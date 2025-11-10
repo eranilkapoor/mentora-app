@@ -664,7 +664,7 @@ We’ll now move into the **UI/UX Wireframe Design Blueprint** for your **Matrim
 
 ---
 
-# 🎨 **UI/UX WIREFRAME BLUEPRINT – MATRIMONIAL PLATFORM**
+# 🎨**UI/UX WIREFRAME BLUEPRINT – MATRIMONIAL PLATFORM**
 
 ### 📱 Platforms:
 
@@ -865,11 +865,9 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 ### **4. Home Screen**
 
 * Top Section:
-
   * Search bar
   * Chips: “Recommended”, “New”, “Nearby”
 * Card Swipe UI:
-
   * Swipe right = Like
   * Swipe left = Skip
   * Tap = View Profile
