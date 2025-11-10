@@ -2068,3 +2068,851 @@ You won’t touch business logic — just rewire data sources.
 | 🔸 5. No implicit dependencies    | Use interfaces, not direct imports               |
 
 ---
+
+
+Nice — I’ll walk you through a practical, **step-by-step NestJS initial setup** for your modular-monolith matrimonial app that’s **designed for an easy future migration to microservices**.
+
+You’ll get:
+
+1. commands to bootstrap the project
+2. recommended folder structure and why
+3. critical packages to install (Mongo, Redis, Passport/JWT, Socket.io, etc.)
+4. sample code for core files (main.ts, app.module.ts, config, repository pattern, event abstraction, a sample module)
+5. Docker + docker-compose for local dev (Mongo + Redis)
+6. scripts (lint/test/dev) and basic CI hint
+7. migration tips (how to swap repo → HTTP/gRPC later)
+
+I keep code snippets minimal and copy-paste ready.
+
+---
+
+## 0) Assumptions
+
+* You’ll use **TypeScript**, **NestJS**, **MongoDB (Mongoose)**, and **Redis (ioredis)**.
+* Use **npm** (you can adapt to yarn/pnpm).
+* Project name: `matrimony-app`.
+
+---
+
+## 1) Bootstrap the Nest project
+
+(If you don't have Nest CLI: `npm i -g @nestjs/cli`)
+
+```bash
+# create project
+nest new matrimony-app
+# choose npm when prompted (or yarn)
+cd matrimony-app
+```
+
+---
+
+## 2) Install recommended packages
+
+```bash
+# database + redis
+npm install mongoose @nestjs/mongoose ioredis
+
+# auth + security
+npm install @nestjs/passport passport passport-local passport-jwt @nestjs/jwt bcryptjs
+
+# validation, config, websockets, queues, docs
+npm install class-validator class-transformer @nestjs/config @nestjs/platform-socket.io socket.io socket.io-client bullmq ioredis
+
+# dev helpers
+npm install -D eslint prettier eslint-config-prettier eslint-plugin-prettier husky
+```
+
+Notes:
+
+* `bullmq` requires Redis and is useful for background jobs (optional).
+* You can add `@nestjs/terminus`, `@nestjs/axios`, `swagger-ui-express` later.
+
+---
+
+## 3) Recommended folder structure (modular monolith)
+
+Create modules in `src/modules/*` and an infrastructure layer for technical concerns.
+
+```
+/src
+  /common              # shared DTOs, interfaces, constants, events
+  /config              # config files, env validation
+  /infrastructure
+    /database          # mongoose connection provider
+    /redis             # redis client provider
+    /events            # local event emitter abstraction
+    /jobs              # background jobs
+    /libs              # shared utility libraries
+  /modules
+    /auth
+    /user
+    /profile
+    /match
+    /chat
+    /notification
+    /payment
+    /admin
+  main.ts
+  app.module.ts
+```
+
+Why this structure:
+
+* Each domain is self-contained. Later you can extract any folder into its own microservice.
+* `infrastructure` contains pluggable pieces (DB, redis, event bus) you’ll swap for remote services later.
+
+---
+
+## 4) Configuration (env + @nestjs/config)
+
+Create `.env` at project root (example):
+
+```
+PORT=3000
+MONGO_URI=mongodb://mongo:27017/matrimony
+JWT_SECRET=supersecret
+JWT_EXPIRES_IN=900s
+REDIS_HOST=redis
+REDIS_PORT=6379
+```
+
+Add `src/config/configuration.ts`:
+
+```ts
+export default () => ({
+  port: parseInt(process.env.PORT, 10) || 3000,
+  mongoUri: process.env.MONGO_URI,
+  jwt: {
+    secret: process.env.JWT_SECRET,
+    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
+  },
+  redis: {
+    host: process.env.REDIS_HOST,
+    port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+  }
+});
+```
+
+In `app.module.ts` import `ConfigModule`:
+
+```ts
+import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import configuration from './config/configuration';
+
+@Module({
+  imports: [
+    ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
+    // Modules...
+  ],
+})
+export class AppModule {}
+```
+
+---
+
+## 5) Database provider (Mongoose config)
+
+`src/infrastructure/database/mongoose.config.ts`:
+
+```ts
+import { MongooseModule } from '@nestjs/mongoose';
+
+export const MongooseConfig = MongooseModule.forRoot(process.env.MONGO_URI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+```
+
+Then add `MongooseConfig` to `imports` in `AppModule`.
+
+---
+
+## 6) Redis provider (ioredis) + service wrapper
+
+`src/infrastructure/redis/redis.provider.ts`:
+
+```ts
+import Redis from 'ioredis';
+import { Provider } from '@nestjs/common';
+
+export const REDIS = 'REDIS';
+
+export const RedisProvider: Provider = {
+  provide: REDIS,
+  useFactory: () => {
+    return new Redis({
+      host: process.env.REDIS_HOST,
+      port: +process.env.REDIS_PORT,
+    });
+  }
+};
+```
+
+Use injection:
+
+```ts
+constructor(@Inject(REDIS) private readonly redisClient: Redis) {}
+```
+
+Wrap conversions into `RedisService` for convenience (set/get with JSON).
+
+---
+
+## 7) Repository pattern (abstraction around Mongoose models)
+
+Create repository inside each module. Example `src/modules/profile/repositories/profile.repository.ts`:
+
+```ts
+@Injectable()
+export class ProfileRepository {
+  constructor(@InjectModel(Profile.name) private profileModel: Model<ProfileDocument>) {}
+
+  async create(dto: CreateProfileDto) {
+    return this.profileModel.create(dto);
+  }
+
+  async findByUserId(userId: string) {
+    return this.profileModel.findOne({ userId }).lean();
+  }
+
+  async update(userId: string, patch: Partial<Profile>) {
+    return this.profileModel.updateOne({ userId }, { $set: patch });
+  }
+}
+```
+
+**Why:** later you can replace `ProfileRepository` implementation with an HTTP client that talks to a `profile` microservice without changing business logic.
+
+---
+
+## 8) Local event emitter abstraction (prepare for event bus)
+
+Create `src/infrastructure/events/event-bus.ts`:
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { EventEmitter2 } from 'eventemitter2';
+
+@Injectable()
+export class EventBus {
+  private emitter = new EventEmitter2({ wildcard: true });
+
+  emit(event: string, payload: any) {
+    this.emitter.emit(event, payload);
+  }
+
+  on(event: string, cb: (payload: any) => void) {
+    this.emitter.on(event, cb);
+  }
+}
+```
+
+Usage:
+
+* When a profile is created: `eventBus.emit('profile.created', { userId, profile })`
+* Later: swap this implementation with Kafka/NATS producer/consumer.
+
+---
+
+## 9) Sample `main.ts` (enable global validation + swagger)
+
+`src/main.ts`:
+
+```ts
+import { NestFactory } from '@nestjs/core';
+import { AppModule } from './app.module';
+import { ValidationPipe } from '@nestjs/common';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule);
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+
+  const config = new DocumentBuilder().setTitle('Matrimony API').setVersion('1.0').build();
+  const doc = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api', app, doc);
+
+  await app.listen(process.env.PORT || 3000);
+}
+bootstrap();
+```
+
+---
+
+## 10) Sample Auth module skeleton (controller/service/strategy)
+
+Create `src/modules/auth/` with:
+
+* `auth.controller.ts`
+* `auth.service.ts`
+* `strategies/local.strategy.ts` (passport-local)
+* `strategies/jwt.strategy.ts` (passport-jwt)
+* `schemas/user.schema.ts`
+* `repositories/user.repository.ts`
+
+Minimal `auth.service.ts`:
+
+```ts
+@Injectable()
+export class AuthService {
+  constructor(private readonly userRepo: UserRepository, private readonly jwtService: JwtService) {}
+
+  async validateUser(email: string, pass: string) {
+    const user = await this.userRepo.findByEmail(email);
+    if (user && (await bcrypt.compare(pass, user.password))) return user;
+    return null;
+  }
+
+  async login(user: any) {
+    const payload = { sub: user._id, email: user.email };
+    return { access_token: this.jwtService.sign(payload) };
+  }
+}
+```
+
+Nest provides `@nestjs/jwt` and `@nestjs/passport` integrations.
+
+---
+
+## 11) Socket.io (Chat) basic gateway
+
+`src/modules/chat/chat.gateway.ts`:
+
+```ts
+@WebSocketGateway({ namespace: '/chat', cors: true })
+export class ChatGateway implements OnGatewayConnection {
+  @WebSocketServer() server: Server;
+
+  handleConnection(client: Socket) {
+    // Validate token, associate client.id with userId in Redis for presence
+  }
+
+  @SubscribeMessage('message')
+  async handleMessage(client: Socket, payload: any) {
+    // persist via ChatService (repositories)
+    this.server.to(payload.room).emit('message', payload);
+  }
+}
+```
+
+When migrating to microservices, chat may become its own service exposing WebSocket endpoints; keep chat logic isolated inside `modules/chat` for easy extraction.
+
+---
+
+## 12) Docker & docker-compose (local dev)
+
+`Dockerfile` (simple):
+
+```dockerfile
+FROM node:18-alpine
+WORKDIR /usr/src/app
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+EXPOSE 3000
+CMD ["node", "dist/main.js"]
+```
+
+`docker-compose.yml`:
+
+```yaml
+version: '3.8'
+services:
+  app:
+    build: .
+    env_file: .env
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
+      - redis
+  mongo:
+    image: mongo:6
+    ports:
+      - '27017:27017'
+    volumes:
+      - mongo-data:/data/db
+  redis:
+    image: redis:7
+    ports:
+      - '6379:6379'
+volumes:
+  mongo-data:
+```
+
+Run:
+
+```bash
+docker-compose up --build
+```
+
+---
+
+## 13) Useful npm scripts (package.json)
+
+```json
+"scripts": {
+  "start": "nest start",
+  "start:dev": "nest start --watch",
+  "build": "nest build",
+  "lint": "eslint '{src,test}/**/*.ts' --fix",
+  "test": "jest"
+}
+```
+
+Add Husky pre-commit hooks for linting and tests (optional).
+
+---
+
+## 14) Testing & Contract Safety
+
+* Unit tests: **Jest** (Nest default).
+* Integration tests: spin local Mongo/Redis via test docker-compose or use in-memory Mongo.
+* Contract tests: **Pact** or simple OpenAPI contract tests later when you split services.
+
+---
+
+## 15) Basic GitHub Actions CI (starter)
+
+`.github/workflows/ci.yml` snippet:
+
+```yaml
+name: CI
+on: [push, pull_request]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with: node-version: 18
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test -- --coverage
+```
+
+---
+
+## 16) Migration-ready practices to follow from day 1
+
+1. **Repository + Service abstraction**: services call other domains only via interfaces (not direct model queries).
+2. **Publish domain events** using your local `EventBus`. When migrating, replace with Kafka/NATS.
+3. **Shared DTO library**: move `src/common` into `libs/common` or a private npm package so all services use the same DTOs/events.
+4. **Avoid DB JOINs across module collections** and `$lookup` between domain collections. Use IDs and events.
+5. **Use environment configs** for endpoints (so swapping local DB for a remote service endpoint is just config change).
+6. **Keep operations idempotent and use idempotency keys** for webhooks and payments.
+7. **Use feature flags** if you need to route to new microservice early.
+
+---
+
+## 17) Example: How you later replace a repository with an HTTP client
+
+Current monolith `ProfileRepository`:
+
+```ts
+class ProfileRepository {
+  async findByUserId(userId: string) { return profileModel.findOne({ userId }); }
+}
+```
+
+When extracting `profile` service, create an alternative implementation:
+
+```ts
+class ProfileHttpRepository {
+  constructor(private readonly http: HttpService) {}
+  async findByUserId(userId: string) {
+    const r = await this.http.get(`http://profile-service/api/profiles/${userId}`).toPromise();
+    return r.data;
+  }
+}
+```
+
+Swap provider in Nest DI (no change to `ProfileService`).
+
+---
+
+## 18) Next steps I can provide (choose any)
+
+* Generate **starter code skeleton** for Auth + Profile + Match modules (controllers, services, repos, schemas).
+* Create a **shared DTO package** structure and sample DTOs.
+* Produce a **detailed Docker/K8s helm chart** for production.
+* Provide **event schema examples** (Kafka topics + JSON schemas) for migrating to event-driven.
+
+Tell me which of those you want and I’ll generate it next.
+
+
+Perfect 👌 — since you’re building a **NestJS-based enterprise matrimonial app** that will start as a **modular monolith** and later migrate to **microservices**, we’ll design the following:
+
+---
+
+## 🧱 Phase 1: Starter Code Skeleton
+
+We’ll create 3 key modules with minimal files:
+
+* **Auth Module** → handles registration, login (email/phone/social)
+* **Profile Module** → manages user biodata, preferences
+* **Match Module** → handles matchmaking, recommendations
+
+We’ll also define:
+
+* Folder layout
+* Core boilerplate files (controller, service, repository, schema)
+* A shared `BaseEntity` pattern
+* Common `ResponseDto` and error handling
+
+---
+
+### ✅ 1. Folder Structure
+
+```
+src/
+  common/
+    dto/
+    interfaces/
+    utils/
+    constants.ts
+    response.dto.ts
+  infrastructure/
+    database/
+      mongoose.config.ts
+    redis/
+      redis.provider.ts
+  modules/
+    auth/
+      auth.controller.ts
+      auth.service.ts
+      auth.module.ts
+      user.schema.ts
+      user.repository.ts
+    profile/
+      profile.controller.ts
+      profile.service.ts
+      profile.module.ts
+      profile.schema.ts
+      profile.repository.ts
+    match/
+      match.controller.ts
+      match.service.ts
+      match.module.ts
+      match.repository.ts
+  app.module.ts
+  main.ts
+```
+
+---
+
+### ✅ 2. Common Layer
+
+**`src/common/constants.ts`**
+
+```ts
+export const COLLECTIONS = {
+  USER: 'users',
+  PROFILE: 'profiles',
+  MATCH: 'matches',
+};
+
+export const STATUS = {
+  ACTIVE: 'ACTIVE',
+  INACTIVE: 'INACTIVE',
+  DELETED: 'DELETED',
+};
+```
+
+**`src/common/response.dto.ts`**
+
+```ts
+export class ApiResponse<T> {
+  constructor(
+    public success: boolean,
+    public message: string,
+    public data?: T,
+  ) {}
+}
+```
+
+---
+
+### ✅ 3. Auth Module
+
+#### **`auth.module.ts`**
+
+```ts
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
+import { AuthController } from './auth.controller';
+import { AuthService } from './auth.service';
+import { User, UserSchema } from './user.schema';
+import { UserRepository } from './user.repository';
+import { JwtModule } from '@nestjs/jwt';
+
+@Module({
+  imports: [
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
+    JwtModule.register({
+      secret: process.env.JWT_SECRET,
+      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
+    }),
+  ],
+  controllers: [AuthController],
+  providers: [AuthService, UserRepository],
+  exports: [AuthService],
+})
+export class AuthModule {}
+```
+
+#### **`auth.controller.ts`**
+
+```ts
+import { Controller, Post, Body } from '@nestjs/common';
+import { AuthService } from './auth.service';
+import { LoginDto, RegisterDto } from '../../shared-dto/auth.dto';
+import { ApiResponse } from '../../common/response.dto';
+
+@Controller('auth')
+export class AuthController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Post('register')
+  async register(@Body() dto: RegisterDto) {
+    const data = await this.authService.register(dto);
+    return new ApiResponse(true, 'User registered successfully', data);
+  }
+
+  @Post('login')
+  async login(@Body() dto: LoginDto) {
+    const token = await this.authService.login(dto);
+    return new ApiResponse(true, 'Login successful', { token });
+  }
+}
+```
+
+#### **`auth.service.ts`**
+
+```ts
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { JwtService } from '@nestjs/jwt';
+import { UserRepository } from './user.repository';
+import * as bcrypt from 'bcryptjs';
+import { RegisterDto, LoginDto } from '../../shared-dto/auth.dto';
+
+@Injectable()
+export class AuthService {
+  constructor(
+    private readonly userRepo: UserRepository,
+    private readonly jwtService: JwtService,
+  ) {}
+
+  async register(dto: RegisterDto) {
+    const hashed = await bcrypt.hash(dto.password, 10);
+    return this.userRepo.create({ ...dto, password: hashed });
+  }
+
+  async login(dto: LoginDto) {
+    const user = await this.userRepo.findByEmail(dto.email);
+    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+    const payload = { sub: user._id, email: user.email };
+    return this.jwtService.sign(payload);
+  }
+}
+```
+
+#### **`user.schema.ts`**
+
+```ts
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document } from 'mongoose';
+import { COLLECTIONS, STATUS } from '../../common/constants';
+
+@Schema({ collection: COLLECTIONS.USER, timestamps: true })
+export class User {
+  @Prop({ required: true }) name: string;
+  @Prop({ required: true, unique: true }) email: string;
+  @Prop() phone?: string;
+  @Prop({ required: true }) password: string;
+  @Prop({ default: STATUS.ACTIVE }) status: string;
+}
+
+export type UserDocument = User & Document;
+export const UserSchema = SchemaFactory.createForClass(User);
+```
+
+#### **`user.repository.ts`**
+
+```ts
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User, UserDocument } from './user.schema';
+
+@Injectable()
+export class UserRepository {
+  constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
+
+  async create(data: Partial<User>) {
+    return this.model.create(data);
+  }
+
+  async findByEmail(email: string) {
+    return this.model.findOne({ email }).lean();
+  }
+}
+```
+
+---
+
+### ✅ 4. Profile Module (skeleton)
+
+`profile.controller.ts`, `profile.service.ts`, `profile.repository.ts` are similar.
+
+#### **`profile.schema.ts`**
+
+```ts
+@Schema({ collection: COLLECTIONS.PROFILE, timestamps: true })
+export class Profile {
+  @Prop({ required: true }) userId: string;
+  @Prop() gender?: string;
+  @Prop() age?: number;
+  @Prop() religion?: string;
+  @Prop() location?: string;
+  @Prop() interests?: string[];
+}
+
+export type ProfileDocument = Profile & Document;
+export const ProfileSchema = SchemaFactory.createForClass(Profile);
+```
+
+---
+
+### ✅ 5. Match Module (skeleton)
+
+#### **`match.schema.ts`**
+
+```ts
+@Schema({ collection: COLLECTIONS.MATCH, timestamps: true })
+export class Match {
+  @Prop({ required: true }) userId: string;
+  @Prop({ required: true }) matchedUserId: string;
+  @Prop({ default: false }) isAccepted: boolean;
+  @Prop({ default: Date.now }) matchedAt: Date;
+}
+
+export type MatchDocument = Match & Document;
+export const MatchSchema = SchemaFactory.createForClass(Match);
+```
+
+#### **`match.service.ts`**
+
+```ts
+@Injectable()
+export class MatchService {
+  constructor(private readonly matchRepo: MatchRepository) {}
+
+  async findMatches(userId: string) {
+    return this.matchRepo.findByUserId(userId);
+  }
+}
+```
+
+---
+
+## 📦 Phase 2: Create Shared DTO Package
+
+Let’s make a reusable **shared DTO library** that can be published later as a private NPM package (for microservices).
+
+For now, create a folder at project root:
+
+```
+shared-dto/
+  auth.dto.ts
+  profile.dto.ts
+  match.dto.ts
+  index.ts
+```
+
+#### **`shared-dto/auth.dto.ts`**
+
+```ts
+import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
+
+export class RegisterDto {
+  @IsNotEmpty() name: string;
+  @IsEmail() email: string;
+  @MinLength(6) password: string;
+  @IsOptional() phone?: string;
+}
+
+export class LoginDto {
+  @IsEmail() email: string;
+  @IsNotEmpty() password: string;
+}
+```
+
+#### **`shared-dto/profile.dto.ts`**
+
+```ts
+import { IsString, IsNumber, IsArray, IsOptional } from 'class-validator';
+
+export class CreateProfileDto {
+  @IsString() userId: string;
+  @IsOptional() @IsString() gender?: string;
+  @IsOptional() @IsNumber() age?: number;
+  @IsOptional() @IsString() religion?: string;
+  @IsOptional() @IsString() location?: string;
+  @IsOptional() @IsArray() interests?: string[];
+}
+```
+
+#### **`shared-dto/match.dto.ts`**
+
+```ts
+import { IsString, IsBoolean, IsOptional } from 'class-validator';
+
+export class MatchDto {
+  @IsString() userId: string;
+  @IsString() matchedUserId: string;
+  @IsOptional() @IsBoolean() isAccepted?: boolean;
+}
+```
+
+#### **`shared-dto/index.ts`**
+
+```ts
+export * from './auth.dto';
+export * from './profile.dto';
+export * from './match.dto';
+```
+
+---
+
+## 🔗 How to use shared DTOs in each service
+
+Example in `auth.controller.ts`:
+
+```ts
+import { RegisterDto } from '../../shared-dto';
+```
+
+When you split into microservices later:
+
+* Move `/shared-dto` into a separate repo.
+* Publish it as `@matrimony/shared-dto`.
+* Each service imports types from there.
+
+---
+
+## ✅ Next Step Options
+
+I can now generate **one of the following** for you:
+
+1. 🧩 **Dockerized starter project** (Mongo + Redis + Nest ready to run)
+2. 🧠 **Event-driven layer setup** (Kafka/NATS or Redis Streams for microservice readiness)
+3. 🔐 **Social login integration (Google/Facebook/Apple)** boilerplate
+4. 📡 **API Gateway + Microservice communication (HTTP + gRPC)** example for future migration
+
+Which one do you want next?
