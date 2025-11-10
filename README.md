@@ -1,4 +1,4 @@
-# 📘 **Project Management Plan for Matrimonial Website & Mobile Application**
+## 📘 **Project Management Plan for Matrimonial Website & Mobile Application**
 
 ### **Project Title:**
 
@@ -18,7 +18,7 @@ Webnza! Infotech
 
 ## 1. **Executive Summary**
 
-The “MatchMate” project aims to build a **modern, AI-driven matrimonial platform** offering secure matchmaking, personalized recommendations, chat, and privacy-first profiles — accessible through both **web** and **mobile applications (Android & iOS)**.
+The **“MatchMate”** project aims to build a **modern, AI-driven matrimonial platform** offering secure matchmaking, personalized recommendations, chat, and privacy-first profiles — accessible through both **web** and **mobile applications (Android & iOS)**.
 
 The project aligns with the growing digital transformation in the matchmaking industry, expected to reach USD **$15+ billion by 2030**.
 Our goal is to deliver an **MVP in 6 months**, followed by iterative improvements.
