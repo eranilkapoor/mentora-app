@@ -660,19 +660,7 @@ User (1) —— (M) Notifications
 
 ---
 
-Would you like me to create a **visual ER Diagram (Entity Relationship Diagram)** and **API Architecture Diagram** for this?
-It’ll show the relationships graphically (good for pitching investors & onboarding devs).
-
-If yes — please confirm whether you prefer:
-
-* **(A)** MongoDB schema-based ER diagram, or
-* **(B)** A hybrid visual (User-centric model with APIs & entities combined).
-
-
-Absolutely ✅ — that’s the **next logical step** after defining the technical and project management plans.
 We’ll now move into the **UI/UX Wireframe Design Blueprint** for your **Matrimonial Website & Mobile App** — showing **complete flow**, **navigation**, and **screen structure**.
-
-Let’s outline everything first — then I can generate **visual wireframes** (Figma-style or diagram view) for both **Web** and **Mobile**.
 
 ---
 
