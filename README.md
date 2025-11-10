@@ -102,9 +102,13 @@ Adopt a **Hybrid Agile (Scrum + Waterfall)** approach:
 ## 7. **Work Breakdown Structure (WBS)**
 
 **Level 1:** Project Initiation
+
 **Level 2:** Requirements & Design
+
 **Level 3:** Development
+
 **Level 4:** Testing
+
 **Level 5:** Deployment & Closure
 
 Example snapshot:
@@ -276,7 +280,7 @@ I’ll give you a **complete technical architecture**, including:
 
 ---
 
-# ⚙️ **TECHNICAL PLAN – MATRIMONIAL PLATFORM (WEB + MOBILE APP)**
+# ⚙️**TECHNICAL PLAN – MATRIMONIAL PLATFORM (WEB + MOBILE APP)**
 
 ### **Tech Stack Overview**
 
@@ -595,7 +599,6 @@ User (1) —— (M) Chats —— (M) Messages
 User (1) —— (M) Subscriptions
 User (1) —— (M) Reports
 User (1) —— (M) Notifications
-Plan (1) —— (M) Subscriptions
 ```
 
 ---
