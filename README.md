@@ -879,7 +879,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 
 * Profile Image + Gallery
 * Tabs:
-
   * About
   * Education & Profession
   * Partner Preferences
@@ -891,7 +890,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 
 * Chat list view (user photo + name + message preview)
 * Tap → Chat room
-
   * Real-time messages
   * Typing indicator
   * Media send option
@@ -901,7 +899,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 ### **7. Requests Screen**
 
 * Tabs:
-
   * “Received” | “Sent”
 * Card layout for each user
 * Buttons: Accept / Reject / View Profile
@@ -949,36 +946,21 @@ Settings / Logout
 
 ## 🧩 **4. Design Guidelines**
 
-| Element            | Recommendation                                       |
-| ------------------ | ---------------------------------------------------- |
-| **Color Palette**  | Warm + Trust tones (e.g., #E63946, #F1FAEE, #1D3557) |
-| **Typography**     | Poppins / Lato                                       |
-| **Icons**          | Lucide / Feather                                     |
-| **Layout System**  | 8pt Grid                                             |
-| **UI Frameworks**  | Bootstrap (Web), NativeBase (Mobile)                 |
-| **Style Language** | TailwindCSS / Styled Components                      |
-| **Animations**     | Framer Motion (Web), Lottie (Mobile)                 |
+| Element            | Recommendation                                              |
+| ------------------ | ----------------------------------------------------------- |
+| **Color Palette**  | Warm + Trust tones (e.g., #E63946, #F1FAEE, #1D3557)  |
+| **Typography**     | Poppins / Lato                                              |
+| **Icons**          | Lucide / Feather                                            |
+| **Layout System**  | 8pt Grid                                                    |
+| **UI Frameworks**  | Bootstrap (Web), NativeBase (Mobile)                        |
+| **Style Language** | TailwindCSS / Styled Components                             |
+| **Animations**     | Framer Motion (Web), Lottie (Mobile)                        |
 
 ---
 
 ## 🖼️ **5. Deliverables to Visualize Next**
 
-I can now generate **Wireframe Images (Low Fidelity)** for both:
-
-* **Web UI Flow (Desktop)**
-* **Mobile UI Flow (React Native)**
-
-Would you like me to:
-
-1. Generate **simple wireframe visuals (grayscale mockups)** showing layout & flow (best for planning and investor decks), **or**
-2. Generate **colored high-fidelity mockups (Figma-like)** with branding and style (best for developer reference & marketing)?
-
-👉 Please choose **Option 1 (Wireframe)** or **Option 2 (Styled Mockups)** —
-and confirm the **app name** (e.g., *MatchMate* or custom) and **primary color theme** (e.g., red, purple, blue).
-Once you confirm, I’ll generate all screens visually for both **Web** and **Mobile**.
-
-
-Excellent question — this decision is **critical** for your matrimonial application’s scalability, maintainability, and developer productivity. Let’s break it down step-by-step 👇
+[Web Wireframe](Wireframe-Web.png)
 
 ---
 
@@ -1147,18 +1129,6 @@ src/
 ├── main.ts
 └── app.module.ts
 ```
-
----
-
-If you’d like, I can provide next:
-
-1. **Database Schema Design** (MongoDB Collections + Fields + Relationships) — optimized for matchmaking logic
-2. **API Endpoints** (NestJS routes for Auth, Profiles, Matches, and Chat)
-
-Would you like me to generate those two next?
-
-
-Perfect — you’re thinking like a **lead architect**, and these are the exact design decisions that separate scalable apps from patchy ones. Let’s go point-by-point so your **Matrimonial App backend** (NestJS + MongoDB + Redis) is clean, modular, and production-ready 👇
 
 ---
 
@@ -1412,14 +1382,6 @@ When Access Token expires → verify Refresh Token → issue a new one.
 
 ---
 
-If you’d like, I can now give you:
-
-1. **Redis schema + key naming convention** (for OTPs, sessions, cache), and
-2. **Auth API endpoints structure** (routes, inputs, responses for all login types).
-
-Would you like me to generate that next?
-
-
 Great — building the matrimonial app as a **microservices-based enterprise system** is the right call for scale, maintainability, and independent team ownership. Below I’ll give you a complete technical blueprint you can hand to architects/dev leads: service boundaries, DB ownership, communication patterns, infra, CI/CD, reliability patterns (sagas, circuit breakers), data models at a high-level, and development guidelines.
 
 I’ll keep it practical — concrete service list + responsibilities + tech recommendations + patterns + a sample dev structure so your teams can start implementing.
@@ -1450,85 +1412,71 @@ Core approach:
 # Recommended Microservice List (with responsibilities)
 
 1. **API Gateway / Edge**
-
-   * Route /auth /users /matches /chat etc to backing services.
-   * Enforce TLS, rate-limits, auth token verification, request logging.
-   * Tech: **Kong / Traefik / AWS API Gateway**.
+  * Route /auth /users /matches /chat etc to backing services.
+  * Enforce TLS, rate-limits, auth token verification, request logging.
+  * Tech: **Kong / Traefik / AWS API Gateway**.
 
 2. **Auth Service (central auth & identity)**
-
-   * Handles login, token (access + refresh), OAuth callbacks, 2FA, token revocation/blacklist.
-   * Stores users' auth records (password hash, social ids, refresh tokens metadata).
-   * Issues JWTs; validates tokens; exposes userinfo.
-   * Tech: **NestJS**, **Passport strategies**, **Mongoose** for auth-store, **Redis** for refresh-token blacklist/OTP.
+  * Handles login, token (access + refresh), OAuth callbacks, 2FA, token revocation/blacklist.
+  * Stores users' auth records (password hash, social ids, refresh tokens metadata).
+  * Issues JWTs; validates tokens; exposes userinfo.
+  * Tech: **NestJS**, **Passport strategies**, **Mongoose** for auth-store, **Redis** for refresh-token blacklist/OTP.
 
 3. **User/Profile Service**
-
-   * Full user profiles, photos metadata, preferences, verification status.
-   * CRUD for profiles and profile search indexes (light).
-   * Responsible for profile-level validation and privacy settings.
-   * Tech: **NestJS**, **MongoDB (Mongoose)**.
+  * Full user profiles, photos metadata, preferences, verification status.
+  * CRUD for profiles and profile search indexes (light).
+  * Responsible for profile-level validation and privacy settings.
+  * Tech: **NestJS**, **MongoDB (Mongoose)**.
 
 4. **Matchmaking Service**
-
-   * Responsible for matching algorithm, scoring, ranking.
-   * Produces recommended lists; stores match scores; caches result sets.
-   * Subscribes to profile-update events to refresh scores.
-   * Tech: **Node/Python microservice** (NestJS for API, Python for ML if needed), **MongoDB / ElasticSearch** (for fast queries), **Redis** for cache.
+  * Responsible for matching algorithm, scoring, ranking.
+  * Produces recommended lists; stores match scores; caches result sets.
+  * Subscribes to profile-update events to refresh scores.
+  * Tech: **Node/Python microservice** (NestJS for API, Python for ML if needed), **MongoDB / ElasticSearch** (for fast queries), **Redis** for cache.
 
 5. **Search Service**
-
-   * Full-text and faceted search with complex filters (location, caste, education, age).
-   * Indexes data from Profile Service into **ElasticSearch / OpenSearch**.
-   * Offers search API for web/mobile and matchmaking queries.
+  * Full-text and faceted search with complex filters (location, caste, education, age).
+  * Indexes data from Profile Service into **ElasticSearch / OpenSearch**.
+  * Offers search API for web/mobile and matchmaking queries.
 
 6. **Chat Service**
-
-   * Real-time messaging (WebSocket / Socket.io / native ws), message persistence.
-   * Handles presence, typing indicators, delivery receipts.
-   * Stores messages in DB (Mongo) and caches recent messages in Redis.
-   * Tech: **NestJS Gateway** or a dedicated service using **Socket.io** or **NATS + WebSocket proxy**.
+  * Real-time messaging (WebSocket / Socket.io / native ws), message persistence.
+  * Handles presence, typing indicators, delivery receipts.
+  * Stores messages in DB (Mongo) and caches recent messages in Redis.
+  * Tech: **NestJS Gateway** or a dedicated service using **Socket.io** or **NATS + WebSocket proxy**.
 
 7. **Interest / Request Service**
-
-   * Manages sending/accepting/rejecting interests, request statuses, blocks.
-   * Emits events (interest.sent, interest.accepted) for notifications and matchmaking.
+  * Manages sending/accepting/rejecting interests, request statuses, blocks.
+  * Emits events (interest.sent, interest.accepted) for notifications and matchmaking.
 
 8. **Notification Service**
-
-   * Sends push notifications (FCM/APNs), emails (SendGrid) and SMS (Twilio).
-   * Receives events (user.registered, interest.sent, message.received, plan.expired).
-   * Manages templates, throttling, and resend policies.
+  * Sends push notifications (FCM/APNs), emails (SendGrid) and SMS (Twilio).
+  * Receives events (user.registered, interest.sent, message.received, plan.expired).
+  * Manages templates, throttling, and resend policies.
 
 9. **Payments & Subscription Service**
-
-   * Handle plans, subscriptions, invoices, payment verification webhooks (Stripe/Razorpay).
-   * Manage trial periods, renewals, cancellations.
-   * Tech: secure vaulting for payment references (no card storage).
+  * Handle plans, subscriptions, invoices, payment verification webhooks (Stripe/Razorpay).
+  * Manage trial periods, renewals, cancellations.
+  * Tech: secure vaulting for payment references (no card storage).
 
 10. **Admin Service**
-
-    * Admin portal APIs: user moderation, reports, content moderation workflows.
-    * Audit logs and privilege checks.
+  * Admin portal APIs: user moderation, reports, content moderation workflows.
+  * Audit logs and privilege checks.
 
 11. **Reports / Fraud & Moderation Service**
-
-    * Processes reports, runs fraud detection (behavioral patterns), ML-based anomaly detection.
-    * Integrates with Admin Service for workflow.
+  * Processes reports, runs fraud detection (behavioral patterns), ML-based anomaly detection.
+  * Integrates with Admin Service for workflow.
 
 12. **Media Service**
-
-    * Handles upload, processing (thumbs, validation), scanning (malicious content), CDN pre-signed URL generation.
-    * Uses S3, Lambda for processing, and virus/sexually-explicit content detection if required.
+  * Handles upload, processing (thumbs, validation), scanning (malicious content), CDN pre-signed URL generation.
+  * Uses S3, Lambda for processing, and virus/sexually-explicit content detection if required.
 
 13. **Analytics / Events Service**
-
-    * Collects events (Kafka) for analytics, KPI dashboards (Mixpanel/Amplitude).
-    * Exposes aggregated metrics to product/marketing.
+  * Collects events (Kafka) for analytics, KPI dashboards (Mixpanel/Amplitude).
+  * Exposes aggregated metrics to product/marketing.
 
 14. **Gateway Auth / Token Introspection** (optional)
-
-    * Lightweight service or middleware to introspect tokens if central token validation required.
+  * Lightweight service or middleware to introspect tokens if central token validation required.
 
 ---
 
@@ -1558,20 +1506,17 @@ Example ownership:
 # Communication patterns
 
 1. **Synchronous (request/response)** — REST or gRPC for:
-
-   * Client → API Gateway → Service
-   * Service A → Service B for low-latency calls (userinfo, token validation)
-   * Prefer **gRPC** for internal high-perf calls (binary + contract + health).
+  * Client → API Gateway → Service
+  * Service A → Service B for low-latency calls (userinfo, token validation)
+  * Prefer **gRPC** for internal high-perf calls (binary + contract + health).
 
 2. **Asynchronous (event-driven)** — Event bus for eventual consistency:
-
-   * Kafka/RabbitMQ pub/sub for events such as `user.created`, `profile.updated`, `interest.sent`, `payment.succeeded`.
-   * Services subscribe to relevant topics and update local caches/indexes.
+  * Kafka/RabbitMQ pub/sub for events such as `user.created`, `profile.updated`, `interest.sent`, `payment.succeeded`.
+  * Services subscribe to relevant topics and update local caches/indexes.
 
 3. **Choreography vs Orchestration**:
-
-   * Prefer **choreography** (services emit events) for most flows.
-   * Use **orchestration** (Saga Orchestrator) for complex distributed transactions (e.g., payment + subscription activation + analytics).
+  * Prefer **choreography** (services emit events) for most flows.
+  * Use **orchestration** (Saga Orchestrator) for complex distributed transactions (e.g., payment + subscription activation + analytics).
 
 ---
 
@@ -1589,7 +1534,6 @@ Example ownership:
 # Caching & data duplication
 
 * Use Redis for caching hot results:
-
   * Match suggestions cache keyed per user
   * Search results cache
   * Session / refresh token blacklists
@@ -1643,7 +1587,6 @@ Example ownership:
 
 * Repo per service (or mono-repo with per-service pipelines)
 * CI pipeline:
-
   * Lint → Unit Tests → Build → Docker Image → Push to Registry → Integration Tests → Deploy to staging → Canary → Prod
 * Use GitHub Actions / GitLab CI / Jenkins
 * IaC with Terraform (VPC, clusters, managed DBs)
@@ -1771,14 +1714,6 @@ Payment Service:
 * Deploy on **Kubernetes**, CI/CD with GitHub Actions, IaC with Terraform.
 
 ---
-
-If you want, next I can:
-
-1. Produce a **concrete microservice diagram** (ASCII or mermaid) and per-service API contract examples (OpenAPI snippets).
-2. Generate **sample NestJS module templates** for Auth, Profile, and Matchmaking (code skeletons).
-3. Provide a **Kafka topic list + event schemas (JSON Schema)** for the event-driven parts.
-
-Which of the three would you like me to produce now?
 
 Excellent question — and this is **exactly the right approach** 👏. Starting with a **modular monolith (standalone app)** and evolving later into **microservices** is a proven enterprise strategy. It gives you faster MVP delivery, lower DevOps overhead, and a smoother migration path once the system grows.
 
@@ -1922,10 +1857,6 @@ No logic rewrite — just replace the injection binding.
 
 ---
 
-Would you like me to generate a **diagram (architecture flow)** showing this modular monolith → microservices evolution visually?
-It will clearly depict each layer, module, and how it transforms later.
-
-
 Fantastic — this is **one of the smartest things to plan early** 👏.
 Your database design and data-access layer architecture will **decide how easy** (or painful) your future migration to microservices will be.
 
@@ -2066,7 +1997,6 @@ So your **service layer** (`ProfileService`) doesn’t change — only repositor
 
 * Each microservice gets its **own MongoDB database**, using the same schemas.
 * For example:
-
   * **Auth Service DB:** `auth.users`
   * **Profile Service DB:** `profile.profiles`
   * **Match Service DB:** `match.matches`
@@ -2138,10 +2068,3 @@ You won’t touch business logic — just rewire data sources.
 | 🔸 5. No implicit dependencies    | Use interfaces, not direct imports               |
 
 ---
-
-If you’d like, I can create a **visual database architecture diagram** that shows:
-
-* Current monolith DB
-* Future microservice DBs
-* Redis caching layers
-  Would you like me to generate that next?
