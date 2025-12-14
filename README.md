@@ -40,7 +40,7 @@ Our goal is to deliver an **MVP in 6 months**, followed by iterative improvement
 ### **In Scope**
 
 * Web application (React/Next.js + Node.js backend).
-* Mobile apps (React Native or Flutter).
+* Mobile apps (React Native).
 * Admin dashboard for moderation and analytics.
 * Secure authentication (Email, Phone OTP, Google, Facebook, Apple ID).
 * Profile management and verification.
@@ -167,14 +167,14 @@ Example snapshot:
 
 | Role               | Responsible | Accountable | Consulted | Informed     |
 | ------------------ | ----------- | ----------- | --------- | ------------ |
-| Project Manager    | ✅           | ✅           | CTO       | Investors    |
-| Business Analyst   | ✅           | PM          | Users     | Stakeholders |
-| UI/UX Designer     | ✅           | PM          | Marketing | Dev Team     |
-| Backend Developer  | ✅           | Tech Lead   | PM        | QA           |
-| Frontend Developer | ✅           | Tech Lead   | UI/UX     | PM           |
-| Mobile Developer   | ✅           | Tech Lead   | Backend   | PM           |
-| QA Tester          | ✅           | QA Lead     | Dev       | PM           |
-| DevOps Engineer    | ✅           | CTO         | PM        | All          |
+| Project Manager    | ✅         | ✅          | CTO       | Investors    |
+| Business Analyst   | ✅         | PM          | Users     | Stakeholders |
+| UI/UX Designer     | ✅         | PM          | Marketing | Dev Team     |
+| Backend Developer  | ✅         | Tech Lead   | PM        | QA           |
+| Frontend Developer | ✅         | Tech Lead   | UI/UX     | PM           |
+| Mobile Developer   | ✅         | Tech Lead   | Backend   | PM           |
+| QA Tester          | ✅         | QA Lead     | Dev       | PM           |
+| DevOps Engineer    | ✅         | CTO         | PM        | All          |
 
 ---
 
@@ -269,15 +269,6 @@ Example snapshot:
 
 ---
 
-Now we’re moving from **Project Management Plan** → **Technical Plan (System Design Blueprint)** for your **Matrimonial Web + Mobile App**.
-
-I’ll give you a **complete technical architecture**, including:
-
-* 🧩 **Modules & API Endpoints**
-* 🧠 **Database Design (MongoDB Collections + Fields)**
-* 🔗 **Entity Relationships**
-* ⚙️ **Tech Stack & Infrastructure Overview**
-
 ---
 
 # ⚙️**TECHNICAL PLAN – MATRIMONIAL PLATFORM (WEB + MOBILE APP)**
@@ -326,7 +317,9 @@ Here’s a modular RESTful API plan:
 | POST   | `/auth/register`        | Register user (email/phone/social) |
 | POST   | `/auth/login`           | Login using email/password         |
 | POST   | `/auth/social-login`    | Login with Google/Facebook/Apple   |
+| POST   | `/auth/send-otp`        | Send OTP for phone signup/login    |
 | POST   | `/auth/verify-otp`      | Verify OTP for phone signup/login  |
+| POST   | `/auth/refresh-token`   | Get new access token by refresh token  |
 | POST   | `/auth/resend-otp`      | Resend OTP                         |
 | POST   | `/auth/forgot-password` | Send reset password link/OTP       |
 | PUT    | `/auth/reset-password`  | Reset user password                |
@@ -2090,7 +2083,7 @@ I keep code snippets minimal and copy-paste ready.
 
 * You’ll use **TypeScript**, **NestJS**, **MongoDB (Mongoose)**, and **Redis (ioredis)**.
 * Use **npm** (you can adapt to yarn/pnpm).
-* Project name: `matrimony-app`.
+* Project name: `match-mate-app`.
 
 ---
 
@@ -2100,9 +2093,9 @@ I keep code snippets minimal and copy-paste ready.
 
 ```bash
 # create project
-nest new matrimony-app
+nest new match-mate-app
 # choose npm when prompted (or yarn)
-cd matrimony-app
+cd match-mate-app
 ```
 
 ---
