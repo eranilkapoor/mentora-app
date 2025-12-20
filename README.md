@@ -40,7 +40,7 @@ Our goal is to deliver an **MVP in 6 months**, followed by iterative improvement
 ### **In Scope**
 
 * Web application (React/Next.js + Node.js backend).
-* Mobile apps (React Native or Flutter).
+* Mobile apps (React Native).
 * Admin dashboard for moderation and analytics.
 * Secure authentication (Email, Phone OTP, Google, Facebook, Apple ID).
 * Profile management and verification.
@@ -167,14 +167,14 @@ Example snapshot:
 
 | Role               | Responsible | Accountable | Consulted | Informed     |
 | ------------------ | ----------- | ----------- | --------- | ------------ |
-| Project Manager    | ✅           | ✅           | CTO       | Investors    |
-| Business Analyst   | ✅           | PM          | Users     | Stakeholders |
-| UI/UX Designer     | ✅           | PM          | Marketing | Dev Team     |
-| Backend Developer  | ✅           | Tech Lead   | PM        | QA           |
-| Frontend Developer | ✅           | Tech Lead   | UI/UX     | PM           |
-| Mobile Developer   | ✅           | Tech Lead   | Backend   | PM           |
-| QA Tester          | ✅           | QA Lead     | Dev       | PM           |
-| DevOps Engineer    | ✅           | CTO         | PM        | All          |
+| Project Manager    | ✅         | ✅          | CTO       | Investors    |
+| Business Analyst   | ✅         | PM          | Users     | Stakeholders |
+| UI/UX Designer     | ✅         | PM          | Marketing | Dev Team     |
+| Backend Developer  | ✅         | Tech Lead   | PM        | QA           |
+| Frontend Developer | ✅         | Tech Lead   | UI/UX     | PM           |
+| Mobile Developer   | ✅         | Tech Lead   | Backend   | PM           |
+| QA Tester          | ✅         | QA Lead     | Dev       | PM           |
+| DevOps Engineer    | ✅         | CTO         | PM        | All          |
 
 ---
 
@@ -269,15 +269,6 @@ Example snapshot:
 
 ---
 
-Now we’re moving from **Project Management Plan** → **Technical Plan (System Design Blueprint)** for your **Matrimonial Web + Mobile App**.
-
-I’ll give you a **complete technical architecture**, including:
-
-* 🧩 **Modules & API Endpoints**
-* 🧠 **Database Design (MongoDB Collections + Fields)**
-* 🔗 **Entity Relationships**
-* ⚙️ **Tech Stack & Infrastructure Overview**
-
 ---
 
 # ⚙️**TECHNICAL PLAN – MATRIMONIAL PLATFORM (WEB + MOBILE APP)**
@@ -326,7 +317,9 @@ Here’s a modular RESTful API plan:
 | POST   | `/auth/register`        | Register user (email/phone/social) |
 | POST   | `/auth/login`           | Login using email/password         |
 | POST   | `/auth/social-login`    | Login with Google/Facebook/Apple   |
+| POST   | `/auth/send-otp`        | Send OTP for phone signup/login    |
 | POST   | `/auth/verify-otp`      | Verify OTP for phone signup/login  |
+| POST   | `/auth/refresh-token`   | Get new access token by refresh token  |
 | POST   | `/auth/resend-otp`      | Resend OTP                         |
 | POST   | `/auth/forgot-password` | Send reset password link/OTP       |
 | PUT    | `/auth/reset-password`  | Reset user password                |
@@ -2090,7 +2083,7 @@ I keep code snippets minimal and copy-paste ready.
 
 * You’ll use **TypeScript**, **NestJS**, **MongoDB (Mongoose)**, and **Redis (ioredis)**.
 * Use **npm** (you can adapt to yarn/pnpm).
-* Project name: `matrimony-app`.
+* Project name: `match-mate-app`.
 
 ---
 
@@ -2100,9 +2093,9 @@ I keep code snippets minimal and copy-paste ready.
 
 ```bash
 # create project
-nest new matrimony-app
+nest new match-mate-app
 # choose npm when prompted (or yarn)
-cd matrimony-app
+cd match-mate-app
 ```
 
 ---
@@ -2916,3 +2909,1163 @@ I can now generate **one of the following** for you:
 4. 📡 **API Gateway + Microservice communication (HTTP + gRPC)** example for future migration
 
 Which one do you want next?
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+************************************** FRONTEND DOCUMENTS & SETUP ***********************************************
+
+Excellent — since your **MatchMate App** will be an enterprise-grade **React Native (TypeScript)** project that integrates with your **NestJS backend**, let’s set it up properly for **Android + iOS + Web** from day one.
+
+We’ll use **Expo with React Native + TypeScript**, which makes this clean, consistent, and web-compatible (via Expo for Web).
+
+Below is your **complete technical setup guide** 👇
+
+---
+
+## 🧱 1. Project Structure Overview
+
+We’ll create one unified React Native codebase using **Expo + TypeScript** that can run on:
+
+* ✅ Android
+* ✅ iOS
+* ✅ Web (via Expo Web)
+
+---
+
+### 📦 Folder structure (clean architecture ready)
+
+```
+matchmate-app/
+  ├── src/
+  │   ├── api/
+  │   │   └── httpClient.ts
+  │   ├── components/
+  │   │   ├── Button.tsx
+  │   │   ├── Input.tsx
+  │   │   └── Avatar.tsx
+  │   ├── constants/
+  │   │   └── colors.ts
+  │   ├── hooks/
+  │   │   └── useAuth.ts
+  │   ├── navigation/
+  │   │   ├── AppNavigator.tsx
+  │   │   └── AuthNavigator.tsx
+  │   ├── screens/
+  │   │   ├── Auth/
+  │   │   │   ├── LoginScreen.tsx
+  │   │   │   ├── RegisterScreen.tsx
+  │   │   ├── Home/
+  │   │   │   ├── HomeScreen.tsx
+  │   │   ├── Matches/
+  │   │   │   ├── MatchListScreen.tsx
+  │   │   │   └── MatchDetailScreen.tsx
+  │   │   ├── Profile/
+  │   │   │   └── EditProfileScreen.tsx
+  │   │   └── Settings/
+  │   │       └── SettingsScreen.tsx
+  │   ├── services/
+  │   │   ├── authService.ts
+  │   │   ├── matchService.ts
+  │   │   └── profileService.ts
+  │   ├── store/
+  │   │   ├── index.ts
+  │   │   ├── authSlice.ts
+  │   │   └── profileSlice.ts
+  │   ├── theme/
+  │   │   └── theme.ts
+  │   ├── utils/
+  │   │   └── validators.ts
+  │   └── App.tsx
+  ├── app.json
+  ├── package.json
+  ├── tsconfig.json
+  └── .env
+```
+
+---
+
+## 🚀 2. Create Base Project
+
+### Step 1 — Install Expo CLI
+
+```bash
+npm install -g expo-cli
+```
+
+### Step 2 — Create new project
+
+```bash
+npx create-expo-app matchmate-app --template expo-template-blank-typescript
+```
+
+Move into the project:
+
+```bash
+cd matchmate-app
+```
+
+---
+
+## 🧩 3. Install Essential Dependencies
+
+### Core libraries
+
+```bash
+npm install @react-navigation/native @react-navigation/native-stack \
+@react-navigation/bottom-tabs react-native-safe-area-context \
+react-native-screens react-native-gesture-handler
+```
+
+### State management (Redux Toolkit)
+
+```bash
+npm install @reduxjs/toolkit react-redux
+```
+
+### Networking & Utils
+
+```bash
+npm install axios @react-native-async-storage/async-storage
+```
+
+### Authentication
+
+```bash
+npm install expo-auth-session expo-secure-store
+```
+
+### UI Library
+
+```bash
+npm install react-native-paper react-native-vector-icons
+```
+
+### Type definitions
+
+```bash
+npm install -D @types/react @types/react-native
+```
+
+---
+
+## 🌐 4. Enable Web Support
+
+Expo automatically supports web — test it:
+
+```bash
+npx expo start --web
+```
+
+You can access it at:
+👉 [http://localhost:19006](http://localhost:19006)
+
+---
+
+## 🧠 5. Setup Navigation
+
+**`src/navigation/AppNavigator.tsx`**
+
+```tsx
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import HomeScreen from '../screens/Home/HomeScreen';
+import MatchListScreen from '../screens/Matches/MatchListScreen';
+import EditProfileScreen from '../screens/Profile/EditProfileScreen';
+import SettingsScreen from '../screens/Settings/SettingsScreen';
+import { Ionicons } from '@expo/vector-icons';
+
+const Tab = createBottomTabNavigator();
+
+export default function AppNavigator() {
+  return (
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ color, size }) => {
+          let iconName: any;
+          switch (route.name) {
+            case 'Home': iconName = 'home'; break;
+            case 'Matches': iconName = 'heart'; break;
+            case 'Profile': iconName = 'person'; break;
+            case 'Settings': iconName = 'settings'; break;
+          }
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: '#e91e63',
+        tabBarInactiveTintColor: 'gray',
+      })}
+    >
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="Matches" component={MatchListScreen} />
+      <Tab.Screen name="Profile" component={EditProfileScreen} />
+      <Tab.Screen name="Settings" component={SettingsScreen} />
+    </Tab.Navigator>
+  );
+}
+```
+
+---
+
+## 🔐 6. Auth Flow (Login + Register)
+
+**`src/navigation/AuthNavigator.tsx`**
+
+```tsx
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import LoginScreen from '../screens/Auth/LoginScreen';
+import RegisterScreen from '../screens/Auth/RegisterScreen';
+
+const Stack = createNativeStackNavigator();
+
+export default function AuthNavigator() {
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+    </Stack.Navigator>
+  );
+}
+```
+
+---
+
+## 🔧 7. API Setup
+
+**`src/api/httpClient.ts`**
+
+```ts
+import axios from 'axios';
+import Constants from 'expo-constants';
+
+const API_BASE = Constants.expoConfig?.extra?.apiUrl || 'http://localhost:3000';
+
+export const httpClient = axios.create({
+  baseURL: API_BASE,
+  headers: { 'Content-Type': 'application/json' },
+});
+```
+
+Example service:
+**`src/services/authService.ts`**
+
+```ts
+import { httpClient } from '../api/httpClient';
+
+export const AuthService = {
+  login: (data: { email: string; password: string }) =>
+    httpClient.post('/auth/login', data),
+  register: (data: any) => httpClient.post('/auth/register', data),
+};
+```
+
+---
+
+## 🧭 8. Store Setup (Redux Toolkit)
+
+**`src/store/authSlice.ts`**
+
+```ts
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+interface AuthState {
+  token: string | null;
+}
+
+const initialState: AuthState = { token: null };
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    setToken: (state, action: PayloadAction<string>) => {
+      state.token = action.payload;
+    },
+    logout: (state) => {
+      state.token = null;
+    },
+  },
+});
+
+export const { setToken, logout } = authSlice.actions;
+export default authSlice.reducer;
+```
+
+**`src/store/index.ts`**
+
+```ts
+import { configureStore } from '@reduxjs/toolkit';
+import authReducer from './authSlice';
+import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
+
+export const store = configureStore({
+  reducer: { auth: authReducer },
+});
+
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+```
+
+In `App.tsx`:
+
+```tsx
+import { Provider } from 'react-redux';
+import { store } from './store';
+import { NavigationContainer } from '@react-navigation/native';
+import AppNavigator from './navigation/AppNavigator';
+
+export default function App() {
+  return (
+    <Provider store={store}>
+      <NavigationContainer>
+        <AppNavigator />
+      </NavigationContainer>
+    </Provider>
+  );
+}
+```
+
+---
+
+## 📱 9. Run on Devices
+
+### Run on Android Emulator
+
+```bash
+npx expo start --android
+```
+
+### Run on iOS Simulator (Mac)
+
+```bash
+npx expo start --ios
+```
+
+### Run on Web
+
+```bash
+npx expo start --web
+```
+
+---
+
+## 🧩 10. Next Steps / Extensions
+
+| Goal              | Tech                    | Description                         |
+| ----------------- | ----------------------- | ----------------------------------- |
+| 🔐 Social Login   | `expo-auth-session`     | Google, Facebook, Apple sign-in     |
+| 💬 Real-time Chat | `socket.io-client`      | Connect to NestJS Socket.io gateway |
+| 🕸 API Env Config | `.env + expo-constants` | Different URLs for dev/stage/prod   |
+| 🧠 Local Cache    | `AsyncStorage`          | Save session, tokens                |
+| 🌗 Theme          | `react-native-paper`    | Dark/light theme support            |
+
+---
+
+## ⚙️ Summary
+
+You now have:
+✅ TypeScript-based Expo project
+✅ Ready for Android, iOS, Web
+✅ Redux state & Axios API integration
+✅ Auth + Tabs navigation
+✅ Folder structure aligned with your NestJS backend
+
+---
+
+Would you like me to **generate a ready-to-run boilerplate (zipped)** version of this code (Expo + Redux + TypeScript + Axios + Navigation) so your team can start instantly?
+
+
+That’s a **very smart question** — and exactly the kind of decision that makes or breaks the scalability of an enterprise mobile app like your **MatchMate (Matrimonial App)**.
+
+Let’s analyze this in your context — **a large-scale, backend-driven, multi-platform matrimonial app** built with **NestJS, MongoDB, Redis, Socket.io**, etc.
+
+---
+
+## 🧩 TL;DR — Summary First
+
+| Factor                                | **Expo**                          | **React Native CLI**                   | Recommendation                                         |
+| ------------------------------------- | --------------------------------- | -------------------------------------- | ------------------------------------------------------ |
+| 🧱 **Setup & Development Speed**      | Super fast (zero native setup)    | Manual setup, more steps               | ✅ Expo (for quick start & MVP)                         |
+| ⚙️ **Custom Native Modules**          | Limited, needs EAS build or eject | Full control (Android/iOS native code) | ✅ RN CLI (for advanced native features)                |
+| 📦 **Build & Deployment**             | EAS (cloud builds, simple config) | Xcode/Gradle manual builds             | ✅ Expo (simpler CI/CD)                                 |
+| 🧠 **Performance / Optimization**     | Great for 80–90% apps             | Best for heavy native integrations     | ⚖️ Depends on app complexity                           |
+| 🔌 **Third-party SDKs (Native)**      | Needs EAS + config plugin         | Directly installable                   | ✅ RN CLI (for deep SDKs like video call, ML, payments) |
+| 🌐 **Web Support (React Native Web)** | Built-in                          | Needs setup                            | ✅ Expo (works out of box)                              |
+| 🧰 **Team Productivity**              | Faster onboarding                 | More DevOps overhead                   | ✅ Expo                                                 |
+| 💰 **Enterprise Maintainability**     | EAS paid tier for scaling builds  | Free + self-managed CI/CD              | ⚖️ Depends on infra preference                         |
+
+---
+
+## 🧠 Deep Comparison (Specific to *Your Use Case*)
+
+### 1. **Backend-driven App**
+
+You have a strong **NestJS backend** and **Socket.io** for real-time features.
+
+✅ **Expo Advantage:**
+
+* Ideal for apps that mainly rely on API + socket-based backend.
+* You don’t need heavy native modules initially.
+
+💡 *Expo SDK includes everything for push notifications, authentication, and camera/photo upload — perfect for your first release.*
+
+---
+
+### 2. **Scalability to Native Features**
+
+Later, you might want:
+
+* Video calling (WebRTC / Agora)
+* Background matching jobs
+* Native contact sync
+* Payment gateways (Razorpay, Stripe native SDKs)
+* Location-based match suggestions
+
+❌ **Expo Limitation:**
+
+* Some advanced SDKs don’t work with Expo unless you “**eject**” to bare workflow.
+
+✅ **React Native CLI Advantage:**
+
+* Full native control.
+* Easier to integrate platform SDKs (Firebase Phone Auth, Payment SDKs, etc.).
+
+💡 *You can start with Expo and “eject” later to CLI when you need native power.*
+
+---
+
+### 3. **Web Support**
+
+Since you mentioned you want a **single app for Android, iOS, and Web**:
+
+✅ **Expo wins easily**
+
+* Expo Web runs with almost zero setup.
+* Perfect for an MVP or investor demo.
+
+---
+
+### 4. **Enterprise Team Collaboration**
+
+For your company (Webnza! Infotech), where multiple devs will work:
+
+✅ **Expo benefits:**
+
+* Same environment for all developers (no native SDK conflicts).
+* CI/CD through **Expo Application Services (EAS)**.
+
+💡 You can later integrate with **GitHub Actions + EAS Build + Firebase Hosting**.
+
+---
+
+### 5. **Long-term Maintainability**
+
+If you expect:
+
+* Frequent API changes
+* Feature-based modularity
+* Some native-level customizations later
+
+💡 The ideal approach is:
+
+1. **Start with Expo (Managed Workflow)** for MVP & testing.
+2. **Switch to Bare Workflow (Expo Ejected)** when you integrate:
+
+   * Native push notifications
+   * Advanced payment gateways
+   * Deep linking, etc.
+
+This hybrid approach ensures **fast launch → easy migration → full power**.
+
+---
+
+## 🏁 Final Recommendation (For *MatchMate*)
+
+| Phase                             | Use                                       | Reason                                                   |
+| --------------------------------- | ----------------------------------------- | -------------------------------------------------------- |
+| **MVP / Beta (0–6 months)**       | ✅ **Expo (Managed Workflow)**             | Fast to build, test, and deploy Android, iOS & Web       |
+| **Production (6–12 months)**      | ✅ **Eject to Bare (Expo Bare or RN CLI)** | Integrate native SDKs, improve performance               |
+| **Enterprise Scale (>12 months)** | ✅ **React Native CLI**                    | Full native control, CI/CD pipelines, performance tuning |
+
+---
+
+## ⚙️ Practical Setup Roadmap
+
+1. **Start Today:**
+
+   ```
+   npx create-expo-app matchmate-app --template expo-template-blank-typescript
+   ```
+
+   → Build your screens, navigation, and connect to NestJS APIs.
+
+2. **Later (when scaling):**
+
+   ```
+   npx expo prebuild
+   ```
+
+   → This converts it to **bare React Native** (compatible with CLI setup).
+
+---
+
+## 🚀 Conclusion
+
+If you want a **production-ready, web-compatible, scalable foundation** —
+👉 **Start with Expo**
+then
+👉 **Eject to React Native CLI (Bare workflow)** once you add heavy native features.
+
+This approach minimizes rework and gives you the best of both worlds.
+
+---
+
+Would you like me to show you **how to structure your Expo project** so that it’s *“eject-safe”* (minimal changes required when you migrate to RN CLI later)?
+
+
+Excellent and very practical question 👏 — this shows you’re thinking *ahead* about project scalability and migration from **Expo to pure React Native (CLI)**. Let’s break it down clearly so you can make an informed decision.
+
+---
+
+## 🚀 When You Eject from Expo (a.k.a. “Prebuild”)
+
+When you start with **Expo Managed Workflow**, your project doesn’t directly touch native iOS/Android code — Expo handles it for you.
+When you **eject (run `npx expo prebuild`)**, Expo:
+
+✅ **Automatically generates native projects:**
+
+* Creates `/ios` and `/android` folders.
+* Configures Gradle (Android) and Xcode (iOS) builds.
+* Adds native dependencies listed in your `app.json` (like camera, notifications, etc.).
+* Syncs Expo modules with bare React Native environment.
+
+✅ **Keeps your existing JS/TS code intact:**
+
+* All your React components, navigation, Redux/Zustand, and API logic remain unchanged.
+
+✅ **Still supports most Expo SDK libraries**
+
+* Libraries like `expo-notifications`, `expo-auth-session`, `expo-location`, etc. continue to work because Expo still manages those native modules even in Bare Workflow.
+
+---
+
+## ⚠️ But You’ll Need Manual Changes in These Areas:
+
+| Area              | Manual Work Required After Eject | Details                                                                                                                  |
+| ----------------- | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Build Tools**   | ✅ Moderate                       | Install Xcode + Android Studio; update build.gradle / Podfile if needed                                                  |
+| **Native Config** | ✅ Moderate                       | If you add native SDKs (Firebase, Facebook, Apple Auth), you’ll need to configure them manually in `/android` and `/ios` |
+| **OTA Updates**   | ⚙️ Optional                      | Managed workflow gives automatic OTA updates; in bare, you can still use `expo-updates`, but need manual config          |
+| **App Signing**   | ✅ Yes                            | You must manage your own keystores/provisioning profiles                                                                 |
+| **Versioning**    | ✅ Manual                         | You’ll manually bump version numbers in native configs                                                                   |
+
+So it’s **not a complete rebuild**, but **expect 20–30% setup effort** — mostly native config and CI/CD adjustments.
+
+---
+
+## 🧭 Recommendation for *MatchMate (Matrimonial App)*
+
+| Scenario                            | Recommendation                                                                                                                               |
+| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| **MVP / Prototype / Pitch Phase**   | ✅ **Use Expo Managed Workflow** (fast iteration, no native headaches, easy OTA updates)                                                      |
+| **Production Phase / Monetization** | 🔄 **Eject to Bare Workflow** once you need native modules like Firebase Cloud Messaging, Payment SDKs, Deep Linking, or Performance Tracing |
+| **Post-Eject Phase**                | ✅ You’ll still use TypeScript + Expo SDK + Metro Bundler — so it’s familiar and easy to maintain                                             |
+
+---
+
+## 🧩 Ideal Tech Stack for You
+
+**Frontend (Mobile):**
+
+* Expo (Managed → Bare later)
+* React Navigation (v7+)
+* Zustand or Redux Toolkit for state
+* Axios / React Query for API
+* TypeScript
+* Tailwind + NativeWind for styling
+
+**Backend:**
+
+* NestJS (Monolith → Microservice Ready)
+* MongoDB + Redis
+* JWT + Passport (Auth)
+* Socket.IO (Realtime Chat & Notifications)
+
+---
+
+## ✅ Next Step Suggestion
+
+If you’d like, I can generate the **Expo + TypeScript starter structure** (optimized for your MatchMate project) with:
+
+* Folder structure (`src/screens`, `src/components`, etc.)
+* Preconfigured navigation
+* API service integration layer
+* Environment config ready for staging/production
+* Ready for Android/iOS/Web build
+
+Would you like me to generate that full project skeleton next?
+
+
+Perfect 👏 — we’ll generate a **production-ready Expo + TypeScript starter skeleton** tailored for your **MatchMate (Matrimonial App)** that can later **eject safely** to a bare React Native (CLI) setup when you need deep native integrations.
+
+---
+
+## 🧱 **Project Setup Overview**
+
+**Framework:** Expo (with TypeScript)
+**Target:** Android, iOS, Web (via Expo Web)
+**Navigation:** React Navigation v7
+**State Management:** Zustand (lightweight and scalable)
+**API Layer:** Axios + Environment configs
+**Styling:** NativeWind (TailwindCSS for React Native)
+**Auth:** Ready for Email, Phone (OTP), and Social Logins
+**Structure:** Clean, modular, microservice-ready UI layer
+
+---
+
+## 🧩 **1. Create Project**
+
+```bash
+npx create-expo-app matchmate --template
+cd matchmate
+npx expo install typescript
+```
+
+Then rename the `App.js` → `App.tsx`
+
+---
+
+## 📁 **2. Folder Structure (Recommended)**
+
+```
+matchmate/
+│
+├── app/                            # Expo Router Pages
+│   ├── (auth)/                     # Auth stack
+│   │   ├── login.tsx
+│   │   ├── register.tsx
+│   │   ├── otp.tsx
+│   │   └── social-login.tsx
+│   ├── (main)/                     # Protected app routes
+│   │   ├── home.tsx
+│   │   ├── profile.tsx
+│   │   ├── chat.tsx
+│   │   ├── matches.tsx
+│   │   └── settings.tsx
+│   ├── _layout.tsx                 # Root navigation layout
+│   └── index.tsx                   # Default route
+│
+├── src/
+│   ├── api/
+│   │   ├── axiosInstance.ts        # Axios base config
+│   │   └── auth.api.ts             # Auth endpoints
+│   ├── components/
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   ├── Avatar.tsx
+│   │   └── Header.tsx
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   └── useTheme.ts
+│   ├── store/
+│   │   ├── useAuthStore.ts         # Zustand Auth Store
+│   │   └── useUserStore.ts
+│   ├── utils/
+│   │   ├── constants.ts
+│   │   ├── validators.ts
+│   │   └── helpers.ts
+│   ├── config/
+│   │   ├── env.ts                  # Handles API_BASE_URL etc.
+│   │   └── theme.ts
+│   ├── assets/
+│   │   └── icons, fonts, images
+│   └── navigation/
+│       ├── AuthNavigator.tsx
+│       ├── MainNavigator.tsx
+│       └── index.tsx
+│
+├── .env                            # Environment variables
+├── app.json
+├── tsconfig.json
+├── package.json
+└── README.md
+```
+
+---
+
+## ⚙️ **3. Install Core Dependencies**
+
+```bash
+# Navigation
+npx expo install @react-navigation/native @react-navigation/native-stack react-native-screens react-native-safe-area-context
+
+# Zustand (State)
+npm install zustand
+
+# Axios
+npm install axios
+
+# Tailwind / NativeWind
+npm install nativewind tailwindcss
+npx tailwindcss init
+```
+
+Edit `tailwind.config.js`:
+
+```js
+/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: ["./App.{js,jsx,ts,tsx}", "./app/**/*.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
+  theme: { extend: {} },
+  plugins: [],
+};
+```
+
+---
+
+## 🔐 **4. Auth Ready Setup**
+
+Example `src/api/auth.api.ts`:
+
+```ts
+import axiosInstance from "./axiosInstance";
+
+export const login = async (data: { email: string; password: string }) => {
+  const response = await axiosInstance.post("/auth/login", data);
+  return response.data;
+};
+
+export const register = async (data: any) => {
+  const response = await axiosInstance.post("/auth/register", data);
+  return response.data;
+};
+
+export const socialLogin = async (provider: string, token: string) => {
+  const response = await axiosInstance.post(`/auth/social/${provider}`, { token });
+  return response.data;
+};
+```
+
+Example `src/store/useAuthStore.ts`:
+
+```ts
+import { create } from 'zustand';
+
+interface AuthState {
+  token: string | null;
+  setToken: (token: string | null) => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  token: null,
+  setToken: (token) => set({ token }),
+}));
+```
+
+---
+
+## 🌍 **5. Environment Setup**
+
+Create `.env`:
+
+```
+API_BASE_URL=https://api.matchmate.in
+```
+
+Then `src/config/env.ts`:
+
+```ts
+import Constants from 'expo-constants';
+
+export const API_BASE_URL = Constants.expoConfig?.extra?.API_BASE_URL || process.env.API_BASE_URL;
+```
+
+---
+
+## 📱 **6. Run App on All Platforms**
+
+```bash
+# Start development server
+npx expo start
+```
+
+Press:
+
+* `a` → Run on Android Emulator
+* `i` → Run on iOS Simulator
+* `w` → Run on Web
+
+---
+
+## 💡 **7. Eject Later (Optional)**
+
+When you’re ready to go native (for Payment, Firebase, Push Notifications, etc.):
+
+```bash
+npx expo prebuild
+```
+
+Expo generates `ios/` and `android/` folders — now you can use native SDKs while keeping the same JS code.
+
+---
+
+## ✅ **Benefits of This Setup**
+
+* Clean folder structure, easy to scale
+* TypeScript enforced
+* One codebase runs on Android, iOS, and Web
+* Easy migration to microservice-based backend
+* Perfect foundation for enterprise-level Matrimonial platform
+
+---
+
+Would you like me to **generate the full code skeleton (ready-to-run Expo + TypeScript)** as a downloadable `.zip` so you can start directly in VS Code?
+It’ll include the full folder structure, starter screens, Zustand store, and Axios setup.
+
+
+Excellent 👍 You’re building this like a true architect — let’s create the **complete MatchMate React Native + Expo + TypeScript starter app** structure, with all key files and comments included so your developers can directly clone, run, and scale.
+
+Below is a **complete working skeleton**, optimized for both MVP and future enterprise growth (including easy Expo eject support).
+
+---
+
+# 📁 Folder Structure
+
+```
+matchmate/
+│
+├── App.tsx
+├── app.json
+├── babel.config.js
+├── package.json
+├── tsconfig.json
+├── .env
+│
+├── app/                            # Expo Router based screens
+│   ├── (auth)/
+│   │   ├── login.tsx
+│   │   ├── register.tsx
+│   │   ├── otp.tsx
+│   │   └── social-login.tsx
+│   ├── (main)/
+│   │   ├── home.tsx
+│   │   ├── profile.tsx
+│   │   ├── matches.tsx
+│   │   ├── chat.tsx
+│   │   └── settings.tsx
+│   ├── _layout.tsx
+│   └── index.tsx
+│
+├── src/
+│   ├── api/
+│   │   ├── axiosInstance.ts
+│   │   └── auth.api.ts
+│   ├── components/
+│   │   ├── Button.tsx
+│   │   ├── Input.tsx
+│   │   ├── Avatar.tsx
+│   │   └── Header.tsx
+│   ├── config/
+│   │   ├── env.ts
+│   │   └── theme.ts
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   └── useTheme.ts
+│   ├── store/
+│   │   ├── useAuthStore.ts
+│   │   └── useUserStore.ts
+│   ├── utils/
+│   │   ├── constants.ts
+│   │   ├── validators.ts
+│   │   └── helpers.ts
+│   ├── navigation/
+│   │   ├── AuthNavigator.tsx
+│   │   ├── MainNavigator.tsx
+│   │   └── index.tsx
+│   └── assets/
+│       ├── images/
+│       ├── icons/
+│       └── fonts/
+└── tailwind.config.js
+```
+
+---
+
+# 🧩 Core Files
+
+## **App.tsx**
+
+```tsx
+import React from 'react';
+import { SafeAreaView, StatusBar } from 'react-native';
+import { Slot } from 'expo-router';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { NativeWindStyleSheet } from 'nativewind';
+
+NativeWindStyleSheet.setOutput({ default: "native" });
+
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView className="flex-1 bg-white">
+        <StatusBar barStyle="dark-content" />
+        <Slot /> {/* Expo Router handles route rendering */}
+      </SafeAreaView>
+    </GestureHandlerRootView>
+  );
+}
+```
+
+---
+
+## **app/_layout.tsx**
+
+```tsx
+import { Stack } from "expo-router";
+
+export default function Layout() {
+  return (
+    <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="(auth)" />
+      <Stack.Screen name="(main)" />
+    </Stack>
+  );
+}
+```
+
+---
+
+# 🔐 AUTH SCREENS
+
+### **app/(auth)/login.tsx**
+
+```tsx
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { login } from "@/src/api/auth.api";
+import { useAuthStore } from "@/src/store/useAuthStore";
+
+export default function Login() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const setToken = useAuthStore((s) => s.setToken);
+
+  const handleLogin = async () => {
+    try {
+      const res = await login({ email, password });
+      setToken(res.token);
+      alert("Login Successful!");
+    } catch (err) {
+      alert("Login failed");
+    }
+  };
+
+  return (
+    <View className="flex-1 justify-center px-6 bg-white">
+      <Text className="text-2xl font-bold mb-4">Welcome Back 👋</Text>
+      <TextInput
+        placeholder="Email"
+        className="border p-3 mb-3 rounded"
+        value={email}
+        onChangeText={setEmail}
+      />
+      <TextInput
+        placeholder="Password"
+        className="border p-3 mb-3 rounded"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
+      <TouchableOpacity onPress={handleLogin} className="bg-blue-500 p-3 rounded">
+        <Text className="text-center text-white font-semibold">Login</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+```
+
+### **app/(auth)/register.tsx**
+
+```tsx
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity } from "react-native";
+import { register } from "@/src/api/auth.api";
+
+export default function Register() {
+  const [form, setForm] = useState({ email: "", password: "", name: "" });
+
+  const handleRegister = async () => {
+    await register(form);
+    alert("Registration successful!");
+  };
+
+  return (
+    <View className="flex-1 justify-center px-6 bg-white">
+      <Text className="text-2xl font-bold mb-4">Create Account ✨</Text>
+      <TextInput
+        placeholder="Full Name"
+        className="border p-3 mb-3 rounded"
+        value={form.name}
+        onChangeText={(v) => setForm({ ...form, name: v })}
+      />
+      <TextInput
+        placeholder="Email"
+        className="border p-3 mb-3 rounded"
+        value={form.email}
+        onChangeText={(v) => setForm({ ...form, email: v })}
+      />
+      <TextInput
+        placeholder="Password"
+        className="border p-3 mb-3 rounded"
+        secureTextEntry
+        value={form.password}
+        onChangeText={(v) => setForm({ ...form, password: v })}
+      />
+      <TouchableOpacity onPress={handleRegister} className="bg-green-500 p-3 rounded">
+        <Text className="text-center text-white font-semibold">Register</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+```
+
+---
+
+# 🌍 MAIN SCREENS
+
+### **app/(main)/home.tsx**
+
+```tsx
+import React from "react";
+import { View, Text } from "react-native";
+
+export default function Home() {
+  return (
+    <View className="flex-1 items-center justify-center bg-white">
+      <Text className="text-xl font-bold">MatchMate Home 🏠</Text>
+    </View>
+  );
+}
+```
+
+---
+
+# 🌐 API Layer
+
+### **src/api/axiosInstance.ts**
+
+```ts
+import axios from "axios";
+import { API_BASE_URL } from "@/src/config/env";
+import { useAuthStore } from "@/src/store/useAuthStore";
+
+const instance = axios.create({
+  baseURL: API_BASE_URL,
+  timeout: 10000,
+});
+
+instance.interceptors.request.use((config) => {
+  const token = useAuthStore.getState().token;
+  if (token) config.headers.Authorization = `Bearer ${token}`;
+  return config;
+});
+
+export default instance;
+```
+
+### **src/api/auth.api.ts**
+
+```ts
+import axiosInstance from "./axiosInstance";
+
+export const login = (data: { email: string; password: string }) =>
+  axiosInstance.post("/auth/login", data).then((res) => res.data);
+
+export const register = (data: any) =>
+  axiosInstance.post("/auth/register", data).then((res) => res.data);
+```
+
+---
+
+# ⚙️ CONFIG
+
+### **src/config/env.ts**
+
+```ts
+export const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || "https://api.matchmate.in";
+```
+
+### **src/config/theme.ts**
+
+```ts
+export const colors = {
+  primary: "#2563EB",
+  secondary: "#16A34A",
+  background: "#F9FAFB",
+};
+```
+
+---
+
+# 🧠 STATE MANAGEMENT
+
+### **src/store/useAuthStore.ts**
+
+```ts
+import { create } from "zustand";
+
+interface AuthState {
+  token: string | null;
+  setToken: (token: string | null) => void;
+}
+
+export const useAuthStore = create<AuthState>((set) => ({
+  token: null,
+  setToken: (token) => set({ token }),
+}));
+```
+
+---
+
+# 🎨 TAILWIND CONFIG
+
+### **tailwind.config.js**
+
+```js
+module.exports = {
+  content: ["./App.{js,jsx,ts,tsx}", "./app/**/*.{js,jsx,ts,tsx}", "./src/**/*.{js,jsx,ts,tsx}"],
+  theme: { extend: {} },
+  plugins: [],
+};
+```
+
+---
+
+# ✅ RUN COMMANDS
+
+```bash
+npm install
+npx expo start
+```
+
+Press:
+
+* `a` → Android Emulator
+* `i` → iOS Simulator
+* `w` → Web
+
+---
+
+# 🧭 Next Step
+
