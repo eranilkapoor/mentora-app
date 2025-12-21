@@ -194,9 +194,7 @@ const styles = StyleSheet.create({
         paddingHorizontal: 12,
         paddingVertical: 8,
         borderRadius: 16,
-        shadowColor: "#000",
-        shadowOpacity: 0.06,
-        shadowRadius: 4,
+        boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.06)",
         elevation: 1,
     },
     bubbleMe: {

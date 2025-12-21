@@ -137,7 +137,7 @@ export default function LoginScreen ({ navigation }: any) {
                     contentContainerStyle={styles.scrollContent}
                     keyboardShouldPersistTaps="handled"
                 >
-                    <Text style={styles.title}>Welcome back</Text>
+                    <Text style={styles.title}>Match Mate</Text>
                     <Text style={styles.subtitle}>Sign in to continue</Text>
 
                     {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -316,7 +316,7 @@ export default function LoginScreen ({ navigation }: any) {
                                 label="Continue with Google"
                                 onPress={() => handleSocialLogin("google")}
                                 disabled={loading}
-                                emoji="🟢"
+                                emoji="g"
                             />
                         ) : null}
                         {Platform.OS === "ios" ? (
@@ -331,7 +331,7 @@ export default function LoginScreen ({ navigation }: any) {
                             label="Continue with Facebook"
                             onPress={() => handleSocialLogin("facebook")}
                             disabled={loading}
-                            emoji="🔵"
+                            emoji="f"
                         />
                     </View>
 
@@ -379,14 +379,16 @@ const styles = StyleSheet.create({
     container: { flex: 1 },
     scrollContent: {
         padding: 20,
-        paddingTop: 120,
+        paddingTop: 100,
         justifyContent: "flex-start",
     },
     title: {
         fontSize: 28,
-        fontWeight: "700",
-        marginBottom: 6,
-        color: "#111",
+        fontWeight: "900",
+        marginBottom: 26,
+        color: "#dd68c0ff",
+        textAlign: "center",
+        fontFamily: "clebri-bold",
     },
     subtitle: { fontSize: 14, color: "#666", marginBottom: 18 },
     tabRow: {
