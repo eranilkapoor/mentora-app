@@ -3282,3 +3282,66 @@ You now have:
 ✅ Folder structure aligned with your NestJS backend
 
 ---
+
+Register Steps :- 
+
+1. Create Profile For
+  - Self
+  - Son
+  - Daughter
+  - Brother
+  - Sister
+  - Friend
+  - Relative
+  - Client
+2. Personal Details
+  - Gender (Male / Female)
+  - Date Of Birth
+  - Height
+  - Weight
+  - Country
+  - State
+  - City
+3. Career Details
+  - Education
+    - Highest Education
+  - Work Experince
+    - Employed in
+    - Occupation
+    - Income
+4. Social Details
+  - Marital Status
+  - Mother Tounge
+  - Religion
+  - Caste
+  - Horoscope
+  - Manglik
+5. Login Details
+  - First Name
+  - Last Name
+  - Email
+  - Phone Number
+  - Password
+  - Agree Terms & Condition
+  - Receive Notifications
+6. Phone OTP Verification
+  - Enter OTP for Phone
+  - Enter OTP for Email
+7. Add Photo
+  - Add Photos
+8. Bio 
+  - About me
+9. Family Details
+  - Family Status
+  - Family Values
+  - Family Type
+  - Family Income
+  - Father's Occupation
+  - Mother's Occupation
+  - Brother's
+  - Sister's
+  - Family Based Out of 
+    - Country
+    - State
+    - City
+  - Gothra

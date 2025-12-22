@@ -13,7 +13,7 @@ import {
 import { useAppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
 
-function SettingsScreen({ navigation }: any) {
+export default function SettingsScreen({ navigation }: any) {
     const dispatch = useAppDispatch();
 
     const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
@@ -105,7 +105,7 @@ function SettingsScreen({ navigation }: any) {
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.section}>
+                <View style={styles.signOutSection}>
                     <TouchableOpacity style={[styles.signOutButton]} onPress={handleSignOut}>
                         <Text style={styles.signOutText}>Sign Out</Text>
                     </TouchableOpacity>
@@ -169,6 +169,12 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#9aa4b2',
     },
+    signOutSection: {
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        paddingVertical: 8,
+        overflow: 'hidden',
+    },
     signOutButton: {
         paddingVertical: 14,
         alignItems: 'center',
@@ -180,5 +186,3 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
-
-export default SettingsScreen;
