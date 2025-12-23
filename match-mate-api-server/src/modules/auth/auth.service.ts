@@ -2,7 +2,6 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './user.repository';
 import { OtpService } from './otp.service';
-import { MetaService } from './meta.service';
 import * as bcrypt from 'bcryptjs';
 import { RegisterDto, LoginDto, PhoneSendOtpDto, PhoneVerifyDto } from '../../shared-dto/auth.dto';
 
@@ -12,7 +11,6 @@ export class AuthService {
     private readonly userRepo: UserRepository,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
-    private readonly metaService: MetaService,
   ) {}
 
   private async generateTokens(userId: string, email: string) {
@@ -24,12 +22,12 @@ export class AuthService {
 
   async register(dto: RegisterDto) {
     const hashedPassword = await bcrypt.hash(dto.password, 10);
-    return this.userRepo.create({ ...dto, password: hashedPassword });
+    return this.userRepo.create({ ...dto, password_hash: hashedPassword });
   }
 
   async validateUser(email: string, password: string) {
     const user = await this.userRepo.findByEmail(email);
-    if (user?.password && (await bcrypt.compare(password, user.password))) return user;
+    if (user?.password_hash && (await bcrypt.compare(password, user.password_hash))) return user;
     return null;
   }
 
@@ -63,15 +61,15 @@ export class AuthService {
         provider,
         providerId: profile.id,
         email: profile.email,
-        name: profile.name,
+        first_name: profile.first_name,
       });
     return this.issueTokens(user);
   }
 
   async refreshToken(userId: string, refreshToken: string) {
     const user = await this.userRepo.findById(userId);
-    if (!user || !user.refreshToken) throw new UnauthorizedException('Access denied');
-    const isValid = await bcrypt.compare(refreshToken, user.refreshToken);
+    if (!user || !(user as any).refresh_token) throw new UnauthorizedException('Access denied');
+    const isValid = await bcrypt.compare(refreshToken, (user as any).refresh_token);
     if (!isValid) throw new UnauthorizedException('Invalid refresh token');
     return this.issueTokens(user);
   }

@@ -243,7 +243,6 @@ Example snapshot:
 * Bi-weekly sprint demo.
 * Burn-down charts & velocity tracking.
 * Dashboard with KPIs:
-
   * Development progress (%)
   * Bug rate
   * Budget variance
@@ -430,6 +429,8 @@ Here’s a modular RESTful API plan:
   email: String,
   phone: String,
   password_hash: String,
+  provider: String,
+  providerId: String,
   religion: String,
   caste: String,
   language: String,
@@ -703,7 +704,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 ### **A. Landing Page**
 
 * Header:
-
   * Logo (left)
   * Menu: Home | Search | About | Contact | Login / Register
 * Hero Banner: “Find Your Perfect Match”
@@ -723,7 +723,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
   * **Signup with Email/Phone**
   * **Signup with Google/Facebook**
 * Fields:
-
   * Full Name
   * Gender
   * Date of Birth
@@ -754,7 +753,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 
   * Tabs: “Recommended”, “New”, “Nearby”
   * User Cards Grid:
-
     * Photo
     * Name, Age, City
     * “View Profile” | “Send Interest” buttons
@@ -765,7 +763,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 
 * Left: Profile Image (carousel)
 * Right: Details
-
   * Basic Info
   * Education & Career
   * Family Info
@@ -778,7 +775,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 
 * Left Panel: List of Conversations (user name + last message)
 * Right Panel:
-
   * Chat Header (User name + Online status)
   * Chat Window (Messages + Images)
   * Message Input Box + Send Icon
@@ -790,7 +786,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 
 * Tabs: “Received” | “Sent”
 * Card View:
-
   * User Image + Name + Age + Location
   * Buttons: Accept | Reject | Chat
 
@@ -819,7 +814,6 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 
 * Login → Dashboard
 * Panels:
-
   * User Count, Active Matches, Revenue, Reports
   * User Management (CRUD)
   * Reports Handling

@@ -17,6 +17,30 @@ export const religions = [
   "Prefer not to say"
 ];
 
+export const profile_for_options = [
+  "Self",
+  "Son",
+  "Daughter",
+  "Brother",
+  "Sister",
+  "Friend",
+  "Relative",
+  "Client",
+  "Other"
+];
+
+export const country_codes = [
+  "+1", 
+  "+44", 
+  "+91", 
+  "+86", 
+  "+81", 
+  "+33", 
+  "+39", 
+  "+34", 
+  "+49"
+];
+
 export const qualifications = [
   "Below 10th",
   "10th",

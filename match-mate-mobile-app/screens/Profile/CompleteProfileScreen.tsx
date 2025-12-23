@@ -11,29 +11,33 @@ import {
     Alert,
     ActivityIndicator,
 } from "react-native";
-import { profile_for_options, country_codes, religions, qualifications, body_types, complexions, blood_groups, family_types, family_statuses } from "../../constants";
-import { useAppDispatch } from "../../store";
-import { setCredentials } from '../../store/authSlice';
+import { religions, qualifications, body_types, complexions, blood_groups, family_types, family_statuses } from "../../constants";
 
-type RegistrationStep = "auth" | "otp" | "personal" | "education" | "physical" | "family" | "preferences" | "review";
+type RegistrationStep = "auth" | "otp" | "personal" | "address" | "education" | "physical" | "family" | "preferences" | "review";
 
 interface AuthData {
+    firstName: string;
+    lastName: string;
     countryCode: string;
     mobile: string;
     email: string;
-    password: string;
 }
 
 interface PersonalData {
-    profileFor: string;
-    firstName: string;
-    lastName: string;
+    password: string;
+    confirmPassword: string;
     dob: string;
     gender: "male" | "female" | "";
     religion: string;
-    country: string;
-    state: string;
+    caste: string;
+    motherTongue: string;
+}
+
+interface AddressData {
     city: string;
+    state: string;
+    country: string;
+    zipCode: string;
 }
 
 interface EducationData {
@@ -74,8 +78,9 @@ interface PreferencesData {
     otherPreferences: string;
 }
 
-export default function RegisterScreen({ navigation }: any) {
-    const dispatch = useAppDispatch();
+const COUNTRY_CODES = ["+1", "+44", "+91", "+86", "+81", "+33", "+39", "+34", "+49"];
+
+export default function CompleteProfileScreen({ navigation }: any) {
     const [currentStep, setCurrentStep] = useState<RegistrationStep>("auth");
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
@@ -84,22 +89,28 @@ export default function RegisterScreen({ navigation }: any) {
     const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
 
     const [auth, setAuth] = useState<AuthData>({
+        firstName: "",
+        lastName: "",
         countryCode: "+91",
         mobile: "",
         email: "",
-        password: "",
     });
 
     const [personal, setPersonal] = useState<PersonalData>({
-        profileFor: "",
-        firstName: "",
-        lastName: "",
+        password: "",
+        confirmPassword: "",
         dob: "",
         gender: "",
         religion: "",
+        caste: "",
+        motherTongue: "",
+    });
+
+    const [address, setAddress] = useState<AddressData>({
         city: "",
         state: "",
-        country: ""        
+        country: "",
+        zipCode: "",
     });
 
     const [education, setEducation] = useState<EducationData>({
@@ -142,22 +153,31 @@ export default function RegisterScreen({ navigation }: any) {
 
     const validateAuth = () => {
         const e: Record<string, string> = {};
+        if (!auth.firstName.trim()) e.firstName = "First name required";
         if (!auth.mobile.trim() || auth.mobile.length < 10) e.mobile = "Valid mobile number required";
-        if (auth.password.length < 6) e.password = "Min 6 characters";
-    
         setErrors(e);
         return Object.keys(e).length === 0;
     };
 
     const validatePersonal = () => {
         const e: Record<string, string> = {};
-        if (!personal.firstName.trim()) e.firstName = "First name required";
+        if (personal.password.length < 6) e.password = "Min 6 characters";
+        if (personal.password !== personal.confirmPassword) e.confirmPassword = "Passwords don't match";
         if (!personal.dob) e.dob = "Date Of Birth required";
         if (!personal.gender) e.gender = "Gender required";
         if (!personal.religion) e.religion = "Religion required";
-        if (!personal.city.trim()) e.city = "City required";
-        if (!personal.state.trim()) e.state = "State required";
-        if (!personal.country.trim()) e.country = "Country required";
+        if (!personal.caste.trim()) e.caste = "Caste required";
+        if (!personal.motherTongue.trim()) e.motherTongue = "Mother tongue required";
+        setErrors(e);
+        return Object.keys(e).length === 0;
+    };
+
+    const validateAddress = () => {
+        const e: Record<string, string> = {};
+        if (!address.city.trim()) e.city = "City required";
+        if (!address.state.trim()) e.state = "State required";
+        if (!address.country.trim()) e.country = "Country required";
+        if (!address.zipCode.trim()) e.zipCode = "Zip code required";
         setErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -202,9 +222,6 @@ export default function RegisterScreen({ navigation }: any) {
         setErrors(e);
         return Object.keys(e).length === 0;
     };
-
-    // small helper to simulate network latency
-    const fakeNetworkDelay = (ms = 800) => new Promise((res) => setTimeout(res, ms));
 
     const handleSendOTP = async () => {
         if (!validateAuth()) return;
@@ -257,12 +274,15 @@ export default function RegisterScreen({ navigation }: any) {
     };
 
     const handleNext = () => {
-        const steps: RegistrationStep[] = ["personal", "education", "physical", "family", "preferences", "review"];
+        const steps: RegistrationStep[] = ["personal", "address", "education", "physical", "family", "preferences", "review"];
         const currentIndex = steps.indexOf(currentStep);
 
         switch (currentStep) {
             case "personal":
                 if (!validatePersonal()) return;
+                break;
+            case "address":
+                if (!validateAddress()) return;
                 break;
             case "education":
                 if (!validateEducation()) return;
@@ -289,7 +309,7 @@ export default function RegisterScreen({ navigation }: any) {
             setCurrentStep("auth");
             setOtpCode("");
         } else {
-            const steps: RegistrationStep[] = ["personal", "education", "physical", "family", "preferences", "review"];
+            const steps: RegistrationStep[] = ["personal", "address", "education", "physical", "family", "preferences", "review"];
             const currentIndex = steps.indexOf(currentStep);
             if (currentIndex > 0) {
                 setCurrentStep(steps[currentIndex - 1]);
@@ -302,28 +322,13 @@ export default function RegisterScreen({ navigation }: any) {
         navigation?.navigate?.("Login") || null;
     };
 
-    const handleSocialLogin = async (provider: "google" | "apple" | "facebook") => {
-        const e: Record<string, string> = {};
-        setLoading(true);
-        setErrors({});
-        try {
-            await fakeNetworkDelay();
-            //navigation?.navigate?.("AppNavigator", { screen: "Home" });
-            // setIsAuthenticated(true);
-            dispatch(setCredentials({ token: "fake-jwt-token", user: { provider } }));
-        } catch (e) {
-            setErrors({e: `Failed to sign in with ${provider}.`});
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleRegister = async () => {
         setLoading(true);
         try {
             const payload = {
                 auth,
                 personal,
+                address,
                 education,
                 physical,
                 family,
@@ -392,47 +397,25 @@ export default function RegisterScreen({ navigation }: any) {
                 return (
                     <>
                         <View>
-                            <Text style={styles.stepTitle}>Create An Account</Text>
+                            <Text style={styles.stepTitle}>Create Your Account</Text>
+                            <Text style={styles.subtitle}>Enter your basic details to get started</Text>
 
-                            <View style={styles.socialContainer}>
-                                {Platform.OS !== "ios" ? (
-                                    <SocialButton
-                                        label="Continue with Google"
-                                        onPress={() => handleSocialLogin("google")}
-                                        disabled={loading}
-                                        emoji="g"
-                                    />
-                                ) : null}
-                                {Platform.OS === "ios" ? (
-                                    <SocialButton
-                                        label="Continue with Apple"
-                                        onPress={() => handleSocialLogin("apple")}
-                                        disabled={loading}
-                                        emoji=""
-                                    />
-                                ) : null}
-                                <SocialButton
-                                    label="Continue with Facebook"
-                                    onPress={() => handleSocialLogin("facebook")}
-                                    disabled={loading}
-                                    emoji="f"
-                                />
-                            </View>
+                            <Text style={styles.label}>First Name (*)</Text>
+                            <TextInput
+                                placeholder="John"
+                                value={auth.firstName}
+                                onChangeText={(text) => setAuth({ ...auth, firstName: text })}
+                                style={styles.input}
+                            />
+                            <ErrorText field="firstName" />
 
-                            <View style={styles.dividerRow}>
-                                <View style={styles.divider} />
-                                <Text style={styles.dividerText}>OR</Text>
-                                <View style={styles.divider} />
-                            </View>
-                            
-                            <Text style={styles.subtitle}>Sign up with mobile number & email</Text>
-                            
-                            <View style={styles.footer}>
-                                <Text style={styles.footerText}>Already have an account?</Text>
-                                <TouchableOpacity onPress={handleSignIn} disabled={loading}>
-                                    <Text style={styles.linkText}> Sign In</Text>
-                                </TouchableOpacity>
-                            </View>
+                            <Text style={styles.label}>Last Name (Optional)</Text>
+                            <TextInput
+                                placeholder="Doe"
+                                value={auth.lastName}
+                                onChangeText={(text) => setAuth({ ...auth, lastName: text })}
+                                style={styles.input}
+                            />
 
                             <Text style={styles.label}>Mobile Number (*)</Text>
                             <View style={styles.phoneRow}>
@@ -445,8 +428,8 @@ export default function RegisterScreen({ navigation }: any) {
                                 </TouchableOpacity>
                                 {showCountryCodeDropdown && (
                                     <View style={styles.countryCodeDropdown}>
-                                        <ScrollView scrollEnabled={country_codes.length > 4}>
-                                            {country_codes.map((code) => (
+                                        <ScrollView scrollEnabled={COUNTRY_CODES.length > 4}>
+                                            {COUNTRY_CODES.map((code) => (
                                                 <TouchableOpacity
                                                     key={code}
                                                     style={styles.countryCodeItem}
@@ -479,17 +462,12 @@ export default function RegisterScreen({ navigation }: any) {
                                 style={styles.input}
                                 keyboardType="email-address"
                             />
-
-                            <Text style={styles.label}>Password</Text>
-                            <TextInput
-                                placeholder="Password"
-                                value={auth.password}
-                                onChangeText={(text) => setAuth({ ...auth, password: text })}
-                                style={styles.input}
-                                secureTextEntry
-                            />
-                            <ErrorText field="password" />
-
+                        </View>
+                        <View style={styles.footer}>
+                            <Text style={styles.footerText}>Already have an account?</Text>
+                            <TouchableOpacity onPress={handleSignIn} disabled={loading}>
+                                <Text style={styles.linkText}>SignIn</Text>
+                            </TouchableOpacity>
                         </View>
                     </>
                 );
@@ -522,31 +500,25 @@ export default function RegisterScreen({ navigation }: any) {
                     <View>
                         <Text style={styles.stepTitle}>Personal Information</Text>
 
-                        <Text style={styles.label}>Profile For</Text>
-                        <DropdownPicker
-                            label="profile for"
-                            options={profile_for_options}
-                            value={personal.profileFor}
-                            onChange={(val: string) => setPersonal({ ...personal, profileFor: val })}
-                        />
-                        <ErrorText field="profileFor" />
-
-                        <Text style={styles.label}>First Name (*)</Text>
+                        <Text style={styles.label}>Password</Text>
                         <TextInput
-                            placeholder="John"
-                            value={personal.firstName}
-                            onChangeText={(text) => setPersonal({ ...personal, firstName: text })}
+                            placeholder="Password"
+                            value={personal.password}
+                            onChangeText={(text) => setPersonal({ ...personal, password: text })}
                             style={styles.input}
+                            secureTextEntry
                         />
-                        <ErrorText field="firstName" />
+                        <ErrorText field="password" />
 
-                        <Text style={styles.label}>Last Name (Optional)</Text>
+                        <Text style={styles.label}>Confirm Password</Text>
                         <TextInput
-                            placeholder="Doe"
-                            value={personal.lastName}
-                            onChangeText={(text) => setPersonal({ ...personal, lastName: text })}
+                            placeholder="Confirm Password"
+                            value={personal.confirmPassword}
+                            onChangeText={(text) => setPersonal({ ...personal, confirmPassword: text })}
                             style={styles.input}
+                            secureTextEntry
                         />
+                        <ErrorText field="confirmPassword" />
 
                         <Text style={styles.label}>Date of Birth (YYYY-MM-DD)</Text>
                         <TextInput
@@ -583,33 +555,67 @@ export default function RegisterScreen({ navigation }: any) {
                         />
                         <ErrorText field="religion" />
 
-                        <Text style={styles.label}>Country</Text>
+                        <Text style={styles.label}>Caste</Text>
                         <TextInput
-                            placeholder="Country"
-                            value={personal.country}
-                            onChangeText={(text) => setPersonal({ ...personal, country: text })}
+                            placeholder="Caste"
+                            value={personal.caste}
+                            onChangeText={(text) => setPersonal({ ...personal, caste: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="country" />
+                        <ErrorText field="caste" />
 
-                        <Text style={styles.label}>State</Text>
+                        <Text style={styles.label}>Mother Tongue</Text>
                         <TextInput
-                            placeholder="State"
-                            value={personal.state}
-                            onChangeText={(text) => setPersonal({ ...personal, state: text })}
+                            placeholder="Mother Tongue"
+                            value={personal.motherTongue}
+                            onChangeText={(text) => setPersonal({ ...personal, motherTongue: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="state" />
+                        <ErrorText field="motherTongue" />
+                    </View>
+                );
+
+            case "address":
+                return (
+                    <View>
+                        <Text style={styles.stepTitle}>Address Details</Text>
 
                         <Text style={styles.label}>City</Text>
                         <TextInput
                             placeholder="City"
-                            value={personal.city}
-                            onChangeText={(text) => setPersonal({ ...personal, city: text })}
+                            value={address.city}
+                            onChangeText={(text) => setAddress({ ...address, city: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="city" />                        
-                        
+                        <ErrorText field="city" />
+
+                        <Text style={styles.label}>State</Text>
+                        <TextInput
+                            placeholder="State"
+                            value={address.state}
+                            onChangeText={(text) => setAddress({ ...address, state: text })}
+                            style={styles.input}
+                        />
+                        <ErrorText field="state" />
+
+                        <Text style={styles.label}>Country</Text>
+                        <TextInput
+                            placeholder="Country"
+                            value={address.country}
+                            onChangeText={(text) => setAddress({ ...address, country: text })}
+                            style={styles.input}
+                        />
+                        <ErrorText field="country" />
+
+                        <Text style={styles.label}>Zip Code</Text>
+                        <TextInput
+                            placeholder="Zip Code"
+                            value={address.zipCode}
+                            onChangeText={(text) => setAddress({ ...address, zipCode: text })}
+                            style={styles.input}
+                            keyboardType="numeric"
+                        />
+                        <ErrorText field="zipCode" />
                     </View>
                 );
 
@@ -877,7 +883,7 @@ export default function RegisterScreen({ navigation }: any) {
                         <Text style={styles.stepTitle}>Review Your Profile</Text>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Account:</Text>
-                            <Text>{personal.firstName} {personal.lastName} | {auth.countryCode}{auth.mobile}</Text>
+                            <Text>{auth.firstName} {auth.lastName} | {auth.countryCode}{auth.mobile}</Text>
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Personal:</Text>
@@ -885,7 +891,7 @@ export default function RegisterScreen({ navigation }: any) {
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Address:</Text>
-                            <Text>{personal.city}, {personal.state}, {personal.country}</Text>
+                            <Text>{address.city}, {address.state}, {address.country}</Text>
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Education:</Text>
@@ -911,32 +917,8 @@ export default function RegisterScreen({ navigation }: any) {
         }
     };
 
-    function SocialButton({
-        label,
-        onPress,
-        disabled,
-        emoji,
-    }: {
-        label: string;
-        onPress: () => void;
-        disabled?: boolean;
-        emoji?: string;
-    }) {
-        return (
-            <TouchableOpacity
-                style={[styles.socialButton, disabled && styles.disabledButton]}
-                onPress={onPress}
-                disabled={disabled}
-                accessibilityLabel={`social-${label}`}
-            >
-                <Text style={styles.socialEmoji}>{emoji}</Text>
-                <Text style={styles.socialLabel}>{label}</Text>
-            </TouchableOpacity>
-        );
-    }
-
     const getStepPercentage = () => {
-        const allSteps: RegistrationStep[] = ["auth", "otp", "personal", "education", "physical", "family", "preferences", "review"];
+        const allSteps: RegistrationStep[] = ["auth", "otp", "personal", "address", "education", "physical", "family", "preferences", "review"];
         const currentIndex = allSteps.indexOf(currentStep);
         return ((currentIndex + 1) / allSteps.length) * 100;
     };
@@ -1036,8 +1018,9 @@ const styles = StyleSheet.create({
         color: "#000",
     },
     subtitle: {
-        fontSize: 16,
+        fontSize: 14,
         color: "#666",
+        marginBottom: 20,
     },
     label: { fontSize: 13, color: "#444", marginBottom: 6 },
     input: {
@@ -1183,31 +1166,7 @@ const styles = StyleSheet.create({
         color: "#000",
         marginBottom: 4,
     },
-    disabledButton: {
-        opacity: 0.6,
-    },
-    dividerRow: {
-        flexDirection: "row",
-        alignItems: "center",
-        marginVertical: 20,
-    },
-    divider: { flex: 1, height: 1, backgroundColor: "#e6e6e6" },
-    dividerText: { marginHorizontal: 12, color: "#888", fontWeight: "600" },
-    socialContainer: { gap: 10 },
-    socialButton: {
-        flexDirection: "row",
-        alignItems: "center",
-        borderColor: "#e6e6e6",
-        borderWidth: 1,
-        paddingVertical: 12,
-        paddingHorizontal: 14,
-        borderRadius: 10,
-        backgroundColor: "#fff",
-        marginBottom: 8,
-    },
-    socialEmoji: { fontSize: 18, marginRight: 10 },
-    socialLabel: { fontSize: 15, color: "#111", fontWeight: "600" },
-    footer: { flexDirection: "row", justifyContent: "flex-start", marginTop: 24, marginBottom: 24 },
+    footer: { flexDirection: "row", justifyContent: "flex-start", marginTop: 24 },
     footerText: { color: "#666" },
     linkText: { color: "#007AFF", fontWeight: "700" },
 });

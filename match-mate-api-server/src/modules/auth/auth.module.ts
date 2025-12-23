@@ -3,7 +3,6 @@ import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
 import { UserRepository } from './user.repository';
 import { OtpService } from './otp.service';
-import { MetaService } from './meta.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import { User, UserSchema } from './schemas/user.schema';
 import { JwtModule } from '@nestjs/jwt';
@@ -23,6 +22,6 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [AuthController],
-  providers: [AuthService, UserRepository, OtpService, MetaService],
+  providers: [AuthService, UserRepository, OtpService],
 })
 export class AuthModule {}
