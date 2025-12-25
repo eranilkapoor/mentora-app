@@ -45,7 +45,7 @@ export default function SettingsScreen({ navigation }: any) {
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account</Text>
-                    <TouchableOpacity style={styles.row} onPress={() => goto('Profile')}>
+                    <TouchableOpacity style={styles.row} onPress={() => goto('EditProfile')}>
                         <Text style={styles.rowLabel}>Edit Profile</Text>
                         <Text style={styles.rowAction}>{'>'}</Text>
                     </TouchableOpacity>
@@ -94,7 +94,7 @@ export default function SettingsScreen({ navigation }: any) {
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Support</Text>
-                    <TouchableOpacity style={styles.row} onPress={() => goto('Help')}>
+                    <TouchableOpacity style={styles.row} onPress={() => goto('HelpSupport')}>
                         <Text style={styles.rowLabel}>Help & Support</Text>
                         <Text style={styles.rowAction}>{'>'}</Text>
                     </TouchableOpacity>

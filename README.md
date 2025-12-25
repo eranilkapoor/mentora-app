@@ -268,6 +268,12 @@ Example snapshot:
 
 ---
 
+
+
+
+
+
+
 ---
 
 # ⚙️**TECHNICAL PLAN – MATRIMONIAL PLATFORM (WEB + MOBILE APP)**
@@ -654,7 +660,7 @@ User (1) —— (M) Notifications
 
 ---
 
-We’ll now move into the **UI/UX Wireframe Design Blueprint** for your **Matrimonial Website & Mobile App** — showing **complete flow**, **navigation**, and **screen structure**.
+.
 
 ---
 
@@ -826,7 +832,7 @@ Login → Dashboard → Users → Reports → Subscriptions → Analytics
 
 **Navigation:**
 
-* Bottom Tab Bar → `Home | Matches | Chat | Requests | Profile`
+* Bottom Tab Bar → `Home | Matches | Chats | Requests | Profile`
 * Top Right Icons → Notifications, Settings
 
 ---

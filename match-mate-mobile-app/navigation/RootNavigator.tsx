@@ -1,9 +1,21 @@
 import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import AuthStack from './AuthStack';
+import AppStack from './AppStack';
 import { useAppSelector } from '../store';
-import AuthNavigator from './AuthNavigator';
-import AppNavigator from './AppNavigator';
+
+const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
   const token = useAppSelector((state) => state.auth.token);
-  return token ? <AppNavigator /> : <AuthNavigator />;
+
+  return (
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
+      {token ? (
+        <Stack.Screen name="App" component={AppStack} />
+      ) : (
+        <Stack.Screen name="Auth" component={AuthStack} />
+      )}
+    </Stack.Navigator>
+  );
 }

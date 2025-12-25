@@ -13,7 +13,7 @@ import {
 import { useAppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
 
-function NotificationSettings({ navigation }: any) {
+export default function NotificationSettingsScreen({ navigation }: any) {
     const dispatch = useAppDispatch();
 
     const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
@@ -38,9 +38,9 @@ function NotificationSettings({ navigation }: any) {
     return (
         <SafeAreaProvider style={styles.safe}>
             <StatusBar barStyle={darkModeEnabled ? 'light-content' : 'dark-content'} />
-            <View style={styles.header}>
+            {/* <View style={styles.header}>
                 <Text style={styles.headerTitle}>Settings</Text>
-            </View>
+            </View> */}
 
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.section}>
@@ -50,7 +50,7 @@ function NotificationSettings({ navigation }: any) {
                         <Text style={styles.rowAction}>{'>'}</Text>
                     </TouchableOpacity>
 
-                    <TouchableOpacity style={styles.row} onPress={() => goto('NotificationSettings')}>
+                    <TouchableOpacity style={styles.row} onPress={() => goto('ChangePassword')}>
                         <Text style={styles.rowLabel}>Change Password</Text>
                         <Text style={styles.rowAction}>{'>'}</Text>
                     </TouchableOpacity>
@@ -94,7 +94,7 @@ function NotificationSettings({ navigation }: any) {
 
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Support</Text>
-                    <TouchableOpacity style={styles.row} onPress={() => goto('Help')}>
+                    <TouchableOpacity style={styles.row} onPress={() => goto('HelpSupport')}>
                         <Text style={styles.rowLabel}>Help & Support</Text>
                         <Text style={styles.rowAction}>{'>'}</Text>
                     </TouchableOpacity>
@@ -105,7 +105,7 @@ function NotificationSettings({ navigation }: any) {
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.section}>
+                <View style={styles.signOutSection}>
                     <TouchableOpacity style={[styles.signOutButton]} onPress={handleSignOut}>
                         <Text style={styles.signOutText}>Sign Out</Text>
                     </TouchableOpacity>
@@ -169,6 +169,12 @@ const styles = StyleSheet.create({
         fontSize: 18,
         color: '#9aa4b2',
     },
+    signOutSection: {
+        backgroundColor: '#fff',
+        borderRadius: 8,
+        paddingVertical: 8,
+        overflow: 'hidden',
+    },
     signOutButton: {
         paddingVertical: 14,
         alignItems: 'center',
@@ -180,5 +186,3 @@ const styles = StyleSheet.create({
         fontSize: 16,
     },
 });
-
-export default NotificationSettings;
