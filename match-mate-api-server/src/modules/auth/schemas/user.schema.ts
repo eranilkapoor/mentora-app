@@ -1,11 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
+import { COLLECTIONS, STATUS } from './../../../common/constants';
 
-@Schema({ timestamps: true })
+@Schema({ collection: COLLECTIONS.USER, timestamps: true })
 export class User {
   @Prop({ required: true }) first_name: string;
   @Prop() last_name: string;
-  @Prop() gender?: string; // male/female/other
+  @Prop() gender?: string;
   @Prop() dob?: Date;
   @Prop({ unique: true, sparse: true }) email?: string;
   @Prop() phone?: string;
@@ -26,7 +27,7 @@ export class User {
   @Prop() weight?: number;
   @Prop() profile_photo?: string;
   @Prop([String]) gallery?: string[];
-  @Prop() verification_status?: string; // pending/verified/rejected
+  @Prop({ default: STATUS.PENDING }) verification_status?: string;
   @Prop({ default: false }) is_premium?: boolean;
   @Prop() last_login?: Date;
 }

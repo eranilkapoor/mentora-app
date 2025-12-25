@@ -2057,10 +2057,6 @@ You won’t touch business logic — just rewire data sources.
 ---
 
 
-Nice — I’ll walk you through a practical, **step-by-step NestJS initial setup** for your modular-monolith matrimonial app that’s **designed for an easy future migration to microservices**.
-
-You’ll get:
-
 1. commands to bootstrap the project
 2. recommended folder structure and why
 3. critical packages to install (Mongo, Redis, Passport/JWT, Socket.io, etc.)
@@ -2519,405 +2515,162 @@ class ProfileHttpRepository {
 
 Swap provider in Nest DI (no change to `ProfileService`).
 
----
-
-## 18) Next steps I can provide (choose any)
-
-* Generate **starter code skeleton** for Auth + Profile + Match modules (controllers, services, repos, schemas).
-* Create a **shared DTO package** structure and sample DTOs.
-* Produce a **detailed Docker/K8s helm chart** for production.
-* Provide **event schema examples** (Kafka topics + JSON schemas) for migrating to event-driven.
-
-Tell me which of those you want and I’ll generate it next.
-
-
-Perfect 👌 — since you’re building a **NestJS-based enterprise matrimonial app** that will start as a **modular monolith** and later migrate to **microservices**, we’ll design the following:
-
----
-
-## 🧱 Phase 1: Starter Code Skeleton
-
-We’ll create 3 key modules with minimal files:
-
-* **Auth Module** → handles registration, login (email/phone/social)
-* **Profile Module** → manages user biodata, preferences
-* **Match Module** → handles matchmaking, recommendations
-
-We’ll also define:
-
-* Folder layout
-* Core boilerplate files (controller, service, repository, schema)
-* A shared `BaseEntity` pattern
-* Common `ResponseDto` and error handling
-
----
-
 ### ✅ 1. Folder Structure
 
+---
 ```
-src/
-  common/
-    dto/
-    interfaces/
-    utils/
-    constants.ts
-    response.dto.ts
-  infrastructure/
-    database/
-      mongoose.config.ts
-    redis/
-      redis.provider.ts
-  modules/
-    auth/
-      auth.controller.ts
-      auth.service.ts
-      auth.module.ts
-      user.schema.ts
-      user.repository.ts
-    profile/
-      profile.controller.ts
-      profile.service.ts
-      profile.module.ts
-      profile.schema.ts
-      profile.repository.ts
-    match/
-      match.controller.ts
-      match.service.ts
-      match.module.ts
-      match.repository.ts
-  app.module.ts
-  main.ts
+match-mate-api-server/
+  dist/
+  node_modules/
+  src/
+    common/
+      constants/
+      decorators/
+      dto/
+      filters/
+      guards/
+      interceptors/
+      interfaces/
+      utils/
+      constants.ts
+      response.dto.ts
+    config/
+      configuration.ts
+    infrastructure/
+      databases/
+        mongo/
+          mongo.module.ts
+        redis/
+          redis.module.ts
+          redis.provider.ts
+          redis.service.ts
+      events/
+      integrations/
+      jobs/
+      libs/
+    modules/
+      admin/
+      auth/
+        schemas/
+          user.schema.ts
+        strategies/
+          google.strategy.ts
+          jwt.strategy.ts
+          local.strategy.ts
+        auth.controller.ts
+        auth.module.ts
+        auth.service.ts
+        otp.service.ts
+        user.repository.ts
+      chat/
+        dto/
+          join-room.dto.ts
+          send-message.dto.ts
+        schemas/
+          chat-message.schema.ts
+          chat-room.schema.ts
+        chat.controller.ts
+        chat.gateway.ts
+        chat.module.ts
+        chat.repository.ts
+        chat.service.ts
+      match/
+        dto/
+          respond-interest.dto.ts
+          send-interest.dto.ts
+        schemas/
+          interest.schema.ts
+          match.schema.ts
+        match.controller.ts
+        match.module.ts
+        match.repository.ts
+        match.service.ts
+      notification/
+        dto/
+          create-notification.dto.ts
+          mark-read.dto.ts
+        schemas/
+          notification.schema.ts
+        notification.controller.ts
+        notification.module.ts
+        notification.repository.ts
+        notification.service.ts
+      payment/
+        dto/
+          create-order.dto.ts
+          subscription.dto.ts
+          verify-payment.dto.ts
+        enums/
+          payment.status.enum.ts
+        schemas/
+          payment.schema.ts
+        payment.controller.ts
+        payment.gateway.ts
+        payment.module.ts
+        payment.repository.ts
+        payment.service.ts
+      profile/
+        dto/
+          create-profile.dto.ts
+          update-profile.dto.ts
+        schemas/
+          profile.schema.ts
+        profile.controller.ts
+        profile.module.ts
+        profile.repository.ts
+        profile.service.ts
+      user/
+        dto/
+          create-user.dto.ts
+          login-user.dto.ts
+        schemas/
+          user.schema.ts
+        user.controller.ts
+        user.module.ts
+        user.repository.ts
+        user.service.ts
+    shared-dto/
+      auth.dto.ts
+      chat.dto.ts
+      index.dto.ts
+      match.dto.ts
+      profile.dto.ts
+      user.dto.ts
+    app.controller.spec.ts
+    app.controller.ts
+    app.module.ts
+    app.service.ts
+    main.ts
+  test/
+    app.e2e.json
+    jest-e2e.json
+  .env
+  .gitignore
+  .prettierrc
+  eslint.config.mjs
+  nest-cli.json
+  package-lock.json
+  package.json
+  README.md
+  tsconfig.build.json
+  tsconfig.json
 ```
-
 ---
 
-### ✅ 2. Common Layer
 
-**`src/common/constants.ts`**
 
-```ts
-export const COLLECTIONS = {
-  USER: 'users',
-  PROFILE: 'profiles',
-  MATCH: 'matches',
-};
 
-export const STATUS = {
-  ACTIVE: 'ACTIVE',
-  INACTIVE: 'INACTIVE',
-  DELETED: 'DELETED',
-};
-```
 
-**`src/common/response.dto.ts`**
 
-```ts
-export class ApiResponse<T> {
-  constructor(
-    public success: boolean,
-    public message: string,
-    public data?: T,
-  ) {}
-}
-```
 
----
 
-### ✅ 3. Auth Module
 
-#### **`auth.module.ts`**
 
-```ts
-import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
-import { User, UserSchema } from './user.schema';
-import { UserRepository } from './user.repository';
-import { JwtModule } from '@nestjs/jwt';
 
-@Module({
-  imports: [
-    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
-    JwtModule.register({
-      secret: process.env.JWT_SECRET,
-      signOptions: { expiresIn: process.env.JWT_EXPIRES_IN },
-    }),
-  ],
-  controllers: [AuthController],
-  providers: [AuthService, UserRepository],
-  exports: [AuthService],
-})
-export class AuthModule {}
-```
 
-#### **`auth.controller.ts`**
 
-```ts
-import { Controller, Post, Body } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { LoginDto, RegisterDto } from '../../shared-dto/auth.dto';
-import { ApiResponse } from '../../common/response.dto';
 
-@Controller('auth')
-export class AuthController {
-  constructor(private readonly authService: AuthService) {}
-
-  @Post('register')
-  async register(@Body() dto: RegisterDto) {
-    const data = await this.authService.register(dto);
-    return new ApiResponse(true, 'User registered successfully', data);
-  }
-
-  @Post('login')
-  async login(@Body() dto: LoginDto) {
-    const token = await this.authService.login(dto);
-    return new ApiResponse(true, 'Login successful', { token });
-  }
-}
-```
-
-#### **`auth.service.ts`**
-
-```ts
-import { Injectable, UnauthorizedException } from '@nestjs/common';
-import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from './user.repository';
-import * as bcrypt from 'bcryptjs';
-import { RegisterDto, LoginDto } from '../../shared-dto/auth.dto';
-
-@Injectable()
-export class AuthService {
-  constructor(
-    private readonly userRepo: UserRepository,
-    private readonly jwtService: JwtService,
-  ) {}
-
-  async register(dto: RegisterDto) {
-    const hashed = await bcrypt.hash(dto.password, 10);
-    return this.userRepo.create({ ...dto, password: hashed });
-  }
-
-  async login(dto: LoginDto) {
-    const user = await this.userRepo.findByEmail(dto.email);
-    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
-      throw new UnauthorizedException('Invalid credentials');
-    }
-    const payload = { sub: user._id, email: user.email };
-    return this.jwtService.sign(payload);
-  }
-}
-```
-
-#### **`user.schema.ts`**
-
-```ts
-import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
-import { COLLECTIONS, STATUS } from '../../common/constants';
-
-@Schema({ collection: COLLECTIONS.USER, timestamps: true })
-export class User {
-  @Prop({ required: true }) name: string;
-  @Prop({ required: true, unique: true }) email: string;
-  @Prop() phone?: string;
-  @Prop({ required: true }) password: string;
-  @Prop({ default: STATUS.ACTIVE }) status: string;
-}
-
-export type UserDocument = User & Document;
-export const UserSchema = SchemaFactory.createForClass(User);
-```
-
-#### **`user.repository.ts`**
-
-```ts
-import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
-import { User, UserDocument } from './user.schema';
-
-@Injectable()
-export class UserRepository {
-  constructor(@InjectModel(User.name) private model: Model<UserDocument>) {}
-
-  async create(data: Partial<User>) {
-    return this.model.create(data);
-  }
-
-  async findByEmail(email: string) {
-    return this.model.findOne({ email }).lean();
-  }
-}
-```
-
----
-
-### ✅ 4. Profile Module (skeleton)
-
-`profile.controller.ts`, `profile.service.ts`, `profile.repository.ts` are similar.
-
-#### **`profile.schema.ts`**
-
-```ts
-@Schema({ collection: COLLECTIONS.PROFILE, timestamps: true })
-export class Profile {
-  @Prop({ required: true }) userId: string;
-  @Prop() gender?: string;
-  @Prop() age?: number;
-  @Prop() religion?: string;
-  @Prop() location?: string;
-  @Prop() interests?: string[];
-}
-
-export type ProfileDocument = Profile & Document;
-export const ProfileSchema = SchemaFactory.createForClass(Profile);
-```
-
----
-
-### ✅ 5. Match Module (skeleton)
-
-#### **`match.schema.ts`**
-
-```ts
-@Schema({ collection: COLLECTIONS.MATCH, timestamps: true })
-export class Match {
-  @Prop({ required: true }) userId: string;
-  @Prop({ required: true }) matchedUserId: string;
-  @Prop({ default: false }) isAccepted: boolean;
-  @Prop({ default: Date.now }) matchedAt: Date;
-}
-
-export type MatchDocument = Match & Document;
-export const MatchSchema = SchemaFactory.createForClass(Match);
-```
-
-#### **`match.service.ts`**
-
-```ts
-@Injectable()
-export class MatchService {
-  constructor(private readonly matchRepo: MatchRepository) {}
-
-  async findMatches(userId: string) {
-    return this.matchRepo.findByUserId(userId);
-  }
-}
-```
-
----
-
-## 📦 Phase 2: Create Shared DTO Package
-
-Let’s make a reusable **shared DTO library** that can be published later as a private NPM package (for microservices).
-
-For now, create a folder at project root:
-
-```
-shared-dto/
-  auth.dto.ts
-  profile.dto.ts
-  match.dto.ts
-  index.ts
-```
-
-#### **`shared-dto/auth.dto.ts`**
-
-```ts
-import { IsEmail, IsNotEmpty, MinLength, IsOptional } from 'class-validator';
-
-export class RegisterDto {
-  @IsNotEmpty() name: string;
-  @IsEmail() email: string;
-  @MinLength(6) password: string;
-  @IsOptional() phone?: string;
-}
-
-export class LoginDto {
-  @IsEmail() email: string;
-  @IsNotEmpty() password: string;
-}
-```
-
-#### **`shared-dto/profile.dto.ts`**
-
-```ts
-import { IsString, IsNumber, IsArray, IsOptional } from 'class-validator';
-
-export class CreateProfileDto {
-  @IsString() userId: string;
-  @IsOptional() @IsString() gender?: string;
-  @IsOptional() @IsNumber() age?: number;
-  @IsOptional() @IsString() religion?: string;
-  @IsOptional() @IsString() location?: string;
-  @IsOptional() @IsArray() interests?: string[];
-}
-```
-
-#### **`shared-dto/match.dto.ts`**
-
-```ts
-import { IsString, IsBoolean, IsOptional } from 'class-validator';
-
-export class MatchDto {
-  @IsString() userId: string;
-  @IsString() matchedUserId: string;
-  @IsOptional() @IsBoolean() isAccepted?: boolean;
-}
-```
-
-#### **`shared-dto/index.ts`**
-
-```ts
-export * from './auth.dto';
-export * from './profile.dto';
-export * from './match.dto';
-```
-
----
-
-## 🔗 How to use shared DTOs in each service
-
-Example in `auth.controller.ts`:
-
-```ts
-import { RegisterDto } from '../../shared-dto';
-```
-
-When you split into microservices later:
-
-* Move `/shared-dto` into a separate repo.
-* Publish it as `@matrimony/shared-dto`.
-* Each service imports types from there.
-
----
-
-## ✅ Next Step Options
-
-I can now generate **one of the following** for you:
-
-1. 🧩 **Dockerized starter project** (Mongo + Redis + Nest ready to run)
-2. 🧠 **Event-driven layer setup** (Kafka/NATS or Redis Streams for microservice readiness)
-3. 🔐 **Social login integration (Google/Facebook/Apple)** boilerplate
-4. 📡 **API Gateway + Microservice communication (HTTP + gRPC)** example for future migration
-
-Which one do you want next?
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-************************************** FRONTEND DOCUMENTS & SETUP ***********************************************
+************************* FRONTEND DOCUMENTS & SETUP *************************
 
 Excellent — since your **MatchMate App** will be an enterprise-grade **React Native (TypeScript)** project that integrates with your **NestJS backend**, let’s set it up properly for **Android + iOS + Web** from day one.
 

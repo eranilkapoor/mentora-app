@@ -1,4 +1,9 @@
-import { IsString, IsNumber, IsArray, IsOptional } from 'class-validator';
+import { 
+  IsString, 
+  IsNumber, 
+  IsArray, 
+  IsOptional 
+} from 'class-validator';
 
 export class CreateProfileDto {
   @IsString() userId: string;

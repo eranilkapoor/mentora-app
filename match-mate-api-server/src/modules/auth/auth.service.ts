@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './user.repository';
 import { OtpService } from './otp.service';
 import * as bcrypt from 'bcryptjs';
-import { RegisterDto, LoginDto, PhoneSendOtpDto, PhoneVerifyDto } from '../../shared-dto/auth.dto';
+import { RegisterDto, LoginDto } from '../../shared-dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -21,8 +21,8 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    const hashedPassword = await bcrypt.hash(dto.password, 10);
-    return this.userRepo.create({ ...dto, password_hash: hashedPassword });
+    const hashed = await bcrypt.hash(dto.password, 10);
+    return this.userRepo.create({ ...dto, password_hash: hashed });
   }
 
   async validateUser(email: string, password: string) {
@@ -34,7 +34,8 @@ export class AuthService {
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto.email, dto.password);
     if (!user) throw new UnauthorizedException('Invalid credentials');
-    return this.issueTokens(user);
+    const payload = { sub: user._id, email: user.email };
+    return this.jwtService.sign(payload);
   }
 
   // ---------------- PHONE LOGIN FLOW ----------------
