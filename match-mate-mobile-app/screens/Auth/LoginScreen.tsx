@@ -6,34 +6,49 @@ import {
     TouchableOpacity,
     StyleSheet,
     Platform,
+    Modal,
     KeyboardAvoidingView,
     ScrollView,
     ActivityIndicator,
 } from "react-native";
 import Feather from "react-native-vector-icons/Feather";
 import { SafeAreaProvider } from "react-native-safe-area-context";
-import { AuthService } from '../../services/authService';
-import { useAppDispatch } from '../../store';
-import { setCredentials } from '../../store/authSlice';
+import { AuthService } from "../../services/authService";
+import { useAppDispatch } from "../../store";
+import { setCredentials } from "../../store/authSlice";
+import { country_codes } from "../../constants";
+import { fakeApi } from "../../services/fakeApi";
 
-export default function LoginScreen ({ navigation }: any) {
+type FormErrors = {
+  email?: string;
+  password?: string;
+  phone?: string;
+  otp?: string;
+  error?: string;
+};
+
+export default function LoginScreen({ navigation }: any) {
     const dispatch = useAppDispatch();
 
     const [activeTab, setActiveTab] = useState<"email" | "phone">("email");
 
-    // Email / password
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPassword, setShowPassword] = useState(false);
 
-    // Phone / OTP
     const [phone, setPhone] = useState("");
     const [otp, setOtp] = useState("");
     const [otpSent, setOtpSent] = useState(false);
-
+    const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
+    const [countryCode, setCountryCode] = useState(country_codes[2]);
+    
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [errors, setErrors] = useState<FormErrors>({});
 
+    const clearError = (field: keyof FormErrors) => {
+        setErrors(prev => ({ ...prev, [field]: undefined }));
+    };
+    
     const validateEmail = (value: string) =>
         /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
@@ -41,64 +56,98 @@ export default function LoginScreen ({ navigation }: any) {
         /^\+?\d{6,15}$/.test(value);
 
     const handleEmailLogin = async () => {
-        setError(null);
-        if (!email || !password) {
-            setError("Please enter email and password.");
-            return;
-        }
-        if (!validateEmail(email)) {
-            setError("Please enter a valid email address.");
-            return;
-        }
+        const newErrors: FormErrors = {};
+
+        if (!email.trim())
+            newErrors.email = "Email is required";
+        else if (!validateEmail(email))
+            newErrors.email = "Enter a valid email address";
+
+        if (!password)
+            newErrors.password = "Password is required";
+        else if (password.length < 6)
+            newErrors.password = "Minimum 6 characters";
+
+        setErrors(newErrors);
+        
+        if (Object.keys(newErrors).length !== 0) return;
+
         setLoading(true);
         try {
-            await fakeNetworkDelay();
-            //const response = await AuthService.login({ email, password });
-            dispatch(setCredentials({ token: "fake-jwt-token", user: { email } }));
+            const res = await fakeApi(
+                {
+                success: true,
+                data: {
+                    token: "fake-jwt-token",
+                    user: { email },
+                },
+                },
+                1000
+            );
+
+            setLoading(false);
+
+            if (!res.success) {
+                setErrors({ email: res.error });
+                return;
+            }
+
+            dispatch(setCredentials(res.data!));
         } catch (e) {
-            setError("Failed to sign in. Please try again.");
+            setErrors({"error": "Failed to sign in. Please try again."});
         } finally {
             setLoading(false);
         }
     };
 
     const handleGetOtp = async () => {
-        setError(null);
-        if (!phone) {
-            setError("Please enter phone number.");
-            return;
-        }
-        if (!validatePhone(phone)) {
-            setError("Please enter a valid phone number (digits only, include country code).");
-            return;
-        }
+        const newErrors: FormErrors = {};
+
+        if (!phone)
+            newErrors.phone = "Phone number is required";
+        else if (!validatePhone(phone))
+            newErrors.phone = "Enter a valid phone number";
+
+        setErrors(newErrors);
+
+        if (Object.keys(newErrors).length !== 0) return;
+                
         setLoading(true);
         try {
-            await fakeNetworkDelay(1000);
-            // In real app, send OTP here and handle errors
+            await fakeApi({ success: true }, 1000);
             setOtpSent(true);
         } catch (e) {
-            setError("Failed to send OTP. Please try again.");
+            setErrors({"error": "Failed to send OTP. Please try again."});
         } finally {
             setLoading(false);
         }
     };
 
     const handleVerifyOtp = async () => {
-        setError(null);
-        if (!otp) {
-            setError("Please enter the OTP.");
-            return;
-        }
+        const newErrors: FormErrors = {};
+
+        if (otpSent && !otp)
+            newErrors.otp = "OTP is required";
+
+        setErrors(newErrors);
+        
+        if (Object.keys(newErrors).length !== 0) return;
+
         setLoading(true);
         try {
-            await fakeNetworkDelay(800);
-            // In real app, verify OTP here
-            // navigation?.replace?.("Home");
-            // setIsAuthenticated(true);
-            dispatch(setCredentials({ token: "fake-jwt-token", user: { phone } }));
+            const res = await fakeApi(
+                { success: true, data: { token: "jwt", user: { phone } } },
+                800,
+                otp !== "123456" // simulate wrong OTP
+            );
+
+            if (!res.success) {
+                setErrors({ otp: "Invalid OTP" });
+                return;
+            }
+            dispatch(setCredentials(res.data!));
         } catch (e) {
-            setError("Failed to verify OTP. Please try again.");
+            setErrors({"error": "Failed to verify OTP. Please try again."});
         } finally {
             setLoading(false);
         }
@@ -106,14 +155,13 @@ export default function LoginScreen ({ navigation }: any) {
 
     const handleSocialLogin = async (provider: "google" | "apple" | "facebook") => {
         setLoading(true);
-        setError(null);
+        setErrors({});
         try {
             await fakeNetworkDelay();
-            //navigation?.navigate?.("AppNavigator", { screen: "Home" });
             // setIsAuthenticated(true);
             dispatch(setCredentials({ token: "fake-jwt-token", user: { provider } }));
         } catch (e) {
-            setError(`Failed to sign in with ${provider}.`);
+            setErrors({ "error": `Failed to sign in with ${provider}.`});
         } finally {
             setLoading(false);
         }
@@ -130,18 +178,17 @@ export default function LoginScreen ({ navigation }: any) {
     return (
         <SafeAreaProvider style={styles.safe}>
             <KeyboardAvoidingView
-                behavior={Platform.select({ ios: "padding", android: undefined })}
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
                 style={styles.container}
             >
-                <ScrollView
-                    contentContainerStyle={styles.scrollContent}
+                <ScrollView contentContainerStyle={styles.scrollContent}
                     keyboardShouldPersistTaps="handled"
                 >
-                    <Text style={styles.title}>Match Mate</Text>
+                    <Text style={styles.title}>Welcome to Match Mate</Text>
                     <Text style={styles.subtitle}>Sign in to continue</Text>
-
-                    {error ? <Text style={styles.error}>{error}</Text> : null}
-
+                    
+                    {errors.error && <Text style={styles.error}>{errors.error}</Text>}
+                    
                     {/* Tabs */}
                     <View style={styles.tabRow}>
                         <TouchableOpacity
@@ -149,7 +196,7 @@ export default function LoginScreen ({ navigation }: any) {
                             onPress={() => {
                                 setActiveTab("email");
                                 setOtpSent(false);
-                                setError(null);
+                                setErrors({});
                             }}
                             disabled={loading}
                             accessibilityLabel="tab-email"
@@ -162,7 +209,7 @@ export default function LoginScreen ({ navigation }: any) {
                             style={[styles.tabButton, activeTab === "phone" && styles.tabActive]}
                             onPress={() => {
                                 setActiveTab("phone");
-                                setError(null);
+                                setErrors({});
                             }}
                             disabled={loading}
                             accessibilityLabel="tab-phone"
@@ -179,26 +226,34 @@ export default function LoginScreen ({ navigation }: any) {
                             <>
                                 <Text style={styles.label}>Email</Text>
                                 <TextInput
-                                    style={styles.input}
+                                    style={[styles.input, errors.email && styles.inputError]}
                                     placeholder="you@example.com"
                                     keyboardType="email-address"
                                     autoCapitalize="none"
                                     autoComplete="email"
                                     value={email}
-                                    onChangeText={setEmail}
+                                    onChangeText={(t) => {
+                                        setEmail(t);
+                                        if (errors) clearError("email");
+                                    }}
                                     editable={!loading}
                                     textContentType="username"
                                     accessibilityLabel="email-input"
                                 />
+                                {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
 
                                 <Text style={[styles.label, { marginTop: 12 }]}>Password</Text>
-                                <View style={styles.passwordContainer}>
+                                <View style={[styles.passwordContainer, errors.password && styles.inputError]}>
                                     <TextInput
                                         style={styles.passwordInput}
                                         placeholder="••••••••"
                                         secureTextEntry={!showPassword}
                                         value={password}
-                                        onChangeText={setPassword}
+                                        onChangeText={(t) => {
+                                            setPassword(t);
+                                            if (errors) clearError("password");
+                                        }}
+                                        accessibilityLabel="password-input"
                                         editable={!loading}
                                         textContentType="password"
                                     />
@@ -208,13 +263,15 @@ export default function LoginScreen ({ navigation }: any) {
                                         style={styles.eyeIcon}
                                         disabled={loading}
                                     >
-                                        <Feather 
-                                            name={showPassword ? "eye-off" : "eye"} 
-                                            size={20} 
-                                            color="#666" 
+                                        <Feather
+                                            name={showPassword ? "eye-off" : "eye"}
+                                            size={20}
+                                            color="#666"
                                         />
                                     </TouchableOpacity>
                                 </View>
+                                {errors.password && <Text style={styles.errorText}>{errors.password}</Text>}
+
                                 <TouchableOpacity
                                     onPress={handleForgotPassword}
                                     disabled={loading}
@@ -232,23 +289,66 @@ export default function LoginScreen ({ navigation }: any) {
                                     {loading ? (
                                         <ActivityIndicator color="#fff" />
                                     ) : (
-                                        <Text style={styles.primaryButtonText}>Sign in</Text>
+                                        <Text style={styles.primaryButtonText}>Sign In</Text>
                                     )}
                                 </TouchableOpacity>
                             </>
                         ) : (
                             <>
-                                <Text style={styles.label}>Phone number</Text>
-                                <TextInput
-                                    style={styles.input}
-                                    placeholder="+1234567890"
-                                    keyboardType="phone-pad"
-                                    autoCapitalize="none"
-                                    value={phone}
-                                    onChangeText={setPhone}
-                                    editable={!loading && !otpSent}
-                                    accessibilityLabel="phone-input"
-                                />
+                                <Text style={styles.label}>Phone Number</Text>
+                                <View style={[styles.phoneRow, errors.phone && styles.inputError]}>
+                                    <TouchableOpacity
+                                        style={styles.countryCodeBtn}
+                                        onPress={() => setShowCountryCodeDropdown(!showCountryCodeDropdown)}
+                                    >
+                                        <Text style={styles.countryCodeText}>{countryCode}</Text>
+                                        <Text style={{ fontSize: 16, color: "#666" }}>▼</Text>
+                                    </TouchableOpacity>
+                                    <Modal
+                                        visible={showCountryCodeDropdown}
+                                        transparent
+                                        animationType="fade"
+                                        onRequestClose={() => setShowCountryCodeDropdown(false)}
+                                    >
+                                        <TouchableOpacity
+                                            style={styles.modalOverlay}
+                                            activeOpacity={1}
+                                            onPress={() => setShowCountryCodeDropdown(false)}
+                                        >
+                                            <View style={styles.modalDropdown}>
+                                                <ScrollView>
+                                                    {country_codes.map((code) => (
+                                                        <TouchableOpacity
+                                                            key={code}
+                                                            style={styles.countryCodeItem}
+                                                            onPress={() => {
+                                                                setCountryCode(code);
+                                                                setShowCountryCodeDropdown(false);
+                                                            }}
+                                                        >
+                                                            <Text>{code}</Text>
+                                                        </TouchableOpacity>
+                                                    ))}
+                                                </ScrollView>
+                                            </View>
+                                        </TouchableOpacity>
+                                    </Modal>
+                                    <TextInput
+                                        style={[styles.input, styles.phoneInput]}
+                                        placeholder="9911002233"
+                                        keyboardType="phone-pad"
+                                        autoCapitalize="none"
+                                        value={phone}
+                                        onChangeText={(t) => { 
+                                            setPhone(t.slice(0, 10));
+                                            if (errors) clearError("phone");
+                                        }}
+                                        editable={!loading && !otpSent}
+                                        maxLength={10}
+                                        accessibilityLabel="phone-input"
+                                    />
+                                </View>
+                                {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
 
                                 {!otpSent ? (
                                     <TouchableOpacity
@@ -267,14 +367,20 @@ export default function LoginScreen ({ navigation }: any) {
                                     <>
                                         <Text style={[styles.label, { marginTop: 12 }]}>Enter OTP</Text>
                                         <TextInput
-                                            style={styles.input}
+                                            style={[styles.input, styles.otpInput, errors.otp && styles.inputError]}
                                             placeholder="123456"
                                             keyboardType="number-pad"
                                             value={otp}
-                                            onChangeText={setOtp}
+                                            onChangeText={(t) => {
+                                                setOtp(t.slice(0, 6));
+                                                if (errors) clearError("otp");
+                                            }}
                                             editable={!loading}
+                                            maxLength={6}
                                             accessibilityLabel="otp-input"
                                         />
+                                        {errors.otp && <Text style={styles.errorText}>{errors.otp}</Text>}
+                                        
                                         <TouchableOpacity
                                             style={[styles.primaryButton, loading && styles.disabledButton]}
                                             onPress={handleVerifyOtp}
@@ -371,7 +477,6 @@ function SocialButton({
     );
 }
 
-// small helper to simulate network latency
 const fakeNetworkDelay = (ms = 800) => new Promise((res) => setTimeout(res, ms));
 
 const styles = StyleSheet.create({
@@ -386,7 +491,7 @@ const styles = StyleSheet.create({
         fontSize: 28,
         fontWeight: "900",
         marginBottom: 26,
-        color: "#dd68c0ff",
+        color: "#000",
         textAlign: "center",
         fontFamily: "clebri-bold",
     },
@@ -424,12 +529,49 @@ const styles = StyleSheet.create({
         fontSize: 16,
         color: "#111",
     },
+    phoneRow: {
+        flexDirection: "row",
+        marginBottom: 12,
+    },
+    phoneInput: {
+        flex: 1,
+        marginLeft: 8,
+        marginBottom: 0,
+    },
+    otpInput: {
+        fontSize: 24,
+        letterSpacing: 8,
+        textAlign: "center",
+    },
+    countryCodeBtn: {
+        borderWidth: 1,
+        borderColor: "#ddd",
+        borderRadius: 8,
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        justifyContent: "center",
+        alignItems: "center",
+        flexDirection: "row",
+        minWidth: 80,
+    },
+    countryCodeText: {
+        fontWeight: "600",
+        marginRight: 4,
+    },
+    countryCodeItem: {
+        paddingHorizontal: 12,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+        borderBottomColor: "#f0f0f0",
+    },
     passwordContainer: {
         flexDirection: "row",
         alignItems: "center",
         backgroundColor: "#f7f7f8",
         borderRadius: 8,
         paddingHorizontal: 12,
+        borderWidth: 1,
+        borderColor: "transparent",
     },
     passwordInput: {
         flex: 1,
@@ -481,4 +623,29 @@ const styles = StyleSheet.create({
     linkRow: { alignItems: "center", marginTop: 10 },
     linkSmall: { color: "#007AFF", fontSize: 13 },
     error: { color: "#b00020", marginBottom: 10 },
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.2)",
+        justifyContent: "center",
+        alignItems: "center",
+    },
+    modalDropdown: {
+        width: 120,
+        maxHeight: 300,
+        backgroundColor: "#fff",
+        borderRadius: 8,
+        elevation: 10,        // ANDROID
+        shadowColor: "#000",  // IOS
+        shadowOpacity: 0.25,
+        shadowRadius: 6,
+    },
+    inputError: {
+        borderWidth: 1,
+        borderColor: "#d9534f",
+    },
+    errorText: {
+        color: "#d9534f",
+        marginTop: 6,
+        fontSize: 12,
+    },
 });

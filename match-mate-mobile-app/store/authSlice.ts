@@ -5,13 +5,16 @@ interface AuthState {
   user: any | null;
 }
 
-const initialState: AuthState = { token: null, user: null };
+const initialState: AuthState = { 
+  token: null, 
+  user: null 
+};
 
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    setCredentials: (state, action: PayloadAction<{ token: string; user: any }>) => {
+    setCredentials: (state, action: PayloadAction<AuthState>) => {
       state.token = action.payload.token;
       state.user = action.payload.user;
     },

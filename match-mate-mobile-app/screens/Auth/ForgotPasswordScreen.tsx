@@ -1,157 +1,219 @@
 import React, { useState, useCallback } from "react";
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { 
-    View, 
-    Text, 
-    TextInput, 
-    TouchableOpacity, 
-    ActivityIndicator, 
-    KeyboardAvoidingView, 
-    Platform, 
-    StyleSheet, 
-    Alert 
+import {
+    View,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    ActivityIndicator,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    ScrollView,
+    Alert,
 } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { fakeApi } from "../../services/fakeApi";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-export default function ForgotPasswordScreen ({ navigation }: any) {
+type FormErrors = {
+  email?: string;
+  error?: string;
+};
+
+export default function ForgotPasswordScreen({ navigation }: any) {
     const [email, setEmail] = useState("");
-    const [error, setError] = useState<string | null>(null);
+    const [errors, setErrors] = useState<FormErrors>({});
     const [loading, setLoading] = useState(false);
 
+    const clearError = (field: keyof FormErrors) => {
+        setErrors(prev => ({ ...prev, [field]: undefined }));
+    };
+
     const validate = useCallback(() => {
-        if (!email.trim()) return "Email is required";
-        if (!EMAIL_REGEX.test(email.trim())) return "Enter a valid email";
-        return null;
+        const newErrors: FormErrors = {};
+        if (!email.trim())
+            newErrors.email = "Email is required";
+        else if (!EMAIL_REGEX.test(email.trim()))
+            newErrors.email = "Enter a valid email address";
+
+        return Object.keys(newErrors).length ? newErrors : {};
+
     }, [email]);
 
     const onSubmit = useCallback(async () => {
         const validationError = validate();
-        setError(validationError);
+        setErrors(validationError);
         if (validationError) return;
 
         setLoading(true);
         try {
-            // Replace URL with your backend endpoint
-            const res = await fetch("https://api.example.com/auth/forgot-password", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email.trim() }),
-            });
+            const res = await fakeApi(
+                { success: true },
+                800,
+                email === "notfound@example.com"
+            );
 
-            // Accept both 200 and 202 as success depending on API design
-            if (res.ok) {
+            if (res.success) {
                 Alert.alert(
-                    "Email Sent",
-                    "If an account with that email exists, instructions to reset your password have been sent."
+                    "Reset link sent",
+                    "If an account exists with this email, you’ll receive a password reset link shortly."
                 );
                 navigation.goBack();
             } else {
-                const json = await res.json().catch(() => ({}));
-                const msg = json?.message || "Unable to send reset email. Please try again.";
-                Alert.alert("Error", msg);
+                setErrors({ error: res.error || "Failed to send reset link. Please try again." });
             }
         } catch (e) {
-            Alert.alert("Network error", "Please check your connection and try again.");
+            Alert.alert(
+                "Network error",
+                "Please check your internet connection and try again."
+            );
         } finally {
             setLoading(false);
         }
     }, [email, navigation, validate]);
 
     return (
-        <SafeAreaProvider style={styles.container}>
-            <KeyboardAvoidingView behavior={Platform.select({ ios: "padding", android: undefined })} style={styles.flex}>
-                <View style={styles.inner}>
+        <SafeAreaProvider style={styles.safe}>
+            <KeyboardAvoidingView
+                behavior={Platform.OS === "ios" ? "padding" : undefined}
+                style={styles.container}
+            >
+                <ScrollView
+                    contentContainerStyle={styles.scrollContent}
+                    keyboardShouldPersistTaps="handled"
+                >
                     <Text style={styles.title}>Forgot password</Text>
                     <Text style={styles.subtitle}>
-                        Enter the email associated with your account and we'll send a link to reset your
-                        password.
+                        Enter the email associated with your account and we’ll
+                        send you instructions to reset your password.
                     </Text>
 
-                    <View style={styles.inputGroup}>
+                    <View style={styles.form}>
                         <Text style={styles.label}>Email</Text>
                         <TextInput
                             value={email}
                             onChangeText={(t) => {
                                 setEmail(t);
-                                if (error) setError(null);
+                                if (errors) clearError("email");
                             }}
                             placeholder="you@example.com"
                             keyboardType="email-address"
                             autoCapitalize="none"
                             autoCorrect={false}
-                            style={[styles.input, error ? styles.inputError : null]}
+                            style={[styles.input, errors.email && styles.inputError]}
                             editable={!loading}
                             returnKeyType="send"
                             onSubmitEditing={onSubmit}
                         />
-                        {error ? <Text style={styles.errorText}>{error}</Text> : null}
+                        {errors.email && <Text style={styles.errorText}>{errors.email}</Text>}
+
+                        <TouchableOpacity
+                            style={[
+                                styles.primaryButton,
+                                loading && styles.disabledButton,
+                            ]}
+                            onPress={onSubmit}
+                            disabled={loading}
+                        >
+                            {loading ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <Text style={styles.primaryButtonText}>
+                                    Send reset link
+                                </Text>
+                            )}
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
+                            style={styles.backLink}
+                            onPress={() => navigation.goBack()}
+                            disabled={loading}
+                        >
+                            <Text style={styles.backLinkText}>
+                                Back to sign in
+                            </Text>
+                        </TouchableOpacity>
                     </View>
-
-                    <TouchableOpacity
-                        style={[styles.button, loading ? styles.buttonDisabled : null]}
-                        onPress={onSubmit}
-                        disabled={loading}
-                    >
-                        {loading ? (
-                            <ActivityIndicator color="#fff" />
-                        ) : (
-                            <Text style={styles.buttonText}>Send reset link</Text>
-                        )}
-                    </TouchableOpacity>
-
-                    <TouchableOpacity
-                        style={styles.linkContainer}
-                        onPress={() => navigation.goBack()}
-                        disabled={loading}
-                    >
-                        <Text style={styles.linkText}>Back to sign in</Text>
-                    </TouchableOpacity>
-                </View>
+                </ScrollView>
             </KeyboardAvoidingView>
         </SafeAreaProvider>
     );
-};
+}
 
 const styles = StyleSheet.create({
-    flex: { flex: 1 },
-    container: {
+    safe: {
         flex: 1,
         backgroundColor: "#fff",
     },
-    inner: {
-        padding: 20,
+    container: {
         flex: 1,
-        justifyContent: "center",
+    },
+    scrollContent: {
+        padding: 20,
+        paddingTop: 120,
     },
     title: {
         fontSize: 28,
-        fontWeight: "700",
-        marginBottom: 8,
-        color: "#111",
+        fontWeight: "900",
+        color: "#000",
+        marginBottom: 12,
+        textAlign: "center",
     },
     subtitle: {
+        fontSize: 14,
         color: "#666",
+        textAlign: "center",
         marginBottom: 24,
         lineHeight: 20,
     },
-    inputGroup: {
-        marginBottom: 16,
+    form: {
+        marginTop: 8,
     },
     label: {
-        color: "#333",
-        marginBottom: 6,
         fontSize: 13,
+        color: "#444",
+        marginBottom: 6,
     },
     input: {
-        height: 48,
-        borderWidth: 1,
-        borderColor: "#e2e2e2",
+        backgroundColor: "#f7f7f8",
         borderRadius: 8,
+        paddingVertical: 12,
         paddingHorizontal: 12,
-        backgroundColor: "#fff",
+        fontSize: 16,
+        color: "#111",
+    },
+    primaryButton: {
+        marginTop: 18,
+        backgroundColor: "#111",
+        paddingVertical: 14,
+        borderRadius: 10,
+        alignItems: "center",
+    },
+    primaryButtonText: {
+        color: "#fff",
+        fontWeight: "700",
+        fontSize: 16,
+    },
+    disabledButton: {
+        opacity: 0.6,
+    },
+    backLink: {
+        marginTop: 20,
+        alignItems: "center",
+    },
+    backLinkText: {
+        color: "#007AFF",
+        fontSize: 14,
+        fontWeight: "600",
+    },
+    error: {
+        color: "#b00020",
+        marginBottom: 12,
+        textAlign: "center",
     },
     inputError: {
+        borderWidth: 1,
         borderColor: "#d9534f",
     },
     errorText: {
@@ -159,27 +221,4 @@ const styles = StyleSheet.create({
         marginTop: 6,
         fontSize: 12,
     },
-    button: {
-        height: 48,
-        backgroundColor: "#3b82f6",
-        borderRadius: 8,
-        alignItems: "center",
-        justifyContent: "center",
-        marginTop: 8,
-    },
-    buttonDisabled: {
-        opacity: 0.7,
-    },
-    buttonText: {
-        color: "#fff",
-        fontWeight: "600",
-    },
-    linkContainer: {
-        marginTop: 16,
-        alignItems: "center",
-    },
-    linkText: {
-        color: "#3b82f6",
-        fontWeight: "500",
-    }
 });

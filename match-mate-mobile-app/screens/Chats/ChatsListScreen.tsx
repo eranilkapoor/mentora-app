@@ -6,7 +6,6 @@ import {
     Text,
     TouchableOpacity,
     View,
-    Image,
 } from "react-native";
 
 type Chat = {
@@ -19,7 +18,7 @@ type Chat = {
 };
 
 export default function ChatsListScreen({ navigation }: any) {
-    const [chats, setChats] = useState<Chat[]>([
+    const [chats] = useState<Chat[]>([
         {
             id: "c1",
             partnerId: "user1",
@@ -91,21 +90,21 @@ const styles = StyleSheet.create({
     chatItem: {
         flexDirection: "row",
         alignItems: "center",
-        paddingHorizontal: 12,
-        paddingVertical: 10,
+        paddingHorizontal: 16,
+        paddingVertical: 12,
         borderBottomWidth: 1,
         borderBottomColor: "#f0f0f0",
     },
     avatar: {
-        width: 48,
-        height: 48,
-        borderRadius: 24,
+        width: 56,
+        height: 56,
+        borderRadius: 28,
         backgroundColor: "#007AFF",
         justifyContent: "center",
         alignItems: "center",
-        marginRight: 12,
+        marginRight: 16,
     },
-    avatarText: { color: "#fff", fontWeight: "700", fontSize: 18 },
+    avatarText: { color: "#fff", fontWeight: "700", fontSize: 20 },
     chatContent: { flex: 1 },
     chatHeader: {
         flexDirection: "row",
@@ -113,6 +112,6 @@ const styles = StyleSheet.create({
         marginBottom: 4,
     },
     partnerName: { fontSize: 16, fontWeight: "600", color: "#000" },
-    timeText: { fontSize: 12, color: "#999" },
+    timeText: { fontSize: 13, color: "#999" },
     lastMessage: { fontSize: 14, color: "#666" },
 });

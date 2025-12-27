@@ -1,4 +1,4 @@
-import React, { useState, Dispatch, SetStateAction } from 'react';
+import React, { useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
     View,
@@ -38,10 +38,6 @@ export default function SettingsScreen({ navigation }: any) {
     return (
         <SafeAreaProvider style={styles.safe}>
             <StatusBar barStyle={darkModeEnabled ? 'light-content' : 'dark-content'} />
-            {/* <View style={styles.header}>
-                <Text style={styles.headerTitle}>Settings</Text>
-            </View> */}
-
             <ScrollView contentContainerStyle={styles.container}>
                 <View style={styles.section}>
                     <Text style={styles.sectionTitle}>Account</Text>
