@@ -11,9 +11,10 @@ import {
     Alert,
     ActivityIndicator,
 } from "react-native";
-import { profile_for_options, country_codes, religions, qualifications, body_types, complexions, blood_groups, family_types, family_statuses } from "../../constants";
+import { profile_for_options, religions, qualifications, body_types, complexions, blood_groups, family_types, family_statuses } from "../../constants";
 import { useAppDispatch } from "../../store";
 import { setCredentials } from '../../store/authSlice';
+import { SafeAreaProvider } from "react-native-safe-area-context";
 
 type RegistrationStep = "personal" | "education" | "physical" | "family" | "preferences" | "review";
 
@@ -73,6 +74,21 @@ export default function OnboardingScreen({ navigation }: any) {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [showDropdown, setShowDropdown] = useState<string | null>(null);
 
+    const getInputStyle = (field: string) => [
+        styles.input,
+        errors[field] ? styles.inputError : null,
+    ];
+
+    const clearError = (field: string) => {
+        if (errors[field]) {
+            setErrors((prev) => {
+                const updated = { ...prev };
+                delete updated[field];
+                return updated;
+            });
+        }
+    };
+
     const [personal, setPersonal] = useState<PersonalData>({
         profileFor: "",
         firstName: "",
@@ -82,7 +98,7 @@ export default function OnboardingScreen({ navigation }: any) {
         religion: "",
         city: "",
         state: "",
-        country: ""        
+        country: ""
     });
 
     const [education, setEducation] = useState<EducationData>({
@@ -125,59 +141,54 @@ export default function OnboardingScreen({ navigation }: any) {
 
     const validatePersonal = () => {
         const e: Record<string, string> = {};
+        if (!personal.profileFor.trim()) e.profileFor = "Selction required";
         if (!personal.firstName.trim()) e.firstName = "First name required";
         if (!personal.dob) e.dob = "Date Of Birth required";
         if (!personal.gender) e.gender = "Gender required";
         if (!personal.religion) e.religion = "Religion required";
-        if (!personal.city.trim()) e.city = "City required";
-        if (!personal.state.trim()) e.state = "State required";
-        if (!personal.country.trim()) e.country = "Country required";
+
         setErrors(e);
+
         return Object.keys(e).length === 0;
     };
 
     const validateEducation = () => {
         const e: Record<string, string> = {};
         if (!education.qualification) e.qualification = "Qualification required";
-        if (!education.field.trim()) e.field = "Field required";
-        if (!education.university.trim()) e.university = "University required";
         if (!education.occupation.trim()) e.occupation = "Occupation required";
-        if (!education.annualIncome.trim()) e.annualIncome = "Income required";
+
         setErrors(e);
+
         return Object.keys(e).length === 0;
     };
 
     const validatePhysical = () => {
         const e: Record<string, string> = {};
         if (!physical.height.trim()) e.height = "Height required";
-        if (!physical.weight.trim()) e.weight = "Weight required";
-        if (!physical.bodyType) e.bodyType = "Body type required";
-        if (!physical.complexion) e.complexion = "Complexion required";
-        if (!physical.bloodGroup) e.bloodGroup = "Blood group required";
+
         setErrors(e);
+
         return Object.keys(e).length === 0;
     };
 
     const validateFamily = () => {
         const e: Record<string, string> = {};
-        if (!family.fatherName.trim()) e.fatherName = "Father's name required";
-        if (!family.motherName.trim()) e.motherName = "Mother's name required";
         if (!family.familyType) e.familyType = "Family type required";
-        if (!family.familyStatus) e.familyStatus = "Family status required";
+
         setErrors(e);
+
         return Object.keys(e).length === 0;
     };
 
     const validatePreferences = () => {
         const e: Record<string, string> = {};
         if (!preferences.ageRange.trim()) e.ageRange = "Age range required";
-        if (!preferences.heightRange.trim()) e.heightRange = "Height range required";
         if (!preferences.locationPref.trim()) e.locationPref = "Location preference required";
+
         setErrors(e);
+
         return Object.keys(e).length === 0;
     };
-
-    const fakeNetworkDelay = (ms = 800) => new Promise((res) => setTimeout(res, ms));
 
     const handleNext = () => {
         const steps: RegistrationStep[] = ["personal", "education", "physical", "family", "preferences", "review"];
@@ -227,7 +238,7 @@ export default function OnboardingScreen({ navigation }: any) {
                 preferences,
             };
 
-            const res = await fetch("https://localhost:3000/api/auth/register", {
+            const res = await fetch("https://localhost:3000/api/v1/auth/register", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(payload),
@@ -248,17 +259,22 @@ export default function OnboardingScreen({ navigation }: any) {
         }
     };
 
-    const DropdownPicker = ({ label, options, value, onChange }: any) => (
+    const DropdownPicker = ({ label, options, value, onChange, field }: any) => (
         <View>
             <TouchableOpacity
-                style={[styles.input, { justifyContent: "space-between", flexDirection: "row", alignItems: "center" }]}
+                style={[
+                    styles.input,
+                    errors[field] && styles.inputError,
+                    { justifyContent: "space-between", flexDirection: "row", alignItems: "center" },
+                ]}
                 onPress={() => setShowDropdown(showDropdown === label ? null : label)}
             >
                 <Text style={{ color: value ? "#000" : "#999" }}>{value || `Select ${label}`}</Text>
-                <Text style={{ fontSize: 18, color: "#666" }}>
+                <Text style={{ fontSize: 16, color: "#666" }}>
                     {showDropdown === label ? "▲" : "▼"}
                 </Text>
             </TouchableOpacity>
+
             {showDropdown === label && (
                 <View style={[styles.dropdown, { maxHeight: 250 }]}>
                     <ScrollView scrollEnabled={options.length > 5}>
@@ -268,6 +284,7 @@ export default function OnboardingScreen({ navigation }: any) {
                                 style={styles.dropdownItem}
                                 onPress={() => {
                                     onChange(item);
+                                    clearError(field);
                                     setShowDropdown(null);
                                 }}
                             >
@@ -280,8 +297,7 @@ export default function OnboardingScreen({ navigation }: any) {
         </View>
     );
 
-    const ErrorText = ({ field }: { field: string }) =>
-        errors[field] ? <Text style={styles.error}>{errors[field]}</Text> : null;
+    const ErrorText = ({ field }: { field: string }) => errors[field] ? <Text style={styles.error}>{errors[field]}</Text> : null;
 
     const renderStepContent = () => {
         switch (currentStep) {
@@ -289,12 +305,19 @@ export default function OnboardingScreen({ navigation }: any) {
                 return (
                     <View>
                         <Text style={styles.stepTitle}>Personal Information</Text>
+                        <Text style={styles.subtitle}>
+                            Basic details to create your matrimonial profile
+                        </Text>
                         <Text style={styles.label}>Profile For</Text>
                         <DropdownPicker
                             label="profile for"
                             options={profile_for_options}
                             value={personal.profileFor}
-                            onChange={(val: string) => setPersonal({ ...personal, profileFor: val })}
+                            onChange={(val: string) => {
+                                setPersonal({ ...personal, profileFor: val });
+                                clearError("profileFor");
+                            }}
+                            field="profileFor"
                         />
                         <ErrorText field="profileFor" />
 
@@ -302,8 +325,11 @@ export default function OnboardingScreen({ navigation }: any) {
                         <TextInput
                             placeholder="John"
                             value={personal.firstName}
-                            onChangeText={(text) => setPersonal({ ...personal, firstName: text })}
-                            style={styles.input}
+                            onChangeText={(text) => {
+                                setPersonal({ ...personal, firstName: text })
+                                clearError("firstName");
+                            }}
+                            style={[styles.input, getInputStyle("firstName")]}
                         />
                         <ErrorText field="firstName" />
 
@@ -319,25 +345,32 @@ export default function OnboardingScreen({ navigation }: any) {
                         <TextInput
                             placeholder="Date of Birth (YYYY-MM-DD)"
                             value={personal.dob}
-                            onChangeText={(text) => setPersonal({ ...personal, dob: text })}
-                            style={styles.input}
+                            onChangeText={(text) => {
+                                setPersonal({ ...personal, dob: text });
+                                clearError("dob");
+                            }}
+                            style={[styles.input, getInputStyle("dob")]}
                         />
                         <ErrorText field="dob" />
 
                         <Text style={styles.label}>Gender</Text>
                         <View style={styles.genderRow}>
-                            <TouchableOpacity
-                                style={[styles.genderBtn, personal.gender === "male" && styles.genderBtnActive]}
-                                onPress={() => setPersonal({ ...personal, gender: "male" })}
-                            >
-                                <Text>Male</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity
-                                style={[styles.genderBtn, personal.gender === "female" && styles.genderBtnActive]}
-                                onPress={() => setPersonal({ ...personal, gender: "female" })}
-                            >
-                                <Text>Female</Text>
-                            </TouchableOpacity>
+                            {["male", "female"].map((g) => (
+                                <TouchableOpacity
+                                    key={g}
+                                    style={[
+                                        styles.genderBtn,
+                                        personal.gender === g && styles.genderBtnActive,
+                                        errors.gender && styles.inputError,
+                                    ]}
+                                    onPress={() => {
+                                        setPersonal({ ...personal, gender: g as any });
+                                        clearError("gender");
+                                    }}
+                                >
+                                    <Text>{g.charAt(0).toUpperCase() + g.slice(1)}</Text>
+                                </TouchableOpacity>
+                            ))}
                         </View>
                         <ErrorText field="gender" />
 
@@ -346,7 +379,11 @@ export default function OnboardingScreen({ navigation }: any) {
                             label="religion"
                             options={religions}
                             value={personal.religion}
-                            onChange={(val: string) => setPersonal({ ...personal, religion: val })}
+                            onChange={(val: string) => {
+                                setPersonal({ ...personal, religion: val });
+                                clearError("religion");
+                            }}
+                            field="religion"
                         />
                         <ErrorText field="religion" />
 
@@ -357,7 +394,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             onChangeText={(text) => setPersonal({ ...personal, country: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="country" />
 
                         <Text style={styles.label}>State</Text>
                         <TextInput
@@ -366,7 +402,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             onChangeText={(text) => setPersonal({ ...personal, state: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="state" />
 
                         <Text style={styles.label}>City</Text>
                         <TextInput
@@ -375,8 +410,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             onChangeText={(text) => setPersonal({ ...personal, city: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="city" />                        
-                        
                     </View>
                 );
 
@@ -384,13 +417,19 @@ export default function OnboardingScreen({ navigation }: any) {
                 return (
                     <View>
                         <Text style={styles.stepTitle}>Education & Occupation</Text>
-
+                        <Text style={styles.subtitle}>
+                            Basic details about your education and occupation
+                        </Text>
                         <Text style={styles.label}>Qualification</Text>
                         <DropdownPicker
                             label="qualification"
                             options={qualifications}
                             value={education.qualification}
-                            onChange={(val: string) => setEducation({ ...education, qualification: val })}
+                            onChange={(val: string) => {
+                                setEducation({ ...education, qualification: val });
+                                clearError("qualification");
+                            }}
+                            field="qualification"
                         />
                         <ErrorText field="qualification" />
 
@@ -401,7 +440,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             onChangeText={(text) => setEducation({ ...education, field: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="field" />
 
                         <Text style={styles.label}>University/College</Text>
                         <TextInput
@@ -410,14 +448,16 @@ export default function OnboardingScreen({ navigation }: any) {
                             onChangeText={(text) => setEducation({ ...education, university: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="university" />
 
                         <Text style={styles.label}>Occupation</Text>
                         <TextInput
                             placeholder="Occupation"
                             value={education.occupation}
-                            onChangeText={(text) => setEducation({ ...education, occupation: text })}
-                            style={styles.input}
+                            onChangeText={(text) => {
+                                setEducation({ ...education, occupation: text });
+                                clearError("occupation");
+                            }}
+                            style={[styles.input, getInputStyle("occupation")]}
                         />
                         <ErrorText field="occupation" />
 
@@ -429,7 +469,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             style={styles.input}
                             keyboardType="numeric"
                         />
-                        <ErrorText field="annualIncome" />
                     </View>
                 );
 
@@ -437,13 +476,18 @@ export default function OnboardingScreen({ navigation }: any) {
                 return (
                     <View>
                         <Text style={styles.stepTitle}>Physical Details</Text>
-
+                        <Text style={styles.subtitle}>
+                            Basic details about your physical attributes
+                        </Text>
                         <Text style={styles.label}>Height (in cm)</Text>
                         <TextInput
                             placeholder="Height (in cm)"
                             value={physical.height}
-                            onChangeText={(text) => setPhysical({ ...physical, height: text })}
-                            style={styles.input}
+                            onChangeText={(text) => {
+                                setPhysical({ ...physical, height: text });
+                                clearError("height");
+                            }}
+                            style={[styles.input, getInputStyle("height")]}
                             keyboardType="numeric"
                         />
                         <ErrorText field="height" />
@@ -456,7 +500,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             style={styles.input}
                             keyboardType="numeric"
                         />
-                        <ErrorText field="weight" />
 
                         <Text style={styles.label}>Body Type</Text>
                         <DropdownPicker
@@ -464,8 +507,8 @@ export default function OnboardingScreen({ navigation }: any) {
                             options={body_types}
                             value={physical.bodyType}
                             onChange={(val: string) => setPhysical({ ...physical, bodyType: val })}
+                            field="bodyType"
                         />
-                        <ErrorText field="bodyType" />
 
                         <Text style={styles.label}>Complexion</Text>
                         <DropdownPicker
@@ -473,8 +516,8 @@ export default function OnboardingScreen({ navigation }: any) {
                             options={complexions}
                             value={physical.complexion}
                             onChange={(val: string) => setPhysical({ ...physical, complexion: val })}
+                            field="complexion"
                         />
-                        <ErrorText field="complexion" />
 
                         <Text style={styles.label}>Blood Group</Text>
                         <DropdownPicker
@@ -482,8 +525,8 @@ export default function OnboardingScreen({ navigation }: any) {
                             options={blood_groups}
                             value={physical.bloodGroup}
                             onChange={(val: string) => setPhysical({ ...physical, bloodGroup: val })}
+                            field="bloodGroup"
                         />
-                        <ErrorText field="bloodGroup" />
                     </View>
                 );
 
@@ -491,7 +534,9 @@ export default function OnboardingScreen({ navigation }: any) {
                 return (
                     <View>
                         <Text style={styles.stepTitle}>Family Background</Text>
-
+                        <Text style={styles.subtitle}>
+                            Basic details about your family
+                        </Text>
                         <Text style={styles.label}>Father's Name</Text>
                         <TextInput
                             placeholder="Father's Name"
@@ -499,7 +544,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             onChangeText={(text) => setFamily({ ...family, fatherName: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="fatherName" />
 
                         <Text style={styles.label}>Mother's Name</Text>
                         <TextInput
@@ -508,7 +552,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             onChangeText={(text) => setFamily({ ...family, motherName: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="motherName" />
 
                         <Text style={styles.label}>Father's Occupation</Text>
                         <TextInput
@@ -540,7 +583,11 @@ export default function OnboardingScreen({ navigation }: any) {
                             label="familyType"
                             options={family_types}
                             value={family.familyType}
-                            onChange={(val: string) => setFamily({ ...family, familyType: val })}
+                            onChange={(val: string) => {
+                                setFamily({ ...family, familyType: val });
+                                clearError("familyType");
+                            }}
+                            field="familyType"
                         />
                         <ErrorText field="familyType" />
 
@@ -550,8 +597,8 @@ export default function OnboardingScreen({ navigation }: any) {
                             options={family_statuses}
                             value={family.familyStatus}
                             onChange={(val: string) => setFamily({ ...family, familyStatus: val })}
+                            field="familyStatus"
                         />
-                        <ErrorText field="familyStatus" />
 
                         <Text style={styles.label}>Family Values</Text>
                         <TextInput
@@ -567,13 +614,18 @@ export default function OnboardingScreen({ navigation }: any) {
                 return (
                     <View>
                         <Text style={styles.stepTitle}>Partner Preferences</Text>
-
-                        <Text style={styles.label}>Age Range (e.g., 25-32)</Text>    
+                        <Text style={styles.subtitle}>
+                            Specify your preferences for a potential partner
+                        </Text>
+                        <Text style={styles.label}>Age Range (e.g., 25-32)</Text>
                         <TextInput
                             placeholder="Age Range (e.g., 25-32)"
                             value={preferences.ageRange}
-                            onChangeText={(text) => setPreferences({ ...preferences, ageRange: text })}
-                            style={styles.input}
+                            onChangeText={(text) => {
+                                setPreferences({ ...preferences, ageRange: text });
+                                clearError("ageRange");
+                            }}
+                            style={[styles.input, getInputStyle("ageRange")]}
                         />
                         <ErrorText field="ageRange" />
 
@@ -584,7 +636,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             onChangeText={(text) => setPreferences({ ...preferences, heightRange: text })}
                             style={styles.input}
                         />
-                        <ErrorText field="heightRange" />
 
                         <Text style={styles.label}>Qualification Required</Text>
                         <TextInput
@@ -614,8 +665,11 @@ export default function OnboardingScreen({ navigation }: any) {
                         <TextInput
                             placeholder="Location Preference"
                             value={preferences.locationPref}
-                            onChangeText={(text) => setPreferences({ ...preferences, locationPref: text })}
-                            style={styles.input}
+                            onChangeText={(text) => {
+                                setPreferences({ ...preferences, locationPref: text });
+                                clearError("locationPref");
+                            }}
+                            style={[styles.input, getInputStyle("locationPref")]}
                         />
                         <ErrorText field="locationPref" />
 
@@ -648,27 +702,27 @@ export default function OnboardingScreen({ navigation }: any) {
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Personal:</Text>
-                            <Text>{personal.gender} | {personal.dob}</Text>
+                            <Text>{personal.gender.charAt(0).toUpperCase() + personal.gender.slice(1)} | {personal.dob}</Text>
                         </View>
                         <View style={styles.reviewSection}>
-                            <Text style={styles.reviewLabel}>Address:</Text>
-                            <Text>{personal.city}, {personal.state}, {personal.country}</Text>
+                            <Text style={styles.reviewLabel}>Religion:</Text>
+                            <Text>{personal.religion}</Text>
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Education:</Text>
-                            <Text>{education.qualification} in {education.field}</Text>
+                            <Text>{education.qualification} in {education.occupation}</Text>
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Physical:</Text>
-                            <Text>{physical.height} cm, {physical.weight} kg</Text>
+                            <Text>{physical.height} cm</Text>
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Family:</Text>
-                            <Text>{family.fatherName} & {family.motherName}</Text>
+                            <Text>{family.familyType}</Text>
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Preferences:</Text>
-                            <Text>Age: {preferences.ageRange} | Height: {preferences.heightRange}</Text>
+                            <Text>Age: {preferences.ageRange} | Location: {preferences.locationPref}</Text>
                         </View>
                     </ScrollView>
                 );
@@ -685,9 +739,11 @@ export default function OnboardingScreen({ navigation }: any) {
     };
 
     return (
+        <SafeAreaProvider style={styles.safe}>
         <KeyboardAvoidingView
+            behavior={Platform.OS === "ios" ? "padding" : undefined}
+            keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
             style={styles.container}
-            behavior={Platform.select({ ios: "padding", android: undefined })}
         >
             <View style={styles.progressBar}>
                 <View style={[styles.progressFill, { width: `${getStepPercentage()}%` }]} />
@@ -700,7 +756,7 @@ export default function OnboardingScreen({ navigation }: any) {
                 {renderStepContent()}
 
                 <View style={styles.buttonContainer}>
-                    {!["auth", "otp", "personal"].includes(currentStep) && (
+                    {!["personal"].includes(currentStep) && (
                         <TouchableOpacity style={styles.secondaryButton} onPress={handlePrevious}>
                             <Text style={styles.secondaryButtonText}>Previous</Text>
                         </TouchableOpacity>
@@ -726,12 +782,19 @@ export default function OnboardingScreen({ navigation }: any) {
                 </View>
             </ScrollView>
         </KeyboardAvoidingView>
+        </SafeAreaProvider>
     );
 }
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: "#fff" },
-    content: { flex: 1, padding: 20, paddingTop: 80, paddingBottom: 30, justifyContent: "space-between" },
+    safe: { flex: 1, backgroundColor: "#fff" },
+    container: { flex: 1 },
+    content: { 
+        flexGrow: 1,
+        paddingVertical: 30,
+        paddingHorizontal: 20, 
+        justifyContent: "space-between" 
+    },
     progressBar: {
         height: 4,
         backgroundColor: "#e0e0e0",
@@ -749,6 +812,7 @@ const styles = StyleSheet.create({
     subtitle: {
         fontSize: 16,
         color: "#666",
+        marginBottom: 20,
     },
     label: { fontSize: 13, color: "#444", marginBottom: 6 },
     input: {
@@ -921,4 +985,11 @@ const styles = StyleSheet.create({
     footer: { flexDirection: "row", justifyContent: "flex-start", marginTop: 24, marginBottom: 24 },
     footerText: { color: "#666" },
     linkText: { color: "#007AFF", fontWeight: "700" },
+    inputError: {
+        borderColor: "#d04545",
+        backgroundColor: "#fff5f5",
+    },
+    dropdownError: {
+        borderColor: "#d04545",
+    },
 });

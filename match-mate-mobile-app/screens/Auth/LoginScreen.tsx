@@ -157,9 +157,25 @@ export default function LoginScreen({ navigation }: any) {
         setLoading(true);
         setErrors({});
         try {
-            await fakeNetworkDelay();
+            const res = await fakeApi(
+                {
+                    success: true,
+                    data: {
+                        token: "fake-jwt-token",
+                        user: { provider },
+                    },
+                },
+                1000
+            );
+
+            setLoading(false);
+
+            if (!res.success) {
+                setErrors({ error: res.error });
+                return;
+            }
             // setIsAuthenticated(true);
-            dispatch(setCredentials({ token: "fake-jwt-token", user: { provider } }));
+            dispatch(setCredentials(res.data!));
         } catch (e) {
             setErrors({ "error": `Failed to sign in with ${provider}.`});
         } finally {
@@ -179,6 +195,7 @@ export default function LoginScreen({ navigation }: any) {
         <SafeAreaProvider style={styles.safe}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
                 style={styles.container}
             >
                 <ScrollView contentContainerStyle={styles.scrollContent}
@@ -476,8 +493,6 @@ function SocialButton({
         </TouchableOpacity>
     );
 }
-
-const fakeNetworkDelay = (ms = 800) => new Promise((res) => setTimeout(res, ms));
 
 const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: "#fff" },

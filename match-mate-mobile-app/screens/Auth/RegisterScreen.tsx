@@ -17,6 +17,7 @@ import { AuthService } from "../../services/authService";
 import { useAppDispatch } from "../../store";
 import { setCredentials } from "../../store/authSlice";
 import { country_codes } from "../../constants";
+import { fakeApi } from "../../services/fakeApi";
 
 type FormErrors = {
   email?: string;
@@ -73,9 +74,8 @@ export default function RegisterScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            await fakeNetworkDelay();
-            //dispatch(setCredentials({ token: "fake-jwt-token", user: { email, isProfileComplete: false } }));
-            navigation.navigate("CompleteProfile");
+            await fakeApi({ success: true }, 1000);
+            navigation.navigate("Onboarding");
         } catch (e) {
             setErrors({"error": "Registration failed. Please try again."});
         } finally {
@@ -97,7 +97,7 @@ export default function RegisterScreen({ navigation }: any) {
                 
         setLoading(true);
         try {
-            await fakeNetworkDelay(1000);
+            await fakeApi({ success: true }, 1000);
             // In real app, send OTP here and handle errors
             setOtpSent(true);
         } catch (e) {
@@ -119,9 +119,8 @@ export default function RegisterScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            await fakeNetworkDelay(800);
-            //dispatch(setCredentials({ token: "fake-jwt-token", user: { phone, isProfileComplete: false } }));
-            navigation.navigate("CompleteProfile");
+            await fakeApi({ success: true }, 1000);
+            navigation.navigate("Onboarding");
         } catch (e) {
             setErrors({"error": "Failed to verify OTP. Please try again."});
         } finally {
@@ -133,9 +132,9 @@ export default function RegisterScreen({ navigation }: any) {
         setLoading(true);
         setErrors({});
         try {
-            await fakeNetworkDelay();
+            await fakeApi({ success: true }, 1000);
             //dispatch(setCredentials({ token: "fake-jwt-token", user: { provider, isProfileComplete: false } }));
-            navigation.navigate("CompleteProfile");
+            navigation.navigate("Onboarding");
         } catch (e) {
             setErrors({"error": `Failed to sign up with ${provider}.`});
         } finally {
@@ -147,6 +146,7 @@ export default function RegisterScreen({ navigation }: any) {
         <SafeAreaProvider style={styles.safe}>
             <KeyboardAvoidingView
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
                 style={styles.container}
             >
                 <ScrollView contentContainerStyle={styles.scrollContent}
@@ -436,8 +436,6 @@ function SocialButton({
         </TouchableOpacity>
     );
 }
-
-const fakeNetworkDelay = (ms = 800) => new Promise((res) => setTimeout(res, ms));
 
 const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: "#fff" },
