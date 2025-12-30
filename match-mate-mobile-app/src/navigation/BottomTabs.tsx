@@ -6,6 +6,8 @@ import HomeScreen from '../screens/Home/HomeScreen';
 import MatchListScreen from '../screens/Matches/MatchListScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
 import ChatsListScreen from '../screens/Chats/ChatsListScreen';
+import MembershipScreen from '../screens/Membership/MembershipScreen';
+import AssistedMembershipScreen from '../screens/Membership/AssistedMembershipScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -47,6 +49,21 @@ export default function BottomTabs() {
             <Ionicons name="person-outline" size={size} color={color} />
           ),
         }}
+      />
+
+      <Tab.Screen
+        name="Membership"
+        component={MembershipScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="card-outline" size={size} color={color} />  
+          ),
+        }}
+      />
+
+      <Tab.Screen
+          name="Upgrade"
+          component={AssistedMembershipScreen}
       />
     </Tab.Navigator>
   );

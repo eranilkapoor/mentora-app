@@ -1,6 +1,6 @@
 import React, { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import * as Haptics from 'expo-haptics';
 import {
     View,
     Text,
@@ -11,6 +11,7 @@ import {
     Animated,
     PanResponder,
     ImageBackground,
+    ScrollView,
 } from "react-native";
 import HomeHeader from "../../components/HomeHeader";
 
@@ -45,9 +46,9 @@ const MOCK_MATCHES: Match[] = [
         age: 26,
         distanceKm: 5,
         bio: "Designer, plant parent",
-        avatarUrl: "https://images.unsplash.com/photo-1545996124-6a4f3f6b6d24?w=600&q=80",
+        avatarUrl: "https://ix-marketing.imgix.net/case-study_3.png?auto=format,compress&w=1446",
         photos: [
-            "https://images.unsplash.com/photo-1545996124-6a4f3f6b6d24?w=600&q=80",
+            "https://ix-marketing.imgix.net/case-study_3.png?auto=format,compress&w=1446",
             "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600&q=80",
         ],
     },
@@ -61,7 +62,7 @@ const MOCK_MATCHES: Match[] = [
         isOnline: true,
         photos: [
             "https://images.unsplash.com/photo-1524504388940-b1c1722653e1?w=600&q=80",
-            "https://images.unsplash.com/photo-1502233917128-1aa500764cbd?w=600&q=80",
+            "https://ix-marketing.imgix.net/case-study_3.png?auto=format,compress&w=1446",
         ],
     },
     {
@@ -70,9 +71,9 @@ const MOCK_MATCHES: Match[] = [
         age: 24,
         distanceKm: 12,
         bio: "Runner • Software dev",
-        avatarUrl: "https://images.unsplash.com/photo-1531123414780-f2b1f6a3bb6b?w=600&q=80",
+        avatarUrl: "https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=1446",
         photos: [
-            "https://images.unsplash.com/photo-1531123414780-f2b1f6a3bb6b?w=600&q=80",
+            "https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=1446",
             "https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?w=600&q=80",
         ],
     },
@@ -83,8 +84,6 @@ const CARD_WIDTH = width - 32;
 const CARD_HEIGHT = height * 0.65;
 
 export default function HomeScreen(): React.ReactElement {
-    const navigation = useNavigation();
-    const [matches, setMatches] = useState<Match[]>(MOCK_MATCHES);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showDetails, setShowDetails] = useState(false);
     const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
@@ -92,17 +91,21 @@ export default function HomeScreen(): React.ReactElement {
     const pan = new Animated.ValueXY();
 
     const panResponder = PanResponder.create({
-        onStartShouldSetPanResponder: () => true,
         onMoveShouldSetPanResponder: () => true,
-        onPanResponderMove: Animated.event([null, { dx: pan.x, dy: pan.y }]),
-        onPanResponderRelease: (e, { dx }) => {
-            const threshold = 100;
-            if (dx > threshold) {
+        onPanResponderMove: Animated.event(
+            [null, { dx: pan.x, dy: pan.y }],
+            { useNativeDriver: false }
+        ),
+        onPanResponderRelease: (_, gesture) => {
+            if (gesture.dx > 120) {
                 handleLike();
-            } else if (dx < -threshold) {
+            } else if (gesture.dx < -120) {
                 handleSkip();
             } else {
-                Animated.spring(pan, { toValue: { x: 0, y: 0 }, useNativeDriver: false }).start();
+                Animated.spring(pan, {
+                    toValue: { x: 0, y: 0 },
+                    useNativeDriver: false,
+                }).start();
             }
         },
     });
@@ -115,10 +118,8 @@ export default function HomeScreen(): React.ReactElement {
     };
 
     const handleLike = () => {
-        pan.x.setValue(0);
-        pan.y.setValue(0);
-        setCurrentIndex((prev) => prev + 1);
-        setCurrentPhotoIndex(0);
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+        nextCard();
     };
 
     const handleSuperLike = () => {
@@ -126,13 +127,31 @@ export default function HomeScreen(): React.ReactElement {
         handleLike();
     };
 
-    const handleChat = () => {
-        const current = matches[currentIndex];
-        // @ts-ignore
-        navigation.navigate("Chat", { matchId: current.id, name: current.name });
+    const rotate = pan.x.interpolate({
+        inputRange: [-200, 0, 200],
+        outputRange: ['-10deg', '0deg', '10deg'],
+    });
+
+    const likeOpacity = pan.x.interpolate({
+        inputRange: [50, 120],
+        outputRange: [0, 1],
+        extrapolate: 'clamp',
+    });
+
+    const nopeOpacity = pan.x.interpolate({
+        inputRange: [-120, -50],
+        outputRange: [1, 0],
+        extrapolate: 'clamp',
+    });
+
+    const nextCard = () => {
+        pan.x.setValue(0);
+        pan.y.setValue(0);
+        setCurrentIndex((prev) => prev + 1);
+        setCurrentPhotoIndex(0);
     };
 
-    if (currentIndex >= matches.length) {
+    if (currentIndex >= MOCK_MATCHES.length) {
         return (
             <SafeAreaProvider style={styles.container}>
                 <View style={styles.emptyContainer}>
@@ -149,8 +168,7 @@ export default function HomeScreen(): React.ReactElement {
         );
     }
 
-    const current = matches[currentIndex];
-    const currentPhoto = current.photos?.[currentPhotoIndex] || current.avatarUrl;
+    const current = MOCK_MATCHES[currentIndex];
     const totalPhotos = current.photos?.length || 1;
 
     return (
@@ -158,19 +176,19 @@ export default function HomeScreen(): React.ReactElement {
             <HomeHeader />
 
             <View style={styles.topNav}>
-                <TouchableOpacity onPress={() => {/* Filter logic */}}>
+                <TouchableOpacity onPress={() => {/* Filter logic */ }}>
                     <Image
                         source={{
-                            uri: "https://images.unsplash.com/photo-1512941691920-25bda36dc643?w=200&q=80",
+                            uri: "https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=1446",
                         }}
                         style={styles.navIcon}
                     />
                 </TouchableOpacity>
                 <Text style={styles.topNavTitle}>Discover</Text>
-                <TouchableOpacity onPress={() => {/* Notifications */}}>
+                <TouchableOpacity onPress={() => {/* Notifications */ }}>
                     <Image
                         source={{
-                            uri: "https://images.unsplash.com/photo-1512941691920-25bda36dc643?w=200&q=80",
+                            uri: "https://ix-marketing.imgix.net/case-study_2.png?auto=format,compress&w=1446",
                         }}
                         style={styles.navIcon}
                     />
@@ -180,53 +198,54 @@ export default function HomeScreen(): React.ReactElement {
             {!showDetails ? (
                 <>
                     <View style={styles.cardContainer}>
-                        <Animated.View
-                            style={[
-                                styles.card,
-                                {
-                                    transform: [{ translateX: pan.x }, { translateY: pan.y }],
-                                    opacity: pan.x.interpolate({
-                                        inputRange: [-200, 0, 200],
-                                        outputRange: [0.5, 1, 0.5],
-                                    }),
-                                },
-                            ]}
-                            {...panResponder.panHandlers}
-                        >
-                            <ImageBackground
-                                source={{ uri: currentPhoto }}
-                                style={styles.cardImage}
-                                imageStyle={{ borderRadius: 20 }}
-                            >
-                                <View style={styles.photoIndicators}>
-                                    {Array.from({ length: totalPhotos }).map((_, i) => (
-                                        <View
-                                            key={i}
-                                            style={[
-                                                styles.photoIndicator,
-                                                i === currentPhotoIndex && styles.photoIndicatorActive,
-                                            ]}
-                                        />
-                                    ))}
-                                </View>
+                        {MOCK_MATCHES
+                            .slice(currentIndex, currentIndex + 2)
+                            .reverse()
+                            .map((item, index) => {
+                                const isTop = index === 1;
+                                return (
+                                    <Animated.View
+                                        key={item.id}
+                                        style={[
+                                            styles.card,
+                                            !isTop && styles.cardBehind,
+                                            isTop && {
+                                                transform: [
+                                                    { translateX: pan.x },
+                                                    { translateY: pan.y },
+                                                    { rotate },
+                                                ],
+                                            },
+                                        ]}
+                                        {...(isTop ? panResponder.panHandlers : {})}
+                                    >
+                                        <ImageBackground
+                                            source={{ uri: item.photos?.[currentPhotoIndex] || item.avatarUrl }}
+                                            style={styles.cardImage}
+                                            imageStyle={{ borderRadius: 24 }}
+                                        >
+                                            {isTop && (
+                                                <>
+                                                    <Animated.Text style={[styles.likeLabel, { opacity: likeOpacity }]}>
+                                                        LIKE
+                                                    </Animated.Text>
+                                                    <Animated.Text style={[styles.nopeLabel, { opacity: nopeOpacity }]}>
+                                                        NOPE
+                                                    </Animated.Text>
+                                                </>
+                                            )}
 
-                                <View style={styles.cardInfo}>
-                                    <Text style={styles.cardName}>
-                                        {current.name}, <Text style={styles.cardAge}>{current.age}</Text>
-                                    </Text>
-                                    <Text style={styles.cardBio}>{current.bio}</Text>
-                                    <View style={styles.cardMeta}>
-                                        <Text style={styles.cardDistance}>📍 {current.distanceKm} km away</Text>
-                                        {current.isOnline && <Text style={styles.cardOnline}>🟢 Online</Text>}
-                                    </View>
-                                </View>
-
-                                <TouchableOpacity
-                                    style={styles.detailsTap}
-                                    onPress={() => setShowDetails(true)}
-                                />
-                            </ImageBackground>
-                        </Animated.View>
+                                            <View style={styles.cardInfo}>
+                                                <Text style={styles.cardName}>
+                                                    {item.name}, {item.age}
+                                                </Text>
+                                                <Text style={styles.cardBio}>{item.bio}</Text>
+                                                <Text style={styles.cardDistance}>📍 {item.distanceKm} km away</Text>
+                                            </View>
+                                        </ImageBackground>
+                                    </Animated.View>
+                                );
+                            })}
                     </View>
 
                     <View style={styles.photoNav}>
@@ -237,6 +256,12 @@ export default function HomeScreen(): React.ReactElement {
                             style={styles.photoNavButton}
                         >
                             <Text style={styles.photoNavText}>‹</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => setShowDetails(true)}
+                            style={styles.profileButton}
+                        >
+                            <Text style={styles.profileButtonText}>View Profile</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             onPress={() =>
@@ -251,22 +276,21 @@ export default function HomeScreen(): React.ReactElement {
                     </View>
 
                     <View style={styles.bottomNav}>
-                        <TouchableOpacity style={styles.navButton} onPress={handleSkip}>
-                            <Text style={styles.skipIcon}>✕</Text>
+                        <TouchableOpacity style={[styles.actionBtn, styles.skipBtn]} onPress={handleSkip}>
+                            <Text style={styles.actionIcon}>✕</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButton} onPress={handleSuperLike}>
-                            <Text style={styles.superLikeIcon}>⭐</Text>
+
+                        <TouchableOpacity style={[styles.actionBtn, styles.superLikeBtn]} onPress={handleSuperLike}>
+                            <Text style={styles.actionIcon}>⭐</Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButton} onPress={handleLike}>
-                            <Text style={styles.likeIcon}>❤️</Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity style={styles.navButton} onPress={handleChat}>
-                            <Text style={styles.chatIcon}>💬</Text>
+
+                        <TouchableOpacity style={[styles.actionBtn, styles.likeBtn]} onPress={handleLike}>
+                            <Text style={styles.actionIcon}>❤️</Text>
                         </TouchableOpacity>
                     </View>
                 </>
             ) : (
-                <View style={styles.detailsContainer}>
+                <ScrollView style={styles.detailsContainer}>
                     <TouchableOpacity
                         style={styles.backButton}
                         onPress={() => {
@@ -278,7 +302,7 @@ export default function HomeScreen(): React.ReactElement {
                     </TouchableOpacity>
 
                     <Image
-                        source={{ uri: currentPhoto }}
+                        source={{ uri: current.photos?.[currentPhotoIndex] || current.avatarUrl }}
                         style={styles.detailsImage}
                     />
 
@@ -299,6 +323,18 @@ export default function HomeScreen(): React.ReactElement {
                                     ]}
                                 />
                             ))}
+                        </View>
+
+                        <View style={styles.profileActionButtons}>
+                            <TouchableOpacity style={styles.profileActionBtn}>
+                                <Text style={styles.profileActionText}>💬 Chat</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.profileActionBtn}>
+                                <Text style={styles.profileActionText}>🔗 Share</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.profileActionBtn}>
+                                <Text style={styles.profileActionText}>🚫 Block</Text>
+                            </TouchableOpacity>
                         </View>
 
                         <View style={styles.detailsActions}>
@@ -322,7 +358,7 @@ export default function HomeScreen(): React.ReactElement {
                             </TouchableOpacity>
                         </View>
                     </View>
-                </View>
+                </ScrollView>
             )}
         </SafeAreaProvider>
     );
@@ -375,19 +411,12 @@ const styles = StyleSheet.create({
         fontWeight: "700",
         color: "#fff",
     },
-    cardAge: { fontWeight: "600" },
     cardBio: {
         fontSize: 14,
         color: "#fff",
         marginTop: 4,
     },
-    cardMeta: {
-        marginTop: 8,
-        gap: 8,
-    },
     cardDistance: { fontSize: 13, color: "#fff" },
-    cardOnline: { fontSize: 13, color: "#32d74b" },
-    detailsTap: { position: "absolute", width: "100%", height: "100%" },
     photoNav: {
         flexDirection: "row",
         justifyContent: "space-between",
@@ -396,13 +425,21 @@ const styles = StyleSheet.create({
         gap: 12,
     },
     photoNavButton: {
-        flex: 1,
+        flex: 0.2,
         padding: 12,
         backgroundColor: "#f2f2f6",
         borderRadius: 10,
         alignItems: "center",
     },
     photoNavText: { fontSize: 20, color: "#111" },
+    profileButton: {
+        flex: 0.6,
+        padding: 12,
+        backgroundColor: "#ff6b6b",
+        borderRadius: 10,
+        alignItems: "center",
+    },
+    profileButtonText: { fontSize: 14, fontWeight: "600", color: "#fff" },
     bottomNav: {
         flexDirection: "row",
         justifyContent: "center",
@@ -411,19 +448,6 @@ const styles = StyleSheet.create({
         paddingBottom: 24,
         gap: 16,
     },
-    navButton: {
-        width: 60,
-        height: 60,
-        borderRadius: 30,
-        backgroundColor: "#fff",
-        justifyContent: "center",
-        alignItems: "center",
-        elevation: 3,
-    },
-    skipIcon: { fontSize: 24 },
-    superLikeIcon: { fontSize: 24 },
-    likeIcon: { fontSize: 24 },
-    chatIcon: { fontSize: 24 },
     detailsContainer: { flex: 1 },
     backButton: {
         paddingHorizontal: 16,
@@ -436,18 +460,31 @@ const styles = StyleSheet.create({
         resizeMode: "cover",
     },
     detailsContent: {
-        flex: 1,
         paddingHorizontal: 16,
         paddingTop: 20,
+        paddingBottom: 24,
     },
     detailsName: { fontSize: 20, fontWeight: "700", color: "#111" },
     detailsBio: { fontSize: 14, color: "#666", marginTop: 8 },
     detailsDistance: { fontSize: 13, color: "#777", marginTop: 4 },
+    profileActionButtons: {
+        flexDirection: "row",
+        gap: 10,
+        marginTop: 20,
+        marginBottom: 20,
+    },
+    profileActionBtn: {
+        flex: 1,
+        paddingVertical: 12,
+        backgroundColor: "#f2f2f6",
+        borderRadius: 10,
+        alignItems: "center",
+    },
+    profileActionText: { fontSize: 14, fontWeight: "600", color: "#111" },
     detailsActions: {
         flexDirection: "row",
         gap: 12,
-        marginTop: "auto",
-        paddingBottom: 24,
+        marginTop: 10,
     },
     detailsButton: {
         flex: 1,
@@ -473,4 +510,58 @@ const styles = StyleSheet.create({
         borderRadius: 10,
     },
     reloadText: { fontSize: 16, fontWeight: "600", color: "#fff" },
+    cardBehind: {
+        position: 'absolute',
+        top: 8,
+        transform: [{ scale: 0.95 }],
+        opacity: 0.9,
+    },
+    likeLabel: {
+        position: 'absolute',
+        top: 40,
+        left: 24,
+        borderWidth: 3,
+        borderColor: '#4cd964',
+        color: '#4cd964',
+        fontSize: 32,
+        fontWeight: '800',
+        padding: 8,
+        borderRadius: 8,
+    },
+    nopeLabel: {
+        position: 'absolute',
+        top: 40,
+        right: 24,
+        borderWidth: 3,
+        borderColor: '#ff3b30',
+        color: '#ff3b30',
+        fontSize: 32,
+        fontWeight: '800',
+        padding: 8,
+        borderRadius: 8,
+    },
+    actionBtn: {
+        width: 68,
+        height: 68,
+        borderRadius: 34,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#fff',
+        elevation: 6,
+    },
+    skipBtn: {
+        borderWidth: 2,
+        borderColor: '#ff3b30',
+    },
+    likeBtn: {
+        borderWidth: 2,
+        borderColor: '#4cd964',
+    },
+    superLikeBtn: {
+        borderWidth: 2,
+        borderColor: '#0a84ff',
+    },
+    actionIcon: {
+        fontSize: 26,
+    },
 });

@@ -2977,3 +2977,664 @@ Register Steps :-
     - State
     - City
   - Gothra
+
+
+  # React Native Expo Matrimonial App - Complete Structure
+
+## 📁 Folder Structure
+
+```
+matrimonial-app/
+├── .expo/
+├── .husky/                          # Git hooks for pre-commit
+├── assets/
+│   ├── fonts/
+│   ├── images/
+│   ├── icons/
+│   └── animations/                  # Lottie files
+├── src/
+│   ├── app/                         # Expo Router (v3) - File-based routing
+│   │   ├── (auth)/                  # Auth routes group
+│   │   │   ├── _layout.tsx
+│   │   │   ├── login.tsx
+│   │   │   ├── register.tsx
+│   │   │   ├── forgot-password.tsx
+│   │   │   └── verify-otp.tsx
+│   │   ├── (onboarding)/            # Onboarding routes group
+│   │   │   ├── _layout.tsx
+│   │   │   ├── personal-info.tsx
+│   │   │   ├── family-details.tsx
+│   │   │   ├── education-career.tsx
+│   │   │   ├── preferences.tsx
+│   │   │   └── photos.tsx
+│   │   ├── (tabs)/                  # Main app tabs
+│   │   │   ├── _layout.tsx
+│   │   │   ├── index.tsx            # Home screen
+│   │   │   ├── matches.tsx
+│   │   │   ├── activity.tsx
+│   │   │   ├── chats.tsx
+│   │   │   └── membership.tsx
+│   │   ├── profile/
+│   │   │   ├── [id].tsx             # Dynamic profile view
+│   │   │   ├── edit.tsx
+│   │   │   └── settings.tsx
+│   │   ├── chat/
+│   │   │   └── [id].tsx             # Individual chat screen
+│   │   ├── notifications.tsx
+│   │   ├── _layout.tsx              # Root layout
+│   │   └── +not-found.tsx
+│   │
+│   ├── components/
+│   │   ├── ui/                      # Reusable UI components
+│   │   │   ├── Button.tsx
+│   │   │   ├── Input.tsx
+│   │   │   ├── Card.tsx
+│   │   │   ├── Avatar.tsx
+│   │   │   ├── Badge.tsx
+│   │   │   ├── Modal.tsx
+│   │   │   ├── BottomSheet.tsx
+│   │   │   ├── Skeleton.tsx
+│   │   │   └── index.ts
+│   │   ├── auth/
+│   │   │   ├── SocialLoginButtons.tsx
+│   │   │   ├── OTPInput.tsx
+│   │   │   └── PasswordStrength.tsx
+│   │   ├── profile/
+│   │   │   ├── ProfileCard.tsx
+│   │   │   ├── ProfileHeader.tsx
+│   │   │   ├── ProfileGallery.tsx
+│   │   │   ├── ProfileDetails.tsx
+│   │   │   └── QuickActions.tsx
+│   │   ├── matches/
+│   │   │   ├── MatchCard.tsx
+│   │   │   ├── FilterSheet.tsx
+│   │   │   ├── SwipeCard.tsx
+│   │   │   └── MatchList.tsx
+│   │   ├── chat/
+│   │   │   ├── ChatBubble.tsx
+│   │   │   ├── ChatInput.tsx
+│   │   │   ├── ChatHeader.tsx
+│   │   │   └── ChatList.tsx
+│   │   ├── activity/
+│   │   │   ├── ActivityCard.tsx
+│   │   │   ├── ActivityTabs.tsx
+│   │   │   └── InterestItem.tsx
+│   │   └── membership/
+│   │       ├── PlanCard.tsx
+│   │       ├── FeatureComparison.tsx
+│   │       └── PaymentSheet.tsx
+│   │
+│   ├── hooks/
+│   │   ├── useAuth.ts
+│   │   ├── useUser.ts
+│   │   ├── useMatches.ts
+│   │   ├── useChat.ts
+│   │   ├── useNotifications.ts
+│   │   ├── useDebounce.ts
+│   │   ├── useInfiniteScroll.ts
+│   │   └── usePushNotifications.ts
+│   │
+│   ├── services/
+│   │   ├── api/
+│   │   │   ├── client.ts            # Axios/Fetch instance
+│   │   │   ├── auth.api.ts
+│   │   │   ├── user.api.ts
+│   │   │   ├── matches.api.ts
+│   │   │   ├── chat.api.ts
+│   │   │   ├── payment.api.ts
+│   │   │   └── notifications.api.ts
+│   │   ├── socket/
+│   │   │   └── socket.service.ts    # Socket.io for real-time chat
+│   │   ├── storage/
+│   │   │   └── storage.service.ts   # AsyncStorage wrapper
+│   │   ├── analytics/
+│   │   │   └── analytics.service.ts
+│   │   └── push/
+│   │       └── push.service.ts
+│   │
+│   ├── store/                       # Redux Toolkit
+│   │   ├── index.ts                 # Store configuration
+│   │   ├── hooks.ts                 # Typed hooks (useAppDispatch, useAppSelector)
+│   │   ├── slices/
+│   │   │   ├── authSlice.ts
+│   │   │   ├── userSlice.ts
+│   │   │   ├── matchesSlice.ts
+│   │   │   ├── chatSlice.ts
+│   │   │   ├── notificationSlice.ts
+│   │   │   └── appSlice.ts
+│   │   └── services/                # RTK Query APIs
+│   │       ├── authApi.ts
+│   │       ├── userApi.ts
+│   │       ├── matchesApi.ts
+│   │       ├── chatApi.ts
+│   │       └── paymentsApi.ts
+│   │
+│   ├── utils/
+│   │   ├── validation.ts            # Form validation schemas (Zod)
+│   │   ├── formatters.ts
+│   │   ├── constants.ts
+│   │   ├── helpers.ts
+│   │   ├── permissions.ts
+│   │   └── errorHandler.ts
+│   │
+│   ├── styles/
+│   │   ├── theme.ts                 # Design tokens & theme
+│   │   ├── colors.ts
+│   │   ├── typography.ts
+│   │   ├── spacing.ts
+│   │   ├── shadows.ts
+│   │   └── globalStyles.ts          # Common styles
+│   │
+│   ├── types/
+│   │   ├── auth.types.ts
+│   │   ├── user.types.ts
+│   │   ├── match.types.ts
+│   │   ├── chat.types.ts
+│   │   ├── navigation.types.ts
+│   │   └── api.types.ts
+│   │
+│   └── config/
+│       ├── env.ts
+│       ├── firebase.ts
+│       └── app.config.ts
+│
+├── .env
+├── .env.example
+├── .eslintrc.js
+├── .prettierrc
+├── .gitignore
+├── app.json
+├── babel.config.js
+├── metro.config.js
+├── package.json
+├── tsconfig.json
+└── README.md
+```
+
+## 📦 Recommended Tech Stack
+
+### Core
+- **React Native** (0.73+)
+- **Expo SDK** (50+)
+- **TypeScript** (5.x)
+- **Expo Router** (v3) - File-based routing
+
+### State Management
+- **Redux Toolkit** - Modern Redux with less boilerplate
+- **RTK Query** - Powerful data fetching & caching
+
+### API & Data Fetching
+- **Axios** - HTTP client
+- **TanStack Query (React Query)** - Server state management
+- **Socket.io-client** - Real-time chat
+
+### Form Management
+- **React Hook Form** - Form handling
+- **Zod** - Schema validation
+
+### UI Components & Styling
+- **React Native StyleSheet** - Native styling
+- **React Native Paper** - Material Design components (Optional)
+- **React Native Elements** - UI component library (Optional)
+- **React Native Reanimated** - Animations
+- **React Native Gesture Handler** - Gestures
+- **React Native Bottom Sheet** - Bottom sheets
+- **React Native Fast Image** - Image optimization
+
+### Authentication & Backend
+- **Firebase Auth** - Social logins, OTP
+- **Supabase** - Backend (Alternative to Firebase)
+- **JWT** - Token management
+
+### Navigation
+- **Expo Router** - File-based routing (built on React Navigation)
+
+### Payments
+- **Stripe** or **Razorpay**
+- **react-native-iap** - In-app purchases
+
+### Push Notifications
+- **Expo Notifications**
+- **Firebase Cloud Messaging**
+
+### Additional Tools
+- **React Native MMKV** - Fast key-value storage
+- **Date-fns** - Date manipulation
+- **React Native Image Crop Picker** - Image selection
+- **React Native SVG** - SVG support
+- **Sentry** - Error tracking
+- **Mixpanel/Amplitude** - Analytics
+
+## 📝 Package.json Dependencies
+
+```json
+{
+  "dependencies": {
+    "expo": "~50.0.0",
+    "expo-router": "~3.4.0",
+    "react": "18.2.0",
+    "react-native": "0.73.0",
+    "react-native-reanimated": "~3.6.0",
+    "react-native-gesture-handler": "~2.14.0",
+    "react-native-safe-area-context": "4.8.2",
+    "react-native-screens": "~3.29.0",
+    
+    "@reduxjs/toolkit": "^2.0.1",
+    "react-redux": "^9.0.4",
+    "redux-persist": "^6.0.0",
+    "@react-native-async-storage/async-storage": "1.21.0",
+    
+    "axios": "^1.6.5",
+    "socket.io-client": "^4.6.1",
+    
+    "react-hook-form": "^7.49.3",
+    "zod": "^3.22.4",
+    "@hookform/resolvers": "^3.3.4",
+    
+    "react-native-paper": "^5.12.1",
+    "react-native-vector-icons": "^10.0.3",
+    
+    "firebase": "^10.7.2",
+    "@react-native-firebase/app": "^19.0.1",
+    "@react-native-firebase/auth": "^19.0.1",
+    "@react-native-firebase/messaging": "^19.0.1",
+    
+    "expo-notifications": "~0.27.0",
+    "expo-image-picker": "~14.7.0",
+    "expo-secure-store": "~12.8.0",
+    "expo-auth-session": "~5.4.0",
+    
+    "react-native-mmkv": "^2.11.0",
+    "react-native-fast-image": "^8.6.3",
+    "react-native-svg": "14.1.0",
+    "@gorhom/bottom-sheet": "^4.6.0",
+    
+    "date-fns": "^3.0.6",
+    "@sentry/react-native": "^5.15.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.23.7",
+    "@types/react": "~18.2.45",
+    "typescript": "^5.3.3",
+    "prettier": "^3.1.1",
+    "eslint": "^8.56.0",
+    "@typescript-eslint/eslint-plugin": "^6.18.1",
+    "@typescript-eslint/parser": "^6.18.1",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-react": "^7.33.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0"
+  }
+}
+```
+
+## 🚀 Key Features Implementation
+
+### 1. Authentication Flow
+- Email/Password with Firebase Auth
+- Phone OTP verification
+- Social logins (Google, Facebook, Apple)
+- JWT token management
+- Secure storage with Expo Secure Store
+
+### 2. Onboarding
+- Multi-step form with React Hook Form
+- Progress indicator
+- Image upload with compression
+- Validation with Zod schemas
+
+### 3. Matches System
+- Swipe cards (Tinder-style)
+- Filter and sort options
+- Infinite scroll with RTK Query
+- Caching and optimistic updates with Redux
+
+### 4. Real-time Chat
+- Socket.io for real-time messaging
+- Message read receipts
+- Typing indicators
+- Image/media sharing
+
+### 5. Activity Tracking
+- Interest sent/received
+- Profile views
+- Online status
+- Match notifications
+
+### 6. Membership & Payments
+- Plan comparison
+- Stripe/Razorpay integration
+- In-app purchases for mobile
+- Subscription management
+
+## 🎨 Best Practices Implemented
+
+1. **Type Safety**: Full TypeScript coverage
+2. **Code Splitting**: Lazy loading with Expo Router
+3. **Performance**: Memoization, FlatList optimization
+4. **Error Handling**: Global error boundaries
+5. **Security**: Secure token storage, API key protection
+6. **Testing**: Jest + React Native Testing Library setup ready
+7. **CI/CD**: EAS Build configuration
+8. **Accessibility**: Screen reader support, proper labeling
+9. **Offline Support**: Redux Persist for state persistence
+10. **Analytics**: Event tracking integrated
+
+## 📱 File-based Routing Example (Expo Router)
+
+```typescript
+// app/_layout.tsx
+import { Stack } from 'expo-router';
+
+export default function Layout() {
+  return <Stack screenOptions={{ headerShown: false }} />;
+}
+
+// app/(tabs)/_layout.tsx
+import { Tabs } from 'expo-router';
+
+export default function TabLayout() {
+  return (
+    <Tabs>
+      <Tabs.Screen name="index" options={{ title: 'Home' }} />
+      <Tabs.Screen name="matches" options={{ title: 'Matches' }} />
+      {/* ... */}
+    </Tabs>
+  );
+}
+```
+
+## 🔧 Configuration Files
+
+### app.json
+```json
+{
+  "expo": {
+    "name": "MatrimonialApp",
+    "slug": "matrimonial-app",
+    "scheme": "matrimonialapp",
+    "plugins": [
+      "expo-router",
+      "expo-secure-store",
+      "@react-native-firebase/app"
+    ]
+  }
+}
+```
+
+## 🏗️ Redux Toolkit Setup Examples
+
+### store/index.ts
+```typescript
+import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import {
+  persistStore,
+  persistReducer,
+  FLUSH,
+  REHYDRATE,
+  PAUSE,
+  PERSIST,
+  PURGE,
+  REGISTER,
+} from 'redux-persist';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import authReducer from './slices/authSlice';
+import userReducer from './slices/userSlice';
+import matchesReducer from './slices/matchesSlice';
+import { authApi } from './services/authApi';
+import { matchesApi } from './services/matchesApi';
+
+const persistConfig = {
+  key: 'root',
+  storage: AsyncStorage,
+  whitelist: ['auth', 'user'], // Only persist these reducers
+};
+
+const persistedAuthReducer = persistReducer(persistConfig, authReducer);
+
+export const store = configureStore({
+  reducer: {
+    auth: persistedAuthReducer,
+    user: userReducer,
+    matches: matchesReducer,
+    [authApi.reducerPath]: authApi.reducer,
+    [matchesApi.reducerPath]: matchesApi.reducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }).concat(authApi.middleware, matchesApi.middleware),
+});
+
+setupListeners(store.dispatch);
+
+export const persistor = persistStore(store);
+export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+```
+
+### store/hooks.ts
+```typescript
+import { useDispatch, useSelector, TypedUseSelectorHook } from 'react-redux';
+import type { RootState, AppDispatch } from './index';
+
+export const useAppDispatch = () => useDispatch<AppDispatch>();
+export const useAppSelector: TypedUseSelectorHook<RootState> = useSelector;
+```
+
+### store/slices/authSlice.ts
+```typescript
+import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+
+interface AuthState {
+  token: string | null;
+  refreshToken: string | null;
+  isAuthenticated: boolean;
+  isLoading: boolean;
+  user: {
+    id: string;
+    email: string;
+    phone?: string;
+  } | null;
+}
+
+const initialState: AuthState = {
+  token: null,
+  refreshToken: null,
+  isAuthenticated: false,
+  isLoading: false,
+  user: null,
+};
+
+const authSlice = createSlice({
+  name: 'auth',
+  initialState,
+  reducers: {
+    setCredentials: (
+      state,
+      action: PayloadAction<{ token: string; refreshToken: string; user: any }>
+    ) => {
+      state.token = action.payload.token;
+      state.refreshToken = action.payload.refreshToken;
+      state.user = action.payload.user;
+      state.isAuthenticated = true;
+    },
+    logout: (state) => {
+      state.token = null;
+      state.refreshToken = null;
+      state.user = null;
+      state.isAuthenticated = false;
+    },
+    setLoading: (state, action: PayloadAction<boolean>) => {
+      state.isLoading = action.payload;
+    },
+  },
+});
+
+export const { setCredentials, logout, setLoading } = authSlice.actions;
+export default authSlice.reducer;
+```
+
+### store/services/authApi.ts (RTK Query)
+```typescript
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { RootState } from '../index';
+
+export const authApi = createApi({
+  reducerPath: 'authApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.EXPO_PUBLIC_API_URL,
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as RootState).auth.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  endpoints: (builder) => ({
+    login: builder.mutation({
+      query: (credentials) => ({
+        url: '/auth/login',
+        method: 'POST',
+        body: credentials,
+      }),
+    }),
+    register: builder.mutation({
+      query: (userData) => ({
+        url: '/auth/register',
+        method: 'POST',
+        body: userData,
+      }),
+    }),
+    verifyOTP: builder.mutation({
+      query: (otpData) => ({
+        url: '/auth/verify-otp',
+        method: 'POST',
+        body: otpData,
+      }),
+    }),
+    forgotPassword: builder.mutation({
+      query: (email) => ({
+        url: '/auth/forgot-password',
+        method: 'POST',
+        body: { email },
+      }),
+    }),
+  }),
+});
+
+export const {
+  useLoginMutation,
+  useRegisterMutation,
+  useVerifyOTPMutation,
+  useForgotPasswordMutation,
+} = authApi;
+```
+
+### store/services/matchesApi.ts
+```typescript
+import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
+import { RootState } from '../index';
+
+export const matchesApi = createApi({
+  reducerPath: 'matchesApi',
+  baseQuery: fetchBaseQuery({
+    baseUrl: process.env.EXPO_PUBLIC_API_URL,
+    prepareHeaders: (headers, { getState }) => {
+      const token = (getState() as RootState).auth.token;
+      if (token) {
+        headers.set('authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
+  tagTypes: ['Matches', 'Match'],
+  endpoints: (builder) => ({
+    getMatches: builder.query({
+      query: ({ page = 1, limit = 20, filters }) => ({
+        url: '/matches',
+        params: { page, limit, ...filters },
+      }),
+      providesTags: ['Matches'],
+    }),
+    getMatchById: builder.query({
+      query: (id) => `/matches/${id}`,
+      providesTags: (result, error, id) => [{ type: 'Match', id }],
+    }),
+    sendInterest: builder.mutation({
+      query: (matchId) => ({
+        url: `/matches/${matchId}/interest`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Matches'],
+    }),
+    acceptInterest: builder.mutation({
+      query: (matchId) => ({
+        url: `/matches/${matchId}/accept`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['Matches'],
+    }),
+  }),
+});
+
+export const {
+  useGetMatchesQuery,
+  useGetMatchByIdQuery,
+  useSendInterestMutation,
+  useAcceptInterestMutation,
+} = matchesApi;
+```
+
+### app/_layout.tsx (Root Layout with Redux)
+```typescript
+import { useEffect } from 'react';
+import { Stack } from 'expo-router';
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import { store, persistor } from '../store';
+import { ActivityIndicator } from 'react-native';
+
+export default function RootLayout() {
+  return (
+    <Provider store={store}>
+      <PersistGate loading={<ActivityIndicator />} persistor={persistor}>
+        <Stack screenOptions={{ headerShown: false }} />
+      </PersistGate>
+    </Provider>
+  );
+}
+```
+
+### Usage Example in Components
+```typescript
+// app/(auth)/login.tsx
+import { useAppDispatch } from '../../store/hooks';
+import { useLoginMutation } from '../../store/services/authApi';
+import { setCredentials } from '../../store/slices/authSlice';
+
+export default function LoginScreen() {
+  const dispatch = useAppDispatch();
+  const [login, { isLoading, error }] = useLoginMutation();
+
+  const handleLogin = async (email: string, password: string) => {
+    try {
+      const result = await login({ email, password }).unwrap();
+      dispatch(setCredentials(result));
+      router.replace('/(tabs)');
+    } catch (err) {
+      console.error('Login failed:', err);
+    }
+  };
+
+  return (
+    // Your login UI
+  );
+}
+```

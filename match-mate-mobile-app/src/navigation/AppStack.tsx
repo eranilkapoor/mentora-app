@@ -12,6 +12,7 @@ import PrivacyPolicyScreen from '../screens/Settings/PrivacyPolicyScreen';
 import HelpSupportScreen from '../screens/Settings/HelpSupportScreen';
 import NotificationSettingsScreen from '../screens/Settings/NotificationSettingsScreen';
 import EditProfileScreen from '../screens/Profile/EditProfileScreen';
+import OnlineMatchesScreen from '../screens/Matches/OnlineMatchesScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -81,6 +82,12 @@ export default function AppStack() {
         component={PrivacyPolicyScreen}
         options={{ title: "Privacy Policy" }} 
       />
+
+      <Stack.Screen
+        name="OnlineMatches"
+        component={OnlineMatchesScreen}
+      />
+
     </Stack.Navigator>
   );
 }
