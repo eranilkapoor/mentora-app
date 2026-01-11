@@ -3638,3 +3638,2230 @@ export default function LoginScreen() {
   );
 }
 ```
+
+
+# Complete API Security Guide for Matrimonial App
+
+## 🔐 Overview of API Security Layers
+
+```
+┌─────────────────────────────────────────────────────────┐
+│  1. Request Headers (Authentication, Correlation ID)    │
+├─────────────────────────────────────────────────────────┤
+│  2. Rate Limiting (Prevent abuse)                       │
+├─────────────────────────────────────────────────────────┤
+│  3. Input Validation (Sanitization, Schema validation)  │
+├─────────────────────────────────────────────────────────┤
+│  4. Authorization (Permission checks)                   │
+├─────────────────────────────────────────────────────────┤
+│  5. Business Logic (Your app code)                      │
+├─────────────────────────────────────────────────────────┤
+│  6. Response Filtering (Data sanitization)              │
+├─────────────────────────────────────────────────────────┤
+│  7. Logging & Monitoring (Track everything)             │
+└─────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 1️⃣ Request Headers (Security Headers)
+
+### Required Headers for Every API Request
+
+```typescript
+// Common security headers
+{
+  // Authentication
+  "Authorization": "Bearer eyJhbGciOiJIUzI1NiIs...",
+  
+  // Tracking & Debugging
+  "X-Correlation-ID": "550e8400-e29b-41d4-a716-446655440000",
+  "X-Request-ID": "123e4567-e89b-12d3-a456-426614174000",
+  
+  // Client Information
+  "X-Client-Version": "1.2.3",
+  "X-Platform": "ios" | "android" | "web",
+  "X-Device-ID": "device-unique-identifier",
+  
+  // Security
+  "X-API-Key": "your-api-key" (for server-to-server),
+  "Content-Type": "application/json",
+  "Accept": "application/json",
+  
+  // Optional but recommended
+  "User-Agent": "MatchMate/1.2.3 (iOS 16.0; iPhone14,2)",
+  "Accept-Language": "en-US",
+  "X-Timezone": "Asia/Kolkata"
+}
+```
+
+### What Each Header Does
+
+| Header | Purpose | Example | Required? |
+|--------|---------|---------|-----------|
+| **Authorization** | User authentication | `Bearer JWT_TOKEN` | ✅ Yes (except public APIs) |
+| **X-Correlation-ID** | Track request across services | UUID | ✅ Yes |
+| **X-Request-ID** | Unique per request | UUID | ✅ Yes |
+| **X-Client-Version** | Client version for compatibility | `1.2.3` | ✅ Yes |
+| **X-Platform** | Device platform | `ios`, `android`, `web` | ✅ Yes |
+| **X-Device-ID** | Unique device identifier | UUID | ✅ Yes |
+| **X-API-Key** | Server-to-server auth | Secret key | ⚠️ Only for backend |
+| **User-Agent** | Client information | Browser/app info | ⚠️ Recommended |
+| **X-Timezone** | User timezone | `Asia/Kolkata` | ⚠️ Optional |
+
+---
+
+## 2️⃣ Correlation ID (Request Tracing)
+
+### What is Correlation ID?
+
+**Correlation ID** = A unique identifier that follows a request through the entire system (frontend → backend → database → external services)
+
+### Benefits
+
+✅ **Track requests** across multiple services  
+✅ **Debug issues** by following the request flow  
+✅ **Monitor performance** for specific requests  
+✅ **Link logs** from different services  
+
+### Implementation
+
+```typescript
+// src/services/api/client.ts
+
+import axios, { AxiosInstance } from 'axios';
+import { v4 as uuidv4 } from 'uuid';
+import * as SecureStore from 'expo-secure-store';
+
+class ApiClient {
+  private client: AxiosInstance;
+  private deviceId: string | null = null;
+
+  constructor() {
+    this.client = axios.create({
+      baseURL: process.env.EXPO_PUBLIC_API_URL,
+      timeout: 30000,
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+      },
+    });
+
+    this.setupInterceptors();
+    this.initializeDeviceId();
+  }
+
+  private async initializeDeviceId() {
+    try {
+      let deviceId = await SecureStore.getItemAsync('deviceId');
+      if (!deviceId) {
+        deviceId = uuidv4();
+        await SecureStore.setItemAsync('deviceId', deviceId);
+      }
+      this.deviceId = deviceId;
+    } catch (error) {
+      console.error('Failed to initialize device ID:', error);
+      this.deviceId = uuidv4(); // Fallback to in-memory
+    }
+  }
+
+  private setupInterceptors() {
+    // ==========================================
+    // REQUEST INTERCEPTOR
+    // ==========================================
+    this.client.interceptors.request.use(
+      async (config) => {
+        // Generate Correlation ID (one per request chain)
+        const correlationId = uuidv4();
+        
+        // Generate Request ID (unique for each request)
+        const requestId = uuidv4();
+
+        // Get auth token
+        const token = await this.getAuthToken();
+
+        // Add all security headers
+        config.headers['X-Correlation-ID'] = correlationId;
+        config.headers['X-Request-ID'] = requestId;
+        config.headers['X-Client-Version'] = this.getAppVersion();
+        config.headers['X-Platform'] = this.getPlatform();
+        config.headers['X-Device-ID'] = this.deviceId || 'unknown';
+        config.headers['X-Timezone'] = this.getTimezone();
+
+        if (token) {
+          config.headers['Authorization'] = `Bearer ${token}`;
+        }
+
+        // Log request (for debugging)
+        this.logRequest(correlationId, requestId, config);
+
+        return config;
+      },
+      (error) => {
+        return Promise.reject(error);
+      }
+    );
+
+    // ==========================================
+    // RESPONSE INTERCEPTOR
+    // ==========================================
+    this.client.interceptors.response.use(
+      (response) => {
+        // Extract correlation ID from response
+        const correlationId = response.config.headers['X-Correlation-ID'];
+        
+        // Log response
+        this.logResponse(correlationId, response);
+
+        return response;
+      },
+      async (error) => {
+        const correlationId = error.config?.headers?.['X-Correlation-ID'];
+        
+        // Log error with correlation ID
+        this.logError(correlationId, error);
+
+        // Handle specific errors
+        if (error.response?.status === 401) {
+          // Token expired - try refresh
+          return this.handleUnauthorized(error);
+        }
+
+        if (error.response?.status === 429) {
+          // Rate limit exceeded
+          throw new RateLimitError(
+            'Too many requests. Please try again later.',
+            error.response.headers['X-RateLimit-Reset']
+          );
+        }
+
+        return Promise.reject(error);
+      }
+    );
+  }
+
+  // ==========================================
+  // HELPER METHODS
+  // ==========================================
+
+  private async getAuthToken(): Promise<string | null> {
+    try {
+      return await SecureStore.getItemAsync('authToken');
+    } catch {
+      return null;
+    }
+  }
+
+  private getAppVersion(): string {
+    return '1.2.3'; // Get from app config or package.json
+  }
+
+  private getPlatform(): string {
+    return Platform.OS; // 'ios', 'android', 'web'
+  }
+
+  private getTimezone(): string {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone;
+  }
+
+  private logRequest(
+    correlationId: string,
+    requestId: string,
+    config: any
+  ) {
+    console.log('[API Request]', {
+      correlationId,
+      requestId,
+      method: config.method?.toUpperCase(),
+      url: config.url,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private logResponse(correlationId: string, response: any) {
+    console.log('[API Response]', {
+      correlationId,
+      status: response.status,
+      duration: this.calculateDuration(response),
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private logError(correlationId: string, error: any) {
+    console.error('[API Error]', {
+      correlationId,
+      message: error.message,
+      status: error.response?.status,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  private calculateDuration(response: any): number {
+    // Calculate request duration if available
+    return 0; // Implement timing logic
+  }
+
+  private async handleUnauthorized(error: any) {
+    // Implement token refresh logic
+    // If refresh fails, redirect to login
+    throw error;
+  }
+
+  // ==========================================
+  // PUBLIC API METHODS
+  // ==========================================
+
+  public getInstance(): AxiosInstance {
+    return this.client;
+  }
+}
+
+export const apiClient = new ApiClient().getInstance();
+
+// Custom error classes
+export class RateLimitError extends Error {
+  constructor(message: string, public resetAt?: string) {
+    super(message);
+    this.name = 'RateLimitError';
+  }
+}
+```
+
+---
+
+## 3️⃣ Rate Limiting
+
+### What is Rate Limiting?
+
+**Rate Limiting** = Restrict the number of API requests a client can make in a time window
+
+### Why Rate Limiting?
+
+✅ **Prevent abuse** (spamming, DDoS attacks)  
+✅ **Protect resources** (database, CPU)  
+✅ **Fair usage** across all users  
+✅ **Cost control** (API costs, infrastructure)  
+
+### Common Rate Limit Strategies
+
+| Strategy | Description | Example |
+|----------|-------------|---------|
+| **Fixed Window** | X requests per time window | 100 requests/hour |
+| **Sliding Window** | Rolling time window | 100 requests in last 60 minutes |
+| **Token Bucket** | Tokens refill over time | 10 tokens, refill 1/second |
+| **Leaky Bucket** | Process at constant rate | Process 10 req/second |
+
+### Rate Limit Headers (Backend sends these)
+
+```typescript
+{
+  "X-RateLimit-Limit": "100",        // Max requests allowed
+  "X-RateLimit-Remaining": "73",     // Requests left
+  "X-RateLimit-Reset": "1640000000", // Unix timestamp when limit resets
+  "Retry-After": "3600"              // Seconds until retry (if rate limited)
+}
+```
+
+### Recommended Rate Limits for Matrimonial App
+
+```typescript
+// Rate limits per endpoint type
+const RATE_LIMITS = {
+  // Authentication endpoints
+  LOGIN: {
+    limit: 5,
+    window: '15m',
+    message: 'Too many login attempts. Try again in 15 minutes.',
+  },
+  
+  REGISTER: {
+    limit: 3,
+    window: '1h',
+    message: 'Too many registration attempts.',
+  },
+  
+  FORGOT_PASSWORD: {
+    limit: 3,
+    window: '1h',
+    message: 'Too many password reset requests.',
+  },
+  
+  OTP_SEND: {
+    limit: 5,
+    window: '1h',
+    message: 'Too many OTP requests.',
+  },
+  
+  // Profile endpoints
+  PROFILE_UPDATE: {
+    limit: 10,
+    window: '1h',
+    message: 'Profile update limit reached.',
+  },
+  
+  AVATAR_UPLOAD: {
+    limit: 5,
+    window: '1h',
+    message: 'Too many avatar uploads.',
+  },
+  
+  // Match endpoints
+  SEND_INTEREST: {
+    limit: 50,
+    window: '1d',
+    message: 'Daily interest limit reached. Upgrade for more.',
+  },
+  
+  VIEW_PROFILE: {
+    limit: 100,
+    window: '1d',
+    message: 'Daily profile view limit reached.',
+  },
+  
+  SEARCH_MATCHES: {
+    limit: 30,
+    window: '1h',
+    message: 'Too many search requests.',
+  },
+  
+  // Chat endpoints
+  SEND_MESSAGE: {
+    limit: 100,
+    window: '1h',
+    message: 'Message rate limit exceeded.',
+  },
+  
+  // Payment endpoints
+  PAYMENT_INITIATE: {
+    limit: 5,
+    window: '1h',
+    message: 'Too many payment attempts.',
+  },
+  
+  // General API
+  GENERAL: {
+    limit: 1000,
+    window: '1h',
+    message: 'API rate limit exceeded.',
+  },
+};
+```
+
+### Frontend Rate Limit Handling
+
+```typescript
+// src/services/api/rateLimiter.ts
+
+class RateLimitHandler {
+  private rateLimitInfo: Map<string, RateLimitData> = new Map();
+
+  handleRateLimitResponse(response: AxiosResponse) {
+    const endpoint = this.getEndpointKey(response.config.url || '');
+    
+    const rateLimitData: RateLimitData = {
+      limit: parseInt(response.headers['x-ratelimit-limit'] || '0'),
+      remaining: parseInt(response.headers['x-ratelimit-remaining'] || '0'),
+      reset: parseInt(response.headers['x-ratelimit-reset'] || '0'),
+    };
+
+    this.rateLimitInfo.set(endpoint, rateLimitData);
+
+    // Warn user if approaching limit
+    if (rateLimitData.remaining < rateLimitData.limit * 0.2) {
+      this.showRateLimitWarning(endpoint, rateLimitData);
+    }
+  }
+
+  handleRateLimitError(error: any) {
+    const retryAfter = error.response?.headers['retry-after'];
+    const resetAt = error.response?.headers['x-ratelimit-reset'];
+
+    // Show user-friendly message
+    const waitTime = this.formatWaitTime(retryAfter || resetAt);
+    
+    Alert.alert(
+      'Rate Limit Exceeded',
+      `You've made too many requests. Please try again in ${waitTime}.`,
+      [{ text: 'OK' }]
+    );
+
+    // Optionally, implement exponential backoff
+    return this.scheduleRetry(retryAfter);
+  }
+
+  private getEndpointKey(url: string): string {
+    // Extract endpoint from URL
+    return url.split('?')[0];
+  }
+
+  private formatWaitTime(seconds: number): string {
+    if (seconds < 60) return `${seconds} seconds`;
+    if (seconds < 3600) return `${Math.ceil(seconds / 60)} minutes`;
+    return `${Math.ceil(seconds / 3600)} hours`;
+  }
+
+  private showRateLimitWarning(endpoint: string, data: RateLimitData) {
+    console.warn(`Approaching rate limit for ${endpoint}:`, {
+      remaining: data.remaining,
+      limit: data.limit,
+      resetAt: new Date(data.reset * 1000).toISOString(),
+    });
+  }
+
+  private async scheduleRetry(retryAfter: number): Promise<void> {
+    // Wait and retry logic
+    await new Promise(resolve => setTimeout(resolve, retryAfter * 1000));
+  }
+
+  getRateLimitInfo(endpoint: string): RateLimitData | null {
+    return this.rateLimitInfo.get(endpoint) || null;
+  }
+
+  canMakeRequest(endpoint: string): boolean {
+    const info = this.rateLimitInfo.get(endpoint);
+    return !info || info.remaining > 0;
+  }
+}
+
+interface RateLimitData {
+  limit: number;
+  remaining: number;
+  reset: number; // Unix timestamp
+}
+
+export const rateLimitHandler = new RateLimitHandler();
+```
+
+---
+
+## 4️⃣ Input Validation & Sanitization
+
+### Types of Validation
+
+```typescript
+// src/utils/validators/apiValidation.ts
+
+export class ApiValidation {
+  
+  // ==========================================
+  // STRING VALIDATION
+  // ==========================================
+  
+  static sanitizeString(input: string): string {
+    // Remove HTML tags
+    let sanitized = input.replace(/<[^>]*>/g, '');
+    
+    // Remove SQL injection patterns
+    sanitized = sanitized.replace(/['";]/g, '');
+    
+    // Remove script tags
+    sanitized = sanitized.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+    
+    // Trim whitespace
+    sanitized = sanitized.trim();
+    
+    return sanitized;
+  }
+
+  static validateEmail(email: string): boolean {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  }
+
+  static validatePhone(phone: string): boolean {
+    const phoneRegex = /^\+?[1-9]\d{9,14}$/;
+    return phoneRegex.test(phone.replace(/[\s-()]/g, ''));
+  }
+
+  static validateAlphanumeric(input: string): boolean {
+    return /^[a-zA-Z0-9]+$/.test(input);
+  }
+
+  // ==========================================
+  // NUMBER VALIDATION
+  // ==========================================
+  
+  static validateInteger(value: any): boolean {
+    return Number.isInteger(Number(value));
+  }
+
+  static validatePositiveNumber(value: number): boolean {
+    return typeof value === 'number' && value > 0;
+  }
+
+  static validateRange(value: number, min: number, max: number): boolean {
+    return value >= min && value <= max;
+  }
+
+  // ==========================================
+  // DATE VALIDATION
+  // ==========================================
+  
+  static validateDate(date: string): boolean {
+    const parsed = Date.parse(date);
+    return !isNaN(parsed);
+  }
+
+  static validateAge(dateOfBirth: Date, minAge: number = 18): boolean {
+    const today = new Date();
+    const age = today.getFullYear() - dateOfBirth.getFullYear();
+    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
+    
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())) {
+      return (age - 1) >= minAge;
+    }
+    
+    return age >= minAge;
+  }
+
+  // ==========================================
+  // OBJECT VALIDATION
+  // ==========================================
+  
+  static validateRequiredFields(obj: any, requiredFields: string[]): {
+    isValid: boolean;
+    missingFields: string[];
+  } {
+    const missingFields = requiredFields.filter(field => !obj[field]);
+    
+    return {
+      isValid: missingFields.length === 0,
+      missingFields,
+    };
+  }
+
+  static validateMaxSize(obj: any, maxSizeBytes: number): boolean {
+    const size = new Blob([JSON.stringify(obj)]).size;
+    return size <= maxSizeBytes;
+  }
+
+  // ==========================================
+  // FILE VALIDATION
+  // ==========================================
+  
+  static validateFile(file: File, options: FileValidationOptions): {
+    isValid: boolean;
+    error?: string;
+  } {
+    // Check file size
+    if (file.size > options.maxSize) {
+      return {
+        isValid: false,
+        error: `File size must be less than ${options.maxSize / (1024 * 1024)}MB`,
+      };
+    }
+
+    // Check file type
+    if (!options.allowedTypes.includes(file.type)) {
+      return {
+        isValid: false,
+        error: `File type must be one of: ${options.allowedTypes.join(', ')}`,
+      };
+    }
+
+    // Check file name
+    if (options.maxNameLength && file.name.length > options.maxNameLength) {
+      return {
+        isValid: false,
+        error: `File name is too long`,
+      };
+    }
+
+    return { isValid: true };
+  }
+
+  // ==========================================
+  // SECURITY CHECKS
+  // ==========================================
+  
+  static detectSQLInjection(input: string): boolean {
+    const sqlPatterns = [
+      /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)/gi,
+      /(UNION.*SELECT)/gi,
+      /(\bOR\b.*=.*)/gi,
+      /(;|\-\-|\/\*|\*\/)/g,
+    ];
+
+    return sqlPatterns.some(pattern => pattern.test(input));
+  }
+
+  static detectXSS(input: string): boolean {
+    const xssPatterns = [
+      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      /<iframe/gi,
+      /javascript:/gi,
+      /on\w+\s*=/gi, // event handlers like onclick=
+    ];
+
+    return xssPatterns.some(pattern => pattern.test(input));
+  }
+
+  static sanitizeForSQL(input: string): string {
+    // Escape single quotes
+    return input.replace(/'/g, "''");
+  }
+
+  static sanitizeForHTML(input: string): string {
+    const htmlEntities: Record<string, string> = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#x27;',
+      '/': '&#x2F;',
+    };
+
+    return input.replace(/[&<>"'\/]/g, char => htmlEntities[char]);
+  }
+}
+
+interface FileValidationOptions {
+  maxSize: number; // in bytes
+  allowedTypes: string[];
+  maxNameLength?: number;
+}
+```
+
+---
+
+## 5️⃣ Complete API Request Flow
+
+```typescript
+// src/modules/user/repositories/UserRepository.ts
+
+import { apiClient } from '../../services/api/client';
+import { ApiValidation } from '../../utils/validators/apiValidation';
+import { UpdateUserDTO } from '../dto/UserRequest.dto';
+
+export class UserRepository {
+  
+  async updateUser(userId: string, data: UpdateUserDTO): Promise<User> {
+    // ==========================================
+    // 1. INPUT VALIDATION
+    // ==========================================
+    
+    // Validate required fields
+    const { isValid, missingFields } = ApiValidation.validateRequiredFields(
+      { userId },
+      ['userId']
+    );
+    
+    if (!isValid) {
+      throw new ValidationError(`Missing fields: ${missingFields.join(', ')}`);
+    }
+
+    // Sanitize string inputs
+    if (data.fullName) {
+      data.fullName = ApiValidation.sanitizeString(data.fullName);
+    }
+
+    if (data.bio) {
+      data.bio = ApiValidation.sanitizeString(data.bio);
+      
+      // Check for XSS
+      if (ApiValidation.detectXSS(data.bio)) {
+        throw new SecurityError('Invalid content detected in bio');
+      }
+    }
+
+    // Validate email format
+    if (data.email && !ApiValidation.validateEmail(data.email)) {
+      throw new ValidationError('Invalid email format');
+    }
+
+    // Validate phone format
+    if (data.phone && !ApiValidation.validatePhone(data.phone)) {
+      throw new ValidationError('Invalid phone format');
+    }
+
+    // ==========================================
+    // 2. MAKE API CALL (with all security headers)
+    // ==========================================
+    
+    try {
+      const response = await apiClient.patch<UserResponseDTO>(
+        `/users/${userId}`,
+        data,
+        {
+          // Additional headers for this specific request
+          headers: {
+            'X-Operation': 'user-update',
+          },
+        }
+      );
+
+      // ==========================================
+      // 3. RESPONSE VALIDATION
+      // ==========================================
+      
+      if (!response.data || !response.data.id) {
+        throw new ApiError('Invalid response from server');
+      }
+
+      // Transform and return
+      return transformUserFromDTO(response.data);
+      
+    } catch (error) {
+      // ==========================================
+      // 4. ERROR HANDLING
+      // ==========================================
+      
+      if (axios.isAxiosError(error)) {
+        const correlationId = error.config?.headers?.['X-Correlation-ID'];
+        
+        // Log error with correlation ID for debugging
+        console.error('[API Error]', {
+          correlationId,
+          endpoint: '/users/:id',
+          status: error.response?.status,
+          message: error.message,
+        });
+
+        // Handle specific errors
+        if (error.response?.status === 429) {
+          throw new RateLimitError('Too many requests');
+        }
+
+        if (error.response?.status === 401) {
+          throw new AuthenticationError('Unauthorized');
+        }
+
+        if (error.response?.status === 403) {
+          throw new AuthorizationError('Forbidden');
+        }
+
+        if (error.response?.status === 422) {
+          throw new ValidationError(
+            error.response.data?.message || 'Validation failed'
+          );
+        }
+      }
+
+      throw error;
+    }
+  }
+}
+
+// Custom error classes
+class ValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ValidationError';
+  }
+}
+
+class SecurityError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'SecurityError';
+  }
+}
+
+class ApiError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'ApiError';
+  }
+}
+
+class AuthenticationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthenticationError';
+  }
+}
+
+class AuthorizationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'AuthorizationError';
+  }
+}
+```
+
+---
+
+## 6️⃣ Security Checklist for All APIs
+
+### ✅ Before Making API Request
+
+- [ ] Validate all inputs (email, phone, strings, numbers)
+- [ ] Sanitize user input (remove HTML, SQL injection patterns)
+- [ ] Check for XSS patterns
+- [ ] Validate file uploads (size, type, name)
+- [ ] Add authentication token
+- [ ] Add correlation ID
+- [ ] Add request ID
+- [ ] Add client version
+- [ ] Add platform info
+- [ ] Add device ID
+
+### ✅ During API Request
+
+- [ ] Use HTTPS only (never HTTP)
+- [ ] Set proper timeout (prevent hanging)
+- [ ] Implement retry logic (with exponential backoff)
+- [ ] Handle rate limiting
+- [ ] Log request (with correlation ID)
+
+### ✅ After API Response
+
+- [ ] Validate response structure
+- [ ] Check status code
+- [ ] Handle errors gracefully
+- [ ] Extract and store rate limit headers
+- [ ] Log response (with correlation ID)
+- [ ] Transform DTO to model
+- [ ] Cache if needed
+
+---
+
+## 7️⃣ Monitoring & Logging
+
+```typescript
+// src/services/monitoring/apiMonitoring.ts
+
+import * as Sentry from '@sentry/react-native';
+
+export class ApiMonitoring {
+  
+  static logApiRequest(
+    correlationId: string,
+    endpoint: string,
+    method: string,
+    data?: any
+  ) {
+    // Log to analytics
+    Analytics.track('api_request', {
+      correlationId,
+      endpoint,
+      method,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Log to Sentry for error tracking
+    Sentry.addBreadcrumb({
+      category: 'api',
+      message: `${method} ${endpoint}`,
+      level: 'info',
+      data: {
+        correlationId,
+      },
+    });
+  }
+
+  static logApiResponse(
+    correlationId: string,
+    endpoint: string,
+    status: number,
+    duration: number
+  ) {
+    Analytics.track('api_response', {
+      correlationId,
+      endpoint,
+      status,
+      duration,
+      timestamp: new Date().toISOString(),
+    });
+  }
+
+  static logApiError(
+    correlationId: string,
+    endpoint: string,
+    error: any
+  ) {
+    // Log to Sentry
+    Sentry.captureException(error, {
+      tags: {
+        correlationId,
+        endpoint,
+      },
+      extra: {
+        message: error.message,
+        status: error.response?.status,
+      },
+    });
+
+    // Log to analytics
+    Analytics.track('api_error', {
+      correlationId,
+      endpoint,
+      error: error.message,
+      status: error.response?.status,
+      timestamp: new Date().toISOString(),
+    });
+  }
+}
+```
+
+---
+
+## 🎯 Summary
+
+### Must-Have Security Features
+
+| Feature | Priority | Purpose |
+|---------|----------|---------|
+| **Correlation ID** | 🔴 Critical | Track requests, debug issues |
+| **Rate Limiting** | 🔴 Critical | Prevent abuse, protect resources |
+| **Input Validation** | 🔴 Critical | Prevent SQL injection, XSS |
+| **Authentication** | 🔴 Critical | Verify user identity |
+| **Authorization** | 🔴 Critical | Check permissions |
+| **HTTPS Only** | 🔴 Critical | Encrypt data in transit |
+| **Request/Response Logging** | 🟡 Important | Monitor, debug |
+| **Error Handling** | 🟡 Important | User experience |
+| **Device ID Tracking** | 🟢 Nice to have | Analytics, security |
+| **Client Version** | 🟢 Nice to have | Compatibility checks |
+
+### Implementation Order
+
+1. **Week 1**: Set up API client with headers (Correlation ID, Request ID, Auth)
+2. **Week 2**: Add input validation and sanitization
+3. **Week 3**: Implement rate limiting handling
+4. **Week 4**: Add comprehensive error handling
+5. **Week 5**: Set up monitoring and logging
+
+This architecture ensures your matrimonial app is secure, scalable, and maintainable! 🚀
+
+
+
+# Complete NestJS Backend Security Guide for Matrimonial App
+
+## 🏗️ Security Architecture: Frontend vs Backend
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                         FRONTEND (React Native)                  │
+│  - Generates Correlation ID                                      │
+│  - Sends headers (Auth, Device ID, Platform)                     │
+│  - Basic validation (UX only - CAN BE BYPASSED!)                │
+│  - Shows rate limit warnings                                     │
+│  - Handles errors gracefully                                     │
+└────────────────────────────┬────────────────────────────────────┘
+                             │ HTTPS
+                             ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                         BACKEND (NestJS)                         │
+│  ✅ RECEIVES Correlation ID & propagates it                      │
+│  ✅ ENFORCES rate limiting (Redis/Memory)                        │
+│  ✅ VALIDATES all inputs (NEVER trust client!)                   │
+│  ✅ VERIFIES authentication (JWT validation)                     │
+│  ✅ CHECKS authorization (permissions)                           │
+│  ✅ SANITIZES all data (SQL injection, XSS prevention)          │
+│  ✅ LOGS everything (with Correlation ID)                        │
+│  ✅ ENCRYPTS sensitive data                                      │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 📁 Complete NestJS Project Structure
+
+```
+matrimonial-api/
+├── src/
+│   ├── common/
+│   │   ├── decorators/
+│   │   │   ├── correlation-id.decorator.ts
+│   │   │   ├── current-user.decorator.ts
+│   │   │   ├── roles.decorator.ts
+│   │   │   └── rate-limit.decorator.ts
+│   │   ├── filters/
+│   │   │   ├── http-exception.filter.ts
+│   │   │   └── all-exceptions.filter.ts
+│   │   ├── guards/
+│   │   │   ├── jwt-auth.guard.ts
+│   │   │   ├── roles.guard.ts
+│   │   │   └── rate-limit.guard.ts
+│   │   ├── interceptors/
+│   │   │   ├── correlation-id.interceptor.ts
+│   │   │   ├── logging.interceptor.ts
+│   │   │   ├── transform.interceptor.ts
+│   │   │   └── sanitize.interceptor.ts
+│   │   ├── middleware/
+│   │   │   ├── correlation-id.middleware.ts
+│   │   │   ├── rate-limit.middleware.ts
+│   │   │   └── security-headers.middleware.ts
+│   │   ├── pipes/
+│   │   │   ├── validation.pipe.ts
+│   │   │   └── sanitization.pipe.ts
+│   │   └── validators/
+│   │       ├── is-adult.validator.ts
+│   │       ├── is-valid-phone.validator.ts
+│   │       └── is-safe-string.validator.ts
+│   │
+│   ├── modules/
+│   │   ├── auth/
+│   │   │   ├── guards/
+│   │   │   ├── strategies/
+│   │   │   ├── dto/
+│   │   │   ├── auth.controller.ts
+│   │   │   ├── auth.service.ts
+│   │   │   └── auth.module.ts
+│   │   │
+│   │   ├── user/
+│   │   │   ├── entities/
+│   │   │   │   └── user.entity.ts
+│   │   │   ├── dto/
+│   │   │   │   ├── create-user.dto.ts
+│   │   │   │   └── update-user.dto.ts
+│   │   │   ├── user.controller.ts
+│   │   │   ├── user.service.ts
+│   │   │   ├── user.repository.ts
+│   │   │   └── user.module.ts
+│   │   │
+│   │   ├── match/
+│   │   ├── chat/
+│   │   └── payment/
+│   │
+│   ├── config/
+│   │   ├── database.config.ts
+│   │   ├── jwt.config.ts
+│   │   ├── redis.config.ts
+│   │   └── rate-limit.config.ts
+│   │
+│   ├── app.module.ts
+│   └── main.ts
+│
+├── .env
+├── .env.example
+├── package.json
+└── tsconfig.json
+```
+
+---
+
+## 1️⃣ Correlation ID Implementation (NestJS)
+
+### Middleware - Extract/Generate Correlation ID
+
+```typescript
+// src/common/middleware/correlation-id.middleware.ts
+
+import { Injectable, NestMiddleware } from '@nestjs/common';
+import { Request, Response, NextFunction } from 'express';
+import { v4 as uuidv4 } from 'uuid';
+
+@Injectable()
+export class CorrelationIdMiddleware implements NestMiddleware {
+  use(req: Request, res: Response, next: NextFunction) {
+    // Extract correlation ID from request header or generate new one
+    const correlationId = 
+      req.headers['x-correlation-id'] as string || 
+      uuidv4();
+
+    // Generate request ID (unique per request)
+    const requestId = uuidv4();
+
+    // Attach to request object for later use
+    req['correlationId'] = correlationId;
+    req['requestId'] = requestId;
+
+    // Add to response headers (send back to client)
+    res.setHeader('X-Correlation-ID', correlationId);
+    res.setHeader('X-Request-ID', requestId);
+
+    // Store in async context for logging (optional but recommended)
+    // This allows you to access correlationId anywhere in the request lifecycle
+    
+    next();
+  }
+}
+```
+
+### Interceptor - Log All Requests with Correlation ID
+
+```typescript
+// src/common/interceptors/logging.interceptor.ts
+
+import {
+  Injectable,
+  NestInterceptor,
+  ExecutionContext,
+  CallHandler,
+  Logger,
+} from '@nestjs/common';
+import { Observable } from 'rxjs';
+import { tap } from 'rxjs/operators';
+
+@Injectable()
+export class LoggingInterceptor implements NestInterceptor {
+  private readonly logger = new Logger('HTTP');
+
+  intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
+    const request = context.switchToHttp().getRequest();
+    const { method, url, body, headers } = request;
+    const correlationId = request['correlationId'];
+    const requestId = request['requestId'];
+    const userAgent = headers['user-agent'] || 'unknown';
+    const clientVersion = headers['x-client-version'] || 'unknown';
+    const platform = headers['x-platform'] || 'unknown';
+    const deviceId = headers['x-device-id'] || 'unknown';
+
+    const startTime = Date.now();
+
+    // Log incoming request
+    this.logger.log({
+      type: 'REQUEST',
+      correlationId,
+      requestId,
+      method,
+      url,
+      clientVersion,
+      platform,
+      deviceId,
+      userAgent,
+      timestamp: new Date().toISOString(),
+      body: this.sanitizeBody(body),
+    });
+
+    return next.handle().pipe(
+      tap({
+        next: (data) => {
+          const response = context.switchToHttp().getResponse();
+          const duration = Date.now() - startTime;
+
+          // Log successful response
+          this.logger.log({
+            type: 'RESPONSE',
+            correlationId,
+            requestId,
+            method,
+            url,
+            statusCode: response.statusCode,
+            duration: `${duration}ms`,
+            timestamp: new Date().toISOString(),
+          });
+        },
+        error: (error) => {
+          const duration = Date.now() - startTime;
+
+          // Log error response
+          this.logger.error({
+            type: 'ERROR',
+            correlationId,
+            requestId,
+            method,
+            url,
+            error: error.message,
+            stack: error.stack,
+            duration: `${duration}ms`,
+            timestamp: new Date().toISOString(),
+          });
+        },
+      }),
+    );
+  }
+
+  private sanitizeBody(body: any): any {
+    if (!body) return {};
+
+    // Remove sensitive data from logs
+    const sanitized = { ...body };
+    const sensitiveFields = ['password', 'token', 'creditCard', 'cvv'];
+
+    sensitiveFields.forEach((field) => {
+      if (sanitized[field]) {
+        sanitized[field] = '***REDACTED***';
+      }
+    });
+
+    return sanitized;
+  }
+}
+```
+
+### Decorator - Access Correlation ID in Controllers
+
+```typescript
+// src/common/decorators/correlation-id.decorator.ts
+
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+export const CorrelationId = createParamDecorator(
+  (data: unknown, ctx: ExecutionContext): string => {
+    const request = ctx.switchToHttp().getRequest();
+    return request['correlationId'];
+  },
+);
+
+// Usage in controller:
+// async createUser(@CorrelationId() correlationId: string) { ... }
+```
+
+---
+
+## 2️⃣ Rate Limiting (NestJS)
+
+### Rate Limit Configuration
+
+```typescript
+// src/config/rate-limit.config.ts
+
+export const RATE_LIMIT_CONFIG = {
+  // Authentication endpoints
+  AUTH_LOGIN: {
+    ttl: 900, // 15 minutes in seconds
+    limit: 5,
+    message: 'Too many login attempts. Please try again in 15 minutes.',
+  },
+  
+  AUTH_REGISTER: {
+    ttl: 3600, // 1 hour
+    limit: 3,
+    message: 'Too many registration attempts.',
+  },
+  
+  AUTH_OTP_SEND: {
+    ttl: 3600,
+    limit: 5,
+    message: 'Too many OTP requests.',
+  },
+  
+  AUTH_FORGOT_PASSWORD: {
+    ttl: 3600,
+    limit: 3,
+    message: 'Too many password reset requests.',
+  },
+
+  // User profile endpoints
+  USER_UPDATE: {
+    ttl: 3600,
+    limit: 10,
+    message: 'Profile update limit reached.',
+  },
+
+  USER_AVATAR_UPLOAD: {
+    ttl: 3600,
+    limit: 5,
+    message: 'Too many avatar uploads.',
+  },
+
+  // Match endpoints
+  MATCH_SEND_INTEREST: {
+    ttl: 86400, // 1 day
+    limit: 50, // Free tier
+    limitPremium: 200, // Premium tier
+    message: 'Daily interest limit reached. Upgrade for more.',
+  },
+
+  MATCH_VIEW_PROFILE: {
+    ttl: 86400,
+    limit: 100,
+    limitPremium: 500,
+    message: 'Daily profile view limit reached.',
+  },
+
+  MATCH_SEARCH: {
+    ttl: 3600,
+    limit: 30,
+    message: 'Too many search requests.',
+  },
+
+  // Chat endpoints
+  CHAT_SEND_MESSAGE: {
+    ttl: 3600,
+    limit: 100,
+    limitPremium: 500,
+    message: 'Message rate limit exceeded.',
+  },
+
+  // General API
+  GENERAL: {
+    ttl: 3600,
+    limit: 1000,
+    message: 'API rate limit exceeded.',
+  },
+};
+```
+
+### Rate Limit Guard (Using Redis)
+
+```typescript
+// src/common/guards/rate-limit.guard.ts
+
+import {
+  Injectable,
+  CanActivate,
+  ExecutionContext,
+  HttpException,
+  HttpStatus,
+} from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { InjectRedis } from '@liaoliaots/nestjs-redis';
+import Redis from 'ioredis';
+import { RATE_LIMIT_KEY } from '../decorators/rate-limit.decorator';
+
+@Injectable()
+export class RateLimitGuard implements CanActivate {
+  constructor(
+    private reflector: Reflector,
+    @InjectRedis() private readonly redis: Redis,
+  ) {}
+
+  async canActivate(context: ExecutionContext): Promise<boolean> {
+    // Get rate limit config from decorator
+    const rateLimitConfig = this.reflector.get(
+      RATE_LIMIT_KEY,
+      context.getHandler(),
+    );
+
+    if (!rateLimitConfig) {
+      return true; // No rate limit defined
+    }
+
+    const request = context.switchToHttp().getRequest();
+    const response = context.switchToHttp().getResponse();
+    
+    // Create unique key per user/IP
+    const identifier = this.getIdentifier(request);
+    const key = `rate-limit:${rateLimitConfig.name}:${identifier}`;
+
+    // Get current count from Redis
+    const currentCount = await this.redis.get(key);
+    const count = currentCount ? parseInt(currentCount, 10) : 0;
+
+    // Get limit based on user membership
+    const limit = this.getLimit(request, rateLimitConfig);
+
+    // Calculate reset time
+    const ttl = rateLimitConfig.ttl;
+    const resetAt = Date.now() + ttl * 1000;
+
+    // Set rate limit headers
+    response.setHeader('X-RateLimit-Limit', limit);
+    response.setHeader('X-RateLimit-Remaining', Math.max(0, limit - count - 1));
+    response.setHeader('X-RateLimit-Reset', Math.floor(resetAt / 1000));
+
+    // Check if limit exceeded
+    if (count >= limit) {
+      const retryAfter = await this.redis.ttl(key);
+      response.setHeader('Retry-After', retryAfter);
+
+      throw new HttpException(
+        {
+          statusCode: HttpStatus.TOO_MANY_REQUESTS,
+          message: rateLimitConfig.message,
+          retryAfter,
+          resetAt,
+        },
+        HttpStatus.TOO_MANY_REQUESTS,
+      );
+    }
+
+    // Increment counter
+    if (count === 0) {
+      // First request - set with expiry
+      await this.redis.setex(key, ttl, 1);
+    } else {
+      // Increment existing
+      await this.redis.incr(key);
+    }
+
+    return true;
+  }
+
+  private getIdentifier(request: any): string {
+    // Use user ID if authenticated, otherwise use IP
+    const userId = request.user?.id;
+    const ip = request.ip || request.connection.remoteAddress;
+    return userId || ip;
+  }
+
+  private getLimit(request: any, config: any): number {
+    // Check if user is premium
+    const isPremium = request.user?.membership?.tier !== 'free';
+    return isPremium && config.limitPremium 
+      ? config.limitPremium 
+      : config.limit;
+  }
+}
+```
+
+### Rate Limit Decorator
+
+```typescript
+// src/common/decorators/rate-limit.decorator.ts
+
+import { SetMetadata } from '@nestjs/common';
+
+export const RATE_LIMIT_KEY = 'rate-limit';
+
+export interface RateLimitOptions {
+  name: string;
+  ttl: number; // seconds
+  limit: number;
+  limitPremium?: number;
+  message: string;
+}
+
+export const RateLimit = (options: RateLimitOptions) =>
+  SetMetadata(RATE_LIMIT_KEY, options);
+
+// Usage in controller:
+/*
+@RateLimit({
+  name: 'login',
+  ttl: 900,
+  limit: 5,
+  message: 'Too many login attempts',
+})
+@Post('login')
+async login() { ... }
+*/
+```
+
+---
+
+## 3️⃣ Input Validation & Sanitization (NestJS)
+
+### DTOs with Class Validator
+
+```typescript
+// src/modules/user/dto/create-user.dto.ts
+
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsString,
+  IsEnum,
+  IsDate,
+  MinLength,
+  MaxLength,
+  Matches,
+  IsPhoneNumber,
+  IsOptional,
+} from 'class-validator';
+import { Transform, Type } from 'class-transformer';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsAdult } from '../../../common/validators/is-adult.validator';
+import { IsSafeString } from '../../../common/validators/is-safe-string.validator';
+
+export class CreateUserDto {
+  @ApiProperty({ example: 'john@example.com' })
+  @IsEmail({}, { message: 'Invalid email format' })
+  @IsNotEmpty({ message: 'Email is required' })
+  @Transform(({ value }) => value?.toLowerCase().trim())
+  email: string;
+
+  @ApiProperty({ example: 'StrongP@ss123' })
+  @IsString()
+  @MinLength(8, { message: 'Password must be at least 8 characters' })
+  @MaxLength(50, { message: 'Password must not exceed 50 characters' })
+  @Matches(
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/,
+    {
+      message:
+        'Password must contain uppercase, lowercase, number and special character',
+    },
+  )
+  password: string;
+
+  @ApiProperty({ example: 'John Doe' })
+  @IsString()
+  @MinLength(2, { message: 'Name must be at least 2 characters' })
+  @MaxLength(100, { message: 'Name must not exceed 100 characters' })
+  @Matches(/^[a-zA-Z\s]+$/, { message: 'Name can only contain letters and spaces' })
+  @Transform(({ value }) => value?.trim())
+  @IsSafeString({ message: 'Name contains invalid characters' })
+  fullName: string;
+
+  @ApiProperty({ example: '+919876543210' })
+  @IsPhoneNumber('IN', { message: 'Invalid phone number for India' })
+  @IsOptional()
+  phone?: string;
+
+  @ApiProperty({ example: '1995-06-15' })
+  @Type(() => Date)
+  @IsDate({ message: 'Invalid date format' })
+  @IsAdult({ message: 'You must be at least 18 years old' })
+  dateOfBirth: Date;
+
+  @ApiProperty({ example: 'male', enum: ['male', 'female', 'other'] })
+  @IsEnum(['male', 'female', 'other'], { message: 'Invalid gender' })
+  gender: 'male' | 'female' | 'other';
+
+  @ApiProperty({ example: true })
+  @Transform(({ value }) => value === true || value === 'true')
+  termsAccepted: boolean;
+}
+```
+
+### Custom Validators
+
+```typescript
+// src/common/validators/is-adult.validator.ts
+
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
+
+@ValidatorConstraint({ async: false })
+export class IsAdultConstraint implements ValidatorConstraintInterface {
+  validate(dateOfBirth: Date) {
+    const today = new Date();
+    const birthDate = new Date(dateOfBirth);
+    let age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+
+    if (
+      monthDiff < 0 ||
+      (monthDiff === 0 && today.getDate() < birthDate.getDate())
+    ) {
+      age--;
+    }
+
+    return age >= 18 && age <= 100;
+  }
+
+  defaultMessage() {
+    return 'You must be between 18 and 100 years old';
+  }
+}
+
+export function IsAdult(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: IsAdultConstraint,
+    });
+  };
+}
+```
+
+```typescript
+// src/common/validators/is-safe-string.validator.ts
+
+import {
+  registerDecorator,
+  ValidationOptions,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
+
+@ValidatorConstraint({ async: false })
+export class IsSafeStringConstraint implements ValidatorConstraintInterface {
+  validate(text: string) {
+    if (!text) return true;
+
+    // Check for SQL injection patterns
+    const sqlPatterns = [
+      /(\b(SELECT|INSERT|UPDATE|DELETE|DROP|CREATE|ALTER|EXEC|EXECUTE)\b)/gi,
+      /(UNION.*SELECT)/gi,
+      /(\bOR\b.*=.*)/gi,
+      /(;|--|\/\*|\*\/)/g,
+    ];
+
+    // Check for XSS patterns
+    const xssPatterns = [
+      /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+      /<iframe/gi,
+      /javascript:/gi,
+      /on\w+\s*=/gi,
+    ];
+
+    const hasSQLInjection = sqlPatterns.some((pattern) => pattern.test(text));
+    const hasXSS = xssPatterns.some((pattern) => pattern.test(text));
+
+    return !hasSQLInjection && !hasXSS;
+  }
+
+  defaultMessage() {
+    return 'Text contains invalid or dangerous characters';
+  }
+}
+
+export function IsSafeString(validationOptions?: ValidationOptions) {
+  return function (object: Object, propertyName: string) {
+    registerDecorator({
+      target: object.constructor,
+      propertyName: propertyName,
+      options: validationOptions,
+      constraints: [],
+      validator: IsSafeStringConstraint,
+    });
+  };
+}
+```
+
+### Sanitization Pipe
+
+```typescript
+// src/common/pipes/sanitization.pipe.ts
+
+import { PipeTransform, Injectable, ArgumentMetadata } from '@nestjs/common';
+import * as sanitizeHtml from 'sanitize-html';
+
+@Injectable()
+export class SanitizationPipe implements PipeTransform {
+  transform(value: any, metadata: ArgumentMetadata) {
+    if (metadata.type === 'body') {
+      return this.sanitizeObject(value);
+    }
+    return value;
+  }
+
+  private sanitizeObject(obj: any): any {
+    if (typeof obj === 'string') {
+      return this.sanitizeString(obj);
+    }
+
+    if (Array.isArray(obj)) {
+      return obj.map((item) => this.sanitizeObject(item));
+    }
+
+    if (obj && typeof obj === 'object') {
+      const sanitized = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          sanitized[key] = this.sanitizeObject(obj[key]);
+        }
+      }
+      return sanitized;
+    }
+
+    return obj;
+  }
+
+  private sanitizeString(str: string): string {
+    // Remove HTML tags
+    let sanitized = sanitizeHtml(str, {
+      allowedTags: [], // No HTML tags allowed
+      allowedAttributes: {},
+    });
+
+    // Remove SQL injection patterns
+    sanitized = sanitized.replace(/['";]/g, '');
+
+    // Trim whitespace
+    sanitized = sanitized.trim();
+
+    return sanitized;
+  }
+}
+```
+
+---
+
+## 4️⃣ Authentication & Authorization (NestJS)
+
+### JWT Strategy
+
+```typescript
+// src/modules/auth/strategies/jwt.strategy.ts
+
+import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { PassportStrategy } from '@nestjs/passport';
+import { ExtractJwt, Strategy } from 'passport-jwt';
+import { ConfigService } from '@nestjs/config';
+import { UserService } from '../../user/user.service';
+
+@Injectable()
+export class JwtStrategy extends PassportStrategy(Strategy) {
+  constructor(
+    private configService: ConfigService,
+    private userService: UserService,
+  ) {
+    super({
+      jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
+      ignoreExpiration: false,
+      secretOrKey: configService.get<string>('JWT_SECRET'),
+    });
+  }
+
+  async validate(payload: any) {
+    // Payload contains: { sub: userId, email: string, iat: number, exp: number }
+    
+    const user = await this.userService.findById(payload.sub);
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    if (!user.isActive) {
+      throw new UnauthorizedException('User account is inactive');
+    }
+
+    // This user object will be attached to request.user
+    return {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+      membership: user.membership,
+    };
+  }
+}
+```
+
+### JWT Auth Guard
+
+```typescript
+// src/common/guards/jwt-auth.guard.ts
+
+import {
+  Injectable,
+  ExecutionContext,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { Reflector } from '@nestjs/core';
+import { IS_PUBLIC_KEY } from '../decorators/public.decorator';
+
+@Injectable()
+export class JwtAuthGuard extends AuthGuard('jwt') {
+  constructor(private reflector: Reflector) {
+    super();
+  }
+
+  canActivate(context: ExecutionContext) {
+    // Check if route is marked as public
+    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    if (isPublic) {
+      return true;
+    }
+
+    return super.canActivate(context);
+  }
+
+  handleRequest(err, user, info) {
+    if (err || !user) {
+      throw err || new UnauthorizedException('Invalid or expired token');
+    }
+    return user;
+  }
+}
+```
+
+### Roles Guard (Authorization)
+
+```typescript
+// src/common/guards/roles.guard.ts
+
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
+import { Reflector } from '@nestjs/core';
+import { ROLES_KEY } from '../decorators/roles.decorator';
+
+@Injectable()
+export class RolesGuard implements CanActivate {
+  constructor(private reflector: Reflector) {}
+
+  canActivate(context: ExecutionContext): boolean {
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
+      ROLES_KEY,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (!requiredRoles) {
+      return true; // No roles required
+    }
+
+    const request = context.switchToHttp().getRequest();
+    const user = request.user;
+
+    if (!user) {
+      return false;
+    }
+
+    // Check if user has required role
+    return requiredRoles.some((role) => user.role === role);
+  }
+}
+```
+
+### Decorators
+
+```typescript
+// src/common/decorators/public.decorator.ts
+import { SetMetadata } from '@nestjs/common';
+
+export const IS_PUBLIC_KEY = 'isPublic';
+export const Public = () => SetMetadata(IS_PUBLIC_KEY, true);
+
+// src/common/decorators/roles.decorator.ts
+import { SetMetadata } from '@nestjs/common';
+
+export const ROLES_KEY = 'roles';
+export const Roles = (...roles: string[]) => SetMetadata(ROLES_KEY, roles);
+
+// src/common/decorators/current-user.decorator.ts
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+
+export const CurrentUser = createParamDecorator(
+  (data: string, ctx: ExecutionContext) => {
+    const request = ctx.switchToHttp().getRequest();
+    const user = request.user;
+
+    return data ? user?.[data] : user;
+  },
+);
+```
+
+## 6️⃣ Global Error Handling
+```typescript
+// src/common/filters/all-exceptions.filter.ts
+
+import {
+  ExceptionFilter,
+  Catch,
+  ArgumentsHost,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
+
+@Catch()
+export class AllExceptionsFilter implements ExceptionFilter {
+  private readonly logger = new Logger(AllExceptionsFilter.name);
+
+  catch(exception: unknown, host: ArgumentsHost) {
+    const ctx = host.switchToHttp();
+    const response = ctx.getResponse();
+    const request = ctx.getRequest();
+
+    const correlationId = request['correlationId'];
+    const requestId = request['requestId'];
+
+    let status = HttpStatus.INTERNAL_SERVER_ERROR;
+    let message = 'Internal server error';
+    let errors = null;
+
+    if (exception instanceof HttpException) {
+      status = exception.getStatus();
+      const exceptionResponse = exception.getResponse();
+
+      if (typeof exceptionResponse === 'object') {
+        message = (exceptionResponse as any).message || message;
+        errors = (exceptionResponse as any).errors;
+      } else {
+        message = exceptionResponse as string;
+      }
+    } else if (exception instanceof Error) {
+      message = exception.message;
+    }
+
+    // Log error with correlation ID
+    this.logger.error({
+      correlationId,
+      requestId,
+      path: request.url,
+      method: request.method,
+      statusCode: status,
+      message,
+      stack: exception instanceof Error ? exception.stack : undefined,
+      timestamp: new Date().toISOString(),
+    });
+
+    // Send error response
+    response.status(status).json({
+      statusCode: status,
+      message,
+      errors,
+      correlationId,
+      requestId,
+      timestamp: new Date().toISOString(),
+      path: request.url,
+    });
+  }
+}
+```
+
+---
+
+## 7️⃣ Main Application Setup
+```typescript
+// src/main.ts
+
+import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import helmet from 'helmet';
+import * as compression from 'compression';
+import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
+
+async function bootstrap() {
+  const app = await NestFactory.create(AppModule, {
+    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+  });
+
+  // ==========================================
+  // SECURITY MIDDLEWARE
+  // ==========================================
+  
+  // Helmet - Security headers
+  app.use(helmet());
+
+  // CORS
+  app.enableCors({
+    origin: process.env.ALLOWED_ORIGINS?.split(',') || '*',
+    credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'X-Correlation-ID',
+      'X-Request-ID',
+      'X-Client-Version',
+      'X-Platform',
+      'X-Device-ID',
+    ],
+    exposedHeaders: [
+      'X-Correlation-ID',
+      'X-Request-ID',
+      'X-RateLimit-Limit',
+      'X-RateLimit-Remaining',
+      'X-RateLimit-Reset',
+    ],
+  });
+
+  // Compression
+  app.use(compression());
+
+  // ==========================================
+  // GLOBAL PIPES
+  // ==========================================
+  
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strip properties not in DTO
+      forbidNonWhitelisted: true, // Throw error for extra properties
+      transform: true, // Auto-transform payloads to DTO instances
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
+
+  // ==========================================
+  // GLOBAL FILTERS
+  // ==========================================
+  
+  app.useGlobalFilters(new AllExceptionsFilter());
+
+  // ==========================================
+  // GLOBAL INTERCEPTORS
+  // ==========================================
+  
+  app.useGlobalInterceptors(new LoggingInterceptor());
+
+  // ==========================================
+  // API PREFIX
+  // ==========================================
+  
+  app.setGlobalPrefix('api/v1');
+
+  // ==========================================
+  // SWAGGER DOCUMENTATION
+  // ==========================================
+  
+  const config = new DocumentBuilder()
+    .setTitle('Matrimonial API')
+    .setDescription('API documentation for Matrimonial App')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .addApiKey({ type: 'apiKey', name: 'X-API-Key', in: 'header' })
+    .build();
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api/docs', app, document);
+
+  // ==========================================
+  // START SERVER
+  // ==========================================
+  
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+
+  console.log(`🚀 Server running on: http://localhost:${port}`);
+  console.log(`📚 API Docs available at: http://localhost:${port}/api/docs`);
+}
+
+bootstrap();
+```
+
+---
+
+## 8️⃣ App Module Configuration
+```typescript
+// src/app.module.ts
+
+import { Module, MiddlewareConsumer, NestModule } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
+import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { TypeOrmModule } from '@nestjs/typeorm';
+import { RedisModule } from '@liaoliaots/nestjs-redis';
+import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
+import { AuthModule } from './modules/auth/auth.module';
+import { UserModule } from './modules/user/user.module';
+
+@Module({
+  imports: [
+    // Configuration
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+
+    // Database
+    TypeOrmModule.forRoot({
+      type: 'postgres',
+      host: process.env.DB_HOST,
+      port: parseInt(process.env.DB_PORT, 10),
+      username: process.env.DB_USERNAME,
+      password: process.env.DB_PASSWORD,
+      database: process.env.DB_DATABASE,
+      autoLoadEntities: true,
+      synchronize: process.env.NODE_ENV === 'development',
+      logging: process.env.NODE_ENV === 'development',
+    }),
+
+    // Redis for rate limiting & caching
+    RedisModule.forRoot({
+      config: {
+        host: process.env.REDIS_HOST || 'localhost',
+        port: parseInt(process.env.REDIS_PORT, 10) || 6379,
+        password: process.env.REDIS_PASSWORD,
+      },
+    }),
+
+    // Global rate limiting (fallback)
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 100, // 100 requests per minute
+      },
+    ]),
+
+    // Feature modules
+    AuthModule,
+    UserModule,
+    // ... other modules
+  ],
+  providers: [
+    // Apply JWT Guard globally
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
+})
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    // Apply correlation ID middleware to all routes
+    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+  }
+}
+```
+
+---
+
+## 9️⃣ Environment Variables
+```bash
+# .env.example
+
+# Application
+NODE_ENV=development
+PORT=3000
+ALLOWED_ORIGINS=http://localhost:3000,http://localhost:19006
+
+# Database
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=postgres
+DB_PASSWORD=your_password
+DB_DATABASE=matrimonial_db
+
+# Redis
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# JWT
+JWT_SECRET=your-super-secret-jwt-key-change-this
+JWT_EXPIRATION=1h
+JWT_REFRESH_SECRET=your-refresh-secret
+JWT_REFRESH_EXPIRATION=7d
+
+# API Keys
+API_KEY_ADMIN=admin-secret-key
+
+# File Upload
+MAX_FILE_SIZE=5242880  # 5MB in bytes
+ALLOWED_FILE_TYPES=image/jpeg,image/png,image/webp
+
+# External Services
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_S3_BUCKET=
+FIREBASE_PROJECT_ID=
+FIREBASE_PRIVATE_KEY=
+
+# Monitoring
+SENTRY_DSN=
+```
+
+---
+
+## 🎯 Security Best Practices Summary
+
+### Frontend (React Native)
+✅ Generate Correlation ID  
+✅ Send security headers  
+✅ Basic validation (UX)  
+✅ Handle rate limit responses  
+✅ Store tokens securely  
+⚠️ **DO NOT** trust client validation  
+
+### Backend (NestJS)
+✅ **RECEIVE** and propagate Correlation ID  
+✅ **ENFORCE** rate limiting with Redis  
+✅ **VALIDATE** all inputs (CRITICAL!)  
+✅ **SANITIZE** all data  
+✅ **VERIFY** JWT tokens  
+✅ **CHECK** permissions (authorization)  
+✅ **LOG** everything with Correlation ID  
+✅ **ENCRYPT** sensitive data  
+✅ Use HTTPS only  
+✅ Set security headers (Helmet)  
+
+---
+
+## 🚀 Quick Start Checklist
+
+**Week 1: Foundation**
+- [ ] Set up Correlation ID middleware
+- [ ] Implement logging interceptor
+- [ ] Add JWT authentication
+- [ ] Configure Redis
+
+**Week 2: Security**
+- [ ] Implement rate limiting
+- [ ] Add input validation (DTOs)
+- [ ] Create custom validators
+- [ ] Add sanitization pipe
+
+**Week 3: Authorization**
+- [ ] Implement role-based guards
+- [ ] Add permission checks
+- [ ] Create admin endpoints
+
+**Week 4: Monitoring**
+- [ ] Set up Sentry
+- [ ] Add comprehensive logging
+- [ ] Create health check endpoints
+- [ ] Monitor rate limit usage
+
+This gives you enterprise-grade security for your matrimonial app! 🔐</parameter>
