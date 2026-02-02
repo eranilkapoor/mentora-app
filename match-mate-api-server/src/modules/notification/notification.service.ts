@@ -5,9 +5,7 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 
 @Injectable()
 export class NotificationService {
-  constructor(
-    private readonly notificationRepo: NotificationRepository,
-  ) {}
+  constructor(private readonly notificationRepo: NotificationRepository) {}
 
   async notify(dto: CreateNotificationDto) {
     const notification = await this.notificationRepo.create({

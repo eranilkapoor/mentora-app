@@ -2557,14 +2557,6 @@ match-mate-api-server/
 
 ************************* FRONTEND DOCUMENTS & SETUP *************************
 
-Excellent — since your **MatchMate App** will be an enterprise-grade **React Native (TypeScript)** project that integrates with your **NestJS backend**, let’s set it up properly for **Android + iOS + Web** from day one.
-
-We’ll use **Expo with React Native + TypeScript**, which makes this clean, consistent, and web-compatible (via Expo for Web).
-
-Below is your **complete technical setup guide** 👇
-
----
-
 ## 🧱 1. Project Structure Overview
 
 We’ll create one unified React Native codebase using **Expo + TypeScript** that can run on:
@@ -2979,7 +2971,7 @@ Register Steps :-
   - Gothra
 
 
-  # React Native Expo Matrimonial App - Complete Structure
+# React Native Expo Matrimonial App - Complete Structure
 
 ## 📁 Folder Structure
 

@@ -7,9 +7,7 @@ import { PaymentController } from './payment.controller';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([
-      { name: Payment.name, schema: PaymentSchema },
-    ]),
+    MongooseModule.forFeature([{ name: Payment.name, schema: PaymentSchema }]),
   ],
   providers: [PaymentService, PaymentRepository],
   controllers: [PaymentController],

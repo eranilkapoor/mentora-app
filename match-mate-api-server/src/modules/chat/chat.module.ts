@@ -4,14 +4,8 @@ import { ChatGateway } from './chat.gateway';
 import { ChatService } from './chat.service';
 import { ChatRepository } from './chat.repository';
 import { ChatController } from './chat.controller';
-import {
-  ChatMessage,
-  ChatMessageSchema,
-} from './schemas/chat-message.schema';
-import {
-  ChatRoom,
-  ChatRoomSchema,
-} from './schemas/chat-room.schema';
+import { ChatMessage, ChatMessageSchema } from './schemas/chat-message.schema';
+import { ChatRoom, ChatRoomSchema } from './schemas/chat-room.schema';
 
 @Module({
   imports: [

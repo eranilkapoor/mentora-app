@@ -40,7 +40,7 @@ export default function LoginScreen({ navigation }: any) {
     const [otp, setOtp] = useState("");
     const [otpSent, setOtpSent] = useState(false);
     const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
-    const [countryCode, setCountryCode] = useState(country_codes[2]);
+    const [countryCode, setCountryCode] = useState(`+${country_codes[2]}`);
     
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
@@ -49,11 +49,8 @@ export default function LoginScreen({ navigation }: any) {
         setErrors(prev => ({ ...prev, [field]: undefined }));
     };
     
-    const validateEmail = (value: string) =>
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-    const validatePhone = (value: string) =>
-        /^\+?\d{6,15}$/.test(value);
+    const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    const validatePhone = (value: string) => /^\+?\d{6,15}$/.test(value);
 
     const handleEmailLogin = async () => {
         const newErrors: FormErrors = {};
@@ -74,21 +71,23 @@ export default function LoginScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            const res = await fakeApi(
-                {
-                success: true,
-                data: {
-                    token: "fake-jwt-token",
-                    user: { email },
-                },
-                },
-                1000
-            );
+            // const res = await fakeApi(
+            //     {
+            //     success: true,
+            //     data: {
+            //         token: "fake-jwt-token",
+            //         user: { email },
+            //     },
+            //     },
+            //     1000
+            // );
 
+            const res = await AuthService.login({ email, password }).then(res => res.data);
+console.log(res);
             setLoading(false);
 
             if (!res.success) {
-                setErrors({ email: res.error });
+                setErrors({ email: "Invalid email or password" });
                 return;
             }
 
@@ -339,11 +338,11 @@ export default function LoginScreen({ navigation }: any) {
                                                             key={code}
                                                             style={styles.countryCodeItem}
                                                             onPress={() => {
-                                                                setCountryCode(code);
+                                                                setCountryCode(`+${code}`);
                                                                 setShowCountryCodeDropdown(false);
                                                             }}
                                                         >
-                                                            <Text>{code}</Text>
+                                                            <Text>+{code}</Text>
                                                         </TouchableOpacity>
                                                     ))}
                                                 </ScrollView>

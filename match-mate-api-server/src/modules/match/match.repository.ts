@@ -26,19 +26,12 @@ export class MatchRepository {
   }
 
   updateInterestStatus(id: string, status: InterestStatus) {
-    return this.interestModel.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true },
-    );
+    return this.interestModel.findByIdAndUpdate(id, { status }, { new: true });
   }
 
   createMatch(user1: string, user2: string) {
     return this.matchModel.create({
-      users: [
-        new Types.ObjectId(user1),
-        new Types.ObjectId(user2),
-      ],
+      users: [new Types.ObjectId(user1), new Types.ObjectId(user2)],
     });
   }
 

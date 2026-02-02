@@ -1,11 +1,10 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
+import { RequestWithCorrelationId } from '../interfaces/request-with-correlation.interface';
 
 export const CorrelationId = createParamDecorator(
-  (data: unknown, ctx: ExecutionContext): string => {
-    const request = ctx.switchToHttp().getRequest();
-    return request['correlationId'];
+  (_data: unknown, ctx: ExecutionContext): string | undefined => {
+    const request = ctx.switchToHttp().getRequest<RequestWithCorrelationId>();
+
+    return request.correlationId;
   },
 );
-
-// Usage in controller:
-// async createUser(@CorrelationId() correlationId: string) { ... }

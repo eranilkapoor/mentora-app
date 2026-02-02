@@ -1,6 +1,4 @@
-import {
-  MaritalStatus,
-} from '../schemas/profile.schema';
+import { MaritalStatus } from '../schemas/profile.schema';
 
 export class UpdateProfileDto {
   firstName?: string;

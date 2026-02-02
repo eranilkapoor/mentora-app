@@ -1,7 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, BadRequestException } from '@nestjs/common';
 import { ProfileRepository } from './profile.repository';
 
 @Injectable()
@@ -38,9 +35,7 @@ export class ProfileService {
       'location',
     ];
 
-    const completed = requiredFields.every(
-      (f) => profile[f],
-    );
+    const completed = requiredFields.every((f) => profile[f]);
 
     if (profile.isProfileComplete !== completed) {
       profile.isProfileComplete = completed;

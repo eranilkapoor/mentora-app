@@ -1,33 +1,68 @@
 import { Controller, Post, Body } from '@nestjs/common';
-import { AuthService } from './auth.service';
-import { RegisterDto, LoginDto, PhoneSendOtpDto, PhoneVerifyDto, SocialLoginDto } from '../../shared-dto/auth.dto';
 import { ApiResponse } from '../../common/response.dto';
+import {
+  RegisterDto,
+  LoginDto,
+  PhoneSendOtpDto,
+  PhoneVerifyDto,
+  SocialLoginDto,
+} from './dto/auth.dto';
+import { AuthService } from './auth.service';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @Post('register') 
-  async register(@Body() dto: RegisterDto) { 
+  @Public()
+  @Post('register')
+  async register(@Body() dto: RegisterDto) {
     const data = await this.authService.register(dto);
     return new ApiResponse(true, 'User registered successfully', data);
   }
 
-  @Post('login') 
-  async login(@Body() dto: LoginDto) { 
-    const token = await this.authService.login(dto);
-    return new ApiResponse(true, 'Login successful', { token });
+  @Public()
+  @Post('login')
+  async login(@Body() dto: LoginDto) {
+    const data = await this.authService.login(dto);
+    return new ApiResponse(true, 'Login successful', data);
   }
 
-  // Phone OTP two-step login
-  @Post('phone/send-otp') sendOtp(@Body() dto: PhoneSendOtpDto) { return this.authService.sendOtp(dto.phone); }
-  @Post('phone/verify-otp') verifyOtp(@Body() dto: PhoneVerifyDto) { return this.authService.verifyOtp(dto.phone, dto.otp); }
-
-  // Social login
-  @Post('login/social') social(@Body() dto: SocialLoginDto) {
-    return this.authService.validateOAuthLogin(dto.provider, { id: dto.accessToken, email: '', name: '' });
+  @Public()
+  @Post('send-otp')
+  async sendOtp(@Body() dto: PhoneSendOtpDto) {
+    const data = await this.authService.sendOtp(dto.country_code, dto.phone);
+    return new ApiResponse(true, 'OTP sent successfully', data);
   }
 
-  @Post('refresh') refresh(@Body('userId') userId: string, @Body('refreshToken') token: string) { return this.authService.refreshToken(userId, token); }
-  @Post('logout') logout(@Body('userId') userId: string) { return this.authService.logout(userId); }
+  @Public()
+  @Post('verify-otp')
+  async verifyOtp(@Body() dto: PhoneVerifyDto) {
+    const data = await this.authService.verifyOtp(
+      dto.country_code,
+      dto.phone,
+      dto.otp,
+    );
+    return new ApiResponse(true, 'OTP verified successfully', data);
+  }
+
+  @Public()
+  @Post('social-login')
+  async socialLogin(@Body() dto: SocialLoginDto) {
+    const data = await this.authService.socialLogin(dto);
+    return new ApiResponse(true, 'Social login successful', data);
+  }
+
+  @Post('refresh')
+  async refresh(
+    @Body('userId') userId: string,
+    @Body('refreshToken') token: string,
+  ) {
+    return this.authService.refreshToken(userId, token);
+  }
+
+  @Post('logout')
+  async logout(@Body('userId') userId: string) {
+    return this.authService.logout(userId);
+  }
 }

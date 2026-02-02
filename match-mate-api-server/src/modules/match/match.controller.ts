@@ -14,10 +14,7 @@ export class MatchController {
 
   @Post('interest')
   sendInterest(@Body() dto: SendInterestDto) {
-    return this.matchService.sendInterest(
-      this.getUserId(),
-      dto.receiverId,
-    );
+    return this.matchService.sendInterest(this.getUserId(), dto.receiverId);
   }
 
   @Post('respond')

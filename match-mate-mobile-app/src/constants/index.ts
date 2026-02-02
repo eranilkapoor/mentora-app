@@ -30,15 +30,15 @@ export const profile_for_options = [
 ];
 
 export const country_codes = [
-  "+1", 
-  "+44", 
-  "+91", 
-  "+86", 
-  "+81", 
-  "+33", 
-  "+39", 
-  "+34", 
-  "+49"
+  "1", 
+  "44", 
+  "91", 
+  "86", 
+  "81", 
+  "33", 
+  "39", 
+  "34", 
+  "49"
 ];
 
 export const qualifications = [

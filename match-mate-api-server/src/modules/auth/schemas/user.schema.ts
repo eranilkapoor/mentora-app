@@ -1,36 +1,76 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { COLLECTIONS, STATUS } from './../../../common/constants';
+import { COLLECTIONS } from './../../../common/constants';
+import { AuthProvider } from '../enums/auth-provider.enum';
+import { UserStatus } from '../enums/user-status.enum';
+
+@Schema({ _id: false })
+export class PhoneNumber {
+  @Prop({ required: true })
+  countryCode: string;
+
+  @Prop({ required: true })
+  phone: string;
+}
+
+const PhoneNumberSchema = SchemaFactory.createForClass(PhoneNumber);
+
+@Schema({ timestamps: true, _id: false })
+export class AuthAccount {
+  @Prop({
+    type: String,
+    enum: AuthProvider,
+    required: true,
+  })
+  provider: AuthProvider;
+
+  @Prop({ required: true })
+  providerId: string;
+
+  @Prop()
+  passwordHash?: string;
+
+  @Prop({ default: false })
+  isVerified: boolean;
+
+  @Prop({ default: false })
+  isPrimary: boolean;
+}
+
+const AuthAccountSchema = SchemaFactory.createForClass(AuthAccount);
 
 @Schema({ collection: COLLECTIONS.USER, timestamps: true })
 export class User {
-  @Prop({ required: true }) first_name: string;
-  @Prop() last_name: string;
-  @Prop() gender?: string;
-  @Prop() dob?: Date;
-  @Prop({ unique: true, sparse: true }) email?: string;
-  @Prop() phone?: string;
-  @Prop() password_hash?: string;
-  @Prop() provider?: string;
-  @Prop() providerId?: string;
-  @Prop() religion?: string;
-  @Prop() caste?: string;
-  @Prop() language?: string;
-  @Prop() country?: string;
-  @Prop() state?: string;
-  @Prop() city?: string;
-  @Prop() education?: string;
-  @Prop() profession?: string;
-  @Prop() income?: string;
-  @Prop() marital_status?: string;
-  @Prop() height?: number;
-  @Prop() weight?: number;
-  @Prop() profile_photo?: string;
-  @Prop([String]) gallery?: string[];
-  @Prop({ default: STATUS.PENDING }) verification_status?: string;
-  @Prop({ default: false }) is_premium?: boolean;
-  @Prop() last_login?: Date;
+  @Prop({
+    type: String,
+    enum: UserStatus,
+    default: UserStatus.PENDING,
+  })
+  status: UserStatus;
+
+  @Prop()
+  primaryEmail?: string;
+
+  @Prop({ type: PhoneNumberSchema })
+  primaryPhone?: PhoneNumber;
+
+  @Prop({ default: false })
+  isEmailVerified: boolean;
+
+  @Prop({ default: false })
+  isPhoneVerified: boolean;
+
+  @Prop({ default: false })
+  profileCompleted: boolean;
+
+  @Prop({ type: [AuthAccountSchema], default: [] })
+  authAccounts: AuthAccount[];
 }
 
 export type UserDocument = User & Document;
 export const UserSchema = SchemaFactory.createForClass(User);
+
+UserSchema.index(
+  { 'authAccounts.provider': 1, 'authAccounts.providerId': 1 },
+  { unique: true },
+);

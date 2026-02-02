@@ -17,7 +17,8 @@ export class AnalyticsEvent extends Document {
   platform: 'web' | 'android' | 'ios';
 }
 
-export const AnalyticsEventSchema = SchemaFactory.createForClass(AnalyticsEvent);
+export const AnalyticsEventSchema =
+  SchemaFactory.createForClass(AnalyticsEvent);
 
 AnalyticsEventSchema.index({ eventType: 1, createdAt: -1 });
 AnalyticsEventSchema.index({ userId: 1 });

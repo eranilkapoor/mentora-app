@@ -7,7 +7,7 @@ import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import configuration from './config/configuration';
 import { MongoModule } from './infrastructure/databases/mongo/mongo.module';
 import { RedisModule } from './infrastructure/databases/redis/redis.module';
-import {AuthModule} from './modules/auth/auth.module';
+import { AuthModule } from './modules/auth/auth.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { UserModule } from './modules/user/user.module';
 import { ProfileModule } from './modules/profile/profile.module';
@@ -21,9 +21,9 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
 @Module({
   imports: [
     // Configuration
-    ConfigModule.forRoot({ 
-      isGlobal: true, 
-      load: [configuration] 
+    ConfigModule.forRoot({
+      isGlobal: true,
+      load: [configuration],
     }),
     // Database
     MongoModule,
@@ -32,20 +32,20 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
     // Global rate limiting (fallback)
     ThrottlerModule.forRoot([
       {
-        ttl: 60000, // 1 minute
-        limit: 100, // 100 requests per minute
+        ttl: 900, // 1 minute
+        limit: 1, // 100 requests per minute
       },
     ]),
     // Feature modules
     AuthModule,
-    AdminModule,
-    AnalyticsModule,
-    ChatModule,
-    UserModule,
-    ProfileModule,
-    MatchModule,
-    NotificationModule,
-    PaymentModule,
+    //AdminModule,
+    //AnalyticsModule,
+    //ChatModule,
+    //UserModule,
+    //ProfileModule,
+    //MatchModule,
+    //NotificationModule,
+    //PaymentModule,
   ],
   controllers: [AppController],
   providers: [
@@ -53,7 +53,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
-    AppService
+    AppService,
   ],
 })
 export class AppModule implements NestModule {

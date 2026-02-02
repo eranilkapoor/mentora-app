@@ -8,6 +8,9 @@ import {
 export class OnboardingProfileDto {
   /* BASIC */
   @IsNotEmpty()
+  profile_for: string;
+
+  @IsNotEmpty()
   first_name: string;
 
   @IsOptional()
@@ -20,18 +23,18 @@ export class OnboardingProfileDto {
   dob: string;
 
   /* LOCATION */
-  @IsNotEmpty()
-  country: string;
+  @IsOptional()
+  country?: string;
 
-  @IsNotEmpty()
-  state: string;
+  @IsOptional()
+  state?: string;
 
-  @IsNotEmpty()
-  city: string;
+  @IsOptional()
+  city?: string;
 
   /* MATRIMONIAL */
-  @IsOptional()
-  religion?: string;
+  @IsNotEmpty()
+  religion: string;
 
   @IsOptional()
   caste?: string;
@@ -39,24 +42,64 @@ export class OnboardingProfileDto {
   @IsOptional()
   language?: string;
 
-  @IsOptional()
-  education?: string;
+  @IsNotEmpty()
+  education: string;
 
   @IsOptional()
-  profession?: string;
+  education_area?: string;
+
+  @IsOptional()
+  college?: string;
+
+  @IsNotEmpty()
+  profession: string;
 
   @IsOptional()
   income?: string;
 
-  @IsOptional()
-  marital_status?: string;
+  @IsNotEmpty()
+  marital_status: string;
 
   /* PHYSICAL */
-  @IsOptional()
+  @IsNotEmpty()
   @IsNumber()
-  height?: number;
+  height: number;
 
   @IsOptional()
   @IsNumber()
   weight?: number;
+
+  @IsOptional()
+  body_type?: string;
+
+  @IsOptional()
+  complexion?: string;
+
+  @IsOptional()
+  blood_group?: string;
+
+  /* FAMILY */
+  @IsOptional()
+  father_name?: string;
+
+  @IsOptional()
+  mother_name?: string;
+
+  @IsOptional()
+  father_occupation?: string;
+
+  @IsOptional()
+  mother_occupation?: string;
+
+  @IsOptional()
+  family_status?: string;
+
+  @IsOptional()
+  family_type?: string;
+
+  @IsOptional()
+  family_values?: string;
+
+  @IsOptional()
+  no_of_siblings?: string;
 }

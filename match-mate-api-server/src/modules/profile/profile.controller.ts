@@ -14,18 +14,12 @@ export class ProfileController {
 
   @Post()
   create(@Body() dto: CreateProfileDto) {
-    return this.profileService.createProfile(
-      this.getUserId(),
-      dto,
-    );
+    return this.profileService.createProfile(this.getUserId(), dto);
   }
 
   @Patch()
   update(@Body() dto: UpdateProfileDto) {
-    return this.profileService.updateProfile(
-      this.getUserId(),
-      dto,
-    );
+    return this.profileService.updateProfile(this.getUserId(), dto);
   }
 
   @Get('me')

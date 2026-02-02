@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Get,
-  Patch,
-  Body,
-  Query,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Get, Patch, Body, Query, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { AdminQueryDto } from './dto/admin-query.dto';

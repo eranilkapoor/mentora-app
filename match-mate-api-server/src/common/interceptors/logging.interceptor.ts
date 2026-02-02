@@ -14,13 +14,15 @@ export class LoggingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
+
     const { method, url, body, headers } = request;
-    const correlationId = request['correlationId'];
-    const requestId = request['requestId'];
+    
+    const correlationId = (headers['x-correlation-id'] as string) || 'unknown';
+    const requestId = (headers['x-request-id'] as string) || 'unknown';
     const userAgent = headers['user-agent'] || 'unknown';
-    const clientVersion = headers['x-client-version'] || 'unknown';
-    const platform = headers['x-platform'] || 'unknown';
-    const deviceId = headers['x-device-id'] || 'unknown';
+    const clientVersion = (headers['x-client-version'] as string) || 'unknown';
+    const platform = (headers['x-platform'] as string) || 'unknown';
+    const deviceId = (headers['x-device-id'] as string) || 'unknown';
 
     const startTime = Date.now();
 

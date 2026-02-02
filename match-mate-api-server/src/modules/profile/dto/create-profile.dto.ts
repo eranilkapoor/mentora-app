@@ -1,7 +1,4 @@
-import {
-  Gender,
-  MaritalStatus,
-} from '../schemas/profile.schema';
+import { Gender, MaritalStatus } from '../schemas/profile.schema';
 
 export class CreateProfileDto {
   firstName: string;

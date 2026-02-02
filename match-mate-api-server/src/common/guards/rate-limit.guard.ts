@@ -7,7 +7,6 @@ import {
   Inject,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-//import { InjectRedis } from '@liaoliaots/nestjs-redis';
 import Redis from 'ioredis';
 import { RATE_LIMIT_KEY } from '../decorators/rate-limit.decorator';
 import { REDIS } from 'src/infrastructure/databases/redis/redis.provider';
@@ -16,9 +15,7 @@ import { REDIS } from 'src/infrastructure/databases/redis/redis.provider';
 export class RateLimitGuard implements CanActivate {
   constructor(
     private reflector: Reflector,
-    //@InjectRedis() private readonly redis: Redis,
     @Inject(REDIS) private readonly redis: Redis,
-
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
@@ -34,7 +31,7 @@ export class RateLimitGuard implements CanActivate {
 
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
-    
+
     // Create unique key per user/IP
     const identifier = this.getIdentifier(request);
     const key = `rate-limit:${rateLimitConfig.name}:${identifier}`;
@@ -93,8 +90,8 @@ export class RateLimitGuard implements CanActivate {
   private getLimit(request: any, config: any): number {
     // Check if user is premium
     const isPremium = request.user?.membership?.tier !== 'free';
-    return isPremium && config.limitPremium 
-      ? config.limitPremium 
+    return isPremium && config.limitPremium
+      ? config.limitPremium
       : config.limit;
   }
 }

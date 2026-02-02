@@ -1,8 +1,4 @@
-import { 
-  IsString, 
-  IsBoolean, 
-  IsOptional 
-} from 'class-validator';
+import { IsString, IsBoolean, IsOptional } from 'class-validator';
 
 export class MatchDto {
   @IsString() userId: string;

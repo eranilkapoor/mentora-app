@@ -1,11 +1,4 @@
-import {
-  Controller,
-  Post,
-  Body,
-  Req,
-  Get,
-  UseGuards,
-} from '@nestjs/common';
+import { Controller, Post, Body, Req, Get, UseGuards } from '@nestjs/common';
 import { PaymentService } from './payment.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { VerifyPaymentDto } from './dto/verify-payment.dto';

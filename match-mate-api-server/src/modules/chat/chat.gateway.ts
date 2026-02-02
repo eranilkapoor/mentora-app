@@ -13,9 +13,7 @@ import { SendMessageDto } from './dto/send-message.dto';
   namespace: '/chat',
   cors: { origin: '*' },
 })
-export class ChatGateway
-  implements OnGatewayConnection, OnGatewayDisconnect
-{
+export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server: Server;
 
@@ -46,16 +44,13 @@ export class ChatGateway
   async handleMessage(client: Socket, payload: SendMessageDto) {
     const senderId = client.data.userId;
 
-    const savedMessage = await this.chatService.sendMessage(
-      senderId,
-      payload,
-    );
+    const savedMessage = await this.chatService.sendMessage(senderId, payload);
 
     this.server.to(payload.roomId).emit('message', {
       _id: savedMessage._id,
       senderId,
       receiverId: payload.receiverId,
-      message: payload.message
+      message: payload.message,
     });
   }
 }

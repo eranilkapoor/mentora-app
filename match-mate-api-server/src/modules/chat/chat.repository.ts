@@ -31,10 +31,7 @@ export class ChatRepository {
   async findRoomByParticipants(user1: string, user2: string) {
     return this.roomModel.findOne({
       participants: {
-        $all: [
-          new Types.ObjectId(user1),
-          new Types.ObjectId(user2),
-        ],
+        $all: [new Types.ObjectId(user1), new Types.ObjectId(user2)],
       },
     });
   }

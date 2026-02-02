@@ -50,14 +50,16 @@ async function bootstrap() {
   // GLOBAL PIPES
   // ==========================================
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true, // Strip properties not in DTO
-    forbidNonWhitelisted: true, // Throw error for extra properties
-    transform: true, // Auto-transform payloads to DTO instances
-    transformOptions: {
-      enableImplicitConversion: true,
-    },
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true, // Strip properties not in DTO
+      forbidNonWhitelisted: true, // Throw error for extra properties
+      transform: true, // Auto-transform payloads to DTO instances
+      transformOptions: {
+        enableImplicitConversion: true,
+      },
+    }),
+  );
 
   // ==========================================
   // GLOBAL FILTERS
@@ -106,7 +108,9 @@ async function bootstrap() {
   console.log(`🚀 Server running on: http://localhost:${port}`);
   console.log(`Application is running on: http://localhost:${port}/${apiPrefix}/${apiVersion}`);
   console.log(`📚 API Docs available at: http://localhost:${port}/api/docs`);
-
 }
 
-bootstrap();
+bootstrap().catch((err) => {
+  console.error(err);
+  process.exit(1);
+});

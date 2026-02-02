@@ -6,7 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { UserRepository } from './user.repository';
+import { UserRepository } from './repositories/user.repository';
 import { OtpService } from './otp.service';
 import { User, UserSchema } from './schemas/user.schema';
 
@@ -19,7 +19,10 @@ import { User, UserSchema } from './schemas/user.schema';
       useFactory: (configService: ConfigService) => ({
         secret: configService.get<string>('jwt.secret', '123456'),
         signOptions: {
-          expiresIn: parseInt(configService.get<string>('jwt.expiresIn', '900'), 10), // 15 minutes in seconds
+          expiresIn: parseInt(
+            configService.get<string>('jwt.expiresIn', '900'),
+            10,
+          ), // 15 minutes in seconds
         },
       }),
       inject: [ConfigService],

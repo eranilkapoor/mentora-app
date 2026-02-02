@@ -18,7 +18,7 @@ export class ChatService {
       senderId,
       receiverId: payload.receiverId,
       roomId: payload.roomId,
-      message: payload.message
+      message: payload.message,
     });
   }
 }

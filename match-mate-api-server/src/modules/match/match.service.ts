@@ -29,14 +29,9 @@ export class MatchService {
     }
 
     const status =
-      action === 'ACCEPT'
-        ? InterestStatus.ACCEPTED
-        : InterestStatus.REJECTED;
+      action === 'ACCEPT' ? InterestStatus.ACCEPTED : InterestStatus.REJECTED;
 
-    const updated = await this.repo.updateInterestStatus(
-      interestId,
-      status,
-    );
+    const updated = await this.repo.updateInterestStatus(interestId, status);
 
     if (status === InterestStatus.ACCEPTED) {
       await this.repo.createMatch(
