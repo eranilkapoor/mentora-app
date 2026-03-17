@@ -25,6 +25,9 @@
     },
     "web": {
       "favicon": "./src/assets/favicon.png"
+    },
+    "extra": {
+      "apiUrl": "http://localhost:3000/api/v1/"
     }
   }
 }

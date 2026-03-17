@@ -1,7 +1,7 @@
 import {
   ConflictException,
   Injectable,
-  UnauthorizedException,
+  UnauthorizedException
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './repositories/user.repository';
@@ -17,13 +17,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
   ) {}
-
-  private generateTokens(userId: string, email: string) {
-    const payload = { sub: userId, email };
-    const accessToken = this.jwtService.sign(payload, { expiresIn: '15m' });
-    const refreshToken = this.jwtService.sign(payload, { expiresIn: '7d' });
-    return { accessToken, refreshToken };
-  }
 
   async register(dto: RegisterDto) {
     const email = dto.email.toLowerCase();
@@ -121,7 +114,19 @@ export class AuthService {
     );
 
     if (existingUser) {
-      return this.issueTokens(existingUser);
+      const token = this.jwtService.sign({
+        sub: existingUser._id,
+      });
+
+      return {
+        user: {
+          userId: existingUser._id,
+          phone: existingUser.primaryPhone,
+          isPhoneVerified: existingUser.isPhoneVerified,
+          profileCompleted: existingUser.profileCompleted,
+        },
+        token,
+      };
     }
 
     const user = await this.userRepo.create({
@@ -160,7 +165,18 @@ export class AuthService {
     );
 
     if (existingUser) {
-      return this.issueTokens(existingUser);
+      const token = this.jwtService.sign({
+        sub: existingUser._id,
+      });
+
+      return {
+        user: {
+          userId: existingUser._id,
+          provider: dto.provider,
+          profileCompleted: existingUser.profileCompleted,
+        },
+        token,
+      };
     }
 
     const user = await this.userRepo.create({
@@ -182,36 +198,16 @@ export class AuthService {
     });
 
     return {
-      userId: user._id,
-      provider: dto.provider,
-      profileCompleted: user.profileCompleted,
-      accessToken: token,
+      user: {
+        userId: user._id,
+        provider: dto.provider,
+        profileCompleted: user.profileCompleted
+      },
+      token
     };
-  }
-
-  async refreshToken(userId: string, refreshToken: string) {
-    const user = await this.userRepo.findById(userId);
-    if (!user || !(user as any).refresh_token)
-      throw new UnauthorizedException('Access denied');
-    const isValid = await bcrypt.compare(
-      refreshToken,
-      (user as any).refresh_token,
-    );
-    if (!isValid) throw new UnauthorizedException('Invalid refresh token');
-    return this.issueTokens(user);
   }
 
   async logout(userId: string) {
     return true;
-  }
-
-  private async issueTokens(user: any) {
-    const tokens = await this.generateTokens(
-      user._id.toString(),
-      user.email ?? '',
-    );
-    const hashedRefresh = await bcrypt.hash(tokens.refreshToken, 10);
-
-    return { userId: user._id, ...tokens };
   }
 }

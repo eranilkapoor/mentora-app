@@ -19,75 +19,17 @@ const Stack = createNativeStackNavigator();
 export default function AppStack() {
   return (
     <Stack.Navigator>
-      <Stack.Screen
-        name="Tabs"
-        component={BottomTabs}
-        options={{ headerShown: false }}
-      />
-
-      <Stack.Screen
-        name="Notifications"
-        component={NotificationsScreen}
-        options={{
-          title: 'Notifications',
-        }}
-      />
-
-      <Stack.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{
-          title: 'Settings',
-        }}
-      />
-
-      <Stack.Screen
-        name="EditProfile"
-        component={EditProfileScreen}
-        options={{ title: 'Edit Profile' }}
-      />
-
-      <Stack.Screen
-        name="ChangePassword"
-        component={ChangePasswordScreen}
-        options={{ title: 'Change Password' }}
-      />
-
-      <Stack.Screen
-        name="ChatScreen"
-        component={ChatScreen}
-        options={{ title: 'Chat Screen' }}
-      />
-
-      <Stack.Screen
-        name="MatchDetail"
-        component={MatchDetailScreen}
-        options={{ title: 'Match Detail' }}
-      />
-
-      <Stack.Screen 
-        name="NotificationSettings" 
-        component={NotificationSettingsScreen}
-        options={{ title: "Notification Settings" }} 
-      />
-
-      <Stack.Screen 
-        name="HelpSupport" 
-        component={HelpSupportScreen}
-        options={{ title: "Help & Support" }} 
-      />
-
-      <Stack.Screen 
-        name="PrivacyPolicy" 
-        component={PrivacyPolicyScreen}
-        options={{ title: "Privacy Policy" }} 
-      />
-
-      <Stack.Screen
-        name="OnlineMatches"
-        component={OnlineMatchesScreen}
-      />
-
+      <Stack.Screen name="Tabs" component={BottomTabs} options={{ headerShown: false }} />
+      <Stack.Screen name="Notifications" component={NotificationsScreen} options={{ title: 'Notifications' }} />
+      <Stack.Screen name="Settings" component={SettingsScreen} options={{ title: 'Settings' }} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} options={{ title: 'Edit Profile' }} />
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} options={{ title: 'Change Password' }} />
+      <Stack.Screen name="ChatScreen" component={ChatScreen} options={{ title: 'Chat Screen' }} />
+      <Stack.Screen name="MatchDetail" component={MatchDetailScreen} options={{ title: 'Match Detail' }} />
+      <Stack.Screen name="NotificationSettings" component={NotificationSettingsScreen} options={{ title: "Notification Settings" }} />
+      <Stack.Screen name="HelpSupport" component={HelpSupportScreen} options={{ title: "Help & Support" }} />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} options={{ title: "Privacy Policy" }} />
+      <Stack.Screen name="OnlineMatches" component={OnlineMatchesScreen} options={{ headerShown: false }} />
     </Stack.Navigator>
   );
 }

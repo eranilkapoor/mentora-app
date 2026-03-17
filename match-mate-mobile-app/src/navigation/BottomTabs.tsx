@@ -23,6 +23,7 @@ export default function BottomTabs() {
           ),
         }}
       />
+
       <Tab.Screen
         name="Matches"
         component={MatchListScreen}
@@ -32,6 +33,7 @@ export default function BottomTabs() {
           ),
         }}
       />
+
       <Tab.Screen
         name="Chat"
         component={ChatsListScreen}
@@ -41,6 +43,7 @@ export default function BottomTabs() {
           ),
         }}
       />
+      
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}

@@ -40,7 +40,7 @@ export default function LoginScreen({ navigation }: any) {
     const [otp, setOtp] = useState("");
     const [otpSent, setOtpSent] = useState(false);
     const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
-    const [countryCode, setCountryCode] = useState(`+${country_codes[2]}`);
+    const [countryCode, setCountryCode] = useState(country_codes[2]);
     
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<FormErrors>({});
@@ -71,19 +71,8 @@ export default function LoginScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            // const res = await fakeApi(
-            //     {
-            //     success: true,
-            //     data: {
-            //         token: "fake-jwt-token",
-            //         user: { email },
-            //     },
-            //     },
-            //     1000
-            // );
-
             const res = await AuthService.login({ email, password }).then(res => res.data);
-console.log(res);
+            
             setLoading(false);
 
             if (!res.success) {
@@ -113,10 +102,15 @@ console.log(res);
                 
         setLoading(true);
         try {
-            await fakeApi({ success: true }, 1000);
+            const res = await AuthService.sendOtp({ country_code: countryCode, phone }).then(res => res.data);
+            console.log(res);
+            if (!res.success) {
+                setErrors({ error: "Failed to send OTP. Please try again." });
+                return;
+            }
             setOtpSent(true);
         } catch (e) {
-            setErrors({"error": "Failed to send OTP. Please try again."});
+            setErrors({ error: "Failed to send OTP. Please try again." });
         } finally {
             setLoading(false);
         }
@@ -134,12 +128,13 @@ console.log(res);
 
         setLoading(true);
         try {
-            const res = await fakeApi(
-                { success: true, data: { token: "jwt", user: { phone } } },
-                800,
-                otp !== "123456" // simulate wrong OTP
-            );
-
+            // const res = await fakeApi(
+            //     { success: true, data: { token: "jwt", user: { phone } } },
+            //     800,
+            //     otp !== "123456" // simulate wrong OTP
+            // );
+            const res = await AuthService.verifyOtp({ country_code: countryCode, phone, otp }).then(res => res.data);
+            
             if (!res.success) {
                 setErrors({ otp: "Invalid OTP" });
                 return;
@@ -176,7 +171,7 @@ console.log(res);
             // setIsAuthenticated(true);
             dispatch(setCredentials(res.data!));
         } catch (e) {
-            setErrors({ "error": `Failed to sign in with ${provider}.`});
+            setErrors({ error: `Failed to sign in with ${provider}.`});
         } finally {
             setLoading(false);
         }
@@ -317,7 +312,7 @@ console.log(res);
                                         style={styles.countryCodeBtn}
                                         onPress={() => setShowCountryCodeDropdown(!showCountryCodeDropdown)}
                                     >
-                                        <Text style={styles.countryCodeText}>{countryCode}</Text>
+                                        <Text style={styles.countryCodeText}>+{countryCode}</Text>
                                         <Text style={{ fontSize: 16, color: "#666" }}>▼</Text>
                                     </TouchableOpacity>
                                     <Modal
@@ -338,7 +333,7 @@ console.log(res);
                                                             key={code}
                                                             style={styles.countryCodeItem}
                                                             onPress={() => {
-                                                                setCountryCode(`+${code}`);
+                                                                setCountryCode(code);
                                                                 setShowCountryCodeDropdown(false);
                                                             }}
                                                         >
@@ -406,7 +401,7 @@ console.log(res);
                                             {loading ? (
                                                 <ActivityIndicator color="#fff" />
                                             ) : (
-                                                <Text style={styles.primaryButtonText}>Submit OTP</Text>
+                                                <Text style={styles.primaryButtonText}>Verify & Continue</Text>
                                             )}
                                         </TouchableOpacity>
 
@@ -597,8 +592,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 6,
         paddingVertical: 4,
     },
-    forgot: { alignSelf: "flex-end", marginTop: 8 },
-    forgotText: { color: "#007AFF", fontSize: 13 },
     primaryButton: {
         marginTop: 18,
         backgroundColor: "#111",
@@ -649,9 +642,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         borderRadius: 8,
         elevation: 10,        // ANDROID
-        shadowColor: "#000",  // IOS
-        shadowOpacity: 0.25,
-        shadowRadius: 6,
+        // shadowColor: "#000",  // IOS
+        // shadowOpacity: 0.25,
+        // shadowRadius: 6,
     },
     inputError: {
         borderWidth: 1,
@@ -662,4 +655,6 @@ const styles = StyleSheet.create({
         marginTop: 6,
         fontSize: 12,
     },
+    forgot: { alignSelf: "flex-end", marginTop: 8 },
+    forgotText: { color: "#007AFF", fontSize: 13 }
 });

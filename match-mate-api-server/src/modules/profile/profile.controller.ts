@@ -12,12 +12,12 @@ export class ProfileController {
     return 'USER_ID_FROM_AUTH';
   }
 
-  @Post()
+  @Post("/*path")
   create(@Body() dto: CreateProfileDto) {
     return this.profileService.createProfile(this.getUserId(), dto);
   }
 
-  @Patch()
+  @Patch("/*path")
   update(@Body() dto: UpdateProfileDto) {
     return this.profileService.updateProfile(this.getUserId(), dto);
   }

@@ -16,12 +16,12 @@ import { CreateNotificationDto } from './dto/create-notification.dto';
 export class NotificationController {
   constructor(private readonly service: NotificationService) {}
 
-  @Get()
+  @Get("/*path")
   getMyNotifications(@Req() req: any) {
     return this.service.getUserNotifications(req.user.id);
   }
 
-  @Post()
+  @Post("/*path")
   create(@Body() dto: CreateNotificationDto) {
     return this.service.notify(dto);
   }

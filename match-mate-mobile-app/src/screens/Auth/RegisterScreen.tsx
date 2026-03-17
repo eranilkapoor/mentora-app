@@ -49,11 +49,8 @@ export default function RegisterScreen({ navigation }: any) {
         setErrors(prev => ({ ...prev, [field]: undefined }));
     };
 
-    const validateEmail = (value: string) =>
-        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-
-    const validatePhone = (value: string) =>
-        /^\+?\d{6,15}$/.test(value);
+    const validateEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+    const validatePhone = (value: string) => /^\+?\d{6,15}$/.test(value);
 
     const handleEmailRegister = async () => {
         const newErrors: FormErrors = {};
@@ -101,7 +98,7 @@ export default function RegisterScreen({ navigation }: any) {
             // In real app, send OTP here and handle errors
             setOtpSent(true);
         } catch (e) {
-            setErrors({"error": "Failed to send OTP. Please try again."});
+            setErrors({ error: "Failed to send OTP. Please try again." });
         } finally {
             setLoading(false);
         }
@@ -136,7 +133,7 @@ export default function RegisterScreen({ navigation }: any) {
             //dispatch(setCredentials({ token: "fake-jwt-token", user: { provider, isProfileComplete: false } }));
             navigation.navigate("Onboarding");
         } catch (e) {
-            setErrors({"error": `Failed to sign up with ${provider}.`});
+            setErrors({ error: `Failed to sign up with ${provider}.` });
         } finally {
             setLoading(false);
         }
@@ -261,7 +258,7 @@ export default function RegisterScreen({ navigation }: any) {
                                         style={styles.countryCodeBtn}
                                         onPress={() => setShowCountryCodeDropdown(!showCountryCodeDropdown)}
                                     >
-                                        <Text style={styles.countryCodeText}>{countryCode}</Text>
+                                        <Text style={styles.countryCodeText}>+{countryCode}</Text>
                                         <Text style={{ fontSize: 16, color: "#666" }}>▼</Text>
                                     </TouchableOpacity>
                                     <Modal
@@ -286,7 +283,7 @@ export default function RegisterScreen({ navigation }: any) {
                                                                 setShowCountryCodeDropdown(false);
                                                             }}
                                                         >
-                                                            <Text>{code}</Text>
+                                                            <Text>+{code}</Text>
                                                         </TouchableOpacity>
                                                     ))}
                                                 </ScrollView>
@@ -591,9 +588,9 @@ const styles = StyleSheet.create({
         backgroundColor: "#fff",
         borderRadius: 8,
         elevation: 10,        // ANDROID
-        shadowColor: "#000",  // IOS
-        shadowOpacity: 0.25,
-        shadowRadius: 6,
+        // shadowColor: "#000",  // IOS
+        // shadowOpacity: 0.25,
+        // shadowRadius: 6,
     },
     inputError: {
         borderWidth: 1,

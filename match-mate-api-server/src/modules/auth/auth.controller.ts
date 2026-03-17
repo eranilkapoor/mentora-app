@@ -38,11 +38,7 @@ export class AuthController {
   @Public()
   @Post('verify-otp')
   async verifyOtp(@Body() dto: PhoneVerifyDto) {
-    const data = await this.authService.verifyOtp(
-      dto.country_code,
-      dto.phone,
-      dto.otp,
-    );
+    const data = await this.authService.verifyOtp(dto.country_code, dto.phone, dto.otp);
     return new ApiResponse(true, 'OTP verified successfully', data);
   }
 
@@ -51,14 +47,6 @@ export class AuthController {
   async socialLogin(@Body() dto: SocialLoginDto) {
     const data = await this.authService.socialLogin(dto);
     return new ApiResponse(true, 'Social login successful', data);
-  }
-
-  @Post('refresh')
-  async refresh(
-    @Body('userId') userId: string,
-    @Body('refreshToken') token: string,
-  ) {
-    return this.authService.refreshToken(userId, token);
   }
 
   @Post('logout')
