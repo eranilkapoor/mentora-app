@@ -8,11 +8,11 @@ import AppStack from './AppStack';
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator() {
-  const token = useAppSelector((state) => state.auth.token);
+  const { token, user } = useAppSelector((state) => state.auth);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {token ? (
+      {token && user?.isProfileCompleted ? (
         <Stack.Screen name="App" component={AppStack} />
       ) : (
         <Stack.Screen name="Auth" component={AuthStack} />

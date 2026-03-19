@@ -10,7 +10,7 @@ import { RedisModule } from './infrastructure/databases/redis/redis.module';
 import { AuthModule } from './modules/auth/auth.module';
 // import { ChatModule } from './modules/chat/chat.module';
 // import { UserModule } from './modules/user/user.module';
-// import { ProfileModule } from './modules/profile/profile.module';
+import { ProfileModule } from './modules/profile/profile.module';
 // import { MatchModule } from './modules/match/match.module';
 // import { NotificationModule } from './modules/notification/notification.module';
 // import { PaymentModule } from './modules/payment/payment.module';
@@ -42,7 +42,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
     //AnalyticsModule,
     //ChatModule,
     //UserModule,
-    //ProfileModule,
+    ProfileModule,
     //MatchModule,
     //NotificationModule,
     //PaymentModule,

@@ -26,7 +26,6 @@ export class LoggingInterceptor implements NestInterceptor {
 
     const startTime = Date.now();
 
-    // Log incoming request
     this.logger.log({
       type: 'REQUEST',
       correlationId,
@@ -47,7 +46,6 @@ export class LoggingInterceptor implements NestInterceptor {
           const response = context.switchToHttp().getResponse();
           const duration = Date.now() - startTime;
 
-          // Log successful response
           this.logger.log({
             type: 'RESPONSE',
             correlationId,
@@ -62,7 +60,6 @@ export class LoggingInterceptor implements NestInterceptor {
         error: (error) => {
           const duration = Date.now() - startTime;
 
-          // Log error response
           this.logger.error({
             type: 'ERROR',
             correlationId,
@@ -82,7 +79,6 @@ export class LoggingInterceptor implements NestInterceptor {
   private sanitizeBody(body: any): any {
     if (!body) return {};
 
-    // Remove sensitive data from logs
     const sanitized = { ...body };
     const sensitiveFields = ['password', 'token', 'creditCard', 'cvv'];
 

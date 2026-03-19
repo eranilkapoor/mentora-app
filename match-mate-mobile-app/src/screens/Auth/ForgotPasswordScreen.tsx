@@ -32,18 +32,21 @@ export default function ForgotPasswordScreen({ navigation }: any) {
 
     const validate = useCallback(() => {
         const newErrors: FormErrors = {};
+
         if (!email.trim())
             newErrors.email = "Email is required";
         else if (!EMAIL_REGEX.test(email.trim()))
             newErrors.email = "Enter a valid email address";
 
-        return Object.keys(newErrors).length ? newErrors : {};
+        return Object.keys(newErrors).length ? newErrors : null;
 
     }, [email]);
 
     const onSubmit = useCallback(async () => {
         const validationError = validate();
-        setErrors(validationError);
+
+        setErrors(validationError || {});
+
         if (validationError) return;
 
         setLoading(true);

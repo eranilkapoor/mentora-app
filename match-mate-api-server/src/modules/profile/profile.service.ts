@@ -1,28 +1,28 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
-import { ProfileRepository } from './profile.repository';
+import { ProfileRepository } from './repositories/profile.repository';
 
 @Injectable()
 export class ProfileService {
-  constructor(private readonly repo: ProfileRepository) {}
+  constructor(private readonly profileRepo: ProfileRepository) {}
 
   async createProfile(userId: string, dto: any) {
-    const existing = await this.repo.findByUserId(userId);
+    const existing = await this.profileRepo.findByUserId(userId);
     if (existing) {
       throw new BadRequestException('Profile already exists');
     }
 
-    const profile = await this.repo.createProfile(userId, dto);
+    const profile = await this.profileRepo.createProfile(userId, dto);
 
     return this.markProfileCompletion(profile);
   }
 
   async updateProfile(userId: string, dto: any) {
-    const profile = await this.repo.updateProfile(userId, dto);
+    const profile = await this.profileRepo.updateProfile(userId, dto);
     return this.markProfileCompletion(profile);
   }
 
   getMyProfile(userId: string) {
-    return this.repo.findByUserId(userId);
+    return this.profileRepo.findByUserId(userId);
   }
 
   private markProfileCompletion(profile: any) {

@@ -1,5 +1,5 @@
-import { Controller, Post, Body } from '@nestjs/common';
-import { ApiResponse } from '../../common/response.dto';
+import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { ApiResponse } from 'src/common/response.dto';
 import {
   RegisterDto,
   LoginDto,
@@ -8,9 +8,13 @@ import {
   SocialLoginDto,
 } from './dto/auth.dto';
 import { AuthService } from './auth.service';
-import { Public } from 'src/common/decorators/public.decorator';
+import { Public } from 'src/modules/auth/decorators/public.decorator';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { CurrentUser } from './decorators/current-user.decorator';
+import { OnboardingProfileDto } from './dto/onboarding-profile.dto';
 
 @Controller('auth')
+@UseGuards(JwtAuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -47,6 +51,19 @@ export class AuthController {
   async socialLogin(@Body() dto: SocialLoginDto) {
     const data = await this.authService.socialLogin(dto);
     return new ApiResponse(true, 'Social login successful', data);
+  }
+
+  @Public()
+  @Post('forgot-password')
+  async forgotPassword(@Body() dto: { email: string }) {
+    const data = await this.authService.forgotPassword(dto.email);
+    return new ApiResponse(true, 'Password reset instructions sent', data);
+  }
+
+  @Post('onboarding-profile')
+  async onboardingProfile(@CurrentUser('userId') userId: string, @Body() dto: OnboardingProfileDto) {
+    const data = await this.authService.onboardingProfile(userId, dto);
+    return new ApiResponse(true, 'Onboarding profile saved successfully', data);
   }
 
   @Post('logout')

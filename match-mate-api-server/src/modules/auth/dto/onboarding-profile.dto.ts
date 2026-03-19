@@ -3,18 +3,20 @@ import {
   IsOptional,
   IsDateString,
   IsNumber,
+  IsArray,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 
-export class OnboardingProfileDto {
-  /* BASIC */
+class PersonalDto {
   @IsNotEmpty()
-  profile_for: string;
+  profileFor: string;
 
   @IsNotEmpty()
-  first_name: string;
+  firstName: string;
 
   @IsOptional()
-  last_name?: string;
+  lastName?: string;
 
   @IsNotEmpty()
   gender: string;
@@ -22,7 +24,12 @@ export class OnboardingProfileDto {
   @IsDateString()
   dob: string;
 
-  /* LOCATION */
+  @IsNotEmpty()
+  religion: string;
+
+  @IsOptional()
+  caste?: string;
+
   @IsOptional()
   country?: string;
 
@@ -32,35 +39,17 @@ export class OnboardingProfileDto {
   @IsOptional()
   city?: string;
 
-  /* MATRIMONIAL */
-  @IsNotEmpty()
-  religion: string;
+  @IsOptional()
+  motherTongue?: string;
 
   @IsOptional()
-  caste?: string;
+  maritalStatus: string;
 
   @IsOptional()
-  language?: string;
+  aboutMe?: string;
+}
 
-  @IsNotEmpty()
-  education: string;
-
-  @IsOptional()
-  education_area?: string;
-
-  @IsOptional()
-  college?: string;
-
-  @IsNotEmpty()
-  profession: string;
-
-  @IsOptional()
-  income?: string;
-
-  @IsNotEmpty()
-  marital_status: string;
-
-  /* PHYSICAL */
+class PhysicalDto {
   @IsNotEmpty()
   @IsNumber()
   height: number;
@@ -70,36 +59,129 @@ export class OnboardingProfileDto {
   weight?: number;
 
   @IsOptional()
-  body_type?: string;
+  bodyType?: string;
 
   @IsOptional()
   complexion?: string;
 
   @IsOptional()
-  blood_group?: string;
+  bloodGroup?: string;
+}
 
-  /* FAMILY */
-  @IsOptional()
-  father_name?: string;
-
-  @IsOptional()
-  mother_name?: string;
+class EducationDto {
+  @IsNotEmpty()
+  qualification: string;
 
   @IsOptional()
-  father_occupation?: string;
+  field?: string;
 
   @IsOptional()
-  mother_occupation?: string;
+  university?: string;
+
+  @IsNotEmpty()
+  occupation: string;
 
   @IsOptional()
-  family_status?: string;
+  annualIncome?: string;
+}
+
+class FamilyDto {
+  @IsOptional()
+  fatherName?: string;
 
   @IsOptional()
-  family_type?: string;
+  motherName?: string;
 
   @IsOptional()
-  family_values?: string;
+  fatherOccupation?: string;
 
   @IsOptional()
-  no_of_siblings?: string;
+  motherOccupation?: string;
+
+  @IsOptional()
+  familyType?: string;
+
+  @IsOptional()
+  familyStatus?: string;
+
+  @IsOptional()
+  familyValues?: string;
+
+  @IsOptional()
+  siblings?: string;
+}
+
+class PreferencesDto {
+  @IsOptional()
+  partnerPreference?: string;
+
+  @IsOptional()
+  @IsArray()
+  hobbies?: string[];
+
+  @IsOptional()
+  @IsArray()
+  interests?: string[];
+
+  @IsOptional()
+  music?: string;
+
+  @IsOptional()
+  movies?: string;
+
+  @IsOptional()
+  sports?: string;
+
+  @IsOptional()
+  food?: string;
+
+  @IsOptional()
+  @IsArray()
+  languagesKnown?: string[];
+
+  @IsOptional()
+  ageRange?: string;
+
+  @IsOptional()
+  heightRange?: string;
+
+  @IsOptional()
+  qualificationRequired?: string;
+
+  @IsOptional()
+  religionPref?: string;
+
+  @IsOptional()
+  castePref?: string;
+
+  @IsOptional()
+  locationPref?: string;
+
+  @IsOptional()
+  incomePref?: string;
+
+  @IsOptional()
+  otherPreferences?: string;
+}
+
+export class OnboardingProfileDto {
+  @ValidateNested()
+  @Type(() => PersonalDto)
+  personal: PersonalDto;
+
+  @ValidateNested()
+  @Type(() => PhysicalDto)
+  physical: PhysicalDto;
+
+  @ValidateNested()
+  @Type(() => EducationDto)
+  education: EducationDto;
+
+  @ValidateNested()
+  @Type(() => FamilyDto)
+  family: FamilyDto;
+
+  @ValidateNested()
+  @Type(() => PreferencesDto)
+  preferences: PreferencesDto;
 }

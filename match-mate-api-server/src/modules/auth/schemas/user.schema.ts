@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { COLLECTIONS } from './../../../common/constants';
+import { COLLECTIONS } from 'src/common/constants';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import { UserStatus } from '../enums/user-status.enum';
 
@@ -61,7 +61,7 @@ export class User {
   isPhoneVerified: boolean;
 
   @Prop({ default: false })
-  profileCompleted: boolean;
+  isProfileCompleted: boolean;
 
   @Prop({ type: [AuthAccountSchema], default: [] })
   authAccounts: AuthAccount[];

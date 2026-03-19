@@ -2,13 +2,12 @@ import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-//import { UserService } from '../../user/user.service';
-
+import { UserRepository } from '../repositories/user.repository';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
     private configService: ConfigService,
-    //private userService: UserService,
+    private userRepo: UserRepository,
   ) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
@@ -18,27 +17,19 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // Payload contains: { sub: userId, email: string, iat: number, exp: number }
-
     const user = {
-      id: payload.sub,
-      email: payload.email,
+      userId: payload.userId,
       role: payload.role,
-      isActive: true, // This should be fetched from the database
-    }; //await this.userService.findById(payload.sub);
+    }; 
+    
+    await this.userRepo.findById(payload.userId);
 
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    if (!user.isActive) {
-      throw new UnauthorizedException('User account is inactive');
-    }
-
-    // This user object will be attached to request.user
     return {
-      id: user.id,
-      email: user.email,
+      userId: user.userId,
       role: user.role,
     };
   }

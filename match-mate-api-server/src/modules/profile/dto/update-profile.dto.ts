@@ -1,4 +1,4 @@
-import { MaritalStatus } from '../schemas/profile.schema';
+import { MaritalStatus } from '../enums/marital-status.enum';
 
 export class UpdateProfileDto {
   firstName?: string;

@@ -13,8 +13,9 @@ import {
 } from "react-native";
 import { profile_for_options, religions, qualifications, body_types, complexions, blood_groups, family_types, family_statuses } from "../../constants";
 import { useAppDispatch } from "../../store";
-import { setCredentials } from '../../store/authSlice';
+import { setProfileCompleted } from '../../store/authSlice';
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import { AuthService } from "../../services/authService";
 
 type RegistrationStep = "personal" | "education" | "physical" | "family" | "preferences" | "review";
 
@@ -23,7 +24,7 @@ interface PersonalData {
     firstName: string;
     lastName: string;
     dob: string;
-    gender: "male" | "female" | "";
+    gender: "MALE" | "FEMALE" | "OTHER";
     religion: string;
     country: string;
     state: string;
@@ -74,6 +75,8 @@ export default function OnboardingScreen({ navigation }: any) {
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [showDropdown, setShowDropdown] = useState<string | null>(null);
 
+    const dispatch = useAppDispatch();
+
     const getInputStyle = (field: string) => [
         styles.input,
         errors[field] ? styles.inputError : null,
@@ -94,7 +97,7 @@ export default function OnboardingScreen({ navigation }: any) {
         firstName: "",
         lastName: "",
         dob: "",
-        gender: "",
+        gender: "OTHER",
         religion: "",
         city: "",
         state: "",
@@ -141,6 +144,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
     const validatePersonal = () => {
         const e: Record<string, string> = {};
+
         if (!personal.profileFor.trim()) e.profileFor = "Selction required";
         if (!personal.firstName.trim()) e.firstName = "First name required";
         if (!personal.dob) e.dob = "Date Of Birth required";
@@ -154,6 +158,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
     const validateEducation = () => {
         const e: Record<string, string> = {};
+
         if (!education.qualification) e.qualification = "Qualification required";
         if (!education.occupation.trim()) e.occupation = "Occupation required";
 
@@ -164,6 +169,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
     const validatePhysical = () => {
         const e: Record<string, string> = {};
+
         if (!physical.height.trim()) e.height = "Height required";
 
         setErrors(e);
@@ -173,6 +179,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
     const validateFamily = () => {
         const e: Record<string, string> = {};
+
         if (!family.familyType) e.familyType = "Family type required";
 
         setErrors(e);
@@ -182,6 +189,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
     const validatePreferences = () => {
         const e: Record<string, string> = {};
+
         if (!preferences.ageRange.trim()) e.ageRange = "Age range required";
         if (!preferences.locationPref.trim()) e.locationPref = "Location preference required";
 
@@ -220,7 +228,9 @@ export default function OnboardingScreen({ navigation }: any) {
 
     const handlePrevious = () => {
         const steps: RegistrationStep[] = ["personal", "education", "physical", "family", "preferences", "review"];
+
         const currentIndex = steps.indexOf(currentStep);
+
         if (currentIndex > 0) {
             setCurrentStep(steps[currentIndex - 1]);
             setErrors({});
@@ -238,26 +248,68 @@ export default function OnboardingScreen({ navigation }: any) {
                 preferences,
             };
 
-            const res = await fetch("https://localhost:3000/api/v1/auth/register", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(body.message || "Registration failed");
+            const res = await AuthService.onboardingProfile(payload).then(res => res.data);
+            
+            if (!res.success) {
+                setErrors({ otp: "Onboarding profile creation failed" });
+                return;
             }
 
-            Alert.alert("Success", "Account created successfully!", [
-                { text: "OK", onPress: () => navigation?.navigate?.("Login") || null },
-            ]);
+            dispatch(setProfileCompleted(true));
         } catch (err: any) {
             Alert.alert("Error", err.message || "Something went wrong");
         } finally {
             setLoading(false);
         }
     };
+
+//    {
+//   "personal": {
+//     "profileFor": "Self",
+//     "firstName": "Anil",
+//     "lastName": "Kapoor",
+//     "dob": "1990-08-25",
+//     "gender": "male",
+//     "religion": "Hindu",
+//     "city": "New Delhi",
+//     "state": "Delhi",
+//     "country": "India"
+//   },
+//   "education": {
+//     "qualification": "BE/BTech",
+//     "field": "Computer Science",
+//     "university": "A.K.T.U",
+//     "occupation": "Software Engineer",
+//     "annualIncome": "35 LPA"
+//   },
+//   "physical": {
+//     "height": "168",
+//     "weight": "78",
+//     "bodyType": "Average",
+//     "complexion": "Wheatish",
+//     "bloodGroup": "B+"
+//   },
+//   "family": {
+//     "fatherName": "Suresh Chandra",
+//     "motherName": "Munni Devi",
+//     "fatherOccupation": "Farmer",
+//     "motherOccupation": "Home Maker",
+//     "siblings": "5",
+//     "familyType": "Joint Family",
+//     "familyStatus": "Middle Class",
+//     "familyValues": "Modern"
+//   },
+//   "preferences": {
+//     "ageRange": "25-30",
+//     "heightRange": "160-168",
+//     "qualificationRequired": "Graduate",
+//     "religionPref": "Hindu",
+//     "castePref": "Jatav",
+//     "locationPref": "Delhi",
+//     "incomePref": "10-25",
+//     "otherPreferences": "Working Women"
+//   }
+// }
 
     const DropdownPicker = ({ label, options, value, onChange, field }: any) => (
         <View>
@@ -355,7 +407,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
                         <Text style={styles.label}>Gender</Text>
                         <View style={styles.genderRow}>
-                            {["male", "female"].map((g) => (
+                            {["MALE", "FEMALE", "OTHER"].map((g) => (
                                 <TouchableOpacity
                                     key={g}
                                     style={[
@@ -993,3 +1045,4 @@ const styles = StyleSheet.create({
         borderColor: "#d04545",
     },
 });
+

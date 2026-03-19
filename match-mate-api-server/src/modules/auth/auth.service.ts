@@ -5,10 +5,12 @@ import {
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './repositories/user.repository';
+import { ProfileRepository } from '../profile/repositories/profile.repository';
 import { OtpService } from './otp.service';
 import * as bcrypt from 'bcryptjs';
 import { RegisterDto, LoginDto, SocialLoginDto } from './dto/auth.dto';
 import { AuthProvider } from './enums/auth-provider.enum';
+import { OnboardingProfileDto } from './dto/onboarding-profile.dto';
 
 @Injectable()
 export class AuthService {
@@ -16,7 +18,8 @@ export class AuthService {
     private readonly userRepo: UserRepository,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
-  ) {}
+    private readonly profileRepo: ProfileRepository,
+  ) { }
 
   async register(dto: RegisterDto) {
     const email = dto.email.toLowerCase();
@@ -48,7 +51,8 @@ export class AuthService {
     await user.save();
 
     const token = this.jwtService.sign({
-      sub: user._id,
+      userId: user._id,
+      role: 'user',
     });
 
     return {
@@ -56,7 +60,7 @@ export class AuthService {
         userId: user._id,
         email: user.primaryEmail,
         isEmailVerified: user.isEmailVerified,
-        profileCompleted: user.profileCompleted,
+        isProfileCompleted: user.isProfileCompleted,
       },
       token,
     };
@@ -85,7 +89,8 @@ export class AuthService {
     }
 
     const token = this.jwtService.sign({
-      sub: existingUser._id,
+      userId: existingUser._id,
+      role: 'user',
     });
 
     return {
@@ -93,7 +98,7 @@ export class AuthService {
         userId: existingUser._id,
         email: existingUser.primaryEmail,
         isEmailVerified: existingUser.isEmailVerified,
-        profileCompleted: existingUser.profileCompleted,
+        isProfileCompleted: existingUser.isProfileCompleted,
       },
       token,
     };
@@ -115,7 +120,8 @@ export class AuthService {
 
     if (existingUser) {
       const token = this.jwtService.sign({
-        sub: existingUser._id,
+        userId: existingUser._id,
+        role: 'user',
       });
 
       return {
@@ -123,7 +129,7 @@ export class AuthService {
           userId: existingUser._id,
           phone: existingUser.primaryPhone,
           isPhoneVerified: existingUser.isPhoneVerified,
-          profileCompleted: existingUser.profileCompleted,
+          isProfileCompleted: existingUser.isProfileCompleted,
         },
         token,
       };
@@ -144,7 +150,8 @@ export class AuthService {
     await user.save();
 
     const token = this.jwtService.sign({
-      sub: user._id,
+      userId: user._id,
+      role: 'user',
     });
 
     return {
@@ -152,7 +159,7 @@ export class AuthService {
         userId: user._id,
         phone: user.primaryPhone,
         isPhoneVerified: user.isPhoneVerified,
-        profileCompleted: user.profileCompleted,
+        isProfileCompleted: user.isProfileCompleted,
       },
       token,
     };
@@ -166,14 +173,15 @@ export class AuthService {
 
     if (existingUser) {
       const token = this.jwtService.sign({
-        sub: existingUser._id,
+        userId: existingUser._id,
+        role: 'user',
       });
 
       return {
         user: {
           userId: existingUser._id,
           provider: dto.provider,
-          profileCompleted: existingUser.profileCompleted,
+          isProfileCompleted: existingUser.isProfileCompleted,
         },
         token,
       };
@@ -184,7 +192,7 @@ export class AuthService {
         {
           provider:
             AuthProvider[
-              dto.provider.toUpperCase() as keyof typeof AuthProvider
+            dto.provider.toUpperCase() as keyof typeof AuthProvider
             ],
           providerId: dto.provider_id,
           isVerified: false,
@@ -194,16 +202,91 @@ export class AuthService {
     });
 
     const token = this.jwtService.sign({
-      sub: user._id,
+      userId: user._id,
+      role: 'user',
     });
 
     return {
       user: {
         userId: user._id,
         provider: dto.provider,
-        profileCompleted: user.profileCompleted
+        isProfileCompleted: user.isProfileCompleted
       },
       token
+    };
+  }
+
+  async forgotPassword(email: string) {
+    // Implementation for forgot password
+  }
+
+  async onboardingProfile(userId: string, dto: OnboardingProfileDto) {
+    console.log('User profile marked as completed');
+    console.log('Profile data received:', userId, dto);
+    const user = await this.userRepo.findById(userId);
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    user.isProfileCompleted = true;
+    await user.save();
+
+    const profileData = {
+      profileFor: dto.personal.profileFor,
+      firstName: dto.personal.firstName,
+      lastName: dto.personal.lastName,
+      gender: dto.personal.gender,
+      dateOfBirth: dto.personal.dob,
+
+      heightCm: dto.physical.height,
+      weightKg: dto.physical.weight,
+
+      religion: dto.personal.religion,
+      caste: dto.personal.caste,
+
+      country: dto.personal.country,
+      state: dto.personal.state,
+      city: dto.personal.city,
+      location: dto.personal.city,
+
+      motherTongue: dto.personal.motherTongue,
+      maritalStatus: dto.personal.maritalStatus,
+      aboutMe: dto.personal.aboutMe,
+
+      education: dto.education.qualification,
+      fieldOfEducation: dto.education.field,
+      college: dto.education.university,
+      occupation: dto.education.occupation,
+      annualIncome: dto.education.annualIncome,
+
+      bodyType: dto.physical.bodyType,
+      complexion: dto.physical.complexion,
+      bloodGroup: dto.physical.bloodGroup,
+
+      fatherName: dto.family.fatherName,
+      motherName: dto.family.motherName,
+      fatherOccupation: dto.family.fatherOccupation,
+      motherOccupation: dto.family.motherOccupation,
+      familyType: dto.family.familyType,
+      familyStatus: dto.family.familyStatus,
+      familyValues: dto.family.familyValues,
+      siblings: dto.family.siblings,
+
+      partnerPreference: dto.preferences.partnerPreference,
+      hobbies: dto.preferences.hobbies,
+      interests: dto.preferences.interests,
+      music: dto.preferences.music,
+      movies: dto.preferences.movies,
+      sports: dto.preferences.sports,
+      food: dto.preferences.food,
+      languagesKnown: dto.preferences.languagesKnown,
+    };
+
+    await this.profileRepo.createProfile(userId, profileData);
+
+    return {
+      userId: user._id,
+      isProfileCompleted: user.isProfileCompleted,
     };
   }
 

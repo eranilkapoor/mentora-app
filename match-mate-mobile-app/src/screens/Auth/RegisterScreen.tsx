@@ -71,8 +71,19 @@ export default function RegisterScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            await fakeApi({ success: true }, 1000);
-            navigation.navigate("Onboarding");
+            const res = await AuthService.register({ email, password }).then(res => res.data);
+                        
+            if (!res.success) {
+                setErrors({ email: "Email already registered. Please try login!" });
+                return;
+            }
+
+            dispatch(setCredentials(res.data!));
+
+            if(res.data?.user?.isProfileCompleted === false) {
+                navigation?.navigate?.("Onboarding");
+                return;
+            }
         } catch (e) {
             setErrors({"error": "Registration failed. Please try again."});
         } finally {
@@ -94,8 +105,13 @@ export default function RegisterScreen({ navigation }: any) {
                 
         setLoading(true);
         try {
-            await fakeApi({ success: true }, 1000);
-            // In real app, send OTP here and handle errors
+            const res = await AuthService.sendOtp({ country_code: countryCode, phone }).then(res => res.data);
+            
+            if (!res.success) {
+                setErrors({ error: "Failed to send OTP. Please try again." });
+                return;
+            }
+
             setOtpSent(true);
         } catch (e) {
             setErrors({ error: "Failed to send OTP. Please try again." });
@@ -116,8 +132,19 @@ export default function RegisterScreen({ navigation }: any) {
 
         setLoading(true);
         try {
-            await fakeApi({ success: true }, 1000);
-            navigation.navigate("Onboarding");
+            const res = await AuthService.verifyOtp({ country_code: countryCode, phone, otp }).then(res => res.data);
+                        
+            if (!res.success) {
+                setErrors({ otp: "Invalid OTP" });
+                return;
+            }
+
+            dispatch(setCredentials(res.data!));
+
+            if(res.data?.user?.isProfileCompleted === false) {
+                navigation?.navigate?.("Onboarding");
+                return;
+            }
         } catch (e) {
             setErrors({"error": "Failed to verify OTP. Please try again."});
         } finally {
