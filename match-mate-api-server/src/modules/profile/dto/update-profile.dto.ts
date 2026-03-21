@@ -1,16 +1,4 @@
-import { MaritalStatus } from '../enums/marital-status.enum';
+import { PartialType } from '@nestjs/mapped-types';
+import { CreateProfileDto } from './create-profile.dto';
 
-export class UpdateProfileDto {
-  firstName?: string;
-  lastName?: string;
-  heightCm?: number;
-  religion?: string;
-  caste?: string;
-  motherTongue?: string;
-  maritalStatus?: MaritalStatus;
-  education?: string;
-  occupation?: string;
-  annualIncome?: string;
-  location?: string;
-  aboutMe?: string;
-}
+export class UpdateProfileDto extends PartialType(CreateProfileDto) {}

@@ -11,7 +11,7 @@ import {
     Alert,
     ActivityIndicator,
 } from "react-native";
-import { profile_for_options, religions, qualifications, body_types, complexions, blood_groups, family_types, family_statuses } from "../../constants";
+import { profile_for_options, religions, qualifications, body_types, complexions, family_types, family_statuses } from "../../constants";
 import { useAppDispatch } from "../../store";
 import { setProfileCompleted } from '../../store/authSlice';
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -24,7 +24,7 @@ interface PersonalData {
     firstName: string;
     lastName: string;
     dob: string;
-    gender: "MALE" | "FEMALE" | "OTHER";
+    gender: "male" | "female" | "other";
     religion: string;
     country: string;
     state: string;
@@ -44,7 +44,6 @@ interface PhysicalData {
     weight: string;
     bodyType: string;
     complexion: string;
-    bloodGroup: string;
 }
 
 interface FamilyData {
@@ -97,7 +96,7 @@ export default function OnboardingScreen({ navigation }: any) {
         firstName: "",
         lastName: "",
         dob: "",
-        gender: "OTHER",
+        gender: "other",
         religion: "",
         city: "",
         state: "",
@@ -117,7 +116,6 @@ export default function OnboardingScreen({ navigation }: any) {
         weight: "",
         bodyType: "",
         complexion: "",
-        bloodGroup: "",
     });
 
     const [family, setFamily] = useState<FamilyData>({
@@ -287,7 +285,6 @@ export default function OnboardingScreen({ navigation }: any) {
 //     "weight": "78",
 //     "bodyType": "Average",
 //     "complexion": "Wheatish",
-//     "bloodGroup": "B+"
 //   },
 //   "family": {
 //     "fatherName": "Suresh Chandra",
@@ -407,7 +404,7 @@ export default function OnboardingScreen({ navigation }: any) {
 
                         <Text style={styles.label}>Gender</Text>
                         <View style={styles.genderRow}>
-                            {["MALE", "FEMALE", "OTHER"].map((g) => (
+                            {["male", "female", "other"].map((g) => (
                                 <TouchableOpacity
                                     key={g}
                                     style={[
@@ -569,15 +566,6 @@ export default function OnboardingScreen({ navigation }: any) {
                             value={physical.complexion}
                             onChange={(val: string) => setPhysical({ ...physical, complexion: val })}
                             field="complexion"
-                        />
-
-                        <Text style={styles.label}>Blood Group</Text>
-                        <DropdownPicker
-                            label="bloodGroup"
-                            options={blood_groups}
-                            value={physical.bloodGroup}
-                            onChange={(val: string) => setPhysical({ ...physical, bloodGroup: val })}
-                            field="bloodGroup"
                         />
                     </View>
                 );

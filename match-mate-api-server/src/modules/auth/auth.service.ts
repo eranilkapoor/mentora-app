@@ -16,9 +16,9 @@ import { OnboardingProfileDto } from './dto/onboarding-profile.dto';
 export class AuthService {
   constructor(
     private readonly userRepo: UserRepository,
+    private readonly profileRepo: ProfileRepository,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
-    private readonly profileRepo: ProfileRepository,
   ) { }
 
   async register(dto: RegisterDto) {
@@ -140,7 +140,7 @@ export class AuthService {
         {
           provider: AuthProvider.PHONE,
           providerId: `${country_code}|${phone}`,
-          isVerified: false,
+          isVerified: true,
           isPrimary: true,
         },
       ],
@@ -195,7 +195,7 @@ export class AuthService {
             dto.provider.toUpperCase() as keyof typeof AuthProvider
             ],
           providerId: dto.provider_id,
-          isVerified: false,
+          isVerified: true,
           isPrimary: true,
         },
       ],
@@ -217,72 +217,84 @@ export class AuthService {
   }
 
   async forgotPassword(email: string) {
-    // Implementation for forgot password
+    const user = await this.userRepo.findByProvider(
+      AuthProvider.EMAIL,
+      email.toLowerCase(),
+    );
+
+    if (!user) {
+      throw new UnauthorizedException('User not found');
+    }
+
+    const resetToken = this.jwtService.sign(
+      { userId: user._id, type: 'password-reset' },
+      { expiresIn: '15m' }
+    );
+
+    // TODO: Send reset token via email (e.g., using MailerService)
+    return { message: 'Password reset link sent to email', resetToken };
   }
 
   async onboardingProfile(userId: string, dto: OnboardingProfileDto) {
-    console.log('User profile marked as completed');
-    console.log('Profile data received:', userId, dto);
     const user = await this.userRepo.findById(userId);
     if (!user) {
       throw new UnauthorizedException('User not found');
     }
 
-    user.isProfileCompleted = true;
-    await user.save();
-
     const profileData = {
-      profileFor: dto.personal.profileFor,
-      firstName: dto.personal.firstName,
-      lastName: dto.personal.lastName,
-      gender: dto.personal.gender,
-      dateOfBirth: dto.personal.dob,
-
-      heightCm: dto.physical.height,
-      weightKg: dto.physical.weight,
-
-      religion: dto.personal.religion,
-      caste: dto.personal.caste,
-
-      country: dto.personal.country,
-      state: dto.personal.state,
-      city: dto.personal.city,
-      location: dto.personal.city,
-
-      motherTongue: dto.personal.motherTongue,
-      maritalStatus: dto.personal.maritalStatus,
-      aboutMe: dto.personal.aboutMe,
-
-      education: dto.education.qualification,
-      fieldOfEducation: dto.education.field,
-      college: dto.education.university,
-      occupation: dto.education.occupation,
-      annualIncome: dto.education.annualIncome,
-
-      bodyType: dto.physical.bodyType,
-      complexion: dto.physical.complexion,
-      bloodGroup: dto.physical.bloodGroup,
-
-      fatherName: dto.family.fatherName,
-      motherName: dto.family.motherName,
-      fatherOccupation: dto.family.fatherOccupation,
-      motherOccupation: dto.family.motherOccupation,
-      familyType: dto.family.familyType,
-      familyStatus: dto.family.familyStatus,
-      familyValues: dto.family.familyValues,
-      siblings: dto.family.siblings,
-
-      partnerPreference: dto.preferences.partnerPreference,
-      hobbies: dto.preferences.hobbies,
-      interests: dto.preferences.interests,
-      music: dto.preferences.music,
-      movies: dto.preferences.movies,
-      sports: dto.preferences.sports,
-      food: dto.preferences.food,
-      languagesKnown: dto.preferences.languagesKnown,
+      personal: {
+        profileFor: dto.personal.profileFor,
+        firstName: dto.personal.firstName,
+        lastName: dto.personal.lastName,
+        gender: dto.personal.gender,
+        dob: dto.personal.dob,
+        religion: dto.personal.religion,
+        caste: dto.personal.caste,
+        country: dto.personal.country,
+        state: dto.personal.state,
+        city: dto.personal.city,
+        motherTongue: dto.personal.motherTongue,
+        maritalStatus: dto.personal.maritalStatus,
+        aboutMe: dto.personal.aboutMe,
+      },
+      physical: {
+        height: dto.physical.height,
+        weight: dto.physical.weight,
+        bodyType: dto.physical.bodyType,
+        complexion: dto.physical.complexion,
+      },
+      education: {
+        qualification: dto.education.qualification,
+        field: dto.education.field,
+        university: dto.education.university,
+        occupation: dto.education.occupation,
+        annualIncome: dto.education.annualIncome,
+      },
+      family: {
+        fatherName: dto.family.fatherName,
+        motherName: dto.family.motherName,
+        fatherOccupation: dto.family.fatherOccupation,
+        motherOccupation: dto.family.motherOccupation,
+        familyType: dto.family.familyType,
+        familyStatus: dto.family.familyStatus,
+        familyValues: dto.family.familyValues,
+        siblings: dto.family.siblings,
+      },
+      preferences: {
+        partnerPreference: dto.preferences.partnerPreference,
+        hobbies: dto.preferences.hobbies,
+        interests: dto.preferences.interests,
+        music: dto.preferences.music,
+        movies: dto.preferences.movies,
+        sports: dto.preferences.sports,
+        languagesKnown: dto.preferences.languagesKnown,
+      }
     };
 
-    await this.profileRepo.createProfile(userId, profileData);
+    await this.profileRepo.createProfile(userId, dto);
+
+    user.isProfileCompleted = true;
+    await user.save();
 
     return {
       userId: user._id,
@@ -291,6 +303,10 @@ export class AuthService {
   }
 
   async logout(userId: string) {
+    // Invalidate user session or token (depends on your implementation)
+    // If using token blacklisting, add token to blacklist
+    // If using session storage, clear the session
+    // For now, returning true indicates successful logout
     return true;
   }
 }

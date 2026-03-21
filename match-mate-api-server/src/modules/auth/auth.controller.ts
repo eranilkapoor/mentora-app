@@ -16,7 +16,7 @@ import { OnboardingProfileDto } from './dto/onboarding-profile.dto';
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(private readonly authService: AuthService) { }
 
   @Public()
   @Post('register')

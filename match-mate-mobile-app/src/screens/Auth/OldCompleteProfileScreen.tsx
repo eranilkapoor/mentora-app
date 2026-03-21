@@ -11,7 +11,7 @@ import {
     Alert,
     ActivityIndicator,
 } from "react-native";
-import { religions, qualifications, body_types, complexions, blood_groups, family_types, family_statuses } from "../../constants";
+import { religions, qualifications, body_types, complexions, family_types, family_statuses } from "../../constants";
 
 type RegistrationStep = "auth" | "otp" | "personal" | "address" | "education" | "physical" | "family" | "preferences" | "review";
 
@@ -53,7 +53,6 @@ interface PhysicalData {
     weight: string;
     bodyType: string;
     complexion: string;
-    bloodGroup: string;
 }
 
 interface FamilyData {
@@ -126,7 +125,6 @@ export default function CompleteProfileScreen({ navigation }: any) {
         weight: "",
         bodyType: "",
         complexion: "",
-        bloodGroup: "",
     });
 
     const [family, setFamily] = useState<FamilyData>({
@@ -199,7 +197,6 @@ export default function CompleteProfileScreen({ navigation }: any) {
         if (!physical.weight.trim()) e.weight = "Weight required";
         if (!physical.bodyType) e.bodyType = "Body type required";
         if (!physical.complexion) e.complexion = "Complexion required";
-        if (!physical.bloodGroup) e.bloodGroup = "Blood group required";
         setErrors(e);
         return Object.keys(e).length === 0;
     };
@@ -714,15 +711,6 @@ export default function CompleteProfileScreen({ navigation }: any) {
                             onChange={(val: string) => setPhysical({ ...physical, complexion: val })}
                         />
                         <ErrorText field="complexion" />
-
-                        <Text style={styles.label}>Blood Group</Text>
-                        <DropdownPicker
-                            label="bloodGroup"
-                            options={blood_groups}
-                            value={physical.bloodGroup}
-                            onChange={(val: string) => setPhysical({ ...physical, bloodGroup: val })}
-                        />
-                        <ErrorText field="bloodGroup" />
                     </View>
                 );
 

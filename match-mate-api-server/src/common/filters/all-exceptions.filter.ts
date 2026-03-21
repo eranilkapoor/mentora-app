@@ -50,6 +50,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Log error with correlation ID
     this.logger.error({
+      success: false,
       path: request.url,
       method: request.method,
       correlationId,
@@ -63,6 +64,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // Custom 404 response
     if (status === HttpStatus.NOT_FOUND) {
       response.status(404).json({
+        success: false,
         statusCode: 404,
         message: 'API endpoint not found',
         correlationId,
@@ -75,11 +77,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
 
     // Send error response
     response.status(status).json({
-      statusCode: status,
+      success: false,
       message,
+      errors,
+      statusCode: status,
       correlationId,
       requestId,
-      errors,
       timestamp: new Date().toISOString(),
       path: request.url,
     });

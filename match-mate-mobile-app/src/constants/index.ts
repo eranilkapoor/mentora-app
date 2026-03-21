@@ -306,18 +306,6 @@ export const countries = [
   "United Arab Emirates"
 ];
 
-export const blood_groups = [
-  "A+",
-  "A-",
-  "B+",
-  "B-",
-  "AB+",
-  "AB-",
-  "O+",
-  "O-",
-  "Prefer not to say"
-];
-
 export const zodiac_signs = [
   "Aries",
   "Taurus",

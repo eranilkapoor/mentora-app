@@ -13,4 +13,4 @@ import { Profile, ProfileSchema } from './schemas/profile.schema';
   providers: [ProfileService, ProfileRepository],
   exports: [ProfileService],
 })
-export class ProfileModule {}
+export class ProfileModule { }

@@ -1,29 +1,31 @@
-import { Controller, Post, Get, Patch, Body } from '@nestjs/common';
+import { Controller, Post, Get, Patch, Body, UseGuards } from '@nestjs/common';
 import { ProfileService } from './profile.service';
 import { CreateProfileDto } from './dto/create-profile.dto';
 import { UpdateProfileDto } from './dto/update-profile.dto';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { ApiResponse } from 'src/common/response.dto';
 
 @Controller('profile')
+@UseGuards(JwtAuthGuard)
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
-  // TEMP: replace with Auth Guard
-  private getUserId(): string {
-    return 'USER_ID_FROM_AUTH';
-  }
-
   @Post()
-  create(@Body() dto: CreateProfileDto) {
-    return this.profileService.createProfile(this.getUserId(), dto);
+  async create(@CurrentUser('userId') userId: string, @Body() dto: CreateProfileDto) {
+    const data = await this.profileService.createProfile(userId, dto);
+    return new ApiResponse(true, 'Profile created successfully', data);
   }
 
   @Patch()
-  update(@Body() dto: UpdateProfileDto) {
-    return this.profileService.updateProfile(this.getUserId(), dto);
+  async update(@CurrentUser('userId') userId: string, @Body() dto: UpdateProfileDto) {
+    const data = await this.profileService.updateProfile(userId, dto);
+    return new ApiResponse(true, 'Profile updated successfully', data);
   }
 
   @Get('me')
-  getMyProfile() {
-    return this.profileService.getMyProfile(this.getUserId());
+  async getMyProfile(@CurrentUser('userId') userId: string) {
+    const data = await this.profileService.getMyProfile(userId);
+    return new ApiResponse(true, 'Profile retrieved successfully', data);
   }
 }

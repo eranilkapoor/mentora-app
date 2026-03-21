@@ -5,7 +5,7 @@ interface PersonalData {
     firstName: string;
     lastName: string;
     dob: string;
-    gender: "MALE" | "FEMALE" | "OTHER";
+    gender: "male" | "female" | "other";
     religion: string;
     country: string;
     state: string;
@@ -25,7 +25,6 @@ interface PhysicalData {
     weight: string;
     bodyType: string;
     complexion: string;
-    bloodGroup: string;
 }
 
 interface FamilyData {

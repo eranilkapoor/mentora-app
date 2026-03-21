@@ -11,37 +11,14 @@ export class ProfileService {
       throw new BadRequestException('Profile already exists');
     }
 
-    const profile = await this.profileRepo.createProfile(userId, dto);
-
-    return this.markProfileCompletion(profile);
+    return await this.profileRepo.createProfile(userId, dto);
   }
 
   async updateProfile(userId: string, dto: any) {
-    const profile = await this.profileRepo.updateProfile(userId, dto);
-    return this.markProfileCompletion(profile);
+    return await this.profileRepo.updateProfile(userId, dto);
   }
 
-  getMyProfile(userId: string) {
-    return this.profileRepo.findByUserId(userId);
-  }
-
-  private markProfileCompletion(profile: any) {
-    const requiredFields = [
-      'firstName',
-      'gender',
-      'dateOfBirth',
-      'religion',
-      'education',
-      'location',
-    ];
-
-    const completed = requiredFields.every((f) => profile[f]);
-
-    if (profile.isProfileComplete !== completed) {
-      profile.isProfileComplete = completed;
-      profile.save();
-    }
-
-    return profile;
+  async getMyProfile(userId: string) {
+    return await this.profileRepo.findByUserId(userId);
   }
 }

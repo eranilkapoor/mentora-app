@@ -7,6 +7,8 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { Gender } from '../enums/gender.enum';
+import { MaritalStatus } from '../enums/marital-status.enum';
 
 class PersonalDto {
   @IsNotEmpty()
@@ -19,7 +21,7 @@ class PersonalDto {
   lastName?: string;
 
   @IsNotEmpty()
-  gender: string;
+  gender: Gender;
 
   @IsDateString()
   dob: string;
@@ -43,7 +45,7 @@ class PersonalDto {
   motherTongue?: string;
 
   @IsOptional()
-  maritalStatus: string;
+  maritalStatus: MaritalStatus;
 
   @IsOptional()
   aboutMe?: string;
@@ -63,9 +65,6 @@ class PhysicalDto {
 
   @IsOptional()
   complexion?: string;
-
-  @IsOptional()
-  bloodGroup?: string;
 }
 
 class EducationDto {

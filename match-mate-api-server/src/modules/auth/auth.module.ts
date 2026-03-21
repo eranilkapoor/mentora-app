@@ -16,7 +16,7 @@ import { Profile, ProfileSchema } from '../profile/schemas/profile.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema }, 
+      { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema }
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -39,4 +39,4 @@ import { Profile, ProfileSchema } from '../profile/schemas/profile.schema';
   providers: [JwtStrategy, AuthService, UserRepository, OtpService, ProfileRepository],
   exports: [AuthService, JwtModule, PassportModule],
 })
-export class AuthModule {}
+export class AuthModule { }

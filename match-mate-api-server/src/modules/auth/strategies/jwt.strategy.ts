@@ -6,7 +6,7 @@ import { UserRepository } from '../repositories/user.repository';
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(
-    private configService: ConfigService,
+    configService: ConfigService,
     private userRepo: UserRepository,
   ) {
     super({
@@ -20,8 +20,8 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     const user = {
       userId: payload.userId,
       role: payload.role,
-    }; 
-    
+    };
+
     await this.userRepo.findById(payload.userId);
 
     if (!user) {
