@@ -1,53 +1,5 @@
 import httpClient from '../api/httpClient';
-
-interface PersonalData {
-    profileFor: string;
-    firstName: string;
-    lastName: string;
-    dob: string;
-    gender: "male" | "female" | "other";
-    religion: string;
-    country: string;
-    state: string;
-    city: string;
-}
-
-interface EducationData {
-    qualification: string;
-    field: string;
-    university: string;
-    occupation: string;
-    annualIncome: string;
-}
-
-interface PhysicalData {
-    height: string;
-    weight: string;
-    bodyType: string;
-    complexion: string;
-}
-
-interface FamilyData {
-    fatherName: string;
-    motherName: string;
-    fatherOccupation: string;
-    motherOccupation: string;
-    siblings: string;
-    familyType: string;
-    familyStatus: string;
-    familyValues: string;
-}
-
-interface PreferencesData {
-    ageRange: string;
-    heightRange: string;
-    qualificationRequired: string;
-    religionPref: string;
-    castePref: string;
-    locationPref: string;
-    incomePref: string;
-    otherPreferences: string;
-}
+import { EducationData, FamilyData, PersonalData, PhysicalData, PreferencesData } from '../types/onboarding.types';
 
 export const AuthService = {
   login: (data: { 

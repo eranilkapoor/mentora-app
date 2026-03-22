@@ -84,6 +84,20 @@ class EducationDto {
   annualIncome?: string;
 }
 
+class SiblingsDto {
+  @IsOptional()
+  brothers?: number;
+
+  @IsOptional()
+  sisters?: number;
+
+  @IsOptional()
+  marriedBrothers?: number;
+
+  @IsOptional()
+  marriedSisters?: number;
+}
+
 class FamilyDto {
   @IsOptional()
   fatherName?: string;
@@ -106,61 +120,117 @@ class FamilyDto {
   @IsOptional()
   familyValues?: string;
 
+  @ValidateNested()
+  @Type(() => SiblingsDto)
+  siblings?: SiblingsDto;
+}
+
+class PartnerPreferenceDto {
   @IsOptional()
-  siblings?: string;
+  ageRange?: {
+    min: number;
+    max: number;
+  };
+
+  @IsOptional()
+  heightRange?: {
+    min: number;
+    max: number;
+  };
+
+  @IsOptional()
+  @IsArray()
+  maritalStatus?: MaritalStatus[];
+
+  @IsOptional()
+  @IsArray()
+  religion?: string[];
+
+  @IsOptional()
+  @IsArray()
+  caste?: string[];
+
+  @IsOptional()
+  @IsArray()
+  country?: string[];
+
+  @IsOptional()
+  @IsArray()
+  state?: string[];
+
+  @IsOptional()
+  @IsArray()
+  city?: string[];
+
+  @IsOptional()
+  @IsArray()
+  qualification?: string[];
+
+  @IsOptional()
+  @IsArray()
+  occupation?: string[];
+
+  @IsOptional()  
+  annualIncomeRange?: {
+    min: number;
+    max: number;
+  };
+
+  @IsOptional()
+  bodyType?: string[];
+
+  @IsOptional()
+  complexion?: string[];
+  
+  @IsOptional()
+  smoking?: string[];
+
+  @IsOptional()
+  drinking?: string[];
+
+  @IsOptional()
+  diet?: string[];
+
+  @IsOptional()
+  languagesKnown?: string[];
+
+  @IsOptional()
+  aboutPartner?: string;
 }
 
 class PreferencesDto {
-  @IsOptional()
-  partnerPreference?: string;
+  @ValidateNested()
+  @Type(() => PartnerPreferenceDto)
+  partnerPreference?: PartnerPreferenceDto;
 
   @IsOptional()
   @IsArray()
   hobbies?: string[];
 
   @IsOptional()
+  smoking?: string;
+
+  @IsOptional()
+  drinking?: string;
+
+  @IsOptional()
+  diet?: string;
+
+  @IsOptional()
   @IsArray()
-  interests?: string[];
+  music?: string[];
 
   @IsOptional()
-  music?: string;
+  @IsArray()
+  movies?: string[];
 
   @IsOptional()
-  movies?: string;
-
-  @IsOptional()
-  sports?: string;
-
-  @IsOptional()
-  food?: string;
+  @IsArray()
+  sports?: string[];
 
   @IsOptional()
   @IsArray()
   languagesKnown?: string[];
-
-  @IsOptional()
-  ageRange?: string;
-
-  @IsOptional()
-  heightRange?: string;
-
-  @IsOptional()
-  qualificationRequired?: string;
-
-  @IsOptional()
-  religionPref?: string;
-
-  @IsOptional()
-  castePref?: string;
-
-  @IsOptional()
-  locationPref?: string;
-
-  @IsOptional()
-  incomePref?: string;
-
-  @IsOptional()
-  otherPreferences?: string;
 }
 
 export class OnboardingProfileDto {

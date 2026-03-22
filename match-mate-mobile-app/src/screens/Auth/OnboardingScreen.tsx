@@ -11,7 +11,16 @@ import {
     Alert,
     ActivityIndicator,
 } from "react-native";
-import { profile_for_options, religions, qualifications, body_types, complexions, family_types, family_statuses } from "../../constants";
+import { 
+    profile_for_options, 
+    religions, 
+    qualifications, 
+    body_types, 
+    complexions, 
+    family_types, 
+    family_statuses 
+} from "../../constants";
+import { PersonalData, EducationData, PhysicalData, FamilyData, PreferencesData } from "../../types/onboarding.types";
 import { useAppDispatch } from "../../store";
 import { setProfileCompleted } from '../../store/authSlice';
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -19,62 +28,13 @@ import { AuthService } from "../../services/authService";
 
 type RegistrationStep = "personal" | "education" | "physical" | "family" | "preferences" | "review";
 
-interface PersonalData {
-    profileFor: string;
-    firstName: string;
-    lastName: string;
-    dob: string;
-    gender: "male" | "female" | "other";
-    religion: string;
-    country: string;
-    state: string;
-    city: string;
-}
+export default function OnboardingScreen() {
+    const dispatch = useAppDispatch();
 
-interface EducationData {
-    qualification: string;
-    field: string;
-    university: string;
-    occupation: string;
-    annualIncome: string;
-}
-
-interface PhysicalData {
-    height: string;
-    weight: string;
-    bodyType: string;
-    complexion: string;
-}
-
-interface FamilyData {
-    fatherName: string;
-    motherName: string;
-    fatherOccupation: string;
-    motherOccupation: string;
-    siblings: string;
-    familyType: string;
-    familyStatus: string;
-    familyValues: string;
-}
-
-interface PreferencesData {
-    ageRange: string;
-    heightRange: string;
-    qualificationRequired: string;
-    religionPref: string;
-    castePref: string;
-    locationPref: string;
-    incomePref: string;
-    otherPreferences: string;
-}
-
-export default function OnboardingScreen({ navigation }: any) {
     const [currentStep, setCurrentStep] = useState<RegistrationStep>("personal");
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
     const [showDropdown, setShowDropdown] = useState<string | null>(null);
-
-    const dispatch = useAppDispatch();
 
     const getInputStyle = (field: string) => [
         styles.input,
@@ -98,9 +58,20 @@ export default function OnboardingScreen({ navigation }: any) {
         dob: "",
         gender: "other",
         religion: "",
-        city: "",
+        caste: "",
+        country: "",
         state: "",
-        country: ""
+        city: "",
+        motherTongue: "",
+        maritalStatus: "never_married",
+        aboutMe: "",
+    });
+
+    const [physical, setPhysical] = useState<PhysicalData>({
+        height: "",
+        weight: "",
+        bodyType: "",
+        complexion: "",
     });
 
     const [education, setEducation] = useState<EducationData>({
@@ -111,33 +82,63 @@ export default function OnboardingScreen({ navigation }: any) {
         annualIncome: "",
     });
 
-    const [physical, setPhysical] = useState<PhysicalData>({
-        height: "",
-        weight: "",
-        bodyType: "",
-        complexion: "",
-    });
-
     const [family, setFamily] = useState<FamilyData>({
         fatherName: "",
         motherName: "",
         fatherOccupation: "",
         motherOccupation: "",
-        siblings: "",
         familyType: "",
         familyStatus: "",
         familyValues: "",
+        siblings: {
+            brothers: 0,
+            sisters: 0,
+            marriedBrothers: 0,
+            marriedSisters: 0,
+            details: [],
+            note: ""
+        }
     });
 
     const [preferences, setPreferences] = useState<PreferencesData>({
-        ageRange: "",
-        heightRange: "",
-        qualificationRequired: "",
-        religionPref: "",
-        castePref: "",
-        locationPref: "",
-        incomePref: "",
-        otherPreferences: "",
+        partnerPreference: {
+            ageRange: {
+                min: 18,
+                max: 100,
+            },
+            heightRange: {
+                min: 100,
+                max: 250,
+            },
+            maritalStatus: [],
+            religion: [],
+            caste: [],
+            country: [],
+            state: [],
+            city: [],
+            qualification: [],
+            occupation: [],
+            annualIncomeRange: {
+                min: 0,
+                max: 1000,
+            },
+            bodyType: [],
+            complexion: [],
+            smoking: [],
+            drinking: [],
+            diet: [],
+            languagesKnown: [],
+            aboutPartner: "",
+            isStrict: false
+        },
+        hobbies: [],
+        smoking: "non_smoker",
+        drinking: "non_drinker",
+        diet: "vegetarian",
+        music: [],
+        movies: [],
+        sports: [],
+        languagesKnown: []
     });
 
     const validatePersonal = () => {
@@ -188,8 +189,8 @@ export default function OnboardingScreen({ navigation }: any) {
     const validatePreferences = () => {
         const e: Record<string, string> = {};
 
-        if (!preferences.ageRange.trim()) e.ageRange = "Age range required";
-        if (!preferences.locationPref.trim()) e.locationPref = "Location preference required";
+        if (!preferences.partnerPreference.ageRange.min || !preferences.partnerPreference.ageRange.max) e.ageRange = "Age range required";
+        if (!preferences.partnerPreference.country.length) e.locationPref = "Location preference required";
 
         setErrors(e);
 
@@ -260,53 +261,6 @@ export default function OnboardingScreen({ navigation }: any) {
             setLoading(false);
         }
     };
-
-//    {
-//   "personal": {
-//     "profileFor": "Self",
-//     "firstName": "Anil",
-//     "lastName": "Kapoor",
-//     "dob": "1990-08-25",
-//     "gender": "male",
-//     "religion": "Hindu",
-//     "city": "New Delhi",
-//     "state": "Delhi",
-//     "country": "India"
-//   },
-//   "education": {
-//     "qualification": "BE/BTech",
-//     "field": "Computer Science",
-//     "university": "A.K.T.U",
-//     "occupation": "Software Engineer",
-//     "annualIncome": "35 LPA"
-//   },
-//   "physical": {
-//     "height": "168",
-//     "weight": "78",
-//     "bodyType": "Average",
-//     "complexion": "Wheatish",
-//   },
-//   "family": {
-//     "fatherName": "Suresh Chandra",
-//     "motherName": "Munni Devi",
-//     "fatherOccupation": "Farmer",
-//     "motherOccupation": "Home Maker",
-//     "siblings": "5",
-//     "familyType": "Joint Family",
-//     "familyStatus": "Middle Class",
-//     "familyValues": "Modern"
-//   },
-//   "preferences": {
-//     "ageRange": "25-30",
-//     "heightRange": "160-168",
-//     "qualificationRequired": "Graduate",
-//     "religionPref": "Hindu",
-//     "castePref": "Jatav",
-//     "locationPref": "Delhi",
-//     "incomePref": "10-25",
-//     "otherPreferences": "Working Women"
-//   }
-// }
 
     const DropdownPicker = ({ label, options, value, onChange, field }: any) => (
         <View>
@@ -612,8 +566,8 @@ export default function OnboardingScreen({ navigation }: any) {
                         <Text style={styles.label}>Number of Siblings</Text>
                         <TextInput
                             placeholder="Number of Siblings"
-                            value={family.siblings}
-                            onChangeText={(text) => setFamily({ ...family, siblings: text })}
+                            value={family.siblings.brothers + family.siblings.sisters > 0 ? `${family.siblings.brothers + family.siblings.sisters}` : ""}
+                            onChangeText={(text) => setFamily({ ...family, siblings: { ...family.siblings, brothers: parseInt(text) || 0, sisters: parseInt(text) || 0 } })}
                             style={styles.input}
                             keyboardType="numeric"
                         />
@@ -660,9 +614,10 @@ export default function OnboardingScreen({ navigation }: any) {
                         <Text style={styles.label}>Age Range (e.g., 25-32)</Text>
                         <TextInput
                             placeholder="Age Range (e.g., 25-32)"
-                            value={preferences.ageRange}
+                            value={preferences.partnerPreference.ageRange.min && preferences.partnerPreference.ageRange.max ? `${preferences.partnerPreference.ageRange.min}-${preferences.partnerPreference.ageRange.max}` : ""}
                             onChangeText={(text) => {
-                                setPreferences({ ...preferences, ageRange: text });
+                                const [min, max] = text.split("-").map(Number);
+                                setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, ageRange: { min, max } } });
                                 clearError("ageRange");
                             }}
                             style={[styles.input, getInputStyle("ageRange")]}
@@ -672,60 +627,53 @@ export default function OnboardingScreen({ navigation }: any) {
                         <Text style={styles.label}>Height Range (e.g., 160-180 cm)</Text>
                         <TextInput
                             placeholder="Height Range (e.g., 160-180 cm)"
-                            value={preferences.heightRange}
-                            onChangeText={(text) => setPreferences({ ...preferences, heightRange: text })}
-                            style={styles.input}
+                            value={preferences.partnerPreference.heightRange.min && preferences.partnerPreference.heightRange.max ? `${preferences.partnerPreference.heightRange.min}-${preferences.partnerPreference.heightRange.max}` : ""}
+                            onChangeText={(text) => {
+                                const [min, max] = text.split("-").map(Number);
+                                setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, heightRange: { min, max } } });
+                                clearError("heightRange");
+                            }}
+                            style={[styles.input, getInputStyle("heightRange")]}
                         />
 
                         <Text style={styles.label}>Qualification Required</Text>
                         <TextInput
                             placeholder="Qualification Required"
-                            value={preferences.qualificationRequired}
-                            onChangeText={(text) => setPreferences({ ...preferences, qualificationRequired: text })}
+                            value={preferences.partnerPreference.qualification.join(", ")}
+                            onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, qualification: text.split(",").map(q => q.trim()).filter(q => q) } })}
                             style={styles.input}
                         />
 
                         <Text style={styles.label}>Religion Preference</Text>
                         <TextInput
                             placeholder="Religion Preference"
-                            value={preferences.religionPref}
-                            onChangeText={(text) => setPreferences({ ...preferences, religionPref: text })}
+                            value={preferences.partnerPreference.religion.join(", ")}
+                            onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, religion: text.split(",").map(r => r.trim()).filter(r => r) } })}
                             style={styles.input}
                         />
 
                         <Text style={styles.label}>Caste Preference</Text>
                         <TextInput
                             placeholder="Caste Preference (if any)"
-                            value={preferences.castePref}
-                            onChangeText={(text) => setPreferences({ ...preferences, castePref: text })}
+                            value={preferences.partnerPreference.caste.join(", ")}
+                            onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, caste: text.split(",").map(c => c.trim()).filter(c => c) } })}
                             style={styles.input}
                         />
 
                         <Text style={styles.label}>Location Preference</Text>
                         <TextInput
-                            placeholder="Location Preference"
-                            value={preferences.locationPref}
-                            onChangeText={(text) => {
-                                setPreferences({ ...preferences, locationPref: text });
-                                clearError("locationPref");
-                            }}
-                            style={[styles.input, getInputStyle("locationPref")]}
+                            placeholder="Location Preference (comma-separated)"
+                            value={preferences.partnerPreference.country.join(", ")}
+                            onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, country: text.split(",").map(c => c.trim()).filter(c => c) } })}
+                            style={[styles.input, getInputStyle("country")]}
                         />
-                        <ErrorText field="locationPref" />
+                        <ErrorText field="country" />
 
-                        <Text style={styles.label}>Income Preference</Text>
+                        <Text style={styles.label}>About Partner</Text>
                         <TextInput
-                            placeholder="Income Preference"
-                            value={preferences.incomePref}
-                            onChangeText={(text) => setPreferences({ ...preferences, incomePref: text })}
-                            style={styles.input}
-                        />
-
-                        <Text style={styles.label}>Other Preferences</Text>
-                        <TextInput
-                            placeholder="Other Preferences"
-                            value={preferences.otherPreferences}
-                            onChangeText={(text) => setPreferences({ ...preferences, otherPreferences: text })}
+                            placeholder="Tell us about your ideal partner"
+                            value={preferences.partnerPreference.aboutPartner}
+                            onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, aboutPartner: text } })}
                             style={[styles.input, { height: 100, textAlignVertical: "top" }]}
                             multiline
                         />
@@ -762,7 +710,7 @@ export default function OnboardingScreen({ navigation }: any) {
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Preferences:</Text>
-                            <Text>Age: {preferences.ageRange} | Location: {preferences.locationPref}</Text>
+                            <Text>Age: {preferences.partnerPreference.ageRange.min}-{preferences.partnerPreference.ageRange.max} | Location: {preferences.partnerPreference.country.join(", ")}</Text>
                         </View>
                     </ScrollView>
                 );

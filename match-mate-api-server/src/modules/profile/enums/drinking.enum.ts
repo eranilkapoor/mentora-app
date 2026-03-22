@@ -1,7 +1,7 @@
 export enum Drinking {
-  NON_DRINKER = 'NON_DRINKER',
-  OCCASIONALLY = 'OCCASIONALLY',
-  REGULAR = 'REGULAR',
-  SOCIALLY = 'SOCIALLY',
-  OPEN_TO = 'OPEN_TO',
+  NON_DRINKER = 'non_drinker',
+  OCCASIONALLY = 'occasionally',
+  REGULAR = 'regular',
+  SOCIALLY = 'socially',
+  OPEN_TO = 'open_to',
 }

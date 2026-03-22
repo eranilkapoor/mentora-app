@@ -7,9 +7,11 @@ import { Smoking } from '../enums/smoking.enum';
 import { Drinking } from '../enums/drinking.enum';
 import { Diet } from '../enums/diet.enum';
 
-/* PERSONAL */
 @Schema({ _id: false })
 class Personal {
+  @Prop({ required: true })
+  profileFor: string;
+
   @Prop({ required: true })
   firstName: string;
 
@@ -47,7 +49,6 @@ class Personal {
   aboutMe: string;
 }
 
-/* PHYSICAL */
 @Schema({ _id: false })
 class Physical {
   @Prop({ required: true })
@@ -63,7 +64,6 @@ class Physical {
   complexion: string;
 }
 
-/* EDUCATION */
 @Schema({ _id: false })
 class Education {
   @Prop({ required: true })
@@ -118,8 +118,6 @@ export class Siblings {
   note?: string; // e.g. "1 elder brother, married"
 }
 
-export const SiblingsSchema = SchemaFactory.createForClass(Siblings);
-/* FAMILY */
 @Schema({ _id: false })
 class Family {
   @Prop()
@@ -143,7 +141,7 @@ class Family {
   @Prop()
   familyValues: string;
 
-  @Prop({ type: Siblings })
+  @Prop({ type: Siblings, default: () => ({}) })
   siblings: Siblings;
 }
 
@@ -176,24 +174,21 @@ class IncomeRange {
 
 @Schema({ _id: false })
 export class PartnerPreference {
-  /* BASIC */
   @Prop({ type: AgeRange })
   ageRange: AgeRange;
 
   @Prop({ type: HeightRange })
   heightRange: HeightRange;
 
-  @Prop({ type: [String], default: [] })
-  maritalStatus: string[];
+  @Prop({ type: [String], enum: MaritalStatus, default: [] })
+  maritalStatus: MaritalStatus[];
 
-  /* RELIGION */
   @Prop({ type: [String], default: [] })
   religion: string[];
 
   @Prop({ type: [String], default: [] })
   caste: string[];
 
-  /* LOCATION */
   @Prop({ type: [String], default: [] })
   country: string[];
 
@@ -203,7 +198,6 @@ export class PartnerPreference {
   @Prop({ type: [String], default: [] })
   city: string[];
 
-  /* EDUCATION / CAREER */
   @Prop({ type: [String], default: [] })
   qualification: string[];
 
@@ -213,14 +207,12 @@ export class PartnerPreference {
   @Prop({ type: IncomeRange })
   annualIncomeRange: IncomeRange;
 
-  /* PHYSICAL */
   @Prop({ type: [String], default: [] })
   bodyType: string[];
 
   @Prop({ type: [String], default: [] })
   complexion: string[];
 
-  /* LIFESTYLE */
   @Prop({ type: [String], enum: Smoking, default: [] })
   smoking: Smoking[];
 
@@ -230,36 +222,33 @@ export class PartnerPreference {
   @Prop({ type: [String], enum: Diet, default: [] })
   diet: Diet[];
 
-  /* OTHER */
   @Prop({ type: [String], default: [] })
   languagesKnown: string[];
 
   @Prop()
-  aboutPartner: string; // free text
+  aboutPartner: string;
 
   @Prop({ default: false })
-  isStrict: boolean; // 🔥 strict filter or flexible match
+  isStrict: boolean;
 }
-
-export const PartnerPreferenceSchema = SchemaFactory.createForClass(PartnerPreference);
 
 /* PREFERENCES */
 @Schema({ _id: false })
 class Preferences {
-  @Prop({ type: PartnerPreferenceSchema, required: true })
+  @Prop({ type: PartnerPreference, required: true })
   partnerPreference: PartnerPreference;
 
   @Prop({ type: [String], default: [] })
   hobbies: string[];
 
-  @Prop({ type: [String], enum: Smoking, default: [] })
-  smoking: Smoking[];
+  @Prop({ type: String, enum: Smoking, default: "" })
+  smoking: string;
 
-  @Prop({ type: [String], enum: Drinking, default: [] })
-  drinking: Drinking[];
+  @Prop({ type: String, enum: Drinking, default: "" })
+  drinking: string;
 
-  @Prop({ type: [String], enum: Diet, default: [] })
-  diet: Diet[];
+  @Prop({ type: String, enum: Diet, default: "" })
+  diet: string;
 
   @Prop({ type: [String], default: [] })
   music: string[];
@@ -283,9 +272,6 @@ export class Profile {
     unique: true 
   })
   userId: Types.ObjectId;
-
-  @Prop({ required: true })
-  profileFor: string;
 
   @Prop({ type: Personal, required: true })
   personal: Personal;
@@ -324,13 +310,13 @@ export class Profile {
 export type ProfileDocument = Profile & Document;
 export const ProfileSchema = SchemaFactory.createForClass(Profile);
 
-ProfileSchema.index({ 
-  userId: 1, 
-  profileFor: 1, 
-  religion: 1, 
-  caste: 1, 
-  isVerified: 1, 
-  isPremium: 1, 
+ProfileSchema.index({
+  userId: 1,
+  profileFor: 1,
+  religion: 1,
+  caste: 1,
+  isVerified: 1,
+  isPremium: 1,
   isActive: 1,
   'preferences.partnerPreference.religion': 1
 });

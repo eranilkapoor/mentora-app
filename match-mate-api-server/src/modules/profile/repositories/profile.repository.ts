@@ -10,25 +10,43 @@ export class ProfileRepository {
     private readonly profileModel: Model<ProfileDocument>,
   ) {}
 
-  createProfile(userId: string, data: any) {
-    return this.profileModel.create({
-      userId: new Types.ObjectId(userId),
-      ...data,
-    });
+  async createProfile(userId: string, data: any) {
+    try {
+      return await this.profileModel.create({
+        userId: new Types.ObjectId(userId),
+        ...data,
+      });
+    } catch (error) {
+      throw new Error(`Failed to create profile: ${error.message}`);
+    }
   }
 
-  findByUserId(userId: string) {
-    return this.profileModel.findOne({
-      userId: new Types.ObjectId(userId),
-      isActive: true,
-    });
+  async findByUserId(userId: string) {
+    try {
+      return await this.profileModel.findOne({
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+      },
+      {
+        __v: 0,
+        _id: 0,
+        createdAt: 0,
+        updatedAt: 0,
+      });
+    } catch (error) {
+      throw new Error(`Failed to find profile: ${error.message}`);
+    }
   }
 
-  updateProfile(userId: string, data: any) {
-    return this.profileModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId) },
-      { $set: data },
-      { new: true },
-    );
+  async updateProfile(userId: string, data: any) {
+    try {
+      return await this.profileModel.findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        { $set: data },
+        { new: true },
+      );
+    } catch (error) {
+      throw new Error(`Failed to update profile: ${error.message}`);
+    }
   }
 }

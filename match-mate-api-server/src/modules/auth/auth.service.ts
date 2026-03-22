@@ -241,56 +241,6 @@ export class AuthService {
       throw new UnauthorizedException('User not found');
     }
 
-    const profileData = {
-      personal: {
-        profileFor: dto.personal.profileFor,
-        firstName: dto.personal.firstName,
-        lastName: dto.personal.lastName,
-        gender: dto.personal.gender,
-        dob: dto.personal.dob,
-        religion: dto.personal.religion,
-        caste: dto.personal.caste,
-        country: dto.personal.country,
-        state: dto.personal.state,
-        city: dto.personal.city,
-        motherTongue: dto.personal.motherTongue,
-        maritalStatus: dto.personal.maritalStatus,
-        aboutMe: dto.personal.aboutMe,
-      },
-      physical: {
-        height: dto.physical.height,
-        weight: dto.physical.weight,
-        bodyType: dto.physical.bodyType,
-        complexion: dto.physical.complexion,
-      },
-      education: {
-        qualification: dto.education.qualification,
-        field: dto.education.field,
-        university: dto.education.university,
-        occupation: dto.education.occupation,
-        annualIncome: dto.education.annualIncome,
-      },
-      family: {
-        fatherName: dto.family.fatherName,
-        motherName: dto.family.motherName,
-        fatherOccupation: dto.family.fatherOccupation,
-        motherOccupation: dto.family.motherOccupation,
-        familyType: dto.family.familyType,
-        familyStatus: dto.family.familyStatus,
-        familyValues: dto.family.familyValues,
-        siblings: dto.family.siblings,
-      },
-      preferences: {
-        partnerPreference: dto.preferences.partnerPreference,
-        hobbies: dto.preferences.hobbies,
-        interests: dto.preferences.interests,
-        music: dto.preferences.music,
-        movies: dto.preferences.movies,
-        sports: dto.preferences.sports,
-        languagesKnown: dto.preferences.languagesKnown,
-      }
-    };
-
     await this.profileRepo.createProfile(userId, dto);
 
     user.isProfileCompleted = true;
