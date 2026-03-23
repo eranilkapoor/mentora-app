@@ -7,6 +7,8 @@ import {
     Image,
     Dimensions,
 } from "react-native";
+import { ProfileService } from "../../services/profileService";
+import { annualIncomeFormat, cmToFeetInches, formatAboutMe, formatAgeRange, formatLifestyleChoice, formatMaritalStatus, formatWeight, getAgeFromDOB, getFullName } from "../../utils/format";
 
 const { width } = Dimensions.get("window");
 
@@ -96,6 +98,16 @@ const Row = ({ label, value }: any) => (
 );
 
 export default function ProfileScreen() {
+    const [profileData, setProfileData] = React.useState<any>(null);
+
+    React.useEffect(() => {
+        ProfileService.getMyProfile().then((response) => {
+            console.log("Profile Data:", response.data?.data);
+            setProfileData(response.data?.data);
+        });
+    }, []);
+
+
     return (
         <ScrollView style={styles.container} showsVerticalScrollIndicator={false}>
             {/* Photo Carousel */}
@@ -105,97 +117,97 @@ export default function ProfileScreen() {
                 showsHorizontalScrollIndicator={false}
                 style={styles.carousel}
             >
-                {profile.photos.map((uri, index) => (
+                {profile?.photos.map((uri: string, index: number) => (
                     <Image key={index} source={{ uri }} style={styles.photo} />
                 ))}
             </ScrollView>
 
             {/* Basic Details */}
             <View style={styles.header}>
-                <Text style={styles.name}>{profile.basic.name}</Text>
+                <Text style={styles.name}>{getFullName(profileData?.personal.firstName, profileData?.personal.lastName)}</Text>
                 <Text style={styles.subText}>
-                    {profile.basic.age} yrs • {profile.basic.height}
-                </Text>
-                <Text style={styles.subText}>
-                    {profile.basic.maritalStatus}
+                    {getAgeFromDOB(profileData?.personal.dob)} • {cmToFeetInches(profileData?.physical.height)} • {formatMaritalStatus(profileData?.personal.maritalStatus)}
                 </Text>
             </View>
 
             {/* About */}
             <Section title="About Me">
-                <Text style={styles.aboutText}>{profile.about}</Text>
+                <Text style={styles.aboutText}>{formatAboutMe(profileData?.personal.aboutMe)}</Text>
             </Section>
 
             {/* Religious & Social */}
             <Section title="Religious & Social Background">
-                <Row label="Religion" value={profile.religion.religion} />
-                <Row label="Caste" value={profile.religion.caste} />
-                <Row label="Mother Tongue" value={profile.religion.motherTongue} />
+                <Row label="Religion" value={profileData?.personal.religion} />
+                <Row label="Caste" value={profileData?.personal.caste} />
+                <Row label="Mother Tongue" value={profileData?.personal.motherTongue} />
             </Section>
 
             {/* Education & Career */}
             <Section title="Education & Career">
-                <Row label="Education" value={profile.education.education} />
-                <Row label="College" value={profile.education.college} />
-                <Row label="Profession" value={profile.education.profession} />
-                <Row label="Annual Income" value={profile.education.income} />
+                <Row label="Education" value={profileData?.education.education} />
+                <Row label="College" value={profileData?.education.college} />
+                <Row label="Profession" value={profileData?.education.occupation} />
+                <Row label="Annual Income" value={annualIncomeFormat(profileData?.education.annualIncome)} />
             </Section>
 
             {/* Location */}
             <Section title="Location Details">
-                <Row label="Country" value={profile.location.country} />
-                <Row label="State" value={profile.location.state} />
-                <Row label="City" value={profile.location.city} />
+                <Row label="Country" value={profileData?.personal.country} />
+                <Row label="State" value={profileData?.personal.state} />
+                <Row label="City" value={profileData?.personal.city} />
             </Section>
 
             {/* Physical Attributes */}
             <Section title="Physical Attributes">
-                <Row label="Height" value={profile.basic.height} />
-                <Row label="Weight" value={profile.physical.weight} />
-                <Row label="Body Type" value={profile.physical.bodyType} />
-                <Row label="Complexion" value={profile.physical.complexion} />
+                <Row label="Height" value={cmToFeetInches(profileData?.physical.height)} />
+                <Row label="Weight" value={formatWeight(profileData?.physical.weight)} />
+                <Row label="Body Type" value={profileData?.physical.bodyType} />
+                <Row label="Complexion" value={profileData?.physical.complexion} />
             </Section>
 
             {/* Lifestyle */}
             <Section title="Lifestyle">
-                <Row label="Smoking" value={profile.lifestyle.smoking} />
-                <Row label="Drinking" value={profile.lifestyle.drinking} />
-                <Row label="Diet" value={profile.lifestyle.diet} />
+                <Row label="Smoking" value={formatLifestyleChoice(profileData?.preferences.smoking)} />
+                <Row label="Drinking" value={formatLifestyleChoice(profileData?.preferences.drinking)} />
+                <Row label="Diet" value={formatLifestyleChoice(profileData?.preferences.diet)} />
             </Section>
 
             {/* Family Background */}
             <Section title="Family Background">
-                <Row label="Father" value={profile.family.fatherStatus} />
-                <Row label="Mother" value={profile.family.motherStatus} />
-                <Row label="Siblings" value={profile.family.siblings} />
-                <Row label="Family Type" value={profile.family.familyType} />
-                <Row label="Family Values" value={profile.family.familyValues} />
+                <Row label="Father Name" value={profileData?.family.fatherName} />
+                <Row label="Mother Name" value={profileData?.family.motherName} />
+                <Row label="Father Occupation" value={profileData?.family.fatherOccupation} />
+                <Row label="Mother Occupation" value={profileData?.family.motherOccupation} />
+                <Row label="Family Type" value={profileData?.family.familyType} />
+                <Row label="Family Status" value={profileData?.family.familyStatus} />
+                <Row label="Family Values" value={profileData?.family.familyValues} />
             </Section>
 
             {/* Interests & Hobbies */}
             <Section title="Interests & Hobbies">
-                <Row label="Hobbies" value={profile.interests.hobbies} />
-                <Row label="Music" value={profile.interests.music} />
-                <Row label="Movies" value={profile.interests.movies} />
-                <Row label="Sports" value={profile.interests.sports} />
+                <Row label="Languages Known" value={profileData?.preferences.languagesKnown} />
+                <Row label="Hobbies" value={profileData?.preferences.hobbies} />
+                <Row label="Music" value={profileData?.preferences.music} />
+                <Row label="Movies" value={profileData?.preferences.movies} />
+                <Row label="Sports" value={profileData?.preferences.sports} />
             </Section>
 
             {/* Partner Preferences */}
             <Section title="Partner Preferences">
-                <Row label="Age Range" value={profile.partnerPreferences.ageRange} />
-                <Row label="Height Range" value={profile.partnerPreferences.heightRange} />
-                <Row label="Religion" value={profile.partnerPreferences.religion} />
-                <Row label="Caste" value={profile.partnerPreferences.caste} />
-                <Row label="Education" value={profile.partnerPreferences.education} />
-                <Row label="Profession" value={profile.partnerPreferences.profession} />
-                <Row label="Marital Status" value={profile.partnerPreferences.maritalStatus} />
-                <Row label="Location" value={profile.partnerPreferences.location} />
-                <Row label="Body Type" value={profile.partnerPreferences.bodyType} />
-                <Row label="Complexion" value={profile.partnerPreferences.complexion} />
-                <Row label="Diet" value={profile.partnerPreferences.diet} />
-                <Row label="Smoking" value={profile.partnerPreferences.smoking} />
-                <Row label="Drinking" value={profile.partnerPreferences.drinking} />
-                <Row label="Family Type" value={profile.partnerPreferences.familyType} />
+                <Row label="Age Range" value={formatAgeRange(profileData?.preferences.partnerPreference.ageRange.min, profileData?.preferences.partnerPreference.ageRange.max)} />
+                <Row label="Height Range" value={`${cmToFeetInches(profileData?.preferences.partnerPreference.heightRange.min)} - ${cmToFeetInches(profileData?.preferences.partnerPreference.heightRange.max)}`} />
+                <Row label="Religion" value={profileData?.preferences.partnerPreference.religion} />
+                <Row label="Caste" value={profileData?.preferences.partnerPreference.caste} />
+                <Row label="Education" value={profileData?.preferences.partnerPreference.education} />
+                <Row label="Profession" value={profileData?.preferences.partnerPreference.occupation} />
+                <Row label="Marital Status" value={profileData?.preferences.partnerPreference.maritalStatus} />
+                <Row label="Location" value={profileData?.preferences.partnerPreference.country} />
+                <Row label="Body Type" value={profileData?.preferences.partnerPreference.bodyType} />
+                <Row label="Complexion" value={profileData?.preferences.partnerPreference.complexion} />
+                <Row label="Diet" value={profileData?.preferences.partnerPreference.diet} />
+                <Row label="Smoking" value={profileData?.preferences.partnerPreference.smoking} />
+                <Row label="Drinking" value={profileData?.preferences.partnerPreference.drinking} />
+                <Row label="Family Type" value={profileData?.preferences.partnerPreference.familyType} />
             </Section>
 
             <View style={{ height: 24 }} />

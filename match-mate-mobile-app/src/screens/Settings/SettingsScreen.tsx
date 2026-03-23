@@ -9,6 +9,7 @@ import {
     Alert,
     ScrollView,
     StatusBar,
+    Platform,
 } from 'react-native';
 import { useAppDispatch } from '../../store';
 import { logout } from '../../store/authSlice';
@@ -21,12 +22,25 @@ export default function SettingsScreen({ navigation }: any) {
     const [locationSharing, setLocationSharing] = useState<boolean>(false);
 
     const handleSignOut = () => {
+        if(Platform.OS === 'web') {
+            if (window.confirm('Are you sure you want to sign out?')) {
+                dispatch(logout());
+            }
+            return;
+        }
+
         Alert.alert('Sign out', 'Are you sure you want to sign out?', [
             { text: 'Cancel', style: 'cancel' },
             {
                 text: 'Sign Out',
                 style: 'destructive',
-                onPress: () => dispatch(logout())
+                onPress: () => {
+                    dispatch(logout());
+                    navigation?.reset?.({
+                        index: 0,
+                        routes: [{ name: 'Login' }],
+                    });
+                }
             },
         ]);
     };

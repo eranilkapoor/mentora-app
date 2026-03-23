@@ -94,9 +94,7 @@ export default function OnboardingScreen() {
             brothers: 0,
             sisters: 0,
             marriedBrothers: 0,
-            marriedSisters: 0,
-            details: [],
-            note: ""
+            marriedSisters: 0
         }
     });
 
@@ -104,11 +102,11 @@ export default function OnboardingScreen() {
         partnerPreference: {
             ageRange: {
                 min: 18,
-                max: 100,
+                max: 32,
             },
             heightRange: {
-                min: 100,
-                max: 250,
+                min: 155,
+                max: 170,
             },
             maritalStatus: [],
             religion: [],
@@ -119,8 +117,8 @@ export default function OnboardingScreen() {
             qualification: [],
             occupation: [],
             annualIncomeRange: {
-                min: 0,
-                max: 1000,
+                min: 100000,
+                max: 1000000,
             },
             bodyType: [],
             complexion: [],
@@ -128,8 +126,7 @@ export default function OnboardingScreen() {
             drinking: [],
             diet: [],
             languagesKnown: [],
-            aboutPartner: "",
-            isStrict: false
+            aboutPartner: ""
         },
         hobbies: [],
         smoking: "non_smoker",
@@ -155,21 +152,21 @@ export default function OnboardingScreen() {
         return Object.keys(e).length === 0;
     };
 
-    const validateEducation = () => {
+    const validatePhysical = () => {
         const e: Record<string, string> = {};
 
-        if (!education.qualification) e.qualification = "Qualification required";
-        if (!education.occupation.trim()) e.occupation = "Occupation required";
+        if (!physical.height.trim()) e.height = "Height required";
 
         setErrors(e);
 
         return Object.keys(e).length === 0;
     };
 
-    const validatePhysical = () => {
+    const validateEducation = () => {
         const e: Record<string, string> = {};
 
-        if (!physical.height.trim()) e.height = "Height required";
+        if (!education.qualification) e.qualification = "Qualification required";
+        if (!education.occupation.trim()) e.occupation = "Occupation required";
 
         setErrors(e);
 
@@ -189,8 +186,9 @@ export default function OnboardingScreen() {
     const validatePreferences = () => {
         const e: Record<string, string> = {};
 
-        if (!preferences.partnerPreference.ageRange.min || !preferences.partnerPreference.ageRange.max) e.ageRange = "Age range required";
-        if (!preferences.partnerPreference.country.length) e.locationPref = "Location preference required";
+        if (!(preferences.partnerPreference?.ageRange?.min)) e.minAgeRange = "Age range required";
+        if (!(preferences.partnerPreference?.ageRange?.max)) e.maxAgeRange = "Age range required";
+        if (!(preferences.partnerPreference?.country?.length)) e.country = "Location preference required";
 
         setErrors(e);
 
@@ -198,7 +196,7 @@ export default function OnboardingScreen() {
     };
 
     const handleNext = () => {
-        const steps: RegistrationStep[] = ["personal", "education", "physical", "family", "preferences", "review"];
+        const steps: RegistrationStep[] = ["personal", "physical", "education", "family", "preferences", "review"];
         const currentIndex = steps.indexOf(currentStep);
 
         switch (currentStep) {
@@ -416,6 +414,55 @@ export default function OnboardingScreen() {
                     </View>
                 );
 
+            case "physical":
+                return (
+                    <View>
+                        <Text style={styles.stepTitle}>Physical Details</Text>
+                        <Text style={styles.subtitle}>
+                            Basic details about your physical attributes
+                        </Text>
+                        <Text style={styles.label}>Height (in cm)</Text>
+                        <TextInput
+                            placeholder="Height (in cm)"
+                            value={physical.height}
+                            onChangeText={(text) => {
+                                setPhysical({ ...physical, height: text });
+                                clearError("height");
+                            }}
+                            style={[styles.input, getInputStyle("height")]}
+                            keyboardType="numeric"
+                        />
+                        <ErrorText field="height" />
+
+                        <Text style={styles.label}>Weight (in kg)</Text>
+                        <TextInput
+                            placeholder="Weight (in kg)"
+                            value={physical.weight}
+                            onChangeText={(text) => setPhysical({ ...physical, weight: text })}
+                            style={styles.input}
+                            keyboardType="numeric"
+                        />
+
+                        <Text style={styles.label}>Body Type</Text>
+                        <DropdownPicker
+                            label="bodyType"
+                            options={body_types}
+                            value={physical.bodyType}
+                            onChange={(val: string) => setPhysical({ ...physical, bodyType: val })}
+                            field="bodyType"
+                        />
+
+                        <Text style={styles.label}>Complexion</Text>
+                        <DropdownPicker
+                            label="complexion"
+                            options={complexions}
+                            value={physical.complexion}
+                            onChange={(val: string) => setPhysical({ ...physical, complexion: val })}
+                            field="complexion"
+                        />
+                    </View>
+                );
+            
             case "education":
                 return (
                     <View>
@@ -475,55 +522,6 @@ export default function OnboardingScreen() {
                     </View>
                 );
 
-            case "physical":
-                return (
-                    <View>
-                        <Text style={styles.stepTitle}>Physical Details</Text>
-                        <Text style={styles.subtitle}>
-                            Basic details about your physical attributes
-                        </Text>
-                        <Text style={styles.label}>Height (in cm)</Text>
-                        <TextInput
-                            placeholder="Height (in cm)"
-                            value={physical.height}
-                            onChangeText={(text) => {
-                                setPhysical({ ...physical, height: text });
-                                clearError("height");
-                            }}
-                            style={[styles.input, getInputStyle("height")]}
-                            keyboardType="numeric"
-                        />
-                        <ErrorText field="height" />
-
-                        <Text style={styles.label}>Weight (in kg)</Text>
-                        <TextInput
-                            placeholder="Weight (in kg)"
-                            value={physical.weight}
-                            onChangeText={(text) => setPhysical({ ...physical, weight: text })}
-                            style={styles.input}
-                            keyboardType="numeric"
-                        />
-
-                        <Text style={styles.label}>Body Type</Text>
-                        <DropdownPicker
-                            label="bodyType"
-                            options={body_types}
-                            value={physical.bodyType}
-                            onChange={(val: string) => setPhysical({ ...physical, bodyType: val })}
-                            field="bodyType"
-                        />
-
-                        <Text style={styles.label}>Complexion</Text>
-                        <DropdownPicker
-                            label="complexion"
-                            options={complexions}
-                            value={physical.complexion}
-                            onChange={(val: string) => setPhysical({ ...physical, complexion: val })}
-                            field="complexion"
-                        />
-                    </View>
-                );
-
             case "family":
                 return (
                     <View>
@@ -563,11 +561,20 @@ export default function OnboardingScreen() {
                             style={styles.input}
                         />
 
-                        <Text style={styles.label}>Number of Siblings</Text>
+                        <Text style={styles.label}>Number of Brothers</Text>
                         <TextInput
-                            placeholder="Number of Siblings"
-                            value={family.siblings.brothers + family.siblings.sisters > 0 ? `${family.siblings.brothers + family.siblings.sisters}` : ""}
-                            onChangeText={(text) => setFamily({ ...family, siblings: { ...family.siblings, brothers: parseInt(text) || 0, sisters: parseInt(text) || 0 } })}
+                            placeholder="Number of Brothers"
+                            value={(family.siblings?.brothers ?? 0) > 0 ? `${family.siblings?.brothers}` : ""}
+                            onChangeText={(text) => setFamily({ ...family, siblings: { ...family.siblings, brothers: parseInt(text) || 0 } })}
+                            style={styles.input}
+                            keyboardType="numeric"
+                        />
+
+                        <Text style={styles.label}>Number of Sisters</Text>
+                        <TextInput
+                            placeholder="Number of Sisters"
+                            value={(family.siblings?.sisters ?? 0) > 0 ? `${family.siblings?.sisters}` : ""}
+                            onChangeText={(text) => setFamily({ ...family, siblings: { ...family.siblings, sisters: parseInt(text) || 0 } })}
                             style={styles.input}
                             keyboardType="numeric"
                         />
@@ -611,23 +618,36 @@ export default function OnboardingScreen() {
                         <Text style={styles.subtitle}>
                             Specify your preferences for a potential partner
                         </Text>
-                        <Text style={styles.label}>Age Range (e.g., 25-32)</Text>
+                        <Text style={styles.label}>Min Age (e.g., 25)</Text>
                         <TextInput
-                            placeholder="Age Range (e.g., 25-32)"
-                            value={preferences.partnerPreference.ageRange.min && preferences.partnerPreference.ageRange.max ? `${preferences.partnerPreference.ageRange.min}-${preferences.partnerPreference.ageRange.max}` : ""}
+                            placeholder="Min Age (e.g., 25)"
+                            value={preferences?.partnerPreference?.ageRange?.min !== undefined ? `${preferences.partnerPreference.ageRange.min}` : ""}
                             onChangeText={(text) => {
                                 const [min, max] = text.split("-").map(Number);
                                 setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, ageRange: { min, max } } });
-                                clearError("ageRange");
+                                clearError("minAgeRange");
                             }}
-                            style={[styles.input, getInputStyle("ageRange")]}
+                            style={[styles.input, getInputStyle("minAgeRange")]}
                         />
-                        <ErrorText field="ageRange" />
+                        <ErrorText field="minAgeRange" />
+
+                        <Text style={styles.label}>Max Age (e.g., 32)</Text>
+                        <TextInput
+                            placeholder="Max Age (e.g., 32)"
+                            value={preferences?.partnerPreference?.ageRange?.max !== undefined ? `${preferences.partnerPreference.ageRange.max}` : ""}
+                            onChangeText={(text) => {
+                                const [min, max] = text.split("-").map(Number);
+                                setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, ageRange: { min, max } } });
+                                clearError("maxAgeRange");
+                            }}
+                            style={[styles.input, getInputStyle("maxAgeRange")]}
+                        />
+                        <ErrorText field="maxAgeRange" />
 
                         <Text style={styles.label}>Height Range (e.g., 160-180 cm)</Text>
                         <TextInput
                             placeholder="Height Range (e.g., 160-180 cm)"
-                            value={preferences.partnerPreference.heightRange.min && preferences.partnerPreference.heightRange.max ? `${preferences.partnerPreference.heightRange.min}-${preferences.partnerPreference.heightRange.max}` : ""}
+                            value={preferences?.partnerPreference?.heightRange?.min && preferences?.partnerPreference?.heightRange?.max ? `${preferences.partnerPreference.heightRange.min}-${preferences.partnerPreference.heightRange.max}` : ""}
                             onChangeText={(text) => {
                                 const [min, max] = text.split("-").map(Number);
                                 setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, heightRange: { min, max } } });
@@ -639,7 +659,7 @@ export default function OnboardingScreen() {
                         <Text style={styles.label}>Qualification Required</Text>
                         <TextInput
                             placeholder="Qualification Required"
-                            value={preferences.partnerPreference.qualification.join(", ")}
+                            value={preferences?.partnerPreference?.qualification?.join(", ") || ""}
                             onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, qualification: text.split(",").map(q => q.trim()).filter(q => q) } })}
                             style={styles.input}
                         />
@@ -647,7 +667,7 @@ export default function OnboardingScreen() {
                         <Text style={styles.label}>Religion Preference</Text>
                         <TextInput
                             placeholder="Religion Preference"
-                            value={preferences.partnerPreference.religion.join(", ")}
+                            value={preferences?.partnerPreference?.religion?.join(", ") || ""}
                             onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, religion: text.split(",").map(r => r.trim()).filter(r => r) } })}
                             style={styles.input}
                         />
@@ -655,7 +675,7 @@ export default function OnboardingScreen() {
                         <Text style={styles.label}>Caste Preference</Text>
                         <TextInput
                             placeholder="Caste Preference (if any)"
-                            value={preferences.partnerPreference.caste.join(", ")}
+                            value={preferences?.partnerPreference?.caste?.join(", ") || ""}
                             onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, caste: text.split(",").map(c => c.trim()).filter(c => c) } })}
                             style={styles.input}
                         />
@@ -663,7 +683,7 @@ export default function OnboardingScreen() {
                         <Text style={styles.label}>Location Preference</Text>
                         <TextInput
                             placeholder="Location Preference (comma-separated)"
-                            value={preferences.partnerPreference.country.join(", ")}
+                            value={preferences?.partnerPreference?.country?.join(", ") || ""}
                             onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, country: text.split(",").map(c => c.trim()).filter(c => c) } })}
                             style={[styles.input, getInputStyle("country")]}
                         />
@@ -672,7 +692,7 @@ export default function OnboardingScreen() {
                         <Text style={styles.label}>About Partner</Text>
                         <TextInput
                             placeholder="Tell us about your ideal partner"
-                            value={preferences.partnerPreference.aboutPartner}
+                            value={preferences?.partnerPreference?.aboutPartner || ""}
                             onChangeText={(text) => setPreferences({ ...preferences, partnerPreference: { ...preferences.partnerPreference, aboutPartner: text } })}
                             style={[styles.input, { height: 100, textAlignVertical: "top" }]}
                             multiline
@@ -710,7 +730,7 @@ export default function OnboardingScreen() {
                         </View>
                         <View style={styles.reviewSection}>
                             <Text style={styles.reviewLabel}>Preferences:</Text>
-                            <Text>Age: {preferences.partnerPreference.ageRange.min}-{preferences.partnerPreference.ageRange.max} | Location: {preferences.partnerPreference.country.join(", ")}</Text>
+                            <Text>Age: {preferences?.partnerPreference?.ageRange?.min}-{preferences?.partnerPreference?.ageRange?.max} | Location: {preferences?.partnerPreference?.country?.join(", ") || "Not specified"}</Text>
                         </View>
                     </ScrollView>
                 );

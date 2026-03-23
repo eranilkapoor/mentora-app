@@ -103,7 +103,7 @@ async function bootstrap() {
   // ==========================================
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
+  await app.listen(port, '0.0.0.0');
 
   console.log(`🚀 API Base is running on: http://localhost:${port}/${apiPrefix}/${apiVersion}`);
   console.log(`📚 API Docs available at: http://localhost:${port}/api/docs`);

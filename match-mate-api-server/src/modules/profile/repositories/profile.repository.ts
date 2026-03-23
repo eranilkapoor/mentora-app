@@ -25,7 +25,7 @@ export class ProfileRepository {
     try {
       return await this.profileModel.findOne({
         userId: new Types.ObjectId(userId),
-        isActive: true,
+        isActive: false,
       },
       {
         __v: 0,
