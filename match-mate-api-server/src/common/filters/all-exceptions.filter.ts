@@ -22,7 +22,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
-    const correlationId = (request.headers['x-correlation-id'] as string) || 'unknown';
+    const correlationId =
+      (request.headers['x-correlation-id'] as string) || 'unknown';
     const requestId = (request.headers['x-request-id'] as string) || 'unknown';
 
     let status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR;

@@ -12,12 +12,13 @@ import { User, UserSchema } from './schemas/user.schema';
 import { ProfileModule } from '../profile/profile.module';
 import { Profile, ProfileSchema } from '../profile/schemas/profile.schema';
 import { ProfileService } from '../profile/profile.service';
+import { ProfileRepository } from '../profile/repositories/profile.repository';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: Profile.name, schema: ProfileSchema }
+      { name: Profile.name, schema: ProfileSchema },
     ]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
@@ -36,7 +37,14 @@ import { ProfileService } from '../profile/profile.service';
     ProfileModule,
   ],
   controllers: [AuthController],
-  providers: [JwtStrategy, AuthService, UserRepository, OtpService, ProfileService],
+  providers: [
+    JwtStrategy,
+    AuthService,
+    UserRepository,
+    OtpService,
+    ProfileService,
+    ProfileRepository,
+  ],
   exports: [AuthService, JwtModule, PassportModule],
 })
-export class AuthModule { }
+export class AuthModule {}

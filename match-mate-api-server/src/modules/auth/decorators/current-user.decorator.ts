@@ -19,7 +19,9 @@ export const CurrentUser = createParamDecorator(
     }
 
     if (data && !(data in user)) {
-      throw new UnauthorizedException(`Property ${String(data)} not found in user`);
+      throw new UnauthorizedException(
+        `Property ${String(data)} not found in user`,
+      );
     }
 
     return data ? user[data] : user;

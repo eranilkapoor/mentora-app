@@ -237,13 +237,13 @@ class Preferences {
   @Prop({ type: [String], default: [] })
   hobbies: string[];
 
-  @Prop({ type: String, enum: Smoking, default: "" })
+  @Prop({ type: String, enum: Smoking, default: '' })
   smoking: string;
 
-  @Prop({ type: String, enum: Drinking, default: "" })
+  @Prop({ type: String, enum: Drinking, default: '' })
   drinking: string;
 
-  @Prop({ type: String, enum: Diet, default: "" })
+  @Prop({ type: String, enum: Diet, default: '' })
   diet: string;
 
   @Prop({ type: [String], default: [] })
@@ -261,10 +261,10 @@ class Preferences {
 
 @Schema({ collection: COLLECTIONS.PROFILE, timestamps: true })
 export class Profile {
-  @Prop({ 
-    type: Types.ObjectId, 
-    required: true, 
-    unique: true 
+  @Prop({
+    type: Types.ObjectId,
+    required: true,
+    unique: true,
   })
   userId: Types.ObjectId;
 
@@ -298,7 +298,7 @@ export class Profile {
   @Prop({ default: false })
   isDeleted: boolean;
 
-  @Prop( { default: false })
+  @Prop({ default: false })
   isActive: boolean;
 }
 
@@ -313,5 +313,5 @@ ProfileSchema.index({
   isVerified: 1,
   isPremium: 1,
   isActive: 1,
-  'preferences.partnerPreference.religion': 1
+  'preferences.partnerPreference.religion': 1,
 });

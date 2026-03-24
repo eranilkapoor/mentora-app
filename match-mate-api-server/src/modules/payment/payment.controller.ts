@@ -19,7 +19,7 @@ export class PaymentController {
     return this.service.verifyPayment(dto);
   }
 
-  @Get("/*path")
+  @Get('/*path')
   getMyPayments(@Req() req: any) {
     return this.service.getUserPayments(req.user.id);
   }

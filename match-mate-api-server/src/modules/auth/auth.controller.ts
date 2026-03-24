@@ -16,7 +16,7 @@ import { OnboardingProfileDto } from './dto/onboarding-profile.dto';
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
 export class AuthController {
-  constructor(private readonly authService: AuthService) { }
+  constructor(private readonly authService: AuthService) {}
 
   @Public()
   @Post('register')
@@ -25,7 +25,9 @@ export class AuthController {
       const data = await this.authService.register(dto);
       return new ApiResponse(true, 'User registered successfully', data);
     } catch (error) {
-      return new ApiResponse(false, error.message || 'Registration failed');
+      const message =
+        error instanceof Error ? error.message : 'Registration failed';
+      return new ApiResponse(false, message);
     }
   }
 
@@ -36,18 +38,21 @@ export class AuthController {
       const data = await this.authService.login(dto);
       return new ApiResponse(true, 'Login successful', data);
     } catch (error) {
-      return new ApiResponse(false, error.message || 'Login failed');
+      const message = error instanceof Error ? error.message : 'Login failed';
+      return new ApiResponse(false, message);
     }
   }
 
   @Public()
   @Post('send-otp')
-  async sendOtp(@Body() dto: PhoneSendOtpDto) {
+  sendOtp(@Body() dto: PhoneSendOtpDto) {
     try {
-      const data = await this.authService.sendOtp(dto.country_code, dto.phone);
+      const data = this.authService.sendOtp(dto.country_code, dto.phone);
       return new ApiResponse(true, 'OTP sent successfully', data);
     } catch (error) {
-      return new ApiResponse(false, error.message || 'Failed to send OTP');
+      const message =
+        error instanceof Error ? error.message : 'Failed to send OTP';
+      return new ApiResponse(false, message);
     }
   }
 
@@ -55,10 +60,16 @@ export class AuthController {
   @Post('verify-otp')
   async verifyOtp(@Body() dto: PhoneVerifyDto) {
     try {
-      const data = await this.authService.verifyOtp(dto.country_code, dto.phone, dto.otp);
+      const data = await this.authService.verifyOtp(
+        dto.country_code,
+        dto.phone,
+        dto.otp,
+      );
       return new ApiResponse(true, 'OTP verified successfully', data);
     } catch (error) {
-      return new ApiResponse(false, error.message || 'OTP verification failed');
+      const message =
+        error instanceof Error ? error.message : 'OTP verification failed';
+      return new ApiResponse(false, message);
     }
   }
 
@@ -69,7 +80,9 @@ export class AuthController {
       const data = await this.authService.socialLogin(dto);
       return new ApiResponse(true, 'Social login successful', data);
     } catch (error) {
-      return new ApiResponse(false, error.message || 'Social login failed');
+      const message =
+        error instanceof Error ? error.message : 'Social login failed';
+      return new ApiResponse(false, message);
     }
   }
 
@@ -80,26 +93,42 @@ export class AuthController {
       const data = await this.authService.forgotPassword(dto.email);
       return new ApiResponse(true, 'Password reset instructions sent', data);
     } catch (error) {
-      return new ApiResponse(false, error.message || 'Failed to process password reset');
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to process password reset';
+      return new ApiResponse(false, message);
     }
   }
 
   @Post('onboarding-profile')
-  async onboardingProfile(@CurrentUser('userId') userId: string, @Body() dto: OnboardingProfileDto) {
+  async onboardingProfile(
+    @CurrentUser('userId') userId: string,
+    @Body() dto: OnboardingProfileDto,
+  ) {
     try {
       const data = await this.authService.onboardingProfile(userId, dto);
-      return new ApiResponse(true, 'Onboarding profile saved successfully', data);
+      return new ApiResponse(
+        true,
+        'Onboarding profile saved successfully',
+        data,
+      );
     } catch (error) {
-      return new ApiResponse(false, error.message || 'Failed to save onboarding profile');
+      const message =
+        error instanceof Error
+          ? error.message
+          : 'Failed to save onboarding profile';
+      return new ApiResponse(false, message);
     }
   }
 
   @Post('logout')
-  async logout(@Body('userId') userId: string) {
+  logout() {
     try {
-      return await this.authService.logout(userId);
+      return this.authService.logout();
     } catch (error) {
-      return new ApiResponse(false, error.message || 'Logout failed');
+      const message = error instanceof Error ? error.message : 'Logout failed';
+      return new ApiResponse(false, message);
     }
   }
 }

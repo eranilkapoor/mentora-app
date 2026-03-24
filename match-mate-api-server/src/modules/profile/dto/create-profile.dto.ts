@@ -93,7 +93,9 @@ export class EducationDto {
 
 class SiblingDetail {
   @IsNotEmpty()
-  @IsEnum(['brother', 'sister'], { message: 'Type must be either brother or sister' })
+  @IsEnum(['brother', 'sister'], {
+    message: 'Type must be either brother or sister',
+  })
   type: 'brother' | 'sister';
 
   @IsNotEmpty()

@@ -93,7 +93,9 @@ class EducationDto {
 
 class SiblingDetail {
   @IsNotEmpty()
-  @IsEnum(['brother', 'sister'], { message: 'Type must be either brother or sister' })
+  @IsEnum(['brother', 'sister'], {
+    message: 'Type must be either brother or sister',
+  })
   type: 'brother' | 'sister';
 
   @IsNotEmpty()
@@ -195,7 +197,7 @@ class PartnerPreferenceDto {
   @IsArray()
   occupation?: string[];
 
-  @IsOptional()  
+  @IsOptional()
   annualIncomeRange?: {
     min: number;
     max: number;
@@ -206,7 +208,7 @@ class PartnerPreferenceDto {
 
   @IsOptional()
   complexion?: string[];
-  
+
   @IsOptional()
   smoking?: Smoking[];
 

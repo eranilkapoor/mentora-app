@@ -1,5 +1,5 @@
 import { PassportStrategy } from '@nestjs/passport';
-import { Strategy, VerifyCallback } from 'passport-google-oauth20';
+import { Strategy, VerifyCallback, Profile } from 'passport-google-oauth20';
 import { Injectable } from '@nestjs/common';
 import { AuthService } from '../auth.service';
 import { AuthProvider } from '../enums/auth-provider.enum';
@@ -23,13 +23,18 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     });
   }
 
-  async validate(access_token: string, profile: any, done: VerifyCallback) {
+  async validate(
+    accessToken: string,
+    _refreshToken: string,
+    profile: Profile,
+    done: VerifyCallback,
+  ): Promise<void> {
     const user = await this.authService.socialLogin({
       provider: AuthProvider.GOOGLE,
       provider_id: profile.id,
-      email: profile.emails[0].value,
+      // email: profile?.emails[0].value,
       first_name: profile.displayName,
-      access_token,
+      access_token: accessToken,
     });
 
     done(null, user);

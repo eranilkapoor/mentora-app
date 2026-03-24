@@ -1,7 +1,7 @@
 import {
   ConflictException,
   Injectable,
-  UnauthorizedException
+  UnauthorizedException,
 } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './repositories/user.repository';
@@ -19,7 +19,7 @@ export class AuthService {
     private readonly profileService: ProfileService,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
-  ) { }
+  ) {}
 
   async register(dto: RegisterDto) {
     try {
@@ -118,14 +118,14 @@ export class AuthService {
     }
   }
 
-  async sendOtp(country_code: string, phone: string) {
-    const otp = await this.otpService.generate(country_code, phone);
+  sendOtp(country_code: string, phone: string) {
+    const otp = this.otpService.generate(country_code, phone);
     return { phone, otp };
   }
 
   async verifyOtp(country_code: string, phone: string, otp: string) {
     try {
-      const isValid = await this.otpService.verify(country_code, phone, otp);
+      const isValid = this.otpService.verify(country_code, phone, otp);
       if (!isValid) throw new UnauthorizedException('Invalid OTP');
 
       const existingUser = await this.userRepo.findByProvider(
@@ -214,7 +214,7 @@ export class AuthService {
           {
             provider:
               AuthProvider[
-              dto.provider.toUpperCase() as keyof typeof AuthProvider
+                dto.provider.toUpperCase() as keyof typeof AuthProvider
               ],
             providerId: dto.provider_id,
             isVerified: true,
@@ -232,9 +232,9 @@ export class AuthService {
         user: {
           userId: user._id,
           provider: dto.provider,
-          isProfileCompleted: user.isProfileCompleted
+          isProfileCompleted: user.isProfileCompleted,
         },
-        token
+        token,
       };
     } catch (error) {
       if (error instanceof ConflictException) {
@@ -259,7 +259,7 @@ export class AuthService {
 
       const resetToken = this.jwtService.sign(
         { userId: user._id, type: 'password-reset' },
-        { expiresIn: '15m' }
+        { expiresIn: '15m' },
       );
 
       // TODO: Send reset token via email (e.g., using MailerService)
@@ -268,7 +268,9 @@ export class AuthService {
       if (error instanceof UnauthorizedException) {
         throw error;
       }
-      throw new UnauthorizedException('Failed to process password reset request');
+      throw new UnauthorizedException(
+        'Failed to process password reset request',
+      );
     }
   }
 
@@ -296,7 +298,7 @@ export class AuthService {
     }
   }
 
-  async logout(userId: string) {
+  logout() {
     // Invalidate user session or token (depends on your implementation)
     // If using token blacklisting, add token to blacklist
     // If using session storage, clear the session

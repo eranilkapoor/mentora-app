@@ -2,7 +2,7 @@ import { SetMetadata } from '@nestjs/common';
 
 export const RATE_LIMIT_KEY = 'rate-limit';
 
-export interface RateLimitOptions {
+export interface RateLimitConfig {
   name: string;
   ttl: number; // seconds
   limit: number;
@@ -10,7 +10,8 @@ export interface RateLimitOptions {
   message: string;
 }
 
-export const RateLimit = (options: RateLimitOptions) => SetMetadata(RATE_LIMIT_KEY, options);
+export const RateLimit = (options: RateLimitConfig) =>
+  SetMetadata(RATE_LIMIT_KEY, options);
 
 // Usage in controller:
 /*

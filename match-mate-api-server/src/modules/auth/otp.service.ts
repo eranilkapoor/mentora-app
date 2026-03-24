@@ -4,14 +4,14 @@ import { Injectable } from '@nestjs/common';
 export class OtpService {
   private otpStore = new Map<string, string>();
 
-  async generate(country_code: string, phone: string) {
+  generate(country_code: string, phone: string) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     this.otpStore.set(`${country_code}|${phone}`, otp);
 
     return otp;
   }
 
-  async verify(country_code: string, phone: string, otp: string) {
+  verify(country_code: string, phone: string, otp: string) {
     const validOtp = this.otpStore.get(`${country_code}|${phone}`);
 
     return validOtp === otp;

@@ -5,93 +5,129 @@ import {
   HttpException,
   HttpStatus,
   Inject,
+  Logger,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import Redis from 'ioredis';
-import { RATE_LIMIT_KEY } from '../decorators/rate-limit.decorator';
+import { Request, Response } from 'express';
+import {
+  RATE_LIMIT_KEY,
+  RateLimitConfig,
+} from '../decorators/rate-limit.decorator';
 import { REDIS } from 'src/infrastructure/databases/redis/redis.provider';
+
+interface AuthenticatedUser {
+  id?: string;
+  membership?: {
+    tier: string;
+  };
+}
+
+interface AuthenticatedRequest extends Omit<Request, 'connection'> {
+  user?: AuthenticatedUser;
+  connection: {
+    remoteAddress?: string;
+  };
+}
+
+interface RateLimitErrorResponse {
+  statusCode: number;
+  message: string;
+  retryAfter: number;
+  resetAt: number;
+}
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
+  private readonly logger = new Logger(RateLimitGuard.name);
+
   constructor(
-    private reflector: Reflector,
+    private readonly reflector: Reflector,
     @Inject(REDIS) private readonly redis: Redis,
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    // Get rate limit config from decorator
-    const rateLimitConfig = this.reflector.get(
+    const rateLimitConfig = this.reflector.get<RateLimitConfig>(
       RATE_LIMIT_KEY,
       context.getHandler(),
     );
 
     if (!rateLimitConfig) {
-      return true; // No rate limit defined
+      return true;
     }
 
-    const request = context.switchToHttp().getRequest();
-    const response = context.switchToHttp().getResponse();
+    const request = context.switchToHttp().getRequest<AuthenticatedRequest>();
+    const response = context.switchToHttp().getResponse<Response>();
 
-    // Create unique key per user/IP
     const identifier = this.getIdentifier(request);
     const key = `rate-limit:${rateLimitConfig.name}:${identifier}`;
 
-    // Get current count from Redis
-    const currentCount = await this.redis.get(key);
-    const count = currentCount ? parseInt(currentCount, 10) : 0;
+    const [currentCount, existingTtl] = await Promise.all([
+      this.redis.get(key),
+      this.redis.ttl(key),
+    ]);
 
-    // Get limit based on user membership
+    const count = currentCount !== null ? parseInt(currentCount, 10) : 0;
     const limit = this.getLimit(request, rateLimitConfig);
+    const { ttl } = rateLimitConfig;
+    const resetAt = Date.now() + (existingTtl > 0 ? existingTtl : ttl) * 1000;
 
-    // Calculate reset time
-    const ttl = rateLimitConfig.ttl;
-    const resetAt = Date.now() + ttl * 1000;
-
-    // Set rate limit headers
     response.setHeader('X-RateLimit-Limit', limit);
     response.setHeader('X-RateLimit-Remaining', Math.max(0, limit - count - 1));
     response.setHeader('X-RateLimit-Reset', Math.floor(resetAt / 1000));
 
-    // Check if limit exceeded
     if (count >= limit) {
-      const retryAfter = await this.redis.ttl(key);
-      response.setHeader('Retry-After', retryAfter);
+      response.setHeader('Retry-After', existingTtl);
 
-      throw new HttpException(
-        {
-          statusCode: HttpStatus.TOO_MANY_REQUESTS,
-          message: rateLimitConfig.message,
-          retryAfter,
-          resetAt,
-        },
-        HttpStatus.TOO_MANY_REQUESTS,
+      this.logger.warn(
+        `Rate limit exceeded for identifier: ${identifier}, key: ${key}`,
       );
+
+      const errorResponse: RateLimitErrorResponse = {
+        statusCode: HttpStatus.TOO_MANY_REQUESTS,
+        message: rateLimitConfig.message,
+        retryAfter: existingTtl,
+        resetAt,
+      };
+
+      throw new HttpException(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
     }
 
-    // Increment counter
-    if (count === 0) {
-      // First request - set with expiry
-      await this.redis.setex(key, ttl, 1);
-    } else {
-      // Increment existing
-      await this.redis.incr(key);
-    }
+    await this.incrementCounter(key, count, ttl);
 
     return true;
   }
 
-  private getIdentifier(request: any): string {
-    // Use user ID if authenticated, otherwise use IP
+  private getIdentifier(request: AuthenticatedRequest): string {
     const userId = request.user?.id;
-    const ip = request.ip || request.connection.remoteAddress;
-    return userId || ip;
+    const ip =
+      (request.headers['x-forwarded-for'] as string)?.split(',')[0].trim() ??
+      request.ip ??
+      request.connection.remoteAddress ??
+      'unknown';
+
+    return userId ?? ip;
   }
 
-  private getLimit(request: any, config: any): number {
-    // Check if user is premium
+  private getLimit(
+    request: AuthenticatedRequest,
+    config: RateLimitConfig,
+  ): number {
     const isPremium = request.user?.membership?.tier !== 'free';
-    return isPremium && config.limitPremium
+    return isPremium && config.limitPremium !== undefined
       ? config.limitPremium
       : config.limit;
+  }
+
+  private async incrementCounter(
+    key: string,
+    count: number,
+    ttl: number,
+  ): Promise<void> {
+    if (count === 0) {
+      await this.redis.setex(key, ttl, 1);
+    } else {
+      await this.redis.incr(key);
+    }
   }
 }
