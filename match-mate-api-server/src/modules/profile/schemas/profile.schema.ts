@@ -16,7 +16,7 @@ class Personal {
   firstName: string;
 
   @Prop()
-  lastName: string;
+  lastName?: string;
 
   @Prop({ required: true, enum: Gender })
   gender: Gender;
@@ -28,25 +28,25 @@ class Personal {
   religion: string;
 
   @Prop()
-  caste: string;
+  caste?: string;
 
   @Prop()
-  country: string;
+  country?: string;
 
   @Prop()
-  state: string;
+  state?: string;
 
   @Prop()
-  city: string;
+  city?: string;
 
   @Prop()
-  motherTongue: string;
+  motherTongue?: string;
 
   @Prop({ enum: MaritalStatus, required: true })
   maritalStatus: MaritalStatus;
 
   @Prop()
-  aboutMe: string;
+  aboutMe?: string;
 }
 
 @Schema({ _id: false })
@@ -55,13 +55,13 @@ class Physical {
   height: number;
 
   @Prop()
-  weight: number;
+  weight?: number;
 
   @Prop()
-  bodyType: string;
+  bodyType?: string;
 
   @Prop()
-  complexion: string;
+  complexion?: string;
 }
 
 @Schema({ _id: false })
@@ -70,16 +70,16 @@ class Education {
   qualification: string;
 
   @Prop()
-  field: string;
+  field?: string;
 
   @Prop()
-  university: string;
+  university?: string;
 
   @Prop({ required: true })
   occupation: string;
 
   @Prop()
-  annualIncome: string;
+  annualIncome?: string;
 }
 
 @Schema({ _id: false })
@@ -96,7 +96,6 @@ class SiblingDetail {
 
 @Schema({ _id: false })
 export class Siblings {
-  /* SUMMARY COUNTS */
   @Prop({ default: 0 })
   brothers: number;
 
@@ -109,40 +108,38 @@ export class Siblings {
   @Prop({ default: 0 })
   marriedSisters: number;
 
-  /* OPTIONAL DETAILS */
   @Prop({ type: [SiblingDetail], default: [] })
   details: SiblingDetail[];
 
-  /* FLEXIBLE TEXT (fallback) */
   @Prop()
-  note?: string; // e.g. "1 elder brother, married"
+  note?: string;
 }
 
 @Schema({ _id: false })
 class Family {
   @Prop()
-  fatherName: string;
+  fatherName?: string;
 
   @Prop()
-  motherName: string;
+  motherName?: string;
 
   @Prop()
-  fatherOccupation: string;
+  fatherOccupation?: string;
 
   @Prop()
-  motherOccupation: string;
+  motherOccupation?: string;
 
   @Prop()
-  familyType: string;
+  familyType?: string;
 
   @Prop()
-  familyStatus: string;
+  familyStatus?: string;
 
   @Prop()
-  familyValues: string;
+  familyValues?: string;
 
   @Prop({ type: Siblings, default: () => ({}) })
-  siblings: Siblings;
+  siblings?: Siblings;
 }
 
 @Schema({ _id: false })
@@ -175,10 +172,10 @@ class IncomeRange {
 @Schema({ _id: false })
 export class PartnerPreference {
   @Prop({ type: AgeRange })
-  ageRange: AgeRange;
+  ageRange?: AgeRange;
 
   @Prop({ type: HeightRange })
-  heightRange: HeightRange;
+  heightRange?: HeightRange;
 
   @Prop({ type: [String], enum: MaritalStatus, default: [] })
   maritalStatus: MaritalStatus[];
@@ -205,7 +202,7 @@ export class PartnerPreference {
   occupation: string[];
 
   @Prop({ type: IncomeRange })
-  annualIncomeRange: IncomeRange;
+  annualIncomeRange?: IncomeRange;
 
   @Prop({ type: [String], default: [] })
   bodyType: string[];
@@ -226,13 +223,12 @@ export class PartnerPreference {
   languagesKnown: string[];
 
   @Prop()
-  aboutPartner: string;
+  aboutPartner?: string;
 
   @Prop({ default: false })
   isStrict: boolean;
 }
 
-/* PREFERENCES */
 @Schema({ _id: false })
 class Preferences {
   @Prop({ type: PartnerPreference, required: true })
@@ -263,7 +259,6 @@ class Preferences {
   languagesKnown: string[];
 }
 
-/* MAIN PROFILE */
 @Schema({ collection: COLLECTIONS.PROFILE, timestamps: true })
 export class Profile {
   @Prop({ 
@@ -320,71 +315,3 @@ ProfileSchema.index({
   isActive: 1,
   'preferences.partnerPreference.religion': 1
 });
-
-/*
-First Name : Required, String
-Last Name : Optional, String
-Gender : Required
-Date of Birth : Required, Date
-Marital Status (Single/Divorced/Widowed) : Optional, Enum
-Religion : Optional, String
-Caste : Optional, String
-Country : Optional, String
-State : Optional, String
-City : Optional, String
-Mother Tongue : Optional, String
-About Me : Optional, String
-Height (cm) : Required, Number
-Weight (kg) : Optional, Number
-Body Type (Slim/Athletic/Average/Heavy) : Optional, String
-Complexion  (Fair/Wheatish/Dark) : Optional, String
-Qualification (High School/Graduate/Postgraduate/Doctorate) : Optional, String
-Field of Study : Optional, String
-University/College : Optional, String
-Occupation : Optional, String
-Annual Income : Optional, Number
-Father's Name : Required, String
-Mother's Name : Optional, String
-Father's Occupation : Optional, String
-Mother's Occupation : Optional, String
-Family Type (Joint/Nuclear) : Optional, String
-Family Status (Middle Class/Upper Middle Class/Rich) : Optional, String
-Family Values (Traditional/Moderate/Liberal) : Optional, String
-Siblings (Number of Brothers/Sisters) : Optional, String
-
-Partner Preferences:
-- Age Range : Optional, Object { min: Number, max: Number }
-- Height Range (cm) : Optional, Object { min: Number, max: Number }
-- Marital Status : Optional, Array of Enum (Single, Divorced)
-- Religion : Optional, Array of String
-- Caste : Optional, Array of String
-- Country : Optional, Array of String
-- State : Optional, Array of String
-- City : Optional, Array of String
-- Qualification : Optional, Array of String
-- Occupation : Optional, Array of String
-- Income Range : Optional, Object { min: Number, max: Number }
-- Body Type : Optional, Array of String
-- Complexion : Optional, Array of String
-- Diet : Optional, Array of String (Vegetarian/Non-Vegetarian/Eggetarian)
-- Smoking Habits : Optional, Array of String (Non-Smoker/Smoker)
-- Drinking Habits : Optional, Array of String (Non-Drinker/Drinker)
-- Languages Known : Optional, Array of String
-- About Partner : Optional, String
-- Is Strict : Optional, Boolean (true for strict filter, false for flexible match)
-
-Hobbies : Optional, Array of String
-Interests : Optional, Array of String
-Music : Optional, Array of String
-Movies : Optional, Array of String
-Sports : Optional, Array of String
-Food : Optional, Array of String
-Languages Known : Optional, Array of String
-
-Profile Completion Percentage : Number (0 to 100)
-Is Verified : Boolean
-Is Premium : Boolean
-Is Profile Locked : Boolean
-Is Deleted : Boolean
-Is Active : Boolean 
-*/

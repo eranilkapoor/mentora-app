@@ -5,10 +5,14 @@ import {
   IsNumber,
   IsArray,
   ValidateNested,
+  IsEnum,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import { Gender } from '../enums/gender.enum';
 import { MaritalStatus } from '../enums/marital-status.enum';
+import { Diet } from 'src/modules/profile/enums/diet.enum';
+import { Drinking } from 'src/modules/profile/enums/drinking.enum';
+import { Smoking } from 'src/modules/profile/enums/smoking.enum';
 
 class PersonalDto {
   @IsNotEmpty()
@@ -21,8 +25,10 @@ class PersonalDto {
   lastName?: string;
 
   @IsNotEmpty()
+  @IsEnum(Gender)
   gender: Gender;
 
+  @IsNotEmpty()
   @IsDateString()
   dob: string;
 
@@ -45,7 +51,8 @@ class PersonalDto {
   motherTongue?: string;
 
   @IsOptional()
-  maritalStatus: MaritalStatus;
+  @IsEnum(MaritalStatus)
+  maritalStatus?: MaritalStatus;
 
   @IsOptional()
   aboutMe?: string;
@@ -84,6 +91,18 @@ class EducationDto {
   annualIncome?: string;
 }
 
+class SiblingDetail {
+  @IsNotEmpty()
+  @IsEnum(['brother', 'sister'], { message: 'Type must be either brother or sister' })
+  type: 'brother' | 'sister';
+
+  @IsNotEmpty()
+  married: boolean;
+
+  @IsOptional()
+  occupation?: string;
+}
+
 class SiblingsDto {
   @IsOptional()
   brothers?: number;
@@ -96,6 +115,12 @@ class SiblingsDto {
 
   @IsOptional()
   marriedSisters?: number;
+
+  @IsOptional()
+  details?: SiblingDetail[];
+
+  @IsOptional()
+  note?: string;
 }
 
 class FamilyDto {
@@ -183,19 +208,22 @@ class PartnerPreferenceDto {
   complexion?: string[];
   
   @IsOptional()
-  smoking?: string[];
+  smoking?: Smoking[];
 
   @IsOptional()
-  drinking?: string[];
+  drinking?: Drinking[];
 
   @IsOptional()
-  diet?: string[];
+  diet?: Diet[];
 
   @IsOptional()
   languagesKnown?: string[];
 
   @IsOptional()
   aboutPartner?: string;
+
+  @IsOptional()
+  isStrict?: boolean;
 }
 
 class PreferencesDto {

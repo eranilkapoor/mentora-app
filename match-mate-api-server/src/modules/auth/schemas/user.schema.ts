@@ -55,10 +55,10 @@ export class User {
   primaryPhone?: PhoneNumber;
 
   @Prop({ default: false })
-  isEmailVerified: boolean;
+  isEmailVerified?: boolean;
 
   @Prop({ default: false })
-  isPhoneVerified: boolean;
+  isPhoneVerified?: boolean;
 
   @Prop({ default: false })
   isProfileCompleted: boolean;

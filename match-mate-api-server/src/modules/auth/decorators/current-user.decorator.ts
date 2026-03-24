@@ -14,7 +14,6 @@ export const CurrentUser = createParamDecorator(
     const request = ctx.switchToHttp().getRequest<AppRequest>();
     const user = request.user as JwtUser;
 
-    // 🔥 Enforce authentication (fail fast)
     if (!user) {
       throw new UnauthorizedException('User not found in request');
     }
@@ -23,7 +22,6 @@ export const CurrentUser = createParamDecorator(
       throw new UnauthorizedException(`Property ${String(data)} not found in user`);
     }
 
-    // 🔥 Return specific field or full user
     return data ? user[data] : user;
   },
 );

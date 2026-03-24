@@ -49,4 +49,44 @@ export class ProfileRepository {
       throw new Error(`Failed to update profile: ${error.message}`);
     }
   }
+
+  async updatePersonalInfo(userId: string, data: any) {
+    try {
+      return await this.updateProfile(userId, { personal: data });
+    } catch (error) {
+      throw new Error(`Failed to update personal info: ${error.message}`);
+    }
+  }
+
+  async updatePhysicalInfo(userId: string, data: any) {
+    try {
+      return await this.updateProfile(userId, { physical: data });
+    } catch (error) {
+      throw new Error(`Failed to update physical info: ${error.message}`);
+    }
+  }
+
+  async updateEducationInfo(userId: string, data: any) {
+    try {
+      return await this.updateProfile(userId, { education: data });
+    } catch (error) {
+      throw new Error(`Failed to update education info: ${error.message}`);
+    }
+  }
+
+  async updateFamilyInfo(userId: string, data: any) {
+    try {
+      return await this.updateProfile(userId, { family: data });
+    } catch (error) {
+      throw new Error(`Failed to update family info: ${error.message}`);
+    }
+  }
+
+  async updatePreferences(userId: string, data: any) {
+    try {
+      return await this.updateProfile(userId, { preferences: data });
+    } catch (error) {
+      throw new Error(`Failed to update preferences: ${error.message}`);
+    }
+  }
 }
