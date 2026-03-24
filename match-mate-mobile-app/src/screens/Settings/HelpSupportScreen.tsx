@@ -1,189 +1,320 @@
-import React, { useState } from 'react';
+import React, { useCallback, useState } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    ScrollView,
-    StatusBar,
-    Platform,
-    UIManager,
-    LayoutAnimation,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  Platform,
+  UIManager,
+  LayoutAnimation,
+  Linking,
 } from 'react-native';
-import { Ionicons } from '@expo/vector-icons';
+import Feather from 'react-native-vector-icons/Feather';
+import { Colors } from '../../constants/colors';
+import { type RootNavigationProp } from '../../navigation/types';
 
-if (Platform.OS === "android" && UIManager.setLayoutAnimationEnabledExperimental) {
+// ─── Android LayoutAnimation setup ───────────────────────────────────────────
+
+if (
+  Platform.OS === 'android' &&
+  UIManager.setLayoutAnimationEnabledExperimental
+) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-const faqs = [
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface HelpSupportScreenProps {
+  navigation: RootNavigationProp;
+}
+
+interface FaqItem {
+  question: string;
+  answer: string;
+}
+
+interface ContactItem {
+  icon: string;
+  label: string;
+  value: string;
+  action: () => void;
+  iconColor?: string;
+}
+
+interface FaqCardProps {
+  faq: FaqItem;
+  index: number;
+  expanded: boolean;
+  onToggle: (index: number) => void;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SUPPORT_EMAIL = 'support@webnza.com';
+const SUPPORT_PHONE = '+919654698878';
+const WHATSAPP_NUMBER = '919654698878';
+
+const FAQ_DATA: FaqItem[] = [
   {
-    question: "How do I create or update my profile?",
+    question: 'How do I create or update my profile?',
     answer:
-      "You can edit your profile by going to the Profile section → Edit Profile. Make sure to add clear photos and complete details for better matches.",
+      'You can edit your profile by going to the Profile section → Edit Profile. Make sure to add clear photos and complete details for better matches.',
   },
   {
-    question: "How does MatchMate find matches?",
+    question: 'How does MatchMate find matches?',
     answer:
-      "Our algorithm recommends matches based on your preferences such as age, location, education, interests, and other profile parameters.",
+      'Our algorithm recommends matches based on your preferences such as age, location, education, interests, and other profile parameters.',
   },
   {
-    question: "Is my information safe?",
+    question: 'Is my information safe?',
     answer:
-      "Yes. We use secure servers, encrypted data transfer, and strict privacy policies to protect your personal information.",
+      'Yes. We use secure servers, encrypted data transfer, and strict privacy policies to protect your personal information.',
   },
   {
-    question: "How do I delete my account?",
+    question: 'How do I delete my account?',
     answer:
-      "You can request account deletion from Settings → Account → Delete Account. Once deleted, your data will be removed within standard retention timelines.",
+      'You can request account deletion from Settings → Account → Delete Account. Once deleted, your data will be removed within standard retention timelines.',
   },
 ];
 
-export default function HelpSupportScreen({ navigation }: any) {
-    const [darkModeEnabled, setDarkModeEnabled] = useState<boolean>(false);
-    const [expanded, setExpanded] = useState<number | null>(null);
+// ─── Sub-components ──────────────────────────────────────────────────────────
 
-    const toggleFAQ = (index: number) => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-        setExpanded(expanded === index ? null : index);
-    };
+function FaqCard({
+  faq,
+  index,
+  expanded,
+  onToggle,
+}: FaqCardProps): React.ReactElement {
+  return (
+    <View style={styles.faqContainer}>
+      <TouchableOpacity
+        onPress={() => onToggle(index)}
+        style={styles.faqHeader}
+        accessibilityRole="button"
+        accessibilityLabel={faq.question}
+        accessibilityState={{ expanded }}
+      >
+        <Text style={styles.faqQuestion}>{faq.question}</Text>
+        <Feather
+          name={expanded ? 'chevron-up' : 'chevron-down'}
+          size={20}
+          color={Colors.textSecondary}
+        />
+      </TouchableOpacity>
 
-
-    return (
-        <SafeAreaProvider style={styles.safe}>
-            <StatusBar barStyle={darkModeEnabled ? 'light-content' : 'dark-content'} />
-            <ScrollView>
-                <View style={styles.section}>
-                    <Text style={styles.subtitle}>
-                        We're here to help! Contact us or browse FAQs below.
-                    </Text>
-
-                    {/* Contact Blocks */}
-                    <View style={styles.card}>
-                        <Text style={styles.cardTitle}>Contact Support</Text>
-
-                        <TouchableOpacity style={styles.row}>
-                            <Ionicons name="mail-outline" size={22} color="#444" />
-                            <Text style={styles.rowText}>support@webnza.com</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.row}>
-                            <Ionicons name="call-outline" size={22} color="#444" />
-                            <Text style={styles.rowText}>+91 9654698878</Text>
-                        </TouchableOpacity>
-
-                        <TouchableOpacity style={styles.row}>
-                            <Ionicons name="logo-whatsapp" size={22} color="#25D366" />
-                            <Text style={styles.rowText}>Chat with us on WhatsApp</Text>
-                        </TouchableOpacity>
-
-                    </View>
-
-                    {/* FAQ Section */}
-                    <Text style={styles.faqTitle}>Frequently Asked Questions</Text>
-
-                    {faqs.map((faq, index) => (
-                        <View key={index} style={styles.faqContainer}>
-                        <TouchableOpacity
-                            onPress={() => toggleFAQ(index)}
-                            style={styles.faqHeader}
-                        >
-                            <Text style={styles.faqQuestion}>{faq.question}</Text>
-                            <Ionicons
-                            name={expanded === index ? "chevron-up" : "chevron-down"}
-                            size={20}
-                            color="#444"
-                            />
-                        </TouchableOpacity>
-
-                        {expanded === index && (
-                            <Text style={styles.faqAnswer}>{faq.answer}</Text>
-                        )}
-                        </View>
-                    ))}
-
-                    <View style={{ height: 40 }} />
-                </View>
-            </ScrollView>
-        </SafeAreaProvider>
-    );
+      {expanded && <Text style={styles.faqAnswer}>{faq.answer}</Text>}
+    </View>
+  );
 }
 
-const styles = StyleSheet.create({
-    safe: {
-        flex: 1,
-        backgroundColor: '#f8fafc',
-    },
-    section: {
-        marginBottom: 24,
-        backgroundColor: '#ffffff',
-        borderRadius: 8,
-        paddingVertical: 8,
-        padding: 16,
-        overflow: 'hidden',
-    },
-    title: {
-        fontSize: 24,
-        fontWeight: "700",
-        color: "#333",
-        marginBottom: 4,
-    },
-    subtitle: {
-        fontSize: 14,
-        color: "#666",
-        marginBottom: 16,
-    },
-    card: {
-        backgroundColor: "#F7F7F7",
-        padding: 16,
-        borderRadius: 10,
-        marginBottom: 20,
-        elevation: 1,
-    },
-    cardTitle: {
-        fontSize: 18,
-        fontWeight: "600",
-        marginBottom: 12,
-        color: "#222",
-    },
-    row: {
-        flexDirection: "row",
-        alignItems: "center",
-        paddingVertical: 8,
-    },
-    rowText: {
-        marginLeft: 10,
-        fontSize: 15,
-        color: "#444",
-    },
+function ContactRow({
+  icon,
+  label,
+  action,
+  iconColor,
+}: ContactItem): React.ReactElement {
+  return (
+    <TouchableOpacity
+      style={styles.contactRow}
+      onPress={action}
+      accessibilityRole="link"
+      accessibilityLabel={label}
+    >
+      <View style={styles.contactIconWrapper}>
+        <Feather
+          name={icon}
+          size={20}
+          color={iconColor ?? Colors.textSecondary}
+        />
+      </View>
+      <Text style={styles.contactRowText}>{label}</Text>
+      <Feather name="chevron-right" size={16} color={Colors.textMuted} />
+    </TouchableOpacity>
+  );
+}
 
-    faqTitle: {
-        fontSize: 20,
-        fontWeight: "700",
-        marginBottom: 10,
-        color: "#222",
+// ─── Main Screen ─────────────────────────────────────────────────────────────
+
+export default function HelpSupportScreen({}: HelpSupportScreenProps): React.ReactElement {
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  const toggleFaq = useCallback((index: number): void => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setExpanded((prev) => (prev === index ? null : index));
+  }, []);
+
+  const openEmail = useCallback((): void => {
+    void Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
+  }, []);
+
+  const openPhone = useCallback((): void => {
+    void Linking.openURL(`tel:${SUPPORT_PHONE}`);
+  }, []);
+
+  const openWhatsApp = useCallback((): void => {
+    void Linking.openURL(
+      `https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I need help with MatchMate.`
+    );
+  }, []);
+
+  const CONTACT_ITEMS: ContactItem[] = [
+    {
+      icon: 'mail',
+      label: SUPPORT_EMAIL,
+      value: SUPPORT_EMAIL,
+      action: openEmail,
     },
-    faqContainer: {
-        borderBottomWidth: 1,
-        borderBottomColor: "#E0E0E0",
-        paddingVertical: 12,
+    {
+      icon: 'phone',
+      label: SUPPORT_PHONE,
+      value: SUPPORT_PHONE,
+      action: openPhone,
     },
-    faqHeader: {
-        flexDirection: "row",
-        justifyContent: "space-between",
-        alignItems: "center",
+    {
+      icon: 'message-circle',
+      label: 'Chat with us on WhatsApp',
+      value: WHATSAPP_NUMBER,
+      action: openWhatsApp,
+      iconColor: Colors.whatsapp,
     },
-    faqQuestion: {
-        flex: 1,
-        fontSize: 16,
-        fontWeight: "600",
-        color: "#333",
-    },
-    faqAnswer: {
-        marginTop: 8,
-        fontSize: 14,
-        lineHeight: 20,
-        color: "#555",
-    },
+  ];
+
+  return (
+    <SafeAreaProvider style={styles.safe}>
+      <StatusBar barStyle="dark-content" />
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <Text style={styles.subtitle}>
+          We're here to help! Contact us or browse FAQs below.
+        </Text>
+
+        {/* Contact Card */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Contact Support</Text>
+          {CONTACT_ITEMS.map((item) => (
+            <ContactRow key={item.value} {...item} />
+          ))}
+        </View>
+
+        {/* FAQ Section */}
+        <Text style={styles.faqTitle}>Frequently Asked Questions</Text>
+        <View style={styles.faqList}>
+          {FAQ_DATA.map((faq, index) => (
+            <FaqCard
+              key={faq.question}
+              faq={faq}
+              index={index}
+              expanded={expanded === index}
+              onToggle={toggleFaq}
+            />
+          ))}
+        </View>
+
+        <View style={styles.footer} />
+      </ScrollView>
+    </SafeAreaProvider>
+  );
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: Colors.backgroundPage,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 40,
+  },
+  subtitle: {
+    fontSize: 14,
+    color: Colors.textBody,
+    marginBottom: 16,
+    lineHeight: 20,
+  },
+  card: {
+    backgroundColor: Colors.inputBackground,
+    padding: 16,
+    borderRadius: 10,
+    marginBottom: 24,
+    elevation: 1,
+    shadowColor: Colors.black,
+    shadowOpacity: 0.04,
+    shadowRadius: 4,
+    shadowOffset: { width: 0, height: 1 },
+  },
+  cardTitle: {
+    fontSize: 17,
+    fontWeight: '600',
+    marginBottom: 12,
+    color: Colors.textPrimary,
+  },
+  contactRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: 10,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: Colors.divider,
+  },
+  contactIconWrapper: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: Colors.white,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 10,
+  },
+  contactRowText: {
+    flex: 1,
+    fontSize: 14,
+    color: Colors.textSecondary,
+  },
+  faqTitle: {
+    fontSize: 18,
+    fontWeight: '700',
+    marginBottom: 12,
+    color: Colors.textPrimary,
+  },
+  faqList: {
+    borderRadius: 10,
+    backgroundColor: Colors.white,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: Colors.divider,
+  },
+  faqContainer: {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.divider,
+    paddingHorizontal: 14,
+    paddingVertical: 14,
+  },
+  faqHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  faqQuestion: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    paddingRight: 12,
+  },
+  faqAnswer: {
+    marginTop: 10,
+    fontSize: 14,
+    lineHeight: 21,
+    color: Colors.textBody,
+  },
+  footer: {
+    height: 24,
+  },
 });

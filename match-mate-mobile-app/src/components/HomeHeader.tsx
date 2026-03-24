@@ -15,12 +15,7 @@ export default function HomeHeader() {
   const navigation = useNavigation<any>();
 
   return (
-    <View
-      style={[
-        styles.container,
-        { paddingTop: insets.top + 8 },
-      ]}
-    >
+    <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
       {/* LEFT: Profile */}
       <TouchableOpacity
         style={styles.iconButton}

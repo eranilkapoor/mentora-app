@@ -14,7 +14,7 @@ export const fakeApi = async <T>(
   if (shouldFail) {
     return {
       success: false,
-      error: response.error || "Something went wrong",
+      error: response.error ?? 'Something went wrong',
     };
   }
 

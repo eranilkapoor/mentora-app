@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -9,30 +9,30 @@ import {
   TextInput,
   RefreshControl,
   ActivityIndicator,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const mockFetchMatches = async () => {
   await new Promise((r) => setTimeout(r, 700));
   return [
     {
-      id: "1",
-      name: "Priya Sharma",
+      id: '1',
+      name: 'Priya Sharma',
       age: 28,
-      city: "Mumbai",
-      lastMessage: "Hi, how are you?",
-      avatarUrl: "https://i.pravatar.cc/150?img=10",
+      city: 'Mumbai',
+      lastMessage: 'Hi, how are you?',
+      avatarUrl: 'https://i.pravatar.cc/150?img=10',
       matchedAt: new Date().toISOString(),
       isOnline: true,
       unreadCount: 2,
     },
     {
-      id: "2",
-      name: "Ankit Verma",
+      id: '2',
+      name: 'Ankit Verma',
       age: 31,
-      city: "Delhi",
-      lastMessage: "Thanks for accepting",
-      avatarUrl: "https://i.pravatar.cc/150?img=11",
+      city: 'Delhi',
+      lastMessage: 'Thanks for accepting',
+      avatarUrl: 'https://i.pravatar.cc/150?img=11',
       matchedAt: new Date(Date.now() - 3600000).toISOString(),
       isOnline: false,
       unreadCount: 0,
@@ -42,7 +42,7 @@ const mockFetchMatches = async () => {
 
 const ChatListScreen = ({ navigation }: any) => {
   const [matches, setMatches] = useState<any[]>([]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -71,9 +71,7 @@ const ChatListScreen = ({ navigation }: any) => {
     return (
       <TouchableOpacity
         style={styles.card}
-        onPress={() =>
-          navigation.navigate("ChatScreen", { userId: item.id })
-        }
+        onPress={() => navigation.navigate('ChatScreen', { userId: item.id })}
       >
         <View style={styles.avatarWrap}>
           <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
@@ -94,7 +92,7 @@ const ChatListScreen = ({ navigation }: any) => {
 
           <Text style={styles.subText}>{item.city}</Text>
           <Text style={styles.lastMessage} numberOfLines={1}>
-            {item.lastMessage || "Start conversation"}
+            {item.lastMessage || 'Start conversation'}
           </Text>
         </View>
       </TouchableOpacity>
@@ -135,7 +133,7 @@ export default ChatListScreen;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
 
   searchBox: {
@@ -144,16 +142,16 @@ const styles = StyleSheet.create({
 
   searchInput: {
     height: 40,
-    backgroundColor: "#f1f3f6",
+    backgroundColor: '#f1f3f6',
     borderRadius: 8,
     paddingHorizontal: 12,
   },
 
   card: {
-    flexDirection: "row",
+    flexDirection: 'row',
     padding: 14,
     borderBottomWidth: 1,
-    borderColor: "#f0f0f0",
+    borderColor: '#f0f0f0',
   },
 
   avatarWrap: {
@@ -167,56 +165,56 @@ const styles = StyleSheet.create({
   },
 
   onlineDot: {
-    position: "absolute",
+    position: 'absolute',
     right: 2,
     bottom: 2,
     width: 12,
     height: 12,
     borderRadius: 6,
-    backgroundColor: "#2ecc71",
+    backgroundColor: '#2ecc71',
     borderWidth: 2,
-    borderColor: "#fff",
+    borderColor: '#fff',
   },
 
   info: {
     flex: 1,
-    justifyContent: "center",
+    justifyContent: 'center',
   },
 
   nameRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   name: {
     fontSize: 16,
-    fontWeight: "600",
-    color: "#222",
+    fontWeight: '600',
+    color: '#222',
   },
 
   subText: {
     fontSize: 13,
-    color: "#777",
+    color: '#777',
     marginTop: 2,
   },
 
   lastMessage: {
     fontSize: 14,
-    color: "#444",
+    color: '#444',
     marginTop: 4,
   },
 
   badge: {
-    backgroundColor: "#e53935",
+    backgroundColor: '#e53935',
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
 
   badgeText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 12,
-    fontWeight: "600",
+    fontWeight: '600',
   },
 });

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -7,14 +7,14 @@ import {
   ScrollView,
   Dimensions,
   FlatList,
-} from "react-native";
+} from 'react-native';
 
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 
 const PHOTOS = [
-  "https://randomuser.me/api/portraits/women/65.jpg",
-  "https://randomuser.me/api/portraits/women/66.jpg",
-  "https://randomuser.me/api/portraits/women/67.jpg",
+  'https://randomuser.me/api/portraits/women/65.jpg',
+  'https://randomuser.me/api/portraits/women/66.jpg',
+  'https://randomuser.me/api/portraits/women/67.jpg',
 ];
 
 export default function MatchDetailsScreen() {
@@ -29,9 +29,7 @@ export default function MatchDetailsScreen() {
         pagingEnabled
         showsHorizontalScrollIndicator={false}
         onMomentumScrollEnd={(e) => {
-          const index = Math.round(
-            e.nativeEvent.contentOffset.x / width
-          );
+          const index = Math.round(e.nativeEvent.contentOffset.x / width);
           setActiveIndex(index);
         }}
         renderItem={({ item }) => (
@@ -44,10 +42,7 @@ export default function MatchDetailsScreen() {
         {PHOTOS.map((_, i) => (
           <View
             key={i}
-            style={[
-              styles.dot,
-              i === activeIndex && styles.activeDot,
-            ]}
+            style={[styles.dot, i === activeIndex && styles.activeDot]}
           />
         ))}
       </View>
@@ -82,8 +77,8 @@ export default function MatchDetailsScreen() {
       {/* ABOUT */}
       <Section title="About Me">
         <Text style={styles.aboutText}>
-          I am a caring and family-oriented person who believes in
-          mutual respect and understanding.
+          I am a caring and family-oriented person who believes in mutual
+          respect and understanding.
         </Text>
       </Section>
     </ScrollView>
@@ -115,54 +110,54 @@ function Row({ label, value }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   photo: {
     width,
     height: 350,
   },
   dots: {
-    flexDirection: "row",
-    justifyContent: "center",
+    flexDirection: 'row',
+    justifyContent: 'center',
     marginVertical: 8,
   },
   dot: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#ccc",
+    backgroundColor: '#ccc',
     marginHorizontal: 4,
   },
   activeDot: {
-    backgroundColor: "#e91e63",
+    backgroundColor: '#e91e63',
   },
   section: {
     paddingHorizontal: 16,
     paddingVertical: 12,
     borderBottomWidth: 1,
-    borderColor: "#eee",
+    borderColor: '#eee',
   },
   sectionTitle: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: '700',
     marginBottom: 8,
-    color: "#e91e63",
+    color: '#e91e63',
   },
   row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginVertical: 4,
   },
   label: {
-    color: "#666",
+    color: '#666',
     fontSize: 14,
   },
   value: {
     fontSize: 14,
-    fontWeight: "500",
+    fontWeight: '500',
   },
   aboutText: {
-    color: "#444",
+    color: '#444',
     lineHeight: 20,
   },
 });

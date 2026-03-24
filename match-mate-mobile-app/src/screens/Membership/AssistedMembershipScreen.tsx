@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,11 +6,11 @@ import {
   TouchableOpacity,
   ScrollView,
   Image,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 export default function AssistedMembershipScreen() {
-  const [tab, setTab] = useState<"self" | "assisted">("assisted");
+  const [tab, setTab] = useState<'self' | 'assisted'>('assisted');
   const [duration, setDuration] = useState(3);
 
   return (
@@ -32,8 +32,8 @@ export default function AssistedMembershipScreen() {
         {/* TABS */}
         <View style={styles.tabs}>
           <TouchableOpacity
-            style={[styles.tab, tab === "self" && styles.inactiveTab]}
-            onPress={() => setTab("self")}
+            style={[styles.tab, tab === 'self' && styles.inactiveTab]}
+            onPress={() => setTab('self')}
           >
             <Text style={styles.inactiveText}>Self-Service</Text>
           </TouchableOpacity>
@@ -62,9 +62,7 @@ export default function AssistedMembershipScreen() {
             <Text style={styles.point}>
               • Get additional info of the bride & her family
             </Text>
-            <Text style={styles.point}>
-              • With 3 times faster matching
-            </Text>
+            <Text style={styles.point}>• With 3 times faster matching</Text>
             <Text style={styles.point}>
               • Set up unlimited meetings with profiles
             </Text>
@@ -133,117 +131,117 @@ const Plan = ({ months, price, oldPrice, active, onPress }: any) => (
   </TouchableOpacity>
 );
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: '#fff' },
 
   header: {
-    flexDirection: "row",
+    flexDirection: 'row',
     padding: 16,
-    justifyContent: "space-between",
-    alignItems: "center",
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
-  headerLeft: { flexDirection: "row", alignItems: "center" },
+  headerLeft: { flexDirection: 'row', alignItems: 'center' },
 
   avatar: {
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#e53935",
-    alignItems: "center",
-    justifyContent: "center",
+    backgroundColor: '#e53935',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginRight: 8,
   },
 
-  avatarText: { color: "#fff", fontWeight: "700" },
-  headerTitle: { fontSize: 16, fontWeight: "700" },
-  needHelp: { color: "#e53935", fontWeight: "600" },
+  avatarText: { color: '#fff', fontWeight: '700' },
+  headerTitle: { fontSize: 16, fontWeight: '700' },
+  needHelp: { color: '#e53935', fontWeight: '600' },
 
   tabs: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginHorizontal: 16,
     borderRadius: 8,
-    backgroundColor: "#f3f3f3",
+    backgroundColor: '#f3f3f3',
   },
 
   tab: {
     flex: 1,
     paddingVertical: 10,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
   activeTab: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#e53935",
+    borderColor: '#e53935',
   },
 
-  inactiveTab: { backgroundColor: "transparent" },
-  activeText: { color: "#e53935", fontWeight: "700" },
-  inactiveText: { color: "#777" },
+  inactiveTab: { backgroundColor: 'transparent' },
+  activeText: { color: '#e53935', fontWeight: '700' },
+  inactiveText: { color: '#777' },
 
   sectionTitle: {
     margin: 16,
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: '700',
   },
 
   card: {
     marginHorizontal: 16,
     padding: 14,
     borderRadius: 12,
-    backgroundColor: "#fafafa",
+    backgroundColor: '#fafafa',
     borderWidth: 1,
-    borderColor: "#eee",
+    borderColor: '#eee',
   },
 
-  benefit: { fontWeight: "600", marginBottom: 6 },
+  benefit: { fontWeight: '600', marginBottom: 6 },
 
   points: { marginTop: 6 },
-  point: { fontSize: 13, color: "#444", marginVertical: 2 },
+  point: { fontSize: 13, color: '#444', marginVertical: 2 },
 
   actions: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 12,
   },
 
   outlineBtn: {
     borderWidth: 1,
-    borderColor: "#e53935",
+    borderColor: '#e53935',
     paddingVertical: 6,
     paddingHorizontal: 12,
     borderRadius: 20,
     marginRight: 12,
   },
 
-  outlineText: { color: "#e53935", fontWeight: "600" },
-  linkText: { color: "#e53935", fontWeight: "600" },
+  outlineText: { color: '#e53935', fontWeight: '600' },
+  linkText: { color: '#e53935', fontWeight: '600' },
 
   offer: {
-    textAlign: "center",
+    textAlign: 'center',
     marginVertical: 14,
-    fontWeight: "700",
-    color: "#e53935",
+    fontWeight: '700',
+    color: '#e53935',
   },
 
   planRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
+    flexDirection: 'row',
+    justifyContent: 'space-around',
   },
 
   planCard: {
-    width: "30%",
+    width: '30%',
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 12,
     padding: 10,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
   activePlan: {
-    borderColor: "#e53935",
-    backgroundColor: "#fdecea",
+    borderColor: '#e53935',
+    backgroundColor: '#fdecea',
   },
 
   radio: {
@@ -251,40 +249,40 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: 7,
     borderWidth: 1,
-    borderColor: "#aaa",
+    borderColor: '#aaa',
     marginBottom: 6,
   },
 
   radioActive: {
-    backgroundColor: "#e53935",
-    borderColor: "#e53935",
+    backgroundColor: '#e53935',
+    borderColor: '#e53935',
   },
 
-  planMonths: { fontWeight: "600" },
-  planPrice: { color: "#e53935", fontWeight: "700" },
+  planMonths: { fontWeight: '600' },
+  planPrice: { color: '#e53935', fontWeight: '700' },
   oldPrice: {
     fontSize: 11,
-    textDecorationLine: "line-through",
-    color: "#888",
+    textDecorationLine: 'line-through',
+    color: '#888',
   },
 
   cta: {
-    position: "absolute",
+    position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
     padding: 12,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderTopWidth: 1,
-    borderColor: "#eee",
+    borderColor: '#eee',
   },
 
   ctaBtn: {
-    backgroundColor: "#e53935",
+    backgroundColor: '#e53935',
     paddingVertical: 14,
     borderRadius: 25,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
-  ctaText: { color: "#fff", fontSize: 16, fontWeight: "700" },
+  ctaText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });

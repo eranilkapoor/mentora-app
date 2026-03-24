@@ -43,7 +43,7 @@ export default function BottomTabs() {
           ),
         }}
       />
-      
+
       <Tab.Screen
         name="Profile"
         component={ProfileScreen}
@@ -59,15 +59,12 @@ export default function BottomTabs() {
         component={MembershipScreen}
         options={{
           tabBarIcon: ({ color, size }) => (
-            <Ionicons name="card-outline" size={size} color={color} />  
+            <Ionicons name="card-outline" size={size} color={color} />
           ),
         }}
       />
 
-      <Tab.Screen
-          name="Upgrade"
-          component={AssistedMembershipScreen}
-      />
+      <Tab.Screen name="Upgrade" component={AssistedMembershipScreen} />
     </Tab.Navigator>
   );
 }

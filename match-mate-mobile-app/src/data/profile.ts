@@ -7,8 +7,6 @@ export const PROFILES = [
     distance: '20 km away',
     verified: true,
     isNew: true,
-    images: [
-      'https://picsum.photos/600/900',
-    ],
+    images: ['https://picsum.photos/600/900'],
   },
 ];

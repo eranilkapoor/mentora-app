@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  FlatList,
-  StyleSheet,
-  Text,
-} from 'react-native';
+import { View, FlatList, StyleSheet, Text } from 'react-native';
 import NotificationItem from './NotificationItem';
 
 const mockNotifications = [
@@ -35,9 +30,7 @@ export default function NotificationsScreen() {
       <FlatList
         data={mockNotifications}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <NotificationItem {...item} />
-        )}
+        renderItem={({ item }) => <NotificationItem {...item} />}
         ListEmptyComponent={
           <Text style={styles.empty}>No notifications yet</Text>
         }

@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useCallback } from "react";
-import { SafeAreaProvider } from "react-native-safe-area-context";
+import React, { useEffect, useState, useCallback } from 'react';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   TextInput,
   RefreshControl,
   ActivityIndicator,
-} from "react-native";
+} from 'react-native';
 
 type Match = {
   id: string;
@@ -34,35 +34,35 @@ const mockFetchMatches = async (): Promise<Match[]> => {
   await new Promise((r) => setTimeout(r, 700));
   return [
     {
-      id: "1",
-      name: "Priya Sharma",
+      id: '1',
+      name: 'Priya Sharma',
       age: 28,
-      height: "5'4\"",
-      religion: "Hindu",
-      caste: "Brahmin",
-      education: "B.Tech",
-      profession: "Software Engineer",
-      location: "Mumbai, India",
-      avatarUrl: "https://randomuser.me/api/portraits/women/65.jpg",
+      height: '5\'4"',
+      religion: 'Hindu',
+      caste: 'Brahmin',
+      education: 'B.Tech',
+      profession: 'Software Engineer',
+      location: 'Mumbai, India',
+      avatarUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
     },
     {
-      id: "2",
-      name: "Anjali Verma",
+      id: '2',
+      name: 'Anjali Verma',
       age: 26,
-      height: "5'2\"",
-      religion: "Hindu",
-      caste: "Kayastha",
-      education: "MBA",
-      profession: "HR Manager",
-      location: "Delhi, India",
-      avatarUrl: "https://randomuser.me/api/portraits/women/66.jpg",
+      height: '5\'2"',
+      religion: 'Hindu',
+      caste: 'Kayastha',
+      education: 'MBA',
+      profession: 'HR Manager',
+      location: 'Delhi, India',
+      avatarUrl: 'https://randomuser.me/api/portraits/women/66.jpg',
     },
   ];
 };
 
 const MatchListScreen: React.FC<Props> = ({ navigation }) => {
   const [matches, setMatches] = useState<Match[]>([]);
-  const [query, setQuery] = useState("");
+  const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -110,7 +110,7 @@ const MatchListScreen: React.FC<Props> = ({ navigation }) => {
           <TouchableOpacity
             style={styles.outlineBtn}
             onPress={() =>
-              navigation.navigate("OnlineMatches", { userId: item.id })
+              navigation.navigate('OnlineMatches', { userId: item.id })
             }
           >
             <Text style={styles.outlineText}>View Profile</Text>
@@ -118,9 +118,7 @@ const MatchListScreen: React.FC<Props> = ({ navigation }) => {
 
           <TouchableOpacity
             style={styles.primaryBtn}
-            onPress={() =>
-              navigation.navigate("ChatScreen", { user: item })
-            }
+            onPress={() => navigation.navigate('ChatScreen', { user: item })}
           >
             <Text style={styles.primaryText}>Chat</Text>
           </TouchableOpacity>
@@ -167,30 +165,30 @@ const MatchListScreen: React.FC<Props> = ({ navigation }) => {
 /* ---------- STYLES ---------- */
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#f5f5f5" },
+  container: { flex: 1, backgroundColor: '#f5f5f5' },
 
   searchBox: {
     padding: 12,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
   searchInput: {
     height: 42,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: '#f0f0f0',
     borderRadius: 8,
     paddingHorizontal: 12,
   },
 
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     marginHorizontal: 12,
     marginTop: 12,
     borderRadius: 12,
-    overflow: "hidden",
+    overflow: 'hidden',
     elevation: 2,
   },
 
   photo: {
-    width: "100%",
+    width: '100%',
     height: 220,
   },
 
@@ -200,24 +198,24 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 18,
-    fontWeight: "700",
-    color: "#111",
+    fontWeight: '700',
+    color: '#111',
   },
 
   sub: {
     fontSize: 14,
-    color: "#555",
+    color: '#555',
     marginTop: 4,
   },
 
   location: {
     fontSize: 13,
-    color: "#777",
+    color: '#777',
     marginTop: 6,
   },
 
   actions: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: 12,
     gap: 10,
   },
@@ -227,36 +225,36 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#e91e63",
-    alignItems: "center",
+    borderColor: '#e91e63',
+    alignItems: 'center',
   },
 
   outlineText: {
-    color: "#e91e63",
-    fontWeight: "600",
+    color: '#e91e63',
+    fontWeight: '600',
   },
 
   primaryBtn: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 8,
-    backgroundColor: "#e91e63",
-    alignItems: "center",
+    backgroundColor: '#e91e63',
+    alignItems: 'center',
   },
 
   primaryText: {
-    color: "#fff",
-    fontWeight: "600",
+    color: '#fff',
+    fontWeight: '600',
   },
 
   center: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   emptyText: {
-    color: "#666",
+    color: '#666',
   },
 });
 

@@ -1,9 +1,9 @@
 export const COLORS = {
-    primary: "#e53935",
-    secondary: "#f5f5f5",
-    textPrimary: "#222",
-    textSecondary: "#666",
-    border: "#eee",
-    white: "#fff",
-    online: "#4CAF50",
+  primary: '#E53935',
+  secondary: '#F5F5F5',
+  textPrimary: '#222222',
+  textSecondary: '#666666',
+  border: '#EEEEEE',
+  white: '#FFFFFF',
+  online: '#4CAF50',
 };

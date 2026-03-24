@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -7,45 +7,85 @@ import {
   Image,
   TouchableOpacity,
   Dimensions,
-} from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import HomeHeader from "../../components/HomeHeader";
+  ListRenderItem,
+} from 'react-native';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
+import Feather from 'react-native-vector-icons/Feather';
+import HomeHeader from '../../components/HomeHeader';
+import { Colors } from '../../constants/colors';
+import { type RootNavigationProp } from '../../navigation/types';
+import { type Profile } from '../../types/profile.types';
 
-const { width } = Dimensions.get("window");
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-/** ---- MOCK DATA (Jeevansathi Style) ---- */
-const PROFILES = [
+interface HomeScreenProps {
+  navigation: RootNavigationProp;
+}
+
+interface ProfileCardProps {
+  item: Profile;
+  onChat: () => void;
+  onView: () => void;
+  onShortlist: () => void;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const SCREEN_WIDTH = Dimensions.get('window').width;
+const CARD_WIDTH = SCREEN_WIDTH - 24;
+
+// ─── Mock Data ────────────────────────────────────────────────────────────────
+
+const PROFILES: Profile[] = [
   {
-    id: "1",
-    name: "Gayatri",
+    id: '1',
+    name: 'Gayatri',
     age: 39,
-    height: "5'4\"",
-    location: "Pune, Maharashtra",
-    religion: "Hindu • Brahmin",
-    education: "MBA",
-    profession: "HR Manager",
+    height: '5\'4"',
+    location: 'Pune, Maharashtra',
+    religion: 'Hindu • Brahmin',
+    education: 'MBA',
+    profession: 'HR Manager',
     photos: [
-      "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600",
-      "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600",
+      'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=600',
+      'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600',
     ],
   },
   {
-    id: "2",
-    name: "Neha",
+    id: '2',
+    name: 'Neha',
     age: 35,
-    height: "5'6\"",
-    location: "Mumbai, Maharashtra",
-    religion: "Hindu • Maratha",
-    education: "B.Tech",
-    profession: "Software Engineer",
+    height: '5\'6"',
+    location: 'Mumbai, Maharashtra',
+    religion: 'Hindu • Maratha',
+    education: 'B.Tech',
+    profession: 'Software Engineer',
     photos: [
-      "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600",
+      'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=600',
     ],
   },
 ];
 
-/** ---- PHOTO CAROUSEL ---- */
-const PhotoCarousel = ({ photos }: { photos: string[] }) => {
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function PhotoCarousel({
+  photos,
+  name,
+}: {
+  photos: string[];
+  name: string;
+}): React.ReactElement {
+  const renderPhoto: ListRenderItem<string> = useCallback(
+    ({ item }) => (
+      <Image
+        source={{ uri: item }}
+        style={styles.photo}
+        accessibilityLabel={`Photo of ${name}`}
+      />
+    ),
+    [name]
+  );
+
   return (
     <FlatList
       data={photos}
@@ -53,179 +93,296 @@ const PhotoCarousel = ({ photos }: { photos: string[] }) => {
       pagingEnabled
       showsHorizontalScrollIndicator={false}
       keyExtractor={(_, i) => i.toString()}
-      renderItem={({ item }) => (
-        <Image source={{ uri: item }} style={styles.photo} />
-      )}
+      renderItem={renderPhoto}
     />
   );
-};
+}
 
-/** ---- PROFILE CARD ---- */
-const ProfileCard = ({ item, onChat, onView }: any) => {
+function InfoRow({
+  label,
+  value,
+}: {
+  label: string;
+  value: string;
+}): React.ReactElement {
+  return (
+    <View style={styles.infoRow}>
+      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.value}>{value}</Text>
+    </View>
+  );
+}
+
+function ProfileCard({
+  item,
+  onChat,
+  onView,
+  onShortlist,
+}: ProfileCardProps): React.ReactElement {
   return (
     <View style={styles.card}>
-      <PhotoCarousel photos={item.photos} />
+      <PhotoCarousel photos={item.photos} name={item.name} />
+
+      {/* Photo count badge */}
+      {item.photos.length > 1 && (
+        <View style={styles.photoBadge}>
+          <Feather name="image" size={12} color={Colors.white} />
+          <Text style={styles.photoBadgeText}>{item.photos.length}</Text>
+        </View>
+      )}
 
       <View style={styles.cardContent}>
-        <Text style={styles.name}>
-          {item.name}, {item.age}
-        </Text>
+        <View style={styles.nameRow}>
+          <Text style={styles.name}>
+            {item.name}, {item.age}
+          </Text>
+          <View style={styles.verifiedBadge}>
+            <Feather name="check-circle" size={14} color={Colors.primary} />
+            <Text style={styles.verifiedText}>Verified</Text>
+          </View>
+        </View>
 
-        <Text style={styles.meta}>
-          {item.height} • {item.location}
-        </Text>
+        <View style={styles.metaRow}>
+          <Feather name="map-pin" size={13} color={Colors.textMuted} />
+          <Text style={styles.meta}>
+            {item.height} • {item.location}
+          </Text>
+        </View>
 
         <View style={styles.divider} />
 
-        <Text style={styles.label}>Education</Text>
-        <Text style={styles.value}>{item.education}</Text>
+        <View style={styles.infoGrid}>
+          <InfoRow label="Education" value={item.education} />
+          <InfoRow label="Profession" value={item.profession} />
+          <InfoRow label="Religion" value={item.religion} />
+        </View>
 
-        <Text style={styles.label}>Profession</Text>
-        <Text style={styles.value}>{item.profession}</Text>
-
-        <Text style={styles.label}>Religion / Community</Text>
-        <Text style={styles.value}>{item.religion}</Text>
-
-        {/* ---- ACTION BUTTONS ---- */}
+        {/* Action Buttons */}
         <View style={styles.actions}>
-          <TouchableOpacity style={styles.chatBtn} onPress={onChat}>
+          <TouchableOpacity
+            style={styles.chatBtn}
+            onPress={onChat}
+            accessibilityRole="button"
+            accessibilityLabel={`Chat with ${item.name}`}
+          >
+            <Feather name="message-circle" size={16} color={Colors.white} />
             <Text style={styles.chatText}>Chat</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.viewBtn} onPress={onView}>
+          <TouchableOpacity
+            style={styles.viewBtn}
+            onPress={onView}
+            accessibilityRole="button"
+            accessibilityLabel={`View ${item.name}'s profile`}
+          >
+            <Feather name="user" size={16} color={Colors.textPrimary} />
             <Text style={styles.viewText}>View Profile</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.shortlistBtn}>
-            <Text style={styles.shortlistText}>Shortlist</Text>
+          <TouchableOpacity
+            style={styles.shortlistBtn}
+            onPress={onShortlist}
+            accessibilityRole="button"
+            accessibilityLabel={`Shortlist ${item.name}`}
+          >
+            <Feather name="bookmark" size={18} color={Colors.accent} />
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
-};
+}
 
-/** ---- HOME SCREEN ---- */
-export default function HomeScreen({ navigation }: any) {
+// ─── Main Screen ─────────────────────────────────────────────────────────────
+
+export default function HomeScreen({
+  navigation,
+}: HomeScreenProps): React.ReactElement {
+  const handleChat = useCallback(
+    (profile: Profile) => {
+      navigation.navigate('ChatScreen', { user: profile });
+    },
+    [navigation]
+  );
+
+  const handleView = useCallback(
+    (profile: Profile) => {
+      navigation.navigate('MatchDetail', { user: profile });
+    },
+    [navigation]
+  );
+
+  const handleShortlist = useCallback((profile: Profile) => {
+    // TODO: dispatch shortlist action
+    console.warn(`Shortlisted: ${profile.name}`);
+  }, []);
+
+  const renderProfile: ListRenderItem<Profile> = useCallback(
+    ({ item }) => (
+      <ProfileCard
+        item={item}
+        onChat={() => handleChat(item)}
+        onView={() => handleView(item)}
+        onShortlist={() => handleShortlist(item)}
+      />
+    ),
+    [handleChat, handleView, handleShortlist]
+  );
+
   return (
     <SafeAreaProvider style={styles.container}>
       <HomeHeader />
-
       <FlatList
         data={PROFILES}
         keyExtractor={(item) => item.id}
-        contentContainerStyle={{ paddingBottom: 24 }}
+        contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => (
-          <ProfileCard
-            item={item}
-            onChat={() => navigation.navigate("ChatScreen", { user: item })}
-            onView={() =>
-              navigation.navigate("MatchDetail", { user: item })
-            }
-          />
-        )}
+        renderItem={renderProfile}
       />
     </SafeAreaProvider>
   );
 }
 
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f6f6f6",
+    backgroundColor: Colors.backgroundPage,
   },
-
+  listContent: {
+    paddingBottom: 24,
+  },
   card: {
-    backgroundColor: "#fff",
+    backgroundColor: Colors.white,
     marginHorizontal: 12,
     marginTop: 16,
     borderRadius: 14,
-    overflow: "hidden",
+    overflow: 'hidden',
     elevation: 3,
+    shadowColor: Colors.black,
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 2 },
   },
-
   photo: {
-    width,
+    width: CARD_WIDTH,
     height: 320,
-    resizeMode: "cover",
+    resizeMode: 'cover',
   },
-
+  photoBadge: {
+    position: 'absolute',
+    top: 12,
+    right: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.overlayDark,
+    borderRadius: 12,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    gap: 4,
+  },
+  photoBadgeText: {
+    color: Colors.white,
+    fontSize: 12,
+    fontWeight: '600',
+  },
   cardContent: {
     padding: 16,
   },
-
+  nameRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 4,
+  },
   name: {
     fontSize: 20,
-    fontWeight: "700",
-    color: "#111",
+    fontWeight: '700',
+    color: Colors.textPrimary,
   },
-
+  verifiedBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  verifiedText: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  metaRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    marginTop: 2,
+  },
   meta: {
     fontSize: 14,
-    color: "#666",
-    marginTop: 4,
+    color: Colors.textMuted,
   },
-
   divider: {
     height: 1,
-    backgroundColor: "#eee",
+    backgroundColor: Colors.divider,
     marginVertical: 12,
   },
-
+  infoGrid: {
+    gap: 6,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   label: {
     fontSize: 12,
-    color: "#888",
-    marginTop: 6,
+    color: Colors.textMuted,
   },
-
   value: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#222",
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textPrimary,
   },
-
   actions: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: 16,
     gap: 10,
   },
-
   chatBtn: {
     flex: 1,
-    backgroundColor: "#ff6b6b",
+    flexDirection: 'row',
+    backgroundColor: Colors.chatBtn,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
-
   chatText: {
-    color: "#fff",
-    fontWeight: "700",
+    color: Colors.white,
+    fontWeight: '700',
+    fontSize: 14,
   },
-
   viewBtn: {
     flex: 1,
-    backgroundColor: "#f1f1f1",
+    flexDirection: 'row',
+    backgroundColor: Colors.backgroundLight,
     paddingVertical: 12,
     borderRadius: 8,
-    alignItems: "center",
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
   },
-
   viewText: {
-    color: "#111",
-    fontWeight: "600",
+    color: Colors.textPrimary,
+    fontWeight: '600',
+    fontSize: 14,
   },
-
   shortlistBtn: {
-    width: 44,
-    backgroundColor: "#fff5e6",
+    width: 48,
+    backgroundColor: Colors.shortlistBg,
     borderRadius: 8,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  shortlistText: {
-    fontSize: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });

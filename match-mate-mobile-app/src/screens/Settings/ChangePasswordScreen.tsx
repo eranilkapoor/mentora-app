@@ -1,184 +1,582 @@
-import React, { useState, Dispatch, SetStateAction } from 'react';
+import React, { useState, useCallback } from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import {
-    View,
-    Text,
-    StyleSheet,
-    Switch,
-    TouchableOpacity,
-    Alert,
-    ScrollView,
-    StatusBar,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  ScrollView,
+  StatusBar,
+  TextInput,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
-import { useAppDispatch } from '../../store';
-import { logout } from '../../store/authSlice';
+import Feather from 'react-native-vector-icons/Feather';
+import { Colors } from '../../constants/colors';
+import { type RootNavigationProp } from '../../navigation/types';
+import { AuthService } from '../../services/authService';
 
-function ChangePasswordScreen({ navigation }: any) {
-    const dispatch = useAppDispatch();
+// ─── Types ────────────────────────────────────────────────────────────────────
 
-    const [notificationsEnabled, setNotificationsEnabled] = useState<boolean>(true);
-    const [darkModeEnabled, setDarkModeEnabled] = useState<boolean>(false);
-    const [locationSharing, setLocationSharing] = useState<boolean>(false);
-
-    const handleSignOut = () => {
-        Alert.alert('Sign out', 'Are you sure you want to sign out?', [
-            { text: 'Cancel', style: 'cancel' },
-            {
-                text: 'Sign Out',
-                style: 'destructive',
-                onPress: () => dispatch(logout())
-            },
-        ]);
-    };
-
-    const goto = (screen: string) => {
-        navigation?.navigate?.(screen);
-    };
-
-    return (
-        <SafeAreaProvider style={styles.safe}>
-            <StatusBar barStyle={darkModeEnabled ? 'light-content' : 'dark-content'} />
-            <View style={styles.header}>
-                <Text style={styles.headerTitle}>Settings</Text>
-            </View>
-
-            <ScrollView contentContainerStyle={styles.container}>
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Account</Text>
-                    <TouchableOpacity style={styles.row} onPress={() => goto('Profile')}>
-                        <Text style={styles.rowLabel}>Edit Profile</Text>
-                        <Text style={styles.rowAction}>{'>'}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.row} onPress={() => goto('ChangePasswordScreen')}>
-                        <Text style={styles.rowLabel}>Change Password</Text>
-                        <Text style={styles.rowAction}>{'>'}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Preferences</Text>
-                    <View style={styles.row}>
-                        <Text style={styles.rowLabel}>Dark Mode</Text>
-                        <Switch
-                            value={darkModeEnabled}
-                            onValueChange={setDarkModeEnabled}
-                            trackColor={{ false: '#ccc', true: '#4f46e5' }}
-                            thumbColor={darkModeEnabled ? '#fff' : '#fff'} />
-                    </View>
-
-                    <View style={styles.row}>
-                        <Text style={styles.rowLabel}>Share Location</Text>
-                        <Switch
-                            value={locationSharing}
-                            onValueChange={setLocationSharing}
-                            trackColor={{ false: '#ccc', true: '#4f46e5' }} />
-                    </View>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Notifications</Text>
-                    <View style={styles.row}>
-                        <Text style={styles.rowLabel}>App Notifications</Text>
-                        <Switch
-                            value={notificationsEnabled}
-                            onValueChange={setNotificationsEnabled}
-                            trackColor={{ false: '#ccc', true: '#4f46e5' }} />
-                    </View>
-
-                    <TouchableOpacity style={styles.row} onPress={() => goto('NotificationSettings')}>
-                        <Text style={styles.rowLabel}>Notification Settings</Text>
-                        <Text style={styles.rowAction}>{'>'}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.section}>
-                    <Text style={styles.sectionTitle}>Support</Text>
-                    <TouchableOpacity style={styles.row} onPress={() => goto('Help')}>
-                        <Text style={styles.rowLabel}>Help & Support</Text>
-                        <Text style={styles.rowAction}>{'>'}</Text>
-                    </TouchableOpacity>
-
-                    <TouchableOpacity style={styles.row} onPress={() => goto('PrivacyPolicy')}>
-                        <Text style={styles.rowLabel}>Privacy Policy</Text>
-                        <Text style={styles.rowAction}>{'>'}</Text>
-                    </TouchableOpacity>
-                </View>
-
-                <View style={styles.section}>
-                    <TouchableOpacity style={[styles.signOutButton]} onPress={handleSignOut}>
-                        <Text style={styles.signOutText}>Sign Out</Text>
-                    </TouchableOpacity>
-                </View>
-            </ScrollView>
-        </SafeAreaProvider>
-    );
+interface ChangePasswordScreenProps {
+  navigation: RootNavigationProp;
 }
 
-const styles = StyleSheet.create({
-    safe: {
-        flex: 1,
-        backgroundColor: '#f8fafc',
-    },
-    header: {
-        paddingVertical: 18,
-        paddingHorizontal: 16,
-        borderBottomWidth: StyleSheet.hairlineWidth,
-        borderBottomColor: '#e6e9ef',
-        backgroundColor: '#fff',
-    },
-    headerTitle: {
-        fontSize: 20,
-        fontWeight: '600',
-        color: '#0f172a',
-    },
-    container: {
-        padding: 16,
-        paddingBottom: 40,
-    },
-    section: {
-        marginBottom: 24,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        paddingVertical: 8,
-        overflow: 'hidden',
-    },
-    sectionTitle: {
-        fontSize: 13,
-        fontWeight: '600',
-        color: '#475569',
-        paddingHorizontal: 12,
-        paddingVertical: 8,
-        textTransform: 'uppercase',
-        letterSpacing: 0.6,
-    },
-    row: {
-        height: 56,
-        paddingHorizontal: 12,
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        borderTopWidth: StyleSheet.hairlineWidth,
-        borderTopColor: '#eef2f7',
-    },
-    rowLabel: {
-        fontSize: 16,
-        color: '#0f172a',
-    },
-    rowAction: {
-        fontSize: 18,
-        color: '#9aa4b2',
-    },
-    signOutButton: {
-        paddingVertical: 14,
-        alignItems: 'center',
-        justifyContent: 'center',
-    },
-    signOutText: {
-        color: '#ef4444',
-        fontWeight: '600',
-        fontSize: 16,
-    },
-});
+interface FormValues {
+  oldPassword: string;
+  newPassword: string;
+  confirmPassword: string;
+}
 
-export default ChangePasswordScreen;
+interface FormErrors {
+  oldPassword?: string;
+  newPassword?: string;
+  confirmPassword?: string;
+}
+
+interface PasswordFieldProps {
+  label: string;
+  value: string;
+  placeholder: string;
+  error?: string;
+  visible: boolean;
+  onChangeText: (text: string) => void;
+  onToggleVisibility: () => void;
+  accessibilityLabel: string;
+  editable?: boolean;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const MIN_PASSWORD_LENGTH = 8;
+
+const PASSWORD_RULES = [
+  { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+  { label: 'One uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
+  { label: 'One number', test: (p: string) => /[0-9]/.test(p) },
+  {
+    label: 'One special character',
+    test: (p: string) => /[^A-Za-z0-9]/.test(p),
+  },
+];
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function PasswordStrengthBar({
+  password,
+}: {
+  password: string;
+}): React.ReactElement | null {
+  if (password.length === 0) return null;
+
+  const passed = PASSWORD_RULES.filter((r) => r.test(password)).length;
+  const strength =
+    passed <= 1
+      ? 'Weak'
+      : passed <= 2
+        ? 'Fair'
+        : passed === 3
+          ? 'Good'
+          : 'Strong';
+  const strengthColor =
+    passed <= 1
+      ? Colors.danger
+      : passed <= 2
+        ? Colors.accent
+        : passed === 3
+          ? Colors.link
+          : Colors.success;
+
+  return (
+    <View style={styles.strengthWrapper}>
+      <View style={styles.strengthBarRow}>
+        {PASSWORD_RULES.map((rule, i) => (
+          <View
+            key={rule.label}
+            style={[
+              styles.strengthSegment,
+              i < passed && { backgroundColor: strengthColor },
+            ]}
+          />
+        ))}
+      </View>
+      <Text style={[styles.strengthLabel, { color: strengthColor }]}>
+        {strength}
+      </Text>
+
+      <View style={styles.rulesContainer}>
+        {PASSWORD_RULES.map((rule) => {
+          const isPassed = rule.test(password);
+          return (
+            <View key={rule.label} style={styles.ruleRow}>
+              <Feather
+                name={isPassed ? 'check-circle' : 'circle'}
+                size={13}
+                color={isPassed ? Colors.success : Colors.textMuted}
+              />
+              <Text
+                style={[styles.ruleText, isPassed && styles.ruleTextPassed]}
+              >
+                {rule.label}
+              </Text>
+            </View>
+          );
+        })}
+      </View>
+    </View>
+  );
+}
+
+function PasswordField({
+  label,
+  value,
+  placeholder,
+  error,
+  visible,
+  onChangeText,
+  onToggleVisibility,
+  accessibilityLabel,
+  editable = true,
+}: PasswordFieldProps): React.ReactElement {
+  return (
+    <View style={styles.fieldWrapper}>
+      <Text style={styles.label}>{label}</Text>
+      <View
+        style={[
+          styles.inputContainer,
+          error !== undefined && styles.inputError,
+          !editable && styles.inputDisabled,
+        ]}
+      >
+        <Feather
+          name="lock"
+          size={18}
+          color={Colors.textMuted}
+          style={styles.inputIcon}
+        />
+        <TextInput
+          style={styles.input}
+          placeholder={placeholder}
+          placeholderTextColor={Colors.textMuted}
+          secureTextEntry={!visible}
+          value={value}
+          onChangeText={onChangeText}
+          editable={editable}
+          autoCapitalize="none"
+          autoCorrect={false}
+          textContentType="password"
+          accessibilityLabel={accessibilityLabel}
+        />
+        <TouchableOpacity
+          onPress={onToggleVisibility}
+          style={styles.eyeButton}
+          accessibilityRole="button"
+          accessibilityLabel={visible ? 'Hide password' : 'Show password'}
+          disabled={!editable}
+        >
+          <Feather
+            name={visible ? 'eye-off' : 'eye'}
+            size={18}
+            color={Colors.textMuted}
+          />
+        </TouchableOpacity>
+      </View>
+      {error !== undefined && <Text style={styles.errorText}>{error}</Text>}
+    </View>
+  );
+}
+
+// ─── Main Screen ─────────────────────────────────────────────────────────────
+
+export default function ChangePasswordScreen({
+  navigation,
+}: ChangePasswordScreenProps): React.ReactElement {
+  const [values, setValues] = useState<FormValues>({
+    oldPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  const [visibility, setVisibility] = useState({
+    oldPassword: false,
+    newPassword: false,
+    confirmPassword: false,
+  });
+
+  const [errors, setErrors] = useState<FormErrors>({});
+  const [loading, setLoading] = useState(false);
+
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+
+  const setValue = useCallback(
+    (field: keyof FormValues, text: string): void => {
+      setValues((prev) => ({ ...prev, [field]: text }));
+      setErrors((prev) => ({ ...prev, [field]: undefined }));
+    },
+    []
+  );
+
+  const toggleVisibility = useCallback(
+    (field: keyof typeof visibility): void => {
+      setVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+    },
+    []
+  );
+
+  const validate = useCallback((): boolean => {
+    const newErrors: FormErrors = {};
+
+    if (!values.oldPassword) {
+      newErrors.oldPassword = 'Current password is required';
+    }
+
+    if (!values.newPassword) {
+      newErrors.newPassword = 'New password is required';
+    } else if (values.newPassword.length < MIN_PASSWORD_LENGTH) {
+      newErrors.newPassword = `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;
+    } else if (values.newPassword === values.oldPassword) {
+      newErrors.newPassword = 'New password must differ from current password';
+    }
+
+    if (!values.confirmPassword) {
+      newErrors.confirmPassword = 'Please confirm your new password';
+    } else if (values.confirmPassword !== values.newPassword) {
+      newErrors.confirmPassword = 'Passwords do not match';
+    }
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }, [values]);
+
+  // ─── Submit ───────────────────────────────────────────────────────────────
+
+  const handleSubmit = useCallback(async (): Promise<void> => {
+    if (!validate()) return;
+
+    setLoading(true);
+    try {
+      await AuthService.changePassword({
+        oldPassword: values.oldPassword,
+        newPassword: values.newPassword,
+      });
+
+      Alert.alert(
+        'Password Changed',
+        'Your password has been updated successfully.',
+        [{ text: 'OK', onPress: () => navigation.goBack() }]
+      );
+    } catch (error) {
+      const err = error as { message?: string };
+      if (err.message?.toLowerCase().includes('incorrect')) {
+        setErrors({ oldPassword: 'Current password is incorrect' });
+      } else {
+        Alert.alert(
+          'Error',
+          err.message ?? 'Failed to change password. Please try again.'
+        );
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [validate, values, navigation]);
+
+  const handleReset = useCallback((): void => {
+    setValues({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setErrors({});
+    setVisibility({
+      oldPassword: false,
+      newPassword: false,
+      confirmPassword: false,
+    });
+  }, []);
+
+  // ─── Render ───────────────────────────────────────────────────────────────
+
+  return (
+    <SafeAreaProvider style={styles.safe}>
+      <StatusBar barStyle="dark-content" />
+
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Info Banner */}
+        <View style={styles.infoBanner}>
+          <Feather name="shield" size={18} color={Colors.primary} />
+          <Text style={styles.infoBannerText}>
+            Choose a strong password you don't use elsewhere.
+          </Text>
+        </View>
+
+        {/* Form Card */}
+        <View style={styles.card}>
+          <PasswordField
+            label="Current Password"
+            value={values.oldPassword}
+            placeholder="Enter current password"
+            error={errors.oldPassword}
+            visible={visibility.oldPassword}
+            onChangeText={(t) => setValue('oldPassword', t)}
+            onToggleVisibility={() => toggleVisibility('oldPassword')}
+            accessibilityLabel="current-password-input"
+            editable={!loading}
+          />
+
+          <View style={styles.separator} />
+
+          <PasswordField
+            label="New Password"
+            value={values.newPassword}
+            placeholder="Enter new password"
+            error={errors.newPassword}
+            visible={visibility.newPassword}
+            onChangeText={(t) => setValue('newPassword', t)}
+            onToggleVisibility={() => toggleVisibility('newPassword')}
+            accessibilityLabel="new-password-input"
+            editable={!loading}
+          />
+
+          <PasswordStrengthBar password={values.newPassword} />
+
+          <View style={styles.separator} />
+
+          <PasswordField
+            label="Confirm New Password"
+            value={values.confirmPassword}
+            placeholder="Re-enter new password"
+            error={errors.confirmPassword}
+            visible={visibility.confirmPassword}
+            onChangeText={(t) => setValue('confirmPassword', t)}
+            onToggleVisibility={() => toggleVisibility('confirmPassword')}
+            accessibilityLabel="confirm-password-input"
+            editable={!loading}
+          />
+
+          {/* Match indicator */}
+          {values.confirmPassword.length > 0 && (
+            <View style={styles.matchRow}>
+              <Feather
+                name={
+                  values.confirmPassword === values.newPassword
+                    ? 'check-circle'
+                    : 'x-circle'
+                }
+                size={14}
+                color={
+                  values.confirmPassword === values.newPassword
+                    ? Colors.success
+                    : Colors.danger
+                }
+              />
+              <Text
+                style={[
+                  styles.matchText,
+                  {
+                    color:
+                      values.confirmPassword === values.newPassword
+                        ? Colors.success
+                        : Colors.danger,
+                  },
+                ]}
+              >
+                {values.confirmPassword === values.newPassword
+                  ? 'Passwords match'
+                  : 'Passwords do not match'}
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* Actions */}
+        <TouchableOpacity
+          style={[styles.primaryButton, loading && styles.disabledButton]}
+          onPress={() => {
+            void handleSubmit();
+          }}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel="Update password"
+        >
+          {loading ? (
+            <ActivityIndicator color={Colors.white} />
+          ) : (
+            <>
+              <Feather name="check" size={18} color={Colors.white} />
+              <Text style={styles.primaryButtonText}>Update Password</Text>
+            </>
+          )}
+        </TouchableOpacity>
+
+        <TouchableOpacity
+          style={styles.resetButton}
+          onPress={handleReset}
+          disabled={loading}
+          accessibilityRole="button"
+          accessibilityLabel="Clear all fields"
+        >
+          <Text style={styles.resetButtonText}>Clear All Fields</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </SafeAreaProvider>
+  );
+}
+
+// ─── Styles ──────────────────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+    backgroundColor: Colors.backgroundPage,
+  },
+  scrollContent: {
+    padding: 16,
+    paddingBottom: 48,
+  },
+  infoBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    backgroundColor: Colors.primaryLight,
+    borderRadius: 10,
+    padding: 14,
+    marginBottom: 20,
+  },
+  infoBannerText: {
+    flex: 1,
+    fontSize: 13,
+    color: Colors.primary,
+    fontWeight: '500',
+    lineHeight: 18,
+  },
+  card: {
+    backgroundColor: Colors.white,
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 20,
+    elevation: 2,
+    shadowColor: Colors.black,
+    shadowOpacity: 0.06,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+  },
+  fieldWrapper: {
+    marginBottom: 4,
+  },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    marginBottom: 8,
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingHorizontal: 12,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 13,
+    fontSize: 15,
+    color: Colors.textPrimary,
+  },
+  eyeButton: {
+    padding: 6,
+  },
+  inputError: {
+    borderColor: Colors.error,
+    backgroundColor: Colors.errorLight,
+  },
+  inputDisabled: {
+    opacity: 0.5,
+  },
+  errorText: {
+    color: Colors.error,
+    fontSize: 12,
+    marginTop: 5,
+  },
+  separator: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: Colors.divider,
+    marginVertical: 16,
+  },
+  strengthWrapper: {
+    marginTop: 10,
+    marginBottom: 4,
+  },
+  strengthBarRow: {
+    flexDirection: 'row',
+    gap: 6,
+    marginBottom: 6,
+  },
+  strengthSegment: {
+    flex: 1,
+    height: 4,
+    borderRadius: 2,
+    backgroundColor: Colors.border,
+  },
+  strengthLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  rulesContainer: {
+    gap: 5,
+  },
+  ruleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+  },
+  ruleText: {
+    fontSize: 12,
+    color: Colors.textMuted,
+  },
+  ruleTextPassed: {
+    color: Colors.success,
+  },
+  matchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    marginTop: 8,
+  },
+  matchText: {
+    fontSize: 12,
+    fontWeight: '500',
+  },
+  primaryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    backgroundColor: Colors.primary,
+    paddingVertical: 15,
+    borderRadius: 12,
+    marginBottom: 12,
+  },
+  primaryButtonText: {
+    color: Colors.white,
+    fontWeight: '700',
+    fontSize: 16,
+  },
+  disabledButton: {
+    opacity: 0.6,
+  },
+  resetButton: {
+    alignItems: 'center',
+    paddingVertical: 12,
+  },
+  resetButtonText: {
+    color: Colors.textMuted,
+    fontSize: 14,
+    fontWeight: '500',
+  },
+});

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -6,8 +6,8 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 type OnlineMatch = {
   id: string;
@@ -33,25 +33,25 @@ export default function OnlineMatchesScreen({ navigation }: any) {
     setTimeout(() => {
       setMatches([
         {
-          id: "1",
-          name: "Priya Sharma",
+          id: '1',
+          name: 'Priya Sharma',
           age: 27,
-          height: "5'4\"",
-          education: "MBA",
-          profession: "HR Manager",
-          city: "Delhi",
-          photo: "https://i.pravatar.cc/300?img=11",
+          height: '5\'4"',
+          education: 'MBA',
+          profession: 'HR Manager',
+          city: 'Delhi',
+          photo: 'https://i.pravatar.cc/300?img=11',
           isOnline: true,
         },
         {
-          id: "2",
-          name: "Ankit Verma",
+          id: '2',
+          name: 'Ankit Verma',
           age: 30,
-          height: "5'9\"",
-          education: "B.Tech",
-          profession: "Software Engineer",
-          city: "Bangalore",
-          photo: "https://i.pravatar.cc/300?img=12",
+          height: '5\'9"',
+          education: 'B.Tech',
+          profession: 'Software Engineer',
+          city: 'Bangalore',
+          photo: 'https://i.pravatar.cc/300?img=12',
           isOnline: true,
         },
       ]);
@@ -88,7 +88,7 @@ export default function OnlineMatchesScreen({ navigation }: any) {
           <TouchableOpacity
             style={styles.chatBtn}
             onPress={() =>
-              navigation.navigate("Chat", {
+              navigation.navigate('Chat', {
                 partnerId: item.id,
                 partnerName: item.name,
               })
@@ -100,7 +100,7 @@ export default function OnlineMatchesScreen({ navigation }: any) {
           <TouchableOpacity
             style={styles.profileBtn}
             onPress={() =>
-              navigation.navigate("ProfileDetail", { userId: item.id })
+              navigation.navigate('ProfileDetail', { userId: item.id })
             }
           >
             <Text style={styles.profileText}>View Profile</Text>
@@ -126,12 +126,12 @@ export default function OnlineMatchesScreen({ navigation }: any) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
 
   header: {
     fontSize: 18,
-    fontWeight: "700",
+    fontWeight: '700',
     padding: 16,
   },
 
@@ -139,24 +139,24 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     marginBottom: 16,
     borderRadius: 12,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: "#eee",
-    overflow: "hidden",
+    borderColor: '#eee',
+    overflow: 'hidden',
   },
 
   image: {
-    width: "100%",
+    width: '100%',
     height: 220,
   },
 
   onlineBadge: {
-    position: "absolute",
+    position: 'absolute',
     top: 12,
     left: 12,
-    backgroundColor: "rgba(0,0,0,0.6)",
-    flexDirection: "row",
-    alignItems: "center",
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 20,
@@ -166,12 +166,12 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#4CAF50",
+    backgroundColor: '#4CAF50',
     marginRight: 6,
   },
 
   onlineText: {
-    color: "#fff",
+    color: '#fff',
     fontSize: 12,
   },
 
@@ -181,23 +181,23 @@ const styles = StyleSheet.create({
 
   name: {
     fontSize: 16,
-    fontWeight: "700",
+    fontWeight: '700',
     marginBottom: 4,
   },
 
   subText: {
-    color: "#555",
+    color: '#555',
     fontSize: 13,
     marginBottom: 2,
   },
 
   actions: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginTop: 10,
   },
 
   chatBtn: {
-    backgroundColor: "#e53935",
+    backgroundColor: '#e53935',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
@@ -205,20 +205,20 @@ const styles = StyleSheet.create({
   },
 
   chatText: {
-    color: "#fff",
-    fontWeight: "600",
+    color: '#fff',
+    fontWeight: '600',
   },
 
   profileBtn: {
     borderWidth: 1,
-    borderColor: "#e53935",
+    borderColor: '#e53935',
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 20,
   },
 
   profileText: {
-    color: "#e53935",
-    fontWeight: "600",
+    color: '#e53935',
+    fontWeight: '600',
   },
 });

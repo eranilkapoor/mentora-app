@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   FlatList,
   StyleSheet,
@@ -9,10 +9,10 @@ import {
   Image,
   KeyboardAvoidingView,
   Platform,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
-import { useFocusEffect } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useFocusEffect } from '@react-navigation/native';
+import * as ImagePicker from 'expo-image-picker';
 
 type Message = {
   id: string;
@@ -20,14 +20,14 @@ type Message = {
   text?: string;
   imageUrl?: string;
   timestamp: number;
-  type: "text" | "image";
+  type: 'text' | 'image';
 };
 
 export default function ChatScreen({ navigation, route }: any) {
   const { partnerId, partnerName, partnerPhoto } = route.params || {};
 
   const [messages, setMessages] = useState<Message[]>([]);
-  const [inputText, setInputText] = useState("");
+  const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   useFocusEffect(
@@ -39,18 +39,18 @@ export default function ChatScreen({ navigation, route }: any) {
   const fetchMessages = (pId: string) => {
     setMessages([
       {
-        id: "1",
-        senderId: "me",
-        text: "Hi, nice to connect 😊",
+        id: '1',
+        senderId: 'me',
+        text: 'Hi, nice to connect 😊',
         timestamp: Date.now() - 60000,
-        type: "text",
+        type: 'text',
       },
       {
-        id: "2",
+        id: '2',
         senderId: pId,
-        text: "Hello! Same here.",
+        text: 'Hello! Same here.',
         timestamp: Date.now() - 30000,
-        type: "text",
+        type: 'text',
       },
     ]);
   };
@@ -60,14 +60,14 @@ export default function ChatScreen({ navigation, route }: any) {
 
     const newMessage: Message = {
       id: Date.now().toString(),
-      senderId: "me",
+      senderId: 'me',
       text: inputText,
       timestamp: Date.now(),
-      type: "text",
+      type: 'text',
     };
 
     setMessages((prev) => [newMessage, ...prev]);
-    setInputText("");
+    setInputText('');
   };
 
   const pickImage = async () => {
@@ -79,32 +79,26 @@ export default function ChatScreen({ navigation, route }: any) {
     if (!result.canceled) {
       const newMessage: Message = {
         id: Date.now().toString(),
-        senderId: "me",
+        senderId: 'me',
         imageUrl: result.assets[0].uri,
         timestamp: Date.now(),
-        type: "image",
+        type: 'image',
       };
       setMessages((prev) => [newMessage, ...prev]);
     }
   };
 
   const renderMessage = ({ item }: { item: Message }) => {
-    const isMe = item.senderId === "me";
+    const isMe = item.senderId === 'me';
 
     return (
       <View
-        style={[
-          styles.messageRow,
-          isMe ? styles.rightAlign : styles.leftAlign,
-        ]}
+        style={[styles.messageRow, isMe ? styles.rightAlign : styles.leftAlign]}
       >
         <View
-          style={[
-            styles.bubble,
-            isMe ? styles.myBubble : styles.otherBubble,
-          ]}
+          style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
         >
-          {item.type === "text" ? (
+          {item.type === 'text' ? (
             <Text style={[styles.messageText, isMe && styles.myText]}>
               {item.text}
             </Text>
@@ -113,8 +107,8 @@ export default function ChatScreen({ navigation, route }: any) {
           )}
           <Text style={styles.time}>
             {new Date(item.timestamp).toLocaleTimeString([], {
-              hour: "2-digit",
-              minute: "2-digit",
+              hour: '2-digit',
+              minute: '2-digit',
             })}
           </Text>
         </View>
@@ -132,9 +126,7 @@ export default function ChatScreen({ navigation, route }: any) {
 
         <Image
           source={{
-            uri:
-              partnerPhoto ||
-              "https://i.pravatar.cc/150?img=12",
+            uri: partnerPhoto || 'https://i.pravatar.cc/150?img=12',
           }}
           style={styles.headerAvatar}
         />
@@ -146,7 +138,7 @@ export default function ChatScreen({ navigation, route }: any) {
 
         <TouchableOpacity
           onPress={() =>
-            navigation.navigate("ProfileDetails", { userId: partnerId })
+            navigation.navigate('ProfileDetails', { userId: partnerId })
           }
         >
           <Text style={styles.viewProfile}>View</Text>
@@ -154,7 +146,7 @@ export default function ChatScreen({ navigation, route }: any) {
       </View>
 
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
         <FlatList
@@ -167,7 +159,7 @@ export default function ChatScreen({ navigation, route }: any) {
 
         {showEmojiPicker && (
           <View style={styles.emojiBox}>
-            {["😀", "😂", "❤️", "👍", "😍", "🙏"].map((e) => (
+            {['😀', '😂', '❤️', '👍', '😍', '🙏'].map((e) => (
               <TouchableOpacity
                 key={e}
                 onPress={() => {
@@ -183,7 +175,9 @@ export default function ChatScreen({ navigation, route }: any) {
 
         {/* 🔹 Input */}
         <View style={styles.inputBar}>
-          <TouchableOpacity onPress={() => setShowEmojiPicker(!showEmojiPicker)}>
+          <TouchableOpacity
+            onPress={() => setShowEmojiPicker(!showEmojiPicker)}
+          >
             <Text style={styles.icon}>😊</Text>
           </TouchableOpacity>
 
@@ -209,15 +203,15 @@ export default function ChatScreen({ navigation, route }: any) {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#fff" },
+  container: { flex: 1, backgroundColor: '#fff' },
 
   header: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
     borderBottomWidth: 1,
-    borderColor: "#eee",
+    borderColor: '#eee',
   },
 
   back: { fontSize: 28, marginRight: 8 },
@@ -229,39 +223,39 @@ const styles = StyleSheet.create({
     marginRight: 10,
   },
 
-  headerName: { fontSize: 16, fontWeight: "600" },
-  headerSub: { fontSize: 12, color: "#4caf50" },
+  headerName: { fontSize: 16, fontWeight: '600' },
+  headerSub: { fontSize: 12, color: '#4caf50' },
 
   viewProfile: {
-    color: "#e53935",
-    fontWeight: "600",
+    color: '#e53935',
+    fontWeight: '600',
   },
 
   messageRow: { marginVertical: 4, paddingHorizontal: 12 },
-  leftAlign: { alignItems: "flex-start" },
-  rightAlign: { alignItems: "flex-end" },
+  leftAlign: { alignItems: 'flex-start' },
+  rightAlign: { alignItems: 'flex-end' },
 
   bubble: {
-    maxWidth: "75%",
+    maxWidth: '75%',
     borderRadius: 14,
     padding: 10,
   },
 
   myBubble: {
-    backgroundColor: "#fdecea",
+    backgroundColor: '#fdecea',
   },
 
   otherBubble: {
-    backgroundColor: "#f1f3f6",
+    backgroundColor: '#f1f3f6',
   },
 
-  messageText: { fontSize: 14, color: "#222" },
-  myText: { color: "#b71c1c" },
+  messageText: { fontSize: 14, color: '#222' },
+  myText: { color: '#b71c1c' },
 
   time: {
     fontSize: 10,
-    color: "#888",
-    alignSelf: "flex-end",
+    color: '#888',
+    alignSelf: 'flex-end',
     marginTop: 4,
   },
 
@@ -272,37 +266,37 @@ const styles = StyleSheet.create({
   },
 
   inputBar: {
-    flexDirection: "row",
-    alignItems: "flex-end",
+    flexDirection: 'row',
+    alignItems: 'flex-end',
     padding: 8,
     borderTopWidth: 1,
-    borderColor: "#eee",
+    borderColor: '#eee',
   },
 
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: "#ddd",
+    borderColor: '#ddd',
     borderRadius: 20,
     paddingHorizontal: 14,
     paddingVertical: 8,
     marginHorizontal: 6,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
   },
 
   icon: { fontSize: 22, marginHorizontal: 4 },
 
   send: {
-    color: "#e53935",
-    fontWeight: "600",
+    color: '#e53935',
+    fontWeight: '600',
     paddingHorizontal: 8,
   },
 
   emojiBox: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
     padding: 10,
-    backgroundColor: "#f7f7f7",
+    backgroundColor: '#f7f7f7',
   },
 
   emoji: { fontSize: 26, margin: 8 },
