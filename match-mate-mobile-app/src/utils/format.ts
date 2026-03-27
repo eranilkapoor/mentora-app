@@ -32,10 +32,11 @@ export const formatAgeRange = (minAge: number, maxAge: number): string => {
   return `${minAge} yrs - ${maxAge} yrs`;
 };
 
-export const cmToFeetInches = (cm: number): string => {
-  if (!cm) return '';
+export const cmToFeetInches = (cm: number | string): string => {
+  const cmValue = typeof cm === 'string' ? parseFloat(cm) : cm;
+  if (!cmValue) return '';
 
-  const inchesTotal = cm / 2.54;
+  const inchesTotal = cmValue / 2.54;
   const feet = Math.floor(inchesTotal / 12);
   const inches = Math.round(inchesTotal % 12);
 
@@ -74,23 +75,25 @@ export const formatLifestyleChoice = (choice: string): string => {
     .join(' ');
 };
 
-export const formatWeight = (weight: number): string => {
-  if (!weight) return '';
-  return `${weight} kg`;
+export const formatWeight = (weight: number | string): string => {
+  const weightValue = typeof weight === 'string' ? parseFloat(weight) : weight;
+  if (!weightValue) return '';
+  return `${weightValue} kg`;
 };
 
-export const annualIncomeFormat = (income: number): string => {
-  if (!income) return '';
-  if (income >= 10000000) {
-    return `₹${(income / 10000000).toFixed(1)} Cr`;
-  } else if (income >= 100000) {
-    return `₹${(income / 100000).toFixed(1)} L`;
+export const annualIncomeFormat = (income: number | string): string => {
+  const incomeValue = typeof income === 'string' ? parseFloat(income) : income;
+  if (!incomeValue) return '';
+  if (incomeValue >= 10000000) {
+    return `₹${(incomeValue / 10000000).toFixed(1)} Cr`;
+  } else if (incomeValue >= 100000) {
+    return `₹${(incomeValue / 100000).toFixed(1)} L`;
   } else {
-    return `₹${income}`;
+    return `₹${incomeValue}`;
   }
 };
 
-export const formatAboutMe = (aboutMe: string): string => {
+export const formatAboutMe = (aboutMe: string | undefined): string => {
   if (!aboutMe || aboutMe.trim() === '') {
     return 'I am a calm and positive person who believes in mutual respect and family values. Looking for a compatible life partner.';
   }

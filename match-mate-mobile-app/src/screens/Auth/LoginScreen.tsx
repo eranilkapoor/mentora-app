@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -13,123 +13,203 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthService } from '../../services/authService';
 import { useAppDispatch } from '../../store';
 import { setCredentials } from '../../store/authSlice';
 import { country_codes } from '../../constants';
 import { fakeApi } from '../../services/fakeApi';
+import { Colors } from '../../constants/colors';
+import { type RootStackParamList } from '../../navigation/types';
 
-type FormErrors = {
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+
+interface LoginScreenProps {
+  navigation: LoginScreenNavigationProp;
+}
+
+type ActiveTab = 'email' | 'phone';
+type SocialProvider = 'google' | 'apple' | 'facebook';
+
+interface FormErrors {
   email?: string;
   password?: string;
   phone?: string;
   otp?: string;
   error?: string;
-};
+}
 
-export default function LoginScreen({ navigation }: any) {
+interface SocialButtonProps {
+  label: string;
+  onPress: () => void;
+  disabled?: boolean;
+  icon: string;
+  iconColor?: string;
+}
+
+// ─── Constants ────────────────────────────────────────────────────────────────
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_REGEX = /^\+?\d{6,15}$/;
+const DEFAULT_COUNTRY_CODE = country_codes[2] as string;
+
+// ─── Sub-components ──────────────────────────────────────────────────────────
+
+function SocialButton({
+  label,
+  onPress,
+  disabled = false,
+  icon,
+  iconColor,
+}: SocialButtonProps): React.ReactElement {
+  return (
+    <TouchableOpacity
+      style={[styles.socialButton, disabled && styles.disabledButton]}
+      onPress={onPress}
+      disabled={disabled}
+      accessibilityRole="button"
+      accessibilityLabel={label}
+    >
+      <Feather
+        name={icon}
+        size={20}
+        color={iconColor ?? Colors.textSecondary}
+        style={styles.socialIcon}
+      />
+      <Text style={styles.socialLabel}>{label}</Text>
+    </TouchableOpacity>
+  );
+}
+
+// ─── Main Screen ─────────────────────────────────────────────────────────────
+
+export default function LoginScreen({
+  navigation,
+}: LoginScreenProps): React.ReactElement {
   const dispatch = useAppDispatch();
 
-  const [activeTab, setActiveTab] = useState<'email' | 'phone'>('email');
-
+  const [activeTab, setActiveTab] = useState<ActiveTab>('email');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-
   const [phone, setPhone] = useState('');
   const [otp, setOtp] = useState('');
   const [otpSent, setOtpSent] = useState(false);
   const [showCountryCodeDropdown, setShowCountryCodeDropdown] = useState(false);
-  const [countryCode, setCountryCode] = useState(country_codes[2]);
-
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const clearError = (field: keyof FormErrors) => {
+  // ─── Helpers ─────────────────────────────────────────────────────────────
+
+  const clearError = useCallback((field: keyof FormErrors): void => {
     setErrors((prev) => ({ ...prev, [field]: undefined }));
-  };
+  }, []);
 
-  const validateEmail = (value: string) =>
-    /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-  const validatePhone = (value: string) => /^\+?\d{6,15}$/.test(value);
+  const validateEmail = (value: string): boolean => EMAIL_REGEX.test(value);
+  const validatePhone = (value: string): boolean => PHONE_REGEX.test(value);
 
-  const handleEmailLogin = async () => {
+  const navigateAfterAuth = useCallback(
+    (isProfileCompleted: boolean): void => {
+      if (!isProfileCompleted) {
+        navigation.navigate('Onboarding');
+      }
+    },
+    [navigation]
+  );
+
+  const handleTabSwitch = useCallback((tab: ActiveTab): void => {
+    setActiveTab(tab);
+    setOtpSent(false);
+    setErrors({});
+  }, []);
+
+  const handleResendOtp = useCallback((): void => {
+    setOtpSent(false);
+    setOtp('');
+  }, []);
+
+  // ─── Handlers ────────────────────────────────────────────────────────────
+
+  const handleEmailLogin = useCallback(async (): Promise<void> => {
     const newErrors: FormErrors = {};
 
-    if (!email.trim()) newErrors.email = 'Email is required';
-    else if (!validateEmail(email))
+    if (!email.trim()) {
+      newErrors.email = 'Email is required';
+    } else if (!validateEmail(email)) {
       newErrors.email = 'Enter a valid email address';
+    }
 
-    if (!password) newErrors.password = 'Password is required';
-    else if (password.length < 6) newErrors.password = 'Minimum 6 characters';
+    if (!password) {
+      newErrors.password = 'Password is required';
+    } else if (password.length < 6) {
+      newErrors.password = 'Minimum 6 characters';
+    }
 
     setErrors(newErrors);
-
-    if (Object.keys(newErrors).length !== 0) return;
+    if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
     try {
-      const res = await AuthService.login({ email, password }).then(
-        (res) => res.data
-      );
+      const res = await AuthService.login({ email, password });
+      const { data } = res;
 
-      if (!res.success) {
+      if (!data.success) {
         setErrors({ email: 'Invalid email or password' });
         return;
       }
 
-      dispatch(setCredentials(res.data!));
-
-      if (res.data?.user?.isProfileCompleted === false) {
-        navigation?.navigate?.('Onboarding');
-        return;
+      if (data.data) {
+        dispatch(setCredentials(data.data));
+        navigateAfterAuth(data.data.user?.isProfileCompleted ?? false);
       }
-    } catch (e) {
+    } catch {
       setErrors({ error: 'Failed to sign in. Please try again.' });
     } finally {
       setLoading(false);
     }
-  };
+  }, [email, password, dispatch, navigateAfterAuth]);
 
-  const handleGetOtp = async () => {
+  const handleGetOtp = useCallback(async (): Promise<void> => {
     const newErrors: FormErrors = {};
 
-    if (!phone) newErrors.phone = 'Phone number is required';
-    else if (!validatePhone(phone))
+    if (!phone) {
+      newErrors.phone = 'Phone number is required';
+    } else if (!validatePhone(phone)) {
       newErrors.phone = 'Enter a valid phone number';
+    }
 
     setErrors(newErrors);
-
-    if (Object.keys(newErrors).length !== 0) return;
+    if (Object.keys(newErrors).length > 0) return;
 
     setLoading(true);
     try {
       const res = await AuthService.sendOtp({
         country_code: countryCode,
         phone,
-      }).then((res) => res.data);
+      });
+      const { data } = res;
 
-      if (!res.success) {
+      if (!data.success) {
         setErrors({ error: 'Failed to send OTP. Please try again.' });
         return;
       }
 
       setOtpSent(true);
-    } catch (e) {
+    } catch {
       setErrors({ error: 'Failed to send OTP. Please try again.' });
     } finally {
       setLoading(false);
     }
-  };
+  }, [phone, countryCode]);
 
-  const handleVerifyOtp = async () => {
-    const newErrors: FormErrors = {};
-
-    if (otpSent && !otp) newErrors.otp = 'OTP is required';
-
-    setErrors(newErrors);
-
-    if (Object.keys(newErrors).length !== 0) return;
+  const handleVerifyOtp = useCallback(async (): Promise<void> => {
+    if (!otp) {
+      setErrors({ otp: 'OTP is required' });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -137,65 +217,52 @@ export default function LoginScreen({ navigation }: any) {
         country_code: countryCode,
         phone,
         otp,
-      }).then((res) => res.data);
+      });
+      const { data } = res;
 
-      if (!res.success) {
+      if (!data.success) {
         setErrors({ otp: 'Invalid OTP' });
         return;
       }
 
-      dispatch(setCredentials(res.data!));
-
-      if (res.data?.user?.isProfileCompleted === false) {
-        navigation?.navigate?.('Onboarding');
-        return;
+      if (data.data) {
+        dispatch(setCredentials(data.data));
+        navigateAfterAuth(data.data.user?.isProfileCompleted ?? false);
       }
-    } catch (e) {
+    } catch {
       setErrors({ error: 'Failed to verify OTP. Please try again.' });
     } finally {
       setLoading(false);
     }
-  };
+  }, [otp, countryCode, phone, dispatch, navigateAfterAuth]);
 
-  const handleSocialLogin = async (
-    provider: 'google' | 'apple' | 'facebook'
-  ) => {
-    setLoading(true);
-    setErrors({});
-    try {
-      const res = await fakeApi(
-        {
-          success: true,
-          data: {
-            token: 'fake-jwt-token',
-            user: { provider },
+  const handleSocialLogin = useCallback(
+    async (provider: SocialProvider): Promise<void> => {
+      setLoading(true);
+      setErrors({});
+      try {
+        const res = await fakeApi(
+          {
+            success: true,
+            data: { token: 'fake-jwt-token', user: { provider } },
           },
-        },
-        1000
-      );
+          1000
+        );
 
-      setLoading(false);
-
-      if (!res.success) {
-        setErrors({ error: res.error });
-        return;
+        if (!res.success) {
+          setErrors({ error: res.error as string });
+          return;
+        }
+      } catch {
+        setErrors({ error: `Failed to sign in with ${provider}.` });
+      } finally {
+        setLoading(false);
       }
-      // setIsAuthenticated(true);
-      dispatch(setCredentials(res.data!));
-    } catch (e) {
-      setErrors({ error: `Failed to sign in with ${provider}.` });
-    } finally {
-      setLoading(false);
-    }
-  };
+    },
+    []
+  );
 
-  const handleForgotPassword = () => {
-    navigation?.navigate?.('ForgotPassword');
-  };
-
-  const handleCreateAccount = () => {
-    navigation?.navigate?.('Register');
-  };
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
     <SafeAreaProvider style={styles.safe}>
@@ -207,159 +274,207 @@ export default function LoginScreen({ navigation }: any) {
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.title}>Welcome to Match Mate</Text>
-          <Text style={styles.subtitle}>Sign in to continue</Text>
+          {/* Title */}
+          <Text style={styles.title}>Welcome to MatchMate</Text>
+          <Text style={styles.subtitle}>
+            Sign in to find your perfect match
+          </Text>
 
-          {errors.error && <Text style={styles.error}>{errors.error}</Text>}
+          {/* Global error */}
+          {errors.error !== undefined && (
+            <View style={styles.errorBanner}>
+              <Feather name="alert-circle" size={14} color={Colors.error} />
+              <Text style={styles.errorBannerText}>{errors.error}</Text>
+            </View>
+          )}
 
           {/* Tabs */}
           <View style={styles.tabRow}>
-            <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === 'email' && styles.tabActive,
-              ]}
-              onPress={() => {
-                setActiveTab('email');
-                setOtpSent(false);
-                setErrors({});
-              }}
-              disabled={loading}
-              accessibilityLabel="tab-email"
-            >
-              <Text
+            {(['email', 'phone'] as ActiveTab[]).map((tab) => (
+              <TouchableOpacity
+                key={tab}
                 style={[
-                  styles.tabText,
-                  activeTab === 'email' && styles.tabTextActive,
+                  styles.tabButton,
+                  activeTab === tab && styles.tabActive,
                 ]}
+                onPress={() => handleTabSwitch(tab)}
+                disabled={loading}
+                accessibilityRole="tab"
+                accessibilityLabel={`tab-${tab}`}
+                accessibilityState={{ selected: activeTab === tab }}
               >
-                Email
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[
-                styles.tabButton,
-                activeTab === 'phone' && styles.tabActive,
-              ]}
-              onPress={() => {
-                setActiveTab('phone');
-                setErrors({});
-              }}
-              disabled={loading}
-              accessibilityLabel="tab-phone"
-            >
-              <Text
-                style={[
-                  styles.tabText,
-                  activeTab === 'phone' && styles.tabTextActive,
-                ]}
-              >
-                Phone (OTP)
-              </Text>
-            </TouchableOpacity>
+                <Feather
+                  name={tab === 'email' ? 'mail' : 'smartphone'}
+                  size={14}
+                  color={
+                    activeTab === tab ? Colors.white : Colors.textSecondary
+                  }
+                  style={styles.tabIcon}
+                />
+                <Text
+                  style={[
+                    styles.tabText,
+                    activeTab === tab && styles.tabTextActive,
+                  ]}
+                >
+                  {tab === 'email' ? 'Email' : 'Phone (OTP)'}
+                </Text>
+              </TouchableOpacity>
+            ))}
           </View>
 
-          {/* Form container */}
+          {/* Form */}
           <View style={styles.form}>
             {activeTab === 'email' ? (
               <>
+                {/* Email Field */}
                 <Text style={styles.label}>Email</Text>
-                <TextInput
-                  style={[styles.input, errors.email && styles.inputError]}
-                  placeholder="you@example.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  value={email}
-                  onChangeText={(t) => {
-                    setEmail(t);
-                    if (errors) clearError('email');
-                  }}
-                  editable={!loading}
-                  textContentType="username"
-                  accessibilityLabel="email-input"
-                />
-                {errors.email && (
+                <View
+                  style={[
+                    styles.inputWrapper,
+                    errors.email !== undefined && styles.inputError,
+                  ]}
+                >
+                  <Feather
+                    name="mail"
+                    size={16}
+                    color={Colors.textMuted}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="you@example.com"
+                    placeholderTextColor={Colors.textMuted}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    value={email}
+                    onChangeText={(t) => {
+                      setEmail(t);
+                      clearError('email');
+                    }}
+                    editable={!loading}
+                    textContentType="username"
+                    accessibilityLabel="email-input"
+                  />
+                </View>
+                {errors.email !== undefined && (
                   <Text style={styles.errorText}>{errors.email}</Text>
                 )}
 
-                <Text style={[styles.label, { marginTop: 12 }]}>Password</Text>
+                {/* Password Field */}
+                <Text style={[styles.label, styles.labelSpacing]}>
+                  Password
+                </Text>
                 <View
                   style={[
-                    styles.passwordContainer,
-                    errors.password && styles.inputError,
+                    styles.inputWrapper,
+                    errors.password !== undefined && styles.inputError,
                   ]}
                 >
+                  <Feather
+                    name="lock"
+                    size={16}
+                    color={Colors.textMuted}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
-                    style={styles.passwordInput}
+                    style={styles.input}
                     placeholder="••••••••"
+                    placeholderTextColor={Colors.textMuted}
                     secureTextEntry={!showPassword}
                     value={password}
                     onChangeText={(t) => {
                       setPassword(t);
-                      if (errors) clearError('password');
+                      clearError('password');
                     }}
                     accessibilityLabel="password-input"
                     editable={!loading}
                     textContentType="password"
                   />
-
                   <TouchableOpacity
-                    onPress={() => setShowPassword(!showPassword)}
-                    style={styles.eyeIcon}
+                    onPress={() => setShowPassword((prev) => !prev)}
+                    style={styles.eyeButton}
                     disabled={loading}
+                    accessibilityRole="button"
+                    accessibilityLabel={
+                      showPassword ? 'Hide password' : 'Show password'
+                    }
                   >
                     <Feather
                       name={showPassword ? 'eye-off' : 'eye'}
-                      size={20}
-                      color="#666"
+                      size={18}
+                      color={Colors.textMuted}
                     />
                   </TouchableOpacity>
                 </View>
-                {errors.password && (
+                {errors.password !== undefined && (
                   <Text style={styles.errorText}>{errors.password}</Text>
                 )}
 
+                {/* Forgot Password */}
                 <TouchableOpacity
-                  onPress={handleForgotPassword}
+                  onPress={() => navigation.navigate('ForgotPassword')}
                   disabled={loading}
-                  style={styles.forgot}
+                  style={styles.forgotRow}
+                  accessibilityRole="button"
                 >
                   <Text style={styles.forgotText}>Forgot password?</Text>
                 </TouchableOpacity>
 
+                {/* Sign In Button */}
                 <TouchableOpacity
                   style={[
                     styles.primaryButton,
                     loading && styles.disabledButton,
                   ]}
-                  onPress={handleEmailLogin}
+                  onPress={() => {
+                    void handleEmailLogin();
+                  }}
                   disabled={loading}
-                  accessibilityLabel="email-login-button"
+                  accessibilityRole="button"
+                  accessibilityLabel="Sign in with email"
                 >
                   {loading ? (
-                    <ActivityIndicator color="#fff" />
+                    <ActivityIndicator color={Colors.white} />
                   ) : (
-                    <Text style={styles.primaryButtonText}>Sign In</Text>
+                    <>
+                      <Text style={styles.primaryButtonText}>Sign In</Text>
+                      <Feather
+                        name="arrow-right"
+                        size={18}
+                        color={Colors.white}
+                      />
+                    </>
                   )}
                 </TouchableOpacity>
               </>
             ) : (
               <>
+                {/* Phone Field */}
                 <Text style={styles.label}>Phone Number</Text>
                 <View
-                  style={[styles.phoneRow, errors.phone && styles.inputError]}
+                  style={[
+                    styles.phoneRow,
+                    errors.phone !== undefined && styles.inputError,
+                  ]}
                 >
                   <TouchableOpacity
                     style={styles.countryCodeBtn}
-                    onPress={() =>
-                      setShowCountryCodeDropdown(!showCountryCodeDropdown)
-                    }
+                    onPress={() => setShowCountryCodeDropdown((prev) => !prev)}
+                    accessibilityRole="button"
+                    accessibilityLabel="Select country code"
                   >
                     <Text style={styles.countryCodeText}>+{countryCode}</Text>
-                    <Text style={{ fontSize: 16, color: '#666' }}>▼</Text>
+                    <Feather
+                      name="chevron-down"
+                      size={14}
+                      color={Colors.textMuted}
+                    />
                   </TouchableOpacity>
+
                   <Modal
                     visible={showCountryCodeDropdown}
                     transparent
@@ -372,39 +487,62 @@ export default function LoginScreen({ navigation }: any) {
                       onPress={() => setShowCountryCodeDropdown(false)}
                     >
                       <View style={styles.modalDropdown}>
-                        <ScrollView>
+                        <ScrollView keyboardShouldPersistTaps="handled">
                           {country_codes.map((code) => (
                             <TouchableOpacity
                               key={code}
-                              style={styles.countryCodeItem}
+                              style={[
+                                styles.countryCodeItem,
+                                countryCode === code &&
+                                  styles.countryCodeItemActive,
+                              ]}
                               onPress={() => {
-                                setCountryCode(code);
+                                setCountryCode(code as string);
                                 setShowCountryCodeDropdown(false);
                               }}
+                              accessibilityRole="button"
+                              accessibilityLabel={`Country code ${code}`}
                             >
-                              <Text>+{code}</Text>
+                              <Text
+                                style={[
+                                  styles.countryCodeItemText,
+                                  countryCode === code &&
+                                    styles.countryCodeItemTextActive,
+                                ]}
+                              >
+                                +{code}
+                              </Text>
+                              {countryCode === code && (
+                                <Feather
+                                  name="check"
+                                  size={14}
+                                  color={Colors.primary}
+                                />
+                              )}
                             </TouchableOpacity>
                           ))}
                         </ScrollView>
                       </View>
                     </TouchableOpacity>
                   </Modal>
+
                   <TextInput
                     style={[styles.input, styles.phoneInput]}
                     placeholder="9911002233"
+                    placeholderTextColor={Colors.textMuted}
                     keyboardType="phone-pad"
                     autoCapitalize="none"
                     value={phone}
                     onChangeText={(t) => {
                       setPhone(t.slice(0, 10));
-                      if (errors) clearError('phone');
+                      clearError('phone');
                     }}
                     editable={!loading && !otpSent}
                     maxLength={10}
                     accessibilityLabel="phone-input"
                   />
                 </View>
-                {errors.phone && (
+                {errors.phone !== undefined && (
                   <Text style={styles.errorText}>{errors.phone}</Text>
                 )}
 
@@ -414,39 +552,57 @@ export default function LoginScreen({ navigation }: any) {
                       styles.primaryButton,
                       loading && styles.disabledButton,
                     ]}
-                    onPress={handleGetOtp}
+                    onPress={() => {
+                      void handleGetOtp();
+                    }}
                     disabled={loading}
-                    accessibilityLabel="get-otp-button"
+                    accessibilityRole="button"
+                    accessibilityLabel="Get OTP"
                   >
                     {loading ? (
-                      <ActivityIndicator color="#fff" />
+                      <ActivityIndicator color={Colors.white} />
                     ) : (
-                      <Text style={styles.primaryButtonText}>Get OTP</Text>
+                      <>
+                        <Text style={styles.primaryButtonText}>Get OTP</Text>
+                        <Feather name="send" size={16} color={Colors.white} />
+                      </>
                     )}
                   </TouchableOpacity>
                 ) : (
                   <>
-                    <Text style={[styles.label, { marginTop: 12 }]}>
+                    {/* OTP sent info */}
+                    <View style={styles.otpInfoBanner}>
+                      <Feather
+                        name="check-circle"
+                        size={14}
+                        color={Colors.success}
+                      />
+                      <Text style={styles.otpInfoText}>
+                        OTP sent to +{countryCode} {phone}
+                      </Text>
+                    </View>
+
+                    <Text style={[styles.label, styles.labelSpacing]}>
                       Enter OTP
                     </Text>
                     <TextInput
                       style={[
-                        styles.input,
                         styles.otpInput,
-                        errors.otp && styles.inputError,
+                        errors.otp !== undefined && styles.inputError,
                       ]}
-                      placeholder="123456"
+                      placeholder="• • • • • •"
+                      placeholderTextColor={Colors.textMuted}
                       keyboardType="number-pad"
                       value={otp}
                       onChangeText={(t) => {
                         setOtp(t.slice(0, 6));
-                        if (errors) clearError('otp');
+                        clearError('otp');
                       }}
                       editable={!loading}
                       maxLength={6}
                       accessibilityLabel="otp-input"
                     />
-                    {errors.otp && (
+                    {errors.otp !== undefined && (
                       <Text style={styles.errorText}>{errors.otp}</Text>
                     )}
 
@@ -455,28 +611,41 @@ export default function LoginScreen({ navigation }: any) {
                         styles.primaryButton,
                         loading && styles.disabledButton,
                       ]}
-                      onPress={handleVerifyOtp}
+                      onPress={() => {
+                        void handleVerifyOtp();
+                      }}
                       disabled={loading}
-                      accessibilityLabel="verify-otp-button"
+                      accessibilityRole="button"
+                      accessibilityLabel="Verify OTP"
                     >
                       {loading ? (
-                        <ActivityIndicator color="#fff" />
+                        <ActivityIndicator color={Colors.white} />
                       ) : (
-                        <Text style={styles.primaryButtonText}>
-                          Verify & Continue
-                        </Text>
+                        <>
+                          <Text style={styles.primaryButtonText}>
+                            Verify & Sign In
+                          </Text>
+                          <Feather
+                            name="arrow-right"
+                            size={18}
+                            color={Colors.white}
+                          />
+                        </>
                       )}
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={[styles.linkRow]}
-                      onPress={() => {
-                        setOtpSent(false);
-                        setOtp('');
-                      }}
+                      style={styles.resendRow}
+                      onPress={handleResendOtp}
                       disabled={loading}
+                      accessibilityRole="button"
                     >
-                      <Text style={styles.linkSmall}>
+                      <Feather
+                        name="refresh-cw"
+                        size={13}
+                        color={Colors.link}
+                      />
+                      <Text style={styles.resendText}>
                         Resend / change number
                       </Text>
                     </TouchableOpacity>
@@ -486,40 +655,55 @@ export default function LoginScreen({ navigation }: any) {
             )}
           </View>
 
+          {/* Divider */}
           <View style={styles.dividerRow}>
             <View style={styles.divider} />
             <Text style={styles.dividerText}>OR</Text>
             <View style={styles.divider} />
           </View>
 
+          {/* Social Buttons */}
           <View style={styles.socialContainer}>
-            {Platform.OS !== 'ios' ? (
+            {Platform.OS !== 'ios' && (
               <SocialButton
                 label="Continue with Google"
-                onPress={() => handleSocialLogin('google')}
+                onPress={() => {
+                  void handleSocialLogin('google');
+                }}
                 disabled={loading}
-                emoji="g"
+                icon="search"
+                iconColor="#EA4335"
               />
-            ) : null}
-            {Platform.OS === 'ios' ? (
+            )}
+            {Platform.OS === 'ios' && (
               <SocialButton
                 label="Continue with Apple"
-                onPress={() => handleSocialLogin('apple')}
+                onPress={() => {
+                  void handleSocialLogin('apple');
+                }}
                 disabled={loading}
-                emoji=""
+                icon="smartphone"
               />
-            ) : null}
+            )}
             <SocialButton
               label="Continue with Facebook"
-              onPress={() => handleSocialLogin('facebook')}
+              onPress={() => {
+                void handleSocialLogin('facebook');
+              }}
               disabled={loading}
-              emoji="f"
+              icon="facebook"
+              iconColor="#1877F2"
             />
           </View>
 
+          {/* Footer */}
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={handleCreateAccount} disabled={loading}>
+            <TouchableOpacity
+              onPress={() => navigation.navigate('Register')}
+              disabled={loading}
+              accessibilityRole="button"
+            >
               <Text style={styles.linkText}> Create account</Text>
             </TouchableOpacity>
           </View>
@@ -529,197 +713,305 @@ export default function LoginScreen({ navigation }: any) {
   );
 }
 
-function SocialButton({
-  label,
-  onPress,
-  disabled,
-  emoji,
-}: {
-  label: string;
-  onPress: () => void;
-  disabled?: boolean;
-  emoji?: string;
-}) {
-  return (
-    <TouchableOpacity
-      style={[styles.socialButton, disabled && styles.disabledButton]}
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityLabel={`social-${label}`}
-    >
-      <Text style={styles.socialEmoji}>{emoji}</Text>
-      <Text style={styles.socialLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
+// ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: '#fff' },
+  safe: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
   container: { flex: 1 },
   scrollContent: {
     padding: 20,
-    paddingTop: 100,
+    paddingTop: 80,
     justifyContent: 'flex-start',
   },
   title: {
     fontSize: 28,
     fontWeight: '900',
-    marginBottom: 26,
-    color: '#000',
+    marginBottom: 8,
+    color: Colors.textPrimary,
     textAlign: 'center',
     fontFamily: 'clebri-bold',
   },
-  subtitle: { fontSize: 14, color: '#666', marginBottom: 18 },
+  subtitle: {
+    fontSize: 14,
+    color: Colors.textMuted,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.errorLight,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.error,
+  },
+  errorBannerText: {
+    color: Colors.error,
+    fontSize: 13,
+    flex: 1,
+  },
   tabRow: {
     flexDirection: 'row',
     borderRadius: 10,
-    backgroundColor: '#f2f2f2',
+    backgroundColor: Colors.backgroundLight,
     padding: 4,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   tabButton: {
     flex: 1,
+    flexDirection: 'row',
     paddingVertical: 10,
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 8,
+    gap: 6,
   },
   tabActive: {
-    backgroundColor: '#111',
+    backgroundColor: Colors.black,
+  },
+  tabIcon: {
+    marginRight: 2,
   },
   tabText: {
-    color: '#444',
+    color: Colors.textSecondary,
     fontWeight: '600',
+    fontSize: 13,
   },
   tabTextActive: {
-    color: '#fff',
+    color: Colors.white,
   },
-  form: { marginTop: 8 },
-  label: { fontSize: 13, color: '#444', marginBottom: 6 },
-  input: {
-    backgroundColor: '#f7f7f8',
-    borderRadius: 8,
-    paddingVertical: 12,
+  form: { marginTop: 4 },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    marginBottom: 6,
+  },
+  labelSpacing: {
+    marginTop: 12,
+  },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
     paddingHorizontal: 12,
-    fontSize: 16,
-    color: '#111',
+    marginBottom: 4,
+  },
+  inputIcon: {
+    marginRight: 10,
+  },
+  input: {
+    flex: 1,
+    paddingVertical: 13,
+    fontSize: 15,
+    color: Colors.textPrimary,
+  },
+  eyeButton: {
+    padding: 6,
   },
   phoneRow: {
     flexDirection: 'row',
-    marginBottom: 12,
+    marginBottom: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    overflow: 'hidden',
+    backgroundColor: Colors.inputBackground,
   },
   phoneInput: {
     flex: 1,
-    marginLeft: 8,
+    paddingVertical: 13,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    color: Colors.textPrimary,
     marginBottom: 0,
   },
   otpInput: {
-    fontSize: 24,
-    letterSpacing: 8,
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    fontSize: 28,
+    letterSpacing: 12,
     textAlign: 'center',
+    color: Colors.textPrimary,
+    marginBottom: 4,
   },
   countryCodeBtn: {
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
     flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 13,
+    borderRightWidth: 1,
+    borderRightColor: Colors.border,
     minWidth: 80,
   },
   countryCodeText: {
     fontWeight: '600',
-    marginRight: 4,
+    color: Colors.textPrimary,
+    fontSize: 15,
   },
   countryCodeItem: {
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: Colors.divider,
   },
-  passwordContainer: {
+  countryCodeItemActive: {
+    backgroundColor: Colors.primaryLight,
+  },
+  countryCodeItemText: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+  },
+  countryCodeItemTextActive: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  inputError: {
+    borderColor: Colors.error,
+    backgroundColor: Colors.errorLight,
+  },
+  errorText: {
+    color: Colors.error,
+    fontSize: 12,
+    marginBottom: 8,
+    marginTop: 2,
+  },
+  otpInfoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#f7f7f8',
+    gap: 6,
+    backgroundColor: Colors.successLight,
     borderRadius: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: 'transparent',
+    padding: 10,
+    marginBottom: 12,
+    marginTop: 4,
   },
-  passwordInput: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#111',
+  otpInfoText: {
+    fontSize: 13,
+    color: Colors.success,
+    fontWeight: '500',
   },
-  eyeIcon: {
-    paddingHorizontal: 6,
-    paddingVertical: 4,
+  forgotRow: {
+    alignSelf: 'flex-end',
+    marginTop: 6,
+    marginBottom: 4,
+  },
+  forgotText: {
+    color: Colors.link,
+    fontSize: 13,
+    fontWeight: '500',
   },
   primaryButton: {
-    marginTop: 18,
-    backgroundColor: '#111',
+    marginTop: 16,
+    backgroundColor: Colors.black,
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
-  primaryButtonText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+  primaryButtonText: {
+    color: Colors.white,
+    fontWeight: '700',
+    fontSize: 16,
+  },
   disabledButton: {
     opacity: 0.6,
+  },
+  resendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 10,
+  },
+  resendText: {
+    color: Colors.link,
+    fontSize: 13,
+    fontWeight: '500',
   },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 20,
   },
-  divider: { flex: 1, height: 1, backgroundColor: '#e6e6e6' },
-  dividerText: { marginHorizontal: 12, color: '#888', fontWeight: '600' },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
+  dividerText: {
+    marginHorizontal: 12,
+    color: Colors.textMuted,
+    fontWeight: '600',
+    fontSize: 13,
+  },
   socialContainer: { gap: 10 },
   socialButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderColor: '#e6e6e6',
+    borderColor: Colors.border,
     borderWidth: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 16,
     borderRadius: 10,
-    backgroundColor: '#fff',
-    marginBottom: 8,
+    backgroundColor: Colors.white,
   },
-  socialEmoji: { fontSize: 18, marginRight: 10 },
-  socialLabel: { fontSize: 15, color: '#111', fontWeight: '600' },
-  footer: { flexDirection: 'row', justifyContent: 'flex-start', marginTop: 24 },
-  footerText: { color: '#666' },
-  linkText: { color: '#007AFF', fontWeight: '700' },
-  linkRow: { alignItems: 'center', marginTop: 10 },
-  linkSmall: { color: '#007AFF', fontSize: 13 },
-  error: { color: '#b00020', marginBottom: 10 },
+  socialIcon: {
+    marginRight: 12,
+  },
+  socialLabel: {
+    fontSize: 15,
+    color: Colors.textPrimary,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 12,
+  },
+  footerText: { color: Colors.textMuted },
+  linkText: {
+    color: Colors.link,
+    fontWeight: '700',
+  },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.2)',
+    backgroundColor: Colors.modalOverlay,
     justifyContent: 'center',
     alignItems: 'center',
   },
   modalDropdown: {
-    width: 120,
+    width: 140,
     maxHeight: 300,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-    elevation: 10, // ANDROID
-    // shadowColor: "#000",  // IOS
-    // shadowOpacity: 0.25,
-    // shadowRadius: 6,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
+    elevation: 10,
+    shadowColor: Colors.black,
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
-  inputError: {
-    borderWidth: 1,
-    borderColor: '#d9534f',
-  },
-  errorText: {
-    color: '#d9534f',
-    marginTop: 6,
-    fontSize: 12,
-  },
-  forgot: { alignSelf: 'flex-end', marginTop: 8 },
-  forgotText: { color: '#007AFF', fontSize: 13 },
 });

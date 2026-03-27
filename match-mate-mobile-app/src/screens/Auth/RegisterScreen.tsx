@@ -21,7 +21,7 @@ import { fakeApi } from '../../services/fakeApi';
 import { Colors } from '../../constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 
-// ─── Types ───────────────────────────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 interface RegisterScreenProps {
   navigation: RootNavigationProp;
@@ -42,10 +42,11 @@ interface SocialButtonProps {
   label: string;
   onPress: () => void;
   disabled?: boolean;
-  emoji?: string;
+  icon: string;
+  iconColor?: string;
 }
 
-// ─── Constants ───────────────────────────────────────────────────────────────
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const PHONE_REGEX = /^\+?\d{6,15}$/;
@@ -57,17 +58,23 @@ function SocialButton({
   label,
   onPress,
   disabled = false,
-  emoji,
+  icon,
+  iconColor,
 }: SocialButtonProps): React.ReactElement {
   return (
     <TouchableOpacity
       style={[styles.socialButton, disabled && styles.disabledButton]}
       onPress={onPress}
       disabled={disabled}
-      accessibilityLabel={`social-${label}`}
       accessibilityRole="button"
+      accessibilityLabel={label}
     >
-      <Text style={styles.socialEmoji}>{emoji}</Text>
+      <Feather
+        name={icon}
+        size={20}
+        color={iconColor ?? Colors.textSecondary}
+        style={styles.socialIcon}
+      />
       <Text style={styles.socialLabel}>{label}</Text>
     </TouchableOpacity>
   );
@@ -92,18 +99,17 @@ export default function RegisterScreen({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // ─── Helpers ───────────────────────────────────────────────────────────────
+  // ─── Helpers ─────────────────────────────────────────────────────────────
 
-  const clearError = useCallback((field: keyof FormErrors) => {
+  const clearError = useCallback((field: keyof FormErrors): void => {
     setErrors((prev) => ({ ...prev, [field]: undefined }));
   }, []);
 
   const validateEmail = (value: string): boolean => EMAIL_REGEX.test(value);
-
   const validatePhone = (value: string): boolean => PHONE_REGEX.test(value);
 
   const navigateAfterAuth = useCallback(
-    (isProfileCompleted: boolean) => {
+    (isProfileCompleted: boolean): void => {
       if (!isProfileCompleted) {
         navigation.navigate('Onboarding');
       }
@@ -111,13 +117,18 @@ export default function RegisterScreen({
     [navigation]
   );
 
-  // ─── Handlers ──────────────────────────────────────────────────────────────
-
-  const handleTabSwitch = useCallback((tab: ActiveTab) => {
+  const handleTabSwitch = useCallback((tab: ActiveTab): void => {
     setActiveTab(tab);
     setOtpSent(false);
     setErrors({});
   }, []);
+
+  const handleResendOtp = useCallback((): void => {
+    setOtpSent(false);
+    setOtp('');
+  }, []);
+
+  // ─── Handlers ────────────────────────────────────────────────────────────
 
   const handleEmailRegister = useCallback(async (): Promise<void> => {
     const newErrors: FormErrors = {};
@@ -238,12 +249,7 @@ export default function RegisterScreen({
     [navigation]
   );
 
-  const handleResendOtp = useCallback(() => {
-    setOtpSent(false);
-    setOtp('');
-  }, []);
-
-  // ─── Render ────────────────────────────────────────────────────────────────
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
     <SafeAreaProvider style={styles.safe}>
@@ -255,14 +261,20 @@ export default function RegisterScreen({
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          <Text style={styles.title}>Create an account</Text>
+          {/* Title */}
+          <Text style={styles.title}>Create an Account</Text>
           <Text style={styles.subtitle}>
             Start your journey to find your perfect match
           </Text>
 
+          {/* Global error banner */}
           {errors.error !== undefined && (
-            <Text style={styles.error}>{errors.error}</Text>
+            <View style={styles.errorBanner}>
+              <Feather name="alert-circle" size={14} color={Colors.error} />
+              <Text style={styles.errorBannerText}>{errors.error}</Text>
+            </View>
           )}
 
           {/* Tabs */}
@@ -276,10 +288,18 @@ export default function RegisterScreen({
                 ]}
                 onPress={() => handleTabSwitch(tab)}
                 disabled={loading}
-                accessibilityLabel={`tab-${tab}`}
                 accessibilityRole="tab"
+                accessibilityLabel={`tab-${tab}`}
                 accessibilityState={{ selected: activeTab === tab }}
               >
+                <Feather
+                  name={tab === 'email' ? 'mail' : 'smartphone'}
+                  size={14}
+                  color={
+                    activeTab === tab ? Colors.white : Colors.textSecondary
+                  }
+                  style={styles.tabIcon}
+                />
                 <Text
                   style={[
                     styles.tabText,
@@ -296,41 +316,61 @@ export default function RegisterScreen({
           <View style={styles.form}>
             {activeTab === 'email' ? (
               <>
+                {/* Email Field */}
                 <Text style={styles.label}>Email</Text>
-                <TextInput
+                <View
                   style={[
-                    styles.input,
+                    styles.inputWrapper,
                     errors.email !== undefined && styles.inputError,
                   ]}
-                  placeholder="you@example.com"
-                  keyboardType="email-address"
-                  autoCapitalize="none"
-                  autoComplete="email"
-                  value={email}
-                  onChangeText={(t) => {
-                    setEmail(t);
-                    clearError('email');
-                  }}
-                  editable={!loading}
-                  textContentType="username"
-                  accessibilityLabel="email-input"
-                />
+                >
+                  <Feather
+                    name="mail"
+                    size={16}
+                    color={Colors.textMuted}
+                    style={styles.inputIcon}
+                  />
+                  <TextInput
+                    style={styles.input}
+                    placeholder="you@example.com"
+                    placeholderTextColor={Colors.textMuted}
+                    keyboardType="email-address"
+                    autoCapitalize="none"
+                    autoComplete="email"
+                    value={email}
+                    onChangeText={(t) => {
+                      setEmail(t);
+                      clearError('email');
+                    }}
+                    editable={!loading}
+                    textContentType="username"
+                    accessibilityLabel="email-input"
+                  />
+                </View>
                 {errors.email !== undefined && (
                   <Text style={styles.errorText}>{errors.email}</Text>
                 )}
 
+                {/* Password Field */}
                 <Text style={[styles.label, styles.labelSpacing]}>
                   Password
                 </Text>
                 <View
                   style={[
-                    styles.passwordContainer,
+                    styles.inputWrapper,
                     errors.password !== undefined && styles.inputError,
                   ]}
                 >
+                  <Feather
+                    name="lock"
+                    size={16}
+                    color={Colors.textMuted}
+                    style={styles.inputIcon}
+                  />
                   <TextInput
-                    style={styles.passwordInput}
-                    placeholder="••••••••"
+                    style={styles.input}
+                    placeholder="Min. 6 characters"
+                    placeholderTextColor={Colors.textMuted}
                     secureTextEntry={!showPassword}
                     value={password}
                     onChangeText={(t) => {
@@ -339,20 +379,20 @@ export default function RegisterScreen({
                     }}
                     accessibilityLabel="password-input"
                     editable={!loading}
-                    textContentType="password"
+                    textContentType="newPassword"
                   />
                   <TouchableOpacity
                     onPress={() => setShowPassword((prev) => !prev)}
-                    style={styles.eyeIcon}
+                    style={styles.eyeButton}
                     disabled={loading}
-                    accessibilityLabel={
-                      showPassword ? 'hide-password' : 'show-password'
-                    }
                     accessibilityRole="button"
+                    accessibilityLabel={
+                      showPassword ? 'Hide password' : 'Show password'
+                    }
                   >
                     <Feather
                       name={showPassword ? 'eye-off' : 'eye'}
-                      size={20}
+                      size={18}
                       color={Colors.textMuted}
                     />
                   </TouchableOpacity>
@@ -361,25 +401,38 @@ export default function RegisterScreen({
                   <Text style={styles.errorText}>{errors.password}</Text>
                 )}
 
+                {/* Register Button */}
                 <TouchableOpacity
                   style={[
                     styles.primaryButton,
                     loading && styles.disabledButton,
                   ]}
-                  onPress={handleEmailRegister}
+                  onPress={() => {
+                    void handleEmailRegister();
+                  }}
                   disabled={loading}
-                  accessibilityLabel="email-register-button"
                   accessibilityRole="button"
+                  accessibilityLabel="Register with email"
                 >
                   {loading ? (
                     <ActivityIndicator color={Colors.white} />
                   ) : (
-                    <Text style={styles.primaryButtonText}>Continue</Text>
+                    <>
+                      <Text style={styles.primaryButtonText}>
+                        Create Account
+                      </Text>
+                      <Feather
+                        name="arrow-right"
+                        size={18}
+                        color={Colors.white}
+                      />
+                    </>
                   )}
                 </TouchableOpacity>
               </>
             ) : (
               <>
+                {/* Phone Field */}
                 <Text style={styles.label}>Phone Number</Text>
                 <View
                   style={[
@@ -390,11 +443,15 @@ export default function RegisterScreen({
                   <TouchableOpacity
                     style={styles.countryCodeBtn}
                     onPress={() => setShowCountryCodeDropdown((prev) => !prev)}
-                    accessibilityLabel="country-code-selector"
                     accessibilityRole="button"
+                    accessibilityLabel="Select country code"
                   >
                     <Text style={styles.countryCodeText}>+{countryCode}</Text>
-                    <Text style={styles.dropdownArrow}>▼</Text>
+                    <Feather
+                      name="chevron-down"
+                      size={14}
+                      color={Colors.textMuted}
+                    />
                   </TouchableOpacity>
 
                   <Modal
@@ -409,19 +466,38 @@ export default function RegisterScreen({
                       onPress={() => setShowCountryCodeDropdown(false)}
                     >
                       <View style={styles.modalDropdown}>
-                        <ScrollView>
+                        <ScrollView keyboardShouldPersistTaps="handled">
                           {country_codes.map((code) => (
                             <TouchableOpacity
                               key={code}
-                              style={styles.countryCodeItem}
+                              style={[
+                                styles.countryCodeItem,
+                                countryCode === code &&
+                                  styles.countryCodeItemActive,
+                              ]}
                               onPress={() => {
                                 setCountryCode(code as string);
                                 setShowCountryCodeDropdown(false);
                               }}
-                              accessibilityLabel={`country-code-${code}`}
                               accessibilityRole="button"
+                              accessibilityLabel={`Country code ${code}`}
                             >
-                              <Text>+{code}</Text>
+                              <Text
+                                style={[
+                                  styles.countryCodeItemText,
+                                  countryCode === code &&
+                                    styles.countryCodeItemTextActive,
+                                ]}
+                              >
+                                +{code}
+                              </Text>
+                              {countryCode === code && (
+                                <Feather
+                                  name="check"
+                                  size={14}
+                                  color={Colors.primary}
+                                />
+                              )}
                             </TouchableOpacity>
                           ))}
                         </ScrollView>
@@ -432,6 +508,7 @@ export default function RegisterScreen({
                   <TextInput
                     style={[styles.input, styles.phoneInput]}
                     placeholder="9911002233"
+                    placeholderTextColor={Colors.textMuted}
                     keyboardType="phone-pad"
                     autoCapitalize="none"
                     value={phone}
@@ -454,29 +531,46 @@ export default function RegisterScreen({
                       styles.primaryButton,
                       loading && styles.disabledButton,
                     ]}
-                    onPress={handleGetOtp}
+                    onPress={() => {
+                      void handleGetOtp();
+                    }}
                     disabled={loading}
-                    accessibilityLabel="get-otp-button"
                     accessibilityRole="button"
+                    accessibilityLabel="Get OTP"
                   >
                     {loading ? (
                       <ActivityIndicator color={Colors.white} />
                     ) : (
-                      <Text style={styles.primaryButtonText}>Get OTP</Text>
+                      <>
+                        <Text style={styles.primaryButtonText}>Get OTP</Text>
+                        <Feather name="send" size={16} color={Colors.white} />
+                      </>
                     )}
                   </TouchableOpacity>
                 ) : (
                   <>
+                    {/* OTP sent banner */}
+                    <View style={styles.otpInfoBanner}>
+                      <Feather
+                        name="check-circle"
+                        size={14}
+                        color={Colors.success}
+                      />
+                      <Text style={styles.otpInfoText}>
+                        OTP sent to +{countryCode} {phone}
+                      </Text>
+                    </View>
+
                     <Text style={[styles.label, styles.labelSpacing]}>
                       Enter OTP
                     </Text>
                     <TextInput
                       style={[
-                        styles.input,
                         styles.otpInput,
                         errors.otp !== undefined && styles.inputError,
                       ]}
-                      placeholder="123456"
+                      placeholder="• • • • • •"
+                      placeholderTextColor={Colors.textMuted}
                       keyboardType="number-pad"
                       value={otp}
                       onChangeText={(t) => {
@@ -496,27 +590,41 @@ export default function RegisterScreen({
                         styles.primaryButton,
                         loading && styles.disabledButton,
                       ]}
-                      onPress={handleVerifyOtp}
+                      onPress={() => {
+                        void handleVerifyOtp();
+                      }}
                       disabled={loading}
-                      accessibilityLabel="verify-otp-button"
                       accessibilityRole="button"
+                      accessibilityLabel="Verify OTP and register"
                     >
                       {loading ? (
                         <ActivityIndicator color={Colors.white} />
                       ) : (
-                        <Text style={styles.primaryButtonText}>
-                          Verify & Continue
-                        </Text>
+                        <>
+                          <Text style={styles.primaryButtonText}>
+                            Verify & Create Account
+                          </Text>
+                          <Feather
+                            name="arrow-right"
+                            size={18}
+                            color={Colors.white}
+                          />
+                        </>
                       )}
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                      style={styles.linkRow}
+                      style={styles.resendRow}
                       onPress={handleResendOtp}
                       disabled={loading}
                       accessibilityRole="button"
                     >
-                      <Text style={styles.linkSmall}>
+                      <Feather
+                        name="refresh-cw"
+                        size={13}
+                        color={Colors.link}
+                      />
+                      <Text style={styles.resendText}>
                         Resend / change number
                       </Text>
                     </TouchableOpacity>
@@ -542,7 +650,8 @@ export default function RegisterScreen({
                   void handleSocialRegister('google');
                 }}
                 disabled={loading}
-                emoji="G"
+                icon="search"
+                iconColor="#EA4335"
               />
             )}
             {Platform.OS === 'ios' && (
@@ -552,7 +661,7 @@ export default function RegisterScreen({
                   void handleSocialRegister('apple');
                 }}
                 disabled={loading}
-                emoji=""
+                icon="smartphone"
               />
             )}
             <SocialButton
@@ -561,7 +670,8 @@ export default function RegisterScreen({
                 void handleSocialRegister('facebook');
               }}
               disabled={loading}
-              emoji="f"
+              icon="facebook"
+              iconColor="#1877F2"
             />
           </View>
 
@@ -585,110 +695,229 @@ export default function RegisterScreen({
 // ─── Styles ──────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.white },
+  safe: {
+    flex: 1,
+    backgroundColor: Colors.white,
+  },
   container: { flex: 1 },
   scrollContent: {
     padding: 20,
-    paddingTop: 100,
+    paddingTop: 80,
     justifyContent: 'flex-start',
   },
   title: {
     fontSize: 28,
     fontWeight: '900',
-    marginBottom: 26,
-    color: Colors.black,
+    marginBottom: 8,
+    color: Colors.textPrimary,
     textAlign: 'center',
     fontFamily: 'clebri-bold',
   },
   subtitle: {
     fontSize: 14,
     color: Colors.textMuted,
-    marginBottom: 18,
+    marginBottom: 24,
+    textAlign: 'center',
+  },
+  errorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    backgroundColor: Colors.errorLight,
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: Colors.error,
+  },
+  errorBannerText: {
+    color: Colors.error,
+    fontSize: 13,
+    flex: 1,
   },
   tabRow: {
     flexDirection: 'row',
     borderRadius: 10,
     backgroundColor: Colors.backgroundLight,
     padding: 4,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   tabButton: {
     flex: 1,
+    flexDirection: 'row',
     paddingVertical: 10,
     alignItems: 'center',
+    justifyContent: 'center',
     borderRadius: 8,
+    gap: 6,
   },
   tabActive: { backgroundColor: Colors.black },
-  tabText: { color: Colors.textSecondary, fontWeight: '600' },
-  tabTextActive: { color: Colors.white },
-  form: { marginTop: 8 },
-  label: { fontSize: 13, color: Colors.textSecondary, marginBottom: 6 },
-  labelSpacing: { marginTop: 12 },
-  input: {
-    backgroundColor: Colors.inputBackground,
-    borderRadius: 8,
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    fontSize: 16,
-    color: Colors.black,
+  tabIcon: { marginRight: 2 },
+  tabText: {
+    color: Colors.textSecondary,
+    fontWeight: '600',
+    fontSize: 13,
   },
-  phoneRow: { flexDirection: 'row', marginBottom: 12 },
-  phoneInput: { flex: 1, marginLeft: 8, marginBottom: 0 },
-  otpInput: { fontSize: 24, letterSpacing: 8, textAlign: 'center' },
-  countryCodeBtn: {
+  tabTextActive: { color: Colors.white },
+  form: { marginTop: 4 },
+  label: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: Colors.textSecondary,
+    marginBottom: 6,
+  },
+  labelSpacing: { marginTop: 12 },
+  inputWrapper: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: Colors.border,
-    borderRadius: 8,
     paddingHorizontal: 12,
-    paddingVertical: 12,
-    justifyContent: 'center',
-    alignItems: 'center',
+    marginBottom: 4,
+  },
+  inputIcon: { marginRight: 10 },
+  input: {
+    flex: 1,
+    paddingVertical: 13,
+    fontSize: 15,
+    color: Colors.textPrimary,
+  },
+  eyeButton: { padding: 6 },
+  phoneRow: {
     flexDirection: 'row',
+    marginBottom: 4,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    overflow: 'hidden',
+    backgroundColor: Colors.inputBackground,
+  },
+  phoneInput: {
+    flex: 1,
+    paddingVertical: 13,
+    paddingHorizontal: 12,
+    fontSize: 15,
+    color: Colors.textPrimary,
+    marginBottom: 0,
+  },
+  otpInput: {
+    backgroundColor: Colors.inputBackground,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    paddingVertical: 16,
+    paddingHorizontal: 12,
+    fontSize: 28,
+    letterSpacing: 12,
+    textAlign: 'center',
+    color: Colors.textPrimary,
+    marginBottom: 4,
+  },
+  countryCodeBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingHorizontal: 12,
+    paddingVertical: 13,
+    borderRightWidth: 1,
+    borderRightColor: Colors.border,
     minWidth: 80,
   },
-  countryCodeText: { fontWeight: '600', marginRight: 4 },
-  dropdownArrow: { fontSize: 16, color: Colors.textMuted },
+  countryCodeText: {
+    fontWeight: '600',
+    color: Colors.textPrimary,
+    fontSize: 15,
+  },
   countryCodeItem: {
-    paddingHorizontal: 12,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 14,
     paddingVertical: 12,
-    borderBottomWidth: 1,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: Colors.divider,
   },
-  passwordContainer: {
+  countryCodeItemActive: {
+    backgroundColor: Colors.primaryLight,
+  },
+  countryCodeItemText: {
+    fontSize: 14,
+    color: Colors.textPrimary,
+  },
+  countryCodeItemTextActive: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+  inputError: {
+    borderColor: Colors.error,
+    backgroundColor: Colors.errorLight,
+  },
+  errorText: {
+    color: Colors.error,
+    fontSize: 12,
+    marginBottom: 8,
+    marginTop: 2,
+  },
+  otpInfoBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: Colors.inputBackground,
+    gap: 6,
+    backgroundColor: Colors.successLight,
     borderRadius: 8,
-    paddingHorizontal: 12,
-    borderWidth: 1,
-    borderColor: Colors.transparent,
+    padding: 10,
+    marginBottom: 12,
+    marginTop: 4,
   },
-  passwordInput: {
-    flex: 1,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: Colors.black,
+  otpInfoText: {
+    fontSize: 13,
+    color: Colors.success,
+    fontWeight: '500',
   },
-  eyeIcon: { paddingHorizontal: 6, paddingVertical: 4 },
   primaryButton: {
-    marginTop: 18,
+    marginTop: 16,
     backgroundColor: Colors.black,
     paddingVertical: 14,
     borderRadius: 10,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 8,
   },
-  primaryButtonText: { color: Colors.white, fontWeight: '700', fontSize: 16 },
+  primaryButtonText: {
+    color: Colors.white,
+    fontWeight: '700',
+    fontSize: 16,
+  },
   disabledButton: { opacity: 0.6 },
+  resendRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 10,
+  },
+  resendText: {
+    color: Colors.link,
+    fontSize: 13,
+    fontWeight: '500',
+  },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginVertical: 20,
   },
-  divider: { flex: 1, height: 1, backgroundColor: Colors.divider },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.border,
+  },
   dividerText: {
     marginHorizontal: 12,
     color: Colors.textMuted,
     fontWeight: '600',
+    fontSize: 13,
   },
   socialContainer: { gap: 10 },
   socialButton: {
@@ -696,20 +925,28 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     borderColor: Colors.border,
     borderWidth: 1,
-    paddingVertical: 12,
-    paddingHorizontal: 14,
+    paddingVertical: 13,
+    paddingHorizontal: 16,
     borderRadius: 10,
     backgroundColor: Colors.white,
-    marginBottom: 8,
   },
-  socialEmoji: { fontSize: 18, marginRight: 10 },
-  socialLabel: { fontSize: 15, color: Colors.black, fontWeight: '600' },
-  footer: { flexDirection: 'row', justifyContent: 'flex-start', marginTop: 24 },
+  socialIcon: { marginRight: 12 },
+  socialLabel: {
+    fontSize: 15,
+    color: Colors.textPrimary,
+    fontWeight: '600',
+    flex: 1,
+    textAlign: 'center',
+  },
+  footer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 24,
+    marginBottom: 12,
+  },
   footerText: { color: Colors.textMuted },
   linkText: { color: Colors.link, fontWeight: '700' },
-  linkRow: { alignItems: 'center', marginTop: 10 },
-  linkSmall: { color: Colors.link, fontSize: 13 },
-  error: { color: Colors.error, marginBottom: 10 },
   modalOverlay: {
     flex: 1,
     backgroundColor: Colors.modalOverlay,
@@ -717,16 +954,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalDropdown: {
-    width: 120,
+    width: 140,
     maxHeight: 300,
     backgroundColor: Colors.white,
-    borderRadius: 8,
+    borderRadius: 10,
     elevation: 10,
     shadowColor: Colors.black,
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    shadowOffset: { width: 0, height: 4 },
   },
-  inputError: { borderWidth: 1, borderColor: Colors.error },
-  errorText: { color: Colors.error, marginTop: 6, fontSize: 12 },
 });

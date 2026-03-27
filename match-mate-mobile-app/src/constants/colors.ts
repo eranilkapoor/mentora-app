@@ -32,6 +32,7 @@ export const Colors = {
   errorLight: '#fff5f5',
   danger: '#ef4444',
   success: '#16a34a',
+  successLight: '#f0fdf4',
   link: '#007AFF',
   chatBtn: '#ff6b6b',
   shortlistBg: '#fff5e6',

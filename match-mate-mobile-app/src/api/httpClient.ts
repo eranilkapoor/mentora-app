@@ -2,8 +2,14 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { store } from '../store';
 
-const API_BASE =
-  Constants.expoConfig?.extra?.apiUrl || process.env.EXPO_PUBLIC_API_BASE_URL;
+type ExpoExtra = {
+  apiUrl?: string;
+  clientVersion?: string;
+};
+
+const extra = Constants.expoConfig?.extra as ExpoExtra | undefined;
+const API_BASE: string =
+  extra?.apiUrl ?? (process.env.EXPO_PUBLIC_API_BASE_URL as string) ?? '';
 
 const getDeviceId = () => {
   let deviceId = localStorage.getItem('deviceId');
@@ -22,15 +28,15 @@ const httpClient = axios.create({
 });
 
 httpClient.interceptors.request.use((config) => {
-  const { token, user } = store.getState().auth;
+  const { token } = store.getState().auth;
 
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
 
   config.headers['X-Client-Version'] =
-    process.env.EXPO_PUBLIC_REACT_APP_CLIENT_VERSION ||
-    Constants.expoConfig?.extra?.clientVersion ||
+    extra?.clientVersion ??
+    (process.env.EXPO_PUBLIC_REACT_APP_CLIENT_VERSION as string) ??
     '1.0';
   config.headers['X-Platform'] = 'web';
   config.headers['X-Device-Id'] = getDeviceId();

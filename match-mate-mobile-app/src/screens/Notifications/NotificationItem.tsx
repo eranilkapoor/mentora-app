@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { Colors } from '../../constants/colors';
 
 interface Props {
   title: string;
@@ -38,11 +39,11 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     padding: 14,
     borderBottomWidth: 1,
-    borderBottomColor: '#eee',
-    backgroundColor: '#fff',
+    borderBottomColor: Colors.border,
+    backgroundColor: Colors.backgroundPage,
   },
   unread: {
-    backgroundColor: '#FFF5F8',
+    backgroundColor: Colors.backgroundPage,
   },
   icon: {
     marginRight: 12,
@@ -55,15 +56,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 14,
     marginBottom: 2,
-    color: '#111',
+    color: Colors.textPrimary,
   },
   message: {
     fontSize: 13,
-    color: '#555',
+    color: Colors.textSecondary,
   },
   time: {
     fontSize: 11,
-    color: '#999',
+    color: Colors.textMuted,
     marginTop: 4,
   },
 });

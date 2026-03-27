@@ -45,6 +45,11 @@ type RegistrationStep =
   | 'review';
 
 type Gender = 'male' | 'female' | 'other';
+type ApiResponse<T> = {
+  success: boolean;
+  data: T;
+  message?: string;
+};
 
 interface DropdownPickerProps {
   label: string;
@@ -454,15 +459,16 @@ export default function OnboardingScreen(): React.ReactElement {
   const handleSubmit = useCallback(async (): Promise<void> => {
     setLoading(true);
     try {
-      const res = await AuthService.onboardingProfile({
-        personal,
-        education,
-        physical,
-        family,
-        preferences,
-      });
+      const { data }: { data: ApiResponse<unknown> } =
+        await AuthService.onboardingProfile({
+          personal,
+          education,
+          physical,
+          family,
+          preferences,
+        });
 
-      if (!res.data.success) {
+      if (!data.success as boolean) {
         Alert.alert('Error', 'Onboarding profile creation failed.');
         return;
       }
@@ -869,8 +875,8 @@ export default function OnboardingScreen(): React.ReactElement {
                 partnerPreference: {
                   ...p.partnerPreference,
                   ageRange: {
-                    max: p?.partnerPreference?.ageRange?.max || 35,
-                    min: parseInt(t) || 18,
+                    max: p?.partnerPreference?.ageRange?.max ?? 35,
+                    min: parseInt(t) ?? 18,
                   },
                 },
               }));
@@ -894,8 +900,8 @@ export default function OnboardingScreen(): React.ReactElement {
                 partnerPreference: {
                   ...p.partnerPreference,
                   ageRange: {
-                    min: p?.partnerPreference?.ageRange?.min || 18,
-                    max: parseInt(t) || 35,
+                    min: p?.partnerPreference?.ageRange?.min ?? 18,
+                    max: parseInt(t) ?? 35,
                   },
                 },
               }));
@@ -923,8 +929,8 @@ export default function OnboardingScreen(): React.ReactElement {
                 partnerPreference: {
                   ...p.partnerPreference,
                   heightRange: {
-                    max: p?.partnerPreference?.heightRange?.max || 0,
-                    min: parseInt(t) || 0,
+                    max: p?.partnerPreference?.heightRange?.max ?? 0,
+                    min: parseInt(t) ?? 0,
                   },
                 },
               }))
@@ -947,8 +953,8 @@ export default function OnboardingScreen(): React.ReactElement {
                 partnerPreference: {
                   ...p.partnerPreference,
                   heightRange: {
-                    min: p?.partnerPreference?.heightRange?.min || 0,
-                    max: parseInt(t) || 0,
+                    min: p?.partnerPreference?.heightRange?.min ?? 0,
+                    max: parseInt(t) ?? 0,
                   },
                 },
               }))
@@ -1080,7 +1086,7 @@ export default function OnboardingScreen(): React.ReactElement {
         <ReviewRow label="Family Type" value={family.familyType ?? ''} />
         <ReviewRow
           label="Family Status"
-          value={family.familyStatus || 'Not specified'}
+          value={family.familyStatus ?? 'Not specified'}
         />
       </View>
 
@@ -1093,14 +1099,14 @@ export default function OnboardingScreen(): React.ReactElement {
         <ReviewRow
           label="Location"
           value={
-            preferences.partnerPreference?.country?.join(', ') ||
+            preferences.partnerPreference?.country?.join(', ') ??
             'Not specified'
           }
         />
         <ReviewRow
           label="Religion"
           value={
-            preferences.partnerPreference?.religion?.join(', ') ||
+            preferences.partnerPreference?.religion?.join(', ') ??
             'Not specified'
           }
         />
