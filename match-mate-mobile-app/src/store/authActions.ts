@@ -31,8 +31,10 @@ export const restoreSession = () => async (dispatch: AppDispatch) => {
 
     // 🔥 Fetch user (VERY IMPORTANT)
     try {
-      const { data } = await AuthService.verifyUser();
-      dispatch(setCredentials({ token, user: data.data as User }));
+      const {
+        data: { data },
+      } = await AuthService.verifyUser();
+      dispatch(setCredentials({ token, user: data as User }));
     } catch {
       await Storage.removeToken();
       dispatch(logout());

@@ -13,12 +13,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
+import { Colors } from '../../constants/colors';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const RED = '#D32F2F';
-const RED_LIGHT = '#FDECEA';
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
@@ -254,7 +253,10 @@ export default ChatListScreen;
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5' },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.backgroundPage,
+  },
 
   // Header
   header: {
@@ -264,21 +266,33 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingTop: 12,
     paddingBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.divider,
   },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: '#1A1A1A' },
-  headerSub: { fontSize: 12, color: '#888', marginTop: 2 },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  headerSub: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginTop: 2,
+  },
   filterBtn: {
     paddingHorizontal: 14,
     paddingVertical: 7,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: '#DDD',
-    backgroundColor: '#fff',
+    borderColor: Colors.border,
+    backgroundColor: Colors.white,
   },
-  filterText: { fontSize: 13, color: '#555', fontWeight: '600' },
+  filterText: {
+    fontSize: 13,
+    color: Colors.textBody,
+    fontWeight: '600',
+  },
 
   // Search
   searchBox: {
@@ -286,40 +300,50 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     margin: 12,
     paddingHorizontal: 12,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderRadius: 12,
     borderWidth: 1,
-    borderColor: '#EEE',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    borderColor: Colors.divider,
   },
-  searchIcon: { fontSize: 15, marginRight: 6 },
-  searchInput: { flex: 1, height: 44, fontSize: 14, color: '#1A1A1A' },
+  searchIcon: {
+    fontSize: 15,
+    marginRight: 6,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    fontSize: 14,
+    color: Colors.textPrimary,
+  },
 
-  listContent: { paddingBottom: 24 },
+  listContent: {
+    paddingBottom: 24,
+  },
 
   // Card
   card: {
     flexDirection: 'row',
     paddingHorizontal: 16,
     paddingVertical: 14,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.divider,
   },
-  cardUnread: { backgroundColor: RED_LIGHT },
+  cardUnread: {
+    backgroundColor: Colors.primaryLight, // 🔥 instead of RED_LIGHT
+  },
 
   // Avatar
-  avatarWrap: { marginRight: 12, position: 'relative' },
+  avatarWrap: {
+    marginRight: 12,
+    position: 'relative',
+  },
   avatar: {
     width: 60,
     height: 60,
     borderRadius: 30,
     borderWidth: 2,
-    borderColor: '#EEE',
+    borderColor: Colors.divider,
   },
   onlineDot: {
     position: 'absolute',
@@ -328,23 +352,39 @@ const styles = StyleSheet.create({
     width: 13,
     height: 13,
     borderRadius: 7,
-    backgroundColor: '#66BB6A',
+    backgroundColor: Colors.success, // 🔥 instead of hardcoded green
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: Colors.white,
   },
 
   // Info
-  info: { flex: 1, justifyContent: 'center' },
+  info: {
+    flex: 1,
+    justifyContent: 'center',
+  },
   topRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 2,
   },
-  name: { fontSize: 15, fontWeight: '600', color: '#1A1A1A' },
-  nameUnread: { fontWeight: '800' },
-  time: { fontSize: 11, color: '#AAA' },
-  city: { fontSize: 12, color: '#888', marginBottom: 4 },
+  name: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: Colors.textPrimary,
+  },
+  nameUnread: {
+    fontWeight: '800',
+  },
+  time: {
+    fontSize: 11,
+    color: Colors.textMuted,
+  },
+  city: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+    marginBottom: 4,
+  },
   bottomRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -352,15 +392,18 @@ const styles = StyleSheet.create({
   },
   lastMessage: {
     fontSize: 13,
-    color: '#888',
+    color: Colors.textSecondary,
     flex: 1,
     marginRight: 8,
   },
-  lastMessageUnread: { color: '#333', fontWeight: '600' },
+  lastMessageUnread: {
+    color: Colors.textPrimary,
+    fontWeight: '600',
+  },
 
   // Badge
   badge: {
-    backgroundColor: RED,
+    backgroundColor: Colors.primary, // 🔥 instead of RED
     borderRadius: 10,
     minWidth: 20,
     height: 20,
@@ -368,12 +411,34 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  badgeText: { color: '#fff', fontSize: 11, fontWeight: '800' },
+  badgeText: {
+    color: Colors.white,
+    fontSize: 11,
+    fontWeight: '800',
+  },
 
   // States
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
-  loadingText: { fontSize: 13, color: '#888', marginTop: 8 },
-  emptyEmoji: { fontSize: 40, marginBottom: 4 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: '#333' },
-  emptySub: { fontSize: 13, color: '#888' },
+  center: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 8,
+  },
+  emptyEmoji: {
+    fontSize: 40,
+    marginBottom: 4,
+  },
+  emptyTitle: {
+    fontSize: 16,
+    fontWeight: '700',
+    color: Colors.textPrimary,
+  },
+  emptySub: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+  },
 });

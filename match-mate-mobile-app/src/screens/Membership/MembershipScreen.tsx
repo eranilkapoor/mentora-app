@@ -7,6 +7,7 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors } from '../../constants/colors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -221,28 +222,34 @@ export default function MembershipScreen() {
 
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
-const RED = '#D32F2F';
-const RED_LIGHT = '#FDECEA';
-const GREEN = '#2E7D32';
-const GREEN_LIGHT = '#E8F5E9';
-
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
-  scroll: { paddingHorizontal: 16, paddingBottom: 110 },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.backgroundPage,
+  },
+  scroll: {
+    paddingHorizontal: 16,
+    paddingBottom: 110,
+  },
 
   // Page title
   pageTitle: {
     fontSize: 22,
     fontWeight: '800',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     marginTop: 20,
   },
-  pageSubtitle: { fontSize: 13, color: '#888', marginTop: 2, marginBottom: 20 },
+  pageSubtitle: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    marginTop: 2,
+    marginBottom: 20,
+  },
 
   // Tabs
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#EFEFEF',
+    backgroundColor: Colors.backgroundLight,
     borderRadius: 10,
     padding: 4,
     marginBottom: 16,
@@ -254,29 +261,40 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTab: {
-    backgroundColor: '#fff',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.08,
-    shadowRadius: 4,
+    backgroundColor: Colors.white,
     elevation: 2,
   },
-  tabText: { fontSize: 13, color: '#888', fontWeight: '500' },
-  activeTabText: { color: RED, fontWeight: '700' },
+  tabText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: Colors.primary,
+    fontWeight: '700',
+  },
 
   // Refund banner
   refundBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: GREEN_LIGHT,
+    backgroundColor: Colors.successLight,
     borderRadius: 10,
     padding: 12,
     marginBottom: 20,
     gap: 10,
   },
   refundIcon: { fontSize: 20 },
-  refundText: { fontSize: 13, fontWeight: '700', color: GREEN },
-  refundSub: { fontSize: 11, color: '#388E3C', marginTop: 2 },
+  refundText: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: Colors.success,
+  },
+  refundSub: {
+    fontSize: 11,
+    color: Colors.success,
+    marginTop: 2,
+  },
 
   // Plan cards
   planRow: {
@@ -288,57 +306,74 @@ const styles = StyleSheet.create({
   planCard: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.border,
     borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 8,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     position: 'relative',
   },
   planCardActive: {
-    borderColor: RED,
-    backgroundColor: RED_LIGHT,
-    shadowColor: RED,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryLight,
     elevation: 4,
   },
   bestBadge: {
     position: 'absolute',
     top: -10,
-    backgroundColor: '#388E3C',
+    backgroundColor: Colors.success,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 20,
   },
-  bestBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
-  planName: { fontSize: 12, fontWeight: '700', color: '#555', marginTop: 8 },
-  planNameActive: { color: RED },
+  bestBadgeText: {
+    color: Colors.white,
+    fontSize: 10,
+    fontWeight: '700',
+  },
+  planName: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.textBody,
+    marginTop: 8,
+  },
+  planNameActive: {
+    color: Colors.primary,
+  },
   planPrice: {
     fontSize: 17,
     fontWeight: '800',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     marginTop: 4,
   },
-  planPriceActive: { color: RED },
-  planDuration: { fontSize: 10, color: '#999', marginBottom: 10 },
+  planPriceActive: {
+    color: Colors.primary,
+  },
+  planDuration: {
+    fontSize: 10,
+    color: Colors.textMuted,
+    marginBottom: 10,
+  },
+
+  // Radio
   radioOuter: {
     width: 16,
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#CCC',
+    borderColor: Colors.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  radioOuterActive: { borderColor: RED },
+  radioOuterActive: {
+    borderColor: Colors.primary,
+  },
   radioInner: {
     width: 8,
     height: 8,
     borderRadius: 4,
-    backgroundColor: RED,
+    backgroundColor: Colors.primary,
   },
 
   // Feature table
@@ -346,30 +381,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: 10,
     borderBottomWidth: 2,
-    borderColor: RED,
+    borderColor: Colors.primary,
     marginBottom: 2,
   },
   featureHeaderLabel: {
     flex: 1,
     fontSize: 12,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
   },
   featureHeaderCol: {
     flex: 1,
     textAlign: 'center',
     fontSize: 11,
-    color: '#888',
+    color: Colors.textSecondary,
     fontWeight: '600',
   },
-  featureHeaderColActive: { color: RED, fontWeight: '800' },
+  featureHeaderColActive: {
+    color: Colors.primary,
+    fontWeight: '800',
+  },
 
   featureTable: {
     borderRadius: 10,
     overflow: 'hidden',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: Colors.divider,
     marginBottom: 20,
   },
   featureRow: {
@@ -377,10 +415,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderColor: '#F5F5F5',
+    borderColor: Colors.divider,
     alignItems: 'center',
   },
-  featureLabel: { flex: 1, fontSize: 12, color: '#444' },
+  featureLabel: {
+    flex: 1,
+    fontSize: 12,
+    color: Colors.textBody,
+  },
   featureValues: {
     flexDirection: 'row',
     width: '45%',
@@ -393,16 +435,24 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     marginHorizontal: 2,
   },
-  featureCellActive: { backgroundColor: RED_LIGHT },
+  featureCellActive: {
+    backgroundColor: Colors.primaryLight,
+  },
   featureValue: {
     fontSize: 12,
     fontWeight: '700',
-    color: '#555',
+    color: Colors.textBody,
     textAlign: 'center',
   },
-  featureValueActive: { color: RED },
-  featureCheck: { color: '#2E7D32' },
-  featureZero: { color: '#BBBBBB' },
+  featureValueActive: {
+    color: Colors.primary,
+  },
+  featureCheck: {
+    color: Colors.success,
+  },
+  featureZero: {
+    color: Colors.textMuted,
+  },
 
   // Trust badges
   trustRow: {
@@ -413,14 +463,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   trustBadge: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: Colors.divider,
   },
-  trustText: { fontSize: 11, color: '#555', fontWeight: '500' },
+  trustText: {
+    fontSize: 11,
+    color: Colors.textBody,
+    fontWeight: '500',
+  },
 
   // CTA
   ctaContainer: {
@@ -431,35 +485,36 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     paddingBottom: 24,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderColor: '#EEEEEE',
+    borderColor: Colors.divider,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
     elevation: 10,
   },
-  ctaInfo: { flex: 1 },
-  ctaPlan: { fontSize: 12, color: '#888' },
-  ctaPrice: { fontSize: 18, fontWeight: '800', color: '#1A1A1A' },
+  ctaInfo: {
+    flex: 1,
+  },
+  ctaPlan: {
+    fontSize: 12,
+    color: Colors.textSecondary,
+  },
+  ctaPrice: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
   ctaButton: {
     flex: 2,
-    backgroundColor: RED,
+    backgroundColor: Colors.primary,
     paddingVertical: 14,
     borderRadius: 30,
     alignItems: 'center',
-    shadowColor: RED,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
     elevation: 6,
   },
   ctaButtonText: {
-    color: '#fff',
+    color: Colors.white,
     fontSize: 15,
     fontWeight: '800',
     letterSpacing: 0.3,

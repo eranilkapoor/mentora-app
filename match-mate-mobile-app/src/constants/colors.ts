@@ -9,6 +9,9 @@ export const Colors = {
   primaryLight: '#ede9fe',
   primaryBorder: '#c4b5fd',
   accent: '#f59e0b',
+  accentLight: '#ffedd5',
+  secondary: '#6b7280',
+  secondaryLight: '#f3f4f6',
   whatsapp: '#25D366',
 
   // Backgrounds

@@ -79,8 +79,6 @@ function SettingToggle({
 export default function SettingsScreen({
   navigation,
 }: SettingsScreenProps): React.ReactElement {
-  const dispatch = useAppDispatch();
-
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [locationSharing, setLocationSharing] = useState(false);
@@ -112,7 +110,7 @@ export default function SettingsScreen({
         onPress: confirmSignOut,
       },
     ]);
-  }, [dispatch]);
+  }, []);
 
   return (
     <SafeAreaProvider style={styles.safe}>

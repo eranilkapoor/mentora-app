@@ -16,7 +16,6 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { AuthService } from '../../services/authService';
 import { useAppDispatch } from '../../store';
-import { setCredentials } from '../../store/authSlice';
 import { country_codes } from '../../constants';
 import { fakeApi } from '../../services/fakeApi';
 import { Colors } from '../../constants/colors';
@@ -50,22 +49,26 @@ interface SocialButtonProps {
   iconColor?: string;
 }
 
+interface CountryCodeDropdownProps {
+  visible: boolean;
+  onClose: () => void;
+  selectedCode: string;
+  onSelectCode: (code: string) => void;
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^\+?\d{6,15}$/;
+const PHONE_REGEX = /^\d{6,15}$/;
 const DEFAULT_COUNTRY_CODE = country_codes[2] as string;
+const PASSWORD_MIN_LENGTH = 6;
+const PHONE_MAX_LENGTH = 10;
+const OTP_LENGTH = 6;
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function SocialButton({
-  label,
-  onPress,
-  disabled = false,
-  icon,
-  iconColor,
-}: SocialButtonProps): React.ReactElement {
-  return (
+const SocialButton = React.memo<SocialButtonProps>(
+  ({ label, onPress, disabled = false, icon, iconColor }) => (
     <TouchableOpacity
       style={[styles.socialButton, disabled && styles.disabledButton]}
       onPress={onPress}
@@ -81,8 +84,61 @@ function SocialButton({
       />
       <Text style={styles.socialLabel}>{label}</Text>
     </TouchableOpacity>
-  );
-}
+  )
+);
+
+SocialButton.displayName = 'SocialButton';
+
+const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
+  ({ visible, onClose, selectedCode, onSelectCode }) => (
+    <Modal
+      visible={visible}
+      transparent
+      animationType="fade"
+      onRequestClose={onClose}
+    >
+      <TouchableOpacity
+        style={styles.modalOverlay}
+        activeOpacity={1}
+        onPress={onClose}
+      >
+        <View style={styles.modalDropdown}>
+          <ScrollView keyboardShouldPersistTaps="handled">
+            {country_codes.map((code) => (
+              <TouchableOpacity
+                key={code}
+                style={[
+                  styles.countryCodeItem,
+                  selectedCode === code && styles.countryCodeItemActive,
+                ]}
+                onPress={() => {
+                  onSelectCode(code as string);
+                  onClose();
+                }}
+                accessibilityRole="button"
+                accessibilityLabel={`Country code ${code}`}
+              >
+                <Text
+                  style={[
+                    styles.countryCodeItemText,
+                    selectedCode === code && styles.countryCodeItemTextActive,
+                  ]}
+                >
+                  +{code}
+                </Text>
+                {selectedCode === code && (
+                  <Feather name="check" size={14} color={Colors.primary} />
+                )}
+              </TouchableOpacity>
+            ))}
+          </ScrollView>
+        </View>
+      </TouchableOpacity>
+    </Modal>
+  )
+);
+
+CountryCodeDropdown.displayName = 'CountryCodeDropdown';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
@@ -90,6 +146,8 @@ export default function LoginScreen({
   navigation,
 }: LoginScreenProps): React.ReactElement {
   const dispatch = useAppDispatch();
+
+  // ─── State ───────────────────────────────────────────────────────────────
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('email');
   const [email, setEmail] = useState('');
@@ -103,14 +161,35 @@ export default function LoginScreen({
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────
+  // ─── Validation Helpers ──────────────────────────────────────────────────
 
-  const clearError = useCallback((field: keyof FormErrors): void => {
-    setErrors((prev) => ({ ...prev, [field]: undefined }));
+  const validateEmail = useCallback((value: string): boolean => {
+    return EMAIL_REGEX.test(value.trim());
   }, []);
 
-  const validateEmail = (value: string): boolean => EMAIL_REGEX.test(value);
-  const validatePhone = (value: string): boolean => PHONE_REGEX.test(value);
+  const validatePhone = useCallback((value: string): boolean => {
+    return PHONE_REGEX.test(value);
+  }, []);
+
+  const validatePassword = useCallback((value: string): boolean => {
+    return value.length >= PASSWORD_MIN_LENGTH;
+  }, []);
+
+  // ─── Error Management ────────────────────────────────────────────────────
+
+  const clearError = useCallback((field: keyof FormErrors): void => {
+    setErrors((prev) => {
+      const newErrors = { ...prev };
+      delete newErrors[field];
+      return newErrors;
+    });
+  }, []);
+
+  const clearAllErrors = useCallback((): void => {
+    setErrors({});
+  }, []);
+
+  // ─── Navigation ──────────────────────────────────────────────────────────
 
   const navigateAfterAuth = useCallback(
     (isProfileCompleted: boolean): void => {
@@ -121,62 +200,74 @@ export default function LoginScreen({
     [navigation]
   );
 
+  // ─── Tab Management ──────────────────────────────────────────────────────
+
   const handleTabSwitch = useCallback((tab: ActiveTab): void => {
     setActiveTab(tab);
     setOtpSent(false);
+    setOtp('');
     setErrors({});
   }, []);
 
-  const handleResendOtp = useCallback((): void => {
-    setOtpSent(false);
-    setOtp('');
-  }, []);
-
-  // ─── Handlers ────────────────────────────────────────────────────────────
+  // ─── Email Login ─────────────────────────────────────────────────────────
 
   const handleEmailLogin = useCallback(async (): Promise<void> => {
     const newErrors: FormErrors = {};
 
+    // Validate email
     if (!email.trim()) {
       newErrors.email = 'Email is required';
     } else if (!validateEmail(email)) {
       newErrors.email = 'Enter a valid email address';
     }
 
+    // Validate password
     if (!password) {
       newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Minimum 6 characters';
+    } else if (!validatePassword(password)) {
+      newErrors.password = `Minimum ${PASSWORD_MIN_LENGTH} characters`;
     }
 
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     setLoading(true);
     try {
-      const res = await AuthService.login({ email, password });
+      const res = await AuthService.login({ email: email.trim(), password });
       const { data } = res;
 
       if (!data.success) {
-        setErrors({ email: 'Invalid email or password' });
+        setErrors({ error: 'Invalid email or password' });
         return;
       }
 
-      if (data.data) {
+      if (data.data?.token && data.data?.user) {
         dispatch(loginUser(data.data.token, data.data.user));
-        //dispatch(setCredentials(data.data));
-        navigateAfterAuth(data.data.user?.isProfileCompleted ?? false);
+        navigateAfterAuth(data.data.user.isProfileCompleted ?? false);
+      } else {
+        setErrors({ error: 'Invalid response from server' });
       }
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
       setErrors({
-        error:
-          'Failed to sign in. Please try again.' +
-          (error instanceof Error ? ` (${error.message})` : ''),
+        error: `Failed to sign in. Please try again. (${errorMessage})`,
       });
     } finally {
       setLoading(false);
     }
-  }, [email, password, dispatch, navigateAfterAuth]);
+  }, [
+    email,
+    password,
+    dispatch,
+    navigateAfterAuth,
+    validateEmail,
+    validatePassword,
+  ]);
+
+  // ─── Phone/OTP Login ─────────────────────────────────────────────────────
 
   const handleGetOtp = useCallback(async (): Promise<void> => {
     const newErrors: FormErrors = {};
@@ -187,8 +278,10 @@ export default function LoginScreen({
       newErrors.phone = 'Enter a valid phone number';
     }
 
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     setLoading(true);
     try {
@@ -204,16 +297,26 @@ export default function LoginScreen({
       }
 
       setOtpSent(true);
-    } catch {
-      setErrors({ error: 'Failed to send OTP. Please try again.' });
+      clearAllErrors();
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      setErrors({
+        error: `Failed to send OTP. Please try again. (${errorMessage})`,
+      });
     } finally {
       setLoading(false);
     }
-  }, [phone, countryCode]);
+  }, [phone, countryCode, validatePhone, clearAllErrors]);
 
   const handleVerifyOtp = useCallback(async (): Promise<void> => {
     if (!otp) {
       setErrors({ otp: 'OTP is required' });
+      return;
+    }
+
+    if (otp.length !== OTP_LENGTH) {
+      setErrors({ otp: `OTP must be ${OTP_LENGTH} digits` });
       return;
     }
 
@@ -231,22 +334,36 @@ export default function LoginScreen({
         return;
       }
 
-      if (data.data) {
+      if (data.data?.token && data.data?.user) {
         dispatch(loginUser(data.data.token, data.data.user));
-        //dispatch(setCredentials(data.data));
-        navigateAfterAuth(data.data.user?.isProfileCompleted ?? false);
+        navigateAfterAuth(data.data.user.isProfileCompleted ?? false);
+      } else {
+        setErrors({ error: 'Invalid response from server' });
       }
-    } catch {
-      setErrors({ error: 'Failed to verify OTP. Please try again.' });
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : 'Unknown error';
+      setErrors({
+        error: `Failed to verify OTP. Please try again. (${errorMessage})`,
+      });
     } finally {
       setLoading(false);
     }
   }, [otp, countryCode, phone, dispatch, navigateAfterAuth]);
 
+  const handleResendOtp = useCallback((): void => {
+    setOtpSent(false);
+    setOtp('');
+    clearAllErrors();
+  }, [clearAllErrors]);
+
+  // ─── Social Login ────────────────────────────────────────────────────────
+
   const handleSocialLogin = useCallback(
     async (provider: SocialProvider): Promise<void> => {
       setLoading(true);
-      setErrors({});
+      clearAllErrors();
+
       try {
         const res = await fakeApi(
           {
@@ -258,16 +375,82 @@ export default function LoginScreen({
 
         if (!res.success) {
           setErrors({ error: res.error as string });
-          return;
         }
-      } catch {
-        setErrors({ error: `Failed to sign in with ${provider}.` });
+        // TODO: Implement actual social login
+      } catch (error) {
+        const errorMessage =
+          error instanceof Error ? error.message : 'Unknown error';
+        setErrors({
+          error: `Failed to sign in with ${provider}. (${errorMessage})`,
+        });
       } finally {
         setLoading(false);
       }
     },
-    []
+    [clearAllErrors]
   );
+
+  // ─── Input Handlers ──────────────────────────────────────────────────────
+
+  const handleEmailChange = useCallback(
+    (text: string) => {
+      setEmail(text);
+      if (errors.email) clearError('email');
+    },
+    [errors.email, clearError]
+  );
+
+  const handlePasswordChange = useCallback(
+    (text: string) => {
+      setPassword(text);
+      if (errors.password) clearError('password');
+    },
+    [errors.password, clearError]
+  );
+
+  const handlePhoneChange = useCallback(
+    (text: string) => {
+      const sanitized = text.replace(/\D/g, '').slice(0, PHONE_MAX_LENGTH);
+      setPhone(sanitized);
+      if (errors.phone) clearError('phone');
+    },
+    [errors.phone, clearError]
+  );
+
+  const handleOtpChange = useCallback(
+    (text: string) => {
+      const sanitized = text.replace(/\D/g, '').slice(0, OTP_LENGTH);
+      setOtp(sanitized);
+      if (errors.otp) clearError('otp');
+    },
+    [errors.otp, clearError]
+  );
+
+  const handleCountryCodeSelect = useCallback((code: string) => {
+    setCountryCode(code);
+  }, []);
+
+  const toggleCountryCodeDropdown = useCallback(() => {
+    setShowCountryCodeDropdown((prev) => !prev);
+  }, []);
+
+  const closeCountryCodeDropdown = useCallback(() => {
+    setShowCountryCodeDropdown(false);
+  }, []);
+
+  const togglePasswordVisibility = useCallback(() => {
+    setShowPassword((prev) => !prev);
+  }, []);
+
+  // ─── Navigation Handlers ─────────────────────────────────────────────────
+
+  const handleForgotPassword = useCallback(() => {
+    navigation.navigate('ForgotPassword');
+  }, [navigation]);
+
+  const handleRegister = useCallback(() => {
+    navigation.navigate('Register');
+  }, [navigation]);
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
@@ -290,7 +473,7 @@ export default function LoginScreen({
           </Text>
 
           {/* Global error */}
-          {errors.error !== undefined && (
+          {errors.error && (
             <View style={styles.errorBanner}>
               <Feather name="alert-circle" size={14} color={Colors.error} />
               <Text style={styles.errorBannerText}>{errors.error}</Text>
@@ -299,7 +482,7 @@ export default function LoginScreen({
 
           {/* Tabs */}
           <View style={styles.tabRow}>
-            {(['email', 'phone'] as ActiveTab[]).map((tab) => (
+            {(['email', 'phone'] as const).map((tab) => (
               <TouchableOpacity
                 key={tab}
                 style={[
@@ -309,7 +492,7 @@ export default function LoginScreen({
                 onPress={() => handleTabSwitch(tab)}
                 disabled={loading}
                 accessibilityRole="tab"
-                accessibilityLabel={`tab-${tab}`}
+                accessibilityLabel={`${tab} tab`}
                 accessibilityState={{ selected: activeTab === tab }}
               >
                 <Feather
@@ -341,7 +524,7 @@ export default function LoginScreen({
                 <View
                   style={[
                     styles.inputWrapper,
-                    errors.email !== undefined && styles.inputError,
+                    errors.email && styles.inputError,
                   ]}
                 >
                   <Feather
@@ -358,16 +541,13 @@ export default function LoginScreen({
                     autoCapitalize="none"
                     autoComplete="email"
                     value={email}
-                    onChangeText={(t) => {
-                      setEmail(t);
-                      clearError('email');
-                    }}
+                    onChangeText={handleEmailChange}
                     editable={!loading}
                     textContentType="username"
-                    accessibilityLabel="email-input"
+                    accessibilityLabel="Email input"
                   />
                 </View>
-                {errors.email !== undefined && (
+                {errors.email && (
                   <Text style={styles.errorText}>{errors.email}</Text>
                 )}
 
@@ -378,7 +558,7 @@ export default function LoginScreen({
                 <View
                   style={[
                     styles.inputWrapper,
-                    errors.password !== undefined && styles.inputError,
+                    errors.password && styles.inputError,
                   ]}
                 >
                   <Feather
@@ -393,16 +573,13 @@ export default function LoginScreen({
                     placeholderTextColor={Colors.textMuted}
                     secureTextEntry={!showPassword}
                     value={password}
-                    onChangeText={(t) => {
-                      setPassword(t);
-                      clearError('password');
-                    }}
-                    accessibilityLabel="password-input"
+                    onChangeText={handlePasswordChange}
+                    accessibilityLabel="Password input"
                     editable={!loading}
                     textContentType="password"
                   />
                   <TouchableOpacity
-                    onPress={() => setShowPassword((prev) => !prev)}
+                    onPress={togglePasswordVisibility}
                     style={styles.eyeButton}
                     disabled={loading}
                     accessibilityRole="button"
@@ -417,16 +594,17 @@ export default function LoginScreen({
                     />
                   </TouchableOpacity>
                 </View>
-                {errors.password !== undefined && (
+                {errors.password && (
                   <Text style={styles.errorText}>{errors.password}</Text>
                 )}
 
                 {/* Forgot Password */}
                 <TouchableOpacity
-                  onPress={() => navigation.navigate('ForgotPassword')}
+                  onPress={handleForgotPassword}
                   disabled={loading}
                   style={styles.forgotRow}
                   accessibilityRole="button"
+                  accessibilityLabel="Forgot password"
                 >
                   <Text style={styles.forgotText}>Forgot password?</Text>
                 </TouchableOpacity>
@@ -463,14 +641,11 @@ export default function LoginScreen({
                 {/* Phone Field */}
                 <Text style={styles.label}>Phone Number</Text>
                 <View
-                  style={[
-                    styles.phoneRow,
-                    errors.phone !== undefined && styles.inputError,
-                  ]}
+                  style={[styles.phoneRow, errors.phone && styles.inputError]}
                 >
                   <TouchableOpacity
                     style={styles.countryCodeBtn}
-                    onPress={() => setShowCountryCodeDropdown((prev) => !prev)}
+                    onPress={toggleCountryCodeDropdown}
                     accessibilityRole="button"
                     accessibilityLabel="Select country code"
                   >
@@ -482,56 +657,12 @@ export default function LoginScreen({
                     />
                   </TouchableOpacity>
 
-                  <Modal
+                  <CountryCodeDropdown
                     visible={showCountryCodeDropdown}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setShowCountryCodeDropdown(false)}
-                  >
-                    <TouchableOpacity
-                      style={styles.modalOverlay}
-                      activeOpacity={1}
-                      onPress={() => setShowCountryCodeDropdown(false)}
-                    >
-                      <View style={styles.modalDropdown}>
-                        <ScrollView keyboardShouldPersistTaps="handled">
-                          {country_codes.map((code) => (
-                            <TouchableOpacity
-                              key={code}
-                              style={[
-                                styles.countryCodeItem,
-                                countryCode === code &&
-                                  styles.countryCodeItemActive,
-                              ]}
-                              onPress={() => {
-                                setCountryCode(code as string);
-                                setShowCountryCodeDropdown(false);
-                              }}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Country code ${code}`}
-                            >
-                              <Text
-                                style={[
-                                  styles.countryCodeItemText,
-                                  countryCode === code &&
-                                    styles.countryCodeItemTextActive,
-                                ]}
-                              >
-                                +{code}
-                              </Text>
-                              {countryCode === code && (
-                                <Feather
-                                  name="check"
-                                  size={14}
-                                  color={Colors.primary}
-                                />
-                              )}
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </View>
-                    </TouchableOpacity>
-                  </Modal>
+                    onClose={closeCountryCodeDropdown}
+                    selectedCode={countryCode}
+                    onSelectCode={handleCountryCodeSelect}
+                  />
 
                   <TextInput
                     style={[styles.input, styles.phoneInput]}
@@ -540,16 +671,13 @@ export default function LoginScreen({
                     keyboardType="phone-pad"
                     autoCapitalize="none"
                     value={phone}
-                    onChangeText={(t) => {
-                      setPhone(t.slice(0, 10));
-                      clearError('phone');
-                    }}
+                    onChangeText={handlePhoneChange}
                     editable={!loading && !otpSent}
-                    maxLength={10}
-                    accessibilityLabel="phone-input"
+                    maxLength={PHONE_MAX_LENGTH}
+                    accessibilityLabel="Phone number input"
                   />
                 </View>
-                {errors.phone !== undefined && (
+                {errors.phone && (
                   <Text style={styles.errorText}>{errors.phone}</Text>
                 )}
 
@@ -593,23 +721,17 @@ export default function LoginScreen({
                       Enter OTP
                     </Text>
                     <TextInput
-                      style={[
-                        styles.otpInput,
-                        errors.otp !== undefined && styles.inputError,
-                      ]}
+                      style={[styles.otpInput, errors.otp && styles.inputError]}
                       placeholder="• • • • • •"
                       placeholderTextColor={Colors.textMuted}
                       keyboardType="number-pad"
                       value={otp}
-                      onChangeText={(t) => {
-                        setOtp(t.slice(0, 6));
-                        clearError('otp');
-                      }}
+                      onChangeText={handleOtpChange}
                       editable={!loading}
-                      maxLength={6}
-                      accessibilityLabel="otp-input"
+                      maxLength={OTP_LENGTH}
+                      accessibilityLabel="OTP input"
                     />
-                    {errors.otp !== undefined && (
+                    {errors.otp && (
                       <Text style={styles.errorText}>{errors.otp}</Text>
                     )}
 
@@ -646,6 +768,7 @@ export default function LoginScreen({
                       onPress={handleResendOtp}
                       disabled={loading}
                       accessibilityRole="button"
+                      accessibilityLabel="Resend OTP or change number"
                     >
                       <Feather
                         name="refresh-cw"
@@ -707,9 +830,10 @@ export default function LoginScreen({
           <View style={styles.footer}>
             <Text style={styles.footerText}>Don't have an account?</Text>
             <TouchableOpacity
-              onPress={() => navigation.navigate('Register')}
+              onPress={handleRegister}
               disabled={loading}
               accessibilityRole="button"
+              accessibilityLabel="Create account"
             >
               <Text style={styles.linkText}> Create account</Text>
             </TouchableOpacity>
@@ -727,7 +851,9 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.white,
   },
-  container: { flex: 1 },
+  container: {
+    flex: 1,
+  },
   scrollContent: {
     padding: 20,
     paddingTop: 80,
@@ -793,7 +919,9 @@ const styles = StyleSheet.create({
   tabTextActive: {
     color: Colors.white,
   },
-  form: { marginTop: 4 },
+  form: {
+    marginTop: 4,
+  },
   label: {
     fontSize: 13,
     fontWeight: '600',
@@ -971,7 +1099,9 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     fontSize: 13,
   },
-  socialContainer: { gap: 10 },
+  socialContainer: {
+    gap: 10,
+  },
   socialButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -999,7 +1129,9 @@ const styles = StyleSheet.create({
     marginTop: 24,
     marginBottom: 12,
   },
-  footerText: { color: Colors.textMuted },
+  footerText: {
+    color: Colors.textMuted,
+  },
   linkText: {
     color: Colors.link,
     fontWeight: '700',

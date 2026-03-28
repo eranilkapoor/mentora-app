@@ -7,17 +7,11 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-  RefreshControl,
   ActivityIndicator,
-  ListRenderItem,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const PINK = '#C2185B';
-const PINK_LIGHT = '#FCE4EC';
+import { Colors } from '../../constants/colors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -54,7 +48,7 @@ const mockFetchMatches = async (): Promise<Match[]> => {
       id: '1',
       name: 'Priya Sharma',
       age: 28,
-      height: '5\'4"',
+      height: `5'4"`,
       religion: 'Hindu',
       caste: 'Brahmin',
       education: 'B.Tech',
@@ -64,65 +58,25 @@ const mockFetchMatches = async (): Promise<Match[]> => {
       isOnline: true,
       isNew: true,
     },
-    {
-      id: '2',
-      name: 'Anjali Verma',
-      age: 26,
-      height: '5\'2"',
-      religion: 'Hindu',
-      caste: 'Kayastha',
-      education: 'MBA',
-      profession: 'HR Manager',
-      location: 'Delhi, India',
-      avatarUrl: 'https://randomuser.me/api/portraits/women/66.jpg',
-      isOnline: false,
-      isNew: false,
-    },
-    {
-      id: '3',
-      name: 'Sneha Iyer',
-      age: 27,
-      height: '5\'3"',
-      religion: 'Hindu',
-      caste: 'Iyer',
-      education: 'MBBS',
-      profession: 'Doctor',
-      location: 'Bengaluru, India',
-      avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg',
-      isOnline: true,
-      isNew: false,
-    },
   ];
 };
 
-// ─── Match Card ───────────────────────────────────────────────────────────────
+// ─── Card ─────────────────────────────────────────────────────────────────────
 
-interface MatchCardProps {
-  item: Match;
-  onViewProfile: () => void;
-  onChat: () => void;
-}
-
-const MatchCard: React.FC<MatchCardProps> = ({
-  item,
-  onViewProfile,
-  onChat,
-}) => (
+const MatchCard = ({ item, onViewProfile, onChat }: any) => (
   <View style={styles.card}>
-    {/* Photo */}
     <View style={styles.photoWrapper}>
       <Image source={{ uri: item.avatarUrl }} style={styles.photo} />
 
-      {/* Gradient-like overlay at bottom of photo */}
       <View style={styles.photoOverlay} />
 
-      {/* Badges */}
       <View style={styles.badgeRow}>
         {item.isNew && (
           <View style={styles.newBadge}>
             <Text style={styles.newBadgeText}>NEW</Text>
           </View>
         )}
+
         {item.isOnline && (
           <View style={styles.onlineBadge}>
             <View style={styles.onlineDot} />
@@ -131,7 +85,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
         )}
       </View>
 
-      {/* Name overlay on photo */}
       <View style={styles.nameOverlay}>
         <Text style={styles.nameOverlayText}>
           {item.name}, {item.age}
@@ -140,44 +93,26 @@ const MatchCard: React.FC<MatchCardProps> = ({
       </View>
     </View>
 
-    {/* Info section */}
     <View style={styles.info}>
-      {/* Tags row */}
       <View style={styles.tagsRow}>
-        {[item.height, item.religion, item.caste].map((tag) => (
+        {[item.height, item.religion, item.caste].map((tag: string) => (
           <View key={tag} style={styles.tag}>
             <Text style={styles.tagText}>{tag}</Text>
           </View>
         ))}
       </View>
 
-      {/* Education & profession */}
       <View style={styles.metaRow}>
-        <View style={styles.metaItem}>
-          <Text style={styles.metaIcon}>🎓</Text>
-          <Text style={styles.metaText}>{item.education}</Text>
-        </View>
-        <View style={styles.metaItem}>
-          <Text style={styles.metaIcon}>💼</Text>
-          <Text style={styles.metaText}>{item.profession}</Text>
-        </View>
+        <Text style={styles.metaText}>🎓 {item.education}</Text>
+        <Text style={styles.metaText}>💼 {item.profession}</Text>
       </View>
 
-      {/* Actions */}
       <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.outlineBtn}
-          onPress={onViewProfile}
-          activeOpacity={0.8}
-        >
+        <TouchableOpacity style={styles.outlineBtn} onPress={onViewProfile}>
           <Text style={styles.outlineText}>View Profile</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={styles.primaryBtn}
-          onPress={onChat}
-          activeOpacity={0.85}
-        >
+        <TouchableOpacity style={styles.primaryBtn} onPress={onChat}>
           <Text style={styles.primaryText}>💬 Chat</Text>
         </TouchableOpacity>
       </View>
@@ -185,7 +120,7 @@ const MatchCard: React.FC<MatchCardProps> = ({
   </View>
 );
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+// ─── Screen ───────────────────────────────────────────────────────────────────
 
 const MatchListScreen: React.FC<Props> = ({ navigation }) => {
   const [matches, setMatches] = useState<Match[]>([]);
@@ -204,167 +139,113 @@ const MatchListScreen: React.FC<Props> = ({ navigation }) => {
     loadMatches();
   }, [loadMatches]);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
-    await loadMatches();
-    setRefreshing(false);
-  };
-
   const filtered = matches.filter((m) =>
     m.name.toLowerCase().includes(query.toLowerCase())
   );
 
-  const renderItem: ListRenderItem<Match> = ({ item }) => (
-    <MatchCard
-      item={item}
-      onViewProfile={() =>
-        navigation.navigate('OnlineMatches', { userId: item.id })
-      }
-      onChat={() => navigation.navigate('ChatScreen', { user: item })}
-    />
-  );
-
   return (
     <SafeAreaView style={styles.container}>
-      {/* ── Header ── */}
+      {/* Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Your Matches</Text>
-          <Text style={styles.headerSub}>
-            {matches.length > 0
-              ? `${matches.length} profiles found for you`
-              : 'Finding your matches…'}
-          </Text>
-        </View>
-        <TouchableOpacity style={styles.filterBtn}>
+        <Text style={styles.headerTitle}>Your Matches</Text>
+        <TouchableOpacity>
           <Text style={styles.filterText}>⚙ Filter</Text>
         </TouchableOpacity>
       </View>
 
-      {/* ── Search ── */}
+      {/* Search */}
       <View style={styles.searchBox}>
-        <Text style={styles.searchIcon}>🔍</Text>
         <TextInput
-          placeholder="Search by name…"
-          placeholderTextColor="#AAA"
+          placeholder="Search..."
+          placeholderTextColor={Colors.textMuted}
+          style={styles.searchInput}
           value={query}
           onChangeText={setQuery}
-          style={styles.searchInput}
-          returnKeyType="search"
-          clearButtonMode="while-editing"
         />
       </View>
 
-      {/* ── Content ── */}
+      {/* Content */}
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={PINK} />
-          <Text style={styles.loadingText}>Finding your matches…</Text>
-        </View>
-      ) : filtered.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyEmoji}>💔</Text>
-          <Text style={styles.emptyTitle}>No matches found</Text>
-          <Text style={styles.emptySubtitle}>
-            Try a different name or clear filters
-          </Text>
-        </View>
+        <ActivityIndicator size="large" color={Colors.primary} />
       ) : (
         <FlatList
           data={filtered}
-          keyExtractor={(item) => item.id}
-          renderItem={renderItem}
-          refreshControl={
-            <RefreshControl
-              refreshing={refreshing}
-              onRefresh={onRefresh}
-              colors={[PINK]}
-              tintColor={PINK}
+          keyExtractor={(i) => i.id}
+          renderItem={({ item }) => (
+            <MatchCard
+              item={item}
+              onViewProfile={() =>
+                navigation.navigate('OnlineMatches', { userId: item.id })
+              }
+              onChat={() => navigation.navigate('ChatScreen', { user: item })}
             />
-          }
-          contentContainerStyle={styles.listContent}
-          showsVerticalScrollIndicator={false}
+          )}
         />
       )}
     </SafeAreaView>
   );
 };
 
+export default MatchListScreen;
+
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5' },
+  container: { flex: 1, backgroundColor: Colors.backgroundPage },
 
-  // Header
   header: {
+    padding: 16,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingTop: 12,
-    paddingBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.border,
   },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: '#1A1A1A' },
-  headerSub: { fontSize: 12, color: '#888', marginTop: 2 },
-  filterBtn: {
-    paddingHorizontal: 14,
-    paddingVertical: 7,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: '#DDD',
-    backgroundColor: '#fff',
-  },
-  filterText: { fontSize: 13, color: '#555', fontWeight: '600' },
 
-  // Search
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+
+  filterText: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+
   searchBox: {
-    flexDirection: 'row',
-    alignItems: 'center',
     margin: 12,
-    paddingHorizontal: 12,
-    backgroundColor: '#fff',
-    borderRadius: 12,
+    backgroundColor: Colors.white,
+    borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#EEE',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
+    borderColor: Colors.border,
+    paddingHorizontal: 10,
   },
-  searchIcon: { fontSize: 15, marginRight: 6, color: '#AAA' },
-  searchInput: { flex: 1, height: 44, fontSize: 14, color: '#1A1A1A' },
 
-  listContent: { paddingHorizontal: 12, paddingBottom: 24, paddingTop: 4 },
+  searchInput: {
+    height: 40,
+    color: Colors.textPrimary,
+  },
 
-  // Card
   card: {
-    backgroundColor: '#fff',
-    marginTop: 12,
+    backgroundColor: Colors.white,
+    margin: 12,
     borderRadius: 16,
     overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
-    elevation: 3,
   },
 
-  // Photo
-  photoWrapper: { position: 'relative' },
   photo: { width: '100%', height: 240 },
+
+  photoWrapper: { position: 'relative' },
+
   photoOverlay: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
     height: 100,
-    // Simulated gradient from transparent to dark
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    width: '100%',
+    backgroundColor: Colors.overlayDark,
   },
+
   badgeRow: {
     position: 'absolute',
     top: 10,
@@ -372,94 +253,114 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
   },
+
   newBadge: {
-    backgroundColor: PINK,
+    backgroundColor: Colors.primary,
+    borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 20,
   },
+
   newBadgeText: {
-    color: '#fff',
+    color: Colors.white,
     fontSize: 10,
     fontWeight: '800',
-    letterSpacing: 0.5,
   },
+
   onlineBadge: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: Colors.overlayDark,
+    borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 3,
-    borderRadius: 20,
   },
+
   onlineDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: '#66BB6A',
+    width: 6,
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: Colors.success,
+    marginRight: 4,
   },
-  onlineBadgeText: { color: '#fff', fontSize: 10, fontWeight: '700' },
+
+  onlineBadgeText: {
+    color: Colors.white,
+    fontSize: 10,
+  },
+
   nameOverlay: {
     position: 'absolute',
     bottom: 10,
-    left: 12,
-    right: 12,
-  },
-  nameOverlayText: { fontSize: 20, fontWeight: '800', color: '#fff' },
-  locationOverlayText: {
-    fontSize: 12,
-    color: 'rgba(255,255,255,0.85)',
-    marginTop: 2,
+    left: 10,
   },
 
-  // Info
+  nameOverlayText: {
+    color: Colors.white,
+    fontSize: 18,
+    fontWeight: '800',
+  },
+
+  locationOverlayText: {
+    color: Colors.white,
+    fontSize: 12,
+    opacity: 0.8,
+  },
+
   info: { padding: 12 },
 
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
+  tagsRow: { flexDirection: 'row', gap: 6 },
+
   tag: {
-    backgroundColor: PINK_LIGHT,
-    borderRadius: 20,
-    paddingHorizontal: 10,
+    backgroundColor: Colors.primaryLight,
+    paddingHorizontal: 8,
     paddingVertical: 4,
+    borderRadius: 20,
   },
-  tagText: { fontSize: 11, color: PINK, fontWeight: '600' },
 
-  metaRow: { flexDirection: 'row', gap: 12, marginBottom: 12 },
-  metaItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  metaIcon: { fontSize: 13 },
-  metaText: { fontSize: 12, color: '#555', fontWeight: '500' },
+  tagText: {
+    color: Colors.primary,
+    fontSize: 11,
+  },
 
-  actions: { flexDirection: 'row', gap: 10 },
+  metaRow: {
+    marginVertical: 10,
+    gap: 6,
+  },
+
+  metaText: {
+    color: Colors.textSecondary,
+    fontSize: 12,
+  },
+
+  actions: {
+    flexDirection: 'row',
+    gap: 10,
+  },
+
   outlineBtn: {
     flex: 1,
-    paddingVertical: 10,
+    borderWidth: 1,
+    borderColor: Colors.primary,
     borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: PINK,
+    padding: 10,
     alignItems: 'center',
   },
-  outlineText: { color: PINK, fontWeight: '700', fontSize: 13 },
+
+  outlineText: {
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+
   primaryBtn: {
     flex: 1,
-    paddingVertical: 10,
+    backgroundColor: Colors.primary,
     borderRadius: 10,
-    backgroundColor: PINK,
+    padding: 10,
     alignItems: 'center',
-    shadowColor: PINK,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
-    elevation: 4,
   },
-  primaryText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 
-  // States
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
-  loadingText: { fontSize: 13, color: '#888', marginTop: 8 },
-  emptyEmoji: { fontSize: 40, marginBottom: 4 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: '#333' },
-  emptySubtitle: { fontSize: 13, color: '#888' },
+  primaryText: {
+    color: Colors.white,
+    fontWeight: '700',
+  },
 });
-
-export default MatchListScreen;

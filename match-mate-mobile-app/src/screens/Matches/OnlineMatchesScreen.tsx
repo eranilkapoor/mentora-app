@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
+import { Colors } from '../../constants/colors';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const RED = '#D32F2F';
-const RED_LIGHT = '#FDECEA';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -241,7 +241,10 @@ export default function OnlineMatchesScreen({ navigation }: Props) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5' },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.backgroundPage,
+  },
 
   // Header
   header: {
@@ -250,26 +253,36 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 16,
     paddingVertical: 12,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.border,
   },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: '#1A1A1A' },
-  headerSub: { fontSize: 12, color: '#888', marginTop: 2 },
-  onlineCountText: { color: '#388E3C', fontWeight: '700' },
+  headerTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary },
+  headerSub: { fontSize: 12, color: Colors.textMuted, marginTop: 2 },
+  onlineCountText: { color: Colors.primary, fontWeight: '700' },
   liveIndicator: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: RED_LIGHT,
+    backgroundColor: Colors.primaryLight,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 5,
     borderWidth: 1,
-    borderColor: '#FFCDD2',
+    borderColor: Colors.border,
   },
-  liveDot: { width: 7, height: 7, borderRadius: 4, backgroundColor: RED },
-  liveText: { fontSize: 11, fontWeight: '800', color: RED, letterSpacing: 1 },
+  liveDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: Colors.primary,
+  },
+  liveText: {
+    fontSize: 11,
+    fontWeight: '800',
+    color: Colors.primary,
+    letterSpacing: 1,
+  },
 
   listContent: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 24 },
 
@@ -277,9 +290,9 @@ const styles = StyleSheet.create({
   card: {
     marginBottom: 14,
     borderRadius: 16,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     overflow: 'hidden',
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.07,
     shadowRadius: 8,
@@ -295,7 +308,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     height: 110,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: Colors.overlayDark,
   },
   badgeRow: {
     position: 'absolute',
@@ -308,7 +321,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: Colors.overlayDark,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 20,
@@ -317,17 +330,17 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: '#66BB6A',
+    backgroundColor: Colors.success,
   },
-  onlineBadgeText: { color: '#fff', fontSize: 11, fontWeight: '700' },
+  onlineBadgeText: { color: Colors.white, fontSize: 11, fontWeight: '700' },
   newBadge: {
-    backgroundColor: RED,
+    backgroundColor: Colors.primary,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 20,
   },
   newBadgeText: {
-    color: '#fff',
+    color: Colors.white,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 0.5,
@@ -338,10 +351,10 @@ const styles = StyleSheet.create({
     left: 12,
     right: 12,
   },
-  nameOverlayText: { fontSize: 20, fontWeight: '800', color: '#fff' },
+  nameOverlayText: { fontSize: 20, fontWeight: '800', color: Colors.white },
   cityOverlayText: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.85)',
+    color: Colors.white,
     marginTop: 2,
   },
 
@@ -349,12 +362,12 @@ const styles = StyleSheet.create({
   info: { padding: 12 },
   tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
   tag: {
-    backgroundColor: RED_LIGHT,
+    backgroundColor: Colors.primaryLight,
     borderRadius: 20,
     paddingHorizontal: 10,
     paddingVertical: 4,
   },
-  tagText: { fontSize: 11, color: RED, fontWeight: '600' },
+  tagText: { fontSize: 11, color: Colors.primary, fontWeight: '600' },
 
   // Actions
   actions: { flexDirection: 'row', gap: 10 },
@@ -362,29 +375,29 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
-    backgroundColor: RED,
+    backgroundColor: Colors.primary,
     alignItems: 'center',
-    shadowColor: RED,
+    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
   },
-  chatText: { color: '#fff', fontWeight: '700', fontSize: 13 },
+  chatText: { color: Colors.white, fontWeight: '700', fontSize: 13 },
   profileBtn: {
     flex: 1,
     paddingVertical: 10,
     borderRadius: 10,
     borderWidth: 1.5,
-    borderColor: RED,
+    borderColor: Colors.primary,
     alignItems: 'center',
   },
-  profileText: { color: RED, fontWeight: '700', fontSize: 13 },
+  profileText: { color: Colors.primary, fontWeight: '700', fontSize: 13 },
 
   // States
   center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
-  loadingText: { fontSize: 13, color: '#888', marginTop: 8 },
+  loadingText: { fontSize: 13, color: Colors.textMuted, marginTop: 8 },
   emptyEmoji: { fontSize: 40, marginBottom: 4 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: '#333' },
-  emptySub: { fontSize: 13, color: '#888' },
+  emptyTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
+  emptySub: { fontSize: 13, color: Colors.textMuted },
 });

@@ -14,13 +14,11 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
+import { Colors } from '../../constants/colors';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const { width } = Dimensions.get('window');
-const PINK = '#C2185B';
-const PINK_LIGHT = '#FCE4EC';
-const RED = '#D32F2F';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,7 +50,7 @@ const PHOTOS = [
   'https://randomuser.me/api/portraits/women/67.jpg',
 ];
 
-// ─── Reusable Components ──────────────────────────────────────────────────────
+// ─── Components ───────────────────────────────────────────────────────────────
 
 const Section: React.FC<SectionProps> = ({ title, icon, children }) => (
   <View style={styles.section}>
@@ -88,11 +86,8 @@ export default function MatchDetailsScreen({ navigation }: Props) {
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
-      <ScrollView
-        showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scroll}
-      >
-        {/* ── Photo Carousel ── */}
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Carousel */}
         <View style={styles.carouselWrapper}>
           <FlatList
             ref={flatListRef}
@@ -105,17 +100,14 @@ export default function MatchDetailsScreen({ navigation }: Props) {
             keyExtractor={(_, i) => String(i)}
           />
 
-          {/* Scrim for readability of overlaid content */}
           <View style={styles.carouselScrim} />
 
-          {/* Photo counter pill */}
           <View style={styles.counterPill}>
             <Text style={styles.counterText}>
               {activeIndex + 1} / {PHOTOS.length}
             </Text>
           </View>
 
-          {/* Dot indicators */}
           <View style={styles.dots}>
             {PHOTOS.map((_, i) => (
               <View
@@ -125,7 +117,6 @@ export default function MatchDetailsScreen({ navigation }: Props) {
             ))}
           </View>
 
-          {/* Name & location overlay */}
           <View style={styles.heroOverlay}>
             <View style={styles.onlinePill}>
               <View style={styles.onlineDot} />
@@ -136,7 +127,7 @@ export default function MatchDetailsScreen({ navigation }: Props) {
           </View>
         </View>
 
-        {/* ── Quick chips ── */}
+        {/* Chips */}
         <View style={styles.chipsRow}>
           {['Hindu', 'Brahmin', '5\'4"', 'Never Married'].map((chip) => (
             <View key={chip} style={styles.chip}>
@@ -145,55 +136,27 @@ export default function MatchDetailsScreen({ navigation }: Props) {
           ))}
         </View>
 
-        {/* ── Sections ── */}
+        {/* Sections */}
         <Section title="Basic Details" icon="👤">
           <Row label="Name" value="Priya Sharma" />
           <Row label="Age" value="28 Years" />
           <Row label="Height" value="5.4 ft" />
-          <Row label="Marital Status" value="Never Married" />
-          <Row label="Religion" value="Hindu" />
-          <Row label="Caste" value="Brahmin" />
-          <Row label="Location" value="Mumbai, India" />
         </Section>
 
-        <Section title="Education & Career" icon="🎓">
-          <Row label="Education" value="B.Tech — Computer Science" />
-          <Row label="Profession" value="Software Engineer" />
-          <Row label="Company" value="MNC Company" />
-          <Row label="Income" value="₹12 LPA" />
-        </Section>
-
-        <Section title="Family Details" icon="🏠">
-          <Row label="Father" value="Businessman" />
-          <Row label="Mother" value="Homemaker" />
-          <Row label="Siblings" value="1 Brother" />
-          <Row label="Family Type" value="Nuclear" />
-        </Section>
-
-        <Section title="About Me" icon="💬">
-          <Text style={styles.aboutText}>
-            I am a caring and family-oriented person who believes in mutual
-            respect and understanding. Looking for a partner who values honesty
-            and shared growth.
-          </Text>
-        </Section>
-
-        {/* Bottom spacer for CTA */}
         <View style={{ height: 90 }} />
       </ScrollView>
 
-      {/* ── Sticky CTA ── */}
+      {/* CTA */}
       <View style={styles.cta}>
         <TouchableOpacity
           style={styles.ctaOutline}
-          activeOpacity={0.8}
           onPress={() => navigation.navigate('ChatScreen', { userId: '1' })}
         >
           <Text style={styles.ctaOutlineText}>💬 Chat</Text>
         </TouchableOpacity>
+
         <TouchableOpacity
           style={styles.ctaPrimary}
-          activeOpacity={0.85}
           onPress={() => navigation.navigate('RequestContact', { userId: '1' })}
         >
           <Text style={styles.ctaPrimaryText}>Send Interest →</Text>
@@ -206,171 +169,201 @@ export default function MatchDetailsScreen({ navigation }: Props) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5' },
-  scroll: { paddingBottom: 0 },
+  container: { flex: 1, backgroundColor: Colors.backgroundPage },
 
-  // Carousel
-  carouselWrapper: { position: 'relative' },
   photo: { width, height: 380 },
+
+  carouselWrapper: { position: 'relative' },
+
   carouselScrim: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
+    width: '100%',
     height: 160,
-    backgroundColor: 'rgba(0,0,0,0.45)',
+    backgroundColor: Colors.overlayDark,
   },
+
   counterPill: {
     position: 'absolute',
     top: 14,
     right: 14,
-    backgroundColor: 'rgba(0,0,0,0.5)',
+    backgroundColor: Colors.overlayDark,
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
   },
-  counterText: { color: '#fff', fontSize: 12, fontWeight: '700' },
+
+  counterText: { color: Colors.white, fontSize: 12, fontWeight: '700' },
+  sectionIcon: {
+    fontSize: 16,
+    marginRight: 8,
+  },
+
+  sectionBody: {
+    gap: 4, // spacing between rows (RN 0.71+)
+  },
+
   dots: {
     position: 'absolute',
     bottom: 54,
-    left: 0,
-    right: 0,
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 6,
   },
+
   dot: {
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: 'rgba(255,255,255,0.5)',
+    backgroundColor: Colors.white,
   },
-  dotActive: { backgroundColor: '#fff', width: 18 },
+
+  dotActive: {
+    backgroundColor: Colors.white,
+    width: 18,
+  },
+
   heroOverlay: {
     position: 'absolute',
     bottom: 14,
     left: 14,
     right: 14,
   },
+
   onlinePill: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 5,
-    backgroundColor: 'rgba(0,0,0,0.45)',
-    alignSelf: 'flex-start',
+    backgroundColor: Colors.overlayDark,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 20,
     marginBottom: 6,
   },
+
   onlineDot: {
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: '#66BB6A',
+    backgroundColor: Colors.success,
+    marginRight: 5,
   },
-  onlinePillText: { color: '#fff', fontSize: 11, fontWeight: '700' },
-  heroName: { fontSize: 24, fontWeight: '800', color: '#fff' },
-  heroLocation: { fontSize: 13, color: 'rgba(255,255,255,0.85)', marginTop: 2 },
 
-  // Quick chips
+  onlinePillText: {
+    color: Colors.white,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+
+  heroName: {
+    fontSize: 24,
+    fontWeight: '800',
+    color: Colors.white,
+  },
+
+  heroLocation: {
+    fontSize: 13,
+    color: Colors.white,
+    opacity: 0.85,
+  },
+
   chipsRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     gap: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    backgroundColor: '#fff',
+    padding: 14,
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.divider,
   },
+
   chip: {
-    backgroundColor: PINK_LIGHT,
+    backgroundColor: Colors.primaryLight,
     borderRadius: 20,
     paddingHorizontal: 12,
     paddingVertical: 5,
   },
-  chipText: { fontSize: 12, color: PINK, fontWeight: '600' },
 
-  // Sections
+  chipText: {
+    fontSize: 12,
+    color: Colors.primary,
+    fontWeight: '600',
+  },
+
   section: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     marginTop: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    padding: 16,
     borderTopWidth: 1,
     borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.divider,
   },
+
   sectionHeader: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
     marginBottom: 12,
   },
-  sectionIcon: { fontSize: 16 },
-  sectionTitle: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
-  sectionBody: { gap: 2 },
 
-  // Rows
+  sectionTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderColor: '#F8F8F8',
+    borderColor: Colors.divider,
   },
-  label: { fontSize: 13, color: '#888', flex: 1 },
+
+  label: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+  },
+
   value: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1A1A1A',
-    flex: 1,
-    textAlign: 'right',
+    color: Colors.textPrimary,
   },
 
-  aboutText: { fontSize: 14, color: '#444', lineHeight: 22 },
-
-  // CTA
   cta: {
     position: 'absolute',
     bottom: 0,
-    left: 0,
-    right: 0,
     flexDirection: 'row',
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: 24,
-    backgroundColor: '#fff',
+    padding: 16,
+    backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderColor: '#EEE',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -3 },
-    shadowOpacity: 0.06,
-    shadowRadius: 10,
-    elevation: 10,
+    borderColor: Colors.border,
   },
+
   ctaOutline: {
     flex: 1,
-    paddingVertical: 13,
-    borderRadius: 30,
     borderWidth: 1.5,
-    borderColor: RED,
+    borderColor: Colors.primary,
+    borderRadius: 30,
     alignItems: 'center',
+    padding: 13,
   },
-  ctaOutlineText: { color: RED, fontWeight: '700', fontSize: 14 },
+
+  ctaOutlineText: {
+    color: Colors.primary,
+    fontWeight: '700',
+  },
+
   ctaPrimary: {
     flex: 2,
-    paddingVertical: 13,
+    backgroundColor: Colors.primary,
     borderRadius: 30,
-    backgroundColor: RED,
     alignItems: 'center',
-    shadowColor: RED,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 6,
+    padding: 13,
+    marginLeft: 10,
   },
-  ctaPrimaryText: { color: '#fff', fontWeight: '800', fontSize: 14 },
+
+  ctaPrimaryText: {
+    color: Colors.white,
+    fontWeight: '800',
+  },
 });

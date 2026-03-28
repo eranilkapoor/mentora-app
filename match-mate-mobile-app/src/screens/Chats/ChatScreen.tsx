@@ -15,14 +15,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+import { Colors } from '../../constants/colors';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const RED = '#D32F2F';
-const RED_LIGHT = '#FDECEA';
-const RED_DARK = '#B71C1C';
-const BUBBLE_ME = '#FDECEA';
-const BUBBLE_YOU = '#F1F3F6';
 
 const EMOJIS = ['😀', '😂', '❤️', '👍', '😍', '🙏', '🎉', '😊'];
 
@@ -284,8 +279,13 @@ export default function ChatScreen({ navigation, route }: Props) {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#F5F5F5' },
-  flex: { flex: 1 },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.backgroundPage,
+  },
+  flex: {
+    flex: 1,
+  },
 
   // Header
   header: {
@@ -293,18 +293,21 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingHorizontal: 12,
     paddingVertical: 10,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.backgroundPage,
     borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
+    borderColor: Colors.border,
+    shadowColor: Colors.black,
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
     shadowOpacity: 0.04,
     shadowRadius: 4,
     elevation: 2,
     gap: 10,
   },
   backBtn: { paddingHorizontal: 4 },
-  backArrow: { fontSize: 30, color: '#1A1A1A', lineHeight: 32 },
+  backArrow: { fontSize: 30, color: Colors.textPrimary, lineHeight: 32 },
 
   avatarWrapper: { position: 'relative' },
   headerAvatar: {
@@ -312,7 +315,7 @@ const styles = StyleSheet.create({
     height: 44,
     borderRadius: 22,
     borderWidth: 2,
-    borderColor: '#EEE',
+    borderColor: Colors.border,
   },
   onlineDot: {
     position: 'absolute',
@@ -321,13 +324,13 @@ const styles = StyleSheet.create({
     width: 11,
     height: 11,
     borderRadius: 6,
-    backgroundColor: '#66BB6A',
+    backgroundColor: Colors.primaryLight,
     borderWidth: 2,
-    borderColor: '#fff',
+    borderColor: Colors.white,
   },
 
   headerInfo: { flex: 1 },
-  headerName: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
+  headerName: { fontSize: 15, fontWeight: '800', color: Colors.textPrimary },
   onlineRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -338,18 +341,18 @@ const styles = StyleSheet.create({
     width: 7,
     height: 7,
     borderRadius: 4,
-    backgroundColor: '#66BB6A',
+    backgroundColor: Colors.primaryLight,
   },
-  headerSub: { fontSize: 11, color: '#66BB6A', fontWeight: '600' },
+  headerSub: { fontSize: 11, color: Colors.primaryLight, fontWeight: '600' },
 
   viewProfileBtn: {
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1.5,
-    borderColor: RED,
+    borderColor: Colors.primary,
   },
-  viewProfileText: { color: RED, fontWeight: '700', fontSize: 12 },
+  viewProfileText: { color: Colors.primary, fontWeight: '700', fontSize: 12 },
 
   // Messages
   messagesList: { paddingHorizontal: 12, paddingVertical: 14 },
@@ -362,26 +365,31 @@ const styles = StyleSheet.create({
     maxWidth: '78%',
     borderRadius: 16,
     padding: 10,
-    shadowColor: '#000',
+    shadowColor: Colors.black,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
   myBubble: {
-    backgroundColor: BUBBLE_ME,
+    backgroundColor: Colors.primary,
     borderBottomRightRadius: 4,
   },
   otherBubble: {
-    backgroundColor: BUBBLE_YOU,
+    backgroundColor: Colors.backgroundPage,
     borderBottomLeftRadius: 4,
   },
-  messageText: { fontSize: 14, color: '#222', lineHeight: 20 },
-  myText: { color: RED_DARK },
+  messageText: { fontSize: 14, color: Colors.textPrimary, lineHeight: 20 },
+  myText: { color: Colors.textPrimary },
   image: { width: 200, height: 200, borderRadius: 10 },
-  time: { fontSize: 10, color: '#AAA', alignSelf: 'flex-end', marginTop: 4 },
-  timeMe: { color: '#BBBBBB' },
-  readTick: { fontSize: 10, color: RED, fontWeight: '700' },
+  time: {
+    fontSize: 10,
+    color: Colors.textSecondary,
+    alignSelf: 'flex-end',
+    marginTop: 4,
+  },
+  timeMe: { color: Colors.textSecondary },
+  readTick: { fontSize: 10, color: Colors.primary, fontWeight: '700' },
 
   // Emoji picker
   emojiBox: {
@@ -389,9 +397,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     paddingHorizontal: 8,
     paddingVertical: 6,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.border,
   },
   emojiBtn: { padding: 6 },
   emoji: { fontSize: 26 },
@@ -403,9 +411,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 8,
     paddingBottom: 10,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.border,
     gap: 6,
   },
   iconBtn: { paddingBottom: 9 },
@@ -413,13 +421,13 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     borderWidth: 1,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.border,
     borderRadius: 22,
     paddingHorizontal: 14,
     paddingVertical: 9,
-    backgroundColor: '#FAFAFA',
+    backgroundColor: Colors.backgroundPage,
     fontSize: 14,
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     maxHeight: 100,
     lineHeight: 20,
   },
@@ -427,19 +435,19 @@ const styles = StyleSheet.create({
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: '#E0E0E0',
+    backgroundColor: Colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 1,
   },
   sendBtnActive: {
-    backgroundColor: RED,
-    shadowColor: RED,
+    backgroundColor: Colors.primary,
+    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 4,
   },
-  sendText: { fontSize: 16, color: '#AAA' },
-  sendTextActive: { color: '#fff' },
+  sendText: { fontSize: 16, color: Colors.white },
+  sendTextActive: { color: Colors.white },
 });

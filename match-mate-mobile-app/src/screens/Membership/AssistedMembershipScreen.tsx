@@ -7,13 +7,12 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { Colors } from '../../constants/colors';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const RED = '#D32F2F';
-const RED_LIGHT = '#FDECEA';
-const GOLD = '#F9A825';
-const GOLD_LIGHT = '#FFFDE7';
+const GOLD = Colors.accent;
+const GOLD_LIGHT = Colors.accentLight;
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -222,8 +221,14 @@ export default function AssistedMembershipScreen() {
 // ─── Styles ───────────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#FAFAFA' },
-  scroll: { paddingHorizontal: 16, paddingBottom: 110 },
+  container: {
+    flex: 1,
+    backgroundColor: Colors.backgroundPage,
+  },
+  scroll: {
+    paddingHorizontal: 16,
+    paddingBottom: 110,
+  },
 
   // Header
   header: {
@@ -232,35 +237,55 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderBottomWidth: 1,
-    borderColor: '#F0F0F0',
+    borderColor: Colors.divider,
   },
-  headerLeft: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   avatar: {
     width: 38,
     height: 38,
     borderRadius: 19,
-    backgroundColor: RED,
+    backgroundColor: Colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { color: '#fff', fontWeight: '800', fontSize: 13 },
-  headerTitle: { fontSize: 15, fontWeight: '800', color: '#1A1A1A' },
-  headerSub: { fontSize: 11, color: '#888', marginTop: 1 },
+  avatarText: {
+    color: Colors.white,
+    fontWeight: '800',
+    fontSize: 13,
+  },
+  headerTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  headerSub: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+    marginTop: 1,
+  },
   helpBtn: {
     paddingHorizontal: 10,
     paddingVertical: 6,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: RED,
+    borderColor: Colors.primary,
   },
-  helpText: { color: RED, fontWeight: '600', fontSize: 12 },
+  helpText: {
+    color: Colors.primary,
+    fontWeight: '600',
+    fontSize: 12,
+  },
 
   // Tabs
   tabs: {
     flexDirection: 'row',
-    backgroundColor: '#EFEFEF',
+    backgroundColor: Colors.backgroundLight,
     borderRadius: 10,
     padding: 4,
     marginTop: 16,
@@ -273,17 +298,20 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   activeTab: {
-    backgroundColor: '#fff',
-    borderWidth: 1.5,
-    borderColor: RED,
-    shadowColor: RED,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.primary,
     elevation: 2,
   },
-  tabText: { fontSize: 13, color: '#888', fontWeight: '500' },
-  activeTabText: { color: RED, fontWeight: '700' },
+  tabText: {
+    fontSize: 13,
+    color: Colors.textSecondary,
+    fontWeight: '500',
+  },
+  activeTabText: {
+    color: Colors.primary,
+    fontWeight: '700',
+  },
 
   // Section label
   sectionLabelRow: {
@@ -306,23 +334,26 @@ const styles = StyleSheet.create({
     color: GOLD,
     letterSpacing: 1,
   },
-  dividerLine: { flex: 1, height: 1, backgroundColor: '#EEE' },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: Colors.divider,
+  },
 
   // Card
   card: {
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: Colors.divider,
     overflow: 'hidden',
     marginBottom: 20,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 8,
     elevation: 2,
   },
-  cardTopAccent: { height: 4, backgroundColor: GOLD },
+  cardTopAccent: {
+    height: 4,
+    backgroundColor: GOLD,
+  },
   benefitRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -335,16 +366,19 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 13,
     fontWeight: '700',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     lineHeight: 20,
   },
   divider: {
     height: 1,
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.divider,
     marginHorizontal: 14,
     marginTop: 12,
   },
-  pointsContainer: { paddingHorizontal: 14, paddingTop: 10 },
+  pointsContainer: {
+    paddingHorizontal: 14,
+    paddingTop: 10,
+  },
   pointRow: {
     flexDirection: 'row',
     alignItems: 'flex-start',
@@ -355,10 +389,16 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: RED,
+    backgroundColor: Colors.primary,
     marginTop: 6,
   },
-  pointText: { flex: 1, fontSize: 13, color: '#444', lineHeight: 20 },
+  pointText: {
+    flex: 1,
+    fontSize: 13,
+    color: Colors.textBody,
+    lineHeight: 20,
+  },
+
   cardActions: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -368,32 +408,40 @@ const styles = StyleSheet.create({
   },
   callbackBtn: {
     borderWidth: 1.5,
-    borderColor: RED,
+    borderColor: Colors.primary,
     paddingVertical: 8,
     paddingHorizontal: 14,
     borderRadius: 20,
   },
-  callbackText: { color: RED, fontWeight: '700', fontSize: 12 },
-  knowMoreText: { color: RED, fontWeight: '600', fontSize: 13 },
+  callbackText: {
+    color: Colors.primary,
+    fontWeight: '700',
+    fontSize: 12,
+  },
+  knowMoreText: {
+    color: Colors.primary,
+    fontWeight: '600',
+    fontSize: 13,
+  },
 
   // Offer banner
   offerBanner: {
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: RED_LIGHT,
+    backgroundColor: Colors.primaryLight,
     borderRadius: 10,
     paddingVertical: 10,
     marginBottom: 16,
     gap: 8,
     borderWidth: 1,
-    borderColor: '#FFCDD2',
+    borderColor: Colors.primaryBorder,
   },
   offerEmoji: { fontSize: 16 },
   offerText: {
     fontSize: 13,
     fontWeight: '800',
-    color: RED,
+    color: Colors.primary,
     letterSpacing: 0.5,
   },
 
@@ -407,20 +455,16 @@ const styles = StyleSheet.create({
   planCard: {
     flex: 1,
     borderWidth: 1.5,
-    borderColor: '#E0E0E0',
+    borderColor: Colors.border,
     borderRadius: 14,
     padding: 10,
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     position: 'relative',
   },
   planCardActive: {
-    borderColor: RED,
-    backgroundColor: RED_LIGHT,
-    shadowColor: RED,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
+    borderColor: Colors.primary,
+    backgroundColor: Colors.primaryLight,
     elevation: 4,
   },
   popularBadge: {
@@ -431,54 +475,85 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
     borderRadius: 20,
   },
-  popularBadgeText: { color: '#fff', fontSize: 10, fontWeight: '800' },
+  popularBadgeText: {
+    color: Colors.white,
+    fontSize: 10,
+    fontWeight: '800',
+  },
+
   radioOuter: {
     width: 16,
     height: 16,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: '#CCC',
+    borderColor: Colors.border,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
     marginTop: 4,
   },
-  radioOuterActive: { borderColor: RED },
-  radioInner: { width: 8, height: 8, borderRadius: 4, backgroundColor: RED },
-  planMonths: { fontSize: 12, fontWeight: '700', color: '#555' },
-  planMonthsActive: { color: RED },
+  radioOuterActive: {
+    borderColor: Colors.primary,
+  },
+  radioInner: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: Colors.primary,
+  },
+
+  planMonths: {
+    fontSize: 12,
+    fontWeight: '700',
+    color: Colors.textBody,
+  },
+  planMonthsActive: {
+    color: Colors.primary,
+  },
   planPrice: {
     fontSize: 15,
     fontWeight: '800',
-    color: '#1A1A1A',
+    color: Colors.textPrimary,
     marginTop: 4,
   },
-  planPriceActive: { color: RED },
+  planPriceActive: {
+    color: Colors.primary,
+  },
   oldPrice: {
     fontSize: 11,
     textDecorationLine: 'line-through',
-    color: '#AAA',
+    color: Colors.textMuted,
     marginBottom: 6,
   },
   perMonthBadge: {
-    backgroundColor: '#F5F5F5',
+    backgroundColor: Colors.backgroundLight,
     borderRadius: 10,
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  perMonthText: { fontSize: 9, color: '#666', fontWeight: '600' },
+  perMonthText: {
+    fontSize: 9,
+    color: Colors.textSecondary,
+    fontWeight: '600',
+  },
 
   // Savings
   savingsRow: {
-    backgroundColor: '#E8F5E9',
+    backgroundColor: Colors.successLight,
     borderRadius: 10,
     padding: 10,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#C8E6C9',
+    borderColor: Colors.success,
   },
-  savingsText: { fontSize: 12, color: '#2E7D32', lineHeight: 18 },
-  savingsHighlight: { fontWeight: '800' },
+  savingsText: {
+    fontSize: 12,
+    color: Colors.success,
+    lineHeight: 18,
+  },
+  savingsHighlight: {
+    fontWeight: '800',
+  },
 
   // Trust strip
   trustStrip: {
@@ -489,14 +564,18 @@ const styles = StyleSheet.create({
   },
   trustItem: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderRadius: 20,
     paddingVertical: 6,
     alignItems: 'center',
     borderWidth: 1,
-    borderColor: '#EEE',
+    borderColor: Colors.divider,
   },
-  trustText: { fontSize: 11, color: '#555', fontWeight: '500' },
+  trustText: {
+    fontSize: 11,
+    color: Colors.textBody,
+    fontWeight: '500',
+  },
 
   // CTA
   ctaContainer: {
@@ -507,36 +586,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     paddingBottom: 24,
-    backgroundColor: '#fff',
+    backgroundColor: Colors.white,
     borderTopWidth: 1,
-    borderColor: '#EEE',
+    borderColor: Colors.divider,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.06,
-    shadowRadius: 12,
     elevation: 10,
   },
   ctaLeft: { flex: 1 },
-  ctaLabel: { fontSize: 11, color: '#888' },
-  ctaPrice: { fontSize: 18, fontWeight: '800', color: '#1A1A1A' },
-  ctaDuration: { fontSize: 11, color: '#888' },
+  ctaLabel: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
+  ctaPrice: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: Colors.textPrimary,
+  },
+  ctaDuration: {
+    fontSize: 11,
+    color: Colors.textSecondary,
+  },
   ctaButton: {
     flex: 2,
-    backgroundColor: RED,
+    backgroundColor: Colors.primary,
     paddingVertical: 14,
     borderRadius: 30,
     alignItems: 'center',
-    shadowColor: RED,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.35,
-    shadowRadius: 10,
     elevation: 6,
   },
   ctaButtonText: {
-    color: '#fff',
+    color: Colors.white,
     fontSize: 14,
     fontWeight: '800',
     letterSpacing: 0.3,
