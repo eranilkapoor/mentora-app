@@ -21,6 +21,7 @@ import { country_codes } from '../../constants';
 import { fakeApi } from '../../services/fakeApi';
 import { Colors } from '../../constants/colors';
 import { type RootStackParamList } from '../../navigation/types';
+import { loginUser } from '../../store/authActions';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -162,11 +163,16 @@ export default function LoginScreen({
       }
 
       if (data.data) {
-        dispatch(setCredentials(data.data));
+        dispatch(loginUser(data.data.token, data.data.user));
+        //dispatch(setCredentials(data.data));
         navigateAfterAuth(data.data.user?.isProfileCompleted ?? false);
       }
-    } catch {
-      setErrors({ error: 'Failed to sign in. Please try again.' });
+    } catch (error) {
+      setErrors({
+        error:
+          'Failed to sign in. Please try again.' +
+          (error instanceof Error ? ` (${error.message})` : ''),
+      });
     } finally {
       setLoading(false);
     }
@@ -226,7 +232,8 @@ export default function LoginScreen({
       }
 
       if (data.data) {
-        dispatch(setCredentials(data.data));
+        dispatch(loginUser(data.data.token, data.data.user));
+        //dispatch(setCredentials(data.data));
         navigateAfterAuth(data.data.user?.isProfileCompleted ?? false);
       }
     } catch {

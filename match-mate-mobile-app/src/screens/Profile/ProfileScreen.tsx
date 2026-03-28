@@ -26,6 +26,7 @@ import {
   getAgeFromDOB,
   getFullName,
 } from '../../utils/format';
+import HomeHeader from '../../components/HomeHeader';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -191,9 +192,7 @@ function ProfileSkeleton(): React.ReactElement {
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
-export default function ProfileScreen({
-  navigation,
-}: ProfileScreenProps): React.ReactElement {
+export default function ProfileScreen({}: ProfileScreenProps): React.ReactElement {
   const [profileData, setProfileData] = useState<ProfileData>({
     personal: {
       firstName: '',
@@ -300,6 +299,7 @@ export default function ProfileScreen({
   if (loading) {
     return (
       <SafeAreaProvider style={styles.safe}>
+        <HomeHeader />
         <View style={styles.header}>
           <View style={styles.headerSpacer} />
           <Text style={styles.headerTitle}>My Profile</Text>
@@ -315,19 +315,7 @@ export default function ProfileScreen({
   return (
     <SafeAreaProvider style={styles.safe}>
       {/* Header */}
-      <View style={styles.header}>
-        <View style={styles.headerSpacer} />
-        <Text style={styles.headerTitle}>My Profile</Text>
-        <TouchableOpacity
-          onPress={() => navigation.navigate('EditProfile')}
-          style={styles.editButton}
-          accessibilityRole="button"
-          accessibilityLabel="Edit profile"
-        >
-          <Feather name="edit-2" size={18} color={Colors.primary} />
-        </TouchableOpacity>
-      </View>
-
+      <HomeHeader />
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
@@ -381,7 +369,7 @@ export default function ProfileScreen({
             </View>
           </View>
           <Text style={styles.subText}>
-            {getAgeFromDOB(profileData?.personal.dob)} yrs •{' '}
+            {getAgeFromDOB(profileData?.personal.dob)} •{' '}
             {cmToFeetInches(profileData?.physical.height ?? 150)} •{' '}
             {formatMaritalStatus(profileData?.personal.maritalStatus)}
           </Text>
@@ -618,11 +606,6 @@ const styles = StyleSheet.create({
   },
   headerSpacer: {
     width: 30,
-  },
-  editButton: {
-    padding: 4,
-    width: 30,
-    alignItems: 'flex-end',
   },
   photo: {
     width: SCREEN_WIDTH,

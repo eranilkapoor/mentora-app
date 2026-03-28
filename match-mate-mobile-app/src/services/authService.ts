@@ -32,4 +32,5 @@ export const AuthService = {
     family: FamilyData;
     preferences: PreferencesData;
   }) => httpClient.post('/auth/onboarding-profile', data),
+  verifyUser: () => httpClient.get('/auth/verify-user'),
 };

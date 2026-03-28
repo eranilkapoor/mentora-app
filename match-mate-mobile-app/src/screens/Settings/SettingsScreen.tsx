@@ -13,12 +13,12 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useAppDispatch } from '../../store';
-import { logout } from '../../store/authSlice';
 import { Colors } from '../../constants/colors';
 import {
   ParamlessScreen,
   type RootNavigationProp,
 } from '../../navigation/types';
+import { logoutUser } from '../../store/authActions';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -93,9 +93,8 @@ export default function SettingsScreen({
   );
 
   const handleSignOut = useCallback(() => {
-    const confirmSignOut = (): void => {
-      dispatch(logout());
-      navigation.reset({ index: 0, routes: [{ name: 'Login' }] });
+    const confirmSignOut = async (): Promise<void> => {
+      logoutUser();
     };
 
     if (Platform.OS === 'web') {
@@ -113,7 +112,7 @@ export default function SettingsScreen({
         onPress: confirmSignOut,
       },
     ]);
-  }, [dispatch, navigation]);
+  }, [dispatch]);
 
   return (
     <SafeAreaProvider style={styles.safe}>

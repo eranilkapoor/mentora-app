@@ -298,6 +298,27 @@ export class AuthService {
     }
   }
 
+  async verifyUser(userId: string) {
+    try {
+      const user = await this.userRepo.findById(userId);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      return {
+        userId: user._id,
+        email: user.primaryEmail,
+        phone: user.primaryPhone,
+        isProfileCompleted: user.isProfileCompleted,
+      };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('User verification failed');
+    }
+  }
+
   logout() {
     // Invalidate user session or token (depends on your implementation)
     // If using token blacklisting, add token to blacklist

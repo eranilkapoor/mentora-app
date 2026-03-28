@@ -1,4 +1,4 @@
-import { Controller, Post, Body, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
 import { ApiResponse } from 'src/common/response.dto';
 import {
   RegisterDto,
@@ -118,6 +118,18 @@ export class AuthController {
         error instanceof Error
           ? error.message
           : 'Failed to save onboarding profile';
+      return new ApiResponse(false, message);
+    }
+  }
+
+  @Get('verify-user')
+  async verifyUser(@CurrentUser('userId') userId: string) {
+    try {
+      const data = await this.authService.verifyUser(userId);
+      return new ApiResponse(true, 'User verified successfully', data);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to verify user';
       return new ApiResponse(false, message);
     }
   }
