@@ -1,7 +1,7 @@
 import React from 'react';
 import { View, FlatList, StyleSheet, Text } from 'react-native';
 import NotificationItem from './NotificationItem';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 
 const mockNotifications = [
   {

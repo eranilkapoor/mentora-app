@@ -3,7 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
-import Loader from '../components/Loader';
+import Loader from '../shared/components/Loader';
 
 import { useAppDispatch, useAppSelector } from '../store';
 import { restoreSession } from '../store/authActions';

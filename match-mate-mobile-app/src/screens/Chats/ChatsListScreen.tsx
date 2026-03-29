@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

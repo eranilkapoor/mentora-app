@@ -1,7 +1,7 @@
 import React from 'react';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { View, Text, StyleSheet, ScrollView, StatusBar } from 'react-native';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────

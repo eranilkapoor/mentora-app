@@ -15,8 +15,8 @@ import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppDispatch } from '../../store';
 import { setProfileCompleted } from '../../store/authSlice';
-import { AuthService } from '../../services/authService';
-import { Colors } from '../../constants/colors';
+import { AuthService } from '../../core/services/authService';
+import { Colors } from '../../core/constants/colors';
 import {
   profile_for_options,
   religions,
@@ -25,14 +25,14 @@ import {
   complexions,
   family_types,
   family_statuses,
-} from '../../constants';
+} from '../../core/constants';
 import {
   type PersonalData,
   type EducationData,
   type PhysicalData,
   type FamilyData,
   type PreferencesData,
-} from '../../types/onboarding.types';
+} from '../../core/types/onboarding.types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

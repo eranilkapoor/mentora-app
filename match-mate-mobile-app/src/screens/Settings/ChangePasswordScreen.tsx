@@ -12,9 +12,9 @@ import {
   Alert,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
-import { AuthService } from '../../services/authService';
+import { AuthService } from '../../core/services/authService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

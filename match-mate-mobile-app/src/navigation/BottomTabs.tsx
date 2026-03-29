@@ -23,7 +23,7 @@ export default function BottomTabs() {
           ),
         }}
       />
-
+      
       <Tab.Screen
         name="Matches"
         component={MatchListScreen}
@@ -64,7 +64,15 @@ export default function BottomTabs() {
         }}
       />
 
-      <Tab.Screen name="Upgrade" component={AssistedMembershipScreen} />
+      <Tab.Screen
+        name="AssistedMembership"
+        component={AssistedMembershipScreen}
+        options={{
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="card-outline" size={size} color={color} />
+          ),
+        }}
+      />
     </Tab.Navigator>
   );
 }

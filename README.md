@@ -5857,3 +5857,62 @@ SENTRY_DSN=
 - [ ] Monitor rate limit usage
 
 This gives you enterprise-grade security for your matrimonial app! 🔐</parameter>
+
+
+
+src/
+│
+├── app/                      # App-level config
+│   ├── store.ts
+│   ├── rootReducer.ts
+│   ├── navigation.tsx
+│
+├── assets/
+│   ├── images/
+│   ├── fonts/
+│
+├── core/                     # Shared logic (GLOBAL)
+│   ├── api/                  # API client (axios, interceptors)
+│   ├── services/             # global services (socket, analytics)
+│   ├── hooks/                # reusable hooks
+│   ├── utils/
+│   ├── constants/
+│   ├── types/
+│
+├── features/                 # 🔥 MAIN CHANGE
+│   ├── auth/
+│   │   ├── api/
+│   │   │   ├── authAPI.ts
+│   │   │
+│   │   ├── components/
+│   │   │   ├── LoginForm.tsx
+│   │   │
+│   │   ├── screens/
+│   │   │   ├── LoginScreen.tsx
+│   │   │
+│   │   ├── store/
+│   │   │   ├── authSlice.ts
+│   │   │
+│   │   ├── hooks/
+│   │   │   ├── useAuth.ts
+│   │   │
+│   │   ├── types.ts
+│   │
+│   ├── user/
+│   ├── chat/
+│   ├── payments/
+│
+├── shared/                   # Reusable UI components
+│   ├── components/
+│   │   ├── Button/
+│   │   ├── Input/
+│   │   ├── Loader/
+│   │
+│   ├── styles/
+│   ├── theme/
+│
+├── navigation/
+│   ├── RootNavigator.tsx
+│   ├── TabNavigator.tsx
+│
+├── App.tsx

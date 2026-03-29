@@ -1,5 +1,5 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { Profile } from '../types/profile.types';
+import { Profile } from '../core/types/profile.types';
 
 export type RootStackParamList = {
   Login: undefined;

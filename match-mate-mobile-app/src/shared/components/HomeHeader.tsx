@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { Colors } from '../constants/colors';
+import { Colors } from '../../core/constants/colors';
 
 // 🔹 Define your navigation type
 type RootStackParamList = {

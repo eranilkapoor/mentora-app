@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 

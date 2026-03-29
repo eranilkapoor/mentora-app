@@ -13,7 +13,7 @@ import {
   Linking,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 
 // ─── Android LayoutAnimation setup ───────────────────────────────────────────

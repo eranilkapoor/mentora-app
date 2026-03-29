@@ -11,7 +11,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -192,7 +192,6 @@ export default MatchListScreen;
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.backgroundPage },
-
   header: {
     padding: 16,
     flexDirection: 'row',
@@ -201,18 +200,15 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: Colors.border,
   },
-
   headerTitle: {
     fontSize: 18,
     fontWeight: '800',
     color: Colors.textPrimary,
   },
-
   filterText: {
     color: Colors.primary,
     fontWeight: '600',
   },
-
   searchBox: {
     margin: 12,
     backgroundColor: Colors.white,
@@ -221,23 +217,18 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     paddingHorizontal: 10,
   },
-
   searchInput: {
     height: 40,
     color: Colors.textPrimary,
   },
-
   card: {
     backgroundColor: Colors.white,
     margin: 12,
     borderRadius: 16,
     overflow: 'hidden',
   },
-
   photo: { width: '100%', height: 240 },
-
   photoWrapper: { position: 'relative' },
-
   photoOverlay: {
     position: 'absolute',
     bottom: 0,
@@ -245,7 +236,6 @@ const styles = StyleSheet.create({
     width: '100%',
     backgroundColor: Colors.overlayDark,
   },
-
   badgeRow: {
     position: 'absolute',
     top: 10,
@@ -253,20 +243,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     gap: 6,
   },
-
   newBadge: {
     backgroundColor: Colors.primary,
     borderRadius: 20,
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-
   newBadgeText: {
     color: Colors.white,
     fontSize: 10,
     fontWeight: '800',
   },
-
   onlineBadge: {
     flexDirection: 'row',
     backgroundColor: Colors.overlayDark,
@@ -274,7 +261,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 3,
   },
-
   onlineDot: {
     width: 6,
     height: 6,
@@ -282,61 +268,49 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.success,
     marginRight: 4,
   },
-
   onlineBadgeText: {
     color: Colors.white,
     fontSize: 10,
   },
-
   nameOverlay: {
     position: 'absolute',
     bottom: 10,
     left: 10,
   },
-
   nameOverlayText: {
     color: Colors.white,
     fontSize: 18,
     fontWeight: '800',
   },
-
   locationOverlayText: {
     color: Colors.white,
     fontSize: 12,
     opacity: 0.8,
   },
-
   info: { padding: 12 },
-
   tagsRow: { flexDirection: 'row', gap: 6 },
-
   tag: {
     backgroundColor: Colors.primaryLight,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 20,
   },
-
   tagText: {
     color: Colors.primary,
     fontSize: 11,
   },
-
   metaRow: {
     marginVertical: 10,
     gap: 6,
   },
-
   metaText: {
     color: Colors.textSecondary,
     fontSize: 12,
   },
-
   actions: {
     flexDirection: 'row',
     gap: 10,
   },
-
   outlineBtn: {
     flex: 1,
     borderWidth: 1,
@@ -345,12 +319,10 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
   },
-
   outlineText: {
     color: Colors.primary,
     fontWeight: '600',
   },
-
   primaryBtn: {
     flex: 1,
     backgroundColor: Colors.primary,
@@ -358,7 +330,6 @@ const styles = StyleSheet.create({
     padding: 10,
     alignItems: 'center',
   },
-
   primaryText: {
     color: Colors.white,
     fontWeight: '700',

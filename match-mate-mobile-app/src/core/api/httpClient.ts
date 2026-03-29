@@ -2,7 +2,6 @@ import axios from 'axios';
 import Constants from 'expo-constants';
 import { Platform } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { store } from '../store';
 
 type ExpoExtra = {
   apiUrl?: string;
@@ -22,7 +21,12 @@ const generateUUID = (): string => {
   });
 };
 
+/* ================= Device ID ================= */
+let cachedDeviceId: string | null = null;
+
 export const getDeviceId = async (): Promise<string> => {
+  if (cachedDeviceId) return cachedDeviceId;
+
   try {
     if (Platform.OS === 'web') {
       let deviceId: string | null = localStorage.getItem('deviceId');
@@ -43,13 +47,15 @@ export const getDeviceId = async (): Promise<string> => {
       await AsyncStorage.setItem('deviceId', deviceId);
     }
 
+    cachedDeviceId = deviceId;
+
     return deviceId;
-  } catch (error) {
-    console.error('DeviceId error:', error);
-    return generateUUID(); // fallback
+  } catch {
+    return generateUUID();
   }
 };
 
+/* ================= Axios Instance ================= */
 const httpClient = axios.create({
   baseURL: API_BASE,
   headers: {
@@ -57,19 +63,29 @@ const httpClient = axios.create({
   },
 });
 
-httpClient.interceptors.request.use((config) => {
-  const { token } = store.getState().auth;
+/* ================= Token Setter (IMPORTANT) ================= */
+let authToken: string | null = null;
 
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+export const setAuthToken = (token: string | null) => {
+  authToken = token;
+};
+
+/* ================= Interceptor ================= */
+httpClient.interceptors.request.use(async (config) => {
+  // Attach auth token if available
+  if (authToken) {
+    config.headers.Authorization = `Bearer ${authToken}`;
   }
+
+  // Device ID (await properly)
+  const deviceId = await getDeviceId();
 
   config.headers['X-Client-Version'] =
     extra?.clientVersion ??
     (process.env.EXPO_PUBLIC_REACT_APP_CLIENT_VERSION as string) ??
     '1.0';
-  config.headers['X-Platform'] = 'web';
-  config.headers['X-Device-Id'] = getDeviceId();
+  config.headers['X-Platform'] = Platform.OS;
+  config.headers['X-Device-Id'] = deviceId;
   config.headers['X-Correlation-Id'] = generateUUID();
   config.headers['X-Request-Id'] = generateUUID();
 

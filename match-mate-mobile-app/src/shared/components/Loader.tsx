@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, ActivityIndicator, StyleSheet } from 'react-native';
-import { Colors } from '../constants/colors';
+import { Colors } from '../../core/constants/colors';
 
 type LoaderProps = {
   fullScreen?: boolean;

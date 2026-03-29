@@ -1,4 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { setAuthToken } from '../core/api/httpClient';
 
 // ─── TYPES ─────────────────────────────────────────────────
 
@@ -47,17 +48,20 @@ const authSlice = createSlice({
     setAuth: (state, action: PayloadAction<SetAuthPayload>) => {
       state.token = action.payload.token;
       state.loading = false;
+      setAuthToken(action.payload.token); // ✅ sync with API layer
     },
     // 🔹 Full login (token + user)
     setCredentials: (state, action: PayloadAction<SetCredentialsPayload>) => {
       state.token = action.payload.token;
       state.user = action.payload.user;
       state.loading = false;
+      setAuthToken(action.payload.token); // ✅ sync with API layer
     },
     // 🔹 After fetching profile
     setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
       state.loading = false;
+      setAuthToken(state.token); // ✅ sync with API layer
     },
     // 🔹 Profile completion update
     setProfileCompleted: (state, action: PayloadAction<boolean>) => {

@@ -7,12 +7,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/colors';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const GOLD = Colors.accent;
-const GOLD_LIGHT = Colors.accentLight;
+import { Colors } from '../../core/constants/colors';
+import HomeHeader from '../../shared/components/HomeHeader';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -88,25 +84,15 @@ export default function AssistedMembershipScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* ── Header ── */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.avatar}>
-            <Text style={styles.avatarText}>JS</Text>
-          </View>
-          <View>
-            <Text style={styles.headerTitle}>Upgrade Membership</Text>
-            <Text style={styles.headerSub}>Assisted Plan</Text>
-          </View>
-        </View>
-        <TouchableOpacity style={styles.helpBtn}>
-          <Text style={styles.helpText}>Need help?</Text>
-        </TouchableOpacity>
-      </View>
-
+      <HomeHeader />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
+        {/* ── Page title ── */}
+        <Text style={styles.pageTitle}>Choose Your Plan</Text>
+        <Text style={styles.pageSubtitle}>Find your perfect match, faster</Text>
+
         {/* ── Tabs ── */}
         <View style={styles.tabs}>
           {(['self', 'assisted'] as const).map((t) => (
@@ -191,11 +177,11 @@ export default function AssistedMembershipScreen() {
           </Text>
         </View>
 
-        {/* ── Trust strip ── */}
-        <View style={styles.trustStrip}>
-          {['🔒 Secure', '✅ Verified', '🏆 10M+ Members'].map((t) => (
-            <View key={t} style={styles.trustItem}>
-              <Text style={styles.trustText}>{t}</Text>
+        {/* ── Trust badges ── */}
+        <View style={styles.trustRow}>
+          {['🔒 Secure Payment', '✅ Verified Profiles', '🏆 10M+ Members'].map((badge) => (
+            <View key={badge} style={styles.trustBadge}>
+              <Text style={styles.trustText}>{badge}</Text>
             </View>
           ))}
         </View>
@@ -203,8 +189,8 @@ export default function AssistedMembershipScreen() {
 
       {/* ── Sticky CTA ── */}
       <View style={styles.ctaContainer}>
-        <View style={styles.ctaLeft}>
-          <Text style={styles.ctaLabel}>Selected</Text>
+        <View style={styles.ctaInfo}>
+          <Text style={styles.ctaPlan}>Selected</Text>
           <Text style={styles.ctaPrice}>
             {DURATION_PLANS.find((p) => p.months === duration)?.price}
           </Text>
@@ -230,56 +216,18 @@ const styles = StyleSheet.create({
     paddingBottom: 110,
   },
 
-  // Header
-  header: {
-    flexDirection: 'row',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderColor: Colors.divider,
-  },
-  headerLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-  },
-  avatar: {
-    width: 38,
-    height: 38,
-    borderRadius: 19,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  avatarText: {
-    color: Colors.white,
-    fontWeight: '800',
-    fontSize: 13,
-  },
-  headerTitle: {
-    fontSize: 15,
+  // Page title
+  pageTitle: {
+    fontSize: 22,
     fontWeight: '800',
     color: Colors.textPrimary,
+    marginTop: 20,
   },
-  headerSub: {
-    fontSize: 11,
+  pageSubtitle: {
+    fontSize: 13,
     color: Colors.textSecondary,
-    marginTop: 1,
-  },
-  helpBtn: {
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-  },
-  helpText: {
-    color: Colors.primary,
-    fontWeight: '600',
-    fontSize: 12,
+    marginTop: 2,
+    marginBottom: 20,
   },
 
   // Tabs
@@ -320,10 +268,10 @@ const styles = StyleSheet.create({
     marginBottom: 14,
   },
   exclusivePill: {
-    backgroundColor: GOLD_LIGHT,
+    backgroundColor: Colors.accentLight,
     borderRadius: 20,
     borderWidth: 1,
-    borderColor: GOLD,
+    borderColor: Colors.accent,
     paddingHorizontal: 12,
     paddingVertical: 4,
     marginRight: 10,
@@ -331,7 +279,7 @@ const styles = StyleSheet.create({
   exclusivePillText: {
     fontSize: 11,
     fontWeight: '800',
-    color: GOLD,
+    color: Colors.accent,
     letterSpacing: 1,
   },
   dividerLine: {
@@ -352,7 +300,7 @@ const styles = StyleSheet.create({
   },
   cardTopAccent: {
     height: 4,
-    backgroundColor: GOLD,
+    backgroundColor: Colors.accent,
   },
   benefitRow: {
     flexDirection: 'row',
@@ -449,8 +397,8 @@ const styles = StyleSheet.create({
   planRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 24,
     gap: 8,
-    marginBottom: 14,
   },
   planCard: {
     flex: 1,
@@ -470,7 +418,7 @@ const styles = StyleSheet.create({
   popularBadge: {
     position: 'absolute',
     top: -10,
-    backgroundColor: GOLD,
+    backgroundColor: Colors.accent,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 20,
@@ -478,9 +426,10 @@ const styles = StyleSheet.create({
   popularBadgeText: {
     color: Colors.white,
     fontSize: 10,
-    fontWeight: '800',
+    fontWeight: '700',
   },
 
+  // Radio
   radioOuter: {
     width: 16,
     height: 16,
@@ -555,14 +504,14 @@ const styles = StyleSheet.create({
     fontWeight: '800',
   },
 
-  // Trust strip
-  trustStrip: {
+  // Trust badges
+  trustRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 8,
     gap: 8,
   },
-  trustItem: {
+  trustBadge: {
     flex: 1,
     backgroundColor: Colors.white,
     borderRadius: 20,
@@ -594,9 +543,11 @@ const styles = StyleSheet.create({
     gap: 12,
     elevation: 10,
   },
-  ctaLeft: { flex: 1 },
-  ctaLabel: {
-    fontSize: 11,
+  ctaInfo: {
+    flex: 1,
+  },
+  ctaPlan: {
+    fontSize: 12,
     color: Colors.textSecondary,
   },
   ctaPrice: {

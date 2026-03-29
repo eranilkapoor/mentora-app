@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useAppDispatch } from '../../store';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 import {
   ParamlessScreen,
   type RootNavigationProp,

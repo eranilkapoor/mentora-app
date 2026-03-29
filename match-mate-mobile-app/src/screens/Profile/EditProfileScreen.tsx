@@ -16,9 +16,9 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
-import { ProfileService } from '../../services/profileService';
+import { ProfileService } from '../../core/services/profileService';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

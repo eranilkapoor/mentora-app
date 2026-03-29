@@ -7,7 +7,8 @@ import {
   ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
+import HomeHeader from '../../shared/components/HomeHeader';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -30,13 +31,7 @@ interface FeatureRowProps {
 const PLANS: Plan[] = [
   { name: 'Pro Lite', price: '₹1,999', contacts: 0, superInterest: 0 },
   { name: 'Pro', price: '₹3,999', contacts: 25, superInterest: 0 },
-  {
-    name: 'Pro Max',
-    price: '₹6,999',
-    contacts: 50,
-    superInterest: 50,
-    best: true,
-  },
+  { name: 'Pro Max', price: '₹6,999', contacts: 50, superInterest: 50, best: true },
 ];
 
 const FEATURES: { label: string; values: string[] }[] = [
@@ -49,11 +44,7 @@ const FEATURES: { label: string; values: string[] }[] = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const FeatureRow: React.FC<FeatureRowProps> = ({
-  label,
-  values = ['✔', '✔', '✔'],
-  selectedIndex,
-}) => (
+const FeatureRow: React.FC<FeatureRowProps> = ({ label, values = ['✔', '✔', '✔'], selectedIndex }) => (
   <View style={styles.featureRow}>
     <Text style={styles.featureLabel}>{label}</Text>
     <View style={styles.featureValues}>
@@ -91,6 +82,8 @@ export default function MembershipScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* ── Header ── */}
+      <HomeHeader />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
@@ -136,8 +129,8 @@ export default function MembershipScreen() {
                 activeOpacity={0.85}
               >
                 {plan.best && (
-                  <View style={styles.bestBadge}>
-                    <Text style={styles.bestBadgeText}>⭐ Top</Text>
+                  <View style={styles.popularBadge}>
+                    <Text style={styles.popularBadgeText}>⭐ Top</Text>
                   </View>
                 )}
                 <Text
@@ -252,7 +245,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundLight,
     borderRadius: 10,
     padding: 4,
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 20,
   },
   tab: {
     flex: 1,
@@ -262,6 +256,8 @@ const styles = StyleSheet.create({
   },
   activeTab: {
     backgroundColor: Colors.white,
+    borderWidth: 1,
+    borderColor: Colors.primary,
     elevation: 2,
   },
   tabText: {
@@ -308,8 +304,7 @@ const styles = StyleSheet.create({
     borderWidth: 1.5,
     borderColor: Colors.border,
     borderRadius: 14,
-    paddingVertical: 14,
-    paddingHorizontal: 8,
+    padding: 10,
     alignItems: 'center',
     backgroundColor: Colors.white,
     position: 'relative',
@@ -319,15 +314,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.primaryLight,
     elevation: 4,
   },
-  bestBadge: {
+  popularBadge: {
     position: 'absolute',
     top: -10,
-    backgroundColor: Colors.success,
+    backgroundColor: Colors.accent,
     paddingHorizontal: 8,
     paddingVertical: 3,
     borderRadius: 20,
   },
-  bestBadgeText: {
+  popularBadgeText: {
     color: Colors.white,
     fontSize: 10,
     fontWeight: '700',
@@ -365,6 +360,8 @@ const styles = StyleSheet.create({
     borderColor: Colors.border,
     alignItems: 'center',
     justifyContent: 'center',
+    marginBottom: 8,
+    marginTop: 4,
   },
   radioOuterActive: {
     borderColor: Colors.primary,
@@ -458,15 +455,15 @@ const styles = StyleSheet.create({
   trustRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    flexWrap: 'wrap',
-    gap: 8,
     marginBottom: 8,
+    gap: 8,
   },
   trustBadge: {
+    flex: 1,
     backgroundColor: Colors.white,
     borderRadius: 20,
-    paddingHorizontal: 10,
     paddingVertical: 6,
+    alignItems: 'center',
     borderWidth: 1,
     borderColor: Colors.divider,
   },
@@ -515,7 +512,7 @@ const styles = StyleSheet.create({
   },
   ctaButtonText: {
     color: Colors.white,
-    fontSize: 15,
+    fontSize: 14,
     fontWeight: '800',
     letterSpacing: 0.3,
   },

@@ -14,11 +14,11 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthService } from '../../services/authService';
+import { AuthService } from '../../core/services/authService';
 import { useAppDispatch } from '../../store';
-import { country_codes } from '../../constants';
-import { fakeApi } from '../../services/fakeApi';
-import { Colors } from '../../constants/colors';
+import { country_codes } from '../../core/constants';
+import { fakeApi } from '../../core/services/fakeApi';
+import { Colors } from '../../core/constants/colors';
 import { type RootStackParamList } from '../../navigation/types';
 import { loginUser } from '../../store/authActions';
 

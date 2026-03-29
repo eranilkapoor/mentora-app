@@ -1,7 +1,7 @@
 import { AppDispatch } from './index';
 import { setAuth, setCredentials, logout } from './authSlice';
 import { Storage } from './authHelpers';
-import { AuthService } from '../services/authService';
+import { AuthService } from '../core/services/authService';
 
 type User = {
   userId: string;

@@ -12,9 +12,9 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { Colors } from '../../constants/colors';
+import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
-import { ProfileService } from '../../services/profileService';
+import { ProfileService } from '../../core/services/profileService';
 import {
   annualIncomeFormat,
   cmToFeetInches,
@@ -25,8 +25,8 @@ import {
   formatWeight,
   getAgeFromDOB,
   getFullName,
-} from '../../utils/format';
-import HomeHeader from '../../components/HomeHeader';
+} from '../../core/utils/format';
+import HomeHeader from '../../shared/components/HomeHeader';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -300,11 +300,6 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
     return (
       <SafeAreaProvider style={styles.safe}>
         <HomeHeader />
-        <View style={styles.header}>
-          <View style={styles.headerSpacer} />
-          <Text style={styles.headerTitle}>My Profile</Text>
-          <View style={styles.headerSpacer} />
-        </View>
         <ProfileSkeleton />
       </SafeAreaProvider>
     );
