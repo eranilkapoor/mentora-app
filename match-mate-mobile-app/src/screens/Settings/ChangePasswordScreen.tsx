@@ -14,7 +14,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
-import { AuthService } from '../../core/services/authService';
+import { useChangePasswordMutation } from '../../store/services/authApi';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -205,6 +205,7 @@ export default function ChangePasswordScreen({
 
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
+  const [changePassword] = useChangePasswordMutation();
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -255,10 +256,10 @@ export default function ChangePasswordScreen({
 
     setLoading(true);
     try {
-      await AuthService.changePassword({
+      await changePassword({
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
-      });
+      }).unwrap();
 
       Alert.alert(
         'Password Changed',
@@ -278,7 +279,7 @@ export default function ChangePasswordScreen({
     } finally {
       setLoading(false);
     }
-  }, [validate, values, navigation]);
+  }, [validate, values, navigation, changePassword]);
 
   const handleReset = useCallback((): void => {
     setValues({ oldPassword: '', newPassword: '', confirmPassword: '' });

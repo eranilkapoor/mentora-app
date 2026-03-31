@@ -14,8 +14,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useAppDispatch } from '../../store';
-import { setProfileCompleted } from '../../store/authSlice';
-import { AuthService } from '../../core/services/authService';
+import { setProfileCompleted } from '../../store/slices/authSlice';
 import { Colors } from '../../core/constants/colors';
 import {
   profile_for_options,
@@ -33,6 +32,7 @@ import {
   type FamilyData,
   type PreferencesData,
 } from '../../core/types/onboarding.types';
+import { useOnboardingProfileMutation } from '../../store/services/authApi';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -45,11 +45,6 @@ type RegistrationStep =
   | 'review';
 
 type Gender = 'male' | 'female' | 'other';
-type ApiResponse<T> = {
-  success: boolean;
-  data: T;
-  message?: string;
-};
 
 interface DropdownPickerProps {
   label: string;
@@ -349,6 +344,7 @@ export default function OnboardingScreen(): React.ReactElement {
     sports: [],
     languagesKnown: [],
   });
+  const [onboardingProfile] = useOnboardingProfileMutation();
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -459,16 +455,15 @@ export default function OnboardingScreen(): React.ReactElement {
   const handleSubmit = useCallback(async (): Promise<void> => {
     setLoading(true);
     try {
-      const { data }: { data: ApiResponse<unknown> } =
-        await AuthService.onboardingProfile({
-          personal,
-          education,
-          physical,
-          family,
-          preferences,
-        });
+      const response = await onboardingProfile({
+        personal,
+        education,
+        physical,
+        family,
+        preferences,
+      }).unwrap();
 
-      if (!data.success as boolean) {
+      if (!response.success as boolean) {
         Alert.alert('Error', 'Onboarding profile creation failed.');
         return;
       }
@@ -480,7 +475,15 @@ export default function OnboardingScreen(): React.ReactElement {
     } finally {
       setLoading(false);
     }
-  }, [personal, education, physical, family, preferences, dispatch]);
+  }, [
+    personal,
+    education,
+    physical,
+    family,
+    preferences,
+    dispatch,
+    onboardingProfile,
+  ]);
 
   // ─── Step Content ─────────────────────────────────────────────────────────
 

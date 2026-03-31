@@ -99,19 +99,6 @@ export default function ForgotPasswordScreen({
   if (submitted) {
     return (
       <SafeAreaProvider style={styles.safe}>
-        <View style={styles.header}>
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={styles.backButton}
-            accessibilityRole="button"
-            accessibilityLabel="Go back"
-          >
-            <Feather name="arrow-left" size={22} color={Colors.textPrimary} />
-          </TouchableOpacity>
-          <Text style={styles.headerTitle}>Forgot Password</Text>
-          <View style={styles.headerSpacer} />
-        </View>
-
         <View style={styles.successContainer}>
           <View style={styles.successIconWrapper}>
             <Feather name="mail" size={36} color={Colors.primary} />
@@ -162,20 +149,6 @@ export default function ForgotPasswordScreen({
 
   return (
     <SafeAreaProvider style={styles.safe}>
-      {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          onPress={() => navigation.goBack()}
-          style={styles.backButton}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Feather name="arrow-left" size={22} color={Colors.textPrimary} />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Forgot Password</Text>
-        <View style={styles.headerSpacer} />
-      </View>
-
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
@@ -307,24 +280,6 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
   },
   container: { flex: 1 },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: Colors.white,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  backButton: { padding: 4 },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 17,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  headerSpacer: { width: 30 },
   scrollContent: {
     padding: 20,
     paddingTop: 32,

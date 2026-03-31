@@ -1254,10 +1254,6 @@ When Access Token expires → verify Refresh Token → issue a new one.
 
 ---
 
-Great — building the matrimonial app as a **microservices-based enterprise system** is the right call for scale, maintainability, and independent team ownership. Below I’ll give you a complete technical blueprint you can hand to architects/dev leads: service boundaries, DB ownership, communication patterns, infra, CI/CD, reliability patterns (sagas, circuit breakers), data models at a high-level, and development guidelines.
-
-I’ll keep it practical — concrete service list + responsibilities + tech recommendations + patterns + a sample dev structure so your teams can start implementing.
-
 ---
 
 # Microservices architecture — high level overview
@@ -1728,11 +1724,6 @@ No logic rewrite — just replace the injection binding.
 5. **Add centralized auth & monitoring**
 
 ---
-
-Fantastic — this is **one of the smartest things to plan early** 👏.
-Your database design and data-access layer architecture will **decide how easy** (or painful) your future migration to microservices will be.
-
-Let’s go step-by-step and I’ll show you how to structure your database and data-access layer in the **monolithic phase**, so you can later migrate smoothly to **service-specific databases**.
 
 ---
 

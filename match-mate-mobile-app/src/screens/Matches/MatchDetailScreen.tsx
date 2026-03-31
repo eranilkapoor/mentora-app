@@ -142,8 +142,6 @@ export default function MatchDetailsScreen({ navigation }: Props) {
           <Row label="Age" value="28 Years" />
           <Row label="Height" value="5.4 ft" />
         </Section>
-
-        <View style={{ height: 90 }} />
       </ScrollView>
 
       {/* CTA */}

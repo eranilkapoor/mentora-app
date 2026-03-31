@@ -160,7 +160,7 @@ const ChatListScreen: React.FC<Props> = ({ navigation }) => {
   }, []);
 
   useEffect(() => {
-    loadMatches();
+    void loadMatches();
   }, [loadMatches]);
 
   const onRefresh = async () => {

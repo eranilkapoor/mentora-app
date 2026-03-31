@@ -12,13 +12,13 @@ import {
   Platform,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { useAppDispatch } from '../../store';
 import { Colors } from '../../core/constants/colors';
 import {
   ParamlessScreen,
   type RootNavigationProp,
 } from '../../navigation/types';
-import { logoutUser } from '../../store/authActions';
+import { useAppDispatch } from '../../store/hook';
+import { logout } from '../../store/slices/authSlice';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -79,6 +79,7 @@ function SettingToggle({
 export default function SettingsScreen({
   navigation,
 }: SettingsScreenProps): React.ReactElement {
+  const dispatch = useAppDispatch();
   const [notificationsEnabled, setNotificationsEnabled] = useState(true);
   const [darkModeEnabled, setDarkModeEnabled] = useState(false);
   const [locationSharing, setLocationSharing] = useState(false);
@@ -92,12 +93,12 @@ export default function SettingsScreen({
 
   const handleSignOut = useCallback(() => {
     const confirmSignOut = async (): Promise<void> => {
-      logoutUser();
+      void dispatch(logout()); // ✅ FIX: dispatch the logout action
     };
 
     if (Platform.OS === 'web') {
       if (window.confirm('Are you sure you want to sign out?')) {
-        confirmSignOut();
+        void confirmSignOut(); // ✅ FIX
       }
       return;
     }
@@ -107,10 +108,10 @@ export default function SettingsScreen({
       {
         text: 'Sign Out',
         style: 'destructive',
-        onPress: confirmSignOut,
+        onPress: () => void confirmSignOut(), // ✅ FIX
       },
     ]);
-  }, []);
+  }, [dispatch]);
 
   return (
     <SafeAreaProvider style={styles.safe}>

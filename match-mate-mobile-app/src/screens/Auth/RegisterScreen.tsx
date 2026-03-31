@@ -13,13 +13,17 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { AuthService } from '../../core/services/authService';
 import { useAppDispatch } from '../../store';
-import { setCredentials } from '../../store/authSlice';
+import { setCredentials } from '../../store/slices/authSlice';
 import { country_codes } from '../../core/constants';
 import { fakeApi } from '../../core/services/fakeApi';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
+import {
+  useRegisterMutation,
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+} from '../../store/services/authApi';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -98,6 +102,9 @@ export default function RegisterScreen({
   const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [register] = useRegisterMutation();
+  const [sendOtp] = useSendOtpMutation();
+  const [verifyOtp] = useVerifyOtpMutation();
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -150,24 +157,23 @@ export default function RegisterScreen({
 
     setLoading(true);
     try {
-      const res = await AuthService.register({ email, password });
-      const { data } = res;
+      const response = await register({ email, password }).unwrap();
 
-      if (!data.success) {
+      if (!response.success) {
         setErrors({ email: 'Email already registered. Please try login!' });
         return;
       }
 
-      if (data.data) {
-        dispatch(setCredentials(data.data));
-        navigateAfterAuth(data.data.user?.isProfileCompleted ?? false);
+      if (response.data) {
+        dispatch(setCredentials(response.data));
+        navigateAfterAuth(response.data.user?.isProfileCompleted ?? false);
       }
     } catch {
       setErrors({ error: 'Registration failed. Please try again.' });
     } finally {
       setLoading(false);
     }
-  }, [email, password, dispatch, navigateAfterAuth]);
+  }, [email, password, dispatch, navigateAfterAuth, register]);
 
   const handleGetOtp = useCallback(async (): Promise<void> => {
     const newErrors: FormErrors = {};
@@ -183,13 +189,12 @@ export default function RegisterScreen({
 
     setLoading(true);
     try {
-      const res = await AuthService.sendOtp({
+      const response = await sendOtp({
         country_code: countryCode,
         phone,
-      });
-      const { data } = res;
+      }).unwrap();
 
-      if (!data.success) {
+      if (!response.success) {
         setErrors({ error: 'Failed to send OTP. Please try again.' });
         return;
       }
@@ -200,7 +205,7 @@ export default function RegisterScreen({
     } finally {
       setLoading(false);
     }
-  }, [phone, countryCode]);
+  }, [phone, countryCode, sendOtp]);
 
   const handleVerifyOtp = useCallback(async (): Promise<void> => {
     if (!otp) {
@@ -210,28 +215,27 @@ export default function RegisterScreen({
 
     setLoading(true);
     try {
-      const res = await AuthService.verifyOtp({
+      const response = await verifyOtp({
         country_code: countryCode,
         phone,
         otp,
-      });
-      const { data } = res;
+      }).unwrap();
 
-      if (!data.success) {
+      if (!response.success) {
         setErrors({ otp: 'Invalid OTP' });
         return;
       }
 
-      if (data.data) {
-        dispatch(setCredentials(data.data));
-        navigateAfterAuth(data.data.user?.isProfileCompleted ?? false);
+      if (response.data) {
+        dispatch(setCredentials(response.data));
+        navigateAfterAuth(response.data.user?.isProfileCompleted ?? false);
       }
     } catch {
       setErrors({ error: 'Failed to verify OTP. Please try again.' });
     } finally {
       setLoading(false);
     }
-  }, [otp, countryCode, phone, dispatch, navigateAfterAuth]);
+  }, [otp, countryCode, phone, dispatch, navigateAfterAuth, verifyOtp]);
 
   const handleSocialRegister = useCallback(
     async (provider: SocialProvider): Promise<void> => {

@@ -31,7 +31,13 @@ interface FeatureRowProps {
 const PLANS: Plan[] = [
   { name: 'Pro Lite', price: '₹1,999', contacts: 0, superInterest: 0 },
   { name: 'Pro', price: '₹3,999', contacts: 25, superInterest: 0 },
-  { name: 'Pro Max', price: '₹6,999', contacts: 50, superInterest: 50, best: true },
+  {
+    name: 'Pro Max',
+    price: '₹6,999',
+    contacts: 50,
+    superInterest: 50,
+    best: true,
+  },
 ];
 
 const FEATURES: { label: string; values: string[] }[] = [
@@ -44,7 +50,11 @@ const FEATURES: { label: string; values: string[] }[] = [
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-const FeatureRow: React.FC<FeatureRowProps> = ({ label, values = ['✔', '✔', '✔'], selectedIndex }) => (
+const FeatureRow: React.FC<FeatureRowProps> = ({
+  label,
+  values = ['✔', '✔', '✔'],
+  selectedIndex,
+}) => (
   <View style={styles.featureRow}>
     <Text style={styles.featureLabel}>{label}</Text>
     <View style={styles.featureValues}>

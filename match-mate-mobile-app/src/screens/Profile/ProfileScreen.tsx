@@ -14,7 +14,6 @@ import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
-import { ProfileService } from '../../core/services/profileService';
 import {
   annualIncomeFormat,
   cmToFeetInches,
@@ -27,88 +26,13 @@ import {
   getFullName,
 } from '../../core/utils/format';
 import HomeHeader from '../../shared/components/HomeHeader';
+import { useGetMyProfileQuery } from '../../store/services/profileApi';
+import { ProfileData } from '../../core/types/api';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface ProfileScreenProps {
   navigation: RootNavigationProp;
-}
-
-interface ProfilePersonal {
-  firstName: string;
-  lastName?: string;
-  dob: string;
-  gender: string;
-  maritalStatus: string;
-  religion: string;
-  caste?: string;
-  motherTongue?: string;
-  country?: string;
-  state?: string;
-  city?: string;
-  aboutMe?: string;
-}
-
-interface ProfilePhysical {
-  height: number | string;
-  weight?: number | string;
-  bodyType?: string;
-  complexion?: string;
-}
-
-interface ProfileEducation {
-  education?: string;
-  college?: string;
-  occupation?: string;
-  annualIncome?: string;
-}
-
-interface ProfileFamily {
-  fatherName?: string;
-  motherName?: string;
-  fatherOccupation?: string;
-  motherOccupation?: string;
-  familyType?: string;
-  familyStatus?: string;
-  familyValues?: string;
-}
-
-interface PartnerPreference {
-  ageRange?: { min: number; max: number };
-  heightRange?: { min: number; max: number };
-  religion?: string[];
-  caste?: string[];
-  education?: string[];
-  occupation?: string[];
-  maritalStatus?: string[];
-  country?: string[];
-  bodyType?: string[];
-  complexion?: string[];
-  diet?: string[];
-  smoking?: string[];
-  drinking?: string[];
-  familyType?: string[];
-}
-
-interface ProfilePreferences {
-  smoking?: string;
-  drinking?: string;
-  diet?: string;
-  languagesKnown?: string[];
-  hobbies?: string[];
-  music?: string[];
-  movies?: string[];
-  sports?: string[];
-  partnerPreference?: PartnerPreference;
-}
-
-interface ProfileData {
-  photos?: string[];
-  personal: ProfilePersonal;
-  physical: ProfilePhysical;
-  education: ProfileEducation;
-  family: ProfileFamily;
-  preferences: ProfilePreferences;
 }
 
 interface SectionProps {
@@ -195,19 +119,30 @@ function ProfileSkeleton(): React.ReactElement {
 export default function ProfileScreen({}: ProfileScreenProps): React.ReactElement {
   const [profileData, setProfileData] = useState<ProfileData>({
     personal: {
+      profileFor: 'Self',
       firstName: '',
+      lastName: '',
+      gender: 'other',
       dob: '',
-      gender: '',
-      maritalStatus: '',
       religion: '',
+      caste: '',
+      country: '',
+      state: '',
+      city: '',
+      motherTongue: '',
+      maritalStatus: '',
+      aboutMe: '',
     },
     physical: {
-      height: 0,
-      weight: 0,
+      height: '',
+      weight: '',
+      bodyType: '',
+      complexion: '',
     },
     education: {
-      education: '',
-      college: '',
+      qualification: '',
+      field: '',
+      university: '',
       occupation: '',
       annualIncome: '',
     },
@@ -221,9 +156,9 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
       familyValues: '',
     },
     preferences: {
-      smoking: '',
-      drinking: '',
-      diet: '',
+      smoking: 'non_smoker',
+      drinking: 'non_drinker',
+      diet: 'non_vegetarian',
       languagesKnown: [],
       hobbies: [],
       music: [],
@@ -238,29 +173,36 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
+  const { data, isLoading, isError } = useGetMyProfileQuery();
 
   const fetchProfile = useCallback(async (): Promise<void> => {
     setLoading(true);
     setError(null);
     try {
-      const response = await ProfileService.getMyProfile();
-      const data = (response as { data: { data: ProfileData } }).data.data;
-      setProfileData(data);
+      if (data && !isLoading && !isError) {
+        // Map API response to ProfileData structure
+        if (data?.success) {
+          setProfileData(data.data);
+        }
+      } else {
+        setError('Failed to load profile. Please try again.');
+      }
     } catch {
       setError('Failed to load profile. Please try again.');
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [data, isLoading, isError]);
 
   useEffect(() => {
     void fetchProfile();
   }, [fetchProfile]);
 
   const photos =
-    profileData?.photos?.length !== undefined && profileData.photos.length > 0
-      ? profileData.photos
-      : FALLBACK_PHOTOS;
+    //profileData?.photos?.length !== undefined && profileData.photos.length > 0
+    //? profileData.photos
+    //:
+    FALLBACK_PHOTOS;
 
   const renderPhoto: ListRenderItem<string> = useCallback(
     ({ item, index }) => (
@@ -354,7 +296,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
           <View style={styles.nameRow}>
             <Text style={styles.name}>
               {getFullName(
-                profileData?.personal.firstName ?? 'User',
+                profileData?.personal.firstName ?? '',
                 profileData?.personal.lastName ?? ''
               )}
             </Text>
@@ -401,8 +343,8 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
 
         {/* Education & Career */}
         <Section title="Education & Career" icon="book">
-          <Row label="Education" value={profileData?.education.education} />
-          <Row label="College" value={profileData?.education.college} />
+          <Row label="Education" value={profileData?.education.qualification} />
+          <Row label="College" value={profileData?.education.university} />
           <Row label="Profession" value={profileData?.education.occupation} />
           <Row
             label="Annual Income"
@@ -516,7 +458,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
           />
           <Row
             label="Education"
-            value={profileData?.preferences.partnerPreference?.education}
+            value={profileData?.preferences.partnerPreference?.qualification}
           />
           <Row
             label="Profession"
@@ -550,10 +492,6 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
             label="Drinking"
             value={profileData?.preferences.partnerPreference?.drinking}
           />
-          <Row
-            label="Family Type"
-            value={profileData?.preferences.partnerPreference?.familyType}
-          />
         </Section>
 
         <View style={styles.footer} />
@@ -582,25 +520,6 @@ const styles = StyleSheet.create({
     padding: 32,
     gap: 12,
     backgroundColor: Colors.backgroundPage,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    backgroundColor: Colors.white,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  headerTitle: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 17,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  headerSpacer: {
-    width: 30,
   },
   photo: {
     width: SCREEN_WIDTH,

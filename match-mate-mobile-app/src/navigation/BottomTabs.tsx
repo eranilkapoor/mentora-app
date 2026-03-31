@@ -23,7 +23,7 @@ export default function BottomTabs() {
           ),
         }}
       />
-      
+
       <Tab.Screen
         name="Matches"
         component={MatchListScreen}

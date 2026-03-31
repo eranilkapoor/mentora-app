@@ -179,11 +179,13 @@ export default function AssistedMembershipScreen() {
 
         {/* ── Trust badges ── */}
         <View style={styles.trustRow}>
-          {['🔒 Secure Payment', '✅ Verified Profiles', '🏆 10M+ Members'].map((badge) => (
-            <View key={badge} style={styles.trustBadge}>
-              <Text style={styles.trustText}>{badge}</Text>
-            </View>
-          ))}
+          {['🔒 Secure Payment', '✅ Verified Profiles', '🏆 10M+ Members'].map(
+            (badge) => (
+              <View key={badge} style={styles.trustBadge}>
+                <Text style={styles.trustText}>{badge}</Text>
+              </View>
+            )
+          )}
         </View>
       </ScrollView>
 

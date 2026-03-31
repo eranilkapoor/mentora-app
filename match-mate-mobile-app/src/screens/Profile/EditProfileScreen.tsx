@@ -18,8 +18,10 @@ import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
-import { ProfileService } from '../../core/services/profileService';
-
+import {
+  useGetMyProfileQuery,
+  useUpdatePersonalInfoMutation,
+} from '../../store/services/profileApi';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface EditProfileScreenProps {
@@ -32,11 +34,12 @@ interface ProfileImage {
 }
 
 interface PersonalSection {
+  profileFor: string;
   firstName: string;
   lastName: string;
   dob: string;
-  gender: string;
-  maritalStatus: string;
+  gender: (typeof GENDER_OPTIONS)[number];
+  maritalStatus: (typeof MARITAL_OPTIONS)[number];
   religion: string;
   caste: string;
   motherTongue: string;
@@ -49,8 +52,8 @@ interface PersonalSection {
 interface PhysicalSection {
   height: string;
   weight: string;
-  bodyType: string;
-  complexion: string;
+  bodyType: (typeof BODY_TYPE_OPTIONS)[number];
+  complexion: (typeof COMPLEXION_OPTIONS)[number];
 }
 
 interface EducationSection {
@@ -66,7 +69,7 @@ interface FamilySection {
   motherName: string;
   fatherOccupation: string;
   motherOccupation: string;
-  familyType: string;
+  familyType: (typeof FAMILY_TYPE_OPTIONS)[number];
   familyStatus: string;
   familyValues: string;
 }
@@ -74,9 +77,9 @@ interface FamilySection {
 interface PreferencesSection {
   hobbies: string[];
   languagesKnown: string[];
-  smoking: string;
-  drinking: string;
-  diet: string;
+  smoking: (typeof SMOKING_OPTIONS)[number];
+  drinking: (typeof DRINKING_OPTIONS)[number];
+  diet: (typeof DIET_OPTIONS)[number];
 }
 
 interface ProfileData {
@@ -85,7 +88,7 @@ interface ProfileData {
   education: EducationSection;
   family: FamilySection;
   preferences: PreferencesSection;
-  images: ProfileImage[];
+  images?: ProfileImage[];
 }
 
 type SectionKey = keyof ProfileData | 'images';
@@ -146,11 +149,12 @@ const DIET_OPTIONS = [
 
 const INITIAL_PROFILE: ProfileData = {
   personal: {
+    profileFor: '',
     firstName: '',
     lastName: '',
     dob: '',
-    gender: '',
-    maritalStatus: '',
+    gender: 'male' as const,
+    maritalStatus: 'never_married' as const,
     religion: '',
     caste: '',
     motherTongue: '',
@@ -162,8 +166,8 @@ const INITIAL_PROFILE: ProfileData = {
   physical: {
     height: '',
     weight: '',
-    bodyType: '',
-    complexion: '',
+    bodyType: 'average' as const,
+    complexion: 'fair' as const,
   },
   education: {
     qualification: '',
@@ -177,16 +181,16 @@ const INITIAL_PROFILE: ProfileData = {
     motherName: '',
     fatherOccupation: '',
     motherOccupation: '',
-    familyType: '',
+    familyType: 'nuclear' as const,
     familyStatus: '',
     familyValues: '',
   },
   preferences: {
     hobbies: [],
     languagesKnown: [],
-    smoking: '',
-    drinking: '',
-    diet: '',
+    smoking: 'non_smoker' as const,
+    drinking: 'non_drinker' as const,
+    diet: 'vegetarian' as const,
   },
   images: [],
 };
@@ -405,22 +409,23 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
   const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
   const [sectionLoading, setSectionLoading] = useState<SectionKey | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
+  const { data } = useGetMyProfileQuery();
+  const [updatePersonalInfo] = useUpdatePersonalInfoMutation();
 
   // ─── Load ─────────────────────────────────────────────────────────────────
 
   const loadProfile = useCallback(async (): Promise<void> => {
     try {
-      const res = await ProfileService.getMyProfile();
-      const data = res.data?.data as ProfileData | null;
-      if (data !== null && data !== undefined) {
-        setProfile((prev) => ({ ...prev, ...data }));
+      const response = data;
+      if (response !== null && response !== undefined) {
+        setProfile((prev) => ({ ...prev, ...response }));
       }
     } catch {
       Alert.alert('Error', 'Failed to load profile. Please try again.');
     } finally {
       setPageLoading(false);
     }
-  }, []);
+  }, [data]);
 
   useEffect(() => {
     void loadProfile();
@@ -442,7 +447,7 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
       profile.family.familyType,
       profile.preferences.hobbies.length > 0 ? 'yes' : '',
       profile.preferences.languagesKnown.length > 0 ? 'yes' : '',
-      profile.images.length > 0 ? 'yes' : '',
+      profile.images && profile.images.length > 0 ? 'yes' : '',
     ];
 
     const filled = checks.filter(
@@ -474,22 +479,25 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
     if (!result.canceled && result.assets[0] !== undefined) {
       const newImage: ProfileImage = {
         uri: result.assets[0].uri,
-        isPrimary: profile.images.length === 0,
+        isPrimary: (profile.images ?? []).length === 0,
       };
-      setProfile((p) => ({ ...p, images: [...p.images, newImage] }));
+      setProfile((p) => ({ ...p, images: [...(p.images ?? []), newImage] }));
     }
-  }, [profile.images.length]);
+  }, [profile.images]);
 
   const setPrimary = useCallback((index: number): void => {
     setProfile((p) => ({
       ...p,
-      images: p.images.map((img, i) => ({ ...img, isPrimary: i === index })),
+      images: (p.images ?? []).map((img, i) => ({
+        ...img,
+        isPrimary: i === index,
+      })),
     }));
   }, []);
 
   const removeImage = useCallback((index: number): void => {
     setProfile((p) => {
-      const updated = p.images.filter((_, i) => i !== index);
+      const updated = (p.images ?? []).filter((_, i) => i !== index);
       if (updated.length > 0 && !updated.some((img) => img.isPrimary)) {
         updated[0] = { ...updated[0], isPrimary: true };
       }
@@ -503,11 +511,7 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
     async (section: SectionKey): Promise<void> => {
       setSectionLoading(section);
       try {
-        // await ProfileService.updatePersonalInfo(
-        //   section === 'images'
-        //     ? { images: profile.images }
-        //     : { [section]: profile[section as keyof ProfileData] },
-        // );
+        await updatePersonalInfo(profile.personal);
         Alert.alert(
           'Saved',
           `${section.charAt(0).toUpperCase() + section.slice(1)} updated successfully.`
@@ -518,7 +522,7 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
         setSectionLoading(null);
       }
     },
-    [profile]
+    [profile, updatePersonalInfo]
   );
 
   const handleSave = useCallback(
@@ -616,7 +620,7 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={styles.photoRow}
             >
-              {profile.images.map((img, index) => (
+              {(profile.images ?? []).map((img, index) => (
                 <View key={img.uri} style={styles.photoWrapper}>
                   <Image source={{ uri: img.uri }} style={styles.photo} />
                   {img.isPrimary === true && (

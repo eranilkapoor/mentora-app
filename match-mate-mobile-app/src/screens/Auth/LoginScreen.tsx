@@ -14,13 +14,17 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthService } from '../../core/services/authService';
 import { useAppDispatch } from '../../store';
 import { country_codes } from '../../core/constants';
 import { fakeApi } from '../../core/services/fakeApi';
 import { Colors } from '../../core/constants/colors';
 import { type RootStackParamList } from '../../navigation/types';
-import { loginUser } from '../../store/authActions';
+import {
+  useLoginMutation,
+  useSendOtpMutation,
+  useVerifyOtpMutation,
+} from '../../store/services/authApi';
+import { setCredentials } from '../../store/slices/authSlice';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -160,6 +164,9 @@ export default function LoginScreen({
   const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+  const [login] = useLoginMutation();
+  const [sendOtp] = useSendOtpMutation();
+  const [verifyOtp] = useVerifyOtpMutation();
 
   // ─── Validation Helpers ──────────────────────────────────────────────────
 
@@ -235,17 +242,24 @@ export default function LoginScreen({
 
     setLoading(true);
     try {
-      const res = await AuthService.login({ email: email.trim(), password });
-      const { data } = res;
+      const response = await login({
+        email: email.trim(),
+        password,
+      }).unwrap();
 
-      if (!data.success) {
+      if (!response.success) {
         setErrors({ error: 'Invalid email or password' });
         return;
       }
 
-      if (data.data?.token && data.data?.user) {
-        dispatch(loginUser(data.data.token, data.data.user));
-        navigateAfterAuth(data.data.user.isProfileCompleted ?? false);
+      if (response.data?.token && response.data?.user) {
+        void dispatch(
+          setCredentials({
+            token: response.data.token,
+            user: response.data.user,
+          })
+        );
+        navigateAfterAuth(response.data.user.isProfileCompleted ?? false);
       } else {
         setErrors({ error: 'Invalid response from server' });
       }
@@ -259,6 +273,7 @@ export default function LoginScreen({
       setLoading(false);
     }
   }, [
+    login,
     email,
     password,
     dispatch,
@@ -285,13 +300,12 @@ export default function LoginScreen({
 
     setLoading(true);
     try {
-      const res = await AuthService.sendOtp({
+      const response = await sendOtp({
         country_code: countryCode,
         phone,
-      });
-      const { data } = res;
+      }).unwrap();
 
-      if (!data.success) {
+      if (!response.success) {
         setErrors({ error: 'Failed to send OTP. Please try again.' });
         return;
       }
@@ -307,7 +321,7 @@ export default function LoginScreen({
     } finally {
       setLoading(false);
     }
-  }, [phone, countryCode, validatePhone, clearAllErrors]);
+  }, [phone, countryCode, validatePhone, clearAllErrors, sendOtp]);
 
   const handleVerifyOtp = useCallback(async (): Promise<void> => {
     if (!otp) {
@@ -322,21 +336,25 @@ export default function LoginScreen({
 
     setLoading(true);
     try {
-      const res = await AuthService.verifyOtp({
+      const response = await verifyOtp({
         country_code: countryCode,
         phone,
         otp,
-      });
-      const { data } = res;
+      }).unwrap();
 
-      if (!data.success) {
+      if (!response.success) {
         setErrors({ otp: 'Invalid OTP' });
         return;
       }
 
-      if (data.data?.token && data.data?.user) {
-        dispatch(loginUser(data.data.token, data.data.user));
-        navigateAfterAuth(data.data.user.isProfileCompleted ?? false);
+      if (response.data?.token && response.data?.user) {
+        void dispatch(
+          setCredentials({
+            token: response.data.token,
+            user: response.data.user,
+          })
+        );
+        navigateAfterAuth(response.data.user.isProfileCompleted ?? false);
       } else {
         setErrors({ error: 'Invalid response from server' });
       }
@@ -349,7 +367,7 @@ export default function LoginScreen({
     } finally {
       setLoading(false);
     }
-  }, [otp, countryCode, phone, dispatch, navigateAfterAuth]);
+  }, [otp, countryCode, phone, dispatch, navigateAfterAuth, verifyOtp]);
 
   const handleResendOtp = useCallback((): void => {
     setOtpSent(false);
@@ -845,7 +863,6 @@ export default function LoginScreen({
 }
 
 // ─── Styles ──────────────────────────────────────────────────────────────────
-
 const styles = StyleSheet.create({
   safe: {
     flex: 1,

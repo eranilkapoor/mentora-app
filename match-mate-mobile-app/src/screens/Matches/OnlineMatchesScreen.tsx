@@ -175,7 +175,7 @@ export default function OnlineMatchesScreen({ navigation }: Props) {
   }, []);
 
   useEffect(() => {
-    loadMatches();
+    void loadMatches();
   }, [loadMatches]);
 
   const onlineCount = matches.filter((m) => m.isOnline).length;

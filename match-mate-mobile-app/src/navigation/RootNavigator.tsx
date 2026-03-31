@@ -1,32 +1,23 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
-import Loader from '../shared/components/Loader';
 
-import { useAppDispatch, useAppSelector } from '../store';
-import { restoreSession } from '../store/authActions';
+import { useAppSelector } from '../store';
 
 const Stack = createNativeStackNavigator();
 
 export default function RootNavigator(): React.ReactElement {
-  const dispatch = useAppDispatch();
+  const token = useAppSelector((state) => state.auth?.token);
+  const user = useAppSelector((state) => state.auth?.user);
 
-  const { token, user, loading } = useAppSelector((state) => state.auth);
-
-  useEffect(() => {
-    void dispatch(restoreSession());
-  }, [dispatch]);
-
-  // ✅ BLOCK UI until auth restored
-  if (loading) {
-    return <Loader fullScreen />;
-  }
+  const isLoggedIn = Boolean(token);
+  const isProfileComplete = Boolean(user?.isProfileCompleted);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {token && user?.isProfileCompleted ? (
+      {isLoggedIn && isProfileComplete ? (
         <Stack.Screen name="App" component={AppStack} />
       ) : (
         <Stack.Screen name="Auth" component={AuthStack} />
