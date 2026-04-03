@@ -8,7 +8,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
-import HomeHeader from '../../shared/components/HomeHeader';
+import Header from '../../core/components/Header';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -84,7 +84,7 @@ export default function AssistedMembershipScreen() {
   return (
     <SafeAreaView style={styles.container}>
       {/* ── Header ── */}
-      <HomeHeader />
+      <Header />
       <ScrollView
         contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}

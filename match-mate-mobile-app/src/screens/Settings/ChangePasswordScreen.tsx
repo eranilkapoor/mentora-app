@@ -1,20 +1,22 @@
 import React, { useState, useCallback } from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  StatusBar,
   TextInput,
   ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 import { useChangePasswordMutation } from '../../store/services/authApi';
+import { PASSWORD_MIN_LENGTH } from '../../core/constants';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -48,10 +50,11 @@ interface PasswordFieldProps {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const MIN_PASSWORD_LENGTH = 8;
-
 const PASSWORD_RULES = [
-  { label: 'At least 8 characters', test: (p: string) => p.length >= 8 },
+  {
+    label: `At least ${PASSWORD_MIN_LENGTH} characters`,
+    test: (p: string) => p.length >= PASSWORD_MIN_LENGTH,
+  },
   { label: 'One uppercase letter', test: (p: string) => /[A-Z]/.test(p) },
   { label: 'One number', test: (p: string) => /[0-9]/.test(p) },
   {
@@ -233,8 +236,8 @@ export default function ChangePasswordScreen({
 
     if (!values.newPassword) {
       newErrors.newPassword = 'New password is required';
-    } else if (values.newPassword.length < MIN_PASSWORD_LENGTH) {
-      newErrors.newPassword = `Password must be at least ${MIN_PASSWORD_LENGTH} characters`;
+    } else if (values.newPassword.length < PASSWORD_MIN_LENGTH) {
+      newErrors.newPassword = `Password must be at least ${PASSWORD_MIN_LENGTH} characters`;
     } else if (values.newPassword === values.oldPassword) {
       newErrors.newPassword = 'New password must differ from current password';
     }
@@ -294,132 +297,138 @@ export default function ChangePasswordScreen({
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaProvider style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
-
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: Colors.backgroundPage }]}
+    >
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
+        style={styles.safe}
       >
-        {/* Info Banner */}
-        <View style={styles.infoBanner}>
-          <Feather name="shield" size={18} color={Colors.primary} />
-          <Text style={styles.infoBannerText}>
-            Choose a strong password you don't use elsewhere.
-          </Text>
-        </View>
-
-        {/* Form Card */}
-        <View style={styles.card}>
-          <PasswordField
-            label="Current Password"
-            value={values.oldPassword}
-            placeholder="Enter current password"
-            error={errors.oldPassword}
-            visible={visibility.oldPassword}
-            onChangeText={(t) => setValue('oldPassword', t)}
-            onToggleVisibility={() => toggleVisibility('oldPassword')}
-            accessibilityLabel="current-password-input"
-            editable={!loading}
-          />
-
-          <View style={styles.separator} />
-
-          <PasswordField
-            label="New Password"
-            value={values.newPassword}
-            placeholder="Enter new password"
-            error={errors.newPassword}
-            visible={visibility.newPassword}
-            onChangeText={(t) => setValue('newPassword', t)}
-            onToggleVisibility={() => toggleVisibility('newPassword')}
-            accessibilityLabel="new-password-input"
-            editable={!loading}
-          />
-
-          <PasswordStrengthBar password={values.newPassword} />
-
-          <View style={styles.separator} />
-
-          <PasswordField
-            label="Confirm New Password"
-            value={values.confirmPassword}
-            placeholder="Re-enter new password"
-            error={errors.confirmPassword}
-            visible={visibility.confirmPassword}
-            onChangeText={(t) => setValue('confirmPassword', t)}
-            onToggleVisibility={() => toggleVisibility('confirmPassword')}
-            accessibilityLabel="confirm-password-input"
-            editable={!loading}
-          />
-
-          {/* Match indicator */}
-          {values.confirmPassword.length > 0 && (
-            <View style={styles.matchRow}>
-              <Feather
-                name={
-                  values.confirmPassword === values.newPassword
-                    ? 'check-circle'
-                    : 'x-circle'
-                }
-                size={14}
-                color={
-                  values.confirmPassword === values.newPassword
-                    ? Colors.success
-                    : Colors.danger
-                }
-              />
-              <Text
-                style={[
-                  styles.matchText,
-                  {
-                    color:
-                      values.confirmPassword === values.newPassword
-                        ? Colors.success
-                        : Colors.danger,
-                  },
-                ]}
-              >
-                {values.confirmPassword === values.newPassword
-                  ? 'Passwords match'
-                  : 'Passwords do not match'}
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Actions */}
-        <TouchableOpacity
-          style={[styles.primaryButton, loading && styles.disabledButton]}
-          onPress={() => {
-            void handleSubmit();
-          }}
-          disabled={loading}
-          accessibilityRole="button"
-          accessibilityLabel="Update password"
+        <ScrollView
+          contentContainerStyle={styles.scrollContent}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
-          {loading ? (
-            <ActivityIndicator color={Colors.white} />
-          ) : (
-            <>
-              <Feather name="check" size={18} color={Colors.white} />
-              <Text style={styles.primaryButtonText}>Update Password</Text>
-            </>
-          )}
-        </TouchableOpacity>
+          {/* Info Banner */}
+          <View style={styles.infoBanner}>
+            <Feather name="shield" size={18} color={Colors.primary} />
+            <Text style={styles.infoBannerText}>
+              Choose a strong password you don't use elsewhere.
+            </Text>
+          </View>
 
-        <TouchableOpacity
-          style={styles.resetButton}
-          onPress={handleReset}
-          disabled={loading}
-          accessibilityRole="button"
-          accessibilityLabel="Clear all fields"
-        >
-          <Text style={styles.resetButtonText}>Clear All Fields</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaProvider>
+          {/* Form Card */}
+          <View style={styles.card}>
+            <PasswordField
+              label="Current Password"
+              value={values.oldPassword}
+              placeholder="Enter current password"
+              error={errors.oldPassword}
+              visible={visibility.oldPassword}
+              onChangeText={(t) => setValue('oldPassword', t)}
+              onToggleVisibility={() => toggleVisibility('oldPassword')}
+              accessibilityLabel="current-password-input"
+              editable={!loading}
+            />
+
+            <View style={styles.separator} />
+
+            <PasswordField
+              label="New Password"
+              value={values.newPassword}
+              placeholder="Enter new password"
+              error={errors.newPassword}
+              visible={visibility.newPassword}
+              onChangeText={(t) => setValue('newPassword', t)}
+              onToggleVisibility={() => toggleVisibility('newPassword')}
+              accessibilityLabel="new-password-input"
+              editable={!loading}
+            />
+
+            <PasswordStrengthBar password={values.newPassword} />
+
+            <View style={styles.separator} />
+
+            <PasswordField
+              label="Confirm New Password"
+              value={values.confirmPassword}
+              placeholder="Re-enter new password"
+              error={errors.confirmPassword}
+              visible={visibility.confirmPassword}
+              onChangeText={(t) => setValue('confirmPassword', t)}
+              onToggleVisibility={() => toggleVisibility('confirmPassword')}
+              accessibilityLabel="confirm-password-input"
+              editable={!loading}
+            />
+
+            {/* Match indicator */}
+            {values.confirmPassword.length > 0 && (
+              <View style={styles.matchRow}>
+                <Feather
+                  name={
+                    values.confirmPassword === values.newPassword
+                      ? 'check-circle'
+                      : 'x-circle'
+                  }
+                  size={14}
+                  color={
+                    values.confirmPassword === values.newPassword
+                      ? Colors.success
+                      : Colors.danger
+                  }
+                />
+                <Text
+                  style={[
+                    styles.matchText,
+                    {
+                      color:
+                        values.confirmPassword === values.newPassword
+                          ? Colors.success
+                          : Colors.danger,
+                    },
+                  ]}
+                >
+                  {values.confirmPassword === values.newPassword
+                    ? 'Passwords match'
+                    : 'Passwords do not match'}
+                </Text>
+              </View>
+            )}
+          </View>
+
+          {/* Actions */}
+          <TouchableOpacity
+            style={[styles.primaryButton, loading && styles.disabledButton]}
+            onPress={() => {
+              void handleSubmit();
+            }}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Update password"
+          >
+            {loading ? (
+              <ActivityIndicator color={Colors.white} />
+            ) : (
+              <>
+                <Feather name="check" size={18} color={Colors.white} />
+                <Text style={styles.primaryButtonText}>Update Password</Text>
+              </>
+            )}
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.resetButton}
+            onPress={handleReset}
+            disabled={loading}
+            accessibilityRole="button"
+            accessibilityLabel="Clear all fields"
+          >
+            <Text style={styles.resetButtonText}>Clear All Fields</Text>
+          </TouchableOpacity>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
@@ -456,10 +465,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 20,
     elevation: 2,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.06,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    boxShadow: `0px 2px 6px rgba(0, 0, 0, 0.06)`,
   },
   fieldWrapper: {
     marginBottom: 4,

@@ -1,5 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { isWeb } from './device';
+import { Platform } from 'react-native';
+
+const isWeb = Platform.OS === 'web';
 
 /* ================= Generic Storage ================= */
 export const Storage = {

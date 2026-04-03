@@ -1,5 +1,3 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { RootState } from '../index';
 import { ApiResponse, ProfileData } from '../../core/types/api';
 import {
   PersonalData,
@@ -8,45 +6,16 @@ import {
   FamilyData,
   PreferencesData,
 } from '../../core/types/profile.types';
-import { Platform } from 'react-native';
-import { getDeviceId } from '../../core/utils/device';
+import { baseApi } from './baseApi';
 
 // 🔹 Base API (you can also move this to baseApi.ts)
-export const profileApi = createApi({
-  reducerPath: 'profileApi',
-
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL as string,
-
-    prepareHeaders: async (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token;
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-
-      const deviceId = await getDeviceId();
-
-      headers.set('X-Device-Id', deviceId);
-      headers.set('X-Platform', Platform.OS);
-      headers.set('X-Client-Version', '1.0');
-
-      return headers;
-    },
-  }),
-
-  tagTypes: ['Profile'],
-
+export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    // ✅ GET PROFILE
     getMyProfile: builder.query<ApiResponse<ProfileData>, void>({
-      query: () => ({
-        url: '/profile/me',
-        method: 'GET',
-      }),
+      query: () => '/profile/me',
       providesTags: ['Profile'],
     }),
 
-    // ✅ UPDATE PERSONAL
     updatePersonalInfo: builder.mutation<
       ApiResponse<ProfileData>,
       PersonalData
@@ -59,7 +28,6 @@ export const profileApi = createApi({
       invalidatesTags: ['Profile'],
     }),
 
-    // ✅ UPDATE PHYSICAL
     updatePhysicalInfo: builder.mutation<
       ApiResponse<ProfileData>,
       PhysicalData
@@ -72,7 +40,6 @@ export const profileApi = createApi({
       invalidatesTags: ['Profile'],
     }),
 
-    // ✅ UPDATE EDUCATION
     updateEducationInfo: builder.mutation<
       ApiResponse<ProfileData>,
       EducationData
@@ -85,7 +52,6 @@ export const profileApi = createApi({
       invalidatesTags: ['Profile'],
     }),
 
-    // ✅ UPDATE FAMILY
     updateFamilyInfo: builder.mutation<ApiResponse<ProfileData>, FamilyData>({
       query: (body) => ({
         url: '/profile/family',
@@ -95,7 +61,6 @@ export const profileApi = createApi({
       invalidatesTags: ['Profile'],
     }),
 
-    // ✅ UPDATE PREFERENCES
     updatePreferences: builder.mutation<
       ApiResponse<ProfileData>,
       PreferencesData
@@ -108,6 +73,8 @@ export const profileApi = createApi({
       invalidatesTags: ['Profile'],
     }),
   }),
+
+  overrideExisting: false,
 });
 
 // ✅ EXPORT HOOKS

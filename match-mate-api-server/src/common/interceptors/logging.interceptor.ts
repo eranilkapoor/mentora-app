@@ -9,6 +9,12 @@ import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
 
+type ApiRequest = {
+  method: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  url: string;
+  body?: Record<string, unknown>;
+};
+
 interface RequestHeaders {
   'x-correlation-id'?: string;
   'x-request-id'?: string;
@@ -76,7 +82,7 @@ export class LoggingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<Request>();
-    const { method, url, body } = request;
+    const { method, url, body } = request as ApiRequest;
     const headers = request.headers as RequestHeaders;
 
     const correlationId = headers['x-correlation-id'] ?? UNKNOWN;

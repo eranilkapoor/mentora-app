@@ -1,12 +1,11 @@
 import React, { useCallback, useState } from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   ScrollView,
-  StatusBar,
   Platform,
   UIManager,
   LayoutAnimation,
@@ -15,6 +14,11 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
+import {
+  SUPPORT_EMAIL,
+  SUPPORT_PHONE,
+  WHATSAPP_NUMBER,
+} from '../../core/constants';
 
 // ─── Android LayoutAnimation setup ───────────────────────────────────────────
 
@@ -52,10 +56,6 @@ interface FaqCardProps {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const SUPPORT_EMAIL = 'support@webnza.com';
-const SUPPORT_PHONE = '+919654698878';
-const WHATSAPP_NUMBER = '919654698878';
 
 const FAQ_DATA: FaqItem[] = [
   {
@@ -183,9 +183,9 @@ export default function HelpSupportScreen({}: HelpSupportScreenProps): React.Rea
   ];
 
   return (
-    <SafeAreaProvider style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
-
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: Colors.backgroundPage }]}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -218,7 +218,7 @@ export default function HelpSupportScreen({}: HelpSupportScreenProps): React.Rea
 
         <View style={styles.footer} />
       </ScrollView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 
@@ -245,10 +245,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     marginBottom: 24,
     elevation: 1,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
   },
   cardTitle: {
     fontSize: 17,

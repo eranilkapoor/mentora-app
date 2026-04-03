@@ -1,6 +1,6 @@
 import React from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, ScrollView, StatusBar } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 
@@ -152,9 +152,9 @@ function PolicySection({
 
 export default function PrivacyPolicyScreen({}: PrivacyPolicyScreenProps): React.ReactElement {
   return (
-    <SafeAreaProvider style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
-
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: Colors.backgroundPage }]}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -178,7 +178,7 @@ export default function PrivacyPolicyScreen({}: PrivacyPolicyScreenProps): React
           <View style={styles.footer} />
         </View>
       </ScrollView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 

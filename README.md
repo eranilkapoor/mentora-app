@@ -5907,3 +5907,99 @@ src/
 │   ├── TabNavigator.tsx
 │
 ├── App.tsx
+
+
+
+src/
+  app/
+    store.ts
+    hooks.ts
+    persist.ts
+
+  features/
+    auth/
+      authSlice.ts
+      authApi.ts
+    profile/
+      profileApi.ts
+
+  services/
+    baseApi.ts
+
+
+
+src/
+  ├── app/
+  │    ├── store.ts
+  │    ├── hooks.ts
+  │    └── persist.ts
+  │
+  ├── theme/                     🔥 THEME LAYER
+  │    ├── index.ts              (exports everything)
+  │    ├── colors.ts
+  │    ├── spacing.ts
+  │    ├── typography.ts
+  │    ├── shadows.ts
+  │    ├── lightTheme.ts
+  │    ├── darkTheme.ts
+  │    └── ThemeProvider.tsx
+  │
+  ├── components/                🔥 COMMON UI
+  │    ├── Button/
+  │    ├── Text/
+  │    ├── Card/
+  │    └── Input/
+  │
+  ├── features/
+  │    ├── auth/
+  │    ├── profile/
+  │    ├── membership/
+  │
+  ├── screens/
+  │    ├── Home/
+  │    ├── Profile/
+  │
+  └── core/
+       ├── utils/
+       └── constants/
+
+
+
+
+
+/src
+  /features
+    /auth
+      LoginScreen.tsx
+      RegisterScreen.tsx
+      auth.types.ts
+      auth.enums.ts
+      auth.validators.ts
+
+    /profile
+      ProfileScreen.tsx
+      EditProfileScreen.tsx
+      profile.types.ts
+      profile.enums.ts
+      profile.validators.ts
+
+    /onboarding
+      onboarding.types.ts
+
+  /shared
+    /types
+      api.types.ts
+      common.types.ts
+      navigation.types.ts
+
+    /enums
+      common.enums.ts
+
+  /utils
+    /validators
+      authValidators.ts
+      commonValidators.ts
+
+  /theme
+    ThemeProvider.tsx
+    types.ts   ← theme types

@@ -1,14 +1,12 @@
-import React, { useCallback, useState } from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import React, { useCallback } from 'react';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
-  StyleSheet,
   Switch,
   TouchableOpacity,
   Alert,
   ScrollView,
-  StatusBar,
   Platform,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
@@ -17,8 +15,17 @@ import {
   ParamlessScreen,
   type RootNavigationProp,
 } from '../../navigation/types';
-import { useAppDispatch } from '../../store/hook';
+import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
+import {
+  toggleNotifications,
+  toggleSound,
+  toggleLocationSharing,
+  toggleVibration,
+} from '../../store/slices/settingsSlice';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '../../core/theme/ThemeProvider';
+import { settingsStyles } from './SettingsScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -40,6 +47,7 @@ interface SettingToggleProps {
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function SettingRow({ label, onPress }: SettingRowProps): React.ReactElement {
+  const styles = settingsStyles(useTheme().theme);
   return (
     <TouchableOpacity
       style={styles.row}
@@ -58,6 +66,7 @@ function SettingToggle({
   value,
   onValueChange,
 }: SettingToggleProps): React.ReactElement {
+  const styles = settingsStyles(useTheme().theme);
   return (
     <View style={styles.row} accessibilityRole="none">
       <Text style={styles.rowLabel}>{label}</Text>
@@ -80,9 +89,22 @@ export default function SettingsScreen({
   navigation,
 }: SettingsScreenProps): React.ReactElement {
   const dispatch = useAppDispatch();
-  const [notificationsEnabled, setNotificationsEnabled] = useState(true);
-  const [darkModeEnabled, setDarkModeEnabled] = useState(false);
-  const [locationSharing, setLocationSharing] = useState(false);
+  const { t } = useTranslation();
+  const { theme } = useTheme();
+  const styles = settingsStyles(theme);
+
+  const themeMode = useAppSelector((state) => state.settings.theme);
+  const language = useAppSelector((state) => state.settings.language);
+  const locationSharing = useAppSelector(
+    (state) => state.settings.locationSharing
+  );
+  const soundEnabled = useAppSelector((state) => state.settings.soundEnabled);
+  const vibrationEnabled = useAppSelector(
+    (state) => state.settings.vibrationEnabled
+  );
+  const notificationsEnabled = useAppSelector(
+    (state) => state.settings.notificationsEnabled
+  );
 
   const navigateTo = useCallback(
     (screen: ParamlessScreen) => {
@@ -108,69 +130,90 @@ export default function SettingsScreen({
       {
         text: 'Sign Out',
         style: 'destructive',
-        onPress: () => void confirmSignOut(), // ✅ FIX
+        onPress: () => void confirmSignOut(), // ✅ FIX: call the confirmSignOut function
       },
     ]);
   }, [dispatch]);
 
   return (
-    <SafeAreaProvider style={styles.safe}>
-      <StatusBar
-        barStyle={darkModeEnabled ? 'light-content' : 'dark-content'}
-      />
-
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: theme.colors.backgroundPage }]}
+    >
       <ScrollView contentContainerStyle={styles.container}>
         {/* Account */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Account</Text>
+          <Text style={styles.sectionTitle}>{t('account')}</Text>
           <SettingRow
-            label="Edit Profile"
+            label={t('edit_profile')}
             onPress={() => navigateTo('EditProfile')}
           />
           <SettingRow
-            label="Change Password"
+            label={t('change_password')}
             onPress={() => navigateTo('ChangePassword')}
           />
         </View>
 
         {/* Preferences */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
-          <SettingToggle
-            label="Dark Mode"
-            value={darkModeEnabled}
-            onValueChange={setDarkModeEnabled}
+          <Text style={styles.sectionTitle}>{t('preferences')}</Text>
+          <SettingRow
+            label={`${t('language')} (${language === 'en' ? t('english') : t('hindi')})`}
+            onPress={() => navigateTo('Languages')}
           />
+
+          <SettingRow
+            label={`${t('theme')} (${themeMode === 'light' ? t('light') : themeMode === 'dark' ? t('dark') : t('system')})`}
+            onPress={() => navigateTo('Themes')}
+          />
+
           <SettingToggle
-            label="Share Location"
+            label={t('share_location')}
             value={locationSharing}
-            onValueChange={setLocationSharing}
+            onValueChange={() => dispatch(toggleLocationSharing())}
+          />
+        </View>
+
+        {/* App Settings */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>{t('app_settings')}</Text>
+          <SettingToggle
+            label={t('sound')}
+            value={soundEnabled}
+            onValueChange={() => dispatch(toggleSound())}
+          />
+
+          <SettingToggle
+            label={t('vibration')}
+            value={vibrationEnabled}
+            onValueChange={() => dispatch(toggleVibration())}
           />
         </View>
 
         {/* Notifications */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Notifications</Text>
+          <Text style={styles.sectionTitle}>{t('notifications')}</Text>
           <SettingToggle
-            label="App Notifications"
+            label={t('app_notifications')}
             value={notificationsEnabled}
-            onValueChange={setNotificationsEnabled}
+            onValueChange={() => dispatch(toggleNotifications())}
           />
+
           <SettingRow
-            label="Notification Settings"
+            label={t('notification_settings')}
             onPress={() => navigateTo('NotificationSettings')}
           />
         </View>
 
         {/* Support */}
         <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Support</Text>
+          <Text style={styles.sectionTitle}>{t('support')}</Text>
           <SettingRow
-            label="Help & Support"
+            label={t('help_and_support')}
             onPress={() => navigateTo('HelpSupport')}
           />
+
           <SettingRow
-            label="Privacy Policy"
+            label={t('privacy_policy')}
             onPress={() => navigateTo('PrivacyPolicy')}
           />
         </View>
@@ -184,70 +227,10 @@ export default function SettingsScreen({
             accessibilityLabel="Sign out of your account"
           >
             <Feather name="log-out" size={18} color={Colors.danger} />
-            <Text style={styles.signOutText}>Sign Out</Text>
+            <Text style={styles.signOutText}>{t('sign_out')}</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  container: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  section: {
-    marginBottom: 24,
-    backgroundColor: Colors.white,
-    borderRadius: 8,
-    paddingVertical: 8,
-    overflow: 'hidden',
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  row: {
-    height: 56,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Colors.divider,
-  },
-  rowLabel: {
-    fontSize: 16,
-    color: Colors.textPrimary,
-  },
-  signOutSection: {
-    backgroundColor: Colors.white,
-    borderRadius: 8,
-    paddingVertical: 8,
-    overflow: 'hidden',
-  },
-  signOutButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    paddingVertical: 14,
-  },
-  signOutText: {
-    color: Colors.danger,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-});

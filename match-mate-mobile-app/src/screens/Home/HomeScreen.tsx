@@ -6,15 +6,15 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-  Dimensions,
   ListRenderItem,
 } from 'react-native';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
-import HomeHeader from '../../shared/components/HomeHeader';
+import Header from '../../core/components/Header';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 import { type Profile } from '../../core/types/profile.types';
+import { windowWidth } from '../../core/utils/device';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -29,16 +29,11 @@ interface ProfileCardProps {
   onShortlist: () => void;
 }
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
-const CARD_WIDTH = SCREEN_WIDTH - 24;
-
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const PROFILES: Profile[] = [
   {
-    id: '1',
+    userId: '1',
     name: 'Gayatri',
     age: 39,
     height: '5\'4"',
@@ -52,7 +47,7 @@ const PROFILES: Profile[] = [
     ],
   },
   {
-    id: '2',
+    userId: '2',
     name: 'Neha',
     age: 35,
     height: '5\'6"',
@@ -80,6 +75,7 @@ function PhotoCarousel({
       <Image
         source={{ uri: item }}
         style={styles.photo}
+        resizeMode="cover"
         accessibilityLabel={`Photo of ${name}`}
       />
     ),
@@ -200,7 +196,7 @@ export default function HomeScreen({
 }: HomeScreenProps): React.ReactElement {
   const handleChat = useCallback(
     (profile: Profile) => {
-      navigation.navigate('ChatScreen', { user: profile });
+      navigation.navigate('Chats', { userId: profile.userId });
     },
     [navigation]
   );
@@ -230,16 +226,16 @@ export default function HomeScreen({
   );
 
   return (
-    <SafeAreaProvider style={styles.container}>
-      <HomeHeader />
+    <SafeAreaView style={styles.container}>
+      <Header />
       <FlatList
         data={PROFILES}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => item.userId}
         contentContainerStyle={styles.listContent}
         showsVerticalScrollIndicator={false}
         renderItem={renderProfile}
       />
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 
@@ -260,15 +256,11 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
     elevation: 3,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.08,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 2 },
+    boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.08)`,
   },
   photo: {
-    width: CARD_WIDTH,
+    width: windowWidth - 24,
     height: 320,
-    resizeMode: 'cover',
   },
   photoBadge: {
     position: 'absolute',

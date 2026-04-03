@@ -4,7 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AuthStack from './AuthStack';
 import AppStack from './AppStack';
 
-import { useAppSelector } from '../store';
+import { useAppSelector } from '../store/hooks';
 
 const Stack = createNativeStackNavigator();
 

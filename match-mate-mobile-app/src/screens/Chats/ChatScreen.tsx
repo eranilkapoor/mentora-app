@@ -16,15 +16,12 @@ import { useFocusEffect } from '@react-navigation/native';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { Colors } from '../../core/constants/colors';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const EMOJIS = ['😀', '😂', '❤️', '👍', '😍', '🙏', '🎉', '😊'];
+import { EMOJIS } from '../../core/constants';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
-  ChatScreen: { partnerId: string; partnerName: string; partnerPhoto?: string };
+  ChatScreen: { userId: string; partnerName?: string; partnerPhoto?: string };
   ProfileDetails: { userId: string };
 };
 
@@ -101,7 +98,7 @@ const fetchMessages = (pId: string): Message[] => [
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function ChatScreen({ navigation, route }: Props) {
-  const { partnerId, partnerName, partnerPhoto } = route.params ?? {};
+  const { userId, partnerName, partnerPhoto } = route.params ?? {};
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -110,8 +107,8 @@ export default function ChatScreen({ navigation, route }: Props) {
 
   useFocusEffect(
     useCallback(() => {
-      setMessages(fetchMessages(partnerId ?? 'partner'));
-    }, [partnerId])
+      setMessages(fetchMessages(userId ?? 'partner'));
+    }, [userId])
   );
 
   const handleSend = () => {
@@ -185,7 +182,7 @@ export default function ChatScreen({ navigation, route }: Props) {
         <TouchableOpacity
           style={styles.viewProfileBtn}
           onPress={() =>
-            navigation.navigate('ProfileDetails', { userId: partnerId ?? '' })
+            navigation.navigate('ProfileDetails', { userId: userId ?? '' })
           }
           activeOpacity={0.8}
         >
@@ -296,13 +293,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundPage,
     borderBottomWidth: 1,
     borderColor: Colors.border,
-    shadowColor: Colors.black,
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
+    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
     elevation: 2,
     gap: 10,
   },
@@ -365,10 +356,7 @@ const styles = StyleSheet.create({
     maxWidth: '78%',
     borderRadius: 16,
     padding: 10,
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
+    boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.05)`,
     elevation: 1,
   },
   myBubble: {
@@ -442,10 +430,7 @@ const styles = StyleSheet.create({
   },
   sendBtnActive: {
     backgroundColor: Colors.primary,
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    boxShadow: `0px 3px 6px rgba(0, 0, 0, 0.3)`,
     elevation: 4,
   },
   sendText: { fontSize: 16, color: Colors.white },

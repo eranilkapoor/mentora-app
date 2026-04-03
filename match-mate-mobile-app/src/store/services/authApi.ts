@@ -1,5 +1,3 @@
-import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { RootState } from '../index';
 import {
   LoginRequest,
   RegisterRequest,
@@ -18,28 +16,9 @@ import {
   OnbardingResponse,
   User,
 } from '../../core/types';
-import { Platform } from 'react-native';
-import { getDeviceId } from '../../core/utils/device';
+import { baseApi } from './baseApi';
 
-export const authApi = createApi({
-  reducerPath: 'authApi',
-  baseQuery: fetchBaseQuery({
-    baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL as string,
-    prepareHeaders: async (headers, { getState }) => {
-      const token = (getState() as RootState).auth.token;
-      if (token) {
-        headers.set('authorization', `Bearer ${token}`);
-      }
-
-      const deviceId = await getDeviceId();
-
-      headers.set('X-Device-Id', deviceId);
-      headers.set('X-Platform', Platform.OS);
-      headers.set('X-Client-Version', '1.0');
-
-      return headers;
-    },
-  }),
+export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     login: builder.mutation<ApiResponse<LoginResponse>, LoginRequest>({
       query: (body) => ({
@@ -48,6 +27,7 @@ export const authApi = createApi({
         body,
       }),
     }),
+
     register: builder.mutation<ApiResponse<RegisterResponse>, RegisterRequest>({
       query: (body) => ({
         url: '/auth/register',
@@ -55,6 +35,7 @@ export const authApi = createApi({
         body,
       }),
     }),
+
     sendOtp: builder.mutation<ApiResponse<SendOtpResponse>, SendOtpRequest>({
       query: (body) => ({
         url: '/auth/send-otp',

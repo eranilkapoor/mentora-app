@@ -7,30 +7,17 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  StyleSheet,
   ScrollView,
   Alert,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
-import { type RootNavigationProp } from '../../navigation/types';
 import { fakeApi } from '../../core/services/fakeApi';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface ForgotPasswordScreenProps {
-  navigation: RootNavigationProp;
-}
-
-interface FormErrors {
-  email?: string;
-  error?: string;
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+import { EMAIL_REGEX } from '../../core/constants';
+import { ForgotPasswordScreenProps, FormErrors } from './Auth.types';
+import { forgotPasswordStyles } from './ForgotPasswordScreen.styles';
+import { useThemedStyles } from '../../core/theme/useThemedStyles';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
@@ -41,6 +28,7 @@ export default function ForgotPasswordScreen({
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const styles = useThemedStyles(forgotPasswordStyles);
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
 
@@ -98,7 +86,7 @@ export default function ForgotPasswordScreen({
 
   if (submitted) {
     return (
-      <SafeAreaProvider style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.successContainer}>
           <View style={styles.successIconWrapper}>
             <Feather name="mail" size={36} color={Colors.primary} />
@@ -141,14 +129,14 @@ export default function ForgotPasswordScreen({
             <Text style={styles.resendText}>Resend reset link</Text>
           </TouchableOpacity>
         </View>
-      </SafeAreaProvider>
+      </SafeAreaView>
     );
   }
 
   // ─── Form State ───────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaProvider style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
@@ -268,223 +256,6 @@ export default function ForgotPasswordScreen({
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
-  container: { flex: 1 },
-  scrollContent: {
-    padding: 20,
-    paddingTop: 32,
-  },
-  iconWrapper: {
-    width: 72,
-    height: 72,
-    borderRadius: 36,
-    backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    alignSelf: 'center',
-    marginBottom: 20,
-  },
-  title: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: Colors.textPrimary,
-    marginBottom: 10,
-    textAlign: 'center',
-    fontFamily: 'clebri-bold',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    textAlign: 'center',
-    marginBottom: 24,
-    lineHeight: 21,
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Colors.errorLight,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Colors.error,
-  },
-  errorBannerText: {
-    color: Colors.error,
-    fontSize: 13,
-    flex: 1,
-  },
-  form: { marginTop: 4 },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: 6,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.inputBackground,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: 12,
-    marginBottom: 4,
-  },
-  inputIcon: { marginRight: 10 },
-  input: {
-    flex: 1,
-    paddingVertical: 13,
-    fontSize: 15,
-    color: Colors.textPrimary,
-  },
-  inputError: {
-    borderColor: Colors.error,
-    backgroundColor: Colors.errorLight,
-  },
-  errorText: {
-    color: Colors.error,
-    fontSize: 12,
-    marginBottom: 8,
-    marginTop: 2,
-  },
-  primaryButton: {
-    marginTop: 16,
-    backgroundColor: Colors.black,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  primaryButtonText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  disabledButton: { opacity: 0.6 },
-  backLink: {
-    marginTop: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  backLinkText: {
-    color: Colors.link,
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  infoCard: {
-    marginTop: 28,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: Colors.primaryBorder,
-  },
-  infoCardTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.primary,
-    marginBottom: 12,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    marginBottom: 10,
-  },
-  infoIconWrapper: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  infoText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    flex: 1,
-    lineHeight: 18,
-  },
-  successContainer: {
-    flex: 1,
-    padding: 24,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  successIconWrapper: {
-    width: 88,
-    height: 88,
-    borderRadius: 44,
-    backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 24,
-  },
-  successTitle: {
-    fontSize: 24,
-    fontWeight: '900',
-    color: Colors.textPrimary,
-    marginBottom: 12,
-    textAlign: 'center',
-    fontFamily: 'clebri-bold',
-  },
-  successSubtitle: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    textAlign: 'center',
-    lineHeight: 22,
-    marginBottom: 24,
-  },
-  successEmail: {
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  successTips: {
-    width: '100%',
-    backgroundColor: Colors.backgroundPage,
-    borderRadius: 12,
-    padding: 16,
-    gap: 10,
-    marginBottom: 28,
-  },
-  tipRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  tipText: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    flex: 1,
-  },
-  resendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 14,
-  },
-  resendText: {
-    color: Colors.link,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-});

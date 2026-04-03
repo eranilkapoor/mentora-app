@@ -413,10 +413,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 1 },
-        shadowOpacity: 0.05,
-        shadowRadius: 2,
+        boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.05)`,
       },
       android: {
         elevation: 1,
@@ -455,10 +452,7 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
-        shadowOffset: { width: 0, height: 2 },
-        shadowOpacity: 0.1,
-        shadowRadius: 8,
+        boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.01)`,
       },
       android: {
         elevation: 4,

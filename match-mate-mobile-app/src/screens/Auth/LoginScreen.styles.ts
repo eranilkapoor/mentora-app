@@ -1,0 +1,360 @@
+import { Theme } from '@/core/theme/types';
+import { StyleSheet } from 'react-native';
+
+export const loginStyles = (theme: Theme) =>
+  StyleSheet.create({
+    safe: {
+      flex: 1,
+      backgroundColor: theme.colors.white,
+    },
+
+    container: {
+      flex: 1,
+    },
+
+    scrollContent: {
+      padding: 20,
+      paddingTop: 80,
+      justifyContent: 'flex-start',
+    },
+
+    title: {
+      fontSize: 28,
+      fontWeight: '900',
+      marginBottom: 8,
+      color: theme.colors.textPrimary,
+      textAlign: 'center',
+      fontFamily: 'clebri-bold',
+    },
+
+    subtitle: {
+      fontSize: 14,
+      color: theme.colors.textMuted,
+      marginBottom: 24,
+      textAlign: 'center',
+    },
+
+    errorBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: theme.colors.errorLight,
+      borderRadius: 8,
+      padding: 12,
+      marginBottom: 16,
+      borderWidth: 1,
+      borderColor: theme.colors.error,
+    },
+
+    errorBannerText: {
+      color: theme.colors.error,
+      fontSize: 13,
+      flex: 1,
+    },
+
+    tabRow: {
+      flexDirection: 'row',
+      borderRadius: 10,
+      backgroundColor: theme.colors.backgroundLight,
+      padding: 4,
+      marginBottom: 16,
+    },
+
+    tabButton: {
+      flex: 1,
+      flexDirection: 'row',
+      paddingVertical: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 8,
+      gap: 6,
+    },
+
+    tabActive: {
+      backgroundColor: theme.colors.black,
+    },
+
+    tabIcon: {
+      marginRight: 2,
+    },
+
+    tabText: {
+      color: theme.colors.textSecondary,
+      fontWeight: '600',
+      fontSize: 13,
+    },
+
+    tabTextActive: {
+      color: theme.colors.white,
+    },
+
+    form: {
+      marginTop: 4,
+    },
+
+    label: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+
+    labelSpacing: {
+      marginTop: 12,
+    },
+
+    inputWrapper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.inputBackground,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingHorizontal: 12,
+      marginBottom: 4,
+    },
+
+    inputIcon: {
+      marginRight: 10,
+    },
+
+    input: {
+      flex: 1,
+      paddingVertical: 13,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+    },
+
+    eyeButton: {
+      padding: 6,
+    },
+
+    phoneRow: {
+      flexDirection: 'row',
+      marginBottom: 4,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.inputBackground,
+    },
+
+    phoneInput: {
+      flex: 1,
+      paddingVertical: 13,
+      paddingHorizontal: 12,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+      marginBottom: 0,
+    },
+
+    otpInput: {
+      backgroundColor: theme.colors.inputBackground,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingVertical: 16,
+      paddingHorizontal: 12,
+      fontSize: 28,
+      letterSpacing: 12,
+      textAlign: 'center',
+      color: theme.colors.textPrimary,
+      marginBottom: 4,
+    },
+
+    countryCodeBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: 12,
+      paddingVertical: 13,
+      borderRightWidth: 1,
+      borderRightColor: theme.colors.border,
+      minWidth: 80,
+    },
+
+    countryCodeText: {
+      fontWeight: '600',
+      color: theme.colors.textPrimary,
+      fontSize: 15,
+    },
+
+    countryCodeItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+    },
+
+    countryCodeItemActive: {
+      backgroundColor: theme.colors.primaryLight,
+    },
+
+    countryCodeItemText: {
+      fontSize: 14,
+      color: theme.colors.textPrimary,
+    },
+
+    countryCodeItemTextActive: {
+      color: theme.colors.primary,
+      fontWeight: '600',
+    },
+
+    inputError: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorLight,
+    },
+
+    errorText: {
+      color: theme.colors.error,
+      fontSize: 12,
+      marginBottom: 8,
+      marginTop: 2,
+    },
+
+    otpInfoBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: theme.colors.successLight,
+      borderRadius: 8,
+      padding: 10,
+      marginBottom: 12,
+      marginTop: 4,
+    },
+
+    otpInfoText: {
+      fontSize: 13,
+      color: theme.colors.success,
+      fontWeight: '500',
+    },
+
+    forgotRow: {
+      alignSelf: 'flex-end',
+      marginTop: 6,
+      marginBottom: 4,
+    },
+
+    forgotText: {
+      color: theme.colors.link,
+      fontSize: 13,
+      fontWeight: '500',
+    },
+
+    primaryButton: {
+      marginTop: 16,
+      backgroundColor: theme.colors.black,
+      paddingVertical: 14,
+      borderRadius: 10,
+      alignItems: 'center',
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 8,
+    },
+
+    primaryButtonText: {
+      color: theme.colors.white,
+      fontWeight: '700',
+      fontSize: 16,
+    },
+
+    disabledButton: {
+      opacity: 0.6,
+    },
+
+    resendRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      marginTop: 10,
+    },
+
+    resendText: {
+      color: theme.colors.link,
+      fontSize: 13,
+      fontWeight: '500',
+    },
+
+    dividerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 20,
+    },
+
+    divider: {
+      flex: 1,
+      height: 1,
+      backgroundColor: theme.colors.border,
+    },
+
+    dividerText: {
+      marginHorizontal: 12,
+      color: theme.colors.textMuted,
+      fontWeight: '600',
+      fontSize: 13,
+    },
+
+    socialContainer: {
+      gap: 10,
+    },
+
+    socialButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderColor: theme.colors.border,
+      borderWidth: 1,
+      paddingVertical: 13,
+      paddingHorizontal: 16,
+      borderRadius: 10,
+      backgroundColor: theme.colors.white,
+    },
+
+    socialIcon: {
+      marginRight: 12,
+    },
+
+    socialLabel: {
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+      fontWeight: '600',
+      flex: 1,
+      textAlign: 'center',
+    },
+
+    footer: {
+      flexDirection: 'row',
+      justifyContent: 'center',
+      alignItems: 'center',
+      marginTop: 24,
+      marginBottom: 12,
+    },
+
+    footerText: {
+      color: theme.colors.textMuted,
+    },
+
+    linkText: {
+      color: theme.colors.link,
+      fontWeight: '700',
+    },
+
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: theme.colors.modalOverlay,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+
+    modalDropdown: {
+      width: 140,
+      maxHeight: 300,
+      backgroundColor: theme.colors.white,
+      borderRadius: 10,
+      boxShadow: `0px 4px 8px ${theme.colors.black}26`, // 15% opacity
+      elevation: 10,
+    },
+  });

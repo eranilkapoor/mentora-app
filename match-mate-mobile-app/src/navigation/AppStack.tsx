@@ -13,6 +13,8 @@ import HelpSupportScreen from '../screens/Settings/HelpSupportScreen';
 import NotificationSettingsScreen from '../screens/Settings/NotificationSettingsScreen';
 import EditProfileScreen from '../screens/Profile/EditProfileScreen';
 import OnlineMatchesScreen from '../screens/Matches/OnlineMatchesScreen';
+import LanguageScreen from '../screens/Settings/LanguageScreen';
+import ThemeScreen from '../screens/Settings/ThemeScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -73,6 +75,16 @@ export default function AppStack() {
         name="OnlineMatches"
         component={OnlineMatchesScreen}
         options={{ headerShown: false }}
+      />
+      <Stack.Screen
+        name="Languages"
+        component={LanguageScreen}
+        options={{ title: 'Select Language' }}
+      />
+      <Stack.Screen
+        name="Themes"
+        component={ThemeScreen}
+        options={{ title: 'Select Theme' }}
       />
     </Stack.Navigator>
   );

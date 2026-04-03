@@ -1,10 +1,17 @@
-export const COLORS = {
-  primary: '#2563EB',
-  secondary: '#16A34A',
-  background: '#F9FAFB',
-};
+export const SUPPORT_EMAIL = 'support@webnza.com';
+export const SUPPORT_PHONE = '+919654698878';
+export const WHATSAPP_NUMBER = '919654698878';
 
-export const religions = [
+export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const PHONE_REGEX = /^\d{6,15}$/;
+export const DEFAULT_COUNTRY_CODE = '91'; // Default to India
+export const PASSWORD_MIN_LENGTH = 6;
+export const PHONE_MAX_LENGTH = 10;
+export const OTP_LENGTH = 6;
+
+export const EMOJIS = ['😀', '😂', '❤️', '👍', '😍', '🙏', '🎉', '😊'];
+
+export const RELIGIONS = [
   'Hindu',
   'Muslim',
   'Christian',
@@ -17,7 +24,7 @@ export const religions = [
   'Prefer not to say',
 ];
 
-export const profile_for_options = [
+export const PROFILE_FOR_OPTIONS = [
   'Self',
   'Son',
   'Daughter',
@@ -29,7 +36,7 @@ export const profile_for_options = [
   'Other',
 ];
 
-export const country_codes = [
+export const COUNTRY_CODES = [
   '1',
   '44',
   '91',
@@ -41,7 +48,7 @@ export const country_codes = [
   '49',
 ];
 
-export const qualifications = [
+export const QUALIFICATIONS = [
   'Below 10th',
   '10th',
   '12th',
@@ -76,7 +83,7 @@ export const qualifications = [
   'Prefer not to say',
 ];
 
-export const body_types = [
+export const BODY_TYPES = [
   'Slim',
   'Average',
   'Athletic',
@@ -91,65 +98,51 @@ export const body_types = [
   'Prefer not to say',
 ];
 
-export const complexions = ['Fair', 'Wheatish', 'Dark', 'Prefer not to say'];
+export const COMPLEXIONS = ['Fair', 'Wheatish', 'Dark', 'Prefer not to say'];
 
-export const smoking_habits = [
+export const SMOKING_HABITS = [
   'Non Smoker',
   'Occasional Smoker',
   'Regular Smoker',
   'Prefer not to say',
 ];
 
-export const drinking_habits = [
+export const DRINKING_HABITS = [
   'Non Drinker',
   'Occasional Drinker',
   'Regular Drinker',
   'Prefer not to say',
 ];
 
-export const eating_habits = [
+export const EATING_HABITS = [
   'Vegetarian',
   'Non Vegetarian',
   'Eggetarian',
   'Prefer not to say',
 ];
 
-export const exercise_habits = [
+export const EXERCISE_HABITS = [
   'Regularly',
   'Occasionally',
   'Rarely',
   'Prefer not to say',
 ];
 
-export const sleep_habits = [
+export const SLEEP_HABITS = [
   'Early to bed, early to rise',
   'Late to bed, late to rise',
   'Irregular sleeping pattern',
   'Prefer not to say',
 ];
 
-export const drinking_preferences = [
-  'Social Drinker',
-  'Regular Drinker',
-  'Non Drinker',
-  'Prefer not to say',
-];
-
-export const smoking_preferences = [
-  'Social Smoker',
-  'Regular Smoker',
-  'Non Smoker',
-  'Prefer not to say',
-];
-
-export const pets_preferences = [
+export const PETS_PREFERENCES = [
   'Loves Pets',
   'Okay with Pets',
   'No Pets',
   'Prefer not to say',
 ];
 
-export const hobbies = [
+export const HOBBIES = [
   'Reading',
   'Traveling',
   'Cooking',
@@ -172,7 +165,7 @@ export const hobbies = [
   'Bird Watching',
 ];
 
-export const interests = [
+export const INTERESTS = [
   'Technology',
   'Art',
   'Science',
@@ -195,7 +188,7 @@ export const interests = [
   'Health',
 ];
 
-export const professions = [
+export const PROFESSIONS = [
   'Engineer',
   'Doctor',
   'Teacher',
@@ -218,7 +211,7 @@ export const professions = [
   'Pilot',
 ];
 
-export const industries = [
+export const INDUSTRIES = [
   'Information Technology',
   'Healthcare',
   'Education',
@@ -241,7 +234,7 @@ export const industries = [
   'Media',
 ];
 
-export const goals = [
+export const GOALS = [
   'Long-term Relationship',
   'Short-term Relationship',
   'Friendship',
@@ -254,7 +247,7 @@ export const goals = [
   'Shared Interests',
 ];
 
-export const languages = [
+export const LANGUAGES = [
   'English',
   'Spanish',
   'Mandarin',
@@ -277,7 +270,7 @@ export const languages = [
   'Persian',
 ];
 
-export const countries = [
+export const COUNTRIES = [
   'United States',
   'India',
   'China',
@@ -301,7 +294,7 @@ export const countries = [
   'United Arab Emirates',
 ];
 
-export const zodiac_signs = [
+export const ZODIAC_SIGNS = [
   'Aries',
   'Taurus',
   'Gemini',
@@ -316,7 +309,7 @@ export const zodiac_signs = [
   'Pisces',
 ];
 
-export const marital_statuses = [
+export const MARITAL_STATUSES = [
   'Single',
   'Divorced',
   'Widowed',
@@ -324,14 +317,14 @@ export const marital_statuses = [
   'Prefer not to say',
 ];
 
-export const children_preferences = [
+export const CHILDREN_PREFERENCES = [
   'Want Children',
   "Don't Want Children",
   'Open to Discussion',
   'Prefer not to say',
 ];
 
-export const living_arrangements = [
+export const LIVING_ARRANGEMENTS = [
   'Living with Parents',
   'Living Alone',
   'Living with Roommates',
@@ -339,7 +332,7 @@ export const living_arrangements = [
   'Prefer not to say',
 ];
 
-export const employment_statuses = [
+export const EMPLOYMENT_STATUSES = [
   'Employed Full-time',
   'Employed Part-time',
   'Self-employed',
@@ -349,7 +342,7 @@ export const employment_statuses = [
   'Prefer not to say',
 ];
 
-export const annual_incomes = [
+export const ANNUAL_INCOMES = [
   'Below $25,000',
   '$25,000 - $50,000',
   '$50,000 - $100,000',
@@ -359,7 +352,7 @@ export const annual_incomes = [
   'Prefer not to say',
 ];
 
-export const housing_types = [
+export const HOUSING_TYPES = [
   'Owned Apartment/House',
   'Rented Apartment/House',
   'Living with Family',
@@ -367,7 +360,7 @@ export const housing_types = [
   'Prefer not to say',
 ];
 
-export const transport_types = [
+export const TRANSPORT_TYPES = [
   'Owns a Car',
   'Owns a Bike/Scooter',
   'Uses Public Transport',
@@ -375,14 +368,14 @@ export const transport_types = [
   'Prefer not to say',
 ];
 
-export const travel_frequencies = [
+export const TRAVEL_FREQUENCIES = [
   'Frequently',
   'Occasionally',
   'Rarely',
   'Prefer not to say',
 ];
 
-export const vacation_preferences = [
+export const VACATION_PREFERENCES = [
   'Beach Destinations',
   'Mountain Destinations',
   'City Tours',
@@ -391,7 +384,7 @@ export const vacation_preferences = [
   'Prefer not to say',
 ];
 
-export const music_preferences = [
+export const MUSIC_PREFERENCES = [
   'Pop',
   'Rock',
   'Classical',
@@ -404,7 +397,7 @@ export const music_preferences = [
   'Prefer not to say',
 ];
 
-export const movie_genres = [
+export const MOVIE_GENRES = [
   'Action',
   'Comedy',
   'Drama',
@@ -417,7 +410,7 @@ export const movie_genres = [
   'Prefer not to say',
 ];
 
-export const book_genres = [
+export const BOOK_GENRES = [
   'Fiction',
   'Non-Fiction',
   'Mystery',
@@ -430,7 +423,7 @@ export const book_genres = [
   'Prefer not to say',
 ];
 
-export const sports_preferences = [
+export const SPORTS_PREFERENCES = [
   'Football',
   'Basketball',
   'Tennis',
@@ -443,7 +436,7 @@ export const sports_preferences = [
   'Prefer not to say',
 ];
 
-export const cuisines = [
+export const CUISINES = [
   'Italian',
   'Chinese',
   'Indian',
@@ -456,7 +449,7 @@ export const cuisines = [
   'Spanish',
 ];
 
-export const dietary_restrictions = [
+export const DIETARY_RESTRICTIONS = [
   'Vegetarian',
   'Vegan',
   'Gluten-Free',
@@ -468,21 +461,21 @@ export const dietary_restrictions = [
   'Prefer not to say',
 ];
 
-export const family_types = [
-  'Joint Family',
-  'Nuclear Family',
-  'Extended Family',
-  'Single Parent Family',
-  'Blended Family',
-  'Multigenerational Family',
-  'Adoptive Family',
-  'Same-Sex Parent Family',
-  'Grandparent-Led Family',
-  'Childless Family',
+export const FAMILY_TYPES = [
+  'Joint',
+  'Nuclear',
+  'Extended',
+  'Single Parent',
+  'Blended',
+  'Multigenerational',
+  'Adoptive',
+  'Same-Sex Parent',
+  'Grandparent-Led',
+  'Childless',
   'Prefer not to say',
 ];
 
-export const family_values = [
+export const FAMILY_VALUES = [
   'Traditional',
   'Conservative',
   'Moderate',
@@ -495,7 +488,7 @@ export const family_values = [
   'Prefer not to say',
 ];
 
-export const family_statuses = [
+export const FAMILY_STATUSES = [
   'Affluent',
   'Upper Class',
   'Upper-Middle Class',

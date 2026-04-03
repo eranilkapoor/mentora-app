@@ -3,16 +3,10 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useNavigation, NavigationProp } from '@react-navigation/native';
-import { Colors } from '../../core/constants/colors';
+import { Colors } from '../constants/colors';
+import { RootStackParamList } from '@/navigation/types';
 
-// 🔹 Define your navigation type
-type RootStackParamList = {
-  Profile: undefined;
-  Notifications: undefined;
-  Settings: undefined;
-};
-
-export default function HomeHeader(): React.ReactElement {
+export default function Header(): React.ReactElement {
   const insets = useSafeAreaInsets();
 
   const navigation = useNavigation<NavigationProp<RootStackParamList>>();

@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   Platform,
   Modal,
   KeyboardAvoidingView,
@@ -12,137 +11,35 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useAppDispatch } from '../../store';
-import { country_codes } from '../../core/constants';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAppDispatch } from '../../store/hooks';
+import {
+  COUNTRY_CODES,
+  DEFAULT_COUNTRY_CODE,
+  EMAIL_REGEX,
+  OTP_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PHONE_MAX_LENGTH,
+  PHONE_REGEX,
+} from '../../core/constants';
 import { fakeApi } from '../../core/services/fakeApi';
 import { Colors } from '../../core/constants/colors';
-import { type RootStackParamList } from '../../navigation/types';
 import {
   useLoginMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
 } from '../../store/services/authApi';
 import { setCredentials } from '../../store/slices/authSlice';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type LoginScreenNavigationProp = NativeStackNavigationProp<RootStackParamList>;
-
-interface LoginScreenProps {
-  navigation: LoginScreenNavigationProp;
-}
-
-type ActiveTab = 'email' | 'phone';
-type SocialProvider = 'google' | 'apple' | 'facebook';
-
-interface FormErrors {
-  email?: string;
-  password?: string;
-  phone?: string;
-  otp?: string;
-  error?: string;
-}
-
-interface SocialButtonProps {
-  label: string;
-  onPress: () => void;
-  disabled?: boolean;
-  icon: string;
-  iconColor?: string;
-}
-
-interface CountryCodeDropdownProps {
-  visible: boolean;
-  onClose: () => void;
-  selectedCode: string;
-  onSelectCode: (code: string) => void;
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const PHONE_REGEX = /^\d{6,15}$/;
-const DEFAULT_COUNTRY_CODE = country_codes[2] as string;
-const PASSWORD_MIN_LENGTH = 6;
-const PHONE_MAX_LENGTH = 10;
-const OTP_LENGTH = 6;
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-const SocialButton = React.memo<SocialButtonProps>(
-  ({ label, onPress, disabled = false, icon, iconColor }) => (
-    <TouchableOpacity
-      style={[styles.socialButton, disabled && styles.disabledButton]}
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-    >
-      <Feather
-        name={icon}
-        size={20}
-        color={iconColor ?? Colors.textSecondary}
-        style={styles.socialIcon}
-      />
-      <Text style={styles.socialLabel}>{label}</Text>
-    </TouchableOpacity>
-  )
-);
-
-SocialButton.displayName = 'SocialButton';
-
-const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
-  ({ visible, onClose, selectedCode, onSelectCode }) => (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="fade"
-      onRequestClose={onClose}
-    >
-      <TouchableOpacity
-        style={styles.modalOverlay}
-        activeOpacity={1}
-        onPress={onClose}
-      >
-        <View style={styles.modalDropdown}>
-          <ScrollView keyboardShouldPersistTaps="handled">
-            {country_codes.map((code) => (
-              <TouchableOpacity
-                key={code}
-                style={[
-                  styles.countryCodeItem,
-                  selectedCode === code && styles.countryCodeItemActive,
-                ]}
-                onPress={() => {
-                  onSelectCode(code as string);
-                  onClose();
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={`Country code ${code}`}
-              >
-                <Text
-                  style={[
-                    styles.countryCodeItemText,
-                    selectedCode === code && styles.countryCodeItemTextActive,
-                  ]}
-                >
-                  +{code}
-                </Text>
-                {selectedCode === code && (
-                  <Feather name="check" size={14} color={Colors.primary} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      </TouchableOpacity>
-    </Modal>
-  )
-);
-
-CountryCodeDropdown.displayName = 'CountryCodeDropdown';
+import { loginStyles } from './LoginScreen.styles';
+import {
+  LoginScreenProps,
+  ActiveTab,
+  SocialProvider,
+  FormErrors,
+  SocialButtonProps,
+  CountryCodeDropdownProps,
+} from './Auth.types';
+import { useThemedStyles } from '../../core/theme/useThemedStyles';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
@@ -150,6 +47,7 @@ export default function LoginScreen({
   navigation,
 }: LoginScreenProps): React.ReactElement {
   const dispatch = useAppDispatch();
+  const styles = useThemedStyles(loginStyles);
 
   // ─── State ───────────────────────────────────────────────────────────────
 
@@ -164,6 +62,7 @@ export default function LoginScreen({
   const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+
   const [login] = useLoginMutation();
   const [sendOtp] = useSendOtpMutation();
   const [verifyOtp] = useVerifyOtpMutation();
@@ -470,10 +369,84 @@ export default function LoginScreen({
     navigation.navigate('Register');
   }, [navigation]);
 
+  // ─── Sub-components ──────────────────────────────────────────────────────────
+
+  const SocialButton = React.memo<SocialButtonProps>(
+    ({ label, onPress, disabled = false, icon, iconColor }) => (
+      <TouchableOpacity
+        style={[styles.socialButton, disabled && styles.disabledButton]}
+        onPress={onPress}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
+        <Feather
+          name={icon}
+          size={20}
+          color={iconColor ?? Colors.textSecondary}
+          style={styles.socialIcon}
+        />
+        <Text style={styles.socialLabel}>{label}</Text>
+      </TouchableOpacity>
+    )
+  );
+
+  SocialButton.displayName = 'SocialButton';
+
+  const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
+    ({ visible, onClose, selectedCode, onSelectCode }) => (
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={onClose}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={onClose}
+        >
+          <View style={styles.modalDropdown}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {COUNTRY_CODES.map((code) => (
+                <TouchableOpacity
+                  key={code}
+                  style={[
+                    styles.countryCodeItem,
+                    selectedCode === code && styles.countryCodeItemActive,
+                  ]}
+                  onPress={() => {
+                    onSelectCode(code as string);
+                    onClose();
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Country code ${code}`}
+                >
+                  <Text
+                    style={[
+                      styles.countryCodeItemText,
+                      selectedCode === code && styles.countryCodeItemTextActive,
+                    ]}
+                  >
+                    +{code}
+                  </Text>
+                  {selectedCode === code && (
+                    <Feather name="check" size={14} color={Colors.primary} />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    )
+  );
+
+  CountryCodeDropdown.displayName = 'CountryCodeDropdown';
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaProvider style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
@@ -858,316 +831,6 @@ export default function LoginScreen({
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.white,
-  },
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    padding: 20,
-    paddingTop: 80,
-    justifyContent: 'flex-start',
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '900',
-    marginBottom: 8,
-    color: Colors.textPrimary,
-    textAlign: 'center',
-    fontFamily: 'clebri-bold',
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    marginBottom: 24,
-    textAlign: 'center',
-  },
-  errorBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-    backgroundColor: Colors.errorLight,
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: Colors.error,
-  },
-  errorBannerText: {
-    color: Colors.error,
-    fontSize: 13,
-    flex: 1,
-  },
-  tabRow: {
-    flexDirection: 'row',
-    borderRadius: 10,
-    backgroundColor: Colors.backgroundLight,
-    padding: 4,
-    marginBottom: 16,
-  },
-  tabButton: {
-    flex: 1,
-    flexDirection: 'row',
-    paddingVertical: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: 8,
-    gap: 6,
-  },
-  tabActive: {
-    backgroundColor: Colors.black,
-  },
-  tabIcon: {
-    marginRight: 2,
-  },
-  tabText: {
-    color: Colors.textSecondary,
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  tabTextActive: {
-    color: Colors.white,
-  },
-  form: {
-    marginTop: 4,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: 6,
-  },
-  labelSpacing: {
-    marginTop: 12,
-  },
-  inputWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.inputBackground,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: 12,
-    marginBottom: 4,
-  },
-  inputIcon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 13,
-    fontSize: 15,
-    color: Colors.textPrimary,
-  },
-  eyeButton: {
-    padding: 6,
-  },
-  phoneRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    overflow: 'hidden',
-    backgroundColor: Colors.inputBackground,
-  },
-  phoneInput: {
-    flex: 1,
-    paddingVertical: 13,
-    paddingHorizontal: 12,
-    fontSize: 15,
-    color: Colors.textPrimary,
-    marginBottom: 0,
-  },
-  otpInput: {
-    backgroundColor: Colors.inputBackground,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingVertical: 16,
-    paddingHorizontal: 12,
-    fontSize: 28,
-    letterSpacing: 12,
-    textAlign: 'center',
-    color: Colors.textPrimary,
-    marginBottom: 4,
-  },
-  countryCodeBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    paddingHorizontal: 12,
-    paddingVertical: 13,
-    borderRightWidth: 1,
-    borderRightColor: Colors.border,
-    minWidth: 80,
-  },
-  countryCodeText: {
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    fontSize: 15,
-  },
-  countryCodeItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  countryCodeItemActive: {
-    backgroundColor: Colors.primaryLight,
-  },
-  countryCodeItemText: {
-    fontSize: 14,
-    color: Colors.textPrimary,
-  },
-  countryCodeItemTextActive: {
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  inputError: {
-    borderColor: Colors.error,
-    backgroundColor: Colors.errorLight,
-  },
-  errorText: {
-    color: Colors.error,
-    fontSize: 12,
-    marginBottom: 8,
-    marginTop: 2,
-  },
-  otpInfoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: Colors.successLight,
-    borderRadius: 8,
-    padding: 10,
-    marginBottom: 12,
-    marginTop: 4,
-  },
-  otpInfoText: {
-    fontSize: 13,
-    color: Colors.success,
-    fontWeight: '500',
-  },
-  forgotRow: {
-    alignSelf: 'flex-end',
-    marginTop: 6,
-    marginBottom: 4,
-  },
-  forgotText: {
-    color: Colors.link,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  primaryButton: {
-    marginTop: 16,
-    backgroundColor: Colors.black,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  primaryButtonText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  resendRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    marginTop: 10,
-  },
-  resendText: {
-    color: Colors.link,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginVertical: 20,
-  },
-  divider: {
-    flex: 1,
-    height: 1,
-    backgroundColor: Colors.border,
-  },
-  dividerText: {
-    marginHorizontal: 12,
-    color: Colors.textMuted,
-    fontWeight: '600',
-    fontSize: 13,
-  },
-  socialContainer: {
-    gap: 10,
-  },
-  socialButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: Colors.border,
-    borderWidth: 1,
-    paddingVertical: 13,
-    paddingHorizontal: 16,
-    borderRadius: 10,
-    backgroundColor: Colors.white,
-  },
-  socialIcon: {
-    marginRight: 12,
-  },
-  socialLabel: {
-    fontSize: 15,
-    color: Colors.textPrimary,
-    fontWeight: '600',
-    flex: 1,
-    textAlign: 'center',
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginTop: 24,
-    marginBottom: 12,
-  },
-  footerText: {
-    color: Colors.textMuted,
-  },
-  linkText: {
-    color: Colors.link,
-    fontWeight: '700',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: Colors.modalOverlay,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalDropdown: {
-    width: 140,
-    maxHeight: 300,
-    backgroundColor: Colors.white,
-    borderRadius: 10,
-    elevation: 10,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.15,
-    shadowRadius: 8,
-    shadowOffset: { width: 0, height: 4 },
-  },
-});

@@ -15,9 +15,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const RED = '#D32F2F';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
@@ -218,7 +215,7 @@ const ChatListScreen: React.FC<Props> = ({ navigation }) => {
       {/* ── Content ── */}
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={RED} />
+          <ActivityIndicator size="large" color={Colors.primary} />
           <Text style={styles.loadingText}>Loading conversations…</Text>
         </View>
       ) : filtered.length === 0 ? (
@@ -236,8 +233,8 @@ const ChatListScreen: React.FC<Props> = ({ navigation }) => {
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={[RED]}
-              tintColor={RED}
+              colors={[Colors.primary]}
+              tintColor={Colors.primary}
             />
           }
           contentContainerStyle={styles.listContent}
@@ -403,7 +400,7 @@ const styles = StyleSheet.create({
 
   // Badge
   badge: {
-    backgroundColor: Colors.primary, // 🔥 instead of RED
+    backgroundColor: Colors.primary,
     borderRadius: 10,
     minWidth: 20,
     height: 20,

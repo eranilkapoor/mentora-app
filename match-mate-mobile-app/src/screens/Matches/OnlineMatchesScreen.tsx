@@ -13,10 +13,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const RED = '#D32F2F';
-
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
@@ -103,7 +99,11 @@ const MatchCard: React.FC<MatchCardProps> = ({
   <View style={styles.card}>
     {/* Photo */}
     <View style={styles.photoWrapper}>
-      <Image source={{ uri: item.photo }} style={styles.image} />
+      <Image
+        source={{ uri: item.photo }}
+        style={styles.image}
+        resizeMode="cover"
+      />
       <View style={styles.photoScrim} />
 
       {/* Top badges */}
@@ -216,7 +216,7 @@ export default function OnlineMatchesScreen({ navigation }: Props) {
 
       {loading ? (
         <View style={styles.center}>
-          <ActivityIndicator size="large" color={RED} />
+          <ActivityIndicator size="large" color={Colors.primary} />
           <Text style={styles.loadingText}>Finding who's online…</Text>
         </View>
       ) : matches.length === 0 ? (
@@ -292,10 +292,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     backgroundColor: Colors.white,
     overflow: 'hidden',
-    shadowColor: Colors.black,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.07,
-    shadowRadius: 8,
+    boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.07)`,
     elevation: 3,
   },
 
@@ -377,10 +374,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: Colors.primary,
     alignItems: 'center',
-    shadowColor: Colors.primary,
-    shadowOffset: { width: 0, height: 3 },
-    shadowOpacity: 0.3,
-    shadowRadius: 6,
+    boxShadow: `0px 3px 6px rgba(0, 0, 0, 0.3)`,
     elevation: 4,
   },
   chatText: { color: Colors.white, fontWeight: '700', fontSize: 13 },

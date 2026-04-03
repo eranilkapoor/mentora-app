@@ -1,6 +1,6 @@
 import { Dimensions, Platform } from 'react-native';
 import Constants from 'expo-constants';
-import { Storage } from './store';
+import { Storage } from './storage';
 
 export const { width: windowWidth, height: windowHeight } =
   Dimensions.get('window');

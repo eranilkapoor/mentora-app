@@ -1,5 +1,5 @@
 import React, { useState, useCallback } from 'react';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
@@ -7,7 +7,6 @@ import {
   Switch,
   TouchableOpacity,
   ScrollView,
-  StatusBar,
   Alert,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
@@ -339,9 +338,9 @@ export default function NotificationSettingsScreen({}: NotificationSettingsScree
   );
 
   return (
-    <SafeAreaProvider style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
-
+    <SafeAreaView
+      style={[styles.safe, { backgroundColor: Colors.backgroundPage }]}
+    >
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -408,7 +407,7 @@ export default function NotificationSettingsScreen({}: NotificationSettingsScree
 
         <View style={styles.footer} />
       </ScrollView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 
@@ -492,10 +491,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: 'hidden',
     elevation: 1,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
   },
   cardHeader: {
     paddingHorizontal: 14,

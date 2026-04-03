@@ -7,7 +7,6 @@ import {
   ScrollView,
   FlatList,
   TouchableOpacity,
-  Dimensions,
   ListRenderItem,
   NativeSyntheticEvent,
   NativeScrollEvent,
@@ -15,10 +14,9 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
+import { windowWidth } from '../../core/utils/device';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const { width } = Dimensions.get('window');
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -76,7 +74,7 @@ export default function MatchDetailsScreen({ navigation }: Props) {
   const flatListRef = useRef<FlatList<string>>(null);
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>) => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / width);
+    const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
     setActiveIndex(index);
   };
 
@@ -169,7 +167,7 @@ export default function MatchDetailsScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.backgroundPage },
 
-  photo: { width, height: 380 },
+  photo: { width: windowWidth, height: 380 },
 
   carouselWrapper: { position: 'relative' },
 

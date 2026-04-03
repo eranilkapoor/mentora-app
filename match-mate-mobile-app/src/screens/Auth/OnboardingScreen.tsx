@@ -4,7 +4,6 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
-  StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
   Platform,
@@ -12,18 +11,18 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useAppDispatch } from '../../store';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useAppDispatch } from '../../store/hooks';
 import { setProfileCompleted } from '../../store/slices/authSlice';
 import { Colors } from '../../core/constants/colors';
 import {
-  profile_for_options,
-  religions,
-  qualifications,
-  body_types,
-  complexions,
-  family_types,
-  family_statuses,
+  PROFILE_FOR_OPTIONS,
+  RELIGIONS,
+  QUALIFICATIONS,
+  BODY_TYPES,
+  COMPLEXIONS,
+  FAMILY_TYPES,
+  FAMILY_STATUSES,
 } from '../../core/constants';
 import {
   type PersonalData,
@@ -33,35 +32,14 @@ import {
   type PreferencesData,
 } from '../../core/types/onboarding.types';
 import { useOnboardingProfileMutation } from '../../store/services/authApi';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type RegistrationStep =
-  | 'personal'
-  | 'physical'
-  | 'education'
-  | 'family'
-  | 'preferences'
-  | 'review';
-
-type Gender = 'male' | 'female' | 'other';
-
-interface DropdownPickerProps {
-  label: string;
-  options: string[];
-  value: string;
-  onChange: (val: string) => void;
-  field: string;
-  errors: Record<string, string>;
-  onClearError: (field: string) => void;
-  showDropdown: string | null;
-  onSetShowDropdown: (val: string | null) => void;
-}
-
-interface ErrorTextProps {
-  field: string;
-  errors: Record<string, string>;
-}
+import {
+  DropdownPickerProps,
+  ErrorTextProps,
+  Gender,
+  RegistrationStep,
+} from './Auth.types';
+import { onboardingStyles } from './OnboardingScreen.styles';
+import { useThemedStyles } from '../../core/theme/useThemedStyles';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -98,6 +76,7 @@ function ErrorText({
   field,
   errors,
 }: ErrorTextProps): React.ReactElement | null {
+  const styles = useThemedStyles(onboardingStyles);
   if (errors[field] === undefined) return null;
   return <Text style={styles.error}>{errors[field]}</Text>;
 }
@@ -114,6 +93,7 @@ function DropdownPicker({
   onSetShowDropdown,
 }: DropdownPickerProps): React.ReactElement {
   const isOpen = showDropdown === field;
+  const styles = useThemedStyles(onboardingStyles);
 
   return (
     <View>
@@ -187,6 +167,7 @@ function StepIndicator({
   currentStep: RegistrationStep;
 }): React.ReactElement {
   const currentIndex = STEPS.indexOf(currentStep);
+  const styles = useThemedStyles(onboardingStyles);
 
   return (
     <ScrollView
@@ -249,6 +230,7 @@ function ReviewRow({
   label: string;
   value: string;
 }): React.ReactElement {
+  const styles = useThemedStyles(onboardingStyles);
   return (
     <View style={styles.reviewSection}>
       <Text style={styles.reviewLabel}>{label}</Text>
@@ -261,6 +243,7 @@ function ReviewRow({
 
 export default function OnboardingScreen(): React.ReactElement {
   const dispatch = useAppDispatch();
+  const styles = useThemedStyles(onboardingStyles);
 
   const [currentStep, setCurrentStep] = useState<RegistrationStep>('personal');
   const [loading, setLoading] = useState(false);
@@ -362,7 +345,7 @@ export default function OnboardingScreen(): React.ReactElement {
       styles.input,
       errors[field] !== undefined ? styles.inputError : null,
     ],
-    [errors]
+    [errors, styles]
   );
 
   // ─── Validators ──────────────────────────────────────────────────────────
@@ -504,7 +487,7 @@ export default function OnboardingScreen(): React.ReactElement {
       <Text style={styles.label}>Profile For *</Text>
       <DropdownPicker
         label="Profile For"
-        options={profile_for_options}
+        options={PROFILE_FOR_OPTIONS}
         value={personal.profileFor}
         onChange={(val) => {
           setPersonal((p) => ({ ...p, profileFor: val }));
@@ -583,7 +566,7 @@ export default function OnboardingScreen(): React.ReactElement {
       <Text style={styles.label}>Religion *</Text>
       <DropdownPicker
         label="Religion"
-        options={religions}
+        options={RELIGIONS}
         value={personal.religion}
         onChange={(val) => {
           setPersonal((p) => ({ ...p, religion: val }));
@@ -657,7 +640,7 @@ export default function OnboardingScreen(): React.ReactElement {
       <Text style={styles.label}>Body Type</Text>
       <DropdownPicker
         label="Body Type"
-        options={body_types}
+        options={BODY_TYPES}
         value={physical.bodyType}
         onChange={(val) => setPhysical((p) => ({ ...p, bodyType: val }))}
         field="bodyType"
@@ -667,7 +650,7 @@ export default function OnboardingScreen(): React.ReactElement {
       <Text style={styles.label}>Complexion</Text>
       <DropdownPicker
         label="Complexion"
-        options={complexions}
+        options={COMPLEXIONS}
         value={physical.complexion}
         onChange={(val) => setPhysical((p) => ({ ...p, complexion: val }))}
         field="complexion"
@@ -686,7 +669,7 @@ export default function OnboardingScreen(): React.ReactElement {
       <Text style={styles.label}>Qualification *</Text>
       <DropdownPicker
         label="Qualification"
-        options={qualifications}
+        options={QUALIFICATIONS}
         value={education.qualification}
         onChange={(val) => {
           setEducation((e) => ({ ...e, qualification: val }));
@@ -827,7 +810,7 @@ export default function OnboardingScreen(): React.ReactElement {
       <Text style={styles.label}>Family Type *</Text>
       <DropdownPicker
         label="Family Type"
-        options={family_types}
+        options={FAMILY_TYPES}
         value={family.familyType ?? ''}
         onChange={(val) => {
           setFamily((f) => ({ ...f, familyType: val }));
@@ -841,7 +824,7 @@ export default function OnboardingScreen(): React.ReactElement {
       <Text style={styles.label}>Family Status</Text>
       <DropdownPicker
         label="Family Status"
-        options={family_statuses}
+        options={FAMILY_STATUSES}
         value={family.familyStatus ?? ''}
         onChange={(val) => setFamily((f) => ({ ...f, familyStatus: val }))}
         field="familyStatus"
@@ -1143,7 +1126,7 @@ export default function OnboardingScreen(): React.ReactElement {
   const isLastStep = currentStep === 'review';
 
   return (
-    <SafeAreaProvider style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
@@ -1218,293 +1201,6 @@ export default function OnboardingScreen(): React.ReactElement {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.white },
-  container: { flex: 1 },
-  content: {
-    flexGrow: 1,
-    paddingVertical: 24,
-    paddingHorizontal: 20,
-  },
-  progressBarWrapper: {
-    height: 4,
-    backgroundColor: Colors.border,
-  },
-  progressFill: {
-    height: 4,
-    backgroundColor: Colors.primary,
-  },
-  stepIndicatorContainer: {
-    backgroundColor: Colors.white,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  stepIndicatorContent: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stepIndicatorItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  stepDot: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: Colors.backgroundLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  stepDotActive: {
-    backgroundColor: Colors.primary,
-    borderColor: Colors.primary,
-  },
-  stepDotCompleted: {
-    backgroundColor: Colors.success,
-    borderColor: Colors.success,
-  },
-  stepDotLabel: {
-    fontSize: 10,
-    color: Colors.textMuted,
-    marginLeft: 4,
-    marginRight: 2,
-  },
-  stepDotLabelActive: {
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-  stepDotLabelCompleted: {
-    color: Colors.success,
-  },
-  stepConnector: {
-    width: 20,
-    height: 2,
-    backgroundColor: Colors.border,
-    marginHorizontal: 4,
-  },
-  stepConnectorCompleted: {
-    backgroundColor: Colors.success,
-  },
-  stepTitle: {
-    fontSize: 22,
-    fontWeight: '700',
-    marginBottom: 6,
-    color: Colors.textPrimary,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    marginBottom: 20,
-    lineHeight: 20,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 13,
-    marginBottom: 12,
-    fontSize: 15,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.inputBackground,
-  },
-  textArea: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 13,
-    marginBottom: 12,
-    fontSize: 15,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.inputBackground,
-    height: 100,
-  },
-  inputError: {
-    borderColor: Colors.error,
-    backgroundColor: Colors.errorLight,
-  },
-  dropdownTrigger: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  dropdownValueText: {
-    color: Colors.textPrimary,
-    fontSize: 15,
-  },
-  dropdownPlaceholder: {
-    color: Colors.textMuted,
-    fontSize: 15,
-  },
-  dropdown: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    marginBottom: 12,
-    backgroundColor: Colors.white,
-    maxHeight: 220,
-    elevation: 4,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.08,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  dropdownItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 13,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  dropdownItemActive: {
-    backgroundColor: Colors.primaryLight,
-  },
-  dropdownItemText: {
-    fontSize: 15,
-    color: Colors.textPrimary,
-  },
-  dropdownItemTextActive: {
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  chipRow: {
-    flexDirection: 'row',
-    gap: 10,
-    marginBottom: 12,
-  },
-  chip: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-    backgroundColor: Colors.inputBackground,
-  },
-  chipActive: {
-    backgroundColor: Colors.primaryLight,
-    borderColor: Colors.primary,
-  },
-  chipText: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  chipTextActive: {
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-  row: {
-    flexDirection: 'row',
-    gap: 12,
-  },
-  halfField: {
-    flex: 1,
-  },
-  error: {
-    color: Colors.error,
-    marginBottom: 10,
-    marginTop: -6,
-    fontSize: 12,
-  },
-  buttonContainer: {
-    flexDirection: 'row',
-    gap: 12,
-    marginTop: 24,
-    marginBottom: 20,
-    paddingBottom: 20,
-  },
-  primaryButton: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: Colors.primary,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  primaryButtonText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  secondaryButton: {
-    flex: 1,
-    flexDirection: 'row',
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    paddingVertical: 14,
-    borderRadius: 10,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-  },
-  secondaryButtonText: {
-    color: Colors.primary,
-    fontWeight: '600',
-    fontSize: 16,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  reviewCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Colors.divider,
-    elevation: 1,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
-  },
-  reviewSectionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-    marginBottom: 10,
-  },
-  reviewSection: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 8,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  reviewLabel: {
-    fontSize: 13,
-    color: Colors.textMuted,
-    flex: 1,
-  },
-  reviewValue: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    flex: 2,
-    textAlign: 'right',
-  },
-});

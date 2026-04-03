@@ -5,13 +5,12 @@ import {
   StyleSheet,
   ScrollView,
   Image,
-  Dimensions,
   TouchableOpacity,
   FlatList,
   ListRenderItem,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 import {
@@ -25,9 +24,10 @@ import {
   getAgeFromDOB,
   getFullName,
 } from '../../core/utils/format';
-import HomeHeader from '../../shared/components/HomeHeader';
+import Header from '../../core/components/Header';
 import { useGetMyProfileQuery } from '../../store/services/profileApi';
 import { ProfileData } from '../../core/types/api';
+import { windowWidth } from '../../core/utils/device';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -47,8 +47,6 @@ interface RowProps {
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
-
-const SCREEN_WIDTH = Dimensions.get('window').width;
 
 const FALLBACK_PHOTOS = [
   'https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=800',
@@ -209,6 +207,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
       <Image
         source={{ uri: item }}
         style={styles.photo}
+        resizeMode="cover"
         accessibilityLabel={`Profile photo ${index + 1}`}
       />
     ),
@@ -219,7 +218,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
 
   if (!loading && error !== null) {
     return (
-      <SafeAreaProvider style={styles.centerContainer}>
+      <SafeAreaView style={styles.centerContainer}>
         <Feather name="alert-circle" size={48} color={Colors.danger} />
         <Text style={styles.errorTitle}>Something went wrong</Text>
         <Text style={styles.errorSubtitle}>{error}</Text>
@@ -232,7 +231,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
         >
           <Text style={styles.retryButtonText}>Try Again</Text>
         </TouchableOpacity>
-      </SafeAreaProvider>
+      </SafeAreaView>
     );
   }
 
@@ -240,19 +239,19 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
 
   if (loading) {
     return (
-      <SafeAreaProvider style={styles.safe}>
-        <HomeHeader />
+      <SafeAreaView style={styles.safe}>
+        <Header />
         <ProfileSkeleton />
-      </SafeAreaProvider>
+      </SafeAreaView>
     );
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaProvider style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       {/* Header */}
-      <HomeHeader />
+      <Header />
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
@@ -269,7 +268,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
             renderItem={renderPhoto}
             onScroll={(e) => {
               const index = Math.round(
-                e.nativeEvent.contentOffset.x / SCREEN_WIDTH
+                e.nativeEvent.contentOffset.x / windowWidth
               );
               setActivePhotoIndex(index);
             }}
@@ -496,7 +495,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
 
         <View style={styles.footer} />
       </ScrollView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 
@@ -522,9 +521,8 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.backgroundPage,
   },
   photo: {
-    width: SCREEN_WIDTH,
+    width: windowWidth,
     height: 400,
-    resizeMode: 'cover',
   },
   dotRow: {
     position: 'absolute',
@@ -695,7 +693,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   skeletonPhoto: {
-    width: SCREEN_WIDTH,
+    width: windowWidth,
     height: 400,
     backgroundColor: Colors.backgroundLight,
   },

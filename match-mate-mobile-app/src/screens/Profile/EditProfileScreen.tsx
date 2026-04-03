@@ -11,11 +11,10 @@ import {
   Platform,
   Alert,
   Image,
-  StatusBar,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import Feather from 'react-native-vector-icons/Feather';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 import {
@@ -581,20 +580,19 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
 
   if (pageLoading) {
     return (
-      <SafeAreaProvider style={styles.safe}>
+      <SafeAreaView style={styles.safe}>
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={Colors.primary} />
           <Text style={styles.loadingText}>Loading your profile...</Text>
         </View>
-      </SafeAreaProvider>
+      </SafeAreaView>
     );
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaProvider style={styles.safe}>
-      <StatusBar barStyle="dark-content" />
+    <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         style={styles.flex}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
@@ -963,7 +961,7 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
           <View style={styles.footer} />
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }
 
@@ -994,10 +992,7 @@ const styles = StyleSheet.create({
     padding: 16,
     marginBottom: 16,
     elevation: 1,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
   },
   completionRow: {
     flexDirection: 'row',
@@ -1038,10 +1033,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
     overflow: 'hidden',
     elevation: 1,
-    shadowColor: Colors.black,
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 1 },
+    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
   },
   sectionHeader: {
     flexDirection: 'row',
@@ -1086,7 +1078,6 @@ const styles = StyleSheet.create({
     width: 100,
     height: 125,
     borderRadius: 10,
-    resizeMode: 'cover',
   },
   primaryBadge: {
     position: 'absolute',
