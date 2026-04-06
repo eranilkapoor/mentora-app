@@ -2,7 +2,6 @@ import React, { useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   Image,
   TouchableOpacity,
@@ -14,7 +13,8 @@ import Header from '../../core/components/Header';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 import { type Profile } from '../../core/types/profile.types';
-import { windowWidth } from '../../core/utils/device';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { homeStyles } from './HomeScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -70,6 +70,8 @@ function PhotoCarousel({
   photos: string[];
   name: string;
 }): React.ReactElement {
+  const styles = useThemedStyles(homeStyles);
+
   const renderPhoto: ListRenderItem<string> = useCallback(
     ({ item }) => (
       <Image
@@ -79,7 +81,7 @@ function PhotoCarousel({
         accessibilityLabel={`Photo of ${name}`}
       />
     ),
-    [name]
+    [name, styles]
   );
 
   return (
@@ -101,6 +103,8 @@ function InfoRow({
   label: string;
   value: string;
 }): React.ReactElement {
+  const styles = useThemedStyles(homeStyles);
+
   return (
     <View style={styles.infoRow}>
       <Text style={styles.label}>{label}</Text>
@@ -115,6 +119,8 @@ function ProfileCard({
   onView,
   onShortlist,
 }: ProfileCardProps): React.ReactElement {
+  const styles = useThemedStyles(homeStyles);
+
   return (
     <View style={styles.card}>
       <PhotoCarousel photos={item.photos} name={item.name} />
@@ -194,6 +200,8 @@ function ProfileCard({
 export default function HomeScreen({
   navigation,
 }: HomeScreenProps): React.ReactElement {
+  const styles = useThemedStyles(homeStyles);
+
   const handleChat = useCallback(
     (profile: Profile) => {
       navigation.navigate('Chats', { userId: profile.userId });
@@ -238,143 +246,3 @@ export default function HomeScreen({
     </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  listContent: {
-    paddingBottom: 24,
-  },
-  card: {
-    backgroundColor: Colors.white,
-    marginHorizontal: 12,
-    marginTop: 16,
-    borderRadius: 14,
-    overflow: 'hidden',
-    elevation: 3,
-    boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.08)`,
-  },
-  photo: {
-    width: windowWidth - 24,
-    height: 320,
-  },
-  photoBadge: {
-    position: 'absolute',
-    top: 12,
-    right: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.overlayDark,
-    borderRadius: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    gap: 4,
-  },
-  photoBadgeText: {
-    color: Colors.white,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  cardContent: {
-    padding: 16,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  name: {
-    fontSize: 20,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  verifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  verifiedText: {
-    fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  metaRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  meta: {
-    fontSize: 14,
-    color: Colors.textMuted,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: Colors.divider,
-    marginVertical: 12,
-  },
-  infoGrid: {
-    gap: 6,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  label: {
-    fontSize: 12,
-    color: Colors.textMuted,
-  },
-  value: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  actions: {
-    flexDirection: 'row',
-    marginTop: 16,
-    gap: 10,
-  },
-  chatBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: Colors.chatBtn,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  chatText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  viewBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    backgroundColor: Colors.backgroundLight,
-    paddingVertical: 12,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  viewText: {
-    color: Colors.textPrimary,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  shortlistBtn: {
-    width: 48,
-    backgroundColor: Colors.shortlistBg,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});

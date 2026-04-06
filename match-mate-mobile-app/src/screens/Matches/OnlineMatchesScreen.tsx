@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   Image,
   TouchableOpacity,
@@ -12,6 +11,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { onlineMatchesStyles } from './OnlineMatchesScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -95,75 +96,81 @@ const MatchCard: React.FC<MatchCardProps> = ({
   item,
   onChat,
   onViewProfile,
-}) => (
-  <View style={styles.card}>
-    {/* Photo */}
-    <View style={styles.photoWrapper}>
-      <Image
-        source={{ uri: item.photo }}
-        style={styles.image}
-        resizeMode="cover"
-      />
-      <View style={styles.photoScrim} />
+}) => {
+  const styles = useThemedStyles(onlineMatchesStyles);
 
-      {/* Top badges */}
-      <View style={styles.badgeRow}>
-        {item.isOnline && (
-          <View style={styles.onlineBadge}>
-            <View style={styles.onlineDot} />
-            <Text style={styles.onlineBadgeText}>Online now</Text>
-          </View>
-        )}
-        {item.isNew && (
-          <View style={styles.newBadge}>
-            <Text style={styles.newBadgeText}>NEW</Text>
-          </View>
-        )}
+  return (
+    <View style={styles.card}>
+      {/* Photo */}
+      <View style={styles.photoWrapper}>
+        <Image
+          source={{ uri: item.photo }}
+          style={styles.image}
+          resizeMode="cover"
+        />
+        <View style={styles.photoScrim} />
+
+        {/* Top badges */}
+        <View style={styles.badgeRow}>
+          {item.isOnline && (
+            <View style={styles.onlineBadge}>
+              <View style={styles.onlineDot} />
+              <Text style={styles.onlineBadgeText}>Online now</Text>
+            </View>
+          )}
+          {item.isNew && (
+            <View style={styles.newBadge}>
+              <Text style={styles.newBadgeText}>NEW</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Name overlay */}
+        <View style={styles.nameOverlay}>
+          <Text style={styles.nameOverlayText}>
+            {item.name}, {item.age}
+          </Text>
+          <Text style={styles.cityOverlayText}>📍 {item.city}</Text>
+        </View>
       </View>
 
-      {/* Name overlay */}
-      <View style={styles.nameOverlay}>
-        <Text style={styles.nameOverlayText}>
-          {item.name}, {item.age}
-        </Text>
-        <Text style={styles.cityOverlayText}>📍 {item.city}</Text>
+      {/* Info */}
+      <View style={styles.info}>
+        <View style={styles.tagsRow}>
+          {[item.height, item.education, item.profession].map((tag) => (
+            <View key={tag} style={styles.tag}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+
+        {/* Actions */}
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={styles.chatBtn}
+            onPress={onChat}
+            activeOpacity={0.85}
+          >
+            <Text style={styles.chatText}>💬 Chat</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.profileBtn}
+            onPress={onViewProfile}
+            activeOpacity={0.8}
+          >
+            <Text style={styles.profileText}>View Profile</Text>
+          </TouchableOpacity>
+        </View>
       </View>
     </View>
-
-    {/* Info */}
-    <View style={styles.info}>
-      <View style={styles.tagsRow}>
-        {[item.height, item.education, item.profession].map((tag) => (
-          <View key={tag} style={styles.tag}>
-            <Text style={styles.tagText}>{tag}</Text>
-          </View>
-        ))}
-      </View>
-
-      {/* Actions */}
-      <View style={styles.actions}>
-        <TouchableOpacity
-          style={styles.chatBtn}
-          onPress={onChat}
-          activeOpacity={0.85}
-        >
-          <Text style={styles.chatText}>💬 Chat</Text>
-        </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.profileBtn}
-          onPress={onViewProfile}
-          activeOpacity={0.8}
-        >
-          <Text style={styles.profileText}>View Profile</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
-  </View>
-);
+  );
+};
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function OnlineMatchesScreen({ navigation }: Props) {
+  const styles = useThemedStyles(onlineMatchesStyles);
+
   const [matches, setMatches] = useState<OnlineMatch[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -237,161 +244,3 @@ export default function OnlineMatchesScreen({ navigation }: Props) {
     </SafeAreaView>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderColor: Colors.border,
-  },
-  headerTitle: { fontSize: 20, fontWeight: '800', color: Colors.textPrimary },
-  headerSub: { fontSize: 12, color: Colors.textMuted, marginTop: 2 },
-  onlineCountText: { color: Colors.primary, fontWeight: '700' },
-  liveIndicator: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderWidth: 1,
-    borderColor: Colors.border,
-  },
-  liveDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-  },
-  liveText: {
-    fontSize: 11,
-    fontWeight: '800',
-    color: Colors.primary,
-    letterSpacing: 1,
-  },
-
-  listContent: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 24 },
-
-  // Card
-  card: {
-    marginBottom: 14,
-    borderRadius: 16,
-    backgroundColor: Colors.white,
-    overflow: 'hidden',
-    boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.07)`,
-    elevation: 3,
-  },
-
-  // Photo
-  photoWrapper: { position: 'relative' },
-  image: { width: '100%', height: 230 },
-  photoScrim: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    height: 110,
-    backgroundColor: Colors.overlayDark,
-  },
-  badgeRow: {
-    position: 'absolute',
-    top: 10,
-    left: 10,
-    flexDirection: 'row',
-    gap: 6,
-  },
-  onlineBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    backgroundColor: Colors.overlayDark,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  onlineDot: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: Colors.success,
-  },
-  onlineBadgeText: { color: Colors.white, fontSize: 11, fontWeight: '700' },
-  newBadge: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-  },
-  newBadgeText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  nameOverlay: {
-    position: 'absolute',
-    bottom: 10,
-    left: 12,
-    right: 12,
-  },
-  nameOverlayText: { fontSize: 20, fontWeight: '800', color: Colors.white },
-  cityOverlayText: {
-    fontSize: 12,
-    color: Colors.white,
-    marginTop: 2,
-  },
-
-  // Info
-  info: { padding: 12 },
-  tagsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 12 },
-  tag: {
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  tagText: { fontSize: 11, color: Colors.primary, fontWeight: '600' },
-
-  // Actions
-  actions: { flexDirection: 'row', gap: 10 },
-  chatBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    boxShadow: `0px 3px 6px rgba(0, 0, 0, 0.3)`,
-    elevation: 4,
-  },
-  chatText: { color: Colors.white, fontWeight: '700', fontSize: 13 },
-  profileBtn: {
-    flex: 1,
-    paddingVertical: 10,
-    borderRadius: 10,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    alignItems: 'center',
-  },
-  profileText: { color: Colors.primary, fontWeight: '700', fontSize: 13 },
-
-  // States
-  center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
-  loadingText: { fontSize: 13, color: Colors.textMuted, marginTop: 8 },
-  emptyEmoji: { fontSize: 40, marginBottom: 4 },
-  emptyTitle: { fontSize: 16, fontWeight: '700', color: Colors.textPrimary },
-  emptySub: { fontSize: 13, color: Colors.textMuted },
-});

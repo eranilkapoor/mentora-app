@@ -3,7 +3,6 @@ import {
   View,
   Text,
   TextInput,
-  StyleSheet,
   ScrollView,
   TouchableOpacity,
   ActivityIndicator,
@@ -21,6 +20,8 @@ import {
   useGetMyProfileQuery,
   useUpdatePersonalInfoMutation,
 } from '../../store/services/profileApi';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { editProfileStyles } from './EditProfileScreen.styles';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface EditProfileScreenProps {
@@ -205,6 +206,8 @@ function FormInput({
   keyboardType = 'default',
   editable = true,
 }: FormInputProps): React.ReactElement {
+  const styles = useThemedStyles(editProfileStyles);
+
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -234,6 +237,8 @@ function SelectPill({
   value,
   onChange,
 }: SelectPillProps): React.ReactElement {
+  const styles = useThemedStyles(editProfileStyles);
+
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
@@ -268,6 +273,7 @@ function TagInput({
   placeholder,
 }: TagInputProps): React.ReactElement {
   const [text, setText] = useState('');
+  const styles = useThemedStyles(editProfileStyles);
 
   const handleAdd = useCallback((): void => {
     const trimmed = text.trim();
@@ -335,6 +341,7 @@ function SectionCard({
   onSave,
 }: SectionCardProps): React.ReactElement {
   const isSaving = sectionLoading === sectionKey;
+  const styles = useThemedStyles(editProfileStyles);
 
   return (
     <View style={styles.sectionCard}>
@@ -368,6 +375,7 @@ function SectionCard({
 }
 
 function CompletionBar({ percent }: { percent: number }): React.ReactElement {
+  const styles = useThemedStyles(editProfileStyles);
   const color =
     percent < 40
       ? Colors.danger
@@ -575,6 +583,7 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
   );
 
   const sectionProps = { sectionLoading, onSave: handleSave };
+  const styles = useThemedStyles(editProfileStyles);
 
   // ─── Loading state ────────────────────────────────────────────────────────
 
@@ -964,293 +973,3 @@ export default function EditProfileScreen({}: EditProfileScreenProps): React.Rea
     </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: Colors.backgroundPage },
-  flex: { flex: 1 },
-  loadingContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    fontSize: 14,
-    color: Colors.textMuted,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 48,
-  },
-
-  // ── Completion ────────────────────────────────────────────────────────────
-  completionCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 16,
-    elevation: 1,
-    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
-  },
-  completionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: 12,
-  },
-  completionTitle: {
-    fontSize: 15,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 4,
-  },
-  completionSubtitle: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    maxWidth: 220,
-  },
-  completionPercent: {
-    fontSize: 24,
-    fontWeight: '900',
-  },
-  progressBarBg: {
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.backgroundLight,
-    overflow: 'hidden',
-  },
-  progressBarFill: {
-    height: 6,
-    borderRadius: 3,
-  },
-
-  // ── Section Card ──────────────────────────────────────────────────────────
-  sectionCard: {
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-    elevation: 1,
-    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-    backgroundColor: Colors.backgroundPage,
-  },
-  sectionIconWrapper: {
-    width: 26,
-    height: 26,
-    borderRadius: 7,
-    backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  sectionBody: {
-    padding: 16,
-  },
-
-  // ── Photos ────────────────────────────────────────────────────────────────
-  photoRow: {
-    gap: 10,
-    paddingHorizontal: 2,
-    paddingVertical: 4,
-  },
-  photoWrapper: {
-    position: 'relative',
-    marginRight: 4,
-  },
-  photo: {
-    width: 100,
-    height: 125,
-    borderRadius: 10,
-  },
-  primaryBadge: {
-    position: 'absolute',
-    bottom: 30,
-    left: 0,
-    right: 0,
-    backgroundColor: Colors.primary,
-    paddingVertical: 2,
-    alignItems: 'center',
-  },
-  primaryBadgeText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  photoActions: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 4,
-    gap: 6,
-  },
-  photoActionBtn: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 5,
-    borderRadius: 6,
-    backgroundColor: Colors.backgroundLight,
-  },
-  photoActionBtnDanger: {
-    backgroundColor: Colors.errorLight,
-  },
-  addPhotoBtn: {
-    width: 100,
-    height: 125,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    borderStyle: 'dashed',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    backgroundColor: Colors.inputBackground,
-  },
-  addPhotoText: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    fontWeight: '500',
-  },
-  photoHint: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    paddingHorizontal: 16,
-    paddingBottom: 12,
-    lineHeight: 17,
-  },
-
-  // ── Form Fields ───────────────────────────────────────────────────────────
-  field: { marginBottom: 14 },
-  fieldLabel: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: 6,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    fontSize: 15,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.inputBackground,
-  },
-  multilineInput: {
-    minHeight: 90,
-    paddingTop: 12,
-  },
-  inputDisabled: { opacity: 0.5 },
-  row: { flexDirection: 'row', gap: 10 },
-  halfField: { flex: 1 },
-
-  // ── Pills ─────────────────────────────────────────────────────────────────
-  pillRow: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  pill: {
-    paddingVertical: 7,
-    paddingHorizontal: 14,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 20,
-    backgroundColor: Colors.inputBackground,
-  },
-  pillSelected: {
-    backgroundColor: Colors.primaryLight,
-    borderColor: Colors.primary,
-  },
-  pillText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    textTransform: 'capitalize',
-  },
-  pillTextSelected: {
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-
-  // ── Tag Input ─────────────────────────────────────────────────────────────
-  tagInputRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
-  },
-  tagInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 10,
-    paddingHorizontal: 12,
-    paddingVertical: 11,
-    fontSize: 15,
-    color: Colors.textPrimary,
-    backgroundColor: Colors.inputBackground,
-  },
-  tagAddBtn: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: Colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  tagList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-    marginTop: 10,
-  },
-  tag: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-  },
-  tagText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-
-  // ── Save Button ───────────────────────────────────────────────────────────
-  saveBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    margin: 16,
-    marginTop: 4,
-    backgroundColor: Colors.primary,
-    paddingVertical: 13,
-    borderRadius: 10,
-  },
-  saveBtnDisabled: { opacity: 0.6 },
-  saveBtnText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  footer: { height: 16 },
-});

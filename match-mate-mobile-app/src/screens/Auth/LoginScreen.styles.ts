@@ -71,7 +71,10 @@ export const loginStyles = (theme: Theme) =>
     },
 
     tabActive: {
-      backgroundColor: theme.colors.black,
+      backgroundColor: theme.colors.white,
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      elevation: 2,
     },
 
     tabIcon: {
@@ -85,7 +88,7 @@ export const loginStyles = (theme: Theme) =>
     },
 
     tabTextActive: {
-      color: theme.colors.white,
+      color: theme.colors.primary,
     },
 
     form: {
@@ -246,7 +249,7 @@ export const loginStyles = (theme: Theme) =>
 
     primaryButton: {
       marginTop: 16,
-      backgroundColor: theme.colors.black,
+      backgroundColor: theme.colors.primary,
       paddingVertical: 14,
       borderRadius: 10,
       alignItems: 'center',

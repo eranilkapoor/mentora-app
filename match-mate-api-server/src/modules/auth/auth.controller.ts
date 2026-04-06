@@ -1,4 +1,6 @@
-import { Controller, Post, Body, UseGuards, Get } from '@nestjs/common';
+import { Controller, Post, Body, UseGuards, Get, UseInterceptors, UploadedFiles, ValidationPipe, BadRequestException, Req } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { memoryStorage } from 'multer';
 import { ApiResponse } from 'src/common/response.dto';
 import {
   RegisterDto,
@@ -102,12 +104,40 @@ export class AuthController {
   }
 
   @Post('onboarding-profile')
+  @UseInterceptors(
+    FilesInterceptor('images', 6, {
+      storage: memoryStorage(),
+      fileFilter: (_, file, cb) => {
+        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+        if (!allowed.includes(file.mimetype)) {
+          return cb(
+            new Error('Only JPG, PNG, WEBP images are allowed'),
+            false
+          );
+        }
+
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per image
+    }),
+  )
   async onboardingProfile(
+    @Req() req: any,
     @CurrentUser('userId') userId: string,
-    @Body() dto: OnboardingProfileDto,
+    @Body(new ValidationPipe({ transform: true })) dto: OnboardingProfileDto,
+    //@Body() dto: any,
+    @UploadedFiles() images: Express.Multer.File[],
   ) {
+    console.log('🟢 AFTER VALIDATION DTO:', dto);
+    const safeImages = images ?? [];
+
+    if (safeImages.length < 1) {
+      throw new BadRequestException('At least 1 image is required');
+    }
+    
     try {
-      const data = await this.authService.onboardingProfile(userId, dto);
+      const data = await this.authService.onboardingProfile(userId, dto, safeImages);
       return new ApiResponse(
         true,
         'Onboarding profile saved successfully',

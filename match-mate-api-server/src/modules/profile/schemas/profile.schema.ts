@@ -10,22 +10,22 @@ import { Diet } from '../enums/diet.enum';
 @Schema({ _id: false })
 class Personal {
   @Prop({ required: true })
-  profileFor: string;
+  profileFor!: string;
 
   @Prop({ required: true })
-  firstName: string;
+  firstName!: string;
 
   @Prop()
   lastName?: string;
 
   @Prop({ required: true, enum: Gender })
-  gender: Gender;
+  gender!: Gender;
 
   @Prop({ required: true })
-  dob: Date;
+  dob!: Date;
 
   @Prop({ required: true })
-  religion: string;
+  religion!: string;
 
   @Prop()
   caste?: string;
@@ -43,7 +43,7 @@ class Personal {
   motherTongue?: string;
 
   @Prop({ enum: MaritalStatus, required: true })
-  maritalStatus: MaritalStatus;
+  maritalStatus!: MaritalStatus;
 
   @Prop()
   aboutMe?: string;
@@ -52,7 +52,7 @@ class Personal {
 @Schema({ _id: false })
 class Physical {
   @Prop({ required: true })
-  height: number;
+  height!: number;
 
   @Prop()
   weight?: number;
@@ -67,7 +67,7 @@ class Physical {
 @Schema({ _id: false })
 class Education {
   @Prop({ required: true })
-  qualification: string;
+  qualification!: string;
 
   @Prop()
   field?: string;
@@ -76,7 +76,7 @@ class Education {
   university?: string;
 
   @Prop({ required: true })
-  occupation: string;
+  occupation!: string;
 
   @Prop()
   annualIncome?: string;
@@ -85,10 +85,10 @@ class Education {
 @Schema({ _id: false })
 class SiblingDetail {
   @Prop({ enum: ['brother', 'sister'], required: true })
-  type: 'brother' | 'sister';
+  type!: 'brother' | 'sister';
 
   @Prop({ default: false })
-  married: boolean;
+  married!: boolean;
 
   @Prop()
   occupation?: string;
@@ -97,19 +97,19 @@ class SiblingDetail {
 @Schema({ _id: false })
 export class Siblings {
   @Prop({ default: 0 })
-  brothers: number;
+  brothers!: number;
 
   @Prop({ default: 0 })
-  sisters: number;
+  sisters!: number;
 
   @Prop({ default: 0 })
-  marriedBrothers: number;
+  marriedBrothers!: number;
 
   @Prop({ default: 0 })
-  marriedSisters: number;
+  marriedSisters!: number;
 
   @Prop({ type: [SiblingDetail], default: [] })
-  details: SiblingDetail[];
+  details!: SiblingDetail[];
 
   @Prop()
   note?: string;
@@ -145,28 +145,28 @@ class Family {
 @Schema({ _id: false })
 class AgeRange {
   @Prop()
-  min: number;
+  min!: number;
 
   @Prop()
-  max: number;
+  max!: number;
 }
 
 @Schema({ _id: false })
 class HeightRange {
   @Prop()
-  min: number;
+  min!: number;
 
   @Prop()
-  max: number;
+  max!: number;
 }
 
 @Schema({ _id: false })
 class IncomeRange {
   @Prop()
-  min: number;
+  min!: number;
 
   @Prop()
-  max: number;
+  max!: number;
 }
 
 @Schema({ _id: false })
@@ -178,85 +178,102 @@ export class PartnerPreference {
   heightRange?: HeightRange;
 
   @Prop({ type: [String], enum: MaritalStatus, default: [] })
-  maritalStatus: MaritalStatus[];
+  maritalStatus!: MaritalStatus[];
 
   @Prop({ type: [String], default: [] })
-  religion: string[];
+  religion!: string[];
 
   @Prop({ type: [String], default: [] })
-  caste: string[];
+  caste!: string[];
 
   @Prop({ type: [String], default: [] })
-  country: string[];
+  country!: string[];
 
   @Prop({ type: [String], default: [] })
-  state: string[];
+  state!: string[];
 
   @Prop({ type: [String], default: [] })
-  city: string[];
+  city!: string[];
 
   @Prop({ type: [String], default: [] })
-  qualification: string[];
+  qualification!: string[];
 
   @Prop({ type: [String], default: [] })
-  occupation: string[];
+  occupation!: string[];
 
   @Prop({ type: IncomeRange })
   annualIncomeRange?: IncomeRange;
 
   @Prop({ type: [String], default: [] })
-  bodyType: string[];
+  bodyType!: string[];
 
   @Prop({ type: [String], default: [] })
-  complexion: string[];
+  complexion!: string[];
 
   @Prop({ type: [String], enum: Smoking, default: [] })
-  smoking: Smoking[];
+  smoking!: Smoking[];
 
   @Prop({ type: [String], enum: Drinking, default: [] })
-  drinking: Drinking[];
+  drinking!: Drinking[];
 
   @Prop({ type: [String], enum: Diet, default: [] })
-  diet: Diet[];
+  diet!: Diet[];
 
   @Prop({ type: [String], default: [] })
-  languagesKnown: string[];
+  languagesKnown!: string[];
 
   @Prop()
   aboutPartner?: string;
 
   @Prop({ default: false })
-  isStrict: boolean;
+  isStrict!: boolean;
 }
 
 @Schema({ _id: false })
 class Preferences {
   @Prop({ type: PartnerPreference, required: true })
-  partnerPreference: PartnerPreference;
+  partnerPreference!: PartnerPreference;
 
   @Prop({ type: [String], default: [] })
-  hobbies: string[];
+  hobbies!: string[];
 
   @Prop({ type: String, enum: Smoking, default: '' })
-  smoking: string;
+  smoking!: string;
 
   @Prop({ type: String, enum: Drinking, default: '' })
-  drinking: string;
+  drinking!: string;
 
   @Prop({ type: String, enum: Diet, default: '' })
-  diet: string;
+  diet!: string;
 
   @Prop({ type: [String], default: [] })
-  music: string[];
+  music!: string[];
 
   @Prop({ type: [String], default: [] })
-  movies: string[];
+  movies!: string[];
 
   @Prop({ type: [String], default: [] })
-  sports: string[];
+  sports!: string[];
 
   @Prop({ type: [String], default: [] })
-  languagesKnown: string[];
+  languagesKnown!: string[];
+}
+
+// ─── New: Profile Image ───────────────────────────────────────────────────────
+
+@Schema({ _id: true, timestamps: true })
+class ProfileImage {
+  @Prop({ required: true })
+  url!: string;
+
+  @Prop({ default: false })
+  isPrimary!: boolean;
+
+  @Prop({ default: true })
+  isActive!: boolean;
+
+  @Prop()
+  uploadedAt!: Date;
 }
 
 @Schema({ collection: COLLECTIONS.PROFILE, timestamps: true })
@@ -266,40 +283,43 @@ export class Profile {
     required: true,
     unique: true,
   })
-  userId: Types.ObjectId;
+  userId!: Types.ObjectId;
 
   @Prop({ type: Personal, required: true })
-  personal: Personal;
+  personal!: Personal;
 
   @Prop({ type: Physical, required: true })
-  physical: Physical;
+  physical!: Physical;
 
   @Prop({ type: Education, required: true })
-  education: Education;
+  education!: Education;
 
   @Prop({ type: Family, required: true })
-  family: Family;
+  family!: Family;
 
   @Prop({ type: Preferences, required: true })
-  preferences: Preferences;
+  preferences!: Preferences;
+
+  @Prop({ type: [ProfileImage], default: [] })
+  images!: ProfileImage[];
 
   @Prop({ default: 0 })
-  profileCompletionPercentage: number;
+  profileCompletionPercentage!: number;
 
   @Prop({ default: false })
-  isVerified: boolean;
+  isVerified!: boolean;
 
   @Prop({ default: false })
-  isPremium: boolean;
+  isPremium!: boolean;
 
   @Prop({ default: false })
-  isProfileLocked: boolean;
+  isProfileLocked!: boolean;
 
   @Prop({ default: false })
-  isDeleted: boolean;
+  isDeleted!: boolean;
 
   @Prop({ default: false })
-  isActive: boolean;
+  isActive!: boolean;
 }
 
 export type ProfileDocument = Profile & Document;

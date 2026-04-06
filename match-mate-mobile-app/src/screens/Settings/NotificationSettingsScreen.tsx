@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
-  StyleSheet,
   Switch,
   TouchableOpacity,
   ScrollView,
@@ -12,6 +11,8 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { notificationSettingsStyles } from './NotificationSettingsScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -200,6 +201,8 @@ function ToggleRow({
   onValueChange,
   disabled = false,
 }: ToggleRowProps): React.ReactElement {
+  const styles = useThemedStyles(notificationSettingsStyles);
+
   return (
     <View style={[styles.row, disabled && styles.rowDisabled]}>
       <View style={styles.rowIconWrapper}>
@@ -242,6 +245,8 @@ function SectionCard({
   onToggle: (key: string, val: boolean) => void;
   masterEnabled: boolean;
 }): React.ReactElement {
+  const styles = useThemedStyles(notificationSettingsStyles);
+
   return (
     <View style={styles.card}>
       <View style={styles.cardHeader}>
@@ -270,6 +275,7 @@ function SectionCard({
 export default function NotificationSettingsScreen({}: NotificationSettingsScreenProps): React.ReactElement {
   const [settings, setSettings] =
     useState<NotificationState>(buildInitialState);
+  const styles = useThemedStyles(notificationSettingsStyles);
 
   const masterEnabled = settings['masterToggle'] ?? true;
 
@@ -410,149 +416,3 @@ export default function NotificationSettingsScreen({}: NotificationSettingsScree
     </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 48,
-  },
-  masterCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 12,
-    borderWidth: 1,
-    borderColor: Colors.primaryBorder,
-  },
-  masterLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  masterIconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  masterLabel: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  masterSubtitle: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-    marginTop: 2,
-  },
-  quickActions: {
-    flexDirection: 'row',
-    backgroundColor: Colors.white,
-    borderRadius: 10,
-    marginBottom: 20,
-    overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Colors.divider,
-  },
-  quickActionBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    paddingVertical: 12,
-  },
-  quickActionDivider: {
-    width: StyleSheet.hairlineWidth,
-    backgroundColor: Colors.divider,
-  },
-  quickActionText: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.primary,
-  },
-  quickActionTextDanger: {
-    color: Colors.danger,
-  },
-  card: {
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-    elevation: 1,
-    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
-  },
-  cardHeader: {
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-    backgroundColor: Colors.backgroundPage,
-  },
-  sectionTitle: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.6,
-  },
-  sectionSubtitle: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 2,
-  },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 14,
-    paddingVertical: 12,
-  },
-  rowDisabled: {
-    opacity: 0.5,
-  },
-  rowIconWrapper: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 12,
-  },
-  rowTextWrapper: {
-    flex: 1,
-    marginRight: 8,
-  },
-  rowLabel: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-  },
-  rowDescription: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginTop: 2,
-  },
-  rowDivider: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: Colors.divider,
-    marginLeft: 60,
-  },
-  textDisabled: {
-    color: Colors.textMuted,
-  },
-  footer: {
-    height: 24,
-  },
-});

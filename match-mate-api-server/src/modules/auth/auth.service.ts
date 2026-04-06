@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -11,15 +12,20 @@ import * as bcrypt from 'bcryptjs';
 import { RegisterDto, LoginDto, SocialLoginDto } from './dto/auth.dto';
 import { AuthProvider } from './enums/auth-provider.enum';
 import { OnboardingProfileDto } from './dto/onboarding-profile.dto';
+import { StorageService } from '../storage/storage.service';
+import type { ICacheService } from 'src/modules/cache/cache.interface';
+import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly storageService: StorageService,
     private readonly userRepo: UserRepository,
     private readonly profileService: ProfileService,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
-  ) {}
+    @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
+  ) { }
 
   async register(dto: RegisterDto) {
     try {
@@ -55,6 +61,10 @@ export class AuthService {
         userId: user._id,
         role: 'user',
       });
+
+      const cacheKey = `auth:${user.id}`;
+      // Cache for 15 minutes
+      await this.cache.set(cacheKey, token, 900);
 
       return {
         user: {
@@ -101,6 +111,10 @@ export class AuthService {
         role: 'user',
       });
 
+      const cacheKey = `auth:${existingUser.id}`;
+      // Cache for 15 minutes
+      await this.cache.set(cacheKey, token, 900);
+
       return {
         user: {
           userId: existingUser._id,
@@ -139,6 +153,10 @@ export class AuthService {
           role: 'user',
         });
 
+        const cacheKey = `auth:${existingUser.id}`;
+        // Cache for 15 minutes
+        await this.cache.set(cacheKey, token, 900);
+
         return {
           user: {
             userId: existingUser._id,
@@ -168,6 +186,10 @@ export class AuthService {
         userId: user._id,
         role: 'user',
       });
+
+      const cacheKey = `auth:${user.id}`;
+      // Cache for 15 minutes
+      await this.cache.set(cacheKey, token, 900);
 
       return {
         user: {
@@ -199,6 +221,10 @@ export class AuthService {
           role: 'user',
         });
 
+        const cacheKey = `auth:${existingUser.id}`;
+        // Cache for 15 minutes
+        await this.cache.set(cacheKey, token, 900);
+
         return {
           user: {
             userId: existingUser._id,
@@ -214,7 +240,7 @@ export class AuthService {
           {
             provider:
               AuthProvider[
-                dto.provider.toUpperCase() as keyof typeof AuthProvider
+              dto.provider.toUpperCase() as keyof typeof AuthProvider
               ],
             providerId: dto.provider_id,
             isVerified: true,
@@ -227,6 +253,10 @@ export class AuthService {
         userId: user._id,
         role: 'user',
       });
+
+      const cacheKey = `auth:${user.id}`;
+      // Cache for 15 minutes
+      await this.cache.set(cacheKey, token, 900);
 
       return {
         user: {
@@ -274,14 +304,22 @@ export class AuthService {
     }
   }
 
-  async onboardingProfile(userId: string, dto: OnboardingProfileDto) {
+  async onboardingProfile(userId: string, dto: OnboardingProfileDto, images: Express.Multer.File[]) {
     try {
       const user = await this.userRepo.findById(userId);
       if (!user) {
         throw new UnauthorizedException('User not found');
       }
 
-      await this.profileService.createProfile(userId, dto);
+      // Parse primaryImageIndex sent from frontend FormData
+      const primaryIndex = dto.primaryImageIndex !== undefined
+        ? parseInt(String(dto.primaryImageIndex), 10)
+        : 0;
+
+      // Upload images to local filesystem
+      const uploadedImages = await this.uploadImages(images, primaryIndex);
+
+      await this.profileService.createProfile(userId, dto, uploadedImages);
 
       user.isProfileCompleted = true;
       await user.save();
@@ -296,6 +334,21 @@ export class AuthService {
       }
       throw new UnauthorizedException('Profile onboarding failed');
     }
+  }
+
+  private async uploadImages(
+    files: Express.Multer.File[],
+    primaryIndex: number,
+  ): Promise<{ filename: string; url: string; isPrimary: boolean }[]> {
+    if (!files || files.length === 0) return [];
+
+    const uploaded = await this.storageService.uploadFiles(files, 'profiles');
+
+    return uploaded.map((result, index) => ({
+      filename: result.filename, // ← just the filename, stored in DB
+      url: result.url,           // ← full URL for client use
+      isPrimary: index === primaryIndex,
+    }));
   }
 
   async verifyUser(userId: string) {

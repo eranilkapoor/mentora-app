@@ -279,4 +279,99 @@ export const onboardingStyles = (theme: Theme) =>
       flex: 2,
       textAlign: 'right',
     },
+
+    ///////////////////////////
+    // ─── Photo styles (add to onboardingStyles StyleSheet.create block) ───────────
+
+    photoRow: {
+      flexDirection: 'row',
+      gap: 12,
+      paddingVertical: 8,
+      paddingHorizontal: 2,
+    },
+    photoWrapper: {
+      width: 110,
+      height: 140,
+      borderRadius: 12,
+      overflow: 'hidden',
+      position: 'relative',
+    },
+    photo: {
+      width: '100%',
+      height: '100%',
+      borderRadius: 12,
+    },
+    primaryBadge: {
+      position: 'absolute',
+      top: 6,
+      left: 6,
+      backgroundColor: theme.colors.primary,
+      borderRadius: 6,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+    },
+    primaryBadgeText: {
+      color: theme.colors.white,
+      fontSize: 10,
+      fontWeight: '700',
+    },
+    photoActions: {
+      position: 'absolute',
+      bottom: 6,
+      right: 6,
+      flexDirection: 'row',
+      gap: 6,
+    },
+    photoActionBtn: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      backgroundColor: theme.colors.white,
+      alignItems: 'center',
+      justifyContent: 'center',
+      elevation: 2,
+    },
+    photoActionBtnDanger: {
+      backgroundColor: theme.colors.errorLight,
+    },
+    addPhotoBtn: {
+      width: 110,
+      height: 140,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: theme.colors.border,
+      borderStyle: 'dashed',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    addPhotoText: {
+      fontSize: 12,
+      color: theme.colors.textMuted,
+      fontWeight: '500',
+    },
+    photoHint: {
+      fontSize: 12,
+      color: theme.colors.textMuted,
+      marginTop: 10,
+      marginBottom: 4,
+      lineHeight: 18,
+    },
+    photoEmptyState: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingVertical: 32,
+      gap: 8,
+    },
+    photoEmptyTitle: {
+      fontSize: 16,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+    },
+    photoEmptySubtitle: {
+      fontSize: 13,
+      color: theme.colors.textMuted,
+      textAlign: 'center',
+    },
   });

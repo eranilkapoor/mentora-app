@@ -17,11 +17,13 @@ export type Theme = {
     backgroundLight: string;
     surface: string; // cards, modals, inputs
     modalOverlay: string;
+    overlayDark: string;
 
     // Text
     textPrimary: string;
     textSecondary: string;
     textMuted: string;
+    textBody: string;
     textInverse: string;
 
     // UI
@@ -42,6 +44,8 @@ export type Theme = {
 
     // Links / CTA
     link: string;
+    chatBtn: string;
+    shortlistBg: string;
 
     // Static (still useful)
     white: string;

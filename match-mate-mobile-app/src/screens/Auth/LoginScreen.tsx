@@ -490,7 +490,7 @@ export default function LoginScreen({
                   name={tab === 'email' ? 'mail' : 'smartphone'}
                   size={14}
                   color={
-                    activeTab === tab ? Colors.white : Colors.textSecondary
+                    activeTab === tab ? Colors.primary : Colors.textSecondary
                   }
                   style={styles.tabIcon}
                 />

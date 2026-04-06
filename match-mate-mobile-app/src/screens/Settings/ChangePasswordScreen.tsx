@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   TextInput,
@@ -17,6 +16,8 @@ import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
 import { useChangePasswordMutation } from '../../store/services/authApi';
 import { PASSWORD_MIN_LENGTH } from '../../core/constants';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { chnagePasswordStyles } from './ChangePasswordScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -70,6 +71,8 @@ function PasswordStrengthBar({
 }: {
   password: string;
 }): React.ReactElement | null {
+  const styles = useThemedStyles(chnagePasswordStyles);
+
   if (password.length === 0) return null;
 
   const passed = PASSWORD_RULES.filter((r) => r.test(password)).length;
@@ -141,6 +144,8 @@ function PasswordField({
   accessibilityLabel,
   editable = true,
 }: PasswordFieldProps): React.ReactElement {
+  const styles = useThemedStyles(chnagePasswordStyles);
+
   return (
     <View style={styles.fieldWrapper}>
       <Text style={styles.label}>{label}</Text>
@@ -194,6 +199,8 @@ function PasswordField({
 export default function ChangePasswordScreen({
   navigation,
 }: ChangePasswordScreenProps): React.ReactElement {
+  const styles = useThemedStyles(chnagePasswordStyles);
+
   const [values, setValues] = useState<FormValues>({
     oldPassword: '',
     newPassword: '',
@@ -431,159 +438,3 @@ export default function ChangePasswordScreen({
     </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 48,
-  },
-  infoBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: Colors.primaryLight,
-    borderRadius: 10,
-    padding: 14,
-    marginBottom: 20,
-  },
-  infoBannerText: {
-    flex: 1,
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '500',
-    lineHeight: 18,
-  },
-  card: {
-    backgroundColor: Colors.white,
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 20,
-    elevation: 2,
-    boxShadow: `0px 2px 6px rgba(0, 0, 0, 0.06)`,
-  },
-  fieldWrapper: {
-    marginBottom: 4,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: Colors.textSecondary,
-    marginBottom: 8,
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.inputBackground,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: 12,
-  },
-  inputIcon: {
-    marginRight: 10,
-  },
-  input: {
-    flex: 1,
-    paddingVertical: 13,
-    fontSize: 15,
-    color: Colors.textPrimary,
-  },
-  eyeButton: {
-    padding: 6,
-  },
-  inputError: {
-    borderColor: Colors.error,
-    backgroundColor: Colors.errorLight,
-  },
-  inputDisabled: {
-    opacity: 0.5,
-  },
-  errorText: {
-    color: Colors.error,
-    fontSize: 12,
-    marginTop: 5,
-  },
-  separator: {
-    height: StyleSheet.hairlineWidth,
-    backgroundColor: Colors.divider,
-    marginVertical: 16,
-  },
-  strengthWrapper: {
-    marginTop: 10,
-    marginBottom: 4,
-  },
-  strengthBarRow: {
-    flexDirection: 'row',
-    gap: 6,
-    marginBottom: 6,
-  },
-  strengthSegment: {
-    flex: 1,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: Colors.border,
-  },
-  strengthLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  rulesContainer: {
-    gap: 5,
-  },
-  ruleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-  },
-  ruleText: {
-    fontSize: 12,
-    color: Colors.textMuted,
-  },
-  ruleTextPassed: {
-    color: Colors.success,
-  },
-  matchRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginTop: 8,
-  },
-  matchText: {
-    fontSize: 12,
-    fontWeight: '500',
-  },
-  primaryButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: Colors.primary,
-    paddingVertical: 15,
-    borderRadius: 12,
-    marginBottom: 12,
-  },
-  primaryButtonText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 16,
-  },
-  disabledButton: {
-    opacity: 0.6,
-  },
-  resetButton: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  resetButtonText: {
-    color: Colors.textMuted,
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});

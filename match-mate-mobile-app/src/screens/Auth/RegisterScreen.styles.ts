@@ -7,7 +7,9 @@ export const registerStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.white,
     },
-    container: { flex: 1 },
+    container: {
+      flex: 1,
+    },
     scrollContent: {
       padding: 20,
       paddingTop: 80,
@@ -48,7 +50,8 @@ export const registerStyles = (theme: Theme) =>
       borderRadius: 10,
       backgroundColor: theme.colors.backgroundLight,
       padding: 4,
-      marginBottom: 16,
+      marginTop: 16,
+      marginBottom: 20,
     },
     tabButton: {
       flex: 1,
@@ -59,15 +62,26 @@ export const registerStyles = (theme: Theme) =>
       borderRadius: 8,
       gap: 6,
     },
-    tabActive: { backgroundColor: theme.colors.black },
-    tabIcon: { marginRight: 2 },
+    tabActive: {
+      backgroundColor: theme.colors.white,
+      borderWidth: 1,
+      borderColor: theme.colors.primary,
+      elevation: 2,
+    },
+    tabIcon: {
+      marginRight: 2,
+    },
     tabText: {
       color: theme.colors.textSecondary,
       fontWeight: '600',
       fontSize: 13,
     },
-    tabTextActive: { color: theme.colors.white },
-    form: { marginTop: 4 },
+    tabTextActive: {
+      color: theme.colors.primary,
+    },
+    form: {
+      marginTop: 4,
+    },
     label: {
       fontSize: 13,
       fontWeight: '600',
@@ -185,7 +199,7 @@ export const registerStyles = (theme: Theme) =>
     },
     primaryButton: {
       marginTop: 16,
-      backgroundColor: theme.colors.black,
+      backgroundColor: theme.colors.primary,
       paddingVertical: 14,
       borderRadius: 10,
       alignItems: 'center',

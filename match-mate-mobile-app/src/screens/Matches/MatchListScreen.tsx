@@ -2,7 +2,6 @@ import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   FlatList,
   TouchableOpacity,
   Image,
@@ -14,6 +13,8 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { matchListStyles } from './MatchListScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -100,103 +101,113 @@ const mockFetchMatches = async (): Promise<Match[]> => {
 // ─── Card Component ───────────────────────────────────────────────────────────
 
 const MatchCard = React.memo<MatchCardProps>(
-  ({ item, onViewProfile, onChat }) => (
-    <View style={styles.card}>
-      <View style={styles.photoWrapper}>
-        <Image
-          source={{ uri: item.avatarUrl }}
-          style={styles.photo}
-          resizeMode="cover"
-        />
+  ({ item, onViewProfile, onChat }) => {
+    const styles = useThemedStyles(matchListStyles);
 
-        <View style={styles.photoOverlay} />
+    return (
+      <View style={styles.card}>
+        <View style={styles.photoWrapper}>
+          <Image
+            source={{ uri: item.avatarUrl }}
+            style={styles.photo}
+            resizeMode="cover"
+          />
 
-        <View style={styles.badgeRow}>
-          {item.isNew && (
-            <View style={styles.newBadge}>
-              <Text style={styles.newBadgeText}>NEW</Text>
-            </View>
-          )}
+          <View style={styles.photoOverlay} />
 
-          {item.isOnline && (
-            <View style={styles.onlineBadge}>
-              <View style={styles.onlineDot} />
-              <Text style={styles.onlineBadgeText}>Online</Text>
-            </View>
-          )}
+          <View style={styles.badgeRow}>
+            {item.isNew && (
+              <View style={styles.newBadge}>
+                <Text style={styles.newBadgeText}>NEW</Text>
+              </View>
+            )}
+
+            {item.isOnline && (
+              <View style={styles.onlineBadge}>
+                <View style={styles.onlineDot} />
+                <Text style={styles.onlineBadgeText}>Online</Text>
+              </View>
+            )}
+          </View>
+
+          <View style={styles.nameOverlay}>
+            <Text style={styles.nameOverlayText} numberOfLines={1}>
+              {item.name}, {item.age}
+            </Text>
+            <Text style={styles.locationOverlayText} numberOfLines={1}>
+              📍 {item.location}
+            </Text>
+          </View>
         </View>
 
-        <View style={styles.nameOverlay}>
-          <Text style={styles.nameOverlayText} numberOfLines={1}>
-            {item.name}, {item.age}
-          </Text>
-          <Text style={styles.locationOverlayText} numberOfLines={1}>
-            📍 {item.location}
-          </Text>
+        <View style={styles.info}>
+          <View style={styles.tagsRow}>
+            {[item.height, item.religion, item.caste].map((tag) => (
+              <View key={tag} style={styles.tag}>
+                <Text style={styles.tagText}>{tag}</Text>
+              </View>
+            ))}
+          </View>
+
+          <View style={styles.metaRow}>
+            <Text style={styles.metaText} numberOfLines={1}>
+              🎓 {item.education}
+            </Text>
+            <Text style={styles.metaText} numberOfLines={1}>
+              💼 {item.profession}
+            </Text>
+          </View>
+
+          <View style={styles.actions}>
+            <TouchableOpacity
+              style={styles.outlineBtn}
+              onPress={onViewProfile}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.outlineText}>View Profile</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.primaryBtn}
+              onPress={onChat}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.primaryText}>💬 Chat</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
-
-      <View style={styles.info}>
-        <View style={styles.tagsRow}>
-          {[item.height, item.religion, item.caste].map((tag) => (
-            <View key={tag} style={styles.tag}>
-              <Text style={styles.tagText}>{tag}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.metaRow}>
-          <Text style={styles.metaText} numberOfLines={1}>
-            🎓 {item.education}
-          </Text>
-          <Text style={styles.metaText} numberOfLines={1}>
-            💼 {item.profession}
-          </Text>
-        </View>
-
-        <View style={styles.actions}>
-          <TouchableOpacity
-            style={styles.outlineBtn}
-            onPress={onViewProfile}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.outlineText}>View Profile</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.primaryBtn}
-            onPress={onChat}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.primaryText}>💬 Chat</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </View>
-  )
+    );
+  }
 );
 
 MatchCard.displayName = 'MatchCard';
 
 // ─── Empty State ──────────────────────────────────────────────────────────────
 
-const EmptyState: React.FC<{ query: string }> = ({ query }) => (
-  <View style={styles.emptyContainer}>
-    <Text style={styles.emptyEmoji}>🔍</Text>
-    <Text style={styles.emptyTitle}>
-      {query ? 'No matches found' : 'No matches yet'}
-    </Text>
-    <Text style={styles.emptySubtitle}>
-      {query
-        ? 'Try adjusting your search or filters'
-        : 'New matches will appear here'}
-    </Text>
-  </View>
-);
+const EmptyState: React.FC<{ query: string }> = ({ query }) => {
+  const styles = useThemedStyles(matchListStyles);
+
+  return (
+    <View style={styles.emptyContainer}>
+      <Text style={styles.emptyEmoji}>🔍</Text>
+      <Text style={styles.emptyTitle}>
+        {query ? 'No matches found' : 'No matches yet'}
+      </Text>
+      <Text style={styles.emptySubtitle}>
+        {query
+          ? 'Try adjusting your search or filters'
+          : 'New matches will appear here'}
+      </Text>
+    </View>
+  );
+};
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 const MatchListScreen: React.FC<Props> = ({ navigation }) => {
+  const styles = useThemedStyles(matchListStyles);
+
   const [matches, setMatches] = useState<Match[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -322,7 +333,7 @@ const MatchListScreen: React.FC<Props> = ({ navigation }) => {
         )}
       </>
     ),
-    [query, loading, filteredMatches.length, handleFilter]
+    [query, loading, filteredMatches.length, handleFilter, styles]
   );
 
   return (
@@ -360,256 +371,3 @@ const MatchListScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 export default MatchListScreen;
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  listContent: {
-    flexGrow: 1,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 12,
-  },
-  loadingText: {
-    color: Colors.textSecondary,
-    fontSize: 14,
-    marginTop: 8,
-  },
-  header: {
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    backgroundColor: Colors.white,
-    borderBottomWidth: 1,
-    borderColor: Colors.border,
-  },
-  headerTitle: {
-    fontSize: 20,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  filterText: {
-    color: Colors.primary,
-    fontWeight: '600',
-    fontSize: 14,
-  },
-  searchBox: {
-    margin: 12,
-    marginBottom: 8,
-    backgroundColor: Colors.white,
-    borderRadius: 10,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    paddingHorizontal: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    ...Platform.select({
-      ios: {
-        boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.05)`,
-      },
-      android: {
-        elevation: 1,
-      },
-    }),
-  },
-  searchInput: {
-    flex: 1,
-    height: 44,
-    color: Colors.textPrimary,
-    fontSize: 14,
-  },
-  clearButton: {
-    padding: 4,
-    marginLeft: 8,
-  },
-  clearText: {
-    color: Colors.textMuted,
-    fontSize: 18,
-    fontWeight: '600',
-  },
-  resultsCount: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-  },
-  resultsText: {
-    color: Colors.textSecondary,
-    fontSize: 13,
-    fontWeight: '500',
-  },
-  card: {
-    backgroundColor: Colors.white,
-    marginHorizontal: 12,
-    marginBottom: 16,
-    borderRadius: 16,
-    overflow: 'hidden',
-    ...Platform.select({
-      ios: {
-        boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.01)`,
-      },
-      android: {
-        elevation: 4,
-      },
-    }),
-  },
-  photo: {
-    width: '100%',
-    height: 280,
-  },
-  photoWrapper: {
-    position: 'relative',
-  },
-  photoOverlay: {
-    position: 'absolute',
-    bottom: 0,
-    height: 120,
-    width: '100%',
-    backgroundColor: Colors.black,
-  },
-  badgeRow: {
-    position: 'absolute',
-    top: 12,
-    left: 12,
-    flexDirection: 'row',
-    gap: 8,
-  },
-  newBadge: {
-    backgroundColor: Colors.primary,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-  },
-  newBadgeText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontWeight: '800',
-    letterSpacing: 0.5,
-  },
-  onlineBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.black,
-    borderRadius: 20,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    gap: 4,
-  },
-  onlineDot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.success,
-  },
-  onlineBadgeText: {
-    color: Colors.white,
-    fontSize: 11,
-    fontWeight: '600',
-  },
-  nameOverlay: {
-    position: 'absolute',
-    bottom: 12,
-    left: 12,
-    right: 12,
-  },
-  nameOverlayText: {
-    color: Colors.white,
-    fontSize: 20,
-    fontWeight: '800',
-    marginBottom: 2,
-  },
-  locationOverlayText: {
-    color: Colors.white,
-    fontSize: 13,
-    opacity: 0.9,
-  },
-  info: {
-    padding: 14,
-  },
-  tagsRow: {
-    flexDirection: 'row',
-    gap: 8,
-    flexWrap: 'wrap',
-  },
-  tag: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  tagText: {
-    color: Colors.primary,
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  metaRow: {
-    marginTop: 12,
-    marginBottom: 14,
-    gap: 6,
-  },
-  metaText: {
-    color: Colors.textSecondary,
-    fontSize: 13,
-  },
-  actions: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  outlineBtn: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  outlineText: {
-    color: Colors.primary,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  primaryBtn: {
-    flex: 1,
-    backgroundColor: Colors.primary,
-    borderRadius: 10,
-    paddingVertical: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  primaryText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 14,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 60,
-    paddingHorizontal: 32,
-  },
-  emptyEmoji: {
-    fontSize: 64,
-    marginBottom: 16,
-  },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginBottom: 8,
-    textAlign: 'center',
-  },
-  emptySubtitle: {
-    fontSize: 14,
-    color: Colors.textSecondary,
-    textAlign: 'center',
-    lineHeight: 20,
-  },
-});

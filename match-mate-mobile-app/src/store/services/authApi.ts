@@ -6,7 +6,6 @@ import {
   ForgotPasswordRequest,
   ChangePasswordRequest,
   SocialLoginRequest,
-  OnboardingProfileRequest,
   ApiResponse,
   LoginResponse,
   RegisterResponse,
@@ -84,12 +83,13 @@ export const authApi = baseApi.injectEndpoints({
 
     onboardingProfile: builder.mutation<
       ApiResponse<OnbardingResponse>,
-      OnboardingProfileRequest
+      FormData
     >({
       query: (body) => ({
         url: '/auth/onboarding-profile',
         method: 'POST',
         body,
+        formData: true,
       }),
     }),
 

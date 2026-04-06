@@ -8,6 +8,7 @@ import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider } from './core/theme/ThemeProvider';
 import i18n from './i18n'; // 🔥 Import i18n instance
 import { StatusBar } from 'react-native';
+import MobileWrapper from './core/components/MobileWrapper';
 
 export default function App() {
   const themeMode = store.getState().settings.theme;
@@ -24,12 +25,16 @@ export default function App() {
     <SafeAreaProvider>
       <Provider store={store}>
         <PersistGate loading={null} persistor={persistor}>
-          <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-          <ThemeProvider>
-            <NavigationContainer>
-              <RootNavigator />
-            </NavigationContainer>
-          </ThemeProvider>
+          <MobileWrapper>
+            <StatusBar
+              barStyle={isDarkMode ? 'light-content' : 'dark-content'}
+            />
+            <ThemeProvider>
+              <NavigationContainer>
+                <RootNavigator />
+              </NavigationContainer>
+            </ThemeProvider>
+          </MobileWrapper>
         </PersistGate>
       </Provider>
     </SafeAreaProvider>

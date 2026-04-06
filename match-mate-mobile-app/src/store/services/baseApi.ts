@@ -31,17 +31,15 @@ const rawBaseQuery = fetchBaseQuery({
       (process.env.EXPO_PUBLIC_CLIENT_VERSION as string) ?? '1.0.0'
     );
     headers.set('X-Correlation-Id', `${generateUUID()}`);
-    headers.set('Content-Type', 'application/json');
-    headers.set('Accept', 'application/json');
     headers.set('X-Request-Id', `${generateUUID()}`);
 
     return headers;
   },
 });
 
-// 🔥 Retry Wrapper (3 attempts)
+// 🔥 Retry Wrapper (0 attempts)
 const baseQueryWithRetry = retry(rawBaseQuery, {
-  maxRetries: 2, // total = 3 attempts
+  maxRetries: 0, // total = 0 attempts
 });
 
 // 🔥 Wrapper (for global error handling)

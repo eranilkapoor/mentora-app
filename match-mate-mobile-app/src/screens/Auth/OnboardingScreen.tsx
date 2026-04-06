@@ -9,7 +9,9 @@ import {
   Platform,
   Alert,
   ActivityIndicator,
+  Image,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useAppDispatch } from '../../store/hooks';
@@ -41,6 +43,13 @@ import {
 import { onboardingStyles } from './OnboardingScreen.styles';
 import { useThemedStyles } from '../../core/theme/useThemedStyles';
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+interface ProfileImage {
+  uri: string;
+  isPrimary?: boolean;
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const STEPS: RegistrationStep[] = [
@@ -49,6 +58,7 @@ const STEPS: RegistrationStep[] = [
   'education',
   'family',
   'preferences',
+  'photos',
   'review',
 ];
 
@@ -58,6 +68,7 @@ const STEP_LABELS: Record<RegistrationStep, string> = {
   education: 'Education',
   family: 'Family',
   preferences: 'Preferences',
+  photos: 'Photos',
   review: 'Review',
 };
 
@@ -67,6 +78,7 @@ const STEP_ICONS: Record<RegistrationStep, string> = {
   education: 'book',
   family: 'home',
   preferences: 'heart',
+  photos: 'camera',
   review: 'check-circle',
 };
 
@@ -239,6 +251,39 @@ function ReviewRow({
   );
 }
 
+// export const appendImagesToFormData = async (
+//   formData: FormData,
+//   photos: Photo[]
+// ) => {
+//   const isWeb = Platform.OS === 'web';
+
+//   for (const [index, photo] of photos.entries()) {
+//     const filename = `photo_${index}.jpg`;
+//     const type = 'image/jpeg';
+
+//     if (isWeb) {
+//       const res = await fetch(photo.uri);
+//       const blob = await res.blob();
+//       const file = new File([blob], filename, { type });
+
+//       formData.append('images', file);
+//     } else {
+//       formData.append('images', {
+//         uri: photo.uri,
+//         name: filename,
+//         type,
+//       } as any);
+//     }
+//   }
+// };
+
+const uriToFile = async (uri: string, filename: string, type: string) => {
+  const response = await fetch(uri);
+  const blob = await response.blob();
+
+  return new File([blob], filename, { type });
+};
+
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function OnboardingScreen(): React.ReactElement {
@@ -249,6 +294,10 @@ export default function OnboardingScreen(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+
+  // ─── Photos State ─────────────────────────────────────────────────────────
+
+  const [photos, setPhotos] = useState<ProfileImage[]>([]);
 
   const [personal, setPersonal] = useState<PersonalData>({
     profileFor: '',
@@ -327,6 +376,7 @@ export default function OnboardingScreen(): React.ReactElement {
     sports: [],
     languagesKnown: [],
   });
+
   const [onboardingProfile] = useOnboardingProfileMutation();
 
   // ─── Helpers ─────────────────────────────────────────────────────────────
@@ -347,6 +397,55 @@ export default function OnboardingScreen(): React.ReactElement {
     ],
     [errors, styles]
   );
+
+  // ─── Photo Handlers ───────────────────────────────────────────────────────
+
+  const pickImage = useCallback(async (): Promise<void> => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(
+        'Permission Required',
+        'Please allow access to your photo library.'
+      );
+      return;
+    }
+
+    if (photos.length >= 6) {
+      Alert.alert('Limit Reached', 'You can upload a maximum of 6 photos.');
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsEditing: true,
+      aspect: [4, 5] as [number, number],
+    });
+
+    if (!result.canceled && result.assets[0] !== undefined) {
+      const newImage: ProfileImage = {
+        uri: result.assets[0].uri,
+        isPrimary: photos.length === 0,
+      };
+      setPhotos((prev) => [...prev, newImage]);
+    }
+  }, [photos.length]);
+
+  const setPrimaryPhoto = useCallback((index: number): void => {
+    setPhotos((prev) =>
+      prev.map((img, i) => ({ ...img, isPrimary: i === index }))
+    );
+  }, []);
+
+  const removePhoto = useCallback((index: number): void => {
+    setPhotos((prev) => {
+      const updated = prev.filter((_, i) => i !== index);
+      if (updated.length > 0 && !updated.some((img) => img.isPrimary)) {
+        updated[0] = { ...updated[0], isPrimary: true };
+      }
+      return updated;
+    });
+  }, []);
 
   // ─── Validators ──────────────────────────────────────────────────────────
 
@@ -404,6 +503,7 @@ export default function OnboardingScreen(): React.ReactElement {
       education: validateEducation,
       family: validateFamily,
       preferences: validatePreferences,
+      // photos step has no required validation — it's optional
     };
 
     const validator = validators[currentStep];
@@ -437,14 +537,73 @@ export default function OnboardingScreen(): React.ReactElement {
 
   const handleSubmit = useCallback(async (): Promise<void> => {
     setLoading(true);
+
     try {
-      const response = await onboardingProfile({
-        personal,
-        education,
-        physical,
-        family,
-        preferences,
-      }).unwrap();
+      const formData = new FormData();
+
+      // Append JSON fields as a string
+      formData.append('personal', JSON.stringify(personal));
+      formData.append('education', JSON.stringify(education));
+      formData.append('physical', JSON.stringify(physical));
+      formData.append('family', JSON.stringify(family));
+      formData.append('preferences', JSON.stringify(preferences));
+
+      // Primary image logic
+      let primaryIndex = 0;
+
+      // photos.forEach((photo, index) => {
+      //   const filename = photo.uri.split('/').pop() ?? `photo_${index}.jpg`;
+      //   const match = /\.(\w+)$/.exec(filename);
+      //   const ext = match?.[1]?.toLowerCase();
+      //   const type = ext === 'jpg' || ext === 'jpeg'
+      //       ? 'image/jpeg'
+      //       : ext === 'png'
+      //       ? 'image/png'
+      //       : ext === 'webp'
+      //       ? 'image/webp'
+      //       : 'image/jpeg';
+
+      //   formData.append('images', {
+      //     uri: photo.uri,
+      //     name: filename,
+      //     type,
+      //   } as any);
+
+      //   if (photo.isPrimary) {
+      //     primaryIndex = index;
+      //   }
+      //   console.log(filename, match, ext, type);
+      // });
+
+      const isWeb = Platform.OS === 'web';
+
+      for (const [index, photo] of photos.entries()) {
+        const filename = `photo_${index}.jpg`;
+        const type = 'image/jpeg';
+
+        if (isWeb) {
+          const response = await fetch(photo.uri);
+          const blob = await response.blob();
+          const file = new File([blob], filename, { type });
+
+          formData.append('images', file);
+        } else {
+          formData.append('images', {
+            uri: photo.uri,
+            name: filename,
+            type,
+          } as any);
+        }
+
+        if (photo.isPrimary) {
+          primaryIndex = index;
+        }
+      }
+
+      formData.append('primaryImageIndex', String(primaryIndex));
+      console.log(personal, education, physical, family, preferences, photos);
+   
+      const response = await onboardingProfile(formData).unwrap();
 
       if (!response.success as boolean) {
         Alert.alert('Error', 'Onboarding profile creation failed.');
@@ -464,6 +623,7 @@ export default function OnboardingScreen(): React.ReactElement {
     physical,
     family,
     preferences,
+    photos,
     dispatch,
     onboardingProfile,
   ]);
@@ -1013,6 +1173,89 @@ export default function OnboardingScreen(): React.ReactElement {
     </View>
   );
 
+  // ─── Photos Step ──────────────────────────────────────────────────────────
+
+  const renderPhotos = (): React.ReactElement => (
+    <View>
+      <Text style={styles.stepTitle}>Profile Photos</Text>
+      <Text style={styles.subtitle}>
+        Add photos to make your profile more appealing. The first photo will
+        appear on your profile card.
+      </Text>
+
+      {/* Photo Grid */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.photoRow}
+        keyboardShouldPersistTaps="handled"
+      >
+        {photos.map((img, index) => (
+          <View key={img.uri} style={styles.photoWrapper}>
+            <Image source={{ uri: img.uri }} style={styles.photo} />
+
+            {img.isPrimary === true && (
+              <View style={styles.primaryBadge}>
+                <Text style={styles.primaryBadgeText}>Primary</Text>
+              </View>
+            )}
+
+            <View style={styles.photoActions}>
+              <TouchableOpacity
+                style={styles.photoActionBtn}
+                onPress={() => setPrimaryPhoto(index)}
+                accessibilityRole="button"
+                accessibilityLabel="Set as primary photo"
+              >
+                <Feather name="star" size={12} color={Colors.accent} />
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.photoActionBtn, styles.photoActionBtnDanger]}
+                onPress={() => removePhoto(index)}
+                accessibilityRole="button"
+                accessibilityLabel="Remove photo"
+              >
+                <Feather name="trash-2" size={12} color={Colors.danger} />
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+
+        {/* Add Photo Button */}
+        {photos.length < 6 ? (
+          <TouchableOpacity
+            style={styles.addPhotoBtn}
+            onPress={() => {
+              void pickImage();
+            }}
+            accessibilityRole="button"
+            accessibilityLabel="Add photo"
+          >
+            <Feather name="plus" size={28} color={Colors.textMuted} />
+            <Text style={styles.addPhotoText}>Add Photo</Text>
+          </TouchableOpacity>
+        ) : (
+          ''
+        )}
+      </ScrollView>
+
+      <Text style={styles.photoHint}>
+        Tap ⭐ to set a photo as primary. Tap 🗑 to remove it. You can add up to
+        6 photos.
+      </Text>
+
+      {photos.length === 0 && (
+        <View style={styles.photoEmptyState}>
+          <Feather name="camera" size={40} color={Colors.textMuted} />
+          <Text style={styles.photoEmptyTitle}>No photos yet</Text>
+          <Text style={styles.photoEmptySubtitle}>
+            Profiles with photos get 3× more responses
+          </Text>
+        </View>
+      )}
+    </View>
+  );
+
   const renderReview = (): React.ReactElement => (
     <View>
       <Text style={styles.stepTitle}>Review Your Profile</Text>
@@ -1097,6 +1340,16 @@ export default function OnboardingScreen(): React.ReactElement {
           }
         />
       </View>
+
+      <View style={styles.reviewCard}>
+        <Text style={styles.reviewSectionTitle}>Photos</Text>
+        <ReviewRow
+          label="Uploaded"
+          value={
+            photos.length > 0 ? `${photos.length} photo(s)` : 'No photos added'
+          }
+        />
+      </View>
     </View>
   );
 
@@ -1112,6 +1365,8 @@ export default function OnboardingScreen(): React.ReactElement {
         return renderFamily();
       case 'preferences':
         return renderPreferences();
+      case 'photos':
+        return renderPhotos();
       case 'review':
         return renderReview();
       default:

@@ -13,32 +13,32 @@ import { AuthProvider } from '../enums/auth-provider.enum';
 export class RegisterDto {
   @IsNotEmpty()
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsNotEmpty()
   @MinLength(6)
-  password: string;
+  password!: string;
 }
 
 export class LoginDto {
   @IsNotEmpty()
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsNotEmpty()
-  password: string;
+  password!: string;
 }
 
 export class SocialLoginDto {
   @IsEnum(AuthProvider)
-  provider: AuthProvider;
+  provider!: AuthProvider;
 
   @IsNotEmpty()
-  provider_id: string;
+  provider_id!: string;
 
   @IsNotEmpty()
   @IsString()
-  access_token: string;
+  access_token!: string;
 
   @IsOptional()
   @IsEmail()
@@ -56,26 +56,26 @@ export class SocialLoginDto {
 
 export class PhoneSendOtpDto {
   @IsNotEmpty()
-  country_code: string;
+  country_code!: string;
 
   @IsNotEmpty()
   @Matches(/^[0-9]{8,15}$/, {
     message: 'Invalid phone number',
   })
-  phone: string;
+  phone!: string;
 }
 
 export class PhoneVerifyDto {
   @IsNotEmpty()
-  country_code: string;
+  country_code!: string;
 
   @IsNotEmpty()
   @Matches(/^[0-9]{8,15}$/, {
     message: 'Invalid phone number',
   })
-  phone: string;
+  phone!: string;
 
   @IsNotEmpty()
   @Length(6)
-  otp: string;
+  otp!: string;
 }

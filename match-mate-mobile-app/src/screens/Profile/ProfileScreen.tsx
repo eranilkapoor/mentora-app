@@ -2,7 +2,6 @@ import React, { useCallback, useEffect, useState } from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   Image,
   TouchableOpacity,
@@ -26,8 +25,10 @@ import {
 } from '../../core/utils/format';
 import Header from '../../core/components/Header';
 import { useGetMyProfileQuery } from '../../store/services/profileApi';
-import { ProfileData } from '../../core/types/api';
+import { ProfileData, ProfileImage } from '../../core/types/api';
 import { windowWidth } from '../../core/utils/device';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { profileStyles } from './ProfileScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -56,6 +57,8 @@ const FALLBACK_PHOTOS = [
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function Section({ title, icon, children }: SectionProps): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
@@ -70,6 +73,7 @@ function Section({ title, icon, children }: SectionProps): React.ReactElement {
 }
 
 function Row({ label, value }: RowProps): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
   const displayValue = Array.isArray(value)
     ? value.join(', ') || '—'
     : (value ?? '—');
@@ -83,6 +87,8 @@ function Row({ label, value }: RowProps): React.ReactElement {
 }
 
 function TagList({ items }: { items: string[] }): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+
   return (
     <View style={styles.tagList}>
       {items.map((item) => (
@@ -95,6 +101,8 @@ function TagList({ items }: { items: string[] }): React.ReactElement {
 }
 
 function ProfileSkeleton(): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+
   return (
     <View style={styles.skeletonContainer}>
       <View style={styles.skeletonPhoto} />
@@ -167,7 +175,9 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
         heightRange: { min: 150, max: 250 },
       },
     },
+    images: []
   });
+  const styles = useThemedStyles(profileStyles);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
@@ -196,12 +206,17 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
     void fetchProfile();
   }, [fetchProfile]);
 
-  const photos =
-    //profileData?.photos?.length !== undefined && profileData.photos.length > 0
-    //? profileData.photos
-    //:
-    FALLBACK_PHOTOS;
-
+  const photos: string[] =
+  profileData?.images?.length > 0
+    ? profileData.images
+        .filter((img) => img.isActive !== false)
+        .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
+        .map((img) =>{
+          console.log('📸 Image URL:', img.url); // ← check this in logs
+          return "http://192.168.1.4:3000"+ img.url;
+        })   // extract URL string from ProfileImage
+    : FALLBACK_PHOTOS;
+console.log(photos);
   const renderPhoto: ListRenderItem<string> = useCallback(
     ({ item, index }) => (
       <Image
@@ -211,7 +226,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
         accessibilityLabel={`Profile photo ${index + 1}`}
       />
     ),
-    []
+    [styles]
   );
 
   // ─── Error state ─────────────────────────────────────────────────────────
@@ -498,226 +513,3 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
     </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  container: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingBottom: 32,
-  },
-  centerContainer: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 32,
-    gap: 12,
-    backgroundColor: Colors.backgroundPage,
-  },
-  photo: {
-    width: windowWidth,
-    height: 400,
-  },
-  dotRow: {
-    position: 'absolute',
-    bottom: 12,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 6,
-  },
-  dot: {
-    width: 6,
-    height: 6,
-    borderRadius: 3,
-    backgroundColor: Colors.overlayDark,
-  },
-  dotActive: {
-    backgroundColor: Colors.white,
-    width: 18,
-  },
-  nameCard: {
-    backgroundColor: Colors.white,
-    padding: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  nameRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 4,
-  },
-  name: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  verifiedBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  verifiedText: {
-    fontSize: 12,
-    color: Colors.primary,
-    fontWeight: '600',
-  },
-  subText: {
-    color: Colors.textMuted,
-    fontSize: 14,
-    marginBottom: 6,
-  },
-  locationRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-  },
-  locationText: {
-    fontSize: 13,
-    color: Colors.textMuted,
-  },
-  section: {
-    marginTop: 12,
-  },
-  sectionHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    marginBottom: 6,
-    gap: 8,
-  },
-  sectionIconWrapper: {
-    width: 24,
-    height: 24,
-    borderRadius: 6,
-    backgroundColor: Colors.primaryLight,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  sectionTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: Colors.textSecondary,
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  card: {
-    backgroundColor: Colors.white,
-    paddingHorizontal: 16,
-    paddingVertical: 4,
-  },
-  row: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  rowLabel: {
-    color: Colors.textMuted,
-    fontSize: 14,
-    flex: 1,
-  },
-  rowValue: {
-    color: Colors.textPrimary,
-    fontSize: 14,
-    fontWeight: '500',
-    flex: 2,
-    textAlign: 'right',
-  },
-  aboutText: {
-    color: Colors.textBody,
-    fontSize: 14,
-    lineHeight: 22,
-    paddingVertical: 10,
-  },
-  tagSection: {
-    paddingVertical: 10,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-  },
-  tagSectionLabel: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginBottom: 8,
-  },
-  tagList: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 8,
-  },
-  tag: {
-    backgroundColor: Colors.primaryLight,
-    paddingHorizontal: 12,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  tagText: {
-    fontSize: 13,
-    color: Colors.primary,
-    fontWeight: '500',
-  },
-  errorTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-    marginTop: 8,
-  },
-  errorSubtitle: {
-    fontSize: 14,
-    color: Colors.textMuted,
-    textAlign: 'center',
-  },
-  retryButton: {
-    backgroundColor: Colors.primary,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 10,
-    marginTop: 8,
-  },
-  retryButtonText: {
-    color: Colors.white,
-    fontWeight: '700',
-    fontSize: 15,
-  },
-  skeletonContainer: {
-    flex: 1,
-  },
-  skeletonPhoto: {
-    width: windowWidth,
-    height: 400,
-    backgroundColor: Colors.backgroundLight,
-  },
-  skeletonHeader: {
-    backgroundColor: Colors.white,
-    padding: 16,
-    gap: 8,
-  },
-  skeletonCard: {
-    backgroundColor: Colors.white,
-    padding: 16,
-    marginTop: 12,
-    gap: 8,
-  },
-  skeletonLine: {
-    height: 14,
-    borderRadius: 7,
-    backgroundColor: Colors.backgroundLight,
-    width: '80%',
-  },
-  skeletonLineShort: {
-    width: '50%',
-  },
-  footer: {
-    height: 24,
-  },
-});

@@ -90,12 +90,20 @@ export interface VerifyOtpResponse {
   token: string;
 }
 
+export interface ProfileImage {
+  url: string;
+  isPrimary?: boolean;
+  isActive?: boolean;
+  uploadedAt?: Date;
+}
+
 export interface OnboardingProfileRequest {
   personal: PersonalData;
   physical: PhysicalData;
   education: EducationData;
   family: FamilyData;
   preferences: PreferencesData;
+  images: ProfileImage;
 }
 
 export interface ForgotPasswordRequest {
@@ -124,4 +132,5 @@ export interface ProfileData {
   education: EducationData;
   family: FamilyData;
   preferences: PreferencesData;
+  images: ProfileImage[];
 }

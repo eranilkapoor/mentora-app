@@ -6,15 +6,10 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import configuration from './config/configuration';
 import { MongoModule } from './infrastructure/databases/mongo/mongo.module';
-import { RedisModule } from './infrastructure/databases/redis/redis.module';
+import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
-// import { ChatModule } from './modules/chat/chat.module';
+import { CacheModule } from './modules/cache/cache.module';
 import { ProfileModule } from './modules/profile/profile.module';
-// import { MatchModule } from './modules/match/match.module';
-// import { NotificationModule } from './modules/notification/notification.module';
-// import { PaymentModule } from './modules/payment/payment.module';
-// import { AdminModule } from './modules/admin/admin.module';
-// import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 
 @Module({
@@ -24,10 +19,12 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
       isGlobal: true,
       load: [configuration],
     }),
+    // Cache 
+    CacheModule,
+    // Storage
+    StorageModule,
     // Database
     MongoModule,
-    // Redis for rate limiting & caching
-    RedisModule,
     // Global rate limiting (fallback)
     ThrottlerModule.forRoot([
       {
@@ -37,13 +34,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
     ]),
     // Feature modules
     AuthModule,
-    //AdminModule,
-    //AnalyticsModule,
-    //ChatModule,
     ProfileModule,
-    //MatchModule,
-    //NotificationModule,
-    //PaymentModule,
   ],
   controllers: [AppController],
   providers: [

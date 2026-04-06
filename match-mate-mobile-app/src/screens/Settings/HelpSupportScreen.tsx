@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
-  StyleSheet,
   TouchableOpacity,
   ScrollView,
   Platform,
@@ -19,6 +18,8 @@ import {
   SUPPORT_PHONE,
   WHATSAPP_NUMBER,
 } from '../../core/constants';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { helpSupportStyles } from './HelpSupportScreen.styles';
 
 // ─── Android LayoutAnimation setup ───────────────────────────────────────────
 
@@ -88,6 +89,8 @@ function FaqCard({
   expanded,
   onToggle,
 }: FaqCardProps): React.ReactElement {
+  const styles = useThemedStyles(helpSupportStyles);
+
   return (
     <View style={styles.faqContainer}>
       <TouchableOpacity
@@ -116,6 +119,8 @@ function ContactRow({
   action,
   iconColor,
 }: ContactItem): React.ReactElement {
+  const styles = useThemedStyles(helpSupportStyles);
+
   return (
     <TouchableOpacity
       style={styles.contactRow}
@@ -139,6 +144,8 @@ function ContactRow({
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function HelpSupportScreen({}: HelpSupportScreenProps): React.ReactElement {
+  const styles = useThemedStyles(helpSupportStyles);
+
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const toggleFaq = useCallback((index: number): void => {
@@ -221,97 +228,3 @@ export default function HelpSupportScreen({}: HelpSupportScreenProps): React.Rea
     </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: Colors.textBody,
-    marginBottom: 16,
-    lineHeight: 20,
-  },
-  card: {
-    backgroundColor: Colors.inputBackground,
-    padding: 16,
-    borderRadius: 10,
-    marginBottom: 24,
-    elevation: 1,
-    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
-  },
-  cardTitle: {
-    fontSize: 17,
-    fontWeight: '600',
-    marginBottom: 12,
-    color: Colors.textPrimary,
-  },
-  contactRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 10,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: Colors.divider,
-  },
-  contactIconWrapper: {
-    width: 36,
-    height: 36,
-    borderRadius: 18,
-    backgroundColor: Colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginRight: 10,
-  },
-  contactRowText: {
-    flex: 1,
-    fontSize: 14,
-    color: Colors.textSecondary,
-  },
-  faqTitle: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginBottom: 12,
-    color: Colors.textPrimary,
-  },
-  faqList: {
-    borderRadius: 10,
-    backgroundColor: Colors.white,
-    overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
-    borderColor: Colors.divider,
-  },
-  faqContainer: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: Colors.divider,
-    paddingHorizontal: 14,
-    paddingVertical: 14,
-  },
-  faqHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  faqQuestion: {
-    flex: 1,
-    fontSize: 15,
-    fontWeight: '600',
-    color: Colors.textPrimary,
-    paddingRight: 12,
-  },
-  faqAnswer: {
-    marginTop: 10,
-    fontSize: 14,
-    lineHeight: 21,
-    color: Colors.textBody,
-  },
-  footer: {
-    height: 24,
-  },
-});

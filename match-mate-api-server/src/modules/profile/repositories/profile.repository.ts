@@ -17,19 +17,61 @@ export class ProfileRepository {
   constructor(
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
-  ) {}
+  ) { }
 
-  async createProfile(userId: string, data: CreateProfileDto) {
+  async createProfile(userId: string, data: CreateProfileDto, images: { url: string; isPrimary: boolean; isActive: boolean; uploadedAt: Date }[] = []) {
     try {
       return await this.profileModel.create({
         userId: new Types.ObjectId(userId),
         ...data,
+        images
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
       throw new Error(`Failed to create profile: ${message}`);
     }
   }
+
+  async addImages(
+    userId: string,
+    images: { url: string; isPrimary: boolean; isActive: boolean; uploadedAt: Date }[],
+  ) {
+    return this.profileModel.findOneAndUpdate(
+      { userId },
+      { $push: { images: { $each: images } } },
+      { new: true },
+    );
+  }
+
+  async setPrimaryImage(userId: string, imageId: string) {
+    // First unset all primary flags, then set the target one
+    await this.profileModel.findOneAndUpdate(
+      { userId },
+      { $set: { 'images.$[].isPrimary': false } },
+    );
+    return this.profileModel.findOneAndUpdate(
+      { userId, 'images._id': imageId },
+      { $set: { 'images.$.isPrimary': true } },
+      { new: true },
+    );
+  }
+
+  async removeImage(userId: string, imageId: string) {
+    return this.profileModel.findOneAndUpdate(
+      { userId },
+      { $pull: { images: { _id: imageId } } },
+      { new: true },
+    );
+  }
+
+  async getImages(userId: string) {
+    const profile = await this.profileModel
+      .findOne({ userId })
+      .select('images')
+      .lean();
+    return profile?.images ?? [];
+  }
+
 
   async findByUserId(userId: string) {
     try {

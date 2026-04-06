@@ -1,7 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react';
 import {
   FlatList,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
@@ -15,8 +14,9 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { NavigationProp, RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
-import { Colors } from '../../core/constants/colors';
 import { EMOJIS } from '../../core/constants';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { chatStyles } from './ChatScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -52,6 +52,7 @@ const formatTime = (ts: number): string =>
 
 const MessageBubble: React.FC<BubbleProps> = ({ item }) => {
   const isMe = item.senderId === 'me';
+  const styles = useThemedStyles(chatStyles);
 
   return (
     <View
@@ -98,6 +99,8 @@ const fetchMessages = (pId: string): Message[] => [
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function ChatScreen({ navigation, route }: Props) {
+  const styles = useThemedStyles(chatStyles);
+
   const { userId, partnerName, partnerPhoto } = route.params ?? {};
 
   const [messages, setMessages] = useState<Message[]>([]);
@@ -272,167 +275,3 @@ export default function ChatScreen({ navigation, route }: Props) {
     </SafeAreaView>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  flex: {
-    flex: 1,
-  },
-
-  // Header
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 10,
-    backgroundColor: Colors.backgroundPage,
-    borderBottomWidth: 1,
-    borderColor: Colors.border,
-    boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
-    elevation: 2,
-    gap: 10,
-  },
-  backBtn: { paddingHorizontal: 4 },
-  backArrow: { fontSize: 30, color: Colors.textPrimary, lineHeight: 32 },
-
-  avatarWrapper: { position: 'relative' },
-  headerAvatar: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    borderWidth: 2,
-    borderColor: Colors.border,
-  },
-  onlineDot: {
-    position: 'absolute',
-    right: 1,
-    bottom: 1,
-    width: 11,
-    height: 11,
-    borderRadius: 6,
-    backgroundColor: Colors.primaryLight,
-    borderWidth: 2,
-    borderColor: Colors.white,
-  },
-
-  headerInfo: { flex: 1 },
-  headerName: { fontSize: 15, fontWeight: '800', color: Colors.textPrimary },
-  onlineRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    marginTop: 2,
-  },
-  onlineDotInline: {
-    width: 7,
-    height: 7,
-    borderRadius: 4,
-    backgroundColor: Colors.primaryLight,
-  },
-  headerSub: { fontSize: 11, color: Colors.primaryLight, fontWeight: '600' },
-
-  viewProfileBtn: {
-    paddingHorizontal: 12,
-    paddingVertical: 6,
-    borderRadius: 20,
-    borderWidth: 1.5,
-    borderColor: Colors.primary,
-  },
-  viewProfileText: { color: Colors.primary, fontWeight: '700', fontSize: 12 },
-
-  // Messages
-  messagesList: { paddingHorizontal: 12, paddingVertical: 14 },
-
-  messageRow: { marginVertical: 3 },
-  leftAlign: { alignItems: 'flex-start' },
-  rightAlign: { alignItems: 'flex-end' },
-
-  bubble: {
-    maxWidth: '78%',
-    borderRadius: 16,
-    padding: 10,
-    boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.05)`,
-    elevation: 1,
-  },
-  myBubble: {
-    backgroundColor: Colors.primary,
-    borderBottomRightRadius: 4,
-  },
-  otherBubble: {
-    backgroundColor: Colors.backgroundPage,
-    borderBottomLeftRadius: 4,
-  },
-  messageText: { fontSize: 14, color: Colors.textPrimary, lineHeight: 20 },
-  myText: { color: Colors.textPrimary },
-  image: { width: 200, height: 200, borderRadius: 10 },
-  time: {
-    fontSize: 10,
-    color: Colors.textSecondary,
-    alignSelf: 'flex-end',
-    marginTop: 4,
-  },
-  timeMe: { color: Colors.textSecondary },
-  readTick: { fontSize: 10, color: Colors.primary, fontWeight: '700' },
-
-  // Emoji picker
-  emojiBox: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderColor: Colors.border,
-  },
-  emojiBtn: { padding: 6 },
-  emoji: { fontSize: 26 },
-
-  // Input bar
-  inputBar: {
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    paddingBottom: 10,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderColor: Colors.border,
-    gap: 6,
-  },
-  iconBtn: { paddingBottom: 9 },
-  iconText: { fontSize: 22 },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    borderRadius: 22,
-    paddingHorizontal: 14,
-    paddingVertical: 9,
-    backgroundColor: Colors.backgroundPage,
-    fontSize: 14,
-    color: Colors.textPrimary,
-    maxHeight: 100,
-    lineHeight: 20,
-  },
-  sendBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 1,
-  },
-  sendBtnActive: {
-    backgroundColor: Colors.primary,
-    boxShadow: `0px 3px 6px rgba(0, 0, 0, 0.3)`,
-    elevation: 4,
-  },
-  sendText: { fontSize: 16, color: Colors.white },
-  sendTextActive: { color: Colors.white },
-});

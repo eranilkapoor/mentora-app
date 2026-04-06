@@ -1,14 +1,9 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../../core/constants/colors';
 import Header from '../../core/components/Header';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { membershipStyles } from './MembershipScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,6 +19,19 @@ interface FeatureRowProps {
   label: string;
   values?: string[];
   selectedIndex: number;
+}
+
+interface DurationPlan {
+  months: number;
+  price: string;
+  oldPrice: string;
+  perMonth: string;
+}
+
+interface PlanCardProps {
+  plan: DurationPlan;
+  active: boolean;
+  onPress: () => void;
 }
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
@@ -48,46 +56,103 @@ const FEATURES: { label: string; values: string[] }[] = [
   { label: 'Super Interest', values: ['0', '0', '50'] },
 ];
 
+const DURATION_PLANS: DurationPlan[] = [
+  { months: 3, price: '₹16,585', oldPrice: '₹33,169', perMonth: '₹5,528/mo' },
+  { months: 6, price: '₹26,186', oldPrice: '₹52,372', perMonth: '₹4,364/mo' },
+  { months: 12, price: '₹42,373', oldPrice: '₹84,745', perMonth: '₹3,531/mo' },
+];
+
+const BENEFITS = [
+  { icon: '⭐', text: 'All Pro Max benefits + unlimited daily matches' },
+  { icon: '👩‍💼', text: 'Dedicated relationship manager assigned to you' },
+];
+
+const POINTS = [
+  'Enhance and optimise your profile',
+  'Find the most relevant & serious matches',
+  'Get additional info on the bride & her family',
+  '3× faster matching with priority placement',
+  'Unlimited meeting setups with profiles',
+];
+
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
 const FeatureRow: React.FC<FeatureRowProps> = ({
   label,
   values = ['✔', '✔', '✔'],
   selectedIndex,
-}) => (
-  <View style={styles.featureRow}>
-    <Text style={styles.featureLabel}>{label}</Text>
-    <View style={styles.featureValues}>
-      {values.map((v, i) => (
-        <View
-          key={i}
-          style={[
-            styles.featureCell,
-            i === selectedIndex && styles.featureCellActive,
-          ]}
-        >
-          <Text
+}) => {
+  const styles = useThemedStyles(membershipStyles);
+
+  return (
+    <View style={styles.featureRow}>
+      <Text style={styles.featureLabel}>{label}</Text>
+      <View style={styles.featureValues}>
+        {values.map((v, i) => (
+          <View
+            key={i}
             style={[
-              styles.featureValue,
-              v === '✔' && styles.featureCheck,
-              v === '0' && styles.featureZero,
-              i === selectedIndex && styles.featureValueActive,
+              styles.featureCell,
+              i === selectedIndex && styles.featureCellActive,
             ]}
           >
-            {v}
-          </Text>
-        </View>
-      ))}
+            <Text
+              style={[
+                styles.featureValue,
+                v === '✔' && styles.featureCheck,
+                v === '0' && styles.featureZero,
+                i === selectedIndex && styles.featureValueActive,
+              ]}
+            >
+              {v}
+            </Text>
+          </View>
+        ))}
+      </View>
     </View>
-  </View>
-);
+  );
+};
+
+const PlanCard: React.FC<PlanCardProps> = ({ plan, active, onPress }) => {
+  const styles = useThemedStyles(membershipStyles);
+
+  return (
+    <TouchableOpacity
+      style={[styles.planCard, active && styles.planCardActive]}
+      onPress={onPress}
+      activeOpacity={0.8}
+    >
+      {plan.months === 6 && (
+        <View style={styles.popularBadge}>
+          <Text style={styles.popularBadgeText}>Popular</Text>
+        </View>
+      )}
+      <View style={[styles.radioOuter, active && styles.radioOuterActive]}>
+        {active && <View style={styles.radioInner} />}
+      </View>
+      <Text style={[styles.planMonths, active && styles.planMonthsActive]}>
+        {plan.months} months
+      </Text>
+      <Text style={[styles.planPrice, active && styles.planPriceActive]}>
+        {plan.price}
+      </Text>
+      <Text style={styles.oldPrice}>{plan.oldPrice}</Text>
+      <View style={styles.perMonthBadge}>
+        <Text style={styles.perMonthText}>{plan.perMonth}</Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function MembershipScreen() {
-  const [tab, setTab] = useState<'self' | 'assisted'>('self');
-  const [selectedPlan, setSelectedPlan] = useState<string>('Pro Max');
+  const styles = useThemedStyles(membershipStyles);
 
+  const [tab, setTab] = useState<'self' | 'assisted'>('self');
+
+  const [duration, setDuration] = useState<number>(6);
+  const [selectedPlan, setSelectedPlan] = useState<string>('Pro Max');
   const selectedIndex = PLANS.findIndex((p) => p.name === selectedPlan);
 
   return (
@@ -118,412 +183,221 @@ export default function MembershipScreen() {
           ))}
         </View>
 
-        {/* ── Refund banner ── */}
-        <View style={styles.refundBanner}>
-          <Text style={styles.refundIcon}>🔁</Text>
-          <View>
-            <Text style={styles.refundText}>30-day full refund guarantee</Text>
-            <Text style={styles.refundSub}>*Terms & conditions apply</Text>
-          </View>
-        </View>
-
-        {/* ── Plan cards ── */}
-        <View style={styles.planRow}>
-          {PLANS.map((plan) => {
-            const active = selectedPlan === plan.name;
-            return (
-              <TouchableOpacity
-                key={plan.name}
-                style={[styles.planCard, active && styles.planCardActive]}
-                onPress={() => setSelectedPlan(plan.name)}
-                activeOpacity={0.85}
-              >
-                {plan.best && (
-                  <View style={styles.popularBadge}>
-                    <Text style={styles.popularBadgeText}>⭐ Top</Text>
-                  </View>
-                )}
-                <Text
-                  style={[styles.planName, active && styles.planNameActive]}
-                >
-                  {plan.name}
+        {tab === 'self' ? (
+          <>
+            {/* ── Refund banner ── */}
+            <View style={styles.refundBanner}>
+              <Text style={styles.refundIcon}>🔁</Text>
+              <View>
+                <Text style={styles.refundText}>
+                  30-day full refund guarantee
                 </Text>
-                <Text
-                  style={[styles.planPrice, active && styles.planPriceActive]}
-                >
-                  {plan.price}
-                </Text>
-                <Text style={styles.planDuration}>/ 3 months</Text>
-                <View
-                  style={[styles.radioOuter, active && styles.radioOuterActive]}
-                >
-                  {active && <View style={styles.radioInner} />}
-                </View>
-              </TouchableOpacity>
-            );
-          })}
-        </View>
-
-        {/* ── Feature table header ── */}
-        <View style={styles.featureHeader}>
-          <Text style={styles.featureHeaderLabel}>Features</Text>
-          <View style={styles.featureValues}>
-            {PLANS.map((p, i) => (
-              <Text
-                key={p.name}
-                style={[
-                  styles.featureHeaderCol,
-                  i === selectedIndex && styles.featureHeaderColActive,
-                ]}
-                numberOfLines={1}
-              >
-                {p.name.replace('Pro ', '')}
-              </Text>
-            ))}
-          </View>
-        </View>
-
-        {/* ── Feature rows ── */}
-        <View style={styles.featureTable}>
-          {FEATURES.map((f) => (
-            <FeatureRow
-              key={f.label}
-              label={f.label}
-              values={f.values}
-              selectedIndex={selectedIndex}
-            />
-          ))}
-        </View>
-
-        {/* ── Trust badges ── */}
-        <View style={styles.trustRow}>
-          {['🔒 Secure Payment', '✅ Verified Profiles', '💬 24/7 Support'].map(
-            (badge) => (
-              <View key={badge} style={styles.trustBadge}>
-                <Text style={styles.trustText}>{badge}</Text>
+                <Text style={styles.refundSub}>*Terms & conditions apply</Text>
               </View>
-            )
-          )}
-        </View>
+            </View>
+
+            {/* ── Plan cards ── */}
+            <View style={styles.planRow}>
+              {PLANS.map((plan) => {
+                const active = selectedPlan === plan.name;
+                return (
+                  <TouchableOpacity
+                    key={plan.name}
+                    style={[styles.planCard, active && styles.planCardActive]}
+                    onPress={() => setSelectedPlan(plan.name)}
+                    activeOpacity={0.85}
+                  >
+                    {plan.best && (
+                      <View style={styles.popularBadge}>
+                        <Text style={styles.popularBadgeText}>⭐ Top</Text>
+                      </View>
+                    )}
+                    <Text
+                      style={[styles.planName, active && styles.planNameActive]}
+                    >
+                      {plan.name}
+                    </Text>
+                    <Text
+                      style={[
+                        styles.planPrice,
+                        active && styles.planPriceActive,
+                      ]}
+                    >
+                      {plan.price}
+                    </Text>
+                    <Text style={styles.planDuration}>/ 3 months</Text>
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        active && styles.radioOuterActive,
+                      ]}
+                    >
+                      {active && <View style={styles.radioInner} />}
+                    </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            {/* ── Feature table header ── */}
+            <View style={styles.featureHeader}>
+              <Text style={styles.featureHeaderLabel}>Features</Text>
+              <View style={styles.featureValues}>
+                {PLANS.map((p, i) => (
+                  <Text
+                    key={p.name}
+                    style={[
+                      styles.featureHeaderCol,
+                      i === selectedIndex && styles.featureHeaderColActive,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {p.name.replace('Pro ', '')}
+                  </Text>
+                ))}
+              </View>
+            </View>
+
+            {/* ── Feature rows ── */}
+            <View style={styles.featureTable}>
+              {FEATURES.map((f) => (
+                <FeatureRow
+                  key={f.label}
+                  label={f.label}
+                  values={f.values}
+                  selectedIndex={selectedIndex}
+                />
+              ))}
+            </View>
+
+            {/* ── Trust badges ── */}
+            <View style={styles.trustRow}>
+              {[
+                '🔒 Secure Payment',
+                '✅ Verified Profiles',
+                '💬 24/7 Support',
+              ].map((badge) => (
+                <View key={badge} style={styles.trustBadge}>
+                  <Text style={styles.trustText}>{badge}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        ) : (
+          <>
+            {/* ── Section label ── */}
+            <View style={styles.sectionLabelRow}>
+              <View style={styles.exclusivePill}>
+                <Text style={styles.exclusivePillText}>✦ EXCLUSIVE</Text>
+              </View>
+              <View style={styles.dividerLine} />
+            </View>
+
+            {/* ── Benefits card ── */}
+            <View style={styles.card}>
+              <View style={styles.cardTopAccent} />
+              {BENEFITS.map((b) => (
+                <View key={b.text} style={styles.benefitRow}>
+                  <Text style={styles.benefitIcon}>{b.icon}</Text>
+                  <Text style={styles.benefitText}>{b.text}</Text>
+                </View>
+              ))}
+
+              <View style={styles.divider} />
+
+              <View style={styles.pointsContainer}>
+                {POINTS.map((p) => (
+                  <View key={p} style={styles.pointRow}>
+                    <View style={styles.pointDot} />
+                    <Text style={styles.pointText}>{p}</Text>
+                  </View>
+                ))}
+              </View>
+
+              <View style={styles.cardActions}>
+                <TouchableOpacity
+                  style={styles.callbackBtn}
+                  activeOpacity={0.85}
+                >
+                  <Text style={styles.callbackText}>📞 Request Call Back</Text>
+                </TouchableOpacity>
+                <TouchableOpacity activeOpacity={0.7}>
+                  <Text style={styles.knowMoreText}>Know more ›</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {/* ── Offer banner ── */}
+            <View style={styles.offerBanner}>
+              <Text style={styles.offerEmoji}>🎉</Text>
+              <Text style={styles.offerText}>FLAT 50% OFF ON ALL PLANS</Text>
+              <Text style={styles.offerEmoji}>🎉</Text>
+            </View>
+
+            {/* ── Duration plans ── */}
+            <View style={styles.planRow}>
+              {DURATION_PLANS.map((plan) => (
+                <PlanCard
+                  key={plan.months}
+                  plan={plan}
+                  active={duration === plan.months}
+                  onPress={() => setDuration(plan.months)}
+                />
+              ))}
+            </View>
+
+            {/* ── Savings callout ── */}
+            <View style={styles.savingsRow}>
+              <Text style={styles.savingsText}>
+                💡 Save more with longer plans — up to{' '}
+                <Text style={styles.savingsHighlight}>₹42,372</Text> saved on 12
+                months
+              </Text>
+            </View>
+
+            {/* ── Trust badges ── */}
+            <View style={styles.trustRow}>
+              {[
+                '🔒 Secure Payment',
+                '✅ Verified Profiles',
+                '🏆 10M+ Members',
+              ].map((badge) => (
+                <View key={badge} style={styles.trustBadge}>
+                  <Text style={styles.trustText}>{badge}</Text>
+                </View>
+              ))}
+            </View>
+          </>
+        )}
       </ScrollView>
 
       {/* ── Sticky CTA ── */}
-      <View style={styles.ctaContainer}>
-        <View style={styles.ctaInfo}>
-          <Text style={styles.ctaPlan}>{selectedPlan}</Text>
-          <Text style={styles.ctaPrice}>
-            {PLANS.find((p) => p.name === selectedPlan)?.price}
-          </Text>
+      {tab === 'self' ? (
+        <View style={styles.ctaContainer}>
+          <View style={styles.ctaInfo}>
+            <Text style={styles.ctaPlan}>{selectedPlan}</Text>
+            <Text style={styles.ctaPrice}>
+              {PLANS.find((p) => p.name === selectedPlan)?.price}
+            </Text>
+          </View>
+          <TouchableOpacity style={styles.ctaButton} activeOpacity={0.85}>
+            <Text style={styles.ctaButtonText}>Get {selectedPlan} →</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.ctaButton} activeOpacity={0.85}>
-          <Text style={styles.ctaButtonText}>Get {selectedPlan} →</Text>
-        </TouchableOpacity>
-      </View>
+      ) : (
+        <View style={styles.ctaContainer}>
+          <View style={styles.ctaInfo}>
+            <Text style={styles.ctaPlan}>Selected</Text>
+            <Text style={styles.ctaPrice}>
+              {DURATION_PLANS.find((p) => p.months === duration)?.price}
+            </Text>
+            <Text style={styles.ctaDuration}>{duration} months</Text>
+          </View>
+          <TouchableOpacity style={styles.ctaButton} activeOpacity={0.85}>
+            <Text style={styles.ctaButtonText}>Get Exclusive Now →</Text>
+          </TouchableOpacity>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  scroll: {
-    paddingHorizontal: 16,
-    paddingBottom: 110,
-  },
-
-  // Page title
-  pageTitle: {
-    fontSize: 22,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    marginTop: 20,
-  },
-  pageSubtitle: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    marginTop: 2,
-    marginBottom: 20,
-  },
-
-  // Tabs
-  tabs: {
-    flexDirection: 'row',
-    backgroundColor: Colors.backgroundLight,
-    borderRadius: 10,
-    padding: 4,
-    marginTop: 16,
-    marginBottom: 20,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: 9,
-    alignItems: 'center',
-    borderRadius: 8,
-  },
-  activeTab: {
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: Colors.primary,
-    elevation: 2,
-  },
-  tabText: {
-    fontSize: 13,
-    color: Colors.textSecondary,
-    fontWeight: '500',
-  },
-  activeTabText: {
-    color: Colors.primary,
-    fontWeight: '700',
-  },
-
-  // Refund banner
-  refundBanner: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: Colors.successLight,
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 20,
-    gap: 10,
-  },
-  refundIcon: { fontSize: 20 },
-  refundText: {
-    fontSize: 13,
-    fontWeight: '700',
-    color: Colors.success,
-  },
-  refundSub: {
-    fontSize: 11,
-    color: Colors.success,
-    marginTop: 2,
-  },
-
-  // Plan cards
-  planRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 24,
-    gap: 8,
-  },
-  planCard: {
-    flex: 1,
-    borderWidth: 1.5,
-    borderColor: Colors.border,
-    borderRadius: 14,
-    padding: 10,
-    alignItems: 'center',
-    backgroundColor: Colors.white,
-    position: 'relative',
-  },
-  planCardActive: {
-    borderColor: Colors.primary,
-    backgroundColor: Colors.primaryLight,
-    elevation: 4,
-  },
-  popularBadge: {
-    position: 'absolute',
-    top: -10,
-    backgroundColor: Colors.accent,
-    paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
-  },
-  popularBadgeText: {
-    color: Colors.white,
-    fontSize: 10,
-    fontWeight: '700',
-  },
-  planName: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textBody,
-    marginTop: 8,
-  },
-  planNameActive: {
-    color: Colors.primary,
-  },
-  planPrice: {
-    fontSize: 17,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-    marginTop: 4,
-  },
-  planPriceActive: {
-    color: Colors.primary,
-  },
-  planDuration: {
-    fontSize: 10,
-    color: Colors.textMuted,
-    marginBottom: 10,
-  },
-
-  // Radio
-  radioOuter: {
-    width: 16,
-    height: 16,
-    borderRadius: 8,
-    borderWidth: 2,
-    borderColor: Colors.border,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 8,
-    marginTop: 4,
-  },
-  radioOuterActive: {
-    borderColor: Colors.primary,
-  },
-  radioInner: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: Colors.primary,
-  },
-
-  // Feature table
-  featureHeader: {
-    flexDirection: 'row',
-    paddingVertical: 10,
-    borderBottomWidth: 2,
-    borderColor: Colors.primary,
-    marginBottom: 2,
-  },
-  featureHeaderLabel: {
-    flex: 1,
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textPrimary,
-  },
-  featureHeaderCol: {
-    flex: 1,
-    textAlign: 'center',
-    fontSize: 11,
-    color: Colors.textSecondary,
-    fontWeight: '600',
-  },
-  featureHeaderColActive: {
-    color: Colors.primary,
-    fontWeight: '800',
-  },
-
-  featureTable: {
-    borderRadius: 10,
-    overflow: 'hidden',
-    backgroundColor: Colors.white,
-    borderWidth: 1,
-    borderColor: Colors.divider,
-    marginBottom: 20,
-  },
-  featureRow: {
-    flexDirection: 'row',
-    paddingVertical: 12,
-    paddingHorizontal: 12,
-    borderBottomWidth: 1,
-    borderColor: Colors.divider,
-    alignItems: 'center',
-  },
-  featureLabel: {
-    flex: 1,
-    fontSize: 12,
-    color: Colors.textBody,
-  },
-  featureValues: {
-    flexDirection: 'row',
-    width: '45%',
-    justifyContent: 'space-around',
-  },
-  featureCell: {
-    flex: 1,
-    alignItems: 'center',
-    paddingVertical: 2,
-    borderRadius: 4,
-    marginHorizontal: 2,
-  },
-  featureCellActive: {
-    backgroundColor: Colors.primaryLight,
-  },
-  featureValue: {
-    fontSize: 12,
-    fontWeight: '700',
-    color: Colors.textBody,
-    textAlign: 'center',
-  },
-  featureValueActive: {
-    color: Colors.primary,
-  },
-  featureCheck: {
-    color: Colors.success,
-  },
-  featureZero: {
-    color: Colors.textMuted,
-  },
-
-  // Trust badges
-  trustRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 8,
-    gap: 8,
-  },
-  trustBadge: {
-    flex: 1,
-    backgroundColor: Colors.white,
-    borderRadius: 20,
-    paddingVertical: 6,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.divider,
-  },
-  trustText: {
-    fontSize: 11,
-    color: Colors.textBody,
-    fontWeight: '500',
-  },
-
-  // CTA
-  ctaContainer: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    paddingBottom: 24,
-    backgroundColor: Colors.white,
-    borderTopWidth: 1,
-    borderColor: Colors.divider,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    elevation: 10,
-  },
-  ctaInfo: {
-    flex: 1,
-  },
-  ctaPlan: {
-    fontSize: 12,
-    color: Colors.textSecondary,
-  },
-  ctaPrice: {
-    fontSize: 18,
-    fontWeight: '800',
-    color: Colors.textPrimary,
-  },
-  ctaButton: {
-    flex: 2,
-    backgroundColor: Colors.primary,
-    paddingVertical: 14,
-    borderRadius: 30,
-    alignItems: 'center',
-    elevation: 6,
-  },
-  ctaButtonText: {
-    color: Colors.white,
-    fontSize: 14,
-    fontWeight: '800',
-    letterSpacing: 0.3,
-  },
-});

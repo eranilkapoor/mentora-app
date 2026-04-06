@@ -1,8 +1,10 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import { Colors } from '../../core/constants/colors';
 import { type RootNavigationProp } from '../../navigation/types';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { privacyPolicyStyles } from './PrivacyPolicyScreen.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -111,6 +113,8 @@ const POLICY_SECTIONS: SectionItem[] = [
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
 function BulletList({ items }: { items: string[] }): React.ReactElement {
+  const styles = useThemedStyles(privacyPolicyStyles);
+
   return (
     <View>
       {items.map((item) => (
@@ -128,6 +132,8 @@ function PolicySection({
 }: {
   section: SectionItem;
 }): React.ReactElement {
+  const styles = useThemedStyles(privacyPolicyStyles);
+
   return (
     <View style={styles.policySection}>
       <Text style={styles.heading}>{section.heading}</Text>
@@ -151,6 +157,8 @@ function PolicySection({
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function PrivacyPolicyScreen({}: PrivacyPolicyScreenProps): React.ReactElement {
+  const styles = useThemedStyles(privacyPolicyStyles);
+
   return (
     <SafeAreaView
       style={[styles.safe, { backgroundColor: Colors.backgroundPage }]}
@@ -181,76 +189,3 @@ export default function PrivacyPolicyScreen({}: PrivacyPolicyScreenProps): React
     </SafeAreaView>
   );
 }
-
-// ─── Styles ──────────────────────────────────────────────────────────────────
-
-const styles = StyleSheet.create({
-  safe: {
-    flex: 1,
-    backgroundColor: Colors.backgroundPage,
-  },
-  scrollContent: {
-    padding: 16,
-    paddingBottom: 40,
-  },
-  card: {
-    backgroundColor: Colors.white,
-    borderRadius: 8,
-    padding: 16,
-    overflow: 'hidden',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 4,
-    color: Colors.textPrimary,
-  },
-  updateText: {
-    fontSize: 12,
-    color: Colors.textMuted,
-    marginBottom: 16,
-  },
-  policySection: {
-    marginTop: 4,
-  },
-  heading: {
-    fontSize: 18,
-    fontWeight: '700',
-    marginTop: 20,
-    marginBottom: 8,
-    color: Colors.textPrimary,
-  },
-  subHeading: {
-    fontSize: 15,
-    fontWeight: '600',
-    marginTop: 12,
-    marginBottom: 6,
-    color: Colors.textSecondary,
-  },
-  paragraph: {
-    fontSize: 14,
-    lineHeight: 22,
-    color: Colors.textBody,
-    marginBottom: 8,
-  },
-  bulletRow: {
-    flexDirection: 'row',
-    marginBottom: 5,
-    paddingRight: 8,
-  },
-  bulletDot: {
-    fontSize: 14,
-    color: Colors.primary,
-    marginRight: 8,
-    lineHeight: 22,
-  },
-  bulletText: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 22,
-    color: Colors.textBody,
-  },
-  footer: {
-    height: 24,
-  },
-});

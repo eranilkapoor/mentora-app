@@ -89,7 +89,7 @@ export const forgotPasswordStyles = (theme: Theme) =>
     },
     primaryButton: {
       marginTop: 16,
-      backgroundColor: theme.colors.black,
+      backgroundColor: theme.colors.primary,
       paddingVertical: 14,
       borderRadius: 10,
       alignItems: 'center',

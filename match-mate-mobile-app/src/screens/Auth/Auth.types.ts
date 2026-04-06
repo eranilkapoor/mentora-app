@@ -52,6 +52,7 @@ export type RegistrationStep =
   | 'education'
   | 'family'
   | 'preferences'
+  | 'photos'
   | 'review';
 
 export type Gender = 'male' | 'female' | 'other';

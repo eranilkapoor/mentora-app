@@ -51,16 +51,15 @@ export const LIGHTCOLORS = {
   chatBtn: '#ff6b6b',
   shortlistBg: '#fff5e6',
 
-
   online: '#22C55E',
   offline: '#9CA3AF',
   verified: '#3B82F6',
 
   gold: '#FFD700',
-  platinum: '#E5E4E2',  
+  platinum: '#E5E4E2',
   gradients: {
     primary: ['#E94057', '#F27121'],
-  }
+  },
 };
 
 export const DARKCOLORS = {
