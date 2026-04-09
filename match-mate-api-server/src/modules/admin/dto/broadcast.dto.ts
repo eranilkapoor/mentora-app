@@ -2,8 +2,8 @@ import { IsString } from 'class-validator';
 
 export class BroadcastDto {
   @IsString()
-  title: string;
+  title!: string;
 
   @IsString()
-  message: string;
+  message!: string;
 }

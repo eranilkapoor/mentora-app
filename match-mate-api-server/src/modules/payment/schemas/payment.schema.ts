@@ -7,28 +7,28 @@ export type PaymentDocument = Payment & Document;
 @Schema({ timestamps: true })
 export class Payment {
   @Prop({ type: Types.ObjectId, required: true, index: true })
-  userId: Types.ObjectId;
+  userId!: Types.ObjectId;
 
   @Prop({ required: true })
-  orderId: string;
+  orderId!: string;
 
   @Prop()
   paymentId?: string;
 
   @Prop({ required: true })
-  amount: number;
+  amount!: number;
 
   @Prop({ default: 'INR' })
-  currency: string;
+  currency!: string;
 
   @Prop({
     enum: PaymentStatus,
     default: PaymentStatus.PENDING,
   })
-  status: PaymentStatus;
+  status!: PaymentStatus;
 
   @Prop()
-  gateway: string; // razorpay | stripe
+  gateway!: string; // razorpay | stripe
 
   @Prop()
   planId?: string;

@@ -2,11 +2,11 @@ import { IsBoolean, IsString } from 'class-validator';
 
 export class UpdateUserStatusDto {
   @IsString()
-  userId: string;
+  userId!: string;
 
   @IsBoolean()
-  isBlocked: boolean;
+  isBlocked!: boolean;
 
   @IsBoolean()
-  isVerified: boolean;
+  isVerified!: boolean;
 }

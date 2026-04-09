@@ -1,4 +1,4 @@
 export class RespondInterestDto {
-  interestId: string;
-  action: 'ACCEPT' | 'REJECT';
+  interestId!: string;
+  action!: 'ACCEPT' | 'REJECT';
 }

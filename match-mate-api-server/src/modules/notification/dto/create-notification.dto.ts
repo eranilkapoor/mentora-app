@@ -2,13 +2,13 @@ import { IsMongoId, IsString, IsOptional, IsEnum } from 'class-validator';
 
 export class CreateNotificationDto {
   @IsMongoId()
-  userId: string;
+  userId!: string;
 
   @IsString()
-  title: string;
+  title!: string;
 
   @IsString()
-  message: string;
+  message!: string;
 
   @IsOptional()
   @IsEnum(['MATCH', 'CHAT', 'SYSTEM', 'PAYMENT'])

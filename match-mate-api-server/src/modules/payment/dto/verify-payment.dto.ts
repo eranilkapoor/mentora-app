@@ -2,11 +2,11 @@ import { IsString } from 'class-validator';
 
 export class VerifyPaymentDto {
   @IsString()
-  orderId: string;
+  orderId!: string;
 
   @IsString()
-  paymentId: string;
+  paymentId!: string;
 
   @IsString()
-  signature: string;
+  signature!: string;
 }

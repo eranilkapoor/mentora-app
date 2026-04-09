@@ -6,22 +6,22 @@ export type NotificationDocument = Notification & Document;
 @Schema({ timestamps: true })
 export class Notification {
   @Prop({ type: Types.ObjectId, required: true, index: true })
-  userId: Types.ObjectId;
+  userId!: Types.ObjectId;
 
   @Prop({ required: true })
-  title: string;
+  title!: string;
 
   @Prop({ required: true })
-  message: string;
+  message!: string;
 
   @Prop({
     enum: ['MATCH', 'CHAT', 'SYSTEM', 'PAYMENT'],
     default: 'SYSTEM',
   })
-  type: string;
+  type!: string;
 
   @Prop({ default: false })
-  isRead: boolean;
+  isRead!: boolean;
 
   @Prop({ type: Object })
   metadata?: Record<string, any>;

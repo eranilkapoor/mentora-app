@@ -15,7 +15,7 @@ import { SendMessageDto } from './dto/send-message.dto';
 })
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
-  server: Server;
+  server!: Server;
 
   constructor(private readonly chatService: ChatService) {}
 

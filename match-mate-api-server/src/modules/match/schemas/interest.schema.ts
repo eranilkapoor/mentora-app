@@ -10,17 +10,17 @@ export enum InterestStatus {
 @Schema({ timestamps: true })
 export class Interest extends Document {
   @Prop({ type: Types.ObjectId, required: true })
-  senderId: Types.ObjectId;
+  senderId!: Types.ObjectId;
 
   @Prop({ type: Types.ObjectId, required: true })
-  receiverId: Types.ObjectId;
+  receiverId!: Types.ObjectId;
 
   @Prop({
     type: String,
     enum: InterestStatus,
     default: InterestStatus.PENDING,
   })
-  status: InterestStatus;
+  status!: InterestStatus;
 }
 
 export const InterestSchema = SchemaFactory.createForClass(Interest);

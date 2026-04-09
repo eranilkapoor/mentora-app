@@ -3,10 +3,10 @@ import { AnalyticsEventType } from '../enums/analytics-event.enum';
 
 export class TrackEventDto {
   @IsString()
-  userId: string;
+  userId!: string;
 
   @IsEnum(AnalyticsEventType)
-  eventType: AnalyticsEventType;
+  eventType!: AnalyticsEventType;
 
   @IsOptional()
   @IsObject()

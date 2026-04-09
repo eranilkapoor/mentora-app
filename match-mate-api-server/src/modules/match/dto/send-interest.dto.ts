@@ -1,3 +1,3 @@
 export class SendInterestDto {
-  receiverId: string;
+  receiverId!: string;
 }

@@ -4,10 +4,10 @@ import { Document, Types } from 'mongoose';
 @Schema({ timestamps: true })
 export class Match extends Document {
   @Prop({ type: [Types.ObjectId], required: true })
-  users: Types.ObjectId[];
+  users!: Types.ObjectId[];
 
   @Prop({ default: true })
-  isActive: boolean;
+  isActive!: boolean;
 }
 
 export const MatchSchema = SchemaFactory.createForClass(Match);
