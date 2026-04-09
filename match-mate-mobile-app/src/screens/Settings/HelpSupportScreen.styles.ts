@@ -8,87 +8,163 @@ export const helpSupportStyles = (theme: Theme) =>
       backgroundColor: theme.colors.backgroundPage,
     },
     scrollContent: {
-      padding: 16,
+      paddingHorizontal: 16,
+      paddingTop: 20,
       paddingBottom: 40,
     },
-    subtitle: {
-      fontSize: 14,
-      color: theme.colors.textBody,
+
+    // ─── Header Card ──────────────────────────────────────────────────────
+    headerCard: {
+      backgroundColor: theme.colors.white,
+      borderRadius: 16,
+      padding: 20,
       marginBottom: 16,
-      lineHeight: 20,
-    },
-    card: {
-      backgroundColor: theme.colors.inputBackground,
-      padding: 16,
-      borderRadius: 10,
-      marginBottom: 24,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
       elevation: 1,
-      boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
     },
-    cardTitle: {
-      fontSize: 17,
-      fontWeight: '600',
+    headerIconWrapper: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
       marginBottom: 12,
-      color: theme.colors.textPrimary,
     },
+    headerTitle: {
+      fontSize: 20,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+      marginBottom: 4,
+    },
+    headerSubtitle: {
+      fontSize: 13,
+      color: theme.colors.textMuted,
+      lineHeight: 19,
+    },
+
+    // ─── Section Card ─────────────────────────────────────────────────────
+    sectionCard: {
+      backgroundColor: theme.colors.white,
+      borderRadius: 16,
+      marginBottom: 16,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      elevation: 1,
+      overflow: 'hidden',
+    },
+    sectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+    },
+    sectionIconWrapper: {
+      width: 28,
+      height: 28,
+      borderRadius: 8,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    sectionTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+    },
+
+    // ─── Contact Row ──────────────────────────────────────────────────────
     contactRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingVertical: 10,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: theme.colors.divider,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+      gap: 12,
+    },
+    contactRowLast: {
+      borderBottomWidth: 0,
     },
     contactIconWrapper: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
-      backgroundColor: theme.colors.white,
+      width: 38,
+      height: 38,
+      borderRadius: 11,
+      backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 10,
     },
-    contactRowText: {
+    contactTextWrapper: {
       flex: 1,
-      fontSize: 14,
-      color: theme.colors.textSecondary,
     },
-    faqTitle: {
-      fontSize: 18,
-      fontWeight: '700',
-      marginBottom: 12,
+    contactLabel: {
+      fontSize: 13,
+      color: theme.colors.textMuted,
+      marginBottom: 1,
+    },
+    contactValue: {
+      fontSize: 14,
+      fontWeight: '600',
       color: theme.colors.textPrimary,
     },
-    faqList: {
-      borderRadius: 10,
-      backgroundColor: theme.colors.white,
-      overflow: 'hidden',
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-    },
+
+    // ─── FAQ ──────────────────────────────────────────────────────────────
     faqContainer: {
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.colors.divider,
-      paddingHorizontal: 14,
-      paddingVertical: 14,
+      overflow: 'hidden',
+    },
+    faqContainerLast: {
+      borderBottomWidth: 0,
     },
     faqHeader: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 15,
+      gap: 12,
+    },
+    faqHeaderActive: {
+      backgroundColor: theme.colors.primaryLight,
+    },
+    faqIconWrapper: {
+      width: 28,
+      height: 28,
+      borderRadius: 8,
+      backgroundColor: theme.colors.backgroundLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    faqIconWrapperActive: {
+      backgroundColor: theme.colors.primaryLight,
     },
     faqQuestion: {
       flex: 1,
-      fontSize: 15,
+      fontSize: 14,
       fontWeight: '600',
       color: theme.colors.textPrimary,
-      paddingRight: 12,
+      lineHeight: 20,
+    },
+    faqQuestionActive: {
+      color: theme.colors.primary,
     },
     faqAnswer: {
-      marginTop: 10,
+      paddingHorizontal: 16,
+      paddingBottom: 16,
+      paddingTop: 4,
       fontSize: 14,
-      lineHeight: 21,
+      lineHeight: 22,
       color: theme.colors.textBody,
     },
+
+    // ─── Footer ───────────────────────────────────────────────────────────
     footer: {
       height: 24,
     },

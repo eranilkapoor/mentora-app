@@ -21,7 +21,7 @@ import {
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { helpSupportStyles } from './HelpSupportScreen.styles';
 
-// ─── Android LayoutAnimation setup ───────────────────────────────────────────
+// ─── Android LayoutAnimation ──────────────────────────────────────────────────
 
 if (
   Platform.OS === 'android' &&
@@ -39,6 +39,7 @@ interface HelpSupportScreenProps {
 interface FaqItem {
   question: string;
   answer: string;
+  icon: string;
 }
 
 interface ContactItem {
@@ -47,37 +48,35 @@ interface ContactItem {
   value: string;
   action: () => void;
   iconColor?: string;
-}
-
-interface FaqCardProps {
-  faq: FaqItem;
-  index: number;
-  expanded: boolean;
-  onToggle: (index: number) => void;
+  isLast?: boolean;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const FAQ_DATA: FaqItem[] = [
   {
+    icon: 'user',
     question: 'How do I create or update my profile?',
     answer:
-      'You can edit your profile by going to the Profile section → Edit Profile. Make sure to add clear photos and complete details for better matches.',
+      'Go to Profile → Edit Profile. Add clear photos and complete all sections for better match recommendations.',
   },
   {
+    icon: 'heart',
     question: 'How does MatchMate find matches?',
     answer:
       'Our algorithm recommends matches based on your preferences such as age, location, education, interests, and other profile parameters.',
   },
   {
+    icon: 'shield',
     question: 'Is my information safe?',
     answer:
       'Yes. We use secure servers, encrypted data transfer, and strict privacy policies to protect your personal information.',
   },
   {
+    icon: 'trash-2',
     question: 'How do I delete my account?',
     answer:
-      'You can request account deletion from Settings → Account → Delete Account. Once deleted, your data will be removed within standard retention timelines.',
+      'Go to Settings → Account → Delete Account. Once deleted, your data will be removed within standard retention timelines.',
   },
 ];
 
@@ -88,27 +87,55 @@ function FaqCard({
   index,
   expanded,
   onToggle,
-}: FaqCardProps): React.ReactElement {
+  isLast,
+}: {
+  faq: FaqItem;
+  index: number;
+  expanded: boolean;
+  onToggle: (i: number) => void;
+  isLast: boolean;
+}): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
 
   return (
-    <View style={styles.faqContainer}>
+    <View style={[styles.faqContainer, isLast && styles.faqContainerLast]}>
       <TouchableOpacity
         onPress={() => onToggle(index)}
-        style={styles.faqHeader}
+        style={[styles.faqHeader, expanded && styles.faqHeaderActive]}
         accessibilityRole="button"
         accessibilityLabel={faq.question}
         accessibilityState={{ expanded }}
       >
-        <Text style={styles.faqQuestion}>{faq.question}</Text>
+        <View
+          style={[
+            styles.faqIconWrapper,
+            expanded && styles.faqIconWrapperActive,
+          ]}
+        >
+          <Feather
+            name={faq.icon}
+            size={13}
+            color={expanded ? Colors.primary : Colors.textMuted}
+          />
+        </View>
+        <Text
+          style={[
+            styles.faqQuestion,
+            expanded && styles.faqQuestionActive,
+          ]}
+        >
+          {faq.question}
+        </Text>
         <Feather
           name={expanded ? 'chevron-up' : 'chevron-down'}
-          size={20}
-          color={Colors.textSecondary}
+          size={16}
+          color={expanded ? Colors.primary : Colors.textMuted}
         />
       </TouchableOpacity>
 
-      {expanded && <Text style={styles.faqAnswer}>{faq.answer}</Text>}
+      {expanded && (
+        <Text style={styles.faqAnswer}>{faq.answer}</Text>
+      )}
     </View>
   );
 }
@@ -116,14 +143,16 @@ function FaqCard({
 function ContactRow({
   icon,
   label,
+  value,
   action,
   iconColor,
+  isLast,
 }: ContactItem): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
 
   return (
     <TouchableOpacity
-      style={styles.contactRow}
+      style={[styles.contactRow, isLast && styles.contactRowLast]}
       onPress={action}
       accessibilityRole="link"
       accessibilityLabel={label}
@@ -131,12 +160,15 @@ function ContactRow({
       <View style={styles.contactIconWrapper}>
         <Feather
           name={icon}
-          size={20}
+          size={18}
           color={iconColor ?? Colors.textSecondary}
         />
       </View>
-      <Text style={styles.contactRowText}>{label}</Text>
-      <Feather name="chevron-right" size={16} color={Colors.textMuted} />
+      <View style={styles.contactTextWrapper}>
+        <Text style={styles.contactLabel}>{label}</Text>
+        <Text style={styles.contactValue}>{value}</Text>
+      </View>
+      <Feather name="chevron-right" size={15} color={Colors.textMuted} />
     </TouchableOpacity>
   );
 }
@@ -145,7 +177,6 @@ function ContactRow({
 
 export default function HelpSupportScreen({}: HelpSupportScreenProps): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
-
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const toggleFaq = useCallback((index: number): void => {
@@ -153,65 +184,87 @@ export default function HelpSupportScreen({}: HelpSupportScreenProps): React.Rea
     setExpanded((prev) => (prev === index ? null : index));
   }, []);
 
-  const openEmail = useCallback((): void => {
-    void Linking.openURL(`mailto:${SUPPORT_EMAIL}`);
-  }, []);
-
-  const openPhone = useCallback((): void => {
-    void Linking.openURL(`tel:${SUPPORT_PHONE}`);
-  }, []);
-
-  const openWhatsApp = useCallback((): void => {
-    void Linking.openURL(
-      `https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I need help with MatchMate.`
-    );
-  }, []);
+  const openEmail = useCallback(
+    () => void Linking.openURL(`mailto:${SUPPORT_EMAIL}`),
+    [],
+  );
+  const openPhone = useCallback(
+    () => void Linking.openURL(`tel:${SUPPORT_PHONE}`),
+    [],
+  );
+  const openWhatsApp = useCallback(
+    () =>
+      void Linking.openURL(
+        `https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I need help with MatchMate.`,
+      ),
+    [],
+  );
 
   const CONTACT_ITEMS: ContactItem[] = [
     {
       icon: 'mail',
-      label: SUPPORT_EMAIL,
+      label: 'Email Support',
       value: SUPPORT_EMAIL,
       action: openEmail,
     },
     {
       icon: 'phone',
-      label: SUPPORT_PHONE,
+      label: 'Call Us',
       value: SUPPORT_PHONE,
       action: openPhone,
     },
     {
       icon: 'message-circle',
-      label: 'Chat with us on WhatsApp',
-      value: WHATSAPP_NUMBER,
+      label: 'WhatsApp',
+      value: 'Chat with us on WhatsApp',
       action: openWhatsApp,
       iconColor: Colors.whatsapp,
+      isLast: true,
     },
   ];
 
   return (
-    <SafeAreaView
-      style={[styles.safe, { backgroundColor: Colors.backgroundPage }]}
-    >
+    <SafeAreaView style={styles.safe}>
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.subtitle}>
-          We're here to help! Contact us or browse FAQs below.
-        </Text>
+        {/* ── Header Card ──────────────────────────────────────────── */}
+        <View style={styles.headerCard}>
+          <View style={styles.headerIconWrapper}>
+            <Feather name="life-buoy" size={22} color={Colors.primary} />
+          </View>
+          <Text style={styles.headerTitle}>Help & Support</Text>
+          <Text style={styles.headerSubtitle}>
+            We're here to help! Reach out to us or browse the FAQs below.
+          </Text>
+        </View>
 
-        {/* Contact Card */}
-        <View style={styles.card}>
-          <Text style={styles.cardTitle}>Contact Support</Text>
+        {/* ── Contact Card ─────────────────────────────────────────── */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconWrapper}>
+              <Feather name="phone" size={13} color={Colors.primary} />
+            </View>
+            <Text style={styles.sectionTitle}>Contact Support</Text>
+          </View>
+
           {CONTACT_ITEMS.map((item) => (
             <ContactRow key={item.value} {...item} />
           ))}
         </View>
 
-        {/* FAQ Section */}
-        <Text style={styles.faqTitle}>Frequently Asked Questions</Text>
-        <View style={styles.faqList}>
+        {/* ── FAQ Card ─────────────────────────────────────────────── */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <View style={styles.sectionIconWrapper}>
+              <Feather name="help-circle" size={13} color={Colors.primary} />
+            </View>
+            <Text style={styles.sectionTitle}>
+              Frequently Asked Questions
+            </Text>
+          </View>
+
           {FAQ_DATA.map((faq, index) => (
             <FaqCard
               key={faq.question}
@@ -219,6 +272,7 @@ export default function HelpSupportScreen({}: HelpSupportScreenProps): React.Rea
               index={index}
               expanded={expanded === index}
               onToggle={toggleFaq}
+              isLast={index === FAQ_DATA.length - 1}
             />
           ))}
         </View>

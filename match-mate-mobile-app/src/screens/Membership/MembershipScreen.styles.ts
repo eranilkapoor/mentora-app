@@ -9,43 +9,93 @@ export const membershipStyles = (theme: Theme) =>
     },
     scroll: {
       paddingHorizontal: 16,
-      paddingBottom: 110,
+      paddingBottom: 120,
     },
 
-    // Page title
-    pageTitle: {
-      fontSize: 22,
-      fontWeight: '800',
-      color: theme.colors.textPrimary,
+    // ─── Hero ─────────────────────────────────────────────────────────────
+    heroCard: {
+      backgroundColor: theme.colors.primary,
+      borderRadius: 20,
+      padding: 20,
       marginTop: 20,
-    },
-    pageSubtitle: {
-      fontSize: 13,
-      color: theme.colors.textSecondary,
-      marginTop: 2,
       marginBottom: 20,
+      overflow: 'hidden',
+    },
+    heroBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: 'rgba(255,255,255,0.2)',
+      alignSelf: 'flex-start',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: 20,
+      marginBottom: 12,
+    },
+    heroBadgeText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: theme.colors.white,
+      letterSpacing: 0.5,
+    },
+    heroTitle: {
+      fontSize: 24,
+      fontWeight: '800',
+      color: theme.colors.white,
+      marginBottom: 4,
+    },
+    heroSubtitle: {
+      fontSize: 13,
+      color: 'rgba(255,255,255,0.8)',
+      lineHeight: 19,
+      marginBottom: 16,
+    },
+    heroStats: {
+      flexDirection: 'row',
+      gap: 12,
+    },
+    heroStat: {
+      backgroundColor: 'rgba(255,255,255,0.15)',
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      alignItems: 'center',
+    },
+    heroStatValue: {
+      fontSize: 16,
+      fontWeight: '800',
+      color: theme.colors.white,
+    },
+    heroStatLabel: {
+      fontSize: 10,
+      color: 'rgba(255,255,255,0.75)',
+      marginTop: 1,
     },
 
-    // Tabs
+    // ─── Tabs ─────────────────────────────────────────────────────────────
     tabs: {
       flexDirection: 'row',
       backgroundColor: theme.colors.backgroundLight,
-      borderRadius: 10,
+      borderRadius: 12,
       padding: 4,
-      marginTop: 16,
       marginBottom: 20,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
     },
     tab: {
       flex: 1,
-      paddingVertical: 9,
+      paddingVertical: 10,
       alignItems: 'center',
-      borderRadius: 8,
+      borderRadius: 9,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 6,
     },
     activeTab: {
       backgroundColor: theme.colors.white,
-      borderWidth: 1,
-      borderColor: theme.colors.primary,
-      elevation: 2,
+      elevation: 3,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
     },
     tabText: {
       fontSize: 13,
@@ -57,15 +107,17 @@ export const membershipStyles = (theme: Theme) =>
       fontWeight: '700',
     },
 
-    // Refund banner
+    // ─── Refund Banner ────────────────────────────────────────────────────
     refundBanner: {
       flexDirection: 'row',
       alignItems: 'center',
       backgroundColor: theme.colors.successLight,
-      borderRadius: 10,
+      borderRadius: 12,
       padding: 12,
       marginBottom: 20,
       gap: 10,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.success,
     },
     refundIcon: { fontSize: 20 },
     refundText: {
@@ -76,36 +128,37 @@ export const membershipStyles = (theme: Theme) =>
     refundSub: {
       fontSize: 11,
       color: theme.colors.success,
-      marginTop: 2,
+      marginTop: 1,
     },
 
-    // Plan cards
+    // ─── Plan Cards ───────────────────────────────────────────────────────
     planRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: 24,
+      marginBottom: 20,
       gap: 8,
     },
     planCard: {
       flex: 1,
       borderWidth: 1.5,
       borderColor: theme.colors.border,
-      borderRadius: 14,
-      padding: 10,
+      borderRadius: 16,
+      padding: 12,
       alignItems: 'center',
       backgroundColor: theme.colors.white,
       position: 'relative',
+      elevation: 1,
     },
     planCardActive: {
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.primaryLight,
-      elevation: 4,
+      elevation: 5,
     },
     popularBadge: {
       position: 'absolute',
-      top: -10,
+      top: -11,
       backgroundColor: theme.colors.accent,
-      paddingHorizontal: 8,
+      paddingHorizontal: 9,
       paddingVertical: 3,
       borderRadius: 20,
     },
@@ -118,48 +171,58 @@ export const membershipStyles = (theme: Theme) =>
       fontSize: 12,
       fontWeight: '700',
       color: theme.colors.textBody,
-      marginTop: 8,
+      marginTop: 10,
     },
-    planNameActive: {
-      color: theme.colors.primary,
-    },
+    planNameActive: { color: theme.colors.primary },
     planPrice: {
-      fontSize: 17,
+      fontSize: 18,
       fontWeight: '800',
       color: theme.colors.textPrimary,
       marginTop: 4,
     },
-    planPriceActive: {
-      color: theme.colors.primary,
-    },
+    planPriceActive: { color: theme.colors.primary },
     planDuration: {
       fontSize: 10,
       color: theme.colors.textMuted,
       marginBottom: 10,
     },
-    // Radio
     radioOuter: {
-      width: 16,
-      height: 16,
-      borderRadius: 8,
+      width: 18,
+      height: 18,
+      borderRadius: 9,
       borderWidth: 2,
       borderColor: theme.colors.border,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 8,
       marginTop: 4,
+      marginBottom: 6,
     },
-    radioOuterActive: {
-      borderColor: theme.colors.primary,
-    },
+    radioOuterActive: { borderColor: theme.colors.primary },
     radioInner: {
-      width: 8,
-      height: 8,
-      borderRadius: 4,
+      width: 9,
+      height: 9,
+      borderRadius: 5,
       backgroundColor: theme.colors.primary,
     },
 
-    // Feature table
+    // ─── Feature Table ────────────────────────────────────────────────────
+    featureTableCard: {
+      backgroundColor: theme.colors.white,
+      borderRadius: 16,
+      overflow: 'hidden',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      marginBottom: 20,
+      elevation: 1,
+    },
+    featureTableHeader: {
+      flexDirection: 'row',
+      paddingVertical: 12,
+      paddingHorizontal: 14,
+      borderBottomWidth: 2,
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primaryLight,
+    },
     featureHeader: {
       flexDirection: 'row',
       paddingVertical: 10,
@@ -184,7 +247,6 @@ export const membershipStyles = (theme: Theme) =>
       color: theme.colors.primary,
       fontWeight: '800',
     },
-
     featureTable: {
       borderRadius: 10,
       overflow: 'hidden',
@@ -195,15 +257,18 @@ export const membershipStyles = (theme: Theme) =>
     },
     featureRow: {
       flexDirection: 'row',
-      paddingVertical: 12,
-      paddingHorizontal: 12,
-      borderBottomWidth: 1,
+      paddingVertical: 13,
+      paddingHorizontal: 14,
+      borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       alignItems: 'center',
     },
+    featureRowLast: {
+      borderBottomWidth: 0,
+    },
     featureLabel: {
       flex: 1,
-      fontSize: 12,
+      fontSize: 13,
       color: theme.colors.textBody,
     },
     featureValues: {
@@ -214,44 +279,37 @@ export const membershipStyles = (theme: Theme) =>
     featureCell: {
       flex: 1,
       alignItems: 'center',
-      paddingVertical: 2,
-      borderRadius: 4,
+      paddingVertical: 3,
+      borderRadius: 6,
       marginHorizontal: 2,
     },
-    featureCellActive: {
-      backgroundColor: theme.colors.primaryLight,
-    },
+    featureCellActive: { backgroundColor: theme.colors.primaryLight },
     featureValue: {
       fontSize: 12,
       fontWeight: '700',
       color: theme.colors.textBody,
       textAlign: 'center',
     },
-    featureValueActive: {
-      color: theme.colors.primary,
-    },
-    featureCheck: {
-      color: theme.colors.success,
-    },
-    featureZero: {
-      color: theme.colors.textMuted,
-    },
+    featureValueActive: { color: theme.colors.primary },
+    featureCheck: { color: theme.colors.success },
+    featureZero: { color: theme.colors.textMuted },
 
-    // Trust badges
+    // ─── Trust Badges ─────────────────────────────────────────────────────
     trustRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
-      marginBottom: 8,
+      marginBottom: 12,
       gap: 8,
     },
     trustBadge: {
       flex: 1,
       backgroundColor: theme.colors.white,
       borderRadius: 20,
-      paddingVertical: 6,
+      paddingVertical: 7,
       alignItems: 'center',
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
+      elevation: 1,
     },
     trustText: {
       fontSize: 11,
@@ -259,7 +317,7 @@ export const membershipStyles = (theme: Theme) =>
       fontWeight: '500',
     },
 
-    // CTA
+    // ─── CTA Bar ──────────────────────────────────────────────────────────
     ctaContainer: {
       position: 'absolute',
       bottom: 0,
@@ -267,51 +325,51 @@ export const membershipStyles = (theme: Theme) =>
       right: 0,
       paddingHorizontal: 16,
       paddingVertical: 12,
-      paddingBottom: 24,
+      paddingBottom: 28,
       backgroundColor: theme.colors.white,
-      borderTopWidth: 1,
+      borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 12,
-      elevation: 10,
+      elevation: 16,
     },
-    ctaInfo: {
-      flex: 1,
-    },
+    ctaInfo: { flex: 1 },
     ctaPlan: {
       fontSize: 12,
       color: theme.colors.textSecondary,
     },
     ctaPrice: {
-      fontSize: 18,
+      fontSize: 20,
       fontWeight: '800',
       color: theme.colors.textPrimary,
+    },
+    ctaDuration: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
     },
     ctaButton: {
       flex: 2,
       backgroundColor: theme.colors.primary,
-      paddingVertical: 14,
+      paddingVertical: 15,
       borderRadius: 30,
       alignItems: 'center',
       elevation: 6,
     },
     ctaButtonText: {
       color: theme.colors.white,
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: '800',
       letterSpacing: 0.3,
     },
 
-    ///////////////////
+    // ─── Assisted ─────────────────────────────────────────────────────────
     planMonths: {
-      fontSize: 12,
+      fontSize: 13,
       fontWeight: '700',
       color: theme.colors.textBody,
     },
-    planMonthsActive: {
-      color: theme.colors.primary,
-    },
+    planMonthsActive: { color: theme.colors.primary },
     oldPrice: {
       fontSize: 11,
       textDecorationLine: 'line-through',
@@ -321,17 +379,13 @@ export const membershipStyles = (theme: Theme) =>
     perMonthBadge: {
       backgroundColor: theme.colors.backgroundLight,
       borderRadius: 10,
-      paddingHorizontal: 6,
-      paddingVertical: 2,
+      paddingHorizontal: 7,
+      paddingVertical: 3,
     },
     perMonthText: {
-      fontSize: 9,
+      fontSize: 10,
       color: theme.colors.textSecondary,
       fontWeight: '600',
-    },
-    ctaDuration: {
-      fontSize: 11,
-      color: theme.colors.textSecondary,
     },
     sectionLabelRow: {
       flexDirection: 'row',
@@ -358,11 +412,10 @@ export const membershipStyles = (theme: Theme) =>
       height: 1,
       backgroundColor: theme.colors.divider,
     },
-    // Card
     card: {
       backgroundColor: theme.colors.white,
       borderRadius: 16,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       overflow: 'hidden',
       marginBottom: 20,
@@ -375,38 +428,38 @@ export const membershipStyles = (theme: Theme) =>
     benefitRow: {
       flexDirection: 'row',
       alignItems: 'flex-start',
-      paddingHorizontal: 14,
+      paddingHorizontal: 16,
       paddingTop: 14,
-      gap: 8,
+      gap: 10,
     },
     benefitIcon: { fontSize: 18 },
     benefitText: {
       flex: 1,
-      fontSize: 13,
+      fontSize: 14,
       fontWeight: '700',
       color: theme.colors.textPrimary,
-      lineHeight: 20,
+      lineHeight: 21,
     },
     divider: {
-      height: 1,
+      height: StyleSheet.hairlineWidth,
       backgroundColor: theme.colors.divider,
-      marginHorizontal: 14,
-      marginTop: 12,
+      marginHorizontal: 16,
+      marginTop: 14,
     },
     pointsContainer: {
-      paddingHorizontal: 14,
-      paddingTop: 10,
+      paddingHorizontal: 16,
+      paddingTop: 12,
     },
     pointRow: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       marginVertical: 4,
-      gap: 8,
+      gap: 10,
     },
     pointDot: {
-      width: 6,
-      height: 6,
-      borderRadius: 3,
+      width: 7,
+      height: 7,
+      borderRadius: 4,
       backgroundColor: theme.colors.primary,
       marginTop: 6,
     },
@@ -419,35 +472,34 @@ export const membershipStyles = (theme: Theme) =>
     cardActions: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 14,
-      paddingVertical: 14,
+      paddingHorizontal: 16,
+      paddingVertical: 16,
       gap: 14,
     },
     callbackBtn: {
       borderWidth: 1.5,
       borderColor: theme.colors.primary,
-      paddingVertical: 8,
-      paddingHorizontal: 14,
+      paddingVertical: 9,
+      paddingHorizontal: 16,
       borderRadius: 20,
     },
     callbackText: {
       color: theme.colors.primary,
       fontWeight: '700',
-      fontSize: 12,
+      fontSize: 13,
     },
     knowMoreText: {
       color: theme.colors.primary,
       fontWeight: '600',
       fontSize: 13,
     },
-    // Offer banner
     offerBanner: {
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
       backgroundColor: theme.colors.primaryLight,
-      borderRadius: 10,
-      paddingVertical: 10,
+      borderRadius: 12,
+      paddingVertical: 11,
       marginBottom: 16,
       gap: 8,
       borderWidth: 1,
@@ -460,21 +512,18 @@ export const membershipStyles = (theme: Theme) =>
       color: theme.colors.primary,
       letterSpacing: 0.5,
     },
-    // Savings
     savingsRow: {
       backgroundColor: theme.colors.successLight,
-      borderRadius: 10,
-      padding: 10,
+      borderRadius: 12,
+      padding: 12,
       marginBottom: 16,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.success,
     },
     savingsText: {
-      fontSize: 12,
+      fontSize: 13,
       color: theme.colors.success,
-      lineHeight: 18,
+      lineHeight: 19,
     },
-    savingsHighlight: {
-      fontWeight: '800',
-    },
+    savingsHighlight: { fontWeight: '800' },
   });

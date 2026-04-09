@@ -25,7 +25,7 @@ export default function Header(): React.ReactElement {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top + 8 }]}>
+    <View style={[styles.container, { paddingTop: insets.top + 1 }]}>
       {/* LEFT: Profile */}
       <TouchableOpacity
         style={styles.iconButton}
@@ -72,7 +72,7 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.white,
     flexDirection: 'row',
     alignItems: 'center',
-    paddingHorizontal: 16,
+    paddingHorizontal: 10,
     paddingBottom: 10,
     borderBottomWidth: 1,
     borderBottomColor: Colors.border,
