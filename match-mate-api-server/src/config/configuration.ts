@@ -5,6 +5,7 @@ export default () => ({
     version: process.env.API_VERSION || 'v1',
     baseUrl: process.env.API_BASE_URL || 'http://localhost:3000'
   },
+  dbDriver: process.env.DB_DRIVER,
   mongo: {
     uri: `mongodb://${process.env.MONGO_USER}:${process.env.MONGO_PASS}@${process.env.MONGO_HOST}:${process.env.MONGO_PORT}/${process.env.MONGO_DB}?replicaSet=atlas-ymrq2p-shard-0&ssl=true&authSource=admin&retryWrites=true&w=majority&appName=Cluster0`,
     retryAttempts: process.env.MONGO_RETRY_ATTEMPTS

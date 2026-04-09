@@ -62,7 +62,7 @@ export class AuthService {
         role: 'user',
       });
 
-      const cacheKey = `auth:${user.id}`;
+      const cacheKey = `auth:${user._id}`;
       // Cache for 15 minutes
       await this.cache.set(cacheKey, token, 900);
 
@@ -111,7 +111,7 @@ export class AuthService {
         role: 'user',
       });
 
-      const cacheKey = `auth:${existingUser.id}`;
+      const cacheKey = `auth:${existingUser._id}`;
       // Cache for 15 minutes
       await this.cache.set(cacheKey, token, 900);
 
@@ -153,7 +153,7 @@ export class AuthService {
           role: 'user',
         });
 
-        const cacheKey = `auth:${existingUser.id}`;
+        const cacheKey = `auth:${existingUser._id}`;
         // Cache for 15 minutes
         await this.cache.set(cacheKey, token, 900);
 
@@ -187,7 +187,7 @@ export class AuthService {
         role: 'user',
       });
 
-      const cacheKey = `auth:${user.id}`;
+      const cacheKey = `auth:${user._id}`;
       // Cache for 15 minutes
       await this.cache.set(cacheKey, token, 900);
 
@@ -221,7 +221,7 @@ export class AuthService {
           role: 'user',
         });
 
-        const cacheKey = `auth:${existingUser.id}`;
+        const cacheKey = `auth:${existingUser._id}`;
         // Cache for 15 minutes
         await this.cache.set(cacheKey, token, 900);
 
@@ -254,7 +254,7 @@ export class AuthService {
         role: 'user',
       });
 
-      const cacheKey = `auth:${user.id}`;
+      const cacheKey = `auth:${user._id}`;
       // Cache for 15 minutes
       await this.cache.set(cacheKey, token, 900);
 

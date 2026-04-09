@@ -7,10 +7,10 @@ import { UserStatus } from '../enums/user-status.enum';
 @Schema({ _id: false })
 export class PhoneNumber {
   @Prop({ required: true })
-  countryCode: string;
+  countryCode!: string;
 
   @Prop({ required: true })
-  phone: string;
+  phone!: string;
 }
 
 const PhoneNumberSchema = SchemaFactory.createForClass(PhoneNumber);
@@ -22,19 +22,19 @@ export class AuthAccount {
     enum: AuthProvider,
     required: true,
   })
-  provider: AuthProvider;
+  provider!: AuthProvider;
 
   @Prop({ required: true })
-  providerId: string;
+  providerId!: string;
 
   @Prop()
   passwordHash?: string;
 
   @Prop({ default: false })
-  isVerified: boolean;
+  isVerified!: boolean;
 
   @Prop({ default: false })
-  isPrimary: boolean;
+  isPrimary!: boolean;
 }
 
 const AuthAccountSchema = SchemaFactory.createForClass(AuthAccount);
@@ -46,7 +46,7 @@ export class User {
     enum: UserStatus,
     default: UserStatus.PENDING,
   })
-  status: UserStatus;
+  status!: UserStatus;
 
   @Prop()
   primaryEmail?: string;
@@ -61,10 +61,10 @@ export class User {
   isPhoneVerified?: boolean;
 
   @Prop({ default: false })
-  isProfileCompleted: boolean;
+  isProfileCompleted!: boolean;
 
   @Prop({ type: [AuthAccountSchema], default: [] })
-  authAccounts: AuthAccount[];
+  authAccounts!: AuthAccount[];
 }
 
 export type UserDocument = User & Document;
