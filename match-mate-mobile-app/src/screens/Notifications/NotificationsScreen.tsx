@@ -130,17 +130,16 @@ function NotifItem({
         <Feather
           name={item.icon}
           size={18}
-          color={item.iconColor ?? (item.unread ? Colors.primary : Colors.textMuted)}
+          color={
+            item.iconColor ?? (item.unread ? Colors.primary : Colors.textMuted)
+          }
         />
       </View>
 
       <View style={styles.notifContent}>
         <View style={styles.notifTitleRow}>
           <Text
-            style={[
-              styles.notifTitle,
-              item.unread && styles.notifTitleUnread,
-            ]}
+            style={[styles.notifTitle, item.unread && styles.notifTitleUnread]}
             numberOfLines={1}
           >
             {item.title}
@@ -176,7 +175,9 @@ function EmptyState(): React.ReactElement {
 
 export default function NotificationsScreen(): React.ReactElement {
   const styles = useThemedStyles(notificationStyles);
-  const [sections, setSections] = useState<NotifSection[]>(INITIAL_NOTIFICATIONS);
+  const [sections, setSections] = useState<NotifSection[]>(
+    INITIAL_NOTIFICATIONS
+  );
 
   const unreadCount = sections
     .flatMap((s) => s.data)
@@ -187,7 +188,7 @@ export default function NotificationsScreen(): React.ReactElement {
       prev.map((section) => ({
         ...section,
         data: section.data.map((n) => ({ ...n, unread: false })),
-      })),
+      }))
     );
   }, []);
 
@@ -196,9 +197,9 @@ export default function NotificationsScreen(): React.ReactElement {
       prev.map((section) => ({
         ...section,
         data: section.data.map((n) =>
-          n.id === id ? { ...n, unread: false } : n,
+          n.id === id ? { ...n, unread: false } : n
         ),
-      })),
+      }))
     );
   }, []);
 
@@ -269,7 +270,7 @@ export default function NotificationsScreen(): React.ReactElement {
                   />
                 ))}
               </View>
-            ),
+            )
           )
         )}
       </ScrollView>

@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
   ListRenderItem,
 } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
@@ -17,13 +18,11 @@ import { onlineMatchesStyles } from './OnlineMatchesScreen.styles';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
-  Chat: { partnerId: string; partnerName: string };
-  ProfileDetail: { userId: string };
+  ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
+  MatchDetail: { userId: string };
 };
 
-type Props = {
-  navigation: NavigationProp<RootStackParamList>;
-};
+type Props = { navigation: NavigationProp<RootStackParamList> };
 
 type OnlineMatch = {
   id: string;
@@ -38,70 +37,84 @@ type OnlineMatch = {
   isNew?: boolean;
 };
 
-interface MatchCardProps {
-  item: OnlineMatch;
-  onChat: () => void;
-  onViewProfile: () => void;
-}
-
-// ─── Mock API ─────────────────────────────────────────────────────────────────
+// ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const mockFetchOnlineMatches = (): Promise<OnlineMatch[]> =>
-  new Promise<OnlineMatch[]>((resolve) =>
-    setTimeout(() => {
-      resolve([
-        {
-          id: '1',
-          name: 'Priya Sharma',
-          age: 27,
-          height: '5\'4"',
-          education: 'MBA',
-          profession: 'HR Manager',
-          city: 'Delhi',
-          photo: 'https://i.pravatar.cc/300?img=11',
-          isOnline: true,
-          isNew: true,
-        },
-        {
-          id: '2',
-          name: 'Ankit Verma',
-          age: 30,
-          height: '5\'9"',
-          education: 'B.Tech',
-          profession: 'Software Engineer',
-          city: 'Bangalore',
-          photo: 'https://i.pravatar.cc/300?img=12',
-          isOnline: true,
-          isNew: false,
-        },
-        {
-          id: '3',
-          name: 'Meera Nair',
-          age: 25,
-          height: '5\'2"',
-          education: 'B.Com',
-          profession: 'Chartered Accountant',
-          city: 'Kochi',
-          photo: 'https://i.pravatar.cc/300?img=47',
-          isOnline: false,
-          isNew: true,
-        },
-      ]);
-    }, 600)
+  new Promise((resolve) =>
+    setTimeout(
+      () =>
+        resolve([
+          {
+            id: '1',
+            name: 'Priya Sharma',
+            age: 27,
+            height: "5'4\"",
+            education: 'MBA',
+            profession: 'HR Manager',
+            city: 'Delhi',
+            photo: 'https://i.pravatar.cc/300?img=11',
+            isOnline: true,
+            isNew: true,
+          },
+          {
+            id: '2',
+            name: 'Ankit Verma',
+            age: 30,
+            height: "5'9\"",
+            education: 'B.Tech',
+            profession: 'Software Engineer',
+            city: 'Bangalore',
+            photo: 'https://i.pravatar.cc/300?img=12',
+            isOnline: true,
+            isNew: false,
+          },
+          {
+            id: '3',
+            name: 'Meera Nair',
+            age: 25,
+            height: "5'2\"",
+            education: 'B.Com',
+            profession: 'Chartered Accountant',
+            city: 'Kochi',
+            photo: 'https://i.pravatar.cc/300?img=47',
+            isOnline: false,
+            isNew: true,
+          },
+        ]),
+      600,
+    ),
   );
+
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SkeletonCard(): React.ReactElement {
+  const styles = useThemedStyles(onlineMatchesStyles);
+  return (
+    <View style={styles.skeletonCard}>
+      <View style={styles.skeletonPhoto} />
+      <View style={styles.skeletonInfo}>
+        <View style={styles.skeletonLine} />
+        <View style={[styles.skeletonLine, styles.skeletonLineShort]} />
+      </View>
+    </View>
+  );
+}
 
 // ─── Match Card ───────────────────────────────────────────────────────────────
 
-const MatchCard: React.FC<MatchCardProps> = ({
+const MatchCard = React.memo(function MatchCard({
   item,
   onChat,
   onViewProfile,
-}) => {
+}: {
+  item: OnlineMatch;
+  onChat: () => void;
+  onViewProfile: () => void;
+}): React.ReactElement {
   const styles = useThemedStyles(onlineMatchesStyles);
 
   return (
     <View style={styles.card}>
-      {/* Photo */}
       <View style={styles.photoWrapper}>
         <Image
           source={{ uri: item.photo }}
@@ -110,7 +123,6 @@ const MatchCard: React.FC<MatchCardProps> = ({
         />
         <View style={styles.photoScrim} />
 
-        {/* Top badges */}
         <View style={styles.badgeRow}>
           {item.isOnline && (
             <View style={styles.onlineBadge}>
@@ -118,23 +130,24 @@ const MatchCard: React.FC<MatchCardProps> = ({
               <Text style={styles.onlineBadgeText}>Online now</Text>
             </View>
           )}
-          {item.isNew && (
+          {item.isNew === true && (
             <View style={styles.newBadge}>
               <Text style={styles.newBadgeText}>NEW</Text>
             </View>
           )}
         </View>
 
-        {/* Name overlay */}
         <View style={styles.nameOverlay}>
           <Text style={styles.nameOverlayText}>
             {item.name}, {item.age}
           </Text>
-          <Text style={styles.cityOverlayText}>📍 {item.city}</Text>
+          <View style={styles.cityOverlayRow}>
+            <Feather name="map-pin" size={12} color="rgba(255,255,255,0.9)" />
+            <Text style={styles.cityOverlayText}>{item.city}</Text>
+          </View>
         </View>
       </View>
 
-      {/* Info */}
       <View style={styles.info}>
         <View style={styles.tagsRow}>
           {[item.height, item.education, item.profession].map((tag) => (
@@ -144,37 +157,41 @@ const MatchCard: React.FC<MatchCardProps> = ({
           ))}
         </View>
 
-        {/* Actions */}
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.chatBtn}
             onPress={onChat}
             activeOpacity={0.85}
+            accessibilityRole="button"
           >
-            <Text style={styles.chatText}>💬 Chat</Text>
+            <Feather name="message-circle" size={15} color={Colors.white} />
+            <Text style={styles.chatText}>Chat</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.profileBtn}
             onPress={onViewProfile}
             activeOpacity={0.8}
+            accessibilityRole="button"
           >
+            <Feather name="user" size={15} color={Colors.primary} />
             <Text style={styles.profileText}>View Profile</Text>
           </TouchableOpacity>
         </View>
       </View>
     </View>
   );
-};
+});
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+// ─── Main Screen ─────────────────────────────────────────────────────────────
 
-export default function OnlineMatchesScreen({ navigation }: Props) {
+export default function OnlineMatchesScreen({
+  navigation,
+}: Props): React.ReactElement {
   const styles = useThemedStyles(onlineMatchesStyles);
-
   const [matches, setMatches] = useState<OnlineMatch[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const loadMatches = useCallback(async () => {
+  const loadMatches = useCallback(async (): Promise<void> => {
     setLoading(true);
     const data = await mockFetchOnlineMatches();
     setMatches(data);
@@ -187,33 +204,45 @@ export default function OnlineMatchesScreen({ navigation }: Props) {
 
   const onlineCount = matches.filter((m) => m.isOnline).length;
 
-  const renderItem: ListRenderItem<OnlineMatch> = ({ item }) => (
-    <MatchCard
-      item={item}
-      onChat={() =>
-        navigation.navigate('Chat', {
-          partnerId: item.id,
-          partnerName: item.name,
-        })
-      }
-      onViewProfile={() =>
-        navigation.navigate('ProfileDetail', { userId: item.id })
-      }
-    />
+  const renderItem: ListRenderItem<OnlineMatch> = useCallback(
+    ({ item }) => (
+      <MatchCard
+        item={item}
+        onChat={() =>
+          navigation.navigate('ChatScreen', {
+            userId: item.id,
+            partnerName: item.name,
+            partnerPhoto: item.photo,
+          })
+        }
+        onViewProfile={() =>
+          navigation.navigate('MatchDetail', { userId: item.id })
+        }
+      />
+    ),
+    [navigation],
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* ── Header ── */}
+    <SafeAreaView style={styles.safe}>
+      {/* ── Header ───────────────────────────────────────────────── */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Online Matches</Text>
-          {!loading && (
-            <Text style={styles.headerSub}>
-              <Text style={styles.onlineCountText}>{onlineCount} online</Text> ·{' '}
-              {matches.length} total profiles
-            </Text>
-          )}
+        <View style={styles.headerLeft}>
+          <View style={styles.headerIconWrapper}>
+            <Feather name="wifi" size={20} color={Colors.primary} />
+          </View>
+          <View>
+            <Text style={styles.headerTitle}>Online Now</Text>
+            {!loading && (
+              <Text style={styles.headerSub}>
+                <Text style={styles.onlineCountText}>
+                  {onlineCount} online
+                </Text>
+                {' · '}
+                {matches.length} total
+              </Text>
+            )}
+          </View>
         </View>
         <View style={styles.liveIndicator}>
           <View style={styles.liveDot} />
@@ -221,16 +250,24 @@ export default function OnlineMatchesScreen({ navigation }: Props) {
         </View>
       </View>
 
+      {/* ── Content ──────────────────────────────────────────────── */}
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={styles.loadingText}>Finding who's online…</Text>
-        </View>
+        <FlatList
+          data={[1, 2, 3]}
+          keyExtractor={(i) => String(i)}
+          renderItem={() => <SkeletonCard />}
+          contentContainerStyle={styles.listContent}
+          scrollEnabled={false}
+        />
       ) : matches.length === 0 ? (
         <View style={styles.center}>
-          <Text style={styles.emptyEmoji}>🕊️</Text>
+          <View style={styles.emptyIconWrapper}>
+            <Feather name="wifi-off" size={34} color={Colors.primary} />
+          </View>
           <Text style={styles.emptyTitle}>No one online right now</Text>
-          <Text style={styles.emptySub}>Check back in a bit!</Text>
+          <Text style={styles.emptySub}>
+            Check back in a bit — matches go online throughout the day.
+          </Text>
         </View>
       ) : (
         <FlatList
@@ -239,6 +276,8 @@ export default function OnlineMatchesScreen({ navigation }: Props) {
           renderItem={renderItem}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          initialNumToRender={4}
+          maxToRenderPerBatch={8}
         />
       )}
     </SafeAreaView>

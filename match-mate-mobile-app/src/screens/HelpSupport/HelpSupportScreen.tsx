@@ -119,10 +119,7 @@ function FaqCard({
           />
         </View>
         <Text
-          style={[
-            styles.faqQuestion,
-            expanded && styles.faqQuestionActive,
-          ]}
+          style={[styles.faqQuestion, expanded && styles.faqQuestionActive]}
         >
           {faq.question}
         </Text>
@@ -133,9 +130,7 @@ function FaqCard({
         />
       </TouchableOpacity>
 
-      {expanded && (
-        <Text style={styles.faqAnswer}>{faq.answer}</Text>
-      )}
+      {expanded && <Text style={styles.faqAnswer}>{faq.answer}</Text>}
     </View>
   );
 }
@@ -186,18 +181,18 @@ export default function HelpSupportScreen({}: HelpSupportScreenProps): React.Rea
 
   const openEmail = useCallback(
     () => void Linking.openURL(`mailto:${SUPPORT_EMAIL}`),
-    [],
+    []
   );
   const openPhone = useCallback(
     () => void Linking.openURL(`tel:${SUPPORT_PHONE}`),
-    [],
+    []
   );
   const openWhatsApp = useCallback(
     () =>
       void Linking.openURL(
-        `https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I need help with MatchMate.`,
+        `https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I need help with MatchMate.`
       ),
-    [],
+    []
   );
 
   const CONTACT_ITEMS: ContactItem[] = [
@@ -260,9 +255,7 @@ export default function HelpSupportScreen({}: HelpSupportScreenProps): React.Rea
             <View style={styles.sectionIconWrapper}>
               <Feather name="help-circle" size={13} color={Colors.primary} />
             </View>
-            <Text style={styles.sectionTitle}>
-              Frequently Asked Questions
-            </Text>
+            <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
           </View>
 
           {FAQ_DATA.map((faq, index) => (

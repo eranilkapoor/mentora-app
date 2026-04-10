@@ -602,7 +602,7 @@ export default function OnboardingScreen(): React.ReactElement {
 
       formData.append('primaryImageIndex', String(primaryIndex));
       console.log(personal, education, physical, family, preferences, photos);
-   
+
       const response = await onboardingProfile(formData).unwrap();
 
       if (!response.success as boolean) {

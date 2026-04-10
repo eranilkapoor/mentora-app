@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -7,9 +7,9 @@ import {
   Image,
   TextInput,
   RefreshControl,
-  ActivityIndicator,
   ListRenderItem,
 } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
@@ -19,12 +19,10 @@ import { chatsListStyles } from './ChatsListScreen.styles';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
-  ChatScreen: { userId: string };
+  ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
 };
 
-type Props = {
-  navigation: NavigationProp<RootStackParamList>;
-};
+type Props = { navigation: NavigationProp<RootStackParamList> };
 
 type ChatMatch = {
   id: string;
@@ -38,11 +36,6 @@ type ChatMatch = {
   unreadCount: number;
 };
 
-interface ChatRowProps {
-  item: ChatMatch;
-  onPress: () => void;
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 const formatTime = (iso: string): string => {
@@ -51,22 +44,22 @@ const formatTime = (iso: string): string => {
   const hours = Math.floor(diff / 3600000);
   const days = Math.floor(diff / 86400000);
   if (mins < 1) return 'Just now';
-  if (mins < 60) return `${mins}m ago`;
-  if (hours < 24) return `${hours}h ago`;
-  return `${days}d ago`;
+  if (mins < 60) return `${mins}m`;
+  if (hours < 24) return `${hours}h`;
+  return `${days}d`;
 };
 
-// ─── Mock API ─────────────────────────────────────────────────────────────────
+// ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const mockFetchMatches = async (): Promise<ChatMatch[]> => {
-  await new Promise<void>((r) => setTimeout(r, 700));
+  await new Promise<void>((r) => setTimeout(r, 600));
   return [
     {
       id: '1',
       name: 'Priya Sharma',
       age: 28,
       city: 'Mumbai',
-      lastMessage: 'Hi, how are you?',
+      lastMessage: 'Hi, how are you? 😊',
       avatarUrl: 'https://i.pravatar.cc/150?img=10',
       matchedAt: new Date().toISOString(),
       isOnline: true,
@@ -94,12 +87,48 @@ const mockFetchMatches = async (): Promise<ChatMatch[]> => {
       isOnline: true,
       unreadCount: 5,
     },
+    {
+      id: '4',
+      name: 'Rahul Mehta',
+      age: 30,
+      city: 'Pune',
+      lastMessage: 'Would love to know more about you.',
+      avatarUrl: 'https://i.pravatar.cc/150?img=15',
+      matchedAt: new Date(Date.now() - 86400000).toISOString(),
+      isOnline: false,
+      unreadCount: 0,
+    },
   ];
 };
 
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
+function SkeletonList(): React.ReactElement {
+  const styles = useThemedStyles(chatsListStyles);
+  return (
+    <>
+      {[1, 2, 3, 4].map((i) => (
+        <View key={i} style={styles.skeletonCard}>
+          <View style={styles.skeletonAvatar} />
+          <View style={styles.skeletonLines}>
+            <View style={styles.skeletonLine} />
+            <View style={[styles.skeletonLine, styles.skeletonLineShort]} />
+          </View>
+        </View>
+      ))}
+    </>
+  );
+}
+
 // ─── Chat Row ─────────────────────────────────────────────────────────────────
 
-const ChatRow: React.FC<ChatRowProps> = ({ item, onPress }) => {
+function ChatRow({
+  item,
+  onPress,
+}: {
+  item: ChatMatch;
+  onPress: () => void;
+}): React.ReactElement {
   const styles = useThemedStyles(chatsListStyles);
 
   return (
@@ -107,10 +136,18 @@ const ChatRow: React.FC<ChatRowProps> = ({ item, onPress }) => {
       style={[styles.card, item.unreadCount > 0 && styles.cardUnread]}
       onPress={onPress}
       activeOpacity={0.75}
+      accessibilityRole="button"
+      accessibilityLabel={`Chat with ${item.name}`}
     >
       {/* Avatar */}
       <View style={styles.avatarWrap}>
-        <Image source={{ uri: item.avatarUrl }} style={styles.avatar} />
+        <Image
+          source={{ uri: item.avatarUrl }}
+          style={[
+            styles.avatar,
+            item.unreadCount > 0 && styles.avatarUnread,
+          ]}
+        />
         {item.isOnline && <View style={styles.onlineDot} />}
       </View>
 
@@ -119,13 +156,24 @@ const ChatRow: React.FC<ChatRowProps> = ({ item, onPress }) => {
         <View style={styles.topRow}>
           <Text
             style={[styles.name, item.unreadCount > 0 && styles.nameUnread]}
+            numberOfLines={1}
           >
             {item.name}, {item.age}
           </Text>
-          <Text style={styles.time}>{formatTime(item.matchedAt)}</Text>
+          <Text
+            style={[
+              styles.time,
+              item.unreadCount > 0 && styles.timeUnread,
+            ]}
+          >
+            {formatTime(item.matchedAt)}
+          </Text>
         </View>
 
-        <Text style={styles.city}>📍 {item.city}</Text>
+        <View style={styles.cityRow}>
+          <Feather name="map-pin" size={11} color={Colors.textMuted} />
+          <Text style={styles.city}>{item.city}</Text>
+        </View>
 
         <View style={styles.bottomRow}>
           <Text
@@ -146,20 +194,18 @@ const ChatRow: React.FC<ChatRowProps> = ({ item, onPress }) => {
       </View>
     </TouchableOpacity>
   );
-};
+}
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+// ─── Main Screen ─────────────────────────────────────────────────────────────
 
-const ChatListScreen: React.FC<Props> = ({ navigation }) => {
+export default function ChatListScreen({ navigation }: Props): React.ReactElement {
   const styles = useThemedStyles(chatsListStyles);
-
   const [matches, setMatches] = useState<ChatMatch[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadMatches = useCallback(async () => {
-    setLoading(true);
+  const loadMatches = useCallback(async (): Promise<void> => {
     const data = await mockFetchMatches();
     setMatches(data);
     setLoading(false);
@@ -169,69 +215,106 @@ const ChatListScreen: React.FC<Props> = ({ navigation }) => {
     void loadMatches();
   }, [loadMatches]);
 
-  const onRefresh = async () => {
+  const onRefresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
     await loadMatches();
     setRefreshing(false);
-  };
+  }, [loadMatches]);
 
   const filtered = matches.filter((m) =>
-    m.name.toLowerCase().includes(query.toLowerCase())
+    m.name.toLowerCase().includes(query.toLowerCase()),
   );
 
   const totalUnread = matches.reduce((sum, m) => sum + m.unreadCount, 0);
 
-  const renderItem: ListRenderItem<ChatMatch> = ({ item }) => (
-    <ChatRow
-      item={item}
-      onPress={() => navigation.navigate('ChatScreen', { userId: item.id })}
-    />
+  const renderItem: ListRenderItem<ChatMatch> = useCallback(
+    ({ item }) => (
+      <ChatRow
+        item={item}
+        onPress={() =>
+          navigation.navigate('ChatScreen', {
+            userId: item.id,
+            partnerName: item.name,
+            partnerPhoto: item.avatarUrl,
+          })
+        }
+      />
+    ),
+    [navigation],
   );
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* ── Header ── */}
+    <SafeAreaView style={styles.safe}>
+      {/* ── Header ───────────────────────────────────────────────── */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerTitle}>Messages</Text>
-          {!loading && (
-            <Text style={styles.headerSub}>
-              {totalUnread > 0
-                ? `${totalUnread} unread message${totalUnread > 1 ? 's' : ''}`
-                : `${matches.length} conversations`}
-            </Text>
-          )}
+        <View style={styles.headerLeft}>
+          <View style={styles.headerIconWrapper}>
+            <Feather name="message-circle" size={20} color={Colors.primary} />
+          </View>
+          <View>
+            <Text style={styles.headerTitle}>Messages</Text>
+            {!loading && (
+              <Text style={styles.headerSub}>
+                {totalUnread > 0
+                  ? `${totalUnread} unread`
+                  : `${matches.length} conversations`}
+              </Text>
+            )}
+          </View>
         </View>
-        <TouchableOpacity style={styles.filterBtn}>
-          <Text style={styles.filterText}>⚙ Filter</Text>
+        <TouchableOpacity
+          style={styles.filterBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Filter conversations"
+        >
+          <Feather name="sliders" size={14} color={Colors.textSecondary} />
+          <Text style={styles.filterText}>Filter</Text>
         </TouchableOpacity>
       </View>
 
-      {/* ── Search ── */}
-      <View style={styles.searchBox}>
-        <Text style={styles.searchIcon}>🔍</Text>
-        <TextInput
-          placeholder="Search conversations…"
-          placeholderTextColor="#AAA"
-          value={query}
-          onChangeText={setQuery}
-          style={styles.searchInput}
-          returnKeyType="search"
-          clearButtonMode="while-editing"
-        />
+      {/* ── Search ───────────────────────────────────────────────── */}
+      <View style={styles.searchWrapper}>
+        <View style={styles.searchBox}>
+          <Feather name="search" size={16} color={Colors.textMuted} />
+          <TextInput
+            placeholder="Search conversations…"
+            placeholderTextColor={Colors.textMuted}
+            value={query}
+            onChangeText={setQuery}
+            style={styles.searchInput}
+            returnKeyType="search"
+            clearButtonMode="while-editing"
+            accessibilityLabel="Search conversations"
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <Feather name="x" size={16} color={Colors.textMuted} />
+            </TouchableOpacity>
+          )}
+        </View>
       </View>
 
-      {/* ── Content ── */}
+      {/* ── Content ──────────────────────────────────────────────── */}
       {loading ? (
-        <View style={styles.center}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={styles.loadingText}>Loading conversations…</Text>
-        </View>
+        <SkeletonList />
       ) : filtered.length === 0 ? (
-        <View style={styles.center}>
-          <Text style={styles.emptyEmoji}>💌</Text>
-          <Text style={styles.emptyTitle}>No conversations yet</Text>
-          <Text style={styles.emptySub}>Start chatting with your matches!</Text>
+        <View style={styles.emptyWrapper}>
+          <View style={styles.emptyIconWrapper}>
+            <Feather name="message-circle" size={36} color={Colors.primary} />
+          </View>
+          <Text style={styles.emptyTitle}>
+            {query.length > 0 ? 'No results found' : 'No conversations yet'}
+          </Text>
+          <Text style={styles.emptySub}>
+            {query.length > 0
+              ? `No matches for "${query}"`
+              : 'Start chatting with your matches!'}
+          </Text>
+          {query.length === 0 && (
+            <TouchableOpacity style={styles.emptyBtn}>
+              <Text style={styles.emptyBtnText}>Browse Matches</Text>
+            </TouchableOpacity>
+          )}
         </View>
       ) : (
         <FlatList
@@ -252,6 +335,4 @@ const ChatListScreen: React.FC<Props> = ({ navigation }) => {
       )}
     </SafeAreaView>
   );
-};
-
-export default ChatListScreen;
+}

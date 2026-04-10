@@ -10,6 +10,7 @@ import {
   RefreshControl,
   Platform,
 } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
@@ -19,8 +20,8 @@ import { matchListStyles } from './MatchListScreen.styles';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
-  OnlineMatches: { userId: string };
-  ChatScreen: { user: Match };
+  MatchDetail: { userId: string };
+  ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
 };
 
 interface Match {
@@ -38,26 +39,20 @@ interface Match {
   isNew?: boolean;
 }
 
-interface MatchCardProps {
-  item: Match;
-  onViewProfile: () => void;
-  onChat: () => void;
-}
-
 interface Props {
   navigation: NavigationProp<RootStackParamList>;
 }
 
-// ─── Mock API ─────────────────────────────────────────────────────────────────
+// ─── Mock Data ────────────────────────────────────────────────────────────────
 
 const mockFetchMatches = async (): Promise<Match[]> => {
-  await new Promise<void>((resolve) => setTimeout(resolve, 700));
+  await new Promise<void>((r) => setTimeout(r, 700));
   return [
     {
       id: '1',
       name: 'Priya Sharma',
       age: 28,
-      height: `5'4"`,
+      height: "5'4\"",
       religion: 'Hindu',
       caste: 'Brahmin',
       education: 'B.Tech',
@@ -71,7 +66,7 @@ const mockFetchMatches = async (): Promise<Match[]> => {
       id: '2',
       name: 'Ananya Reddy',
       age: 26,
-      height: `5'5"`,
+      height: "5'5\"",
       religion: 'Hindu',
       caste: 'Reddy',
       education: 'MBA',
@@ -85,7 +80,7 @@ const mockFetchMatches = async (): Promise<Match[]> => {
       id: '3',
       name: 'Meera Patel',
       age: 27,
-      height: `5'3"`,
+      height: "5'3\"",
       religion: 'Hindu',
       caste: 'Patel',
       education: 'B.Sc',
@@ -98,140 +93,167 @@ const mockFetchMatches = async (): Promise<Match[]> => {
   ];
 };
 
-// ─── Card Component ───────────────────────────────────────────────────────────
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
-const MatchCard = React.memo<MatchCardProps>(
-  ({ item, onViewProfile, onChat }) => {
-    const styles = useThemedStyles(matchListStyles);
-
-    return (
-      <View style={styles.card}>
-        <View style={styles.photoWrapper}>
-          <Image
-            source={{ uri: item.avatarUrl }}
-            style={styles.photo}
-            resizeMode="cover"
-          />
-
-          <View style={styles.photoOverlay} />
-
-          <View style={styles.badgeRow}>
-            {item.isNew && (
-              <View style={styles.newBadge}>
-                <Text style={styles.newBadgeText}>NEW</Text>
-              </View>
-            )}
-
-            {item.isOnline && (
-              <View style={styles.onlineBadge}>
-                <View style={styles.onlineDot} />
-                <Text style={styles.onlineBadgeText}>Online</Text>
-              </View>
-            )}
-          </View>
-
-          <View style={styles.nameOverlay}>
-            <Text style={styles.nameOverlayText} numberOfLines={1}>
-              {item.name}, {item.age}
-            </Text>
-            <Text style={styles.locationOverlayText} numberOfLines={1}>
-              📍 {item.location}
-            </Text>
-          </View>
-        </View>
-
-        <View style={styles.info}>
-          <View style={styles.tagsRow}>
-            {[item.height, item.religion, item.caste].map((tag) => (
-              <View key={tag} style={styles.tag}>
-                <Text style={styles.tagText}>{tag}</Text>
-              </View>
-            ))}
-          </View>
-
-          <View style={styles.metaRow}>
-            <Text style={styles.metaText} numberOfLines={1}>
-              🎓 {item.education}
-            </Text>
-            <Text style={styles.metaText} numberOfLines={1}>
-              💼 {item.profession}
-            </Text>
-          </View>
-
-          <View style={styles.actions}>
-            <TouchableOpacity
-              style={styles.outlineBtn}
-              onPress={onViewProfile}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.outlineText}>View Profile</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={styles.primaryBtn}
-              onPress={onChat}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.primaryText}>💬 Chat</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
+function SkeletonCard(): React.ReactElement {
+  const styles = useThemedStyles(matchListStyles);
+  return (
+    <View style={styles.skeletonCard}>
+      <View style={styles.skeletonPhoto} />
+      <View style={styles.skeletonInfo}>
+        <View style={styles.skeletonLine} />
+        <View style={[styles.skeletonLine, styles.skeletonLineShort]} />
+        <View style={[styles.skeletonLine, styles.skeletonLineXShort]} />
       </View>
-    );
-  }
-);
+    </View>
+  );
+}
 
-MatchCard.displayName = 'MatchCard';
+// ─── Match Card ───────────────────────────────────────────────────────────────
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
-const EmptyState: React.FC<{ query: string }> = ({ query }) => {
+const MatchCard = React.memo(function MatchCard({
+  item,
+  onViewProfile,
+  onChat,
+}: {
+  item: Match;
+  onViewProfile: () => void;
+  onChat: () => void;
+}): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
 
   return (
+    <View style={styles.card}>
+      <View style={styles.photoWrapper}>
+        <Image
+          source={{ uri: item.avatarUrl }}
+          style={styles.photo}
+          resizeMode="cover"
+        />
+        <View style={styles.photoScrim} />
+
+        <View style={styles.badgeRow}>
+          {item.isNew === true && (
+            <View style={styles.newBadge}>
+              <Text style={styles.newBadgeText}>NEW</Text>
+            </View>
+          )}
+          {item.isOnline === true && (
+            <View style={styles.onlineBadge}>
+              <View style={styles.onlineDot} />
+              <Text style={styles.onlineBadgeText}>Online</Text>
+            </View>
+          )}
+        </View>
+
+        <View style={styles.nameOverlay}>
+          <Text style={styles.nameOverlayText} numberOfLines={1}>
+            {item.name}, {item.age}
+          </Text>
+          <View style={styles.locationOverlayRow}>
+            <Feather name="map-pin" size={12} color="rgba(255,255,255,0.9)" />
+            <Text style={styles.locationOverlayText}>{item.location}</Text>
+          </View>
+        </View>
+      </View>
+
+      <View style={styles.info}>
+        <View style={styles.tagsRow}>
+          {[item.height, item.religion, item.caste].map((tag) => (
+            <View key={tag} style={styles.tag}>
+              <Text style={styles.tagText}>{tag}</Text>
+            </View>
+          ))}
+        </View>
+
+        <View style={styles.metaRow}>
+          <View style={styles.metaItem}>
+            <Feather name="book" size={13} color={Colors.textMuted} />
+            <Text style={styles.metaText}>{item.education}</Text>
+          </View>
+          <View style={styles.metaItem}>
+            <Feather name="briefcase" size={13} color={Colors.textMuted} />
+            <Text style={styles.metaText}>{item.profession}</Text>
+          </View>
+        </View>
+
+        <View style={styles.actions}>
+          <TouchableOpacity
+            style={styles.outlineBtn}
+            onPress={onViewProfile}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+          >
+            <Feather name="user" size={14} color={Colors.primary} />
+            <Text style={styles.outlineText}>Profile</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.primaryBtn}
+            onPress={onChat}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+          >
+            <Feather name="message-circle" size={14} color={Colors.white} />
+            <Text style={styles.primaryText}>Chat</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </View>
+  );
+});
+
+// ─── Empty State ──────────────────────────────────────────────────────────────
+
+function EmptyState({ query }: { query: string }): React.ReactElement {
+  const styles = useThemedStyles(matchListStyles);
+  return (
     <View style={styles.emptyContainer}>
-      <Text style={styles.emptyEmoji}>🔍</Text>
+      <View style={styles.emptyIconWrapper}>
+        <Feather name="search" size={36} color={Colors.primary} />
+      </View>
       <Text style={styles.emptyTitle}>
         {query ? 'No matches found' : 'No matches yet'}
       </Text>
       <Text style={styles.emptySubtitle}>
         {query
-          ? 'Try adjusting your search or filters'
-          : 'New matches will appear here'}
+          ? `No results for "${query}". Try different keywords.`
+          : 'New matches will appear here as they come in.'}
       </Text>
+      {query.length === 0 && (
+        <TouchableOpacity style={styles.emptyBtn}>
+          <Text style={styles.emptyBtnText}>Update Preferences</Text>
+        </TouchableOpacity>
+      )}
     </View>
   );
-};
+}
 
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+// ─── Main Screen ─────────────────────────────────────────────────────────────
 
-const MatchListScreen: React.FC<Props> = ({ navigation }) => {
+export default function MatchListScreen({
+  navigation,
+}: Props): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
-
   const [matches, setMatches] = useState<Match[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  const loadMatches = useCallback(async () => {
+  const loadMatches = useCallback(async (): Promise<void> => {
     try {
       setLoading(true);
       const data = await mockFetchMatches();
       setMatches(data);
-    } catch (error) {
-      console.error('Failed to load matches:', error);
     } finally {
       setLoading(false);
     }
   }, []);
 
-  const onRefresh = useCallback(async () => {
+  const onRefresh = useCallback(async (): Promise<void> => {
     try {
       setRefreshing(true);
       const data = await mockFetchMatches();
       setMatches(data);
-    } catch (error) {
-      console.error('Failed to refresh matches:', error);
     } finally {
       setRefreshing(false);
     }
@@ -241,114 +263,114 @@ const MatchListScreen: React.FC<Props> = ({ navigation }) => {
     void loadMatches();
   }, [loadMatches]);
 
-  const filteredMatches = useMemo(() => {
-    if (!query.trim()) {
-      return matches;
-    }
-
-    const searchTerm = query.toLowerCase().trim();
+  const filtered = useMemo(() => {
+    if (!query.trim()) return matches;
+    const q = query.toLowerCase().trim();
     return matches.filter(
-      (match) =>
-        match.name.toLowerCase().includes(searchTerm) ||
-        match.location.toLowerCase().includes(searchTerm) ||
-        match.profession.toLowerCase().includes(searchTerm)
+      (m) =>
+        m.name.toLowerCase().includes(q) ||
+        m.location.toLowerCase().includes(q) ||
+        m.profession.toLowerCase().includes(q),
     );
   }, [matches, query]);
-
-  const handleViewProfile = useCallback(
-    (userId: string) => {
-      navigation.navigate('OnlineMatches', { userId });
-    },
-    [navigation]
-  );
-
-  const handleChat = useCallback(
-    (user: Match) => {
-      navigation.navigate('ChatScreen', { user });
-    },
-    [navigation]
-  );
-
-  const handleFilter = useCallback(() => {
-    // TODO: Navigate to filter screen or show filter modal
-    // console.log('Open filters');
-  }, []);
-
-  const keyExtractor = useCallback((item: Match) => item.id, []);
 
   const renderItem = useCallback(
     ({ item }: { item: Match }) => (
       <MatchCard
         item={item}
-        onViewProfile={() => handleViewProfile(item.id)}
-        onChat={() => handleChat(item)}
+        onViewProfile={() =>
+          navigation.navigate('MatchDetail', { userId: item.id })
+        }
+        onChat={() =>
+          navigation.navigate('ChatScreen', {
+            userId: item.id,
+            partnerName: item.name,
+            partnerPhoto: item.avatarUrl,
+          })
+        }
       />
     ),
-    [handleViewProfile, handleChat]
+    [navigation],
   );
 
-  const renderListHeader = useCallback(
+  const ListHeader = useCallback(
     () => (
       <>
-        {/* Header */}
-        <View style={styles.header}>
-          <Text style={styles.headerTitle}>Your Matches</Text>
-          <TouchableOpacity onPress={handleFilter} activeOpacity={0.7}>
-            <Text style={styles.filterText}>⚙ Filter</Text>
-          </TouchableOpacity>
+        <View style={styles.searchWrapper}>
+          <View style={styles.searchBox}>
+            <Feather name="search" size={16} color={Colors.textMuted} />
+            <TextInput
+              placeholder="Search by name, location, profession…"
+              placeholderTextColor={Colors.textMuted}
+              style={styles.searchInput}
+              value={query}
+              onChangeText={setQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {query.length > 0 && (
+              <TouchableOpacity onPress={() => setQuery('')}>
+                <Feather name="x" size={16} color={Colors.textMuted} />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
-
-        {/* Search */}
-        <View style={styles.searchBox}>
-          <TextInput
-            placeholder="Search by name, location, profession..."
-            placeholderTextColor={Colors.textMuted}
-            style={styles.searchInput}
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="search"
-          />
-          {query.length > 0 && (
-            <TouchableOpacity
-              onPress={() => setQuery('')}
-              style={styles.clearButton}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.clearText}>✕</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
-        {/* Results count */}
         {!loading && (
-          <View style={styles.resultsCount}>
+          <View style={styles.resultsBar}>
             <Text style={styles.resultsText}>
-              {filteredMatches.length}{' '}
-              {filteredMatches.length === 1 ? 'match' : 'matches'}
-              {query && ' found'}
+              <Text style={styles.resultsHighlight}>{filtered.length}</Text>
+              {' '}
+              {filtered.length === 1 ? 'match' : 'matches'}
+              {query.length > 0 ? ' found' : ' for you'}
             </Text>
           </View>
         )}
       </>
     ),
-    [query, loading, filteredMatches.length, handleFilter, styles]
+    [query, loading, filtered.length, styles],
   );
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
-      {loading ? (
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={styles.loadingText}>Finding your matches...</Text>
+    <SafeAreaView style={styles.safe}>
+      {/* ── Header ───────────────────────────────────────────────── */}
+      <View style={styles.header}>
+        <View style={styles.headerLeft}>
+          <View style={styles.headerIconWrapper}>
+            <Feather name="heart" size={20} color={Colors.primary} />
+          </View>
+          <View>
+            <Text style={styles.headerTitle}>Your Matches</Text>
+            {!loading && (
+              <Text style={styles.headerSub}>
+                {matches.length} profiles found
+              </Text>
+            )}
+          </View>
         </View>
+        <TouchableOpacity
+          style={styles.filterBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Filter matches"
+        >
+          <Feather name="sliders" size={14} color={Colors.textSecondary} />
+          <Text style={styles.filterText}>Filter</Text>
+        </TouchableOpacity>
+      </View>
+
+      {loading ? (
+        <>
+          <ListHeader />
+          {[1, 2].map((i) => (
+            <SkeletonCard key={i} />
+          ))}
+        </>
       ) : (
         <FlatList
-          data={filteredMatches}
-          keyExtractor={keyExtractor}
+          data={filtered}
+          keyExtractor={(item) => item.id}
           renderItem={renderItem}
-          ListHeaderComponent={renderListHeader}
+          ListHeaderComponent={ListHeader}
           ListEmptyComponent={<EmptyState query={query} />}
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
@@ -368,6 +390,4 @@ const MatchListScreen: React.FC<Props> = ({ navigation }) => {
       )}
     </SafeAreaView>
   );
-};
-
-export default MatchListScreen;
+}

@@ -3,22 +3,35 @@ import { StyleSheet } from 'react-native';
 
 export const chatsListStyles = (theme: Theme) =>
   StyleSheet.create({
-    container: {
+    safe: {
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
     },
 
-    // Header
+    // ─── Header ───────────────────────────────────────────────────────────
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 16,
-      paddingTop: 12,
-      paddingBottom: 10,
+      paddingVertical: 14,
       backgroundColor: theme.colors.white,
-      borderBottomWidth: 1,
+      borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
+      elevation: 2,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    headerIconWrapper: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     headerTitle: {
       fontSize: 20,
@@ -27,73 +40,85 @@ export const chatsListStyles = (theme: Theme) =>
     },
     headerSub: {
       fontSize: 12,
-      color: theme.colors.textSecondary,
-      marginTop: 2,
+      color: theme.colors.textMuted,
+      marginTop: 1,
     },
     filterBtn: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
       paddingHorizontal: 14,
-      paddingVertical: 7,
+      paddingVertical: 8,
       borderRadius: 20,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.backgroundLight,
     },
     filterText: {
       fontSize: 13,
-      color: theme.colors.textBody,
+      color: theme.colors.textSecondary,
       fontWeight: '600',
     },
 
-    // Search
+    // ─── Search ───────────────────────────────────────────────────────────
+    searchWrapper: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      backgroundColor: theme.colors.white,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
     searchBox: {
       flexDirection: 'row',
       alignItems: 'center',
-      margin: 12,
       paddingHorizontal: 12,
-      backgroundColor: theme.colors.white,
+      gap: 8,
+      backgroundColor: theme.colors.backgroundLight,
       borderRadius: 12,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-    },
-    searchIcon: {
-      fontSize: 15,
-      marginRight: 6,
+      height: 42,
     },
     searchInput: {
       flex: 1,
-      height: 44,
       fontSize: 14,
       color: theme.colors.textPrimary,
     },
 
+    // ─── List ─────────────────────────────────────────────────────────────
     listContent: {
-      paddingBottom: 24,
+      paddingTop: 8,
+      paddingBottom: 32,
     },
 
-    // Card
+    // ─── Chat Card ────────────────────────────────────────────────────────
     card: {
       flexDirection: 'row',
       paddingHorizontal: 16,
-      paddingVertical: 14,
+      paddingVertical: 13,
       backgroundColor: theme.colors.white,
-      borderBottomWidth: 1,
+      borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
+      alignItems: 'center',
     },
     cardUnread: {
-      backgroundColor: theme.colors.primaryLight, // 🔥 instead of RED_LIGHT
+      backgroundColor: theme.colors.primaryLight,
     },
 
-    // Avatar
+    // ─── Avatar ───────────────────────────────────────────────────────────
     avatarWrap: {
       marginRight: 12,
       position: 'relative',
     },
     avatar: {
-      width: 60,
-      height: 60,
-      borderRadius: 30,
+      width: 58,
+      height: 58,
+      borderRadius: 29,
       borderWidth: 2,
       borderColor: theme.colors.divider,
+    },
+    avatarUnread: {
+      borderColor: theme.colors.primary,
     },
     onlineDot: {
       position: 'absolute',
@@ -102,12 +127,12 @@ export const chatsListStyles = (theme: Theme) =>
       width: 13,
       height: 13,
       borderRadius: 7,
-      backgroundColor: theme.colors.success, // 🔥 instead of hardcoded green
+      backgroundColor: theme.colors.success,
       borderWidth: 2,
       borderColor: theme.colors.white,
     },
 
-    // Info
+    // ─── Info ─────────────────────────────────────────────────────────────
     info: {
       flex: 1,
       justifyContent: 'center',
@@ -122,18 +147,30 @@ export const chatsListStyles = (theme: Theme) =>
       fontSize: 15,
       fontWeight: '600',
       color: theme.colors.textPrimary,
+      flex: 1,
     },
     nameUnread: {
       fontWeight: '800',
+      color: theme.colors.primary,
     },
     time: {
       fontSize: 11,
       color: theme.colors.textMuted,
+      marginLeft: 8,
+    },
+    timeUnread: {
+      color: theme.colors.primary,
+      fontWeight: '600',
+    },
+    cityRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      marginBottom: 4,
     },
     city: {
       fontSize: 12,
-      color: theme.colors.textSecondary,
-      marginBottom: 4,
+      color: theme.colors.textMuted,
     },
     bottomRow: {
       flexDirection: 'row',
@@ -142,7 +179,7 @@ export const chatsListStyles = (theme: Theme) =>
     },
     lastMessage: {
       fontSize: 13,
-      color: theme.colors.textSecondary,
+      color: theme.colors.textMuted,
       flex: 1,
       marginRight: 8,
     },
@@ -151,7 +188,7 @@ export const chatsListStyles = (theme: Theme) =>
       fontWeight: '600',
     },
 
-    // Badge
+    // ─── Badge ────────────────────────────────────────────────────────────
     badge: {
       backgroundColor: theme.colors.primary,
       borderRadius: 10,
@@ -167,28 +204,86 @@ export const chatsListStyles = (theme: Theme) =>
       fontWeight: '800',
     },
 
-    // States
-    center: {
+    // ─── Loading ──────────────────────────────────────────────────────────
+    loadingContainer: {
       flex: 1,
       justifyContent: 'center',
       alignItems: 'center',
+      gap: 12,
     },
     loadingText: {
-      fontSize: 13,
-      color: theme.colors.textSecondary,
-      marginTop: 8,
+      fontSize: 14,
+      color: theme.colors.textMuted,
     },
-    emptyEmoji: {
-      fontSize: 40,
+
+    // ─── Skeleton ─────────────────────────────────────────────────────────
+    skeletonCard: {
+      flexDirection: 'row',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      alignItems: 'center',
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      backgroundColor: theme.colors.white,
+      gap: 12,
+    },
+    skeletonAvatar: {
+      width: 58,
+      height: 58,
+      borderRadius: 29,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    skeletonLines: {
+      flex: 1,
+      gap: 8,
+    },
+    skeletonLine: {
+      height: 12,
+      borderRadius: 6,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    skeletonLineShort: {
+      width: '60%',
+    },
+
+    // ─── Empty ────────────────────────────────────────────────────────────
+    emptyWrapper: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      paddingHorizontal: 32,
+      gap: 12,
+    },
+    emptyIconWrapper: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
       marginBottom: 4,
     },
     emptyTitle: {
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: '700',
       color: theme.colors.textPrimary,
     },
     emptySub: {
-      fontSize: 13,
-      color: theme.colors.textSecondary,
+      fontSize: 14,
+      color: theme.colors.textMuted,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
+    emptyBtn: {
+      marginTop: 8,
+      paddingHorizontal: 24,
+      paddingVertical: 11,
+      borderRadius: 24,
+      backgroundColor: theme.colors.primary,
+    },
+    emptyBtnText: {
+      color: theme.colors.white,
+      fontWeight: '700',
+      fontSize: 14,
     },
   });

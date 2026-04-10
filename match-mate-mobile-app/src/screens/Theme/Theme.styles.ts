@@ -1,7 +1,7 @@
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const helpSupportStyles = (theme: Theme) =>
+export const themeStyles = (theme: Theme) =>
   StyleSheet.create({
     safe: {
       flex: 1,
@@ -18,7 +18,7 @@ export const helpSupportStyles = (theme: Theme) =>
       backgroundColor: theme.colors.white,
       borderRadius: 16,
       padding: 20,
-      marginBottom: 16,
+      marginBottom: 20,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       elevation: 1,
@@ -41,7 +41,7 @@ export const helpSupportStyles = (theme: Theme) =>
     headerSubtitle: {
       fontSize: 13,
       color: theme.colors.textMuted,
-      lineHeight: 19,
+      lineHeight: 18,
     },
 
     // ─── Section Card ─────────────────────────────────────────────────────
@@ -79,93 +79,85 @@ export const helpSupportStyles = (theme: Theme) =>
       letterSpacing: 0.5,
     },
 
-    // ─── Contact Row ──────────────────────────────────────────────────────
-    contactRow: {
+    // ─── Option Row ───────────────────────────────────────────────────────
+    optionRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
-      gap: 12,
-    },
-    contactRowLast: {
-      borderBottomWidth: 0,
-    },
-    contactIconWrapper: {
-      width: 38,
-      height: 38,
-      borderRadius: 11,
-      backgroundColor: theme.colors.backgroundLight,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    contactTextWrapper: {
-      flex: 1,
-    },
-    contactLabel: {
-      fontSize: 13,
-      color: theme.colors.textMuted,
-      marginBottom: 1,
-    },
-    contactValue: {
-      fontSize: 14,
-      fontWeight: '600',
-      color: theme.colors.textPrimary,
-    },
-
-    // ─── FAQ ──────────────────────────────────────────────────────────────
-    faqContainer: {
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
-      overflow: 'hidden',
-    },
-    faqContainerLast: {
-      borderBottomWidth: 0,
-    },
-    faqHeader: {
-      flexDirection: 'row',
       justifyContent: 'space-between',
-      alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 15,
-      gap: 12,
+      paddingVertical: 16,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
     },
-    faqHeaderActive: {
+    optionRowLast: {
+      borderBottomWidth: 0,
+    },
+    optionRowActive: {
       backgroundColor: theme.colors.primaryLight,
     },
-    faqIconWrapper: {
-      width: 28,
-      height: 28,
-      borderRadius: 8,
+    optionLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      flex: 1,
+    },
+    optionIconWrapper: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
       backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    faqIconWrapperActive: {
+    optionIconWrapperActive: {
       backgroundColor: theme.colors.primaryLight,
     },
-    faqQuestion: {
-      flex: 1,
-      fontSize: 14,
-      fontWeight: '600',
+    optionLabel: {
+      fontSize: 15,
+      fontWeight: '500',
       color: theme.colors.textPrimary,
-      lineHeight: 20,
     },
-    faqQuestionActive: {
+    optionLabelActive: {
       color: theme.colors.primary,
+      fontWeight: '600',
     },
-    faqAnswer: {
-      paddingHorizontal: 16,
-      paddingBottom: 16,
-      paddingTop: 4,
-      fontSize: 14,
-      lineHeight: 22,
-      color: theme.colors.textBody,
+    optionDescription: {
+      fontSize: 12,
+      color: theme.colors.textMuted,
+      marginTop: 2,
     },
 
-    // ─── Footer ───────────────────────────────────────────────────────────
-    footer: {
+    // ─── Check Badge ──────────────────────────────────────────────────────
+    checkBadge: {
+      width: 24,
       height: 24,
+      borderRadius: 12,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    checkBadgeEmpty: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      borderWidth: 2,
+      borderColor: theme.colors.border,
+    },
+
+    // ─── Info Card ────────────────────────────────────────────────────────
+    infoCard: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: 10,
+      backgroundColor: theme.colors.primaryLight,
+      borderRadius: 12,
+      padding: 14,
+      marginBottom: 16,
+    },
+    infoText: {
+      flex: 1,
+      fontSize: 13,
+      color: theme.colors.primary,
+      lineHeight: 18,
     },
   });

@@ -59,11 +59,7 @@ interface SectionProps {
 
 // ─── Sub-components ──────────────────────────────────────────────────────────
 
-function Section({
-  icon,
-  title,
-  children,
-}: SectionProps): React.ReactElement {
+function Section({ icon, title, children }: SectionProps): React.ReactElement {
   const styles = useThemedStyles(settingsStyles);
   return (
     <View style={styles.section}>
@@ -165,7 +161,7 @@ export default function SettingsScreen({
   const soundEnabled = useAppSelector((s) => s.settings.soundEnabled);
   const vibrationEnabled = useAppSelector((s) => s.settings.vibrationEnabled);
   const notificationsEnabled = useAppSelector(
-    (s) => s.settings.notificationsEnabled,
+    (s) => s.settings.notificationsEnabled
   );
 
   const firstName = useAppSelector((s) => s.auth.user?.firstName ?? '');
@@ -174,13 +170,15 @@ export default function SettingsScreen({
 
   const navigateTo = useCallback(
     (screen: ParamlessScreen) => navigation.navigate(screen),
-    [navigation],
+    [navigation]
   );
 
   const themeBadge =
-    themeMode === 'light' ? t('light')
-    : themeMode === 'dark' ? t('dark')
-    : t('system');
+    themeMode === 'light'
+      ? t('light')
+      : themeMode === 'dark'
+        ? t('dark')
+        : t('system');
 
   const langBadge = language === 'en' ? t('english') : t('hindi');
 
@@ -190,7 +188,11 @@ export default function SettingsScreen({
     };
 
     if (Platform.OS === 'web') {
-      if (window.confirm(t('sign_out_confirm', 'Are you sure you want to sign out?'))) {
+      if (
+        window.confirm(
+          t('sign_out_confirm', 'Are you sure you want to sign out?')
+        )
+      ) {
         doLogout();
       }
       return;
@@ -202,7 +204,7 @@ export default function SettingsScreen({
       [
         { text: t('cancel', 'Cancel'), style: 'cancel' },
         { text: t('sign_out'), style: 'destructive', onPress: doLogout },
-      ],
+      ]
     );
   }, [dispatch, t]);
 
@@ -224,7 +226,8 @@ export default function SettingsScreen({
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>
-              {`${firstName} ${lastName}`.trim() || t('your_profile', 'Your Profile')}
+              {`${firstName} ${lastName}`.trim() ||
+                t('your_profile', 'Your Profile')}
             </Text>
             <Text style={styles.profileSubtext} numberOfLines={1}>
               {email || t('tap_to_edit', 'Tap to edit your profile')}
@@ -309,7 +312,10 @@ export default function SettingsScreen({
           <SettingRow
             icon="sliders"
             label={t('notification_settings')}
-            subLabel={t('notification_settings_sub', 'Customize what you receive')}
+            subLabel={t(
+              'notification_settings_sub',
+              'Customize what you receive'
+            )}
             onPress={() => navigateTo('NotificationSettings')}
             isLast
           />

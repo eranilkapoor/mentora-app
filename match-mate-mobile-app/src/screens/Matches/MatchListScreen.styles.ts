@@ -3,121 +3,143 @@ import { Platform, StyleSheet } from 'react-native';
 
 export const matchListStyles = (theme: Theme) =>
   StyleSheet.create({
-    container: {
+    safe: {
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
     },
     listContent: {
-      flexGrow: 1,
+      paddingBottom: 32,
     },
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: 12,
-    },
-    loadingText: {
-      color: theme.colors.textSecondary,
-      fontSize: 14,
-      marginTop: 8,
-    },
+
+    // ─── Header ───────────────────────────────────────────────────────────
     header: {
-      padding: 16,
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
+      paddingHorizontal: 16,
+      paddingVertical: 14,
       backgroundColor: theme.colors.white,
-      borderBottomWidth: 1,
-      borderColor: theme.colors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      elevation: 2,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    headerIconWrapper: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     headerTitle: {
       fontSize: 20,
       fontWeight: '800',
       color: theme.colors.textPrimary,
     },
-    filterText: {
-      color: theme.colors.primary,
-      fontWeight: '600',
-      fontSize: 14,
+    headerSub: {
+      fontSize: 12,
+      color: theme.colors.textMuted,
+      marginTop: 1,
     },
-    searchBox: {
-      margin: 12,
-      marginBottom: 8,
-      backgroundColor: theme.colors.white,
-      borderRadius: 10,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      paddingHorizontal: 12,
+    filterBtn: {
       flexDirection: 'row',
       alignItems: 'center',
-      ...Platform.select({
-        ios: {
-          boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.05)`,
-        },
-        android: {
-          elevation: 1,
-        },
-      }),
+      gap: 6,
+      paddingHorizontal: 14,
+      paddingVertical: 8,
+      borderRadius: 20,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    filterText: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      fontWeight: '600',
+    },
+
+    // ─── Search ───────────────────────────────────────────────────────────
+    searchWrapper: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      backgroundColor: theme.colors.white,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    searchBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 12,
+      gap: 8,
+      backgroundColor: theme.colors.backgroundLight,
+      borderRadius: 12,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      height: 42,
     },
     searchInput: {
       flex: 1,
-      height: 44,
-      color: theme.colors.textPrimary,
       fontSize: 14,
+      color: theme.colors.textPrimary,
     },
-    clearButton: {
-      padding: 4,
-      marginLeft: 8,
-    },
-    clearText: {
-      color: theme.colors.textMuted,
-      fontSize: 18,
-      fontWeight: '600',
-    },
-    resultsCount: {
+
+    // ─── Results Count ────────────────────────────────────────────────────
+    resultsBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
       paddingHorizontal: 16,
-      paddingVertical: 8,
+      paddingVertical: 10,
     },
     resultsText: {
-      color: theme.colors.textSecondary,
       fontSize: 13,
+      color: theme.colors.textMuted,
       fontWeight: '500',
     },
+    resultsHighlight: {
+      color: theme.colors.primary,
+      fontWeight: '700',
+    },
+
+    // ─── Card ─────────────────────────────────────────────────────────────
     card: {
       backgroundColor: theme.colors.white,
-      marginHorizontal: 12,
+      marginHorizontal: 16,
       marginBottom: 16,
-      borderRadius: 16,
+      borderRadius: 18,
       overflow: 'hidden',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
       ...Platform.select({
-        ios: {
-          boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.01)`,
-        },
-        android: {
-          elevation: 4,
-        },
+        android: { elevation: 3 },
       }),
     },
+
+    // ─── Photo ────────────────────────────────────────────────────────────
     photo: {
       width: '100%',
-      height: 280,
+      height: 300,
     },
-    photoWrapper: {
-      position: 'relative',
-    },
-    photoOverlay: {
+    photoWrapper: { position: 'relative' },
+    photoScrim: {
       position: 'absolute',
       bottom: 0,
-      height: 120,
-      width: '100%',
-      backgroundColor: theme.colors.black,
+      left: 0,
+      right: 0,
+      height: 140,
+      backgroundColor: theme.colors.overlayDark,
     },
     badgeRow: {
       position: 'absolute',
       top: 12,
       left: 12,
       flexDirection: 'row',
-      gap: 8,
+      gap: 6,
     },
     newBadge: {
       backgroundColor: theme.colors.primary,
@@ -134,15 +156,15 @@ export const matchListStyles = (theme: Theme) =>
     onlineBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.black,
+      backgroundColor: 'rgba(0,0,0,0.45)',
       borderRadius: 20,
       paddingHorizontal: 10,
       paddingVertical: 4,
-      gap: 4,
+      gap: 5,
     },
     onlineDot: {
-      width: 8,
-      height: 8,
+      width: 7,
+      height: 7,
       borderRadius: 4,
       backgroundColor: theme.colors.success,
     },
@@ -154,33 +176,42 @@ export const matchListStyles = (theme: Theme) =>
     nameOverlay: {
       position: 'absolute',
       bottom: 12,
-      left: 12,
-      right: 12,
+      left: 14,
+      right: 14,
     },
     nameOverlayText: {
       color: theme.colors.white,
-      fontSize: 20,
+      fontSize: 22,
       fontWeight: '800',
-      marginBottom: 2,
+      marginBottom: 3,
+    },
+    locationOverlayRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
     },
     locationOverlayText: {
-      color: theme.colors.white,
+      color: 'rgba(255,255,255,0.9)',
       fontSize: 13,
-      opacity: 0.9,
     },
+
+    // ─── Info ─────────────────────────────────────────────────────────────
     info: {
       padding: 14,
     },
     tagsRow: {
       flexDirection: 'row',
-      gap: 8,
+      gap: 7,
       flexWrap: 'wrap',
+      marginBottom: 12,
     },
     tag: {
       backgroundColor: theme.colors.primaryLight,
-      paddingHorizontal: 10,
+      paddingHorizontal: 11,
       paddingVertical: 5,
       borderRadius: 20,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
     },
     tagText: {
       color: theme.colors.primary,
@@ -188,43 +219,93 @@ export const matchListStyles = (theme: Theme) =>
       fontWeight: '600',
     },
     metaRow: {
-      marginTop: 12,
+      gap: 5,
       marginBottom: 14,
+    },
+    metaItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
       gap: 6,
     },
     metaText: {
       color: theme.colors.textSecondary,
       fontSize: 13,
     },
+
+    // ─── Actions ──────────────────────────────────────────────────────────
     actions: {
       flexDirection: 'row',
       gap: 10,
     },
     outlineBtn: {
       flex: 1,
-      borderWidth: 1.5,
-      borderColor: theme.colors.primary,
-      borderRadius: 10,
-      paddingVertical: 12,
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
+      gap: 6,
+      borderWidth: 1.5,
+      borderColor: theme.colors.primary,
+      borderRadius: 12,
+      paddingVertical: 12,
     },
     outlineText: {
       color: theme.colors.primary,
       fontWeight: '700',
-      fontSize: 14,
+      fontSize: 13,
     },
     primaryBtn: {
       flex: 1,
-      backgroundColor: theme.colors.primary,
-      borderRadius: 10,
-      paddingVertical: 12,
+      flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
+      gap: 6,
+      backgroundColor: theme.colors.primary,
+      borderRadius: 12,
+      paddingVertical: 12,
+      elevation: 3,
     },
     primaryText: {
       color: theme.colors.white,
       fontWeight: '700',
+      fontSize: 13,
+    },
+
+    // ─── Skeleton ─────────────────────────────────────────────────────────
+    skeletonCard: {
+      backgroundColor: theme.colors.white,
+      marginHorizontal: 16,
+      marginBottom: 16,
+      borderRadius: 18,
+      overflow: 'hidden',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    skeletonPhoto: {
+      width: '100%',
+      height: 300,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    skeletonInfo: {
+      padding: 14,
+      gap: 10,
+    },
+    skeletonLine: {
+      height: 13,
+      borderRadius: 6,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    skeletonLineShort: { width: '55%' },
+    skeletonLineXShort: { width: '35%' },
+
+    // ─── Loading / Empty ──────────────────────────────────────────────────
+    loadingContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 12,
+    },
+    loadingText: {
+      color: theme.colors.textMuted,
       fontSize: 14,
     },
     emptyContainer: {
@@ -233,22 +314,39 @@ export const matchListStyles = (theme: Theme) =>
       alignItems: 'center',
       paddingVertical: 60,
       paddingHorizontal: 32,
+      gap: 12,
     },
-    emptyEmoji: {
-      fontSize: 64,
-      marginBottom: 16,
+    emptyIconWrapper: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 4,
     },
     emptyTitle: {
       fontSize: 18,
       fontWeight: '700',
       color: theme.colors.textPrimary,
-      marginBottom: 8,
       textAlign: 'center',
     },
     emptySubtitle: {
       fontSize: 14,
-      color: theme.colors.textSecondary,
+      color: theme.colors.textMuted,
       textAlign: 'center',
       lineHeight: 20,
+    },
+    emptyBtn: {
+      marginTop: 8,
+      paddingHorizontal: 24,
+      paddingVertical: 11,
+      borderRadius: 24,
+      backgroundColor: theme.colors.primary,
+    },
+    emptyBtnText: {
+      color: theme.colors.white,
+      fontWeight: '700',
+      fontSize: 14,
     },
   });

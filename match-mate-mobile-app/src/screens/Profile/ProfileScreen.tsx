@@ -175,7 +175,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
         heightRange: { min: 150, max: 250 },
       },
     },
-    images: []
+    images: [],
   });
   const styles = useThemedStyles(profileStyles);
   const [loading, setLoading] = useState(true);
@@ -207,16 +207,16 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
   }, [fetchProfile]);
 
   const photos: string[] =
-  profileData?.images?.length > 0
-    ? profileData.images
-        .filter((img) => img.isActive !== false)
-        .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
-        .map((img) =>{
-          console.log('📸 Image URL:', img.url); // ← check this in logs
-          return "http://192.168.1.4:3000"+ img.url;
-        })   // extract URL string from ProfileImage
-    : FALLBACK_PHOTOS;
-console.log(photos);
+    profileData?.images?.length > 0
+      ? profileData.images
+          .filter((img) => img.isActive !== false)
+          .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
+          .map((img) => {
+            console.log('📸 Image URL:', img.url); // ← check this in logs
+            return 'http://192.168.1.4:3000' + img.url;
+          }) // extract URL string from ProfileImage
+      : FALLBACK_PHOTOS;
+  console.log(photos);
   const renderPhoto: ListRenderItem<string> = useCallback(
     ({ item, index }) => (
       <Image

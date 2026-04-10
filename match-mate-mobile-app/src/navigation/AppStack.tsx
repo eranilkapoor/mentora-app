@@ -5,16 +5,16 @@ import BottomTabs from './BottomTabs';
 
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import SettingsScreen from '../screens/Settings/SettingsScreen';
-import ChangePasswordScreen from '../screens/Settings/ChangePasswordScreen';
+import ChangePasswordScreen from '../screens/ChangePassword/ChangePassword.screen';
 import ChatScreen from '../screens/Chats/ChatScreen';
 import MatchDetailScreen from '../screens/Matches/MatchDetailScreen';
 import PrivacyPolicyScreen from '../screens/Settings/PrivacyPolicyScreen';
-import HelpSupportScreen from '../screens/Settings/HelpSupportScreen';
-import NotificationSettingsScreen from '../screens/Settings/NotificationSettingsScreen';
+import HelpSupportScreen from '../screens/HelpSupport/HelpSupportScreen';
+import NotificationSettingsScreen from '../screens/NotificationSettings/NotificationSettingsScreen';
 import EditProfileScreen from '../screens/Profile/EditProfileScreen';
 import OnlineMatchesScreen from '../screens/Matches/OnlineMatchesScreen';
-import LanguageScreen from '../screens/Settings/LanguageScreen';
-import ThemeScreen from '../screens/Settings/ThemeScreen';
+import LanguageScreen from '../screens/Language/Language.screen';
+import ThemeScreen from '../screens/Theme/Theme.screen';
 
 const Stack = createNativeStackNavigator();
 

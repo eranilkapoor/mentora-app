@@ -1,10 +1,5 @@
 import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  ScrollView,
-} from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../core/components/Header';
@@ -47,7 +42,13 @@ interface PlanCardProps {
 const PLANS: Plan[] = [
   { name: 'Pro Lite', price: '₹1,999', contacts: 0, superInterest: 0 },
   { name: 'Pro', price: '₹3,999', contacts: 25, superInterest: 0 },
-  { name: 'Pro Max', price: '₹6,999', contacts: 50, superInterest: 50, best: true },
+  {
+    name: 'Pro Max',
+    price: '₹6,999',
+    contacts: 50,
+    superInterest: 50,
+    best: true,
+  },
 ];
 
 const FEATURES: { label: string; values: string[] }[] = [
@@ -115,7 +116,11 @@ function FeatureRow({
   );
 }
 
-function PlanCard({ plan, active, onPress }: PlanCardProps): React.ReactElement {
+function PlanCard({
+  plan,
+  active,
+  onPress,
+}: PlanCardProps): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
   return (
     <TouchableOpacity
@@ -217,7 +222,9 @@ export default function MembershipScreen(): React.ReactElement {
             <View style={styles.refundBanner}>
               <Text style={styles.refundIcon}>🔁</Text>
               <View>
-                <Text style={styles.refundText}>30-day full refund guarantee</Text>
+                <Text style={styles.refundText}>
+                  30-day full refund guarantee
+                </Text>
                 <Text style={styles.refundSub}>*Terms & conditions apply</Text>
               </View>
             </View>
@@ -240,14 +247,26 @@ export default function MembershipScreen(): React.ReactElement {
                         <Text style={styles.popularBadgeText}>⭐ Top</Text>
                       </View>
                     )}
-                    <Text style={[styles.planName, active && styles.planNameActive]}>
+                    <Text
+                      style={[styles.planName, active && styles.planNameActive]}
+                    >
                       {plan.name}
                     </Text>
-                    <Text style={[styles.planPrice, active && styles.planPriceActive]}>
+                    <Text
+                      style={[
+                        styles.planPrice,
+                        active && styles.planPriceActive,
+                      ]}
+                    >
                       {plan.price}
                     </Text>
                     <Text style={styles.planDuration}>/ 3 months</Text>
-                    <View style={[styles.radioOuter, active && styles.radioOuterActive]}>
+                    <View
+                      style={[
+                        styles.radioOuter,
+                        active && styles.radioOuterActive,
+                      ]}
+                    >
                       {active && <View style={styles.radioInner} />}
                     </View>
                   </TouchableOpacity>
@@ -328,7 +347,10 @@ export default function MembershipScreen(): React.ReactElement {
                 ))}
               </View>
               <View style={styles.cardActions}>
-                <TouchableOpacity style={styles.callbackBtn} activeOpacity={0.85}>
+                <TouchableOpacity
+                  style={styles.callbackBtn}
+                  activeOpacity={0.85}
+                >
                   <Text style={styles.callbackText}>📞 Request Call Back</Text>
                 </TouchableOpacity>
                 <TouchableOpacity activeOpacity={0.7}>
@@ -360,7 +382,8 @@ export default function MembershipScreen(): React.ReactElement {
             <View style={styles.savingsRow}>
               <Text style={styles.savingsText}>
                 💡 Save more with longer plans — up to{' '}
-                <Text style={styles.savingsHighlight}>₹42,372</Text> saved on 12 months
+                <Text style={styles.savingsHighlight}>₹42,372</Text> saved on 12
+                months
               </Text>
             </View>
 

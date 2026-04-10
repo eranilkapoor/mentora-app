@@ -7,37 +7,35 @@ export const chatStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
     },
-    flex: {
-      flex: 1,
-    },
+    flex: { flex: 1 },
 
-    // Header
+    // ─── Header ───────────────────────────────────────────────────────────
     header: {
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: 12,
       paddingVertical: 10,
-      backgroundColor: theme.colors.backgroundPage,
-      borderBottomWidth: 1,
-      borderColor: theme.colors.border,
-      boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
-      elevation: 2,
+      backgroundColor: theme.colors.white,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      elevation: 3,
       gap: 10,
     },
-    backBtn: { paddingHorizontal: 4 },
-    backArrow: {
-      fontSize: 30,
-      color: theme.colors.textPrimary,
-      lineHeight: 32,
+    backBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.backgroundLight,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
-
     avatarWrapper: { position: 'relative' },
     headerAvatar: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
+      width: 42,
+      height: 42,
+      borderRadius: 21,
       borderWidth: 2,
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.primaryLight,
     },
     onlineDot: {
       position: 'absolute',
@@ -46,11 +44,10 @@ export const chatStyles = (theme: Theme) =>
       width: 11,
       height: 11,
       borderRadius: 6,
-      backgroundColor: theme.colors.primaryLight,
+      backgroundColor: theme.colors.success,
       borderWidth: 2,
       borderColor: theme.colors.white,
     },
-
     headerInfo: { flex: 1 },
     headerName: {
       fontSize: 15,
@@ -61,26 +58,38 @@ export const chatStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      marginTop: 2,
+      marginTop: 1,
     },
     onlineDotInline: {
-      width: 7,
-      height: 7,
-      borderRadius: 4,
-      backgroundColor: theme.colors.primaryLight,
+      width: 6,
+      height: 6,
+      borderRadius: 3,
+      backgroundColor: theme.colors.success,
     },
     headerSub: {
       fontSize: 11,
-      color: theme.colors.primaryLight,
-      fontWeight: '600',
+      color: theme.colors.success,
+      fontWeight: '500',
     },
-
+    headerActions: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    headerActionBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.backgroundLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
     viewProfileBtn: {
       paddingHorizontal: 12,
       paddingVertical: 6,
       borderRadius: 20,
       borderWidth: 1.5,
       borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.primaryLight,
     },
     viewProfileText: {
       color: theme.colors.primary,
@@ -88,18 +97,45 @@ export const chatStyles = (theme: Theme) =>
       fontSize: 12,
     },
 
-    // Messages
-    messagesList: { paddingHorizontal: 12, paddingVertical: 14 },
+    // ─── Date Separator ───────────────────────────────────────────────────
+    dateSeparator: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginVertical: 12,
+      paddingHorizontal: 16,
+      gap: 10,
+    },
+    dateLine: {
+      flex: 1,
+      height: StyleSheet.hairlineWidth,
+      backgroundColor: theme.colors.divider,
+    },
+    dateText: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
+      fontWeight: '600',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      backgroundColor: theme.colors.backgroundLight,
+      borderRadius: 10,
+    },
 
-    messageRow: { marginVertical: 3 },
+    // ─── Messages ─────────────────────────────────────────────────────────
+    messagesList: {
+      paddingHorizontal: 12,
+      paddingVertical: 14,
+    },
+    messageRow: {
+      marginVertical: 3,
+    },
     leftAlign: { alignItems: 'flex-start' },
     rightAlign: { alignItems: 'flex-end' },
 
     bubble: {
       maxWidth: '78%',
-      borderRadius: 16,
-      padding: 10,
-      boxShadow: `0px 1px 2px rgba(0, 0, 0, 0.05)`,
+      borderRadius: 18,
+      paddingHorizontal: 13,
+      paddingVertical: 9,
       elevation: 1,
     },
     myBubble: {
@@ -107,60 +143,90 @@ export const chatStyles = (theme: Theme) =>
       borderBottomRightRadius: 4,
     },
     otherBubble: {
-      backgroundColor: theme.colors.backgroundPage,
+      backgroundColor: theme.colors.white,
       borderBottomLeftRadius: 4,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
     },
     messageText: {
       fontSize: 14,
       color: theme.colors.textPrimary,
-      lineHeight: 20,
+      lineHeight: 21,
     },
-    myText: { color: theme.colors.textPrimary },
-    image: { width: 200, height: 200, borderRadius: 10 },
-    time: {
-      fontSize: 10,
-      color: theme.colors.textSecondary,
-      alignSelf: 'flex-end',
+    myText: {
+      color: theme.colors.white,
+    },
+    image: {
+      width: 200,
+      height: 200,
+      borderRadius: 12,
+    },
+    timeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-end',
+      gap: 3,
       marginTop: 4,
     },
-    timeMe: { color: theme.colors.textSecondary },
-    readTick: { fontSize: 10, color: theme.colors.primary, fontWeight: '700' },
+    time: {
+      fontSize: 10,
+      color: theme.colors.textMuted,
+    },
+    timeMe: {
+      color: 'rgba(255,255,255,0.65)',
+    },
+    readTick: {
+      fontSize: 11,
+      color: 'rgba(255,255,255,0.85)',
+      fontWeight: '700',
+    },
 
-    // Emoji picker
+    // ─── Emoji Picker ─────────────────────────────────────────────────────
     emojiBox: {
       flexDirection: 'row',
       flexWrap: 'wrap',
       paddingHorizontal: 8,
-      paddingVertical: 6,
+      paddingVertical: 8,
       backgroundColor: theme.colors.white,
-      borderTopWidth: 1,
-      borderColor: theme.colors.border,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      maxHeight: 180,
     },
-    emojiBtn: { padding: 6 },
+    emojiBtn: {
+      padding: 6,
+      borderRadius: 8,
+    },
     emoji: { fontSize: 26 },
 
-    // Input bar
+    // ─── Input Bar ────────────────────────────────────────────────────────
     inputBar: {
       flexDirection: 'row',
       alignItems: 'flex-end',
       paddingHorizontal: 10,
       paddingVertical: 8,
-      paddingBottom: 10,
+      paddingBottom: 12,
       backgroundColor: theme.colors.white,
-      borderTopWidth: 1,
-      borderColor: theme.colors.border,
-      gap: 6,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      gap: 8,
     },
-    iconBtn: { paddingBottom: 9 },
-    iconText: { fontSize: 22 },
+    iconBtn: {
+      width: 36,
+      height: 36,
+      borderRadius: 18,
+      backgroundColor: theme.colors.backgroundLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 2,
+    },
     input: {
       flex: 1,
-      borderWidth: 1,
+      borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.border,
       borderRadius: 22,
       paddingHorizontal: 14,
       paddingVertical: 9,
-      backgroundColor: theme.colors.backgroundPage,
+      backgroundColor: theme.colors.backgroundLight,
       fontSize: 14,
       color: theme.colors.textPrimary,
       maxHeight: 100,
@@ -170,16 +236,13 @@ export const chatStyles = (theme: Theme) =>
       width: 40,
       height: 40,
       borderRadius: 20,
-      backgroundColor: theme.colors.border,
+      backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
       marginBottom: 1,
     },
     sendBtnActive: {
       backgroundColor: theme.colors.primary,
-      boxShadow: `0px 3px 6px rgba(0, 0, 0, 0.3)`,
       elevation: 4,
     },
-    sendText: { fontSize: 16, color: theme.colors.white },
-    sendTextActive: { color: theme.colors.white },
   });

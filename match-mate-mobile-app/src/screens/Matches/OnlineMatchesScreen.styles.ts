@@ -3,39 +3,60 @@ import { StyleSheet } from 'react-native';
 
 export const onlineMatchesStyles = (theme: Theme) =>
   StyleSheet.create({
-    container: {
+    safe: {
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
     },
 
-    // Header
+    // ─── Header ───────────────────────────────────────────────────────────
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingVertical: 14,
       backgroundColor: theme.colors.white,
-      borderBottomWidth: 1,
-      borderColor: theme.colors.border,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      elevation: 2,
+    },
+    headerLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    headerIconWrapper: {
+      width: 42,
+      height: 42,
+      borderRadius: 21,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
     },
     headerTitle: {
       fontSize: 20,
       fontWeight: '800',
       color: theme.colors.textPrimary,
     },
-    headerSub: { fontSize: 12, color: theme.colors.textMuted, marginTop: 2 },
-    onlineCountText: { color: theme.colors.primary, fontWeight: '700' },
+    headerSub: {
+      fontSize: 12,
+      color: theme.colors.textMuted,
+      marginTop: 1,
+    },
+    onlineCountText: {
+      color: theme.colors.success,
+      fontWeight: '700',
+    },
     liveIndicator: {
       flexDirection: 'row',
       alignItems: 'center',
-      gap: 5,
+      gap: 6,
       backgroundColor: theme.colors.primaryLight,
       borderRadius: 20,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
+      paddingHorizontal: 12,
+      paddingVertical: 7,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
     },
     liveDot: {
       width: 7,
@@ -50,33 +71,39 @@ export const onlineMatchesStyles = (theme: Theme) =>
       letterSpacing: 1,
     },
 
-    listContent: { paddingHorizontal: 12, paddingTop: 8, paddingBottom: 24 },
+    // ─── List ─────────────────────────────────────────────────────────────
+    listContent: {
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 32,
+    },
 
-    // Card
+    // ─── Card ─────────────────────────────────────────────────────────────
     card: {
-      marginBottom: 14,
-      borderRadius: 16,
+      marginBottom: 16,
+      borderRadius: 18,
       backgroundColor: theme.colors.white,
       overflow: 'hidden',
-      boxShadow: `0px 2px 8px rgba(0, 0, 0, 0.07)`,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
       elevation: 3,
     },
 
-    // Photo
+    // ─── Photo ────────────────────────────────────────────────────────────
     photoWrapper: { position: 'relative' },
-    image: { width: '100%', height: 230 },
+    image: { width: '100%', height: 260 },
     photoScrim: {
       position: 'absolute',
       bottom: 0,
       left: 0,
       right: 0,
-      height: 110,
+      height: 130,
       backgroundColor: theme.colors.overlayDark,
     },
     badgeRow: {
       position: 'absolute',
-      top: 10,
-      left: 10,
+      top: 12,
+      left: 12,
       flexDirection: 'row',
       gap: 6,
     },
@@ -84,9 +111,9 @@ export const onlineMatchesStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
-      backgroundColor: theme.colors.overlayDark,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
+      backgroundColor: 'rgba(0,0,0,0.45)',
+      paddingHorizontal: 10,
+      paddingVertical: 5,
       borderRadius: 20,
     },
     onlineDot: {
@@ -102,8 +129,8 @@ export const onlineMatchesStyles = (theme: Theme) =>
     },
     newBadge: {
       backgroundColor: theme.colors.primary,
-      paddingHorizontal: 8,
-      paddingVertical: 4,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
       borderRadius: 20,
     },
     newBadgeText: {
@@ -114,56 +141,76 @@ export const onlineMatchesStyles = (theme: Theme) =>
     },
     nameOverlay: {
       position: 'absolute',
-      bottom: 10,
-      left: 12,
-      right: 12,
+      bottom: 12,
+      left: 14,
+      right: 14,
     },
     nameOverlayText: {
-      fontSize: 20,
+      fontSize: 22,
       fontWeight: '800',
       color: theme.colors.white,
+      marginBottom: 3,
+    },
+    cityOverlayRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
     },
     cityOverlayText: {
-      fontSize: 12,
-      color: theme.colors.white,
-      marginTop: 2,
+      fontSize: 13,
+      color: 'rgba(255,255,255,0.9)',
     },
 
-    // Info
-    info: { padding: 12 },
+    // ─── Info ─────────────────────────────────────────────────────────────
+    info: { padding: 14 },
     tagsRow: {
       flexDirection: 'row',
       flexWrap: 'wrap',
-      gap: 6,
-      marginBottom: 12,
+      gap: 7,
+      marginBottom: 13,
     },
     tag: {
       backgroundColor: theme.colors.primaryLight,
       borderRadius: 20,
-      paddingHorizontal: 10,
-      paddingVertical: 4,
+      paddingHorizontal: 11,
+      paddingVertical: 5,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
     },
-    tagText: { fontSize: 11, color: theme.colors.primary, fontWeight: '600' },
+    tagText: {
+      fontSize: 12,
+      color: theme.colors.primary,
+      fontWeight: '600',
+    },
 
-    // Actions
+    // ─── Actions ──────────────────────────────────────────────────────────
     actions: { flexDirection: 'row', gap: 10 },
     chatBtn: {
       flex: 1,
-      paddingVertical: 10,
-      borderRadius: 10,
-      backgroundColor: theme.colors.primary,
+      flexDirection: 'row',
       alignItems: 'center',
-      boxShadow: `0px 3px 6px rgba(0, 0, 0, 0.3)`,
-      elevation: 4,
+      justifyContent: 'center',
+      gap: 6,
+      paddingVertical: 12,
+      borderRadius: 12,
+      backgroundColor: theme.colors.primary,
+      elevation: 3,
     },
-    chatText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
+    chatText: {
+      color: theme.colors.white,
+      fontWeight: '700',
+      fontSize: 13,
+    },
     profileBtn: {
       flex: 1,
-      paddingVertical: 10,
-      borderRadius: 10,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingVertical: 12,
+      borderRadius: 12,
       borderWidth: 1.5,
       borderColor: theme.colors.primary,
-      alignItems: 'center',
     },
     profileText: {
       color: theme.colors.primary,
@@ -171,14 +218,62 @@ export const onlineMatchesStyles = (theme: Theme) =>
       fontSize: 13,
     },
 
-    // States
-    center: { flex: 1, justifyContent: 'center', alignItems: 'center', gap: 8 },
-    loadingText: { fontSize: 13, color: theme.colors.textMuted, marginTop: 8 },
-    emptyEmoji: { fontSize: 40, marginBottom: 4 },
+    // ─── Skeleton ─────────────────────────────────────────────────────────
+    skeletonCard: {
+      marginBottom: 16,
+      borderRadius: 18,
+      backgroundColor: theme.colors.white,
+      overflow: 'hidden',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    skeletonPhoto: {
+      width: '100%',
+      height: 260,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    skeletonInfo: {
+      padding: 14,
+      gap: 10,
+    },
+    skeletonLine: {
+      height: 13,
+      borderRadius: 6,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    skeletonLineShort: { width: '50%' },
+
+    // ─── States ───────────────────────────────────────────────────────────
+    center: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      gap: 12,
+      paddingHorizontal: 32,
+    },
+    emptyIconWrapper: {
+      width: 80,
+      height: 80,
+      borderRadius: 40,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginBottom: 4,
+    },
+    loadingText: {
+      fontSize: 14,
+      color: theme.colors.textMuted,
+    },
     emptyTitle: {
-      fontSize: 16,
+      fontSize: 18,
       fontWeight: '700',
       color: theme.colors.textPrimary,
+      textAlign: 'center',
     },
-    emptySub: { fontSize: 13, color: theme.colors.textMuted },
+    emptySub: {
+      fontSize: 14,
+      color: theme.colors.textMuted,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
   });
