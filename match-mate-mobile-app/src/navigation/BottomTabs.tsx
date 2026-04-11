@@ -1,7 +1,9 @@
 import React from 'react';
+import { View, Text, Platform, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
-import { Ionicons } from '@expo/vector-icons';
+import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '../core/theme/ThemeProvider';
+import { BottomTabParamList } from './types';
 
 import HomeScreen from '../screens/Home/HomeScreen';
 import MatchListScreen from '../screens/Matches/MatchListScreen';
@@ -9,9 +11,71 @@ import ProfileScreen from '../screens/Profile/ProfileScreen';
 import ChatsListScreen from '../screens/Chats/ChatsListScreen';
 import MembershipScreen from '../screens/Membership/MembershipScreen';
 
-const Tab = createBottomTabNavigator();
+const Tab = createBottomTabNavigator<BottomTabParamList>();
 
-export default function BottomTabs() {
+// ─── Custom Tab Icon ──────────────────────────────────────────────────────────
+function TabIcon({
+  name,
+  focused,
+  color,
+  badge,
+}: {
+  name: string;
+  focused: boolean;
+  color: string;
+  badge?: number;
+}): React.ReactElement {
+  return (
+    <View style={tabIconStyles.wrapper}>
+      <Feather name={name} size={22} color={color} />
+      {badge !== undefined && badge > 0 && (
+        <View style={tabIconStyles.badge}>
+          <Text style={tabIconStyles.badgeText}>
+            {badge > 99 ? '99+' : badge}
+          </Text>
+        </View>
+      )}
+      {focused && (
+        <View style={[tabIconStyles.dot, { backgroundColor: color }]} />
+      )}
+    </View>
+  );
+}
+
+const tabIconStyles = StyleSheet.create({
+  wrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    backgroundColor: '#E91E63',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 3,
+  },
+});
+
+// ─── Bottom Tabs ─────────────────────────────────────────────────────────────
+
+export default function BottomTabs(): React.ReactElement {
   const { theme } = useTheme();
 
   return (
@@ -20,9 +84,24 @@ export default function BottomTabs() {
         headerShown: false,
         tabBarActiveTintColor: theme.colors.primary,
         tabBarInactiveTintColor: theme.colors.textMuted,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '600',
+          marginTop: Platform.OS === 'android' ? 0 : -2,
+          marginBottom: Platform.OS === 'android' ? 4 : 0,
+        },
         tabBarStyle: {
-          backgroundColor: theme.colors.surface,
-          borderTopColor: theme.colors.border,
+          backgroundColor: theme.colors.white,
+          borderTopWidth: StyleSheet.hairlineWidth,
+          borderTopColor: theme.colors.divider,
+          height: Platform.OS === 'android' ? 60 : 82,
+          paddingBottom: Platform.OS === 'android' ? 8 : 24,
+          paddingTop: 8,
+          elevation: 12,
+        },
+        tabBarItemStyle: {
+          paddingVertical: 0,
         },
       }}
     >
@@ -31,12 +110,8 @@ export default function BottomTabs() {
         component={HomeScreen}
         options={{
           tabBarLabel: 'Home',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name="home-outline"
-              size={focused ? size + 2 : size}
-              color={focused ? theme.colors.primary : color}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="home" focused={focused} color={color} />
           ),
         }}
       />
@@ -46,12 +121,8 @@ export default function BottomTabs() {
         component={MatchListScreen}
         options={{
           tabBarLabel: 'Matches',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name="heart-outline"
-              size={focused ? size + 2 : size}
-              color={focused ? theme.colors.primary : color}
-            />
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="heart" focused={focused} color={color} />
           ),
         }}
       />
@@ -62,26 +133,12 @@ export default function BottomTabs() {
         options={{
           tabBarLabel: 'Chats',
           tabBarBadge: 3,
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name="chatbubble-outline"
-              size={focused ? size + 2 : size}
-              color={focused ? theme.colors.primary : color}
-            />
-          ),
-        }}
-      />
-
-      <Tab.Screen
-        name="Profile"
-        component={ProfileScreen}
-        options={{
-          tabBarLabel: 'Profile',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name="person-outline"
-              size={focused ? size + 2 : size}
-              color={focused ? theme.colors.primary : color}
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon
+              name="message-circle"
+              focused={focused}
+              color={color}
+              badge={3} // TODO: wire to unread count from Redux
             />
           ),
         }}
@@ -91,13 +148,20 @@ export default function BottomTabs() {
         name="Membership"
         component={MembershipScreen}
         options={{
-          tabBarLabel: 'Membership',
-          tabBarIcon: ({ color, size, focused }) => (
-            <Ionicons
-              name="card-outline"
-              size={focused ? size + 2 : size}
-              color={focused ? theme.colors.primary : color}
-            />
+          tabBarLabel: 'Premium',
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="star" focused={focused} color={color} />
+          ),
+        }}
+      />
+
+      <Tab.Screen
+        name="Profile"
+        component={ProfileScreen}
+        options={{
+          tabBarLabel: 'Profile',
+          tabBarIcon: ({ focused, color }) => (
+            <TabIcon name="user" focused={focused} color={color} />
           ),
         }}
       />

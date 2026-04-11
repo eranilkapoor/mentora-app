@@ -15,19 +15,29 @@ import {
 import { baseApi } from './services/baseApi';
 import { setupListeners } from '@reduxjs/toolkit/query/react';
 
-/* ================= Root Reducer ================= */
-const rootReducer = combineReducers({
-  [baseApi.reducerPath]: baseApi.reducer,
-  auth: authReducer,
-  settings: settingsReducer,
-});
-
 /* ================= Persist Config ================= */
 const persistConfig = {
   key: 'root',
   storage: AsyncStorage,
-  whitelist: ['auth', 'settings'], // Only persist these reducers
+  whitelist: [baseApi.reducerPath], // Only persist these reducers
 };
+const authPersistConfig = {
+  key: 'auth',
+  storage: AsyncStorage,
+  whitelist: ['token', 'user'], // ✅ don't persist isHydrated
+};
+
+const settingsPersistConfig = {
+  key: 'settings',
+  storage: AsyncStorage,
+};
+
+/* ================= Root Reducer ================= */
+const rootReducer = combineReducers({
+  [baseApi.reducerPath]: baseApi.reducer,
+  auth: persistReducer(authPersistConfig, authReducer),
+  settings: persistReducer(settingsPersistConfig, settingsReducer),
+});
 
 /* ================= Persisted Reducer ================= */
 const persistedReducer = persistReducer(persistConfig, rootReducer);

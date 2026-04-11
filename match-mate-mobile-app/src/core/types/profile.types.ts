@@ -120,4 +120,6 @@ export interface Profile {
   education: string;
   profession: string;
   photos: string[];
+  isOnline?: boolean;
+  isNew?: boolean;
 }

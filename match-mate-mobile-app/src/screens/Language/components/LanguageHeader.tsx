@@ -12,7 +12,7 @@ export const LanguageHeader = ({ styles, t }: any) => (
     <Text style={styles.headerSubtitle}>
       {t(
         'language_subtitle',
-        'Choose your preferred language for the app interface.',
+        'Choose your preferred language for the app interface.'
       )}
     </Text>
   </View>

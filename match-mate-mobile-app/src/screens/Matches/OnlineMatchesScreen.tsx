@@ -5,15 +5,14 @@ import {
   FlatList,
   Image,
   TouchableOpacity,
-  ActivityIndicator,
   ListRenderItem,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { onlineMatchesStyles } from './OnlineMatchesScreen.styles';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -22,7 +21,7 @@ type RootStackParamList = {
   MatchDetail: { userId: string };
 };
 
-type Props = { navigation: NavigationProp<RootStackParamList> };
+type Props = { navigation: NativeStackNavigationProp<RootStackParamList> };
 
 type OnlineMatch = {
   id: string;
@@ -48,7 +47,7 @@ const mockFetchOnlineMatches = (): Promise<OnlineMatch[]> =>
             id: '1',
             name: 'Priya Sharma',
             age: 27,
-            height: "5'4\"",
+            height: '5\'4"',
             education: 'MBA',
             profession: 'HR Manager',
             city: 'Delhi',
@@ -60,7 +59,7 @@ const mockFetchOnlineMatches = (): Promise<OnlineMatch[]> =>
             id: '2',
             name: 'Ankit Verma',
             age: 30,
-            height: "5'9\"",
+            height: '5\'9"',
             education: 'B.Tech',
             profession: 'Software Engineer',
             city: 'Bangalore',
@@ -72,7 +71,7 @@ const mockFetchOnlineMatches = (): Promise<OnlineMatch[]> =>
             id: '3',
             name: 'Meera Nair',
             age: 25,
-            height: "5'2\"",
+            height: '5\'2"',
             education: 'B.Com',
             profession: 'Chartered Accountant',
             city: 'Kochi',
@@ -81,8 +80,8 @@ const mockFetchOnlineMatches = (): Promise<OnlineMatch[]> =>
             isNew: true,
           },
         ]),
-      600,
-    ),
+      600
+    )
   );
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -220,7 +219,7 @@ export default function OnlineMatchesScreen({
         }
       />
     ),
-    [navigation],
+    [navigation]
   );
 
   return (
@@ -235,9 +234,7 @@ export default function OnlineMatchesScreen({
             <Text style={styles.headerTitle}>Online Now</Text>
             {!loading && (
               <Text style={styles.headerSub}>
-                <Text style={styles.onlineCountText}>
-                  {onlineCount} online
-                </Text>
+                <Text style={styles.onlineCountText}>{onlineCount} online</Text>
                 {' · '}
                 {matches.length} total
               </Text>

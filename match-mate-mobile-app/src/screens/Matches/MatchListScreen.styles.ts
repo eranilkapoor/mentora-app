@@ -11,56 +11,59 @@ export const matchListStyles = (theme: Theme) =>
       paddingBottom: 32,
     },
 
-    // ─── Header ───────────────────────────────────────────────────────────
-    header: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      alignItems: 'center',
-      paddingHorizontal: 16,
-      paddingVertical: 14,
+    // ─── Tabs ─────────────────────────────────────────────────────────────
+    tabsWrapper: {
       backgroundColor: theme.colors.white,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      elevation: 2,
     },
-    headerLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
+    tabsScroll: {
+      paddingHorizontal: 16,
+      paddingVertical: 10,
+      gap: 8,
     },
-    headerIconWrapper: {
-      width: 42,
-      height: 42,
-      borderRadius: 21,
-      backgroundColor: theme.colors.primaryLight,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    headerTitle: {
-      fontSize: 20,
-      fontWeight: '800',
-      color: theme.colors.textPrimary,
-    },
-    headerSub: {
-      fontSize: 12,
-      color: theme.colors.textMuted,
-      marginTop: 1,
-    },
-    filterBtn: {
+    tab: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      paddingHorizontal: 14,
+      paddingHorizontal: 16,
       paddingVertical: 8,
       borderRadius: 20,
-      borderWidth: StyleSheet.hairlineWidth,
+      borderWidth: 1.5,
       borderColor: theme.colors.border,
       backgroundColor: theme.colors.backgroundLight,
     },
-    filterText: {
+    tabActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    tabText: {
       fontSize: 13,
-      color: theme.colors.textSecondary,
       fontWeight: '600',
+      color: theme.colors.textSecondary,
+    },
+    tabTextActive: {
+      color: theme.colors.white,
+    },
+    tabBadge: {
+      minWidth: 18,
+      height: 18,
+      borderRadius: 9,
+      backgroundColor: theme.colors.primaryLight,
+      paddingHorizontal: 4,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tabBadgeActive: {
+      backgroundColor: 'rgba(255,255,255,0.25)',
+    },
+    tabBadgeText: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: theme.colors.primary,
+    },
+    tabBadgeTextActive: {
+      color: theme.colors.white,
     },
 
     // ─── Search ───────────────────────────────────────────────────────────
@@ -88,7 +91,7 @@ export const matchListStyles = (theme: Theme) =>
       color: theme.colors.textPrimary,
     },
 
-    // ─── Results Count ────────────────────────────────────────────────────
+    // ─── Results Bar ──────────────────────────────────────────────────────
     resultsBar: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -115,16 +118,9 @@ export const matchListStyles = (theme: Theme) =>
       overflow: 'hidden',
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      ...Platform.select({
-        android: { elevation: 3 },
-      }),
+      ...Platform.select({ android: { elevation: 3 } }),
     },
-
-    // ─── Photo ────────────────────────────────────────────────────────────
-    photo: {
-      width: '100%',
-      height: 300,
-    },
+    photo: { width: '100%', height: 300 },
     photoWrapper: { position: 'relative' },
     photoScrim: {
       position: 'absolute',
@@ -190,15 +186,8 @@ export const matchListStyles = (theme: Theme) =>
       alignItems: 'center',
       gap: 5,
     },
-    locationOverlayText: {
-      color: 'rgba(255,255,255,0.9)',
-      fontSize: 13,
-    },
-
-    // ─── Info ─────────────────────────────────────────────────────────────
-    info: {
-      padding: 14,
-    },
+    locationOverlayText: { color: 'rgba(255,255,255,0.9)', fontSize: 13 },
+    info: { padding: 14 },
     tagsRow: {
       flexDirection: 'row',
       gap: 7,
@@ -213,30 +202,11 @@ export const matchListStyles = (theme: Theme) =>
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.primaryBorder,
     },
-    tagText: {
-      color: theme.colors.primary,
-      fontSize: 12,
-      fontWeight: '600',
-    },
-    metaRow: {
-      gap: 5,
-      marginBottom: 14,
-    },
-    metaItem: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 6,
-    },
-    metaText: {
-      color: theme.colors.textSecondary,
-      fontSize: 13,
-    },
-
-    // ─── Actions ──────────────────────────────────────────────────────────
-    actions: {
-      flexDirection: 'row',
-      gap: 10,
-    },
+    tagText: { color: theme.colors.primary, fontSize: 12, fontWeight: '600' },
+    metaRow: { gap: 5, marginBottom: 14 },
+    metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    metaText: { color: theme.colors.textSecondary, fontSize: 13 },
+    actions: { flexDirection: 'row', gap: 10 },
     outlineBtn: {
       flex: 1,
       flexDirection: 'row',
@@ -264,11 +234,7 @@ export const matchListStyles = (theme: Theme) =>
       paddingVertical: 12,
       elevation: 3,
     },
-    primaryText: {
-      color: theme.colors.white,
-      fontWeight: '700',
-      fontSize: 13,
-    },
+    primaryText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
 
     // ─── Skeleton ─────────────────────────────────────────────────────────
     skeletonCard: {
@@ -285,10 +251,7 @@ export const matchListStyles = (theme: Theme) =>
       height: 300,
       backgroundColor: theme.colors.backgroundLight,
     },
-    skeletonInfo: {
-      padding: 14,
-      gap: 10,
-    },
+    skeletonInfo: { padding: 14, gap: 10 },
     skeletonLine: {
       height: 13,
       borderRadius: 6,
@@ -297,23 +260,11 @@ export const matchListStyles = (theme: Theme) =>
     skeletonLineShort: { width: '55%' },
     skeletonLineXShort: { width: '35%' },
 
-    // ─── Loading / Empty ──────────────────────────────────────────────────
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: 12,
-    },
-    loadingText: {
-      color: theme.colors.textMuted,
-      fontSize: 14,
-    },
+    // ─── Empty ────────────────────────────────────────────────────────────
     emptyContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
       paddingVertical: 60,
       paddingHorizontal: 32,
+      alignItems: 'center',
       gap: 12,
     },
     emptyIconWrapper: {

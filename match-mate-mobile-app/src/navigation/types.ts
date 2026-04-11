@@ -1,13 +1,27 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { Profile } from '../core/types/profile.types';
 
-export type RootStackParamList = {
+// ─── Auth Stack ───────────────────────────────────────────────────────────────
+export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
   Onboarding: undefined;
+};
+
+// ─── Bottom Tabs ──────────────────────────────────────────────────────────────
+export type BottomTabParamList = {
   Home: undefined;
+  Matches: undefined;
+  Chats: undefined;
   Profile: undefined;
+  Membership: undefined;
+};
+
+// ─── App Stack ────────────────────────────────────────────────────────────────
+export type AppStackParamList = {
+  Tabs: undefined;
   Notifications: undefined;
   Settings: undefined;
   EditProfile: undefined;
@@ -17,18 +31,22 @@ export type RootStackParamList = {
   NotificationSettings: undefined;
   HelpSupport: undefined;
   PrivacyPolicy: undefined;
-  Matches: undefined;
   OnlineMatches: undefined;
   MatchDetails: { user: Profile };
-  Chats: { userId: string };
-  ChatDetails: undefined; // add params if needed
-  // add all your screens here
+  ChatScreen: {
+    userId: string;
+    partnerName: string;
+    partnerPhoto: string;
+  };
+  ChatsDetail: { userId: string };
 };
 
-export type ParamlessScreen = {
-  [K in keyof RootStackParamList]: RootStackParamList[K] extends undefined
-    ? K
-    : never;
-}[keyof RootStackParamList];
+// ─── Root Stack ───────────────────────────────────────────────────────────────
+export type RootStackParamList = {
+  Auth: undefined;
+  App: undefined;
+};
 
+export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
+export type BootamNavigationProp = BottomTabNavigationProp<BottomTabParamList>;
 export type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>;

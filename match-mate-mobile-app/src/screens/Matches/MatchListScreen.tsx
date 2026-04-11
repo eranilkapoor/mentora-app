@@ -6,16 +6,17 @@ import {
   TouchableOpacity,
   Image,
   TextInput,
-  ActivityIndicator,
   RefreshControl,
+  ScrollView,
   Platform,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchListStyles } from './MatchListScreen.styles';
+import Header from '../../core/components/Header';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -23,6 +24,8 @@ type RootStackParamList = {
   MatchDetail: { userId: string };
   ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
 };
+
+type TabKey = 'recommended' | 'new' | 'online';
 
 interface Match {
   id: string;
@@ -39,58 +42,77 @@ interface Match {
   isNew?: boolean;
 }
 
-interface Props {
-  navigation: NavigationProp<RootStackParamList>;
+interface TabConfig {
+  key: TabKey;
+  label: string;
+  icon: string;
+  count: number;
 }
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
+const ALL_MATCHES: Match[] = [
+  {
+    id: '1',
+    name: 'Priya Sharma',
+    age: 28,
+    height: '5\'4"',
+    religion: 'Hindu',
+    caste: 'Brahmin',
+    education: 'B.Tech',
+    profession: 'Software Engineer',
+    location: 'Mumbai, India',
+    avatarUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
+    isOnline: true,
+    isNew: true,
+  },
+  {
+    id: '2',
+    name: 'Ananya Reddy',
+    age: 26,
+    height: '5\'5"',
+    religion: 'Hindu',
+    caste: 'Reddy',
+    education: 'MBA',
+    profession: 'Business Analyst',
+    location: 'Hyderabad, India',
+    avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg',
+    isOnline: false,
+    isNew: true,
+  },
+  {
+    id: '3',
+    name: 'Meera Patel',
+    age: 27,
+    height: '5\'3"',
+    religion: 'Hindu',
+    caste: 'Patel',
+    education: 'B.Sc',
+    profession: 'Teacher',
+    location: 'Ahmedabad, India',
+    avatarUrl: 'https://randomuser.me/api/portraits/women/72.jpg',
+    isOnline: true,
+    isNew: false,
+  },
+  {
+    id: '4',
+    name: 'Kavya Nair',
+    age: 25,
+    height: '5\'2"',
+    religion: 'Hindu',
+    caste: 'Nair',
+    education: 'B.Com',
+    profession: 'CA',
+    location: 'Kochi, Kerala',
+    avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
+    isOnline: true,
+    isNew: false,
+  },
+];
+
 const mockFetchMatches = async (): Promise<Match[]> => {
   await new Promise<void>((r) => setTimeout(r, 700));
-  return [
-    {
-      id: '1',
-      name: 'Priya Sharma',
-      age: 28,
-      height: "5'4\"",
-      religion: 'Hindu',
-      caste: 'Brahmin',
-      education: 'B.Tech',
-      profession: 'Software Engineer',
-      location: 'Mumbai, India',
-      avatarUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
-      isOnline: true,
-      isNew: true,
-    },
-    {
-      id: '2',
-      name: 'Ananya Reddy',
-      age: 26,
-      height: "5'5\"",
-      religion: 'Hindu',
-      caste: 'Reddy',
-      education: 'MBA',
-      profession: 'Business Analyst',
-      location: 'Hyderabad, India',
-      avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg',
-      isOnline: false,
-      isNew: false,
-    },
-    {
-      id: '3',
-      name: 'Meera Patel',
-      age: 27,
-      height: "5'3\"",
-      religion: 'Hindu',
-      caste: 'Patel',
-      education: 'B.Sc',
-      profession: 'Teacher',
-      location: 'Ahmedabad, India',
-      avatarUrl: 'https://randomuser.me/api/portraits/women/72.jpg',
-      isOnline: true,
-      isNew: false,
-    },
-  ];
+  return ALL_MATCHES;
 };
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -202,42 +224,19 @@ const MatchCard = React.memo(function MatchCard({
   );
 });
 
-// ─── Empty State ──────────────────────────────────────────────────────────────
-
-function EmptyState({ query }: { query: string }): React.ReactElement {
-  const styles = useThemedStyles(matchListStyles);
-  return (
-    <View style={styles.emptyContainer}>
-      <View style={styles.emptyIconWrapper}>
-        <Feather name="search" size={36} color={Colors.primary} />
-      </View>
-      <Text style={styles.emptyTitle}>
-        {query ? 'No matches found' : 'No matches yet'}
-      </Text>
-      <Text style={styles.emptySubtitle}>
-        {query
-          ? `No results for "${query}". Try different keywords.`
-          : 'New matches will appear here as they come in.'}
-      </Text>
-      {query.length === 0 && (
-        <TouchableOpacity style={styles.emptyBtn}>
-          <Text style={styles.emptyBtnText}>Update Preferences</Text>
-        </TouchableOpacity>
-      )}
-    </View>
-  );
-}
-
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function MatchListScreen({
   navigation,
-}: Props): React.ReactElement {
+}: {
+  navigation: NativeStackNavigationProp<RootStackParamList>;
+}): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const [matches, setMatches] = useState<Match[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [activeTab, setActiveTab] = useState<TabKey>('recommended');
 
   const loadMatches = useCallback(async (): Promise<void> => {
     try {
@@ -263,16 +262,53 @@ export default function MatchListScreen({
     void loadMatches();
   }, [loadMatches]);
 
+  // Tab filter
+  const tabFiltered = useMemo(() => {
+    switch (activeTab) {
+      case 'new':
+        return matches.filter((m) => m.isNew);
+      case 'online':
+        return matches.filter((m) => m.isOnline);
+      default:
+        return matches;
+    }
+  }, [matches, activeTab]);
+
+  // Search filter
   const filtered = useMemo(() => {
-    if (!query.trim()) return matches;
+    if (!query.trim()) return tabFiltered;
     const q = query.toLowerCase().trim();
-    return matches.filter(
+    return tabFiltered.filter(
       (m) =>
         m.name.toLowerCase().includes(q) ||
         m.location.toLowerCase().includes(q) ||
-        m.profession.toLowerCase().includes(q),
+        m.profession.toLowerCase().includes(q)
     );
-  }, [matches, query]);
+  }, [tabFiltered, query]);
+
+  const TABS: TabConfig[] = useMemo(
+    () => [
+      {
+        key: 'recommended',
+        label: 'Recommended',
+        icon: 'star',
+        count: matches.length,
+      },
+      {
+        key: 'new',
+        label: 'New',
+        icon: 'zap',
+        count: matches.filter((m) => m.isNew).length,
+      },
+      {
+        key: 'online',
+        label: 'Online',
+        icon: 'wifi',
+        count: matches.filter((m) => m.isOnline).length,
+      },
+    ],
+    [matches]
+  );
 
   const renderItem = useCallback(
     ({ item }: { item: Match }) => (
@@ -290,74 +326,92 @@ export default function MatchListScreen({
         }
       />
     ),
-    [navigation],
+    [navigation]
   );
 
   const ListHeader = useCallback(
     () => (
-      <>
-        <View style={styles.searchWrapper}>
-          <View style={styles.searchBox}>
-            <Feather name="search" size={16} color={Colors.textMuted} />
-            <TextInput
-              placeholder="Search by name, location, profession…"
-              placeholderTextColor={Colors.textMuted}
-              style={styles.searchInput}
-              value={query}
-              onChangeText={setQuery}
-              autoCapitalize="none"
-              autoCorrect={false}
-              returnKeyType="search"
-            />
-            {query.length > 0 && (
-              <TouchableOpacity onPress={() => setQuery('')}>
-                <Feather name="x" size={16} color={Colors.textMuted} />
-              </TouchableOpacity>
-            )}
-          </View>
+      <View style={styles.searchWrapper}>
+        <View style={styles.searchBox}>
+          <Feather name="search" size={16} color={Colors.textMuted} />
+          <TextInput
+            placeholder="Search by name, location, profession…"
+            placeholderTextColor={Colors.textMuted}
+            style={styles.searchInput}
+            value={query}
+            onChangeText={setQuery}
+            autoCapitalize="none"
+            autoCorrect={false}
+            returnKeyType="search"
+          />
+          {query.length > 0 && (
+            <TouchableOpacity onPress={() => setQuery('')}>
+              <Feather name="x" size={16} color={Colors.textMuted} />
+            </TouchableOpacity>
+          )}
         </View>
-        {!loading && (
-          <View style={styles.resultsBar}>
-            <Text style={styles.resultsText}>
-              <Text style={styles.resultsHighlight}>{filtered.length}</Text>
-              {' '}
-              {filtered.length === 1 ? 'match' : 'matches'}
-              {query.length > 0 ? ' found' : ' for you'}
-            </Text>
-          </View>
-        )}
-      </>
+      </View>
     ),
-    [query, loading, filtered.length, styles],
+    [query, styles]
   );
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* ── Header ───────────────────────────────────────────────── */}
-      <View style={styles.header}>
-        <View style={styles.headerLeft}>
-          <View style={styles.headerIconWrapper}>
-            <Feather name="heart" size={20} color={Colors.primary} />
-          </View>
-          <View>
-            <Text style={styles.headerTitle}>Your Matches</Text>
-            {!loading && (
-              <Text style={styles.headerSub}>
-                {matches.length} profiles found
-              </Text>
-            )}
-          </View>
-        </View>
-        <TouchableOpacity
-          style={styles.filterBtn}
-          accessibilityRole="button"
-          accessibilityLabel="Filter matches"
+      {/* ── Shared Header ────────────────────────────────────────── */}
+      <Header
+        onFilter={() => {}}
+        onNotifications={() => navigation.navigate('Notifications' as never)}
+        hasUnread
+      />
+
+      {/* ── Tabs ─────────────────────────────────────────────────── */}
+      <View style={styles.tabsWrapper}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tabsScroll}
         >
-          <Feather name="sliders" size={14} color={Colors.textSecondary} />
-          <Text style={styles.filterText}>Filter</Text>
-        </TouchableOpacity>
+          {TABS.map((t) => {
+            const isActive = activeTab === t.key;
+            return (
+              <TouchableOpacity
+                key={t.key}
+                style={[styles.tab, isActive && styles.tabActive]}
+                onPress={() => setActiveTab(t.key)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: isActive }}
+              >
+                <Feather
+                  name={t.icon}
+                  size={13}
+                  color={isActive ? Colors.white : Colors.textSecondary}
+                />
+                <Text
+                  style={[styles.tabText, isActive && styles.tabTextActive]}
+                >
+                  {t.label}
+                </Text>
+                {t.count > 0 && (
+                  <View
+                    style={[styles.tabBadge, isActive && styles.tabBadgeActive]}
+                  >
+                    <Text
+                      style={[
+                        styles.tabBadgeText,
+                        isActive && styles.tabBadgeTextActive,
+                      ]}
+                    >
+                      {t.count}
+                    </Text>
+                  </View>
+                )}
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
       </View>
 
+      {/* ── Content ──────────────────────────────────────────────── */}
       {loading ? (
         <>
           <ListHeader />
@@ -371,7 +425,26 @@ export default function MatchListScreen({
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           ListHeaderComponent={ListHeader}
-          ListEmptyComponent={<EmptyState query={query} />}
+          ListEmptyComponent={
+            <View style={styles.emptyContainer}>
+              <View style={styles.emptyIconWrapper}>
+                <Feather name="search" size={36} color={Colors.primary} />
+              </View>
+              <Text style={styles.emptyTitle}>
+                {query ? 'No results found' : 'No matches yet'}
+              </Text>
+              <Text style={styles.emptySubtitle}>
+                {query
+                  ? `Try different keywords`
+                  : 'Check back soon for new matches.'}
+              </Text>
+              {query.length === 0 && (
+                <TouchableOpacity style={styles.emptyBtn}>
+                  <Text style={styles.emptyBtnText}>Update Preferences</Text>
+                </TouchableOpacity>
+              )}
+            </View>
+          }
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={

@@ -11,7 +11,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
-import { type RootNavigationProp } from '../../navigation/types';
+//import { BootamNavigationProp } from '../../navigation/types';
 import {
   annualIncomeFormat,
   cmToFeetInches,
@@ -25,16 +25,26 @@ import {
 } from '../../core/utils/format';
 import Header from '../../core/components/Header';
 import { useGetMyProfileQuery } from '../../store/services/profileApi';
-import { ProfileData, ProfileImage } from '../../core/types/api';
+import { ProfileData } from '../../core/types/api';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { profileStyles } from './ProfileScreen.styles';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
+type RootStackParamList = {
+  MatchDetail: { userId: string };
+  ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
+};
+
 interface ProfileScreenProps {
-  navigation: RootNavigationProp;
+  navigation: NativeStackNavigationProp<RootStackParamList>;
 }
+
+// interface ProfileScreenProps {
+//   navigation: BootamNavigationProp;
+// }
 
 interface SectionProps {
   title: string;
@@ -255,7 +265,11 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
   if (loading) {
     return (
       <SafeAreaView style={styles.safe}>
-        <Header />
+        <Header 
+          onNotifications={() => navigation.navigate('Notifications' as never)}
+          onSettings={() => navigation.navigate('Settings' as never)}
+          hasUnread
+        />
         <ProfileSkeleton />
       </SafeAreaView>
     );
@@ -266,7 +280,12 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
-      <Header />
+      <Header 
+        //onFilter={() => {}}
+        onNotifications={() => navigation.navigate('Notifications' as never)}
+        onSettings={() => navigation.navigate('Settings' as never)}
+        hasUnread
+      />
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}

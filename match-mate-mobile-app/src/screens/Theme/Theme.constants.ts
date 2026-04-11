@@ -1,6 +1,7 @@
+import { TFunction } from 'i18next';
 import { ThemeOption } from './Theme.types';
 
-export const getThemeOptions = (t: any): ThemeOption[] => [
+export const getThemeOptions = (t: TFunction): ThemeOption[] => [
   {
     code: 'light',
     label: t('light'),

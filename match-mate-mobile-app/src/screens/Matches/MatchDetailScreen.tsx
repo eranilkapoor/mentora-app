@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp } from '@react-navigation/native';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchDetailStyles } from './MatchDetailScreen.styles';
 import { Colors } from '../../core/constants/colors';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,7 +25,7 @@ type RootStackParamList = {
   RequestContact: { userId: string };
 };
 
-type Props = { navigation: NavigationProp<RootStackParamList> };
+type Props = { navigation: NativeStackNavigationProp<RootStackParamList> };
 
 interface SectionProps {
   title: string;
@@ -51,17 +51,13 @@ const PHOTOS = [
 const CHIPS = [
   { icon: 'sun', label: 'Hindu' },
   { icon: 'users', label: 'Brahmin' },
-  { icon: 'trending-up', label: "5'4\"" },
+  { icon: 'trending-up', label: '5\'4"' },
   { icon: 'heart', label: 'Never Married' },
 ];
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function Section({
-  title,
-  icon,
-  children,
-}: SectionProps): React.ReactElement {
+function Section({ title, icon, children }: SectionProps): React.ReactElement {
   const styles = useThemedStyles(matchDetailStyles);
   return (
     <View style={styles.section}>
@@ -101,9 +97,7 @@ export default function MatchDetailsScreen({
   const flatListRef = useRef<FlatList<string>>(null);
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
-    const index = Math.round(
-      e.nativeEvent.contentOffset.x / windowWidth,
-    );
+    const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
     setActiveIndex(index);
   };
 
@@ -155,7 +149,11 @@ export default function MatchDetailsScreen({
             </View>
             <Text style={styles.heroName}>Priya Sharma, 28</Text>
             <View style={styles.heroLocationRow}>
-              <Feather name="map-pin" size={13} color="rgba(255,255,255,0.85)" />
+              <Feather
+                name="map-pin"
+                size={13}
+                color="rgba(255,255,255,0.85)"
+              />
               <Text style={styles.heroLocation}>Mumbai, India</Text>
             </View>
           </View>
@@ -208,8 +206,8 @@ export default function MatchDetailsScreen({
         <Section title="About Me" icon="user">
           <Text style={styles.aboutText}>
             Hi! I'm Priya, a software engineer based in Mumbai. I love
-            travelling, reading, and exploring new cuisines. Looking for
-            someone who values family and has a good sense of humour.
+            travelling, reading, and exploring new cuisines. Looking for someone
+            who values family and has a good sense of humour.
           </Text>
         </Section>
 
@@ -226,14 +224,24 @@ export default function MatchDetailsScreen({
         <Section title="Education & Career" icon="book">
           <Row label="Education" value="B.Tech" icon="book" />
           <Row label="Profession" value="Software Engineer" icon="briefcase" />
-          <Row label="Annual Income" value="₹12L – ₹15L" icon="dollar-sign" isLast />
+          <Row
+            label="Annual Income"
+            value="₹12L – ₹15L"
+            icon="dollar-sign"
+            isLast
+          />
         </Section>
 
         {/* ── Family ───────────────────────────────────────────────── */}
         <Section title="Family Background" icon="home">
           <Row label="Family Type" value="Nuclear" icon="home" />
           <Row label="Family Status" value="Middle Class" icon="shield" />
-          <Row label="Father's Occupation" value="Business" icon="briefcase" isLast />
+          <Row
+            label="Father's Occupation"
+            value="Business"
+            icon="briefcase"
+            isLast
+          />
         </Section>
 
         <View style={styles.footerSpacer} />
@@ -258,9 +266,7 @@ export default function MatchDetailsScreen({
 
         <TouchableOpacity
           style={styles.ctaPrimary}
-          onPress={() =>
-            navigation.navigate('RequestContact', { userId: '1' })
-          }
+          onPress={() => navigation.navigate('RequestContact', { userId: '1' })}
           accessibilityRole="button"
         >
           <Feather name="heart" size={16} color={Colors.white} />

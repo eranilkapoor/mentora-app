@@ -51,10 +51,7 @@ export const useChangePassword = (navigation: any) => {
       if (error?.message?.toLowerCase().includes('incorrect')) {
         setErrors({ oldPassword: 'Current password is incorrect' });
       } else {
-        Alert.alert(
-          'Error',
-          error?.message ?? 'Something went wrong'
-        );
+        Alert.alert('Error', error?.message ?? 'Something went wrong');
       }
     } finally {
       setLoading(false);

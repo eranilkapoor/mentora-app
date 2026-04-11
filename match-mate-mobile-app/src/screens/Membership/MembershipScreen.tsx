@@ -161,7 +161,10 @@ export default function MembershipScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header />
+      <Header 
+        onNotifications={() => navigation.navigate('Notifications' as never)}
+        hasUnread
+      />
 
       <ScrollView
         contentContainerStyle={styles.scroll}

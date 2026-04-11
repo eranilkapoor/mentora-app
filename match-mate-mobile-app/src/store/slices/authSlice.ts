@@ -5,6 +5,7 @@ import { User } from '../../core/types/api';
 interface AuthState {
   token: string | null;
   user: User | null;
+  isHydrated: boolean;
 }
 
 // ─── PAYLOADS ──────────────────────────────────────────
@@ -20,6 +21,7 @@ export interface SetCredentialsPayload {
 const initialState: AuthState = {
   token: null,
   user: null,
+  isHydrated: false,
 };
 
 // ─── SLICE ─────────────────────────────────────────────
@@ -31,6 +33,7 @@ const authSlice = createSlice({
     setCredentials: (state, action: PayloadAction<SetCredentialsPayload>) => {
       state.token = action.payload.token;
       state.user = action.payload.user;
+      state.isHydrated = true;
     },
     // 🔹 After fetching profile
     setUser: (state, action: PayloadAction<User>) => {
@@ -47,10 +50,25 @@ const authSlice = createSlice({
       state.token = null;
       state.user = null;
     },
+    setHydrated: (state) => {
+      // ✅ add this action
+      state.isHydrated = true;
+    },
+  },
+  extraReducers: (builder) => {
+    // ✅ redux-persist fires this action when rehydration is complete
+    builder.addCase('persist/REHYDRATE', (state) => {
+      state.isHydrated = true;
+    });
   },
 });
 
 // ─── EXPORTS ───────────────────────────────────────────
-export const { setCredentials, setUser, setProfileCompleted, logout } =
-  authSlice.actions;
+export const {
+  setCredentials,
+  setUser,
+  setProfileCompleted,
+  logout,
+  setHydrated,
+} = authSlice.actions;
 export default authSlice.reducer;

@@ -44,16 +44,11 @@ export const LanguageOptionItem = ({
 
         <View>
           <Text
-            style={[
-              styles.optionLabel,
-              isActive && styles.optionLabelActive,
-            ]}
+            style={[styles.optionLabel, isActive && styles.optionLabelActive]}
           >
             {item.label}
           </Text>
-          <Text style={styles.optionNativeName}>
-            {item.nativeName}
-          </Text>
+          <Text style={styles.optionNativeName}>{item.nativeName}</Text>
         </View>
       </View>
 

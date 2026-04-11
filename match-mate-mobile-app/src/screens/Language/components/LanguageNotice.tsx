@@ -9,7 +9,7 @@ export const LanguageNotice = ({ styles, t }: any) => (
     <Text style={styles.noticeText}>
       {t(
         'language_notice',
-        'Some content may require a restart to fully apply the new language.',
+        'Some content may require a restart to fully apply the new language.'
       )}
     </Text>
   </View>

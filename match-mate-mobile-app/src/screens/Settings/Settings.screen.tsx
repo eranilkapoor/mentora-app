@@ -3,7 +3,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View,
   Text,
-  Switch,
   TouchableOpacity,
   Alert,
   ScrollView,
@@ -11,10 +10,6 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../core/constants/colors';
-import {
-  ParamlessScreen,
-  type RootNavigationProp,
-} from '../../navigation/types';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { logout } from '../../store/slices/authSlice';
 import {
@@ -26,125 +21,10 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { settingsStyles } from './SettingsScreen.styles';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface SettingsScreenProps {
-  navigation: RootNavigationProp;
-}
-
-interface SettingRowProps {
-  icon: string;
-  label: string;
-  subLabel?: string;
-  badge?: string;
-  onPress: () => void;
-  isLast?: boolean;
-}
-
-interface SettingToggleProps {
-  icon: string;
-  label: string;
-  subLabel?: string;
-  value: boolean;
-  onValueChange: (val: boolean) => void;
-  isLast?: boolean;
-}
-
-interface SectionProps {
-  icon: string;
-  title: string;
-  children: React.ReactNode;
-}
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function Section({ icon, title, children }: SectionProps): React.ReactElement {
-  const styles = useThemedStyles(settingsStyles);
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <View style={styles.sectionIconWrapper}>
-          <Feather name={icon} size={13} color={Colors.primary} />
-        </View>
-        <Text style={styles.sectionTitle}>{title}</Text>
-      </View>
-      {children}
-    </View>
-  );
-}
-
-function SettingRow({
-  icon,
-  label,
-  subLabel,
-  badge,
-  onPress,
-  isLast,
-}: SettingRowProps): React.ReactElement {
-  const styles = useThemedStyles(settingsStyles);
-  return (
-    <TouchableOpacity
-      style={[styles.row, isLast && styles.rowLast]}
-      onPress={onPress}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-    >
-      <View style={styles.rowLeft}>
-        <View style={styles.rowIconWrapper}>
-          <Feather name={icon} size={16} color={Colors.textSecondary} />
-        </View>
-        <View style={styles.rowLabelWrapper}>
-          <Text style={styles.rowLabel}>{label}</Text>
-          {subLabel !== undefined && (
-            <Text style={styles.rowSubLabel}>{subLabel}</Text>
-          )}
-        </View>
-      </View>
-      {badge !== undefined && (
-        <View style={styles.rowBadge}>
-          <Text style={styles.rowBadgeText}>{badge}</Text>
-        </View>
-      )}
-      <Feather name="chevron-right" size={16} color={Colors.textMuted} />
-    </TouchableOpacity>
-  );
-}
-
-function SettingToggle({
-  icon,
-  label,
-  subLabel,
-  value,
-  onValueChange,
-  isLast,
-}: SettingToggleProps): React.ReactElement {
-  const styles = useThemedStyles(settingsStyles);
-  return (
-    <View style={[styles.row, isLast && styles.rowLast]}>
-      <View style={styles.rowLeft}>
-        <View style={styles.rowIconWrapper}>
-          <Feather name={icon} size={16} color={Colors.textSecondary} />
-        </View>
-        <View style={styles.rowLabelWrapper}>
-          <Text style={styles.rowLabel}>{label}</Text>
-          {subLabel !== undefined && (
-            <Text style={styles.rowSubLabel}>{subLabel}</Text>
-          )}
-        </View>
-      </View>
-      <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{ false: Colors.switchTrackOff, true: Colors.primary }}
-        thumbColor={Colors.white}
-        accessibilityLabel={label}
-        accessibilityRole="switch"
-        accessibilityState={{ checked: value }}
-      />
-    </View>
-  );
-}
+import { SettingsScreenProps } from './Settings.types';
+import { Section } from './components/Section';
+import { SettingRow } from './components/SettingRow';
+import { SettingToggle } from './components/SettingToggle';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
@@ -167,11 +47,6 @@ export default function SettingsScreen({
   const firstName = useAppSelector((s) => s.auth.user?.firstName ?? '');
   const lastName = useAppSelector((s) => s.auth.user?.lastName ?? '');
   const email = useAppSelector((s) => s.auth.user?.email ?? '');
-
-  const navigateTo = useCallback(
-    (screen: ParamlessScreen) => navigation.navigate(screen),
-    [navigation]
-  );
 
   const themeBadge =
     themeMode === 'light'
@@ -217,7 +92,7 @@ export default function SettingsScreen({
         {/* ── Profile Banner ───────────────────────────────────────── */}
         <TouchableOpacity
           style={styles.profileBanner}
-          onPress={() => navigateTo('EditProfile')}
+          onPress={() => navigation.navigate('EditProfile' as never)}
           accessibilityRole="button"
           accessibilityLabel="Edit profile"
         >
@@ -244,13 +119,13 @@ export default function SettingsScreen({
             icon="edit-3"
             label={t('edit_profile')}
             subLabel={t('edit_profile_sub', 'Update your personal info')}
-            onPress={() => navigateTo('EditProfile')}
+            onPress={() => navigation.navigate('EditProfile' as never)}
           />
           <SettingRow
             icon="lock"
             label={t('change_password')}
             subLabel={t('change_password_sub', 'Keep your account secure')}
-            onPress={() => navigateTo('ChangePassword')}
+            onPress={() => navigation.navigate('ChangePassword' as never)}
             isLast
           />
         </Section>
@@ -262,14 +137,14 @@ export default function SettingsScreen({
             label={t('language')}
             subLabel={t('language_sub', 'App display language')}
             badge={langBadge}
-            onPress={() => navigateTo('Languages')}
+            onPress={() => navigation.navigate('Languages' as never)}
           />
           <SettingRow
             icon="sun"
             label={t('theme')}
             subLabel={t('theme_sub', 'Appearance & color scheme')}
             badge={themeBadge}
-            onPress={() => navigateTo('Themes')}
+            onPress={() => navigation.navigate('Themes' as never)}
           />
           <SettingToggle
             icon="map-pin"
@@ -316,7 +191,7 @@ export default function SettingsScreen({
               'notification_settings_sub',
               'Customize what you receive'
             )}
-            onPress={() => navigateTo('NotificationSettings')}
+            onPress={() => navigation.navigate('NotificationSettings' as never)}
             isLast
           />
         </Section>
@@ -327,13 +202,13 @@ export default function SettingsScreen({
             icon="help-circle"
             label={t('help_and_support')}
             subLabel={t('help_sub', 'FAQs and contact us')}
-            onPress={() => navigateTo('HelpSupport')}
+            onPress={() => navigation.navigate('HelpSupport' as never)}
           />
           <SettingRow
             icon="shield"
             label={t('privacy_policy')}
             subLabel={t('privacy_sub', 'How we handle your data')}
-            onPress={() => navigateTo('PrivacyPolicy')}
+            onPress={() => navigation.navigate('PrivacyPolicy' as never)}
             isLast
           />
         </Section>

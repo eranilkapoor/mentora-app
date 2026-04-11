@@ -21,7 +21,7 @@ import {
   useUpdatePersonalInfoMutation,
 } from '../../store/services/profileApi';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editProfileStyles } from './EditProfileScreen.styles';
+import { editProfileStyles } from '../EditProfile/EditProfileScreen.styles';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface EditProfileScreenProps {

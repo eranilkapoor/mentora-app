@@ -9,6 +9,7 @@ import { ThemeProvider } from './core/theme/ThemeProvider';
 import i18n from './i18n'; // 🔥 Import i18n instance
 import { StatusBar } from 'react-native';
 import MobileWrapper from './core/components/MobileWrapper';
+import Loader from './core/components/Loader';
 
 export default function App() {
   const themeMode = store.getState().settings.theme;
@@ -24,7 +25,7 @@ export default function App() {
   return (
     <SafeAreaProvider>
       <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
+        <PersistGate loading={<Loader />} persistor={persistor}>
           <MobileWrapper>
             <StatusBar
               barStyle={isDarkMode ? 'light-content' : 'dark-content'}

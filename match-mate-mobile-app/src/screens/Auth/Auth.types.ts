@@ -1,23 +1,15 @@
-import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { type RootStackParamList } from '../../navigation/types';
-
-export type LoginScreenNavigationProp =
-  NativeStackNavigationProp<RootStackParamList>;
-export type RegisterScreenNavigationProp =
-  NativeStackNavigationProp<RootStackParamList>;
-export type ForgotPasswordScreenNavigationProp =
-  NativeStackNavigationProp<RootStackParamList>;
+import { AuthNavigationProp } from '@/navigation/types';
 
 export interface LoginScreenProps {
-  navigation: LoginScreenNavigationProp;
+  navigation: AuthNavigationProp;
 }
 
 export interface RegisterScreenProps {
-  navigation: RegisterScreenNavigationProp;
+  navigation: AuthNavigationProp;
 }
 
 export interface ForgotPasswordScreenProps {
-  navigation: ForgotPasswordScreenNavigationProp;
+  navigation: AuthNavigationProp;
 }
 
 export type ActiveTab = 'email' | 'phone';

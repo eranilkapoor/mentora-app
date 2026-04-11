@@ -11,18 +11,20 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NavigationProp } from '@react-navigation/native';
 import { Colors } from '../../core/constants/colors';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { chatsListStyles } from './ChatsListScreen.styles';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Header from '@/core/components/Header';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
   ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
+  RequestContact: { userId: string };
 };
 
-type Props = { navigation: NavigationProp<RootStackParamList> };
+type Props = { navigation: NativeStackNavigationProp<RootStackParamList> };
 
 type ChatMatch = {
   id: string;
@@ -143,10 +145,7 @@ function ChatRow({
       <View style={styles.avatarWrap}>
         <Image
           source={{ uri: item.avatarUrl }}
-          style={[
-            styles.avatar,
-            item.unreadCount > 0 && styles.avatarUnread,
-          ]}
+          style={[styles.avatar, item.unreadCount > 0 && styles.avatarUnread]}
         />
         {item.isOnline && <View style={styles.onlineDot} />}
       </View>
@@ -161,10 +160,7 @@ function ChatRow({
             {item.name}, {item.age}
           </Text>
           <Text
-            style={[
-              styles.time,
-              item.unreadCount > 0 && styles.timeUnread,
-            ]}
+            style={[styles.time, item.unreadCount > 0 && styles.timeUnread]}
           >
             {formatTime(item.matchedAt)}
           </Text>
@@ -198,7 +194,9 @@ function ChatRow({
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
-export default function ChatListScreen({ navigation }: Props): React.ReactElement {
+export default function ChatListScreen({
+  navigation,
+}: Props): React.ReactElement {
   const styles = useThemedStyles(chatsListStyles);
   const [matches, setMatches] = useState<ChatMatch[]>([]);
   const [query, setQuery] = useState('');
@@ -222,7 +220,7 @@ export default function ChatListScreen({ navigation }: Props): React.ReactElemen
   }, [loadMatches]);
 
   const filtered = matches.filter((m) =>
-    m.name.toLowerCase().includes(query.toLowerCase()),
+    m.name.toLowerCase().includes(query.toLowerCase())
   );
 
   const totalUnread = matches.reduce((sum, m) => sum + m.unreadCount, 0);
@@ -240,13 +238,18 @@ export default function ChatListScreen({ navigation }: Props): React.ReactElemen
         }
       />
     ),
-    [navigation],
+    [navigation]
   );
 
   return (
     <SafeAreaView style={styles.safe}>
       {/* ── Header ───────────────────────────────────────────────── */}
-      <View style={styles.header}>
+      <Header 
+        onFilter={() => {}}
+        onNotifications={() => navigation.navigate('Notifications' as never)}
+        hasUnread
+      />
+      {/* <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.headerIconWrapper}>
             <Feather name="message-circle" size={20} color={Colors.primary} />
@@ -270,7 +273,7 @@ export default function ChatListScreen({ navigation }: Props): React.ReactElemen
           <Feather name="sliders" size={14} color={Colors.textSecondary} />
           <Text style={styles.filterText}>Filter</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* ── Search ───────────────────────────────────────────────── */}
       <View style={styles.searchWrapper}>

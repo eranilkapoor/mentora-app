@@ -11,8 +11,7 @@ import { LanguageOptionItem } from './components/LanguageOptionItem';
 
 export default function LanguageScreen(): React.ReactElement {
   const styles = useThemedStyles(languageStyles);
-  const { t, languages, currentLang, onSelectLanguage } =
-    useLanguageScreen();
+  const { t, languages, currentLang, onSelectLanguage } = useLanguageScreen();
 
   return (
     <SafeAreaView style={styles.safe}>

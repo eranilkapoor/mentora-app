@@ -96,16 +96,10 @@ function MessageBubble({ item }: { item: Message }): React.ReactElement {
 
   return (
     <View
-      style={[
-        styles.messageRow,
-        isMe ? styles.rightAlign : styles.leftAlign,
-      ]}
+      style={[styles.messageRow, isMe ? styles.rightAlign : styles.leftAlign]}
     >
       <View
-        style={[
-          styles.bubble,
-          isMe ? styles.myBubble : styles.otherBubble,
-        ]}
+        style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
       >
         {item.type === 'image' && item.imageUrl ? (
           <Image source={{ uri: item.imageUrl }} style={styles.image} />
@@ -120,9 +114,7 @@ function MessageBubble({ item }: { item: Message }): React.ReactElement {
             {formatTime(item.timestamp)}
           </Text>
           {isMe && (
-            <Text style={styles.readTick}>
-              {item.read ? '✓✓' : '✓'}
-            </Text>
+            <Text style={styles.readTick}>{item.read ? '✓✓' : '✓'}</Text>
           )}
         </View>
       </View>
@@ -145,7 +137,10 @@ function DateSeparator({ ts }: { ts: number }): React.ReactElement {
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
-export default function ChatScreen({ navigation, route }: Props): React.ReactElement {
+export default function ChatScreen({
+  navigation,
+  route,
+}: Props): React.ReactElement {
   const styles = useThemedStyles(chatStyles);
   const { userId, partnerName, partnerPhoto } = route.params ?? {};
 
@@ -157,7 +152,7 @@ export default function ChatScreen({ navigation, route }: Props): React.ReactEle
   useFocusEffect(
     useCallback(() => {
       setMessages(fetchMessages(userId ?? 'partner'));
-    }, [userId]),
+    }, [userId])
   );
 
   const handleSend = useCallback((): void => {
@@ -211,7 +206,7 @@ export default function ChatScreen({ navigation, route }: Props): React.ReactEle
           )}
       </>
     ),
-    [messages],
+    [messages]
   );
 
   return (
@@ -286,7 +281,9 @@ export default function ChatScreen({ navigation, route }: Props): React.ReactEle
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
           ListFooterComponent={
-            <DateSeparator ts={messages[messages.length - 1]?.timestamp ?? Date.now()} />
+            <DateSeparator
+              ts={messages[messages.length - 1]?.timestamp ?? Date.now()}
+            />
           }
         />
 
