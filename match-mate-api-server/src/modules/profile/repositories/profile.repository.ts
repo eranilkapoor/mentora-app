@@ -17,14 +17,23 @@ export class ProfileRepository {
   constructor(
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
-  ) { }
+  ) {}
 
-  async createProfile(userId: string, data: CreateProfileDto, images: { url: string; isPrimary: boolean; isActive: boolean; uploadedAt: Date }[] = []) {
+  async createProfile(
+    userId: string,
+    data: CreateProfileDto,
+    images: {
+      url: string;
+      isPrimary: boolean;
+      isActive: boolean;
+      uploadedAt: Date;
+    }[] = [],
+  ) {
     try {
       return await this.profileModel.create({
         userId: new Types.ObjectId(userId),
         ...data,
-        images
+        images,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -34,7 +43,12 @@ export class ProfileRepository {
 
   async addImages(
     userId: string,
-    images: { url: string; isPrimary: boolean; isActive: boolean; uploadedAt: Date }[],
+    images: {
+      url: string;
+      isPrimary: boolean;
+      isActive: boolean;
+      uploadedAt: Date;
+    }[],
   ) {
     return this.profileModel.findOneAndUpdate(
       { userId },
@@ -71,7 +85,6 @@ export class ProfileRepository {
       .lean();
     return profile?.images ?? [];
   }
-
 
   async findByUserId(userId: string) {
     try {

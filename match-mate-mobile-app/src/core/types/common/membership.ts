@@ -3,4 +3,5 @@ export const MembershipTiers = {
   PREMIUM: 'premium',
 } as const;
 
-export type MembershipTier = (typeof MembershipTiers)[keyof typeof MembershipTiers];
+export type MembershipTier =
+  (typeof MembershipTiers)[keyof typeof MembershipTiers];

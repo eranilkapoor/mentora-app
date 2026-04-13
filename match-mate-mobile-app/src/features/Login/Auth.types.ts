@@ -1,15 +1,15 @@
-import { AuthNavigationProp } from '@/navigation/types';
+import { RootNavigationProp } from '@/navigation/types';
 
 export interface LoginScreenProps {
-  navigation: AuthNavigationProp;
+  navigation: RootNavigationProp;
 }
 
 export interface RegisterScreenProps {
-  navigation: AuthNavigationProp;
+  navigation: RootNavigationProp;
 }
 
 export interface ForgotPasswordScreenProps {
-  navigation: AuthNavigationProp;
+  navigation: RootNavigationProp;
 }
 
 export type ActiveTab = 'email' | 'phone';

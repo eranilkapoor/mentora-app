@@ -1,7 +1,7 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { chatStyles } from "../ChatScreen.styles";
-import { formatDateLabel } from "../Chat.types";
-import { View, Text } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { chatStyles } from '../ChatScreen.styles';
+import { formatDateLabel } from '../Chat.types';
+import { View, Text } from 'react-native';
 
 export function DateSeparator({ ts }: { ts: number }): React.ReactElement {
   const styles = useThemedStyles(chatStyles);

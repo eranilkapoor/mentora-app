@@ -15,3 +15,17 @@ export interface PersonalData {
   maritalStatus: MaritalStatus;
   aboutMe: string;
 }
+
+export interface MatchProfile {
+  userId: string;
+  name: string;
+  age: number;
+  height: string; // e.g. "5'4\""
+  location: string; // e.g. "Pune, Maharashtra"
+  religion: string; // e.g. "Hindu • Brahmin"
+  education: string;
+  profession: string;
+  isOnline?: boolean;
+  isNew?: boolean;
+  photos: string[];
+}

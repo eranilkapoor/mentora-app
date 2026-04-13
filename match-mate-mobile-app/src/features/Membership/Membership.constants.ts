@@ -1,4 +1,4 @@
-import { DurationPlan, Plan } from "./Membership.types";
+import { DurationPlan, Plan } from './Membership.types';
 
 export const PLANS: Plan[] = [
   { name: 'Pro Lite', price: '₹1,999', contacts: 0, superInterest: 0 },

@@ -1,6 +1,6 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { chatListStyles } from "../ChatListScreen.styles";
-import { View } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { chatListStyles } from '../ChatListScreen.styles';
+import { View } from 'react-native';
 
 export function SkeletonList(): React.ReactElement {
   const styles = useThemedStyles(chatListStyles);

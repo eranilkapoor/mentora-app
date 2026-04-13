@@ -19,7 +19,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
       isGlobal: true,
       load: [configuration],
     }),
-    // Cache 
+    // Cache
     CacheModule,
     // Storage
     StorageModule,

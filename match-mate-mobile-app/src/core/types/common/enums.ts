@@ -9,9 +9,10 @@ export const MaritalStatuses = {
   NEVER_MARRIED: 'never_married',
   DIVORCED: 'divorced',
   WIDOWED: 'widowed',
-  AWAITING_DIVORCED: 'awaiting_divorced'
+  AWAITING_DIVORCED: 'awaiting_divorced',
 } as const;
-export type MaritalStatus = (typeof MaritalStatuses)[keyof typeof MaritalStatuses];
+export type MaritalStatus =
+  (typeof MaritalStatuses)[keyof typeof MaritalStatuses];
 
 export const SmokingTypes = {
   NON_SMOKER: 'non_smoker',

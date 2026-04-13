@@ -6003,3 +6003,17 @@ src/
   /theme
     ThemeProvider.tsx
     types.ts   ← theme types
+
+
+
+import { navigationRef } from '@/navigation/navigationRef';
+
+navigationRef.reset({
+  index: 0,
+  routes: [{ name: 'Tabs' }],
+});
+
+navigationRef.reset({
+  index: 0,
+  routes: [{ name: 'Login' }],
+});

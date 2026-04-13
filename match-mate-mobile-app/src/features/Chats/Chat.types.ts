@@ -1,4 +1,4 @@
-import { NavigationProp, RouteProp } from "@react-navigation/native";
+import { NavigationProp, RouteProp } from '@react-navigation/native';
 
 export type RootStackParamList = {
   ChatsDetail: { userId: string; partnerName?: string; partnerPhoto?: string };

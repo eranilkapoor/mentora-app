@@ -1,12 +1,15 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { Profile } from '../core/types/profile.types';
 
 // ─── Auth Stack ───────────────────────────────────────────────────────────────
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
+};
+
+// ─── Onboarding Stack ───────────────────────────────────────────────────────────────
+export type OnboardingStackParamList = {
   Onboarding: undefined;
 };
 
@@ -32,7 +35,7 @@ export type AppStackParamList = {
   HelpSupport: undefined;
   PrivacyPolicy: undefined;
   OnlineMatches: undefined;
-  MatchDetails: { user: Profile };
+  MatchDetails: { userId: string };
   ChatsDetail: {
     userId: string;
     partnerName: string;
@@ -43,6 +46,7 @@ export type AppStackParamList = {
 // ─── Root Stack ───────────────────────────────────────────────────────────────
 export type RootStackParamList = {
   Auth: undefined;
+  Onboarding: undefined;
   App: undefined;
 };
 

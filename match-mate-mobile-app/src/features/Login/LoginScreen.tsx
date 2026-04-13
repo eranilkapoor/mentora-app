@@ -362,11 +362,11 @@ export default function LoginScreen({
   // ─── Navigation Handlers ─────────────────────────────────────────────────
 
   const handleForgotPassword = useCallback(() => {
-    navigation.navigate('ForgotPassword');
+    navigation.navigate('ForgotPassword' as never);
   }, [navigation]);
 
   const handleRegister = useCallback(() => {
-    navigation.navigate('Register');
+    navigation.navigate('Register' as never);
   }, [navigation]);
 
   // ─── Sub-components ──────────────────────────────────────────────────────────

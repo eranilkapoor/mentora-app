@@ -15,7 +15,7 @@ export const MongoModule = MongooseModule.forRootAsync({
       logger.log('⚠️  DB_DRIVER=local — skipping MongoDB connection');
       return {
         uri: 'mongodb://localhost:27017/local_dummy',
-        retryAttempts: 0,        // don't retry
+        retryAttempts: 0, // don't retry
         retryDelay: 0,
         connectionFactory: (connection: any) => {
           // Close immediately — we don't need it in local mode

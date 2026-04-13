@@ -26,7 +26,11 @@ export class ProfileService {
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
   ) {}
 
-  async createProfile(userId: string, dto: CreateProfileDto, images: ProfileImageInput[] = []) {
+  async createProfile(
+    userId: string,
+    dto: CreateProfileDto,
+    images: ProfileImageInput[] = [],
+  ) {
     try {
       const existing = await this.profileRepo.findByUserId(userId);
       if (existing) {

@@ -1,7 +1,7 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { SelectPillProps } from "../EditProfile.types";
-import { editProfileStyles } from "../EditProfileScreen.styles";
-import { TouchableOpacity, View, Text } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { SelectPillProps } from '../EditProfile.types';
+import { editProfileStyles } from '../EditProfileScreen.styles';
+import { TouchableOpacity, View, Text } from 'react-native';
 
 export function SelectPill({
   label,

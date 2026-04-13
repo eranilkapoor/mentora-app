@@ -25,7 +25,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
-  ) { }
+  ) {}
 
   async register(dto: RegisterDto) {
     try {
@@ -240,7 +240,7 @@ export class AuthService {
           {
             provider:
               AuthProvider[
-              dto.provider.toUpperCase() as keyof typeof AuthProvider
+                dto.provider.toUpperCase() as keyof typeof AuthProvider
               ],
             providerId: dto.provider_id,
             isVerified: true,
@@ -304,7 +304,11 @@ export class AuthService {
     }
   }
 
-  async onboardingProfile(userId: string, dto: OnboardingProfileDto, images: Express.Multer.File[]) {
+  async onboardingProfile(
+    userId: string,
+    dto: OnboardingProfileDto,
+    images: Express.Multer.File[],
+  ) {
     try {
       const user = await this.userRepo.findById(userId);
       if (!user) {
@@ -312,9 +316,10 @@ export class AuthService {
       }
 
       // Parse primaryImageIndex sent from frontend FormData
-      const primaryIndex = dto.primaryImageIndex !== undefined
-        ? parseInt(String(dto.primaryImageIndex), 10)
-        : 0;
+      const primaryIndex =
+        dto.primaryImageIndex !== undefined
+          ? parseInt(String(dto.primaryImageIndex), 10)
+          : 0;
 
       // Upload images to local filesystem
       const uploadedImages = await this.uploadImages(images, primaryIndex);
@@ -346,7 +351,7 @@ export class AuthService {
 
     return uploaded.map((result, index) => ({
       filename: result.filename, // ← just the filename, stored in DB
-      url: result.url,           // ← full URL for client use
+      url: result.url, // ← full URL for client use
       isPrimary: index === primaryIndex,
     }));
   }

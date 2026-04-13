@@ -1,9 +1,4 @@
-import {
-  MaritalStatus,
-  Smoking,
-  Drinking,
-  Diet,
-} from '../common/enums';
+import { MaritalStatus, Smoking, Drinking, Diet } from '../common/enums';
 import { AgeRange, HeightRange, IncomeRange } from '../common/ranges';
 
 export interface PartnerPreference {

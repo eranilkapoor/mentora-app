@@ -1,11 +1,12 @@
-import { ApiResponse, ProfileData } from '../../core/types/api';
 import {
+  ApiResponse,
+  ProfileData,
   PersonalData,
   PhysicalData,
   EducationData,
   FamilyData,
   PreferencesData,
-} from '../../core/types/profile.types';
+} from '../../core/types';
 import { baseApi } from './baseApi';
 
 // 🔹 Base API (you can also move this to baseApi.ts)

@@ -1,6 +1,6 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { profileStyles } from "../ProfileScreen.styles";
-import { View } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { profileStyles } from '../ProfileScreen.styles';
+import { View } from 'react-native';
 
 export function ProfileSkeleton(): React.ReactElement {
   const styles = useThemedStyles(profileStyles);

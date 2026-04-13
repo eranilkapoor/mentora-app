@@ -18,11 +18,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
 
   constructor(private readonly config: ConfigService) {
     // Persist cache to file so it survives restarts
-    this.persistPath = path.join(
-      process.cwd(),
-      'local-db',
-      'local-cache.json',
-    );
+    this.persistPath = path.join(process.cwd(), 'local-db', 'local-cache.json');
 
     this.loadFromDisk();
 
@@ -38,9 +34,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
   }
 
   async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
-    const expiresAt = ttlSeconds
-      ? Date.now() + ttlSeconds * 1000
-      : null;
+    const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 
     this.store.set(key, { value, expiresAt });
     this.saveToDisk();
@@ -128,9 +122,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
         }
       }
 
-      this.logger.log(
-        `📂 Loaded ${this.store.size} entries from disk cache`,
-      );
+      this.logger.log(`📂 Loaded ${this.store.size} entries from disk cache`);
     } catch {
       this.logger.warn('⚠️ Could not load cache from disk, starting fresh');
     }

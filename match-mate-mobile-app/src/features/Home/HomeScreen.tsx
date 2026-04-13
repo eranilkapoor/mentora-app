@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../core/constants/colors';
-import { type Profile } from '../../core/types/profile.types';
+import { type MatchProfile } from '../../core/types';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { homeStyles } from './HomeScreen.styles';
 import Header from '../../core/components/Header';
@@ -30,7 +30,7 @@ interface HomeScreenProps {
 
 // ─── Mock Data ────────────────────────────────────────────────────────────────
 
-const PROFILES: Profile[] = [
+const PROFILES: MatchProfile[] = [
   {
     userId: '1',
     name: 'Gayatri',
@@ -107,7 +107,7 @@ function ProfileCard({
   onView,
   onShortlist,
 }: {
-  item: Profile;
+  item: MatchProfile;
   onChat: () => void;
   onView: () => void;
   onShortlist: () => void;
@@ -238,7 +238,7 @@ export default function HomeScreen({
     setRefreshing(false);
   }, []);
 
-  const renderProfile: ListRenderItem<Profile> = useCallback(
+  const renderProfile: ListRenderItem<MatchProfile> = useCallback(
     ({ item }) => (
       <ProfileCard
         item={item}

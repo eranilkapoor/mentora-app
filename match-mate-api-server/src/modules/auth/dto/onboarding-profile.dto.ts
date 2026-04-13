@@ -7,7 +7,7 @@ import {
   ValidateNested,
   IsEnum,
   IsString,
-  IsBoolean
+  IsBoolean,
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { Gender } from 'src/common/enums/gender.enum';
@@ -336,7 +336,8 @@ export class PreferencesDto {
   languagesKnown?: string[];
 }
 
-const parseJSON = <T>(cls: new () => T) =>
+const parseJSON =
+  <T>(cls: new () => T) =>
   ({ value }: { value: unknown }): T => {
     const parsed = typeof value === 'string' ? JSON.parse(value) : value;
     return plainToInstance(cls, parsed);
@@ -370,6 +371,8 @@ export class OnboardingProfileDto {
 
   @IsOptional()
   @IsNumber()
-  @Transform(({ value }) => (value !== undefined ? parseInt(String(value), 10) : 0))
+  @Transform(({ value }) =>
+    value !== undefined ? parseInt(String(value), 10) : 0,
+  )
   primaryImageIndex?: number;
 }

@@ -1,8 +1,8 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { notificationStyles } from "../NotificationsScreen.styles";
-import { View, Text } from "react-native";
-import Feather from "react-native-vector-icons/Feather";
-import { Colors } from "@/core/constants/colors";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { notificationStyles } from '../NotificationsScreen.styles';
+import { View, Text } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
+import { Colors } from '@/core/constants/colors';
 
 export function EmptyState(): React.ReactElement {
   const styles = useThemedStyles(notificationStyles);

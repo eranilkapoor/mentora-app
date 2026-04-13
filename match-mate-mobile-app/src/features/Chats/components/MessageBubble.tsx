@@ -1,7 +1,7 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { formatTime, Message } from "../Chat.types";
-import { chatStyles } from "../ChatScreen.styles";
-import { View, Image, Text } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { formatTime, Message } from '../Chat.types';
+import { chatStyles } from '../ChatScreen.styles';
+import { View, Image, Text } from 'react-native';
 
 export function MessageBubble({ item }: { item: Message }): React.ReactElement {
   const isMe = item.senderId === 'me';

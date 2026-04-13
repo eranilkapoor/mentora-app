@@ -1,6 +1,6 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { privacyPolicyStyles } from "../PrivacyPolicyScreen.styles";
-import { View, Text } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { privacyPolicyStyles } from '../PrivacyPolicyScreen.styles';
+import { View, Text } from 'react-native';
 
 export function BulletList({ items }: { items: string[] }): React.ReactElement {
   const styles = useThemedStyles(privacyPolicyStyles);

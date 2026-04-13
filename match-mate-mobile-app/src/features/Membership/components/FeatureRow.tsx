@@ -1,7 +1,7 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { FeatureRowProps } from "../Membership.types";
-import { membershipStyles } from "../MembershipScreen.styles";
-import { View, Text } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { FeatureRowProps } from '../Membership.types';
+import { membershipStyles } from '../MembershipScreen.styles';
+import { View, Text } from 'react-native';
 
 export function FeatureRow({
   label,

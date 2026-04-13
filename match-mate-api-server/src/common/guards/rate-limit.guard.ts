@@ -92,9 +92,12 @@ export class RateLimitGuard implements CanActivate {
     );
 
     // ─── Set response headers ───────────────────────────────────────────────
-    
+
     response.setHeader('X-RateLimit-Limit', limit);
-    response.setHeader('X-RateLimit-Remaining', Math.max(0, limit - entry.count - 1));
+    response.setHeader(
+      'X-RateLimit-Remaining',
+      Math.max(0, limit - entry.count - 1),
+    );
     response.setHeader('X-RateLimit-Reset', Math.floor(entry.expiresAt / 1000));
 
     // ─── Check limit ────────────────────────────────────────────────────────

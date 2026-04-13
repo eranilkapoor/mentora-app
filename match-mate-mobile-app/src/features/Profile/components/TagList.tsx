@@ -1,6 +1,6 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { profileStyles } from "../ProfileScreen.styles";
-import { View, Text } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { profileStyles } from '../ProfileScreen.styles';
+import { View, Text } from 'react-native';
 
 export function TagList({ items }: { items: string[] }): React.ReactElement {
   const styles = useThemedStyles(profileStyles);

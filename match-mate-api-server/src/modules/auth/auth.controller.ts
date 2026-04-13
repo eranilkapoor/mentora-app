@@ -1,4 +1,15 @@
-import { Controller, Post, Body, UseGuards, Get, UseInterceptors, UploadedFiles, ValidationPipe, BadRequestException, Req } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  UseInterceptors,
+  UploadedFiles,
+  ValidationPipe,
+  BadRequestException,
+  Req,
+} from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { ApiResponse } from 'src/common/response.dto';
@@ -111,10 +122,7 @@ export class AuthController {
         const allowed = ['image/jpeg', 'image/png', 'image/webp'];
 
         if (!allowed.includes(file.mimetype)) {
-          return cb(
-            new Error('Only JPG, PNG, WEBP images are allowed'),
-            false
-          );
+          return cb(new Error('Only JPG, PNG, WEBP images are allowed'), false);
         }
 
         cb(null, true);
@@ -135,9 +143,13 @@ export class AuthController {
     if (safeImages.length < 1) {
       throw new BadRequestException('At least 1 image is required');
     }
-    
+
     try {
-      const data = await this.authService.onboardingProfile(userId, dto, safeImages);
+      const data = await this.authService.onboardingProfile(
+        userId,
+        dto,
+        safeImages,
+      );
       return new ApiResponse(
         true,
         'Onboarding profile saved successfully',

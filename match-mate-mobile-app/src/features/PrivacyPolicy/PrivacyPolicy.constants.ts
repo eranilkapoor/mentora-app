@@ -1,4 +1,4 @@
-import { SectionItem } from "./PrivacyPolicy.types";
+import { SectionItem } from './PrivacyPolicy.types';
 
 export const POLICY_SECTIONS: SectionItem[] = [
   {

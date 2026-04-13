@@ -24,7 +24,7 @@ import {
 } from '../../core/utils/format';
 import Header from '../../core/components/Header';
 import { useGetMyProfileQuery } from '../../store/services/profileApi';
-import { ProfileData } from '../../core/types/api';
+import { ProfileData } from '../../core/types';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { profileStyles } from './ProfileScreen.styles';
@@ -36,7 +36,9 @@ import { Row } from './components/Row';
 import { TagList } from './components/TagList';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-export default function ProfileScreen({ navigation }: ProfileScreenProps): React.ReactElement {
+export default function ProfileScreen({
+  navigation,
+}: ProfileScreenProps): React.ReactElement {
   const [profileData, setProfileData] = useState<ProfileData>({
     personal: {
       profileFor: 'Self',
@@ -50,7 +52,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps): React
       state: '',
       city: '',
       motherTongue: '',
-      maritalStatus: '',
+      maritalStatus: 'never_married',
       aboutMe: '',
     },
     physical: {
@@ -169,7 +171,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps): React
   if (loading) {
     return (
       <SafeAreaView style={styles.safe}>
-        <Header 
+        <Header
           onNotifications={() => navigation.navigate('Notifications' as never)}
           onSettings={() => navigation.navigate('Settings' as never)}
           hasUnread
@@ -184,7 +186,7 @@ export default function ProfileScreen({ navigation }: ProfileScreenProps): React
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
-      <Header 
+      <Header
         onNotifications={() => navigation.navigate('Notifications' as never)}
         onSettings={() => navigation.navigate('Settings' as never)}
         hasUnread

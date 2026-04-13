@@ -7,12 +7,20 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { membershipStyles } from './MembershipScreen.styles';
 import { Colors } from '../../core/constants/colors';
 import { MembershipScreenProps } from './Membership.types';
-import { BENEFITS, DURATION_PLANS, FEATURES, PLANS, POINTS } from './Membership.constants';
+import {
+  BENEFITS,
+  DURATION_PLANS,
+  FEATURES,
+  PLANS,
+  POINTS,
+} from './Membership.constants';
 import { FeatureRow } from './components/FeatureRow';
 import { PlanCard } from './components/PlanCard';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-export default function MembershipScreen({ navigation }: MembershipScreenProps): React.ReactElement {
+export default function MembershipScreen({
+  navigation,
+}: MembershipScreenProps): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
   const [tab, setTab] = useState<'self' | 'assisted'>('self');
   const [duration, setDuration] = useState<number>(6);
@@ -21,7 +29,7 @@ export default function MembershipScreen({ navigation }: MembershipScreenProps):
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header 
+      <Header
         onNotifications={() => navigation.navigate('Notifications' as never)}
         onSettings={() => navigation.navigate('Settings' as never)}
         hasUnread

@@ -1,5 +1,5 @@
-import { Colors } from "@/core/constants/colors";
-import { NotifSection } from "./Notifications.types";
+import { Colors } from '@/core/constants/colors';
+import { NotifSection } from './Notifications.types';
 
 export const INITIAL_NOTIFICATIONS: NotifSection[] = [
   {

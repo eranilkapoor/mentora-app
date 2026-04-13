@@ -7,7 +7,7 @@ import {
   ValidateNested,
   IsEnum,
   IsString,
-  IsBoolean
+  IsBoolean,
 } from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 import { Gender } from 'src/common/enums/gender.enum';
@@ -160,27 +160,27 @@ export class FamilyDto {
   fatherName?: string;
 
   @IsOptional()
-   @IsString()
+  @IsString()
   motherName?: string;
 
   @IsOptional()
-   @IsString()
+  @IsString()
   fatherOccupation?: string;
 
   @IsOptional()
-   @IsString()
+  @IsString()
   motherOccupation?: string;
 
   @IsOptional()
-   @IsString()
+  @IsString()
   familyType?: string;
 
   @IsOptional()
-   @IsString()
+  @IsString()
   familyStatus?: string;
 
   @IsOptional()
-   @IsString()
+  @IsString()
   familyValues?: string;
 
   @ValidateNested()
@@ -251,8 +251,8 @@ class PartnerPreferenceDto {
 
   @IsOptional()
   @ValidateNested()
-    @Type(() => RangeDto)
-    annualIncomeRange?: RangeDto;
+  @Type(() => RangeDto)
+  annualIncomeRange?: RangeDto;
 
   @IsOptional()
   @IsArray()
@@ -368,6 +368,8 @@ export class CreateProfileDto {
 
   @IsOptional()
   @IsNumber()
-  @Transform(({ value }) => (value !== undefined ? parseInt(String(value), 10) : 0))
+  @Transform(({ value }) =>
+    value !== undefined ? parseInt(String(value), 10) : 0,
+  )
   primaryImageIndex?: number;
 }

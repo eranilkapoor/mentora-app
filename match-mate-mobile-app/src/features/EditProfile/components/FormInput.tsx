@@ -1,8 +1,8 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { FormInputProps } from "../EditProfile.types";
-import { editProfileStyles } from "../EditProfileScreen.styles";
-import { TextInput, View, Text } from "react-native";
-import { Colors } from "@/core/constants/colors";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { FormInputProps } from '../EditProfile.types';
+import { editProfileStyles } from '../EditProfileScreen.styles';
+import { TextInput, View, Text } from 'react-native';
+import { Colors } from '@/core/constants/colors';
 
 export function FormInput({
   label,

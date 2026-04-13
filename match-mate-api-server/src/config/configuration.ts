@@ -3,7 +3,7 @@ export default () => ({
   api: {
     prefix: process.env.API_PREFIX || 'api',
     version: process.env.API_VERSION || 'v1',
-    baseUrl: process.env.API_BASE_URL || 'http://localhost:3000'
+    baseUrl: process.env.API_BASE_URL || 'http://localhost:3000',
   },
   dbDriver: process.env.DB_DRIVER,
   mongo: {
@@ -30,7 +30,7 @@ export default () => ({
     awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID,
     awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     awsS3Bucket: process.env.AWS_S3_BUCKET,
-    awsS3BaseUrl: process.env.AWS_S3_BASE_URL
+    awsS3BaseUrl: process.env.AWS_S3_BASE_URL,
   },
-  cacheDriver: process.env.CACHE_DRIVER
+  cacheDriver: process.env.CACHE_DRIVER,
 });

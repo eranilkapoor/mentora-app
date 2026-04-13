@@ -4,7 +4,11 @@ import { isWeb } from '../utils/device';
 import { useThemedStyles } from '../theme/useThemedStyles';
 import { mobileStyles } from './MobileWrapper.styles';
 
-export default function MobileWrapper({ children }: any) {
+export default function MobileWrapper({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const styles = useThemedStyles(mobileStyles);
 
   if (!isWeb) return children;

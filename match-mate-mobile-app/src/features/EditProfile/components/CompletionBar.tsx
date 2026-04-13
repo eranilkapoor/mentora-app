@@ -1,9 +1,13 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { editProfileStyles } from "../EditProfileScreen.styles";
-import { Colors } from "@/core/constants/colors";
-import { View, Text } from "react-native";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { editProfileStyles } from '../EditProfileScreen.styles';
+import { Colors } from '@/core/constants/colors';
+import { View, Text } from 'react-native';
 
-export function CompletionBar({ percent }: { percent: number }): React.ReactElement {
+export function CompletionBar({
+  percent,
+}: {
+  percent: number;
+}): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const color =
     percent < 40

@@ -35,7 +35,13 @@ import {
 } from '../Login/Auth.types';
 import { onboardingStyles } from './OnboardingScreen.styles';
 import { useThemedStyles } from '../../core/theme/useThemedStyles';
-import { EducationData, FamilyData, PersonalData, PhysicalData, PreferencesData } from '@/core/types';
+import {
+  EducationData,
+  FamilyData,
+  PersonalData,
+  PhysicalData,
+  PreferencesData,
+} from '@/core/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

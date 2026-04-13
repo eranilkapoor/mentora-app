@@ -20,8 +20,27 @@ import {
 } from '../../store/services/profileApi';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { editProfileStyles } from './EditProfileScreen.styles';
-import { EducationSection, FamilySection, PersonalSection, PhysicalSection, PreferencesSection, ProfileData, ProfileImage, SectionKey } from './EditProfile.types';
-import { BODY_TYPE_OPTIONS, COMPLEXION_OPTIONS, DIET_OPTIONS, DRINKING_OPTIONS, FAMILY_TYPE_OPTIONS, GENDER_OPTIONS, INITIAL_PROFILE, MARITAL_OPTIONS, SMOKING_OPTIONS } from './EditProfile.constants';
+import {
+  EducationSection,
+  FamilySection,
+  PersonalSection,
+  PhysicalSection,
+  PreferencesSection,
+  ProfileData,
+  ProfileImage,
+  SectionKey,
+} from './EditProfile.types';
+import {
+  BODY_TYPE_OPTIONS,
+  COMPLEXION_OPTIONS,
+  DIET_OPTIONS,
+  DRINKING_OPTIONS,
+  FAMILY_TYPE_OPTIONS,
+  GENDER_OPTIONS,
+  INITIAL_PROFILE,
+  MARITAL_OPTIONS,
+  SMOKING_OPTIONS,
+} from './EditProfile.constants';
 import { CompletionBar } from './components/CompletionBar';
 import { SectionCard } from './components/SectionCard';
 import { FormInput } from './components/FormInput';

@@ -1,6 +1,15 @@
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-import { BODY_TYPE_OPTIONS, COMPLEXION_OPTIONS, DIET_OPTIONS, DRINKING_OPTIONS, FAMILY_TYPE_OPTIONS, GENDER_OPTIONS, MARITAL_OPTIONS, SMOKING_OPTIONS } from "./EditProfile.constants";
+import {
+  BODY_TYPE_OPTIONS,
+  COMPLEXION_OPTIONS,
+  DIET_OPTIONS,
+  DRINKING_OPTIONS,
+  FAMILY_TYPE_OPTIONS,
+  GENDER_OPTIONS,
+  MARITAL_OPTIONS,
+  SMOKING_OPTIONS,
+} from './EditProfile.constants';
 
 export interface ProfileImage {
   uri: string;

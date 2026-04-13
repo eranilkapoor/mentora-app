@@ -29,7 +29,8 @@ const buildInitialState = (): NotificationState => {
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function NotificationSettingsScreen(): React.ReactElement {
-  const [settings, setSettings] = useState<NotificationState>(buildInitialState);
+  const [settings, setSettings] =
+    useState<NotificationState>(buildInitialState);
   const styles = useThemedStyles(notificationSettingsStyles);
 
   const masterEnabled = settings['masterToggle'] ?? true;

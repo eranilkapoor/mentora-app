@@ -15,6 +15,8 @@ const ThemeContext = createContext<{
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
+}: {
+  children: React.ReactNode;
 }) => {
   const mode = useAppSelector((state) => state.settings.theme);
   const systemTheme = useColorScheme(); // 'light' | 'dark'

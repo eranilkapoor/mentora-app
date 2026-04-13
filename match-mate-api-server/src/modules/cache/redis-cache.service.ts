@@ -28,12 +28,8 @@ export class RedisCacheService
   }
 
   onModuleInit() {
-    this.client.on('connect', () =>
-      this.logger.log('✅ Redis connected'),
-    );
-    this.client.on('error', (err) =>
-      this.logger.error('❌ Redis error:', err),
-    );
+    this.client.on('connect', () => this.logger.log('✅ Redis connected'));
+    this.client.on('error', (err) => this.logger.error('❌ Redis error:', err));
   }
 
   onModuleDestroy() {

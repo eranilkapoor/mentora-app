@@ -1,8 +1,11 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { NotificationGroup, NotificationState } from "../NotificationSettings.types";
-import { notificationSettingsStyles } from "../NotificationSettingsScreen.styles";
-import { View, Text } from "react-native";
-import { ToggleRow } from "./ToggleRow";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import {
+  NotificationGroup,
+  NotificationState,
+} from '../NotificationSettings.types';
+import { notificationSettingsStyles } from '../NotificationSettingsScreen.styles';
+import { View, Text } from 'react-native';
+import { ToggleRow } from './ToggleRow';
 
 export function SectionCard({
   group,

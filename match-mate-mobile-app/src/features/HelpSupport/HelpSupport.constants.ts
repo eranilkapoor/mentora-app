@@ -1,4 +1,4 @@
-import { FaqItem } from "./HelpSupport.types";
+import { FaqItem } from './HelpSupport.types';
 
 export const FAQ_DATA: FaqItem[] = [
   {

@@ -1,4 +1,4 @@
-import { NotificationGroup } from "./NotificationSettings.types";
+import { NotificationGroup } from './NotificationSettings.types';
 
 export const NOTIFICATION_GROUPS: NotificationGroup[] = [
   {

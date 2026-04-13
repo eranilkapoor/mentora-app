@@ -1,5 +1,4 @@
 import React from 'react';
-import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
 import { useTheme } from '../core/theme/ThemeProvider';
@@ -18,6 +17,7 @@ import EditProfileScreen from '../features/EditProfile/EditProfileScreen';
 import OnlineMatchesScreen from '../features/OnlineMatches/OnlineMatchesScreen';
 import LanguageScreen from '../features/Language/Language.screen';
 import ThemeScreen from '../features/Theme/Theme.screen';
+import { isAndroid } from '@/core/utils/device';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
@@ -39,7 +39,7 @@ export default function AppStack(): React.ReactElement {
     contentStyle: {
       backgroundColor: theme.colors.backgroundPage,
     },
-    animation: Platform.OS === 'android' ? 'slide_from_right' : 'default',
+    animation: isAndroid ? 'slide_from_right' : 'default',
   };
 
   return (
@@ -89,7 +89,7 @@ export default function AppStack(): React.ReactElement {
       <Stack.Screen
         name="MatchDetails"
         component={MatchDetailScreen}
-        options={{ title: "Match Detail" }}
+        options={{ title: 'Match Detail' }}
       />
       <Stack.Screen
         name="OnlineMatches"

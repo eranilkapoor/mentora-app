@@ -31,11 +31,7 @@ export const BackButton = (): React.ReactElement => {
       accessibilityRole="button"
       accessibilityLabel="Go back"
     >
-      <Feather
-        name="arrow-left"
-        size={18}
-        color={theme.colors.textPrimary}
-      />
+      <Feather name="arrow-left" size={18} color={theme.colors.textPrimary} />
     </TouchableOpacity>
   );
 };

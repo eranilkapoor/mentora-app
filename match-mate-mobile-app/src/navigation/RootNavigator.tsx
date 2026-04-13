@@ -1,32 +1,32 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useAppSelector } from '../store/hooks';
-import { RootStackParamList } from './types';
 
 import AuthStack from './AuthStack';
+import OnboardingStack from './OnboardingStack';
 import AppStack from './AppStack';
-import Loader from '@/core/components/Loader';
+import { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator(): React.ReactElement {
-  const token = useAppSelector((state) => state.auth?.token);
-  const user = useAppSelector((state) => state.auth?.user);
-  const isHydrated = useAppSelector((state) => state.auth?.isHydrated ?? false);
+  const token = useAppSelector((state) => state.auth.token);
+  const user = useAppSelector((state) => state.auth.user);
 
   const isLoggedIn = Boolean(token);
   const isProfileComplete = Boolean(user?.isProfileCompleted);
 
-  if (!isHydrated) {
-    return <Loader />;
-  }
-
   return (
     <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
-      {isLoggedIn && isProfileComplete ? (
-        <Stack.Screen name="App" component={AppStack} />
-      ) : (
+      {!isLoggedIn ? (
+        // ❌ Not logged in → Auth
         <Stack.Screen name="Auth" component={AuthStack} />
+      ) : !isProfileComplete ? (
+        // ⚠️ Logged in but onboarding pending
+        <Stack.Screen name="Onboarding" component={OnboardingStack} />
+      ) : (
+        // ✅ Fully ready
+        <Stack.Screen name="App" component={AppStack} />
       )}
     </Stack.Navigator>
   );

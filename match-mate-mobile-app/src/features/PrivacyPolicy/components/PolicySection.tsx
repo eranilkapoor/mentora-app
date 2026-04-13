@@ -1,8 +1,8 @@
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { SectionItem } from "../PrivacyPolicy.types";
-import { privacyPolicyStyles } from "../PrivacyPolicyScreen.styles";
-import { View, Text } from "react-native";
-import { BulletList } from "./BulletList";
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { SectionItem } from '../PrivacyPolicy.types';
+import { privacyPolicyStyles } from '../PrivacyPolicyScreen.styles';
+import { View, Text } from 'react-native';
+import { BulletList } from './BulletList';
 
 export function PolicySection({
   section,
