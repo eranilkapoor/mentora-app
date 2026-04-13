@@ -21,7 +21,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
-  ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
+  Chats: { userId: string; partnerName: string; partnerPhoto: string };
   RequestContact: { userId: string };
 };
 
@@ -252,7 +252,7 @@ export default function MatchDetailsScreen({
         <TouchableOpacity
           style={styles.ctaOutline}
           onPress={() =>
-            navigation.navigate('ChatScreen', {
+            navigation.navigate('Chats', {
               userId: '1',
               partnerName: 'Priya Sharma',
               partnerPhoto: PHOTOS[0],

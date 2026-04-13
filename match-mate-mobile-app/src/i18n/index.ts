@@ -16,7 +16,7 @@ i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: languageCode, // auto detect
+    lng: languageCode,
     fallbackLng: 'en',
     interpolation: {
       escapeValue: false,

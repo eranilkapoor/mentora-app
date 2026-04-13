@@ -11,7 +11,6 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
-//import { BootamNavigationProp } from '../../navigation/types';
 import {
   annualIncomeFormat,
   cmToFeetInches,
@@ -29,110 +28,15 @@ import { ProfileData } from '../../core/types/api';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { profileStyles } from './ProfileScreen.styles';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type RootStackParamList = {
-  MatchDetail: { userId: string };
-  ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
-};
-
-interface ProfileScreenProps {
-  navigation: NativeStackNavigationProp<RootStackParamList>;
-}
-
-// interface ProfileScreenProps {
-//   navigation: BootamNavigationProp;
-// }
-
-interface SectionProps {
-  title: string;
-  icon: string;
-  children: React.ReactNode;
-}
-
-interface RowProps {
-  label: string;
-  value?: string | string[] | null;
-}
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const FALLBACK_PHOTOS = [
-  'https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=800',
-  'https://ix-marketing.imgix.net/case-study_2.png?auto=format,compress&w=800',
-];
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function Section({ title, icon, children }: SectionProps): React.ReactElement {
-  const styles = useThemedStyles(profileStyles);
-
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <View style={styles.sectionIconWrapper}>
-          <Feather name={icon} size={14} color={Colors.primary} />
-        </View>
-        <Text style={styles.sectionTitle}>{title}</Text>
-      </View>
-      <View style={styles.card}>{children}</View>
-    </View>
-  );
-}
-
-function Row({ label, value }: RowProps): React.ReactElement {
-  const styles = useThemedStyles(profileStyles);
-  const displayValue = Array.isArray(value)
-    ? value.join(', ') || '—'
-    : (value ?? '—');
-
-  return (
-    <View style={styles.row}>
-      <Text style={styles.rowLabel}>{label}</Text>
-      <Text style={styles.rowValue}>{displayValue}</Text>
-    </View>
-  );
-}
-
-function TagList({ items }: { items: string[] }): React.ReactElement {
-  const styles = useThemedStyles(profileStyles);
-
-  return (
-    <View style={styles.tagList}>
-      {items.map((item) => (
-        <View key={item} style={styles.tag}>
-          <Text style={styles.tagText}>{item}</Text>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-function ProfileSkeleton(): React.ReactElement {
-  const styles = useThemedStyles(profileStyles);
-
-  return (
-    <View style={styles.skeletonContainer}>
-      <View style={styles.skeletonPhoto} />
-      <View style={styles.skeletonHeader}>
-        <View style={styles.skeletonLine} />
-        <View style={[styles.skeletonLine, styles.skeletonLineShort]} />
-      </View>
-      {[1, 2, 3].map((i) => (
-        <View key={i} style={styles.skeletonCard}>
-          <View style={styles.skeletonLine} />
-          <View style={[styles.skeletonLine, styles.skeletonLineShort]} />
-        </View>
-      ))}
-    </View>
-  );
-}
+import { ProfileScreenProps } from './Profile.types';
+import { FALLBACK_PHOTOS } from './Profile.constants';
+import { ProfileSkeleton } from './components/ProfileSkeleton';
+import { Section } from './components/Section';
+import { Row } from './components/Row';
+import { TagList } from './components/TagList';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-
-export default function ProfileScreen({}: ProfileScreenProps): React.ReactElement {
+export default function ProfileScreen({ navigation }: ProfileScreenProps): React.ReactElement {
   const [profileData, setProfileData] = useState<ProfileData>({
     personal: {
       profileFor: 'Self',
@@ -226,7 +130,7 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
             return 'http://192.168.1.4:3000' + img.url;
           }) // extract URL string from ProfileImage
       : FALLBACK_PHOTOS;
-  console.log(photos);
+
   const renderPhoto: ListRenderItem<string> = useCallback(
     ({ item, index }) => (
       <Image
@@ -281,7 +185,6 @@ export default function ProfileScreen({}: ProfileScreenProps): React.ReactElemen
     <SafeAreaView style={styles.safe}>
       {/* Header */}
       <Header 
-        //onFilter={() => {}}
         onNotifications={() => navigation.navigate('Notifications' as never)}
         onSettings={() => navigation.navigate('Settings' as never)}
         hasUnread

@@ -1,7 +1,7 @@
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const chatsListStyles = (theme: Theme) =>
+export const chatListStyles = (theme: Theme) =>
   StyleSheet.create({
     safe: {
       flex: 1,

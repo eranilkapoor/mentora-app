@@ -33,7 +33,7 @@ import {
   RegisterScreenProps,
   SocialButtonProps,
   SocialProvider,
-} from './Auth.types';
+} from '../Auth/Auth.types';
 import { registerStyles } from './RegisterScreen.styles';
 import { useThemedStyles } from '../../core/theme/useThemedStyles';
 

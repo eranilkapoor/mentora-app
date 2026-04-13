@@ -6,153 +6,13 @@ import Header from '../../core/components/Header';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { membershipStyles } from './MembershipScreen.styles';
 import { Colors } from '../../core/constants/colors';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface Plan {
-  name: string;
-  price: string;
-  contacts: number;
-  superInterest: number;
-  best?: boolean;
-}
-
-interface FeatureRowProps {
-  label: string;
-  values: string[];
-  selectedIndex: number;
-  isLast?: boolean;
-}
-
-interface DurationPlan {
-  months: number;
-  price: string;
-  oldPrice: string;
-  perMonth: string;
-}
-
-interface PlanCardProps {
-  plan: DurationPlan;
-  active: boolean;
-  onPress: () => void;
-}
-
-// ─── Data ─────────────────────────────────────────────────────────────────────
-
-const PLANS: Plan[] = [
-  { name: 'Pro Lite', price: '₹1,999', contacts: 0, superInterest: 0 },
-  { name: 'Pro', price: '₹3,999', contacts: 25, superInterest: 0 },
-  {
-    name: 'Pro Max',
-    price: '₹6,999',
-    contacts: 50,
-    superInterest: 50,
-    best: true,
-  },
-];
-
-const FEATURES: { label: string; values: string[] }[] = [
-  { label: 'Unlimited calls & chat', values: ['✔', '✔', '✔'] },
-  { label: 'Engage+', values: ['✔', '✔', '✔'] },
-  { label: 'Advanced Search', values: ['✔', '✔', '✔'] },
-  { label: 'View Contact Numbers', values: ['0', '25', '50'] },
-  { label: 'Super Interest', values: ['0', '0', '50'] },
-];
-
-const DURATION_PLANS: DurationPlan[] = [
-  { months: 3, price: '₹16,585', oldPrice: '₹33,169', perMonth: '₹5,528/mo' },
-  { months: 6, price: '₹26,186', oldPrice: '₹52,372', perMonth: '₹4,364/mo' },
-  { months: 12, price: '₹42,373', oldPrice: '₹84,745', perMonth: '₹3,531/mo' },
-];
-
-const BENEFITS = [
-  { icon: '⭐', text: 'All Pro Max benefits + unlimited daily matches' },
-  { icon: '👩‍💼', text: 'Dedicated relationship manager assigned to you' },
-];
-
-const POINTS = [
-  'Enhance and optimise your profile',
-  'Find the most relevant & serious matches',
-  'Get additional info on the bride & her family',
-  '3× faster matching with priority placement',
-  'Unlimited meeting setups with profiles',
-];
-
-// ─── Sub-components ──────────────────────────────────────────────────────────
-
-function FeatureRow({
-  label,
-  values,
-  selectedIndex,
-  isLast,
-}: FeatureRowProps): React.ReactElement {
-  const styles = useThemedStyles(membershipStyles);
-  return (
-    <View style={[styles.featureRow, isLast && styles.featureRowLast]}>
-      <Text style={styles.featureLabel}>{label}</Text>
-      <View style={styles.featureValues}>
-        {values.map((v, i) => (
-          <View
-            key={i}
-            style={[
-              styles.featureCell,
-              i === selectedIndex && styles.featureCellActive,
-            ]}
-          >
-            <Text
-              style={[
-                styles.featureValue,
-                v === '✔' && styles.featureCheck,
-                v === '0' && styles.featureZero,
-                i === selectedIndex && styles.featureValueActive,
-              ]}
-            >
-              {v}
-            </Text>
-          </View>
-        ))}
-      </View>
-    </View>
-  );
-}
-
-function PlanCard({
-  plan,
-  active,
-  onPress,
-}: PlanCardProps): React.ReactElement {
-  const styles = useThemedStyles(membershipStyles);
-  return (
-    <TouchableOpacity
-      style={[styles.planCard, active && styles.planCardActive]}
-      onPress={onPress}
-      activeOpacity={0.8}
-    >
-      {plan.months === 6 && (
-        <View style={styles.popularBadge}>
-          <Text style={styles.popularBadgeText}>Popular</Text>
-        </View>
-      )}
-      <View style={[styles.radioOuter, active && styles.radioOuterActive]}>
-        {active && <View style={styles.radioInner} />}
-      </View>
-      <Text style={[styles.planMonths, active && styles.planMonthsActive]}>
-        {plan.months} months
-      </Text>
-      <Text style={[styles.planPrice, active && styles.planPriceActive]}>
-        {plan.price}
-      </Text>
-      <Text style={styles.oldPrice}>{plan.oldPrice}</Text>
-      <View style={styles.perMonthBadge}>
-        <Text style={styles.perMonthText}>{plan.perMonth}</Text>
-      </View>
-    </TouchableOpacity>
-  );
-}
+import { MembershipScreenProps } from './Membership.types';
+import { BENEFITS, DURATION_PLANS, FEATURES, PLANS, POINTS } from './Membership.constants';
+import { FeatureRow } from './components/FeatureRow';
+import { PlanCard } from './components/PlanCard';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-
-export default function MembershipScreen(): React.ReactElement {
+export default function MembershipScreen({ navigation }: MembershipScreenProps): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
   const [tab, setTab] = useState<'self' | 'assisted'>('self');
   const [duration, setDuration] = useState<number>(6);
@@ -163,6 +23,7 @@ export default function MembershipScreen(): React.ReactElement {
     <SafeAreaView style={styles.container}>
       <Header 
         onNotifications={() => navigation.navigate('Notifications' as never)}
+        onSettings={() => navigation.navigate('Settings' as never)}
         hasUnread
       />
 

@@ -1,8 +1,7 @@
 import React from 'react';
-import { TouchableOpacity, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import type { NativeStackNavigationOptions } from '@react-navigation/native-stack';
-import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '../core/theme/ThemeProvider';
 import { AppStackParamList } from './types';
 
@@ -11,12 +10,12 @@ import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import SettingsScreen from '../screens/Settings/Settings.screen';
 import ChangePasswordScreen from '../screens/ChangePassword/ChangePassword.screen';
 import ChatScreen from '../screens/Chats/ChatScreen';
-import MatchDetailScreen from '../screens/Matches/MatchDetailScreen';
+import MatchDetailScreen from '../screens/MatchDetail/MatchDetailScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicy/PrivacyPolicyScreen';
 import HelpSupportScreen from '../screens/HelpSupport/HelpSupportScreen';
 import NotificationSettingsScreen from '../screens/NotificationSettings/NotificationSettingsScreen';
 import EditProfileScreen from '../screens/EditProfile/EditProfileScreen';
-import OnlineMatchesScreen from '../screens/Matches/OnlineMatchesScreen';
+import OnlineMatchesScreen from '../screens/OnlineMatches/OnlineMatchesScreen';
 import LanguageScreen from '../screens/Language/Language.screen';
 import ThemeScreen from '../screens/Theme/Theme.screen';
 
@@ -25,7 +24,6 @@ const Stack = createNativeStackNavigator<AppStackParamList>();
 export default function AppStack(): React.ReactElement {
   const { theme } = useTheme();
 
-  // ─── Shared header options applied to every screen ───────────────────────
   const sharedOptions: NativeStackNavigationOptions = {
     headerStyle: {
       backgroundColor: theme.colors.white,
@@ -37,37 +35,7 @@ export default function AppStack(): React.ReactElement {
     },
     headerTintColor: theme.colors.primary,
     headerShadowVisible: false,
-    headerBackButtonDisplayMode: 'minimal', // iOS: shows only chevron, no "Back" text
-    // Custom back button — consistent across iOS & Android
-    // headerLeft: ({ canGoBack, navigation }: any) =>
-    //   canGoBack ? (
-    //     <TouchableOpacity
-    //       onPress={() => {
-    //         try {
-    //           navigation.pop();
-    //         } catch {
-    //           navigation.navigate('Tabs');
-    //         }
-    //       }}
-    //       style={{
-    //         width: 36,
-    //         height: 36,
-    //         borderRadius: 18,
-    //         backgroundColor: theme.colors.backgroundLight,
-    //         alignItems: 'center',
-    //         justifyContent: 'center',
-    //         marginLeft: Platform.OS === 'android' ? 4 : 0,
-    //       }}
-    //       accessibilityRole="button"
-    //       accessibilityLabel="Go back"
-    //     >
-    //       <Feather
-    //         name="arrow-left"
-    //         size={18}
-    //         color={theme.colors.textPrimary}
-    //       />
-    //     </TouchableOpacity>
-    //   ) : null,
+    headerBackButtonDisplayMode: 'minimal',
     contentStyle: {
       backgroundColor: theme.colors.backgroundPage,
     },
@@ -121,7 +89,7 @@ export default function AppStack(): React.ReactElement {
       <Stack.Screen
         name="MatchDetails"
         component={MatchDetailScreen}
-        options={{ headerShown: false }}
+        options={{ title: "Match Detail" }}
       />
       <Stack.Screen
         name="OnlineMatches"
@@ -131,7 +99,7 @@ export default function AppStack(): React.ReactElement {
 
       {/* ── Chat ── */}
       <Stack.Screen
-        name="ChatScreen"
+        name="ChatsDetail"
         component={ChatScreen}
         options={{ headerShown: false }}
       />

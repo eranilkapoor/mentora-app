@@ -20,8 +20,8 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
-  MatchDetail: { userId: string };
-  ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
+  MatchDetails: { userId: string };
+  ChatsDetail: { userId: string; partnerName: string; partnerPhoto: string };
 };
 
 interface HomeScreenProps {
@@ -243,14 +243,14 @@ export default function HomeScreen({
       <ProfileCard
         item={item}
         onChat={() =>
-          navigation.navigate('ChatScreen', {
+          navigation.navigate('ChatsDetail', {
             userId: item.userId,
             partnerName: item.name,
             partnerPhoto: item.photos[0],
           })
         }
         onView={() =>
-          navigation.navigate('MatchDetail', { userId: item.userId })
+          navigation.navigate('MatchDetails', { userId: item.userId })
         }
         onShortlist={() => console.warn(`Shortlisted: ${item.name}`)}
       />

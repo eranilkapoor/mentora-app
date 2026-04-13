@@ -15,7 +15,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
 import { fakeApi } from '../../core/services/fakeApi';
 import { EMAIL_REGEX } from '../../core/constants';
-import { ForgotPasswordScreenProps, FormErrors } from './Auth.types';
+import { ForgotPasswordScreenProps, FormErrors } from '../Auth/Auth.types';
 import { forgotPasswordStyles } from './ForgotPasswordScreen.styles';
 import { useThemedStyles } from '../../core/theme/useThemedStyles';
 

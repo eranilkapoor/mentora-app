@@ -39,7 +39,7 @@ import {
   ErrorTextProps,
   Gender,
   RegistrationStep,
-} from './Auth.types';
+} from '../Auth/Auth.types';
 import { onboardingStyles } from './OnboardingScreen.styles';
 import { useThemedStyles } from '../../core/theme/useThemedStyles';
 

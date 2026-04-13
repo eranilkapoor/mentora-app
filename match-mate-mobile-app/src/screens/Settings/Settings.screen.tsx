@@ -92,7 +92,17 @@ export default function SettingsScreen({
         {/* ── Profile Banner ───────────────────────────────────────── */}
         <TouchableOpacity
           style={styles.profileBanner}
-          onPress={() => navigation.navigate('EditProfile' as never)}
+          onPress={() => navigation.reset({
+            index: 0,
+            routes: [
+              {
+                name: 'Tabs',
+                state: {
+                  routes: [{name: 'Profile'}]
+                }
+              }
+            ]
+          })}
           accessibilityRole="button"
           accessibilityLabel="Edit profile"
         >

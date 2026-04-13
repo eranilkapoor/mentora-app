@@ -22,7 +22,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   MatchDetail: { userId: string };
-  ChatScreen: { userId: string; partnerName: string; partnerPhoto: string };
+  ChatsDetail: { userId: string; partnerName: string; partnerPhoto: string };
 };
 
 type TabKey = 'recommended' | 'new' | 'online';
@@ -318,7 +318,7 @@ export default function MatchListScreen({
           navigation.navigate('MatchDetail', { userId: item.id })
         }
         onChat={() =>
-          navigation.navigate('ChatScreen', {
+          navigation.navigate('ChatsDetail', {
             userId: item.id,
             partnerName: item.name,
             partnerPhoto: item.avatarUrl,

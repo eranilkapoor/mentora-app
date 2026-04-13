@@ -8,7 +8,7 @@ import { BottomTabParamList } from './types';
 import HomeScreen from '../screens/Home/HomeScreen';
 import MatchListScreen from '../screens/Matches/MatchListScreen';
 import ProfileScreen from '../screens/Profile/ProfileScreen';
-import ChatsListScreen from '../screens/Chats/ChatsListScreen';
+import ChatListScreen from '../screens/ChatList/ChatListScreen';
 import MembershipScreen from '../screens/Membership/MembershipScreen';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
@@ -129,7 +129,7 @@ export default function BottomTabs(): React.ReactElement {
 
       <Tab.Screen
         name="Chats"
-        component={ChatsListScreen}
+        component={ChatListScreen}
         options={{
           tabBarLabel: 'Chats',
           tabBarBadge: 3,

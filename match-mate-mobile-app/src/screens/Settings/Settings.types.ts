@@ -1,12 +1,8 @@
-import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { type RootStackParamList } from '../../navigation/types';
+import { AppNavigationProp } from '../../navigation/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-export type SettingsNavigationProp =
-  NativeStackNavigationProp<RootStackParamList>;
-
 export interface SettingsScreenProps {
-  navigation: SettingsNavigationProp;
+  navigation: AppNavigationProp;
 }
 
 export interface SettingRowProps {

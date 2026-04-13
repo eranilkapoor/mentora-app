@@ -13,130 +13,16 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
-import { NavigationProp, RouteProp } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
 import { EMOJIS } from '../../core/constants';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { chatStyles } from './ChatScreen.styles';
 import { Colors } from '../../core/constants/colors';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type RootStackParamList = {
-  ChatScreen: { userId: string; partnerName?: string; partnerPhoto?: string };
-  ProfileDetails: { userId: string };
-};
-
-type Props = {
-  navigation: NavigationProp<RootStackParamList>;
-  route: RouteProp<RootStackParamList, 'ChatScreen'>;
-};
-
-type Message = {
-  id: string;
-  senderId: string;
-  text?: string;
-  imageUrl?: string;
-  timestamp: number;
-  type: 'text' | 'image';
-  read?: boolean;
-};
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-const formatTime = (ts: number): string =>
-  new Date(ts).toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-
-const formatDateLabel = (ts: number): string => {
-  const d = new Date(ts);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(today.getDate() - 1);
-  if (d.toDateString() === today.toDateString()) return 'Today';
-  if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
-  return d.toLocaleDateString([], { day: 'numeric', month: 'short' });
-};
-
-// ─── Mock Data ────────────────────────────────────────────────────────────────
-
-const fetchMessages = (pId: string): Message[] => [
-  {
-    id: '1',
-    senderId: 'me',
-    text: 'Hi, nice to connect! 😊',
-    timestamp: Date.now() - 60000,
-    type: 'text',
-    read: true,
-  },
-  {
-    id: '2',
-    senderId: pId,
-    text: 'Hello! Same here. Looking forward to getting to know you better.',
-    timestamp: Date.now() - 30000,
-    type: 'text',
-  },
-  {
-    id: '3',
-    senderId: 'me',
-    text: 'Tell me about yourself!',
-    timestamp: Date.now() - 10000,
-    type: 'text',
-    read: false,
-  },
-];
-
-// ─── Message Bubble ───────────────────────────────────────────────────────────
-
-function MessageBubble({ item }: { item: Message }): React.ReactElement {
-  const isMe = item.senderId === 'me';
-  const styles = useThemedStyles(chatStyles);
-
-  return (
-    <View
-      style={[styles.messageRow, isMe ? styles.rightAlign : styles.leftAlign]}
-    >
-      <View
-        style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
-      >
-        {item.type === 'image' && item.imageUrl ? (
-          <Image source={{ uri: item.imageUrl }} style={styles.image} />
-        ) : (
-          <Text style={[styles.messageText, isMe && styles.myText]}>
-            {item.text}
-          </Text>
-        )}
-
-        <View style={styles.timeRow}>
-          <Text style={[styles.time, isMe && styles.timeMe]}>
-            {formatTime(item.timestamp)}
-          </Text>
-          {isMe && (
-            <Text style={styles.readTick}>{item.read ? '✓✓' : '✓'}</Text>
-          )}
-        </View>
-      </View>
-    </View>
-  );
-}
-
-// ─── Date Separator ───────────────────────────────────────────────────────────
-
-function DateSeparator({ ts }: { ts: number }): React.ReactElement {
-  const styles = useThemedStyles(chatStyles);
-  return (
-    <View style={styles.dateSeparator}>
-      <View style={styles.dateLine} />
-      <Text style={styles.dateText}>{formatDateLabel(ts)}</Text>
-      <View style={styles.dateLine} />
-    </View>
-  );
-}
+import { fetchMessages, formatDateLabel, Message, Props } from './Chat.types';
+import { MessageBubble } from './components/MessageBubble';
+import { DateSeparator } from './components/DateSeparator';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-
 export default function ChatScreen({
   navigation,
   route,

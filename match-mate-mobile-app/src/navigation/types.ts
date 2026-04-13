@@ -33,12 +33,11 @@ export type AppStackParamList = {
   PrivacyPolicy: undefined;
   OnlineMatches: undefined;
   MatchDetails: { user: Profile };
-  ChatScreen: {
+  ChatsDetail: {
     userId: string;
     partnerName: string;
     partnerPhoto: string;
   };
-  ChatsDetail: { userId: string };
 };
 
 // ─── Root Stack ───────────────────────────────────────────────────────────────
@@ -48,5 +47,7 @@ export type RootStackParamList = {
 };
 
 export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
-export type BootamNavigationProp = BottomTabNavigationProp<BottomTabParamList>;
+export type AppNavigationProp = NativeStackNavigationProp<AppStackParamList>;
+export type BottamNavigationProp = BottomTabNavigationProp<BottomTabParamList>;
+
 export type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>;
