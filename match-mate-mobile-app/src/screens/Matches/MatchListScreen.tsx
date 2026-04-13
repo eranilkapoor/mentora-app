@@ -21,7 +21,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
-  MatchDetail: { userId: string };
+  MatchDetails: { userId: string };
   ChatsDetail: { userId: string; partnerName: string; partnerPhoto: string };
 };
 
@@ -315,7 +315,7 @@ export default function MatchListScreen({
       <MatchCard
         item={item}
         onViewProfile={() =>
-          navigation.navigate('MatchDetail', { userId: item.id })
+          navigation.navigate('MatchDetails', { userId: item.id })
         }
         onChat={() =>
           navigation.navigate('ChatsDetail', {

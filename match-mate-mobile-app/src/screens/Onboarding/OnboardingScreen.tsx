@@ -26,22 +26,16 @@ import {
   FAMILY_TYPES,
   FAMILY_STATUSES,
 } from '../../core/constants';
-import {
-  type PersonalData,
-  type EducationData,
-  type PhysicalData,
-  type FamilyData,
-  type PreferencesData,
-} from '../../core/types/onboarding.types';
 import { useOnboardingProfileMutation } from '../../store/services/authApi';
 import {
   DropdownPickerProps,
   ErrorTextProps,
   Gender,
   RegistrationStep,
-} from '../Auth/Auth.types';
+} from '../Login/Auth.types';
 import { onboardingStyles } from './OnboardingScreen.styles';
 import { useThemedStyles } from '../../core/theme/useThemedStyles';
+import { EducationData, FamilyData, PersonalData, PhysicalData, PreferencesData } from '@/core/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

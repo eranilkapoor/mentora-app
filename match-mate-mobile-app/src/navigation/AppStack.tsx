@@ -8,7 +8,7 @@ import { AppStackParamList } from './types';
 import BottomTabs from './BottomTabs';
 import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
 import SettingsScreen from '../screens/Settings/Settings.screen';
-import ChangePasswordScreen from '../screens/ChangePassword/ChangePassword.screen';
+import ChangePasswordScreen from '../features/ChangePassword/ChangePassword.screen';
 import ChatScreen from '../screens/Chats/ChatScreen';
 import MatchDetailScreen from '../screens/MatchDetail/MatchDetailScreen';
 import PrivacyPolicyScreen from '../screens/PrivacyPolicy/PrivacyPolicyScreen';

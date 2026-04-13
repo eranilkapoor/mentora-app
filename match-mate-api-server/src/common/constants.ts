@@ -12,9 +12,3 @@ export const STATUS = {
   VERIFIED: 'verified',
   REJECTED: 'rejected',
 };
-
-export const GENDER = {
-  MALE: 'male',
-  FEMALE: 'female',
-  OTHER: 'other',
-};

@@ -10,11 +10,11 @@ import {
   IsBoolean
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
-import { Gender } from '../enums/gender.enum';
-import { MaritalStatus } from '../enums/marital-status.enum';
-import { Diet } from 'src/modules/profile/enums/diet.enum';
-import { Drinking } from 'src/modules/profile/enums/drinking.enum';
-import { Smoking } from 'src/modules/profile/enums/smoking.enum';
+import { Gender } from 'src/common/enums/gender.enum';
+import { MaritalStatus } from 'src/common/enums/marital-status.enum';
+import { Diet } from 'src/common/enums/diet.enum';
+import { Drinking } from 'src/common/enums/drinking.enum';
+import { Smoking } from 'src/common/enums/smoking.enum';
 
 export class PersonalDto {
   @IsString()

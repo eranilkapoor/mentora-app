@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants';
-import { Gender } from '../enums/gender.enum';
-import { MaritalStatus } from '../enums/marital-status.enum';
-import { Smoking } from '../enums/smoking.enum';
-import { Drinking } from '../enums/drinking.enum';
-import { Diet } from '../enums/diet.enum';
+import { Smoking } from 'src/common/enums/smoking.enum';
+import { Drinking } from 'src/common/enums/drinking.enum';
+import { Diet } from 'src/common/enums/diet.enum';
+import { Gender } from 'src/common/enums/gender.enum';
+import { MaritalStatus } from 'src/common/enums/marital-status.enum';
 
 @Schema({ _id: false })
 class Personal {

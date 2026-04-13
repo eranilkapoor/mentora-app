@@ -2910,7 +2910,7 @@ Register Steps :-
   - Relative
   - Client
 2. Personal Details
-  - Gender (Male / Female)
+  - Gender (Male / Female / Other)
   - Date Of Birth
   - Height
   - Weight

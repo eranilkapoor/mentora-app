@@ -6,7 +6,7 @@ import RootNavigator from './navigation/RootNavigator';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { PersistGate } from 'redux-persist/integration/react';
 import { ThemeProvider } from './core/theme/ThemeProvider';
-import i18n from './i18n'; // 🔥 Import i18n instance
+import i18n from './i18n';
 import { StatusBar } from 'react-native';
 import MobileWrapper from './core/components/MobileWrapper';
 import Loader from './core/components/Loader';

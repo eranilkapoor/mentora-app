@@ -18,7 +18,7 @@ import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
   Chats: { userId: string; partnerName: string; partnerPhoto: string };
-  MatchDetail: { userId: string };
+  MatchDetails: { userId: string };
 };
 
 type Props = { navigation: NativeStackNavigationProp<RootStackParamList> };
@@ -215,7 +215,7 @@ export default function OnlineMatchesScreen({
           })
         }
         onViewProfile={() =>
-          navigation.navigate('MatchDetail', { userId: item.id })
+          navigation.navigate('MatchDetails', { userId: item.id })
         }
       />
     ),
