@@ -5,11 +5,11 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '../core/theme/ThemeProvider';
 import { BottomTabParamList } from './types';
 
-import HomeScreen from '../screens/Home/HomeScreen';
-import MatchListScreen from '../screens/Matches/MatchListScreen';
-import ProfileScreen from '../screens/Profile/ProfileScreen';
-import ChatListScreen from '../screens/ChatList/ChatListScreen';
-import MembershipScreen from '../screens/Membership/MembershipScreen';
+import HomeScreen from '../features/Home/HomeScreen';
+import MatchListScreen from '../features/Matches/MatchListScreen';
+import ProfileScreen from '../features/Profile/ProfileScreen';
+import ChatListScreen from '../features/ChatList/ChatListScreen';
+import MembershipScreen from '../features/Membership/MembershipScreen';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 

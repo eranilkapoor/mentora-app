@@ -6,18 +6,18 @@ import { useTheme } from '../core/theme/ThemeProvider';
 import { AppStackParamList } from './types';
 
 import BottomTabs from './BottomTabs';
-import NotificationsScreen from '../screens/Notifications/NotificationsScreen';
-import SettingsScreen from '../screens/Settings/Settings.screen';
+import NotificationsScreen from '../features/Notifications/NotificationsScreen';
+import SettingsScreen from '../features/Settings/Settings.screen';
 import ChangePasswordScreen from '../features/ChangePassword/ChangePassword.screen';
-import ChatScreen from '../screens/Chats/ChatScreen';
-import MatchDetailScreen from '../screens/MatchDetail/MatchDetailScreen';
-import PrivacyPolicyScreen from '../screens/PrivacyPolicy/PrivacyPolicyScreen';
-import HelpSupportScreen from '../screens/HelpSupport/HelpSupportScreen';
-import NotificationSettingsScreen from '../screens/NotificationSettings/NotificationSettingsScreen';
-import EditProfileScreen from '../screens/EditProfile/EditProfileScreen';
-import OnlineMatchesScreen from '../screens/OnlineMatches/OnlineMatchesScreen';
-import LanguageScreen from '../screens/Language/Language.screen';
-import ThemeScreen from '../screens/Theme/Theme.screen';
+import ChatScreen from '../features/Chats/ChatScreen';
+import MatchDetailScreen from '../features/MatchDetail/MatchDetailScreen';
+import PrivacyPolicyScreen from '../features/PrivacyPolicy/PrivacyPolicyScreen';
+import HelpSupportScreen from '../features/HelpSupport/HelpSupportScreen';
+import NotificationSettingsScreen from '../features/NotificationSettings/NotificationSettingsScreen';
+import EditProfileScreen from '../features/EditProfile/EditProfileScreen';
+import OnlineMatchesScreen from '../features/OnlineMatches/OnlineMatchesScreen';
+import LanguageScreen from '../features/Language/Language.screen';
+import ThemeScreen from '../features/Theme/Theme.screen';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
