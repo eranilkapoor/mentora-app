@@ -78,7 +78,7 @@ export const editProfileStyles = (theme: Theme) =>
       paddingVertical: 14,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.colors.divider,
-      backgroundColor: theme.colors.backgroundPage,
+      backgroundColor: theme.colors.white,
     },
     sectionIconWrapper: {
       width: 26,

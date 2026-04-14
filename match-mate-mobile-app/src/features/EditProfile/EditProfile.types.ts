@@ -1,5 +1,4 @@
-// ─── Types ────────────────────────────────────────────────────────────────────
-
+import { ProfileImage } from '@/core/types';
 import {
   BODY_TYPE_OPTIONS,
   COMPLEXION_OPTIONS,
@@ -11,16 +10,18 @@ import {
   SMOKING_OPTIONS,
 } from './EditProfile.constants';
 
-export interface ProfileImage {
-  uri: string;
-  isPrimary?: boolean;
-}
+export interface TimeOfBirth {
+  hour?: number;
+  minute?: number;
+  period?: 'AM' | 'PM';
+};
 
 export interface PersonalSection {
   profileFor: string;
   firstName: string;
   lastName: string;
   dob: string;
+  timeOfBirth?: TimeOfBirth;
   gender: (typeof GENDER_OPTIONS)[number];
   maritalStatus: (typeof MARITAL_OPTIONS)[number];
   religion: string;
@@ -35,8 +36,8 @@ export interface PersonalSection {
 export interface PhysicalSection {
   height: string;
   weight: string;
-  bodyType: (typeof BODY_TYPE_OPTIONS)[number];
-  complexion: (typeof COMPLEXION_OPTIONS)[number];
+  bodyType: string;//(typeof BODY_TYPE_OPTIONS)[number];
+  complexion: string;//(typeof COMPLEXION_OPTIONS)[number];
 }
 
 export interface EducationSection {
@@ -48,21 +49,21 @@ export interface EducationSection {
 }
 
 export interface FamilySection {
-  fatherName: string;
-  motherName: string;
-  fatherOccupation: string;
-  motherOccupation: string;
-  familyType: (typeof FAMILY_TYPE_OPTIONS)[number];
-  familyStatus: string;
-  familyValues: string;
+  fatherName?: string;
+  motherName?: string;
+  fatherOccupation?: string;
+  motherOccupation?: string;
+  familyType?: string; //(typeof FAMILY_TYPE_OPTIONS)[number];
+  familyStatus?: string;
+  familyValues?: string;
 }
 
 export interface PreferencesSection {
-  hobbies: string[];
-  languagesKnown: string[];
-  smoking: (typeof SMOKING_OPTIONS)[number];
-  drinking: (typeof DRINKING_OPTIONS)[number];
-  diet: (typeof DIET_OPTIONS)[number];
+  hobbies?: string[];
+  languagesKnown?: string[];
+  smoking?: (typeof SMOKING_OPTIONS)[number];
+  drinking?: (typeof DRINKING_OPTIONS)[number];
+  diet?: (typeof DIET_OPTIONS)[number];
 }
 
 export interface ProfileData {
@@ -78,7 +79,7 @@ export type SectionKey = keyof ProfileData | 'images';
 
 export interface FormInputProps {
   label: string;
-  value: string;
+  value?: string;
   onChange: (v: string) => void;
   multiline?: boolean;
   placeholder?: string;
@@ -89,13 +90,13 @@ export interface FormInputProps {
 export interface SelectPillProps {
   label: string;
   options: readonly string[];
-  value: string;
+  value?: string;
   onChange: (v: string) => void;
 }
 
 export interface TagInputProps {
   label: string;
-  items: string[];
+  items?: string[];
   setItems: (v: string[]) => void;
   placeholder?: string;
 }

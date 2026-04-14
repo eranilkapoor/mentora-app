@@ -50,3 +50,49 @@ export const SiblingTypes = {
   SISTER: 'sister',
 } as const;
 export type SiblingType = (typeof SiblingTypes)[keyof typeof SiblingTypes];
+
+/* ================= BODY TYPE ================= */
+
+export enum BodyType {
+  SLIM = 'slim',
+  ATHLETIC = 'athletic',
+  AVERAGE = 'average',
+  HEAVY = 'heavy',
+}
+
+export const BODY_TYPE_LABELS: Record<BodyType, string> = {
+  [BodyType.SLIM]: 'Slim',
+  [BodyType.ATHLETIC]: 'Athletic',
+  [BodyType.AVERAGE]: 'Average',
+  [BodyType.HEAVY]: 'Heavy',
+};
+
+/* ================= COMPLEXION ================= */
+
+export enum Complexion {
+  FAIR = 'fair',
+  WHEATISH = 'wheatish',
+  DUSKY = 'dusky',
+  DARK = 'dark',
+}
+
+export const COMPLEXION_LABELS: Record<Complexion, string> = {
+  [Complexion.FAIR]: 'Fair',
+  [Complexion.WHEATISH]: 'Wheatish',
+  [Complexion.DUSKY]: 'Dusky',
+  [Complexion.DARK]: 'Dark',
+};
+
+/* ================= FAMILY TYPE ================= */
+
+export enum FamilyType {
+  JOINT = 'joint',
+  NUCLEAR = 'nuclear',
+  EXTENDED = 'extended',
+}
+
+export const FAMILY_TYPE_LABELS: Record<FamilyType, string> = {
+  [FamilyType.JOINT]: 'Joint Family',
+  [FamilyType.NUCLEAR]: 'Nuclear Family',
+  [FamilyType.EXTENDED]: 'Extended Family',
+};

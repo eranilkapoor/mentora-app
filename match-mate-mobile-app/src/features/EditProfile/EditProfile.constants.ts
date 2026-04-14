@@ -1,5 +1,3 @@
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 import { ProfileData } from './EditProfile.types';
 
 export const GENDER_OPTIONS = ['male', 'female', 'other'] as const;
@@ -22,18 +20,33 @@ export const COMPLEXION_OPTIONS = [
   'dark',
 ] as const;
 export const FAMILY_TYPE_OPTIONS = ['joint', 'nuclear', 'extended'] as const;
-export const SMOKING_OPTIONS = ['non_smoker', 'occasional', 'regular'] as const;
+export const SMOKING_OPTIONS = ['non_smoker', 'occasionally', 'regular', 'trying_to_quit', 'open_to'] as const;
 export const DRINKING_OPTIONS = [
   'non_drinker',
-  'occasional',
+  'occasionally',
   'regular',
+  'open_to',
+  'socially'
 ] as const;
 export const DIET_OPTIONS = [
   'vegetarian',
   'non_vegetarian',
   'eggetarian',
   'vegan',
+  'open_to',
+  'jain',
+  'satvik',
+  'halal',
+  'kosher'
 ] as const;
+
+export const HOURS = Array.from({ length: 12 }, (_, i) => i + 1);
+
+export const MINUTES = Array.from({ length: 12 }, (_, i) =>
+  (i * 5).toString().padStart(2, '0')
+);
+
+export const PERIODS = ['AM', 'PM'] as const;
 
 export const INITIAL_PROFILE: ProfileData = {
   personal: {
@@ -54,8 +67,8 @@ export const INITIAL_PROFILE: ProfileData = {
   physical: {
     height: '',
     weight: '',
-    bodyType: 'average' as const,
-    complexion: 'fair' as const,
+    bodyType: 'average',
+    complexion: 'fair',
   },
   education: {
     qualification: '',
@@ -69,16 +82,16 @@ export const INITIAL_PROFILE: ProfileData = {
     motherName: '',
     fatherOccupation: '',
     motherOccupation: '',
-    familyType: 'nuclear' as const,
+    familyType: 'nuclear',
     familyStatus: '',
     familyValues: '',
   },
   preferences: {
     hobbies: [],
     languagesKnown: [],
-    smoking: 'non_smoker' as const,
-    drinking: 'non_drinker' as const,
-    diet: 'vegetarian' as const,
+    smoking: 'non_smoker',
+    drinking: 'non_drinker',
+    diet: 'vegetarian',
   },
   images: [],
 };

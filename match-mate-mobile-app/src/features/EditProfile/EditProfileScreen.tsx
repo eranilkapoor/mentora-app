@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   TouchableOpacity,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   Alert,
@@ -27,7 +26,6 @@ import {
   PhysicalSection,
   PreferencesSection,
   ProfileData,
-  ProfileImage,
   SectionKey,
 } from './EditProfile.types';
 import {
@@ -46,33 +44,50 @@ import { SectionCard } from './components/SectionCard';
 import { FormInput } from './components/FormInput';
 import { SelectPill } from './components/SelectPill';
 import { TagInput } from './components/TagInput';
+import Loader from '@/core/components/Loader';
+import { TimeOfBirthPicker } from './components/TimeOfBirthPicker';
+import { ProfileImage } from '@/core/types';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function EditProfileScreen(): React.ReactElement {
+  const styles = useThemedStyles(editProfileStyles);
+
   const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
   const [sectionLoading, setSectionLoading] = useState<SectionKey | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
-  const { data } = useGetMyProfileQuery();
+  const { data, error, isLoading, isFetching } = useGetMyProfileQuery();
   const [updatePersonalInfo] = useUpdatePersonalInfoMutation();
-
+  console.log(data, profile);
   // ─── Load ─────────────────────────────────────────────────────────────────
 
-  const loadProfile = useCallback(async (): Promise<void> => {
-    try {
-      const response = data;
-      if (response !== null && response !== undefined) {
-        setProfile((prev) => ({ ...prev, ...response }));
+  useEffect(() => {
+    try{ 
+      if (data?.success && data?.data) {
+        setProfile((prev) => ({ ...prev, ...data?.data }));
       }
     } catch {
       Alert.alert('Error', 'Failed to load profile. Please try again.');
     } finally {
       setPageLoading(false);
-    }
-  }, [data]);
+    }    
+  }, [data, error, setProfile, setPageLoading]);
 
-  useEffect(() => {
-    void loadProfile();
-  }, [loadProfile]);
+  // const loadProfile = useCallback(async (): Promise<void> => {
+  //   try {
+  //     const response = data;
+  //     if (response !== null && response !== undefined) {
+  //       setProfile((prev) => ({ ...prev, ...response }));
+  //     }
+  //   } catch {
+  //     Alert.alert('Error', 'Failed to load profile. Please try again.');
+  //   } finally {
+  //     setPageLoading(false);
+  //   }
+  // }, [data]);
+
+  // useEffect(() => {
+  //   void loadProfile();
+  // }, [loadProfile]);
 
   // ─── Completion ───────────────────────────────────────────────────────────
 
@@ -88,8 +103,6 @@ export default function EditProfileScreen(): React.ReactElement {
       profile.education.qualification,
       profile.education.occupation,
       profile.family.familyType,
-      profile.preferences.hobbies.length > 0 ? 'yes' : '',
-      profile.preferences.languagesKnown.length > 0 ? 'yes' : '',
       profile.images && profile.images.length > 0 ? 'yes' : '',
     ];
 
@@ -121,7 +134,7 @@ export default function EditProfileScreen(): React.ReactElement {
 
     if (!result.canceled && result.assets[0] !== undefined) {
       const newImage: ProfileImage = {
-        uri: result.assets[0].uri,
+        url: result.assets[0].uri,
         isPrimary: (profile.images ?? []).length === 0,
       };
       setProfile((p) => ({ ...p, images: [...(p.images ?? []), newImage] }));
@@ -219,19 +232,11 @@ export default function EditProfileScreen(): React.ReactElement {
   );
 
   const sectionProps = { sectionLoading, onSave: handleSave };
-  const styles = useThemedStyles(editProfileStyles);
 
   // ─── Loading state ────────────────────────────────────────────────────────
 
   if (pageLoading) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.loadingContainer}>
-          <ActivityIndicator size="large" color={Colors.primary} />
-          <Text style={styles.loadingText}>Loading your profile...</Text>
-        </View>
-      </SafeAreaView>
-    );
+    return <Loader fullScreen size='large' loadingText='Loading your profile...' />;
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -264,8 +269,8 @@ export default function EditProfileScreen(): React.ReactElement {
               contentContainerStyle={styles.photoRow}
             >
               {(profile.images ?? []).map((img, index) => (
-                <View key={img.uri} style={styles.photoWrapper}>
-                  <Image source={{ uri: img.uri }} style={styles.photo} />
+                <View key={img.url} style={styles.photoWrapper}>
+                  <Image source={{ uri: img.url }} style={styles.photo} />
                   {img.isPrimary === true && (
                     <View style={styles.primaryBadge}>
                       <Text style={styles.primaryBadgeText}>Primary</Text>
@@ -307,10 +312,7 @@ export default function EditProfileScreen(): React.ReactElement {
                 <Text style={styles.addPhotoText}>Add Photo</Text>
               </TouchableOpacity>
             </ScrollView>
-            <Text style={styles.photoHint}>
-              Tap a photo to set as primary. First photo is shown on your
-              profile card.
-            </Text>
+            <Text style={styles.photoHint}>Tap a photo to set as primary. First photo is shown on your profile card.</Text>
           </SectionCard>
 
           {/* ── Personal ───────────────────────────────────────────────── */}
@@ -338,13 +340,30 @@ export default function EditProfileScreen(): React.ReactElement {
                 />
               </View>
             </View>
-
-            <FormInput
-              label="Date of Birth"
-              value={profile.personal.dob}
-              onChange={(v) => setPersonal('dob', v)}
-              placeholder="YYYY-MM-DD"
-            />
+            <View style={styles.row}>
+              <View style={styles.halfField}>
+                <FormInput
+                  label="Date of Birth *"
+                  value={profile.personal.dob}
+                  onChange={(v) => setPersonal('dob', v)}
+                  placeholder="YYYY-MM-DD"
+                />
+              </View>
+              <View style={styles.halfField}>
+                <TimeOfBirthPicker
+                  value={profile.personal.timeOfBirth}
+                  onChange={(val) =>
+                    setProfile((p) => ({
+                      ...p,
+                      personal: {
+                        ...p.personal,
+                        timeOfBirth: val,
+                      },
+                    }))
+                  }
+                />
+              </View>
+            </View>
 
             <SelectPill
               label="Gender"

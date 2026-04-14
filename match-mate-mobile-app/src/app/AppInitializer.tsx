@@ -27,7 +27,7 @@ export default function AppInitializer({
   }, [data, error, dispatch]);
 
   if (token && (isLoading || isFetching)) {
-    return <Loader fullScreen />;
+    return <Loader fullScreen size='large' loadingText='App initializing...' />;
   }
 
   return <>{children}</>;
