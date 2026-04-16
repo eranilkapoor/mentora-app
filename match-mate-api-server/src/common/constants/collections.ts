@@ -1,0 +1,20 @@
+export const COLLECTIONS = {
+  USER: 'users',
+  USER_SESSION: 'user_sessions',
+  PROFILE: 'profiles',
+  PREFERENCE: 'preferences',
+  MEDIA: 'media',
+  INTERACTION: 'interactions',
+  PRIVACY_SETTING: 'privacy_settings',
+  VERIFICATION: 'verification',
+  USER_BLOCK: 'user_blocks',
+  USER_REPORT: 'user_reports',
+  SUBSCRIPTION: 'subscriptions',
+  ANALYTICS: 'analytics',
+  MATCH: 'matches',
+  ACTIVITY_LOG: 'activity_logs',
+  NOTIFICATION: 'notifications',
+  NOTIFICATION_TEMPLATE: 'notification_templates',
+  NOTIFICATION_LOG: 'notification_logs',
+  USER_NOTIFICATION_SETTING: 'user_notification_settings'
+};
