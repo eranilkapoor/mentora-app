@@ -10,10 +10,15 @@ import {
   RoleDocument,
 } from './schemas/role.schema';
 import { Permission as AppPermission } from 'src/common/enums';
+import { ConfigService } from '@nestjs/config';
+import { AppLogger } from 'src/common/logger/logger.service';
 
 @Injectable()
 export class RbacSeederService implements OnApplicationBootstrap {
   constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: AppLogger,
+
     @InjectModel(Permission.name)
     private permissionModel: Model<PermissionDocument>,
 
@@ -22,7 +27,7 @@ export class RbacSeederService implements OnApplicationBootstrap {
   ) {}
 
   async onApplicationBootstrap() {
-    if (process.env.RBAC_SYNC === 'true') {
+    if (this.configService.get<string>('rbacSync') === 'true') {
       await this.syncPermissions();
       await this.syncRoles();
     }
@@ -44,7 +49,7 @@ export class RbacSeederService implements OnApplicationBootstrap {
       );
     }
 
-    console.log(`✅ Permissions synced: ${enumPermissions.length}`);
+    this.logger.log(`✅ Permissions synced: ${enumPermissions.length}`);
   }
 
   private async syncRoles() {
@@ -61,7 +66,7 @@ export class RbacSeederService implements OnApplicationBootstrap {
       { upsert: true },
     );
 
-    console.log(`✅ Role synced with : ${adminPermissions.length} : permissions`);
+    this.logger.log(`✅ Role synced with : ${adminPermissions.length} : permissions`);
   }
 
   // ================= HELPERS =================

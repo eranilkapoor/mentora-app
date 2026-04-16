@@ -2,25 +2,24 @@ import {
   Injectable,
   OnModuleInit,
   OnModuleDestroy,
-  Logger,
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { ICacheService } from './cache.interface';
+import { AppLogger } from 'src/common/logger/logger.service';
 
 @Injectable()
 export class RedisCacheService
   implements ICacheService, OnModuleInit, OnModuleDestroy
 {
-  private readonly logger = new Logger(RedisCacheService.name);
   private readonly client: Redis;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(private readonly configService: ConfigService, private readonly logger: AppLogger) {
     this.client = new Redis({
-      host: this.config.get<string>('redis.host', 'localhost'),
-      port: this.config.get<number>('redis.port', 6379),
-      password: this.config.get<string>('redis.password') || undefined,
-      db: this.config.get<number>('redis.db', 0),
+      host: this.configService.get<string>('redis.host', 'localhost'),
+      port: this.configService.get<number>('redis.port', 6379),
+      password: this.configService.get<string>('redis.password') || undefined,
+      db: this.configService.get<number>('redis.db', 0),
       retryStrategy: (times) => Math.min(times * 50, 2000),
       maxRetriesPerRequest: null,
       enableReadyCheck: false,
@@ -29,7 +28,7 @@ export class RedisCacheService
 
   onModuleInit() {
     this.client.on('connect', () => this.logger.log('✅ Redis connected'));
-    this.client.on('error', (err) => this.logger.error('❌ Redis error:', err));
+    this.client.on('error', (err) => this.logger.error('❌ Redis error:', err.stack));
   }
 
   onModuleDestroy() {

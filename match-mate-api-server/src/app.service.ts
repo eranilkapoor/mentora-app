@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AppService {
+  constructor(private readonly configService: ConfigService) {}
+
   getRoot() {
     return {
       message: 'Matrimony API is running 🚀',
@@ -15,7 +18,7 @@ export class AppService {
       status: 'ok',
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      env: process.env.NODE_ENV,
+      env: this.configService.get<string>('environment'),
       memory: {
         rss: process.memoryUsage().rss,
         heapUsed: process.memoryUsage().heapUsed,

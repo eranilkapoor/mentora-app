@@ -118,6 +118,7 @@ async function bootstrap() {
   // ==========================================
   const apiPrefix = configService.getOrThrow<string>('api.prefix');
   const apiVersion = configService.getOrThrow<string>('api.version');
+  const environment = configService.get<string>('environment');
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -129,7 +130,7 @@ async function bootstrap() {
   // ==========================================
   // SWAGGER (ONLY NON-PROD)
   // ==========================================
-  if (process.env.NODE_ENV !== 'production') {
+  if (environment !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('Matrimony API')
       .setDescription('API documentation for Matrimonial App')
@@ -162,7 +163,7 @@ async function bootstrap() {
 
   logger.log(`🚀 Server running on: http://localhost:${port}/${apiPrefix}`);
   
-  if (process.env.NODE_ENV !== 'production') {
+  if (environment !== 'production') {
     logger.log(`📚 Swagger Docs: http://localhost:${port}/api/docs`);
   }
 }

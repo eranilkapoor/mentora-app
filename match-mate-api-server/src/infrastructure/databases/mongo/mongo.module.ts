@@ -1,14 +1,12 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { Logger } from '@nestjs/common';
-
-const logger = new Logger('MongoModule');
+import { AppLogger } from 'src/common/logger/logger.service';
 
 export const MongoModule = MongooseModule.forRootAsync({
   imports: [ConfigModule],
-  inject: [ConfigService],
-  useFactory: (configService: ConfigService) => {
-    const driver = configService.getOrThrow<string>('dbDriver', 'mongo');
+  inject: [ConfigService, AppLogger],
+  useFactory: (configService: ConfigService, logger: AppLogger) => {
+    const driver = configService.getOrThrow<string>('mongo.dbDriver');
 
     // ─── Local mode — skip MongoDB connection entirely ─────────────────────
     if (driver === 'local') {

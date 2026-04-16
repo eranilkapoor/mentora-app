@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CACHE_SERVICE } from './cache.interface';
 import { RedisCacheService } from './redis-cache.service';
 import { LocalCacheService } from './local-cache.service';
+import { AppLogger } from 'src/common/logger/logger.service';
 
 @Global()
 @Module({
@@ -10,15 +11,15 @@ import { LocalCacheService } from './local-cache.service';
   providers: [
     {
       provide: CACHE_SERVICE,
-      inject: [ConfigService],
-      useFactory: (config: ConfigService) => {
-        const driver = config.get<string>('cacheDriver', 'local');
+      inject: [ConfigService, AppLogger],
+      useFactory: (configService: ConfigService, logger: AppLogger) => {
+        const driver = configService.get<string>('cacheDriver', 'local');
 
         if (driver === 'redis') {
-          return new RedisCacheService(config);
+          return new RedisCacheService(configService, logger);
         }
 
-        return new LocalCacheService(config);
+        return new LocalCacheService(logger);
       },
     },
   ],

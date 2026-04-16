@@ -1,8 +1,8 @@
-import { Injectable, Logger, OnModuleDestroy } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ICacheService } from './cache.interface';
+import { AppLogger } from 'src/common/logger/logger.service';
 
 interface CacheEntry<T> {
   value: T;
@@ -11,12 +11,11 @@ interface CacheEntry<T> {
 
 @Injectable()
 export class LocalCacheService implements ICacheService, OnModuleDestroy {
-  private readonly logger = new Logger(LocalCacheService.name);
   private readonly store = new Map<string, CacheEntry<unknown>>();
   private readonly persistPath: string;
   private cleanupTimer: NodeJS.Timeout;
 
-  constructor(private readonly config: ConfigService) {
+  constructor(private readonly logger: AppLogger) {
     // Persist cache to file so it survives restarts
     this.persistPath = path.join(process.cwd(), 'local-db', 'local-cache.json');
 
@@ -86,7 +85,6 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
   }
 
   // ─── Disk Persistence ─────────────────────────────────────────────────────
-
   private saveToDisk(): void {
     try {
       const dir = path.dirname(this.persistPath);

@@ -4,7 +4,6 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-//import configuration from './config/configuration';
 import configArray from './config';
 import { envValidationSchema } from './config/validation';
 import { MongoModule } from './infrastructure/databases/mongo/mongo.module';
