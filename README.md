@@ -6438,3 +6438,11 @@ I can help you build:
 👉 Admin panel permission control
 
 Just say: **"build RBAC module"**
+
+
+configService.getOrThrow<string>('jwt.secret')
+
+export const getJwtConfig = (config: ConfigService) => ({
+  secret: config.getOrThrow<string>('jwt.secret'),
+  expiresIn: config.getOrThrow<string>('jwt.accessExpiresIn'),
+});

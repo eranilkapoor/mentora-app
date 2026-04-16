@@ -9,7 +9,7 @@ export class JwtRefreshStrategy extends PassportStrategy(
   'jwt-refresh',
 ) {
   constructor(configService: ConfigService) {
-    const secret = configService.get<string>('jwt.secret');
+    const secret = configService.getOrThrow<string>('jwt.secret');
 
     if (!secret) throw new Error('JWT_SECRET missing');
 

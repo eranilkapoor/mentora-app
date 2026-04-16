@@ -15,3 +15,11 @@ export const MembershipFeatures = {
     priorityBoost: true,
   },
 };
+
+export default () => ({
+  membership: {
+    freeLikes: 10,
+    goldLikes: 100,
+    platinumLikes: -1, // unlimited
+  },
+});

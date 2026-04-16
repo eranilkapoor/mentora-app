@@ -8,12 +8,14 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
-import { LoggingInterceptor } from './common/interceptors/logging.interceptor';
 import helmet from 'helmet';
 import compression from 'compression';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import 'dotenv/config';
 import * as path from 'path';
 import * as express from 'express';
+import { AppLogger } from './common/logger/logger.service';
+import { LoggingInterceptor } from './common/logger/logger.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -43,7 +45,7 @@ async function bootstrap() {
   app.use(express.urlencoded({ limit: '2mb', extended: true }));
 
   // CORS (secure)
-  const allowedOrigins = configService.get<string>('cors.origins')?.split(',') || [];
+  const allowedOrigins = configService.get<string[]>('cors.origins') ?? [];
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -105,13 +107,17 @@ async function bootstrap() {
   // ==========================================
   // GLOBAL INTERCEPTORS
   // ==========================================
-  app.useGlobalInterceptors(new LoggingInterceptor());
+  const logger = app.get(AppLogger);
+
+  app.useLogger(logger);
+  
+  app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
   // ==========================================
   // VERSIONING + PREFIX
   // ==========================================
-  const apiPrefix = configService.get<string>('api.prefix') || 'api';
-  const apiVersion = configService.get<string>('api.version') || '1';
+  const apiPrefix = configService.getOrThrow<string>('api.prefix');
+  const apiVersion = configService.getOrThrow<string>('api.version');
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -150,17 +156,14 @@ async function bootstrap() {
   // ==========================================
   // START SERVER
   // ==========================================
-  const port = configService.get<number>('PORT') || 3000;
+  const port = configService.getOrThrow<number>('PORT');
 
   await app.listen(port, '0.0.0.0');
 
-  console.log(
-    `🚀 Server running on: http://localhost:${port}/${apiPrefix}`,
-  );
+  logger.log(`🚀 Server running on: http://localhost:${port}/${apiPrefix}`);
+  
   if (process.env.NODE_ENV !== 'production') {
-    console.log(
-      `📚 Swagger Docs: http://localhost:${port}/api/docs`,
-    );
+    logger.log(`📚 Swagger Docs: http://localhost:${port}/api/docs`);
   }
 }
 

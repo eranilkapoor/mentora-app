@@ -3,11 +3,11 @@ import {
   NestInterceptor,
   ExecutionContext,
   CallHandler,
-  Logger,
 } from '@nestjs/common';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { Request, Response } from 'express';
+import { AppLogger } from './logger.service';
 
 type ApiRequest = {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
@@ -78,7 +78,7 @@ const UNKNOWN = 'unknown';
 
 @Injectable()
 export class LoggingInterceptor implements NestInterceptor {
-  private readonly logger = new Logger(LoggingInterceptor.name);
+  constructor(private readonly logger: AppLogger) {}
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<Request>();
@@ -108,7 +108,7 @@ export class LoggingInterceptor implements NestInterceptor {
       body: this.sanitizeBody(body as Record<string, unknown>),
     };
 
-    this.logger.log(requestLog);
+    this.logger.log('REQUEST', requestLog);
 
     return next.handle().pipe(
       tap({
@@ -127,7 +127,7 @@ export class LoggingInterceptor implements NestInterceptor {
             timestamp: new Date().toISOString(),
           };
 
-          this.logger.log(responseLog);
+          this.logger.log('RESPONSE', responseLog);
         },
         error: (error: unknown) => {
           const duration = Date.now() - startTime;
@@ -145,7 +145,7 @@ export class LoggingInterceptor implements NestInterceptor {
             timestamp: new Date().toISOString(),
           };
 
-          this.logger.error(errorLog);
+          this.logger.error('ERROR', err.stack, errorLog);
         },
       }),
     );

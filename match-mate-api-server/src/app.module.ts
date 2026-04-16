@@ -4,7 +4,9 @@ import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
-import configuration from './config/configuration';
+//import configuration from './config/configuration';
+import configArray from './config';
+import { envValidationSchema } from './config/validation';
 import { MongoModule } from './infrastructure/databases/mongo/mongo.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -14,6 +16,7 @@ import { RbacModule } from './modules/rbac/rbac.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
+import { LoggerModule } from './common/logger/logger.module';
 
 @Module({
   imports: [
@@ -22,7 +25,8 @@ import { RateLimitGuard } from './common/guards/rate-limit.guard';
     // ==========================================
     ConfigModule.forRoot({
       isGlobal: true,
-      load: [configuration],
+      load: configArray,
+      validationSchema: envValidationSchema,
     }),
     // ==========================================
     // ✅ THROTTLER (GLOBAL BASE RATE LIMIT)
@@ -38,6 +42,7 @@ import { RateLimitGuard } from './common/guards/rate-limit.guard';
     // ==========================================
     // OTHER MODULES
     // ==========================================
+    LoggerModule,
     CacheModule,
     StorageModule,
     MongoModule,

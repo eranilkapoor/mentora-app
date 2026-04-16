@@ -8,7 +8,7 @@ export const MongoModule = MongooseModule.forRootAsync({
   imports: [ConfigModule],
   inject: [ConfigService],
   useFactory: (configService: ConfigService) => {
-    const driver = configService.get<string>('dbDriver', 'mongo');
+    const driver = configService.getOrThrow<string>('dbDriver', 'mongo');
 
     // ─── Local mode — skip MongoDB connection entirely ─────────────────────
     if (driver === 'local') {
@@ -26,7 +26,7 @@ export const MongoModule = MongooseModule.forRootAsync({
     }
 
     // ─── Mongo mode ────────────────────────────────────────────────────────
-    const uri = configService.get<string>('mongo.uri');
+    const uri = configService.getOrThrow<string>('mongo.uri');
 
     if (!uri) {
       throw new Error('MONGO_URI is required when DB_DRIVER=mongo');
@@ -36,8 +36,8 @@ export const MongoModule = MongooseModule.forRootAsync({
 
     return {
       uri,
-      retryAttempts: configService.get<number>('mongo.retryAttempts', 5),
-      retryDelay: configService.get<number>('mongo.retryDelay', 5000),
+      retryAttempts: configService.getOrThrow<number>('mongo.retryAttempts', 5),
+      retryDelay: configService.getOrThrow<number>('mongo.retryDelay', 5000),
     };
   },
 });
