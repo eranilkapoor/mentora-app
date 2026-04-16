@@ -10,37 +10,62 @@ import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CacheModule } from './modules/cache/cache.module';
 import { ProfileModule } from './modules/profile/profile.module';
+import { RbacModule } from './modules/rbac/rbac.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
+import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
+import { RateLimitGuard } from './common/guards/rate-limit.guard';
 
 @Module({
   imports: [
-    // Configuration
+    // ==========================================
+    // CONFIG
+    // ==========================================
     ConfigModule.forRoot({
       isGlobal: true,
       load: [configuration],
     }),
-    // Cache
+    // ==========================================
+    // ✅ THROTTLER (GLOBAL BASE RATE LIMIT)
+    // ==========================================
+    ThrottlerModule.forRoot({
+      throttlers: [
+        {
+          ttl: 60,
+          limit: 100,
+        },
+      ],
+    }),
+    // ==========================================
+    // OTHER MODULES
+    // ==========================================
     CacheModule,
-    // Storage
     StorageModule,
-    // Database
     MongoModule,
-    // Global rate limiting (fallback)
-    ThrottlerModule.forRoot([
-      {
-        ttl: 900, // 1 minute
-        limit: 1, // 100 requests per minute
-      },
-    ]),
-    // Feature modules
     AuthModule,
     ProfileModule,
+    RbacModule,
   ],
   controllers: [AppController],
   providers: [
+    // ==========================================
+    // ✅ ORDER MATTERS (TOP → BOTTOM)
+    // ==========================================
+
+    // 1️⃣ Throttler (first line of defense - IP based)
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
+    },
+
+    // 2️⃣ JWT Auth (auth check)
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+    // 3️⃣ Custom Rate Limit (business logic - user based)
+    {
+      provide: APP_GUARD,
+      useClass: RateLimitGuard,
     },
     AppService,
   ],

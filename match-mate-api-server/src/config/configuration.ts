@@ -1,5 +1,8 @@
 export default () => ({
   port: process.env.PORT ? parseInt(process.env.PORT, 10) : 3000,
+  cors: {
+    origins: process.env.ALLOWED_ORIGINS,
+  },
   api: {
     prefix: process.env.API_PREFIX || 'api',
     version: process.env.API_VERSION || 'v1',
@@ -17,7 +20,8 @@ export default () => ({
   },
   jwt: {
     secret: process.env.JWT_SECRET,
-    expiresIn: process.env.JWT_EXPIRES_IN || '15m',
+    accessExpiresIn: process.env.JWT_ACCESS_EXPIRES_IN || '15m',
+    refreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN || '7d',
   },
   redis: {
     host: process.env.REDIS_HOST,

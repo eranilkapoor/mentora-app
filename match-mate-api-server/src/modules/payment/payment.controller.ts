@@ -11,7 +11,7 @@ export class PaymentController {
 
   @Post('order')
   createOrder(@Req() req: any, @Body() dto: CreateOrderDto) {
-    return this.service.createOrder(req.user.id, dto);
+    return this.service.createOrder(req.user.sub, dto);
   }
 
   @Post('verify')
@@ -21,6 +21,6 @@ export class PaymentController {
 
   @Get('/*path')
   getMyPayments(@Req() req: any) {
-    return this.service.getUserPayments(req.user.id);
+    return this.service.getUserPayments(req.user.sub);
   }
 }

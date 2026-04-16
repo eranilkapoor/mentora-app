@@ -29,7 +29,7 @@ export class ProfileService {
   async createProfile(
     userId: string,
     dto: CreateProfileDto,
-    images: ProfileImageInput[] = [],
+    profileImages: ProfileImageInput[] = [],
   ) {
     try {
       const existing = await this.profileRepo.findByUserId(userId);
@@ -37,7 +37,7 @@ export class ProfileService {
         throw new BadRequestException('Profile already exists');
       }
 
-      const imageDocuments = images.map((img) => ({
+      const imageDocuments = profileImages.map((img) => ({
         ...img,
         isActive: true,
         uploadedAt: new Date(),
@@ -125,9 +125,9 @@ export class ProfileService {
 
   // ─── Image Methods ──────────────────────────────────────────────────────────
 
-  async addImages(userId: string, images: ProfileImageInput[]) {
+  async addImages(userId: string, profileImages: ProfileImageInput[]) {
     try {
-      const imageDocuments = images.map((img) => ({
+      const imageDocuments = profileImages.map((img) => ({
         ...img,
         isActive: true,
         uploadedAt: new Date(),
@@ -135,7 +135,7 @@ export class ProfileService {
       return await this.profileRepo.addImages(userId, imageDocuments);
     } catch (error) {
       throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to add images',
+        error instanceof Error ? error.message : 'Failed to add profile images',
       );
     }
   }

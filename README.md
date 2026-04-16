@@ -6017,3 +6017,424 @@ navigationRef.reset({
   index: 0,
   routes: [{ name: 'Login' }],
 });
+
+You’re asking the **right question at the right time** — RBAC design in a matrimony app directly impacts **security, monetization, and scalability**.
+
+I’ll give you a **production-grade RBAC design** used by real platforms (Jeevansathi, Shaadi, BharatMatrimony style), but adapted for your architecture.
+
+---
+
+# 🧠 Step 1: Core Philosophy
+
+In matrimony apps:
+
+👉 **Roles = WHO you are**
+👉 **Permissions = WHAT you can do**
+
+---
+
+# 🚀 Step 2: Roles (Production Ready)
+
+## ✅ 1. USER (default)
+
+* Regular user (free or paid)
+
+---
+
+## ✅ 2. PREMIUM_USER
+
+* Paid users (Gold / Platinum tiers)
+
+---
+
+## ✅ 3. VERIFIED_USER
+
+* KYC / ID verified users
+
+---
+
+## ✅ 4. ADMIN
+
+* Internal admin (dashboard access)
+
+---
+
+## ✅ 5. SUPER_ADMIN
+
+* Full system control
+
+---
+
+## ✅ 6. MODERATOR
+
+* Profile/content moderation
+
+---
+
+## ✅ 7. SUPPORT_AGENT
+
+* Customer support team
+
+---
+
+## ✅ 8. MATCHMAKER / AGENT (Optional but powerful)
+
+* Assisted matrimony (very important business model 💰)
+
+---
+
+# 🧠 Step 3: Permission Categories
+
+Instead of random permissions, group them:
+
+---
+
+## 👤 PROFILE
+
+* `profile:create`
+* `profile:update`
+* `profile:view:self`
+* `profile:view:others`
+* `profile:delete`
+
+---
+
+## ❤️ MATCHING
+
+* `match:view`
+* `match:like`
+* `match:shortlist`
+* `match:ignore`
+
+---
+
+## 💬 COMMUNICATION
+
+* `chat:send`
+* `chat:view`
+* `chat:initiate`
+
+---
+
+## 🔒 CONTACT ACCESS (VERY IMPORTANT - monetization)
+
+* `contact:view`
+* `contact:request`
+
+---
+
+## 📸 MEDIA
+
+* `photo:upload`
+* `photo:view`
+* `photo:private:view`
+
+---
+
+## 💳 SUBSCRIPTION
+
+* `subscription:buy`
+* `subscription:view`
+
+---
+
+## 🚨 MODERATION
+
+* `report:create`
+* `report:review`
+* `profile:block`
+
+---
+
+## 🛠 ADMIN
+
+* `user:list`
+* `user:ban`
+* `user:delete`
+* `analytics:view`
+
+---
+
+## 🎯 MATCHMAKER (Premium business feature)
+
+* `matchmaker:assign`
+* `matchmaker:view_clients`
+* `matchmaker:contact`
+
+---
+
+# 🚀 Step 4: Role → Permission Mapping
+
+## 👤 USER (Free)
+
+```ts
+[
+  'profile:create',
+  'profile:update',
+  'profile:view:self',
+  'profile:view:others',
+  'match:view',
+  'match:like',
+  'match:shortlist',
+  'chat:initiate', // limited
+  'report:create'
+]
+```
+
+---
+
+## 💎 PREMIUM_USER
+
+```ts
+[
+  ...USER,
+  'chat:send',
+  'chat:view',
+  'contact:view', // 🔥 key feature
+  'photo:private:view',
+]
+```
+
+---
+
+## ✅ VERIFIED_USER
+
+👉 Add trust boost (not many permissions, but flags)
+
+---
+
+## 🛠 ADMIN
+
+```ts
+[
+  'user:list',
+  'user:ban',
+  'user:delete',
+  'analytics:view',
+  'report:review'
+]
+```
+
+---
+
+## 👮 MODERATOR
+
+```ts
+[
+  'report:review',
+  'profile:block'
+]
+```
+
+---
+
+## 🎧 SUPPORT_AGENT
+
+```ts
+[
+  'user:list',
+  'profile:view:others',
+  'chat:view'
+]
+```
+
+---
+
+## 💼 MATCHMAKER
+
+```ts
+[
+  'matchmaker:assign',
+  'matchmaker:view_clients',
+  'matchmaker:contact'
+]
+```
+
+---
+
+# 🔥 Step 5: API-Level RBAC Design
+
+## Example APIs
+
+---
+
+## 👤 Profile APIs
+
+```ts
+GET /users/me
+→ profile:view:self
+
+GET /users/:id
+→ profile:view:others
+```
+
+---
+
+## ❤️ Match APIs
+
+```ts
+POST /matches/:id/like
+→ match:like
+```
+
+---
+
+## 💬 Chat APIs
+
+```ts
+POST /chat/send
+→ chat:send (PREMIUM only)
+```
+
+---
+
+## 🔒 Contact APIs (MONEY MAKER 💰)
+
+```ts
+GET /contact/:userId
+→ contact:view (PREMIUM ONLY)
+```
+
+---
+
+## 🚨 Admin APIs
+
+```ts
+GET /admin/users
+→ user:list
+
+POST /admin/ban
+→ user:ban
+```
+
+---
+
+# 🧠 Step 6: How to Implement in NestJS
+
+---
+
+## ✅ 1. Create Permission Decorator
+
+```ts
+import { SetMetadata } from '@nestjs/common';
+
+export const PERMISSIONS_KEY = 'permissions';
+export const Permissions = (...permissions: string[]) =>
+  SetMetadata(PERMISSIONS_KEY, permissions);
+```
+
+---
+
+## ✅ 2. Permission Guard
+
+```ts
+canActivate(context: ExecutionContext): boolean {
+  const requiredPermissions = this.reflector.get<string[]>(
+    PERMISSIONS_KEY,
+    context.getHandler(),
+  );
+
+  const user = context.switchToHttp().getRequest().user;
+
+  return requiredPermissions.every(p =>
+    user.permissions.includes(p),
+  );
+}
+```
+
+---
+
+## ✅ 3. Use in APIs
+
+```ts
+@Permissions('contact:view')
+@Get('contact/:id')
+getContact() {}
+```
+
+---
+
+# 🔥 Step 7: PRODUCTION STRATEGY (VERY IMPORTANT)
+
+## ❌ Don’t hardcode permissions
+
+👉 Store in DB:
+
+### tables:
+
+* roles
+* permissions
+* role_permissions
+* user_roles
+
+---
+
+## ✅ Cache permissions (Redis)
+
+👉 Avoid DB hit on every request
+
+---
+
+## ✅ Attach to JWT
+
+```json
+{
+  "userId": "123",
+  "roles": ["USER"],
+  "permissions": ["profile:view:self", "match:like"]
+}
+```
+
+---
+
+# 🚀 Step 8: Monetization Strategy (Critical for YOU)
+
+👉 Restrict these behind premium:
+
+* chat:send
+* contact:view
+* photo:private:view
+
+👉 This is how apps make money 💰
+
+---
+
+# 🧠 Final Architecture (Your Case)
+
+You should have:
+
+✅ JWT Auth Guard
+✅ Role Guard
+✅ Permission Guard
+✅ Rate Limit Guard
+✅ Throttler
+
+👉 Layered like:
+
+```
+Throttler → Auth → Role → Permission → Business Logic
+```
+
+---
+
+# 🔥 Final Verdict
+
+Your RBAC system should:
+
+✅ Be **permission-driven (not just role-based)**
+✅ Support **premium monetization**
+✅ Be **dynamic (DB driven)**
+✅ Be **cached (Redis)**
+
+---
+
+# 🚀 If you want next level
+
+I can help you build:
+
+👉 Complete NestJS RBAC module (ready to plug)
+👉 DB schema (Mongo + Mongoose for your stack)
+👉 JWT + permission injection
+👉 Admin panel permission control
+
+Just say: **"build RBAC module"**

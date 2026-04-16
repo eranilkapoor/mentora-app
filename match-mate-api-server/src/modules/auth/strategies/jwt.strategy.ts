@@ -1,38 +1,36 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { UserRepository } from '../repositories/user.repository';
+import { Permission } from 'src/common/enums/permission.enum';
+import { getJwtConfig } from 'src/config/jwt.config';
 
 interface JwtPayload {
-  userId: string;
-  role: string;
+  sub: string;
+  roles: string[];
+  permissions: Permission[];
+  membership?: {
+    tier: string;
+  };
 }
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
-  constructor(
-    configService: ConfigService,
-    private userRepo: UserRepository,
-  ) {
+  constructor(configService: ConfigService) {
+    const jwtConfig = getJwtConfig(configService);
+
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('jwt.secret', '123456'),
+      secretOrKey: jwtConfig.secret,
     });
   }
 
-  async validate(
-    payload: JwtPayload,
-  ): Promise<{ userId: string; role: string }> {
-    const user = await this.userRepo.findById(payload.userId);
-
-    if (!user) {
-      throw new UnauthorizedException('User not found');
-    }
-
+  async validate(payload: JwtPayload): Promise<JwtPayload> {
     return {
-      userId: payload.userId,
-      role: payload.role,
+      sub: payload.sub,
+      roles: payload.roles || [],
+      permissions: payload.permissions || [],
+      membership: payload.membership,
     };
   }
 }

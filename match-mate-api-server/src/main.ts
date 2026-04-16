@@ -1,6 +1,10 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { BadRequestException, ValidationPipe } from '@nestjs/common';
+import { 
+  BadRequestException, 
+  ValidationPipe,
+  VersioningType
+} from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
@@ -9,23 +13,48 @@ import helmet from 'helmet';
 import compression from 'compression';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import * as path from 'path';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    logger: ['error', 'warn', 'log', 'debug', 'verbose'],
+    bufferLogs: true,
   });
+
+  const configService = app.get(ConfigService);
+
+  // ==========================================
+  // BASIC HARDENING
+  // ==========================================
+  app.disable('x-powered-by');
+  app.enableShutdownHooks();
 
   // ==========================================
   // SECURITY MIDDLEWARE
   // ==========================================
+  // Helmet
+  app.use(
+    helmet({
+      contentSecurityPolicy: false, // Swagger compatibility
+    }),
+  );
 
-  // Helmet - Security headers
-  app.use(helmet());
+  // Body Size Limit
+  app.use(express.json({ limit: '2mb' }));
+  app.use(express.urlencoded({ limit: '2mb', extended: true }));
 
-  // CORS
+  // CORS (secure)
+  const allowedOrigins = configService.get<string>('cors.origins')?.split(',') || [];
+
   app.enableCors({
-    origin: '*',
-    credentials: false,
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true); // mobile apps / postman
+      if (allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     allowedHeaders: [
       'Content-Type',
@@ -46,23 +75,24 @@ async function bootstrap() {
   });
 
   // Compression
-  app.use(compression());
+  app.use(compression({ level: 6 }));
 
   // ==========================================
   // GLOBAL PIPES
   // ==========================================
-
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true, // Strip properties not in DTO
       forbidNonWhitelisted: true, // Throw error for extra properties
       transform: true, // Auto-transform payloads to DTO instances
       transformOptions: {
-        enableImplicitConversion: true,
+        enableImplicitConversion: false, //safer
       },
       exceptionFactory: (errors) => {
-        console.log('❌ VALIDATION ERRORS:', errors);
-        return new BadRequestException(errors);
+        return new BadRequestException({
+          message: 'Validation failed',
+          errors,
+        });
       },
     }),
   );
@@ -70,41 +100,49 @@ async function bootstrap() {
   // ==========================================
   // GLOBAL FILTERS
   // ==========================================
-
   app.useGlobalFilters(new AllExceptionsFilter());
 
   // ==========================================
   // GLOBAL INTERCEPTORS
   // ==========================================
-
   app.useGlobalInterceptors(new LoggingInterceptor());
 
   // ==========================================
-  // API PREFIX
+  // VERSIONING + PREFIX
   // ==========================================
+  const apiPrefix = configService.get<string>('api.prefix') || 'api';
+  const apiVersion = configService.get<string>('api.version') || '1';
 
-  const configService = app.get(ConfigService);
-  const apiPrefix = configService.get<string>('api.prefix');
-  const apiVersion = configService.get<string>('api.version');
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: apiVersion,
+  });
 
-  app.setGlobalPrefix(`${apiPrefix}/${apiVersion}`);
+  app.setGlobalPrefix(apiPrefix);
 
   // ==========================================
-  // SWAGGER DOCUMENTATION
+  // SWAGGER (ONLY NON-PROD)
   // ==========================================
+  if (process.env.NODE_ENV !== 'production') {
+    const config = new DocumentBuilder()
+      .setTitle('Matrimony API')
+      .setDescription('API documentation for Matrimonial App')
+      .setVersion('1.0')
+      .addBearerAuth()
+      .addApiKey({
+        type: 'apiKey',
+        name: 'X-API-Key',
+        in: 'header',
+      })
+      .build();
 
-  const config = new DocumentBuilder()
-    .setTitle('Matrimony API')
-    .setDescription('API documentation for Matrimonial App')
-    .setVersion('1.0')
-    .addBearerAuth()
-    .addApiKey({ type: 'apiKey', name: 'X-API-Key', in: 'header' })
-    .build();
+    const document = SwaggerModule.createDocument(app, config);
+    SwaggerModule.setup('api/docs', app, document);
+  }
 
-  const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup('api/docs', app, document);
-
-  // Serve uploaded files at /uploads/**
+  // ==========================================
+  // STATIC FILES (⚠️ consider S3 in future)
+  // ==========================================
   app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
     prefix: '/uploads',
   });
@@ -112,17 +150,21 @@ async function bootstrap() {
   // ==========================================
   // START SERVER
   // ==========================================
+  const port = configService.get<number>('PORT') || 3000;
 
-  const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
 
   console.log(
-    `🚀 API Base is running on: http://localhost:${port}/${apiPrefix}/${apiVersion}`,
+    `🚀 Server running on: http://localhost:${port}/${apiPrefix}`,
   );
-  console.log(`📚 API Docs available at: http://localhost:${port}/api/docs`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(
+      `📚 Swagger Docs: http://localhost:${port}/api/docs`,
+    );
+  }
 }
 
 bootstrap().catch((err) => {
-  console.error(err);
+  console.error('❌ Application failed to start', err);
   process.exit(1);
 });

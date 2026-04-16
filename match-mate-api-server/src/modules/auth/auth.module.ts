@@ -13,26 +13,37 @@ import { ProfileModule } from '../profile/profile.module';
 import { Profile, ProfileSchema } from '../profile/schemas/profile.schema';
 import { ProfileService } from '../profile/profile.service';
 import { ProfileRepository } from '../profile/repositories/profile.repository';
+import { getJwtConfig } from 'src/config/jwt.config';
+import { AuthTokenService } from './auth-token.service';
+import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
 
 @Module({
   imports: [
+    ConfigModule, // ✅ ensure available
+
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
+      { name: UserSession.name, schema: UserSessionSchema }
     ]),
+
     PassportModule.register({ defaultStrategy: 'jwt' }),
+
     JwtModule.registerAsync({
       imports: [ConfigModule],
-      useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('jwt.secret', '123456'),
-        signOptions: {
-          expiresIn: parseInt(
-            configService.get<string>('jwt.expiresIn', '900'),
-            10,
-          ),
-        },
-      }),
       inject: [ConfigService],
+      useFactory: (configService: ConfigService) => {
+        const jwtConfig = getJwtConfig(configService);
+
+        return {
+          secret: jwtConfig.secret,
+          signOptions: {
+            expiresIn: jwtConfig.accessExpiresIn,
+            audience: jwtConfig.audience,
+            issuer: jwtConfig.issuer,
+          },
+        };
+      },      
     }),
     ProfileModule,
   ],
@@ -44,6 +55,7 @@ import { ProfileRepository } from '../profile/repositories/profile.repository';
     OtpService,
     ProfileService,
     ProfileRepository,
+    AuthTokenService
   ],
   exports: [AuthService, JwtModule, PassportModule],
 })

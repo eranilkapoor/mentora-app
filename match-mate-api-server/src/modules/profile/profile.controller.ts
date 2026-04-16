@@ -11,7 +11,7 @@ import {
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
-import { ApiResponse } from 'src/common/response.dto';
+import { ApiResponse } from 'src/common/dto/response.dto';
 
 @Controller('profile')
 @UseGuards(JwtAuthGuard)
@@ -20,7 +20,7 @@ export class ProfileController {
 
   @Post()
   async create(
-    @CurrentUser('userId') userId: string,
+    @CurrentUser('sub') userId: string,
     @Body() dto: CreateProfileDto,
   ) {
     try {
@@ -39,7 +39,7 @@ export class ProfileController {
 
   @Patch()
   async update(
-    @CurrentUser('userId') userId: string,
+    @CurrentUser('sub') userId: string,
     @Body() dto: UpdateProfileDto,
   ) {
     try {
@@ -58,7 +58,7 @@ export class ProfileController {
 
   @Patch('personal')
   async updatePersonal(
-    @CurrentUser('userId') userId: string,
+    @CurrentUser('sub') userId: string,
     @Body() dto: PersonalDto,
   ) {
     try {
@@ -79,7 +79,7 @@ export class ProfileController {
 
   @Patch('physical')
   async updatePhysical(
-    @CurrentUser('userId') userId: string,
+    @CurrentUser('sub') userId: string,
     @Body() dto: PhysicalDto,
   ) {
     try {
@@ -100,7 +100,7 @@ export class ProfileController {
 
   @Patch('education')
   async updateEducation(
-    @CurrentUser('userId') userId: string,
+    @CurrentUser('sub') userId: string,
     @Body() dto: EducationDto,
   ) {
     try {
@@ -121,7 +121,7 @@ export class ProfileController {
 
   @Patch('family')
   async updateFamily(
-    @CurrentUser('userId') userId: string,
+    @CurrentUser('sub') userId: string,
     @Body() dto: FamilyDto,
   ) {
     try {
@@ -140,7 +140,7 @@ export class ProfileController {
 
   @Patch('preferences')
   async updatePreferences(
-    @CurrentUser('userId') userId: string,
+    @CurrentUser('sub') userId: string,
     @Body() dto: PreferencesDto,
   ) {
     try {
@@ -158,7 +158,7 @@ export class ProfileController {
   }
 
   @Get('me')
-  async getMyProfile(@CurrentUser('userId') userId: string) {
+  async getMyProfile(@CurrentUser('sub') userId: string) {
     try {
       const data = await this.profileService.getMyProfile(userId);
       return new ApiResponse(true, 'Profile retrieved successfully', data);

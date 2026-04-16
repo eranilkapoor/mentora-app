@@ -4,6 +4,9 @@ import {
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { UserRepository } from './repositories/user.repository';
 import { ProfileService } from '../profile/profile.service';
@@ -15,6 +18,9 @@ import { OnboardingProfileDto } from './dto/onboarding-profile.dto';
 import { StorageService } from '../storage/storage.service';
 import type { ICacheService } from 'src/modules/cache/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
+import { AuthTokenService } from './auth-token.service';
+import { UserSession, UserSessionDocument } from './schemas/user-session.schema';
+import { AppRequest } from 'src/common/interfaces/app-request.interface';
 
 @Injectable()
 export class AuthService {
@@ -24,10 +30,126 @@ export class AuthService {
     private readonly profileService: ProfileService,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
+    private readonly authTokenService: AuthTokenService,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
+
+    @InjectModel(UserSession.name)
+    private readonly userSessionModel: Model<UserSessionDocument>,
   ) {}
 
-  async register(dto: RegisterDto) {
+  private async attachToken(req: AppRequest, res: Response, user: any) {
+    const populatedUser = await this.userRepo.findByIdWithRoles(user._id);
+
+    const payload = this.authTokenService.generatePayload(populatedUser);
+
+    const { accessToken, refreshToken } = this.authTokenService.generateTokens(payload);
+
+    const platform = String(req.headers['x-platform'] || 'web');
+
+    const cacheKey = `auth:${user._id}`;
+    await this.cache.set(cacheKey, accessToken, 900);
+
+    await this.userSessionModel.create({
+      userId: user._id,
+      refreshToken,
+      deviceId: req.headers['x-device-id'],
+      ip: req.ip,
+      userAgent: req.headers['user-agent'],
+      expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    // 🌐 WEB → cookie
+    if (platform === 'web') {
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'strict',
+        path: '/auth/refresh',
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      });
+
+      return { accessToken };
+    }
+
+    // 📱 MOBILE → return both
+    return { accessToken, refreshToken };
+  }
+
+  async refresh(
+    req: AppRequest, 
+    res: Response,
+    oldRefreshToken?: string
+  ) {
+    try {
+      // ✅ 1. Extract userId from JWT (set by JwtRefreshStrategy or guard)
+      const userId = req.user?.sub;
+
+      if (!userId) {
+        throw new UnauthorizedException('Invalid token payload');
+      }
+
+      // ✅ 2. Get refresh token (WEB → cookie, MOBILE → param)
+      const token =
+        oldRefreshToken || req.cookies?.refreshToken;
+
+      if (!token) {
+        throw new UnauthorizedException('Refresh token missing');
+      }
+
+      // ✅ 3. Validate session
+      const session = await this.userSessionModel.findOne({
+        userId,
+        refreshToken: token,
+        isActive: true,
+      });
+
+      if (!session) {
+        throw new UnauthorizedException('Invalid refresh token');
+      }
+
+      // ✅ 4. Rebuild payload (RBAC fresh)
+      const user = await this.userRepo.findByIdWithRoles(userId);
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const payload = this.authTokenService.generatePayload(user);
+
+      // ✅ 5. Generate new tokens
+      const { accessToken, refreshToken } =
+        this.authTokenService.generateTokens(payload);
+
+      // 🔥 6. ROTATE refresh token
+      session.refreshToken = refreshToken;
+      await session.save();
+
+      const platform = String(req.headers['x-platform'] || 'web');
+
+      // 🌐 WEB → set cookie
+      if (platform === 'web') {
+        res.cookie('refreshToken', refreshToken, {
+          httpOnly: true,
+          secure: true,
+          sameSite: 'strict',
+          path: '/auth/refresh',
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        });
+
+        return { accessToken };
+      }
+
+      // 📱 MOBILE → return both
+      return { accessToken, refreshToken };
+    } catch (error) {
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Token refresh failed');
+    }
+  }
+
+  async register(req: AppRequest, res: Response, dto: RegisterDto) {
     try {
       const email = dto.email.toLowerCase();
 
@@ -54,26 +176,19 @@ export class AuthService {
         ],
       });
 
-      user.primaryEmail = email;
+      user.email = email;
       await user.save();
 
-      const token = this.jwtService.sign({
-        userId: user._id,
-        role: 'user',
-      });
-
-      const cacheKey = `auth:${user._id}`;
-      // Cache for 15 minutes
-      await this.cache.set(cacheKey, token, 900);
+      const tokens = await this.attachToken(req, res, user);
 
       return {
         user: {
           userId: user._id,
-          email: user.primaryEmail,
+          email: user.email,
           isEmailVerified: user.isEmailVerified,
-          isProfileCompleted: user.isProfileCompleted,
+          isOnboardingCompleted: user.isOnboardingCompleted,
         },
-        token,
+        ...tokens,
       };
     } catch (error) {
       if (error instanceof ConflictException) {
@@ -83,7 +198,7 @@ export class AuthService {
     }
   }
 
-  async login(dto: LoginDto) {
+  async login(req: AppRequest, res: Response, dto: LoginDto) {
     try {
       const email = dto.email.toLowerCase();
 
@@ -106,23 +221,16 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
-      const token = this.jwtService.sign({
-        userId: existingUser._id,
-        role: 'user',
-      });
-
-      const cacheKey = `auth:${existingUser._id}`;
-      // Cache for 15 minutes
-      await this.cache.set(cacheKey, token, 900);
+      const tokens = await this.attachToken(req, res, existingUser);
 
       return {
         user: {
           userId: existingUser._id,
-          email: existingUser.primaryEmail,
+          email: existingUser.email,
           isEmailVerified: existingUser.isEmailVerified,
-          isProfileCompleted: existingUser.isProfileCompleted,
+          isOnboardingCompleted: existingUser.isOnboardingCompleted,
         },
-        token,
+        ...tokens,
       };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -137,7 +245,7 @@ export class AuthService {
     return { phone, otp };
   }
 
-  async verifyOtp(country_code: string, phone: string, otp: string) {
+  async verifyOtp(req: AppRequest, res: Response, country_code: string, phone: string, otp: string) {
     try {
       const isValid = this.otpService.verify(country_code, phone, otp);
       if (!isValid) throw new UnauthorizedException('Invalid OTP');
@@ -148,23 +256,16 @@ export class AuthService {
       );
 
       if (existingUser) {
-        const token = this.jwtService.sign({
-          userId: existingUser._id,
-          role: 'user',
-        });
-
-        const cacheKey = `auth:${existingUser._id}`;
-        // Cache for 15 minutes
-        await this.cache.set(cacheKey, token, 900);
+        const tokens = await this.attachToken(req, res, existingUser);
 
         return {
           user: {
             userId: existingUser._id,
-            phone: existingUser.primaryPhone,
+            phone: existingUser.phone,
             isPhoneVerified: existingUser.isPhoneVerified,
-            isProfileCompleted: existingUser.isProfileCompleted,
+            isOnboardingCompleted: existingUser.isOnboardingCompleted,
           },
-          token,
+          ...tokens,
         };
       }
 
@@ -179,26 +280,19 @@ export class AuthService {
         ],
       });
 
-      user.primaryPhone = { countryCode: country_code, phone };
+      user.phone = { countryCode: country_code, phone };
       await user.save();
 
-      const token = this.jwtService.sign({
-        userId: user._id,
-        role: 'user',
-      });
-
-      const cacheKey = `auth:${user._id}`;
-      // Cache for 15 minutes
-      await this.cache.set(cacheKey, token, 900);
+      const tokens = await this.attachToken(req, res, user);
 
       return {
         user: {
           userId: user._id,
-          phone: user.primaryPhone,
+          phone: user.phone,
           isPhoneVerified: user.isPhoneVerified,
-          isProfileCompleted: user.isProfileCompleted,
+          isOnboardingCompleted: user.isOnboardingCompleted,
         },
-        token,
+        ...tokens,
       };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -208,7 +302,7 @@ export class AuthService {
     }
   }
 
-  async socialLogin(dto: SocialLoginDto) {
+  async socialLogin(req: AppRequest, res: Response, dto: SocialLoginDto) {
     try {
       const existingUser = await this.userRepo.findByProvider(
         AuthProvider[dto.provider.toUpperCase() as keyof typeof AuthProvider],
@@ -216,22 +310,15 @@ export class AuthService {
       );
 
       if (existingUser) {
-        const token = this.jwtService.sign({
-          userId: existingUser._id,
-          role: 'user',
-        });
-
-        const cacheKey = `auth:${existingUser._id}`;
-        // Cache for 15 minutes
-        await this.cache.set(cacheKey, token, 900);
+        const tokens = await this.attachToken(req, res, existingUser);
 
         return {
           user: {
             userId: existingUser._id,
             provider: dto.provider,
-            isProfileCompleted: existingUser.isProfileCompleted,
+            isOnboardingCompleted: existingUser.isOnboardingCompleted,
           },
-          token,
+          ...tokens,
         };
       }
 
@@ -249,22 +336,15 @@ export class AuthService {
         ],
       });
 
-      const token = this.jwtService.sign({
-        userId: user._id,
-        role: 'user',
-      });
-
-      const cacheKey = `auth:${user._id}`;
-      // Cache for 15 minutes
-      await this.cache.set(cacheKey, token, 900);
+      const tokens = await this.attachToken(req, res, user);
 
       return {
         user: {
           userId: user._id,
           provider: dto.provider,
-          isProfileCompleted: user.isProfileCompleted,
+          isOnboardingCompleted: user.isOnboardingCompleted,
         },
-        token,
+        ...tokens,
       };
     } catch (error) {
       if (error instanceof ConflictException) {
@@ -307,7 +387,7 @@ export class AuthService {
   async onboardingProfile(
     userId: string,
     dto: OnboardingProfileDto,
-    images: Express.Multer.File[],
+    profileImages: Express.Multer.File[],
   ) {
     try {
       const user = await this.userRepo.findById(userId);
@@ -321,17 +401,17 @@ export class AuthService {
           ? parseInt(String(dto.primaryImageIndex), 10)
           : 0;
 
-      // Upload images to local filesystem
-      const uploadedImages = await this.uploadImages(images, primaryIndex);
+      // Upload profile images to local filesystem
+      const uploadedImages = await this.uploadImages(profileImages, primaryIndex);
 
       await this.profileService.createProfile(userId, dto, uploadedImages);
 
-      user.isProfileCompleted = true;
+      user.isOnboardingCompleted = true;
       await user.save();
 
       return {
         userId: user._id,
-        isProfileCompleted: user.isProfileCompleted,
+        isOnboardingCompleted: user.isOnboardingCompleted,
       };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -365,9 +445,9 @@ export class AuthService {
 
       return {
         userId: user._id,
-        email: user.primaryEmail,
-        phone: user.primaryPhone,
-        isProfileCompleted: user.isProfileCompleted,
+        email: user.email,
+        phone: user.phone,
+        isOnboardingCompleted: user.isOnboardingCompleted,
       };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -377,11 +457,21 @@ export class AuthService {
     }
   }
 
-  logout() {
-    // Invalidate user session or token (depends on your implementation)
-    // If using token blacklisting, add token to blacklist
-    // If using session storage, clear the session
-    // For now, returning true indicates successful logout
-    return true;
+  async logout(userId: string, refreshToken: string) {
+    await this.userSessionModel.updateOne(
+      { userId, refreshToken },
+      { isActive: false },
+    );
+
+    return { success: true };
+  }
+
+  async logoutAll(userId: string) {
+    await this.userSessionModel.updateMany(
+      { userId },
+      { isActive: false },
+    );
+
+    return { success: true };
   }
 }

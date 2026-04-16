@@ -33,7 +33,7 @@ export class PersonalDto {
   gender!: Gender;
 
   @IsDateString()
-  dob!: string;
+  dateOfBirth!: string;
 
   @IsString()
   @IsNotEmpty()

@@ -5,7 +5,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { IS_PUBLIC_KEY } from 'src/modules/auth/decorators/public.decorator';
+import { IS_PUBLIC_KEY } from 'src/common/decorators/public.decorator';
 
 interface JwtErrorInfo {
   name?: string;
@@ -41,7 +41,10 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     if (err || !user) {
-      throw err || new UnauthorizedException(info?.message ?? 'Invalid token');
+      console.error('Auth Error:', err || info);
+      throw new UnauthorizedException(
+        info?.message || 'Unauthorized access',
+      );
     }
 
     return user;

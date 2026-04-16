@@ -22,7 +22,7 @@ export class ProfileRepository {
   async createProfile(
     userId: string,
     data: CreateProfileDto,
-    images: {
+    profileImages: {
       url: string;
       isPrimary: boolean;
       isActive: boolean;
@@ -33,7 +33,7 @@ export class ProfileRepository {
       return await this.profileModel.create({
         userId: new Types.ObjectId(userId),
         ...data,
-        images,
+        profileImages,
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';
@@ -43,7 +43,7 @@ export class ProfileRepository {
 
   async addImages(
     userId: string,
-    images: {
+    profileImages: {
       url: string;
       isPrimary: boolean;
       isActive: boolean;
@@ -52,7 +52,7 @@ export class ProfileRepository {
   ) {
     return this.profileModel.findOneAndUpdate(
       { userId },
-      { $push: { images: { $each: images } } },
+      { $push: { profileImages: { $each: profileImages } } },
       { new: true },
     );
   }
@@ -61,11 +61,11 @@ export class ProfileRepository {
     // First unset all primary flags, then set the target one
     await this.profileModel.findOneAndUpdate(
       { userId },
-      { $set: { 'images.$[].isPrimary': false } },
+      { $set: { 'profileImages.$[].isPrimary': false } },
     );
     return this.profileModel.findOneAndUpdate(
-      { userId, 'images._id': imageId },
-      { $set: { 'images.$.isPrimary': true } },
+      { userId, 'profileImages._id': imageId },
+      { $set: { 'profileImages.$.isPrimary': true } },
       { new: true },
     );
   }
@@ -73,7 +73,7 @@ export class ProfileRepository {
   async removeImage(userId: string, imageId: string) {
     return this.profileModel.findOneAndUpdate(
       { userId },
-      { $pull: { images: { _id: imageId } } },
+      { $pull: { profileImages: { _id: imageId } } },
       { new: true },
     );
   }
@@ -81,9 +81,9 @@ export class ProfileRepository {
   async getImages(userId: string) {
     const profile = await this.profileModel
       .findOne({ userId })
-      .select('images')
+      .select('profileImages')
       .lean();
-    return profile?.images ?? [];
+    return profile?.profileImages ?? [];
   }
 
   async findByUserId(userId: string) {

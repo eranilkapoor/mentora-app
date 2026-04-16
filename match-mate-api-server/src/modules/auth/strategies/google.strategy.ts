@@ -29,14 +29,14 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     profile: Profile,
     done: VerifyCallback,
   ): Promise<void> {
-    const user = await this.authService.socialLogin({
-      provider: AuthProvider.GOOGLE,
-      provider_id: profile.id,
-      // email: profile?.emails[0].value,
-      first_name: profile.displayName,
-      access_token: accessToken,
-    });
+    // const user = await this.authService.socialLogin({
+    //   provider: AuthProvider.GOOGLE,
+    //   provider_id: profile.id,
+    //   // email: profile?.emails[0].value,
+    //   first_name: profile.displayName,
+    //   access_token: accessToken,
+    // });
 
-    done(null, user);
+    // done(null, user);
   }
 }

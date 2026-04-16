@@ -20,6 +20,7 @@ export const RateLimit = (options: RateLimitConfig) =>
   ttl: 900,
   limit: 5,
   message: 'Too many login attempts',
+  burst: 20, // new
 })
 @Post('login')
 async login() { ... }

@@ -1,11 +1,29 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
-import { Smoking } from 'src/common/enums/smoking.enum';
-import { Drinking } from 'src/common/enums/drinking.enum';
-import { Diet } from 'src/common/enums/diet.enum';
-import { Gender } from 'src/common/enums/gender.enum';
-import { MaritalStatus } from 'src/common/enums/marital-status.enum';
+import { COLLECTIONS } from 'src/common/constants/collections';
+import { Caste, Diet, Drinking, Gender, ManglikStatus, MaritalStatus, Religion, Smoking } from 'src/common/enums';
+
+class PlaceOfBirth {
+  @Prop()
+  city?: string;
+
+  @Prop()
+  state?: string;
+
+  @Prop()
+  country?: string;
+}
+@Schema({ _id: false })
+class TimeOfBirth {
+  @Prop({ min: 1, max: 12 })
+  hour?: number;
+
+  @Prop({ min: 0, max: 59 })
+  minute?: number;
+
+  @Prop({ enum: ['AM', 'PM'] })
+  period?: 'AM' | 'PM';
+}
 
 @Schema({ _id: false })
 class Personal {
@@ -22,13 +40,40 @@ class Personal {
   gender!: Gender;
 
   @Prop({ required: true })
-  dob!: Date;
-
-  @Prop({ required: true })
-  religion!: string;
+  dateOfBirth!: Date;
 
   @Prop()
-  caste?: string;
+  age?: number; 
+
+  @Prop()
+  timeOfBirth?: TimeOfBirth;
+
+  @Prop({ type: PlaceOfBirth })
+  placeOfBirth?: PlaceOfBirth;
+
+  @Prop({ enum: Religion, required: true })
+  religion!: Religion;
+
+  @Prop({ enum: Caste })
+  caste?: Caste;
+
+  @Prop()
+  subCast?: string;
+
+  @Prop()
+  gotra?: string;
+
+  @Prop({ enum: ManglikStatus, default: ManglikStatus.NON_MANGLIK })
+  manglikStatus?: ManglikStatus;
+
+  @Prop()
+  rashi?: string;
+
+  @Prop()
+  nakshatra?: string;
+
+  @Prop()
+  kundliFileUrl?: string;
 
   @Prop()
   country?: string;
@@ -40,10 +85,25 @@ class Personal {
   city?: string;
 
   @Prop()
+  citizenship?: string;
+
+  @Prop({ default: false })
+  willingToRelocate?: boolean;
+
+  @Prop()
   motherTongue?: string;
 
   @Prop({ enum: MaritalStatus, required: true })
   maritalStatus!: MaritalStatus;
+
+  @Prop({ default: false })
+  hasChildren?: boolean;
+
+  @Prop()
+  sonsCount? : number;
+
+  @Prop()
+  daughtersCount?: number;
 
   @Prop()
   aboutMe?: string;
@@ -52,16 +112,28 @@ class Personal {
 @Schema({ _id: false })
 class Physical {
   @Prop({ required: true })
-  height!: number;
+  heightCm!: number;
+
+  @Prop()
+  heightLabel?: string;
 
   @Prop()
   weight?: number;
+
+  @Prop()
+  bloodGroup?: string;
 
   @Prop()
   bodyType?: string;
 
   @Prop()
   complexion?: string;
+
+  @Prop({ default: false })
+  disabilityStatus?: boolean;
+
+  @Prop()
+  disabilityNote?: string;
 }
 
 @Schema({ _id: false })
@@ -75,11 +147,20 @@ class Education {
   @Prop()
   university?: string;
 
+  @Prop()
+  occupationType?: string;
+
   @Prop({ required: true })
   occupation!: string;
 
   @Prop()
-  annualIncome?: string;
+  companyName?: string;
+
+  @Prop()
+  jobRole?: string;
+
+  @Prop()
+  annualIncome?: number;
 }
 
 @Schema({ _id: false })
@@ -178,49 +259,67 @@ export class PartnerPreference {
   heightRange?: HeightRange;
 
   @Prop({ type: [String], enum: MaritalStatus, default: [] })
-  maritalStatus!: MaritalStatus[];
+  maritalStatus?: MaritalStatus[];
+
+  @Prop()
+  childPreference?: string;
 
   @Prop({ type: [String], default: [] })
-  religion!: string[];
+  religion?: string[];
 
   @Prop({ type: [String], default: [] })
-  caste!: string[];
+  caste?: string[];
 
   @Prop({ type: [String], default: [] })
-  country!: string[];
+  subCaste?: string[];
+
+  @Prop()
+  manglikPreference?: string;
 
   @Prop({ type: [String], default: [] })
-  state!: string[];
+  country?: string[];
 
   @Prop({ type: [String], default: [] })
-  city!: string[];
+  state?: string[];
 
   @Prop({ type: [String], default: [] })
-  qualification!: string[];
+  city?: string[];
+
+  @Prop()
+  nriPreference?: string;
 
   @Prop({ type: [String], default: [] })
-  occupation!: string[];
+  qualification?: string[];
+
+  @Prop({ type: [String], default: [] })
+  occupation?: string[];
 
   @Prop({ type: IncomeRange })
   annualIncomeRange?: IncomeRange;
 
   @Prop({ type: [String], default: [] })
-  bodyType!: string[];
+  bodyType?: string[];
 
   @Prop({ type: [String], default: [] })
-  complexion!: string[];
+  complexion?: string[];
 
   @Prop({ type: [String], enum: Smoking, default: [] })
-  smoking!: Smoking[];
+  smoking?: Smoking[];
 
   @Prop({ type: [String], enum: Drinking, default: [] })
-  drinking!: Drinking[];
+  drinking?: Drinking[];
 
   @Prop({ type: [String], enum: Diet, default: [] })
-  diet!: Diet[];
+  diet?: Diet[];
 
   @Prop({ type: [String], default: [] })
-  languagesKnown!: string[];
+  languagesKnown?: string[];
+
+  @Prop()
+  horoscopeMatchRequired?: string;
+
+  @Prop()
+  isProfileVerificationRequired?: string;
 
   @Prop()
   aboutPartner?: string;
@@ -235,31 +334,29 @@ class Preferences {
   partnerPreference!: PartnerPreference;
 
   @Prop({ type: [String], default: [] })
-  hobbies!: string[];
+  hobbies?: string[];
 
-  @Prop({ type: String, enum: Smoking, default: '' })
-  smoking!: string;
+  @Prop({ enum: Smoking })
+  smoking?: Smoking;
 
-  @Prop({ type: String, enum: Drinking, default: '' })
-  drinking!: string;
+  @Prop({ enum: Drinking })
+  drinking?: Drinking;
 
-  @Prop({ type: String, enum: Diet, default: '' })
-  diet!: string;
-
-  @Prop({ type: [String], default: [] })
-  music!: string[];
+  @Prop({ enum: Diet })
+  diet?: Diet;
 
   @Prop({ type: [String], default: [] })
-  movies!: string[];
+  music?: string[];
 
   @Prop({ type: [String], default: [] })
-  sports!: string[];
+  movies?: string[];
 
   @Prop({ type: [String], default: [] })
-  languagesKnown!: string[];
+  sports?: string[];
+
+  @Prop({ type: [String], default: [] })
+  languagesKnown?: string[];
 }
-
-// ─── New: Profile Image ───────────────────────────────────────────────────────
 
 @Schema({ _id: true, timestamps: true })
 class ProfileImage {
@@ -271,9 +368,27 @@ class ProfileImage {
 
   @Prop({ default: true })
   isActive!: boolean;
+}
+
+@Schema({ _id: true, timestamps: true })
+class ProfileVideo {
+  @Prop({ required: true })
+  url!: string;
+
+  @Prop({ default: false })
+  isPrimary!: boolean;
+
+  @Prop({ default: true })
+  isActive!: boolean;
 
   @Prop()
-  uploadedAt!: Date;
+  thumbnailUrl?: string;
+
+  @Prop()
+  size?: number;
+
+  @Prop()
+  mimeType?: string;
 }
 
 @Schema({ collection: COLLECTIONS.PROFILE, timestamps: true })
@@ -301,7 +416,10 @@ export class Profile {
   preferences!: Preferences;
 
   @Prop({ type: [ProfileImage], default: [] })
-  images!: ProfileImage[];
+  profileImages?: ProfileImage[];
+
+  @Prop({ type: [ProfileVideo], default: [] })
+  profileVideos?: ProfileVideo[];
 
   @Prop({ default: 0 })
   profileCompletionPercentage!: number;
@@ -312,6 +430,21 @@ export class Profile {
   @Prop({ default: false })
   isPremium!: boolean;
 
+  @Prop({ default: 0 })
+  profileScore!: number;
+
+  @Prop({ default: 'free' })
+  membershipPlan!: string;
+
+  @Prop({ default: false })
+  hideContactDetails!: boolean;
+
+  @Prop({ default: false })
+  hidePhotos!: boolean;
+
+  @Prop({ default: false })
+  showOnlyToPaidUsers!: boolean;
+
   @Prop({ default: false })
   isProfileLocked!: boolean;
 
@@ -320,6 +453,24 @@ export class Profile {
 
   @Prop({ default: false })
   isActive!: boolean;
+
+  @Prop({ default: 0 })
+  profileViewsCount!: number;
+
+  @Prop({ default: 0 })
+  interestsSent!: number;
+
+  @Prop({ default: 0 })
+  interestsReceived!: number;
+
+  @Prop({ type: [String], index: true })
+  searchTags?: string[];
+
+  @Prop({ type: Types.ObjectId })
+  createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId })
+  updatedBy?: Types.ObjectId;
 }
 
 export type ProfileDocument = Profile & Document;
@@ -327,9 +478,9 @@ export const ProfileSchema = SchemaFactory.createForClass(Profile);
 
 ProfileSchema.index({
   userId: 1,
-  profileFor: 1,
-  religion: 1,
-  caste: 1,
+  'personal.profileFor': 1,
+  'personal.religion': 1,
+  'personal.caste': 1,
   isVerified: 1,
   isPremium: 1,
   isActive: 1,

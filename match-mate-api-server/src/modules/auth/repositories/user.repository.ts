@@ -34,4 +34,38 @@ export class UserRepository {
   async findByPhone(phone: string): Promise<UserDocument | null> {
     return this.userModel.findOne({ phone }).exec();
   }
+
+  async findByIdWithRoles(userId: string) {
+    return this.userModel
+      .findById(userId)
+      .populate({
+        path: 'roles',
+        populate: { path: 'permissions' },
+      });
+  }
+
+  async update(
+    userId: string,
+    updateData: Partial<User>,
+  ): Promise<User | null> {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: updateData },
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+  }
+
+  async updateMembership(
+    userId: string,
+    membership: User['membership'],
+  ) {
+    return this.userModel.findByIdAndUpdate(
+      userId,
+      { $set: { membership } },
+      { new: true },
+    );
+  }
 }

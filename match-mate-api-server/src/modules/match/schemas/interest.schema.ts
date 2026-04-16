@@ -2,9 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
 export enum InterestStatus {
-  PENDING = 'PENDING',
-  ACCEPTED = 'ACCEPTED',
-  REJECTED = 'REJECTED',
+  PENDING = 'pending',
+  ACCEPTED = 'accepted',
+  REJECTED = 'rejected',
 }
 
 @Schema({ timestamps: true })
@@ -21,6 +21,9 @@ export class Interest extends Document {
     default: InterestStatus.PENDING,
   })
   status!: InterestStatus;
+
+  @Prop()
+  respondedAt?: Date;
 }
 
 export const InterestSchema = SchemaFactory.createForClass(Interest);

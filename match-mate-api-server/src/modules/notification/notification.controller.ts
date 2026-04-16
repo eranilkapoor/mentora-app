@@ -9,19 +9,19 @@ import {
 } from '@nestjs/common';
 import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
-// import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
 @Controller('notifications')
-// @UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard)
 export class NotificationController {
   constructor(private readonly service: NotificationService) {}
 
-  @Get('/*path')
+  @Get()
   getMyNotifications(@Req() req: any) {
-    return this.service.getUserNotifications(req.user.id);
+    return this.service.getUserNotifications(req.user.sub);
   }
 
-  @Post('/*path')
+  @Post()
   create(@Body() dto: CreateNotificationDto) {
     return this.service.notify(dto);
   }
@@ -33,6 +33,6 @@ export class NotificationController {
 
   @Post('read-all')
   markAllRead(@Req() req: any) {
-    return this.service.markAllRead(req.user.id);
+    return this.service.markAllRead(req.user.sub);
   }
 }

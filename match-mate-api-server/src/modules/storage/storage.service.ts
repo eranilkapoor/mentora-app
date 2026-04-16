@@ -38,7 +38,6 @@ export class StorageService {
   }
 
   // ─── Upload Single File ───────────────────────────────────────────────────
-
   async uploadFile(
     file: Express.Multer.File,
     folder = 'profiles',
@@ -54,7 +53,6 @@ export class StorageService {
   }
 
   // ─── Upload Multiple Files ────────────────────────────────────────────────
-
   async uploadFiles(
     files: Express.Multer.File[],
     folder = 'profiles',
@@ -64,7 +62,6 @@ export class StorageService {
   }
 
   // ─── Delete File ──────────────────────────────────────────────────────────
-
   async deleteFile(filename: string, folder = 'profiles'): Promise<void> {
     if (this.isS3) {
       await this.deleteFromS3(filename, folder);
@@ -74,7 +71,6 @@ export class StorageService {
   }
 
   // ─── Get Public URL from filename ─────────────────────────────────────────
-
   getUrl(filename: string, folder = 'profiles'): string {
     if (this.isS3) {
       return `${this.s3BaseUrl}/${folder}/${filename}`;
@@ -83,7 +79,6 @@ export class StorageService {
   }
 
   // ─── S3 Internals ─────────────────────────────────────────────────────────
-
   private async uploadToS3(
     file: Express.Multer.File,
     filename: string,
@@ -125,7 +120,6 @@ export class StorageService {
   }
 
   // ─── Local Internals ──────────────────────────────────────────────────────
-
   private async uploadToLocal(
     file: Express.Multer.File,
     filename: string,
