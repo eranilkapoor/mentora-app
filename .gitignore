@@ -2,3 +2,4 @@ match-mate-api-server/dist/
 match-mate-api-server/src/dist/
 match-mate-api-server/src/node_modules/
 match-mate-api-server/tsconfig.build.tsbuildinfo
+match-mate-api-server/package-lock.json
