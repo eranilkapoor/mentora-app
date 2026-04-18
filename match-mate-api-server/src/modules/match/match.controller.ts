@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Param } from '@nestjs/common';
+import { Controller, Post, Body, Get } from '@nestjs/common';
 import { MatchService } from './match.service';
 import { SendInterestDto } from './dto/send-interest.dto';
 import { RespondInterestDto } from './dto/respond-interest.dto';

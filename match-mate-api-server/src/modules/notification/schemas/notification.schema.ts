@@ -13,8 +13,28 @@ export class Notification {
   @Prop({ required: true })
   message!: string;
 
-  @Prop({ enum: ['info', 'success', 'warning', 'error', 'match', 'chat', 'system', 'payment'], default: 'info' })
-  type!: 'info' | 'success' | 'warning' | 'error' | 'match' | 'chat' | 'system' | 'payment';
+  @Prop({
+    enum: [
+      'info',
+      'success',
+      'warning',
+      'error',
+      'match',
+      'chat',
+      'system',
+      'payment',
+    ],
+    default: 'info',
+  })
+  type!:
+    | 'info'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'match'
+    | 'chat'
+    | 'system'
+    | 'payment';
 
   @Prop({ default: false })
   isRead!: boolean;

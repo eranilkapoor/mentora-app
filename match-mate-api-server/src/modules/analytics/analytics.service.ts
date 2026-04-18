@@ -2,6 +2,22 @@ import { Injectable } from '@nestjs/common';
 import { AnalyticsRepository } from './analytics.repository';
 import { TrackEventDto } from './dto/track-event.dto';
 
+interface AnalyticsStatsQuery {
+  eventType?: string;
+  from?: string;
+  to?: string;
+}
+
+interface AnalyticsDateRange {
+  $gte?: Date;
+  $lte?: Date;
+}
+
+interface AnalyticsMatch extends Record<string, unknown> {
+  eventType?: string;
+  createdAt?: AnalyticsDateRange;
+}
+
 @Injectable()
 export class AnalyticsService {
   constructor(private readonly repo: AnalyticsRepository) {}
@@ -15,8 +31,8 @@ export class AnalyticsService {
     });
   }
 
-  async getStats(query: any) {
-    const match: any = {};
+  async getStats(query: AnalyticsStatsQuery) {
+    const match: AnalyticsMatch = {};
 
     if (query.eventType) {
       match.eventType = query.eventType;

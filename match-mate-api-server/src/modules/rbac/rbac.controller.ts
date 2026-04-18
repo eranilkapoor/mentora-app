@@ -10,6 +10,10 @@ import {
 import { RbacService } from './rbac.service';
 import { Permissions } from '../../common/decorators/permissions.decorator';
 import { Permission } from 'src/common/enums';
+import { CreatePermissionDto } from './dto/create-permission.dto';
+import { CreateRoleDto } from './dto/create-role.dto';
+import { UpdateRoleDto } from './dto/update-role.dto';
+import { AssignRolesDto } from './dto/assign-roles.dto';
 
 @Controller('admin/rbac')
 export class RbacController {
@@ -19,7 +23,7 @@ export class RbacController {
 
   @Post('permissions')
   @Permissions(Permission.ADMIN_MANAGE)
-  createPermission(@Body() dto: any) {
+  createPermission(@Body() dto: CreatePermissionDto) {
     return this.service.createPermission(dto);
   }
 
@@ -38,7 +42,7 @@ export class RbacController {
   // ================= ROLES =================
   @Post('roles')
   @Permissions(Permission.ADMIN_MANAGE)
-  createRole(@Body() dto: any) {
+  createRole(@Body() dto: CreateRoleDto) {
     return this.service.createRole(dto);
   }
 
@@ -50,7 +54,7 @@ export class RbacController {
 
   @Patch('roles/:id')
   @Permissions(Permission.ADMIN_MANAGE)
-  updateRole(@Param('id') id: string, @Body() dto: any) {
+  updateRole(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
     return this.service.updateRole(id, dto);
   }
 
@@ -63,7 +67,7 @@ export class RbacController {
   // ================= USER ROLES =================
   @Post('users/:userId/roles')
   @Permissions(Permission.ADMIN_MANAGE)
-  assignRoles(@Param('userId') userId: string, @Body() dto: any) {
+  assignRoles(@Param('userId') userId: string, @Body() dto: AssignRolesDto) {
     return this.service.assignRoles(userId, dto.roleIds);
   }
 }

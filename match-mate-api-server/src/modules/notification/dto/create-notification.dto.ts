@@ -11,8 +11,25 @@ export class CreateNotificationDto {
   message!: string;
 
   @IsOptional()
-  @IsEnum(['info', 'success', 'warning', 'error', 'match', 'chat', 'system', 'payment'])
-  type?: 'info' | 'success' | 'warning' | 'error' | 'match' | 'chat' | 'system' | 'payment';
+  @IsEnum([
+    'info',
+    'success',
+    'warning',
+    'error',
+    'match',
+    'chat',
+    'system',
+    'payment',
+  ])
+  type?:
+    | 'info'
+    | 'success'
+    | 'warning'
+    | 'error'
+    | 'match'
+    | 'chat'
+    | 'system'
+    | 'payment';
 
   @IsOptional()
   metadata?: Record<string, any>;

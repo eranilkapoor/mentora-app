@@ -5,6 +5,8 @@ export interface ICacheService {
   delByPattern(pattern: string): Promise<void>;
   has(key: string): Promise<boolean>;
   flush(): Promise<void>;
+  incr(key: string): Promise<number>;
+  expire(key: string, ttlSeconds: number): Promise<void>;
 }
 
 // ✅ Use a string token instead of interface as type reference

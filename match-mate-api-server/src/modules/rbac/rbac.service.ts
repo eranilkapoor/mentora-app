@@ -1,21 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { Model, UpdateQuery } from 'mongoose';
 
-import {
-  Permission,
-  PermissionDocument,
-} from './schemas/permission.schema';
+import { Permission, PermissionDocument } from './schemas/permission.schema';
 
-import {
-  Role,
-  RoleDocument,
-} from './schemas/role.schema';
+import { Role, RoleDocument } from './schemas/role.schema';
 
-import {
-  User,
-  UserDocument,
-} from '../auth/schemas/user.schema';
+import { User, UserDocument } from '../auth/schemas/user.schema';
 
 @Injectable()
 export class RbacService {
@@ -28,7 +19,7 @@ export class RbacService {
 
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
-  ) { }
+  ) {}
 
   // ===== PERMISSIONS =====
   createPermission(dto: any) {
@@ -52,7 +43,7 @@ export class RbacService {
     return this.roleModel.find().populate('permissions');
   }
 
-  updateRole(id: string, dto: any) {
+  updateRole(id: string, dto: UpdateQuery<RoleDocument>) {
     return this.roleModel.findByIdAndUpdate(id, dto, { new: true });
   }
 
@@ -62,9 +53,11 @@ export class RbacService {
 
   // ===== USER ROLES =====
   async assignRoles(userId: string, roleIds: string[]) {
-    const roles = await this.roleModel.find({
-      _id: { $in: roleIds },
-    }).populate<{ permissions: Permission[] }>('permissions');
+    const roles = await this.roleModel
+      .find({
+        _id: { $in: roleIds },
+      })
+      .populate<{ permissions: Permission[] }>('permissions');
 
     // flatten permissions
     const permissions = roles.flatMap((role) =>

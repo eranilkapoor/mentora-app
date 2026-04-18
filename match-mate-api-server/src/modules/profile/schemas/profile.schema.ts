@@ -1,7 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
-import { Caste, Diet, Drinking, Gender, ManglikStatus, MaritalStatus, Religion, Smoking } from 'src/common/enums';
+import {
+  Caste,
+  Diet,
+  Drinking,
+  Gender,
+  ManglikStatus,
+  MaritalStatus,
+  Religion,
+  Smoking,
+} from 'src/common/enums';
 
 class PlaceOfBirth {
   @Prop()
@@ -43,7 +52,7 @@ class Personal {
   dateOfBirth!: Date;
 
   @Prop()
-  age?: number; 
+  age?: number;
 
   @Prop()
   timeOfBirth?: TimeOfBirth;
@@ -100,7 +109,7 @@ class Personal {
   hasChildren?: boolean;
 
   @Prop()
-  sonsCount? : number;
+  sonsCount?: number;
 
   @Prop()
   daughtersCount?: number;

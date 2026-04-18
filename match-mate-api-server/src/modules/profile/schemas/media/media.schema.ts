@@ -5,29 +5,29 @@ import { MediaType, MimeType } from 'src/common/enums';
 
 @Schema({ collection: COLLECTIONS.MEDIA, timestamps: true })
 export class Media {
-    @Prop({ type: Types.ObjectId, required: true })
-    userId!: Types.ObjectId;
+  @Prop({ type: Types.ObjectId, required: true })
+  userId!: Types.ObjectId;
 
-    @Prop({ enum: MediaType })
-    type!: MediaType;
+  @Prop({ enum: MediaType })
+  type!: MediaType;
 
-    @Prop({ required: true })
-    url!: string;
+  @Prop({ required: true })
+  url!: string;
 
-    @Prop()
-    thumbnailUrl?: string;
+  @Prop()
+  thumbnailUrl?: string;
 
-    @Prop({ enum: Object.values(MimeType) })
-    mimeType!: MimeType;
+  @Prop({ enum: Object.values(MimeType) })
+  mimeType!: MimeType;
 
-    @Prop()
-    size?: number;
+  @Prop()
+  size?: number;
 
-    @Prop({ default: false })
-    isPrimary!: boolean;
+  @Prop({ default: false })
+  isPrimary!: boolean;
 
-    @Prop({ default: true })
-    isActive!: boolean;    
+  @Prop({ default: true })
+  isActive!: boolean;
 }
 
 export type MediaDocument = Media & Document;

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
-import { SubscriptionStatus } from 'src/modules/subscription/enums/subscription-status.enum';
+import { SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
 
 @Schema({ collection: COLLECTIONS.SUBSCRIPTION, timestamps: true })
 export class Subscription {

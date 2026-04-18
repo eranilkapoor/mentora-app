@@ -38,5 +38,8 @@ export class UserNotificationSettings {
   dndEnd?: string; // "07:00"
 }
 
-export type UserNotificationSettingsDocument = UserNotificationSettings & Document;
-export const UserNotificationSettingsSchema = SchemaFactory.createForClass(UserNotificationSettings);
+export type UserNotificationSettingsDocument = UserNotificationSettings &
+  Document;
+export const UserNotificationSettingsSchema = SchemaFactory.createForClass(
+  UserNotificationSettings,
+);

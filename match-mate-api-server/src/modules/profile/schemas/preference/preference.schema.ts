@@ -1,7 +1,20 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
-import { BodyType, Caste, ChildPreference, Complexion, Diet, Drinking, ManglikStatus, MaritalStatus, OccupationType, Religion, ResidencyPreference, Smoking } from 'src/common/enums';
+import {
+  BodyType,
+  Caste,
+  ChildPreference,
+  Complexion,
+  Diet,
+  Drinking,
+  ManglikStatus,
+  MaritalStatus,
+  OccupationType,
+  Religion,
+  ResidencyPreference,
+  Smoking,
+} from 'src/common/enums';
 
 @Schema({ _id: false })
 class Range<T = number> {
@@ -50,7 +63,10 @@ export class PartnerFilters {
   @Prop({ enum: ChildPreference, default: ChildPreference.DOES_NOT_MATTER })
   childPreference!: ChildPreference;
 
-  @Prop({ enum: ResidencyPreference, default: ResidencyPreference.DOES_NOT_MATTER })
+  @Prop({
+    enum: ResidencyPreference,
+    default: ResidencyPreference.DOES_NOT_MATTER,
+  })
   residencyPreference!: ResidencyPreference;
 
   @Prop({ type: [String], default: [] })

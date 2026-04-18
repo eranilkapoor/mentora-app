@@ -24,4 +24,5 @@ export class NotificationLogs {
 }
 
 export type NotificationLogsDocument = NotificationLogs & Document;
-export const NotificationLogsSchema = SchemaFactory.createForClass(NotificationLogs);
+export const NotificationLogsSchema =
+  SchemaFactory.createForClass(NotificationLogs);

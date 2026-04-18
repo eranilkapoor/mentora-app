@@ -1,5 +1,12 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { Diet, Drinking, ManglikStatus, MaritalStatus, Smoking, TimePeriod } from 'src/common/enums';
+import {
+  Diet,
+  Drinking,
+  ManglikStatus,
+  MaritalStatus,
+  Smoking,
+  TimePeriod,
+} from 'src/common/enums';
 
 @Schema({ _id: false })
 class PlaceOfBirth {
@@ -82,7 +89,7 @@ export class Personal {
   hasChildren?: boolean;
 
   @Prop()
-  sonsCount? : number;
+  sonsCount?: number;
 
   @Prop()
   daughtersCount?: number;

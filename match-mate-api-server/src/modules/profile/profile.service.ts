@@ -170,12 +170,12 @@ export class ProfileService {
     }
   }
 
-  async getMyProfile(userId: string) {
+  async getMyProfile(userId: string): Promise<unknown> {
     try {
       const cacheKey = `profile:${userId}`;
 
       // Try cache first
-      const cached = await this.cache.get<any>(cacheKey);
+      const cached = await this.cache.get<unknown>(cacheKey);
       if (cached) return cached;
 
       // Fetch from DB

@@ -336,7 +336,7 @@ export class PreferencesDto {
   languagesKnown?: string[];
 }
 
-const parseJSON = ({ value }: { value: any }) =>
+const parseJSON = ({ value }: { value: unknown }): unknown =>
   typeof value === 'string' ? JSON.parse(value) : value;
 
 export class CreateProfileDto {

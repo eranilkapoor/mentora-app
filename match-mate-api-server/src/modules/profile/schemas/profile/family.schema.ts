@@ -1,5 +1,10 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { FamilyStatus, FamilyType, FamilyValue, SiblingType } from 'src/common/enums';
+import {
+  FamilyStatus,
+  FamilyType,
+  FamilyValue,
+  SiblingType,
+} from 'src/common/enums';
 
 @Schema({ _id: false })
 class SiblingDetail {

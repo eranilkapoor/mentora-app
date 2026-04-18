@@ -6,7 +6,7 @@ export enum InteractionCategory {
   SAFETY = 'safety',
 }
 
-const InteractionCategoryMap = {
+export const InteractionCategoryMap = {
   like: 'matching',
   pass: 'matching',
   block: 'safety',

@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  OnModuleInit,
-  OnModuleDestroy,
-} from '@nestjs/common';
+import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import Redis from 'ioredis';
 import { ICacheService } from './cache.interface';
@@ -14,7 +10,10 @@ export class RedisCacheService
 {
   private readonly client: Redis;
 
-  constructor(private readonly configService: ConfigService, private readonly logger: AppLogger) {
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: AppLogger,
+  ) {
     this.client = new Redis({
       host: this.configService.get<string>('redis.host', 'localhost'),
       port: this.configService.get<number>('redis.port', 6379),
@@ -28,7 +27,9 @@ export class RedisCacheService
 
   onModuleInit() {
     this.client.on('connect', () => this.logger.log('✅ Redis connected'));
-    this.client.on('error', (err) => this.logger.error('❌ Redis error:', err.stack));
+    this.client.on('error', (err) =>
+      this.logger.error('❌ Redis error:', err.stack),
+    );
   }
 
   onModuleDestroy() {
@@ -67,5 +68,13 @@ export class RedisCacheService
 
   async flush(): Promise<void> {
     await this.client.flushdb();
+  }
+
+  async incr(key: string): Promise<number> {
+    return this.client.incr(key);
+  }
+
+  async expire(key: string, ttlSeconds: number): Promise<void> {
+    await this.client.expire(key, ttlSeconds);
   }
 }

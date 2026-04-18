@@ -55,7 +55,7 @@ export class Profile {
   @Prop({ index: true })
   city?: string;
 
- @Prop({ type: GeoLocation })
+  @Prop({ type: GeoLocation })
   location?: GeoLocation;
 
   @Prop({ enum: Gender, index: true })
@@ -108,9 +108,9 @@ ProfileSchema.index({
   city: 1,
   status: 1,
 });
-ProfileSchema.index({ 
-  isPremium: 1, 
+ProfileSchema.index({
+  isPremium: 1,
   lastActiveAt: -1,
-  profileScore: -1, 
+  profileScore: -1,
 });
 ProfileSchema.index({ location: '2dsphere' });

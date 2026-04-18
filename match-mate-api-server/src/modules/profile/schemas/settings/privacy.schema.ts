@@ -26,7 +26,7 @@ export class PrivacySetting {
   showOnlineStatus!: boolean;
 
   @Prop({ enum: ['all', 'matches', 'none'] })
-  lastSeenVisibility?: 'all' | 'matches' | 'none'
+  lastSeenVisibility?: 'all' | 'matches' | 'none';
 
   @Prop({ default: false })
   incognitoMode!: boolean;
@@ -36,6 +36,7 @@ export class PrivacySetting {
 }
 
 export type PrivacySettingDocument = PrivacySetting & Document;
-export const PrivacySettingSchema = SchemaFactory.createForClass(PrivacySetting);
+export const PrivacySettingSchema =
+  SchemaFactory.createForClass(PrivacySetting);
 
 PrivacySettingSchema.index({ profileVisibility: 1 });

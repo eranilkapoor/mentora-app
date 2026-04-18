@@ -13,7 +13,7 @@ import { AppLogger } from 'src/common/logger/logger.service';
       provide: CACHE_SERVICE,
       inject: [ConfigService, AppLogger],
       useFactory: (configService: ConfigService, logger: AppLogger) => {
-        const driver = configService.get<string>('cacheDriver', 'local');
+        const driver = configService.get<string>('redis.driver', 'local');
 
         if (driver === 'redis') {
           return new RedisCacheService(configService, logger);

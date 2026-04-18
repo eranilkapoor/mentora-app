@@ -5,6 +5,7 @@ import {
   OnGatewayConnection,
   OnGatewayDisconnect,
 } from '@nestjs/websockets';
+import { ForbiddenException } from '@nestjs/common';
 import { Server, Socket } from 'socket.io';
 import { ChatService } from './chat.service';
 import { SendMessageDto } from './dto/send-message.dto';
@@ -17,32 +18,39 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   @WebSocketServer()
   server!: Server;
 
+  private readonly connectedUsers = new Map<string, string>();
+
   constructor(private readonly chatService: ChatService) {}
 
-  async handleConnection(client: Socket) {
-    const token = client.handshake.auth?.token;
+  handleConnection(client: Socket) {
+    const userId = this.getStringValue(client.handshake.query.userId);
+    if (!userId) {
+      client.disconnect(true);
+      return;
+    }
 
-    // 🔐 TODO: Validate JWT
-    // const userId = decodeToken(token);
-
-    const userId = client.handshake.query.userId as string;
-    client.data.userId = userId;
+    this.connectedUsers.set(client.id, userId);
 
     console.log(`User connected: ${userId}`);
   }
 
-  async handleDisconnect(client: Socket) {
-    console.log(`User disconnected: ${client.data.userId}`);
+  handleDisconnect(client: Socket) {
+    const userId = this.connectedUsers.get(client.id) ?? 'unknown';
+    this.connectedUsers.delete(client.id);
+    console.log(`User disconnected: ${userId}`);
   }
 
   @SubscribeMessage('join-room')
   handleJoinRoom(client: Socket, payload: { roomId: string }) {
-    client.join(payload.roomId);
+    void client.join(payload.roomId);
   }
 
   @SubscribeMessage('message')
   async handleMessage(client: Socket, payload: SendMessageDto) {
-    const senderId = client.data.userId;
+    const senderId = this.connectedUsers.get(client.id);
+    if (!senderId) {
+      throw new ForbiddenException('Unauthorized');
+    }
 
     const savedMessage = await this.chatService.sendMessage(senderId, payload);
 
@@ -52,5 +60,21 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       receiverId: payload.receiverId,
       message: payload.message,
     });
+  }
+
+  private getStringValue(value: unknown): string | undefined {
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      typeof value[0] === 'string'
+    ) {
+      return value[0];
+    }
+
+    return undefined;
   }
 }

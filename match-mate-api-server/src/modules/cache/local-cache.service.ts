@@ -32,34 +32,36 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
     this.saveToDisk();
   }
 
-  async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
+  set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
     const expiresAt = ttlSeconds ? Date.now() + ttlSeconds * 1000 : null;
 
     this.store.set(key, { value, expiresAt });
     this.saveToDisk();
+    return Promise.resolve();
   }
 
-  async get<T>(key: string): Promise<T | null> {
+  get<T>(key: string): Promise<T | null> {
     const entry = this.store.get(key) as CacheEntry<T> | undefined;
 
-    if (!entry) return null;
+    if (!entry) return Promise.resolve(null);
 
     // Check expiry
     if (entry.expiresAt !== null && Date.now() > entry.expiresAt) {
       this.store.delete(key);
       this.saveToDisk();
-      return null;
+      return Promise.resolve(null);
     }
 
-    return entry.value;
+    return Promise.resolve(entry.value);
   }
 
-  async del(key: string): Promise<void> {
+  del(key: string): Promise<void> {
     this.store.delete(key);
     this.saveToDisk();
+    return Promise.resolve();
   }
 
-  async delByPattern(pattern: string): Promise<void> {
+  delByPattern(pattern: string): Promise<void> {
     // Convert glob pattern to regex: 'user:*' → /^user:.*/
     const regex = new RegExp(
       '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
@@ -72,6 +74,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
     }
 
     this.saveToDisk();
+    return Promise.resolve();
   }
 
   async has(key: string): Promise<boolean> {
@@ -79,9 +82,29 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
     return value !== null;
   }
 
-  async flush(): Promise<void> {
+  flush(): Promise<void> {
     this.store.clear();
     this.saveToDisk();
+    return Promise.resolve();
+  }
+
+  async incr(key: string): Promise<number> {
+    const current = (await this.get<number>(key)) || 0;
+    const newValue = current + 1;
+
+    await this.set(key, newValue);
+
+    return newValue;
+  }
+
+  async expire(key: string, ttlSeconds: number): Promise<void> {
+    const value = await this.get<string>(key);
+    const expiresAt = ttlSeconds;
+
+    if (value) {
+      this.store.set(key, { value, expiresAt });
+      this.saveToDisk();
+    }
   }
 
   // ─── Disk Persistence ─────────────────────────────────────────────────────

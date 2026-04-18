@@ -3,12 +3,27 @@ import { AdminRepository } from './admin.repository';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { BroadcastDto } from './dto/broadcast.dto';
 
+interface AdminUsersQuery {
+  search?: string;
+  page?: number;
+  limit?: number;
+}
+
+interface AdminUsersFilter {
+  $or?: Array<{
+    email?: { $regex: string; $options: string };
+    phone?: { $regex: string; $options: string };
+  }>;
+}
+
 @Injectable()
 export class AdminService {
   constructor(private readonly repo: AdminRepository) {}
 
-  getUsers(query: any) {
-    const filter: any = {};
+  getUsers(query: AdminUsersQuery) {
+    const filter: AdminUsersFilter = {};
+    const page = query.page ?? 1;
+    const limit = query.limit ?? 20;
 
     if (query.search) {
       filter.$or = [
@@ -17,11 +32,7 @@ export class AdminService {
       ];
     }
 
-    return this.repo.findUsers(
-      filter,
-      (query.page - 1) * query.limit,
-      query.limit,
-    );
+    return this.repo.findUsers(filter, (page - 1) * limit, limit);
   }
 
   updateUserStatus(dto: UpdateUserStatusDto) {
@@ -32,6 +43,7 @@ export class AdminService {
   }
 
   broadcast(dto: BroadcastDto) {
+    void dto;
     // Hook: NotificationService / FCM / Email
     return { success: true, message: 'Broadcast sent' };
   }

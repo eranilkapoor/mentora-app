@@ -4,9 +4,8 @@ import { Model } from 'mongoose';
 import { Subscription } from './schemas/subscription.schema';
 import { UserRepository } from '../auth/repositories/user.repository';
 import { Plan } from '../plan/schemas/plan.schema';
-import { MembershipStatus, MembershipTier } from 'src/common/enums';
-import { PlanTier } from 'src/common/enums/plan-tier.enum';
-import { SubscriptionStatus } from './enums/subscription-status.enum';
+import { PlanTier } from 'src/common/enums';
+import { SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
 
 @Injectable()
 export class SubscriptionService {
@@ -39,10 +38,10 @@ export class SubscriptionService {
 
     // 🔥 UPDATE USER MEMBERSHIP
     await this.userRepo.updateMembership(userId, {
-        tier: MembershipTier.FREE,
-        status: MembershipStatus.ACTIVE,
-        startDate: startDate,
-        expiresAt: endDate,
+      tier: PlanTier.FREE,
+      status: SubscriptionStatus.ACTIVE,
+      startDate: startDate,
+      expiresAt: endDate,
     });
 
     return { success: true };

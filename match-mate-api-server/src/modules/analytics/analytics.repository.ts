@@ -14,7 +14,7 @@ export class AnalyticsRepository {
     return this.model.create(data);
   }
 
-  aggregateStats(match: any) {
+  aggregateStats(match: Record<string, unknown>) {
     return this.model.aggregate([
       { $match: match },
       {

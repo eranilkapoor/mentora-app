@@ -1,34 +1,42 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
+import { AppLogger } from 'src/common/logger/logger.service';
 
 @Injectable()
 export class StorageService {
-  private readonly logger = new Logger(StorageService.name);
   private readonly isS3: boolean;
   private s3Client: S3Client | null = null;
   private readonly bucket: string;
   private readonly s3BaseUrl: string;
   private readonly apiBaseUrl: string;
 
-  constructor(private readonly config: ConfigService) {
-    this.isS3 = this.config.get<string>('storage.storageDriver') === 's3';
-    this.bucket = this.config.get<string>('storage.awsS3Bucket') ?? '';
-    this.s3BaseUrl = this.config.get<string>('storage.awsS3BaseUrl') ?? '';
-    this.apiBaseUrl =
-      this.config.get<string>('api.baseUrl') ?? 'http://localhost:3000';
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly logger: AppLogger,
+  ) {
+    this.isS3 =
+      this.configService.getOrThrow<string>('storage.driver') === 's3';
+    this.bucket = this.configService.getOrThrow<string>('storage.awsS3Bucket');
+    this.s3BaseUrl = this.configService.getOrThrow<string>(
+      'storage.awsS3BaseUrl',
+    );
+    this.apiBaseUrl = this.configService.getOrThrow<string>('api.baseUrl');
 
     if (this.isS3) {
       this.s3Client = new S3Client({
-        region: this.config.get<string>('storage.awsRegion') ?? 'ap-south-1',
+        region: this.configService.getOrThrow<string>('storage.awsRegion'),
         credentials: {
-          accessKeyId: this.config.get<string>('storage.awsAccessKeyId') ?? '',
-          secretAccessKey:
-            this.config.get<string>('storage.awsSecretAccessKey') ?? '',
+          accessKeyId: this.configService.getOrThrow<string>(
+            'storage.awsAccessKeyId',
+          ),
+          secretAccessKey: this.configService.getOrThrow<string>(
+            'storage.awsSecretAccessKey',
+          ),
         },
       });
       this.logger.log('✅ Storage driver: S3');

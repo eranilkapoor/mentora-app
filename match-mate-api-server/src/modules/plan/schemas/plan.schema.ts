@@ -1,7 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { PlanTier } from 'src/common/enums/plan-tier.enum';
+import { COLLECTIONS } from 'src/common/constants';
+import { PlanTier } from 'src/common/enums';
 
-@Schema({ timestamps: true })
+@Schema({ collection: COLLECTIONS.PLAN, timestamps: true })
 export class Plan {
   @Prop({ required: true, unique: true })
   name!: string; // GOLD_MONTHLY

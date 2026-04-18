@@ -8,6 +8,12 @@ import { Reflector } from '@nestjs/core';
 import { ADMIN_ROLES_KEY } from '../decorators/admin.decorator';
 import { AdminRole } from '../enums/admin-role.enum';
 
+interface AdminRequest {
+  user?: {
+    role?: AdminRole;
+  };
+}
+
 @Injectable()
 export class AdminGuard implements CanActivate {
   constructor(private reflector: Reflector) {}
@@ -20,10 +26,10 @@ export class AdminGuard implements CanActivate {
 
     if (!roles) return true;
 
-    const request = context.switchToHttp().getRequest();
+    const request = context.switchToHttp().getRequest<AdminRequest>();
     const admin = request.user; // injected by AuthGuard (JWT)
 
-    if (!admin || !roles.includes(admin.role)) {
+    if (!admin?.role || !roles.includes(admin.role)) {
       throw new ForbiddenException('Admin access denied');
     }
 

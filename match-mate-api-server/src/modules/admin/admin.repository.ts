@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model, UpdateQuery } from 'mongoose';
 import { User } from 'src/modules/auth/schemas/user.schema';
 
 @Injectable()
@@ -10,7 +10,7 @@ export class AdminRepository {
     private readonly userModel: Model<User>,
   ) {}
 
-  findUsers(filter: any, skip = 0, limit = 20) {
+  findUsers(filter: FilterQuery<User>, skip = 0, limit = 20) {
     return this.userModel
       .find(filter)
       .skip(skip)
@@ -18,7 +18,7 @@ export class AdminRepository {
       .sort({ createdAt: -1 });
   }
 
-  updateUserStatus(userId: string, data: any) {
+  updateUserStatus(userId: string, data: UpdateQuery<User>) {
     return this.userModel.findByIdAndUpdate(userId, data, { new: true });
   }
 }

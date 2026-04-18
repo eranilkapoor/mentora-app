@@ -11,14 +11,20 @@ import { NotificationService } from './notification.service';
 import { CreateNotificationDto } from './dto/create-notification.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 
+interface RequestWithUser {
+  user?: {
+    sub?: string;
+  };
+}
+
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
 export class NotificationController {
   constructor(private readonly service: NotificationService) {}
 
   @Get()
-  getMyNotifications(@Req() req: any) {
-    return this.service.getUserNotifications(req.user.sub);
+  getMyNotifications(@Req() req: RequestWithUser) {
+    return this.service.getUserNotifications(req.user?.sub ?? '');
   }
 
   @Post()
@@ -32,7 +38,7 @@ export class NotificationController {
   }
 
   @Post('read-all')
-  markAllRead(@Req() req: any) {
-    return this.service.markAllRead(req.user.sub);
+  markAllRead(@Req() req: RequestWithUser) {
+    return this.service.markAllRead(req.user?.sub ?? '');
   }
 }

@@ -2,6 +2,7 @@ import { Controller, Get, Patch, Body, Query, UseGuards } from '@nestjs/common';
 import { AdminService } from './admin.service';
 import { UpdateUserStatusDto } from './dto/update-user-status.dto';
 import { AdminQueryDto } from './dto/admin-query.dto';
+import { BroadcastDto } from './dto/broadcast.dto';
 import { AdminRoles } from './decorators/admin.decorator';
 import { AdminRole } from './enums/admin-role.enum';
 import { AdminGuard } from './guards/admin.guard';
@@ -26,7 +27,7 @@ export class AdminController {
 
   @Patch('broadcast')
   @AdminRoles(AdminRole.SUPER_ADMIN)
-  broadcast(@Body() dto: any) {
+  broadcast(@Body() dto: BroadcastDto) {
     return this.adminService.broadcast(dto);
   }
 }

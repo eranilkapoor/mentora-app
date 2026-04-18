@@ -67,9 +67,9 @@ export enum ActivityCategory {
 }
 
 export enum ActivityPlatform {
-  WEB = 'web', 
-  IOS = 'ios', 
-  ANDROID = 'android'
+  WEB = 'web',
+  IOS = 'ios',
+  ANDROID = 'android',
 }
 
 @Schema({ collection: COLLECTIONS.ACTIVITY_LOG, timestamps: true })
@@ -90,7 +90,7 @@ export class ActivityLog {
   ip?: string;
 
   @Prop()
-  device?: string;  
+  device?: string;
 
   @Prop()
   userAgent?: string;
