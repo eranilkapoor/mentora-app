@@ -1,5 +1,5 @@
 export enum FamilyValue {
-    TRADITIONAL = 'traditional',
-    MODERATE = 'moderate',
-    LIBERAL = 'liberal'
+  TRADITIONAL = 'traditional',
+  MODERATE = 'moderate',
+  LIBERAL = 'liberal',
 }

@@ -3,8 +3,8 @@ import { JwtUser } from '../../modules/auth/interfaces/jwt-user.interface';
 
 export interface AppRequest extends Request {
   /**
-  * Populated by JwtStrategy (optional for public routes)
-  */
+   * Populated by JwtStrategy (optional for public routes)
+   */
   user?: JwtUser;
 
   /**

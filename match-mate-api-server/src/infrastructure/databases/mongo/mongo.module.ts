@@ -1,12 +1,13 @@
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
+import { Connection } from 'mongoose';
 import { AppLogger } from 'src/common/logger/logger.service';
 
 export const MongoModule = MongooseModule.forRootAsync({
   imports: [ConfigModule],
   inject: [ConfigService, AppLogger],
   useFactory: (configService: ConfigService, logger: AppLogger) => {
-    const driver = configService.getOrThrow<string>('mongo.dbDriver');
+    const driver = configService.getOrThrow<string>('mongo.driver');
 
     // ─── Local mode — skip MongoDB connection entirely ─────────────────────
     if (driver === 'local') {
@@ -15,9 +16,9 @@ export const MongoModule = MongooseModule.forRootAsync({
         uri: 'mongodb://localhost:27017/local_dummy',
         retryAttempts: 0, // don't retry
         retryDelay: 0,
-        connectionFactory: (connection: any) => {
+        connectionFactory: (connection: Connection) => {
           // Close immediately — we don't need it in local mode
-          connection.close();
+          void connection.close();
           return connection;
         },
       };

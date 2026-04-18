@@ -1,4 +1,4 @@
 export enum SiblingType {
-    BROTHER = 'brother',
-    SISTER = 'sister'
+  BROTHER = 'brother',
+  SISTER = 'sister',
 }

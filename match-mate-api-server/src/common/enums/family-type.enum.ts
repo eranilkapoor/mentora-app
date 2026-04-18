@@ -1,4 +1,4 @@
 export enum FamilyType {
-    JOINT = 'joint',
-    NUCLEAR = 'nuclear'
+  JOINT = 'joint',
+  NUCLEAR = 'nuclear',
 }

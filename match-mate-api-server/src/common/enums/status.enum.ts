@@ -6,5 +6,5 @@ export enum Status {
   DELETED = 'deleted',
   INACTIVE = 'inactive',
   VERIFIED = 'verified',
-  REJECTED = 'rejected'
+  REJECTED = 'rejected',
 }

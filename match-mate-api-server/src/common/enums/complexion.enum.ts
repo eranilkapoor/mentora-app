@@ -1,5 +1,5 @@
 export enum Complexion {
-    FAIR = 'Fair', 
-    WHEATISH = 'Wheatish', 
-    DARK = 'Dark',
+  FAIR = 'Fair',
+  WHEATISH = 'Wheatish',
+  DARK = 'Dark',
 }

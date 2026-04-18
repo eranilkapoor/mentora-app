@@ -9,6 +9,9 @@ export const COLLECTIONS = {
   VERIFICATION: 'verification',
   USER_BLOCK: 'user_blocks',
   USER_REPORT: 'user_reports',
+  PLAN: 'plans',
+  FEATURE: 'features',
+  PLAN_FEATURE: 'plan_features',
   SUBSCRIPTION: 'subscriptions',
   ANALYTICS: 'analytics',
   MATCH: 'matches',
@@ -16,5 +19,5 @@ export const COLLECTIONS = {
   NOTIFICATION: 'notifications',
   NOTIFICATION_TEMPLATE: 'notification_templates',
   NOTIFICATION_LOG: 'notification_logs',
-  USER_NOTIFICATION_SETTING: 'user_notification_settings'
+  USER_NOTIFICATION_SETTING: 'user_notification_settings',
 };

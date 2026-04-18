@@ -8,4 +8,5 @@ export const PERMISSIONS_KEY = 'permissions';
  * Usage:
  * @Permissions('view_users', 'block_users')
  */
-export const Permissions = (...permissions: Permission[]) => SetMetadata(PERMISSIONS_KEY, permissions);
+export const Permissions = (...permissions: Permission[]) =>
+  SetMetadata(PERMISSIONS_KEY, permissions);

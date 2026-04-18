@@ -56,7 +56,7 @@ export class RateLimitGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
-  ) { }
+  ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const skip = this.reflector.getAllAndOverride<boolean>(
@@ -80,7 +80,14 @@ export class RateLimitGuard implements CanActivate {
 
     const method = request.method;
     const handlerName = context.getHandler().name;
-    const routePath = request.route?.path ?? handlerName;
+    const requestObject = request as unknown as Record<string, unknown>;
+    const route = requestObject['route'];
+    const rawRoutePath =
+      typeof route === 'object' && route !== null
+        ? (route as Record<string, unknown>)['path']
+        : undefined;
+    const routePath =
+      typeof rawRoutePath === 'string' ? rawRoutePath : handlerName;
     const identifier = this.getIdentifier(request);
     const key = `rate-limit:${rateLimitConfig.name}:${method}:${routePath}:${identifier}`;
     const limit = this.getLimit(request, rateLimitConfig);
@@ -108,12 +115,21 @@ export class RateLimitGuard implements CanActivate {
         };
       }
 
-      const remainingTtlSeconds = Math.max(0, Math.ceil((entry.expiresAt - now) / 1000));
+      const remainingTtlSeconds = Math.max(
+        0,
+        Math.ceil((entry.expiresAt - now) / 1000),
+      );
 
       // ─── Set response headers ───────────────────────────────────────────────
       response.setHeader('X-RateLimit-Limit', limit);
-      response.setHeader('X-RateLimit-Remaining', Math.max(0, limit - entry.count - 1));
-      response.setHeader('X-RateLimit-Reset', Math.floor(entry.expiresAt / 1000));
+      response.setHeader(
+        'X-RateLimit-Remaining',
+        Math.max(0, limit - entry.count - 1),
+      );
+      response.setHeader(
+        'X-RateLimit-Reset',
+        Math.floor(entry.expiresAt / 1000),
+      );
 
       if (entry.count > limit * 2) {
         await this.cache.set(`blocked:${identifier}`, true, 3600);
@@ -123,7 +139,9 @@ export class RateLimitGuard implements CanActivate {
       if (entry.count >= limit) {
         response.setHeader('Retry-After', remainingTtlSeconds);
 
-        this.logger.warn(`Rate limit exceeded — identifier: ${identifier}, key: ${key}, count: ${entry.count}/${limit}`);
+        this.logger.warn(
+          `Rate limit exceeded — identifier: ${identifier}, key: ${key}, count: ${entry.count}/${limit}`,
+        );
 
         const errorResponse: RateLimitErrorResponse = {
           statusCode: HttpStatus.TOO_MANY_REQUESTS,
@@ -146,11 +164,7 @@ export class RateLimitGuard implements CanActivate {
       if (isNew) {
         await this.cache.set<RateLimitEntry>(key, updatedEntry, ttl);
       } else {
-        await this.cache.set<RateLimitEntry>(
-          key,
-          updatedEntry,
-          safeTtl,
-        );
+        await this.cache.set<RateLimitEntry>(key, updatedEntry, safeTtl);
       }
     } finally {
       release();
