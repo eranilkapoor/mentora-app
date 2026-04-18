@@ -49,7 +49,9 @@ export class AuthTokenService {
         : role.permissions.map((permission) => permission.name),
     );
 
-    const permissions = [...new Set([...(user.permissions ?? []), ...rolePermissions])];
+    const permissions = [
+      ...new Set([...(user.permissions ?? []), ...rolePermissions]),
+    ];
 
     return {
       sub: user._id.toString(),
