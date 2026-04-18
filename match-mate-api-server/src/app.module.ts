@@ -17,6 +17,12 @@ import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
 import { LoggerModule } from './common/logger/logger.module';
 import { PlanModule } from './modules/plan/plan.module';
+import { AdminModule } from './modules/admin/admin.module';
+import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { ChatModule } from './modules/chat/chat.module';
+import { MatchModule } from './modules/match/match.module';
+import { NotificationModule } from './modules/notification/notification.module';
+import { PaymentModule } from './modules/payment/payment.module';
 
 @Module({
   imports: [
@@ -52,6 +58,12 @@ import { PlanModule } from './modules/plan/plan.module';
     PlanModule,
     ProfileModule,
     RbacModule,
+    AdminModule,
+    AnalyticsModule,
+    ChatModule,
+    MatchModule,
+    NotificationModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [

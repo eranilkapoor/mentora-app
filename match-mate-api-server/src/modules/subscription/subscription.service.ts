@@ -38,7 +38,7 @@ export class SubscriptionService {
 
     // 🔥 UPDATE USER MEMBERSHIP
     await this.userRepo.updateMembership(userId, {
-      tier: PlanTier.FREE,
+      tier: plan.tier ?? PlanTier.FREE,
       status: SubscriptionStatus.ACTIVE,
       startDate: startDate,
       expiresAt: endDate,

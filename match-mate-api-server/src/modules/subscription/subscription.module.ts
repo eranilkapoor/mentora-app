@@ -6,18 +6,17 @@ import {
   SubscriptionSchema,
 } from './schemas/subscription.schema';
 import { Plan, PlanSchema } from '../plan/schemas/plan.schema';
-import { UserRepository } from '../auth/repositories/user.repository';
-import { User, UserSchema } from '../auth/schemas/user.schema';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: Plan.name, schema: PlanSchema },
-      { name: User.name, schema: UserSchema },
     ]),
+    AuthModule,
   ],
-  providers: [SubscriptionService, UserRepository],
+  providers: [SubscriptionService],
   controllers: [],
   exports: [SubscriptionService],
 })

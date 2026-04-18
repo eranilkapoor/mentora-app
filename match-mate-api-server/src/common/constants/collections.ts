@@ -13,6 +13,7 @@ export const COLLECTIONS = {
   FEATURE: 'features',
   PLAN_FEATURE: 'plan_features',
   SUBSCRIPTION: 'subscriptions',
+  PAYMENT: 'payments',
   ANALYTICS: 'analytics',
   MATCH: 'matches',
   ACTIVITY_LOG: 'activity_logs',

@@ -11,8 +11,6 @@ import { OtpService } from './otp.service';
 import { User, UserSchema } from './schemas/user.schema';
 import { ProfileModule } from '../profile/profile.module';
 import { Profile, ProfileSchema } from '../profile/schemas/profile.schema';
-import { ProfileService } from '../profile/profile.service';
-import { ProfileRepository } from '../profile/repositories/profile.repository';
 import { getJwtConfig } from 'src/config/jwt.config';
 import { AuthTokenService } from './auth-token.service';
 import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
@@ -53,10 +51,8 @@ import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
     AuthService,
     UserRepository,
     OtpService,
-    ProfileService,
-    ProfileRepository,
     AuthTokenService,
   ],
-  exports: [AuthService, JwtModule, PassportModule],
+  exports: [AuthService, UserRepository, JwtModule, PassportModule],
 })
 export class AuthModule {}
