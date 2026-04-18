@@ -18,7 +18,7 @@ export class AppService {
       status: 'ok',
       uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      env: this.configService.get<string>('environment'),
+      env: this.configService.get<string>('env'),
       memory: {
         rss: process.memoryUsage().rss,
         heapUsed: process.memoryUsage().heapUsed,

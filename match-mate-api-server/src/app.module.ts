@@ -16,6 +16,7 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
 import { LoggerModule } from './common/logger/logger.module';
+import { PlanModule } from './modules/plan/plan.module';
 
 @Module({
   imports: [
@@ -24,6 +25,8 @@ import { LoggerModule } from './common/logger/logger.module';
     // ==========================================
     ConfigModule.forRoot({
       isGlobal: true,
+      // 🔥 KEY PART
+      envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
       load: configArray,
       validationSchema: envValidationSchema,
     }),
@@ -46,6 +49,7 @@ import { LoggerModule } from './common/logger/logger.module';
     StorageModule,
     MongoModule,
     AuthModule,
+    PlanModule,
     ProfileModule,
     RbacModule,
   ],
@@ -76,6 +80,6 @@ import { LoggerModule } from './common/logger/logger.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(CorrelationIdMiddleware).forRoutes('*');
+    consumer.apply(CorrelationIdMiddleware).forRoutes('{*path}');
   }
 }

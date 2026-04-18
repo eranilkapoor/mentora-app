@@ -1,9 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { 
-  BadRequestException, 
+import {
+  BadRequestException,
   ValidationPipe,
-  VersioningType
+  VersioningType,
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
@@ -110,7 +110,7 @@ async function bootstrap() {
   const logger = app.get(AppLogger);
 
   app.useLogger(logger);
-  
+
   app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
   // ==========================================
@@ -118,7 +118,7 @@ async function bootstrap() {
   // ==========================================
   const apiPrefix = configService.getOrThrow<string>('api.prefix');
   const apiVersion = configService.getOrThrow<string>('api.version');
-  const environment = configService.get<string>('environment');
+  const env = configService.get<string>('env');
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -130,7 +130,7 @@ async function bootstrap() {
   // ==========================================
   // SWAGGER (ONLY NON-PROD)
   // ==========================================
-  if (environment !== 'production') {
+  if (env !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('Matrimony API')
       .setDescription('API documentation for Matrimonial App')
@@ -162,8 +162,8 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
 
   logger.log(`🚀 Server running on: http://localhost:${port}/${apiPrefix}`);
-  
-  if (environment !== 'production') {
+
+  if (env !== 'production') {
     logger.log(`📚 Swagger Docs: http://localhost:${port}/api/docs`);
   }
 }
