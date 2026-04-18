@@ -24,7 +24,7 @@ import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
-      { name: UserSession.name, schema: UserSessionSchema }
+      { name: UserSession.name, schema: UserSessionSchema },
     ]),
 
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -43,7 +43,7 @@ import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
             issuer: jwtConfig.issuer,
           },
         };
-      },      
+      },
     }),
     ProfileModule,
   ],
@@ -55,7 +55,7 @@ import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
     OtpService,
     ProfileService,
     ProfileRepository,
-    AuthTokenService
+    AuthTokenService,
   ],
   exports: [AuthService, JwtModule, PassportModule],
 })

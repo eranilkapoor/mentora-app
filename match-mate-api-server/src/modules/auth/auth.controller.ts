@@ -39,8 +39,8 @@ export class AuthController {
   @Post('register')
   async register(
     @Req() req: AppRequest,
-    @Res({ passthrough: true }) res: Response, 
-    @Body() dto: RegisterDto
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: RegisterDto,
   ) {
     try {
       const data = await this.authService.register(req, res, dto);
@@ -55,9 +55,9 @@ export class AuthController {
   @Public()
   @Post('login')
   async login(
-    @Req() req: AppRequest, 
-    @Res({ passthrough: true }) res: Response, 
-    @Body() dto: LoginDto
+    @Req() req: AppRequest,
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: LoginDto,
   ) {
     req.res = res;
     try {
@@ -85,9 +85,9 @@ export class AuthController {
   @Public()
   @Post('verify-otp')
   async verifyOtp(
-    @Req() req: AppRequest, 
-    @Res({ passthrough: true }) res: Response, 
-    @Body() dto: PhoneVerifyDto
+    @Req() req: AppRequest,
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: PhoneVerifyDto,
   ) {
     try {
       const data = await this.authService.verifyOtp(
@@ -108,9 +108,9 @@ export class AuthController {
   @Public()
   @Post('social-login')
   async socialLogin(
-    @Req() req: AppRequest, 
-    @Res({ passthrough: true }) res: Response, 
-    @Body() dto: SocialLoginDto
+    @Req() req: AppRequest,
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: SocialLoginDto,
   ) {
     try {
       const data = await this.authService.socialLogin(req, res, dto);
@@ -220,7 +220,10 @@ export class AuthController {
   }
 
   @Post('logout')
-  logout(@Req() req: AuthenticatedRequest, @Body('refreshToken') refreshToken: string) {
+  logout(
+    @Req() req: AuthenticatedRequest,
+    @Body('refreshToken') refreshToken: string,
+  ) {
     try {
       return this.authService.logout(req.user.sub, refreshToken);
     } catch (error) {

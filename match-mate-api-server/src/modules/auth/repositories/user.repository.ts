@@ -36,12 +36,10 @@ export class UserRepository {
   }
 
   async findByIdWithRoles(userId: string) {
-    return this.userModel
-      .findById(userId)
-      .populate({
-        path: 'roles',
-        populate: { path: 'permissions' },
-      });
+    return this.userModel.findById(userId).populate({
+      path: 'roles',
+      populate: { path: 'permissions' },
+    });
   }
 
   async update(
@@ -58,10 +56,7 @@ export class UserRepository {
     );
   }
 
-  async updateMembership(
-    userId: string,
-    membership: User['membership'],
-  ) {
+  async updateMembership(userId: string, membership: User['membership']) {
     return this.userModel.findByIdAndUpdate(
       userId,
       { $set: { membership } },

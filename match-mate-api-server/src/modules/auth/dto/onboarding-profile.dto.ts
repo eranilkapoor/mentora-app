@@ -339,7 +339,8 @@ export class PreferencesDto {
 const parseJSON =
   <T>(cls: new () => T) =>
   ({ value }: { value: unknown }): T => {
-    const parsed = typeof value === 'string' ? JSON.parse(value) : value;
+    const parsed: unknown =
+      typeof value === 'string' ? JSON.parse(value) : value;
     return plainToInstance(cls, parsed);
   };
 export class OnboardingProfileDto {

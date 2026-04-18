@@ -6,6 +6,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from 'src/common/decorators/public.decorator';
+import { AppLogger } from 'src/common/logger/logger.service';
 
 interface JwtErrorInfo {
   name?: string;
@@ -14,7 +15,10 @@ interface JwtErrorInfo {
 
 @Injectable()
 export class JwtAuthGuard extends AuthGuard('jwt') {
-  constructor(private readonly reflector: Reflector) {
+  constructor(
+    private readonly reflector: Reflector,
+    private readonly logger: AppLogger,
+  ) {
     super();
   }
 
@@ -41,10 +45,8 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     }
 
     if (err || !user) {
-      console.error('Auth Error:', err || info);
-      throw new UnauthorizedException(
-        info?.message || 'Unauthorized access',
-      );
+      this.logger.error('Auth Error:', err?.stack);
+      throw new UnauthorizedException(info?.message || 'Unauthorized access');
     }
 
     return user;

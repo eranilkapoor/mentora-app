@@ -1,8 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Types } from 'mongoose';
+import { Document } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
 import { AuthProvider } from '../enums';
-import { MembershipStatus, MembershipTier, Permission, Status } from 'src/common/enums';
+import {
+  SubscriptionStatus,
+  PlanTier,
+  Permission,
+  Status,
+  Role,
+} from 'src/common/enums';
 
 @Schema({ _id: false })
 export class PhoneNumber {
@@ -59,11 +65,8 @@ export class User {
   isOnboardingCompleted!: boolean;
 
   // 🔐 RBAC
-  @Prop({
-    type: [{ type: Types.ObjectId, ref: 'Role' }],
-    default: [],
-  })
-  roles!: Types.ObjectId[];
+  @Prop({ type: [String], default: [Role.USER] })
+  roles!: Role[];
 
   @Prop({ type: [String], default: [] })
   permissions!: Permission[];
@@ -72,13 +75,13 @@ export class User {
     type: {
       tier: {
         type: String,
-        enum: MembershipTier,
-        default: MembershipTier.FREE,
+        enum: PlanTier,
+        default: PlanTier.FREE,
       },
       status: {
         type: String,
-        enum: MembershipStatus,
-        default: MembershipStatus.ACTIVE,
+        enum: SubscriptionStatus,
+        default: SubscriptionStatus.ACTIVE,
       },
       startDate: {
         type: Date,
@@ -96,10 +99,11 @@ export class User {
       },
     },
     default: {},
+    _id: false,
   })
   membership!: {
-    tier: MembershipTier;
-    status: MembershipStatus;
+    tier: PlanTier;
+    status: SubscriptionStatus;
     startDate: Date;
     expiresAt?: Date;
     autoRenew?: boolean;
@@ -139,6 +143,12 @@ export class User {
 export type UserDocument = User & Document;
 export const UserSchema = SchemaFactory.createForClass(User);
 
-UserSchema.index({ email: 1 }, { unique: true, partialFilterExpression: { email: { $exists: true } } });
+UserSchema.index(
+  { email: 1 },
+  { unique: true, partialFilterExpression: { email: { $exists: true } } },
+);
 UserSchema.index({ 'phone.phone': 1 }, { unique: true, sparse: true });
-UserSchema.index({ 'authAccounts.provider': 1, 'authAccounts.providerId': 1 }, { unique: true });
+UserSchema.index(
+  { 'authAccounts.provider': 1, 'authAccounts.providerId': 1 },
+  { unique: true },
+);

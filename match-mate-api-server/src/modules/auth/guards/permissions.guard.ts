@@ -29,7 +29,7 @@ export class PermissionsGuard implements CanActivate {
 
     // 🚀 O(1) lookup using Set
     const permissionSet = new Set(userPermissions);
-    
+
     return requiredPermissions.every((perm) => permissionSet.has(perm));
   }
 }

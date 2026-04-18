@@ -2,45 +2,80 @@ import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { getJwtConfig } from 'src/config/jwt.config';
-import { MembershipTier } from 'src/common/enums';
+import { PlanTier } from 'src/common/enums';
+
+interface TokenPermission {
+  name: string;
+}
+
+interface TokenRole {
+  name: string;
+  permissions: TokenPermission[];
+}
+
+interface TokenUser {
+  _id: { toString(): string };
+  roles: Array<TokenRole | string>;
+  permissions?: string[];
+  membership?: {
+    tier?: PlanTier;
+  };
+}
+
+interface TokenPayload {
+  sub: string;
+  roles: string[];
+  permissions: string[];
+  membership: {
+    tier: PlanTier;
+  };
+}
 
 @Injectable()
 export class AuthTokenService {
-    constructor(
-        private readonly jwtService: JwtService,
-        private readonly configService: ConfigService,
-    ) { }
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly configService: ConfigService,
+  ) {}
 
-    generatePayload(user: any) {
-        const permissions = user.roles.flatMap((role: any) =>
-            role.permissions.map((p: any) => p.name),
-        );
+  generatePayload(user: TokenUser): TokenPayload {
+    const roleNames = user.roles.map((role) =>
+      typeof role === 'string' ? role : role.name,
+    );
 
-        return {
-            sub: user._id.toString(),
-            roles: user.roles.map((r: any) => r.name),
-            permissions: [...new Set(permissions)],
-            membership: {
-                tier: user.membership?.tier || MembershipTier.FREE,
-            },
-        };
-    }
+    const rolePermissions = user.roles.flatMap((role) =>
+      typeof role === 'string'
+        ? []
+        : role.permissions.map((permission) => permission.name),
+    );
 
-    generateTokens(payload: any) {
-        const jwtConfig = getJwtConfig(this.configService);
+    const permissions = [...new Set([...(user.permissions ?? []), ...rolePermissions])];
 
-        const accessToken = this.jwtService.sign(payload, {
-            expiresIn: jwtConfig.accessExpiresIn,
-            audience: jwtConfig.audience,
-            issuer: jwtConfig.issuer,
-        });
+    return {
+      sub: user._id.toString(),
+      roles: roleNames,
+      permissions,
+      membership: {
+        tier: user.membership?.tier || PlanTier.FREE,
+      },
+    };
+  }
 
-        const refreshToken = this.jwtService.sign(payload, {
-            expiresIn: jwtConfig.refreshExpiresIn,
-            audience: jwtConfig.audience,
-            issuer: jwtConfig.issuer,
-        });
+  generateTokens(payload: TokenPayload) {
+    const jwtConfig = getJwtConfig(this.configService);
 
-        return { accessToken, refreshToken };
-    }
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: jwtConfig.accessExpiresIn,
+      audience: jwtConfig.audience,
+      issuer: jwtConfig.issuer,
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: jwtConfig.refreshExpiresIn,
+      audience: jwtConfig.audience,
+      issuer: jwtConfig.issuer,
+    });
+
+    return { accessToken, refreshToken };
+  }
 }

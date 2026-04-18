@@ -8,21 +8,19 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { UserRepository } from './repositories/user.repository';
-import { ProfileService } from '../profile/profile.service';
-import { OtpService } from './otp.service';
+import { UserRepository } from '../repositories/user.repository';
+import { ProfileService } from '../../profile/profile.service';
+import { OtpService } from '../otp.service';
 import * as bcrypt from 'bcryptjs';
-import { RegisterDto, LoginDto, SocialLoginDto } from './dto/auth.dto';
-import { AuthProvider } from './enums/auth-provider.enum';
-import { OnboardingProfileDto } from './dto/onboarding-profile.dto';
-import { StorageService } from '../storage/storage.service';
+import { RegisterDto, LoginDto, SocialLoginDto } from '../dto/auth.dto';
+import { AuthProvider } from '../enums/auth-provider.enum';
 import type { ICacheService } from 'src/modules/cache/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
-import { AuthTokenService } from './auth-token.service';
+import { AuthTokenService } from '../auth-token.service';
 import {
   UserSession,
   UserSessionDocument,
-} from './schemas/user-session.schema';
+} from '../schemas/user-session.schema';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
 
 interface TokenAttachUser {
@@ -30,9 +28,8 @@ interface TokenAttachUser {
 }
 
 @Injectable()
-export class AuthService {
+export class RegistrationService {
   constructor(
-    private readonly storageService: StorageService,
     private readonly userRepo: UserRepository,
     private readonly profileService: ProfileService,
     private readonly jwtService: JwtService,
@@ -188,12 +185,24 @@ export class AuthService {
             isPrimary: true,
           },
         ],
+        email: email,
+        lastLoginIp: req.ip || '127.0.0.1',
+        lastLoginDevice: this.getHeaderString(req, 'x-device-id'),
       });
 
-      user.email = email;
       await user.save();
 
       const tokens = await this.attachToken(req, res, user);
+
+      //await this.subscriptionService.createFreePlan(user._id);
+
+      // await this.activityService.log({
+      //     userId: user._id,
+      //     action: 'register',
+      //     metadata: { method: context.method },
+      // });
+
+      //await this.eventService.emit('user_registered', user);
 
       return {
         user: {
@@ -252,6 +261,34 @@ export class AuthService {
       }
       throw new UnauthorizedException('Login failed');
     }
+  }
+
+  private getHeaderString(req: AppRequest, key: string): string | undefined {
+    const value = req.headers[key];
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      typeof value[0] === 'string'
+    ) {
+      return value[0];
+    }
+
+    return undefined;
+  }
+
+  private getCookieString(req: AppRequest, key: string): string | undefined {
+    const requestObject = req as unknown as Record<string, unknown>;
+    const cookies = requestObject['cookies'];
+    if (typeof cookies !== 'object' || cookies === null) {
+      return undefined;
+    }
+
+    const value = (cookies as Record<string, unknown>)[key];
+    return typeof value === 'string' ? value : undefined;
   }
 
   sendOtp(country_code: string, phone: string) {
@@ -372,154 +409,5 @@ export class AuthService {
       }
       throw new UnauthorizedException('Social login failed');
     }
-  }
-
-  async forgotPassword(email: string) {
-    try {
-      const normalizedEmail = email.toLowerCase();
-
-      const user = await this.userRepo.findByProvider(
-        AuthProvider.EMAIL,
-        normalizedEmail,
-      );
-
-      if (!user) {
-        throw new UnauthorizedException('User not found');
-      }
-
-      const resetToken = this.jwtService.sign(
-        { userId: user._id, type: 'password-reset' },
-        { expiresIn: '15m' },
-      );
-
-      // TODO: Send reset token via email (e.g., using MailerService)
-      return { message: 'Password reset link sent to email', resetToken };
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException(
-        'Failed to process password reset request',
-      );
-    }
-  }
-
-  async onboardingProfile(
-    userId: string,
-    dto: OnboardingProfileDto,
-    profileImages: Express.Multer.File[],
-  ) {
-    try {
-      const user = await this.userRepo.findById(userId);
-      if (!user) {
-        throw new UnauthorizedException('User not found');
-      }
-
-      // Parse primaryImageIndex sent from frontend FormData
-      const primaryIndex =
-        dto.primaryImageIndex !== undefined
-          ? parseInt(String(dto.primaryImageIndex), 10)
-          : 0;
-
-      // Upload profile images to local filesystem
-      const uploadedImages = await this.uploadImages(
-        profileImages,
-        primaryIndex,
-      );
-
-      await this.profileService.createProfile(userId, dto, uploadedImages);
-
-      user.isOnboardingCompleted = true;
-      await user.save();
-
-      return {
-        userId: user._id,
-        isOnboardingCompleted: user.isOnboardingCompleted,
-      };
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException('Profile onboarding failed');
-    }
-  }
-
-  private async uploadImages(
-    files: Express.Multer.File[],
-    primaryIndex: number,
-  ): Promise<{ filename: string; url: string; isPrimary: boolean }[]> {
-    if (!files || files.length === 0) return [];
-
-    const uploaded = await this.storageService.uploadFiles(files, 'profiles');
-
-    return uploaded.map((result, index) => ({
-      filename: result.filename, // ← just the filename, stored in DB
-      url: result.url, // ← full URL for client use
-      isPrimary: index === primaryIndex,
-    }));
-  }
-
-  async verifyUser(userId: string) {
-    try {
-      const user = await this.userRepo.findById(userId);
-      if (!user) {
-        throw new UnauthorizedException('User not found');
-      }
-
-      return {
-        userId: user._id,
-        email: user.email,
-        phone: user.phone,
-        isOnboardingCompleted: user.isOnboardingCompleted,
-      };
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException('User verification failed');
-    }
-  }
-
-  async logout(userId: string, refreshToken: string) {
-    await this.userSessionModel.updateOne(
-      { userId, refreshToken },
-      { isActive: false },
-    );
-
-    return { success: true };
-  }
-
-  async logoutAll(userId: string) {
-    await this.userSessionModel.updateMany({ userId }, { isActive: false });
-
-    return { success: true };
-  }
-
-  private getHeaderString(req: AppRequest, key: string): string | undefined {
-    const value = req.headers[key];
-    if (typeof value === 'string') {
-      return value;
-    }
-
-    if (
-      Array.isArray(value) &&
-      value.length > 0 &&
-      typeof value[0] === 'string'
-    ) {
-      return value[0];
-    }
-
-    return undefined;
-  }
-
-  private getCookieString(req: AppRequest, key: string): string | undefined {
-    const requestObject = req as unknown as Record<string, unknown>;
-    const cookies = requestObject['cookies'];
-    if (typeof cookies !== 'object' || cookies === null) {
-      return undefined;
-    }
-
-    const value = (cookies as Record<string, unknown>)[key];
-    return typeof value === 'string' ? value : undefined;
   }
 }
