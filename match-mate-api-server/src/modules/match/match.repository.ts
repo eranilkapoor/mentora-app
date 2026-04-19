@@ -30,15 +30,37 @@ export class MatchRepository {
   }
 
   createMatch(user1: string, user2: string) {
-    return this.matchModel.create({
-      users: [new Types.ObjectId(user1), new Types.ObjectId(user2)],
-    });
+    const [leftUserId, rightUserId] = [user1, user2].sort();
+
+    return this.matchModel.findOneAndUpdate(
+      {
+        userId: new Types.ObjectId(leftUserId),
+        targetUserId: new Types.ObjectId(rightUserId),
+      },
+      {
+        $set: {
+          isActive: true,
+          isMutual: true,
+          matchedOn: new Date(),
+        },
+        $setOnInsert: {
+          score: 100,
+        },
+      },
+      {
+        new: true,
+        upsert: true,
+      },
+    );
   }
 
   getMatchesForUser(userId: string) {
     return this.matchModel.find({
-      users: new Types.ObjectId(userId),
       isActive: true,
+      $or: [
+        { userId: new Types.ObjectId(userId) },
+        { targetUserId: new Types.ObjectId(userId) },
+      ],
     });
   }
 }
