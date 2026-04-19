@@ -16,6 +16,7 @@ import * as path from 'path';
 import * as express from 'express';
 import { AppLogger } from './common/logger/logger.service';
 import { LoggingInterceptor } from './common/logger/logger.interceptor';
+import { HybridSocketIoAdapter } from './common/adapters/hybrid-socket-io.adapter';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
@@ -113,6 +114,17 @@ async function bootstrap() {
 
   app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
+  const wsAdapter = new HybridSocketIoAdapter(app, configService, logger);
+  await wsAdapter.connectToRedis();
+  app.useWebSocketAdapter(wsAdapter);
+
+  const shutdownSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
+  for (const signal of shutdownSignals) {
+    process.once(signal, () => {
+      void wsAdapter.close();
+    });
+  }
+
   // ==========================================
   // VERSIONING + PREFIX
   // ==========================================
@@ -123,6 +135,7 @@ async function bootstrap() {
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: apiVersion,
+    prefix: false,
   });
 
   app.setGlobalPrefix(apiPrefix);
@@ -161,7 +174,9 @@ async function bootstrap() {
 
   await app.listen(port, '0.0.0.0');
 
-  logger.log(`🚀 Server running on: http://localhost:${port}/${apiPrefix}`);
+  logger.log(
+    `🚀 Server running on: http://localhost:${port}/${apiPrefix}/${apiVersion}`,
+  );
 
   if (env !== 'production') {
     logger.log(`📚 Swagger Docs: http://localhost:${port}/api/docs`);

@@ -7,18 +7,22 @@
   "license": "UNLICENSED",
   "scripts": {
     "prepare": "husky install",
-    "build": "nest build",
+    "build": "npm run clean && nest build",
     "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
     "start": "nest start",
-    "start:dev": "cross-env NODE_ENV=development nest start --watch",
-    "start:debug": "nest start --debug --watch",
+    "start:dev": "npm run clean && cross-env NODE_ENV=development nest start --watch",
+    "start:debug": "npm run clean && nest start --debug --watch",
     "start:prod": "cross-env NODE_ENV=production node dist/main.js",
     "lint:check": "eslint \"{src,apps,libs,test}/**/*.ts\"",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
-    "clean": "rimraf dist",
-    "build:prod": "npm run clean && nest build",
+    "clean": "rimraf dist tsconfig.build.tsbuildinfo tsconfig.tsbuildinfo",
+    "build:prod": "npm run build",
     "start:staging": "cross-env NODE_ENV=staging node dist/main.js",
+    "smoke:local": "node ./scripts/smoke-api.mjs",
+    "smoke:dev": "cross-env SMOKE_BASE_URL=http://localhost:3000 node ./scripts/smoke-api.mjs",
+    "smoke:staging": "cross-env SMOKE_BASE_URL=http://localhost:6000 node ./scripts/smoke-api.mjs",
+    "smoke:prod": "cross-env SMOKE_BASE_URL=http://localhost:9000 node ./scripts/smoke-api.mjs",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
@@ -27,6 +31,7 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1024.0",
+    "@aws-sdk/client-sesv2": "^3.1032.0",
     "@aws-sdk/lib-storage": "^3.1024.0",
     "@nestjs/common": "^11.1.19",
     "@nestjs/config": "^4.0.4",
@@ -39,6 +44,7 @@
     "@nestjs/swagger": "^11.0.0",
     "@nestjs/throttler": "^6.5.0",
     "@nestjs/websockets": "^11.1.19",
+    "@socket.io/redis-adapter": "^8.3.0",
     "bcryptjs": "^3.0.3",
     "bullmq": "^5.63.0",
     "class-transformer": "^0.5.1",
@@ -46,6 +52,7 @@
     "compression": "^1.8.1",
     "cross-env": "^10.1.0",
     "dotenv": "^17.4.2",
+    "firebase-admin": "^13.8.0",
     "helmet": "^8.1.0",
     "ioredis": "^5.8.2",
     "joi": "^18.1.2",
@@ -59,6 +66,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
+    "twilio": "^5.13.1",
     "uuid": "^9.0.1",
     "winston": "^3.19.0"
   },
@@ -109,10 +117,31 @@
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "app.controller.ts",
+      "app.service.ts",
+      "common/logger/logger.interceptor.ts",
+      "modules/admin/admin.controller.ts",
+      "modules/admin/admin.service.ts",
+      "modules/analytics/analytics.controller.ts",
+      "modules/match/match.controller.ts",
+      "modules/match/match.service.ts",
+      "modules/plan/plan.controller.ts",
+      "modules/rbac/rbac.controller.ts",
+      "modules/subscription/subscription.service.ts"
     ],
     "coverageDirectory": "../coverage",
-    "testEnvironment": "node"
+    "testEnvironment": "node",
+    "coverageThreshold": {
+      "global": {
+        "branches": 80,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
+      }
+    },
+    "moduleNameMapper": {
+      "^src/(.*)$": "<rootDir>/$1"
+    }
   },
   "lint-staged": {
     "*.{ts,tsx,js}": [

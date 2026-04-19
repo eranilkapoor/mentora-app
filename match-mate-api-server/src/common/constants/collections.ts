@@ -16,6 +16,8 @@ export const COLLECTIONS = {
   PAYMENT: 'payments',
   ANALYTICS: 'analytics',
   MATCH: 'matches',
+  CHAT_ROOM: 'chat_rooms',
+  CHAT_MESSAGE: 'chat_messages',
   ACTIVITY_LOG: 'activity_logs',
   NOTIFICATION: 'notifications',
   NOTIFICATION_TEMPLATE: 'notification_templates',

@@ -22,6 +22,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
 
+    if (response.headersSent) {
+      return;
+    }
+
     const correlationId =
       (request.headers['x-correlation-id'] as string) || 'unknown';
     const requestId = (request.headers['x-request-id'] as string) || 'unknown';
@@ -74,6 +78,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         path: request.url,
         timestamp: new Date().toISOString(),
       });
+      return;
     }
 
     // Send error response
