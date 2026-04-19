@@ -16,4 +16,14 @@ export class AnalyticsController {
   getStats(@Query() query: AnalyticsQueryDto) {
     return this.analyticsService.getStats(query);
   }
+
+  @Get('overview')
+  getOverview(@Query() query: AnalyticsQueryDto) {
+    return this.analyticsService.getOverview(query);
+  }
+
+  @Get('funnel')
+  getFunnel(@Query() query: AnalyticsQueryDto) {
+    return this.analyticsService.getFunnel(query);
+  }
 }

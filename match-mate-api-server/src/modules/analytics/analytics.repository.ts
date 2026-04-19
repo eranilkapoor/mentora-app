@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { AnalyticsEvent } from './schemas/analytics-event.schema';
-import { Model } from 'mongoose';
+import { Model, PipelineStage } from 'mongoose';
 
 @Injectable()
 export class AnalyticsRepository {
@@ -14,15 +14,15 @@ export class AnalyticsRepository {
     return this.model.create(data);
   }
 
-  aggregateStats(match: Record<string, unknown>) {
-    return this.model.aggregate([
-      { $match: match },
-      {
-        $group: {
-          _id: '$eventType',
-          count: { $sum: 1 },
-        },
-      },
-    ]);
+  aggregate<T>(pipeline: PipelineStage[]) {
+    return this.model.aggregate<T>(pipeline);
+  }
+
+  count(match: Record<string, unknown>) {
+    return this.model.countDocuments(match);
+  }
+
+  distinctUsers(match: Record<string, unknown>) {
+    return this.model.distinct('userId', match);
   }
 }
