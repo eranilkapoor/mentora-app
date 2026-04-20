@@ -21,8 +21,11 @@ import {
   PhoneSendOtpDto,
   PhoneVerifyDto,
   SocialLoginDto,
+  ForgotPasswordDto,
+  ResetPasswordDto,
+  ChangePasswordDto,
 } from './dto/auth.dto';
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 import { Public } from 'src/common/decorators/public.decorator';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { CurrentUser } from './decorators/current-user.decorator';
@@ -124,15 +127,47 @@ export class AuthController {
 
   @Public()
   @Post('forgot-password')
-  async forgotPassword(@Body() dto: { email: string }) {
+  async forgotPassword(@Req() req: AppRequest, @Body() dto: ForgotPasswordDto) {
     try {
-      const data = await this.authService.forgotPassword(dto.email);
-      return new ApiResponse(true, 'Password reset instructions sent', data);
+      const data = await this.authService.forgotPassword(req, dto.email);
+      return new ApiResponse(true, 'Password reset link sent to email', data);
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : 'Failed to process password reset';
+      return new ApiResponse(false, message);
+    }
+  }
+
+  @Public()
+  @Post('reset-password')
+  async resetPassword(@Req() req: AppRequest, @Body() dto: ResetPasswordDto) {
+    try {
+      const data = await this.authService.resetPassword(req, dto);
+      return new ApiResponse(true, 'Password has been reset successfully', data);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Password reset failed';
+      return new ApiResponse(false, message);
+    }
+  }
+
+  @Post('change-password')
+  async changePassword(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: ChangePasswordDto,
+  ) {
+    try {
+      const data = await this.authService.changePassword(
+        req,
+        req.user.sub,
+        dto,
+      );
+      return new ApiResponse(true, 'Password changed successfully', data);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to change password';
       return new ApiResponse(false, message);
     }
   }
@@ -156,11 +191,17 @@ export class AuthController {
   async onboardingProfile(
     @Req() req: AuthenticatedRequest,
     @CurrentUser('sub') userId: string,
-    @Body(new ValidationPipe({ transform: true })) dto: OnboardingProfileDto,
+    @Body(
+      new ValidationPipe({
+        transform: true,
+        whitelist: true,
+        forbidNonWhitelisted: true,
+      }),
+    )
+    dto: OnboardingProfileDto,
     //@Body() dto: any,
     @UploadedFiles() profileImages: Express.Multer.File[],
   ) {
-    console.log('🟢 AFTER VALIDATION DTO:', dto);
     const safeImages = profileImages ?? [];
 
     if (safeImages.length < 1) {
@@ -169,6 +210,7 @@ export class AuthController {
 
     try {
       const data = await this.authService.onboardingProfile(
+        req,
         userId,
         dto,
         safeImages,
@@ -205,8 +247,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Body('refreshToken') refreshToken?: string,
   ) {
-    //const refreshToken = req.cookies?.refreshToken;
-
     return this.authService.refresh(req, res, refreshToken);
   }
 
@@ -225,7 +265,7 @@ export class AuthController {
     @Body('refreshToken') refreshToken: string,
   ) {
     try {
-      return this.authService.logout(req.user.sub, refreshToken);
+      return this.authService.logout(req, req.user.sub, refreshToken);
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Logout failed';
       return new ApiResponse(false, message);
@@ -234,6 +274,6 @@ export class AuthController {
 
   @Post('logout-all')
   logoutAll(@Req() req: AuthenticatedRequest) {
-    return this.authService.logoutAll(req.user.sub);
+    return this.authService.logoutAll(req, req.user.sub);
   }
 }

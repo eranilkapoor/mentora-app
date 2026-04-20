@@ -40,9 +40,14 @@ describe('PaymentController', () => {
       const order = { orderId: 'ord-1', amount: 999 };
       service.createOrder.mockReturnValue(order);
 
-      const result = controller.createOrder(buildReq() as any, { planId: 'plan-1' } as any);
+      const result = controller.createOrder(
+        buildReq() as any,
+        { planId: 'plan-1' } as any,
+      );
       expect(result).toEqual(order);
-      expect(service.createOrder).toHaveBeenCalledWith(USER_ID, { planId: 'plan-1' });
+      expect(service.createOrder).toHaveBeenCalledWith(USER_ID, {
+        planId: 'plan-1',
+      });
     });
   });
 
@@ -97,7 +102,10 @@ describe('PaymentController', () => {
 
       const result = controller.getPaymentByOrder(buildReq() as any, 'ord-1');
       expect(result).toEqual(detail);
-      expect(service.getUserPaymentDetail).toHaveBeenCalledWith(USER_ID, 'ord-1');
+      expect(service.getUserPaymentDetail).toHaveBeenCalledWith(
+        USER_ID,
+        'ord-1',
+      );
     });
   });
 });

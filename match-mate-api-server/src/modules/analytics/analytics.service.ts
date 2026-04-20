@@ -126,7 +126,13 @@ export class AnalyticsService {
       this.repo.distinctUsers(match),
       this.repo.aggregate<AnalyticsStatRow>([
         { $match: match },
-        { $group: { _id: '$platform', count: { $sum: 1 }, uniqueUsersSet: { $addToSet: '$userId' } } },
+        {
+          $group: {
+            _id: '$platform',
+            count: { $sum: 1 },
+            uniqueUsersSet: { $addToSet: '$userId' },
+          },
+        },
         {
           $project: {
             _id: 0,
@@ -147,7 +153,13 @@ export class AnalyticsService {
       ]),
       this.repo.aggregate<AnalyticsStatRow>([
         { $match: match },
-        { $group: { _id: '$eventType', count: { $sum: 1 }, uniqueUsersSet: { $addToSet: '$userId' } } },
+        {
+          $group: {
+            _id: '$eventType',
+            count: { $sum: 1 },
+            uniqueUsersSet: { $addToSet: '$userId' },
+          },
+        },
         {
           $project: {
             _id: 0,
@@ -167,10 +179,19 @@ export class AnalyticsService {
         { $sort: { count: -1 } },
         { $limit: 10 },
       ]),
-      this.repo.count({ ...match, eventType: AnalyticsEventType.PROFILE_IMPRESSION }),
-      this.repo.count({ ...match, eventType: AnalyticsEventType.PROFILE_VIEWED }),
+      this.repo.count({
+        ...match,
+        eventType: AnalyticsEventType.PROFILE_IMPRESSION,
+      }),
+      this.repo.count({
+        ...match,
+        eventType: AnalyticsEventType.PROFILE_VIEWED,
+      }),
       this.repo.count({ ...match, eventType: AnalyticsEventType.LIKE_SENT }),
-      this.repo.count({ ...match, eventType: AnalyticsEventType.MATCH_ACCEPTED }),
+      this.repo.count({
+        ...match,
+        eventType: AnalyticsEventType.MATCH_ACCEPTED,
+      }),
       this.repo.count({ ...match, eventType: AnalyticsEventType.CHAT_STARTED }),
       this.repo.aggregate<{ date: string; count: number }>([
         { $match: match },
@@ -263,8 +284,10 @@ export class AnalyticsService {
     return {
       steps: userCounts.map((step, index) => {
         const previous = index === 0 ? step.users : userCounts[index - 1].users;
-        const conversionFromPrevious = previous > 0 ? Number(((step.users / previous) * 100).toFixed(2)) : 0;
-        const conversionFromStart = base > 0 ? Number(((step.users / base) * 100).toFixed(2)) : 0;
+        const conversionFromPrevious =
+          previous > 0 ? Number(((step.users / previous) * 100).toFixed(2)) : 0;
+        const conversionFromStart =
+          base > 0 ? Number(((step.users / base) * 100).toFixed(2)) : 0;
 
         return {
           eventType: step.eventType,

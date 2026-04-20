@@ -20,10 +20,7 @@ describe('MatchService', () => {
     repo = mockMatchRepository();
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        MatchService,
-        { provide: MatchRepository, useValue: repo },
-      ],
+      providers: [MatchService, { provide: MatchRepository, useValue: repo }],
     }).compile();
 
     service = module.get<MatchService>(MatchService);
@@ -77,9 +74,16 @@ describe('MatchService', () => {
       repo.updateInterestStatus.mockResolvedValue(updated);
       repo.createMatch.mockResolvedValue({ _id: 'match-1' });
 
-      const result = await service.respondToInterest('user-1', 'interest-1', 'ACCEPT');
+      const result = await service.respondToInterest(
+        'user-1',
+        'interest-1',
+        'ACCEPT',
+      );
 
-      expect(repo.updateInterestStatus).toHaveBeenCalledWith('interest-1', InterestStatus.ACCEPTED);
+      expect(repo.updateInterestStatus).toHaveBeenCalledWith(
+        'interest-1',
+        InterestStatus.ACCEPTED,
+      );
       expect(repo.createMatch).toHaveBeenCalledWith('sender-1', 'user-1');
       expect(result).toEqual(updated);
     });
@@ -92,9 +96,16 @@ describe('MatchService', () => {
       const updated = { _id: 'interest-1', status: InterestStatus.REJECTED };
       repo.updateInterestStatus.mockResolvedValue(updated);
 
-      const result = await service.respondToInterest('user-1', 'interest-1', 'REJECT');
+      const result = await service.respondToInterest(
+        'user-1',
+        'interest-1',
+        'REJECT',
+      );
 
-      expect(repo.updateInterestStatus).toHaveBeenCalledWith('interest-1', InterestStatus.REJECTED);
+      expect(repo.updateInterestStatus).toHaveBeenCalledWith(
+        'interest-1',
+        InterestStatus.REJECTED,
+      );
       expect(repo.createMatch).not.toHaveBeenCalled();
       expect(result).toEqual(updated);
     });

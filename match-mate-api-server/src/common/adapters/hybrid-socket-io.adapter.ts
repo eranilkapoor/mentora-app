@@ -74,10 +74,7 @@ export class HybridSocketIoAdapter extends IoAdapter {
   }
 
   async close(): Promise<void> {
-    await Promise.allSettled([
-      this.pubClient?.quit(),
-      this.subClient?.quit(),
-    ]);
+    await Promise.allSettled([this.pubClient?.quit(), this.subClient?.quit()]);
     this.pubClient = undefined;
     this.subClient = undefined;
   }

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Profile, ProfileDocument } from '../schemas/profile.schema';
+import { Profile, ProfileDocument } from '../schemas/profile/profile.schema';
 import {
   CreateProfileDto,
   EducationDto,
@@ -21,7 +21,7 @@ export class ProfileRepository {
 
   async createProfile(
     userId: string,
-    data: CreateProfileDto,
+    data: Record<string, unknown>,
     profileImages: {
       url: string;
       isPrimary: boolean;
@@ -51,39 +51,96 @@ export class ProfileRepository {
     }[],
   ) {
     return this.profileModel.findOneAndUpdate(
-      { userId },
+      { userId: new Types.ObjectId(userId), isDeleted: false },
       { $push: { profileImages: { $each: profileImages } } },
-      { new: true },
+      { new: true, runValidators: true },
     );
   }
 
   async setPrimaryImage(userId: string, imageId: string) {
     // First unset all primary flags, then set the target one
     await this.profileModel.findOneAndUpdate(
-      { userId },
+      { userId: new Types.ObjectId(userId), isDeleted: false },
       { $set: { 'profileImages.$[].isPrimary': false } },
     );
     return this.profileModel.findOneAndUpdate(
-      { userId, 'profileImages._id': imageId },
+      {
+        userId: new Types.ObjectId(userId),
+        isDeleted: false,
+        'profileImages._id': imageId,
+      },
       { $set: { 'profileImages.$.isPrimary': true } },
-      { new: true },
+      { new: true, runValidators: true },
     );
   }
 
   async removeImage(userId: string, imageId: string) {
     return this.profileModel.findOneAndUpdate(
-      { userId },
+      { userId: new Types.ObjectId(userId), isDeleted: false },
       { $pull: { profileImages: { _id: imageId } } },
-      { new: true },
+      { new: true, runValidators: true },
     );
   }
 
   async getImages(userId: string) {
-    const profile = await this.profileModel
-      .findOne({ userId })
+    const profile = (await this.profileModel
+      .findOne({ userId: new Types.ObjectId(userId), isDeleted: false })
       .select('profileImages')
-      .lean();
+      .lean()) as { profileImages?: unknown[] } | null;
     return profile?.profileImages ?? [];
+  }
+
+  async addVideos(
+    userId: string,
+    profileVideos: {
+      url: string;
+      filename?: string;
+      isPrimary: boolean;
+      isActive: boolean;
+      uploadedAt: Date;
+      thumbnailUrl?: string;
+      size?: number;
+      mimeType?: string;
+    }[],
+  ) {
+    return this.profileModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId), isDeleted: false },
+      { $push: { profileVideos: { $each: profileVideos } } },
+      { new: true, runValidators: true },
+    );
+  }
+
+  async setPrimaryVideo(userId: string, videoId: string) {
+    await this.profileModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId), isDeleted: false },
+      { $set: { 'profileVideos.$[].isPrimary': false } },
+    );
+
+    return this.profileModel.findOneAndUpdate(
+      {
+        userId: new Types.ObjectId(userId),
+        isDeleted: false,
+        'profileVideos._id': videoId,
+      },
+      { $set: { 'profileVideos.$.isPrimary': true } },
+      { new: true, runValidators: true },
+    );
+  }
+
+  async removeVideo(userId: string, videoId: string) {
+    return this.profileModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId), isDeleted: false },
+      { $pull: { profileVideos: { _id: videoId } } },
+      { new: true, runValidators: true },
+    );
+  }
+
+  async getVideos(userId: string) {
+    const profile = (await this.profileModel
+      .findOne({ userId: new Types.ObjectId(userId), isDeleted: false })
+      .select('profileVideos')
+      .lean()) as { profileVideos?: unknown[] } | null;
+    return profile?.profileVideos ?? [];
   }
 
   async findByUserId(userId: string) {
@@ -91,7 +148,7 @@ export class ProfileRepository {
       return await this.profileModel.findOne(
         {
           userId: new Types.ObjectId(userId),
-          isActive: false,
+          isDeleted: false,
         },
         {
           __v: 0,
@@ -109,9 +166,9 @@ export class ProfileRepository {
   async updateProfile(userId: string, data: UpdateProfileDto) {
     try {
       return await this.profileModel.findOneAndUpdate(
-        { userId: new Types.ObjectId(userId) },
+        { userId: new Types.ObjectId(userId), isDeleted: false },
         { $set: data },
-        { new: true },
+        { new: true, runValidators: true },
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Unknown error';

@@ -15,10 +15,7 @@ describe('AdminService', () => {
     repo = mockAdminRepository();
 
     const module: TestingModule = await Test.createTestingModule({
-      providers: [
-        AdminService,
-        { provide: AdminRepository, useValue: repo },
-      ],
+      providers: [AdminService, { provide: AdminRepository, useValue: repo }],
     }).compile();
 
     service = module.get<AdminService>(AdminService);
@@ -40,7 +37,9 @@ describe('AdminService', () => {
       expect(repo.findUsers).toHaveBeenCalledWith(
         expect.objectContaining({
           $or: expect.arrayContaining([
-            expect.objectContaining({ email: expect.objectContaining({ $regex: 'john' }) }),
+            expect.objectContaining({
+              email: expect.objectContaining({ $regex: 'john' }),
+            }),
           ]),
         }),
         5, // offset = (2-1)*5

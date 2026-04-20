@@ -1,0 +1,32 @@
+[
+  {
+    "event": "USER_REGISTERED_WELCOME",
+    "title": "Welcome to MatchMate",
+    "body": "Hi {{firstName}}, complete your profile and start connecting."
+  },
+  {
+    "event": "EMAIL_VERIFICATION_OTP",
+    "title": "Email verification required",
+    "body": "Use OTP {{otp}} to verify your email."
+  },
+  {
+    "event": "PHONE_VERIFICATION_OTP",
+    "title": "Phone verification",
+    "body": "OTP {{otp}} is valid for {{expiryMinutes}} minutes."
+  },
+  {
+    "event": "MATCH_FOUND",
+    "title": "New match",
+    "body": "You matched with {{matchName}}."
+  },
+  {
+    "event": "MESSAGE_RECEIVED",
+    "title": "New message",
+    "body": "{{senderName}} sent you a message."
+  },
+  {
+    "event": "SUBSCRIPTION_PURCHASE_SUCCESS",
+    "title": "Subscription activated",
+    "body": "Your {{planName}} plan is active now."
+  }
+]

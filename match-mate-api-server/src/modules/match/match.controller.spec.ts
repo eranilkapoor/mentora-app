@@ -30,9 +30,14 @@ describe('MatchController', () => {
       const interest = { _id: 'interest-1', status: 'PENDING' };
       service.sendInterest.mockReturnValue(interest);
 
-      const result = controller.sendInterest({ receiverId: 'receiver-1' } as any);
+      const result = controller.sendInterest({
+        receiverId: 'receiver-1',
+      } as any);
       expect(result).toEqual(interest);
-      expect(service.sendInterest).toHaveBeenCalledWith('USER_ID_FROM_AUTH', 'receiver-1');
+      expect(service.sendInterest).toHaveBeenCalledWith(
+        'USER_ID_FROM_AUTH',
+        'receiver-1',
+      );
     });
   });
 

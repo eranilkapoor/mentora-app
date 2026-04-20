@@ -1,4 +1,11 @@
-import { IsDateString, IsEnum, IsOptional, IsString, Length, Matches } from 'class-validator';
+import {
+  IsDateString,
+  IsEnum,
+  IsOptional,
+  IsString,
+  Length,
+  Matches,
+} from 'class-validator';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 
 export class PaymentSettlementReportDto {

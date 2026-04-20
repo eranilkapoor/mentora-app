@@ -4,6 +4,7 @@ import { COLLECTIONS } from 'src/common/constants/collections';
 
 export enum ActivityAction {
   // 🔐 AUTH & SECURITY
+  REGISTER = 'register',
   LOGIN = 'login',
   LOGOUT = 'logout',
   LOGIN_FAILED = 'login_failed',

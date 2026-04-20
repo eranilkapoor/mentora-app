@@ -30,7 +30,8 @@ export default () => ({
           process.env.NOTIFICATION_EMAIL_SES_SECRET_ACCESS_KEY ||
           process.env.AWS_SECRET_ACCESS_KEY ||
           '',
-        configurationSet: process.env.NOTIFICATION_EMAIL_SES_CONFIGURATION_SET || '',
+        configurationSet:
+          process.env.NOTIFICATION_EMAIL_SES_CONFIGURATION_SET || '',
       },
     },
     sms: {
@@ -52,7 +53,8 @@ export default () => ({
       provider: process.env.NOTIFICATION_PUSH_PROVIDER || 'log',
       serverKey: process.env.NOTIFICATION_PUSH_SERVER_KEY || '',
       fcm: {
-        serviceAccountJson: process.env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON || '',
+        serviceAccountJson:
+          process.env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON || '',
         projectId: process.env.NOTIFICATION_PUSH_FCM_PROJECT_ID || '',
         clientEmail: process.env.NOTIFICATION_PUSH_FCM_CLIENT_EMAIL || '',
         privateKey: process.env.NOTIFICATION_PUSH_FCM_PRIVATE_KEY || '',

@@ -56,9 +56,13 @@ describe('PlanController', () => {
       const updated = { _id: 'plan-1', name: 'Platinum' };
       service.updatePlan.mockReturnValue(updated);
 
-      const result = controller.updatePlan('plan-1', { name: 'Platinum' } as any);
+      const result = controller.updatePlan('plan-1', {
+        name: 'Platinum',
+      } as any);
       expect(result).toEqual(updated);
-      expect(service.updatePlan).toHaveBeenCalledWith('plan-1', { name: 'Platinum' });
+      expect(service.updatePlan).toHaveBeenCalledWith('plan-1', {
+        name: 'Platinum',
+      });
     });
   });
 
@@ -97,7 +101,10 @@ describe('PlanController', () => {
       const feature = { _id: 'feat-1', key: 'CHAT', label: 'Chat' };
       service.createFeature.mockReturnValue(feature);
 
-      const result = controller.createFeature({ key: 'CHAT', label: 'Chat' } as any);
+      const result = controller.createFeature({
+        key: 'CHAT',
+        label: 'Chat',
+      } as any);
       expect(result).toEqual(feature);
     });
   });
@@ -112,8 +119,14 @@ describe('PlanController', () => {
 
   describe('assignFeature()', () => {
     it('should assign feature to plan', () => {
-      service.assignFeatureToPlan.mockReturnValue({ planId: 'plan-1', featureId: 'feat-1' });
-      const result = controller.assignFeature({ planId: 'plan-1', featureId: 'feat-1' } as any);
+      service.assignFeatureToPlan.mockReturnValue({
+        planId: 'plan-1',
+        featureId: 'feat-1',
+      });
+      const result = controller.assignFeature({
+        planId: 'plan-1',
+        featureId: 'feat-1',
+      } as any);
       expect(result).toEqual({ planId: 'plan-1', featureId: 'feat-1' });
     });
   });
@@ -122,7 +135,10 @@ describe('PlanController', () => {
     it('should remove feature from plan', () => {
       service.removeFeatureFromPlan.mockReturnValue({ success: true });
       const result = controller.removeFeature('plan-1', 'feat-1');
-      expect(service.removeFeatureFromPlan).toHaveBeenCalledWith('plan-1', 'feat-1');
+      expect(service.removeFeatureFromPlan).toHaveBeenCalledWith(
+        'plan-1',
+        'feat-1',
+      );
     });
   });
 });

@@ -5,15 +5,29 @@ import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from './auth.controller';
-import { AuthService } from './auth.service';
+import { AuthService } from './services/auth.service';
 import { UserRepository } from './repositories/user.repository';
-import { OtpService } from './otp.service';
+import { OtpService } from './services/otp.service';
 import { User, UserSchema } from './schemas/user.schema';
 import { ProfileModule } from '../profile/profile.module';
-import { Profile, ProfileSchema } from '../profile/schemas/profile.schema';
+import {
+  Profile,
+  ProfileSchema,
+} from '../profile/schemas/profile/profile.schema';
 import { getJwtConfig } from 'src/config/jwt.config';
-import { AuthTokenService } from './auth-token.service';
+import { AuthTokenService } from './services/auth-token.service';
 import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
+import {
+  Subscription,
+  SubscriptionSchema,
+} from '../subscription/schemas/subscription.schema';
+import { Plan, PlanSchema } from '../plan/schemas/plan.schema';
+import {
+  ActivityLog,
+  ActivityLogSchema,
+} from '../profile/schemas/settings/activity-logs.schema';
+import { NotificationModule } from '../notification/notification.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
@@ -23,6 +37,9 @@ import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
       { name: UserSession.name, schema: UserSessionSchema },
+      { name: Subscription.name, schema: SubscriptionSchema },
+      { name: Plan.name, schema: PlanSchema },
+      { name: ActivityLog.name, schema: ActivityLogSchema },
     ]),
 
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -44,6 +61,8 @@ import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
       },
     }),
     ProfileModule,
+    NotificationModule,
+    AnalyticsModule,
   ],
   controllers: [AuthController],
   providers: [

@@ -38,7 +38,9 @@ describe('RbacController', () => {
     it('should create a permission', () => {
       const perm = { _id: 'perm-1', action: 'ADMIN_MANAGE' };
       service.createPermission.mockReturnValue(perm);
-      const result = controller.createPermission({ action: 'ADMIN_MANAGE' } as any);
+      const result = controller.createPermission({
+        action: 'ADMIN_MANAGE',
+      } as any);
       expect(result).toEqual(perm);
     });
   });
@@ -80,9 +82,13 @@ describe('RbacController', () => {
     it('should update a role by id', () => {
       const updated = { _id: 'role-1', name: 'SUPER_ADMIN' };
       service.updateRole.mockReturnValue(updated);
-      const result = controller.updateRole('role-1', { name: 'SUPER_ADMIN' } as any);
+      const result = controller.updateRole('role-1', {
+        name: 'SUPER_ADMIN',
+      } as any);
       expect(result).toEqual(updated);
-      expect(service.updateRole).toHaveBeenCalledWith('role-1', { name: 'SUPER_ADMIN' });
+      expect(service.updateRole).toHaveBeenCalledWith('role-1', {
+        name: 'SUPER_ADMIN',
+      });
     });
   });
 
@@ -98,7 +104,9 @@ describe('RbacController', () => {
     it('should assign roles to a user', () => {
       const user = { _id: 'user-1', roles: ['role-1'] };
       service.assignRoles.mockReturnValue(user);
-      const result = controller.assignRoles('user-1', { roleIds: ['role-1'] } as any);
+      const result = controller.assignRoles('user-1', {
+        roleIds: ['role-1'],
+      } as any);
       expect(result).toEqual(user);
       expect(service.assignRoles).toHaveBeenCalledWith('user-1', ['role-1']);
     });

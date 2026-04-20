@@ -55,7 +55,10 @@ export const mockUserRepository = () => ({
 });
 
 export const mockAuthTokenService = () => ({
-  generatePayload: jest.fn(() => ({ sub: 'user-id-1', email: 'test@test.com' })),
+  generatePayload: jest.fn(() => ({
+    sub: 'user-id-1',
+    email: 'test@test.com',
+  })),
   generateTokens: jest.fn(() => ({
     accessToken: 'mock-access-token',
     refreshToken: 'mock-refresh-token',
@@ -64,7 +67,9 @@ export const mockAuthTokenService = () => ({
 });
 
 export const mockOtpService = () => ({
-  sendOtp: jest.fn().mockResolvedValue({ phone: '+911234567890', otp: '123456' }),
+  sendOtp: jest
+    .fn()
+    .mockResolvedValue({ phone: '+911234567890', otp: '123456' }),
   verifyOtp: jest.fn().mockResolvedValue(true),
 });
 
@@ -114,8 +119,15 @@ export const mockNotificationQueueService = () => ({
 // ─── Storage ─────────────────────────────────────────────────────────────────
 
 export const mockStorageService = () => ({
-  uploadFile: jest.fn().mockResolvedValue({ filename: 'mock-file.jpg', url: 'https://cdn.test/mock-file.jpg' }),
-  uploadFiles: jest.fn().mockResolvedValue([{ filename: 'mock-file.jpg', url: 'https://cdn.test/mock-file.jpg' }]),
+  uploadFile: jest.fn().mockResolvedValue({
+    filename: 'mock-file.jpg',
+    url: 'https://cdn.test/mock-file.jpg',
+  }),
+  uploadFiles: jest
+    .fn()
+    .mockResolvedValue([
+      { filename: 'mock-file.jpg', url: 'https://cdn.test/mock-file.jpg' },
+    ]),
   deleteFile: jest.fn().mockResolvedValue(undefined),
   getUrl: jest.fn().mockReturnValue('https://cdn.test/mock-file.jpg'),
 });
@@ -123,7 +135,11 @@ export const mockStorageService = () => ({
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 
 export const mockChatService = () => ({
-  health: jest.fn().mockReturnValue({ status: 'ok', transport: 'socket.io', timestamp: expect.any(String) }),
+  health: jest.fn().mockReturnValue({
+    status: 'ok',
+    transport: 'socket.io',
+    timestamp: expect.any(String),
+  }),
   createOrGetDirectRoom: jest.fn(),
   getConversations: jest.fn(),
   getContacts: jest.fn(),

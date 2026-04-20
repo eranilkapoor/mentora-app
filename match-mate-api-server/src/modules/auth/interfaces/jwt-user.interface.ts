@@ -1,9 +1,9 @@
-import { PlanTier } from 'src/common/enums';
+import { Permission, PlanTier, Role } from 'src/common/enums';
 
 export interface JwtUser {
   sub: string;
-  roles: string[];
-  permissions: string[];
+  roles: Role[];
+  permissions: Permission[];
   membership?: {
     tier: PlanTier;
   };

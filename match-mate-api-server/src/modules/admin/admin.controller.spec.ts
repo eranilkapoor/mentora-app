@@ -45,7 +45,11 @@ describe('AdminController', () => {
     it('should pass search filter to service', () => {
       service.getUsers.mockReturnValue({ items: [], total: 0 });
       controller.getUsers({ search: 'john', page: 1, limit: 10 } as any);
-      expect(service.getUsers).toHaveBeenCalledWith({ search: 'john', page: 1, limit: 10 });
+      expect(service.getUsers).toHaveBeenCalledWith({
+        search: 'john',
+        page: 1,
+        limit: 10,
+      });
     });
   });
 
@@ -66,7 +70,10 @@ describe('AdminController', () => {
       const response = { success: true, message: 'Broadcast sent' };
       service.broadcast.mockReturnValue(response);
 
-      const result = controller.broadcast({ title: 'Test', body: 'Hello all' } as any);
+      const result = controller.broadcast({
+        title: 'Test',
+        body: 'Hello all',
+      } as any);
       expect(result).toEqual(response);
     });
   });

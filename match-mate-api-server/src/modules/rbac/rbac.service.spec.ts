@@ -45,7 +45,9 @@ describe('RbacService', () => {
 
   it('getRoles should return populated roles', async () => {
     const roles = [{ _id: 'r1' }];
-    roleModel.find.mockReturnValue({ populate: jest.fn().mockResolvedValue(roles) });
+    roleModel.find.mockReturnValue({
+      populate: jest.fn().mockResolvedValue(roles),
+    });
 
     const result = await service.getRoles();
     expect(result).toEqual(roles);
@@ -53,10 +55,12 @@ describe('RbacService', () => {
 
   it('assignRoles should flatten permissions and update user', async () => {
     roleModel.find.mockReturnValue({
-      populate: jest.fn().mockResolvedValue([
-        { permissions: [{ name: 'A' }, { name: 'B' }] },
-        { permissions: [{ name: 'B' }, { name: 'C' }] },
-      ]),
+      populate: jest
+        .fn()
+        .mockResolvedValue([
+          { permissions: [{ name: 'A' }, { name: 'B' }] },
+          { permissions: [{ name: 'B' }, { name: 'C' }] },
+        ]),
     });
     userModel.findByIdAndUpdate.mockResolvedValue({ _id: 'u1' });
 
@@ -65,7 +69,10 @@ describe('RbacService', () => {
     expect(result).toEqual({ _id: 'u1' });
     expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(
       'u1',
-      expect.objectContaining({ permissions: ['A', 'B', 'C'], roles: ['r1', 'r2'] }),
+      expect.objectContaining({
+        permissions: ['A', 'B', 'C'],
+        roles: ['r1', 'r2'],
+      }),
       { new: true },
     );
   });

@@ -6,7 +6,11 @@ import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentMethod } from '../enums/payment-method.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
 
-@Schema({ collection: COLLECTIONS.PAYMENT, timestamps: true, versionKey: false })
+@Schema({
+  collection: COLLECTIONS.PAYMENT,
+  timestamps: true,
+  versionKey: false,
+})
 export class Payment {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
   userId!: Types.ObjectId;
@@ -50,7 +54,11 @@ export class Payment {
   @Prop({ enum: PaymentMethod })
   method?: PaymentMethod;
 
-  @Prop({ enum: PaymentPurpose, default: PaymentPurpose.SUBSCRIPTION, index: true })
+  @Prop({
+    enum: PaymentPurpose,
+    default: PaymentPurpose.SUBSCRIPTION,
+    index: true,
+  })
   purpose!: PaymentPurpose;
 
   @Prop({

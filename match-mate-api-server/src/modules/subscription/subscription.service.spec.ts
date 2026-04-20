@@ -41,7 +41,9 @@ describe('SubscriptionService', () => {
     it('should throw error when plan not found', async () => {
       planModel.findById.mockResolvedValue(null);
 
-      await expect(service.purchasePlan('user-1', 'plan-999')).rejects.toThrow('Plan not found');
+      await expect(service.purchasePlan('user-1', 'plan-999')).rejects.toThrow(
+        'Plan not found',
+      );
     });
 
     it('should create subscription and update user membership', async () => {

@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AnalyticsService } from './analytics.service';
 import { AnalyticsRepository } from './analytics.repository';
-import { AnalyticsEventType, AnalyticsGroupBy } from './enums/analytics-event.enum';
+import {
+  AnalyticsEventType,
+  AnalyticsGroupBy,
+} from './enums/analytics-event.enum';
 
 const mockRepo = () => ({
   create: jest.fn(),

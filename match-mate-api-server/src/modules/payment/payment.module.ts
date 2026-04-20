@@ -17,7 +17,7 @@ import { SubscriptionModule } from '../subscription/subscription.module';
     SubscriptionModule,
   ],
   providers: [PaymentService, PaymentRepository],
-    controllers: [PaymentController, PaymentAdminController],
+  controllers: [PaymentController, PaymentAdminController],
   exports: [PaymentService],
 })
 export class PaymentModule {}

@@ -1,7 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
-import { AuthProvider } from '../enums';
 import {
   SubscriptionStatus,
   PlanTier,
@@ -9,6 +8,7 @@ import {
   Status,
   Role,
 } from 'src/common/enums';
+import { AuthProvider } from '../enums/auth-provider.enum';
 
 @Schema({ _id: false })
 export class PhoneNumber {

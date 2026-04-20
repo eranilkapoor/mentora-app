@@ -2,7 +2,10 @@ import * as Joi from 'joi';
 
 const envString = Joi.string().trim();
 const optionalString = envString.empty('');
-const hostSchema = Joi.alternatives().try(Joi.string().hostname(), Joi.string().ip());
+const hostSchema = Joi.alternatives().try(
+  Joi.string().hostname(),
+  Joi.string().ip(),
+);
 const optionalHost = hostSchema.empty('');
 const awsRegionSchema = Joi.string()
   .trim()
@@ -18,7 +21,10 @@ const durationSchema = Joi.string()
       'must be a valid duration like 15m, 7d, 3600 or 500ms',
   });
 const optionalDuration = durationSchema.empty('');
-const optionalEmail = Joi.string().trim().email({ tlds: { allow: false } }).empty('');
+const optionalEmail = Joi.string()
+  .trim()
+  .email({ tlds: { allow: false } })
+  .empty('');
 const optionalUri = Joi.string()
   .trim()
   .uri({ scheme: ['http', 'https'] })
@@ -60,7 +66,9 @@ function validateAllowedOrigins(value: string, helpers: Joi.CustomHelpers) {
       continue;
     }
 
-    const { error } = Joi.string().uri({ scheme: ['http', 'https'] }).validate(origin);
+    const { error } = Joi.string()
+      .uri({ scheme: ['http', 'https'] })
+      .validate(origin);
     if (error) {
       return helpers.error('any.custom', {
         customMessage: `ALLOWED_ORIGINS contains an invalid origin: ${origin}`,
@@ -75,7 +83,10 @@ function validateNotificationProviders(
   env: Record<string, unknown>,
   helpers: Joi.CustomHelpers,
 ) {
-  if (env.NOTIFICATION_EMAIL_ENABLED && env.NOTIFICATION_EMAIL_PROVIDER === 'ses') {
+  if (
+    env.NOTIFICATION_EMAIL_ENABLED &&
+    env.NOTIFICATION_EMAIL_PROVIDER === 'ses'
+  ) {
     if (!env.NOTIFICATION_EMAIL_FROM) {
       return helpers.error('any.custom', {
         customMessage:
@@ -104,7 +115,10 @@ function validateNotificationProviders(
     }
   }
 
-  if (env.NOTIFICATION_SMS_ENABLED && env.NOTIFICATION_SMS_PROVIDER === 'twilio') {
+  if (
+    env.NOTIFICATION_SMS_ENABLED &&
+    env.NOTIFICATION_SMS_PROVIDER === 'twilio'
+  ) {
     if (!env.NOTIFICATION_SMS_TWILIO_ACCOUNT_SID) {
       return helpers.error('any.custom', {
         customMessage:
@@ -127,8 +141,13 @@ function validateNotificationProviders(
     }
   }
 
-  if (env.NOTIFICATION_PUSH_ENABLED && env.NOTIFICATION_PUSH_PROVIDER === 'fcm') {
-    const hasServiceAccountJson = Boolean(env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON);
+  if (
+    env.NOTIFICATION_PUSH_ENABLED &&
+    env.NOTIFICATION_PUSH_PROVIDER === 'fcm'
+  ) {
+    const hasServiceAccountJson = Boolean(
+      env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON,
+    );
     const hasDiscreteCredentials =
       Boolean(env.NOTIFICATION_PUSH_FCM_PROJECT_ID) &&
       Boolean(env.NOTIFICATION_PUSH_FCM_CLIENT_EMAIL) &&
@@ -164,11 +183,17 @@ export const envValidationSchema = Joi.object({
     .pattern(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/i)
     .default('api'),
 
-  API_VERSION: Joi.string().trim().pattern(/^v\d+$/i).default('v1'),
+  API_VERSION: Joi.string()
+    .trim()
+    .pattern(/^v\d+$/i)
+    .default('v1'),
 
   API_BASE_URL: Joi.when('NODE_ENV', {
     is: 'production',
-    then: Joi.string().trim().uri({ scheme: ['https'] }).required(),
+    then: Joi.string()
+      .trim()
+      .uri({ scheme: ['https'] })
+      .required(),
     otherwise: Joi.string()
       .trim()
       .uri({ scheme: ['http', 'https'] })
@@ -230,7 +255,10 @@ export const envValidationSchema = Joi.object({
 
   AWS_S3_BASE_URL: optionalUri.when('STORAGE_DRIVER', {
     is: 's3',
-    then: Joi.string().trim().uri({ scheme: ['https'] }).required(),
+    then: Joi.string()
+      .trim()
+      .uri({ scheme: ['https'] })
+      .required(),
   }),
 
   JWT_SECRET: Joi.string().trim().min(32).max(512).required(),
@@ -261,15 +289,26 @@ export const envValidationSchema = Joi.object({
 
   NOTIFICATION_DLQ_NAME: optionalString.default('notification-dispatch-dlq'),
 
-  NOTIFICATION_QUEUE_CONCURRENCY: Joi.number().integer().min(1).max(100).default(5),
+  NOTIFICATION_QUEUE_CONCURRENCY: Joi.number()
+    .integer()
+    .min(1)
+    .max(100)
+    .default(5),
 
   NOTIFICATION_QUEUE_ATTEMPTS: Joi.number().integer().min(1).max(20).default(5),
 
-  NOTIFICATION_QUEUE_BACKOFF_MS: Joi.number().integer().min(0).max(300000).default(3000),
+  NOTIFICATION_QUEUE_BACKOFF_MS: Joi.number()
+    .integer()
+    .min(0)
+    .max(300000)
+    .default(3000),
 
   NOTIFICATION_EMAIL_ENABLED: Joi.boolean().default(false),
 
-  NOTIFICATION_EMAIL_PROVIDER: Joi.string().trim().valid('log', 'ses').default('log'),
+  NOTIFICATION_EMAIL_PROVIDER: Joi.string()
+    .trim()
+    .valid('log', 'ses')
+    .default('log'),
 
   NOTIFICATION_EMAIL_FROM: optionalEmail,
 
@@ -285,7 +324,10 @@ export const envValidationSchema = Joi.object({
 
   NOTIFICATION_SMS_ENABLED: Joi.boolean().default(false),
 
-  NOTIFICATION_SMS_PROVIDER: Joi.string().trim().valid('log', 'twilio').default('log'),
+  NOTIFICATION_SMS_PROVIDER: Joi.string()
+    .trim()
+    .valid('log', 'twilio')
+    .default('log'),
 
   NOTIFICATION_SMS_SENDER_ID: optionalString,
 
@@ -299,7 +341,10 @@ export const envValidationSchema = Joi.object({
 
   NOTIFICATION_PUSH_ENABLED: Joi.boolean().default(false),
 
-  NOTIFICATION_PUSH_PROVIDER: Joi.string().trim().valid('log', 'fcm').default('log'),
+  NOTIFICATION_PUSH_PROVIDER: Joi.string()
+    .trim()
+    .valid('log', 'fcm')
+    .default('log'),
 
   NOTIFICATION_PUSH_SERVER_KEY: optionalString,
 

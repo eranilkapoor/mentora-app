@@ -49,7 +49,12 @@ describe('RedisCacheService', () => {
     await service.set('k1', { ok: true }, 10);
     const value = await service.get<{ ok: boolean }>('k1');
 
-    expect(redisMock.set).toHaveBeenCalledWith('k1', JSON.stringify({ ok: true }), 'EX', 10);
+    expect(redisMock.set).toHaveBeenCalledWith(
+      'k1',
+      JSON.stringify({ ok: true }),
+      'EX',
+      10,
+    );
     expect(value).toEqual({ ok: true });
   });
 

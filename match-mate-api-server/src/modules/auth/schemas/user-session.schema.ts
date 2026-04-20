@@ -24,6 +24,9 @@ export class UserSession {
 
   @Prop()
   expiresAt!: Date;
+
+  @Prop()
+  loggedOutAt?: Date;
 }
 
 export type UserSessionDocument = UserSession & Document;

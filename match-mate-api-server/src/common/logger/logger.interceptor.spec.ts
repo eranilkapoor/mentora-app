@@ -54,7 +54,13 @@ describe('LoggingInterceptor', () => {
       handle: () => throwError(() => new Error('boom')),
     };
 
-    await expect(lastValueFrom(interceptor.intercept(context, next))).rejects.toThrow('boom');
-    expect(logger.error).toHaveBeenCalledWith('ERROR', expect.any(String), expect.any(Object));
+    await expect(
+      lastValueFrom(interceptor.intercept(context, next)),
+    ).rejects.toThrow('boom');
+    expect(logger.error).toHaveBeenCalledWith(
+      'ERROR',
+      expect.any(String),
+      expect.any(Object),
+    );
   });
 });

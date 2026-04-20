@@ -7,8 +7,14 @@ import {
   Length,
   Matches,
   IsOptional,
+  ValidateIf,
 } from 'class-validator';
 import { AuthProvider } from '../enums/auth-provider.enum';
+
+const PASSWORD_POLICY_REGEX =
+  /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]).+$/;
+const PASSWORD_POLICY_MESSAGE =
+  'Password must include uppercase, lowercase, number, and special character';
 
 export class RegisterDto {
   @IsNotEmpty()
@@ -17,7 +23,19 @@ export class RegisterDto {
 
   @IsNotEmpty()
   @MinLength(6)
+  @Matches(PASSWORD_POLICY_REGEX, {
+    message: PASSWORD_POLICY_MESSAGE,
+  })
   password!: string;
+
+  @IsOptional()
+  country_code?: string;
+
+  @ValidateIf((dto: RegisterDto) => Boolean(dto.country_code))
+  @Matches(/^[0-9]{8,15}$/, {
+    message: 'Invalid phone number',
+  })
+  phone?: string;
 }
 
 export class LoginDto {
@@ -78,4 +96,48 @@ export class PhoneVerifyDto {
   @IsNotEmpty()
   @Length(6)
   otp!: string;
+}
+
+export class ForgotPasswordDto {
+  @IsNotEmpty()
+  @IsEmail()
+  email!: string;
+}
+
+export class ResetPasswordDto {
+  @IsNotEmpty()
+  token!: string;
+
+  @IsNotEmpty()
+  @MinLength(6)
+  @Matches(PASSWORD_POLICY_REGEX, {
+    message: PASSWORD_POLICY_MESSAGE,
+  })
+  newPassword!: string;
+
+  @IsNotEmpty()
+  @MinLength(6)
+  @Matches(PASSWORD_POLICY_REGEX, {
+    message: PASSWORD_POLICY_MESSAGE,
+  })
+  confirmPassword!: string;
+}
+
+export class ChangePasswordDto {
+  @IsNotEmpty()
+  oldPassword!: string;
+
+  @IsNotEmpty()
+  @MinLength(6)
+  @Matches(PASSWORD_POLICY_REGEX, {
+    message: PASSWORD_POLICY_MESSAGE,
+  })
+  newPassword!: string;
+
+  @IsNotEmpty()
+  @MinLength(6)
+  @Matches(PASSWORD_POLICY_REGEX, {
+    message: PASSWORD_POLICY_MESSAGE,
+  })
+  confirmPassword!: string;
 }

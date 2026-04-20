@@ -15,7 +15,7 @@ import { App } from 'supertest/types';
 import { AppController } from '../src/app.controller';
 import { AppService } from '../src/app.service';
 import { AuthController } from '../src/modules/auth/auth.controller';
-import { AuthService } from '../src/modules/auth/auth.service';
+import { AuthService } from '../src/modules/auth/services/auth.service';
 import { ProfileController } from '../src/modules/profile/profile.controller';
 import { ProfileService } from '../src/modules/profile/profile.service';
 import { MatchController } from '../src/modules/match/match.controller';
@@ -56,13 +56,27 @@ const MOCK_USER = { sub: 'user-id-1', email: 'test@test.com', roles: [] };
 const AUTH_TOKEN = 'Bearer mock-jwt-token';
 
 const mockAppService = {
-  getRoot: jest.fn(() => ({ message: 'Matrimony API is running 🚀', version: 'v1', timestamp: new Date().toISOString() })),
-  healthCheck: jest.fn(() => ({ status: 'ok', uptime: 123, timestamp: new Date().toISOString(), env: 'test', memory: { rss: 1024, heapUsed: 512 } })),
+  getRoot: jest.fn(() => ({
+    message: 'Matrimony API is running 🚀',
+    version: 'v1',
+    timestamp: new Date().toISOString(),
+  })),
+  healthCheck: jest.fn(() => ({
+    status: 'ok',
+    uptime: 123,
+    timestamp: new Date().toISOString(),
+    env: 'test',
+    memory: { rss: 1024, heapUsed: 512 },
+  })),
 };
 
 const mockAuthService = {
-  register: jest.fn().mockResolvedValue({ user: { userId: 'user-1' }, accessToken: 'tok' }),
-  login: jest.fn().mockResolvedValue({ user: { userId: 'user-1' }, accessToken: 'tok' }),
+  register: jest
+    .fn()
+    .mockResolvedValue({ user: { userId: 'user-1' }, accessToken: 'tok' }),
+  login: jest
+    .fn()
+    .mockResolvedValue({ user: { userId: 'user-1' }, accessToken: 'tok' }),
   sendOtp: jest.fn().mockReturnValue({ phone: '+911234567890', otp: '123456' }),
   verifyOtp: jest.fn().mockResolvedValue({ accessToken: 'tok' }),
   socialLogin: jest.fn().mockResolvedValue({ accessToken: 'tok' }),
@@ -75,7 +89,9 @@ const mockAuthService = {
 };
 
 const mockProfileService = {
-  createProfile: jest.fn().mockResolvedValue({ userId: 'user-1', firstName: 'Test' }),
+  createProfile: jest
+    .fn()
+    .mockResolvedValue({ userId: 'user-1', firstName: 'Test' }),
   updateProfile: jest.fn().mockResolvedValue({ userId: 'user-1' }),
   updatePersonalInfo: jest.fn().mockResolvedValue({}),
   updatePhysicalInfo: jest.fn().mockResolvedValue({}),
@@ -90,17 +106,21 @@ const mockProfileService = {
     profileVisibility: 'private',
     hidePhotos: true,
   }),
-  getImages: jest.fn().mockResolvedValue([
-    { _id: 'img-1', url: 'https://cdn.local/img-1.jpg', isPrimary: true },
-  ]),
+  getImages: jest
+    .fn()
+    .mockResolvedValue([
+      { _id: 'img-1', url: 'https://cdn.local/img-1.jpg', isPrimary: true },
+    ]),
   addImages: jest.fn().mockResolvedValue({
     profileImages: [{ _id: 'img-1', url: 'https://cdn.local/img-1.jpg' }],
   }),
   setPrimaryImage: jest.fn().mockResolvedValue({ success: true }),
   removeImage: jest.fn().mockResolvedValue({ success: true }),
-  getVideos: jest.fn().mockResolvedValue([
-    { _id: 'vid-1', url: 'https://cdn.local/vid-1.mp4', isPrimary: true },
-  ]),
+  getVideos: jest
+    .fn()
+    .mockResolvedValue([
+      { _id: 'vid-1', url: 'https://cdn.local/vid-1.mp4', isPrimary: true },
+    ]),
   addVideos: jest.fn().mockResolvedValue({
     profileVideos: [{ _id: 'vid-1', url: 'https://cdn.local/vid-1.mp4' }],
   }),
@@ -110,13 +130,23 @@ const mockProfileService = {
 };
 
 const mockMatchService = {
-  sendInterest: jest.fn().mockReturnValue({ _id: 'interest-1', status: 'PENDING' }),
-  respondToInterest: jest.fn().mockResolvedValue({ _id: 'interest-1', status: 'ACCEPTED' }),
+  sendInterest: jest
+    .fn()
+    .mockReturnValue({ _id: 'interest-1', status: 'PENDING' }),
+  respondToInterest: jest
+    .fn()
+    .mockResolvedValue({ _id: 'interest-1', status: 'ACCEPTED' }),
   getMyMatches: jest.fn().mockReturnValue([]),
 };
 
 const mockChatService = {
-  health: jest.fn().mockReturnValue({ status: 'ok', transport: 'socket.io', timestamp: new Date().toISOString() }),
+  health: jest
+    .fn()
+    .mockReturnValue({
+      status: 'ok',
+      transport: 'socket.io',
+      timestamp: new Date().toISOString(),
+    }),
   getConversations: jest.fn().mockResolvedValue({ items: [], total: 0 }),
   getContacts: jest.fn().mockResolvedValue({ contacts: [] }),
   createOrGetDirectRoom: jest.fn().mockResolvedValue({ roomId: 'room-1' }),
@@ -170,7 +200,9 @@ const mockPlanService = {
 const mockAdminService = {
   getUsers: jest.fn().mockReturnValue({ items: [], total: 0 }),
   updateUserStatus: jest.fn().mockReturnValue({ _id: 'user-1' }),
-  broadcast: jest.fn().mockReturnValue({ success: true, message: 'Broadcast sent' }),
+  broadcast: jest
+    .fn()
+    .mockReturnValue({ success: true, message: 'Broadcast sent' }),
 };
 
 const mockAnalyticsService = {
@@ -252,8 +284,12 @@ async function buildTestApp(): Promise<INestApplication<App>> {
 describe('E2E – App (Root & Health)', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('GET /api/v1 → 200 with API info', () => {
@@ -280,14 +316,23 @@ describe('E2E – App (Root & Health)', () => {
 describe('E2E – Auth', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('POST /api/v1/auth/register → 201 with tokens', () => {
     return request(app.getHttpServer())
       .post('/api/v1/auth/register')
-      .send({ email: 'test@test.com', password: 'Pass1234!', phone: '1234567890', country_code: '+91' })
+      .send({
+        email: 'test@test.com',
+        password: 'Pass1234!',
+        phone: '1234567890',
+        country_code: '+91',
+      })
       .expect(201)
       .expect((res) => {
         expect(res.body.success).toBe(true);
@@ -356,8 +401,12 @@ describe('E2E – Auth', () => {
 describe('E2E – Profile', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('GET /api/v1/profile/me → 200 with profile', () => {
@@ -576,8 +625,12 @@ describe('E2E – Profile', () => {
 describe('E2E – Match', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('POST /api/v1/match/interest → 201', () => {
@@ -609,8 +662,12 @@ describe('E2E – Match', () => {
 describe('E2E – Chat', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('GET /api/v1/chat/health → 200 (public)', () => {
@@ -683,8 +740,12 @@ describe('E2E – Chat', () => {
 describe('E2E – Notifications', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('GET /api/v1/notifications → 200', () => {
@@ -743,8 +804,12 @@ describe('E2E – Notifications', () => {
 describe('E2E – Payments', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('POST /api/v1/payments/order → 201', () => {
@@ -799,8 +864,12 @@ describe('E2E – Payments', () => {
 describe('E2E – Plans (Admin)', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('GET /api/v1/admin/plans → 200', () => {
@@ -845,8 +914,12 @@ describe('E2E – Plans (Admin)', () => {
 describe('E2E – Admin Users', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('GET /api/v1/admin/users → 200', () => {
@@ -878,8 +951,12 @@ describe('E2E – Admin Users', () => {
 describe('E2E – Analytics', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('POST /api/v1/analytics/track → 201', () => {
@@ -917,8 +994,12 @@ describe('E2E – Analytics', () => {
 describe('E2E – RBAC (Admin)', () => {
   let app: INestApplication<App>;
 
-  beforeAll(async () => { app = await buildTestApp(); });
-  afterAll(async () => { await app.close(); });
+  beforeAll(async () => {
+    app = await buildTestApp();
+  });
+  afterAll(async () => {
+    await app.close();
+  });
   afterEach(() => jest.clearAllMocks());
 
   it('GET /api/v1/admin/rbac/permissions → 200', () => {

@@ -54,10 +54,7 @@ export class PaymentController {
   }
 
   @Get(':orderId')
-  getPaymentByOrder(
-    @Req() req: AppRequest,
-    @Param('orderId') orderId: string,
-  ) {
+  getPaymentByOrder(@Req() req: AppRequest, @Param('orderId') orderId: string) {
     return this.service.getUserPaymentDetail(req.user?.sub ?? '', orderId);
   }
 }

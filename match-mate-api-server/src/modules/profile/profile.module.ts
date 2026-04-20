@@ -3,11 +3,27 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ProfileController } from './profile.controller';
 import { ProfileService } from './profile.service';
 import { ProfileRepository } from './repositories/profile.repository';
-import { Profile, ProfileSchema } from './schemas/profile.schema';
+import { Profile, ProfileSchema } from './schemas/profile/profile.schema';
+import { NotificationModule } from '../notification/notification.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
+import {
+  ActivityLog,
+  ActivityLogSchema,
+} from './schemas/settings/activity-logs.schema';
+import {
+  PrivacySetting,
+  PrivacySettingSchema,
+} from './schemas/settings/privacy.schema';
 
 @Module({
   imports: [
-    MongooseModule.forFeature([{ name: Profile.name, schema: ProfileSchema }]),
+    MongooseModule.forFeature([
+      { name: Profile.name, schema: ProfileSchema },
+      { name: ActivityLog.name, schema: ActivityLogSchema },
+      { name: PrivacySetting.name, schema: PrivacySettingSchema },
+    ]),
+    NotificationModule,
+    AnalyticsModule,
   ],
   controllers: [ProfileController],
   providers: [ProfileService, ProfileRepository],

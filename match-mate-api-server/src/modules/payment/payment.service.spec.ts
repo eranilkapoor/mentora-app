@@ -85,7 +85,9 @@ describe('PaymentService', () => {
     it('should throw BadRequestException when plan is inactive', async () => {
       planModel.findById.mockReturnValue({
         lean: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue({ _id: 'plan-1', isActive: false, price: 999 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: 'plan-1', isActive: false, price: 999 }),
       });
 
       await expect(
@@ -96,7 +98,9 @@ describe('PaymentService', () => {
     it('should return idempotent replay when key already used', async () => {
       planModel.findById.mockReturnValue({
         lean: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue({ _id: 'plan-1', isActive: true, price: 999 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: 'plan-1', isActive: true, price: 999 }),
       });
       const existing = { orderId: 'ord-1' };
       paymentRepo.findByIdempotencyKey.mockResolvedValue(existing);
@@ -112,7 +116,9 @@ describe('PaymentService', () => {
     it('should create a new order successfully', async () => {
       planModel.findById.mockReturnValue({
         lean: jest.fn().mockReturnThis(),
-        exec: jest.fn().mockResolvedValue({ _id: 'plan-1', isActive: true, price: 999 }),
+        exec: jest
+          .fn()
+          .mockResolvedValue({ _id: 'plan-1', isActive: true, price: 999 }),
       });
       paymentRepo.findByIdempotencyKey.mockResolvedValue(null);
       const created = { orderId: 'ord-123', gatewayOrderId: 'rz-ord-123' };

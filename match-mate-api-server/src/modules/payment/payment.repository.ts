@@ -42,24 +42,26 @@ export class PaymentRepository {
     signatureVerified: boolean;
     gatewayPayload?: Record<string, unknown>;
   }) {
-    return this.model.findOneAndUpdate(
-      { orderId: params.orderId },
-      {
-        $set: {
-          status: PaymentStatus.SUCCESS,
-          gatewayPaymentId: params.gatewayPaymentId,
-          gatewayOrderId: params.gatewayOrderId,
-          method: params.method,
-          signatureVerified: params.signatureVerified,
-          paidAt: new Date(),
-          gatewayPayload: params.gatewayPayload,
+    return this.model
+      .findOneAndUpdate(
+        { orderId: params.orderId },
+        {
+          $set: {
+            status: PaymentStatus.SUCCESS,
+            gatewayPaymentId: params.gatewayPaymentId,
+            gatewayOrderId: params.gatewayOrderId,
+            method: params.method,
+            signatureVerified: params.signatureVerified,
+            paidAt: new Date(),
+            gatewayPayload: params.gatewayPayload,
+          },
+          $inc: {
+            attemptCount: 1,
+          },
         },
-        $inc: {
-          attemptCount: 1,
-        },
-      },
-      { new: true },
-    ).exec();
+        { new: true },
+      )
+      .exec();
   }
 
   markFailed(params: {

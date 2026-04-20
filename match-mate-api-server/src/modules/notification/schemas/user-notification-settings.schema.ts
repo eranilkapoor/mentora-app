@@ -9,15 +9,59 @@ export class UserNotificationSettings {
 
   @Prop({
     type: {
-      interestReceived: { push: Boolean, email: Boolean },
-      interestAccepted: { push: Boolean, email: Boolean },
-      profileViewed: { push: Boolean, email: Boolean },
-      matchFound: { push: Boolean, email: Boolean },
-      messageReceived: { push: Boolean, email: Boolean },
+      interestReceived: {
+        inApp: Boolean,
+        push: Boolean,
+        email: Boolean,
+        sms: Boolean,
+      },
+      interestAccepted: {
+        inApp: Boolean,
+        push: Boolean,
+        email: Boolean,
+        sms: Boolean,
+      },
+      profileView: {
+        inApp: Boolean,
+        push: Boolean,
+        email: Boolean,
+        sms: Boolean,
+      },
+      matchFound: {
+        inApp: Boolean,
+        push: Boolean,
+        email: Boolean,
+        sms: Boolean,
+      },
+      messageReceived: {
+        inApp: Boolean,
+        push: Boolean,
+        email: Boolean,
+        sms: Boolean,
+      },
+      subscription: {
+        inApp: Boolean,
+        push: Boolean,
+        email: Boolean,
+        sms: Boolean,
+      },
+      system: {
+        inApp: Boolean,
+        push: Boolean,
+        email: Boolean,
+        sms: Boolean,
+      },
     },
     default: {},
+    _id: false,
   })
-  preferences!: Record<string, { push: boolean; email: boolean }>;
+  preferences!: Record<
+    string,
+    { inApp?: boolean; push?: boolean; email?: boolean; sms?: boolean }
+  >;
+
+  @Prop({ default: true })
+  inAppEnabled!: boolean;
 
   @Prop({ default: true })
   pushEnabled!: boolean;
@@ -31,11 +75,28 @@ export class UserNotificationSettings {
   @Prop({ default: false })
   doNotDisturb!: boolean;
 
-  @Prop()
-  dndStart?: string; // "22:00"
+  @Prop({
+    type: {
+      enabled: { type: Boolean, default: false },
+      start: { type: String },
+      end: { type: String },
+      timezone: { type: String, default: 'UTC' },
+    },
+    default: {},
+    _id: false,
+  })
+  quietHours?: {
+    enabled: boolean;
+    start?: string;
+    end?: string;
+    timezone?: string;
+  };
 
   @Prop()
-  dndEnd?: string; // "07:00"
+  dndStart?: string; // backward compatibility
+
+  @Prop()
+  dndEnd?: string; // backward compatibility
 }
 
 export type UserNotificationSettingsDocument = UserNotificationSettings &

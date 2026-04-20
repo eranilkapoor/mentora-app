@@ -15,6 +15,8 @@ import { MaritalStatus } from 'src/common/enums/marital-status.enum';
 import { Diet } from 'src/common/enums/diet.enum';
 import { Drinking } from 'src/common/enums/drinking.enum';
 import { Smoking } from 'src/common/enums/smoking.enum';
+import { Religion } from 'src/common/enums/religion.enum';
+import { BodyType, Complexion, FamilyStatus, FamilyType, FamilyValue, SiblingType } from 'src/common/enums';
 
 export class PersonalDto {
   @IsString()
@@ -35,9 +37,8 @@ export class PersonalDto {
   @IsDateString()
   dateOfBirth!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  religion!: string;
+  @IsEnum(Religion)
+  religion!: Religion;
 
   @IsOptional()
   @IsString()
@@ -59,9 +60,8 @@ export class PersonalDto {
   @IsString()
   motherTongue?: string;
 
-  @IsOptional()
   @IsEnum(MaritalStatus)
-  maritalStatus?: MaritalStatus;
+  maritalStatus!: MaritalStatus;
 
   @IsOptional()
   @IsString()
@@ -79,12 +79,12 @@ export class PhysicalDto {
   weight?: number;
 
   @IsOptional()
-  @IsString()
-  bodyType?: string;
+  @IsEnum(BodyType)
+  bodyType?: BodyType;
 
   @IsOptional()
-  @IsString()
-  complexion?: string;
+  @IsEnum(Complexion)
+  complexion?: Complexion;
 }
 
 export class EducationDto {
@@ -111,10 +111,10 @@ export class EducationDto {
 
 class SiblingDetail {
   @IsNotEmpty()
-  @IsEnum(['brother', 'sister'], {
+  @IsEnum(SiblingType, {
     message: 'Type must be either brother or sister',
   })
-  type!: 'brother' | 'sister';
+  type!: SiblingType;
 
   @IsBoolean()
   @IsNotEmpty()
@@ -172,16 +172,16 @@ export class FamilyDto {
   motherOccupation?: string;
 
   @IsOptional()
-  @IsString()
-  familyType?: string;
+  @IsEnum(FamilyType)
+  familyType?: FamilyType;
 
   @IsOptional()
-  @IsString()
-  familyStatus?: string;
+  @IsEnum(FamilyStatus)
+  familyStatus?: FamilyStatus;
 
   @IsOptional()
-  @IsString()
-  familyValues?: string;
+  @IsEnum(FamilyValue)
+  familyValues?: FamilyValue;
 
   @ValidateNested()
   @Type(() => SiblingsDto)
@@ -360,9 +360,10 @@ export class OnboardingProfileDto {
   education!: EducationDto;
 
   @Transform(parseJSON(FamilyDto))
+  @IsOptional()
   @ValidateNested()
   @Type(() => FamilyDto)
-  family!: FamilyDto;
+  family?: FamilyDto;
 
   @Transform(parseJSON(PreferencesDto))
   @IsOptional()

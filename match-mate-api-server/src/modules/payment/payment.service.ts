@@ -107,7 +107,10 @@ export class PaymentService {
   async verifyPayment(userId: string, dto: VerifyPaymentDto) {
     this.ensureUserId(userId);
 
-    const payment = await this.paymentRepo.findByOrderIdAndUser(dto.orderId, userId);
+    const payment = await this.paymentRepo.findByOrderIdAndUser(
+      dto.orderId,
+      userId,
+    );
 
     if (!payment) {
       throw new BadRequestException('Invalid order');
@@ -147,7 +150,10 @@ export class PaymentService {
       throw new BadRequestException('Unable to update payment status');
     }
 
-    await this.activateSubscriptionIfRequired(updated.userId.toString(), updated);
+    await this.activateSubscriptionIfRequired(
+      updated.userId.toString(),
+      updated,
+    );
 
     return updated;
   }
@@ -155,7 +161,10 @@ export class PaymentService {
   async markPaymentFailed(userId: string, dto: FailPaymentDto) {
     this.ensureUserId(userId);
 
-    const payment = await this.paymentRepo.findByOrderIdAndUser(dto.orderId, userId);
+    const payment = await this.paymentRepo.findByOrderIdAndUser(
+      dto.orderId,
+      userId,
+    );
 
     if (!payment) {
       throw new BadRequestException('Invalid order');
@@ -193,7 +202,8 @@ export class PaymentService {
     if (dto.status === PaymentStatus.SUCCESS) {
       const updated = await this.paymentRepo.markSuccess({
         orderId: dto.orderId,
-        gatewayPaymentId: dto.gatewayPaymentId ?? payment.gatewayPaymentId ?? '',
+        gatewayPaymentId:
+          dto.gatewayPaymentId ?? payment.gatewayPaymentId ?? '',
         method: dto.method,
         signatureVerified: true,
         gatewayPayload: dto.payload,
@@ -203,13 +213,19 @@ export class PaymentService {
         throw new BadRequestException('Unable to process success webhook');
       }
 
-      await this.activateSubscriptionIfRequired(updated.userId.toString(), updated);
+      await this.activateSubscriptionIfRequired(
+        updated.userId.toString(),
+        updated,
+      );
 
       return { processed: true, status: updated.status };
     }
 
     if (dto.status === PaymentStatus.REFUNDED) {
-      const updated = await this.paymentRepo.markRefunded(dto.orderId, dto.payload);
+      const updated = await this.paymentRepo.markRefunded(
+        dto.orderId,
+        dto.payload,
+      );
 
       if (!updated) {
         throw new BadRequestException('Unable to process refund webhook');
@@ -248,7 +264,10 @@ export class PaymentService {
   async getUserPaymentDetail(userId: string, orderId: string) {
     this.ensureUserId(userId);
 
-    const payment = await this.paymentRepo.findByOrderIdAndUser(orderId, userId);
+    const payment = await this.paymentRepo.findByOrderIdAndUser(
+      orderId,
+      userId,
+    );
 
     if (!payment) {
       throw new BadRequestException('Payment not found');
@@ -478,6 +497,9 @@ export class PaymentService {
       return;
     }
 
-    await this.subscriptionService.purchasePlan(userId, payment.planId.toString());
+    await this.subscriptionService.purchasePlan(
+      userId,
+      payment.planId.toString(),
+    );
   }
 }

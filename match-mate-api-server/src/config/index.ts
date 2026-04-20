@@ -8,4 +8,14 @@ import storage from './storage.config';
 import throttle from './throttle.config';
 import membership from './membership.config';
 
-export default [app, db, jwt, redis, notification, payment, storage, throttle, membership];
+export default [
+  app,
+  db,
+  jwt,
+  redis,
+  notification,
+  payment,
+  storage,
+  throttle,
+  membership,
+];
