@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Permission, PermissionDocument } from './schemas/permission.schema';
 import { Role, RoleDocument } from './schemas/role.schema';
-import { Permission as AppPermission } from 'src/common/enums';
+import { Permission as AppPermission, Role as AdminRole } from 'src/common/enums';
 import { ConfigService } from '@nestjs/config';
 import { AppLogger } from 'src/common/logger/logger.service';
 
@@ -52,9 +52,9 @@ export class RbacSeederService implements OnApplicationBootstrap {
       .select('_id');
 
     await this.roleModel.updateOne(
-      { name: 'ADMIN' },
+      { name: AdminRole.ADMIN },
       {
-        name: 'ADMIN',
+        name: AdminRole.ADMIN,
         permissions: adminPermissions.map((p) => p._id),
       },
       { upsert: true },

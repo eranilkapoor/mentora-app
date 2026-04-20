@@ -281,7 +281,7 @@ export const envValidationSchema = Joi.object({
 
   THROTTLE_LIMIT: Joi.number().integer().min(1).max(10000).default(100),
 
-  NOTIFICATION_SEED_DEFAULTS: Joi.boolean().default(true),
+  NOTIFICATION_SEED_DEFAULTS: Joi.boolean().default(false),
 
   NOTIFICATION_QUEUE_ENABLED: Joi.boolean().empty('').optional(),
 

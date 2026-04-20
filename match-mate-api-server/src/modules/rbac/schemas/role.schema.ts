@@ -4,7 +4,7 @@ import { Document, Types } from 'mongoose';
 @Schema({ timestamps: true })
 export class Role {
   @Prop({ required: true, unique: true })
-  name!: string; // USER, ADMIN, etc
+  name!: string; // user, admin, etc
 
   @Prop()
   description?: string;

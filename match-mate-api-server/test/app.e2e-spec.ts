@@ -1035,7 +1035,7 @@ describe('E2E – RBAC (Admin)', () => {
     return request(app.getHttpServer())
       .post('/api/v1/admin/rbac/roles')
       .set('Authorization', AUTH_TOKEN)
-      .send({ name: 'ADMIN', permissions: [] })
+      .send({ name: 'admin', permissions: [] })
       .expect(201);
   });
 

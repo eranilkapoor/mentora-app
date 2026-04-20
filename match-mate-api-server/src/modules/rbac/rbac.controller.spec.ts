@@ -63,18 +63,18 @@ describe('RbacController', () => {
 
   describe('createRole()', () => {
     it('should create a role', () => {
-      const role = { _id: 'role-1', name: 'ADMIN' };
+      const role = { _id: 'role-1', name: 'admin' };
       service.createRole.mockReturnValue(role);
-      const result = controller.createRole({ name: 'ADMIN' } as any);
+      const result = controller.createRole({ name: 'admin' } as any);
       expect(result).toEqual(role);
     });
   });
 
   describe('getRoles()', () => {
     it('should return all roles with permissions', () => {
-      service.getRoles.mockReturnValue([{ name: 'ADMIN', permissions: [] }]);
+      service.getRoles.mockReturnValue([{ name: 'admin', permissions: [] }]);
       const result = controller.getRoles();
-      expect(result).toEqual([{ name: 'ADMIN', permissions: [] }]);
+      expect(result).toEqual([{ name: 'admin', permissions: [] }]);
     });
   });
 
