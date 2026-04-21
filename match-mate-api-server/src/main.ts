@@ -100,18 +100,18 @@ async function bootstrap() {
     }),
   );
 
-  // ==========================================
-  // GLOBAL FILTERS
-  // ==========================================
-  app.useGlobalFilters(new AllExceptionsFilter());
-
-  // ==========================================
-  // GLOBAL INTERCEPTORS
-  // ==========================================
   const logger = app.get(AppLogger);
 
   app.useLogger(logger);
 
+  // ==========================================
+  // GLOBAL FILTERS
+  // ==========================================
+  app.useGlobalFilters(new AllExceptionsFilter(logger));
+
+  // ==========================================
+  // GLOBAL INTERCEPTORS
+  // ==========================================
   app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
   const wsAdapter = new HybridSocketIoAdapter(app, configService, logger);

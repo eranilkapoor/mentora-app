@@ -7,6 +7,7 @@ import {
   Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
+import { AppLogger } from '../logger/logger.service';
 
 interface ValidationErrorResponse {
   message?: string | string[];
@@ -15,7 +16,7 @@ interface ValidationErrorResponse {
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  private readonly logger = new Logger(AllExceptionsFilter.name);
+  constructor(private readonly logger: AppLogger){}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -54,7 +55,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // Log error with correlation ID
-    this.logger.error({
+    this.logger.error('ERROR LOG :', JSON.stringify({
+      success: false,
+      path: request.url,
+      method: request.method,
+      correlationId,
+      requestId,
+      statusCode: status,
+      message,
+      stack: exception instanceof Error ? exception.stack : undefined,
+      timestamp: new Date().toISOString(),
+    }),
+    {
       success: false,
       path: request.url,
       method: request.method,

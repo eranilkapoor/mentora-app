@@ -13,7 +13,7 @@ import {
 import { UpdateProfileDto } from './dto/update-profile.dto';
 import type { ICacheService } from 'src/modules/cache/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
-import { NotificationService } from '../notification/notification.service';
+import { NotificationService } from '../notification/services/notification.service';
 import { AnalyticsService } from '../analytics/analytics.service';
 import {
   AnalyticsEventType,
@@ -33,6 +33,7 @@ import {
   PrivacySettingDocument,
 } from './schemas/settings/privacy.schema';
 import { UpdatePrivacySettingsDto } from './dto/privacy-media.dto';
+import { BodyType, Complexion, Religion } from 'src/common/enums';
 
 // ─── Image type ───────────────────────────────────────────────────────────────
 
@@ -555,8 +556,8 @@ export class ProfileService {
   ): number {
     let score = 60;
     if (dto.personal.aboutMe) score += 10;
-    if (dto.preferences?.partnerPreference) score += 10;
-    if (dto.preferences?.hobbies?.length) score += 10;
+    if (dto.preferences) score += 10;
+    if (dto.preferences?.qualification?.length) score += 10;
     if (imageCount > 0) score += 10;
     return Math.min(score, 100);
   }
@@ -572,7 +573,7 @@ export class ProfileService {
       dto.education.qualification,
       dto.education.occupation,
       ...(dto.preferences?.languagesKnown ?? []),
-      ...(dto.preferences?.hobbies ?? []),
+      ...(dto.preferences?.qualification ?? []),
     ];
 
     return Array.from(
@@ -699,16 +700,6 @@ export class ProfileService {
       normalized.preferences = {
         ...currentPreferences,
         ...dto.preferences,
-        partnerPreference: {
-          ...((currentPreferences.partnerPreference ?? {}) as Record<
-            string,
-            unknown
-          >),
-          ...((dto.preferences.partnerPreference ?? {}) as Record<
-            string,
-            unknown
-          >),
-        },
       };
     }
 
@@ -762,7 +753,7 @@ export class ProfileService {
           personal.dateOfBirth instanceof Date
             ? personal.dateOfBirth.toISOString()
             : String(personal.dateOfBirth ?? ''),
-        religion: String(personal.religion ?? ''),
+        religion: personal.religion as Religion,
         caste: typeof personal.caste === 'string' ? personal.caste : undefined,
         country:
           typeof personal.country === 'string' ? personal.country : undefined,
@@ -781,11 +772,9 @@ export class ProfileService {
         weight:
           typeof physical.weight === 'number' ? physical.weight : undefined,
         bodyType:
-          typeof physical.bodyType === 'string' ? physical.bodyType : undefined,
+          physical.bodyType as BodyType,
         complexion:
-          typeof physical.complexion === 'string'
-            ? physical.complexion
-            : undefined,
+          physical.complexion as Complexion,
       },
       education: {
         qualification: String(education.qualification ?? ''),
@@ -843,7 +832,7 @@ export class ProfileService {
       Boolean(dto.education.occupation),
       imageCount > 0,
       Boolean(dto.personal.aboutMe),
-      Boolean(dto.preferences?.partnerPreference),
+      Boolean(dto.preferences),
     ];
 
     const completed = checks.filter(Boolean).length;

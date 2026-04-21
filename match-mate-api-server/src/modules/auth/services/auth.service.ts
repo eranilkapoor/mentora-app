@@ -44,7 +44,7 @@ import {
   ActivityLogDocument,
   ActivityPlatform,
 } from '../../profile/schemas/settings/activity-logs.schema';
-import { NotificationService } from '../../notification/notification.service';
+import { NotificationService } from '../../notification/services/notification.service';
 import { AnalyticsService } from '../../analytics/analytics.service';
 import {
   AnalyticsEventType,

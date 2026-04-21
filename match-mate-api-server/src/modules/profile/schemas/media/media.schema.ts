@@ -11,6 +11,9 @@ export class Media {
   @Prop({ enum: MediaType })
   type!: MediaType;
 
+  @Prop()
+  filename?: string;
+
   @Prop({ required: true })
   url!: string;
 

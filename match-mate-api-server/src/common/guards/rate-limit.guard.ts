@@ -16,6 +16,7 @@ import {
 import type { ICacheService } from 'src/modules/cache/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
 import { SKIP_RATE_LIMIT_KEY } from '../decorators/skip-rate-limit.decorator';
+import { AppLogger } from '../logger/logger.service';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,10 +51,11 @@ interface RateLimitEntry {
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
-  private readonly logger = new Logger(RateLimitGuard.name);
+  //private readonly logger = new Logger(RateLimitGuard.name);
   private locks = new Map<string, Promise<void>>();
 
   constructor(
+    private readonly logger: AppLogger,
     private readonly reflector: Reflector,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
   ) {}

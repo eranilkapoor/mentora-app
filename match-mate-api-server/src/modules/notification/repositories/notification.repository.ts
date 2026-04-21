@@ -4,24 +4,24 @@ import { Model, Types } from 'mongoose';
 import {
   Notification,
   NotificationDocument,
-} from './schemas/notification.schema';
+} from '../schemas/notification.schema';
 import {
   NotificationTemplates,
   NotificationTemplatesDocument,
-} from './schemas/notification-templates.schema';
+} from '../schemas/notification-templates.schema';
 import {
   NotificationLogs,
   NotificationLogsDocument,
-} from './schemas/notification-logs.schema';
+} from '../schemas/notification-logs.schema';
 import {
   UserNotificationSettings,
   UserNotificationSettingsDocument,
-} from './schemas/user-notification-settings.schema';
-import { User, UserDocument } from '../auth/schemas/user.schema';
+} from '../schemas/user-notification-settings.schema';
+import { User, UserDocument } from '../../auth/schemas/user.schema';
 import {
   DeliveryLogChannel,
   DeliveryLogStatus,
-} from './notification.constants';
+} from '../notification.constants';
 
 @Injectable()
 export class NotificationRepository {

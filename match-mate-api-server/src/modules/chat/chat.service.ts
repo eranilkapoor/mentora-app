@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { NotificationService } from '../notification/notification.service';
+import { NotificationService } from '../notification/services/notification.service';
 import { ChatPresenceService } from './chat-presence.service';
 import { ChatRealtimeService } from './chat-realtime.service';
 import { ChatRepository } from './chat.repository';

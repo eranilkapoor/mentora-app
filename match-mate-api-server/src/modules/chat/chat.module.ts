@@ -22,7 +22,7 @@ import { Match, MatchSchema } from '../match/schemas/match.schema';
 import {
   UserBlock,
   UserBlockSchema,
-} from '../profile/schemas/interaction/user-block.schema';
+} from '../profile/schemas/settings/user-block.schema';
 import { ChatPresenceService } from './chat-presence.service';
 
 @Module({

@@ -26,15 +26,6 @@ class Range<T = number> {
 }
 
 @Schema({ _id: false })
-export class PartnerPreference {
-  @Prop()
-  childPreference?: string;
-
-  @Prop()
-  nriPreference?: string;
-}
-
-@Schema({ _id: false })
 export class PartnerFilters {
   @Prop({ type: Range })
   age?: Range;
@@ -137,12 +128,6 @@ class MatchWeights {
   @Prop({ default: 15 }) horoscope!: number;
 }
 
-@Schema({ _id: false })
-class PartnerDescription {
-  @Prop()
-  aboutPartner?: string;
-}
-
 @Schema({ collection: COLLECTIONS.PREFERENCE, timestamps: true })
 export class Preference {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
@@ -157,8 +142,8 @@ export class Preference {
   @Prop({ type: MatchWeights, default: () => ({}) })
   weights!: MatchWeights;
 
-  @Prop({ type: PartnerDescription })
-  description?: PartnerDescription;
+  @Prop()
+  aboutPartner?: string;
 
   @Prop({ default: 1 })
   schemaVersion!: number;

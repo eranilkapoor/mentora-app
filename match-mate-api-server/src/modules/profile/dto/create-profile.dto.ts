@@ -9,12 +9,12 @@ import {
   IsString,
   IsBoolean,
 } from 'class-validator';
-import { Type, Transform } from 'class-transformer';
+import { Type, Transform, plainToInstance } from 'class-transformer';
 import { Gender } from 'src/common/enums/gender.enum';
 import { Diet } from 'src/common/enums/diet.enum';
 import { Drinking } from 'src/common/enums/drinking.enum';
 import { Smoking } from 'src/common/enums/smoking.enum';
-import { MaritalStatus } from 'src/common/enums/marital-status.enum';
+import { BodyType, Caste, Complexion, FamilyStatus, FamilyType, FamilyValue, MaritalStatus, Religion, SiblingType } from 'src/common/enums';
 
 export class PersonalDto {
   @IsString()
@@ -35,9 +35,8 @@ export class PersonalDto {
   @IsDateString()
   dateOfBirth!: string;
 
-  @IsString()
-  @IsNotEmpty()
-  religion!: string;
+  @IsEnum(Religion)
+  religion!: Religion;
 
   @IsOptional()
   @IsString()
@@ -59,9 +58,8 @@ export class PersonalDto {
   @IsString()
   motherTongue?: string;
 
-  @IsOptional()
   @IsEnum(MaritalStatus)
-  maritalStatus?: MaritalStatus;
+  maritalStatus!: MaritalStatus;
 
   @IsOptional()
   @IsString()
@@ -79,12 +77,12 @@ export class PhysicalDto {
   weight?: number;
 
   @IsOptional()
-  @IsString()
-  bodyType?: string;
+  @IsEnum(BodyType)
+  bodyType?: BodyType;
 
   @IsOptional()
-  @IsString()
-  complexion?: string;
+  @IsEnum(Complexion)
+  complexion?: Complexion;
 }
 
 export class EducationDto {
@@ -111,10 +109,10 @@ export class EducationDto {
 
 class SiblingDetail {
   @IsNotEmpty()
-  @IsEnum(['brother', 'sister'], {
+  @IsEnum(SiblingType, {
     message: 'Type must be either brother or sister',
   })
-  type!: 'brother' | 'sister';
+  type!: SiblingType;
 
   @IsBoolean()
   @IsNotEmpty()
@@ -129,22 +127,22 @@ export class SiblingsDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  brothers?: number;
+  brothersCount?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  sisters?: number;
+  sistersCount?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  marriedBrothers?: number;
+  marriedBrothersCount?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
-  marriedSisters?: number;
+  marriedSistersCount?: number;
 
   @IsOptional()
   details?: SiblingDetail[];
@@ -172,16 +170,16 @@ export class FamilyDto {
   motherOccupation?: string;
 
   @IsOptional()
-  @IsString()
-  familyType?: string;
+  @IsEnum(FamilyType)
+  familyType?: FamilyType;
 
   @IsOptional()
-  @IsString()
-  familyStatus?: string;
+  @IsEnum(FamilyStatus)
+  familyStatus?: FamilyStatus;
 
   @IsOptional()
-  @IsString()
-  familyValues?: string;
+  @IsEnum(FamilyValue)
+  familyValues?: FamilyValue;
 
   @ValidateNested()
   @Type(() => SiblingsDto)
@@ -198,7 +196,7 @@ export class RangeDto {
   max!: number;
 }
 
-class PartnerPreferenceDto {
+export class PreferencesDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => RangeDto)
@@ -216,13 +214,13 @@ class PartnerPreferenceDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  religion?: string[];
+  @IsEnum(Religion, { each: true })
+  religion?: Religion[];
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  caste?: string[];
+  @IsEnum(Caste, { each: true })
+  caste?: Caste[];
 
   @IsOptional()
   @IsArray()
@@ -256,13 +254,13 @@ class PartnerPreferenceDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  bodyType?: string[];
+  @IsEnum(BodyType, { each: true })
+  bodyType?: BodyType[];
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  complexion?: string[];
+  @IsEnum(Complexion, { each: true })
+  complexion?: Complexion[];
 
   @IsOptional()
   @IsArray()
@@ -292,75 +290,36 @@ class PartnerPreferenceDto {
   isStrict?: boolean;
 }
 
-export class PreferencesDto {
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => PartnerPreferenceDto)
-  partnerPreference?: PartnerPreferenceDto;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  hobbies?: string[];
-
-  @IsOptional()
-  @IsEnum(Smoking)
-  smoking?: Smoking;
-
-  @IsOptional()
-  @IsEnum(Drinking)
-  drinking?: Drinking;
-
-  @IsOptional()
-  @IsEnum(Diet)
-  diet?: Diet;
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  music?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  movies?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  sports?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  languagesKnown?: string[];
-}
-
-const parseJSON = ({ value }: { value: unknown }): unknown =>
-  typeof value === 'string' ? JSON.parse(value) : value;
-
+const parseJSON =
+  <T>(cls: new () => T) =>
+  ({ value }: { value: unknown }): T => {
+    const parsed: unknown =
+      typeof value === 'string' ? JSON.parse(value) : value;
+    return plainToInstance(cls, parsed);
+  };
 export class CreateProfileDto {
-  @Transform(parseJSON)
+  @Transform(parseJSON(PersonalDto))
   @ValidateNested()
   @Type(() => PersonalDto)
   personal!: PersonalDto;
 
-  @Transform(parseJSON)
+  @Transform(parseJSON(PhysicalDto))
   @ValidateNested()
   @Type(() => PhysicalDto)
   physical!: PhysicalDto;
 
-  @Transform(parseJSON)
+  @Transform(parseJSON(EducationDto))
   @ValidateNested()
   @Type(() => EducationDto)
   education!: EducationDto;
 
-  @Transform(parseJSON)
+  @Transform(parseJSON(FamilyDto))
+  @IsOptional()
   @ValidateNested()
   @Type(() => FamilyDto)
-  family!: FamilyDto;
+  family?: FamilyDto;
 
-  @Transform(parseJSON)
+  @Transform(parseJSON(PreferencesDto))
   @IsOptional()
   @ValidateNested()
   @Type(() => PreferencesDto)

@@ -7,30 +7,30 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { AppLogger } from 'src/common/logger/logger.service';
-import { NotificationRepository } from './notification.repository';
-import { CreateNotificationDto } from './dto/create-notification.dto';
-import { ListNotificationsDto } from './dto/list-notifications.dto';
-import { NotificationAnalyticsQueryDto } from './dto/notification-analytics-query.dto';
-import { NotificationDlqQueryDto } from './dto/notification-dlq-query.dto';
-import { NotificationDlqPurgeDto } from './dto/notification-dlq-purge.dto';
-import { NotificationDlqReplayAllDto } from './dto/notification-dlq-replay-all.dto';
-import { SendTemplateNotificationDto } from './dto/send-template-notification.dto';
-import { UpdateNotificationSettingsDto } from './dto/update-notification-settings.dto';
-import { UpsertNotificationTemplateDto } from './dto/upsert-notification-template.dto';
+import { NotificationRepository } from '../repositories/notification.repository';
+import { CreateNotificationDto } from '../dto/create-notification.dto';
+import { ListNotificationsDto } from '../dto/list-notifications.dto';
+import { NotificationAnalyticsQueryDto } from '../dto/notification-analytics-query.dto';
+import { NotificationDlqQueryDto } from '../dto/notification-dlq-query.dto';
+import { NotificationDlqPurgeDto } from '../dto/notification-dlq-purge.dto';
+import { NotificationDlqReplayAllDto } from '../dto/notification-dlq-replay-all.dto';
+import { SendTemplateNotificationDto } from '../dto/send-template-notification.dto';
+import { UpdateNotificationSettingsDto } from '../dto/update-notification-settings.dto';
+import { UpsertNotificationTemplateDto } from '../dto/upsert-notification-template.dto';
 import {
   DeliveryLogChannel,
   DeliveryLogStatus,
   NotificationCategory,
   NotificationChannel,
   NotificationPriority,
-} from './notification.constants';
+} from '../notification.constants';
 import {
   NotificationChannelPayload,
   NotificationChannelProvider,
-} from './interfaces/notification-channel.interface';
-import { EmailNotificationProvider } from './providers/email-notification.provider';
-import { PushNotificationProvider } from './providers/push-notification.provider';
-import { SmsNotificationProvider } from './providers/sms-notification.provider';
+} from '../interfaces/notification-channel.interface';
+import { EmailNotificationProvider } from '../providers/email-notification.provider';
+import { PushNotificationProvider } from '../providers/push-notification.provider';
+import { SmsNotificationProvider } from '../providers/sms-notification.provider';
 import {
   NotificationDispatchJobData,
   NotificationQueueService,

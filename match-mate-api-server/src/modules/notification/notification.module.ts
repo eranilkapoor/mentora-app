@@ -18,13 +18,13 @@ import {
   UserNotificationSettingsSchema,
 } from './schemas/user-notification-settings.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
-import { NotificationService } from './notification.service';
-import { NotificationRepository } from './notification.repository';
+import { NotificationService } from './services/notification.service';
+import { NotificationRepository } from './repositories/notification.repository';
 import { NotificationController } from './notification.controller';
 import { EmailNotificationProvider } from './providers/email-notification.provider';
 import { SmsNotificationProvider } from './providers/sms-notification.provider';
 import { PushNotificationProvider } from './providers/push-notification.provider';
-import { NotificationQueueService } from './notification-queue.service';
+import { NotificationQueueService } from './services/notification-queue.service';
 import { NotificationDispatchWorker } from './notification-dispatch.worker';
 
 @Module({

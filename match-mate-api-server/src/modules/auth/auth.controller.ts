@@ -172,7 +172,6 @@ export class AuthController {
     }
   }
 
-  @Post('onboarding-profile')
   @UseInterceptors(
     FilesInterceptor('profileImages', 6, {
       storage: memoryStorage(),
@@ -188,6 +187,7 @@ export class AuthController {
       limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per image
     }),
   )
+  @Post('onboarding-profile')
   async onboardingProfile(
     @Req() req: AuthenticatedRequest,
     @CurrentUser('sub') userId: string,
@@ -199,7 +199,6 @@ export class AuthController {
       }),
     )
     dto: OnboardingProfileDto,
-    //@Body() dto: any,
     @UploadedFiles() profileImages: Express.Multer.File[],
   ) {
     const safeImages = profileImages ?? [];

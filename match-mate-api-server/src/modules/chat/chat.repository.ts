@@ -19,7 +19,7 @@ import { Match, MatchDocument } from '../match/schemas/match.schema';
 import {
   UserBlock,
   UserBlockDocument,
-} from '../profile/schemas/interaction/user-block.schema';
+} from '../profile/schemas/settings/user-block.schema';
 import { ChatMessageStatus, ChatRoomType } from './enums/chat.enums';
 
 @Injectable()

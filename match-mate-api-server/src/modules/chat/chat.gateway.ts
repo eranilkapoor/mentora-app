@@ -21,6 +21,7 @@ import { SendMessageDto } from './dto/send-message.dto';
 import { TypingEventDto } from './dto/typing-event.dto';
 import { ChatPresenceService } from './chat-presence.service';
 import { getJwtConfig } from 'src/config/jwt.config';
+import { AppLogger } from 'src/common/logger/logger.service';
 
 interface SocketJwtPayload {
   sub: string;
@@ -43,7 +44,7 @@ export class ChatGateway
   @WebSocketServer()
   server!: Server;
 
-  private readonly logger = new Logger(ChatGateway.name);
+  //private readonly logger = new Logger(ChatGateway.name);
 
   constructor(
     private readonly chatService: ChatService,
@@ -51,6 +52,7 @@ export class ChatGateway
     private readonly realtime: ChatRealtimeService,
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
+    private readonly logger: AppLogger,
   ) {}
 
   afterInit(server: Server) {

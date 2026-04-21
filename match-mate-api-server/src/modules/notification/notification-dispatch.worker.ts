@@ -6,8 +6,8 @@ import { AppLogger } from 'src/common/logger/logger.service';
 import {
   NotificationDispatchJobData,
   NotificationQueueService,
-} from './notification-queue.service';
-import { NotificationService } from './notification.service';
+} from './services/notification-queue.service';
+import { NotificationService } from './services/notification.service';
 
 @Injectable()
 export class NotificationDispatchWorker
