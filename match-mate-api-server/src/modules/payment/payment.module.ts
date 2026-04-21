@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Payment, PaymentSchema } from './schemas/payment.schema';
-import { PaymentService } from './payment.service';
-import { PaymentRepository } from './payment.repository';
-import { PaymentController } from './payment.controller';
-import { PaymentAdminController } from './payment.admin.controller';
+import { PaymentService } from './services/payment.service';
+import { PaymentRepository } from './repositories/payment.repository';
+import { PaymentController } from './controllers/payment.controller';
+import { PaymentAdminController } from './controllers/payment.admin.controller';
 import { Plan, PlanSchema } from '../plan/schemas/plan.schema';
 import { SubscriptionModule } from '../subscription/subscription.module';
 

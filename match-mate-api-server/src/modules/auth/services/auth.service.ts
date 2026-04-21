@@ -11,7 +11,7 @@ import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { PlanTier, Role, Status, SubscriptionStatus } from 'src/common/enums';
 import { UserRepository } from '../repositories/user.repository';
-import { ProfileService } from '../../profile/profile.service';
+import { ProfileService } from '../../profile/services/profile.service';
 import { OtpService } from './otp.service';
 import * as bcrypt from 'bcryptjs';
 import {
@@ -23,9 +23,9 @@ import {
 } from '../dto/auth.dto';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import { OnboardingProfileDto } from '../dto/onboarding-profile.dto';
-import { StorageService } from '../../storage/storage.service';
-import type { ICacheService } from 'src/modules/cache/cache.interface';
-import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
+import { StorageService } from '../../storage/services/storage.service';
+import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
 import { AuthTokenService } from './auth-token.service';
 import {
   UserSession,
@@ -45,7 +45,7 @@ import {
   ActivityPlatform,
 } from '../../profile/schemas/settings/activity-logs.schema';
 import { NotificationService } from '../../notification/services/notification.service';
-import { AnalyticsService } from '../../analytics/analytics.service';
+import { AnalyticsService } from '../../analytics/services/analytics.service';
 import {
   AnalyticsEventType,
   AnalyticsPlatform,
@@ -206,7 +206,7 @@ export class AuthService {
       return { accessToken, refreshToken };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
-        throw error;
+        throw new UnauthorizedException(error);
       }
       throw new UnauthorizedException('Token refresh failed');
     }
@@ -280,7 +280,7 @@ export class AuthService {
       };
     } catch (error) {
       if (error instanceof ConflictException) {
-        throw error;
+        throw new ConflictException(error);
       }
       throw new UnauthorizedException('Registration failed');
     }

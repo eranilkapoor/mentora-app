@@ -10,7 +10,7 @@ import { PlanService } from './services/plan.service';
 import { FeatureService } from './services/feature.service';
 
 // Controller
-import { PlanController } from './plan.controller';
+import { PlanController } from './controllers/plan.controller';
 
 // Guards
 import { FeatureGuard } from './guards/feature.guard';

@@ -13,8 +13,8 @@ import {
   RATE_LIMIT_KEY,
   RateLimitConfig,
 } from '../decorators/rate-limit.decorator';
-import type { ICacheService } from 'src/modules/cache/cache.interface';
-import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
+import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
 import { SKIP_RATE_LIMIT_KEY } from '../decorators/skip-rate-limit.decorator';
 import { AppLogger } from '../logger/logger.service';
 

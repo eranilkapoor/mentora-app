@@ -20,7 +20,7 @@ import {
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import { NotificationService } from './services/notification.service';
 import { NotificationRepository } from './repositories/notification.repository';
-import { NotificationController } from './notification.controller';
+import { NotificationController } from './controllers/notification.controller';
 import { EmailNotificationProvider } from './providers/email-notification.provider';
 import { SmsNotificationProvider } from './providers/sms-notification.provider';
 import { PushNotificationProvider } from './providers/push-notification.provider';

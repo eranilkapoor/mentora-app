@@ -1,7 +1,7 @@
 import { UnauthorizedException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { JwtAuthGuard } from './jwt-auth.guard';
-import { IS_PUBLIC_KEY } from 'src/common/decorators/public.decorator';
+import { IS_PUBLIC_KEY } from '../../../common/decorators/public.decorator';
 
 describe('JwtAuthGuard', () => {
   const logger = { error: jest.fn() };

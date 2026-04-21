@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { Permission, PermissionSchema } from './schemas/permission.schema';
-import { RbacSeederService } from './rbac-seeder.service';
+import { RbacSeederService } from './services/rbac-seeder.service';
 import { Role, RoleSchema } from './schemas/role.schema';
-import { RbacController } from './rbac.controller';
-import { RbacService } from './rbac.service';
+import { RbacController } from './controllers/rbac.controller';
+import { RbacService } from './services/rbac.service';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 
 @Module({

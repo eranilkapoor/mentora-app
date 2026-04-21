@@ -14,7 +14,7 @@ export const COLLECTIONS = {
   PLAN_FEATURE: 'plan_features',
   SUBSCRIPTION: 'subscriptions',
   PAYMENT: 'payments',
-  ANALYTICS: 'analytics',
+  ANALYTICS_EVENT: 'analytics_events',
   MATCH: 'matches',
   CHAT_ROOM: 'chat_rooms',
   CHAT_MESSAGE: 'chat_messages',

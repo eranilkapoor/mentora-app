@@ -1,12 +1,12 @@
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationService } from './notification.service';
-import { NotificationRepository } from './notification.repository';
+import { NotificationRepository } from '../repositories/notification.repository';
 import { EmailNotificationProvider } from '../providers/email-notification.provider';
 import { SmsNotificationProvider } from '../providers/sms-notification.provider';
 import { PushNotificationProvider } from '../providers/push-notification.provider';
 import { NotificationQueueService } from './notification-queue.service';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from './../../../common/logger/logger.service';
 import { ConfigService } from '@nestjs/config';
 
 const mockRepo = () => ({

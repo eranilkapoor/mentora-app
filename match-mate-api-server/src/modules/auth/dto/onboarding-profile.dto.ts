@@ -279,7 +279,7 @@ export class PreferencesDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(Smoking, { each: true })
+  @IsString({ each: true })
   languagesKnown?: string[];
 
   @IsOptional()

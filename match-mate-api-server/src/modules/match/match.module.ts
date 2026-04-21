@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { MatchController } from './match.controller';
-import { MatchService } from './match.service';
-import { MatchRepository } from './match.repository';
+import { MatchController } from './controllers/match.controller';
+import { MatchService } from './services/match.service';
+import { MatchRepository } from './repositories/match.repository';
 import { Interest, InterestSchema } from './schemas/interest.schema';
 import { Match, MatchSchema } from './schemas/match.schema';
 

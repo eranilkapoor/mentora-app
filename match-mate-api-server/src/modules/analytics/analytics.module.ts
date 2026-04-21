@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { AnalyticsController } from './analytics.controller';
-import { AnalyticsService } from './analytics.service';
-import { AnalyticsRepository } from './analytics.repository';
+import { AnalyticsController } from './controllers/analytics.controller';
+import { AnalyticsService } from './services/analytics.service';
+import { AnalyticsRepository } from './repositories/analytics.repository';
 import {
   AnalyticsEvent,
   AnalyticsEventSchema,

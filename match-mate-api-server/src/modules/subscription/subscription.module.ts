@@ -1,5 +1,5 @@
 import { Module } from '@nestjs/common';
-import { SubscriptionService } from './subscription.service';
+import { SubscriptionService } from './services/subscription.service';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   Subscription,

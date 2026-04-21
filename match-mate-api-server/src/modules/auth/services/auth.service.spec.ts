@@ -2,19 +2,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { ConflictException, UnauthorizedException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
-import { AuthService } from '../auth.service';
+import { AuthService } from './auth.service';
 import { UserRepository } from '../repositories/user.repository';
 import { AuthTokenService } from './auth-token.service';
 import { OtpService } from './otp.service';
-import { ProfileService } from '../../profile/profile.service';
-import { StorageService } from '../../storage/storage.service';
+import { ProfileService } from '../../profile/services/profile.service';
+import { StorageService } from '../../storage/services/storage.service';
 import { UserSession } from '../schemas/user-session.schema';
-import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
+import { CACHE_SERVICE } from '../../cache/interfaces/cache.interface';
 import { Subscription } from '../../subscription/schemas/subscription.schema';
 import { Plan } from '../../plan/schemas/plan.schema';
 import { ActivityLog } from '../../profile/schemas/settings/activity-logs.schema';
-import { NotificationService } from '../../notification/notification.service';
-import { AnalyticsService } from '../../analytics/analytics.service';
+import { NotificationService } from '../../notification/services/notification.service';
+import { AnalyticsService } from '../../analytics/services/analytics.service';
 import {
   mockCacheService,
   mockAuthTokenService,
@@ -24,7 +24,7 @@ import {
   mockAnalyticsService,
   buildReq,
   buildRes,
-} from 'src/test/helpers/mock-factory';
+} from '../../../test/helpers/mock-factory';
 
 const mockUserRepository = () => ({
   findByProvider: jest.fn(),
