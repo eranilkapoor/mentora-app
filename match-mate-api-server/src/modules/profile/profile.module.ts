@@ -13,7 +13,7 @@ import {
 import {
   PrivacySetting,
   PrivacySettingSchema,
-} from './schemas/settings/privacy.schema';
+} from './schemas/settings/privacy-setting.schema';
 
 @Module({
   imports: [

@@ -31,7 +31,7 @@ import { StorageService } from '../../storage/services/storage.service';
 import {
   PrivacySetting,
   PrivacySettingDocument,
-} from '../schemas/settings/privacy.schema';
+} from '../schemas/settings/privacy-setting.schema';
 import { UpdatePrivacySettingsDto } from '../dto/privacy-media.dto';
 import { BodyType, Complexion, ProfileStatus, Religion } from 'src/common/enums';
 

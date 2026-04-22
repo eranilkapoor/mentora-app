@@ -17,7 +17,7 @@ import {
 import {
   PrivacySetting,
   PrivacySettingSchema,
-} from '../profile/schemas/settings/privacy.schema';
+} from '../profile/schemas/settings/privacy-setting.schema';
 import { Match, MatchSchema } from '../match/schemas/match.schema';
 import {
   UserBlock,

@@ -3,16 +3,16 @@ import { BadRequestException } from '@nestjs/common';
 import { getModelToken } from '@nestjs/mongoose';
 import { ProfileService } from './profile.service';
 import { ProfileRepository } from '../repositories/profile.repository';
-import { CACHE_SERVICE } from 'src/modules/cache/cache.interface';
+import { CACHE_SERVICE } from '../../cache/interfaces/cache.interface';
 import {
   mockCacheService,
   mockAnalyticsService,
   buildReq,
-} from 'src/test/helpers/mock-factory';
+} from '../../../test/helpers/mock-factory';
 import { ActivityLog } from '../schemas/settings/activity-logs.schema';
-import { NotificationService } from '../notification/notification.service';
-import { AnalyticsService } from '../analytics/analytics.service';
-import { StorageService } from '../../storage/storage.service';
+import { NotificationService } from '../../notification/services/notification.service';
+import { AnalyticsService } from '../../analytics/services/analytics.service';
+import { StorageService } from '../../storage/services/storage.service';
 import { PrivacySetting } from '../schemas/settings/privacy.schema';
 
 const mockProfileRepository = () => ({

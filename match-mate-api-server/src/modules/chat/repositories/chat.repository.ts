@@ -14,7 +14,7 @@ import {
 import {
   PrivacySetting,
   PrivacySettingDocument,
-} from '../../profile/schemas/settings/privacy.schema';
+} from '../../profile/schemas/settings/privacy-setting.schema';
 import { Match, MatchDocument } from '../../match/schemas/match.schema';
 import {
   UserBlock,
