@@ -706,32 +706,28 @@ export class AuthService {
     void Promise.allSettled(jobs);
   }
 
+  private readonly analyticsPlatformMap: Record<string, AnalyticsPlatform> = {
+    ios: AnalyticsPlatform.IOS,
+    android: AnalyticsPlatform.ANDROID,
+    mobile: AnalyticsPlatform.API,
+  };
+
+  private readonly activityPlatformMap: Record<string, ActivityPlatform> = {
+    ios: ActivityPlatform.IOS,
+    android: ActivityPlatform.ANDROID,
+  };
+
   private toAnalyticsPlatform(platform: string): AnalyticsPlatform {
-    if (platform === AnalyticsPlatform.IOS) {
-      return AnalyticsPlatform.IOS;
-    }
-
-    if (platform === AnalyticsPlatform.ANDROID) {
-      return AnalyticsPlatform.ANDROID;
-    }
-
-    if (platform === 'mobile') {
-      return AnalyticsPlatform.API;
-    }
-
-    return AnalyticsPlatform.WEB;
+    return (
+      this.analyticsPlatformMap[platform?.toLowerCase()] ??
+      AnalyticsPlatform.WEB
+    );
   }
 
   private toActivityPlatform(platform: string): ActivityPlatform {
-    if (platform === ActivityPlatform.IOS) {
-      return ActivityPlatform.IOS;
-    }
-
-    if (platform === ActivityPlatform.ANDROID) {
-      return ActivityPlatform.ANDROID;
-    }
-
-    return ActivityPlatform.WEB;
+    return (
+      this.activityPlatformMap[platform?.toLowerCase()] ?? ActivityPlatform.WEB
+    );
   }
 
   private getRegisterRequestContext(req: AppRequest): RegisterRequestContext {
@@ -1027,7 +1023,7 @@ export class AuthService {
         },
       });
 
-      // TODO return only true or false link is sending only for testing purpose 
+      // TODO return only true or false link is sending only for testing purpose
       return { resetLink };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -1047,32 +1043,47 @@ export class AuthService {
         );
       }
 
-      const payload = this.jwtService.verify(dto.token);
+      // ✅ Strongly type JWT payload
+      type ResetTokenPayload = {
+        userId: string;
+        type: 'password-reset';
+      };
 
-      if (!payload.userId || payload.type !== 'password-reset') {
+      const payload = this.jwtService.verify<ResetTokenPayload>(dto.token);
+
+      if (!payload?.userId || payload.type !== 'password-reset') {
         throw new UnauthorizedException(
           'Invalid or expired password reset token',
         );
       }
 
       const user = await this.userRepo.findById(payload.userId);
+
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
       const emailAccount = this.findEmailAuthAccount(user);
 
-      if (!user || !emailAccount?.passwordHash) {
+      if (!emailAccount?.passwordHash) {
         throw new UnauthorizedException(
           'Password reset is available only for email registered users',
         );
       }
 
+      // ✅ Hash password safely
       emailAccount.passwordHash = await bcrypt.hash(dto.newPassword, 10);
       user.lastPasswordChangedAt = new Date();
+
       await user.save();
 
+      // ✅ Logout all sessions
       await this.userSessionModel.updateMany(
         { userId: user._id },
         { isActive: false },
       );
 
+      // ✅ Notify user
       await this.notificationService.notify({
         userId: String(user._id),
         title: 'Password changed successfully',
@@ -1086,29 +1097,31 @@ export class AuthService {
         },
       });
 
+      // ✅ Activity log
       await this.activityLogModel.create({
         userId: user._id,
         category: ActivityCategory.AUTH,
         action: ActivityAction.PASSWORD_RESET_SUCCESS,
-        ip: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
+        ip: req.ip ?? this.getHeaderString(req, 'x-forwarded-for'),
         device: this.getHeaderString(req, 'x-device-id'),
         userAgent: this.getHeaderString(req, 'user-agent'),
         requestId: req.requestId,
         correlationId: req.correlationId,
-        platform: this.getRegisterRequestContext(req).platform,
+        platform: this.getRegisterRequestContext(req)?.platform,
         metadata: {
           source: 'reset-password',
         },
       });
 
       return { message: 'Password has been reset successfully' };
-    } catch (error) {
+    } catch (error: unknown) {
       if (
         error instanceof BadRequestException ||
         error instanceof UnauthorizedException
       ) {
         throw error;
       }
+
       throw new UnauthorizedException('Failed to reset password');
     }
   }
@@ -1376,21 +1389,23 @@ export class AuthService {
     }
 
     const result = await this.userSessionModel.updateOne(
-      { 
-        userId: new Types.ObjectId(userId), 
+      {
+        userId: new Types.ObjectId(userId),
         refreshToken,
-        isActive: true
+        isActive: true,
       },
-      { 
+      {
         $set: {
           isActive: false,
-          loggedOutAt: new Date()
-        },  
+          loggedOutAt: new Date(),
+        },
       },
     );
 
     if (result.matchedCount === 0) {
-      throw new UnauthorizedException('Session not found or already logged out');
+      throw new UnauthorizedException(
+        'Session not found or already logged out',
+      );
     }
 
     await this.completeLogoutFlow(req, userId, {
@@ -1407,16 +1422,16 @@ export class AuthService {
     }
 
     await this.userSessionModel.updateMany(
-      { 
+      {
         userId: new Types.ObjectId(userId),
-        isActive: true, 
-      }, 
-      { 
+        isActive: true,
+      },
+      {
         $set: {
           isActive: false,
-          loggedOutAt: new Date()
-        }, 
-      }
+          loggedOutAt: new Date(),
+        },
+      },
     );
 
     await this.completeLogoutFlow(req, userId, {

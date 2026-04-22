@@ -145,7 +145,11 @@ export class AuthController {
   async resetPassword(@Req() req: AppRequest, @Body() dto: ResetPasswordDto) {
     try {
       const data = await this.authService.resetPassword(req, dto);
-      return new ApiResponse(true, 'Password has been reset successfully', data);
+      return new ApiResponse(
+        true,
+        'Password has been reset successfully',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Password reset failed';

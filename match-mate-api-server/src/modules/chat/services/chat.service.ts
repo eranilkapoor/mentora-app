@@ -2,6 +2,7 @@ import {
   BadRequestException,
   ForbiddenException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
@@ -59,6 +60,49 @@ interface ConversationResponse {
   };
 }
 
+type MessageLike = {
+  _id: unknown;
+  roomId: unknown;
+  senderId: unknown;
+  receiverId: unknown;
+  type?: ChatMessageType;
+  content?: string;
+  attachments?: unknown[];
+  replyToMessageId?: unknown;
+  status?: ChatMessageStatus;
+  deliveredAt?: Date | null;
+  readAt?: Date | null;
+  createdAt?: Date;
+  updatedAt?: Date;
+  clientMessageId?: string;
+};
+
+type UserLike = {
+  isEmailVerified?: boolean;
+  isPhoneVerified?: boolean;
+  membership?: {
+    tier?: string;
+  };
+};
+
+type ProfileImageLike = {
+  url?: string;
+  isPrimary?: boolean;
+  isActive?: boolean;
+};
+
+type ProfileLike = {
+  personal?: {
+    firstName?: string;
+    lastName?: string;
+    city?: string;
+    country?: string;
+  };
+  isVerified?: boolean;
+  isPremium?: boolean;
+  profileImages?: ProfileImageLike[];
+};
+
 @Injectable()
 export class ChatService {
   constructor(
@@ -76,7 +120,10 @@ export class ChatService {
     };
   }
 
-  async createOrGetDirectRoom(userId: string, dto: CreateDirectRoomDto) {
+  async createOrGetDirectRoom(
+    userId: string,
+    dto: CreateDirectRoomDto,
+  ): Promise<unknown> {
     this.ensureValidObjectId(userId, 'Invalid user id');
     this.ensureValidObjectId(dto.targetUserId, 'Invalid target user id');
 
@@ -108,17 +155,25 @@ export class ChatService {
       });
     }
 
-    if (dto.initialMessage?.trim()) {
+    // ✅ Ensure room exists (type narrowing for TS)
+    if (!room || !room.id) {
+      throw new InternalServerErrorException('Failed to create or fetch room');
+    }
+
+    const initialMessage =
+      typeof dto.initialMessage === 'string' ? dto.initialMessage.trim() : '';
+
+    if (initialMessage.length > 0) {
       return this.sendMessage(userId, {
-        roomId: room.id,
-        content: dto.initialMessage,
+        roomId: room.id as string,
+        content: initialMessage,
         clientMessageId: dto.clientMessageId,
         attachments: [],
         type: ChatMessageType.TEXT,
       });
     }
 
-    return this.getConversationDetail(userId, room.id);
+    return this.getConversationDetail(userId, room.id as string);
   }
 
   async getConversations(userId: string, query: ListConversationsDto) {
@@ -400,7 +455,11 @@ export class ChatService {
     await this.repo.saveRoom(room);
 
     const messagePayload = this.mapMessage(message);
-    this.realtime.emitToConversation(room.id, 'message:new', messagePayload);
+    this.realtime.emitToConversation(
+      room.id as string,
+      'message:new',
+      messagePayload,
+    );
     await this.emitConversationUpdates(room);
 
     await this.notificationService.notify({
@@ -498,7 +557,7 @@ export class ChatService {
 
     for (const participantId of participantIds) {
       const unreadRows = await this.repo.countUnreadByRoomIds(participantId, [
-        room.id,
+        room.id as string,
       ]);
       const conversation = this.mapConversation(
         room,
@@ -639,8 +698,8 @@ export class ChatService {
       updatedAt?: Date;
     },
     currentUserId: string,
-    userMap: Map<string, any>,
-    profileMap: Map<string, any>,
+    userMap: Map<string, UserLike>,
+    profileMap: Map<string, ProfileLike>,
     unreadCount: number,
   ): ConversationResponse {
     const otherUserId = this.getOtherParticipantId(
@@ -675,21 +734,62 @@ export class ChatService {
     };
   }
 
-  private mapMessage(message: any) {
+  private toSafeString(value: unknown): string {
+    if (typeof value === 'string') return value;
+
+    if (typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    if (
+      value &&
+      typeof value === 'object' &&
+      'toString' in value &&
+      typeof (value as { toString: () => string }).toString === 'function' &&
+      value.constructor?.name === 'ObjectId'
+    ) {
+      return (value as { toString: () => string }).toString();
+    }
+
+    throw new BadRequestException('Invalid value for string conversion');
+  }
+
+  private mapMessage(message: MessageLike): {
+    id: string;
+    roomId: string;
+    senderId: string;
+    receiverId: string;
+    type?: ChatMessageType;
+    content?: string;
+    attachments: unknown[];
+    replyToMessageId?: string;
+    status?: ChatMessageStatus;
+    deliveredAt?: Date | null;
+    readAt?: Date | null;
+    createdAt?: Date;
+    updatedAt?: Date;
+    clientMessageId?: string;
+  } {
     return {
-      id: String(message._id),
-      roomId: String(message.roomId),
-      senderId: String(message.senderId),
-      receiverId: String(message.receiverId),
+      id: this.toSafeString(message._id),
+      roomId: this.toSafeString(message.roomId),
+      senderId: this.toSafeString(message.senderId),
+      receiverId: this.toSafeString(message.receiverId),
       type: message.type,
       content: message.content,
-      attachments: message.attachments ?? [],
+      attachments: Array.isArray(message.attachments)
+        ? message.attachments
+        : [],
       replyToMessageId: message.replyToMessageId
-        ? String(message.replyToMessageId)
+        ? this.toSafeString(message.replyToMessageId)
         : undefined,
       status: message.status,
-      deliveredAt: message.deliveredAt,
-      readAt: message.readAt,
+      deliveredAt: message.deliveredAt ?? null,
+      readAt: message.readAt ?? null,
       createdAt: message.createdAt,
       updatedAt: message.updatedAt,
       clientMessageId: message.clientMessageId,
@@ -698,36 +798,61 @@ export class ChatService {
 
   private buildUserSummary(
     userId: string,
-    userMap: Map<string, any>,
-    profileMap: Map<string, any>,
+    userMap: Map<string, UserLike>,
+    profileMap: Map<string, ProfileLike>,
   ): UserSummary {
     const user = userMap.get(userId);
     const profile = profileMap.get(userId);
-    const firstName = profile?.personal?.firstName ?? 'User';
-    const lastName = profile?.personal?.lastName;
+
+    const firstName =
+      typeof profile?.personal?.firstName === 'string'
+        ? profile.personal.firstName
+        : 'User';
+
+    const lastName =
+      typeof profile?.personal?.lastName === 'string'
+        ? profile.personal.lastName
+        : undefined;
+
+    const images: ProfileImageLike[] = Array.isArray(profile?.profileImages)
+      ? profile.profileImages
+      : [];
+
     const primaryImage =
-      profile?.profileImages?.find(
-        (image: { isPrimary?: boolean; isActive?: boolean }) =>
-          image.isActive !== false && image.isPrimary,
-      ) ??
-      profile?.profileImages?.find(
-        (image: { isActive?: boolean }) => image.isActive !== false,
-      );
+      images.find((img) => img.isActive !== false && img.isPrimary === true) ??
+      images.find((img) => img.isActive !== false);
+
+    const city =
+      typeof profile?.personal?.city === 'string'
+        ? profile.personal.city
+        : undefined;
+
+    const country =
+      typeof profile?.personal?.country === 'string'
+        ? profile.personal.country
+        : undefined;
+
+    const isVerified = Boolean(
+      profile?.isVerified || user?.isEmailVerified || user?.isPhoneVerified,
+    );
+
+    const isPremium = Boolean(
+      profile?.isPremium ||
+      (typeof user?.membership?.tier === 'string' &&
+        user.membership.tier !== 'free'),
+    );
 
     return {
       userId,
       fullName: [firstName, lastName].filter(Boolean).join(' '),
       firstName,
       lastName,
-      avatarUrl: primaryImage?.url,
-      city: profile?.personal?.city,
-      country: profile?.personal?.country,
-      isVerified: Boolean(
-        profile?.isVerified || user?.isEmailVerified || user?.isPhoneVerified,
-      ),
-      isPremium: Boolean(
-        profile?.isPremium || user?.membership?.tier !== 'free',
-      ),
+      avatarUrl:
+        typeof primaryImage?.url === 'string' ? primaryImage.url : undefined,
+      city,
+      country,
+      isVerified,
+      isPremium,
       isOnline: this.presence.isOnline(userId),
       lastSeen: this.presence.getLastSeen(userId),
     };

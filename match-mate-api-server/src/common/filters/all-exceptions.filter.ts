@@ -4,7 +4,6 @@ import {
   ExceptionFilter,
   HttpException,
   HttpStatus,
-  Logger,
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { AppLogger } from '../logger/logger.service';
@@ -16,7 +15,7 @@ interface ValidationErrorResponse {
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly logger: AppLogger){}
+  constructor(private readonly logger: AppLogger) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -55,28 +54,31 @@ export class AllExceptionsFilter implements ExceptionFilter {
     }
 
     // Log error with correlation ID
-    this.logger.error('ERROR LOG :', JSON.stringify({
-      success: false,
-      path: request.url,
-      method: request.method,
-      correlationId,
-      requestId,
-      statusCode: status,
-      message,
-      stack: exception instanceof Error ? exception.stack : undefined,
-      timestamp: new Date().toISOString(),
-    }),
-    {
-      success: false,
-      path: request.url,
-      method: request.method,
-      correlationId,
-      requestId,
-      statusCode: status,
-      message,
-      stack: exception instanceof Error ? exception.stack : undefined,
-      timestamp: new Date().toISOString(),
-    });
+    this.logger.error(
+      'ERROR LOG :',
+      JSON.stringify({
+        success: false,
+        path: request.url,
+        method: request.method,
+        correlationId,
+        requestId,
+        statusCode: status,
+        message,
+        stack: exception instanceof Error ? exception.stack : undefined,
+        timestamp: new Date().toISOString(),
+      }),
+      {
+        success: false,
+        path: request.url,
+        method: request.method,
+        correlationId,
+        requestId,
+        statusCode: status,
+        message,
+        stack: exception instanceof Error ? exception.stack : undefined,
+        timestamp: new Date().toISOString(),
+      },
+    );
 
     // Custom 404 response
     if (status === HttpStatus.NOT_FOUND) {

@@ -1,12 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
-import {
-  Caste,
-  Gender,
-  ProfileStatus,
-  Religion,
-} from 'src/common/enums';
+import { Caste, Gender, ProfileStatus, Religion } from 'src/common/enums';
 import { Education } from './education.schema';
 import { Physical } from './physical.schema';
 import { Personal } from './personal.schema';

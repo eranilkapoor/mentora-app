@@ -43,7 +43,13 @@ const s3BucketSchema = Joi.string()
   });
 
 function validateAllowedOrigins(value: string, helpers: Joi.CustomHelpers) {
-  const env = helpers.state.ancestors[0]?.NODE_ENV;
+  const ancestors = helpers.state.ancestors as unknown[];
+  const root =
+    ancestors.length > 0 && typeof ancestors[0] === 'object'
+      ? (ancestors[0] as { NODE_ENV?: string })
+      : undefined;
+
+  const env = root?.NODE_ENV;
   const origins = value
     .split(',')
     .map((origin) => origin.trim())

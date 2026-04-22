@@ -164,7 +164,7 @@ export class NotificationRepository {
   }
 
   upsertTemplate(key: string, data: Partial<NotificationTemplates>) {
-    const { key: _ignoredKey, ...dataWithoutKey } = data;
+    const { ...dataWithoutKey } = data;
 
     return this.templateModel.findOneAndUpdate(
       { key },

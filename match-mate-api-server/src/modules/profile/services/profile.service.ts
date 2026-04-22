@@ -33,7 +33,14 @@ import {
   PrivacySettingDocument,
 } from '../schemas/settings/privacy-setting.schema';
 import { UpdatePrivacySettingsDto } from '../dto/privacy-media.dto';
-import { BodyType, Complexion, ProfileStatus, Religion } from 'src/common/enums';
+import {
+  BodyType,
+  Complexion,
+  Gender,
+  MaritalStatus,
+  ProfileStatus,
+  Religion,
+} from 'src/common/enums';
 
 // ─── Image type ───────────────────────────────────────────────────────────────
 
@@ -741,25 +748,45 @@ export class ProfileService {
   private buildDerivedProfileFields(
     profile: Record<string, unknown>,
   ): Record<string, unknown> {
-    const personal = (profile.personal ?? {}) as Record<string, unknown>;
-    const physical = (profile.physical ?? {}) as Record<string, unknown>;
-    const education = (profile.education ?? {}) as Record<string, unknown>;
-    const preferences = (profile.preferences ?? {}) as Record<string, unknown>;
-    const profileImages = Array.isArray(profile.profileImages)
-      ? (profile.profileImages as unknown[])
+    const personal =
+      typeof profile.personal === 'object' && profile.personal !== null
+        ? (profile.personal as Record<string, unknown>)
+        : {};
+
+    const physical =
+      typeof profile.physical === 'object' && profile.physical !== null
+        ? (profile.physical as Record<string, unknown>)
+        : {};
+
+    const education =
+      typeof profile.education === 'object' && profile.education !== null
+        ? (profile.education as Record<string, unknown>)
+        : {};
+
+    const preferences =
+      typeof profile.preferences === 'object' && profile.preferences !== null
+        ? (profile.preferences as Record<string, unknown>)
+        : {};
+
+    const profileImages: unknown[] = Array.isArray(profile.profileImages)
+      ? profile.profileImages
       : [];
 
     const dtoLikeProfile: ProfileCreationInput = {
       personal: {
-        profileFor: String(personal.profileFor ?? ''),
-        firstName: String(personal.firstName ?? ''),
+        profileFor:
+          typeof personal.profileFor === 'string' ? personal.profileFor : '',
+        firstName:
+          typeof personal.firstName === 'string' ? personal.firstName : '',
         lastName:
           typeof personal.lastName === 'string' ? personal.lastName : undefined,
-        gender: personal.gender as any,
+        gender: personal.gender as Gender,
         dateOfBirth:
           personal.dateOfBirth instanceof Date
             ? personal.dateOfBirth.toISOString()
-            : String(personal.dateOfBirth ?? ''),
+            : typeof personal.dateOfBirth === 'string'
+              ? personal.dateOfBirth
+              : '',
         religion: personal.religion as Religion,
         caste: typeof personal.caste === 'string' ? personal.caste : undefined,
         country:
@@ -770,34 +797,45 @@ export class ProfileService {
           typeof personal.motherTongue === 'string'
             ? personal.motherTongue
             : undefined,
-        maritalStatus: personal.maritalStatus as any,
+        maritalStatus: personal.maritalStatus as MaritalStatus,
         aboutMe:
           typeof personal.aboutMe === 'string' ? personal.aboutMe : undefined,
       },
       physical: {
-        height: Number(physical.heightCm ?? 0),
+        height: typeof physical.heightCm === 'number' ? physical.heightCm : 0,
         weight:
           typeof physical.weight === 'number' ? physical.weight : undefined,
         bodyType:
-          physical.bodyType as BodyType,
+          typeof physical.bodyType === 'string'
+            ? (physical.bodyType as BodyType)
+            : undefined,
         complexion:
-          physical.complexion as Complexion,
+          typeof physical.complexion === 'string'
+            ? (physical.complexion as Complexion)
+            : undefined,
       },
       education: {
-        qualification: String(education.qualification ?? ''),
+        qualification:
+          typeof education.qualification === 'string'
+            ? education.qualification
+            : '',
         field:
           typeof education.field === 'string' ? education.field : undefined,
         university:
           typeof education.university === 'string'
             ? education.university
             : undefined,
-        occupation: String(education.occupation ?? ''),
+        occupation:
+          typeof education.occupation === 'string' ? education.occupation : '',
         annualIncome:
           typeof education.annualIncome === 'number'
             ? String(education.annualIncome)
             : undefined,
       },
-      family: (profile.family ?? {}) as FamilyDto,
+      family:
+        typeof profile.family === 'object' && profile.family !== null
+          ? (profile.family as FamilyDto)
+          : ({} as FamilyDto),
       preferences: preferences as PreferencesDto,
     };
 
@@ -984,27 +1022,28 @@ export class ProfileService {
     return undefined;
   }
 
+  private readonly analyticsPlatformMap: Record<string, AnalyticsPlatform> = {
+    ios: AnalyticsPlatform.IOS,
+    android: AnalyticsPlatform.ANDROID,
+    mobile: AnalyticsPlatform.API,
+  };
+
+  private readonly activityPlatformMap: Record<string, ActivityPlatform> = {
+    ios: ActivityPlatform.IOS,
+    android: ActivityPlatform.ANDROID,
+  };
+
   private toAnalyticsPlatform(platform: string): AnalyticsPlatform {
-    if (platform === AnalyticsPlatform.IOS) {
-      return AnalyticsPlatform.IOS;
-    }
-    if (platform === AnalyticsPlatform.ANDROID) {
-      return AnalyticsPlatform.ANDROID;
-    }
-    if (platform === 'mobile') {
-      return AnalyticsPlatform.API;
-    }
-    return AnalyticsPlatform.WEB;
+    return (
+      this.analyticsPlatformMap[platform?.toLowerCase()] ??
+      AnalyticsPlatform.WEB
+    );
   }
 
   private toActivityPlatform(platform: string): ActivityPlatform {
-    if (platform === ActivityPlatform.IOS) {
-      return ActivityPlatform.IOS;
-    }
-    if (platform === ActivityPlatform.ANDROID) {
-      return ActivityPlatform.ANDROID;
-    }
-    return ActivityPlatform.WEB;
+    return (
+      this.activityPlatformMap[platform?.toLowerCase()] ?? ActivityPlatform.WEB
+    );
   }
 
   private cmToFeetInches(cm: number): {

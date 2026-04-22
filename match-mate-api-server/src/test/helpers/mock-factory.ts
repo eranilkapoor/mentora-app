@@ -134,11 +134,23 @@ export const mockStorageService = () => ({
 
 // ─── Chat ─────────────────────────────────────────────────────────────────────
 
-export const mockChatService = () => ({
+type MockChatService = {
+  health: jest.Mock;
+  createOrGetDirectRoom: jest.Mock;
+  getConversations: jest.Mock;
+  getContacts: jest.Mock;
+  getConversationDetail: jest.Mock;
+  getMessages: jest.Mock;
+  sendMessage: jest.Mock;
+  markRoomRead: jest.Mock;
+  updateRoomSettings: jest.Mock;
+};
+
+export const mockChatService = (): MockChatService => ({
   health: jest.fn().mockReturnValue({
     status: 'ok',
     transport: 'socket.io',
-    timestamp: expect.any(String),
+    timestamp: expect.any(String) as unknown as string,
   }),
   createOrGetDirectRoom: jest.fn(),
   getConversations: jest.fn(),

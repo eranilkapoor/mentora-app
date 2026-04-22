@@ -140,13 +140,11 @@ const mockMatchService = {
 };
 
 const mockChatService = {
-  health: jest
-    .fn()
-    .mockReturnValue({
-      status: 'ok',
-      transport: 'socket.io',
-      timestamp: new Date().toISOString(),
-    }),
+  health: jest.fn().mockReturnValue({
+    status: 'ok',
+    transport: 'socket.io',
+    timestamp: new Date().toISOString(),
+  }),
   getConversations: jest.fn().mockResolvedValue({ items: [], total: 0 }),
   getContacts: jest.fn().mockResolvedValue({ contacts: [] }),
   createOrGetDirectRoom: jest.fn().mockResolvedValue({ roomId: 'room-1' }),

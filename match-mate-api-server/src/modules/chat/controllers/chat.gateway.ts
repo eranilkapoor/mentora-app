@@ -27,6 +27,16 @@ interface SocketJwtPayload {
   sub: string;
 }
 
+interface AuthenticatedSocket extends Socket {
+  data: {
+    userId?: string;
+  };
+}
+
+interface SocketAuth {
+  token?: string;
+}
+
 @WebSocketGateway({
   namespace: '/chat',
   cors: { origin: '*' },
@@ -53,39 +63,45 @@ export class ChatGateway
     private readonly logger: AppLogger,
   ) {}
 
-  afterInit(server: Server) {
+  afterInit(server: Server): void {
     this.realtime.bindServer(server);
   }
 
-  async handleConnection(client: Socket) {
+  async handleConnection(client: Socket): Promise<void> {
+    const socket = client as AuthenticatedSocket;
+
     try {
-      const payload = await this.verifyClient(client);
+      const payload = await this.verifyClient(socket);
       const userId = payload.sub;
 
-      this.presence.connect(userId, client.id);
-      client.data.userId = userId;
+      this.presence.connect(userId, socket.id);
+      socket.data.userId = userId;
 
-      await client.join(this.realtime.getUserRoom(userId));
-      client.emit('connection:ready', { userId });
+      await socket.join(this.realtime.getUserRoom(userId));
+
+      socket.emit('connection:ready', { userId });
+
       this.server
         .to(this.realtime.getUserRoom(userId))
         .emit('presence:update', {
           userId,
           isOnline: true,
         });
-    } catch (error) {
+    } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unauthorized';
+
       this.logger.warn(`Socket authentication failed: ${message}`);
-      client.emit('connection:error', { message: 'Unauthorized' });
-      client.disconnect(true);
+
+      socket.emit('connection:error', { message: 'Unauthorized' });
+      socket.disconnect(true);
     }
   }
 
-  handleDisconnect(client: Socket) {
-    const userId = this.presence.disconnect(client.id);
-    if (!userId) {
-      return;
-    }
+  handleDisconnect(client: Socket): void {
+    const socket = client as AuthenticatedSocket;
+
+    const userId = this.presence.disconnect(socket.id);
+    if (!userId) return;
 
     this.server.to(this.userRoom(userId)).emit('presence:update', {
       userId,
@@ -98,10 +114,12 @@ export class ChatGateway
   async handleJoinRoom(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: JoinRoomDto,
-  ) {
-    const userId = this.getClientUserId(client);
+  ): Promise<{ event: string; data: { roomId: string } }> {
+    const socket = client as AuthenticatedSocket;
+    const userId = this.getClientUserId(socket);
+
     await this.chatService.getConversationDetail(userId, payload.roomId);
-    await client.join(this.realtime.getConversationRoom(payload.roomId));
+    await socket.join(this.realtime.getConversationRoom(payload.roomId));
     await this.chatService.getMessages(userId, payload.roomId, { limit: 20 });
 
     return {
@@ -114,8 +132,10 @@ export class ChatGateway
   async handleMessage(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: SendMessageDto,
-  ) {
-    const userId = this.getClientUserId(client);
+  ): Promise<{ event: string; data: unknown }> {
+    const socket = client as AuthenticatedSocket;
+    const userId = this.getClientUserId(socket);
+
     const message = await this.chatService.sendMessage(userId, payload);
 
     return {
@@ -128,8 +148,10 @@ export class ChatGateway
   async handleReadReceipt(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: JoinRoomDto & MarkRoomReadDto,
-  ) {
-    const userId = this.getClientUserId(client);
+  ): Promise<{ event: string; data: unknown }> {
+    const socket = client as AuthenticatedSocket;
+    const userId = this.getClientUserId(socket);
+
     const result = await this.chatService.markRoomRead(
       userId,
       payload.roomId,
@@ -146,11 +168,13 @@ export class ChatGateway
   async handleTyping(
     @ConnectedSocket() client: Socket,
     @MessageBody() payload: TypingEventDto,
-  ) {
-    const userId = this.getClientUserId(client);
+  ): Promise<{ event: string; data: { roomId: string; isTyping: boolean } }> {
+    const socket = client as AuthenticatedSocket;
+    const userId = this.getClientUserId(socket);
+
     await this.chatService.getConversationDetail(userId, payload.roomId);
 
-    client
+    socket
       .to(this.realtime.getConversationRoom(payload.roomId))
       .emit('typing', {
         roomId: payload.roomId,
@@ -167,8 +191,9 @@ export class ChatGateway
     };
   }
 
-  private getClientUserId(client: Socket) {
-    const userId = client.data.userId as string | undefined;
+  private getClientUserId(client: AuthenticatedSocket): string {
+    const { userId } = client.data;
+
     if (!userId) {
       throw new WsException('Unauthorized');
     }
@@ -178,11 +203,13 @@ export class ChatGateway
 
   private async verifyClient(client: Socket): Promise<SocketJwtPayload> {
     const token = this.extractToken(client);
+
     if (!token) {
       throw new Error('Missing token');
     }
 
     const jwtConfig = getJwtConfig(this.configService);
+
     return this.jwtService.verifyAsync<SocketJwtPayload>(token, {
       secret: jwtConfig.secret,
       audience: jwtConfig.audience,
@@ -190,12 +217,25 @@ export class ChatGateway
     });
   }
 
-  private extractToken(client: Socket) {
-    const authToken = client.handshake.auth?.token;
-    if (typeof authToken === 'string' && authToken.trim().length > 0) {
-      return authToken.startsWith('Bearer ') ? authToken.slice(7) : authToken;
+  private getAuthToken(client: Socket): string | undefined {
+    const auth = client.handshake.auth as SocketAuth | undefined;
+
+    if (auth && typeof auth.token === 'string') {
+      const token = auth.token.trim();
+      if (token.length > 0) {
+        return token.startsWith('Bearer ') ? token.slice(7) : token;
+      }
     }
 
+    return undefined;
+  }
+
+  private extractToken(client: Socket): string | undefined {
+    // ✅ Auth object
+    const authToken = this.getAuthToken(client);
+    if (authToken) return authToken;
+
+    // ✅ Authorization header
     const authorizationHeader = client.handshake.headers.authorization;
     if (
       typeof authorizationHeader === 'string' &&
@@ -204,7 +244,10 @@ export class ChatGateway
       return authorizationHeader.slice(7);
     }
 
-    const queryToken = client.handshake.query.token;
+    // ✅ Query param
+    const query = client.handshake.query as Record<string, unknown>;
+    const queryToken = query?.token;
+
     if (typeof queryToken === 'string' && queryToken.trim().length > 0) {
       return queryToken.startsWith('Bearer ')
         ? queryToken.slice(7)
@@ -214,7 +257,7 @@ export class ChatGateway
     return undefined;
   }
 
-  private userRoom(userId: string) {
+  private userRoom(userId: string): string {
     return this.realtime.getUserRoom(userId);
   }
 }

@@ -734,15 +734,23 @@ export class NotificationService implements OnModuleInit {
   private render(
     template: string,
     variables: Record<string, string | number | boolean | null>,
-  ) {
-    return template.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_match, key) => {
-      const value = variables[key];
-      if (value === undefined || value === null) {
-        return '';
-      }
+  ): string {
+    return template.replace(
+      /{{\s*([a-zA-Z0-9_]+)\s*}}/g,
+      (_: string, key: string): string => {
+        if (!Object.prototype.hasOwnProperty.call(variables, key)) {
+          return '';
+        }
 
-      return String(value);
-    });
+        const value = variables[key];
+
+        if (value === null) {
+          return '';
+        }
+
+        return String(value);
+      },
+    );
   }
 
   private async seedDefaultTemplates() {

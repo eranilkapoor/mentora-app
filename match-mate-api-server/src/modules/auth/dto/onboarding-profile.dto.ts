@@ -14,7 +14,17 @@ import { Gender } from 'src/common/enums/gender.enum';
 import { Diet } from 'src/common/enums/diet.enum';
 import { Drinking } from 'src/common/enums/drinking.enum';
 import { Smoking } from 'src/common/enums/smoking.enum';
-import { BodyType, Caste, Complexion, FamilyStatus, FamilyType, FamilyValue, MaritalStatus, Religion, SiblingType } from 'src/common/enums';
+import {
+  BodyType,
+  Caste,
+  Complexion,
+  FamilyStatus,
+  FamilyType,
+  FamilyValue,
+  MaritalStatus,
+  Religion,
+  SiblingType,
+} from 'src/common/enums';
 
 export class PersonalDto {
   @IsString()
