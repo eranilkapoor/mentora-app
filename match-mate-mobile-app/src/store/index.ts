@@ -24,7 +24,7 @@ const persistConfig = {
 const authPersistConfig = {
   key: 'auth',
   storage: AsyncStorage,
-  whitelist: ['token', 'user'], // ✅ don't persist isHydrated
+  whitelist: ['access_token', 'user'], // ✅ don't persist isHydrated
 };
 
 const settingsPersistConfig = {

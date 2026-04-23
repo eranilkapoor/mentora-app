@@ -19,7 +19,9 @@ export default function AppProviders(): React.ReactElement {
       <Provider store={store}>
         <PersistGate
           persistor={persistor}
-          loading={<Loader fullScreen size="large" loadingText='App loading...' />}
+          loading={
+            <Loader fullScreen size="large" loadingText="App loading..." />
+          }
           onBeforeLift={() => setHydrated(true)}
         >
           <ErrorBoundary>

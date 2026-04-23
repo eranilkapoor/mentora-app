@@ -20,13 +20,19 @@ export const COMPLEXION_OPTIONS = [
   'dark',
 ] as const;
 export const FAMILY_TYPE_OPTIONS = ['joint', 'nuclear', 'extended'] as const;
-export const SMOKING_OPTIONS = ['non_smoker', 'occasionally', 'regular', 'trying_to_quit', 'open_to'] as const;
+export const SMOKING_OPTIONS = [
+  'non_smoker',
+  'occasionally',
+  'regular',
+  'trying_to_quit',
+  'open_to',
+] as const;
 export const DRINKING_OPTIONS = [
   'non_drinker',
   'occasionally',
   'regular',
   'open_to',
-  'socially'
+  'socially',
 ] as const;
 export const DIET_OPTIONS = [
   'vegetarian',
@@ -37,7 +43,7 @@ export const DIET_OPTIONS = [
   'jain',
   'satvik',
   'halal',
-  'kosher'
+  'kosher',
 ] as const;
 
 export const HOURS = Array.from({ length: 12 }, (_, i) => i + 1);

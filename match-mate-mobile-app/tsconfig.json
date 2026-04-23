@@ -4,7 +4,6 @@
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
-    //////////// Additional strict options
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
     "noImplicitThis": true,

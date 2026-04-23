@@ -98,8 +98,8 @@ export default function LoginScreen({
   // ─── Navigation ──────────────────────────────────────────────────────────
 
   const navigateAfterAuth = useCallback(
-    (isProfileCompleted: boolean): void => {
-      if (!isProfileCompleted) {
+    (isOnboardingCompleted: boolean): void => {
+      if (!isOnboardingCompleted) {
         navigation.navigate('Onboarding');
       }
     },
@@ -151,14 +151,14 @@ export default function LoginScreen({
         return;
       }
 
-      if (response.data?.token && response.data?.user) {
+      if (response.data?.accessToken && response.data?.user) {
         void dispatch(
           setCredentials({
-            token: response.data.token,
+            access_token: response.data.accessToken,
             user: response.data.user,
           })
         );
-        navigateAfterAuth(response.data.user.isProfileCompleted ?? false);
+        navigateAfterAuth(response.data.user.isOnboardingCompleted ?? false);
       } else {
         setErrors({ error: 'Invalid response from server' });
       }
@@ -246,14 +246,14 @@ export default function LoginScreen({
         return;
       }
 
-      if (response.data?.token && response.data?.user) {
+      if (response.data?.accessToken && response.data?.user) {
         void dispatch(
           setCredentials({
-            token: response.data.token,
+            access_token: response.data.accessToken,
             user: response.data.user,
           })
         );
-        navigateAfterAuth(response.data.user.isProfileCompleted ?? false);
+        navigateAfterAuth(response.data.user.isOnboardingCompleted ?? false);
       } else {
         setErrors({ error: 'Invalid response from server' });
       }
@@ -285,7 +285,7 @@ export default function LoginScreen({
         const res = await fakeApi(
           {
             success: true,
-            data: { token: 'fake-jwt-token', user: { provider } },
+            data: { access_token: 'fake-jwt-access_token', user: { provider } },
           },
           1000
         );

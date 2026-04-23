@@ -26,7 +26,7 @@ export interface VerifyOtpResponse {
     };
 
     isPhoneVerified: boolean;
-    isProfileCompleted: boolean;
+    isOnboardingCompleted: boolean;
   };
-  token: string;
+  accessToken: string;
 }

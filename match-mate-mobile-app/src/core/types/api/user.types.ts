@@ -12,7 +12,7 @@ export interface User {
   };
 
   isEmailVerified?: boolean;
-  isProfileCompleted: boolean;
+  isOnboardingCompleted: boolean;
 
   membership?: {
     tier: MembershipTier;

@@ -61,7 +61,7 @@ export default function EditProfileScreen(): React.ReactElement {
   // ─── Load ─────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    try{ 
+    try {
       if (data?.success && data?.data) {
         setProfile((prev) => ({ ...prev, ...data?.data }));
       }
@@ -69,7 +69,7 @@ export default function EditProfileScreen(): React.ReactElement {
       Alert.alert('Error', 'Failed to load profile. Please try again.');
     } finally {
       setPageLoading(false);
-    }    
+    }
   }, [data, error, setProfile, setPageLoading]);
 
   // const loadProfile = useCallback(async (): Promise<void> => {
@@ -236,7 +236,9 @@ export default function EditProfileScreen(): React.ReactElement {
   // ─── Loading state ────────────────────────────────────────────────────────
 
   if (pageLoading) {
-    return <Loader fullScreen size='large' loadingText='Loading your profile...' />;
+    return (
+      <Loader fullScreen size="large" loadingText="Loading your profile..." />
+    );
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -312,7 +314,10 @@ export default function EditProfileScreen(): React.ReactElement {
                 <Text style={styles.addPhotoText}>Add Photo</Text>
               </TouchableOpacity>
             </ScrollView>
-            <Text style={styles.photoHint}>Tap a photo to set as primary. First photo is shown on your profile card.</Text>
+            <Text style={styles.photoHint}>
+              Tap a photo to set as primary. First photo is shown on your
+              profile card.
+            </Text>
           </SectionCard>
 
           {/* ── Personal ───────────────────────────────────────────────── */}

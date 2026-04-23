@@ -6,7 +6,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  token: string;
+  accessToken: string;
   user: User;
 }
 
@@ -16,7 +16,7 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  token: string;
+  accessToken: string;
   user: User;
 }
 
@@ -36,11 +36,11 @@ export interface SocialLoginRequest {
 }
 
 export interface SocialLoginResponse {
-  token: string;
+  accessToken: string;
   user: User;
 }
 
 export interface OnbardingResponse {
   userId: string;
-  isProfileCompleted: boolean;
+  isOnboardingCompleted: boolean;
 }

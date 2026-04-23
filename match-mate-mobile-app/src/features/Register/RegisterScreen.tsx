@@ -99,8 +99,8 @@ export default function RegisterScreen({
   const validatePhone = (value: string): boolean => PHONE_REGEX.test(value);
 
   const navigateAfterAuth = useCallback(
-    (isProfileCompleted: boolean): void => {
-      if (!isProfileCompleted) {
+    (isOnboardingCompleted: boolean): void => {
+      if (!isOnboardingCompleted) {
         navigation.navigate('Onboarding');
       }
     },
@@ -149,7 +149,7 @@ export default function RegisterScreen({
 
       if (response.data) {
         dispatch(setCredentials(response.data));
-        navigateAfterAuth(response.data.user?.isProfileCompleted ?? false);
+        navigateAfterAuth(response.data.user?.isOnboardingCompleted ?? false);
       }
     } catch {
       setErrors({ error: 'Registration failed. Please try again.' });
@@ -211,7 +211,7 @@ export default function RegisterScreen({
 
       if (response.data) {
         dispatch(setCredentials(response.data));
-        navigateAfterAuth(response.data.user?.isProfileCompleted ?? false);
+        navigateAfterAuth(response.data.user?.isOnboardingCompleted ?? false);
       }
     } catch {
       setErrors({ error: 'Failed to verify OTP. Please try again.' });

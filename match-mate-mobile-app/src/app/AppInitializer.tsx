@@ -10,10 +10,10 @@ export default function AppInitializer({
   children: React.ReactNode;
 }) {
   const dispatch = useAppDispatch();
-  const token = useAppSelector((s) => s.auth.token);
+  const access_token = useAppSelector((s) => s.auth.access_token);
 
   const { data, error, isLoading, isFetching } = useVerifyUserQuery(undefined, {
-    skip: !token, // 🚀 only call if token exists
+    skip: !access_token, // 🚀 only call if access_token exists
   });
 
   useEffect(() => {
@@ -26,8 +26,8 @@ export default function AppInitializer({
     }
   }, [data, error, dispatch]);
 
-  if (token && (isLoading || isFetching)) {
-    return <Loader fullScreen size='large' loadingText='App initializing...' />;
+  if (access_token && (isLoading || isFetching)) {
+    return <Loader fullScreen size="large" loadingText="App initializing..." />;
   }
 
   return <>{children}</>;

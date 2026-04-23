@@ -16,7 +16,9 @@ export default function Loader({
   return (
     <View style={fullScreen ? styles.fullScreen : styles.inline}>
       <ActivityIndicator size={size} color={Colors.primary} />
-      {loadingText && <Text style={styles.loadingText}>Loading your profile...</Text>}
+      {loadingText && (
+        <Text style={styles.loadingText}>Loading your profile...</Text>
+      )}
     </View>
   );
 }

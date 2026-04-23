@@ -10,18 +10,18 @@ import { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator(): React.ReactElement {
-  const token = useAppSelector((state) => state.auth.token);
+  const access_token = useAppSelector((state) => state.auth.access_token);
   const user = useAppSelector((state) => state.auth.user);
 
-  const isLoggedIn = Boolean(token);
-  const isProfileComplete = Boolean(user?.isProfileCompleted);
+  const isLoggedIn = Boolean(access_token);
+  const isOnboardingCompleted = Boolean(user?.isOnboardingCompleted);
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
       {!isLoggedIn ? (
         // ❌ Not logged in → Auth
         <Stack.Screen name="Auth" component={AuthStack} />
-      ) : !isProfileComplete ? (
+      ) : !isOnboardingCompleted ? (
         // ⚠️ Logged in but onboarding pending
         <Stack.Screen name="Onboarding" component={OnboardingStack} />
       ) : (

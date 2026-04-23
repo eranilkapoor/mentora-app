@@ -16,10 +16,10 @@ const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL as string,
 
   prepareHeaders: async (headers, { getState }) => {
-    const token = (getState() as RootState).auth.token;
+    const access_token = (getState() as RootState).auth.access_token;
 
-    if (token) {
-      headers.set('authorization', `Bearer ${token}`);
+    if (access_token) {
+      headers.set('authorization', `Bearer ${access_token}`);
     }
 
     const deviceId = await getDeviceId();

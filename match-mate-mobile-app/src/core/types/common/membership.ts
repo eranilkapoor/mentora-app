@@ -1,5 +1,6 @@
 export const MembershipTiers = {
   FREE: 'free',
+  GOLD: 'gold',
   PREMIUM: 'premium',
 } as const;
 

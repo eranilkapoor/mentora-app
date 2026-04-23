@@ -14,7 +14,7 @@ export interface TimeOfBirth {
   hour?: number;
   minute?: number;
   period?: 'AM' | 'PM';
-};
+}
 
 export interface PersonalSection {
   profileFor: string;
@@ -36,8 +36,8 @@ export interface PersonalSection {
 export interface PhysicalSection {
   height: string;
   weight: string;
-  bodyType: string;//(typeof BODY_TYPE_OPTIONS)[number];
-  complexion: string;//(typeof COMPLEXION_OPTIONS)[number];
+  bodyType: string; //(typeof BODY_TYPE_OPTIONS)[number];
+  complexion: string; //(typeof COMPLEXION_OPTIONS)[number];
 }
 
 export interface EducationSection {
