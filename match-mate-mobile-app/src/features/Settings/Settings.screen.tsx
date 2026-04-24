@@ -20,14 +20,13 @@ import {
 } from '../../store/slices/settingsSlice';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { settingsStyles } from './SettingsScreen.styles';
+import { settingsStyles } from './Settings.styles';
 import { SettingsScreenProps } from './Settings.types';
 import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
 import { SettingToggle } from './components/SettingToggle';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-
 export default function SettingsScreen({
   navigation,
 }: SettingsScreenProps): React.ReactElement {
@@ -50,12 +49,13 @@ export default function SettingsScreen({
 
   const themeBadge =
     themeMode === 'light'
-      ? t('light')
+      ? t('theme.light')
       : themeMode === 'dark'
-        ? t('dark')
-        : t('system');
+        ? t('theme.dark')
+        : t('theme.system');
 
-  const langBadge = language === 'en' ? t('english') : t('hindi');
+  const langBadge =
+    language === 'en' ? t('language.english') : t('language.hindi');
 
   const handleSignOut = useCallback(() => {
     const doLogout = (): void => {
@@ -63,24 +63,16 @@ export default function SettingsScreen({
     };
 
     if (Platform.OS === 'web') {
-      if (
-        window.confirm(
-          t('sign_out_confirm', 'Are you sure you want to sign out?')
-        )
-      ) {
+      if (window.confirm(t('settings.sign_out_confirm'))) {
         doLogout();
       }
       return;
     }
 
-    Alert.alert(
-      t('sign_out'),
-      t('sign_out_confirm', 'Are you sure you want to sign out?'),
-      [
-        { text: t('cancel', 'Cancel'), style: 'cancel' },
-        { text: t('sign_out'), style: 'destructive', onPress: doLogout },
-      ]
-    );
+    Alert.alert(t('settings.sign_out'), t('settings.sign_out_confirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      { text: t('settings.sign_out'), style: 'destructive', onPress: doLogout },
+    ]);
   }, [dispatch, t]);
 
   return (
@@ -106,18 +98,17 @@ export default function SettingsScreen({
             })
           }
           accessibilityRole="button"
-          accessibilityLabel="Edit profile"
+          accessibilityLabel={t('profile.edit_profile')}
         >
           <View style={styles.profileAvatarWrapper}>
             <Feather name="user" size={24} color={Colors.primary} />
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>
-              {`${firstName} ${lastName}`.trim() ||
-                t('your_profile', 'Your Profile')}
+              {`${firstName} ${lastName}`.trim() || t('profile.your_profile')}
             </Text>
             <Text style={styles.profileSubtext} numberOfLines={1}>
-              {email || t('tap_to_edit', 'Tap to edit your profile')}
+              {email || t('profile.tap_to_edit')}
             </Text>
           </View>
           <View style={styles.profileChevron}>
@@ -126,42 +117,42 @@ export default function SettingsScreen({
         </TouchableOpacity>
 
         {/* ── Account ──────────────────────────────────────────────── */}
-        <Section icon="user" title={t('account')}>
+        <Section icon="user" title={t('settings.account')}>
           <SettingRow
             icon="edit-3"
-            label={t('edit_profile')}
-            subLabel={t('edit_profile_sub', 'Update your personal info')}
+            label={t('profile.edit_profile')}
+            subLabel={t('profile.edit_profile_sub')}
             onPress={() => navigation.navigate('EditProfile' as never)}
           />
           <SettingRow
             icon="lock"
-            label={t('change_password')}
-            subLabel={t('change_password_sub', 'Keep your account secure')}
+            label={t('settings.change_password')}
+            subLabel={t('settings.change_password_sub')}
             onPress={() => navigation.navigate('ChangePassword' as never)}
             isLast
           />
         </Section>
 
         {/* ── Preferences ──────────────────────────────────────────── */}
-        <Section icon="sliders" title={t('preferences')}>
+        <Section icon="sliders" title={t('settings.preferences')}>
           <SettingRow
             icon="globe"
-            label={t('language')}
-            subLabel={t('language_sub', 'App display language')}
+            label={t('settings.language')}
+            subLabel={t('settings.language_sub')}
             badge={langBadge}
             onPress={() => navigation.navigate('Languages' as never)}
           />
           <SettingRow
             icon="sun"
-            label={t('theme')}
-            subLabel={t('theme_sub', 'Appearance & color scheme')}
+            label={t('settings.theme')}
+            subLabel={t('settings.theme_sub')}
             badge={themeBadge}
             onPress={() => navigation.navigate('Themes' as never)}
           />
           <SettingToggle
             icon="map-pin"
-            label={t('share_location')}
-            subLabel={t('share_location_sub', 'Help find nearby matches')}
+            label={t('settings.share_location')}
+            subLabel={t('settings.share_location_sub')}
             value={locationSharing}
             onValueChange={() => dispatch(toggleLocationSharing())}
             isLast
@@ -169,18 +160,18 @@ export default function SettingsScreen({
         </Section>
 
         {/* ── App Settings ─────────────────────────────────────────── */}
-        <Section icon="settings" title={t('app_settings')}>
+        <Section icon="settings" title={t('settings.app_settings')}>
           <SettingToggle
             icon="volume-2"
-            label={t('sound')}
-            subLabel={t('sound_sub', 'In-app sound effects')}
+            label={t('settings.sound')}
+            subLabel={t('settings.sound_sub')}
             value={soundEnabled}
             onValueChange={() => dispatch(toggleSound())}
           />
           <SettingToggle
             icon="smartphone"
-            label={t('vibration')}
-            subLabel={t('vibration_sub', 'Haptic feedback')}
+            label={t('settings.vibration')}
+            subLabel={t('settings.vibration_sub')}
             value={vibrationEnabled}
             onValueChange={() => dispatch(toggleVibration())}
             isLast
@@ -188,38 +179,35 @@ export default function SettingsScreen({
         </Section>
 
         {/* ── Notifications ────────────────────────────────────────── */}
-        <Section icon="bell" title={t('notifications')}>
+        <Section icon="bell" title={t('settings.notifications')}>
           <SettingToggle
             icon="bell"
-            label={t('app_notifications')}
-            subLabel={t('notifications_sub', 'Messages, matches & updates')}
+            label={t('settings.app_notifications')}
+            subLabel={t('settings.notifications_sub')}
             value={notificationsEnabled}
             onValueChange={() => dispatch(toggleNotifications())}
           />
           <SettingRow
             icon="sliders"
-            label={t('notification_settings')}
-            subLabel={t(
-              'notification_settings_sub',
-              'Customize what you receive'
-            )}
+            label={t('settings.notification_settings')}
+            subLabel={t('settings.notification_settings_sub')}
             onPress={() => navigation.navigate('NotificationSettings' as never)}
             isLast
           />
         </Section>
 
         {/* ── Support ──────────────────────────────────────────────── */}
-        <Section icon="life-buoy" title={t('support')}>
+        <Section icon="life-buoy" title={t('settings.support')}>
           <SettingRow
             icon="help-circle"
-            label={t('help_and_support')}
-            subLabel={t('help_sub', 'FAQs and contact us')}
+            label={t('settings.help_and_support')}
+            subLabel={t('settings.help_sub')}
             onPress={() => navigation.navigate('HelpSupport' as never)}
           />
           <SettingRow
             icon="shield"
-            label={t('privacy_policy')}
-            subLabel={t('privacy_sub', 'How we handle your data')}
+            label={t('settings.privacy_policy')}
+            subLabel={t('settings.privacy_sub')}
             onPress={() => navigation.navigate('PrivacyPolicy' as never)}
             isLast
           />
@@ -231,10 +219,10 @@ export default function SettingsScreen({
             style={styles.signOutButton}
             onPress={handleSignOut}
             accessibilityRole="button"
-            accessibilityLabel="Sign out"
+            accessibilityLabel={t('settings.sign_out')}
           >
             <Feather name="log-out" size={18} color={Colors.danger} />
-            <Text style={styles.signOutText}>{t('sign_out')}</Text>
+            <Text style={styles.signOutText}>{t('settings.sign_out')}</Text>
           </TouchableOpacity>
         </View>
 

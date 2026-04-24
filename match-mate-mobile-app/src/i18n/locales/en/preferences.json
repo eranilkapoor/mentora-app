@@ -1,0 +1,17 @@
+{
+  "preferences": "Preferences",
+  "age_range": "Age Range",
+  "height_range": "Height Range",
+  "marital_status": "Marital Status",
+  "religion": "Religion",
+  "caste": "Caste",
+  "education": "Education",
+  "occupation": "Occupation",
+  "income": "Income",
+  "diet": "Diet",
+  "smoking": "Smoking",
+  "drinking": "Drinking",
+  "languages_known": "Languages Known",
+  "hobbies": "Hobbies",
+  "save_preferences": "Save Preferences"
+}

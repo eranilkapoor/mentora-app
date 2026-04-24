@@ -1,0 +1,11 @@
+{
+  "matches": "Matches",
+  "new_matches": "New Matches",
+  "accepted": "Accepted",
+  "rejected": "Rejected",
+  "pending": "Pending",
+  "send_request": "Send Request",
+  "accept_request": "Accept Request",
+  "reject_request": "Reject Request",
+  "no_matches": "No Matches Found"
+}

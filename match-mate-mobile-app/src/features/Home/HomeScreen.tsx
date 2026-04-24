@@ -10,18 +10,27 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '../../core/constants/colors';
-import { type MatchProfile } from '../../core/types';
+import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { homeStyles } from './HomeScreen.styles';
 import Header from '../../core/components/Header';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
+import { type MatchProfile } from '../../core/types';
+
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type RootStackParamList = {
   MatchDetails: { userId: string };
-  ChatsDetail: { userId: string; partnerName: string; partnerPhoto: string };
+  ChatDetails: {
+    userId: string;
+    partnerName: string;
+    partnerPhoto: string;
+  };
+  Matches: undefined;
+  Notifications: undefined;
+  Filters: undefined;
 };
 
 interface HomeScreenProps {
@@ -113,6 +122,7 @@ function ProfileCard({
   onShortlist: () => void;
 }): React.ReactElement {
   const styles = useThemedStyles(homeStyles);
+  const { theme } = useTheme();
 
   return (
     <View style={styles.card}>
@@ -130,7 +140,10 @@ function ProfileCard({
 
         {item.isNew === true && (
           <View
-            style={[styles.newBadge, item.isOnline ? { top: 44 } : { top: 12 }]}
+            style={[
+              styles.newBadge,
+              item.isOnline ? styles.newBadgeOnline : styles.newBadgeDefault,
+            ]}
           >
             <Text style={styles.newBadgeText}>NEW</Text>
           </View>
@@ -138,7 +151,7 @@ function ProfileCard({
 
         {item.photos.length > 1 && (
           <View style={styles.photoBadge}>
-            <Feather name="image" size={11} color={Colors.white} />
+            <Feather name="image" size={11} color={theme.colors.white} />
             <Text style={styles.photoBadgeText}>{item.photos.length}</Text>
           </View>
         )}
@@ -157,8 +170,8 @@ function ProfileCard({
       {/* Content */}
       <View style={styles.cardContent}>
         <View style={styles.tagsRow}>
-          {[item.height, item.religion, item.education].map((tag) => (
-            <View key={tag} style={styles.tag}>
+          {[item.height, item.religion, item.education].map((tag, index) => (
+            <View key={`${tag}-${index}`} style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>
             </View>
           ))}
@@ -166,7 +179,11 @@ function ProfileCard({
 
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
-            <Feather name="briefcase" size={13} color={Colors.textMuted} />
+            <Feather
+              name="briefcase"
+              size={13}
+              color={theme.colors.textMuted}
+            />
             <Text style={styles.meta}>{item.profession}</Text>
           </View>
         </View>
@@ -180,7 +197,11 @@ function ProfileCard({
             accessibilityRole="button"
             accessibilityLabel={`Chat with ${item.name}`}
           >
-            <Feather name="message-circle" size={16} color={Colors.white} />
+            <Feather
+              name="message-circle"
+              size={16}
+              color={theme.colors.white}
+            />
             <Text style={styles.chatText}>Chat</Text>
           </TouchableOpacity>
 
@@ -190,7 +211,7 @@ function ProfileCard({
             accessibilityRole="button"
             accessibilityLabel={`View ${item.name}'s profile`}
           >
-            <Feather name="user" size={16} color={Colors.primary} />
+            <Feather name="user" size={16} color={theme.colors.primary} />
             <Text style={styles.viewText}>Profile</Text>
           </TouchableOpacity>
 
@@ -200,25 +221,9 @@ function ProfileCard({
             accessibilityRole="button"
             accessibilityLabel={`Shortlist ${item.name}`}
           >
-            <Feather name="bookmark" size={18} color={Colors.accent} />
+            <Feather name="bookmark" size={18} color={theme.colors.accent} />
           </TouchableOpacity>
         </View>
-      </View>
-    </View>
-  );
-}
-
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
-
-function SkeletonCard(): React.ReactElement {
-  const styles = useThemedStyles(homeStyles);
-  return (
-    <View style={styles.skeletonCard}>
-      <View style={styles.skeletonPhoto} />
-      <View style={styles.skeletonContent}>
-        <View style={styles.skeletonLine} />
-        <View style={[styles.skeletonLine, styles.skeletonLineShort]} />
-        <View style={[styles.skeletonLine, styles.skeletonLineXShort]} />
       </View>
     </View>
   );
@@ -230,6 +235,9 @@ export default function HomeScreen({
   navigation,
 }: HomeScreenProps): React.ReactElement {
   const styles = useThemedStyles(homeStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
   const [refreshing, setRefreshing] = useState(false);
 
   const onRefresh = useCallback(async (): Promise<void> => {
@@ -243,7 +251,7 @@ export default function HomeScreen({
       <ProfileCard
         item={item}
         onChat={() =>
-          navigation.navigate('ChatsDetail', {
+          navigation.navigate('ChatDetails', {
             userId: item.userId,
             partnerName: item.name,
             partnerPhoto: item.photos[0],
@@ -261,44 +269,64 @@ export default function HomeScreen({
   const ListHeader = useCallback(
     () => (
       <>
-        {/* Quick Stats */}
+        {/* Stats */}
         <View style={styles.statsRow}>
           {[
             { icon: 'heart', value: '24', label: 'New Matches' },
             { icon: 'eye', value: '12', label: 'Profile Views' },
             { icon: 'star', value: '8', label: 'Interests' },
             { icon: 'message-circle', value: '3', label: 'Unread' },
-          ].map((stat) => (
-            <View key={stat.label} style={styles.statCard}>
-              <Feather name={stat.icon} size={16} color={Colors.primary} />
+          ].map((stat, index) => (
+            <View key={`${stat.label}-${index}`} style={styles.statCard}>
+              <Feather
+                name={stat.icon}
+                size={16}
+                color={theme.colors.primary}
+              />
               <Text style={styles.statValue}>{stat.value}</Text>
               <Text style={styles.statLabel}>{stat.label}</Text>
             </View>
           ))}
         </View>
 
-        {/* Section title */}
+        {/* Section */}
         <View style={styles.sectionHeader}>
-          <Text style={styles.sectionTitle}>Suggested for You</Text>
+          <Text style={styles.sectionTitle}>{t('home.suggested')}</Text>
           <TouchableOpacity
             style={styles.seeAllBtn}
-            onPress={() => navigation.navigate('Matches' as never)}
+            onPress={() => navigation.navigate('Matches')}
           >
-            <Text style={styles.seeAllText}>See all</Text>
-            <Feather name="chevron-right" size={14} color={Colors.primary} />
+            <Text style={styles.seeAllText}>{t('common.see_all')}</Text>
+            <Feather
+              name="chevron-right"
+              size={14}
+              color={theme.colors.primary}
+            />
           </TouchableOpacity>
         </View>
       </>
     ),
-    [styles, navigation]
+    [styles, navigation, theme.colors.primary, t]
   );
 
   return (
     <SafeAreaView style={styles.safe}>
       <Header
-        onFilter={() => {}}
-        onNotifications={() => navigation.navigate('Notifications' as never)}
-        hasUnread
+        title={t('home.title')}
+        subtitle={t('home.subtitle')}
+        enableSearch
+        searchPlaceholder={t('home.search_placeholder')}
+        actions={[
+          {
+            icon: 'bell',
+            badge: true,
+            onPress: () => navigation.navigate('Notifications'),
+          },
+          {
+            icon: 'sliders',
+            onPress: () => navigation.navigate('Filters'),
+          },
+        ]}
       />
 
       <FlatList
@@ -312,19 +340,17 @@ export default function HomeScreen({
           <RefreshControl
             refreshing={refreshing}
             onRefresh={onRefresh}
-            colors={[Colors.primary]}
-            tintColor={Colors.primary}
+            colors={[theme.colors.primary]}
+            tintColor={theme.colors.primary}
           />
         }
         ListEmptyComponent={
           <View style={styles.emptyWrapper}>
             <View style={styles.emptyIconWrapper}>
-              <Feather name="heart" size={36} color={Colors.primary} />
+              <Feather name="heart" size={36} color={theme.colors.primary} />
             </View>
-            <Text style={styles.emptyTitle}>No suggestions yet</Text>
-            <Text style={styles.emptySub}>
-              Complete your profile to start getting matches.
-            </Text>
+            <Text style={styles.emptyTitle}>{t('home.empty_title')}</Text>
+            <Text style={styles.emptySub}>{t('home.empty_subtitle')}</Text>
           </View>
         }
       />

@@ -14,15 +14,15 @@ import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '../../core/constants/colors';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { matchListStyles } from './MatchListScreen.styles';
+import { matchListStyles } from './MatchList.styles';
 import Header from '../../core/components/Header';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type RootStackParamList = {
+type MatchesStackParamList = {
   MatchDetails: { userId: string };
-  ChatsDetail: { userId: string; partnerName: string; partnerPhoto: string };
+  ChatDetails: { userId: string; partnerName: string; partnerPhoto: string };
 };
 
 type TabKey = 'recommended' | 'new' | 'online';
@@ -229,7 +229,7 @@ const MatchCard = React.memo(function MatchCard({
 export default function MatchListScreen({
   navigation,
 }: {
-  navigation: NativeStackNavigationProp<RootStackParamList>;
+  navigation: NativeStackNavigationProp<MatchesStackParamList>;
 }): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const [matches, setMatches] = useState<Match[]>([]);
@@ -318,7 +318,7 @@ export default function MatchListScreen({
           navigation.navigate('MatchDetails', { userId: item.id })
         }
         onChat={() =>
-          navigation.navigate('ChatsDetail', {
+          navigation.navigate('ChatDetails', {
             userId: item.id,
             partnerName: item.name,
             partnerPhoto: item.avatarUrl,
@@ -359,9 +359,11 @@ export default function MatchListScreen({
     <SafeAreaView style={styles.safe}>
       {/* ── Shared Header ────────────────────────────────────────── */}
       <Header
-        onFilter={() => {}}
-        onNotifications={() => navigation.navigate('Notifications' as never)}
-        hasUnread
+        title="Matches"
+        subtitle="People who liked you"
+        enableSearch
+        searchPlaceholder="Search by name, city..."
+        actions={[{ icon: 'filter', onPress: () => {} }]}
       />
 
       {/* ── Tabs ─────────────────────────────────────────────────── */}

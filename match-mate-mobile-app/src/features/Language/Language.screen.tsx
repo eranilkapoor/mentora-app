@@ -26,7 +26,7 @@ export default function LanguageScreen(): React.ReactElement {
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <Text style={styles.sectionTitle}>
-              {t('available_languages', 'Available Languages')}
+              {t('language.available_languages')}
             </Text>
           </View>
 

@@ -5,18 +5,6 @@ import { useTheme } from '../core/theme/ThemeProvider';
 import { AppStackParamList } from './types';
 
 import BottomTabs from './BottomTabs';
-import NotificationsScreen from '../features/Notifications/NotificationsScreen';
-import SettingsScreen from '../features/Settings/Settings.screen';
-import ChangePasswordScreen from '../features/ChangePassword/ChangePassword.screen';
-import ChatScreen from '../features/Chats/ChatScreen';
-import MatchDetailScreen from '../features/MatchDetail/MatchDetailScreen';
-import PrivacyPolicyScreen from '../features/PrivacyPolicy/PrivacyPolicyScreen';
-import HelpSupportScreen from '../features/HelpSupport/HelpSupportScreen';
-import NotificationSettingsScreen from '../features/NotificationSettings/NotificationSettingsScreen';
-import EditProfileScreen from '../features/EditProfile/EditProfileScreen';
-import OnlineMatchesScreen from '../features/OnlineMatches/OnlineMatchesScreen';
-import LanguageScreen from '../features/Language/Language.screen';
-import ThemeScreen from '../features/Theme/Theme.screen';
 import { isAndroid } from '@/core/utils/device';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
@@ -49,78 +37,6 @@ export default function AppStack(): React.ReactElement {
         name="Tabs"
         component={BottomTabs}
         options={{ headerShown: false }}
-      />
-
-      {/* ── Profile & Account ── */}
-      <Stack.Screen
-        name="EditProfile"
-        component={EditProfileScreen}
-        options={{ title: 'Edit Profile' }}
-      />
-      <Stack.Screen
-        name="ChangePassword"
-        component={ChangePasswordScreen}
-        options={{ title: 'Change Password' }}
-      />
-
-      {/* ── Settings ── */}
-      <Stack.Screen
-        name="Settings"
-        component={SettingsScreen}
-        options={{ title: 'Settings' }}
-      />
-      <Stack.Screen
-        name="Languages"
-        component={LanguageScreen}
-        options={{ title: 'Language' }}
-      />
-      <Stack.Screen
-        name="Themes"
-        component={ThemeScreen}
-        options={{ title: 'Appearance' }}
-      />
-      <Stack.Screen
-        name="NotificationSettings"
-        component={NotificationSettingsScreen}
-        options={{ title: 'Notifications' }}
-      />
-
-      {/* ── Matches ── */}
-      <Stack.Screen
-        name="MatchDetails"
-        component={MatchDetailScreen}
-        options={{ title: 'Match Detail' }}
-      />
-      <Stack.Screen
-        name="OnlineMatches"
-        component={OnlineMatchesScreen}
-        options={{ headerShown: false }}
-      />
-
-      {/* ── Chat ── */}
-      <Stack.Screen
-        name="ChatsDetail"
-        component={ChatScreen}
-        options={{ headerShown: false }}
-      />
-
-      {/* ── Notifications ── */}
-      <Stack.Screen
-        name="Notifications"
-        component={NotificationsScreen}
-        options={{ title: 'Notifications' }}
-      />
-
-      {/* ── Support ── */}
-      <Stack.Screen
-        name="HelpSupport"
-        component={HelpSupportScreen}
-        options={{ title: 'Help & Support' }}
-      />
-      <Stack.Screen
-        name="PrivacyPolicy"
-        component={PrivacyPolicyScreen}
-        options={{ title: 'Privacy Policy' }}
       />
     </Stack.Navigator>
   );

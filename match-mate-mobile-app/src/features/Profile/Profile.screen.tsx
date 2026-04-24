@@ -27,7 +27,7 @@ import { useGetMyProfileQuery } from '../../store/services/profileApi';
 import { ProfileData } from '../../core/types';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { profileStyles } from './ProfileScreen.styles';
+import { profileStyles } from './Profile.styles';
 import { ProfileScreenProps } from './Profile.types';
 import { FALLBACK_PHOTOS } from './Profile.constants';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
@@ -128,7 +128,6 @@ export default function ProfileScreen({
           .filter((img) => img.isActive !== false)
           .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
           .map((img) => {
-            console.log('📸 Image URL:', img.url); // ← check this in logs
             return 'http://192.168.1.4:3000' + img.url;
           }) // extract URL string from ProfileImage
       : FALLBACK_PHOTOS;
@@ -172,9 +171,14 @@ export default function ProfileScreen({
     return (
       <SafeAreaView style={styles.safe}>
         <Header
-          onNotifications={() => navigation.navigate('Notifications' as never)}
-          onSettings={() => navigation.navigate('Settings' as never)}
-          hasUnread
+          title="My Profile"
+          actions={[
+            { icon: 'edit', onPress: () => {} },
+            {
+              icon: 'settings',
+              onPress: () => navigation.navigate('Settings'),
+            },
+          ]}
         />
         <ProfileSkeleton />
       </SafeAreaView>
@@ -187,9 +191,11 @@ export default function ProfileScreen({
     <SafeAreaView style={styles.safe}>
       {/* Header */}
       <Header
-        onNotifications={() => navigation.navigate('Notifications' as never)}
-        onSettings={() => navigation.navigate('Settings' as never)}
-        hasUnread
+        title="My Profile"
+        actions={[
+          { icon: 'edit', onPress: () => {} },
+          { icon: 'settings', onPress: () => navigation.navigate('Settings') },
+        ]}
       />
       <ScrollView
         style={styles.container}

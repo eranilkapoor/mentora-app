@@ -25,9 +25,7 @@ export default function ThemeScreen(): React.ReactElement {
 
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>
-              {t('appearance', 'Appearance')}
-            </Text>
+            <Text style={styles.sectionTitle}>{t('theme.appearance')}</Text>
           </View>
 
           {themes.map((item, index) => (

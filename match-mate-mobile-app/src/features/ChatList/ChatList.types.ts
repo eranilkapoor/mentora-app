@@ -1,12 +1,12 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
-export type RootStackParamList = {
-  ChatsDetail: { userId: string; partnerName: string; partnerPhoto: string };
+export type ChatsStackParamList = {
+  ChatDetails: { userId: string; partnerName: string; partnerPhoto: string };
   RequestContact: { userId: string };
 };
 
 export type ChatListProps = {
-  navigation: NativeStackNavigationProp<RootStackParamList>;
+  navigation: NativeStackNavigationProp<ChatsStackParamList>;
 };
 
 export type ChatMatch = {

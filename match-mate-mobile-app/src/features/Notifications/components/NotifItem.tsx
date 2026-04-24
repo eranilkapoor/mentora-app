@@ -1,8 +1,10 @@
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { notificationStyles } from '../NotificationsScreen.styles';
+import React from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
+
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { notificationStyles } from '../Notifications.styles';
 import { Notification } from '../Notifications.types';
 
 export function NotifItem({
@@ -15,6 +17,7 @@ export function NotifItem({
   onPress: (id: string) => void;
 }): React.ReactElement {
   const styles = useThemedStyles(notificationStyles);
+  const { theme } = useTheme();
 
   return (
     <TouchableOpacity
@@ -37,7 +40,8 @@ export function NotifItem({
           name={item.icon}
           size={18}
           color={
-            item.iconColor ?? (item.unread ? Colors.primary : Colors.textMuted)
+            item.iconColor ??
+            (item.unread ? theme.colors.primary : theme.colors.textMuted)
           }
         />
       </View>
@@ -52,6 +56,7 @@ export function NotifItem({
           </Text>
           <Text style={styles.notifTime}>{item.time}</Text>
         </View>
+
         <Text style={styles.notifMessage} numberOfLines={2}>
           {item.message}
         </Text>

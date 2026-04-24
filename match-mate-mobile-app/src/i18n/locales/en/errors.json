@@ -1,0 +1,7 @@
+{
+  "required": "This field is required",
+  "invalid_email": "Invalid email address",
+  "password_mismatch": "Passwords do not match",
+  "network_error": "Network error, please try again",
+  "something_wrong": "Something went wrong"
+}

@@ -4,7 +4,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../core/components/Header';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { membershipStyles } from './MembershipScreen.styles';
+import { membershipStyles } from './Membership.styles';
 import { Colors } from '../../core/constants/colors';
 import { MembershipScreenProps } from './Membership.types';
 import {
@@ -29,11 +29,7 @@ export default function MembershipScreen({
 
   return (
     <SafeAreaView style={styles.container}>
-      <Header
-        onNotifications={() => navigation.navigate('Notifications' as never)}
-        onSettings={() => navigation.navigate('Settings' as never)}
-        hasUnread
-      />
+      <Header title="Go Premium" subtitle="Unlock exclusive features" />
 
       <ScrollView
         contentContainerStyle={styles.scroll}

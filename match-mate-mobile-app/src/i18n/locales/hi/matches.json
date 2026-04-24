@@ -1,0 +1,11 @@
+{
+  "matches": "मैच",
+  "new_matches": "नए मैच",
+  "accepted": "स्वीकृत",
+  "rejected": "अस्वीकृत",
+  "pending": "लंबित",
+  "send_request": "रिक्वेस्ट भेजें",
+  "accept_request": "रिक्वेस्ट स्वीकार करें",
+  "reject_request": "रिक्वेस्ट अस्वीकार करें",
+  "no_matches": "कोई मैच नहीं मिला"
+}

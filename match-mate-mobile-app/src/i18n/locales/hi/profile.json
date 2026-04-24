@@ -1,0 +1,19 @@
+{
+  "profile": "प्रोफाइल",
+  "edit_profile": "प्रोफाइल संपादित करें",
+  "edit_profile_sub": "Update your personal info",
+  "your_profile": "Your Profile",
+  "tap_to_edit": "Tap to edit your profile",
+  "name": "नाम",
+  "age": "आयु",
+  "gender": "लिंग",
+  "dob": "जन्म तिथि",
+  "height": "लंबाई",
+  "weight": "वजन",
+  "bio": "परिचय",
+  "location": "स्थान",
+  "upload_photo": "फोटो अपलोड करें",
+  "verify_profile": "प्रोफाइल सत्यापित करें",
+  "completed": "पूर्ण",
+  "incomplete": "अपूर्ण"
+}

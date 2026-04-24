@@ -1,0 +1,10 @@
+{
+  "chat": "Chat",
+  "type_message": "Type a message...",
+  "send": "Send",
+  "online": "Online",
+  "offline": "Offline",
+  "last_seen": "Last Seen",
+  "typing": "Typing...",
+  "no_messages": "No messages yet"
+}

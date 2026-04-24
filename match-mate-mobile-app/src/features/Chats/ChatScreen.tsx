@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   View,
   TextInput,
-  Image,
   KeyboardAvoidingView,
   Platform,
   ListRenderItem,
@@ -14,35 +13,49 @@ import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import * as ImagePicker from 'expo-image-picker';
+
 import { EMOJIS } from '../../core/constants';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { chatStyles } from './ChatScreen.styles';
-import { Colors } from '../../core/constants/colors';
+
 import { fetchMessages, formatDateLabel, Message, Props } from './Chat.types';
+
 import { MessageBubble } from './components/MessageBubble';
 import { DateSeparator } from './components/DateSeparator';
+import Header from '@/core/components/Header';
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────
+// Screen
+// ─────────────────────────────────────────────
+
 export default function ChatScreen({
   navigation,
   route,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(chatStyles);
+  const { theme } = useTheme();
+
   const { userId, partnerName, partnerPhoto } = route.params ?? {};
 
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const inputRef = useRef<TextInput>(null);
 
+  const inputRef = useRef<TextInput>(null);
+  const listRef = useRef<FlatList<Message>>(null);
+
+  // ─── Load messages ─────────────────────────
   useFocusEffect(
     useCallback(() => {
       setMessages(fetchMessages(userId ?? 'partner'));
     }, [userId])
   );
 
+  // ─── Send message ─────────────────────────
   const handleSend = useCallback((): void => {
     if (!inputText.trim()) return;
+
     const msg: Message = {
       id: Date.now().toString(),
       senderId: 'me',
@@ -51,16 +64,22 @@ export default function ChatScreen({
       type: 'text',
       read: false,
     };
+
     setMessages((prev) => [msg, ...prev]);
     setInputText('');
     setShowEmojiPicker(false);
+
+    // ✅ scroll to latest
+    listRef.current?.scrollToOffset({ offset: 0, animated: true });
   }, [inputText]);
 
+  // ─── Pick image ───────────────────────────
   const handlePickImage = useCallback(async (): Promise<void> => {
     const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       quality: 0.8,
     });
+
     if (!result.canceled && result.assets[0] !== undefined) {
       const msg: Message = {
         id: Date.now().toString(),
@@ -70,21 +89,24 @@ export default function ChatScreen({
         type: 'image',
         read: false,
       };
+
       setMessages((prev) => [msg, ...prev]);
     }
   }, []);
 
+  // ─── Emoji ────────────────────────────────
   const appendEmoji = useCallback((emoji: string): void => {
     setInputText((prev) => prev + emoji);
     setShowEmojiPicker(false);
     inputRef.current?.focus();
   }, []);
 
+  // ─── Render message ───────────────────────
   const renderMessage: ListRenderItem<Message> = useCallback(
     ({ item, index }) => (
       <>
         <MessageBubble item={item} />
-        {/* Show date separator between days */}
+
         {index < messages.length - 1 &&
           formatDateLabel(item.timestamp) !==
             formatDateLabel(messages[index + 1]?.timestamp ?? 0) && (
@@ -97,75 +119,48 @@ export default function ChatScreen({
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      {/* ── Header ───────────────────────────────────────────────── */}
-      <View style={styles.header}>
-        <TouchableOpacity
-          style={styles.backBtn}
-          onPress={() => navigation.goBack()}
-          accessibilityRole="button"
-          accessibilityLabel="Go back"
-        >
-          <Feather name="arrow-left" size={18} color={Colors.textPrimary} />
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={styles.avatarWrapper}
-          onPress={() =>
-            navigation.navigate('ProfileDetails', { userId: userId ?? '' })
-          }
-        >
-          <Image
-            source={{
-              uri: partnerPhoto ?? 'https://i.pravatar.cc/150?img=12',
-            }}
-            style={styles.headerAvatar}
-          />
-          <View style={styles.onlineDot} />
-        </TouchableOpacity>
-
-        <View style={styles.headerInfo}>
-          <Text style={styles.headerName} numberOfLines={1}>
-            {partnerName ?? 'Chat'}
-          </Text>
-          <View style={styles.onlineRow}>
-            <View style={styles.onlineDotInline} />
-            <Text style={styles.headerSub}>Online now</Text>
-          </View>
-        </View>
-
-        <View style={styles.headerActions}>
-          <TouchableOpacity
-            style={styles.headerActionBtn}
-            accessibilityRole="button"
-            accessibilityLabel="Voice call"
-          >
-            <Feather name="phone" size={16} color={Colors.textSecondary} />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.viewProfileBtn}
-            onPress={() =>
-              navigation.navigate('ProfileDetails', { userId: userId ?? '' })
-            }
-            accessibilityRole="button"
-          >
-            <Text style={styles.viewProfileText}>Profile</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
+      {/* ─── HEADER (NEW) ───────────────────── */}
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={partnerName ?? 'Chat'}
+        subtitle="Online now"
+        avatarUri={partnerPhoto ?? 'https://i.pravatar.cc/150?img=12'}
+        actions={[
+          {
+            icon: 'phone',
+            onPress: () => {},
+            accessibilityLabel: 'Voice call',
+          },
+          {
+            icon: 'video',
+            onPress: () => {},
+            accessibilityLabel: 'Video call',
+          },
+          {
+            icon: 'more-vertical',
+            onPress: () => {
+              // TODO: open bottom sheet (profile, block, report)
+            },
+            accessibilityLabel: 'More options',
+          },
+        ]}
+      />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
-        keyboardVerticalOffset={0}
       >
-        {/* ── Messages ─────────────────────────────────────────────── */}
+        {/* ─── Messages ─────────────────────── */}
         <FlatList
+          ref={listRef}
           data={messages}
           inverted
           keyExtractor={(item) => item.id}
           renderItem={renderMessage}
           contentContainerStyle={styles.messagesList}
           showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
           ListFooterComponent={
             <DateSeparator
               ts={messages[messages.length - 1]?.timestamp ?? Date.now()}
@@ -173,7 +168,7 @@ export default function ChatScreen({
           }
         />
 
-        {/* ── Emoji Picker ─────────────────────────────────────────── */}
+        {/* ─── Emoji Picker ─────────────────── */}
         {showEmojiPicker && (
           <View style={styles.emojiBox}>
             {EMOJIS.map((e) => (
@@ -188,7 +183,7 @@ export default function ChatScreen({
           </View>
         )}
 
-        {/* ── Input Bar ────────────────────────────────────────────── */}
+        {/* ─── Input Bar ────────────────────── */}
         <View style={styles.inputBar}>
           <TouchableOpacity
             onPress={() => setShowEmojiPicker((v) => !v)}
@@ -200,7 +195,9 @@ export default function ChatScreen({
             <Feather
               name="smile"
               size={20}
-              color={showEmojiPicker ? Colors.primary : Colors.textMuted}
+              color={
+                showEmojiPicker ? theme.colors.primary : theme.colors.textMuted
+              }
             />
           </TouchableOpacity>
 
@@ -211,18 +208,18 @@ export default function ChatScreen({
             accessibilityRole="button"
             accessibilityLabel="Send image"
           >
-            <Feather name="image" size={20} color={Colors.textMuted} />
+            <Feather name="image" size={20} color={theme.colors.textMuted} />
           </TouchableOpacity>
 
           <TextInput
             ref={inputRef}
             style={styles.input}
             placeholder="Type a message…"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={theme.colors.textMuted}
             value={inputText}
             onChangeText={setInputText}
             multiline
-            onSubmitEditing={handleSend}
+            blurOnSubmit={false}
             accessibilityLabel="Message input"
           />
 
@@ -241,7 +238,9 @@ export default function ChatScreen({
               name="send"
               size={18}
               color={
-                inputText.trim().length > 0 ? Colors.white : Colors.textMuted
+                inputText.trim().length > 0
+                  ? theme.colors.white
+                  : theme.colors.textMuted
               }
             />
           </TouchableOpacity>

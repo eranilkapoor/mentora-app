@@ -367,4 +367,11 @@ export const homeStyles = (theme: Theme) =>
       textAlign: 'center',
       lineHeight: 20,
     },
+    newBadgeOnline: {
+      top: 44,
+    },
+
+    newBadgeDefault: {
+      top: 12,
+    },
   });

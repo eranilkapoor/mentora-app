@@ -1,6 +1,6 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { RowProps } from '../Profile.types';
-import { profileStyles } from '../ProfileScreen.styles';
+import { profileStyles } from '../Profile.styles';
 import { View, Text } from 'react-native';
 
 export function Row({ label, value }: RowProps): React.ReactElement {

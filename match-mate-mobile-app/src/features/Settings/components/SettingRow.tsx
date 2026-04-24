@@ -1,6 +1,6 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SettingRowProps } from '../Settings.types';
-import { settingsStyles } from '../SettingsScreen.styles';
+import { settingsStyles } from '../Settings.styles';
 import { TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '@/core/constants/colors';

@@ -10,7 +10,7 @@ import {
   Platform,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '../../core/constants/colors';
+import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { changePasswordStyles } from './ChangePassword.styles';
 import { InfoBanner } from './components/InfoBanner';
@@ -19,12 +19,11 @@ import { PasswordStrengthBar } from './components/PasswordStrengthBar';
 import { ChangePasswordScreenProps } from './ChangePassword.types';
 import { useChangePassword } from './ChangePassword.hooks';
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
-
 export default function ChangePasswordScreen({
   navigation,
 }: ChangePasswordScreenProps): React.ReactElement {
   const styles = useThemedStyles(changePasswordStyles);
+  const { t } = useTranslation();
 
   const {
     values,
@@ -38,28 +37,22 @@ export default function ChangePasswordScreen({
   } = useChangePassword(navigation);
 
   return (
-    <SafeAreaView
-      style={[styles.safe, { backgroundColor: Colors.backgroundPage }]}
-    >
+    <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
         style={styles.safe}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
         >
-          {/* Info Banner */}
           <InfoBanner styles={styles} />
 
-          {/* Form Card */}
           <View style={styles.card}>
             <PasswordField
-              label="Current Password"
+              label={t('change_password.current')}
               value={values.oldPassword}
-              placeholder="Enter current password"
+              placeholder={t('change_password.placeholders.current')}
               error={errors.oldPassword}
               visible={visibility.oldPassword}
               onChangeText={(t) => setValue('oldPassword', t)}
@@ -71,9 +64,9 @@ export default function ChangePasswordScreen({
             <View style={styles.separator} />
 
             <PasswordField
-              label="New Password"
+              label={t('change_password.new')}
               value={values.newPassword}
-              placeholder="Enter new password"
+              placeholder={t('change_password.placeholders.new')}
               error={errors.newPassword}
               visible={visibility.newPassword}
               onChangeText={(t) => setValue('newPassword', t)}
@@ -87,9 +80,9 @@ export default function ChangePasswordScreen({
             <View style={styles.separator} />
 
             <PasswordField
-              label="Confirm New Password"
+              label={t('change_password.confirm')}
               value={values.confirmPassword}
-              placeholder="Re-enter new password"
+              placeholder={t('change_password.placeholders.confirm')}
               error={errors.confirmPassword}
               visible={visibility.confirmPassword}
               onChangeText={(t) => setValue('confirmPassword', t)}
@@ -97,58 +90,21 @@ export default function ChangePasswordScreen({
               accessibilityLabel="confirm-password-input"
               editable={!loading}
             />
-
-            {/* Match indicator */}
-            {values.confirmPassword.length > 0 && (
-              <View style={styles.matchRow}>
-                <Feather
-                  name={
-                    values.confirmPassword === values.newPassword
-                      ? 'check-circle'
-                      : 'x-circle'
-                  }
-                  size={14}
-                  color={
-                    values.confirmPassword === values.newPassword
-                      ? Colors.success
-                      : Colors.danger
-                  }
-                />
-                <Text
-                  style={[
-                    styles.matchText,
-                    {
-                      color:
-                        values.confirmPassword === values.newPassword
-                          ? Colors.success
-                          : Colors.danger,
-                    },
-                  ]}
-                >
-                  {values.confirmPassword === values.newPassword
-                    ? 'Passwords match'
-                    : 'Passwords do not match'}
-                </Text>
-              </View>
-            )}
           </View>
 
-          {/* Actions */}
           <TouchableOpacity
             style={[styles.primaryButton, loading && styles.disabledButton]}
-            onPress={() => {
-              void handleSubmit();
-            }}
+            onPress={() => void handleSubmit()}
             disabled={loading}
-            accessibilityRole="button"
-            accessibilityLabel="Update password"
           >
             {loading ? (
-              <ActivityIndicator color={Colors.white} />
+              <ActivityIndicator color="#fff" />
             ) : (
               <>
-                <Feather name="check" size={18} color={Colors.white} />
-                <Text style={styles.primaryButtonText}>Update Password</Text>
+                <Feather name="check" size={18} color="#fff" />
+                <Text style={styles.primaryButtonText}>
+                  {t('change_password.update')}
+                </Text>
               </>
             )}
           </TouchableOpacity>
@@ -157,10 +113,10 @@ export default function ChangePasswordScreen({
             style={styles.resetButton}
             onPress={handleReset}
             disabled={loading}
-            accessibilityRole="button"
-            accessibilityLabel="Clear all fields"
           >
-            <Text style={styles.resetButtonText}>Clear All Fields</Text>
+            <Text style={styles.resetButtonText}>
+              {t('change_password.reset')}
+            </Text>
           </TouchableOpacity>
         </ScrollView>
       </KeyboardAvoidingView>

@@ -1,139 +1,247 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, Image } from 'react-native';
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleProp,
+  ViewStyle,
+  TextInput,
+  Image,
+} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { StyleSheet } from 'react-native';
-import { Colors } from '../constants/colors';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { Theme } from '@/core/theme/types';
+import { useTranslation } from 'react-i18next';
+import { headerStyles } from './Header.styles';
 
-const headerStyles = (theme: Theme) =>
-  StyleSheet.create({
-    header: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      backgroundColor: theme.colors.white,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      elevation: 2,
-    },
-    left: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-    },
-    logoWrapper: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      backgroundColor: theme.colors.primaryLight,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    appName: {
-      fontSize: 18,
-      fontWeight: '800',
-      color: theme.colors.primary,
-    },
-    tagline: {
-      fontSize: 11,
-      color: theme.colors.textMuted,
-    },
-    right: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-    },
-    iconBtn: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      backgroundColor: theme.colors.backgroundLight,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    notifDot: {
-      position: 'absolute',
-      top: 7,
-      right: 7,
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: theme.colors.danger,
-      borderWidth: 1.5,
-      borderColor: theme.colors.white,
-    },
-    avatarBtn: {
-      width: 38,
-      height: 38,
-      borderRadius: 19,
-      borderWidth: 2,
-      borderColor: theme.colors.primaryLight,
-    },
-  });
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
+
+type HeaderAction = {
+  icon: React.ComponentProps<typeof Feather>['name'];
+  onPress?: () => void;
+  badge?: boolean;
+  accessibilityLabel?: string;
+};
 
 interface HeaderProps {
-  onFilter?: () => void;
-  onNotifications?: () => void;
-  onSettings?: () => void;
-  hasUnread?: boolean;
+  title?: string;
+  subtitle?: string;
+
+  showBack?: boolean;
+  onBackPress?: () => void;
+
+  leftComponent?: React.ReactNode;
+  avatarUri?: string;
+
+  actions?: HeaderAction[];
+
+  enableSearch?: boolean;
+  searchPlaceholder?: string;
+  onSearchChange?: (text: string) => void;
+
+  containerStyle?: StyleProp<ViewStyle>;
 }
 
+// ─────────────────────────────────────────────
+// Action Button
+// ─────────────────────────────────────────────
+
+interface ActionButtonProps {
+  icon: React.ComponentProps<typeof Feather>['name'];
+  onPress?: () => void;
+  badge?: boolean;
+  label?: string;
+  color: string;
+  styles: ReturnType<typeof headerStyles>;
+}
+
+const ActionButton = React.memo(
+  ({ icon, onPress, badge, label, color, styles }: ActionButtonProps) => (
+    <TouchableOpacity
+      style={styles.iconBtn}
+      onPress={onPress}
+      accessibilityRole="button"
+      accessibilityLabel={label ?? icon}
+      hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+      activeOpacity={0.7}
+    >
+      <Feather name={icon} size={18} color={color} />
+      {badge ? <View style={styles.badge} /> : null}
+    </TouchableOpacity>
+  )
+);
+
+ActionButton.displayName = 'ActionButton';
+
+// ─────────────────────────────────────────────
+// Header Component
+// ─────────────────────────────────────────────
+
 export default function Header({
-  onFilter,
-  onNotifications,
-  onSettings,
-  hasUnread = false,
+  title,
+  subtitle,
+  showBack,
+  onBackPress,
+  leftComponent,
+  avatarUri,
+  actions = [],
+  enableSearch = false,
+  searchPlaceholder,
+  onSearchChange,
+  containerStyle,
 }: HeaderProps): React.ReactElement {
   const styles = useThemedStyles(headerStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
+  const [isSearching, setIsSearching] = useState(false);
+  const [searchText, setSearchText] = useState('');
+
+  // 🔙 Back handler fallback
+  const handleBack = useCallback(() => {
+    onBackPress?.();
+  }, [onBackPress]);
+
+  // 🔍 Search change handler
+  const handleSearchChange = useCallback(
+    (text: string) => {
+      setSearchText(text);
+      onSearchChange?.(text);
+    },
+    [onSearchChange]
+  );
+
+  const clearSearch = useCallback(() => {
+    setSearchText('');
+    onSearchChange?.('');
+  }, [onSearchChange]);
+
+  // ───────────────────────────────────────────
+  // LEFT SECTION
+  // ───────────────────────────────────────────
+
+  const renderLeft = () => {
+    if (isSearching) {
+      return (
+        <View style={styles.searchContainer}>
+          <Feather name="search" size={16} color={theme.colors.textMuted} />
+
+          <TextInput
+            value={searchText}
+            onChangeText={handleSearchChange}
+            placeholder={searchPlaceholder ?? t('common.search')}
+            placeholderTextColor={theme.colors.textMuted}
+            style={styles.searchInput}
+            autoFocus
+            returnKeyType="search"
+            accessibilityLabel={t('common.search')}
+          />
+
+          {searchText.length > 0 && (
+            <TouchableOpacity
+              onPress={clearSearch}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.clear')}
+            >
+              <Feather name="x" size={18} color={theme.colors.textMuted} />
+            </TouchableOpacity>
+          )}
+
+          <TouchableOpacity
+            onPress={() => setIsSearching(false)}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.close')}
+          >
+            <Feather
+              name="chevron-left"
+              size={20}
+              color={theme.colors.textPrimary}
+            />
+          </TouchableOpacity>
+        </View>
+      );
+    }
+
+    if (leftComponent) return leftComponent;
+
+    return (
+      <View style={styles.left}>
+        {showBack && (
+          <TouchableOpacity
+            style={styles.iconBtn}
+            onPress={handleBack}
+            accessibilityRole="button"
+            accessibilityLabel={t('common.go_back')}
+          >
+            <Feather
+              name="arrow-left"
+              size={18}
+              color={theme.colors.textPrimary}
+            />
+          </TouchableOpacity>
+        )}
+
+        {avatarUri ? (
+          <Image
+            source={{ uri: avatarUri }}
+            style={styles.avatar}
+            accessibilityLabel={t('common.avatar')}
+          />
+        ) : null}
+
+        <View>
+          {title ? <Text style={styles.title}>{title}</Text> : null}
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        </View>
+      </View>
+    );
+  };
+
+  // ───────────────────────────────────────────
+  // ACTIONS
+  // ───────────────────────────────────────────
+
+  const finalActions = useMemo(() => {
+    if (!enableSearch) return actions;
+
+    return [
+      {
+        icon: 'search' as const,
+        onPress: () => setIsSearching(true),
+        accessibilityLabel: t('common.search'),
+      },
+      ...actions,
+    ];
+  }, [actions, enableSearch, t]);
+
+  const renderAction = useCallback(
+    (action: HeaderAction, index: number) => (
+      <ActionButton
+        key={`${action.icon}-${index}`}
+        icon={action.icon}
+        onPress={action.onPress}
+        badge={action.badge}
+        label={action.accessibilityLabel}
+        color={theme.colors.textSecondary}
+        styles={styles}
+      />
+    ),
+    [theme.colors.textSecondary, styles]
+  );
+
+  // ───────────────────────────────────────────
+  // RENDER
+  // ───────────────────────────────────────────
 
   return (
-    <View style={styles.header}>
-      <View style={styles.left}>
-        <View style={styles.logoWrapper}>
-          <Feather name="heart" size={18} color={Colors.primary} />
-        </View>
-        <View>
-          <Text style={styles.appName}>MatchMate</Text>
-          <Text style={styles.tagline}>Find your perfect match</Text>
-        </View>
-      </View>
+    <View style={[styles.header, containerStyle]}>
+      {renderLeft()}
 
-      <View style={styles.right}>
-        {onFilter !== undefined && (
-          <TouchableOpacity
-            style={styles.iconBtn}
-            onPress={onFilter}
-            accessibilityRole="button"
-            accessibilityLabel="Filter"
-          >
-            <Feather name="sliders" size={17} color={Colors.textSecondary} />
-          </TouchableOpacity>
-        )}
-
-        <TouchableOpacity
-          style={styles.iconBtn}
-          onPress={onNotifications}
-          accessibilityRole="button"
-          accessibilityLabel="Notifications"
-        >
-          <Feather name="bell" size={17} color={Colors.textSecondary} />
-          {hasUnread && <View style={styles.notifDot} />}
-        </TouchableOpacity>
-
-        {onSettings !== undefined && (
-          <TouchableOpacity
-            style={styles.iconBtn}
-            onPress={onSettings}
-            accessibilityRole="button"
-            accessibilityLabel="Settings"
-          >
-            <Feather name="settings" size={17} color={Colors.textSecondary} />
-          </TouchableOpacity>
-        )}
-      </View>
+      {!isSearching && (
+        <View style={styles.right}>{finalActions.map(renderAction)}</View>
+      )}
     </View>
   );
 }

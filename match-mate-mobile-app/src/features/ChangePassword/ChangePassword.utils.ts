@@ -1,25 +1,30 @@
 import { FormValues, FormErrors } from './ChangePassword.types';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 
-export const validatePasswords = (values: FormValues): FormErrors => {
+export const validatePasswords = (
+  values: FormValues,
+  t: (key: string, params?: Record<string, unknown>) => string
+): FormErrors => {
   const errors: FormErrors = {};
 
   if (!values.oldPassword) {
-    errors.oldPassword = 'Current password is required';
+    errors.oldPassword = t('change_password.errors.current_required');
   }
 
   if (!values.newPassword) {
-    errors.newPassword = 'New password is required';
+    errors.newPassword = t('change_password.errors.new_required');
   } else if (values.newPassword.length < PASSWORD_MIN_LENGTH) {
-    errors.newPassword = `Password must be at least ${PASSWORD_MIN_LENGTH} characters`;
+    errors.newPassword = t('change_password.errors.min_length', {
+      count: PASSWORD_MIN_LENGTH,
+    });
   } else if (values.newPassword === values.oldPassword) {
-    errors.newPassword = 'New password must differ from current password';
+    errors.newPassword = t('change_password.errors.must_differ');
   }
 
   if (!values.confirmPassword) {
-    errors.confirmPassword = 'Please confirm your new password';
+    errors.confirmPassword = t('change_password.errors.confirm_required');
   } else if (values.confirmPassword !== values.newPassword) {
-    errors.confirmPassword = 'Passwords do not match';
+    errors.confirmPassword = t('change_password.errors.mismatch');
   }
 
   return errors;

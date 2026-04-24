@@ -2,7 +2,6 @@ import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
 import { setLanguage, Language } from '../../store/slices/settingsSlice';
 import { getLanguageOptions } from './Language.constants';
-import i18n from '../../i18n';
 
 export const useLanguageScreen = () => {
   const dispatch = useAppDispatch();
@@ -11,8 +10,7 @@ export const useLanguageScreen = () => {
 
   const languages = getLanguageOptions(t);
 
-  const onSelectLanguage = async (lang: Language) => {
-    await i18n.changeLanguage(lang);
+  const onSelectLanguage = (lang: Language) => {
     dispatch(setLanguage(lang));
   };
 

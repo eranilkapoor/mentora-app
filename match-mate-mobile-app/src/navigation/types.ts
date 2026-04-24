@@ -6,6 +6,7 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
+  ResetPassword: undefined;
 };
 
 // ─── Onboarding Stack ───────────────────────────────────────────────────────────────
@@ -13,20 +14,47 @@ export type OnboardingStackParamList = {
   Onboarding: undefined;
 };
 
+// ─── Home Stack ───────────────────────────────────────────────────────────────
+export type HomeStackParamList = {
+  HomeScreen: undefined;
+  Notifications: undefined;
+};
+
+// ─── Matches Stack ────────────────────────────────────────────────────────────────
+export type MatchesStackParamList = {
+  MatchList: undefined;
+  OnlineMatches: undefined;
+  MatchDetails: { userId: string };
+};
+
+// ─── Chats Stack ────────────────────────────────────────────────────────────────
+export type ChatsStackParamList = {
+  ChatList: undefined;
+  ChatDetails: {
+    userId: string;
+    partnerName: string;
+    partnerPhoto: string;
+  };
+};
+
+// ─── Profile Stack ────────────────────────────────────────────────────────────────
+export type ProfileStackParamList = {
+  ProfileScreen: undefined;
+  Settings: undefined;
+};
+
 // ─── Bottom Tabs ──────────────────────────────────────────────────────────────
 export type BottomTabParamList = {
   Home: undefined;
   Matches: undefined;
   Chats: undefined;
-  Profile: undefined;
   Membership: undefined;
+  Profile: undefined;
 };
 
-// ─── App Stack ────────────────────────────────────────────────────────────────
-export type AppStackParamList = {
-  Tabs: undefined;
-  Notifications: undefined;
-  Settings: undefined;
+// ─── Settings Stack ───────────────────────────────────────────────────────────────
+export type SettingsStackParamList = {
+  SettingsScreen: undefined;
   EditProfile: undefined;
   ChangePassword: undefined;
   Languages: undefined;
@@ -34,13 +62,11 @@ export type AppStackParamList = {
   NotificationSettings: undefined;
   HelpSupport: undefined;
   PrivacyPolicy: undefined;
-  OnlineMatches: undefined;
-  MatchDetails: { userId: string };
-  ChatsDetail: {
-    userId: string;
-    partnerName: string;
-    partnerPhoto: string;
-  };
+};
+
+// ─── App Stack ────────────────────────────────────────────────────────────────
+export type AppStackParamList = {
+  Tabs: undefined;
 };
 
 // ─── Root Stack ───────────────────────────────────────────────────────────────
@@ -53,5 +79,7 @@ export type RootStackParamList = {
 export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
 export type AppNavigationProp = NativeStackNavigationProp<AppStackParamList>;
 export type BottamNavigationProp = BottomTabNavigationProp<BottomTabParamList>;
+export type ProfileNavigationProp =
+  NativeStackNavigationProp<ProfileStackParamList>;
 
 export type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>;

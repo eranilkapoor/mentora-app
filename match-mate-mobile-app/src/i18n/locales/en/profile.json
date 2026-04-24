@@ -1,0 +1,19 @@
+{
+  "profile": "Profile",
+  "edit_profile": "Edit Profile",
+  "edit_profile_sub": "Update your personal info",
+  "your_profile": "Your Profile",
+  "tap_to_edit": "Tap to edit your profile",
+  "name": "Name",
+  "age": "Age",
+  "gender": "Gender",
+  "dob": "Date of Birth",
+  "height": "Height",
+  "weight": "Weight",
+  "bio": "Bio",
+  "location": "Location",
+  "upload_photo": "Upload Photo",
+  "verify_profile": "Verify Profile",
+  "completed": "Completed",
+  "incomplete": "Incomplete"
+}

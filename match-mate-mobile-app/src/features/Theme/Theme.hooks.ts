@@ -1,8 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { setTheme } from '../../store/slices/settingsSlice';
 import { getThemeOptions } from './Theme.constants';
-import { ThemeMode } from '@/store/slices/themeSlice';
+import { setTheme, ThemeMode } from '@/store/slices/settingsSlice';
 
 export const useThemeScreen = () => {
   const dispatch = useAppDispatch();

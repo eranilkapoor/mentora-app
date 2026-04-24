@@ -1,7 +1,7 @@
-import { BottamNavigationProp } from '@/navigation/types';
+import { ProfileNavigationProp } from '@/navigation/types';
 
 export interface ProfileScreenProps {
-  navigation: BottamNavigationProp;
+  navigation: ProfileNavigationProp;
 }
 
 export interface SectionProps {

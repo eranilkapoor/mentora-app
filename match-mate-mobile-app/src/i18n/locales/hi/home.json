@@ -1,0 +1,14 @@
+{
+  "title": "MatchMate",
+  "subtitle": "Find your match",
+  "search_placeholder": "Search by name, city...",
+  "suggested": "Suggested for You",
+  "empty_title": "No suggestions yet",
+  "empty_subtitle": "Complete your profile to start getting matches.",
+  "home": "होम",
+  "welcome": "स्वागत है",
+  "recommended_matches": "सुझाए गए मैच",
+  "nearby_matches": "नजदीकी मैच",
+  "recent_activity": "हाल की गतिविधि",
+  "view_all": "सभी देखें"
+}

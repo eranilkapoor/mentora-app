@@ -1,6 +1,6 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { PlanCardProps } from '../Membership.types';
-import { membershipStyles } from '../MembershipScreen.styles';
+import { membershipStyles } from '../Membership.styles';
 import { TouchableOpacity, View, Text } from 'react-native';
 
 export function PlanCard({

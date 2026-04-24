@@ -1,7 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
 import { changePasswordStyles } from '../ChangePassword.styles';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { PasswordFieldProps } from '../ChangePassword.types';
@@ -22,23 +21,25 @@ export function PasswordField({
   return (
     <View style={styles.fieldWrapper}>
       <Text style={styles.label}>{label}</Text>
+
       <View
         style={[
           styles.inputContainer,
-          error !== undefined && styles.inputError,
-          !editable && styles.inputDisabled,
+          error ? styles.inputError : null,
+          !editable ? styles.inputDisabled : null,
         ]}
       >
         <Feather
           name="lock"
           size={18}
-          color={Colors.textMuted}
+          color={styles.label.color}
           style={styles.inputIcon}
         />
+
         <TextInput
           style={styles.input}
           placeholder={placeholder}
-          placeholderTextColor={Colors.textMuted}
+          placeholderTextColor={styles.ruleText.color}
           secureTextEntry={!visible}
           value={value}
           onChangeText={onChangeText}
@@ -48,6 +49,7 @@ export function PasswordField({
           textContentType="password"
           accessibilityLabel={accessibilityLabel}
         />
+
         <TouchableOpacity
           onPress={onToggleVisibility}
           style={styles.eyeButton}
@@ -58,11 +60,12 @@ export function PasswordField({
           <Feather
             name={visible ? 'eye-off' : 'eye'}
             size={18}
-            color={Colors.textMuted}
+            color={styles.ruleText.color}
           />
         </TouchableOpacity>
       </View>
-      {error !== undefined && <Text style={styles.errorText}>{error}</Text>}
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }

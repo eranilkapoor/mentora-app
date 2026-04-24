@@ -1,5 +1,5 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { profileStyles } from '../ProfileScreen.styles';
+import { profileStyles } from '../Profile.styles';
 import { View } from 'react-native';
 
 export function ProfileSkeleton(): React.ReactElement {

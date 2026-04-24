@@ -14,18 +14,18 @@ import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { matchDetailStyles } from './MatchDetailScreen.styles';
+import { matchDetailStyles } from './MatchDetail.styles';
 import { Colors } from '../../core/constants/colors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type RootStackParamList = {
+type MatchesStackParamList = {
   Chats: { userId: string; partnerName: string; partnerPhoto: string };
   RequestContact: { userId: string };
 };
 
-type Props = { navigation: NativeStackNavigationProp<RootStackParamList> };
+type Props = { navigation: NativeStackNavigationProp<MatchesStackParamList> };
 
 interface SectionProps {
   title: string;

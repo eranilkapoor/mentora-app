@@ -4,20 +4,20 @@ import { ThemeOption } from './Theme.types';
 export const getThemeOptions = (t: TFunction): ThemeOption[] => [
   {
     code: 'light',
-    label: t('light'),
-    description: t('light_description', 'Clean white background'),
+    label: t('theme.light'),
+    description: t('theme.light_description'),
     icon: 'sun',
   },
   {
     code: 'dark',
-    label: t('dark'),
-    description: t('dark_description', 'Easy on the eyes at night'),
+    label: t('theme.dark'),
+    description: t('theme.dark_description'),
     icon: 'moon',
   },
   {
     code: 'system',
-    label: t('system'),
-    description: t('system_description', 'Follows your device settings'),
+    label: t('theme.system'),
+    description: t('theme.system_description'),
     icon: 'smartphone',
   },
 ];

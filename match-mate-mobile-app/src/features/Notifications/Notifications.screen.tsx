@@ -1,18 +1,26 @@
 import React, { useCallback, useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, ScrollView } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+
+import Header from '@/core/components/Header';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { notificationStyles } from './NotificationsScreen.styles';
-import { Colors } from '../../core/constants/colors';
+import { notificationStyles } from './Notifications.styles';
+
 import { NotifSection } from './Notifications.types';
 import { INITIAL_NOTIFICATIONS } from './Notifications.constants';
 import { EmptyState } from './components/EmptyState';
 import { NotifItem } from './components/NotifItem';
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
-export default function NotificationsScreen(): React.ReactElement {
+export default function NotificationsScreen({
+  navigation,
+}: any): React.ReactElement {
   const styles = useThemedStyles(notificationStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
   const [sections, setSections] = useState<NotifSection[]>(
     INITIAL_NOTIFICATIONS
   );
@@ -45,52 +53,52 @@ export default function NotificationsScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* ✅ HEADER */}
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('notifications.title')}
+        subtitle={
+          unreadCount > 0
+            ? t('notifications.unread_count', { count: unreadCount })
+            : t('notifications.all_caught_up')
+        }
+        actions={
+          unreadCount > 0
+            ? [
+                {
+                  icon: 'check',
+                  onPress: markAllRead,
+                  accessibilityLabel: t('notifications.mark_all_read'),
+                },
+              ]
+            : []
+        }
+      />
+
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header Card ──────────────────────────────────────────── */}
-        <View style={styles.headerCard}>
-          <View style={styles.headerLeft}>
-            <View style={styles.headerIconWrapper}>
-              <Feather name="bell" size={20} color={Colors.primary} />
-            </View>
-            <View>
-              <Text style={styles.headerTitle}>Notifications</Text>
-              <Text style={styles.headerSubtitle}>
-                {unreadCount > 0
-                  ? `${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`
-                  : 'All caught up!'}
-              </Text>
-            </View>
-          </View>
-          {unreadCount > 0 && (
-            <TouchableOpacity
-              style={styles.markAllBtn}
-              onPress={markAllRead}
-              accessibilityRole="button"
-            >
-              <Text style={styles.markAllText}>Mark all read</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-
         {allNotifs.length === 0 ? (
           <EmptyState />
         ) : (
           sections.map((section) =>
             section.data.length === 0 ? null : (
               <View key={section.title} style={styles.sectionCard}>
-                {/* Section Header */}
                 <View style={styles.sectionHeader}>
                   <View style={styles.sectionIconWrapper}>
                     <Feather
                       name={section.icon}
                       size={13}
-                      color={Colors.primary}
+                      color={theme.colors.primary}
                     />
                   </View>
-                  <Text style={styles.sectionTitle}>{section.title}</Text>
+
+                  <Text style={styles.sectionTitle}>
+                    {t(`notifications.sections.${section.title}`)}
+                  </Text>
+
                   {section.data.some((n) => n.unread) && (
                     <Text style={styles.sectionCount}>
                       {section.data.filter((n) => n.unread).length}
@@ -98,7 +106,6 @@ export default function NotificationsScreen(): React.ReactElement {
                   )}
                 </View>
 
-                {/* Items */}
                 {section.data.map((item, index) => (
                   <NotifItem
                     key={item.id}

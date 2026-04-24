@@ -1,10 +1,10 @@
 import React from 'react';
 import { View, Text } from 'react-native';
 import { PASSWORD_RULES } from '../ChangePassword.constants';
-import { Colors } from '@/core/constants/colors';
 import Feather from 'react-native-vector-icons/Feather';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { changePasswordStyles } from '../ChangePassword.styles';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 export function PasswordStrengthBar({
   password,
@@ -12,26 +12,29 @@ export function PasswordStrengthBar({
   password: string;
 }): React.ReactElement | null {
   const styles = useThemedStyles(changePasswordStyles);
+  const { theme } = useTheme();
 
-  if (password.length === 0) return null;
+  if (!password) return null;
 
   const passed = PASSWORD_RULES.filter((r) => r.test(password)).length;
+
   const strength =
     passed <= 1
-      ? 'Weak'
+      ? 'weak'
       : passed <= 2
-        ? 'Fair'
+        ? 'fair'
         : passed === 3
-          ? 'Good'
-          : 'Strong';
-  const strengthColor =
+          ? 'good'
+          : 'strong';
+
+  const color =
     passed <= 1
-      ? Colors.danger
+      ? theme.colors.error
       : passed <= 2
-        ? Colors.accent
+        ? theme.colors.warning
         : passed === 3
-          ? Colors.link
-          : Colors.success;
+          ? theme.colors.primary
+          : theme.colors.success;
 
   return (
     <View style={styles.strengthWrapper}>
@@ -41,27 +44,32 @@ export function PasswordStrengthBar({
             key={rule.label}
             style={[
               styles.strengthSegment,
-              i < passed && { backgroundColor: strengthColor },
+              i < passed ? { backgroundColor: color } : null,
             ]}
           />
         ))}
       </View>
-      <Text style={[styles.strengthLabel, { color: strengthColor }]}>
-        {strength}
+
+      <Text style={[styles.strengthLabel, { color }]}>
+        {strength.toUpperCase()}
       </Text>
 
       <View style={styles.rulesContainer}>
         {PASSWORD_RULES.map((rule) => {
           const isPassed = rule.test(password);
+
           return (
             <View key={rule.label} style={styles.ruleRow}>
               <Feather
                 name={isPassed ? 'check-circle' : 'circle'}
                 size={13}
-                color={isPassed ? Colors.success : Colors.textMuted}
+                color={isPassed ? theme.colors.success : theme.colors.textMuted}
               />
               <Text
-                style={[styles.ruleText, isPassed && styles.ruleTextPassed]}
+                style={[
+                  styles.ruleText,
+                  isPassed ? styles.ruleTextPassed : null,
+                ]}
               >
                 {rule.label}
               </Text>
