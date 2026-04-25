@@ -99,13 +99,13 @@ export class AuthService {
 
     const payload = this.authTokenService.generatePayload(populatedUser);
 
-    const { accessToken, refreshToken } =
+    const { access_token, refreshToken } =
       this.authTokenService.generateTokens(payload);
 
     const platform = String(req.headers['x-platform'] || 'web');
 
     const cacheKey = `auth:${user._id.toString()}`;
-    await this.cache.set(cacheKey, accessToken, 900);
+    await this.cache.set(cacheKey, access_token, 900);
 
     await this.userSessionModel.create({
       userId: user._id,
@@ -126,11 +126,11 @@ export class AuthService {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return { accessToken };
+      return { access_token };
     }
 
     // 📱 MOBILE → return both
-    return { accessToken, refreshToken };
+    return { access_token, refreshToken };
   }
 
   async refresh(req: AppRequest, res: Response, oldRefreshToken?: string) {
@@ -175,7 +175,7 @@ export class AuthService {
       const payload = this.authTokenService.generatePayload(user);
 
       // ✅ 5. Generate new tokens
-      const { accessToken, refreshToken } =
+      const { access_token, refreshToken } =
         this.authTokenService.generateTokens(payload);
 
       // 🔥 6. ROTATE refresh token
@@ -199,11 +199,11 @@ export class AuthService {
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        return { accessToken };
+        return { access_token };
       }
 
       // 📱 MOBILE → return both
-      return { accessToken, refreshToken };
+      return { access_token, refreshToken };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
         throw new UnauthorizedException(error);

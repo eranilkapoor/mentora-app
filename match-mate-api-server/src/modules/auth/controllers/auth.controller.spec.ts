@@ -44,7 +44,7 @@ describe('AuthController', () => {
 
   describe('register()', () => {
     it('should return success response on valid registration', async () => {
-      const data = { accessToken: 'tok', refreshToken: 'ref' };
+      const data = { access_token: 'tok', refreshToken: 'ref' };
       authService.register.mockResolvedValue(data);
 
       const req = buildReq();
@@ -84,7 +84,7 @@ describe('AuthController', () => {
 
   describe('login()', () => {
     it('should return success response on valid login', async () => {
-      const data = { accessToken: 'tok' };
+      const data = { access_token: 'tok' };
       authService.login.mockResolvedValue(data);
 
       const result = await controller.login(
@@ -139,7 +139,7 @@ describe('AuthController', () => {
 
   describe('verifyOtp()', () => {
     it('should return success on valid OTP', async () => {
-      authService.verifyOtp.mockResolvedValue({ accessToken: 'tok' });
+      authService.verifyOtp.mockResolvedValue({ access_token: 'tok' });
 
       const result = await controller.verifyOtp(
         buildReq() as any,
@@ -165,7 +165,7 @@ describe('AuthController', () => {
   describe('socialLogin()', () => {
     it('should return success on social login', async () => {
       authService.socialLogin.mockResolvedValue({
-        accessToken: 'tok',
+        access_token: 'tok',
         user: {},
       });
       const result = await controller.socialLogin(

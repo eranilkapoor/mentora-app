@@ -6,7 +6,7 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  accessToken: string;
+  access_token: string;
   user: User;
 }
 
@@ -16,7 +16,7 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  accessToken: string;
+  access_token: string;
   user: User;
 }
 
@@ -27,6 +27,12 @@ export interface ForgotPasswordRequest {
 export interface ChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
+  confirmPassword: string;
+}
+
+export interface ResetPasswordRequest {
+  access_token: string;
+  password: string;
 }
 
 export interface SocialLoginRequest {
@@ -36,7 +42,7 @@ export interface SocialLoginRequest {
 }
 
 export interface SocialLoginResponse {
-  accessToken: string;
+  access_token: string;
   user: User;
 }
 

@@ -1,13 +1,12 @@
 import { Theme } from './types';
 import { DARKCOLORS } from './colors';
 import { lightTheme } from './lightTheme';
-import { LAYOUT } from './layout';
 
 export const darkTheme: Theme = {
-  ...lightTheme,
+  ...lightTheme, // inherits spacing, radius, typography, layout, etc.
   colors: {
-    ...lightTheme.colors,
-    ...DARKCOLORS,
+    ...lightTheme.colors, // start with all light colors
+    ...DARKCOLORS, // override only what changes
   },
-  layout: LAYOUT,
+  // layout is already included via ...lightTheme — no need to re-declare
 };

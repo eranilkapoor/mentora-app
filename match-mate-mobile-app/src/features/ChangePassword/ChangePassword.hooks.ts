@@ -1,11 +1,16 @@
-import { useState, useCallback } from 'react';
-import { Alert } from 'react-native';
+import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useChangePasswordMutation } from '../../store/services/authApi';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Toast from 'react-native-toast-message';
+
+import { useChangePasswordMutation } from '@/store/services/authApi';
+import { SettingsStackParamList } from '@/navigation/types';
 import { validatePasswords } from './ChangePassword.utils';
 import { FormValues, FormErrors } from './ChangePassword.types';
 
-export const useChangePassword = (navigation: any) => {
+type ChangePasswordNavProp = NativeStackNavigationProp<SettingsStackParamList>;
+
+export const useChangePassword = (navigation: ChangePasswordNavProp) => {
   const { t } = useTranslation();
 
   const [values, setValues] = useState<FormValues>({
@@ -26,11 +31,25 @@ export const useChangePassword = (navigation: any) => {
 
   const setValue = useCallback((field: keyof FormValues, text: string) => {
     setValues((prev) => ({ ...prev, [field]: text }));
-    setErrors((prev) => ({ ...prev, [field]: undefined }));
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   }, []);
 
   const toggleVisibility = useCallback((field: keyof typeof visibility) => {
     setVisibility((prev) => ({ ...prev, [field]: !prev[field] }));
+  }, []);
+
+  const handleReset = useCallback(() => {
+    setValues({ oldPassword: '', newPassword: '', confirmPassword: '' });
+    setErrors({});
+    setVisibility({
+      oldPassword: false,
+      newPassword: false,
+      confirmPassword: false,
+    });
   }, []);
 
   const handleSubmit = useCallback(async () => {
@@ -47,42 +66,50 @@ export const useChangePassword = (navigation: any) => {
       await changePassword({
         oldPassword: values.oldPassword,
         newPassword: values.newPassword,
+        confirmPassword: values.confirmPassword,
       }).unwrap();
 
-      Alert.alert(
-        t('change_password.success.title'),
-        t('change_password.success.message'),
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
-      );
-    } catch (error: any) {
-      if (error?.message?.toLowerCase().includes('incorrect')) {
+      // ✅ Show success toast
+      Toast.show({
+        type: 'success',
+        text1: t('change_password.success.title') || 'Success',
+        text2:
+          t('change_password.success.message') ||
+          'Password changed successfully',
+        position: 'bottom',
+        visibilityTime: 2500,
+      });
+
+      // ✅ Reset form immediately
+      handleReset();
+
+      // ✅ Optional: navigate after slight delay
+      setTimeout(() => {
+        navigation.goBack();
+      }, 800);
+
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.message
+          : t('common.something_went_wrong');
+
+      if (message.toLowerCase().includes('incorrect')) {
         setErrors({
           oldPassword: t('change_password.errors.incorrect_current'),
         });
       } else {
-        Alert.alert(
-          t('common.error'),
-          error?.message ?? t('common.something_went_wrong')
-        );
+        // ❌ Error toast
+        Toast.show({
+          type: 'error',
+          text1: t('common.error') || 'Error',
+          text2: message,
+        });
       }
     } finally {
       setLoading(false);
     }
-  }, [values, navigation, changePassword, t]);
-
-  const handleReset = useCallback(() => {
-    setValues({
-      oldPassword: '',
-      newPassword: '',
-      confirmPassword: '',
-    });
-    setErrors({});
-    setVisibility({
-      oldPassword: false,
-      newPassword: false,
-      confirmPassword: false,
-    });
-  }, []);
+  }, [values, navigation, changePassword, t, handleReset]);
 
   return {
     values,

@@ -5,19 +5,16 @@ export const loginStyles = (theme: Theme) =>
   StyleSheet.create({
     safe: {
       flex: 1,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.background,
     },
-
     container: {
       flex: 1,
     },
-
     scrollContent: {
       padding: 20,
       paddingTop: 80,
       justifyContent: 'flex-start',
     },
-
     title: {
       fontSize: 28,
       fontWeight: '900',
@@ -26,14 +23,12 @@ export const loginStyles = (theme: Theme) =>
       textAlign: 'center',
       fontFamily: 'clebri-bold',
     },
-
     subtitle: {
       fontSize: 14,
       color: theme.colors.textMuted,
       marginBottom: 24,
       textAlign: 'center',
     },
-
     errorBanner: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -45,13 +40,11 @@ export const loginStyles = (theme: Theme) =>
       borderWidth: 1,
       borderColor: theme.colors.error,
     },
-
     errorBannerText: {
       color: theme.colors.error,
       fontSize: 13,
       flex: 1,
     },
-
     tabRow: {
       flexDirection: 'row',
       borderRadius: 10,
@@ -59,7 +52,6 @@ export const loginStyles = (theme: Theme) =>
       padding: 4,
       marginBottom: 16,
     },
-
     tabButton: {
       flex: 1,
       flexDirection: 'row',
@@ -69,43 +61,35 @@ export const loginStyles = (theme: Theme) =>
       borderRadius: 8,
       gap: 6,
     },
-
     tabActive: {
       backgroundColor: theme.colors.white,
       borderWidth: 1,
       borderColor: theme.colors.primary,
       elevation: 2,
     },
-
     tabIcon: {
       marginRight: 2,
     },
-
     tabText: {
       color: theme.colors.textSecondary,
       fontWeight: '600',
       fontSize: 13,
     },
-
     tabTextActive: {
       color: theme.colors.primary,
     },
-
     form: {
       marginTop: 4,
     },
-
     label: {
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.textSecondary,
       marginBottom: 6,
     },
-
     labelSpacing: {
       marginTop: 12,
     },
-
     inputWrapper: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -116,22 +100,18 @@ export const loginStyles = (theme: Theme) =>
       paddingHorizontal: 12,
       marginBottom: 4,
     },
-
     inputIcon: {
       marginRight: 10,
     },
-
     input: {
       flex: 1,
       paddingVertical: 13,
       fontSize: 15,
       color: theme.colors.textPrimary,
     },
-
     eyeButton: {
       padding: 6,
     },
-
     phoneRow: {
       flexDirection: 'row',
       marginBottom: 4,
@@ -141,7 +121,6 @@ export const loginStyles = (theme: Theme) =>
       overflow: 'hidden',
       backgroundColor: theme.colors.inputBackground,
     },
-
     phoneInput: {
       flex: 1,
       paddingVertical: 13,
@@ -150,7 +129,6 @@ export const loginStyles = (theme: Theme) =>
       color: theme.colors.textPrimary,
       marginBottom: 0,
     },
-
     otpInput: {
       backgroundColor: theme.colors.inputBackground,
       borderRadius: 10,
@@ -164,7 +142,6 @@ export const loginStyles = (theme: Theme) =>
       color: theme.colors.textPrimary,
       marginBottom: 4,
     },
-
     countryCodeBtn: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -175,13 +152,11 @@ export const loginStyles = (theme: Theme) =>
       borderRightColor: theme.colors.border,
       minWidth: 80,
     },
-
     countryCodeText: {
       fontWeight: '600',
       color: theme.colors.textPrimary,
       fontSize: 15,
     },
-
     countryCodeItem: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -191,33 +166,27 @@ export const loginStyles = (theme: Theme) =>
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.colors.divider,
     },
-
     countryCodeItemActive: {
       backgroundColor: theme.colors.primaryLight,
     },
-
     countryCodeItemText: {
       fontSize: 14,
       color: theme.colors.textPrimary,
     },
-
     countryCodeItemTextActive: {
       color: theme.colors.primary,
       fontWeight: '600',
     },
-
     inputError: {
       borderColor: theme.colors.error,
       backgroundColor: theme.colors.errorLight,
     },
-
     errorText: {
       color: theme.colors.error,
       fontSize: 12,
       marginBottom: 8,
       marginTop: 2,
     },
-
     otpInfoBanner: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -228,25 +197,21 @@ export const loginStyles = (theme: Theme) =>
       marginBottom: 12,
       marginTop: 4,
     },
-
     otpInfoText: {
       fontSize: 13,
       color: theme.colors.success,
       fontWeight: '500',
     },
-
     forgotRow: {
       alignSelf: 'flex-end',
       marginTop: 6,
       marginBottom: 4,
     },
-
     forgotText: {
       color: theme.colors.link,
       fontSize: 13,
       fontWeight: '500',
     },
-
     primaryButton: {
       marginTop: 16,
       backgroundColor: theme.colors.primary,
@@ -257,17 +222,14 @@ export const loginStyles = (theme: Theme) =>
       justifyContent: 'center',
       gap: 8,
     },
-
     primaryButtonText: {
       color: theme.colors.white,
       fontWeight: '700',
       fontSize: 16,
     },
-
     disabledButton: {
       opacity: 0.6,
     },
-
     resendRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -275,36 +237,30 @@ export const loginStyles = (theme: Theme) =>
       gap: 6,
       marginTop: 10,
     },
-
     resendText: {
       color: theme.colors.link,
       fontSize: 13,
       fontWeight: '500',
     },
-
     dividerRow: {
       flexDirection: 'row',
       alignItems: 'center',
       marginVertical: 20,
     },
-
     divider: {
       flex: 1,
       height: 1,
       backgroundColor: theme.colors.border,
     },
-
     dividerText: {
       marginHorizontal: 12,
       color: theme.colors.textMuted,
       fontWeight: '600',
       fontSize: 13,
     },
-
     socialContainer: {
       gap: 10,
     },
-
     socialButton: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -315,11 +271,9 @@ export const loginStyles = (theme: Theme) =>
       borderRadius: 10,
       backgroundColor: theme.colors.white,
     },
-
     socialIcon: {
       marginRight: 12,
     },
-
     socialLabel: {
       fontSize: 15,
       color: theme.colors.textPrimary,
@@ -327,7 +281,6 @@ export const loginStyles = (theme: Theme) =>
       flex: 1,
       textAlign: 'center',
     },
-
     footer: {
       flexDirection: 'row',
       justifyContent: 'center',
@@ -335,29 +288,29 @@ export const loginStyles = (theme: Theme) =>
       marginTop: 24,
       marginBottom: 12,
     },
-
     footerText: {
       color: theme.colors.textMuted,
     },
-
     linkText: {
       color: theme.colors.link,
       fontWeight: '700',
     },
-
     modalOverlay: {
       flex: 1,
       backgroundColor: theme.colors.modalOverlay,
       justifyContent: 'center',
       alignItems: 'center',
     },
-
     modalDropdown: {
       width: 140,
       maxHeight: 300,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 10,
-      boxShadow: `0px 4px 8px ${theme.colors.black}26`, // 15% opacity
+      // Fixed: boxShadow is web CSS — use RN shadow props instead
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
       elevation: 10,
     },
   });

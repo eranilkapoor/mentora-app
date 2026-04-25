@@ -1,4 +1,6 @@
-export const LIGHTCOLORS = {
+import { ColorPalette } from './types';
+
+export const LIGHTCOLORS: ColorPalette = {
   // Brand
   primary: '#4F46E5',
   primaryLight: '#EDE9FE',
@@ -34,52 +36,66 @@ export const LIGHTCOLORS = {
   // States
   success: '#16A34A',
   successLight: '#F0FDF4',
-
   error: '#D9534F',
   errorLight: '#FFF5F5',
-
-  // Warning
+  danger: '#ef4444',
   warning: '#F59E0B',
 
   // Links / CTA
   link: '#007AFF',
-
-  // Static
-  white: '#FFFFFF',
-  black: '#000000',
-  danger: '#ef4444',
   chatBtn: '#ff6b6b',
   shortlistBg: '#fff5e6',
 
+  // Status
   online: '#22C55E',
   offline: '#9CA3AF',
   verified: '#3B82F6',
 
+  // Membership
   gold: '#FFD700',
   platinum: '#E5E4E2',
+
+  // Static
+  white: '#FFFFFF',
+  black: '#000000',
+
+  // Gradients
   gradients: {
     primary: ['#E94057', '#F27121'],
   },
 };
 
-export const DARKCOLORS = {
+// Only override what actually changes in dark mode
+// Every key not listed here inherits from LIGHTCOLORS in darkTheme.ts
+export const DARKCOLORS: Partial<ColorPalette> = {
+  // Backgrounds
   background: '#121212',
+  backgroundLight: '#2A2A2A',
   backgroundPage: '#1E1E1E',
   surface: '#1E1E1E',
+  modalOverlay: 'rgba(0,0,0,0.5)',
+  overlayDark: 'rgba(0,0,0,0.7)',
 
-  textPrimary: '#FFFFFF',
+  // Text
+  textPrimary: '#F1F5F9',
   textSecondary: '#A1A1AA',
   textMuted: '#71717A',
-  textBody: '#555555',
+  textBody: '#A1A1AA',
   textInverse: '#000000',
 
+  // UI
   border: '#2C2C2E',
   divider: '#2C2C2E',
-
   inputBackground: '#2A2A2A',
+  switchTrackOff: '#555555',
 
-  danger: '#ef4444',
+  // States
   errorLight: '#3B1A1A',
-  success: '#16A34A',
   successLight: '#1A2E22',
+
+  // Status
+  online: '#4ADE80',
+
+  // Membership
+  platinum: '#C0C0C0',
 };

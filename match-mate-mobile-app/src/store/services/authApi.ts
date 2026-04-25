@@ -14,6 +14,7 @@ import {
   SocialLoginResponse,
   OnbardingResponse,
   User,
+  ResetPasswordRequest,
 } from '../../core/types';
 import { baseApi } from './baseApi';
 
@@ -73,6 +74,14 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    resetPassword: builder.mutation<ApiResponse<User>, ResetPasswordRequest>({
+      query: (body) => ({
+        url: '/auth/reset-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+
     changePassword: builder.mutation<ApiResponse<User>, ChangePasswordRequest>({
       query: (body) => ({
         url: '/auth/change-password',
@@ -106,6 +115,7 @@ export const {
   useVerifyOtpMutation,
   useSocialLoginMutation,
   useForgotPasswordMutation,
+  useResetPasswordMutation,
   useChangePasswordMutation,
   useOnboardingProfileMutation,
   useVerifyUserQuery,

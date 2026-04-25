@@ -14,9 +14,7 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTranslation } from 'react-i18next';
 import { headerStyles } from './Header.styles';
 
-// ─────────────────────────────────────────────
-// Types
-// ─────────────────────────────────────────────
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type HeaderAction = {
   icon: React.ComponentProps<typeof Feather>['name'];
@@ -28,25 +26,18 @@ type HeaderAction = {
 interface HeaderProps {
   title?: string;
   subtitle?: string;
-
   showBack?: boolean;
   onBackPress?: () => void;
-
   leftComponent?: React.ReactNode;
   avatarUri?: string;
-
   actions?: HeaderAction[];
-
   enableSearch?: boolean;
   searchPlaceholder?: string;
   onSearchChange?: (text: string) => void;
-
   containerStyle?: StyleProp<ViewStyle>;
 }
 
-// ─────────────────────────────────────────────
-// Action Button
-// ─────────────────────────────────────────────
+// ─── Action Button ────────────────────────────────────────────────────────────
 
 interface ActionButtonProps {
   icon: React.ComponentProps<typeof Feather>['name'];
@@ -75,9 +66,7 @@ const ActionButton = React.memo(
 
 ActionButton.displayName = 'ActionButton';
 
-// ─────────────────────────────────────────────
-// Header Component
-// ─────────────────────────────────────────────
+// ─── Header ───────────────────────────────────────────────────────────────────
 
 export default function Header({
   title,
@@ -99,12 +88,10 @@ export default function Header({
   const [isSearching, setIsSearching] = useState(false);
   const [searchText, setSearchText] = useState('');
 
-  // 🔙 Back handler fallback
   const handleBack = useCallback(() => {
     onBackPress?.();
   }, [onBackPress]);
 
-  // 🔍 Search change handler
   const handleSearchChange = useCallback(
     (text: string) => {
       setSearchText(text);
@@ -118,16 +105,15 @@ export default function Header({
     onSearchChange?.('');
   }, [onSearchChange]);
 
-  // ───────────────────────────────────────────
-  // LEFT SECTION
-  // ───────────────────────────────────────────
+  const openSearch = useCallback(() => setIsSearching(true), []);
+  const closeSearch = useCallback(() => setIsSearching(false), []);
 
-  const renderLeft = () => {
+  // Memoized so it doesn't re-render on every parent update
+  const leftSection = useMemo(() => {
     if (isSearching) {
       return (
         <View style={styles.searchContainer}>
           <Feather name="search" size={16} color={theme.colors.textMuted} />
-
           <TextInput
             value={searchText}
             onChangeText={handleSearchChange}
@@ -138,7 +124,6 @@ export default function Header({
             returnKeyType="search"
             accessibilityLabel={t('common.search')}
           />
-
           {searchText.length > 0 && (
             <TouchableOpacity
               onPress={clearSearch}
@@ -148,9 +133,8 @@ export default function Header({
               <Feather name="x" size={18} color={theme.colors.textMuted} />
             </TouchableOpacity>
           )}
-
           <TouchableOpacity
-            onPress={() => setIsSearching(false)}
+            onPress={closeSearch}
             accessibilityRole="button"
             accessibilityLabel={t('common.close')}
           >
@@ -182,7 +166,6 @@ export default function Header({
             />
           </TouchableOpacity>
         )}
-
         {avatarUri ? (
           <Image
             source={{ uri: avatarUri }}
@@ -190,31 +173,41 @@ export default function Header({
             accessibilityLabel={t('common.avatar')}
           />
         ) : null}
-
         <View>
           {title ? <Text style={styles.title}>{title}</Text> : null}
           {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
       </View>
     );
-  };
-
-  // ───────────────────────────────────────────
-  // ACTIONS
-  // ───────────────────────────────────────────
+  }, [
+    isSearching,
+    leftComponent,
+    showBack,
+    avatarUri,
+    title,
+    subtitle,
+    searchText,
+    searchPlaceholder,
+    handleBack,
+    handleSearchChange,
+    clearSearch,
+    closeSearch,
+    styles,
+    theme,
+    t,
+  ]);
 
   const finalActions = useMemo(() => {
     if (!enableSearch) return actions;
-
     return [
       {
         icon: 'search' as const,
-        onPress: () => setIsSearching(true),
+        onPress: openSearch,
         accessibilityLabel: t('common.search'),
       },
       ...actions,
     ];
-  }, [actions, enableSearch, t]);
+  }, [actions, enableSearch, openSearch, t]);
 
   const renderAction = useCallback(
     (action: HeaderAction, index: number) => (
@@ -231,14 +224,9 @@ export default function Header({
     [theme.colors.textSecondary, styles]
   );
 
-  // ───────────────────────────────────────────
-  // RENDER
-  // ───────────────────────────────────────────
-
   return (
     <View style={[styles.header, containerStyle]}>
-      {renderLeft()}
-
+      {leftSection}
       {!isSearching && (
         <View style={styles.right}>{finalActions.map(renderAction)}</View>
       )}

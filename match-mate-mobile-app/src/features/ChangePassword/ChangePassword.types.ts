@@ -1,11 +1,7 @@
-import { type NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { type RootStackParamList } from '../../navigation/types';
-
-export type ChangePasswordNavigationProp =
-  NativeStackNavigationProp<RootStackParamList>;
+import { type SettingsNavigationProp } from '../../navigation/types';
 
 export interface ChangePasswordScreenProps {
-  navigation: ChangePasswordNavigationProp;
+  navigation: SettingsNavigationProp;
 }
 
 export interface FormValues {

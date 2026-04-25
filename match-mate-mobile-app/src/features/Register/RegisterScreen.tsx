@@ -11,68 +11,130 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { SafeAreaProvider } from 'react-native-safe-area-context';
-import { useAppDispatch } from '../../store/hooks';
-import { setCredentials } from '../../store/slices/authSlice';
+import { SafeAreaView } from 'react-native-safe-area-context'; // Fixed: was SafeAreaProvider
+import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from '@/store/hooks';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { setCredentials } from '@/store/slices/authSlice';
 import {
   COUNTRY_CODES,
   DEFAULT_COUNTRY_CODE,
   EMAIL_REGEX,
+  OTP_LENGTH,
+  PASSWORD_MIN_LENGTH,
+  PHONE_MAX_LENGTH,
   PHONE_REGEX,
-} from '../../core/constants';
-import { fakeApi } from '../../core/services/fakeApi';
-import { Colors } from '../../core/constants/colors';
+} from '@/core/constants';
 import {
   useRegisterMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
-} from '../../store/services/authApi';
+} from '@/store/services/authApi';
 import {
-  ActiveTab,
-  FormErrors,
   RegisterScreenProps,
-  SocialButtonProps,
+  ActiveTab,
   SocialProvider,
+  FormErrors,
+  SocialButtonProps,
+  CountryCodeDropdownProps,
 } from '../Login/Auth.types';
 import { registerStyles } from './RegisterScreen.styles';
-import { useThemedStyles } from '../../core/theme/useThemedStyles';
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+// ─── Sub-components (module scope — not inside component) ─────────────────────
 
-function SocialButton({
-  label,
-  onPress,
-  disabled = false,
-  icon,
-  iconColor,
-}: SocialButtonProps): React.ReactElement {
-  const styles = useThemedStyles(registerStyles);
-  return (
-    <TouchableOpacity
-      style={[styles.socialButton, disabled && styles.disabledButton]}
-      onPress={onPress}
-      disabled={disabled}
-      accessibilityRole="button"
-      accessibilityLabel={label}
-    >
-      <Feather
-        name={icon}
-        size={20}
-        color={iconColor ?? Colors.textSecondary}
-        style={styles.socialIcon}
-      />
-      <Text style={styles.socialLabel}>{label}</Text>
-    </TouchableOpacity>
-  );
-}
+const SocialButton = React.memo<SocialButtonProps>(
+  ({ label, onPress, disabled = false, icon, iconColor }) => {
+    const styles = useThemedStyles(registerStyles);
+    const { theme } = useTheme();
+    return (
+      <TouchableOpacity
+        style={[styles.socialButton, disabled && styles.disabledButton]}
+        onPress={onPress}
+        disabled={disabled}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+      >
+        <Feather
+          name={icon}
+          size={20}
+          color={iconColor ?? theme.colors.textSecondary}
+          style={styles.socialIcon}
+        />
+        <Text style={styles.socialLabel}>{label}</Text>
+      </TouchableOpacity>
+    );
+  }
+);
+SocialButton.displayName = 'SocialButton';
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
+const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
+  ({ visible, onClose, selectedCode, onSelectCode }) => {
+    const styles = useThemedStyles(registerStyles);
+    const { theme } = useTheme();
+    return (
+      <Modal
+        visible={visible}
+        transparent
+        animationType="fade"
+        onRequestClose={onClose}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={onClose}
+        >
+          <View style={styles.modalDropdown}>
+            <ScrollView keyboardShouldPersistTaps="handled">
+              {COUNTRY_CODES.map((code) => (
+                <TouchableOpacity
+                  key={code}
+                  style={[
+                    styles.countryCodeItem,
+                    selectedCode === code && styles.countryCodeItemActive,
+                  ]}
+                  onPress={() => {
+                    onSelectCode(code);
+                    onClose();
+                  }}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Country code ${code}`}
+                >
+                  <Text
+                    style={[
+                      styles.countryCodeItemText,
+                      selectedCode === code && styles.countryCodeItemTextActive,
+                    ]}
+                  >
+                    +{code}
+                  </Text>
+                  {selectedCode === code && (
+                    <Feather
+                      name="check"
+                      size={14}
+                      color={theme.colors.primary}
+                    />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </TouchableOpacity>
+      </Modal>
+    );
+  }
+);
+CountryCodeDropdown.displayName = 'CountryCodeDropdown';
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function RegisterScreen({
   navigation,
 }: RegisterScreenProps): React.ReactElement {
   const dispatch = useAppDispatch();
   const styles = useThemedStyles(registerStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<ActiveTab>('email');
   const [email, setEmail] = useState('');
@@ -85,90 +147,100 @@ export default function RegisterScreen({
   const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY_CODE);
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
+
   const [register] = useRegisterMutation();
   const [sendOtp] = useSendOtpMutation();
   const [verifyOtp] = useVerifyOtpMutation();
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────
+  // ─── Validation ───────────────────────────────────────────────────────────
 
-  const clearError = useCallback((field: keyof FormErrors): void => {
-    setErrors((prev) => ({ ...prev, [field]: undefined }));
+  const validateEmail = useCallback(
+    (v: string) => EMAIL_REGEX.test(v.trim()),
+    []
+  );
+  const validatePhone = useCallback((v: string) => PHONE_REGEX.test(v), []);
+
+  // ─── Error Management ─────────────────────────────────────────────────────
+
+  const clearError = useCallback((field: keyof FormErrors) => {
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next[field];
+      return next;
+    });
   }, []);
 
-  const validateEmail = (value: string): boolean => EMAIL_REGEX.test(value);
-  const validatePhone = (value: string): boolean => PHONE_REGEX.test(value);
-
-  const navigateAfterAuth = useCallback(
-    (isOnboardingCompleted: boolean): void => {
-      if (!isOnboardingCompleted) {
-        navigation.navigate('Onboarding');
-      }
-    },
-    [navigation]
-  );
-
-  const handleTabSwitch = useCallback((tab: ActiveTab): void => {
+  const handleTabSwitch = useCallback((tab: ActiveTab) => {
     setActiveTab(tab);
     setOtpSent(false);
+    setOtp('');
     setErrors({});
   }, []);
 
-  const handleResendOtp = useCallback((): void => {
+  const handleResendOtp = useCallback(() => {
     setOtpSent(false);
     setOtp('');
+    setErrors({});
   }, []);
 
-  // ─── Handlers ────────────────────────────────────────────────────────────
+  // ─── Email Register ───────────────────────────────────────────────────────
 
-  const handleEmailRegister = useCallback(async (): Promise<void> => {
+  const handleEmailRegister = useCallback(async () => {
     const newErrors: FormErrors = {};
 
     if (!email.trim()) {
-      newErrors.email = 'Email is required';
+      newErrors.email = t('auth.errors.email_required');
     } else if (!validateEmail(email)) {
-      newErrors.email = 'Enter a valid email address';
+      newErrors.email = t('auth.errors.email_invalid');
     }
 
     if (!password) {
-      newErrors.password = 'Password is required';
-    } else if (password.length < 6) {
-      newErrors.password = 'Minimum 6 characters';
+      newErrors.password = t('auth.errors.password_required');
+    } else if (password.length < PASSWORD_MIN_LENGTH) {
+      newErrors.password = t('auth.errors.password_min', {
+        min: PASSWORD_MIN_LENGTH,
+      });
     }
 
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
 
     setLoading(true);
     try {
-      const response = await register({ email, password }).unwrap();
+      const response = await register({
+        email: email.trim(),
+        password,
+      }).unwrap();
 
       if (!response.success) {
-        setErrors({ email: 'Email already registered. Please try login!' });
+        setErrors({ email: t('auth.errors.email_already_registered') });
         return;
       }
 
       if (response.data) {
+        // Dispatch — RootNavigator handles routing automatically
         dispatch(setCredentials(response.data));
-        navigateAfterAuth(response.data.user?.isOnboardingCompleted ?? false);
       }
     } catch {
-      setErrors({ error: 'Registration failed. Please try again.' });
+      setErrors({ error: t('auth.errors.register_failed') });
     } finally {
       setLoading(false);
     }
-  }, [email, password, dispatch, navigateAfterAuth, register]);
+  }, [email, password, register, dispatch, validateEmail, t]);
 
-  const handleGetOtp = useCallback(async (): Promise<void> => {
-    const newErrors: FormErrors = {};
+  // ─── Phone / OTP ──────────────────────────────────────────────────────────
 
+  const handleGetOtp = useCallback(async () => {
     if (!phone) {
-      newErrors.phone = 'Phone number is required';
-    } else if (!validatePhone(phone)) {
-      newErrors.phone = 'Enter a valid phone number';
+      setErrors({ phone: t('auth.errors.phone_required') });
+      return;
     }
-
-    setErrors(newErrors);
-    if (Object.keys(newErrors).length > 0) return;
+    if (!validatePhone(phone)) {
+      setErrors({ phone: t('auth.errors.phone_invalid') });
+      return;
+    }
 
     setLoading(true);
     try {
@@ -176,23 +248,26 @@ export default function RegisterScreen({
         country_code: countryCode,
         phone,
       }).unwrap();
-
       if (!response.success) {
-        setErrors({ error: 'Failed to send OTP. Please try again.' });
+        setErrors({ error: t('auth.errors.otp_send_failed') });
         return;
       }
-
       setOtpSent(true);
+      setErrors({});
     } catch {
-      setErrors({ error: 'Failed to send OTP. Please try again.' });
+      setErrors({ error: t('auth.errors.otp_send_failed') });
     } finally {
       setLoading(false);
     }
-  }, [phone, countryCode, sendOtp]);
+  }, [phone, countryCode, validatePhone, sendOtp, t]);
 
-  const handleVerifyOtp = useCallback(async (): Promise<void> => {
+  const handleVerifyOtp = useCallback(async () => {
     if (!otp) {
-      setErrors({ otp: 'OTP is required' });
+      setErrors({ otp: t('auth.errors.otp_required') });
+      return;
+    }
+    if (otp.length !== OTP_LENGTH) {
+      setErrors({ otp: t('auth.errors.otp_length', { length: OTP_LENGTH }) });
       return;
     }
 
@@ -203,43 +278,40 @@ export default function RegisterScreen({
         phone,
         otp,
       }).unwrap();
-
       if (!response.success) {
-        setErrors({ otp: 'Invalid OTP' });
+        setErrors({ otp: t('auth.errors.otp_invalid') });
         return;
       }
-
       if (response.data) {
         dispatch(setCredentials(response.data));
-        navigateAfterAuth(response.data.user?.isOnboardingCompleted ?? false);
       }
     } catch {
-      setErrors({ error: 'Failed to verify OTP. Please try again.' });
+      setErrors({ error: t('auth.errors.otp_verify_failed') });
     } finally {
       setLoading(false);
     }
-  }, [otp, countryCode, phone, dispatch, navigateAfterAuth, verifyOtp]);
+  }, [otp, countryCode, phone, verifyOtp, dispatch, t]);
 
   const handleSocialRegister = useCallback(
-    async (provider: SocialProvider): Promise<void> => {
+    async (provider: SocialProvider) => {
       setLoading(true);
       setErrors({});
       try {
-        await fakeApi({ success: true }, 1000);
-        navigation.navigate('Onboarding');
+        // TODO: implement real social SDK
+        setErrors({ error: t('auth.errors.social_failed', { provider }) });
       } catch {
-        setErrors({ error: `Failed to sign up with ${provider}.` });
+        setErrors({ error: t('auth.errors.social_failed', { provider }) });
       } finally {
         setLoading(false);
       }
     },
-    [navigation]
+    [t]
   );
 
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaProvider style={styles.safe}>
+    <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
@@ -250,21 +322,20 @@ export default function RegisterScreen({
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {/* Title */}
-          <Text style={styles.title}>Create an Account</Text>
-          <Text style={styles.subtitle}>
-            Start your journey to find your perfect match
-          </Text>
+          <Text style={styles.title}>{t('auth.register.title')}</Text>
+          <Text style={styles.subtitle}>{t('auth.register.subtitle')}</Text>
 
-          {/* Global error banner */}
-          {errors.error !== undefined && (
+          {errors.error && (
             <View style={styles.errorBanner}>
-              <Feather name="alert-circle" size={14} color={Colors.error} />
+              <Feather
+                name="alert-circle"
+                size={14}
+                color={theme.colors.error}
+              />
               <Text style={styles.errorBannerText}>{errors.error}</Text>
             </View>
           )}
 
-          {/* Tabs */}
           <View style={styles.tabRow}>
             {(['email', 'phone'] as ActiveTab[]).map((tab) => (
               <TouchableOpacity
@@ -276,14 +347,16 @@ export default function RegisterScreen({
                 onPress={() => handleTabSwitch(tab)}
                 disabled={loading}
                 accessibilityRole="tab"
-                accessibilityLabel={`tab-${tab}`}
+                accessibilityLabel={t(`auth.tabs.${tab}`)}
                 accessibilityState={{ selected: activeTab === tab }}
               >
                 <Feather
                   name={tab === 'email' ? 'mail' : 'smartphone'}
                   size={14}
                   color={
-                    activeTab === tab ? Colors.primary : Colors.textSecondary
+                    activeTab === tab
+                      ? theme.colors.primary
+                      : theme.colors.textSecondary
                   }
                   style={styles.tabIcon}
                 />
@@ -293,34 +366,32 @@ export default function RegisterScreen({
                     activeTab === tab && styles.tabTextActive,
                   ]}
                 >
-                  {tab === 'email' ? 'Email' : 'Phone (OTP)'}
+                  {t(`auth.tabs.${tab}`)}
                 </Text>
               </TouchableOpacity>
             ))}
           </View>
 
-          {/* Form */}
           <View style={styles.form}>
             {activeTab === 'email' ? (
               <>
-                {/* Email Field */}
-                <Text style={styles.label}>Email</Text>
+                <Text style={styles.label}>{t('auth.fields.email')}</Text>
                 <View
                   style={[
                     styles.inputWrapper,
-                    errors.email !== undefined && styles.inputError,
+                    errors.email && styles.inputError,
                   ]}
                 >
                   <Feather
                     name="mail"
                     size={16}
-                    color={Colors.textMuted}
+                    color={theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="you@example.com"
-                    placeholderTextColor={Colors.textMuted}
+                    placeholder={t('auth.placeholders.email')}
+                    placeholderTextColor={theme.colors.textMuted}
                     keyboardType="email-address"
                     autoCapitalize="none"
                     autoComplete="email"
@@ -331,64 +402,64 @@ export default function RegisterScreen({
                     }}
                     editable={!loading}
                     textContentType="username"
-                    accessibilityLabel="email-input"
+                    accessibilityLabel={t('auth.fields.email')}
                   />
                 </View>
-                {errors.email !== undefined && (
+                {errors.email && (
                   <Text style={styles.errorText}>{errors.email}</Text>
                 )}
 
-                {/* Password Field */}
                 <Text style={[styles.label, styles.labelSpacing]}>
-                  Password
+                  {t('auth.fields.password')}
                 </Text>
                 <View
                   style={[
                     styles.inputWrapper,
-                    errors.password !== undefined && styles.inputError,
+                    errors.password && styles.inputError,
                   ]}
                 >
                   <Feather
                     name="lock"
                     size={16}
-                    color={Colors.textMuted}
+                    color={theme.colors.textMuted}
                     style={styles.inputIcon}
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="Min. 6 characters"
-                    placeholderTextColor={Colors.textMuted}
+                    placeholder={t('auth.placeholders.password_new')}
+                    placeholderTextColor={theme.colors.textMuted}
                     secureTextEntry={!showPassword}
                     value={password}
                     onChangeText={(t) => {
                       setPassword(t);
                       clearError('password');
                     }}
-                    accessibilityLabel="password-input"
                     editable={!loading}
                     textContentType="newPassword"
+                    accessibilityLabel={t('auth.fields.password')}
                   />
                   <TouchableOpacity
-                    onPress={() => setShowPassword((prev) => !prev)}
+                    onPress={() => setShowPassword((p) => !p)}
                     style={styles.eyeButton}
                     disabled={loading}
                     accessibilityRole="button"
                     accessibilityLabel={
-                      showPassword ? 'Hide password' : 'Show password'
+                      showPassword
+                        ? t('auth.actions.hide_password')
+                        : t('auth.actions.show_password')
                     }
                   >
                     <Feather
                       name={showPassword ? 'eye-off' : 'eye'}
                       size={18}
-                      color={Colors.textMuted}
+                      color={theme.colors.textMuted}
                     />
                   </TouchableOpacity>
                 </View>
-                {errors.password !== undefined && (
+                {errors.password && (
                   <Text style={styles.errorText}>{errors.password}</Text>
                 )}
 
-                {/* Register Button */}
                 <TouchableOpacity
                   style={[
                     styles.primaryButton,
@@ -399,19 +470,19 @@ export default function RegisterScreen({
                   }}
                   disabled={loading}
                   accessibilityRole="button"
-                  accessibilityLabel="Register with email"
+                  accessibilityLabel={t('auth.actions.create_account')}
                 >
                   {loading ? (
-                    <ActivityIndicator color={Colors.white} />
+                    <ActivityIndicator color={theme.colors.white} />
                   ) : (
                     <>
                       <Text style={styles.primaryButtonText}>
-                        Create Account
+                        {t('auth.actions.create_account')}
                       </Text>
                       <Feather
                         name="arrow-right"
                         size={18}
-                        color={Colors.white}
+                        color={theme.colors.white}
                       />
                     </>
                   )}
@@ -419,96 +490,49 @@ export default function RegisterScreen({
               </>
             ) : (
               <>
-                {/* Phone Field */}
-                <Text style={styles.label}>Phone Number</Text>
+                <Text style={styles.label}>{t('auth.fields.phone')}</Text>
                 <View
-                  style={[
-                    styles.phoneRow,
-                    errors.phone !== undefined && styles.inputError,
-                  ]}
+                  style={[styles.phoneRow, errors.phone && styles.inputError]}
                 >
                   <TouchableOpacity
                     style={styles.countryCodeBtn}
-                    onPress={() => setShowCountryCodeDropdown((prev) => !prev)}
+                    onPress={() => setShowCountryCodeDropdown((p) => !p)}
                     accessibilityRole="button"
-                    accessibilityLabel="Select country code"
+                    accessibilityLabel={t('auth.actions.select_country_code')}
                   >
                     <Text style={styles.countryCodeText}>+{countryCode}</Text>
                     <Feather
                       name="chevron-down"
                       size={14}
-                      color={Colors.textMuted}
+                      color={theme.colors.textMuted}
                     />
                   </TouchableOpacity>
 
-                  <Modal
+                  <CountryCodeDropdown
                     visible={showCountryCodeDropdown}
-                    transparent
-                    animationType="fade"
-                    onRequestClose={() => setShowCountryCodeDropdown(false)}
-                  >
-                    <TouchableOpacity
-                      style={styles.modalOverlay}
-                      activeOpacity={1}
-                      onPress={() => setShowCountryCodeDropdown(false)}
-                    >
-                      <View style={styles.modalDropdown}>
-                        <ScrollView keyboardShouldPersistTaps="handled">
-                          {COUNTRY_CODES.map((code) => (
-                            <TouchableOpacity
-                              key={code}
-                              style={[
-                                styles.countryCodeItem,
-                                countryCode === code &&
-                                  styles.countryCodeItemActive,
-                              ]}
-                              onPress={() => {
-                                setCountryCode(code as string);
-                                setShowCountryCodeDropdown(false);
-                              }}
-                              accessibilityRole="button"
-                              accessibilityLabel={`Country code ${code}`}
-                            >
-                              <Text
-                                style={[
-                                  styles.countryCodeItemText,
-                                  countryCode === code &&
-                                    styles.countryCodeItemTextActive,
-                                ]}
-                              >
-                                +{code}
-                              </Text>
-                              {countryCode === code && (
-                                <Feather
-                                  name="check"
-                                  size={14}
-                                  color={Colors.primary}
-                                />
-                              )}
-                            </TouchableOpacity>
-                          ))}
-                        </ScrollView>
-                      </View>
-                    </TouchableOpacity>
-                  </Modal>
+                    onClose={() => setShowCountryCodeDropdown(false)}
+                    selectedCode={countryCode}
+                    onSelectCode={(code) => setCountryCode(code)}
+                  />
 
                   <TextInput
                     style={[styles.input, styles.phoneInput]}
-                    placeholder="9911002233"
-                    placeholderTextColor={Colors.textMuted}
+                    placeholder={t('auth.placeholders.phone')}
+                    placeholderTextColor={theme.colors.textMuted}
                     keyboardType="phone-pad"
-                    autoCapitalize="none"
                     value={phone}
-                    onChangeText={(t) => {
-                      setPhone(t.slice(0, 10));
+                    onChangeText={(text) => {
+                      setPhone(
+                        text.replace(/\D/g, '').slice(0, PHONE_MAX_LENGTH)
+                      );
                       clearError('phone');
                     }}
                     editable={!loading && !otpSent}
-                    maxLength={10}
-                    accessibilityLabel="phone-input"
+                    maxLength={PHONE_MAX_LENGTH}
+                    accessibilityLabel={t('auth.fields.phone')}
                   />
                 </View>
-                {errors.phone !== undefined && (
+                {errors.phone && (
                   <Text style={styles.errorText}>{errors.phone}</Text>
                 )}
 
@@ -523,52 +547,54 @@ export default function RegisterScreen({
                     }}
                     disabled={loading}
                     accessibilityRole="button"
-                    accessibilityLabel="Get OTP"
+                    accessibilityLabel={t('auth.actions.get_otp')}
                   >
                     {loading ? (
-                      <ActivityIndicator color={Colors.white} />
+                      <ActivityIndicator color={theme.colors.white} />
                     ) : (
                       <>
-                        <Text style={styles.primaryButtonText}>Get OTP</Text>
-                        <Feather name="send" size={16} color={Colors.white} />
+                        <Text style={styles.primaryButtonText}>
+                          {t('auth.actions.get_otp')}
+                        </Text>
+                        <Feather
+                          name="send"
+                          size={16}
+                          color={theme.colors.white}
+                        />
                       </>
                     )}
                   </TouchableOpacity>
                 ) : (
                   <>
-                    {/* OTP sent banner */}
                     <View style={styles.otpInfoBanner}>
                       <Feather
                         name="check-circle"
                         size={14}
-                        color={Colors.success}
+                        color={theme.colors.success}
                       />
                       <Text style={styles.otpInfoText}>
-                        OTP sent to +{countryCode} {phone}
+                        {t('auth.otp.sent_to', { code: countryCode, phone })}
                       </Text>
                     </View>
 
                     <Text style={[styles.label, styles.labelSpacing]}>
-                      Enter OTP
+                      {t('auth.fields.otp')}
                     </Text>
                     <TextInput
-                      style={[
-                        styles.otpInput,
-                        errors.otp !== undefined && styles.inputError,
-                      ]}
+                      style={[styles.otpInput, errors.otp && styles.inputError]}
                       placeholder="• • • • • •"
-                      placeholderTextColor={Colors.textMuted}
+                      placeholderTextColor={theme.colors.textMuted}
                       keyboardType="number-pad"
                       value={otp}
-                      onChangeText={(t) => {
-                        setOtp(t.slice(0, 6));
+                      onChangeText={(text) => {
+                        setOtp(text.replace(/\D/g, '').slice(0, OTP_LENGTH));
                         clearError('otp');
                       }}
                       editable={!loading}
-                      maxLength={6}
-                      accessibilityLabel="otp-input"
+                      maxLength={OTP_LENGTH}
+                      accessibilityLabel={t('auth.fields.otp')}
                     />
-                    {errors.otp !== undefined && (
+                    {errors.otp && (
                       <Text style={styles.errorText}>{errors.otp}</Text>
                     )}
 
@@ -582,19 +608,19 @@ export default function RegisterScreen({
                       }}
                       disabled={loading}
                       accessibilityRole="button"
-                      accessibilityLabel="Verify OTP and register"
+                      accessibilityLabel={t('auth.actions.verify_create')}
                     >
                       {loading ? (
-                        <ActivityIndicator color={Colors.white} />
+                        <ActivityIndicator color={theme.colors.white} />
                       ) : (
                         <>
                           <Text style={styles.primaryButtonText}>
-                            Verify & Create Account
+                            {t('auth.actions.verify_create')}
                           </Text>
                           <Feather
                             name="arrow-right"
                             size={18}
-                            color={Colors.white}
+                            color={theme.colors.white}
                           />
                         </>
                       )}
@@ -605,14 +631,15 @@ export default function RegisterScreen({
                       onPress={handleResendOtp}
                       disabled={loading}
                       accessibilityRole="button"
+                      accessibilityLabel={t('auth.actions.resend_otp')}
                     >
                       <Feather
                         name="refresh-cw"
                         size={13}
-                        color={Colors.link}
+                        color={theme.colors.link}
                       />
                       <Text style={styles.resendText}>
-                        Resend / change number
+                        {t('auth.actions.resend_otp')}
                       </Text>
                     </TouchableOpacity>
                   </>
@@ -621,18 +648,16 @@ export default function RegisterScreen({
             )}
           </View>
 
-          {/* Divider */}
           <View style={styles.dividerRow}>
             <View style={styles.divider} />
-            <Text style={styles.dividerText}>OR</Text>
+            <Text style={styles.dividerText}>{t('common.or')}</Text>
             <View style={styles.divider} />
           </View>
 
-          {/* Social Buttons */}
           <View style={styles.socialContainer}>
             {Platform.OS !== 'ios' && (
               <SocialButton
-                label="Continue with Google"
+                label={t('auth.social.google')}
                 onPress={() => {
                   void handleSocialRegister('google');
                 }}
@@ -643,7 +668,7 @@ export default function RegisterScreen({
             )}
             {Platform.OS === 'ios' && (
               <SocialButton
-                label="Continue with Apple"
+                label={t('auth.social.apple')}
                 onPress={() => {
                   void handleSocialRegister('apple');
                 }}
@@ -652,7 +677,7 @@ export default function RegisterScreen({
               />
             )}
             <SocialButton
-              label="Continue with Facebook"
+              label={t('auth.social.facebook')}
               onPress={() => {
                 void handleSocialRegister('facebook');
               }}
@@ -662,19 +687,21 @@ export default function RegisterScreen({
             />
           </View>
 
-          {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>Already have an account?</Text>
+            <Text style={styles.footerText}>
+              {t('auth.register.have_account')}
+            </Text>
             <TouchableOpacity
               onPress={() => navigation.goBack()}
               disabled={loading}
               accessibilityRole="button"
+              accessibilityLabel={t('auth.actions.sign_in')}
             >
-              <Text style={styles.linkText}> Sign In</Text>
+              <Text style={styles.linkText}> {t('auth.actions.sign_in')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
-    </SafeAreaProvider>
+    </SafeAreaView>
   );
 }

@@ -2,11 +2,12 @@ import React, { useMemo } from 'react';
 import { View, Text, Platform, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Feather from 'react-native-vector-icons/Feather';
-import { useTheme } from '../core/theme/ThemeProvider';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { useTranslation } from 'react-i18next';
+import { useAppSelector } from '@/store/hooks';
 import { BottomTabParamList } from './types';
 
-import MembershipScreen from '../features/Membership/Membership.screen';
+import MembershipScreen from '@/features/Membership/Membership.screen';
 import HomeStack from './HomeStack';
 import MatchesStack from './MatchesStack';
 import ChatsStack from './ChatsStack';
@@ -14,74 +15,52 @@ import ProfileStack from './ProfileStack';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
-// ─── Typed Tab Icon ──────────────────────────────────────────────────────────
+// ─── Tab Icon ─────────────────────────────────────────────────────────────────
+
 type TabIconProps = {
   name: React.ComponentProps<typeof Feather>['name'];
   focused: boolean;
   color: string;
   badge?: number;
+  badgeColor: string;
 };
 
 const TabIcon = React.memo(
-  ({ name, focused, color, badge }: TabIconProps): React.ReactElement => {
-    return (
-      <View style={tabIconStyles.wrapper}>
-        <Feather name={name} size={22} color={color} />
+  ({
+    name,
+    focused,
+    color,
+    badge,
+    badgeColor,
+  }: TabIconProps): React.ReactElement => (
+    <View style={tabIconStyles.wrapper}>
+      <Feather name={name} size={22} color={color} />
 
-        {badge !== undefined && badge > 0 && (
-          <View style={tabIconStyles.badge}>
-            <Text style={tabIconStyles.badgeText}>
-              {badge > 99 ? '99+' : badge}
-            </Text>
-          </View>
-        )}
+      {badge !== undefined && badge > 0 && (
+        <View style={[tabIconStyles.badge, { backgroundColor: badgeColor }]}>
+          <Text style={tabIconStyles.badgeText}>
+            {badge > 99 ? '99+' : badge}
+          </Text>
+        </View>
+      )}
 
-        {focused && (
-          <View style={[tabIconStyles.dot, { backgroundColor: color }]} />
-        )}
-      </View>
-    );
-  }
+      {focused && (
+        <View style={[tabIconStyles.dot, { backgroundColor: color }]} />
+      )}
+    </View>
+  )
 );
 
 TabIcon.displayName = 'TabIcon';
 
-// ─── Styles ───────────────────────────────────────────────────────────────────
-const tabIconStyles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    backgroundColor: '#E91E63',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  badgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#fff',
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 3,
-  },
-});
+// ─── Bottom Tabs ──────────────────────────────────────────────────────────────
 
-// ─── Bottom Tabs ─────────────────────────────────────────────────────────────
 export default function BottomTabs(): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
+
+  // Read unread count from Redux — replace with your actual selector
+  const unreadCount = 3; //useAppSelector((s) => s.chats.unreadCount ?? 0);
 
   const screenOptions = useMemo(
     () => ({
@@ -111,8 +90,6 @@ export default function BottomTabs(): React.ReactElement {
     [theme]
   );
 
-  const unreadCount = 3; // TODO: from Redux selector
-
   return (
     <Tab.Navigator screenOptions={screenOptions}>
       <Tab.Screen
@@ -121,7 +98,12 @@ export default function BottomTabs(): React.ReactElement {
         options={{
           tabBarLabel: t('tabs.home'),
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon name="home" focused={focused} color={color} />
+            <TabIcon
+              name="home"
+              focused={focused}
+              color={color}
+              badgeColor={theme.colors.error}
+            />
           ),
         }}
       />
@@ -132,7 +114,12 @@ export default function BottomTabs(): React.ReactElement {
         options={{
           tabBarLabel: t('tabs.matches'),
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon name="heart" focused={focused} color={color} />
+            <TabIcon
+              name="heart"
+              focused={focused}
+              color={color}
+              badgeColor={theme.colors.error}
+            />
           ),
         }}
       />
@@ -148,6 +135,7 @@ export default function BottomTabs(): React.ReactElement {
               focused={focused}
               color={color}
               badge={unreadCount}
+              badgeColor={theme.colors.error}
             />
           ),
         }}
@@ -159,7 +147,12 @@ export default function BottomTabs(): React.ReactElement {
         options={{
           tabBarLabel: t('tabs.premium'),
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon name="star" focused={focused} color={color} />
+            <TabIcon
+              name="star"
+              focused={focused}
+              color={color}
+              badgeColor={theme.colors.error}
+            />
           ),
         }}
       />
@@ -170,10 +163,47 @@ export default function BottomTabs(): React.ReactElement {
         options={{
           tabBarLabel: t('tabs.profile'),
           tabBarIcon: ({ focused, color }) => (
-            <TabIcon name="user" focused={focused} color={color} />
+            <TabIcon
+              name="user"
+              focused={focused}
+              color={color}
+              badgeColor={theme.colors.error}
+            />
           ),
         }}
       />
     </Tab.Navigator>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const tabIconStyles = StyleSheet.create({
+  wrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    position: 'relative',
+  },
+  badge: {
+    position: 'absolute',
+    top: -4,
+    right: -8,
+    minWidth: 16,
+    height: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  badgeText: {
+    fontSize: 9,
+    fontWeight: '800',
+    color: '#fff',
+  },
+  dot: {
+    width: 4,
+    height: 4,
+    borderRadius: 2,
+    marginTop: 3,
+  },
+});

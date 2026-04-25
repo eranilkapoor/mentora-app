@@ -73,17 +73,17 @@ const mockAppService = {
 const mockAuthService = {
   register: jest
     .fn()
-    .mockResolvedValue({ user: { userId: 'user-1' }, accessToken: 'tok' }),
+    .mockResolvedValue({ user: { userId: 'user-1' }, access_token: 'tok' }),
   login: jest
     .fn()
-    .mockResolvedValue({ user: { userId: 'user-1' }, accessToken: 'tok' }),
+    .mockResolvedValue({ user: { userId: 'user-1' }, access_token: 'tok' }),
   sendOtp: jest.fn().mockReturnValue({ phone: '+911234567890', otp: '123456' }),
-  verifyOtp: jest.fn().mockResolvedValue({ accessToken: 'tok' }),
-  socialLogin: jest.fn().mockResolvedValue({ accessToken: 'tok' }),
+  verifyOtp: jest.fn().mockResolvedValue({ access_token: 'tok' }),
+  socialLogin: jest.fn().mockResolvedValue({ access_token: 'tok' }),
   forgotPassword: jest.fn().mockResolvedValue({ message: 'Reset email sent' }),
   onboardingProfile: jest.fn().mockResolvedValue({}),
   verifyUser: jest.fn().mockResolvedValue({ isVerified: true }),
-  refresh: jest.fn().mockResolvedValue({ accessToken: 'new-tok' }),
+  refresh: jest.fn().mockResolvedValue({ access_token: 'new-tok' }),
   logout: jest.fn().mockResolvedValue(undefined),
   logoutAll: jest.fn().mockResolvedValue(undefined),
 };

@@ -1,15 +1,16 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
+import { RouteProp } from '@react-navigation/native';
 
 // ─── Auth Stack ───────────────────────────────────────────────────────────────
 export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  ResetPassword: undefined;
+  ResetPassword: { access_token: string };
 };
 
-// ─── Onboarding Stack ───────────────────────────────────────────────────────────────
+// ─── Onboarding Stack ─────────────────────────────────────────────────────────
 export type OnboardingStackParamList = {
   Onboarding: undefined;
 };
@@ -20,14 +21,14 @@ export type HomeStackParamList = {
   Notifications: undefined;
 };
 
-// ─── Matches Stack ────────────────────────────────────────────────────────────────
+// ─── Matches Stack ────────────────────────────────────────────────────────────
 export type MatchesStackParamList = {
   MatchList: undefined;
   OnlineMatches: undefined;
   MatchDetails: { userId: string };
 };
 
-// ─── Chats Stack ────────────────────────────────────────────────────────────────
+// ─── Chats Stack ──────────────────────────────────────────────────────────────
 export type ChatsStackParamList = {
   ChatList: undefined;
   ChatDetails: {
@@ -37,22 +38,13 @@ export type ChatsStackParamList = {
   };
 };
 
-// ─── Profile Stack ────────────────────────────────────────────────────────────────
+// ─── Profile Stack ────────────────────────────────────────────────────────────
+// Settings screen here navigates INTO the SettingsStack navigator
 export type ProfileStackParamList = {
   ProfileScreen: undefined;
-  Settings: undefined;
 };
 
-// ─── Bottom Tabs ──────────────────────────────────────────────────────────────
-export type BottomTabParamList = {
-  Home: undefined;
-  Matches: undefined;
-  Chats: undefined;
-  Membership: undefined;
-  Profile: undefined;
-};
-
-// ─── Settings Stack ───────────────────────────────────────────────────────────────
+// ─── Settings Stack ───────────────────────────────────────────────────────────
 export type SettingsStackParamList = {
   SettingsScreen: undefined;
   EditProfile: undefined;
@@ -64,9 +56,20 @@ export type SettingsStackParamList = {
   PrivacyPolicy: undefined;
 };
 
+// ─── Bottom Tabs ──────────────────────────────────────────────────────────────
+export type BottomTabParamList = {
+  Home: undefined;
+  Matches: undefined;
+  Chats: undefined;
+  Membership: undefined;
+  Profile: undefined;
+};
+
 // ─── App Stack ────────────────────────────────────────────────────────────────
+// Settings is a stack navigator reachable from the app level
 export type AppStackParamList = {
   Tabs: undefined;
+  Settings: undefined; // navigates into SettingsStackNavigator
 };
 
 // ─── Root Stack ───────────────────────────────────────────────────────────────
@@ -76,10 +79,36 @@ export type RootStackParamList = {
   App: undefined;
 };
 
+// ─── Global declaration — enables typed useNavigation() with no generics ──────
+declare global {
+  namespace ReactNavigation {
+    interface RootParamList extends RootStackParamList {}
+  }
+}
+
+// ─── Navigation Props ─────────────────────────────────────────────────────────
+export type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>;
 export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
-export type AppNavigationProp = NativeStackNavigationProp<AppStackParamList>;
-export type BottamNavigationProp = BottomTabNavigationProp<BottomTabParamList>;
+export type OnboardingNavigationProp =
+  NativeStackNavigationProp<OnboardingStackParamList>;
+export type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
+export type MatchesNavigationProp =
+  NativeStackNavigationProp<MatchesStackParamList>;
+export type ChatsNavigationProp =
+  NativeStackNavigationProp<ChatsStackParamList>;
 export type ProfileNavigationProp =
   NativeStackNavigationProp<ProfileStackParamList>;
+export type SettingsNavigationProp =
+  NativeStackNavigationProp<SettingsStackParamList>;
+export type AppNavigationProp = NativeStackNavigationProp<AppStackParamList>;
+export type BottomNavigationProp = BottomTabNavigationProp<BottomTabParamList>; // fixed typo
 
-export type RootNavigationProp = NativeStackNavigationProp<RootStackParamList>;
+// ─── Route Props (for screens that receive params) ────────────────────────────
+export type MatchDetailsRouteProp = RouteProp<
+  MatchesStackParamList,
+  'MatchDetails'
+>;
+export type ChatDetailsRouteProp = RouteProp<
+  ChatsStackParamList,
+  'ChatDetails'
+>;

@@ -1,7 +1,7 @@
-import { ProfileNavigationProp } from '@/navigation/types';
+import { AppNavigationProp } from '@/navigation/types';
 
 export interface ProfileScreenProps {
-  navigation: ProfileNavigationProp;
+  navigation: AppNavigationProp;
 }
 
 export interface SectionProps {

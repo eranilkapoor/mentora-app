@@ -1,33 +1,20 @@
 import React from 'react';
-import { StatusBar } from 'react-native';
+import Toast from 'react-native-toast-message';
 import { NavigationContainer } from '@react-navigation/native';
+import { navigationRef } from '@/navigation/navigationRef';
+import RootNavigator from '@/navigation/RootNavigator';
+import { ThemeProvider } from '@/core/theme/ThemeProvider';
+import ThemedStatusBar from '@/core/components/ThemedStatusBar';
+import { linkingConfig } from '@/navigation/linkingConfig';
 
-import { useAppSelector } from '../store/hooks';
-import { navigationRef } from '../navigation/navigationRef';
-
-import RootNavigator from '../navigation/RootNavigator';
-import { ThemeProvider } from '../core/theme/ThemeProvider';
-import Loader from '@/core/components/Loader';
-
-interface Props {
-  isHydrated: boolean;
-}
-
-export default function AppContent({ isHydrated }: Props) {
-  const themeMode = useAppSelector((s) => s.settings.theme);
-  const isDarkMode = themeMode === 'dark';
-
-  if (!isHydrated) {
-    return <Loader fullScreen size="large" />;
-  }
-
+export default function AppContent() {
   return (
     <ThemeProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-
-      <NavigationContainer ref={navigationRef}>
+      <ThemedStatusBar />
+      <NavigationContainer ref={navigationRef} linking={linkingConfig}>
         <RootNavigator />
       </NavigationContainer>
+      <Toast />
     </ThemeProvider>
   );
 }

@@ -1,7 +1,7 @@
-import { BottamNavigationProp } from '@/navigation/types';
+import { BottomNavigationProp } from '@/navigation/types';
 
 export interface MembershipScreenProps {
-  navigation: BottamNavigationProp;
+  navigation: BottomNavigationProp;
 }
 
 export interface Plan {

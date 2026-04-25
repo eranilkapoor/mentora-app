@@ -26,5 +26,117 @@
   "english": "English",
   "hindi": "Hindi",
   "save": "Save",
-  "dark_mode": "Dark Mode"
+  "dark_mode": "Dark Mode",
+
+  "auth": {
+    "login": {
+      "title": "Welcome to MatchMate",
+      "subtitle": "Sign in to find your perfect match",
+      "no_account": "Don't have an account?"
+    },
+    "register": {
+      "title": "Create an Account",
+      "subtitle": "Start your journey to find your perfect match",
+      "have_account": "Already have an account?"
+    },
+    "forgot": {
+      "title": "Reset your password",
+      "subtitle": "Enter your email and we'll send you a reset link.",
+      "success_title": "Check your inbox",
+      "success_subtitle": "If an account exists for {{email}}, you'll receive a reset link shortly.",
+      "what_happens": "What happens next?",
+      "tips": [
+        "Check your spam or junk folder",
+        "The link expires in 30 minutes",
+        "Request a new link if needed"
+      ],
+      "steps": [
+        { "icon": "mail", "text": "We'll send a reset link to your email" },
+        { "icon": "clock", "text": "The link expires in 30 minutes" },
+        { "icon": "lock", "text": "Create a new strong password" }
+      ]
+    },
+    "reset": {
+      "title": "Create New Password",
+      "subtitle": "Your new password must be different from your previous password.",
+      "success_title": "Password Reset!",
+      "success_subtitle": "Your password has been successfully updated. You can now sign in with your new password.",
+      "invalid_link_title": "Link Expired",
+      "invalid_link_subtitle": "This password reset link is invalid or has expired. Please request a new one.",
+      "rule_length": "At least {{min}} characters",
+      "rule_uppercase": "At least one uppercase letter",
+      "rule_number": "At least one number",
+      "rule_special": "At least one special character",
+      "passwords_match": "Passwords match"
+    },
+    "tabs": { "email": "Email", "phone": "Phone (OTP)" },
+    "fields": {
+      "email": "Email",
+      "password": "Password",
+      "phone": "Phone Number",
+      "otp": "Enter OTP",
+      "new_password": "New Password",
+      "confirm_password": "Confirm Password"
+    },
+    "placeholders": {
+      "email": "you@example.com",
+      "phone": "9911002233",
+      "new_password": "Min. {{min}} characters",
+      "confirm_password": "Repeat new password"
+    },
+    "actions": {
+      "sign_in": "Sign In",
+      "create_account": "Create account",
+      "forgot_password": "Forgot password?",
+      "show_password": "Show password",
+      "hide_password": "Hide password",
+      "get_otp": "Get OTP",
+      "verify_sign_in": "Verify & Sign In",
+      "verify_create": "Verify & Create Account",
+      "resend_otp": "Resend / change number",
+      "select_country_code": "Select country code",
+      "send_reset_link": "Send Reset Link",
+      "resend_reset_link": "Resend reset link",
+      "back_to_sign_in": "Back to Sign In",
+      "reset_password": "Reset Password",
+      "request_new_link": "Request New Link"
+    },
+    "otp": { "sent_to": "OTP sent to +{{code}} {{phone}}" },
+    "social": {
+      "google": "Continue with Google",
+      "apple": "Continue with Apple",
+      "facebook": "Continue with Facebook"
+    },
+    "errors": {
+      "email_required": "Email is required",
+      "email_invalid": "Enter a valid email address",
+      "email_already_registered": "Email already registered. Please sign in.",
+      "password_required": "Password is required",
+      "password_min": "Minimum {{min}} characters",
+      "password_too_weak": "Password is too weak. Add uppercase, numbers, or symbols.",
+      "confirm_password_required": "Please confirm your password",
+      "passwords_do_not_match": "Passwords do not match",
+      "phone_required": "Phone number is required",
+      "phone_invalid": "Enter a valid phone number",
+      "otp_required": "OTP is required",
+      "otp_length": "OTP must be {{length}} digits",
+      "otp_invalid": "Invalid OTP",
+      "otp_send_failed": "Failed to send OTP. Please try again.",
+      "otp_verify_failed": "Failed to verify OTP. Please try again.",
+      "invalid_credentials": "Invalid email or password",
+      "login_failed": "Sign in failed. Please try again.",
+      "register_failed": "Registration failed. Please try again.",
+      "reset_failed": "Failed to reset password. The link may have expired.",
+      "server_error": "Unexpected server error. Please try again.",
+      "network_error": "Network error. Please check your connection.",
+      "social_failed": "Failed to sign in with {{provider}}.",
+      "unknown": "An unknown error occurred"
+    },
+    "password_strength": {
+      "weak": "Weak",
+      "fair": "Fair",
+      "strong": "Strong",
+      "very_strong": "Very Strong"
+    }
+  }
 }

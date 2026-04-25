@@ -8,25 +8,21 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AppStackParamList } from '@/navigation/types';
+import { useTranslation } from 'react-i18next';
 
-// 👉 Ideally import from a central routes file
-const ROOT_ROUTE = 'Tabs';
+// Fallback route when there is no screen to go back to
+const FALLBACK_ROUTE = 'App' as const;
 
 export const BackButton = (): React.ReactElement => {
-  const navigation =
-    useNavigation<NativeStackNavigationProp<AppStackParamList>>();
+  const navigation = useNavigation();
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   const handleBack = useCallback(() => {
     if (navigation.canGoBack()) {
-      navigation.goBack(); // ✅ safer than pop()
+      navigation.goBack();
     } else {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: ROOT_ROUTE }],
-      });
+      navigation.reset({ index: 0, routes: [{ name: FALLBACK_ROUTE }] });
     }
   }, [navigation]);
 
@@ -46,9 +42,10 @@ export const BackButton = (): React.ReactElement => {
       onPress={handleBack}
       style={containerStyle}
       accessibilityRole="button"
-      accessibilityLabel="Go back"
-      accessibilityHint="Navigates to the previous screen"
+      accessibilityLabel={t('common.go_back')}
+      accessibilityHint={t('common.go_back_hint')}
       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+      activeOpacity={0.7}
     >
       <Feather
         name={I18nManager.isRTL ? 'arrow-right' : 'arrow-left'}

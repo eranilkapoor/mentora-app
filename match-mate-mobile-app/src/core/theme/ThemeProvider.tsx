@@ -1,37 +1,34 @@
 import React, { createContext, useContext, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
-import { useAppSelector } from '../../store/hooks';
+import { useAppSelector } from '@/store/hooks';
 import { lightTheme } from './lightTheme';
 import { darkTheme } from './darkTheme';
 import { Theme } from './types';
 
-const ThemeContext = createContext<{
+interface ThemeContextValue {
   theme: Theme;
   isDark: boolean;
-}>({
+}
+
+const ThemeContext = createContext<ThemeContextValue>({
   theme: lightTheme,
   isDark: false,
 });
 
-export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({
-  children,
-}: {
-  children: React.ReactNode;
-}) => {
-  const mode = useAppSelector((state) => state.settings.theme);
-  const systemTheme = useColorScheme(); // 'light' | 'dark'
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
+  const mode = useAppSelector((s) => s.settings.theme);
+  const systemScheme = useColorScheme();
 
-  // 🔥 Resolve final theme
-  const isDark = mode === 'system' ? systemTheme === 'dark' : mode === 'dark';
+  const isDark = mode === 'system' ? systemScheme === 'dark' : mode === 'dark';
 
-  const theme = useMemo(() => (isDark ? darkTheme : lightTheme), [isDark]);
+  const value = useMemo<ThemeContextValue>(
+    () => ({ theme: isDark ? darkTheme : lightTheme, isDark }),
+    [isDark]
+  );
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark }}>
-      {children}
-    </ThemeContext.Provider>
+    <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
-};
+}
 
-// 🔥 Hook
-export const useTheme = () => useContext(ThemeContext);
+export const useTheme = (): ThemeContextValue => useContext(ThemeContext);

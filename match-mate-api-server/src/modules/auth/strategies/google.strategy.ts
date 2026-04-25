@@ -22,7 +22,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
   }
 
   validate(
-    _accessToken: string,
+    _access_token: string,
     _refreshToken: string,
     profile: Profile,
     done: VerifyCallback,

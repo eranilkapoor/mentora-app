@@ -60,7 +60,7 @@ export const mockAuthTokenService = () => ({
     email: 'test@test.com',
   })),
   generateTokens: jest.fn(() => ({
-    accessToken: 'mock-access-token',
+    access_token: 'mock-access-token',
     refreshToken: 'mock-refresh-token',
   })),
   verifyRefreshToken: jest.fn(() => ({ sub: 'user-id-1' })),

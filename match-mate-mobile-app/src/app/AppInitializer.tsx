@@ -1,31 +1,34 @@
-import React, { useEffect, useState } from 'react';
-import { useAppDispatch, useAppSelector } from '../store/hooks';
-import Loader from '../core/components/Loader';
-import { logout, setUser } from '../store/slices/authSlice';
-import { useVerifyUserQuery } from '@/store/services/authApi';
-import i18n from '../i18n';
+import React, { useEffect, useRef, useState } from 'react';
 
-export default function AppInitializer({
-  children,
-}: {
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { logout, setUser } from '@/store/slices/authSlice';
+import { useVerifyUserQuery } from '@/store/services/authApi';
+import Loader from '@/core/components/Loader';
+import i18n from '@/i18n';
+
+interface Props {
   children: React.ReactNode;
-}) {
+}
+
+export default function AppInitializer({ children }: Props) {
   const dispatch = useAppDispatch();
   const access_token = useAppSelector((s) => s.auth.access_token);
   const lang = useAppSelector((s) => s.settings.language);
 
   const [langReady, setLangReady] = useState(false);
-  const isFirstLoad = React.useRef(true);
+  const isFirstLoad = useRef(true);
 
-  const { data, error, isLoading, isFetching } = useVerifyUserQuery(undefined, {
-    skip: !access_token, // 🚀 only call if access_token exists
+  const { data, error, isLoading } = useVerifyUserQuery(undefined, {
+    // Only call the endpoint when a token exists
+    skip: !access_token,
   });
 
-  // ✅ Language sync (runs on mount + whenever lang changes)
+  // Sync i18n language on mount and whenever the user changes it
   useEffect(() => {
     let isMounted = true;
 
     const applyLanguage = async () => {
+      // Show loader only on the very first language application
       if (isFirstLoad.current && isMounted) {
         setLangReady(false);
       }
@@ -33,7 +36,7 @@ export default function AppInitializer({
       try {
         await i18n.changeLanguage(lang);
       } catch (err) {
-        console.error('i18n error:', err);
+        console.error('[AppInitializer] i18n error:', err);
       } finally {
         if (isMounted) {
           setLangReady(true);
@@ -49,19 +52,19 @@ export default function AppInitializer({
     };
   }, [lang]);
 
-  // ✅ Auth sync (unchanged)
+  // Keep Redux auth state in sync with server verification
   useEffect(() => {
     if (data?.success && data?.data) {
       dispatch(setUser(data.data));
     }
 
     if (error) {
+      // Token is invalid or expired — force logout
       dispatch(logout());
     }
   }, [data, error, dispatch]);
 
-  // ✅ Block render until both auth AND language are ready
-  if (!langReady || (access_token && (isLoading || isFetching))) {
+  if (!langReady || (access_token && isLoading)) {
     return <Loader fullScreen size="large" loadingText="App initializing..." />;
   }
 
