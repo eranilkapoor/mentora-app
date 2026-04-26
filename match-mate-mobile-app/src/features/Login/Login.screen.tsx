@@ -10,6 +10,8 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+// 👉 For mobile secure storage
+import * as SecureStore from 'expo-secure-store';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -31,7 +33,7 @@ import {
   useVerifyOtpMutation,
 } from '@/store/services/authApi';
 import { setCredentials } from '@/store/slices/authSlice';
-import { loginStyles } from './LoginScreen.styles';
+import { loginStyles } from './Login.styles';
 import {
   LoginScreenProps,
   ActiveTab,
@@ -39,7 +41,7 @@ import {
   FormErrors,
   SocialButtonProps,
   CountryCodeDropdownProps,
-} from './Auth.types';
+} from './Login.types';
 
 // ─── Sub-components (defined at module scope to prevent remount) ──────────────
 
@@ -221,14 +223,18 @@ export default function LoginScreen({
         return;
       }
 
-      if (response.data?.access_token && response.data?.user) {
+      if (response.data?.accessToken && response.data?.user) {
         // Dispatch credentials — RootNavigator handles routing automatically
         dispatch(
           setCredentials({
-            access_token: response.data.access_token,
+            accessToken: response.data.accessToken,
             user: response.data.user,
           })
         );
+        // ✅ Save refresh token (ONLY MOBILE)
+        if (Platform.OS !== 'web' && response.data?.refreshToken) {
+          await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
+        }
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
@@ -293,13 +299,17 @@ export default function LoginScreen({
         setErrors({ otp: t('auth.errors.otp_invalid') });
         return;
       }
-      if (response.data?.access_token && response.data?.user) {
+      if (response.data?.accessToken && response.data?.user) {
         dispatch(
           setCredentials({
-            access_token: response.data.access_token,
+            accessToken: response.data.accessToken,
             user: response.data.user,
           })
         );
+        // ✅ Save refresh token (ONLY MOBILE)
+        if (Platform.OS !== 'web' && response.data?.refreshToken) {
+          await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
+        }
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }

@@ -4,22 +4,35 @@ import {
   BaseQueryFn,
   FetchArgs,
   FetchBaseQueryError,
-  retry,
 } from '@reduxjs/toolkit/query/react';
+
 import { RootState } from '../index';
 import { Platform } from 'react-native';
 import { getDeviceId, generateUUID } from '../../core/utils/device';
-import { logout } from '../slices/authSlice';
+import { logout, setAccessToken } from '../slices/authSlice';
+
+import { Mutex } from 'async-mutex';
+
+// 👉 For mobile secure storage
+import * as SecureStore from 'expo-secure-store';
+
+const mutex = new Mutex();
+
+// 🔐 Refresh token getter (Mobile only)
+const getRefreshToken = async (): Promise<string | null> => {
+  if (Platform.OS === 'web') return null;
+  return await SecureStore.getItemAsync('refreshToken');
+};
 
 // 🔹 Base Query
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL as string,
-
+  credentials: 'include', // ✅ required for web cookies
   prepareHeaders: async (headers, { getState }) => {
-    const access_token = (getState() as RootState).auth.access_token;
+    const accessToken = (getState() as RootState).auth.accessToken;
 
-    if (access_token) {
-      headers.set('authorization', `Bearer ${access_token}`);
+    if (accessToken) {
+      headers.set('Authorization', `Bearer ${accessToken}`);
     }
 
     const deviceId = await getDeviceId();
@@ -30,29 +43,79 @@ const rawBaseQuery = fetchBaseQuery({
       'X-Client-Version',
       (process.env.EXPO_PUBLIC_CLIENT_VERSION as string) ?? '1.0.0'
     );
-    headers.set('X-Correlation-Id', `${generateUUID()}`);
-    headers.set('X-Request-Id', `${generateUUID()}`);
+    headers.set('X-Correlation-Id', generateUUID());
+    headers.set('X-Request-Id', generateUUID());
 
     return headers;
   },
 });
 
-// 🔥 Retry Wrapper (0 attempts)
-const baseQueryWithRetry = retry(rawBaseQuery, {
-  maxRetries: 0, // total = 0 attempts
-});
-
-// 🔥 Wrapper (for global error handling)
+// 🔁 Base Query with Refresh Logic
 const baseQueryWithAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
 > = async (args, api, extraOptions) => {
-  const result = await baseQueryWithRetry(args, api, extraOptions);
+  await mutex.waitForUnlock();
 
-  // 🔥 Handle 401 globally
-  if (result.error?.status === 401) {
-    api.dispatch(logout());
+  let result = await rawBaseQuery(args, api, extraOptions);
+
+  if (result.error && result.error.status === 401) {
+    // 🔒 Prevent multiple refresh calls
+    if (!mutex.isLocked()) {
+      const release = await mutex.acquire();
+
+      try {
+        // 🔄 Refresh API call
+        const refreshResult = await rawBaseQuery(
+          {
+            url: '/auth/refresh',
+            method: 'POST',
+            ...(Platform.OS !== 'web'
+              ? {
+                  body: {
+                    refreshToken: await getRefreshToken(),
+                  },
+                }
+              : {}),
+          },
+          api,
+          extraOptions
+        );
+
+        if (refreshResult.data) {
+          const data = refreshResult.data as any;
+
+          // ✅ Update access token
+          api.dispatch(setAccessToken(data.accessToken));
+
+          // 🔄 Update refresh token (if provided)
+          if (Platform.OS !== 'web' && data.refreshToken) {
+            await SecureStore.setItemAsync('refreshToken', data.refreshToken);
+          }
+
+          // 🔁 Retry original request
+          result = await rawBaseQuery(args, api, extraOptions);
+        } else {
+          // ❌ Refresh failed → logout
+          api.dispatch(logout());
+          if (Platform.OS !== 'web') {
+            await SecureStore.deleteItemAsync('refreshToken');
+          }
+        }
+      } catch (err) {
+        api.dispatch(logout());
+        if (Platform.OS !== 'web') {
+          await SecureStore.deleteItemAsync('refreshToken');
+        }
+      } finally {
+        release();
+      }
+    } else {
+      // ⏳ Wait for ongoing refresh
+      await mutex.waitForUnlock();
+      result = await rawBaseQuery(args, api, extraOptions);
+    }
   }
 
   return result;
@@ -62,6 +125,6 @@ const baseQueryWithAuth: BaseQueryFn<
 export const baseApi = createApi({
   reducerPath: 'baseApi',
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['Profile', 'Auth'], // 👈 add all tags here
+  tagTypes: ['Profile', 'Auth'],
   endpoints: () => ({}),
 });

@@ -1,6 +1,6 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SelectPillProps } from '../EditProfile.types';
-import { editProfileStyles } from '../EditProfileScreen.styles';
+import { editProfileStyles } from '../EditProfile.styles';
 import { TouchableOpacity, View, Text } from 'react-native';
 
 export function SelectPill({

@@ -7,7 +7,7 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  ResetPassword: { access_token: string };
+  ResetPassword: { accessToken: string };
 };
 
 // ─── Onboarding Stack ─────────────────────────────────────────────────────────

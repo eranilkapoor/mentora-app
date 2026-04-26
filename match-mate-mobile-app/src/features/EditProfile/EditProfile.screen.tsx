@@ -18,7 +18,7 @@ import {
   useUpdatePersonalInfoMutation,
 } from '../../store/services/profileApi';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editProfileStyles } from './EditProfileScreen.styles';
+import { editProfileStyles } from './EditProfile.styles';
 import {
   EducationSection,
   FamilySection,
@@ -47,10 +47,13 @@ import { TagInput } from './components/TagInput';
 import Loader from '@/core/components/Loader';
 import { TimeOfBirthPicker } from './components/TimeOfBirthPicker';
 import { ProfileImage } from '@/core/types';
+import Header from '@/core/components/Header';
+import { useTranslation } from 'react-i18next';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-export default function EditProfileScreen(): React.ReactElement {
+export default function EditProfileScreen({ navigation }: { navigation: any }): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
+  const { t } = useTranslation();
 
   const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
   const [sectionLoading, setSectionLoading] = useState<SectionKey | null>(null);
@@ -250,6 +253,11 @@ export default function EditProfileScreen(): React.ReactElement {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
+        <Header
+          showBack
+          onBackPress={navigation.goBack}
+          title={t('profile.edit_profile')}
+        />
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}

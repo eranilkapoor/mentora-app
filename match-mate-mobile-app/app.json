@@ -29,6 +29,9 @@
     "extra": {
       "apiUrl": "http://192.168.1.4:3000/api/v1"
     },
-    "plugins": ["expo-localization"]
+    "plugins": [
+      "expo-localization",
+      "expo-secure-store"
+    ]
   }
 }

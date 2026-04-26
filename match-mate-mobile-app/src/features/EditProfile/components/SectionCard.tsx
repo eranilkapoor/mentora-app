@@ -1,6 +1,6 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SectionCardProps } from '../EditProfile.types';
-import { editProfileStyles } from '../EditProfileScreen.styles';
+import { editProfileStyles } from '../EditProfile.styles';
 import { ActivityIndicator, TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '@/core/constants/colors';

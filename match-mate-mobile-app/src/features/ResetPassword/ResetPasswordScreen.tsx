@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useResetPasswordMutation } from '@/store/services/authApi';
-import { AuthNavigationProp } from '../Login/Auth.types';
+import { AuthNavigationProp } from './ResetPassword.types';
 import { resetPasswordStyles } from './ResetPasswordScreen.styles';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 
@@ -24,7 +24,7 @@ import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 interface ResetPasswordScreenProps {
   navigation: AuthNavigationProp;
   // Token arrives via deep link query param — passed as route param
-  route: { params: { access_token: string } };
+  route: { params: { accessToken: string } };
 }
 
 interface FormErrors {
@@ -108,7 +108,7 @@ export default function ResetPasswordScreen({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const { access_token } = route.params;
+  const { accessToken } = route.params;
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -161,7 +161,7 @@ export default function ResetPasswordScreen({
     }
 
     try {
-      const response = await resetPassword({ access_token, password }).unwrap();
+      const response = await resetPassword({ accessToken, password }).unwrap();
       if (response.success) {
         setSuccess(true);
       } else {
@@ -170,7 +170,7 @@ export default function ResetPasswordScreen({
     } catch {
       setErrors({ error: t('auth.errors.network_error') });
     }
-  }, [password, access_token, resetPassword, validate, t]);
+  }, [password, accessToken, resetPassword, validate, t]);
 
   // ─── Success State ────────────────────────────────────────────────────────
 
@@ -211,7 +211,7 @@ export default function ResetPasswordScreen({
 
   // ─── Expired / Invalid Token ──────────────────────────────────────────────
 
-  if (!access_token) {
+  if (!accessToken) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.successContainer}>

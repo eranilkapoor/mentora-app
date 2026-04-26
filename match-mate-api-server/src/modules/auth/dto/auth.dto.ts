@@ -56,7 +56,7 @@ export class SocialLoginDto {
 
   @IsNotEmpty()
   @IsString()
-  access_token!: string;
+  accessToken!: string;
 
   @IsOptional()
   @IsEmail()

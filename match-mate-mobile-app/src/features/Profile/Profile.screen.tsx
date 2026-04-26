@@ -173,7 +173,6 @@ export default function ProfileScreen({
         <Header
           title="My Profile"
           actions={[
-            { icon: 'edit', onPress: () => {} },
             {
               icon: 'settings',
               onPress: () => navigation.navigate('Settings'),
@@ -193,7 +192,6 @@ export default function ProfileScreen({
       <Header
         title="My Profile"
         actions={[
-          { icon: 'edit', onPress: () => {} },
           { icon: 'settings', onPress: () => navigation.navigate('Settings') },
         ]}
       />

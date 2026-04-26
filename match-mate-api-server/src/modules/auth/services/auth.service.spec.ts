@@ -165,7 +165,7 @@ describe('AuthService', () => {
         email: 'new@test.com',
       });
       authTokenService.generateTokens.mockReturnValue({
-        access_token: 'acc-tok',
+        accessToken: 'acc-tok',
         refreshToken: 'ref-tok',
       });
       userSessionModel.create.mockResolvedValue({});
@@ -182,7 +182,7 @@ describe('AuthService', () => {
         { email: 'new@test.com', password: 'Pass1234!' } as any,
       );
 
-      expect(result).toHaveProperty('access_token');
+      expect(result).toHaveProperty('accessToken');
       expect(result).toHaveProperty('user');
       expect(subscriptionModel.findOneAndUpdate).toHaveBeenCalled();
       expect(activityLogModel.create).toHaveBeenCalled();
@@ -367,7 +367,7 @@ describe('AuthService', () => {
         email: 'refresh@test.com',
       });
       authTokenService.generateTokens.mockReturnValue({
-        access_token: 'new-access-token',
+        accessToken: 'new-access-token',
         refreshToken: 'new-refresh-token',
       });
       userRepo.update.mockResolvedValue({});
@@ -381,7 +381,7 @@ describe('AuthService', () => {
       );
 
       expect(result).toEqual({
-        access_token: 'new-access-token',
+        accessToken: 'new-access-token',
         refreshToken: 'new-refresh-token',
       });
       expect(session.save).toHaveBeenCalled();
@@ -392,7 +392,7 @@ describe('AuthService', () => {
       expect(analyticsService.trackEvent).toHaveBeenCalled();
     });
 
-    it('should return access_token only and set cookie for web refresh', async () => {
+    it('should return accessToken only and set cookie for web refresh', async () => {
       const session = {
         refreshToken: 'old-refresh-token',
         save: jest.fn().mockResolvedValue(undefined),
@@ -410,7 +410,7 @@ describe('AuthService', () => {
         email: 'refresh-web@test.com',
       });
       authTokenService.generateTokens.mockReturnValue({
-        access_token: 'web-access-token',
+        accessToken: 'web-access-token',
         refreshToken: 'web-refresh-token',
       });
       userRepo.update.mockResolvedValue({});
@@ -421,7 +421,7 @@ describe('AuthService', () => {
       const res = buildRes() as any;
       const result = await service.refresh(req, res, 'old-refresh-token');
 
-      expect(result).toEqual({ access_token: 'web-access-token' });
+      expect(result).toEqual({ accessToken: 'web-access-token' });
       expect(res.cookie).toHaveBeenCalled();
       expect(userRepo.update).toHaveBeenCalled();
       expect(activityLogModel.create).toHaveBeenCalledWith(
@@ -478,7 +478,7 @@ describe('AuthService', () => {
         email: 'otp@test.com',
       });
       authTokenService.generateTokens.mockReturnValue({
-        access_token: 'acc-tok',
+        accessToken: 'acc-tok',
         refreshToken: 'ref-tok',
       });
       userRepo.update.mockResolvedValue({});
@@ -493,7 +493,7 @@ describe('AuthService', () => {
         '123456',
       );
 
-      expect(result).toHaveProperty('access_token');
+      expect(result).toHaveProperty('accessToken');
       expect(userRepo.update).toHaveBeenCalled();
       expect(activityLogModel.create).toHaveBeenCalled();
       expect(analyticsService.trackEvent).toHaveBeenCalled();
@@ -524,7 +524,7 @@ describe('AuthService', () => {
         email: 'otp@test.com',
       });
       authTokenService.generateTokens.mockReturnValue({
-        access_token: 'acc-tok',
+        accessToken: 'acc-tok',
         refreshToken: 'ref-tok',
       });
       userRepo.update.mockResolvedValue({});
@@ -573,7 +573,7 @@ describe('AuthService', () => {
         email: 'social-existing@test.com',
       });
       authTokenService.generateTokens.mockReturnValue({
-        access_token: 'acc-tok',
+        accessToken: 'acc-tok',
         refreshToken: 'ref-tok',
       });
       userRepo.update.mockResolvedValue({});
@@ -588,11 +588,11 @@ describe('AuthService', () => {
         {
           provider: 'google',
           provider_id: 'google-existing-1',
-          access_token: 'google-token',
+          accessToken: 'google-token',
         } as any,
       );
 
-      expect(result).toHaveProperty('access_token');
+      expect(result).toHaveProperty('accessToken');
       expect(userRepo.update).toHaveBeenCalled();
       expect(activityLogModel.create).toHaveBeenCalled();
       expect(analyticsService.trackEvent).toHaveBeenCalled();
@@ -622,7 +622,7 @@ describe('AuthService', () => {
         email: 'social@test.com',
       });
       authTokenService.generateTokens.mockReturnValue({
-        access_token: 'acc-tok',
+        accessToken: 'acc-tok',
         refreshToken: 'ref-tok',
       });
       userSessionModel.create.mockResolvedValue({});
@@ -639,7 +639,7 @@ describe('AuthService', () => {
         {
           provider: 'google',
           provider_id: 'google-provider-1',
-          access_token: 'google-token',
+          accessToken: 'google-token',
           email: 'social@test.com',
         } as any,
       );

@@ -1,5 +1,5 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editProfileStyles } from '../EditProfileScreen.styles';
+import { editProfileStyles } from '../EditProfile.styles';
 import { Colors } from '@/core/constants/colors';
 import { View, Text } from 'react-native';
 

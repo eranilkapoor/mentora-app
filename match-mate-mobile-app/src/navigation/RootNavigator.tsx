@@ -10,12 +10,12 @@ import { RootStackParamList } from './types';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator(): React.ReactElement {
-  const access_token = useAppSelector((s) => s.auth.access_token);
+  const accessToken = useAppSelector((s) => s.auth.accessToken);
   const isOnboardingCompleted = useAppSelector(
     (s) => s.auth.user?.isOnboardingCompleted
   );
 
-  const isLoggedIn = Boolean(access_token);
+  const isLoggedIn = Boolean(accessToken);
   const hasOnboarded = Boolean(isOnboardingCompleted);
 
   return (

@@ -18,6 +18,7 @@ import { PasswordField } from './components/PasswordField';
 import { PasswordStrengthBar } from './components/PasswordStrengthBar';
 import { ChangePasswordScreenProps } from './ChangePassword.types';
 import { useChangePassword } from './ChangePassword.hooks';
+import Header from '@/core/components/Header';
 
 export default function ChangePasswordScreen({
   navigation,
@@ -38,6 +39,11 @@ export default function ChangePasswordScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('settings.change_password')}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.safe}

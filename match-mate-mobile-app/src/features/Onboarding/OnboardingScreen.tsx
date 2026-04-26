@@ -32,7 +32,7 @@ import {
   ErrorTextProps,
   Gender,
   RegistrationStep,
-} from '../Login/Auth.types';
+} from './Onboarding.types';
 import { onboardingStyles } from './OnboardingScreen.styles';
 import { useThemedStyles } from '../../core/theme/useThemedStyles';
 import {

@@ -6,7 +6,8 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  access_token: string;
+  accessToken: string;
+  refreshToken?: string; // Optional: only for mobile
   user: User;
 }
 
@@ -16,7 +17,8 @@ export interface RegisterRequest {
 }
 
 export interface RegisterResponse {
-  access_token: string;
+  accessToken: string;
+  refreshToken?: string; // Optional: only for mobile
   user: User;
 }
 
@@ -31,18 +33,19 @@ export interface ChangePasswordRequest {
 }
 
 export interface ResetPasswordRequest {
-  access_token: string;
+  accessToken: string;
   password: string;
 }
 
 export interface SocialLoginRequest {
   provider: string;
   provider_id: string;
-  access_token: string;
+  accessToken: string;
 }
 
 export interface SocialLoginResponse {
-  access_token: string;
+  accessToken: string;
+  refreshToken?: string; // Optional: only for mobile
   user: User;
 }
 

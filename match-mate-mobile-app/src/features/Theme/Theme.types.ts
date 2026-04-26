@@ -1,4 +1,10 @@
-import { ThemeMode } from '@/store/slices/themeSlice';
+import { ThemeMode } from '@/store/slices/settingsSlice';
+import { AppNavigationProp } from '../../navigation/types';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+export interface ThemeScreenProps {
+  navigation: AppNavigationProp;
+}
 
 export interface ThemeOption {
   code: ThemeMode;

@@ -25,6 +25,7 @@ import { SettingsScreenProps } from './Settings.types';
 import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
 import { SettingToggle } from './components/SettingToggle';
+import Header from '@/core/components/Header';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function SettingsScreen({
@@ -77,6 +78,11 @@ export default function SettingsScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('settings.title')}
+      />
       <ScrollView
         contentContainerStyle={styles.container}
         showsVerticalScrollIndicator={false}

@@ -13,7 +13,7 @@ import { ChatService } from '../services/chat.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
-import { ApiResponse } from 'src/common/dto/response.dto';
+import { ApiResponse } from 'src/common/dto/api-response.dto';
 import { CreateDirectRoomDto } from '../dto/create-direct-room.dto';
 import { ListChatContactsDto } from '../dto/list-chat-contacts.dto';
 import { ListConversationsDto } from '../dto/list-conversations.dto';

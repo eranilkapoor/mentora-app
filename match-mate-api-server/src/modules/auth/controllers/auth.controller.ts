@@ -14,7 +14,7 @@ import {
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { Response } from 'express';
-import { ApiResponse } from 'src/common/dto/response.dto';
+import { ApiResponse } from 'src/common/dto/api-response.dto';
 import {
   RegisterDto,
   LoginDto,

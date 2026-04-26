@@ -12,7 +12,7 @@ import { NotificationService } from '../services/notification.service';
 import { CreateNotificationDto } from '../dto/create-notification.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { ApiResponse } from 'src/common/dto/response.dto';
+import { ApiResponse } from 'src/common/dto/api-response.dto';
 import { ListNotificationsDto } from '../dto/list-notifications.dto';
 import { UpdateNotificationSettingsDto } from '../dto/update-notification-settings.dto';
 import { UpsertNotificationTemplateDto } from '../dto/upsert-notification-template.dto';

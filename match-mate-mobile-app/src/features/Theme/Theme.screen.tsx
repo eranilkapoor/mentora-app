@@ -8,13 +8,22 @@ import { useThemeScreen } from './Theme.hooks';
 import { ThemeHeader } from './components/ThemeHeader';
 import { ThemeInfo } from './components/ThemeInfo';
 import { ThemeOptionItem } from './components/ThemeOptionItem';
+import Header from '@/core/components/Header';
+import { ThemeScreenProps } from './Theme.types';
 
-export default function ThemeScreen(): React.ReactElement {
+export default function ThemeScreen({
+  navigation,
+}: ThemeScreenProps): React.ReactElement {
   const styles = useThemedStyles(themeStyles);
   const { t, themes, currentTheme, onSelectTheme } = useThemeScreen();
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('settings.theme')}
+      />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

@@ -1,12 +1,11 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { useTranslation } from 'react-i18next';
 import { SettingsStackParamList } from './types';
 import { getSharedScreenOptions } from './sharedScreenOptions';
 
 import SettingsScreen from '@/features/Settings/Settings.screen';
-import EditProfileScreen from '@/features/EditProfile/EditProfileScreen';
+import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
 import ChangePasswordScreen from '@/features/ChangePassword/ChangePassword.screen';
 import LanguageScreen from '@/features/Language/Language.screen';
 import ThemeScreen from '@/features/Theme/Theme.screen';
@@ -18,7 +17,6 @@ const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
 export default function SettingsStack(): React.ReactElement {
   const { theme } = useTheme();
-  const { t } = useTranslation();
 
   return (
     // Now consistent with every other stack in the app
@@ -26,42 +24,42 @@ export default function SettingsStack(): React.ReactElement {
       <Stack.Screen
         name="SettingsScreen"
         component={SettingsScreen}
-        options={{ title: t('settings.title') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="EditProfile"
         component={EditProfileScreen}
-        options={{ title: t('settings.edit_profile') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="ChangePassword"
         component={ChangePasswordScreen}
-        options={{ title: t('settings.change_password') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Languages"
         component={LanguageScreen}
-        options={{ title: t('settings.language') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="Themes"
         component={ThemeScreen}
-        options={{ title: t('settings.appearance') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="NotificationSettings"
         component={NotificationSettingsScreen}
-        options={{ title: t('settings.notifications') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="HelpSupport"
         component={HelpSupportScreen}
-        options={{ title: t('settings.help_support') }}
+        options={{ headerShown: false }}
       />
       <Stack.Screen
         name="PrivacyPolicy"
         component={PrivacyPolicyScreen}
-        options={{ title: t('settings.privacy_policy') }}
+        options={{ headerShown: false }}
       />
     </Stack.Navigator>
   );

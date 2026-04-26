@@ -28,5 +28,6 @@ export interface VerifyOtpResponse {
     isPhoneVerified: boolean;
     isOnboardingCompleted: boolean;
   };
-  access_token: string;
+  accessToken: string;
+  refreshToken?: string; // Optional: only for mobile
 }

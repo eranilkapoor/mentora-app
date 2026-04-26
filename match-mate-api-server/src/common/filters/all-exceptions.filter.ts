@@ -84,7 +84,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (status === HttpStatus.NOT_FOUND) {
       response.status(404).json({
         success: false,
-        statusCode: 404,
+        code: 'COMMON.ENDPOINT_NOT_FOUND',
+        statusCode: status,
         message: 'API endpoint not found',
         correlationId,
         requestId,
@@ -92,12 +93,14 @@ export class AllExceptionsFilter implements ExceptionFilter {
         path: request.url,
         timestamp: new Date().toISOString(),
       });
+
       return;
     }
 
     // Send error response
     response.status(status).json({
       success: false,
+      code: status === HttpStatus.INTERNAL_SERVER_ERROR ? 'COMMON.INTERNAL_ERROR' : undefined,
       message,
       errors,
       statusCode: status,

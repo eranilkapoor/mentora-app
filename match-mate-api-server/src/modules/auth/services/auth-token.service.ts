@@ -66,7 +66,7 @@ export class AuthTokenService {
   generateTokens(payload: TokenPayload) {
     const jwtConfig = getJwtConfig(this.configService);
 
-    const access_token = this.jwtService.sign(payload, {
+    const accessToken = this.jwtService.sign(payload, {
       expiresIn: jwtConfig.accessExpiresIn,
       audience: jwtConfig.audience,
       issuer: jwtConfig.issuer,
@@ -78,6 +78,6 @@ export class AuthTokenService {
       issuer: jwtConfig.issuer,
     });
 
-    return { access_token, refreshToken };
+    return { accessToken, refreshToken };
   }
 }

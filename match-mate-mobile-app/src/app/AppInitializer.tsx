@@ -12,7 +12,7 @@ interface Props {
 
 export default function AppInitializer({ children }: Props) {
   const dispatch = useAppDispatch();
-  const access_token = useAppSelector((s) => s.auth.access_token);
+  const accessToken = useAppSelector((s) => s.auth.accessToken);
   const lang = useAppSelector((s) => s.settings.language);
 
   const [langReady, setLangReady] = useState(false);
@@ -20,7 +20,7 @@ export default function AppInitializer({ children }: Props) {
 
   const { data, error, isLoading } = useVerifyUserQuery(undefined, {
     // Only call the endpoint when a token exists
-    skip: !access_token,
+    skip: !accessToken,
   });
 
   // Sync i18n language on mount and whenever the user changes it
@@ -64,7 +64,7 @@ export default function AppInitializer({ children }: Props) {
     }
   }, [data, error, dispatch]);
 
-  if (!langReady || (access_token && isLoading)) {
+  if (!langReady || (accessToken && isLoading)) {
     return <Loader fullScreen size="large" loadingText="App initializing..." />;
   }
 

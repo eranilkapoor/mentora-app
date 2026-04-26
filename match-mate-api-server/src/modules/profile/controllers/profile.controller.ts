@@ -26,7 +26,7 @@ import {
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
-import { ApiResponse } from 'src/common/dto/response.dto';
+import { ApiResponse } from 'src/common/dto/api-response.dto';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { UpdatePrivacySettingsDto } from '../dto/privacy-media.dto';
 import {

@@ -1,6 +1,6 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { FormInputProps } from '../EditProfile.types';
-import { editProfileStyles } from '../EditProfileScreen.styles';
+import { editProfileStyles } from '../EditProfile.styles';
 import { TextInput, View, Text } from 'react-native';
 import { Colors } from '@/core/constants/colors';
 

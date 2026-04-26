@@ -3,22 +3,22 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 // ─── TYPES ─────────────────────────────────────────────────
 interface AuthState {
-  access_token: string | null;
+  accessToken: string | null;
   user: User | null;
 }
 
 // ─── PAYLOADS ──────────────────────────────────────────
 export interface SetAuthPayload {
-  access_token: string;
+  accessToken: string;
 }
 
 export interface SetCredentialsPayload {
-  access_token: string;
+  accessToken: string;
   user: User;
 }
 
 const initialState: AuthState = {
-  access_token: null,
+  accessToken: null,
   user: null,
 };
 
@@ -27,14 +27,17 @@ const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    // 🔹 Full login (access_token + user)
+    // 🔹 Full login (accessToken + user)
     setCredentials: (state, action: PayloadAction<SetCredentialsPayload>) => {
-      state.access_token = action.payload.access_token;
+      state.accessToken = action.payload.accessToken;
       state.user = action.payload.user;
     },
     // 🔹 After fetching profile
     setUser: (state, action: PayloadAction<User>) => {
       state.user = action.payload;
+    },
+    setAccessToken: (state, action: PayloadAction<string>) => {
+      state.accessToken = action.payload;
     },
     // 🔹 Profile completion update
     setProfileCompleted: (state, action: PayloadAction<boolean>) => {
@@ -44,13 +47,13 @@ const authSlice = createSlice({
     },
     // 🔹 Logout
     logout: (state) => {
-      state.access_token = null;
+      state.accessToken = null;
       state.user = null;
     },
   },
 });
 
 // ─── EXPORTS ───────────────────────────────────────────
-export const { setCredentials, setUser, setProfileCompleted, logout } =
+export const { setCredentials, setUser, setProfileCompleted, logout, setAccessToken } =
   authSlice.actions;
 export default authSlice.reducer;

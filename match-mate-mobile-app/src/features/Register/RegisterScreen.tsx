@@ -10,6 +10,8 @@ import {
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
+// 👉 For mobile secure storage
+import * as SecureStore from 'expo-secure-store';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context'; // Fixed: was SafeAreaProvider
 import { useTranslation } from 'react-i18next';
@@ -38,7 +40,7 @@ import {
   FormErrors,
   SocialButtonProps,
   CountryCodeDropdownProps,
-} from '../Login/Auth.types';
+} from './Register.types';
 import { registerStyles } from './RegisterScreen.styles';
 
 // ─── Sub-components (module scope — not inside component) ─────────────────────
@@ -222,6 +224,10 @@ export default function RegisterScreen({
       if (response.data) {
         // Dispatch — RootNavigator handles routing automatically
         dispatch(setCredentials(response.data));
+        // ✅ Save refresh token (ONLY MOBILE)
+        if (Platform.OS !== 'web' && response.data?.refreshToken) {
+          await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
+        }
       }
     } catch {
       setErrors({ error: t('auth.errors.register_failed') });
@@ -284,6 +290,10 @@ export default function RegisterScreen({
       }
       if (response.data) {
         dispatch(setCredentials(response.data));
+        // ✅ Save refresh token (ONLY MOBILE)
+        if (Platform.OS !== 'web' && response.data?.refreshToken) {
+          await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
+        }
       }
     } catch {
       setErrors({ error: t('auth.errors.otp_verify_failed') });

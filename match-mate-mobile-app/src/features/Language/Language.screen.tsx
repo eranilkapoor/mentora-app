@@ -8,13 +8,19 @@ import { useLanguageScreen } from './Language.hooks';
 import { LanguageHeader } from './components/LanguageHeader';
 import { LanguageNotice } from './components/LanguageNotice';
 import { LanguageOptionItem } from './components/LanguageOptionItem';
+import Header from '@/core/components/Header';
 
-export default function LanguageScreen(): React.ReactElement {
+export default function LanguageScreen({ navigation }: { navigation: any }): React.ReactElement {
   const styles = useThemedStyles(languageStyles);
   const { t, languages, currentLang, onSelectLanguage } = useLanguageScreen();
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('settings.language')}
+      />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

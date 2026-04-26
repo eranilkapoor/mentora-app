@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { TagInputProps } from '../EditProfile.types';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editProfileStyles } from '../EditProfileScreen.styles';
+import { editProfileStyles } from '../EditProfile.styles';
 import { TextInput, TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '@/core/constants/colors';
