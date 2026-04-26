@@ -1,0 +1,80 @@
+{
+    "gender": {
+        "male": "Male",
+        "female": "Female",
+        "other": "Other"
+    },
+    "marital": {
+        "never_married": "Never Married",
+        "divorced": "Divorced",
+        "widowed": "Widowed",
+        "awaiting_divorced": "Awaiting Divorce"
+    },
+    "body_type": {
+        "slim": "Slim",
+        "athletic": "Athletic",
+        "average": "Average",
+        "heavy": "Heavy"
+    },
+    "complexion": {
+        "fair": "Fair",
+        "wheatish": "Wheatish",
+        "dusky": "Dusky",
+        "dark": "Dark"
+    },
+    "family_type": {
+        "joint": "Joint",
+        "nuclear": "Nuclear",
+        "extended": "Extended"
+    },
+    "smoking": {
+        "non_smoker": "Non Smoker",
+        "occasionally": "Occasionally",
+        "regular": "Regular",
+        "trying_to_quit": "Trying to Quit",
+        "open_to": "Open To"
+    },
+    "drinking": {
+        "non_drinker": "Non Drinker",
+        "occasionally": "Occasionally",
+        "regular": "Regular",
+        "open_to": "Open To",
+        "socially": "Socially"
+    },
+    "diet": {
+        "vegetarian": "Vegetarian",
+        "non_vegetarian": "Non Vegetarian",
+        "eggetarian": "Eggetarian",
+        "vegan": "Vegan",
+        "open_to": "Open To",
+        "jain": "Jain",
+        "satvik": "Satvik",
+        "halal": "Halal",
+        "kosher": "Kosher"
+    },
+    "manglik": {
+      "non_manglik": "Non Manglik",
+      "manglik": "Manglik",
+      "anshik_manglik": "Anshik Manglik",
+      "dont_know": "Don't Know"
+    },
+    "occupation_type": {
+      "government": "Government",
+      "private": "Private",
+      "business": "Business / Self Employed",
+      "self_employed": "Freelance",
+      "not_working": "Not Working",
+      "student": "Student"
+    },
+    "family_status": {
+      "affluent": "Affluent",
+      "upper_middle_class": "Upper Middle Class",
+      "middle_class": "Middle Class",
+      "lower_middle_class": "Lower Middle Class"
+    },
+    "family_values": {
+      "traditional": "Traditional",
+      "moderate": "Moderate",
+      "liberal": "Liberal"
+    }
+}
