@@ -12,6 +12,9 @@ import tabs from './en/tabs.json';
 import theme from './en/theme.json';
 import errors from './en/errors.json';
 import change_password from './en/change_password.json';
+import edit_profile from './en/edit_profile.json';
+import options from './en/options.json';
+
 
 // ✅ Fix — hi imports from ./hi/ folder
 import hiCommon from './hi/common.json';
@@ -28,6 +31,8 @@ import hiTabs from './hi/tabs.json';
 import hiTheme from './hi/theme.json';
 import hiErrors from './hi/errors.json';
 import hiChange_password from './hi/change_password.json';
+import hiEdit_profile from './hi/edit_profile.json';
+import hiOptions from './hi/options.json';
 
 export const en = {
   common,
@@ -44,6 +49,8 @@ export const en = {
   theme,
   errors,
   change_password,
+  edit_profile,
+  options,
 };
 
 export const hi = {
@@ -61,4 +68,6 @@ export const hi = {
   theme: hiTheme,
   errors: hiErrors,
   change_password: hiChange_password,
+  edit_profile: hiEdit_profile,
+  options: hiOptions,
 };

@@ -1,33 +1,42 @@
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editProfileStyles } from '../EditProfile.styles';
-import { Colors } from '@/core/constants/colors';
+import React from 'react';
 import { View, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { editProfileStyles } from '../EditProfile.styles';
 
-export function CompletionBar({
-  percent,
-}: {
+interface Props {
   percent: number;
-}): React.ReactElement {
+}
+
+export function CompletionBar({ percent }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
+  // Use theme colors instead of static Colors import
   const color =
     percent < 40
-      ? Colors.danger
+      ? theme.colors.danger
       : percent < 75
-        ? Colors.accent
-        : Colors.success;
+        ? theme.colors.accent
+        : theme.colors.success;
+
+  const subtitleKey =
+    percent < 50
+      ? 'edit_profile.completion.low'
+      : percent < 100
+        ? 'edit_profile.completion.medium'
+        : 'edit_profile.completion.complete';
 
   return (
     <View style={styles.completionCard}>
       <View style={styles.completionRow}>
-        <View>
-          <Text style={styles.completionTitle}>Profile Completion</Text>
-          <Text style={styles.completionSubtitle}>
-            {percent < 50
-              ? 'Add more details to get better matches'
-              : percent < 100
-                ? 'Almost there! Complete your profile'
-                : 'Your profile is complete 🎉'}
+        <View style={{ flex: 1 }}>
+          <Text style={styles.completionTitle}>
+            {t('edit_profile.completion.title')}
           </Text>
+          <Text style={styles.completionSubtitle}>{t(subtitleKey)}</Text>
         </View>
         <Text style={[styles.completionPercent, { color }]}>{percent}%</Text>
       </View>

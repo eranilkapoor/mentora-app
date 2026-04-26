@@ -1,39 +1,40 @@
 import React from 'react';
 import { View, Text } from 'react-native';
+import { useTranslation } from 'react-i18next';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SelectPill } from './SelectPill';
+import { TimeOfBirthPickerProps } from '../EditProfile.types';
+import { editProfileStyles } from '../EditProfile.styles';
+import { HOURS, MINUTES, PERIODS } from '../EditProfile.constants';
 
-interface Props {
-  value?: {
-    hour?: number;
-    minute?: number;
-    period?: 'AM' | 'PM';
-  };
-  onChange: (val: any) => void;
-}
+export function TimeOfBirthPicker({
+  value,
+  onChange,
+}: TimeOfBirthPickerProps): React.ReactElement {
+  const styles = useThemedStyles(editProfileStyles);
+  const { t } = useTranslation();
 
-export const TimeOfBirthPicker = ({ value, onChange }: Props) => {
   return (
-    <View>
-      <Text style={{ marginBottom: 6 }}>Time of Birth</Text>
-
-      <View style={{ flexDirection: 'row', gap: 8 }}>
-        <View style={{ flex: 1 }}>
+    <View style={styles.field}>
+      <Text style={styles.timePickerLabel}>
+        {t('edit_profile.fields.time_of_birth')}
+      </Text>
+      <View style={styles.timePickerRow}>
+        <View style={styles.timePickerColumn}>
           <SelectPill
-            label="Hour"
-            options={Array.from({ length: 12 }, (_, i) => `${i + 1}`)}
-            value={value?.hour ? `${value.hour}` : undefined}
+            label={t('edit_profile.time.hour')}
+            options={HOURS.map(String)}
+            value={value?.hour != null ? String(value.hour) : undefined}
             onChange={(v) => onChange({ ...value, hour: Number(v) })}
           />
         </View>
 
-        <View style={{ flex: 1 }}>
+        <View style={styles.timePickerColumn}>
           <SelectPill
-            label="Minute"
-            options={Array.from({ length: 12 }, (_, i) =>
-              `${i * 5}`.padStart(2, '0')
-            )}
+            label={t('edit_profile.time.minute')}
+            options={MINUTES}
             value={
-              value?.minute !== undefined
+              value?.minute != null
                 ? String(value.minute).padStart(2, '0')
                 : undefined
             }
@@ -41,15 +42,17 @@ export const TimeOfBirthPicker = ({ value, onChange }: Props) => {
           />
         </View>
 
-        <View style={{ flex: 1 }}>
+        <View style={styles.timePickerColumn}>
           <SelectPill
-            label="AM/PM"
-            options={['AM', 'PM']}
+            label={t('edit_profile.time.period')}
+            options={PERIODS as unknown as string[]}
             value={value?.period}
-            onChange={(v) => onChange({ ...value, period: v as 'AM' | 'PM' })}
+            onChange={(v) =>
+              onChange({ ...value, period: v as 'AM' | 'PM' })
+            }
           />
         </View>
       </View>
     </View>
   );
-};
+}

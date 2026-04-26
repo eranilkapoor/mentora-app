@@ -1,14 +1,24 @@
 import { ProfileImage } from '@/core/types';
 import {
+  BLOOD_GROUP_OPTIONS,
   BODY_TYPE_OPTIONS,
   COMPLEXION_OPTIONS,
   DIET_OPTIONS,
   DRINKING_OPTIONS,
+  FAMILY_STATUS_OPTIONS,
   FAMILY_TYPE_OPTIONS,
+  FAMILY_VALUE_OPTIONS,
   GENDER_OPTIONS,
+  MANGLIK_OPTIONS,
   MARITAL_OPTIONS,
+  OCCUPATION_TYPE_OPTIONS,
+  SIBLING_TYPE_OPTIONS,
   SMOKING_OPTIONS,
 } from './EditProfile.constants';
+import Feather from 'react-native-vector-icons/Feather';
+import React from 'react';
+
+// ─── Nested types ─────────────────────────────────────────────────────────────
 
 export interface TimeOfBirth {
   hour?: number;
@@ -16,36 +26,78 @@ export interface TimeOfBirth {
   period?: 'AM' | 'PM';
 }
 
+export interface PlaceOfBirth {
+  city?: string;
+  state?: string;
+  country?: string;
+}
+
+export interface SiblingDetail {
+  type: (typeof SIBLING_TYPE_OPTIONS)[number];
+  married: boolean;
+  occupation?: string;
+}
+
+export interface Siblings {
+  brothersCount: number;
+  sistersCount: number;
+  marriedBrothersCount: number;
+  marriedSistersCount: number;
+  details: SiblingDetail[];
+  note?: string;
+}
+
+// ─── Section types ────────────────────────────────────────────────────────────
+
 export interface PersonalSection {
-  profileFor: string;
   firstName: string;
-  lastName: string;
-  dob: string;
+  lastName?: string;
+  dateOfBirth: string;           // stored as ISO string, sent as Date
   timeOfBirth?: TimeOfBirth;
-  gender: (typeof GENDER_OPTIONS)[number];
+  placeOfBirth?: PlaceOfBirth;
+  subCast?: string;
+  gotra?: string;
+  manglikStatus?: (typeof MANGLIK_OPTIONS)[number];
+  rashi?: string;
+  nakshatra?: string;
+  kundliFileUrl?: string;
+  country?: string;
+  state?: string;
+  citizenship?: string;
+  willingToRelocate?: boolean;
+  motherTongue?: string;
   maritalStatus: (typeof MARITAL_OPTIONS)[number];
-  religion: string;
-  caste: string;
-  motherTongue: string;
-  country: string;
-  state: string;
-  city: string;
-  aboutMe: string;
+  hasChildren?: boolean;
+  sonsCount?: number;
+  daughtersCount?: number;
+  // Lifestyle — moved from preferences per schema
+  smoking?: (typeof SMOKING_OPTIONS)[number];
+  drinking?: (typeof DRINKING_OPTIONS)[number];
+  diet?: (typeof DIET_OPTIONS)[number];
+  hobbies?: string[];
+  languages?: string[];
+  aboutMe?: string;
 }
 
 export interface PhysicalSection {
-  height: string;
-  weight: string;
-  bodyType: string; //(typeof BODY_TYPE_OPTIONS)[number];
-  complexion: string; //(typeof COMPLEXION_OPTIONS)[number];
+  heightLabel: string;           // renamed from height
+  weightKg?: string;             // renamed from weight
+  bloodGroup?: (typeof BLOOD_GROUP_OPTIONS)[number];
+  bodyType?: (typeof BODY_TYPE_OPTIONS)[number];
+  complexion?: (typeof COMPLEXION_OPTIONS)[number];
+  disabilityStatus?: boolean;
+  disabilityNote?: string;
 }
 
 export interface EducationSection {
   qualification: string;
-  field: string;
-  university: string;
+  field?: string;
+  university?: string;
+  occupationType?: (typeof OCCUPATION_TYPE_OPTIONS)[number];
   occupation: string;
-  annualIncome: string;
+  companyName?: string;
+  jobRole?: string;
+  annualIncomeAmount?: string;   // renamed from annualIncome, numeric on server
 }
 
 export interface FamilySection {
@@ -53,17 +105,10 @@ export interface FamilySection {
   motherName?: string;
   fatherOccupation?: string;
   motherOccupation?: string;
-  familyType?: string; //(typeof FAMILY_TYPE_OPTIONS)[number];
-  familyStatus?: string;
-  familyValues?: string;
-}
-
-export interface PreferencesSection {
-  hobbies?: string[];
-  languagesKnown?: string[];
-  smoking?: (typeof SMOKING_OPTIONS)[number];
-  drinking?: (typeof DRINKING_OPTIONS)[number];
-  diet?: (typeof DIET_OPTIONS)[number];
+  familyType?: (typeof FAMILY_TYPE_OPTIONS)[number];
+  familyStatus?: (typeof FAMILY_STATUS_OPTIONS)[number];
+  familyValues?: (typeof FAMILY_VALUE_OPTIONS)[number];
+  siblings?: Siblings;
 }
 
 export interface ProfileData {
@@ -71,11 +116,13 @@ export interface ProfileData {
   physical: PhysicalSection;
   education: EducationSection;
   family: FamilySection;
-  preferences: PreferencesSection;
   images?: ProfileImage[];
+  // 'preferences' removed — merged into personal per backend schema
 }
 
-export type SectionKey = keyof ProfileData | 'images';
+export type SectionKey = keyof ProfileData;
+
+// ─── Component prop types ─────────────────────────────────────────────────────
 
 export interface FormInputProps {
   label: string;
@@ -92,6 +139,22 @@ export interface SelectPillProps {
   options: readonly string[];
   value?: string;
   onChange: (v: string) => void;
+  i18nPrefix?: string;
+}
+
+export interface ToggleRowProps {
+  label: string;
+  value?: boolean;
+  onChange: (v: boolean) => void;
+  sublabel?: string;
+}
+
+export interface NumberStepperProps {
+  label: string;
+  value?: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
 }
 
 export interface TagInputProps {
@@ -103,9 +166,19 @@ export interface TagInputProps {
 
 export interface SectionCardProps {
   title: string;
-  icon: string;
+  icon: React.ComponentProps<typeof Feather>['name'];
   children: React.ReactNode;
   sectionKey: SectionKey;
   sectionLoading: SectionKey | null;
   onSave: (key: SectionKey) => void;
+}
+
+export interface TimeOfBirthPickerProps {
+  value?: TimeOfBirth;
+  onChange: (val: TimeOfBirth) => void;
+}
+
+export interface SiblingsEditorProps {
+  value?: Siblings;
+  onChange: (v: Siblings) => void;
 }

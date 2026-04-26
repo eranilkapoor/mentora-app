@@ -5,16 +5,6 @@ export const editProfileStyles = (theme: Theme) =>
   StyleSheet.create({
     safe: { flex: 1, backgroundColor: theme.colors.backgroundPage },
     flex: { flex: 1 },
-    loadingContainer: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 12,
-    },
-    loadingText: {
-      fontSize: 14,
-      color: theme.colors.textMuted,
-    },
     scrollContent: {
       padding: 16,
       paddingBottom: 48,
@@ -22,12 +12,16 @@ export const editProfileStyles = (theme: Theme) =>
 
     // ── Completion ────────────────────────────────────────────────────────────
     completionCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
+      // Fixed: boxShadow is CSS web-only — use RN shadow props
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
       elevation: 1,
-      boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
     },
     completionRow: {
       flexDirection: 'row',
@@ -63,12 +57,15 @@ export const editProfileStyles = (theme: Theme) =>
 
     // ── Section Card ──────────────────────────────────────────────────────────
     sectionCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 12,
       marginBottom: 16,
       overflow: 'hidden',
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.04,
+      shadowRadius: 4,
       elevation: 1,
-      boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
     },
     sectionHeader: {
       flexDirection: 'row',
@@ -78,7 +75,7 @@ export const editProfileStyles = (theme: Theme) =>
       paddingVertical: 14,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.colors.divider,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
     },
     sectionIconWrapper: {
       width: 26,
@@ -94,6 +91,7 @@ export const editProfileStyles = (theme: Theme) =>
       color: theme.colors.textSecondary,
       textTransform: 'uppercase',
       letterSpacing: 0.5,
+      flex: 1,
     },
     sectionBody: {
       padding: 16,
@@ -269,6 +267,21 @@ export const editProfileStyles = (theme: Theme) =>
       fontWeight: '500',
     },
 
+    // ── Time of Birth ─────────────────────────────────────────────────────────
+    timePickerLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    timePickerRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    timePickerColumn: {
+      flex: 1,
+    },
+
     // ── Save Button ───────────────────────────────────────────────────────────
     saveBtn: {
       flexDirection: 'row',
@@ -288,4 +301,13 @@ export const editProfileStyles = (theme: Theme) =>
       fontSize: 15,
     },
     footer: { height: 16 },
+    subSectionLabel: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginTop: 8,
+      marginBottom: 10,
+    },
   });

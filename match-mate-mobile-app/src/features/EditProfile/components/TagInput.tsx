@@ -1,10 +1,10 @@
-import { useCallback, useState } from 'react';
-import { TagInputProps } from '../EditProfile.types';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editProfileStyles } from '../EditProfile.styles';
+import React, { useCallback, useState } from 'react';
 import { TextInput, TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { TagInputProps } from '../EditProfile.types';
+import { editProfileStyles } from '../EditProfile.styles';
 
 export function TagInput({
   label,
@@ -14,19 +14,23 @@ export function TagInput({
 }: TagInputProps): React.ReactElement {
   const [text, setText] = useState('');
   const styles = useThemedStyles(editProfileStyles);
+  const { theme } = useTheme();
+
+  // Guard against undefined items throughout
+  const safeItems = items ?? [];
 
   const handleAdd = useCallback((): void => {
     const trimmed = text.trim();
-    if (trimmed === '' || items.includes(trimmed)) return;
-    setItems([...items, trimmed]);
+    if (trimmed === '' || safeItems.includes(trimmed)) return;
+    setItems([...safeItems, trimmed]);
     setText('');
-  }, [text, items, setItems]);
+  }, [text, safeItems, setItems]);
 
   const handleRemove = useCallback(
     (item: string): void => {
-      setItems(items.filter((i) => i !== item));
+      setItems(safeItems.filter((i) => i !== item));
     },
-    [items, setItems]
+    [safeItems, setItems]
   );
 
   return (
@@ -38,23 +42,24 @@ export function TagInput({
           onChangeText={setText}
           style={styles.tagInput}
           onSubmitEditing={handleAdd}
-          placeholder={placeholder ?? `Add ${label.toLowerCase()}...`}
-          placeholderTextColor={Colors.textMuted}
+          placeholder={placeholder}
+          placeholderTextColor={theme.colors.textMuted}
           returnKeyType="done"
-          accessibilityLabel={`Add ${label}`}
+          accessibilityLabel={label}
         />
         <TouchableOpacity
           style={styles.tagAddBtn}
           onPress={handleAdd}
           accessibilityRole="button"
-          accessibilityLabel={`Add ${label} item`}
+          accessibilityLabel={`Add ${label}`}
         >
-          <Feather name="plus" size={18} color={Colors.white} />
+          <Feather name="plus" size={18} color={theme.colors.white} />
         </TouchableOpacity>
       </View>
-      {items.length > 0 && (
+
+      {safeItems.length > 0 && (
         <View style={styles.tagList}>
-          {items.map((item) => (
+          {safeItems.map((item) => (
             <TouchableOpacity
               key={item}
               style={styles.tag}
@@ -63,7 +68,7 @@ export function TagInput({
               accessibilityLabel={`Remove ${item}`}
             >
               <Text style={styles.tagText}>{item}</Text>
-              <Feather name="x" size={12} color={Colors.primary} />
+              <Feather name="x" size={12} color={theme.colors.primary} />
             </TouchableOpacity>
           ))}
         </View>

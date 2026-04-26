@@ -1,8 +1,9 @@
+import React from 'react';
+import { TextInput, View, Text } from 'react-native';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { FormInputProps } from '../EditProfile.types';
 import { editProfileStyles } from '../EditProfile.styles';
-import { TextInput, View, Text } from 'react-native';
-import { Colors } from '@/core/constants/colors';
 
 export function FormInput({
   label,
@@ -14,6 +15,7 @@ export function FormInput({
   editable = true,
 }: FormInputProps): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
+  const { theme } = useTheme();
 
   return (
     <View style={styles.field}>
@@ -27,8 +29,8 @@ export function FormInput({
           !editable && styles.inputDisabled,
         ]}
         multiline={multiline}
-        placeholder={placeholder ?? `Enter ${label.toLowerCase()}`}
-        placeholderTextColor={Colors.textMuted}
+        placeholder={placeholder}
+        placeholderTextColor={theme.colors.textMuted}
         keyboardType={keyboardType}
         editable={editable}
         textAlignVertical={multiline ? 'top' : 'auto'}

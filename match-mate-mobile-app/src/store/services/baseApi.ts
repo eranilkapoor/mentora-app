@@ -65,52 +65,52 @@ const baseQueryWithAuth: BaseQueryFn<
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();
 
-      try {
-        // 🔄 Refresh API call
-        const refreshResult = await rawBaseQuery(
-          {
-            url: '/auth/refresh',
-            method: 'POST',
-            ...(Platform.OS !== 'web'
-              ? {
-                  body: {
-                    refreshToken: await getRefreshToken(),
-                  },
-                }
-              : {}),
-          },
-          api,
-          extraOptions
-        );
+      // try {
+      //   // 🔄 Refresh API call
+      //   const refreshResult = await rawBaseQuery(
+      //     {
+      //       url: '/auth/refresh',
+      //       method: 'POST',
+      //       ...(Platform.OS !== 'web'
+      //         ? {
+      //             body: {
+      //               refreshToken: await getRefreshToken(),
+      //             },
+      //           }
+      //         : {}),
+      //     },
+      //     api,
+      //     extraOptions
+      //   );
 
-        if (refreshResult.data) {
-          const data = refreshResult.data as any;
+      //   if (refreshResult.data) {
+      //     const data = refreshResult.data as any;
 
-          // ✅ Update access token
-          api.dispatch(setAccessToken(data.accessToken));
+      //     // ✅ Update access token
+      //     api.dispatch(setAccessToken(data.accessToken));
 
-          // 🔄 Update refresh token (if provided)
-          if (Platform.OS !== 'web' && data.refreshToken) {
-            await SecureStore.setItemAsync('refreshToken', data.refreshToken);
-          }
+      //     // 🔄 Update refresh token (if provided)
+      //     if (Platform.OS !== 'web' && data.refreshToken) {
+      //       await SecureStore.setItemAsync('refreshToken', data.refreshToken);
+      //     }
 
-          // 🔁 Retry original request
-          result = await rawBaseQuery(args, api, extraOptions);
-        } else {
-          // ❌ Refresh failed → logout
-          api.dispatch(logout());
-          if (Platform.OS !== 'web') {
-            await SecureStore.deleteItemAsync('refreshToken');
-          }
-        }
-      } catch (err) {
-        api.dispatch(logout());
-        if (Platform.OS !== 'web') {
-          await SecureStore.deleteItemAsync('refreshToken');
-        }
-      } finally {
-        release();
-      }
+      //     // 🔁 Retry original request
+      //     result = await rawBaseQuery(args, api, extraOptions);
+      //   } else {
+      //     // ❌ Refresh failed → logout
+      //     api.dispatch(logout());
+      //     if (Platform.OS !== 'web') {
+      //       await SecureStore.deleteItemAsync('refreshToken');
+      //     }
+      //   }
+      // } catch (err) {
+      //   api.dispatch(logout());
+      //   if (Platform.OS !== 'web') {
+      //     await SecureStore.deleteItemAsync('refreshToken');
+      //   }
+      // } finally {
+      //   release();
+      // }
     } else {
       // ⏳ Wait for ongoing refresh
       await mutex.waitForUnlock();
