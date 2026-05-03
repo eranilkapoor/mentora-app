@@ -47,11 +47,7 @@ export const BLOOD_GROUP_OPTIONS = [
 ] as const;
 
 // ─── Family ───────────────────────────────────────────────────────────────────
-export const FAMILY_TYPE_OPTIONS = [
-  'joint',
-  'nuclear',
-  'extended',
-] as const;
+export const FAMILY_TYPE_OPTIONS = ['joint', 'nuclear', 'extended'] as const;
 
 export const FAMILY_STATUS_OPTIONS = [
   'affluent',

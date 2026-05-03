@@ -4,8 +4,8 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { ChatsStackParamList } from './types';
 import { getSharedScreenOptions } from './sharedScreenOptions';
 
-import ChatListScreen from '@/features/ChatList/ChatListScreen';
-import ChatScreen from '@/features/Chats/ChatScreen';
+import ChatListScreen from '@/features/ChatList/ChatList.screen';
+import ChatScreen from '@/features/Chats/Chat.screen';
 
 const Stack = createNativeStackNavigator<ChatsStackParamList>();
 
@@ -14,16 +14,8 @@ export default function ChatsStack(): React.ReactElement {
 
   return (
     <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
-      <Stack.Screen
-        name="ChatList"
-        component={ChatListScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="ChatDetails"
-        component={ChatScreen}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="ChatList" component={ChatListScreen} />
+      <Stack.Screen name="ChatDetails" component={ChatScreen} />
     </Stack.Navigator>
   );
 }

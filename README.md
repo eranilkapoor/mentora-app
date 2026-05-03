@@ -6427,14 +6427,3 @@ Your RBAC system should:
 ✅ Be **cached (Redis)**
 
 ---
-
-# 🚀 If you want next level
-
-I can help you build:
-
-👉 Complete NestJS RBAC module (ready to plug)
-👉 DB schema (Mongo + Mongoose for your stack)
-👉 JWT + permission injection
-👉 Admin panel permission control
-
-Just say: **"build RBAC module"**

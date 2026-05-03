@@ -143,7 +143,10 @@ export default function LoginScreen({
         );
         // ✅ Save refresh token (ONLY MOBILE)
         if (Platform.OS !== 'web' && response.data?.refreshToken) {
-          await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
+          await SecureStore.setItemAsync(
+            'refreshToken',
+            response.data.refreshToken
+          );
         }
       } else {
         setErrors({ error: t('auth.errors.server_error') });
@@ -218,7 +221,10 @@ export default function LoginScreen({
         );
         // Save refresh token (ONLY MOBILE)
         if (Platform.OS !== 'web' && response.data?.refreshToken) {
-          await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
+          await SecureStore.setItemAsync(
+            'refreshToken',
+            response.data.refreshToken
+          );
         }
       } else {
         setErrors({ error: t('auth.errors.server_error') });

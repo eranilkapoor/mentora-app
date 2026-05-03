@@ -62,7 +62,6 @@ export const preferenceApi = baseApi.injectEndpoints({
     //   }),
     //   invalidatesTags: ['Preference'],
     // }),
-
   }),
 
   overrideExisting: false,
@@ -70,8 +69,8 @@ export const preferenceApi = baseApi.injectEndpoints({
 
 export const {
   useGetMyPreferenceQuery,
-//   useUpdatePreferenceFiltersMutation,
-//   useUpdatePreferenceSettingsMutation,
-//   useUpdatePreferenceWeightsMutation,
-//   useUpdateAboutPartnerMutation,
+  //   useUpdatePreferenceFiltersMutation,
+  //   useUpdatePreferenceSettingsMutation,
+  //   useUpdatePreferenceWeightsMutation,
+  //   useUpdateAboutPartnerMutation,
 } = preferenceApi;

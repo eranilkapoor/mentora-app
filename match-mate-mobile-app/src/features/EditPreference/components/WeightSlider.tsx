@@ -58,12 +58,7 @@ export function WeightSlider({
 
       {/* Visual fill bar */}
       <View style={styles.weightTrack}>
-        <View
-          style={[
-            styles.weightFill,
-            { width: `${fillPercent}%` },
-          ]}
-        />
+        <View style={[styles.weightFill, { width: `${fillPercent}%` }]} />
       </View>
     </View>
   );

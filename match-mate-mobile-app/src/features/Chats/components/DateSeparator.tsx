@@ -1,5 +1,5 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { chatStyles } from '../ChatScreen.styles';
+import { chatStyles } from '../Chat.styles';
 import { formatDateLabel } from '../Chat.types';
 import { View, Text } from 'react-native';
 

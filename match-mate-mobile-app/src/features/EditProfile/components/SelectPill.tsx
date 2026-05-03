@@ -35,7 +35,9 @@ export function SelectPill({
               accessibilityState={{ checked: selected }}
               accessibilityLabel={label}
             >
-              <Text style={[styles.pillText, selected && styles.pillTextSelected]}>
+              <Text
+                style={[styles.pillText, selected && styles.pillTextSelected]}
+              >
                 {label}
               </Text>
             </TouchableOpacity>

@@ -1,11 +1,11 @@
-import React from "react";
-import { CountryCodeDropdownProps } from "../Register.types";
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { registerStyles } from "../Register.styles";
-import { useTheme } from "@/core/theme/ThemeProvider";
-import { Modal, ScrollView, TouchableOpacity, View, Text } from "react-native";
-import { COUNTRY_CODES } from "@/core/constants";
-import Feather from "react-native-vector-icons/Feather";
+import React from 'react';
+import { CountryCodeDropdownProps } from '../Register.types';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { registerStyles } from '../Register.styles';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { Modal, ScrollView, TouchableOpacity, View, Text } from 'react-native';
+import { COUNTRY_CODES } from '@/core/constants';
+import Feather from 'react-native-vector-icons/Feather';
 
 export const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
   ({ visible, onClose, selectedCode, onSelectCode }) => {

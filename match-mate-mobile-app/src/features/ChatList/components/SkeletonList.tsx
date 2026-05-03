@@ -1,5 +1,5 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { chatListStyles } from '../ChatListScreen.styles';
+import { chatListStyles } from '../ChatList.styles';
 import { View } from 'react-native';
 
 export function SkeletonList(): React.ReactElement {

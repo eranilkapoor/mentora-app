@@ -15,8 +15,6 @@ import change_password from './en/change_password.json';
 import edit_profile from './en/edit_profile.json';
 import options from './en/options.json';
 
-
-// ✅ Fix — hi imports from ./hi/ folder
 import hiCommon from './hi/common.json';
 import hiAuth from './hi/auth.json';
 import hiProfile from './hi/profile.json';

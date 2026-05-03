@@ -1,10 +1,10 @@
-import React from "react";
-import { SocialButtonProps } from "../Register.types";
-import { useThemedStyles } from "@/core/theme/useThemedStyles";
-import { registerStyles } from "../Register.styles";
-import { useTheme } from "@/core/theme/ThemeProvider";
-import { TouchableOpacity, Text } from "react-native";
-import Feather from "react-native-vector-icons/Feather";
+import React from 'react';
+import { SocialButtonProps } from '../Register.types';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { registerStyles } from '../Register.styles';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { TouchableOpacity, Text } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
 
 export const SocialButton = React.memo<SocialButtonProps>(
   ({ label, onPress, disabled = false, icon, iconColor }) => {

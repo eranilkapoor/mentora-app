@@ -396,8 +396,8 @@ Don’t try to build everything randomly.
 | Status | Task                                | Depends On | Why                |
 | ------ | ----------------------------------- | ---------- | ------------------ |
 | ✅     | Config + Env + Joi Validation       | None       | Prevent crashes    |
-| ⚠️     | JWT Auth (Access + Refresh)         | Config     | Core security      |
-| ⚠️     | Session Management + Token Rotation | JWT        | Multi-device login |
+| ✅     | JWT Auth (Access + Refresh)         | Config     | Core security      |
+| ✅     | Session Management + Token Rotation | JWT        | Multi-device login |
 | ⚠️     | OTP Service (Phone)                 | None       | India-first users  |
 | 📂     | Email/Password Register             | Auth       | Base               |
 | 📂     | Phone OTP Register                  | OTP        | Base               |
@@ -411,11 +411,11 @@ Don’t try to build everything randomly.
 
 | Status | Task                                                | Depends On | Why         |
 | ------ | --------------------------------------------------- | ---------- | ----------- |
-| 📂     | Login Screen                                        | None       | Entry point |
-| 📂     | Register Screen                                     | None       | Onboarding  |
-| 📂     | OTP Screen                                          | OTP API    | Phone flow  |
-| 📂     | Forgot Password Screen                              | API        | Recovery    |
-| ⚠️     | Token Storage (Web: cookie, Mobile: secure storage) | Auth       | Security    |
+| ✅     | Login Screen                                        | None       | Entry point |
+| ✅     | Register Screen                                     | None       | Onboarding  |
+| ✅     | OTP Screen                                          | OTP API    | Phone flow  |
+| ✅     | Forgot Password Screen                              | API        | Recovery    |
+| ✅     | Token Storage (Web: cookie, Mobile: secure storage) | Auth       | Security    |
 
 ---
 

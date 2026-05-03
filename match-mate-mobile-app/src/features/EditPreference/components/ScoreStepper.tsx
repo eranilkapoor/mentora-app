@@ -32,9 +32,7 @@ export function ScoreStepper({
     <View style={styles.scoreRow}>
       <View style={styles.scoreLabelBlock}>
         <Text style={styles.scoreLabel}>{label}</Text>
-        {sublabel ? (
-          <Text style={styles.scoreSublabel}>{sublabel}</Text>
-        ) : null}
+        {sublabel ? <Text style={styles.scoreSublabel}>{sublabel}</Text> : null}
       </View>
 
       <View style={styles.scoreControls}>

@@ -66,7 +66,9 @@ type Props = {
   navigation: NativeStackNavigationProp<SettingsStackParamList, 'EditProfile'>;
 };
 
-export default function EditProfileScreen({ navigation }: Props): React.ReactElement {
+export default function EditProfileScreen({
+  navigation,
+}: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -154,7 +156,10 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
   const setPrimary = useCallback((index: number) => {
     setProfile((p) => ({
       ...p,
-      images: (p.images ?? []).map((img, i) => ({ ...img, isPrimary: i === index })),
+      images: (p.images ?? []).map((img, i) => ({
+        ...img,
+        isPrimary: i === index,
+      })),
     }));
   }, []);
 
@@ -224,33 +229,54 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
         setSectionLoading(null);
       }
     },
-    [profile, updatePersonalInfo, updatePhysicalInfo, updateEducationInfo, updateFamilyInfo, t]
+    [
+      profile,
+      updatePersonalInfo,
+      updatePhysicalInfo,
+      updateEducationInfo,
+      updateFamilyInfo,
+      t,
+    ]
   );
 
   const handleSave = useCallback(
-    (key: SectionKey) => { void updateSection(key); },
+    (key: SectionKey) => {
+      void updateSection(key);
+    },
     [updateSection]
   );
 
   // ─── Section setters ──────────────────────────────────────────────────────
 
   const setPersonal = useCallback(
-    (key: keyof PersonalSection, value: PersonalSection[keyof PersonalSection]) => {
+    (
+      key: keyof PersonalSection,
+      value: PersonalSection[keyof PersonalSection]
+    ) => {
       setProfile((p) => ({ ...p, personal: { ...p.personal, [key]: value } }));
     },
     []
   );
 
   const setPhysical = useCallback(
-    (key: keyof PhysicalSection, value: PhysicalSection[keyof PhysicalSection]) => {
+    (
+      key: keyof PhysicalSection,
+      value: PhysicalSection[keyof PhysicalSection]
+    ) => {
       setProfile((p) => ({ ...p, physical: { ...p.physical, [key]: value } }));
     },
     []
   );
 
   const setEducation = useCallback(
-    (key: keyof EducationSection, value: EducationSection[keyof EducationSection]) => {
-      setProfile((p) => ({ ...p, education: { ...p.education, [key]: value } }));
+    (
+      key: keyof EducationSection,
+      value: EducationSection[keyof EducationSection]
+    ) => {
+      setProfile((p) => ({
+        ...p,
+        education: { ...p.education, [key]: value },
+      }));
     },
     []
   );
@@ -265,7 +291,9 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
   const sectionProps = { sectionLoading, onSave: handleSave };
 
   if (pageLoading) {
-    return <Loader fullScreen size="large" loadingText={t('edit_profile.loading')} />;
+    return (
+      <Loader fullScreen size="large" loadingText={t('edit_profile.loading')} />
+    );
   }
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -319,15 +347,26 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
                       accessibilityRole="button"
                       accessibilityLabel={t('edit_profile.photos.set_primary')}
                     >
-                      <Feather name="star" size={12} color={theme.colors.accent} />
+                      <Feather
+                        name="star"
+                        size={12}
+                        color={theme.colors.accent}
+                      />
                     </TouchableOpacity>
                     <TouchableOpacity
-                      style={[styles.photoActionBtn, styles.photoActionBtnDanger]}
+                      style={[
+                        styles.photoActionBtn,
+                        styles.photoActionBtnDanger,
+                      ]}
                       onPress={() => removeImage(index)}
                       accessibilityRole="button"
                       accessibilityLabel={t('edit_profile.photos.remove')}
                     >
-                      <Feather name="trash-2" size={12} color={theme.colors.danger} />
+                      <Feather
+                        name="trash-2"
+                        size={12}
+                        color={theme.colors.danger}
+                      />
                     </TouchableOpacity>
                   </View>
                 </View>
@@ -335,15 +374,21 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
 
               <TouchableOpacity
                 style={styles.addPhotoBtn}
-                onPress={() => { void pickImage(); }}
+                onPress={() => {
+                  void pickImage();
+                }}
                 accessibilityRole="button"
                 accessibilityLabel={t('edit_profile.photos.add')}
               >
                 <Feather name="plus" size={28} color={theme.colors.textMuted} />
-                <Text style={styles.addPhotoText}>{t('edit_profile.photos.add')}</Text>
+                <Text style={styles.addPhotoText}>
+                  {t('edit_profile.photos.add')}
+                </Text>
               </TouchableOpacity>
             </ScrollView>
-            <Text style={styles.photoHint}>{t('edit_profile.photos.hint')}</Text>
+            <Text style={styles.photoHint}>
+              {t('edit_profile.photos.hint')}
+            </Text>
           </SectionCard>
 
           {/* ── Personal ───────────────────────────────────────────────── */}
@@ -525,7 +570,10 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
                   label={t('edit_profile.fields.birth_city')}
                   value={profile.personal.placeOfBirth?.city}
                   onChange={(v) =>
-                    setPersonal('placeOfBirth', { ...profile.personal.placeOfBirth, city: v })
+                    setPersonal('placeOfBirth', {
+                      ...profile.personal.placeOfBirth,
+                      city: v,
+                    })
                   }
                 />
               </View>
@@ -534,7 +582,10 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
                   label={t('edit_profile.fields.birth_state')}
                   value={profile.personal.placeOfBirth?.state}
                   onChange={(v) =>
-                    setPersonal('placeOfBirth', { ...profile.personal.placeOfBirth, state: v })
+                    setPersonal('placeOfBirth', {
+                      ...profile.personal.placeOfBirth,
+                      state: v,
+                    })
                   }
                 />
               </View>
@@ -543,7 +594,10 @@ export default function EditProfileScreen({ navigation }: Props): React.ReactEle
               label={t('edit_profile.fields.birth_country')}
               value={profile.personal.placeOfBirth?.country}
               onChange={(v) =>
-                setPersonal('placeOfBirth', { ...profile.personal.placeOfBirth, country: v })
+                setPersonal('placeOfBirth', {
+                  ...profile.personal.placeOfBirth,
+                  country: v,
+                })
               }
             />
           </SectionCard>

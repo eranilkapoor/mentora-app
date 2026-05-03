@@ -1,6 +1,6 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { formatTime, Message } from '../Chat.types';
-import { chatStyles } from '../ChatScreen.styles';
+import { chatStyles } from '../Chat.styles';
 import { View, Image, Text } from 'react-native';
 
 export function MessageBubble({ item }: { item: Message }): React.ReactElement {

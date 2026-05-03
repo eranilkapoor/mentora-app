@@ -6,10 +6,13 @@ import AuthStack from './AuthStack';
 import OnboardingStack from './OnboardingStack';
 import AppStack from './AppStack';
 import { RootStackParamList } from './types';
+import { getSharedScreenOptions } from './sharedScreenOptions';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator(): React.ReactElement {
+  const { theme } = useTheme();
   const accessToken = useAppSelector((s) => s.auth.accessToken);
   const isOnboardingCompleted = useAppSelector(
     (s) => s.auth.user?.isOnboardingCompleted
@@ -19,7 +22,7 @@ export default function RootNavigator(): React.ReactElement {
   const hasOnboarded = Boolean(isOnboardingCompleted);
 
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false, animation: 'fade' }}>
+    <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
       {!isLoggedIn ? (
         <Stack.Screen name="Auth" component={AuthStack} />
       ) : !hasOnboarded ? (

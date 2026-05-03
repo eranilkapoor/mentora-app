@@ -1,6 +1,6 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SectionItem } from '../PrivacyPolicy.types';
-import { privacyPolicyStyles } from '../PrivacyPolicyScreen.styles';
+import { privacyPolicyStyles } from '../PrivacyPolicy.styles';
 import { View, Text } from 'react-native';
 import { BulletList } from './BulletList';
 

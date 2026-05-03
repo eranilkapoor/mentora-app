@@ -52,7 +52,7 @@ export interface Siblings {
 export interface PersonalSection {
   firstName: string;
   lastName?: string;
-  dateOfBirth: string;           // stored as ISO string, sent as Date
+  dateOfBirth: string; // stored as ISO string, sent as Date
   timeOfBirth?: TimeOfBirth;
   placeOfBirth?: PlaceOfBirth;
   subCast?: string;
@@ -80,8 +80,8 @@ export interface PersonalSection {
 }
 
 export interface PhysicalSection {
-  heightLabel: string;           // renamed from height
-  weightKg?: string;             // renamed from weight
+  heightLabel: string; // renamed from height
+  weightKg?: string; // renamed from weight
   bloodGroup?: (typeof BLOOD_GROUP_OPTIONS)[number];
   bodyType?: (typeof BODY_TYPE_OPTIONS)[number];
   complexion?: (typeof COMPLEXION_OPTIONS)[number];
@@ -97,7 +97,7 @@ export interface EducationSection {
   occupation: string;
   companyName?: string;
   jobRole?: string;
-  annualIncomeAmount?: string;   // renamed from annualIncome, numeric on server
+  annualIncomeAmount?: string; // renamed from annualIncome, numeric on server
 }
 
 export interface FamilySection {

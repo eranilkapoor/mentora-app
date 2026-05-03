@@ -10,6 +10,7 @@ export function getSharedScreenOptions(
   theme: Theme
 ): NativeStackNavigationOptions {
   return {
+    headerShown: false,
     headerStyle: {
       backgroundColor: theme.colors.white,
     },

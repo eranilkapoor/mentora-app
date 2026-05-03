@@ -1,7 +1,7 @@
 export const MembershipTiers = {
   FREE: 'free',
   GOLD: 'gold',
-  PREMIUM: 'premium',
+  PLATINUM: 'platinum',
 } as const;
 
 export type MembershipTier =

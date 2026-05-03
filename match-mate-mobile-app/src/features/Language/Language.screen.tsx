@@ -10,7 +10,11 @@ import { LanguageNotice } from './components/LanguageNotice';
 import { LanguageOptionItem } from './components/LanguageOptionItem';
 import Header from '@/core/components/Header';
 
-export default function LanguageScreen({ navigation }: { navigation: any }): React.ReactElement {
+export default function LanguageScreen({
+  navigation,
+}: {
+  navigation: any;
+}): React.ReactElement {
   const styles = useThemedStyles(languageStyles);
   const { t, languages, currentLang, onSelectLanguage } = useLanguageScreen();
 

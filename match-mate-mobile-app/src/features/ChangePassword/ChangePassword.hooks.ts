@@ -82,12 +82,9 @@ export const useChangePassword = (navigation: ChangePasswordNavProp) => {
 
       // Reset form immediately
       handleReset();
-
     } catch (err: unknown) {
       const message =
-        err instanceof Error
-          ? err.message
-          : t('common.something_went_wrong');
+        err instanceof Error ? err.message : t('common.something_went_wrong');
 
       if (message.toLowerCase().includes('incorrect')) {
         setErrors({

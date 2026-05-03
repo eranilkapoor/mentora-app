@@ -1,6 +1,7 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
 import authReducer from './slices/authSlice';
 import settingsReducer from './slices/settingsSlice';
+import chatsReducer from './slices/chatsSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   persistStore,
@@ -37,6 +38,7 @@ const rootReducer = combineReducers({
   [baseApi.reducerPath]: baseApi.reducer,
   auth: persistReducer(authPersistConfig, authReducer),
   settings: persistReducer(settingsPersistConfig, settingsReducer),
+  chats: chatsReducer, // No persistence for chats
 });
 
 /* ================= Persisted Reducer ================= */

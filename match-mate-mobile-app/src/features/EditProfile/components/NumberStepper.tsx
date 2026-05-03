@@ -24,7 +24,10 @@ export function NumberStepper({
           disabled={value <= min}
           style={[
             styles.btn,
-            { borderColor: theme.colors.border, backgroundColor: theme.colors.inputBackground },
+            {
+              borderColor: theme.colors.border,
+              backgroundColor: theme.colors.inputBackground,
+            },
             value <= min && { opacity: 0.4 },
           ]}
           accessibilityRole="button"
@@ -42,7 +45,10 @@ export function NumberStepper({
           disabled={value >= max}
           style={[
             styles.btn,
-            { borderColor: theme.colors.border, backgroundColor: theme.colors.inputBackground },
+            {
+              borderColor: theme.colors.border,
+              backgroundColor: theme.colors.inputBackground,
+            },
             value >= max && { opacity: 0.4 },
           ]}
           accessibilityRole="button"

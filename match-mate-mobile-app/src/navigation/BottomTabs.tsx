@@ -60,7 +60,7 @@ export default function BottomTabs(): React.ReactElement {
   const { t } = useTranslation();
 
   // Read unread count from Redux — replace with your actual selector
-  const unreadCount = 3; //useAppSelector((s) => s.chats.unreadCount ?? 0);
+  const unreadCount = useAppSelector((s) => s.chats.unreadCount ?? 0);
 
   const screenOptions = useMemo(
     () => ({

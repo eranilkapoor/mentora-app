@@ -6,13 +6,13 @@ import { SettingsStackParamList } from '@/navigation/types';
 import { getSharedScreenOptions } from './sharedScreenOptions';
 
 import SettingsScreen from '@/features/Settings/Settings.screen';
-import EditPreferenceScreen from '@/features/EditPreference/EditPreferenceScreen';
+import EditPreferenceScreen from '@/features/EditPreference/EditPreference.screen';
 import ChangePasswordScreen from '@/features/ChangePassword/ChangePassword.screen';
 import LanguageScreen from '@/features/Language/Language.screen';
 import ThemeScreen from '@/features/Theme/Theme.screen';
-import NotificationSettingsScreen from '@/features/NotificationSettings/NotificationSettingsScreen';
-import HelpSupportScreen from '@/features/HelpSupport/HelpSupportScreen';
-import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicyScreen';
+import NotificationSettingsScreen from '@/features/NotificationSettings/NotificationSettings.screen';
+import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
+import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicy.screen';
 import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
@@ -23,22 +23,10 @@ export default function SettingsStack(): React.ReactElement {
 
   return (
     <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
-      <Stack.Screen
-        name="SettingsScreen"
-        component={SettingsScreen}
-        options={{ headerShown: false }}
-      />
-      <Stack.Screen
-        name="EditProfile"
-        component={EditProfileScreen}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
+      <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       {/* Added EditPreference here */}
-      <Stack.Screen
-        name="EditPreference"
-        component={EditPreferenceScreen}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="EditPreference" component={EditPreferenceScreen} />
       <Stack.Screen
         name="ChangePassword"
         component={ChangePasswordScreen}

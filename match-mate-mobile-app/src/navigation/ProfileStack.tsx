@@ -13,11 +13,7 @@ export default function ProfileStack(): React.ReactElement {
 
   return (
     <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
-      <Stack.Screen
-        name="ProfileScreen"
-        component={ProfileScreen}
-        options={{ headerShown: false }}
-      />
+      <Stack.Screen name="ProfileScreen" component={ProfileScreen} />
     </Stack.Navigator>
   );
 }

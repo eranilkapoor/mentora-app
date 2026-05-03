@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
-  Modal,
   KeyboardAvoidingView,
   ScrollView,
   ActivityIndicator,
@@ -137,7 +136,10 @@ export default function RegisterScreen({
         dispatch(setCredentials(response.data));
         // ✅ Save refresh token (ONLY MOBILE)
         if (Platform.OS !== 'web' && response.data?.refreshToken) {
-          await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
+          await SecureStore.setItemAsync(
+            'refreshToken',
+            response.data.refreshToken
+          );
         }
       }
     } catch {
@@ -203,7 +205,10 @@ export default function RegisterScreen({
         dispatch(setCredentials(response.data));
         // ✅ Save refresh token (ONLY MOBILE)
         if (Platform.OS !== 'web' && response.data?.refreshToken) {
-          await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
+          await SecureStore.setItemAsync(
+            'refreshToken',
+            response.data.refreshToken
+          );
         }
       }
     } catch {

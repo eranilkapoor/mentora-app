@@ -3,7 +3,7 @@ import {
   NotificationGroup,
   NotificationState,
 } from '../NotificationSettings.types';
-import { notificationSettingsStyles } from '../NotificationSettingsScreen.styles';
+import { notificationSettingsStyles } from '../NotificationSettings.styles';
 import { View, Text } from 'react-native';
 import { ToggleRow } from './ToggleRow';
 

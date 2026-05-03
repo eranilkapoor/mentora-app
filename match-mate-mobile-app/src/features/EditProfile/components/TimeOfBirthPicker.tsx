@@ -47,9 +47,7 @@ export function TimeOfBirthPicker({
             label={t('edit_profile.time.period')}
             options={PERIODS as unknown as string[]}
             value={value?.period}
-            onChange={(v) =>
-              onChange({ ...value, period: v as 'AM' | 'PM' })
-            }
+            onChange={(v) => onChange({ ...value, period: v as 'AM' | 'PM' })}
           />
         </View>
       </View>
