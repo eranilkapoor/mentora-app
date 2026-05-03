@@ -48,6 +48,7 @@ export type ProfileStackParamList = {
 export type SettingsStackParamList = {
   SettingsScreen: undefined;
   EditProfile: undefined;
+  EditPreference: undefined;
   ChangePassword: undefined;
   Languages: undefined;
   Themes: undefined;

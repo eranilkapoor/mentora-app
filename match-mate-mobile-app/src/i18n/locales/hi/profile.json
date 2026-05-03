@@ -1,9 +1,9 @@
 {
   "profile": "प्रोफाइल",
   "edit_profile": "प्रोफाइल संपादित करें",
-  "edit_profile_sub": "Update your personal info",
-  "your_profile": "Your Profile",
-  "tap_to_edit": "Tap to edit your profile",
+  "edit_profile_sub": "अपनी व्यक्तिगत जानकारी अपडेट करें",
+  "your_profile": "आपका प्रोफाइल",
+  "tap_to_edit": "अपने प्रोफाइल को संपादित करने के लिए टैप करें",
   "name": "नाम",
   "age": "आयु",
   "gender": "लिंग",
@@ -15,5 +15,7 @@
   "upload_photo": "फोटो अपलोड करें",
   "verify_profile": "प्रोफाइल सत्यापित करें",
   "completed": "पूर्ण",
-  "incomplete": "अपूर्ण"
+  "incomplete": "अपूर्ण",
+  "view_profile": "अपना प्रोफाइल देखें",
+  "tap_to_view": "प्रोफाइल देखने के लिए टैप करें"
 }

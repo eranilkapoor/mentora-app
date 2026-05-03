@@ -1,7 +1,7 @@
 import common from './en/common.json';
 import auth from './en/auth.json';
 import profile from './en/profile.json';
-import preferences from './en/preferences.json';
+import preference from './en/preference.json';
 import home from './en/home.json';
 import matches from './en/matches.json';
 import chat from './en/chat.json';
@@ -20,7 +20,7 @@ import options from './en/options.json';
 import hiCommon from './hi/common.json';
 import hiAuth from './hi/auth.json';
 import hiProfile from './hi/profile.json';
-import hiPreferences from './hi/preferences.json';
+import hiPreference from './hi/preference.json';
 import hiHome from './hi/home.json';
 import hiMatches from './hi/matches.json';
 import hiChat from './hi/chat.json';
@@ -38,7 +38,7 @@ export const en = {
   common,
   auth,
   profile,
-  preferences,
+  preference,
   home,
   matches,
   chat,
@@ -57,7 +57,7 @@ export const hi = {
   common: hiCommon,
   auth: hiAuth,
   profile: hiProfile,
-  preferences: hiPreferences,
+  preference: hiPreference,
   home: hiHome,
   matches: hiMatches,
   chat: hiChat,

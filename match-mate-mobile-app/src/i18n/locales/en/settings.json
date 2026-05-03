@@ -26,5 +26,13 @@
   "privacy_policy": "Privacy Policy",
   "privacy_sub": "How we handle your data",
   "sign_out": "Sign Out",
-  "sign_out_confirm": "Are you sure you want to sign out?"
+  "sign_out_confirm": "Are you sure you want to sign out?",
+  "edit_profile": "Edit Profile",
+  "edit_profile_sub": "Update your personal information",
+  "edit_preferences": "Partner Preferences",
+  "edit_preferences_sub": "Update what you're looking for",
+  "partner_preferences": "Partner Preferences",
+  "danger_zone": "Account",
+  "sign_out_sub": "You will be logged out of this device",
+  "version": "MatchMate v{{version}}"
 }

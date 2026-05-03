@@ -5,12 +5,10 @@ import {
   TextInput,
   TouchableOpacity,
   Platform,
-  Modal,
   KeyboardAvoidingView,
   ScrollView,
   ActivityIndicator,
 } from 'react-native';
-// 👉 For mobile secure storage
 import * as SecureStore from 'expo-secure-store';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -19,7 +17,6 @@ import { useAppDispatch } from '@/store/hooks';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import {
-  COUNTRY_CODES,
   DEFAULT_COUNTRY_CODE,
   EMAIL_REGEX,
   OTP_LENGTH,
@@ -39,96 +36,9 @@ import {
   ActiveTab,
   SocialProvider,
   FormErrors,
-  SocialButtonProps,
-  CountryCodeDropdownProps,
 } from './Login.types';
-
-// ─── Sub-components (defined at module scope to prevent remount) ──────────────
-
-const SocialButton = React.memo<SocialButtonProps>(
-  ({ label, onPress, disabled = false, icon, iconColor }) => {
-    const styles = useThemedStyles(loginStyles);
-    const { theme } = useTheme();
-    return (
-      <TouchableOpacity
-        style={[styles.socialButton, disabled && styles.disabledButton]}
-        onPress={onPress}
-        disabled={disabled}
-        accessibilityRole="button"
-        accessibilityLabel={label}
-      >
-        <Feather
-          name={icon}
-          size={20}
-          color={iconColor ?? theme.colors.textSecondary}
-          style={styles.socialIcon}
-        />
-        <Text style={styles.socialLabel}>{label}</Text>
-      </TouchableOpacity>
-    );
-  }
-);
-SocialButton.displayName = 'SocialButton';
-
-const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
-  ({ visible, onClose, selectedCode, onSelectCode }) => {
-    const styles = useThemedStyles(loginStyles);
-    const { theme } = useTheme();
-    return (
-      <Modal
-        visible={visible}
-        transparent
-        animationType="fade"
-        onRequestClose={onClose}
-      >
-        <TouchableOpacity
-          style={styles.modalOverlay}
-          activeOpacity={1}
-          onPress={onClose}
-        >
-          <View style={styles.modalDropdown}>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              {COUNTRY_CODES.map((code) => (
-                <TouchableOpacity
-                  key={code}
-                  style={[
-                    styles.countryCodeItem,
-                    selectedCode === code && styles.countryCodeItemActive,
-                  ]}
-                  onPress={() => {
-                    onSelectCode(code);
-                    onClose();
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Country code ${code}`}
-                >
-                  <Text
-                    style={[
-                      styles.countryCodeItemText,
-                      selectedCode === code && styles.countryCodeItemTextActive,
-                    ]}
-                  >
-                    +{code}
-                  </Text>
-                  {selectedCode === code && (
-                    <Feather
-                      name="check"
-                      size={14}
-                      color={theme.colors.primary}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
-        </TouchableOpacity>
-      </Modal>
-    );
-  }
-);
-CountryCodeDropdown.displayName = 'CountryCodeDropdown';
-
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+import { SocialButton } from './components/SocialButton';
+import { CountryCodeDropdown } from './components/CountryCodeDropdown';
 
 export default function LoginScreen({
   navigation,
@@ -306,7 +216,7 @@ export default function LoginScreen({
             user: response.data.user,
           })
         );
-        // ✅ Save refresh token (ONLY MOBILE)
+        // Save refresh token (ONLY MOBILE)
         if (Platform.OS !== 'web' && response.data?.refreshToken) {
           await SecureStore.setItemAsync('refreshToken', response.data.refreshToken);
         }

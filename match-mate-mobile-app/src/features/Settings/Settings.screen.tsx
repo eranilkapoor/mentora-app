@@ -9,31 +9,37 @@ import {
   Platform,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '../../core/constants/colors';
-import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { logout } from '../../store/slices/authSlice';
+import { useNavigation } from '@react-navigation/native';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { logout } from '@/store/slices/authSlice';
 import {
   toggleNotifications,
   toggleSound,
   toggleLocationSharing,
   toggleVibration,
-} from '../../store/slices/settingsSlice';
+} from '@/store/slices/settingsSlice';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { settingsStyles } from './Settings.styles';
 import { SettingsScreenProps } from './Settings.types';
 import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
 import { SettingToggle } from './components/SettingToggle';
 import Header from '@/core/components/Header';
+import { AppNavigationProp } from '@/navigation/types';
+import Constants from 'expo-constants'; // or from 'react-native-device-info'
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function SettingsScreen({
   navigation,
 }: SettingsScreenProps): React.ReactElement {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const styles = useThemedStyles(settingsStyles);
+  const { theme } = useTheme();
+
+  // Use parent (AppStack) navigator to jump across stacks
+  const appNavigation = useNavigation<AppNavigationProp>();
 
   const themeMode = useAppSelector((s) => s.settings.theme);
   const language = useAppSelector((s) => s.settings.language);
@@ -48,6 +54,8 @@ export default function SettingsScreen({
   const lastName = useAppSelector((s) => s.auth.user?.lastName ?? '');
   const email = useAppSelector((s) => s.auth.user?.email ?? '');
 
+  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
+
   const themeBadge =
     themeMode === 'light'
       ? t('theme.light')
@@ -58,9 +66,11 @@ export default function SettingsScreen({
   const langBadge =
     language === 'en' ? t('language.english') : t('language.hindi');
 
+  // ─── Sign Out ─────────────────────────────────────────────────────────────
+
   const handleSignOut = useCallback(() => {
     const doLogout = (): void => {
-      void dispatch(logout());
+      dispatch(logout());
     };
 
     if (Platform.OS === 'web') {
@@ -72,9 +82,22 @@ export default function SettingsScreen({
 
     Alert.alert(t('settings.sign_out'), t('settings.sign_out_confirm'), [
       { text: t('common.cancel'), style: 'cancel' },
-      { text: t('settings.sign_out'), style: 'destructive', onPress: doLogout },
+      {
+        text: t('settings.sign_out'),
+        style: 'destructive',
+        onPress: doLogout,
+      },
     ]);
   }, [dispatch, t]);
+
+  // ─── Profile Banner — navigates to Profile tab in parent AppStack ──────────
+
+  const handleProfileBannerPress = useCallback(() => {
+    // AppStack knows about Tabs; SettingsStack does not
+    appNavigation.navigate('Tabs');
+  }, [appNavigation]);
+
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -90,35 +113,28 @@ export default function SettingsScreen({
         {/* ── Profile Banner ───────────────────────────────────────── */}
         <TouchableOpacity
           style={styles.profileBanner}
-          onPress={() =>
-            navigation.reset({
-              index: 0,
-              routes: [
-                {
-                  name: 'Tabs',
-                  state: {
-                    routes: [{ name: 'Profile' }],
-                  },
-                },
-              ],
-            })
-          }
+          onPress={handleProfileBannerPress}
           accessibilityRole="button"
-          accessibilityLabel={t('profile.edit_profile')}
+          accessibilityLabel={t('profile.view_profile')}
+          activeOpacity={0.8}
         >
           <View style={styles.profileAvatarWrapper}>
-            <Feather name="user" size={24} color={Colors.primary} />
+            <Feather name="user" size={24} color={theme.colors.primary} />
           </View>
           <View style={styles.profileInfo}>
             <Text style={styles.profileName}>
               {`${firstName} ${lastName}`.trim() || t('profile.your_profile')}
             </Text>
             <Text style={styles.profileSubtext} numberOfLines={1}>
-              {email || t('profile.tap_to_edit')}
+              {email || t('profile.tap_to_view')}
             </Text>
           </View>
           <View style={styles.profileChevron}>
-            <Feather name="chevron-right" size={16} color={Colors.textMuted} />
+            <Feather
+              name="chevron-right"
+              size={16}
+              color={theme.colors.textMuted}
+            />
           </View>
         </TouchableOpacity>
 
@@ -126,47 +142,46 @@ export default function SettingsScreen({
         <Section icon="user" title={t('settings.account')}>
           <SettingRow
             icon="edit-3"
-            label={t('profile.edit_profile')}
-            subLabel={t('profile.edit_profile_sub')}
-            onPress={() => navigation.navigate('EditProfile' as never)}
+            label={t('settings.edit_profile')}
+            subLabel={t('settings.edit_profile_sub')}
+            onPress={() => navigation.navigate('EditProfile')}
           />
           <SettingRow
             icon="lock"
             label={t('settings.change_password')}
             subLabel={t('settings.change_password_sub')}
-            onPress={() => navigation.navigate('ChangePassword' as never)}
+            onPress={() => navigation.navigate('ChangePassword')}
             isLast
           />
         </Section>
 
-        {/* ── Preferences ──────────────────────────────────────────── */}
-        <Section icon="sliders" title={t('settings.preferences')}>
+        {/* ── Partner Preferences ──────────────────────────────────── */}
+        <Section icon="heart" title={t('settings.partner_preferences')}>
           <SettingRow
-            icon="globe"
-            label={t('settings.language')}
-            subLabel={t('settings.language_sub')}
-            badge={langBadge}
-            onPress={() => navigation.navigate('Languages' as never)}
-          />
-          <SettingRow
-            icon="sun"
-            label={t('settings.theme')}
-            subLabel={t('settings.theme_sub')}
-            badge={themeBadge}
-            onPress={() => navigation.navigate('Themes' as never)}
-          />
-          <SettingToggle
-            icon="map-pin"
-            label={t('settings.share_location')}
-            subLabel={t('settings.share_location_sub')}
-            value={locationSharing}
-            onValueChange={() => dispatch(toggleLocationSharing())}
+            icon="sliders"
+            label={t('settings.edit_preferences')}
+            subLabel={t('settings.edit_preferences_sub')}
+            onPress={() => navigation.navigate('EditPreference')}
             isLast
           />
         </Section>
 
         {/* ── App Settings ─────────────────────────────────────────── */}
         <Section icon="settings" title={t('settings.app_settings')}>
+          <SettingRow
+            icon="globe"
+            label={t('settings.language')}
+            subLabel={t('settings.language_sub')}
+            badge={langBadge}
+            onPress={() => navigation.navigate('Languages')}
+          />
+          <SettingRow
+            icon="sun"
+            label={t('settings.theme')}
+            subLabel={t('settings.theme_sub')}
+            badge={themeBadge}
+            onPress={() => navigation.navigate('Themes')}
+          />
           <SettingToggle
             icon="volume-2"
             label={t('settings.sound')}
@@ -180,6 +195,13 @@ export default function SettingsScreen({
             subLabel={t('settings.vibration_sub')}
             value={vibrationEnabled}
             onValueChange={() => dispatch(toggleVibration())}
+          />
+          <SettingToggle
+            icon="map-pin"
+            label={t('settings.share_location')}
+            subLabel={t('settings.share_location_sub')}
+            value={locationSharing}
+            onValueChange={() => dispatch(toggleLocationSharing())}
             isLast
           />
         </Section>
@@ -197,7 +219,7 @@ export default function SettingsScreen({
             icon="sliders"
             label={t('settings.notification_settings')}
             subLabel={t('settings.notification_settings_sub')}
-            onPress={() => navigation.navigate('NotificationSettings' as never)}
+            onPress={() => navigation.navigate('NotificationSettings')}
             isLast
           />
         </Section>
@@ -208,31 +230,32 @@ export default function SettingsScreen({
             icon="help-circle"
             label={t('settings.help_and_support')}
             subLabel={t('settings.help_sub')}
-            onPress={() => navigation.navigate('HelpSupport' as never)}
+            onPress={() => navigation.navigate('HelpSupport')}
           />
           <SettingRow
             icon="shield"
             label={t('settings.privacy_policy')}
             subLabel={t('settings.privacy_sub')}
-            onPress={() => navigation.navigate('PrivacyPolicy' as never)}
+            onPress={() => navigation.navigate('PrivacyPolicy')}
             isLast
           />
         </Section>
 
-        {/* ── Sign Out ─────────────────────────────────────────────── */}
-        <View style={styles.signOutSection}>
-          <TouchableOpacity
-            style={styles.signOutButton}
+        {/* ── Danger Zone ──────────────────────────────────────────── */}
+        <Section icon="alert-triangle" title={t('settings.danger_zone')}>
+          <SettingRow
+            icon="log-out"
+            label={t('settings.sign_out')}
+            subLabel={t('settings.sign_out_sub')}
             onPress={handleSignOut}
-            accessibilityRole="button"
-            accessibilityLabel={t('settings.sign_out')}
-          >
-            <Feather name="log-out" size={18} color={Colors.danger} />
-            <Text style={styles.signOutText}>{t('settings.sign_out')}</Text>
-          </TouchableOpacity>
-        </View>
+            isDanger
+            isLast
+          />
+        </Section>
 
-        <Text style={styles.versionText}>MatchMate v1.0.0</Text>
+        <Text style={styles.versionText}>
+          {t('settings.version', { version: appVersion })}
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );

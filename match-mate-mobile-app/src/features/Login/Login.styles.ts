@@ -306,7 +306,6 @@ export const loginStyles = (theme: Theme) =>
       maxHeight: 300,
       backgroundColor: theme.colors.surface,
       borderRadius: 10,
-      // Fixed: boxShadow is web CSS — use RN shadow props instead
       shadowColor: theme.colors.black,
       shadowOffset: { width: 0, height: 4 },
       shadowOpacity: 0.15,

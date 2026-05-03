@@ -17,6 +17,6 @@ export const mobileStyles = (theme: Theme) =>
       backgroundColor: theme.colors.white,
       borderRadius: 20,
       overflow: 'hidden',
-      boxShadow: '0px 8px 30px rgba(0,0,0,0.2)',
+      boxShadow: `0px 8px 30px ${theme.colors.black}33`,
     },
   });

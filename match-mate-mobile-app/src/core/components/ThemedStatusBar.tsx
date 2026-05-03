@@ -1,6 +1,6 @@
 import React from 'react';
 import { StatusBar } from 'react-native';
-import { useTheme } from '@/core/theme/ThemeProvider'; // adjust to your hook
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 export default function ThemedStatusBar() {
   const { isDark } = useTheme();

@@ -5,11 +5,6 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 type LoaderProps = {
   fullScreen?: boolean;
   size?: 'small' | 'large';
-  /**
-   * When provided, this exact text is shown below the spinner.
-   * When omitted, a default "Loading..." message is shown.
-   * Pass an empty string to suppress all text.
-   */
   loadingText?: string;
 };
 

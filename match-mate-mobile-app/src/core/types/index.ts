@@ -15,3 +15,16 @@ export * from './profile/education.types';
 export * from './profile/family.types';
 
 export * from './preferences/preferences.types';
+
+import {
+  PartnerFilters,
+  MatchSettings,
+  MatchWeights,
+  PreferenceData as _PreferenceData,
+} from '@/features/EditPreference/EditPreference.types';
+
+export type PreferenceData = _PreferenceData;
+export type PartnerFiltersData = PartnerFilters;
+export type MatchSettingsData = MatchSettings;
+export type MatchWeightsData = MatchWeights;
+export type AboutPartnerData = { aboutPartner: string };

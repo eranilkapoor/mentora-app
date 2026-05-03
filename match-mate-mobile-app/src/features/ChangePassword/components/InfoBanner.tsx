@@ -3,9 +3,8 @@ import { View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { changePasswordStyles } from '../ChangePassword.styles'; // import the styles factory type
+import { changePasswordStyles } from '../ChangePassword.styles';
 
-// Derive the prop type from the styles factory so it stays in sync automatically
 type StylesType = ReturnType<typeof changePasswordStyles>;
 
 interface Props {

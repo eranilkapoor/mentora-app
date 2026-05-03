@@ -17,7 +17,7 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { EMAIL_REGEX } from '@/core/constants';
 import { useForgotPasswordMutation } from '@/store/services/authApi'; // use real mutation
 import { ForgotPasswordScreenProps, FormErrors } from './ForgotPassword.types';
-import { forgotPasswordStyles } from './ForgotPasswordScreen.styles';
+import { forgotPasswordStyles } from './ForgotPassword.styles';
 
 export default function ForgotPasswordScreen({
   navigation,

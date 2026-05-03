@@ -80,13 +80,8 @@ export const useChangePassword = (navigation: ChangePasswordNavProp) => {
         visibilityTime: 2500,
       });
 
-      // ✅ Reset form immediately
+      // Reset form immediately
       handleReset();
-
-      // ✅ Optional: navigate after slight delay
-      setTimeout(() => {
-        navigation.goBack();
-      }, 800);
 
     } catch (err: unknown) {
       const message =

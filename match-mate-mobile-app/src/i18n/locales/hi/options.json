@@ -76,5 +76,45 @@
       "traditional": "Traditional",
       "moderate": "Moderate",
       "liberal": "Liberal"
+    },
+    "child_preference": {
+      "does_not_matter": "Doesn't Matter",
+      "want_children": "Want Children",
+      "do_not_want_children": "Don't Want Children",
+      "open_to_children": "Open to It",
+      "has_children_acceptable": "Has Children OK"
+    },
+    "residency_preference": {
+      "does_not_matter": "Doesn't Matter",
+      "same_city": "Same City",
+      "same_state": "Same State",
+      "same_country": "Same Country",
+      "abroad_preferred": "Abroad Preferred",
+      "nri_preferred": "NRI Preferred"
+    },
+    "religion": {
+      "hindu": "Hindu",
+      "muslim": "Muslim",
+      "christian": "Christian",
+      "sikh": "Sikh",
+      "jain": "Jain",
+      "buddhist": "Buddhist",
+      "parsi": "Parsi",
+      "jewish": "Jewish",
+      "other": "Other"
+    },
+    "caste": {
+      "brahmin": "Brahmin",
+      "kshatriya": "Kshatriya",
+      "vaishya": "Vaishya",
+      "shudra": "Shudra",
+      "kayastha": "Kayastha",
+      "rajput": "Rajput",
+      "maratha": "Maratha",
+      "reddy": "Reddy",
+      "naidu": "Naidu",
+      "nair": "Nair",
+      "other": "Other",
+      "does_not_matter": "Doesn't Matter"
     }
 }

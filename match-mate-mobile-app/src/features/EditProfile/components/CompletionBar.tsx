@@ -14,7 +14,6 @@ export function CompletionBar({ percent }: Props): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  // Use theme colors instead of static Colors import
   const color =
     percent < 40
       ? theme.colors.danger

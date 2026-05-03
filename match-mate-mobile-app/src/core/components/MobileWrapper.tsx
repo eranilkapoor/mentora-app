@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { isWeb } from '@/core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { mobileStyles } from './MobileWrapper.styles';
+import { mobileStyles } from '../styles/MobileWrapper.styles';
 
 interface Props {
   children: React.ReactNode;

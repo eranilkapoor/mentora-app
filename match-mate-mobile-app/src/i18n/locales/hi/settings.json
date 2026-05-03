@@ -26,5 +26,13 @@
   "privacy_policy": "गोपनीयता नीति",
   "privacy_sub": "How we handle your data",
   "sign_out": "साइन आउट",
-  "sign_out_confirm": "Are you sure you want to sign out?"
+  "sign_out_confirm": "Are you sure you want to sign out?",
+  "edit_profile": "प्रोफाइल संपादित करें",
+  "edit_profile_sub": "अपनी व्यक्तिगत जानकारी अपडेट करें",
+  "edit_preferences": "पार्टनर प्राथमिकताएं",
+  "edit_preferences_sub": "अपनी प्राथमिकताएं अपडेट करें",
+  "partner_preferences": "पार्टनर प्राथमिकताएं",
+  "danger_zone": "खाता",
+  "sign_out_sub": "You will be logged out of this device",
+  "version": "MatchMate v{{version}}"
 }

@@ -12,7 +12,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTranslation } from 'react-i18next';
-import { headerStyles } from './Header.styles';
+import { headerStyles } from '../styles/Header.styles';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

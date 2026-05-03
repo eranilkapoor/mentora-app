@@ -15,5 +15,7 @@
   "upload_photo": "Upload Photo",
   "verify_profile": "Verify Profile",
   "completed": "Completed",
-  "incomplete": "Incomplete"
+  "incomplete": "Incomplete",
+  "view_profile": "View your profile",
+  "tap_to_view": "Tap to view profile"
 }

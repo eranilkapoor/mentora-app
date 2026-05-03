@@ -1,8 +1,13 @@
-import { AppNavigationProp } from '../../navigation/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { SettingsStackParamList } from '@/navigation/types';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+export type SettingsNavigationProp = NativeStackNavigationProp<
+  SettingsStackParamList,
+  'SettingsScreen'
+>;
+
 export interface SettingsScreenProps {
-  navigation: AppNavigationProp;
+  navigation: SettingsNavigationProp;
 }
 
 export interface SettingRowProps {
@@ -12,6 +17,7 @@ export interface SettingRowProps {
   badge?: string;
   onPress: () => void;
   isLast?: boolean;
+  isDanger?: boolean;
 }
 
 export interface SettingToggleProps {
