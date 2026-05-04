@@ -18,7 +18,7 @@ i18n
     compatibilityJSON: 'v4',
   })
   .then(() => {
-    console.warn(`i18n initialized with language: ${i18n.language}`);
+    console.info(`i18n initialized with language: ${i18n.language}`);
   })
   .catch((err) => {
     console.error('Error initializing i18n:', err);

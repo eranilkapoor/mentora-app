@@ -1,5 +1,5 @@
 import { Theme } from '@/core/theme/types';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const editProfileStyles = (theme: Theme) =>
   StyleSheet.create({
@@ -16,12 +16,15 @@ export const editProfileStyles = (theme: Theme) =>
       borderRadius: 12,
       padding: 16,
       marginBottom: 16,
-      // Fixed: boxShadow is CSS web-only — use RN shadow props
-      shadowColor: theme.colors.black,
-      shadowOffset: { width: 0, height: 1 },
-      shadowOpacity: 0.04,
-      shadowRadius: 4,
-      elevation: 1,
+      ...(Platform.OS === 'ios' || Platform.OS === 'android' ? {
+        boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+      } : {
+        shadowColor: theme.colors.black,
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.04,
+        shadowRadius: 4,
+        elevation: 1,
+      }),
     },
     completionRow: {
       flexDirection: 'row',
@@ -61,10 +64,14 @@ export const editProfileStyles = (theme: Theme) =>
       borderRadius: 12,
       marginBottom: 16,
       overflow: 'hidden',
+      ...(Platform.OS === 'ios' || Platform.OS === 'android' ? {
+        boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
+      } : { 
       shadowColor: theme.colors.black,
       shadowOffset: { width: 0, height: 1 },
       shadowOpacity: 0.04,
       shadowRadius: 4,
+      }),
       elevation: 1,
     },
     sectionHeader: {
