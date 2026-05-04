@@ -1,60 +1,4 @@
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '@/navigation/types';
-import Feather from 'react-native-vector-icons/Feather';
-import React from 'react';
-
-// Auth screens live inside AuthStack — not RootStack
-export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
-
-export interface LoginScreenProps {
-  navigation: AuthNavigationProp;
-}
-
-export interface RegisterScreenProps {
-  navigation: AuthNavigationProp;
-}
-
-export interface ForgotPasswordScreenProps {
-  navigation: AuthNavigationProp;
-}
-
-export type ActiveTab = 'email' | 'phone';
-export type SocialProvider = 'google' | 'apple' | 'facebook';
-
-export interface FormErrors {
-  email?: string;
-  password?: string;
-  phone?: string;
-  otp?: string;
-  error?: string;
-}
-
-export interface SocialButtonProps {
-  label: string;
-  onPress: () => void;
-  disabled?: boolean;
-  // Properly typed instead of plain string
-  icon: React.ComponentProps<typeof Feather>['name'];
-  iconColor?: string;
-}
-
-export interface CountryCodeDropdownProps {
-  visible: boolean;
-  onClose: () => void;
-  selectedCode: string;
-  onSelectCode: (code: string) => void;
-}
-
-export type RegistrationStep =
-  | 'personal'
-  | 'physical'
-  | 'education'
-  | 'family'
-  | 'preferences'
-  | 'photos'
-  | 'review';
-
-export type Gender = 'male' | 'female' | 'other';
+export type RegistrationStep = 'basic' | 'preferences' | 'photos';
 
 export interface DropdownPickerProps {
   label: string;
@@ -71,4 +15,9 @@ export interface DropdownPickerProps {
 export interface ErrorTextProps {
   field: string;
   errors: Record<string, string>;
+}
+
+export interface ProfileImage {
+  uri: string;
+  isPrimary?: boolean;
 }

@@ -15,7 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { EMAIL_REGEX } from '@/core/constants';
-import { useForgotPasswordMutation } from '@/store/services/authApi'; // use real mutation
+import { useForgotPasswordMutation } from '@/store/services/authApi';
 import { ForgotPasswordScreenProps, FormErrors } from './ForgotPassword.types';
 import { forgotPasswordStyles } from './ForgotPassword.styles';
 

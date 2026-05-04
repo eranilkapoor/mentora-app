@@ -11,6 +11,7 @@ export const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
   ({ visible, onClose, selectedCode, onSelectCode }) => {
     const styles = useThemedStyles(registerStyles);
     const { theme } = useTheme();
+    
     return (
       <Modal
         visible={visible}

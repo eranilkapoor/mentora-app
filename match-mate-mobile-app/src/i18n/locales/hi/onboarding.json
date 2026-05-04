@@ -1,0 +1,82 @@
+{
+    "steps": {
+        "basic": "Basic",
+        "preferences": "Preferences",
+        "photos": "Photos"
+    },
+    "select_label": "Select {{label}}",
+    "select_placeholder": "Select {{label}}",
+    "basic": {
+        "title": "Basic Information",
+        "subtitle": "Basic details to create your matrimonial profile"
+    },
+    "preferences": {
+        "title": "Partner Preferences",
+        "subtitle": "Specify your preferences for a potential partner"
+    },
+    "photos": {
+        "title": "Profile Photos",
+        "subtitle": "Add photos to make your profile more appealing. The first photo will appear on your profile card.",
+        "primary": "Primary",
+        "set_primary": "Set as primary photo",
+        "remove": "Remove photo",
+        "add": "Add Photo",
+        "hint": "Tap ⭐ to set a photo as primary. Tap 🗑 to remove it. You can add up to 6 photos.",
+        "empty_title": "No photos yet",
+        "empty_subtitle": "Profiles with photos get 3× more responses",
+        "permission_title": "Permission Required",
+        "permission_message": "Please allow access to your photo library.",
+        "limit_title": "Limit Reached",
+        "limit_message": "You can upload a maximum of {{max}} photos."
+    },
+    "fields": {
+        "profile_for": "Profile For",
+        "first_name": "First Name",
+        "last_name": "Last Name",
+        "dob": "Date of Birth",
+        "gender": "Gender",
+        "religion": "Religion",
+        "country": "Country",
+        "state": "State",
+        "city": "City",
+        "qualification": "Highest Qualification",
+        "occupation": "Occupation",
+        "height": "Height (cm)",
+        "min_age": "Min Age",
+        "max_age": "Max Age",
+        "min_height": "Min Height (cm)",
+        "max_height": "Max Height (cm)",
+        "religion_preference": "Religion Preference",
+        "location_preference": "Location Preference"
+    },
+    "placeholders": {
+        "first_name": "John",
+        "last_name": "Doe",
+        "country": "Country",
+        "state": "State",
+        "city": "City",
+        "occupation": "e.g. Software Engineer",
+        "height": "e.g. 165",
+        "religion_preference": "e.g. Hindu, Sikh",
+        "location_preference": "e.g. India, UAE"
+    },
+    "nav": {
+        "previous": "Previous",
+        "next": "Next",
+        "submit": "Create Profile"
+    },
+    "errors": {
+        "required": "This field is required",
+        "first_name_required": "First name is required",
+        "dob_required": "Date of birth is required",
+        "gender_required": "Gender is required",
+        "religion_required": "Religion is required",
+        "height_required": "Height is required",
+        "qualification_required": "Qualification is required",
+        "occupation_required": "Occupation is required",
+        "min_age_required": "Min age is required",
+        "max_age_required": "Max age is required",
+        "country_required": "Location preference is required",
+        "submit_failed": "Profile creation failed. Please try again."
+    }
+}

@@ -134,14 +134,13 @@ export default function LoginScreen({
       }
 
       if (response.data?.accessToken && response.data?.user) {
-        // Dispatch credentials — RootNavigator handles routing automatically
         dispatch(
           setCredentials({
             accessToken: response.data.accessToken,
             user: response.data.user,
           })
         );
-        // ✅ Save refresh token (ONLY MOBILE)
+        // Save refresh token (ONLY MOBILE)
         if (Platform.OS !== 'web' && response.data?.refreshToken) {
           await SecureStore.setItemAsync(
             'refreshToken',
@@ -427,7 +426,7 @@ export default function LoginScreen({
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder="••••••••"
+                    placeholder={t('auth.placeholders.password')}
                     placeholderTextColor={theme.colors.textMuted}
                     secureTextEntry={!showPassword}
                     value={password}
@@ -587,7 +586,7 @@ export default function LoginScreen({
                     </Text>
                     <TextInput
                       style={[styles.otpInput, errors.otp && styles.inputError]}
-                      placeholder="• • • • • •"
+                      placeholder={t('auth.placeholders.otp')}
                       placeholderTextColor={theme.colors.textMuted}
                       keyboardType="number-pad"
                       value={otp}

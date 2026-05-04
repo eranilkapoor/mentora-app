@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   View,
   Text,
@@ -14,82 +14,43 @@ import {
 import * as ImagePicker from 'expo-image-picker';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useAppDispatch } from '../../store/hooks';
-import { setProfileCompleted } from '../../store/slices/authSlice';
-import { Colors } from '../../core/constants/colors';
+import { useTranslation } from 'react-i18next';
+import { useAppDispatch } from '@/store/hooks';
+import { setProfileCompleted } from '@/store/slices/authSlice';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import {
   PROFILE_FOR_OPTIONS,
   RELIGIONS,
   QUALIFICATIONS,
-  BODY_TYPES,
-  COMPLEXIONS,
-  FAMILY_TYPES,
-  FAMILY_STATUSES,
-} from '../../core/constants';
-import { useOnboardingProfileMutation } from '../../store/services/authApi';
+} from '@/core/constants';
+import { useOnboardingProfileMutation } from '@/store/services/authApi';
 import {
   DropdownPickerProps,
   ErrorTextProps,
-  Gender,
   RegistrationStep,
+  ProfileImage,
 } from './Onboarding.types';
 import { onboardingStyles } from './Onboarding.styles';
-import { useThemedStyles } from '../../core/theme/useThemedStyles';
-import {
-  EducationData,
-  FamilyData,
-  PersonalData,
-  PhysicalData,
-  PreferencesData,
-} from '@/core/types';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface ProfileImage {
-  uri: string;
-  isPrimary?: boolean;
-}
+import { Gender, Genders, BasicData, PreferencesData } from '@/core/types';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const STEPS: RegistrationStep[] = [
-  'personal',
-  'physical',
-  'education',
-  'family',
-  'preferences',
-  'photos',
-  'review',
-];
-
-const STEP_LABELS: Record<RegistrationStep, string> = {
-  personal: 'Personal',
-  physical: 'Physical',
-  education: 'Education',
-  family: 'Family',
-  preferences: 'Preferences',
-  photos: 'Photos',
-  review: 'Review',
-};
+const STEPS: RegistrationStep[] = ['basic', 'preferences', 'photos'];
 
 const STEP_ICONS: Record<RegistrationStep, string> = {
-  personal: 'user',
-  physical: 'activity',
-  education: 'book',
-  family: 'home',
+  basic: 'user',
   preferences: 'heart',
   photos: 'camera',
-  review: 'check-circle',
 };
 
-// ─── Sub-components ──────────────────────────────────────────────────────────
+const MAX_PHOTOS = 6;
 
-function ErrorText({
-  field,
-  errors,
-}: ErrorTextProps): React.ReactElement | null {
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function ErrorText({ field, errors }: ErrorTextProps): React.ReactElement | null {
   const styles = useThemedStyles(onboardingStyles);
-  if (errors[field] === undefined) return null;
+  if (!errors[field]) return null;
   return <Text style={styles.error}>{errors[field]}</Text>;
 }
 
@@ -106,6 +67,8 @@ function DropdownPicker({
 }: DropdownPickerProps): React.ReactElement {
   const isOpen = showDropdown === field;
   const styles = useThemedStyles(onboardingStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View>
@@ -113,22 +76,22 @@ function DropdownPicker({
         style={[
           styles.input,
           styles.dropdownTrigger,
-          errors[field] !== undefined && styles.inputError,
+          errors[field] ? styles.inputError : null,
         ]}
         onPress={() => onSetShowDropdown(isOpen ? null : field)}
         accessibilityRole="button"
-        accessibilityLabel={`Select ${label}`}
+        accessibilityLabel={t('onboarding.select_label', { label })}
         accessibilityState={{ expanded: isOpen }}
       >
         <Text
           style={value ? styles.dropdownValueText : styles.dropdownPlaceholder}
         >
-          {value !== '' ? value : `Select ${label}`}
+          {value || t('onboarding.select_placeholder', { label })}
         </Text>
         <Feather
           name={isOpen ? 'chevron-up' : 'chevron-down'}
           size={16}
-          color={Colors.textMuted}
+          color={theme.colors.textMuted}
         />
       </TouchableOpacity>
 
@@ -152,6 +115,7 @@ function DropdownPicker({
                   onSetShowDropdown(null);
                 }}
                 accessibilityRole="button"
+                accessibilityLabel={item}
               >
                 <Text
                   style={[
@@ -162,7 +126,7 @@ function DropdownPicker({
                   {item}
                 </Text>
                 {value === item && (
-                  <Feather name="check" size={14} color={Colors.primary} />
+                  <Feather name="check" size={14} color={theme.colors.primary} />
                 )}
               </TouchableOpacity>
             ))}
@@ -180,6 +144,8 @@ function StepIndicator({
 }): React.ReactElement {
   const currentIndex = STEPS.indexOf(currentStep);
   const styles = useThemedStyles(onboardingStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <ScrollView
@@ -202,12 +168,12 @@ function StepIndicator({
               ]}
             >
               {isCompleted ? (
-                <Feather name="check" size={12} color={Colors.white} />
+                <Feather name="check" size={12} color={theme.colors.white} />
               ) : (
                 <Feather
                   name={STEP_ICONS[step]}
                   size={12}
-                  color={isActive ? Colors.white : Colors.textMuted}
+                  color={isActive ? theme.colors.white : theme.colors.textMuted}
                 />
               )}
             </View>
@@ -218,7 +184,7 @@ function StepIndicator({
                 isCompleted && styles.stepDotLabelCompleted,
               ]}
             >
-              {STEP_LABELS[step]}
+              {t(`onboarding.steps.${step}`)}
             </Text>
             {index < STEPS.length - 1 && (
               <View
@@ -235,76 +201,26 @@ function StepIndicator({
   );
 }
 
-function ReviewRow({
-  label,
-  value,
-}: {
-  label: string;
-  value: string;
-}): React.ReactElement {
-  const styles = useThemedStyles(onboardingStyles);
-  return (
-    <View style={styles.reviewSection}>
-      <Text style={styles.reviewLabel}>{label}</Text>
-      <Text style={styles.reviewValue}>{value}</Text>
-    </View>
-  );
-}
-
-// export const appendImagesToFormData = async (
-//   formData: FormData,
-//   photos: Photo[]
-// ) => {
-//   const isWeb = Platform.OS === 'web';
-
-//   for (const [index, photo] of photos.entries()) {
-//     const filename = `photo_${index}.jpg`;
-//     const type = 'image/jpeg';
-
-//     if (isWeb) {
-//       const res = await fetch(photo.uri);
-//       const blob = await res.blob();
-//       const file = new File([blob], filename, { type });
-
-//       formData.append('images', file);
-//     } else {
-//       formData.append('images', {
-//         uri: photo.uri,
-//         name: filename,
-//         type,
-//       } as any);
-//     }
-//   }
-// };
-
-const uriToFile = async (uri: string, filename: string, type: string) => {
-  const response = await fetch(uri);
-  const blob = await response.blob();
-
-  return new File([blob], filename, { type });
-};
-
-// ─── Main Screen ─────────────────────────────────────────────────────────────
+// ─── Main Screen ──────────────────────────────────────────────────────────────
 
 export default function OnboardingScreen(): React.ReactElement {
   const dispatch = useAppDispatch();
   const styles = useThemedStyles(onboardingStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
 
-  const [currentStep, setCurrentStep] = useState<RegistrationStep>('personal');
+  const [currentStep, setCurrentStep] = useState<RegistrationStep>('basic');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
-
-  // ─── Photos State ─────────────────────────────────────────────────────────
-
   const [photos, setPhotos] = useState<ProfileImage[]>([]);
 
-  const [personal, setPersonal] = useState<PersonalData>({
+  const [basic, setBasic] = useState<BasicData>({
     profileFor: '',
     firstName: '',
     lastName: '',
     dob: '',
-    gender: 'other',
+    gender: 'male',
     religion: '',
     caste: '',
     country: '',
@@ -313,37 +229,9 @@ export default function OnboardingScreen(): React.ReactElement {
     motherTongue: '',
     maritalStatus: 'never_married',
     aboutMe: '',
-  });
-
-  const [physical, setPhysical] = useState<PhysicalData>({
-    height: '',
-    weight: '',
-    bodyType: '',
-    complexion: '',
-  });
-
-  const [education, setEducation] = useState<EducationData>({
     qualification: '',
-    field: '',
-    university: '',
     occupation: '',
-    annualIncome: '',
-  });
-
-  const [family, setFamily] = useState<FamilyData>({
-    fatherName: '',
-    motherName: '',
-    fatherOccupation: '',
-    motherOccupation: '',
-    familyType: '',
-    familyStatus: '',
-    familyValues: '',
-    siblings: {
-      brothers: 0,
-      sisters: 0,
-      marriedBrothers: 0,
-      marriedSisters: 0,
-    },
+    height: '',
   });
 
   const [preferences, setPreferences] = useState<PreferencesData>({
@@ -379,22 +267,23 @@ export default function OnboardingScreen(): React.ReactElement {
 
   const [onboardingProfile] = useOnboardingProfileMutation();
 
-  // ─── Helpers ─────────────────────────────────────────────────────────────
+  // ─── Helpers ──────────────────────────────────────────────────────────────
 
   const clearError = useCallback((field: string): void => {
     setErrors((prev) => {
       if (prev[field] === undefined) return prev;
-      const updated = { ...prev };
-      delete updated[field];
-      return updated;
+      const next = { ...prev };
+      delete next[field];
+      return next;
     });
   }, []);
 
-  const getInputStyle = useCallback(
-    (field: string) => [
-      styles.input,
-      errors[field] !== undefined ? styles.inputError : null,
-    ],
+  // Stable style helper — memoised so it doesn't recreate arrays on every render
+  const inputStyle = useCallback(
+    (field: string) =>
+      errors[field]
+        ? [styles.input, styles.inputError]
+        : [styles.input],
     [errors, styles]
   );
 
@@ -404,14 +293,17 @@ export default function OnboardingScreen(): React.ReactElement {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
       Alert.alert(
-        'Permission Required',
-        'Please allow access to your photo library.'
+        t('onboarding.photos.permission_title'),
+        t('onboarding.photos.permission_message')
       );
       return;
     }
 
-    if (photos.length >= 6) {
-      Alert.alert('Limit Reached', 'You can upload a maximum of 6 photos.');
+    if (photos.length >= MAX_PHOTOS) {
+      Alert.alert(
+        t('onboarding.photos.limit_title'),
+        t('onboarding.photos.limit_message', { max: MAX_PHOTOS })
+      );
       return;
     }
 
@@ -429,7 +321,7 @@ export default function OnboardingScreen(): React.ReactElement {
       };
       setPhotos((prev) => [...prev, newImage]);
     }
-  }, [photos.length]);
+  }, [photos.length, t]);
 
   const setPrimaryPhoto = useCallback((index: number): void => {
     setPhotos((prev) =>
@@ -447,63 +339,42 @@ export default function OnboardingScreen(): React.ReactElement {
     });
   }, []);
 
-  // ─── Validators ──────────────────────────────────────────────────────────
+  // ─── Validators ───────────────────────────────────────────────────────────
 
-  const validatePersonal = useCallback((): boolean => {
+  const validateBasic = useCallback((): boolean => {
     const e: Record<string, string> = {};
-    if (!personal.profileFor.trim()) e.profileFor = 'Selection required';
-    if (!personal.firstName.trim()) e.firstName = 'First name required';
-    if (!personal.dob) e.dob = 'Date of birth required';
-    if (!personal.gender) e.gender = 'Gender required';
-    if (!personal.religion) e.religion = 'Religion required';
+
+    if (!basic.profileFor.trim()) e.profileFor = t('onboarding.errors.required');
+    if (!basic.firstName.trim()) e.firstName = t('onboarding.errors.first_name_required');
+    if (!basic.dob) e.dob = t('onboarding.errors.dob_required');
+    if (!basic.gender) e.gender = t('onboarding.errors.gender_required');
+    if (!basic.religion) e.religion = t('onboarding.errors.religion_required');
+    if (!basic.height.trim()) e.height = t('onboarding.errors.height_required');
+    if (!basic.qualification) e.qualification = t('onboarding.errors.qualification_required');
+    if (!basic.occupation.trim()) e.occupation = t('onboarding.errors.occupation_required');
+
     setErrors(e);
     return Object.keys(e).length === 0;
-  }, [personal]);
-
-  const validatePhysical = useCallback((): boolean => {
-    const e: Record<string, string> = {};
-    if (!physical.height.trim()) e.height = 'Height required';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }, [physical]);
-
-  const validateEducation = useCallback((): boolean => {
-    const e: Record<string, string> = {};
-    if (!education.qualification) e.qualification = 'Qualification required';
-    if (!education.occupation.trim()) e.occupation = 'Occupation required';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }, [education]);
-
-  const validateFamily = useCallback((): boolean => {
-    const e: Record<string, string> = {};
-    if (!family.familyType) e.familyType = 'Family type required';
-    setErrors(e);
-    return Object.keys(e).length === 0;
-  }, [family]);
+  }, [basic, t]);
 
   const validatePreferences = useCallback((): boolean => {
     const e: Record<string, string> = {};
-    if (!preferences.partnerPreference?.ageRange?.min)
-      e.minAgeRange = 'Min age required';
-    if (!preferences.partnerPreference?.ageRange?.max)
-      e.maxAgeRange = 'Max age required';
-    if (!preferences.partnerPreference?.country?.length)
-      e.country = 'Location preference required';
+    const pref = preferences.partnerPreference;
+
+    if (!pref?.ageRange?.min) e.minAgeRange = t('onboarding.errors.min_age_required');
+    if (!pref?.ageRange?.max) e.maxAgeRange = t('onboarding.errors.max_age_required');
+    if (!pref?.country?.length) e.country = t('onboarding.errors.country_required');
+
     setErrors(e);
     return Object.keys(e).length === 0;
-  }, [preferences]);
+  }, [preferences, t]);
 
-  // ─── Navigation ──────────────────────────────────────────────────────────
+  // ─── Navigation ───────────────────────────────────────────────────────────
 
   const handleNext = useCallback((): void => {
     const validators: Partial<Record<RegistrationStep, () => boolean>> = {
-      personal: validatePersonal,
-      physical: validatePhysical,
-      education: validateEducation,
-      family: validateFamily,
+      basic: validateBasic,
       preferences: validatePreferences,
-      // photos step has no required validation — it's optional
     };
 
     const validator = validators[currentStep];
@@ -515,14 +386,7 @@ export default function OnboardingScreen(): React.ReactElement {
       setErrors({});
       setShowDropdown(null);
     }
-  }, [
-    currentStep,
-    validatePersonal,
-    validatePhysical,
-    validateEducation,
-    validateFamily,
-    validatePreferences,
-  ]);
+  }, [currentStep, validateBasic, validatePreferences]);
 
   const handlePrevious = useCallback((): void => {
     const currentIndex = STEPS.indexOf(currentStep);
@@ -537,62 +401,29 @@ export default function OnboardingScreen(): React.ReactElement {
 
   const handleSubmit = useCallback(async (): Promise<void> => {
     setLoading(true);
-
     try {
       const formData = new FormData();
 
-      // Append JSON fields as a string
-      formData.append('personal', JSON.stringify(personal));
-      formData.append('education', JSON.stringify(education));
-      formData.append('physical', JSON.stringify(physical));
-      formData.append('family', JSON.stringify(family));
+      formData.append('basic', JSON.stringify(basic));
       formData.append('preferences', JSON.stringify(preferences));
 
-      // Primary image logic
       let primaryIndex = 0;
-
-      // photos.forEach((photo, index) => {
-      //   const filename = photo.uri.split('/').pop() ?? `photo_${index}.jpg`;
-      //   const match = /\.(\w+)$/.exec(filename);
-      //   const ext = match?.[1]?.toLowerCase();
-      //   const type = ext === 'jpg' || ext === 'jpeg'
-      //       ? 'image/jpeg'
-      //       : ext === 'png'
-      //       ? 'image/png'
-      //       : ext === 'webp'
-      //       ? 'image/webp'
-      //       : 'image/jpeg';
-
-      //   formData.append('images', {
-      //     uri: photo.uri,
-      //     name: filename,
-      //     type,
-      //   } as any);
-
-      //   if (photo.isPrimary) {
-      //     primaryIndex = index;
-      //   }
-      //   console.log(filename, match, ext, type);
-      // });
-
-      const isWeb = Platform.OS === 'web';
 
       for (const [index, photo] of photos.entries()) {
         const filename = `photo_${index}.jpg`;
         const type = 'image/jpeg';
 
-        if (isWeb) {
+        if (Platform.OS === 'web') {
           const response = await fetch(photo.uri);
           const blob = await response.blob();
-          const file = new File([blob], filename, { type });
-
-          formData.append('images', file);
+          formData.append('images', new File([blob], filename, { type }));
         } else {
-          formData.append('images', {
+          // React Native FormData accepts this shape for multipart uploads
+          (formData as FormData).append('images', {
             uri: photo.uri,
             name: filename,
             type,
-          } as any);
+          } as unknown as Blob);
         }
 
         if (photo.isPrimary) {
@@ -601,784 +432,482 @@ export default function OnboardingScreen(): React.ReactElement {
       }
 
       formData.append('primaryImageIndex', String(primaryIndex));
-      console.log(personal, education, physical, family, preferences, photos);
 
       const response = await onboardingProfile(formData).unwrap();
 
-      if (!response.success as boolean) {
-        Alert.alert('Error', 'Onboarding profile creation failed.');
+      if (!response.success) {
+        Alert.alert(t('common.error'), t('onboarding.errors.submit_failed'));
         return;
       }
 
       dispatch(setProfileCompleted(true));
-    } catch (error) {
-      const err = error as { message?: string };
-      Alert.alert('Error', err.message ?? 'Something went wrong');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : t('common.something_went_wrong');
+      Alert.alert(t('common.error'), message);
     } finally {
       setLoading(false);
     }
-  }, [
-    personal,
-    education,
-    physical,
-    family,
-    preferences,
-    photos,
-    dispatch,
-    onboardingProfile,
-  ]);
+  }, [basic, preferences, photos, dispatch, onboardingProfile, t]);
 
-  // ─── Step Content ─────────────────────────────────────────────────────────
+  // ─── Shared dropdown props ────────────────────────────────────────────────
 
-  const dropdownProps = {
-    errors,
-    onClearError: clearError,
-    showDropdown,
-    onSetShowDropdown: setShowDropdown,
-  };
+  const dropdownProps = useMemo(
+    () => ({
+      errors,
+      onClearError: clearError,
+      showDropdown,
+      onSetShowDropdown: setShowDropdown,
+    }),
+    [errors, clearError, showDropdown]
+  );
 
-  const renderPersonal = (): React.ReactElement => (
-    <View>
-      <Text style={styles.stepTitle}>Personal Information</Text>
-      <Text style={styles.subtitle}>
-        Basic details to create your matrimonial profile
-      </Text>
+  // ─── Step: Basic ──────────────────────────────────────────────────────────
 
-      <Text style={styles.label}>Profile For *</Text>
-      <DropdownPicker
-        label="Profile For"
-        options={PROFILE_FOR_OPTIONS}
-        value={personal.profileFor}
-        onChange={(val) => {
-          setPersonal((p) => ({ ...p, profileFor: val }));
-          clearError('profileFor');
-        }}
-        field="profileFor"
-        {...dropdownProps}
-      />
-      <ErrorText field="profileFor" errors={errors} />
+  const renderBasic = useMemo(
+    () => (
+      <View>
+        <Text style={styles.stepTitle}>{t('onboarding.basic.title')}</Text>
+        <Text style={styles.subtitle}>{t('onboarding.basic.subtitle')}</Text>
 
-      <Text style={styles.label}>First Name *</Text>
-      <TextInput
-        placeholder="John"
-        value={personal.firstName}
-        onChangeText={(t) => {
-          setPersonal((p) => ({ ...p, firstName: t }));
-          clearError('firstName');
-        }}
-        style={getInputStyle('firstName')}
-        accessibilityLabel="First name"
-      />
-      <ErrorText field="firstName" errors={errors} />
+        <Text style={styles.label}>{t('onboarding.fields.profile_for')} *</Text>
+        <DropdownPicker
+          label={t('onboarding.fields.profile_for')}
+          options={PROFILE_FOR_OPTIONS}
+          value={basic.profileFor}
+          onChange={(val) => {
+            setBasic((b) => ({ ...b, profileFor: val }));
+            clearError('profileFor');
+          }}
+          field="profileFor"
+          {...dropdownProps}
+        />
+        <ErrorText field="profileFor" errors={errors} />
 
-      <Text style={styles.label}>Last Name</Text>
-      <TextInput
-        placeholder="Doe"
-        value={personal.lastName}
-        onChangeText={(t) => setPersonal((p) => ({ ...p, lastName: t }))}
-        style={styles.input}
-        accessibilityLabel="Last name"
-      />
+        <Text style={styles.label}>{t('onboarding.fields.first_name')} *</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.first_name')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={basic.firstName}
+          onChangeText={(text) => {
+            setBasic((b) => ({ ...b, firstName: text }));
+            clearError('firstName');
+          }}
+          style={inputStyle('firstName')}
+          accessibilityLabel={t('onboarding.fields.first_name')}
+        />
+        <ErrorText field="firstName" errors={errors} />
 
-      <Text style={styles.label}>Date of Birth *</Text>
-      <TextInput
-        placeholder="YYYY-MM-DD"
-        value={personal.dob}
-        onChangeText={(t) => {
-          setPersonal((p) => ({ ...p, dob: t }));
-          clearError('dob');
-        }}
-        style={getInputStyle('dob')}
-        accessibilityLabel="Date of birth"
-      />
-      <ErrorText field="dob" errors={errors} />
+        <Text style={styles.label}>{t('onboarding.fields.last_name')}</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.last_name')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={basic.lastName}
+          onChangeText={(text) => setBasic((b) => ({ ...b, lastName: text }))}
+          style={styles.input}
+          accessibilityLabel={t('onboarding.fields.last_name')}
+        />
 
-      <Text style={styles.label}>Gender *</Text>
-      <View style={styles.chipRow}>
-        {(['male', 'female', 'other'] as Gender[]).map((g) => (
-          <TouchableOpacity
-            key={g}
-            style={[
-              styles.chip,
-              personal.gender === g && styles.chipActive,
-              errors.gender !== undefined && styles.inputError,
-            ]}
-            onPress={() => {
-              setPersonal((p) => ({ ...p, gender: g }));
-              clearError('gender');
-            }}
-            accessibilityRole="radio"
-            accessibilityState={{ checked: personal.gender === g }}
-          >
-            <Text
+        <Text style={styles.label}>{t('onboarding.fields.dob')} *</Text>
+        <TextInput
+          placeholder="YYYY-MM-DD"
+          placeholderTextColor={theme.colors.textMuted}
+          value={basic.dob}
+          onChangeText={(text) => {
+            setBasic((b) => ({ ...b, dob: text }));
+            clearError('dob');
+          }}
+          style={inputStyle('dob')}
+          accessibilityLabel={t('onboarding.fields.dob')}
+        />
+        <ErrorText field="dob" errors={errors} />
+
+        <Text style={styles.label}>{t('onboarding.fields.gender')} *</Text>
+        <View style={styles.chipRow}>
+          {(Object.values(Genders) as Gender[]).map((g) => (
+            <TouchableOpacity
+              key={g}
               style={[
-                styles.chipText,
-                personal.gender === g && styles.chipTextActive,
+                styles.chip,
+                basic.gender === g && styles.chipActive,
+                errors.gender ? styles.inputError : null,
               ]}
+              onPress={() => {
+                setBasic((b) => ({ ...b, gender: g }));
+                clearError('gender');
+              }}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: basic.gender === g }}
+              accessibilityLabel={g}
             >
-              {g.charAt(0).toUpperCase() + g.slice(1)}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-      <ErrorText field="gender" errors={errors} />
-
-      <Text style={styles.label}>Religion *</Text>
-      <DropdownPicker
-        label="Religion"
-        options={RELIGIONS}
-        value={personal.religion}
-        onChange={(val) => {
-          setPersonal((p) => ({ ...p, religion: val }));
-          clearError('religion');
-        }}
-        field="religion"
-        {...dropdownProps}
-      />
-      <ErrorText field="religion" errors={errors} />
-
-      <Text style={styles.label}>Country</Text>
-      <TextInput
-        placeholder="Country"
-        value={personal.country}
-        onChangeText={(t) => setPersonal((p) => ({ ...p, country: t }))}
-        style={styles.input}
-        accessibilityLabel="Country"
-      />
-
-      <Text style={styles.label}>State</Text>
-      <TextInput
-        placeholder="State"
-        value={personal.state}
-        onChangeText={(t) => setPersonal((p) => ({ ...p, state: t }))}
-        style={styles.input}
-        accessibilityLabel="State"
-      />
-
-      <Text style={styles.label}>City</Text>
-      <TextInput
-        placeholder="City"
-        value={personal.city}
-        onChangeText={(t) => setPersonal((p) => ({ ...p, city: t }))}
-        style={styles.input}
-        accessibilityLabel="City"
-      />
-    </View>
-  );
-
-  const renderPhysical = (): React.ReactElement => (
-    <View>
-      <Text style={styles.stepTitle}>Physical Details</Text>
-      <Text style={styles.subtitle}>
-        Basic details about your physical attributes
-      </Text>
-
-      <Text style={styles.label}>Height (cm) *</Text>
-      <TextInput
-        placeholder="e.g. 165"
-        value={physical.height}
-        onChangeText={(t) => {
-          setPhysical((p) => ({ ...p, height: t }));
-          clearError('height');
-        }}
-        style={getInputStyle('height')}
-        keyboardType="numeric"
-        accessibilityLabel="Height in centimeters"
-      />
-      <ErrorText field="height" errors={errors} />
-
-      <Text style={styles.label}>Weight (kg)</Text>
-      <TextInput
-        placeholder="e.g. 60"
-        value={physical.weight}
-        onChangeText={(t) => setPhysical((p) => ({ ...p, weight: t }))}
-        style={styles.input}
-        keyboardType="numeric"
-        accessibilityLabel="Weight in kilograms"
-      />
-
-      <Text style={styles.label}>Body Type</Text>
-      <DropdownPicker
-        label="Body Type"
-        options={BODY_TYPES}
-        value={physical.bodyType}
-        onChange={(val) => setPhysical((p) => ({ ...p, bodyType: val }))}
-        field="bodyType"
-        {...dropdownProps}
-      />
-
-      <Text style={styles.label}>Complexion</Text>
-      <DropdownPicker
-        label="Complexion"
-        options={COMPLEXIONS}
-        value={physical.complexion}
-        onChange={(val) => setPhysical((p) => ({ ...p, complexion: val }))}
-        field="complexion"
-        {...dropdownProps}
-      />
-    </View>
-  );
-
-  const renderEducation = (): React.ReactElement => (
-    <View>
-      <Text style={styles.stepTitle}>Education & Occupation</Text>
-      <Text style={styles.subtitle}>
-        Details about your education and career
-      </Text>
-
-      <Text style={styles.label}>Qualification *</Text>
-      <DropdownPicker
-        label="Qualification"
-        options={QUALIFICATIONS}
-        value={education.qualification}
-        onChange={(val) => {
-          setEducation((e) => ({ ...e, qualification: val }));
-          clearError('qualification');
-        }}
-        field="qualification"
-        {...dropdownProps}
-      />
-      <ErrorText field="qualification" errors={errors} />
-
-      <Text style={styles.label}>Field of Study</Text>
-      <TextInput
-        placeholder="e.g. Computer Science"
-        value={education.field}
-        onChangeText={(t) => setEducation((e) => ({ ...e, field: t }))}
-        style={styles.input}
-        accessibilityLabel="Field of study"
-      />
-
-      <Text style={styles.label}>University / College</Text>
-      <TextInput
-        placeholder="e.g. Delhi University"
-        value={education.university}
-        onChangeText={(t) => setEducation((e) => ({ ...e, university: t }))}
-        style={styles.input}
-        accessibilityLabel="University or college name"
-      />
-
-      <Text style={styles.label}>Occupation *</Text>
-      <TextInput
-        placeholder="e.g. Software Engineer"
-        value={education.occupation}
-        onChangeText={(t) => {
-          setEducation((e) => ({ ...e, occupation: t }));
-          clearError('occupation');
-        }}
-        style={getInputStyle('occupation')}
-        accessibilityLabel="Occupation"
-      />
-      <ErrorText field="occupation" errors={errors} />
-
-      <Text style={styles.label}>Annual Income</Text>
-      <TextInput
-        placeholder="e.g. 800000"
-        value={education.annualIncome}
-        onChangeText={(t) => setEducation((e) => ({ ...e, annualIncome: t }))}
-        style={styles.input}
-        keyboardType="numeric"
-        accessibilityLabel="Annual income"
-      />
-    </View>
-  );
-
-  const renderFamily = (): React.ReactElement => (
-    <View>
-      <Text style={styles.stepTitle}>Family Background</Text>
-      <Text style={styles.subtitle}>Tell us about your family</Text>
-
-      <Text style={styles.label}>Father's Name</Text>
-      <TextInput
-        placeholder="Father's Name"
-        value={family.fatherName}
-        onChangeText={(t) => setFamily((f) => ({ ...f, fatherName: t }))}
-        style={styles.input}
-        accessibilityLabel="Father name"
-      />
-
-      <Text style={styles.label}>Mother's Name</Text>
-      <TextInput
-        placeholder="Mother's Name"
-        value={family.motherName}
-        onChangeText={(t) => setFamily((f) => ({ ...f, motherName: t }))}
-        style={styles.input}
-        accessibilityLabel="Mother name"
-      />
-
-      <Text style={styles.label}>Father's Occupation</Text>
-      <TextInput
-        placeholder="e.g. Business"
-        value={family.fatherOccupation}
-        onChangeText={(t) => setFamily((f) => ({ ...f, fatherOccupation: t }))}
-        style={styles.input}
-        accessibilityLabel="Father occupation"
-      />
-
-      <Text style={styles.label}>Mother's Occupation</Text>
-      <TextInput
-        placeholder="e.g. Homemaker"
-        value={family.motherOccupation}
-        onChangeText={(t) => setFamily((f) => ({ ...f, motherOccupation: t }))}
-        style={styles.input}
-        accessibilityLabel="Mother occupation"
-      />
-
-      <View style={styles.row}>
-        <View style={styles.halfField}>
-          <Text style={styles.label}>Brothers</Text>
-          <TextInput
-            placeholder="0"
-            value={
-              (family.siblings?.brothers ?? 0) > 0
-                ? String(family.siblings?.brothers)
-                : ''
-            }
-            onChangeText={(t) =>
-              setFamily((f) => ({
-                ...f,
-                siblings: { ...f.siblings, brothers: parseInt(t) || 0 },
-              }))
-            }
-            style={styles.input}
-            keyboardType="numeric"
-            accessibilityLabel="Number of brothers"
-          />
-        </View>
-        <View style={styles.halfField}>
-          <Text style={styles.label}>Sisters</Text>
-          <TextInput
-            placeholder="0"
-            value={
-              (family.siblings?.sisters ?? 0) > 0
-                ? String(family.siblings?.sisters)
-                : ''
-            }
-            onChangeText={(t) =>
-              setFamily((f) => ({
-                ...f,
-                siblings: { ...f.siblings, sisters: parseInt(t) || 0 },
-              }))
-            }
-            style={styles.input}
-            keyboardType="numeric"
-            accessibilityLabel="Number of sisters"
-          />
-        </View>
-      </View>
-
-      <Text style={styles.label}>Family Type *</Text>
-      <DropdownPicker
-        label="Family Type"
-        options={FAMILY_TYPES}
-        value={family.familyType ?? ''}
-        onChange={(val) => {
-          setFamily((f) => ({ ...f, familyType: val }));
-          clearError('familyType');
-        }}
-        field="familyType"
-        {...dropdownProps}
-      />
-      <ErrorText field="familyType" errors={errors} />
-
-      <Text style={styles.label}>Family Status</Text>
-      <DropdownPicker
-        label="Family Status"
-        options={FAMILY_STATUSES}
-        value={family.familyStatus ?? ''}
-        onChange={(val) => setFamily((f) => ({ ...f, familyStatus: val }))}
-        field="familyStatus"
-        {...dropdownProps}
-      />
-
-      <Text style={styles.label}>Family Values</Text>
-      <TextInput
-        placeholder="e.g. Traditional, Modern"
-        value={family.familyValues}
-        onChangeText={(t) => setFamily((f) => ({ ...f, familyValues: t }))}
-        style={styles.input}
-        accessibilityLabel="Family values"
-      />
-    </View>
-  );
-
-  const renderPreferences = (): React.ReactElement => (
-    <View>
-      <Text style={styles.stepTitle}>Partner Preferences</Text>
-      <Text style={styles.subtitle}>
-        Specify your preferences for a potential partner
-      </Text>
-
-      <View style={styles.row}>
-        <View style={styles.halfField}>
-          <Text style={styles.label}>Min Age *</Text>
-          <TextInput
-            placeholder="18"
-            value={String(preferences.partnerPreference?.ageRange?.min ?? 18)}
-            onChangeText={(t) => {
-              setPreferences((p) => ({
-                ...p,
-                partnerPreference: {
-                  ...p.partnerPreference,
-                  ageRange: {
-                    max: p?.partnerPreference?.ageRange?.max ?? 35,
-                    min: parseInt(t) ?? 18,
-                  },
-                },
-              }));
-              clearError('minAgeRange');
-            }}
-            style={getInputStyle('minAgeRange')}
-            keyboardType="numeric"
-            accessibilityLabel="Minimum age preference"
-          />
-          <ErrorText field="minAgeRange" errors={errors} />
-        </View>
-
-        <View style={styles.halfField}>
-          <Text style={styles.label}>Max Age *</Text>
-          <TextInput
-            placeholder="35"
-            value={String(preferences.partnerPreference?.ageRange?.max ?? 35)}
-            onChangeText={(t) => {
-              setPreferences((p) => ({
-                ...p,
-                partnerPreference: {
-                  ...p.partnerPreference,
-                  ageRange: {
-                    min: p?.partnerPreference?.ageRange?.min ?? 18,
-                    max: parseInt(t) ?? 35,
-                  },
-                },
-              }));
-              clearError('maxAgeRange');
-            }}
-            style={getInputStyle('maxAgeRange')}
-            keyboardType="numeric"
-            accessibilityLabel="Maximum age preference"
-          />
-          <ErrorText field="maxAgeRange" errors={errors} />
-        </View>
-      </View>
-
-      <View style={styles.row}>
-        <View style={styles.halfField}>
-          <Text style={styles.label}>Min Height (cm)</Text>
-          <TextInput
-            placeholder="150"
-            value={String(
-              preferences.partnerPreference?.heightRange?.min ?? ''
-            )}
-            onChangeText={(t) =>
-              setPreferences((p) => ({
-                ...p,
-                partnerPreference: {
-                  ...p.partnerPreference,
-                  heightRange: {
-                    max: p?.partnerPreference?.heightRange?.max ?? 0,
-                    min: parseInt(t) ?? 0,
-                  },
-                },
-              }))
-            }
-            style={styles.input}
-            keyboardType="numeric"
-            accessibilityLabel="Minimum height preference"
-          />
-        </View>
-        <View style={styles.halfField}>
-          <Text style={styles.label}>Max Height (cm)</Text>
-          <TextInput
-            placeholder="180"
-            value={String(
-              preferences.partnerPreference?.heightRange?.max ?? ''
-            )}
-            onChangeText={(t) =>
-              setPreferences((p) => ({
-                ...p,
-                partnerPreference: {
-                  ...p.partnerPreference,
-                  heightRange: {
-                    min: p?.partnerPreference?.heightRange?.min ?? 0,
-                    max: parseInt(t) ?? 0,
-                  },
-                },
-              }))
-            }
-            style={styles.input}
-            keyboardType="numeric"
-            accessibilityLabel="Maximum height preference"
-          />
-        </View>
-      </View>
-
-      <Text style={styles.label}>Religion Preference</Text>
-      <TextInput
-        placeholder="e.g. Hindu, Sikh"
-        value={preferences.partnerPreference?.religion?.join(', ') ?? ''}
-        onChangeText={(t) =>
-          setPreferences((p) => ({
-            ...p,
-            partnerPreference: {
-              ...p.partnerPreference,
-              religion: t
-                .split(',')
-                .map((r) => r.trim())
-                .filter(Boolean),
-            },
-          }))
-        }
-        style={styles.input}
-        accessibilityLabel="Religion preference"
-      />
-
-      <Text style={styles.label}>Location Preference *</Text>
-      <TextInput
-        placeholder="e.g. India, UAE"
-        value={preferences.partnerPreference?.country?.join(', ') ?? ''}
-        onChangeText={(t) => {
-          setPreferences((p) => ({
-            ...p,
-            partnerPreference: {
-              ...p.partnerPreference,
-              country: t
-                .split(',')
-                .map((c) => c.trim())
-                .filter(Boolean),
-            },
-          }));
-          clearError('country');
-        }}
-        style={getInputStyle('country')}
-        accessibilityLabel="Location preference"
-      />
-      <ErrorText field="country" errors={errors} />
-
-      <Text style={styles.label}>About Partner</Text>
-      <TextInput
-        placeholder="Describe your ideal partner..."
-        value={preferences.partnerPreference?.aboutPartner ?? ''}
-        onChangeText={(t) =>
-          setPreferences((p) => ({
-            ...p,
-            partnerPreference: { ...p.partnerPreference, aboutPartner: t },
-          }))
-        }
-        style={styles.textArea}
-        multiline
-        numberOfLines={4}
-        textAlignVertical="top"
-        accessibilityLabel="About partner"
-      />
-    </View>
-  );
-
-  // ─── Photos Step ──────────────────────────────────────────────────────────
-
-  const renderPhotos = (): React.ReactElement => (
-    <View>
-      <Text style={styles.stepTitle}>Profile Photos</Text>
-      <Text style={styles.subtitle}>
-        Add photos to make your profile more appealing. The first photo will
-        appear on your profile card.
-      </Text>
-
-      {/* Photo Grid */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.photoRow}
-        keyboardShouldPersistTaps="handled"
-      >
-        {photos.map((img, index) => (
-          <View key={img.uri} style={styles.photoWrapper}>
-            <Image source={{ uri: img.uri }} style={styles.photo} />
-
-            {img.isPrimary === true && (
-              <View style={styles.primaryBadge}>
-                <Text style={styles.primaryBadgeText}>Primary</Text>
-              </View>
-            )}
-
-            <View style={styles.photoActions}>
-              <TouchableOpacity
-                style={styles.photoActionBtn}
-                onPress={() => setPrimaryPhoto(index)}
-                accessibilityRole="button"
-                accessibilityLabel="Set as primary photo"
+              <Text
+                style={[
+                  styles.chipText,
+                  basic.gender === g && styles.chipTextActive,
+                ]}
               >
-                <Feather name="star" size={12} color={Colors.accent} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.photoActionBtn, styles.photoActionBtnDanger]}
-                onPress={() => removePhoto(index)}
-                accessibilityRole="button"
-                accessibilityLabel="Remove photo"
-              >
-                <Feather name="trash-2" size={12} color={Colors.danger} />
-              </TouchableOpacity>
-            </View>
+                {g.charAt(0).toUpperCase() + g.slice(1)}
+              </Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+        <ErrorText field="gender" errors={errors} />
+
+        <Text style={styles.label}>{t('onboarding.fields.religion')} *</Text>
+        <DropdownPicker
+          label={t('onboarding.fields.religion')}
+          options={RELIGIONS}
+          value={basic.religion}
+          onChange={(val) => {
+            setBasic((b) => ({ ...b, religion: val }));
+            clearError('religion');
+          }}
+          field="religion"
+          {...dropdownProps}
+        />
+        <ErrorText field="religion" errors={errors} />
+
+        <Text style={styles.label}>{t('onboarding.fields.country')}</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.country')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={basic.country}
+          onChangeText={(text) => setBasic((b) => ({ ...b, country: text }))}
+          style={styles.input}
+          accessibilityLabel={t('onboarding.fields.country')}
+        />
+
+        <Text style={styles.label}>{t('onboarding.fields.state')}</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.state')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={basic.state}
+          onChangeText={(text) => setBasic((b) => ({ ...b, state: text }))}
+          style={styles.input}
+          accessibilityLabel={t('onboarding.fields.state')}
+        />
+
+        <Text style={styles.label}>{t('onboarding.fields.city')}</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.city')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={basic.city}
+          onChangeText={(text) => setBasic((b) => ({ ...b, city: text }))}
+          style={styles.input}
+          accessibilityLabel={t('onboarding.fields.city')}
+        />
+
+        <Text style={styles.label}>{t('onboarding.fields.qualification')} *</Text>
+        <DropdownPicker
+          label={t('onboarding.fields.qualification')}
+          options={QUALIFICATIONS}
+          value={basic.qualification}
+          onChange={(val) => {
+            setBasic((b) => ({ ...b, qualification: val }));
+            clearError('qualification');
+          }}
+          field="qualification"
+          {...dropdownProps}
+        />
+        <ErrorText field="qualification" errors={errors} />
+
+        <Text style={styles.label}>{t('onboarding.fields.occupation')} *</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.occupation')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={basic.occupation}
+          onChangeText={(text) => {
+            setBasic((b) => ({ ...b, occupation: text }));
+            clearError('occupation');
+          }}
+          style={inputStyle('occupation')}
+          accessibilityLabel={t('onboarding.fields.occupation')}
+        />
+        <ErrorText field="occupation" errors={errors} />
+
+        <Text style={styles.label}>{t('onboarding.fields.height')} *</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.height')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={basic.height}
+          onChangeText={(text) => {
+            setBasic((b) => ({ ...b, height: text }));
+            clearError('height');
+          }}
+          style={inputStyle('height')}
+          keyboardType="numeric"
+          accessibilityLabel={t('onboarding.fields.height')}
+        />
+        <ErrorText field="height" errors={errors} />
+      </View>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [basic, errors, dropdownProps, styles, theme, t, inputStyle, clearError]
+  );
+
+  // ─── Step: Preferences ────────────────────────────────────────────────────
+
+  const renderPreferences = useMemo(
+    () => (
+      <View>
+        <Text style={styles.stepTitle}>{t('onboarding.preferences.title')}</Text>
+        <Text style={styles.subtitle}>{t('onboarding.preferences.subtitle')}</Text>
+
+        {/* Age Range */}
+        <View style={styles.row}>
+          <View style={styles.halfField}>
+            <Text style={styles.label}>{t('onboarding.fields.min_age')} *</Text>
+            <TextInput
+              placeholder="18"
+              placeholderTextColor={theme.colors.textMuted}
+              value={String(preferences.partnerPreference?.ageRange?.min ?? 18)}
+              onChangeText={(text) => {
+                const parsed = parseInt(text, 10);
+                setPreferences((p) => ({
+                  ...p,
+                  partnerPreference: {
+                    ...p.partnerPreference,
+                    ageRange: {
+                      max: p.partnerPreference?.ageRange?.max ?? 35,
+                      min: isNaN(parsed) ? 18 : parsed,
+                    },
+                  },
+                }));
+                clearError('minAgeRange');
+              }}
+              style={inputStyle('minAgeRange')}
+              keyboardType="numeric"
+              accessibilityLabel={t('onboarding.fields.min_age')}
+            />
+            <ErrorText field="minAgeRange" errors={errors} />
           </View>
-        ))}
 
-        {/* Add Photo Button */}
-        {photos.length < 6 ? (
-          <TouchableOpacity
-            style={styles.addPhotoBtn}
-            onPress={() => {
-              void pickImage();
-            }}
-            accessibilityRole="button"
-            accessibilityLabel="Add photo"
-          >
-            <Feather name="plus" size={28} color={Colors.textMuted} />
-            <Text style={styles.addPhotoText}>Add Photo</Text>
-          </TouchableOpacity>
-        ) : (
-          ''
-        )}
-      </ScrollView>
-
-      <Text style={styles.photoHint}>
-        Tap ⭐ to set a photo as primary. Tap 🗑 to remove it. You can add up to
-        6 photos.
-      </Text>
-
-      {photos.length === 0 && (
-        <View style={styles.photoEmptyState}>
-          <Feather name="camera" size={40} color={Colors.textMuted} />
-          <Text style={styles.photoEmptyTitle}>No photos yet</Text>
-          <Text style={styles.photoEmptySubtitle}>
-            Profiles with photos get 3× more responses
-          </Text>
+          <View style={styles.halfField}>
+            <Text style={styles.label}>{t('onboarding.fields.max_age')} *</Text>
+            <TextInput
+              placeholder="35"
+              placeholderTextColor={theme.colors.textMuted}
+              value={String(preferences.partnerPreference?.ageRange?.max ?? 35)}
+              onChangeText={(text) => {
+                const parsed = parseInt(text, 10);
+                setPreferences((p) => ({
+                  ...p,
+                  partnerPreference: {
+                    ...p.partnerPreference,
+                    ageRange: {
+                      min: p.partnerPreference?.ageRange?.min ?? 18,
+                      max: isNaN(parsed) ? 35 : parsed,
+                    },
+                  },
+                }));
+                clearError('maxAgeRange');
+              }}
+              style={inputStyle('maxAgeRange')}
+              keyboardType="numeric"
+              accessibilityLabel={t('onboarding.fields.max_age')}
+            />
+            <ErrorText field="maxAgeRange" errors={errors} />
+          </View>
         </View>
-      )}
-    </View>
+
+        {/* Height Range */}
+        <View style={styles.row}>
+          <View style={styles.halfField}>
+            <Text style={styles.label}>{t('onboarding.fields.min_height')}</Text>
+            <TextInput
+              placeholder="150"
+              placeholderTextColor={theme.colors.textMuted}
+              value={String(preferences.partnerPreference?.heightRange?.min ?? '')}
+              onChangeText={(text) => {
+                const parsed = parseInt(text, 10);
+                setPreferences((p) => ({
+                  ...p,
+                  partnerPreference: {
+                    ...p.partnerPreference,
+                    heightRange: {
+                      max: p.partnerPreference?.heightRange?.max ?? 0,
+                      min: isNaN(parsed) ? 0 : parsed,
+                    },
+                  },
+                }));
+              }}
+              style={styles.input}
+              keyboardType="numeric"
+              accessibilityLabel={t('onboarding.fields.min_height')}
+            />
+          </View>
+
+          <View style={styles.halfField}>
+            <Text style={styles.label}>{t('onboarding.fields.max_height')}</Text>
+            <TextInput
+              placeholder="180"
+              placeholderTextColor={theme.colors.textMuted}
+              value={String(preferences.partnerPreference?.heightRange?.max ?? '')}
+              onChangeText={(text) => {
+                const parsed = parseInt(text, 10);
+                setPreferences((p) => ({
+                  ...p,
+                  partnerPreference: {
+                    ...p.partnerPreference,
+                    heightRange: {
+                      min: p.partnerPreference?.heightRange?.min ?? 0,
+                      max: isNaN(parsed) ? 0 : parsed,
+                    },
+                  },
+                }));
+              }}
+              style={styles.input}
+              keyboardType="numeric"
+              accessibilityLabel={t('onboarding.fields.max_height')}
+            />
+          </View>
+        </View>
+
+        <Text style={styles.label}>{t('onboarding.fields.religion_preference')}</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.religion_preference')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={preferences.partnerPreference?.religion?.join(', ') ?? ''}
+          onChangeText={(text) =>
+            setPreferences((p) => ({
+              ...p,
+              partnerPreference: {
+                ...p.partnerPreference,
+                religion: text
+                  .split(',')
+                  .map((r) => r.trim())
+                  .filter(Boolean),
+              },
+            }))
+          }
+          style={styles.input}
+          accessibilityLabel={t('onboarding.fields.religion_preference')}
+        />
+
+        <Text style={styles.label}>{t('onboarding.fields.location_preference')} *</Text>
+        <TextInput
+          placeholder={t('onboarding.placeholders.location_preference')}
+          placeholderTextColor={theme.colors.textMuted}
+          value={preferences.partnerPreference?.country?.join(', ') ?? ''}
+          onChangeText={(text) => {
+            setPreferences((p) => ({
+              ...p,
+              partnerPreference: {
+                ...p.partnerPreference,
+                country: text
+                  .split(',')
+                  .map((c) => c.trim())
+                  .filter(Boolean),
+              },
+            }));
+            clearError('country');
+          }}
+          style={inputStyle('country')}
+          accessibilityLabel={t('onboarding.fields.location_preference')}
+        />
+        <ErrorText field="country" errors={errors} />
+      </View>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [preferences, errors, styles, theme, t, inputStyle, clearError]
   );
 
-  const renderReview = (): React.ReactElement => (
-    <View>
-      <Text style={styles.stepTitle}>Review Your Profile</Text>
-      <Text style={styles.subtitle}>
-        Please review your details before submitting
-      </Text>
+  // ─── Step: Photos ─────────────────────────────────────────────────────────
 
-      <View style={styles.reviewCard}>
-        <Text style={styles.reviewSectionTitle}>Personal</Text>
-        <ReviewRow
-          label="Name"
-          value={`${personal.firstName} ${personal.lastName}`.trim()}
-        />
-        <ReviewRow
-          label="Gender"
-          value={
-            personal.gender.charAt(0).toUpperCase() + personal.gender.slice(1)
-          }
-        />
-        <ReviewRow label="Date of Birth" value={personal.dob} />
-        <ReviewRow label="Religion" value={personal.religion} />
-        <ReviewRow
-          label="Location"
-          value={
-            [personal.city, personal.state, personal.country]
-              .filter(Boolean)
-              .join(', ') || 'Not specified'
-          }
-        />
-      </View>
+  const renderPhotos = useMemo(
+    () => (
+      <View>
+        <Text style={styles.stepTitle}>{t('onboarding.photos.title')}</Text>
+        <Text style={styles.subtitle}>{t('onboarding.photos.subtitle')}</Text>
 
-      <View style={styles.reviewCard}>
-        <Text style={styles.reviewSectionTitle}>Physical</Text>
-        <ReviewRow label="Height" value={`${physical.height} cm`} />
-        <ReviewRow
-          label="Body Type"
-          value={physical.bodyType || 'Not specified'}
-        />
-        <ReviewRow
-          label="Complexion"
-          value={physical.complexion || 'Not specified'}
-        />
-      </View>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.photoRow}
+          keyboardShouldPersistTaps="handled"
+        >
+          {photos.map((img, index) => (
+            <View key={`${img.uri}-${index}`} style={styles.photoWrapper}>
+              <Image source={{ uri: img.uri }} style={styles.photo} />
 
-      <View style={styles.reviewCard}>
-        <Text style={styles.reviewSectionTitle}>Education</Text>
-        <ReviewRow label="Qualification" value={education.qualification} />
-        <ReviewRow label="Occupation" value={education.occupation} />
-        <ReviewRow
-          label="Annual Income"
-          value={education.annualIncome || 'Not specified'}
-        />
-      </View>
+              {img.isPrimary && (
+                <View style={styles.primaryBadge}>
+                  <Text style={styles.primaryBadgeText}>
+                    {t('onboarding.photos.primary')}
+                  </Text>
+                </View>
+              )}
 
-      <View style={styles.reviewCard}>
-        <Text style={styles.reviewSectionTitle}>Family</Text>
-        <ReviewRow label="Family Type" value={family.familyType ?? ''} />
-        <ReviewRow
-          label="Family Status"
-          value={family.familyStatus ?? 'Not specified'}
-        />
-      </View>
+              <View style={styles.photoActions}>
+                <TouchableOpacity
+                  style={styles.photoActionBtn}
+                  onPress={() => setPrimaryPhoto(index)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('onboarding.photos.set_primary')}
+                >
+                  <Feather name="star" size={12} color={theme.colors.accent} />
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.photoActionBtn, styles.photoActionBtnDanger]}
+                  onPress={() => removePhoto(index)}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('onboarding.photos.remove')}
+                >
+                  <Feather name="trash-2" size={12} color={theme.colors.danger} />
+                </TouchableOpacity>
+              </View>
+            </View>
+          ))}
 
-      <View style={styles.reviewCard}>
-        <Text style={styles.reviewSectionTitle}>Partner Preferences</Text>
-        <ReviewRow
-          label="Age Range"
-          value={`${preferences.partnerPreference?.ageRange?.min ?? '?'} – ${preferences.partnerPreference?.ageRange?.max ?? '?'} yrs`}
-        />
-        <ReviewRow
-          label="Location"
-          value={
-            preferences.partnerPreference?.country?.join(', ') ??
-            'Not specified'
-          }
-        />
-        <ReviewRow
-          label="Religion"
-          value={
-            preferences.partnerPreference?.religion?.join(', ') ??
-            'Not specified'
-          }
-        />
-      </View>
+          {/* Add button — only rendered when under limit, not empty string */}
+          {photos.length < MAX_PHOTOS && (
+            <TouchableOpacity
+              style={styles.addPhotoBtn}
+              onPress={() => { void pickImage(); }}
+              accessibilityRole="button"
+              accessibilityLabel={t('onboarding.photos.add')}
+            >
+              <Feather name="plus" size={28} color={theme.colors.textMuted} />
+              <Text style={styles.addPhotoText}>{t('onboarding.photos.add')}</Text>
+            </TouchableOpacity>
+          )}
+        </ScrollView>
 
-      <View style={styles.reviewCard}>
-        <Text style={styles.reviewSectionTitle}>Photos</Text>
-        <ReviewRow
-          label="Uploaded"
-          value={
-            photos.length > 0 ? `${photos.length} photo(s)` : 'No photos added'
-          }
-        />
+        <Text style={styles.photoHint}>{t('onboarding.photos.hint')}</Text>
+
+        {photos.length === 0 && (
+          <View style={styles.photoEmptyState}>
+            <Feather name="camera" size={40} color={theme.colors.textMuted} />
+            <Text style={styles.photoEmptyTitle}>
+              {t('onboarding.photos.empty_title')}
+            </Text>
+            <Text style={styles.photoEmptySubtitle}>
+              {t('onboarding.photos.empty_subtitle')}
+            </Text>
+          </View>
+        )}
       </View>
-    </View>
+    ),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [photos, styles, theme, t, pickImage, setPrimaryPhoto, removePhoto]
   );
 
-  const renderStepContent = (): React.ReactElement | null => {
-    switch (currentStep) {
-      case 'personal':
-        return renderPersonal();
-      case 'physical':
-        return renderPhysical();
-      case 'education':
-        return renderEducation();
-      case 'family':
-        return renderFamily();
-      case 'preferences':
-        return renderPreferences();
-      case 'photos':
-        return renderPhotos();
-      case 'review':
-        return renderReview();
-      default:
-        return null;
-    }
-  };
+  // ─── Render ───────────────────────────────────────────────────────────────
+
+  const stepContent: Record<RegistrationStep, React.ReactElement> = useMemo(
+    () => ({
+      basic: renderBasic as React.ReactElement,
+      preferences: renderPreferences as React.ReactElement,
+      photos: renderPhotos as React.ReactElement,
+    }),
+    [renderBasic, renderPreferences, renderPhotos]
+  );
 
   const progressPercent =
     ((STEPS.indexOf(currentStep) + 1) / STEPS.length) * 100;
 
   const isFirstStep = currentStep === STEPS[0];
-  const isLastStep = currentStep === 'review';
+  const isLastStep = currentStep === STEPS[STEPS.length - 1];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -1402,7 +931,7 @@ export default function OnboardingScreen(): React.ReactElement {
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
-          {renderStepContent()}
+          {stepContent[currentStep]}
 
           {/* Navigation Buttons */}
           <View style={styles.buttonContainer}>
@@ -1411,45 +940,47 @@ export default function OnboardingScreen(): React.ReactElement {
                 style={styles.secondaryButton}
                 onPress={handlePrevious}
                 accessibilityRole="button"
-                accessibilityLabel="Go to previous step"
+                accessibilityLabel={t('onboarding.nav.previous')}
               >
-                <Feather name="arrow-left" size={16} color={Colors.primary} />
-                <Text style={styles.secondaryButtonText}>Previous</Text>
+                <Feather
+                  name="arrow-left"
+                  size={16}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.secondaryButtonText}>
+                  {t('onboarding.nav.previous')}
+                </Text>
               </TouchableOpacity>
             )}
 
             <TouchableOpacity
-              style={[styles.primaryButton, loading && styles.disabledButton]}
-              onPress={
-                isLastStep
-                  ? () => {
-                      void handleSubmit();
-                    }
-                  : handleNext
-              }
+              style={[
+                styles.primaryButton,
+                loading && styles.disabledButton,
+              ]}
+              onPress={isLastStep ? () => { void handleSubmit(); } : handleNext}
               disabled={loading}
               accessibilityRole="button"
               accessibilityLabel={
-                isLastStep ? 'Submit profile' : 'Go to next step'
+                isLastStep
+                  ? t('onboarding.nav.submit')
+                  : t('onboarding.nav.next')
               }
             >
               {loading ? (
-                <ActivityIndicator color={Colors.white} />
+                <ActivityIndicator color={theme.colors.white} />
               ) : (
                 <>
                   <Text style={styles.primaryButtonText}>
-                    {isLastStep ? 'Create Profile' : 'Next'}
+                    {isLastStep
+                      ? t('onboarding.nav.submit')
+                      : t('onboarding.nav.next')}
                   </Text>
-                  {!isLastStep && (
-                    <Feather
-                      name="arrow-right"
-                      size={16}
-                      color={Colors.white}
-                    />
-                  )}
-                  {isLastStep && (
-                    <Feather name="check" size={16} color={Colors.white} />
-                  )}
+                  <Feather
+                    name={isLastStep ? 'check' : 'arrow-right'}
+                    size={16}
+                    color={theme.colors.white}
+                  />
                 </>
               )}
             </TouchableOpacity>

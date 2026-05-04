@@ -154,7 +154,6 @@ export const forgotPasswordStyles = (theme: Theme) =>
     successContainer: {
       flex: 1,
       padding: 24,
-      alignItems: 'center',
       justifyContent: 'center',
     },
     successIconWrapper: {
@@ -164,6 +163,7 @@ export const forgotPasswordStyles = (theme: Theme) =>
       backgroundColor: theme.colors.primaryLight,
       alignItems: 'center',
       justifyContent: 'center',
+      alignSelf: 'center',
       marginBottom: 24,
     },
     successTitle: {

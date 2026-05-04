@@ -6,8 +6,5 @@ export interface ForgotPasswordScreenProps {
 
 export interface FormErrors {
   email?: string;
-  password?: string;
-  phone?: string;
-  otp?: string;
   error?: string;
 }

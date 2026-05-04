@@ -10,6 +10,7 @@ export const SocialButton = React.memo<SocialButtonProps>(
   ({ label, onPress, disabled = false, icon, iconColor }) => {
     const styles = useThemedStyles(loginStyles);
     const { theme } = useTheme();
+
     return (
       <TouchableOpacity
         style={[styles.socialButton, disabled && styles.disabledButton]}
@@ -29,4 +30,5 @@ export const SocialButton = React.memo<SocialButtonProps>(
     );
   }
 );
+
 SocialButton.displayName = 'SocialButton';

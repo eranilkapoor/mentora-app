@@ -14,6 +14,7 @@ import errors from './en/errors.json';
 import change_password from './en/change_password.json';
 import edit_profile from './en/edit_profile.json';
 import options from './en/options.json';
+import onboarding from './en/onboarding.json';
 
 import hiCommon from './hi/common.json';
 import hiAuth from './hi/auth.json';
@@ -31,6 +32,7 @@ import hiErrors from './hi/errors.json';
 import hiChange_password from './hi/change_password.json';
 import hiEdit_profile from './hi/edit_profile.json';
 import hiOptions from './hi/options.json';
+import hiOnboarding from './hi/onboarding.json';
 
 export const en = {
   common,
@@ -49,6 +51,7 @@ export const en = {
   change_password,
   edit_profile,
   options,
+  onboarding,
 };
 
 export const hi = {
@@ -68,4 +71,5 @@ export const hi = {
   change_password: hiChange_password,
   edit_profile: hiEdit_profile,
   options: hiOptions,
+  onboarding: hiOnboarding,
 };

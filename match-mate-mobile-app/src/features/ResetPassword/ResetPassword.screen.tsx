@@ -15,23 +15,9 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useResetPasswordMutation } from '@/store/services/authApi';
-import { AuthNavigationProp } from './ResetPassword.types';
 import { resetPasswordStyles } from './ResetPassword.styles';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-interface ResetPasswordScreenProps {
-  navigation: AuthNavigationProp;
-  // Token arrives via deep link query param — passed as route param
-  route: { params: { accessToken: string } };
-}
-
-interface FormErrors {
-  password?: string;
-  confirmPassword?: string;
-  error?: string;
-}
+import { FormErrors, ResetPasswordScreenProps } from './ResetPassword.types';
 
 // ─── Password strength check ──────────────────────────────────────────────────
 

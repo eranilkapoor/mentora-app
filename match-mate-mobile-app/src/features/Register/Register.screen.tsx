@@ -132,9 +132,8 @@ export default function RegisterScreen({
       }
 
       if (response.data) {
-        // Dispatch — RootNavigator handles routing automatically
         dispatch(setCredentials(response.data));
-        // ✅ Save refresh token (ONLY MOBILE)
+        // Save refresh token (ONLY MOBILE)
         if (Platform.OS !== 'web' && response.data?.refreshToken) {
           await SecureStore.setItemAsync(
             'refreshToken',
@@ -203,7 +202,7 @@ export default function RegisterScreen({
       }
       if (response.data) {
         dispatch(setCredentials(response.data));
-        // ✅ Save refresh token (ONLY MOBILE)
+        // Save refresh token (ONLY MOBILE)
         if (Platform.OS !== 'web' && response.data?.refreshToken) {
           await SecureStore.setItemAsync(
             'refreshToken',
@@ -352,7 +351,9 @@ export default function RegisterScreen({
                   />
                   <TextInput
                     style={styles.input}
-                    placeholder={t('auth.placeholders.password_new')}
+                    placeholder={t('auth.placeholders.new_password', {
+                      min: PASSWORD_MIN_LENGTH,
+                    })}
                     placeholderTextColor={theme.colors.textMuted}
                     secureTextEntry={!showPassword}
                     value={password}
@@ -508,7 +509,7 @@ export default function RegisterScreen({
                     </Text>
                     <TextInput
                       style={[styles.otpInput, errors.otp && styles.inputError]}
-                      placeholder="• • • • • •"
+                      placeholder={t('auth.placeholders.otp')}
                       placeholderTextColor={theme.colors.textMuted}
                       keyboardType="number-pad"
                       value={otp}

@@ -1,31 +1,19 @@
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { AuthStackParamList } from '@/navigation/types';
 import Feather from 'react-native-vector-icons/Feather';
 import React from 'react';
+import { AuthNavigationProp } from '@/navigation/types';
 
-// Auth screens live inside AuthStack — not RootStack
-export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
 
-export interface LoginScreenProps {
+export interface ResetPasswordScreenProps {
   navigation: AuthNavigationProp;
-}
-
-export interface RegisterScreenProps {
-  navigation: AuthNavigationProp;
-}
-
-export interface ForgotPasswordScreenProps {
-  navigation: AuthNavigationProp;
+  route: { params: { accessToken: string } };
 }
 
 export type ActiveTab = 'email' | 'phone';
 export type SocialProvider = 'google' | 'apple' | 'facebook';
 
 export interface FormErrors {
-  email?: string;
   password?: string;
-  phone?: string;
-  otp?: string;
+  confirmPassword?: string;
   error?: string;
 }
 

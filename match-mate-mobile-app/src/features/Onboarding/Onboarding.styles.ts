@@ -20,6 +20,8 @@ export const onboardingStyles = (theme: Theme) =>
     },
     stepIndicatorContainer: {
       backgroundColor: theme.colors.white,
+      minHeight: 50,
+      maxHeight: 70,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.colors.divider,
     },
@@ -65,7 +67,7 @@ export const onboardingStyles = (theme: Theme) =>
       color: theme.colors.success,
     },
     stepConnector: {
-      width: 20,
+      width: 60,
       height: 2,
       backgroundColor: theme.colors.border,
       marginHorizontal: 4,
@@ -279,10 +281,6 @@ export const onboardingStyles = (theme: Theme) =>
       flex: 2,
       textAlign: 'right',
     },
-
-    ///////////////////////////
-    // ─── Photo styles (add to onboardingStyles StyleSheet.create block) ───────────
-
     photoRow: {
       flexDirection: 'row',
       gap: 12,
