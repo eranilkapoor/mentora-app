@@ -3,13 +3,15 @@ import { StyleSheet } from 'react-native';
 
 export const onboardingStyles = (theme: Theme) =>
   StyleSheet.create({
-    safe: { flex: 1, backgroundColor: theme.colors.white },
+    safe: { flex: 1, backgroundColor: theme.colors.background },
     container: { flex: 1 },
     content: {
       flexGrow: 1,
       paddingVertical: 24,
       paddingHorizontal: 20,
     },
+
+    // ── Progress Bar ──────────────────────────────────────────────────────────
     progressBarWrapper: {
       height: 4,
       backgroundColor: theme.colors.border,
@@ -18,8 +20,10 @@ export const onboardingStyles = (theme: Theme) =>
       height: 4,
       backgroundColor: theme.colors.primary,
     },
+
+    // ── Step Indicator ────────────────────────────────────────────────────────
     stepIndicatorContainer: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       minHeight: 50,
       maxHeight: 70,
       borderBottomWidth: StyleSheet.hairlineWidth,
@@ -75,6 +79,8 @@ export const onboardingStyles = (theme: Theme) =>
     stepConnectorCompleted: {
       backgroundColor: theme.colors.success,
     },
+
+    // ── Typography ────────────────────────────────────────────────────────────
     stepTitle: {
       fontSize: 22,
       fontWeight: '700',
@@ -93,6 +99,14 @@ export const onboardingStyles = (theme: Theme) =>
       color: theme.colors.textSecondary,
       marginBottom: 6,
     },
+    error: {
+      color: theme.colors.error,
+      marginBottom: 10,
+      marginTop: -6,
+      fontSize: 12,
+    },
+
+    // ── Inputs ────────────────────────────────────────────────────────────────
     input: {
       borderWidth: 1,
       borderColor: theme.colors.border,
@@ -104,22 +118,12 @@ export const onboardingStyles = (theme: Theme) =>
       color: theme.colors.textPrimary,
       backgroundColor: theme.colors.inputBackground,
     },
-    textArea: {
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 13,
-      marginBottom: 12,
-      fontSize: 15,
-      color: theme.colors.textPrimary,
-      backgroundColor: theme.colors.inputBackground,
-      height: 100,
-    },
     inputError: {
       borderColor: theme.colors.error,
       backgroundColor: theme.colors.errorLight,
     },
+
+    // ── Dropdown ──────────────────────────────────────────────────────────────
     dropdownTrigger: {
       flexDirection: 'row',
       justifyContent: 'space-between',
@@ -138,9 +142,13 @@ export const onboardingStyles = (theme: Theme) =>
       borderColor: theme.colors.border,
       borderRadius: 10,
       marginBottom: 12,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       maxHeight: 220,
-      boxShadow: `0px 2px 6px rgba(0, 0, 0, 0.08)`,
+      // Fixed: boxShadow is CSS web-only — use RN shadow props
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
       elevation: 4,
     },
     dropdownItem: {
@@ -163,26 +171,32 @@ export const onboardingStyles = (theme: Theme) =>
       color: theme.colors.primary,
       fontWeight: '600',
     },
+
+    // ── Chips ─────────────────────────────────────────────────────────────────
     chipRow: {
       flexDirection: 'row',
-      gap: 10,
+      flexWrap: 'wrap',
+      gap: 8,
       marginBottom: 12,
+      marginTop: 4,
     },
     chip: {
-      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
       borderWidth: 1,
       borderColor: theme.colors.border,
-      paddingVertical: 12,
-      borderRadius: 10,
-      alignItems: 'center',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 20,
       backgroundColor: theme.colors.inputBackground,
+      gap: 5,
     },
     chipActive: {
       backgroundColor: theme.colors.primaryLight,
       borderColor: theme.colors.primary,
     },
     chipText: {
-      fontSize: 14,
+      fontSize: 13,
       color: theme.colors.textSecondary,
       fontWeight: '500',
     },
@@ -190,6 +204,45 @@ export const onboardingStyles = (theme: Theme) =>
       color: theme.colors.primary,
       fontWeight: '700',
     },
+    chipRemove: {
+      width: 16,
+      height: 16,
+      borderRadius: 8,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    chipMore: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderStyle: 'dashed',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: theme.colors.backgroundLight,
+      gap: 4,
+    },
+    chipMoreText: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      fontWeight: '600',
+    },
+    chipShowLess: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderStyle: 'dashed',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: theme.colors.backgroundLight,
+      gap: 4,
+    },
+
+    // ── Layout ────────────────────────────────────────────────────────────────
     row: {
       flexDirection: 'row',
       gap: 12,
@@ -197,12 +250,8 @@ export const onboardingStyles = (theme: Theme) =>
     halfField: {
       flex: 1,
     },
-    error: {
-      color: theme.colors.error,
-      marginBottom: 10,
-      marginTop: -6,
-      fontSize: 12,
-    },
+
+    // ── Buttons ───────────────────────────────────────────────────────────────
     buttonContainer: {
       flexDirection: 'row',
       gap: 12,
@@ -244,43 +293,8 @@ export const onboardingStyles = (theme: Theme) =>
     disabledButton: {
       opacity: 0.6,
     },
-    reviewCard: {
-      backgroundColor: theme.colors.white,
-      borderRadius: 12,
-      padding: 16,
-      marginBottom: 16,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
-      elevation: 1,
-    },
-    reviewSectionTitle: {
-      fontSize: 13,
-      fontWeight: '700',
-      color: theme.colors.primary,
-      textTransform: 'uppercase',
-      letterSpacing: 0.6,
-      marginBottom: 10,
-    },
-    reviewSection: {
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      paddingVertical: 8,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
-    },
-    reviewLabel: {
-      fontSize: 13,
-      color: theme.colors.textMuted,
-      flex: 1,
-    },
-    reviewValue: {
-      fontSize: 13,
-      fontWeight: '600',
-      color: theme.colors.textPrimary,
-      flex: 2,
-      textAlign: 'right',
-    },
+
+    // ── Photos ────────────────────────────────────────────────────────────────
     photoRow: {
       flexDirection: 'row',
       gap: 12,
@@ -371,5 +385,43 @@ export const onboardingStyles = (theme: Theme) =>
       fontSize: 13,
       color: theme.colors.textMuted,
       textAlign: 'center',
+    },
+
+    // ── Date Picker ───────────────────────────────────────────────────────────
+    datePickerOverlay: {
+      position: 'absolute',
+      top: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      backgroundColor: theme.colors.modalOverlay,
+      justifyContent: 'center',
+      padding: 20,
+    },
+    datePickerContainer: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 12,
+      padding: 20,
+    },
+    datePickerActions: {
+      flexDirection: 'row',
+      justifyContent: 'flex-end',
+      marginTop: 16,
+      gap: 16,
+    },
+    // Fixed: moved from inline styles in screen
+    datePickerCancelText: {
+      fontSize: 15,
+      fontWeight: '500',
+      color: theme.colors.textMuted,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
+    },
+    datePickerConfirmText: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: theme.colors.primary,
+      paddingVertical: 4,
+      paddingHorizontal: 8,
     },
   });

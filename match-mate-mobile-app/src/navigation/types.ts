@@ -12,7 +12,7 @@ export type AuthStackParamList = {
 
 // ─── Onboarding Stack ─────────────────────────────────────────────────────────
 export type OnboardingStackParamList = {
-  Onboarding: undefined;
+  OnboardingScreen: undefined;
 };
 
 // ─── Home Stack ───────────────────────────────────────────────────────────────

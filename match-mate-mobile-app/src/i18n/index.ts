@@ -1,27 +1,48 @@
-import i18n from 'i18next';
+import i18n, { Resource } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { en, hi } from './locales';
 
-const resources = {
+// Typed resources (better TS support)
+const resources: Resource = {
   en: { translation: en },
   hi: { translation: hi },
-} as const;
+};
 
-i18n
+// Default language (can be dynamic later)
+const DEFAULT_LANGUAGE = 'en';
+
+void i18n
   .use(initReactI18next)
   .init({
     resources,
+    lng: DEFAULT_LANGUAGE, // explicitly set language
     fallbackLng: 'en',
+
+    // Debug only in dev
+    debug: __DEV__,
+
+    // Performance optimizations
+    load: 'languageOnly', // avoids en-US vs en issues
+    cleanCode: true,
+
     interpolation: {
-      escapeValue: false,
+      escapeValue: false, // React already escapes
     },
+
+    // Return handling
+    returnNull: false,
+    returnEmptyString: false,
+
+    // Better key handling
+    keySeparator: '.', // supports nested keys like auth.login.title
+    nsSeparator: ':',
+
     compatibilityJSON: 'v4',
   })
-  .then(() => {
-    console.info(`i18n initialized with language: ${i18n.language}`);
-  })
-  .catch((err) => {
-    console.error('Error initializing i18n:', err);
+  .catch((err: unknown) => {
+    if (__DEV__) {
+      console.error('i18n init error:', err);
+    }
   });
 
 export default i18n;

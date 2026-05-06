@@ -12,7 +12,7 @@ export default function OnboardingStack(): React.ReactElement {
 
   return (
     <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
-      <Stack.Screen name="Onboarding" component={OnboardingScreen} />
+      <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
     </Stack.Navigator>
   );
 }

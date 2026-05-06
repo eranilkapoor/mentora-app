@@ -306,14 +306,16 @@ export const loginStyles = (theme: Theme) =>
       maxHeight: 300,
       backgroundColor: theme.colors.surface,
       borderRadius: 10,
-      ...(Platform.OS === 'ios' || Platform.OS === 'android' ? {
-        boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
-      } : {
-      shadowColor: theme.colors.black,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.15,
-      shadowRadius: 8,
-      }),
+      ...(Platform.OS === 'ios' || Platform.OS === 'android'
+        ? {
+            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
+          }
+        : {
+            shadowColor: theme.colors.black,
+            shadowOffset: { width: 0, height: 4 },
+            shadowOpacity: 0.15,
+            shadowRadius: 8,
+          }),
       elevation: 10,
     },
   });

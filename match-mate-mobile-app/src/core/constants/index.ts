@@ -4,37 +4,13 @@ export const WHATSAPP_NUMBER = '919654698878';
 
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const PHONE_REGEX = /^\d{6,15}$/;
-export const DEFAULT_COUNTRY_CODE = '91'; // Default to India
+export const DEFAULT_COUNTRY_CODE = '91';
 export const PASSWORD_MIN_LENGTH = 6;
 export const PHONE_MAX_LENGTH = 10;
 export const OTP_LENGTH = 6;
 
 export const EMOJIS = ['😀', '😂', '❤️', '👍', '😍', '🙏', '🎉', '😊'];
-
-export const RELIGIONS = [
-  'Hindu',
-  'Muslim',
-  'Christian',
-  'Sikh',
-  'Jain',
-  'Buddhist',
-  'Jewish',
-  'Parsi',
-  'Other',
-  'Prefer not to say',
-];
-
-export const PROFILE_FOR_OPTIONS = [
-  'Self',
-  'Son',
-  'Daughter',
-  'Brother',
-  'Sister',
-  'Friend',
-  'Relative',
-  'Client',
-  'Other',
-];
+export const MAX_PHOTOS = 6;
 
 export const COUNTRY_CODES = [
   '1',

@@ -1,6 +1,7 @@
 {
   "save": "Save",
   "cancel": "Cancel",
+  "confirm": "Confirm",
   "edit": "Edit",
   "delete": "Delete",
   "update": "Update",
@@ -15,5 +16,14 @@
   "yes": "Yes",
   "no": "No",
   "see_all": "See all",
-  "or": "OR"
+  "or": "OR",
+  "error": "Something went wrong. Please try again.",
+  "something_went_wrong ": "Something went wrong. Please try again.",
+  "network_error": "Network error. Please check your connection.",
+  "validation": {
+    "required": "This field is required",
+    "invalid_email": "Please enter a valid email address",
+    "password_length": "Password must be at least 6 characters",
+    "password_mismatch": "Passwords do not match"
+  }
 }

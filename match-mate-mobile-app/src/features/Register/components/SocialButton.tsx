@@ -10,7 +10,7 @@ export const SocialButton = React.memo<SocialButtonProps>(
   ({ label, onPress, disabled = false, icon, iconColor }) => {
     const styles = useThemedStyles(registerStyles);
     const { theme } = useTheme();
-    
+
     return (
       <TouchableOpacity
         style={[styles.socialButton, disabled && styles.disabledButton]}

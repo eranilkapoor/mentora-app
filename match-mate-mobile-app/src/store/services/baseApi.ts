@@ -60,7 +60,7 @@ const baseQueryWithAuth: BaseQueryFn<
 
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  if (result.error && result.error.status === 401) {
+  if (result.error?.status === 401) {
     // 🔒 Prevent multiple refresh calls
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();

@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { createStyles } from '../styles/ErrorBoundary.styles';
@@ -28,7 +28,6 @@ class ErrorBoundary extends React.Component<Props, State> {
     this.props.onError?.(error, info);
 
     if (__DEV__) {
-      // eslint-disable-next-line no-console
       console.error('[ErrorBoundary]', error, info.componentStack);
     }
   }

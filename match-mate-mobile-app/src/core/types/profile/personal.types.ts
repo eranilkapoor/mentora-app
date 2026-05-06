@@ -1,32 +1,34 @@
-import { Gender, MaritalStatus } from '../common/enums';
+import {
+  Country,
+  Gender,
+  MaritalStatus,
+  ProfileFor,
+  Qualification,
+  Religion,
+} from '../common/enums';
 
 export interface BasicData {
-  profileFor: string;
+  profileFor: ProfileFor;
   firstName: string;
   lastName: string;
   gender: Gender;
-  dob: string;
-  religion: string;
-  caste: string;
-  country: string;
-  state: string;
-  city: string;
-  motherTongue: string;
+  dateOfBirth: string;
+  religion: Religion;
+  country: Country;
   maritalStatus: MaritalStatus;
-  aboutMe: string;
-  qualification: string;
+  qualification: Qualification;
   occupation: string;
   height: string;
 }
 export interface PersonalData {
-  profileFor: string;
+  profileFor: ProfileFor;
   firstName: string;
   lastName: string;
   gender: Gender;
-  dob: string;
-  religion: string;
+  dateOfBirth: string;
+  religion: Religion;
   caste: string;
-  country: string;
+  country: Country;
   state: string;
   city: string;
   motherTongue: string;
@@ -38,9 +40,9 @@ export interface MatchProfile {
   userId: string;
   name: string;
   age: number;
-  height: string; // e.g. "5'4\""
-  location: string; // e.g. "Pune, Maharashtra"
-  religion: string; // e.g. "Hindu • Brahmin"
+  height: string;
+  location: string;
+  religion: string;
   education: string;
   profession: string;
   isOnline?: boolean;

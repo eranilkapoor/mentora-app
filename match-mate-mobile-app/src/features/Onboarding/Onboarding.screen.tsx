@@ -19,189 +19,37 @@ import { useAppDispatch } from '@/store/hooks';
 import { setProfileCompleted } from '@/store/slices/authSlice';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import {
-  PROFILE_FOR_OPTIONS,
-  RELIGIONS,
-  QUALIFICATIONS,
-} from '@/core/constants';
+import { MAX_PHOTOS } from '@/core/constants';
 import { useOnboardingProfileMutation } from '@/store/services/authApi';
 import {
-  DropdownPickerProps,
-  ErrorTextProps,
-  RegistrationStep,
+  ONBOARDING_STEPS,
+  OnboardingSteps,
   ProfileImage,
 } from './Onboarding.types';
 import { onboardingStyles } from './Onboarding.styles';
-import { Gender, Genders, BasicData, PreferencesData } from '@/core/types';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const STEPS: RegistrationStep[] = ['basic', 'preferences', 'photos'];
-
-const STEP_ICONS: Record<RegistrationStep, string> = {
-  basic: 'user',
-  preferences: 'heart',
-  photos: 'camera',
-};
-
-const MAX_PHOTOS = 6;
-
-// ─── Sub-components ───────────────────────────────────────────────────────────
-
-function ErrorText({ field, errors }: ErrorTextProps): React.ReactElement | null {
-  const styles = useThemedStyles(onboardingStyles);
-  if (!errors[field]) return null;
-  return <Text style={styles.error}>{errors[field]}</Text>;
-}
-
-function DropdownPicker({
-  label,
-  options,
-  value,
-  onChange,
-  field,
-  errors,
-  onClearError,
-  showDropdown,
-  onSetShowDropdown,
-}: DropdownPickerProps): React.ReactElement {
-  const isOpen = showDropdown === field;
-  const styles = useThemedStyles(onboardingStyles);
-  const { theme } = useTheme();
-  const { t } = useTranslation();
-
-  return (
-    <View>
-      <TouchableOpacity
-        style={[
-          styles.input,
-          styles.dropdownTrigger,
-          errors[field] ? styles.inputError : null,
-        ]}
-        onPress={() => onSetShowDropdown(isOpen ? null : field)}
-        accessibilityRole="button"
-        accessibilityLabel={t('onboarding.select_label', { label })}
-        accessibilityState={{ expanded: isOpen }}
-      >
-        <Text
-          style={value ? styles.dropdownValueText : styles.dropdownPlaceholder}
-        >
-          {value || t('onboarding.select_placeholder', { label })}
-        </Text>
-        <Feather
-          name={isOpen ? 'chevron-up' : 'chevron-down'}
-          size={16}
-          color={theme.colors.textMuted}
-        />
-      </TouchableOpacity>
-
-      {isOpen && (
-        <View style={styles.dropdown}>
-          <ScrollView
-            nestedScrollEnabled
-            keyboardShouldPersistTaps="handled"
-            showsVerticalScrollIndicator={false}
-          >
-            {options.map((item) => (
-              <TouchableOpacity
-                key={item}
-                style={[
-                  styles.dropdownItem,
-                  value === item && styles.dropdownItemActive,
-                ]}
-                onPress={() => {
-                  onChange(item);
-                  onClearError(field);
-                  onSetShowDropdown(null);
-                }}
-                accessibilityRole="button"
-                accessibilityLabel={item}
-              >
-                <Text
-                  style={[
-                    styles.dropdownItemText,
-                    value === item && styles.dropdownItemTextActive,
-                  ]}
-                >
-                  {item}
-                </Text>
-                {value === item && (
-                  <Feather name="check" size={14} color={theme.colors.primary} />
-                )}
-              </TouchableOpacity>
-            ))}
-          </ScrollView>
-        </View>
-      )}
-    </View>
-  );
-}
-
-function StepIndicator({
-  currentStep,
-}: {
-  currentStep: RegistrationStep;
-}): React.ReactElement {
-  const currentIndex = STEPS.indexOf(currentStep);
-  const styles = useThemedStyles(onboardingStyles);
-  const { theme } = useTheme();
-  const { t } = useTranslation();
-
-  return (
-    <ScrollView
-      horizontal
-      showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.stepIndicatorContent}
-      style={styles.stepIndicatorContainer}
-    >
-      {STEPS.map((step, index) => {
-        const isCompleted = index < currentIndex;
-        const isActive = index === currentIndex;
-
-        return (
-          <View key={step} style={styles.stepIndicatorItem}>
-            <View
-              style={[
-                styles.stepDot,
-                isCompleted && styles.stepDotCompleted,
-                isActive && styles.stepDotActive,
-              ]}
-            >
-              {isCompleted ? (
-                <Feather name="check" size={12} color={theme.colors.white} />
-              ) : (
-                <Feather
-                  name={STEP_ICONS[step]}
-                  size={12}
-                  color={isActive ? theme.colors.white : theme.colors.textMuted}
-                />
-              )}
-            </View>
-            <Text
-              style={[
-                styles.stepDotLabel,
-                isActive && styles.stepDotLabelActive,
-                isCompleted && styles.stepDotLabelCompleted,
-              ]}
-            >
-              {t(`onboarding.steps.${step}`)}
-            </Text>
-            {index < STEPS.length - 1 && (
-              <View
-                style={[
-                  styles.stepConnector,
-                  isCompleted && styles.stepConnectorCompleted,
-                ]}
-              />
-            )}
-          </View>
-        );
-      })}
-    </ScrollView>
-  );
-}
-
-// ─── Main Screen ──────────────────────────────────────────────────────────────
+import {
+  Gender,
+  Genders,
+  BasicData,
+  PreferencesData,
+  MaritalStatus,
+  Religion_Options,
+  Marital_Status_Options,
+  Profile_For_Options,
+  Qualification_Options,
+  Country_Options,
+  Day_Options,
+  Month_Options,
+  Year_Options,
+  Religion,
+  Country,
+  Qualification,
+  ProfileFor,
+} from '@/core/types';
+import { ErrorText } from './components/ErrorText';
+import { DropdownPicker } from './components/DropdownPicker';
+import { StepIndicator } from './components/StepIndicator';
+import { SearchMultiSelect } from './components/SearchMultiSelect';
 
 export default function OnboardingScreen(): React.ReactElement {
   const dispatch = useAppDispatch();
@@ -209,65 +57,51 @@ export default function OnboardingScreen(): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const [currentStep, setCurrentStep] = useState<RegistrationStep>('basic');
+  const [currentStep, setCurrentStep] = useState<OnboardingSteps>('basic');
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Separate dropdown state for main form and date picker
+  // to prevent them from interfering with each other
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
+  const [showDatePickerDropdown, setShowDatePickerDropdown] = useState<
+    string | null
+  >(null);
+
   const [photos, setPhotos] = useState<ProfileImage[]>([]);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [tempDate, setTempDate] = useState({ day: '', month: '', year: '' });
 
   const [basic, setBasic] = useState<BasicData>({
-    profileFor: '',
+    profileFor: 'self',
     firstName: '',
     lastName: '',
-    dob: '',
+    dateOfBirth: '',
     gender: 'male',
-    religion: '',
-    caste: '',
-    country: '',
-    state: '',
-    city: '',
-    motherTongue: '',
+    religion: 'hindu',
+    country: 'india',
     maritalStatus: 'never_married',
-    aboutMe: '',
-    qualification: '',
+    qualification: 'btech',
     occupation: '',
     height: '',
   });
 
   const [preferences, setPreferences] = useState<PreferencesData>({
-    partnerPreference: {
-      ageRange: { min: 18, max: 32 },
-      heightRange: { min: 155, max: 170 },
-      maritalStatus: [],
-      religion: [],
-      caste: [],
-      country: [],
-      state: [],
-      city: [],
-      qualification: [],
-      occupation: [],
-      annualIncomeRange: { min: 100000, max: 1000000 },
-      bodyType: [],
-      complexion: [],
-      smoking: [],
-      drinking: [],
-      diet: [],
-      languagesKnown: [],
-      aboutPartner: '',
-    },
-    hobbies: [],
-    smoking: 'non_smoker',
-    drinking: 'non_drinker',
-    diet: 'vegetarian',
-    music: [],
-    movies: [],
-    sports: [],
-    languagesKnown: [],
+    ageRange: { min: 18, max: 32 },
+    heightRange: { min: 155, max: 170 },
+    maritalStatus: [],
+    religion: [],
+    country: [],
   });
 
   const [onboardingProfile] = useOnboardingProfileMutation();
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
+
+  const formatDate = useCallback((d: string, m: string, y: string): string => {
+    if (!d || !m || !y) return '';
+    return `${y}-${m.padStart(2, '0')}-${d.padStart(2, '0')}`;
+  }, []);
 
   const clearError = useCallback((field: string): void => {
     setErrors((prev) => {
@@ -278,12 +112,46 @@ export default function OnboardingScreen(): React.ReactElement {
     });
   }, []);
 
-  // Stable style helper — memoised so it doesn't recreate arrays on every render
+  const openDatePicker = useCallback(() => {
+    if (basic.dateOfBirth) {
+      const [y, m, d] = basic.dateOfBirth.split('-');
+      setTempDate({ day: d ?? '', month: m ?? '', year: y ?? '' });
+    }
+    // Close main form dropdowns when date picker opens
+    setShowDropdown(null);
+    setShowDatePicker(true);
+  }, [basic.dateOfBirth]);
+
+  const confirmDate = useCallback(() => {
+    const { day, month, year } = tempDate;
+
+    if (!day || !month || !year) {
+      Alert.alert(t('common.error'), t('onboarding.errors.date_incomplete'));
+      return;
+    }
+
+    const formatted = formatDate(day, month, year);
+    setBasic((b) => ({ ...b, dateOfBirth: formatted }));
+    clearError('dateOfBirth');
+    setShowDatePicker(false);
+    setShowDatePickerDropdown(null);
+  }, [tempDate, formatDate, clearError, t]);
+
+  const cancelDatePicker = useCallback(() => {
+    setShowDatePicker(false);
+    setShowDatePickerDropdown(null);
+    // Restore tempDate to match current saved date
+    if (basic.dateOfBirth) {
+      const [y, m, d] = basic.dateOfBirth.split('-');
+      setTempDate({ day: d ?? '', month: m ?? '', year: y ?? '' });
+    } else {
+      setTempDate({ day: '', month: '', year: '' });
+    }
+  }, [basic.dateOfBirth]);
+
   const inputStyle = useCallback(
     (field: string) =>
-      errors[field]
-        ? [styles.input, styles.inputError]
-        : [styles.input],
+      errors[field] ? [styles.input, styles.inputError] : [styles.input],
     [errors, styles]
   );
 
@@ -344,14 +212,22 @@ export default function OnboardingScreen(): React.ReactElement {
   const validateBasic = useCallback((): boolean => {
     const e: Record<string, string> = {};
 
-    if (!basic.profileFor.trim()) e.profileFor = t('onboarding.errors.required');
-    if (!basic.firstName.trim()) e.firstName = t('onboarding.errors.first_name_required');
-    if (!basic.dob) e.dob = t('onboarding.errors.dob_required');
+    if (!basic.profileFor.trim())
+      e.profileFor = t('onboarding.errors.required');
+    if (!basic.firstName.trim())
+      e.firstName = t('onboarding.errors.first_name_required');
+    if (!basic.dateOfBirth)
+      e.dateOfBirth = t('onboarding.errors.date_of_birth_required');
     if (!basic.gender) e.gender = t('onboarding.errors.gender_required');
+    if (!basic.maritalStatus)
+      e.maritalStatus = t('onboarding.errors.marital_status_required');
     if (!basic.religion) e.religion = t('onboarding.errors.religion_required');
+    if (!basic.country) e.country = t('onboarding.errors.country_required');
     if (!basic.height.trim()) e.height = t('onboarding.errors.height_required');
-    if (!basic.qualification) e.qualification = t('onboarding.errors.qualification_required');
-    if (!basic.occupation.trim()) e.occupation = t('onboarding.errors.occupation_required');
+    if (!basic.qualification)
+      e.qualification = t('onboarding.errors.qualification_required');
+    if (!basic.occupation.trim())
+      e.occupation = t('onboarding.errors.occupation_required');
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -359,11 +235,23 @@ export default function OnboardingScreen(): React.ReactElement {
 
   const validatePreferences = useCallback((): boolean => {
     const e: Record<string, string> = {};
-    const pref = preferences.partnerPreference;
 
-    if (!pref?.ageRange?.min) e.minAgeRange = t('onboarding.errors.min_age_required');
-    if (!pref?.ageRange?.max) e.maxAgeRange = t('onboarding.errors.max_age_required');
-    if (!pref?.country?.length) e.country = t('onboarding.errors.country_required');
+    if (!preferences.ageRange?.min)
+      e.minAgeRange = t('onboarding.errors.min_age_required');
+    if (!preferences.ageRange?.max)
+      e.maxAgeRange = t('onboarding.errors.max_age_required');
+    if (!preferences.maritalStatus?.length)
+      e.maritalStatusPreference = t(
+        'onboarding.errors.marital_status_preference_required'
+      );
+    if (!preferences.religion?.length)
+      e.religionPreference = t(
+        'onboarding.errors.religion_preference_required'
+      );
+    if (!preferences.country?.length)
+      e.locationPreference = t(
+        'onboarding.errors.location_preference_required'
+      );
 
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -372,7 +260,7 @@ export default function OnboardingScreen(): React.ReactElement {
   // ─── Navigation ───────────────────────────────────────────────────────────
 
   const handleNext = useCallback((): void => {
-    const validators: Partial<Record<RegistrationStep, () => boolean>> = {
+    const validators: Partial<Record<OnboardingSteps, () => boolean>> = {
       basic: validateBasic,
       preferences: validatePreferences,
     };
@@ -380,18 +268,18 @@ export default function OnboardingScreen(): React.ReactElement {
     const validator = validators[currentStep];
     if (validator !== undefined && !validator()) return;
 
-    const currentIndex = STEPS.indexOf(currentStep);
-    if (currentIndex < STEPS.length - 1) {
-      setCurrentStep(STEPS[currentIndex + 1]);
+    const currentIndex = ONBOARDING_STEPS.indexOf(currentStep);
+    if (currentIndex < ONBOARDING_STEPS.length - 1) {
+      setCurrentStep(ONBOARDING_STEPS[currentIndex + 1]);
       setErrors({});
       setShowDropdown(null);
     }
   }, [currentStep, validateBasic, validatePreferences]);
 
   const handlePrevious = useCallback((): void => {
-    const currentIndex = STEPS.indexOf(currentStep);
+    const currentIndex = ONBOARDING_STEPS.indexOf(currentStep);
     if (currentIndex > 0) {
-      setCurrentStep(STEPS[currentIndex - 1]);
+      setCurrentStep(ONBOARDING_STEPS[currentIndex - 1]);
       setErrors({});
       setShowDropdown(null);
     }
@@ -403,7 +291,6 @@ export default function OnboardingScreen(): React.ReactElement {
     setLoading(true);
     try {
       const formData = new FormData();
-
       formData.append('basic', JSON.stringify(basic));
       formData.append('preferences', JSON.stringify(preferences));
 
@@ -418,7 +305,6 @@ export default function OnboardingScreen(): React.ReactElement {
           const blob = await response.blob();
           formData.append('images', new File([blob], filename, { type }));
         } else {
-          // React Native FormData accepts this shape for multipart uploads
           (formData as FormData).append('images', {
             uri: photo.uri,
             name: filename,
@@ -426,9 +312,7 @@ export default function OnboardingScreen(): React.ReactElement {
           } as unknown as Blob);
         }
 
-        if (photo.isPrimary) {
-          primaryIndex = index;
-        }
+        if (photo.isPrimary) primaryIndex = index;
       }
 
       formData.append('primaryImageIndex', String(primaryIndex));
@@ -450,7 +334,7 @@ export default function OnboardingScreen(): React.ReactElement {
     }
   }, [basic, preferences, photos, dispatch, onboardingProfile, t]);
 
-  // ─── Shared dropdown props ────────────────────────────────────────────────
+  // ─── Dropdown props — two separate instances to prevent state collision ────
 
   const dropdownProps = useMemo(
     () => ({
@@ -460,6 +344,17 @@ export default function OnboardingScreen(): React.ReactElement {
       onSetShowDropdown: setShowDropdown,
     }),
     [errors, clearError, showDropdown]
+  );
+
+  // Date picker gets its own isolated dropdown state
+  const datePickerDropdownProps = useMemo(
+    () => ({
+      errors: {} as Record<string, string>,
+      onClearError: () => {},
+      showDropdown: showDatePickerDropdown,
+      onSetShowDropdown: setShowDatePickerDropdown,
+    }),
+    [showDatePickerDropdown]
   );
 
   // ─── Step: Basic ──────────────────────────────────────────────────────────
@@ -473,10 +368,10 @@ export default function OnboardingScreen(): React.ReactElement {
         <Text style={styles.label}>{t('onboarding.fields.profile_for')} *</Text>
         <DropdownPicker
           label={t('onboarding.fields.profile_for')}
-          options={PROFILE_FOR_OPTIONS}
+          options={Profile_For_Options}
           value={basic.profileFor}
           onChange={(val) => {
-            setBasic((b) => ({ ...b, profileFor: val }));
+            setBasic((b) => ({ ...b, profileFor: val as ProfileFor }));
             clearError('profileFor');
           }}
           field="profileFor"
@@ -502,25 +397,32 @@ export default function OnboardingScreen(): React.ReactElement {
         <TextInput
           placeholder={t('onboarding.placeholders.last_name')}
           placeholderTextColor={theme.colors.textMuted}
-          value={basic.lastName}
+          value={basic.lastName ?? ''}
           onChangeText={(text) => setBasic((b) => ({ ...b, lastName: text }))}
           style={styles.input}
           accessibilityLabel={t('onboarding.fields.last_name')}
         />
 
-        <Text style={styles.label}>{t('onboarding.fields.dob')} *</Text>
-        <TextInput
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor={theme.colors.textMuted}
-          value={basic.dob}
-          onChangeText={(text) => {
-            setBasic((b) => ({ ...b, dob: text }));
-            clearError('dob');
-          }}
-          style={inputStyle('dob')}
-          accessibilityLabel={t('onboarding.fields.dob')}
-        />
-        <ErrorText field="dob" errors={errors} />
+        <Text style={styles.label}>
+          {t('onboarding.fields.date_of_birth')} *
+        </Text>
+        <TouchableOpacity
+          onPress={openDatePicker}
+          style={inputStyle('dateOfBirth')}
+          accessibilityRole="button"
+          accessibilityLabel={t('onboarding.fields.date_of_birth')}
+        >
+          <Text
+            style={
+              basic.dateOfBirth
+                ? styles.dropdownValueText
+                : styles.dropdownPlaceholder
+            }
+          >
+            {basic.dateOfBirth || t('onboarding.placeholders.select_date')}
+          </Text>
+        </TouchableOpacity>
+        <ErrorText field="dateOfBirth" errors={errors} />
 
         <Text style={styles.label}>{t('onboarding.fields.gender')} *</Text>
         <View style={styles.chipRow}>
@@ -553,13 +455,29 @@ export default function OnboardingScreen(): React.ReactElement {
         </View>
         <ErrorText field="gender" errors={errors} />
 
+        <Text style={styles.label}>
+          {t('onboarding.fields.marital_status')} *
+        </Text>
+        <DropdownPicker
+          label={t('onboarding.fields.marital_status')}
+          options={Marital_Status_Options}
+          value={basic.maritalStatus}
+          onChange={(val) => {
+            setBasic((b) => ({ ...b, maritalStatus: val as MaritalStatus }));
+            clearError('maritalStatus');
+          }}
+          field="maritalStatus"
+          {...dropdownProps}
+        />
+        <ErrorText field="maritalStatus" errors={errors} />
+
         <Text style={styles.label}>{t('onboarding.fields.religion')} *</Text>
         <DropdownPicker
           label={t('onboarding.fields.religion')}
-          options={RELIGIONS}
+          options={Religion_Options}
           value={basic.religion}
           onChange={(val) => {
-            setBasic((b) => ({ ...b, religion: val }));
+            setBasic((b) => ({ ...b, religion: val as Religion }));
             clearError('religion');
           }}
           field="religion"
@@ -567,43 +485,29 @@ export default function OnboardingScreen(): React.ReactElement {
         />
         <ErrorText field="religion" errors={errors} />
 
-        <Text style={styles.label}>{t('onboarding.fields.country')}</Text>
-        <TextInput
-          placeholder={t('onboarding.placeholders.country')}
-          placeholderTextColor={theme.colors.textMuted}
+        <Text style={styles.label}>{t('onboarding.fields.country')} *</Text>
+        <DropdownPicker
+          label={t('onboarding.fields.country')}
+          options={Country_Options}
           value={basic.country}
-          onChangeText={(text) => setBasic((b) => ({ ...b, country: text }))}
-          style={styles.input}
-          accessibilityLabel={t('onboarding.fields.country')}
+          onChange={(val) => {
+            setBasic((b) => ({ ...b, country: val as Country }));
+            clearError('country');
+          }}
+          field="country"
+          {...dropdownProps}
         />
+        <ErrorText field="country" errors={errors} />
 
-        <Text style={styles.label}>{t('onboarding.fields.state')}</Text>
-        <TextInput
-          placeholder={t('onboarding.placeholders.state')}
-          placeholderTextColor={theme.colors.textMuted}
-          value={basic.state}
-          onChangeText={(text) => setBasic((b) => ({ ...b, state: text }))}
-          style={styles.input}
-          accessibilityLabel={t('onboarding.fields.state')}
-        />
-
-        <Text style={styles.label}>{t('onboarding.fields.city')}</Text>
-        <TextInput
-          placeholder={t('onboarding.placeholders.city')}
-          placeholderTextColor={theme.colors.textMuted}
-          value={basic.city}
-          onChangeText={(text) => setBasic((b) => ({ ...b, city: text }))}
-          style={styles.input}
-          accessibilityLabel={t('onboarding.fields.city')}
-        />
-
-        <Text style={styles.label}>{t('onboarding.fields.qualification')} *</Text>
+        <Text style={styles.label}>
+          {t('onboarding.fields.qualification')} *
+        </Text>
         <DropdownPicker
           label={t('onboarding.fields.qualification')}
-          options={QUALIFICATIONS}
+          options={Qualification_Options}
           value={basic.qualification}
           onChange={(val) => {
-            setBasic((b) => ({ ...b, qualification: val }));
+            setBasic((b) => ({ ...b, qualification: val as Qualification }));
             clearError('qualification');
           }}
           field="qualification"
@@ -641,8 +545,17 @@ export default function OnboardingScreen(): React.ReactElement {
         <ErrorText field="height" errors={errors} />
       </View>
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [basic, errors, dropdownProps, styles, theme, t, inputStyle, clearError]
+    [
+      basic,
+      errors,
+      dropdownProps,
+      styles,
+      theme,
+      t,
+      inputStyle,
+      clearError,
+      openDatePicker,
+    ]
   );
 
   // ─── Step: Preferences ────────────────────────────────────────────────────
@@ -650,27 +563,27 @@ export default function OnboardingScreen(): React.ReactElement {
   const renderPreferences = useMemo(
     () => (
       <View>
-        <Text style={styles.stepTitle}>{t('onboarding.preferences.title')}</Text>
-        <Text style={styles.subtitle}>{t('onboarding.preferences.subtitle')}</Text>
+        <Text style={styles.stepTitle}>
+          {t('onboarding.preferences.title')}
+        </Text>
+        <Text style={styles.subtitle}>
+          {t('onboarding.preferences.subtitle')}
+        </Text>
 
-        {/* Age Range */}
         <View style={styles.row}>
           <View style={styles.halfField}>
             <Text style={styles.label}>{t('onboarding.fields.min_age')} *</Text>
             <TextInput
               placeholder="18"
               placeholderTextColor={theme.colors.textMuted}
-              value={String(preferences.partnerPreference?.ageRange?.min ?? 18)}
+              value={String(preferences.ageRange?.min ?? 18)}
               onChangeText={(text) => {
                 const parsed = parseInt(text, 10);
                 setPreferences((p) => ({
                   ...p,
-                  partnerPreference: {
-                    ...p.partnerPreference,
-                    ageRange: {
-                      max: p.partnerPreference?.ageRange?.max ?? 35,
-                      min: isNaN(parsed) ? 18 : parsed,
-                    },
+                  ageRange: {
+                    max: p.ageRange?.max ?? 35,
+                    min: isNaN(parsed) ? 18 : parsed,
                   },
                 }));
                 clearError('minAgeRange');
@@ -687,17 +600,14 @@ export default function OnboardingScreen(): React.ReactElement {
             <TextInput
               placeholder="35"
               placeholderTextColor={theme.colors.textMuted}
-              value={String(preferences.partnerPreference?.ageRange?.max ?? 35)}
+              value={String(preferences.ageRange?.max ?? 35)}
               onChangeText={(text) => {
                 const parsed = parseInt(text, 10);
                 setPreferences((p) => ({
                   ...p,
-                  partnerPreference: {
-                    ...p.partnerPreference,
-                    ageRange: {
-                      min: p.partnerPreference?.ageRange?.min ?? 18,
-                      max: isNaN(parsed) ? 35 : parsed,
-                    },
+                  ageRange: {
+                    min: p.ageRange?.min ?? 18,
+                    max: isNaN(parsed) ? 35 : parsed,
                   },
                 }));
                 clearError('maxAgeRange');
@@ -710,24 +620,22 @@ export default function OnboardingScreen(): React.ReactElement {
           </View>
         </View>
 
-        {/* Height Range */}
         <View style={styles.row}>
           <View style={styles.halfField}>
-            <Text style={styles.label}>{t('onboarding.fields.min_height')}</Text>
+            <Text style={styles.label}>
+              {t('onboarding.fields.min_height')}
+            </Text>
             <TextInput
               placeholder="150"
               placeholderTextColor={theme.colors.textMuted}
-              value={String(preferences.partnerPreference?.heightRange?.min ?? '')}
+              value={String(preferences.heightRange?.min ?? '')}
               onChangeText={(text) => {
                 const parsed = parseInt(text, 10);
                 setPreferences((p) => ({
                   ...p,
-                  partnerPreference: {
-                    ...p.partnerPreference,
-                    heightRange: {
-                      max: p.partnerPreference?.heightRange?.max ?? 0,
-                      min: isNaN(parsed) ? 0 : parsed,
-                    },
+                  heightRange: {
+                    max: p.heightRange?.max ?? 0,
+                    min: isNaN(parsed) ? 0 : parsed,
                   },
                 }));
               }}
@@ -738,21 +646,20 @@ export default function OnboardingScreen(): React.ReactElement {
           </View>
 
           <View style={styles.halfField}>
-            <Text style={styles.label}>{t('onboarding.fields.max_height')}</Text>
+            <Text style={styles.label}>
+              {t('onboarding.fields.max_height')}
+            </Text>
             <TextInput
               placeholder="180"
               placeholderTextColor={theme.colors.textMuted}
-              value={String(preferences.partnerPreference?.heightRange?.max ?? '')}
+              value={String(preferences.heightRange?.max ?? '')}
               onChangeText={(text) => {
                 const parsed = parseInt(text, 10);
                 setPreferences((p) => ({
                   ...p,
-                  partnerPreference: {
-                    ...p.partnerPreference,
-                    heightRange: {
-                      min: p.partnerPreference?.heightRange?.min ?? 0,
-                      max: isNaN(parsed) ? 0 : parsed,
-                    },
+                  heightRange: {
+                    min: p.heightRange?.min ?? 0,
+                    max: isNaN(parsed) ? 0 : parsed,
                   },
                 }));
               }}
@@ -763,52 +670,55 @@ export default function OnboardingScreen(): React.ReactElement {
           </View>
         </View>
 
-        <Text style={styles.label}>{t('onboarding.fields.religion_preference')}</Text>
-        <TextInput
-          placeholder={t('onboarding.placeholders.religion_preference')}
-          placeholderTextColor={theme.colors.textMuted}
-          value={preferences.partnerPreference?.religion?.join(', ') ?? ''}
-          onChangeText={(text) =>
+        <SearchMultiSelect
+          label={t('onboarding.fields.marital_status_preference')}
+          options={Marital_Status_Options}
+          selected={preferences.maritalStatus ?? []}
+          onChange={(values) => {
             setPreferences((p) => ({
               ...p,
-              partnerPreference: {
-                ...p.partnerPreference,
-                religion: text
-                  .split(',')
-                  .map((r) => r.trim())
-                  .filter(Boolean),
-              },
-            }))
-          }
-          style={styles.input}
-          accessibilityLabel={t('onboarding.fields.religion_preference')}
+              maritalStatus: values as MaritalStatus[],
+            }));
+            clearError('maritalStatusPreference');
+          }}
+          placeholder={t('onboarding.placeholders.marital_status_preference')}
+          field="maritalStatusPreference"
+          errors={errors}
         />
 
-        <Text style={styles.label}>{t('onboarding.fields.location_preference')} *</Text>
-        <TextInput
-          placeholder={t('onboarding.placeholders.location_preference')}
-          placeholderTextColor={theme.colors.textMuted}
-          value={preferences.partnerPreference?.country?.join(', ') ?? ''}
-          onChangeText={(text) => {
+        <SearchMultiSelect
+          label={t('onboarding.fields.religion_preference')}
+          options={Religion_Options}
+          selected={preferences.religion ?? []}
+          onChange={(values) => {
             setPreferences((p) => ({
               ...p,
-              partnerPreference: {
-                ...p.partnerPreference,
-                country: text
-                  .split(',')
-                  .map((c) => c.trim())
-                  .filter(Boolean),
-              },
+              religion: values as Religion[],
             }));
-            clearError('country');
+            clearError('religionPreference');
           }}
-          style={inputStyle('country')}
-          accessibilityLabel={t('onboarding.fields.location_preference')}
+          placeholder={t('onboarding.placeholders.religion_preference')}
+          field="religionPreference"
+          errors={errors}
         />
-        <ErrorText field="country" errors={errors} />
+
+        <SearchMultiSelect
+          label={t('onboarding.fields.location_preference')}
+          options={Country_Options}
+          selected={preferences.country ?? []}
+          onChange={(values) => {
+            setPreferences((p) => ({
+              ...p,
+              country: values as Country[],
+            }));
+            clearError('locationPreference');
+          }}
+          placeholder={t('onboarding.placeholders.location_preference')}
+          field="locationPreference"
+          errors={errors}
+        />
       </View>
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [preferences, errors, styles, theme, t, inputStyle, clearError]
   );
 
@@ -829,7 +739,6 @@ export default function OnboardingScreen(): React.ReactElement {
           {photos.map((img, index) => (
             <View key={`${img.uri}-${index}`} style={styles.photoWrapper}>
               <Image source={{ uri: img.uri }} style={styles.photo} />
-
               {img.isPrimary && (
                 <View style={styles.primaryBadge}>
                   <Text style={styles.primaryBadgeText}>
@@ -837,7 +746,6 @@ export default function OnboardingScreen(): React.ReactElement {
                   </Text>
                 </View>
               )}
-
               <View style={styles.photoActions}>
                 <TouchableOpacity
                   style={styles.photoActionBtn}
@@ -853,22 +761,29 @@ export default function OnboardingScreen(): React.ReactElement {
                   accessibilityRole="button"
                   accessibilityLabel={t('onboarding.photos.remove')}
                 >
-                  <Feather name="trash-2" size={12} color={theme.colors.danger} />
+                  <Feather
+                    name="trash-2"
+                    size={12}
+                    color={theme.colors.danger}
+                  />
                 </TouchableOpacity>
               </View>
             </View>
           ))}
 
-          {/* Add button — only rendered when under limit, not empty string */}
           {photos.length < MAX_PHOTOS && (
             <TouchableOpacity
               style={styles.addPhotoBtn}
-              onPress={() => { void pickImage(); }}
+              onPress={() => {
+                void pickImage();
+              }}
               accessibilityRole="button"
               accessibilityLabel={t('onboarding.photos.add')}
             >
               <Feather name="plus" size={28} color={theme.colors.textMuted} />
-              <Text style={styles.addPhotoText}>{t('onboarding.photos.add')}</Text>
+              <Text style={styles.addPhotoText}>
+                {t('onboarding.photos.add')}
+              </Text>
             </TouchableOpacity>
           )}
         </ScrollView>
@@ -888,13 +803,12 @@ export default function OnboardingScreen(): React.ReactElement {
         )}
       </View>
     ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [photos, styles, theme, t, pickImage, setPrimaryPhoto, removePhoto]
   );
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // ─── Step content map ─────────────────────────────────────────────────────
 
-  const stepContent: Record<RegistrationStep, React.ReactElement> = useMemo(
+  const stepContent = useMemo<Record<OnboardingSteps, React.ReactElement>>(
     () => ({
       basic: renderBasic as React.ReactElement,
       preferences: renderPreferences as React.ReactElement,
@@ -904,10 +818,14 @@ export default function OnboardingScreen(): React.ReactElement {
   );
 
   const progressPercent =
-    ((STEPS.indexOf(currentStep) + 1) / STEPS.length) * 100;
+    ((ONBOARDING_STEPS.indexOf(currentStep) + 1) / ONBOARDING_STEPS.length) *
+    100;
 
-  const isFirstStep = currentStep === STEPS[0];
-  const isLastStep = currentStep === STEPS[STEPS.length - 1];
+  const isFirstStep = currentStep === ONBOARDING_STEPS[0];
+  const isLastStep =
+    currentStep === ONBOARDING_STEPS[ONBOARDING_STEPS.length - 1];
+
+  // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -916,14 +834,12 @@ export default function OnboardingScreen(): React.ReactElement {
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
         style={styles.container}
       >
-        {/* Progress Bar */}
         <View style={styles.progressBarWrapper}>
           <View
             style={[styles.progressFill, { width: `${progressPercent}%` }]}
           />
         </View>
 
-        {/* Step Indicator */}
         <StepIndicator currentStep={currentStep} />
 
         <ScrollView
@@ -933,7 +849,6 @@ export default function OnboardingScreen(): React.ReactElement {
         >
           {stepContent[currentStep]}
 
-          {/* Navigation Buttons */}
           <View style={styles.buttonContainer}>
             {!isFirstStep && (
               <TouchableOpacity
@@ -954,11 +869,14 @@ export default function OnboardingScreen(): React.ReactElement {
             )}
 
             <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                loading && styles.disabledButton,
-              ]}
-              onPress={isLastStep ? () => { void handleSubmit(); } : handleNext}
+              style={[styles.primaryButton, loading && styles.disabledButton]}
+              onPress={
+                isLastStep
+                  ? () => {
+                      void handleSubmit();
+                    }
+                  : handleNext
+              }
               disabled={loading}
               accessibilityRole="button"
               accessibilityLabel={
@@ -987,6 +905,70 @@ export default function OnboardingScreen(): React.ReactElement {
           </View>
         </ScrollView>
       </KeyboardAvoidingView>
+
+      {/* Date Picker Overlay — outside KeyboardAvoidingView so it covers full screen */}
+      {showDatePicker && (
+        <View style={styles.datePickerOverlay}>
+          <View style={styles.datePickerContainer}>
+            <Text style={styles.stepTitle}>
+              {t('onboarding.date_picker.title')}
+            </Text>
+
+            <Text style={styles.label}>{t('onboarding.date_picker.day')}</Text>
+            <DropdownPicker
+              label={t('onboarding.date_picker.day')}
+              options={Day_Options}
+              value={tempDate.day}
+              onChange={(val) => setTempDate((p) => ({ ...p, day: val }))}
+              field="day"
+              {...datePickerDropdownProps}
+            />
+
+            <Text style={styles.label}>
+              {t('onboarding.date_picker.month')}
+            </Text>
+            <DropdownPicker
+              label={t('onboarding.date_picker.month')}
+              options={Month_Options}
+              value={tempDate.month}
+              onChange={(val) => setTempDate((p) => ({ ...p, month: val }))}
+              field="month"
+              {...datePickerDropdownProps}
+            />
+
+            <Text style={styles.label}>{t('onboarding.date_picker.year')}</Text>
+            <DropdownPicker
+              label={t('onboarding.date_picker.year')}
+              options={Year_Options}
+              value={tempDate.year}
+              onChange={(val) => setTempDate((p) => ({ ...p, year: val }))}
+              field="year"
+              {...datePickerDropdownProps}
+            />
+
+            <View style={styles.datePickerActions}>
+              <TouchableOpacity
+                onPress={cancelDatePicker}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.cancel')}
+              >
+                <Text style={styles.datePickerCancelText}>
+                  {t('common.cancel')}
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={confirmDate}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.confirm')}
+              >
+                <Text style={styles.datePickerConfirmText}>
+                  {t('common.confirm')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
