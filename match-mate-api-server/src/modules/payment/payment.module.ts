@@ -5,7 +5,7 @@ import { PaymentService } from './services/payment.service';
 import { PaymentRepository } from './repositories/payment.repository';
 import { PaymentController } from './controllers/payment.controller';
 import { PaymentAdminController } from './controllers/payment.admin.controller';
-import { Plan, PlanSchema } from '../plan/schemas/plan.schema';
+import { Plan, PlanSchema } from '../subscription/schemas/plan.schema';
 import { SubscriptionModule } from '../subscription/subscription.module';
 
 @Module({

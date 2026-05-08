@@ -17,15 +17,18 @@ import {
   FeatureKey,
   PlanTier,
 } from 'src/common/enums';
-import { Plan, PlanDocument } from 'src/modules/plan/schemas/plan.schema';
+import {
+  Plan,
+  PlanDocument,
+} from 'src/modules/subscription/schemas/plan.schema';
 import {
   Feature,
   FeatureDocument,
-} from 'src/modules/plan/schemas/feature.schema';
+} from 'src/modules/subscription/schemas/feature.schema';
 import {
   PlanFeature,
   PlanFeatureDocument,
-} from 'src/modules/plan/schemas/plan-feature.schema';
+} from 'src/modules/subscription/schemas/plan-feature.schema';
 import {
   NotificationTemplates,
   NotificationTemplatesDocument,

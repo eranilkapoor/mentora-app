@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Subscription } from '../schemas/subscription.schema';
 import { UserRepository } from '../../auth/repositories/user.repository';
-import { Plan } from '../../plan/schemas/plan.schema';
+import { Plan } from '../schemas/plan.schema';
 import { PlanTier } from 'src/common/enums';
 import { SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
 

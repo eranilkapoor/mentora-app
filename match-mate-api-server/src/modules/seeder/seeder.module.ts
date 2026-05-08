@@ -7,12 +7,12 @@ import {
 } from 'src/modules/admin/schemas/permission.schema';
 import { Role, RoleSchema } from 'src/modules/admin/schemas/role.schema';
 import { MasterSeederService } from './services/master-seeder.service';
-import { Plan, PlanSchema } from '../plan/schemas/plan.schema';
-import { Feature, FeatureSchema } from '../plan/schemas/feature.schema';
+import { Plan, PlanSchema } from '../subscription/schemas/plan.schema';
+import { Feature, FeatureSchema } from '../subscription/schemas/feature.schema';
 import {
   PlanFeature,
   PlanFeatureSchema,
-} from '../plan/schemas/plan-feature.schema';
+} from '../subscription/schemas/plan-feature.schema';
 import {
   NotificationTemplates,
   NotificationTemplatesSchema,

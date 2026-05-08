@@ -28,7 +28,7 @@ import {
   UserSession,
   UserSessionDocument,
 } from '../schemas/user-session.schema';
-import { Plan } from '../../plan/schemas/plan.schema';
+import { Plan } from '../../subscription/schemas/plan.schema';
 import {
   Subscription,
   SubscriptionDocument,

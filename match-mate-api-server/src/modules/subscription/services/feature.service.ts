@@ -1,13 +1,13 @@
 import { Injectable, ForbiddenException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { PlanService } from './plan.service';
 import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
 import { PlanFeature } from '../schemas/plan-feature.schema';
-import { Subscription } from '../../subscription/schemas/subscription.schema';
+import { Subscription } from '../schemas/subscription.schema';
 import { FeatureKey } from 'src/common/enums';
 import { FeatureContext } from '../interfaces/feature-context.interface';
+import { PlanService } from './plan.service';
 
 type PopulatedFeature = {
   key: FeatureKey;

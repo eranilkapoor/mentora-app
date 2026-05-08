@@ -1,11 +1,27 @@
 import { Module } from '@nestjs/common';
-import { SubscriptionService } from './services/subscription.service';
 import { MongooseModule } from '@nestjs/mongoose';
+
 import {
   Subscription,
   SubscriptionSchema,
 } from './schemas/subscription.schema';
-import { Plan, PlanSchema } from '../plan/schemas/plan.schema';
+import { Plan, PlanSchema } from './schemas/plan.schema';
+import { Feature, FeatureSchema } from './schemas/feature.schema';
+import { PlanFeature, PlanFeatureSchema } from './schemas/plan-feature.schema';
+
+// Services
+import { SubscriptionService } from './services/subscription.service';
+import { PlanService } from './services/plan.service';
+import { FeatureService } from './services/feature.service';
+
+// Controller
+import { PlanController } from './controllers/plan.controller';
+
+// Guards
+import { FeatureGuard } from './guards/feature.guard';
+
+// External modules
+import { CacheModule } from '../cache/cache.module';
 import { AuthModule } from '../auth/auth.module';
 
 @Module({
@@ -13,11 +29,20 @@ import { AuthModule } from '../auth/auth.module';
     MongooseModule.forFeature([
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: Plan.name, schema: PlanSchema },
+      { name: Feature.name, schema: FeatureSchema },
+      { name: PlanFeature.name, schema: PlanFeatureSchema },
     ]),
     AuthModule,
+    // 🔥 REQUIRED for usage tracking (redis)
+    CacheModule,
   ],
-  providers: [SubscriptionService],
-  controllers: [],
-  exports: [SubscriptionService],
+  providers: [SubscriptionService, PlanService, FeatureService, FeatureGuard],
+  controllers: [PlanController],
+  exports: [
+    SubscriptionService,
+    PlanService,
+    FeatureService,
+    FeatureGuard, // 🔥 IMPORTANT (used globally)
+  ],
 })
 export class SubscriptionModule {}

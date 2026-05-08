@@ -21,7 +21,7 @@ import { PaymentReconciliationDto } from '../dto/payment-reconciliation.dto';
 import { PaymentSettlementReportDto } from '../dto/payment-settlement-report.dto';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
-import { Plan } from '../../plan/schemas/plan.schema';
+import { Plan } from '../../subscription/schemas/plan.schema';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
 
 @Injectable()

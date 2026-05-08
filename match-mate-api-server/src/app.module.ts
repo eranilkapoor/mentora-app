@@ -15,7 +15,6 @@ import { CorrelationIdMiddleware } from './common/middleware/correlation-id.midd
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
 import { LoggerModule } from './common/logger/logger.module';
-import { PlanModule } from './modules/plan/plan.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ChatModule } from './modules/chat/chat.module';
@@ -56,7 +55,6 @@ import { SeederModule } from './modules/seeder/seeder.module';
     MongoModule,
     SeederModule,
     AuthModule,
-    PlanModule,
     ProfileModule,
     AdminModule,
     AnalyticsModule,

@@ -16,7 +16,7 @@ import {
   Subscription,
   SubscriptionSchema,
 } from '../subscription/schemas/subscription.schema';
-import { Plan, PlanSchema } from '../plan/schemas/plan.schema';
+import { Plan, PlanSchema } from '../subscription/schemas/plan.schema';
 import {
   ActivityLog,
   ActivityLogSchema,
