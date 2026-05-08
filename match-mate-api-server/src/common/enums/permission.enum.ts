@@ -1,5 +1,4 @@
 // Format for the permissions : <resource>:<action>
-
 export enum Permission {
   // =========================
   // 🔐 ADMIN / SYSTEM

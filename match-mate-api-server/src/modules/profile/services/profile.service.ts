@@ -1,14 +1,17 @@
-import { Injectable, BadRequestException, Inject } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
+import {
+  Injectable,
+  BadRequestException,
+  Inject,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Model } from 'mongoose';
 import { ProfileRepository } from '../repositories/profile.repository';
 import {
   CreateProfileDto,
-  EducationDto,
-  FamilyDto,
   PersonalDto,
   PhysicalDto,
-  PreferencesDto,
+  EducationDto,
+  FamilyDto,
 } from '../dto/create-profile.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
@@ -26,37 +29,29 @@ import {
   ActivityLogDocument,
   ActivityPlatform,
 } from '../schemas/settings/activity-logs.schema';
-import { AppRequest } from 'src/common/interfaces/app-request.interface';
-import { StorageService } from '../../storage/services/storage.service';
 import {
   PrivacySetting,
   PrivacySettingDocument,
 } from '../schemas/settings/privacy-setting.schema';
 import { UpdatePrivacySettingsDto } from '../dto/privacy-media.dto';
-import {
-  BodyType,
-  Complexion,
-  Gender,
-  MaritalStatus,
-  ProfileStatus,
-  Religion,
-} from 'src/common/enums';
+import { AppRequest } from 'src/common/interfaces/app-request.interface';
+import { ProfileStatus } from 'src/common/enums';
+import { InjectModel } from '@nestjs/mongoose';
+import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
+import { StorageService } from 'src/modules/storage/services/storage.service';
+import { UserRepository } from 'src/modules/auth/repositories/user.repository';
+import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 
-// ─── Image type ───────────────────────────────────────────────────────────────
-
-export interface ProfileImageInput {
-  url: string;
-  isPrimary: boolean;
-  filename?: string;
+interface RegisterRequestContext {
+  platform: ActivityPlatform;
+  ip?: string;
+  device?: string;
 }
-
-type ProfileCreationInput = Omit<CreateProfileDto, 'family'> & {
-  family?: FamilyDto;
-};
 
 @Injectable()
 export class ProfileService {
   constructor(
+    private readonly userRepo: UserRepository,
     private readonly profileRepo: ProfileRepository,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
     @InjectModel(ActivityLog.name)
@@ -68,33 +63,17 @@ export class ProfileService {
     private readonly storageService: StorageService,
   ) {}
 
-  async createProfile(
-    userId: string,
-    dto: ProfileCreationInput,
-    profileImages: ProfileImageInput[] = [],
-  ) {
+  // ─── Create ───────────────────────────────────────────────────────────────
+
+  async createProfile(userId: string, dto: CreateProfileDto) {
     try {
-      const existing = await this.profileRepo.findByUserId(userId);
-      if (existing) {
+      if (await this.profileRepo.exists(userId)) {
         throw new BadRequestException('Profile already exists');
       }
 
-      const imageDocuments = profileImages.map((img) => ({
-        ...img,
-        isActive: true,
-        uploadedAt: new Date(),
-      }));
-
-      const normalizedPayload = this.normalizeProfilePayload(
-        dto,
-        imageDocuments,
-      );
-
-      return await this.profileRepo.createProfile(
-        userId,
-        normalizedPayload,
-        imageDocuments,
-      );
+      const payload = this.buildCreatePayload(dto);
+      const profile = await this.profileRepo.create(userId, payload);
+      return profile;
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
       throw new BadRequestException(
@@ -103,48 +82,46 @@ export class ProfileService {
     }
   }
 
-  async updateProfile(req: AppRequest, userId: string, dto: UpdateProfileDto) {
+  // ─── Read ─────────────────────────────────────────────────────────────────
+
+  async getMyProfile(userId: string) {
     try {
-      return await this.applyProfileUpdate(req, userId, dto, 'profile-update');
+      const cacheKey = `profile:${userId}`;
+      const cached = await this.cache.get<unknown>(cacheKey);
+      if (cached) return cached;
+
+      const profile = await this.profileRepo.findByUserId(userId);
+      if (!profile) throw new BadRequestException('Profile not found');
+
+      const enriched = this.enrichProfile(profile as Record<string, unknown>);
+      await this.cache.set(cacheKey, enriched, 300);
+      return enriched;
     } catch (error) {
+      if (error instanceof BadRequestException) throw error;
       throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to update profile',
+        error instanceof Error ? error.message : 'Failed to retrieve profile',
       );
     }
   }
 
+  // ─── Section updates ──────────────────────────────────────────────────────
+
   async updatePersonalInfo(req: AppRequest, userId: string, dto: PersonalDto) {
-    try {
-      return await this.applyProfileUpdate(
-        req,
-        userId,
-        { personal: dto },
-        'profile-personal-update',
-      );
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to update personal info',
-      );
-    }
+    return this.applyUpdate(
+      req,
+      userId,
+      { personal: dto },
+      'profile-personal-update',
+    );
   }
 
   async updatePhysicalInfo(req: AppRequest, userId: string, dto: PhysicalDto) {
-    try {
-      return await this.applyProfileUpdate(
-        req,
-        userId,
-        { physical: dto },
-        'profile-physical-update',
-      );
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to update physical info',
-      );
-    }
+    return this.applyUpdate(
+      req,
+      userId,
+      { physical: dto },
+      'profile-physical-update',
+    );
   }
 
   async updateEducationInfo(
@@ -152,249 +129,31 @@ export class ProfileService {
     userId: string,
     dto: EducationDto,
   ) {
-    try {
-      return await this.applyProfileUpdate(
-        req,
-        userId,
-        { education: dto },
-        'profile-education-update',
-      );
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to update education info',
-      );
-    }
+    return this.applyUpdate(
+      req,
+      userId,
+      { education: dto },
+      'profile-education-update',
+    );
   }
 
   async updateFamilyInfo(req: AppRequest, userId: string, dto: FamilyDto) {
-    try {
-      return await this.applyProfileUpdate(
-        req,
-        userId,
-        { family: dto },
-        'profile-family-update',
-      );
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to update family info',
-      );
-    }
+    return this.applyUpdate(
+      req,
+      userId,
+      { family: dto },
+      'profile-family-update',
+    );
   }
 
-  async updatePreferences(
-    req: AppRequest,
-    userId: string,
-    dto: PreferencesDto,
-  ) {
-    try {
-      return await this.applyProfileUpdate(
-        req,
-        userId,
-        { preferences: dto },
-        'profile-preferences-update',
-      );
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to update preferences',
-      );
-    }
-  }
-
-  // ─── Image Methods ──────────────────────────────────────────────────────────
-
-  async addImages(
-    req: AppRequest,
-    userId: string,
-    profileImages: Express.Multer.File[],
-  ) {
-    try {
-      const uploadedImages = await this.storageService.uploadFiles(
-        profileImages,
-        'profiles',
-      );
-      const existingImages = await this.profileRepo.getImages(userId);
-      const shouldSetPrimary = existingImages.length === 0;
-      const imageDocuments = uploadedImages.map((img, index) => ({
-        ...img,
-        isPrimary: shouldSetPrimary && index === 0,
-        uploadedAt: new Date(),
-        isActive: true,
-      }));
-
-      const result = await this.profileRepo.addImages(userId, imageDocuments);
-      await this.cache.del(`profile:${userId}`);
-      await this.logProfileActivity(req, userId, 'profile-image-upload', {
-        profileImages: imageDocuments,
-      });
-      this.triggerProfileUpdateJobs(req, userId, 'profile-image-upload', {
-        uploadedImageCount: imageDocuments.length,
-      });
-      return result;
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to add profile images',
-      );
-    }
-  }
-
-  async setPrimaryImage(req: AppRequest, userId: string, imageId: string) {
-    try {
-      const result = await this.profileRepo.setPrimaryImage(userId, imageId);
-      await this.cache.del(`profile:${userId}`);
-      await this.logProfileActivity(req, userId, 'profile-image-primary', {
-        imageId,
-      });
-      return result;
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to set primary image',
-      );
-    }
-  }
-
-  async removeImage(req: AppRequest, userId: string, imageId: string) {
-    try {
-      const existingImages = await this.profileRepo.getImages(userId);
-      const imageToRemove = existingImages.find(
-        (image) =>
-          typeof image === 'object' &&
-          image !== null &&
-          '_id' in image &&
-          String((image as { _id: unknown })._id) === imageId,
-      ) as { filename?: string } | undefined;
-
-      const result = await this.profileRepo.removeImage(userId, imageId);
-      if (imageToRemove?.filename) {
-        await this.storageService.deleteFile(
-          imageToRemove.filename,
-          'profiles',
-        );
-      }
-      await this.cache.del(`profile:${userId}`);
-      await this.logProfileActivity(req, userId, 'profile-image-delete', {
-        imageId,
-      });
-      return result;
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to remove image',
-      );
-    }
-  }
-
-  async getImages(userId: string) {
-    try {
-      return await this.profileRepo.getImages(userId);
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to retrieve images',
-      );
-    }
-  }
-
-  async addVideos(
-    req: AppRequest,
-    userId: string,
-    profileVideos: Express.Multer.File[],
-  ) {
-    try {
-      const uploadedVideos = await this.storageService.uploadFiles(
-        profileVideos,
-        'profile-videos',
-      );
-      const existingVideos = await this.profileRepo.getVideos(userId);
-      const shouldSetPrimary = existingVideos.length === 0;
-      const videoDocuments = uploadedVideos.map((video, index) => ({
-        ...video,
-        isPrimary: shouldSetPrimary && index === 0,
-        isActive: true,
-        uploadedAt: new Date(),
-        mimeType: profileVideos[index]?.mimetype,
-        size: profileVideos[index]?.size,
-      }));
-
-      const result = await this.profileRepo.addVideos(userId, videoDocuments);
-      await this.cache.del(`profile:${userId}`);
-      await this.logProfileActivity(req, userId, 'profile-video-upload', {
-        profileVideos: videoDocuments,
-      });
-      this.triggerProfileUpdateJobs(req, userId, 'profile-video-upload', {
-        uploadedVideoCount: videoDocuments.length,
-      });
-      return result;
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to add profile videos',
-      );
-    }
-  }
-
-  async getVideos(userId: string) {
-    try {
-      return await this.profileRepo.getVideos(userId);
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to retrieve videos',
-      );
-    }
-  }
-
-  async setPrimaryVideo(req: AppRequest, userId: string, videoId: string) {
-    try {
-      const result = await this.profileRepo.setPrimaryVideo(userId, videoId);
-      await this.cache.del(`profile:${userId}`);
-      await this.logProfileActivity(req, userId, 'profile-video-primary', {
-        videoId,
-      });
-      return result;
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to set primary video',
-      );
-    }
-  }
-
-  async removeVideo(req: AppRequest, userId: string, videoId: string) {
-    try {
-      const existingVideos = await this.profileRepo.getVideos(userId);
-      const videoToRemove = existingVideos.find(
-        (video) =>
-          typeof video === 'object' &&
-          video !== null &&
-          '_id' in video &&
-          String((video as { _id: unknown })._id) === videoId,
-      ) as { filename?: string } | undefined;
-
-      const result = await this.profileRepo.removeVideo(userId, videoId);
-      if (videoToRemove?.filename) {
-        await this.storageService.deleteFile(
-          videoToRemove.filename,
-          'profile-videos',
-        );
-      }
-      await this.cache.del(`profile:${userId}`);
-      await this.logProfileActivity(req, userId, 'profile-video-delete', {
-        videoId,
-      });
-      return result;
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to remove video',
-      );
-    }
-  }
+  // ─── Privacy Settings ─────────────────────────────────────────────────────
 
   async getPrivacySettings(userId: string) {
     try {
-      const existingSettings = await this.privacySettingModel
+      const existing = await this.privacySettingModel
         .findOne({ userId })
         .lean();
-
-      if (existingSettings) {
-        return existingSettings;
-      }
+      if (existing) return existing;
 
       const created = await this.privacySettingModel.create({
         userId,
@@ -408,7 +167,6 @@ export class ProfileService {
         incognitoMode: false,
         dailyInterestLimitUsed: 0,
       });
-
       return created.toObject();
     } catch (error) {
       throw new BadRequestException(
@@ -435,31 +193,13 @@ export class ProfileService {
           setDefaultsOnInsert: true,
         },
       );
-
-      await this.profileRepo.updateProfile(userId, {
-        ...(dto.hideContactDetails !== undefined
-          ? { hideContactDetails: dto.hideContactDetails }
-          : {}),
-        ...(dto.hidePhotos !== undefined ? { hidePhotos: dto.hidePhotos } : {}),
-        ...(dto.showOnlyToPremium !== undefined
-          ? { showOnlyToPaidUsers: dto.showOnlyToPremium }
-          : {}),
-      } as UpdateProfileDto);
       await this.cache.del(`profile:${userId}`);
-
-      await this.logProfileActivity(
+      void this.fireAnalytics(
         req,
         userId,
         'profile-privacy-update',
         dto as Record<string, unknown>,
       );
-      this.triggerProfileUpdateJobs(
-        req,
-        userId,
-        'profile-privacy-update',
-        dto as Record<string, unknown>,
-      );
-
       return updated;
     } catch (error) {
       throw new BadRequestException(
@@ -470,440 +210,136 @@ export class ProfileService {
     }
   }
 
-  async getMyProfile(userId: string): Promise<unknown> {
-    try {
-      const cacheKey = `profile:${userId}`;
+  // ─── Private helpers ──────────────────────────────────────────────────────
 
-      // Try cache first
-      const cached = await this.cache.get<unknown>(cacheKey);
-      if (cached) return cached;
-
-      // Fetch from DB
-      const profile = await this.profileRepo.findByUserId(userId);
-      if (!profile) {
-        throw new BadRequestException('Profile not found');
-      }
-
-      const enrichedProfile = this.enrichProfileResponse(
-        profile as unknown as Record<string, unknown>,
-      );
-
-      // Cache for 5 minutes
-      await this.cache.set(cacheKey, enrichedProfile, 300);
-
-      return enrichedProfile;
-    } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to retrieve profile',
-      );
-    }
-  }
-
-  private normalizeProfilePayload(
-    dto: ProfileCreationInput,
-    profileImages: Array<{
-      url: string;
-      isPrimary: boolean;
-      isActive: boolean;
-      uploadedAt: Date;
-    }>,
-  ): Record<string, unknown> {
-    const birthDate = new Date(dto.personal.dateOfBirth);
-    const age = this.calculateAge(birthDate);
-    const annualIncome = dto.education.annualIncome
-      ? Number(dto.education.annualIncome)
-      : undefined;
-
-    return {
-      profileFor: dto.personal.profileFor,
-      personal: {
-        ...dto.personal,
-        dateOfBirth: birthDate,
-        age,
-      },
-      physical: {
-        heightLabel: this.cmToFeetInches(dto.physical.height).formatted,
-        weight: dto.physical.weight,
-        bodyType: dto.physical.bodyType,
-        complexion: dto.physical.complexion,
-      },
-      education: {
-        qualification: dto.education.qualification,
-        field: dto.education.field,
-        university: dto.education.university,
-        occupation: dto.education.occupation,
-        annualIncome: Number.isFinite(annualIncome) ? annualIncome : undefined,
-      },
-      family: dto.family ?? {},
-      age: age,
-      heightCm: dto.physical.height,
-      religion: dto.personal.religion,
-      caste: dto.personal.caste,
-      city: dto.personal.city,
-      gender: dto.personal.gender,
-      profileScore: this.calculateProfileScore(dto, profileImages.length),
-      profileCompletionPercentage: 100,
-      searchTags: this.buildSearchTags(dto),
-      membershipPlan: 'free',
-      status: ProfileStatus.ACTIVE,
-      lastActiveAt: new Date(),
-      isDeleted: false,
-    };
-  }
-
-  private calculateAge(dateOfBirth: Date): number {
-    const today = new Date();
-    let age = today.getFullYear() - dateOfBirth.getFullYear();
-    const monthDiff = today.getMonth() - dateOfBirth.getMonth();
-    if (
-      monthDiff < 0 ||
-      (monthDiff === 0 && today.getDate() < dateOfBirth.getDate())
-    ) {
-      age -= 1;
-    }
-    return age;
-  }
-
-  private calculateProfileScore(
-    dto: ProfileCreationInput,
-    imageCount: number,
-  ): number {
-    let score = 60;
-    if (dto.personal.aboutMe) score += 10;
-    if (dto.preferences) score += 10;
-    if (dto.preferences?.qualification?.length) score += 10;
-    if (imageCount > 0) score += 10;
-    return Math.min(score, 100);
-  }
-
-  private buildSearchTags(dto: ProfileCreationInput): string[] {
-    const tags = [
-      dto.personal.profileFor,
-      dto.personal.religion,
-      dto.personal.caste,
-      dto.personal.city,
-      dto.personal.state,
-      dto.personal.country,
-      dto.education.qualification,
-      dto.education.occupation,
-      ...(dto.preferences?.languagesKnown ?? []),
-      ...(dto.preferences?.qualification ?? []),
-    ];
-
-    return Array.from(
-      new Set(
-        tags
-          .filter(
-            (value): value is string =>
-              typeof value === 'string' && value.trim().length > 0,
-          )
-          .map((value) => value.trim().toLowerCase()),
-      ),
-    );
-  }
-
-  private async applyProfileUpdate(
+  private async applyUpdate(
     req: AppRequest,
     userId: string,
     dto: UpdateProfileDto,
     source: string,
   ) {
-    const existingProfile = (await this.profileRepo.findByUserId(
-      userId,
-    )) as Record<string, unknown> | null;
+    try {
+      const existing = await this.profileRepo.findByUserId(userId);
+      if (!existing) throw new BadRequestException('Profile not found');
 
-    if (!existingProfile) {
-      throw new BadRequestException('Profile not found');
+      const normalized = this.normalizeUpdate(
+        dto,
+        existing as Record<string, unknown>,
+      );
+      const result = await this.profileRepo.update(userId, normalized);
+      await this.cache.del(`profile:${userId}`);
+
+      const enriched = this.enrichProfile(
+        (result as unknown as Record<string, unknown>) ??
+          (existing as Record<string, unknown>),
+      );
+
+      void this.logActivity(req, userId, source, normalized);
+      void this.fireAnalytics(req, userId, source, normalized);
+
+      return enriched;
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error;
+      throw new BadRequestException(
+        error instanceof Error
+          ? error.message
+          : `Failed to update profile (${source})`,
+      );
     }
-
-    const normalizedUpdate = this.normalizeProfileUpdate(dto, existingProfile);
-    const result = await this.profileRepo.updateProfile(
-      userId,
-      normalizedUpdate,
-    );
-    await this.cache.del(`profile:${userId}`);
-
-    const enrichedProfile = this.enrichProfileResponse(
-      (result as unknown as Record<string, unknown>) ?? existingProfile,
-    );
-
-    await this.logProfileActivity(req, userId, source, normalizedUpdate);
-    this.triggerProfileUpdateJobs(req, userId, source, normalizedUpdate);
-
-    return enrichedProfile;
   }
 
-  private normalizeProfileUpdate(
+  private buildCreatePayload(dto: CreateProfileDto): Record<string, unknown> {
+    const birthDate = new Date(dto.personal.dateOfBirth);
+    const age = this.calculateAge(birthDate);
+
+    return {
+      profileFor: dto.personal.profileFor,
+      personal: dto.personal,
+      physical: dto.physical,
+      education: dto.education,
+      family: dto.family ?? {},
+      age,
+      heightCm: this.heightLabelToCm(dto.physical.heightLabel),
+      religion: dto.personal.religion,
+      caste: dto.personal.caste,
+      city: dto.personal.city,
+      gender: dto.personal.gender,
+      profileScore: this.calculateProfileScore(dto),
+      profileCompletionPercentage: this.calculateCompletion(dto),
+      searchTags: this.buildSearchTags(dto),
+      status: ProfileStatus.ACTIVE,
+      lastActiveAt: new Date(),
+    };
+  }
+
+  private normalizeUpdate(
     dto: UpdateProfileDto,
-    existingProfile: Record<string, unknown>,
+    existing: Record<string, unknown>,
   ): Record<string, unknown> {
     const normalized: Record<string, unknown> = {};
-    const currentPersonal = (existingProfile.personal ?? {}) as Record<
-      string,
-      unknown
-    >;
-    const currentPhysical = (existingProfile.physical ?? {}) as Record<
-      string,
-      unknown
-    >;
-    const currentEducation = (existingProfile.education ?? {}) as Record<
-      string,
-      unknown
-    >;
-    const currentPreferences = (existingProfile.preferences ?? {
-      partnerPreference: {},
-    }) as Record<string, unknown>;
 
     if (dto.personal) {
-      const dateOfBirth = dto.personal.dateOfBirth
-        ? new Date(dto.personal.dateOfBirth)
-        : (currentPersonal.dateOfBirth as Date | undefined);
-      normalized.personal = {
-        ...currentPersonal,
+      const merged = {
+        ...((existing.personal as Record<string, unknown>) ?? {}),
         ...dto.personal,
-        ...(dateOfBirth
-          ? {
-              dateOfBirth,
-              age: this.calculateAge(dateOfBirth),
-            }
-          : {}),
       };
+      normalized.personal = merged;
+      // Update derived root fields
+      if (dto.personal.dateOfBirth) {
+        normalized.age = this.calculateAge(new Date(dto.personal.dateOfBirth));
+      }
+      if (dto.personal.religion) normalized.religion = dto.personal.religion;
+      if (dto.personal.caste) normalized.caste = dto.personal.caste;
+      if (dto.personal.city) normalized.city = dto.personal.city;
+      if (dto.personal.gender) normalized.gender = dto.personal.gender;
     }
 
     if (dto.physical) {
-      normalized.physical = {
-        ...currentPhysical,
-        ...(dto.physical.height !== undefined
-          ? { heightCm: dto.physical.height }
-          : {}),
-        ...(dto.physical.weight !== undefined
-          ? { weight: dto.physical.weight }
-          : {}),
-        ...(dto.physical.bodyType !== undefined
-          ? { bodyType: dto.physical.bodyType }
-          : {}),
-        ...(dto.physical.complexion !== undefined
-          ? { complexion: dto.physical.complexion }
-          : {}),
+      const merged = {
+        ...((existing.physical as Record<string, unknown>) ?? {}),
+        ...dto.physical,
       };
+      normalized.physical = merged;
+      if (dto.physical.heightLabel) {
+        normalized.heightCm = this.heightLabelToCm(dto.physical.heightLabel);
+      }
     }
 
     if (dto.education) {
-      const annualIncome = dto.education.annualIncome
-        ? Number(dto.education.annualIncome)
-        : undefined;
       normalized.education = {
-        ...currentEducation,
+        ...((existing.education as Record<string, unknown>) ?? {}),
         ...dto.education,
-        ...(annualIncome !== undefined && Number.isFinite(annualIncome)
-          ? { annualIncome }
-          : dto.education.annualIncome === undefined
-            ? {}
-            : { annualIncome: undefined }),
       };
     }
 
     if (dto.family) {
       normalized.family = {
-        ...((existingProfile.family ?? {}) as Record<string, unknown>),
+        ...((existing.family as Record<string, unknown>) ?? {}),
         ...dto.family,
       };
     }
 
-    if (dto.preferences) {
-      normalized.preferences = {
-        ...currentPreferences,
-        ...dto.preferences,
-      };
-    }
-
-    const mergedProfile = {
-      ...existingProfile,
-      ...normalized,
-      personal: (normalized.personal ?? existingProfile.personal) as Record<
-        string,
-        unknown
-      >,
-      physical: (normalized.physical ?? existingProfile.physical) as Record<
-        string,
-        unknown
-      >,
-      education: (normalized.education ?? existingProfile.education) as Record<
-        string,
-        unknown
-      >,
-      family: (normalized.family ?? existingProfile.family) as Record<
-        string,
-        unknown
-      >,
-      preferences: (normalized.preferences ??
-        existingProfile.preferences) as Record<string, unknown>,
-    };
-
-    Object.assign(normalized, this.buildDerivedProfileFields(mergedProfile));
+    // Recalculate derived fields from the merged state
+    const merged = { ...existing, ...normalized };
+    normalized.searchTags = this.buildSearchTagsFromMerged(merged);
+    normalized.lastActiveAt = new Date();
 
     return normalized;
   }
 
-  private buildDerivedProfileFields(
-    profile: Record<string, unknown>,
-  ): Record<string, unknown> {
-    const personal =
-      typeof profile.personal === 'object' && profile.personal !== null
-        ? (profile.personal as Record<string, unknown>)
-        : {};
-
-    const physical =
-      typeof profile.physical === 'object' && profile.physical !== null
-        ? (profile.physical as Record<string, unknown>)
-        : {};
-
-    const education =
-      typeof profile.education === 'object' && profile.education !== null
-        ? (profile.education as Record<string, unknown>)
-        : {};
-
-    const preferences =
-      typeof profile.preferences === 'object' && profile.preferences !== null
-        ? (profile.preferences as Record<string, unknown>)
-        : {};
-
-    const profileImages: unknown[] = Array.isArray(profile.profileImages)
-      ? profile.profileImages
-      : [];
-
-    const dtoLikeProfile: ProfileCreationInput = {
-      personal: {
-        profileFor:
-          typeof personal.profileFor === 'string' ? personal.profileFor : '',
-        firstName:
-          typeof personal.firstName === 'string' ? personal.firstName : '',
-        lastName:
-          typeof personal.lastName === 'string' ? personal.lastName : undefined,
-        gender: personal.gender as Gender,
-        dateOfBirth:
-          personal.dateOfBirth instanceof Date
-            ? personal.dateOfBirth.toISOString()
-            : typeof personal.dateOfBirth === 'string'
-              ? personal.dateOfBirth
-              : '',
-        religion: personal.religion as Religion,
-        caste: typeof personal.caste === 'string' ? personal.caste : undefined,
-        country:
-          typeof personal.country === 'string' ? personal.country : undefined,
-        state: typeof personal.state === 'string' ? personal.state : undefined,
-        city: typeof personal.city === 'string' ? personal.city : undefined,
-        motherTongue:
-          typeof personal.motherTongue === 'string'
-            ? personal.motherTongue
-            : undefined,
-        maritalStatus: personal.maritalStatus as MaritalStatus,
-        aboutMe:
-          typeof personal.aboutMe === 'string' ? personal.aboutMe : undefined,
-      },
-      physical: {
-        height: typeof physical.heightCm === 'number' ? physical.heightCm : 0,
-        weight:
-          typeof physical.weight === 'number' ? physical.weight : undefined,
-        bodyType:
-          typeof physical.bodyType === 'string'
-            ? (physical.bodyType as BodyType)
-            : undefined,
-        complexion:
-          typeof physical.complexion === 'string'
-            ? (physical.complexion as Complexion)
-            : undefined,
-      },
-      education: {
-        qualification:
-          typeof education.qualification === 'string'
-            ? education.qualification
-            : '',
-        field:
-          typeof education.field === 'string' ? education.field : undefined,
-        university:
-          typeof education.university === 'string'
-            ? education.university
-            : undefined,
-        occupation:
-          typeof education.occupation === 'string' ? education.occupation : '',
-        annualIncome:
-          typeof education.annualIncome === 'number'
-            ? String(education.annualIncome)
-            : undefined,
-      },
-      family:
-        typeof profile.family === 'object' && profile.family !== null
-          ? (profile.family as FamilyDto)
-          : ({} as FamilyDto),
-      preferences: preferences as PreferencesDto,
-    };
-
-    const completionPercentage = this.calculateProfileCompletion(
-      dtoLikeProfile,
-      profileImages.length,
-    );
-
-    return {
-      profileFor: personal.profileFor,
-      age: personal.age,
-      heightCm: physical.heightCm,
-      religion: personal.religion,
-      caste: personal.caste,
-      city: personal.city,
-      gender: personal.gender,
-      searchTags: this.buildSearchTags(dtoLikeProfile),
-      profileCompletionPercentage: completionPercentage,
-      profileScore: this.calculateProfileScore(
-        dtoLikeProfile,
-        profileImages.length,
-      ),
-    };
-  }
-
-  private calculateProfileCompletion(
-    dto: ProfileCreationInput,
-    imageCount: number,
-  ): number {
-    const checks = [
-      Boolean(dto.personal.profileFor),
-      Boolean(dto.personal.firstName),
-      Boolean(dto.personal.gender),
-      Boolean(dto.personal.dateOfBirth),
-      Boolean(dto.personal.religion),
-      Boolean(dto.personal.maritalStatus),
-      Boolean(dto.physical.height),
-      Boolean(dto.education.qualification),
-      Boolean(dto.education.occupation),
-      imageCount > 0,
-      Boolean(dto.personal.aboutMe),
-      Boolean(dto.preferences),
-    ];
-
-    const completed = checks.filter(Boolean).length;
-    return Math.round((completed / checks.length) * 100);
-  }
-
-  private enrichProfileResponse(profile: Record<string, unknown>) {
+  private enrichProfile(profile: Record<string, unknown>) {
     const personal = (profile.personal ?? {}) as Record<string, unknown>;
     const physical = (profile.physical ?? {}) as Record<string, unknown>;
     const education = (profile.education ?? {}) as Record<string, unknown>;
-    const preferences = (profile.preferences ?? {}) as Record<string, unknown>;
-    const profileImages = Array.isArray(profile.profileImages)
-      ? (profile.profileImages as unknown[])
-      : [];
-    const completionPercentage = Number(
-      profile.profileCompletionPercentage ?? 0,
-    );
 
     return {
       ...profile,
       summary: {
-        profileCompletionPercentage: completionPercentage,
+        profileCompletionPercentage: Number(
+          profile.profileCompletionPercentage ?? 0,
+        ),
         profileScore: Number(profile.profileScore ?? 0),
-        imageCount: profileImages.length,
         hasAboutMe: Boolean(personal.aboutMe),
-        hasPartnerPreference: Boolean(preferences.partnerPreference),
       },
       sections: {
         personal: {
@@ -916,23 +352,117 @@ export class ProfileService {
             personal.maritalStatus,
           ),
         },
-        physical: {
-          completed: Boolean(physical.heightCm),
-        },
+        physical: { completed: Boolean(physical.heightLabel) },
         education: {
           completed: Boolean(education.qualification && education.occupation),
         },
-        family: {
-          completed: Boolean(profile.family),
-        },
-        preferences: {
-          completed: Boolean(preferences.partnerPreference),
-        },
+        family: { completed: Boolean(profile.family) },
       },
     };
   }
 
-  private async logProfileActivity(
+  private calculateAge(dateOfBirth: Date): number {
+    const today = new Date();
+    let age = today.getFullYear() - dateOfBirth.getFullYear();
+    const m = today.getMonth() - dateOfBirth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < dateOfBirth.getDate())) {
+      age -= 1;
+    }
+    return age;
+  }
+
+  /**
+   * Parse "5 ft 6 in" → cm. Falls back to 0 if format is unexpected.
+   */
+  private heightLabelToCm(label: string): number {
+    const match = /(\d+)\s*ft\s*(\d+)\s*in/.exec(label);
+    if (!match) return 0;
+    const feet = parseInt(match[1], 10);
+    const inches = parseInt(match[2], 10);
+    return Math.round((feet * 12 + inches) * 2.54);
+  }
+
+  private calculateProfileScore(dto: CreateProfileDto): number {
+    let score = 60;
+    if (dto.personal.aboutMe) score += 10;
+    if (dto.education.annualIncomeAmount) score += 10;
+    if (dto.family) score += 10;
+    return Math.min(score, 100);
+  }
+
+  private calculateCompletion(dto: CreateProfileDto): number {
+    const checks = [
+      Boolean(dto.personal.profileFor),
+      Boolean(dto.personal.firstName),
+      Boolean(dto.personal.gender),
+      Boolean(dto.personal.dateOfBirth),
+      Boolean(dto.personal.religion),
+      Boolean(dto.personal.maritalStatus),
+      Boolean(dto.physical.heightLabel),
+      Boolean(dto.education.qualification),
+      Boolean(dto.education.occupation),
+      Boolean(dto.personal.aboutMe),
+      Boolean(dto.family),
+    ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  }
+
+  private buildSearchTags(dto: CreateProfileDto): string[] {
+    const raw = [
+      dto.personal.profileFor,
+      dto.personal.religion,
+      dto.personal.caste,
+      dto.personal.city,
+      dto.personal.state,
+      dto.personal.country,
+      dto.personal.motherTongue,
+      dto.education.qualification,
+      dto.education.occupation,
+      ...(dto.personal.languages ?? []),
+      ...(dto.personal.hobbies ?? []),
+    ];
+    return this.deduplicateTags(raw);
+  }
+
+  private buildSearchTagsFromMerged(
+    profile: Record<string, unknown>,
+  ): string[] {
+    const personal = (profile.personal ?? {}) as Record<string, unknown>;
+    const education = (profile.education ?? {}) as Record<string, unknown>;
+    const raw = [
+      personal.profileFor,
+      personal.religion,
+      personal.caste,
+      personal.city,
+      personal.state,
+      personal.country,
+      personal.motherTongue,
+      education.qualification,
+      education.occupation,
+      ...(Array.isArray(personal.languages)
+        ? (personal.languages as string[])
+        : []),
+      ...(Array.isArray(personal.hobbies)
+        ? (personal.hobbies as string[])
+        : []),
+    ];
+
+    return this.deduplicateTags(raw as (string | undefined)[]);
+  }
+
+  private deduplicateTags(raw: (string | undefined)[]): string[] {
+    return Array.from(
+      new Set(
+        raw
+          .filter(
+            (v): v is string => typeof v === 'string' && v.trim().length > 0,
+          )
+          .map((v) => v.trim().toLowerCase()),
+      ),
+    );
+  }
+
+  private async logActivity(
     req: AppRequest,
     userId: string,
     source: string,
@@ -942,90 +472,57 @@ export class ProfileService {
       userId,
       category: ActivityCategory.PROFILE,
       action: ActivityAction.UPDATE_PROFILE,
-      ip: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
-      device: this.getHeaderString(req, 'x-device-id'),
-      userAgent: this.getHeaderString(req, 'user-agent'),
+      ip: req.ip ?? this.getHeader(req, 'x-forwarded-for'),
+      device: this.getHeader(req, 'x-device-id'),
+      userAgent: this.getHeader(req, 'user-agent'),
       requestId: req.requestId,
       correlationId: req.correlationId,
       platform: this.toActivityPlatform(
-        this.getHeaderString(req, 'x-platform') || 'web',
+        this.getHeader(req, 'x-platform') ?? 'web',
       ),
-      metadata: {
-        source,
-        changedFields: Object.keys(patch),
-      },
+      metadata: { source, changedFields: Object.keys(patch) },
     });
   }
 
-  private triggerProfileUpdateJobs(
+  private fireAnalytics(
     req: AppRequest,
     userId: string,
     source: string,
     patch: Record<string, unknown>,
   ): void {
-    const jobs: Array<Promise<unknown>> = [];
-
-    jobs.push(
+    void Promise.allSettled([
       this.notificationService.notify({
         userId,
-        title:
-          source === 'profile-preferences-update'
-            ? 'Preferences updated'
-            : 'Profile updated',
-        message:
-          source === 'profile-preferences-update'
-            ? 'Your partner preferences were updated successfully.'
-            : 'Your profile details were updated successfully.',
+        title: 'Profile updated',
+        message: 'Your profile details were updated successfully.',
         type: 'system',
         category: 'system',
         channels: ['in_app', 'push'],
-        metadata: {
-          source,
-          changedFields: Object.keys(patch),
-        },
+        metadata: { source, changedFields: Object.keys(patch) },
       }),
-    );
-
-    jobs.push(
       this.analyticsService.trackEvent({
         userId,
         eventType: AnalyticsEventType.PROFILE_UPDATED,
-        ipAddress: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
-        userAgent: this.getHeaderString(req, 'user-agent'),
+        ipAddress: req.ip ?? this.getHeader(req, 'x-forwarded-for'),
+        userAgent: this.getHeader(req, 'user-agent'),
         platform: this.toAnalyticsPlatform(
-          this.getHeaderString(req, 'x-platform') || 'web',
+          this.getHeader(req, 'x-platform') ?? 'web',
         ),
-        metadata: {
-          source,
-          changedFields: Object.keys(patch),
-        },
+        metadata: { source, changedFields: Object.keys(patch) },
       }),
-    );
-
-    void Promise.allSettled(jobs);
+    ]);
   }
 
-  private getHeaderString(req: AppRequest, key: string): string | undefined {
+  private getHeader(req: AppRequest, key: string): string | undefined {
     const value = req.headers[key];
-    if (typeof value === 'string') {
-      return value;
-    }
-
-    if (
-      Array.isArray(value) &&
-      value.length > 0 &&
-      typeof value[0] === 'string'
-    ) {
-      return value[0];
-    }
-
+    if (typeof value === 'string') return value;
+    if (Array.isArray(value) && typeof value[0] === 'string') return value[0];
     return undefined;
   }
 
   private readonly analyticsPlatformMap: Record<string, AnalyticsPlatform> = {
     ios: AnalyticsPlatform.IOS,
     android: AnalyticsPlatform.ANDROID,
-    mobile: AnalyticsPlatform.API,
   };
 
   private readonly activityPlatformMap: Record<string, ActivityPlatform> = {
@@ -1033,17 +530,12 @@ export class ProfileService {
     android: ActivityPlatform.ANDROID,
   };
 
-  private toAnalyticsPlatform(platform: string): AnalyticsPlatform {
-    return (
-      this.analyticsPlatformMap[platform?.toLowerCase()] ??
-      AnalyticsPlatform.WEB
-    );
+  private toAnalyticsPlatform(p: string): AnalyticsPlatform {
+    return this.analyticsPlatformMap[p?.toLowerCase()] ?? AnalyticsPlatform.WEB;
   }
 
-  private toActivityPlatform(platform: string): ActivityPlatform {
-    return (
-      this.activityPlatformMap[platform?.toLowerCase()] ?? ActivityPlatform.WEB
-    );
+  private toActivityPlatform(p: string): ActivityPlatform {
+    return this.activityPlatformMap[p?.toLowerCase()] ?? ActivityPlatform.WEB;
   }
 
   private cmToFeetInches(cm: number): {
@@ -1073,7 +565,198 @@ export class ProfileService {
     };
   }
 
-  private feetInchesToCm(feet: number, inches: number): number {
-    return Math.round((feet * 12 + inches) * 2.54);
+  private async uploadImages(
+    files: Express.Multer.File[],
+    primaryIndex: number,
+  ): Promise<{ filename: string; url: string; isPrimary: boolean }[]> {
+    if (!files || files.length === 0) return [];
+
+    const uploaded = await this.storageService.uploadFiles(files, 'profiles');
+
+    return uploaded.map((result, index) => ({
+      filename: result.filename, // ← just the filename, stored in DB
+      url: result.url, // ← full URL for client use
+      isPrimary: index === primaryIndex,
+    }));
+  }
+
+  async onboardingProfile(
+    req: AuthenticatedRequest,
+    userId: string,
+    dto: OnboardingProfileDto,
+    profileImages: Express.Multer.File[],
+  ) {
+    try {
+      const user = await this.userRepo.findById(userId);
+      if (!user) {
+        throw new UnauthorizedException('User not found');
+      }
+
+      const primaryIndex =
+        dto.primaryImageIndex !== undefined
+          ? parseInt(String(dto.primaryImageIndex), 10)
+          : 0;
+
+      const uploadedImages = await this.uploadImages(
+        profileImages,
+        primaryIndex,
+      );
+
+      await this.createProfile(userId, {
+        personal: {
+          profileFor: dto.basic.profileFor,
+          firstName: dto.basic.firstName,
+          lastName: dto.basic.lastName,
+          gender: dto.basic.gender,
+          dateOfBirth: dto.basic.dateOfBirth,
+          religion: dto.basic.religion,
+          maritalStatus: dto.basic.maritalStatus,
+          country: dto.basic.country,
+        },
+        physical: {
+          heightLabel: this.cmToFeetInches(dto.basic.height).formatted,
+        },
+        education: {
+          qualification: dto.basic.qualification,
+          occupation: dto.basic.occupation,
+        },
+      });
+
+      user.isOnboardingCompleted = true;
+      await user.save();
+
+      await this.activityLogModel.create({
+        userId: user._id,
+        category: ActivityCategory.PROFILE,
+        action: ActivityAction.CREATE_PROFILE,
+        ip: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
+        device: this.getHeaderString(req, 'x-device-id'),
+        userAgent: this.getHeaderString(req, 'user-agent'),
+        requestId: req.requestId,
+        correlationId: req.correlationId,
+        platform: this.getRegisterRequestContext(req).platform,
+        metadata: {
+          source: 'onboarding-profile',
+          completionPercentage: 100,
+          imageCount: uploadedImages.length,
+        },
+      });
+
+      const channels: Array<'in_app' | 'email' | 'push' | 'sms'> = [
+        'in_app',
+        'push',
+      ];
+      if (user.email) {
+        channels.push('email');
+      }
+      if (user.phone?.phone) {
+        channels.push('sms');
+      }
+
+      await this.notificationService.notify({
+        userId: String(user._id),
+        title: 'Profile onboarding completed',
+        message:
+          'Your profile is now live. We will use your onboarding details to improve discovery and matching.',
+        type: 'system',
+        category: 'system',
+        channels,
+        metadata: {
+          source: 'onboarding-profile',
+          isOnboardingCompleted: true,
+        },
+      });
+
+      await Promise.all([
+        this.analyticsService.trackEvent({
+          userId,
+          eventType: AnalyticsEventType.ONBOARDING_COMPLETED,
+          ipAddress: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
+          userAgent: this.getHeaderString(req, 'user-agent'),
+          platform: this.toAnalyticsPlatform(
+            this.getRegisterRequestContext(req).platform,
+          ),
+          metadata: {
+            source: 'onboarding-profile',
+            imageCount: uploadedImages.length,
+          },
+        }),
+        this.analyticsService.trackEvent({
+          userId,
+          eventType: AnalyticsEventType.PROFILE_CREATED,
+          ipAddress: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
+          userAgent: this.getHeaderString(req, 'user-agent'),
+          platform: this.toAnalyticsPlatform(
+            this.getRegisterRequestContext(req).platform,
+          ),
+          metadata: {
+            source: 'onboarding-profile',
+          },
+        }),
+        this.analyticsService.trackEvent({
+          userId,
+          eventType: AnalyticsEventType.PROFILE_COMPLETED,
+          ipAddress: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
+          userAgent: this.getHeaderString(req, 'user-agent'),
+          platform: this.toAnalyticsPlatform(
+            this.getRegisterRequestContext(req).platform,
+          ),
+          metadata: {
+            source: 'onboarding-profile',
+            completionPercentage: 100,
+          },
+        }),
+      ]);
+
+      return {
+        userId: user._id,
+        isOnboardingCompleted: user.isOnboardingCompleted,
+      };
+    } catch (error) {
+      console.error('Error in onboardingProfile:', error);
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+      throw new UnauthorizedException('Profile onboarding failed');
+    }
+  }
+
+  private getRegisterRequestContext(req: AppRequest): RegisterRequestContext {
+    const rawPlatform = this.getHeaderString(req, 'x-platform') || 'web';
+    return {
+      platform: this.toActivityPlatform(rawPlatform),
+      ip: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
+      device:
+        this.getHeaderString(req, 'x-device-id') ||
+        this.getHeaderString(req, 'user-agent'),
+    };
+  }
+
+  private getHeaderString(req: AppRequest, key: string): string | undefined {
+    const value = req.headers[key];
+    if (typeof value === 'string') {
+      return value;
+    }
+
+    if (
+      Array.isArray(value) &&
+      value.length > 0 &&
+      typeof value[0] === 'string'
+    ) {
+      return value[0];
+    }
+
+    return undefined;
+  }
+
+  private getCookieString(req: AppRequest, key: string): string | undefined {
+    const requestObject = req as unknown as Record<string, unknown>;
+    const cookies = requestObject['cookies'];
+    if (typeof cookies !== 'object' || cookies === null) {
+      return undefined;
+    }
+
+    const value = (cookies as Record<string, unknown>)[key];
+    return typeof value === 'string' ? value : undefined;
   }
 }

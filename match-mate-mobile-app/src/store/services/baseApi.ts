@@ -27,7 +27,7 @@ const getRefreshToken = async (): Promise<string | null> => {
 // 🔹 Base Query
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL as string,
-  credentials: 'include', // ✅ required for web cookies
+  credentials: 'include',
   prepareHeaders: async (headers, { getState }) => {
     const accessToken = (getState() as RootState).auth.accessToken;
 
@@ -50,7 +50,6 @@ const rawBaseQuery = fetchBaseQuery({
   },
 });
 
-// 🔁 Base Query with Refresh Logic
 const baseQueryWithAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
@@ -61,12 +60,10 @@ const baseQueryWithAuth: BaseQueryFn<
   let result = await rawBaseQuery(args, api, extraOptions);
 
   if (result.error?.status === 401) {
-    // 🔒 Prevent multiple refresh calls
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();
 
       try {
-        // 🔄 Refresh API call
         const refreshResult = await rawBaseQuery(
           {
             url: '/auth/refresh',
@@ -84,7 +81,10 @@ const baseQueryWithAuth: BaseQueryFn<
         );
 
         if (refreshResult.data) {
-          const data = refreshResult.data as any;
+          const data = refreshResult.data as {
+            accessToken: string;
+            refreshToken?: string;
+          };
 
           // ✅ Update access token
           api.dispatch(setAccessToken(data.accessToken));
@@ -103,7 +103,8 @@ const baseQueryWithAuth: BaseQueryFn<
             await SecureStore.deleteItemAsync('refreshToken');
           }
         }
-      } catch (err) {
+      } catch (error) {
+        console.error('Token refresh error:', error);
         api.dispatch(logout());
         if (Platform.OS !== 'web') {
           await SecureStore.deleteItemAsync('refreshToken');
@@ -112,7 +113,6 @@ const baseQueryWithAuth: BaseQueryFn<
         release();
       }
     } else {
-      // ⏳ Wait for ongoing refresh
       await mutex.waitForUnlock();
       result = await rawBaseQuery(args, api, extraOptions);
     }

@@ -1,11 +1,28 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+
+// Controllers
 import { ProfileController } from './controllers/profile.controller';
+import { MediaController } from './controllers/media.controller';
+import { PreferenceController } from './controllers/preference.controller';
+
+// Services
 import { ProfileService } from './services/profile.service';
+import { MediaService } from './services/media.service';
+import { PreferenceService } from './services/preference.service';
+
+// Repositories
 import { ProfileRepository } from './repositories/profile.repository';
+import { MediaRepository } from './repositories/media.repository';
+import { PreferenceRepository } from './repositories/preference.repository';
+
+// Schemas
 import { Profile, ProfileSchema } from './schemas/profile/profile.schema';
-import { NotificationModule } from '../notification/notification.module';
-import { AnalyticsModule } from '../analytics/analytics.module';
+import { Media, MediaSchema } from './schemas/media/media.schema';
+import {
+  Preference,
+  PreferenceSchema,
+} from './schemas/preference/preference.schema';
 import {
   ActivityLog,
   ActivityLogSchema,
@@ -15,18 +32,36 @@ import {
   PrivacySettingSchema,
 } from './schemas/settings/privacy-setting.schema';
 
+// External modules
+import { AuthModule } from '../auth/auth.module';
+import { NotificationModule } from '../notification/notification.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
+import { StorageModule } from '../storage/storage.module';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Profile.name, schema: ProfileSchema },
+      { name: Media.name, schema: MediaSchema },
+      { name: Preference.name, schema: PreferenceSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
       { name: PrivacySetting.name, schema: PrivacySettingSchema },
     ]),
     NotificationModule,
     AnalyticsModule,
+    StorageModule,
+    AuthModule,
   ],
-  controllers: [ProfileController],
-  providers: [ProfileService, ProfileRepository],
-  exports: [ProfileService],
+  controllers: [ProfileController, MediaController, PreferenceController],
+  providers: [
+    AuthModule,
+    ProfileService,
+    MediaService,
+    PreferenceService,
+    ProfileRepository,
+    MediaRepository,
+    PreferenceRepository,
+  ],
+  exports: [ProfileService, MediaService, PreferenceService],
 })
 export class ProfileModule {}

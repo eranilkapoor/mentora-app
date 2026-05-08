@@ -218,7 +218,7 @@ export const envValidationSchema = Joi.object({
 
   MONGO_RETRY_DELAY: Joi.number().integer().min(0).max(60000).default(5000),
 
-  RBAC_SYNC: Joi.boolean().default(false),
+  RUN_SEEDER: Joi.boolean().default(false),
 
   CACHE_DRIVER: Joi.string().trim().valid('redis', 'local').default('local'),
 
@@ -286,8 +286,6 @@ export const envValidationSchema = Joi.object({
   THROTTLE_TTL: Joi.number().integer().min(1).max(86400).default(60),
 
   THROTTLE_LIMIT: Joi.number().integer().min(1).max(10000).default(100),
-
-  NOTIFICATION_SEED_DEFAULTS: Joi.boolean().default(false),
 
   NOTIFICATION_QUEUE_ENABLED: Joi.boolean().empty('').optional(),
 

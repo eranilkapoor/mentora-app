@@ -5,5 +5,5 @@ export default () => ({
     retryAttempts: parseInt(process.env.MONGO_RETRY_ATTEMPTS || '5', 10),
     retryDelay: parseInt(process.env.MONGO_RETRY_DELAY || '5000', 10),
   },
-  rbacSync: process.env.RBAC_SYNC,
+  runSeeder: process.env.RUN_SEEDER !== 'false',
 });

@@ -1,6 +1,5 @@
 export default () => ({
   notification: {
-    seedDefaults: process.env.NOTIFICATION_SEED_DEFAULTS !== 'false',
     queue: {
       enabled:
         process.env.NOTIFICATION_QUEUE_ENABLED !== undefined

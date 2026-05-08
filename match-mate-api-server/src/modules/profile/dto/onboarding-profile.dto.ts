@@ -1,13 +1,14 @@
 import {
   IsNotEmpty,
   IsOptional,
-  IsDateString,
   IsNumber,
   IsArray,
   ValidateNested,
   IsEnum,
   IsString,
   IsBoolean,
+  Matches,
+  ValidateBy,
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { Gender } from 'src/common/enums/gender.enum';
@@ -26,7 +27,18 @@ import {
   SiblingType,
 } from 'src/common/enums';
 
-export class PersonalDto {
+function isValidDateString(date: string): boolean {
+  const [year, month, day] = date.split('-').map(Number);
+  const d = new Date(year, month - 1, day);
+
+  return (
+    d.getFullYear() === year &&
+    d.getMonth() === month - 1 &&
+    d.getDate() === day
+  );
+}
+
+export class BasicDto {
   @IsString()
   @IsNotEmpty()
   profileFor!: string;
@@ -42,7 +54,14 @@ export class PersonalDto {
   @IsEnum(Gender)
   gender!: Gender;
 
-  @IsDateString()
+  @IsString()
+  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  @ValidateBy({
+    name: 'isValidDate',
+    validator: {
+      validate: (value: string) => isValidDateString(value),
+    },
+  })
   dateOfBirth!: string;
 
   @IsEnum(Religion)
@@ -50,30 +69,22 @@ export class PersonalDto {
 
   @IsOptional()
   @IsString()
-  caste?: string;
-
-  @IsOptional()
-  @IsString()
   country?: string;
-
-  @IsOptional()
-  @IsString()
-  state?: string;
-
-  @IsOptional()
-  @IsString()
-  city?: string;
-
-  @IsOptional()
-  @IsString()
-  motherTongue?: string;
 
   @IsEnum(MaritalStatus)
   maritalStatus!: MaritalStatus;
 
-  @IsOptional()
+  @Type(() => Number)
+  @IsNumber()
+  height!: number;
+
   @IsString()
-  aboutMe?: string;
+  @IsNotEmpty()
+  qualification!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  occupation!: string;
 }
 
 export class PhysicalDto {
@@ -308,26 +319,10 @@ const parseJSON =
     return plainToInstance(cls, parsed);
   };
 export class OnboardingProfileDto {
-  @Transform(parseJSON(PersonalDto))
+  @Transform(parseJSON(BasicDto))
   @ValidateNested()
-  @Type(() => PersonalDto)
-  personal!: PersonalDto;
-
-  @Transform(parseJSON(PhysicalDto))
-  @ValidateNested()
-  @Type(() => PhysicalDto)
-  physical!: PhysicalDto;
-
-  @Transform(parseJSON(EducationDto))
-  @ValidateNested()
-  @Type(() => EducationDto)
-  education!: EducationDto;
-
-  @Transform(parseJSON(FamilyDto))
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => FamilyDto)
-  family?: FamilyDto;
+  @Type(() => BasicDto)
+  basic!: BasicDto;
 
   @Transform(parseJSON(PreferencesDto))
   @IsOptional()

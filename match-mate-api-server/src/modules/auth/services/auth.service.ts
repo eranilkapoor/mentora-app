@@ -11,7 +11,6 @@ import { Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
 import { PlanTier, Role, Status, SubscriptionStatus } from 'src/common/enums';
 import { UserRepository } from '../repositories/user.repository';
-import { ProfileService } from '../../profile/services/profile.service';
 import { OtpService } from './otp.service';
 import * as bcrypt from 'bcryptjs';
 import {
@@ -22,8 +21,6 @@ import {
   ChangePasswordDto,
 } from '../dto/auth.dto';
 import { AuthProvider } from '../enums/auth-provider.enum';
-import { OnboardingProfileDto } from '../dto/onboarding-profile.dto';
-import { StorageService } from '../../storage/services/storage.service';
 import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
 import { AuthTokenService } from './auth-token.service';
@@ -64,9 +61,7 @@ interface RegisterRequestContext {
 @Injectable()
 export class AuthService {
   constructor(
-    private readonly storageService: StorageService,
     private readonly userRepo: UserRepository,
-    private readonly profileService: ProfileService,
     private readonly jwtService: JwtService,
     private readonly otpService: OtpService,
     private readonly authTokenService: AuthTokenService,
@@ -1221,145 +1216,6 @@ export class AuthService {
       process.env.FRONTEND_URL ||
       'http://localhost:3000';
     return `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
-  }
-
-  async onboardingProfile(
-    req: AppRequest,
-    userId: string,
-    dto: OnboardingProfileDto,
-    profileImages: Express.Multer.File[],
-  ) {
-    try {
-      const user = await this.userRepo.findById(userId);
-      if (!user) {
-        throw new UnauthorizedException('User not found');
-      }
-
-      // Parse primaryImageIndex sent from frontend FormData
-      const primaryIndex =
-        dto.primaryImageIndex !== undefined
-          ? parseInt(String(dto.primaryImageIndex), 10)
-          : 0;
-
-      // Upload profile images to local filesystem
-      const uploadedImages = await this.uploadImages(
-        profileImages,
-        primaryIndex,
-      );
-
-      await this.profileService.createProfile(userId, dto, uploadedImages);
-
-      user.isOnboardingCompleted = true;
-      await user.save();
-
-      await this.activityLogModel.create({
-        userId: user._id,
-        category: ActivityCategory.PROFILE,
-        action: ActivityAction.CREATE_PROFILE,
-        ip: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
-        device: this.getHeaderString(req, 'x-device-id'),
-        userAgent: this.getHeaderString(req, 'user-agent'),
-        requestId: req.requestId,
-        correlationId: req.correlationId,
-        platform: this.getRegisterRequestContext(req).platform,
-        metadata: {
-          source: 'onboarding-profile',
-          completionPercentage: 100,
-          imageCount: uploadedImages.length,
-        },
-      });
-
-      const channels: Array<'in_app' | 'email' | 'push' | 'sms'> = [
-        'in_app',
-        'push',
-      ];
-      if (user.email) {
-        channels.push('email');
-      }
-      if (user.phone?.phone) {
-        channels.push('sms');
-      }
-
-      await this.notificationService.notify({
-        userId: String(user._id),
-        title: 'Profile onboarding completed',
-        message:
-          'Your profile is now live. We will use your onboarding details to improve discovery and matching.',
-        type: 'system',
-        category: 'system',
-        channels,
-        metadata: {
-          source: 'onboarding-profile',
-          isOnboardingCompleted: true,
-        },
-      });
-
-      await Promise.all([
-        this.analyticsService.trackEvent({
-          userId,
-          eventType: AnalyticsEventType.ONBOARDING_COMPLETED,
-          ipAddress: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
-          userAgent: this.getHeaderString(req, 'user-agent'),
-          platform: this.toAnalyticsPlatform(
-            this.getRegisterRequestContext(req).platform,
-          ),
-          metadata: {
-            source: 'onboarding-profile',
-            imageCount: uploadedImages.length,
-          },
-        }),
-        this.analyticsService.trackEvent({
-          userId,
-          eventType: AnalyticsEventType.PROFILE_CREATED,
-          ipAddress: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
-          userAgent: this.getHeaderString(req, 'user-agent'),
-          platform: this.toAnalyticsPlatform(
-            this.getRegisterRequestContext(req).platform,
-          ),
-          metadata: {
-            source: 'onboarding-profile',
-          },
-        }),
-        this.analyticsService.trackEvent({
-          userId,
-          eventType: AnalyticsEventType.PROFILE_COMPLETED,
-          ipAddress: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
-          userAgent: this.getHeaderString(req, 'user-agent'),
-          platform: this.toAnalyticsPlatform(
-            this.getRegisterRequestContext(req).platform,
-          ),
-          metadata: {
-            source: 'onboarding-profile',
-            completionPercentage: 100,
-          },
-        }),
-      ]);
-
-      return {
-        userId: user._id,
-        isOnboardingCompleted: user.isOnboardingCompleted,
-      };
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException('Profile onboarding failed');
-    }
-  }
-
-  private async uploadImages(
-    files: Express.Multer.File[],
-    primaryIndex: number,
-  ): Promise<{ filename: string; url: string; isPrimary: boolean }[]> {
-    if (!files || files.length === 0) return [];
-
-    const uploaded = await this.storageService.uploadFiles(files, 'profiles');
-
-    return uploaded.map((result, index) => ({
-      filename: result.filename, // ← just the filename, stored in DB
-      url: result.url, // ← full URL for client use
-      isPrimary: index === primaryIndex,
-    }));
   }
 
   async verifyUser(userId: string) {

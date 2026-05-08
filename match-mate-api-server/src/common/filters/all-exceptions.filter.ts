@@ -100,7 +100,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
     // Send error response
     response.status(status).json({
       success: false,
-      code: status === HttpStatus.INTERNAL_SERVER_ERROR ? 'COMMON.INTERNAL_ERROR' : undefined,
+      code:
+        status === HttpStatus.INTERNAL_SERVER_ERROR
+          ? 'COMMON.INTERNAL_ERROR'
+          : undefined,
       message,
       errors,
       statusCode: status,

@@ -9,11 +9,6 @@ import { AuthService } from './services/auth.service';
 import { UserRepository } from './repositories/user.repository';
 import { OtpService } from './services/otp.service';
 import { User, UserSchema } from './schemas/user.schema';
-import { ProfileModule } from '../profile/profile.module';
-import {
-  Profile,
-  ProfileSchema,
-} from '../profile/schemas/profile/profile.schema';
 import { getJwtConfig } from 'src/config/jwt.config';
 import { AuthTokenService } from './services/auth-token.service';
 import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
@@ -31,11 +26,10 @@ import { AnalyticsModule } from '../analytics/analytics.module';
 
 @Module({
   imports: [
-    ConfigModule, // ✅ ensure available
+    ConfigModule,
 
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: Profile.name, schema: ProfileSchema },
       { name: UserSession.name, schema: UserSessionSchema },
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: Plan.name, schema: PlanSchema },
@@ -60,7 +54,6 @@ import { AnalyticsModule } from '../analytics/analytics.module';
         };
       },
     }),
-    ProfileModule,
     NotificationModule,
     AnalyticsModule,
   ],

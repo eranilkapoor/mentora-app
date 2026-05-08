@@ -61,8 +61,6 @@ export default function OnboardingScreen(): React.ReactElement {
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Separate dropdown state for main form and date picker
-  // to prevent them from interfering with each other
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
   const [showDatePickerDropdown, setShowDatePickerDropdown] = useState<
     string | null
@@ -117,7 +115,6 @@ export default function OnboardingScreen(): React.ReactElement {
       const [y, m, d] = basic.dateOfBirth.split('-');
       setTempDate({ day: d ?? '', month: m ?? '', year: y ?? '' });
     }
-    // Close main form dropdowns when date picker opens
     setShowDropdown(null);
     setShowDatePicker(true);
   }, [basic.dateOfBirth]);
@@ -140,7 +137,6 @@ export default function OnboardingScreen(): React.ReactElement {
   const cancelDatePicker = useCallback(() => {
     setShowDatePicker(false);
     setShowDatePickerDropdown(null);
-    // Restore tempDate to match current saved date
     if (basic.dateOfBirth) {
       const [y, m, d] = basic.dateOfBirth.split('-');
       setTempDate({ day: d ?? '', month: m ?? '', year: y ?? '' });
@@ -303,9 +299,12 @@ export default function OnboardingScreen(): React.ReactElement {
         if (Platform.OS === 'web') {
           const response = await fetch(photo.uri);
           const blob = await response.blob();
-          formData.append('images', new File([blob], filename, { type }));
+          formData.append(
+            'profileImages',
+            new File([blob], filename, { type })
+          );
         } else {
-          (formData as FormData).append('images', {
+          (formData as FormData).append('profileImages', {
             uri: photo.uri,
             name: filename,
             type,

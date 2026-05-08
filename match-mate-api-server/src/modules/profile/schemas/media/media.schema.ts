@@ -3,34 +3,46 @@ import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
 import { MediaType, MimeType } from 'src/common/enums';
 
+export enum MediaStatus {
+  ACTIVE = 'active',
+  DELETED = 'deleted',
+  PROCESSING = 'processing',
+}
+
 @Schema({ collection: COLLECTIONS.MEDIA, timestamps: true })
 export class Media {
-  @Prop({ type: Types.ObjectId, required: true })
+  @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ enum: MediaType })
+  @Prop({ type: String, enum: MediaType, required: true })
   type!: MediaType;
 
-  @Prop()
+  @Prop({ type: String })
   filename?: string;
 
-  @Prop({ required: true })
+  @Prop({ type: String, required: true })
   url!: string;
 
-  @Prop()
+  @Prop({ type: String })
   thumbnailUrl?: string;
 
-  @Prop({ enum: Object.values(MimeType) })
+  @Prop({ type: String, enum: Object.values(MimeType) })
   mimeType!: MimeType;
 
-  @Prop()
+  @Prop({ type: Number })
   size?: number;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   isPrimary!: boolean;
 
-  @Prop({ default: true })
+  @Prop({ type: String, enum: MediaStatus, default: MediaStatus.ACTIVE })
+  status!: MediaStatus;
+
+  @Prop({ type: Boolean, default: true })
   isActive!: boolean;
+
+  @Prop({ type: Date })
+  uploadedAt!: Date;
 }
 
 export type MediaDocument = Media & Document;

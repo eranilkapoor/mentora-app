@@ -2,13 +2,6 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Profile, ProfileDocument } from '../schemas/profile/profile.schema';
-import {
-  EducationDto,
-  FamilyDto,
-  PersonalDto,
-  PhysicalDto,
-  PreferencesDto,
-} from '../dto/create-profile.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 
 @Injectable()
@@ -18,205 +11,64 @@ export class ProfileRepository {
     private readonly profileModel: Model<ProfileDocument>,
   ) {}
 
-  async createProfile(
-    userId: string,
-    data: Record<string, unknown>,
-    profileImages: {
-      url: string;
-      isPrimary: boolean;
-      isActive: boolean;
-      uploadedAt: Date;
-    }[] = [],
-  ) {
+  async create(userId: string, data: Record<string, unknown>) {
     try {
       return await this.profileModel.create({
         userId: new Types.ObjectId(userId),
         ...data,
-        profileImages,
       });
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to create profile: ${message}`);
+      throw new Error(
+        `Failed to create profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
-  }
-
-  async addImages(
-    userId: string,
-    profileImages: {
-      url: string;
-      isPrimary: boolean;
-      isActive: boolean;
-      uploadedAt: Date;
-    }[],
-  ) {
-    return this.profileModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId), isDeleted: false },
-      { $push: { profileImages: { $each: profileImages } } },
-      { new: true, runValidators: true },
-    );
-  }
-
-  async setPrimaryImage(userId: string, imageId: string) {
-    // First unset all primary flags, then set the target one
-    await this.profileModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId), isDeleted: false },
-      { $set: { 'profileImages.$[].isPrimary': false } },
-    );
-    return this.profileModel.findOneAndUpdate(
-      {
-        userId: new Types.ObjectId(userId),
-        isDeleted: false,
-        'profileImages._id': imageId,
-      },
-      { $set: { 'profileImages.$.isPrimary': true } },
-      { new: true, runValidators: true },
-    );
-  }
-
-  async removeImage(userId: string, imageId: string) {
-    return this.profileModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId), isDeleted: false },
-      { $pull: { profileImages: { _id: imageId } } },
-      { new: true, runValidators: true },
-    );
-  }
-
-  async getImages(userId: string) {
-    const profile = (await this.profileModel
-      .findOne({ userId: new Types.ObjectId(userId), isDeleted: false })
-      .select('profileImages')
-      .lean()) as { profileImages?: unknown[] } | null;
-    return profile?.profileImages ?? [];
-  }
-
-  async addVideos(
-    userId: string,
-    profileVideos: {
-      url: string;
-      filename?: string;
-      isPrimary: boolean;
-      isActive: boolean;
-      uploadedAt: Date;
-      thumbnailUrl?: string;
-      size?: number;
-      mimeType?: string;
-    }[],
-  ) {
-    return this.profileModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId), isDeleted: false },
-      { $push: { profileVideos: { $each: profileVideos } } },
-      { new: true, runValidators: true },
-    );
-  }
-
-  async setPrimaryVideo(userId: string, videoId: string) {
-    await this.profileModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId), isDeleted: false },
-      { $set: { 'profileVideos.$[].isPrimary': false } },
-    );
-
-    return this.profileModel.findOneAndUpdate(
-      {
-        userId: new Types.ObjectId(userId),
-        isDeleted: false,
-        'profileVideos._id': videoId,
-      },
-      { $set: { 'profileVideos.$.isPrimary': true } },
-      { new: true, runValidators: true },
-    );
-  }
-
-  async removeVideo(userId: string, videoId: string) {
-    return this.profileModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId), isDeleted: false },
-      { $pull: { profileVideos: { _id: videoId } } },
-      { new: true, runValidators: true },
-    );
-  }
-
-  async getVideos(userId: string) {
-    const profile = (await this.profileModel
-      .findOne({ userId: new Types.ObjectId(userId), isDeleted: false })
-      .select('profileVideos')
-      .lean()) as { profileVideos?: unknown[] } | null;
-    return profile?.profileVideos ?? [];
   }
 
   async findByUserId(userId: string) {
     try {
-      return await this.profileModel.findOne(
-        {
-          userId: new Types.ObjectId(userId),
-          isDeleted: false,
-        },
-        {
-          __v: 0,
-          _id: 0,
-          createdAt: 0,
-          updatedAt: 0,
-        },
-      );
+      return await this.profileModel
+        .findOne(
+          { userId: new Types.ObjectId(userId), deletedAt: { $exists: false } },
+          { __v: 0 },
+        )
+        .lean();
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to find profile: ${message}`);
+      throw new Error(
+        `Failed to find profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
-  async updateProfile(userId: string, data: UpdateProfileDto) {
+  async update(
+    userId: string,
+    data: UpdateProfileDto | Record<string, unknown>,
+  ) {
     try {
       return await this.profileModel.findOneAndUpdate(
-        { userId: new Types.ObjectId(userId), isDeleted: false },
+        { userId: new Types.ObjectId(userId), deletedAt: { $exists: false } },
         { $set: data },
         { new: true, runValidators: true },
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to update profile: ${message}`);
+      throw new Error(
+        `Failed to update profile: ${error instanceof Error ? error.message : 'Unknown error'}`,
+      );
     }
   }
 
-  async updatePersonalInfo(userId: string, data: PersonalDto) {
-    try {
-      return await this.updateProfile(userId, { personal: data });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to update personal info: ${message}`);
-    }
+  async exists(userId: string): Promise<boolean> {
+    const count = await this.profileModel.countDocuments({
+      userId: new Types.ObjectId(userId),
+      deletedAt: { $exists: false },
+    });
+    return count > 0;
   }
 
-  async updatePhysicalInfo(userId: string, data: PhysicalDto) {
-    try {
-      return await this.updateProfile(userId, { physical: data });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to update physical info: ${message}`);
-    }
-  }
-
-  async updateEducationInfo(userId: string, data: EducationDto) {
-    try {
-      return await this.updateProfile(userId, { education: data });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to update education info: ${message}`);
-    }
-  }
-
-  async updateFamilyInfo(userId: string, data: FamilyDto) {
-    try {
-      return await this.updateProfile(userId, { family: data });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to update family info: ${message}`);
-    }
-  }
-
-  async updatePreferences(userId: string, data: PreferencesDto) {
-    try {
-      return await this.updateProfile(userId, { preferences: data });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Unknown error';
-      throw new Error(`Failed to update preferences: ${message}`);
-    }
+  async softDelete(userId: string) {
+    return this.profileModel.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId) },
+      { $set: { deletedAt: new Date(), status: 'deleted' } },
+      { new: true },
+    );
   }
 }

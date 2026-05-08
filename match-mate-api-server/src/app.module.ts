@@ -23,6 +23,7 @@ import { ChatModule } from './modules/chat/chat.module';
 import { MatchModule } from './modules/match/match.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { PaymentModule } from './modules/payment/payment.module';
+import { SeederModule } from './modules/seeder/seeder.module';
 
 @Module({
   imports: [
@@ -54,6 +55,7 @@ import { PaymentModule } from './modules/payment/payment.module';
     CacheModule,
     StorageModule,
     MongoModule,
+    SeederModule,
     AuthModule,
     PlanModule,
     ProfileModule,

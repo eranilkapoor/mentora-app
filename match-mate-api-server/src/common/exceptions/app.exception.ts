@@ -6,7 +6,7 @@ export class AppException extends HttpException {
     status: HttpStatus,
     public data?: unknown,
     public errors?: unknown[],
-    public meta?: Record<string, any>
+    public meta?: Record<string, any>,
   ) {
     super(
       {

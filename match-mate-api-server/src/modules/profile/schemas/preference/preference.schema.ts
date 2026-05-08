@@ -18,10 +18,10 @@ import {
 
 @Schema({ _id: false })
 class Range<T = number> {
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   min!: T;
 
-  @Prop({ required: true })
+  @Prop({ type: Number, required: true })
   max!: T;
 }
 
@@ -99,38 +99,38 @@ export class PartnerFilters {
 
 @Schema({ _id: false })
 class MatchSettings {
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   isStrict!: boolean;
 
-  @Prop({ default: true })
+  @Prop({ type: Boolean, default: true })
   allowPartialMatches!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   horoscopeRequired!: boolean;
 
-  @Prop({ default: false })
+  @Prop({ type: Boolean, default: false })
   profileVerificationRequired!: boolean;
 
-  @Prop({ default: 50 })
+  @Prop({ type: Number, default: 50 })
   minimumMatchScore!: number;
 }
 
 @Schema({ _id: false })
 class MatchWeights {
-  @Prop({ default: 10 }) age!: number;
-  @Prop({ default: 10 }) height!: number;
-  @Prop({ default: 15 }) religion!: number;
-  @Prop({ default: 10 }) caste!: number;
-  @Prop({ default: 10 }) location!: number;
-  @Prop({ default: 10 }) education!: number;
-  @Prop({ default: 10 }) occupation!: number;
-  @Prop({ default: 10 }) lifestyle!: number;
-  @Prop({ default: 15 }) horoscope!: number;
+  @Prop({ type: Number, default: 10 }) age!: number;
+  @Prop({ type: Number, default: 10 }) height!: number;
+  @Prop({ type: Number, default: 15 }) religion!: number;
+  @Prop({ type: Number, default: 10 }) caste!: number;
+  @Prop({ type: Number, default: 10 }) location!: number;
+  @Prop({ type: Number, default: 10 }) education!: number;
+  @Prop({ type: Number, default: 10 }) occupation!: number;
+  @Prop({ type: Number, default: 10 }) lifestyle!: number;
+  @Prop({ type: Number, default: 15 }) horoscope!: number;
 }
 
 @Schema({ collection: COLLECTIONS.PREFERENCE, timestamps: true })
 export class Preference {
-  @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
+  @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
   @Prop({ type: PartnerFilters, required: true })
@@ -142,10 +142,10 @@ export class Preference {
   @Prop({ type: MatchWeights, default: () => ({}) })
   weights!: MatchWeights;
 
-  @Prop()
+  @Prop({ type: String })
   aboutPartner?: string;
 
-  @Prop({ default: 1 })
+  @Prop({ type: Number, default: 1 })
   schemaVersion!: number;
 }
 

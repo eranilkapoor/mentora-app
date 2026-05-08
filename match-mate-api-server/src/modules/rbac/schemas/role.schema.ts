@@ -17,7 +17,12 @@ export class Role {
 
   @Prop({ default: true })
   isActive!: boolean;
+
+  @Prop({ default: 1 })
+  version!: number;
 }
 
 export type RoleDocument = Role & Document;
 export const RoleSchema = SchemaFactory.createForClass(Role);
+
+RoleSchema.index({ isActive: 1 });

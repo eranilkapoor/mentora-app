@@ -4,15 +4,9 @@ import {
   Body,
   UseGuards,
   Get,
-  UseInterceptors,
-  UploadedFiles,
-  ValidationPipe,
-  BadRequestException,
   Req,
   Res,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
-import { memoryStorage } from 'multer';
 import { Response } from 'express';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
 import {
@@ -29,7 +23,6 @@ import { AuthService } from '../services/auth.service';
 import { Public } from 'src/common/decorators/public.decorator';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
-import { OnboardingProfileDto } from '../dto/onboarding-profile.dto';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 
@@ -172,62 +165,6 @@ export class AuthController {
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to change password';
-      return new ApiResponse(false, message);
-    }
-  }
-
-  @UseInterceptors(
-    FilesInterceptor('profileImages', 6, {
-      storage: memoryStorage(),
-      fileFilter: (_, file, cb) => {
-        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-
-        if (!allowed.includes(file.mimetype)) {
-          return cb(new Error('Only JPG, PNG, WEBP images are allowed'), false);
-        }
-
-        cb(null, true);
-      },
-      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per image
-    }),
-  )
-  @Post('onboarding-profile')
-  async onboardingProfile(
-    @Req() req: AuthenticatedRequest,
-    @CurrentUser('sub') userId: string,
-    @Body(
-      new ValidationPipe({
-        transform: true,
-        whitelist: true,
-        forbidNonWhitelisted: true,
-      }),
-    )
-    dto: OnboardingProfileDto,
-    @UploadedFiles() profileImages: Express.Multer.File[],
-  ) {
-    const safeImages = profileImages ?? [];
-
-    if (safeImages.length < 1) {
-      throw new BadRequestException('At least 1 image is required');
-    }
-
-    try {
-      const data = await this.authService.onboardingProfile(
-        req,
-        userId,
-        dto,
-        safeImages,
-      );
-      return new ApiResponse(
-        true,
-        'Onboarding profile saved successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to save onboarding profile';
       return new ApiResponse(false, message);
     }
   }

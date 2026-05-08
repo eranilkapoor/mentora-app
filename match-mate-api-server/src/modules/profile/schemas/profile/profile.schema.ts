@@ -40,28 +40,28 @@ export class Profile {
   @Prop({ type: Family })
   family?: Family;
 
-  @Prop({ index: true })
+  @Prop()
   age!: number;
 
   @Prop({ index: true })
   heightCm!: number;
 
-  @Prop({ enum: Religion, index: true })
+  @Prop({ enum: Religion })
   religion!: Religion;
 
-  @Prop({ enum: Caste, index: true })
+  @Prop({ enum: Caste })
   caste?: Caste;
 
-  @Prop({ index: true })
+  @Prop()
   city?: string;
 
   @Prop({ type: GeoLocation })
   location?: GeoLocation;
 
-  @Prop({ enum: Gender, index: true })
+  @Prop({ enum: Gender })
   gender!: Gender;
 
-  @Prop({ default: 0, index: true })
+  @Prop({ default: 0 })
   profileScore!: number;
 
   @Prop({ default: 0 })
@@ -73,7 +73,7 @@ export class Profile {
   @Prop({ type: [String], default: [] })
   aiTags?: string[];
 
-  @Prop({ default: false, index: true })
+  @Prop({ default: false })
   isPremium!: boolean;
 
   @Prop({ default: false })
@@ -83,11 +83,10 @@ export class Profile {
     type: String,
     enum: ProfileStatus,
     default: ProfileStatus.DRAFT,
-    index: true,
   })
   status!: ProfileStatus;
 
-  @Prop({ index: true })
+  @Prop()
   lastActiveAt!: Date;
 
   @Prop({ type: Types.ObjectId })
