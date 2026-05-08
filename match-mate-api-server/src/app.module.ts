@@ -11,7 +11,6 @@ import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { CacheModule } from './modules/cache/cache.module';
 import { ProfileModule } from './modules/profile/profile.module';
-import { RbacModule } from './modules/rbac/rbac.module';
 import { CorrelationIdMiddleware } from './common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RateLimitGuard } from './common/guards/rate-limit.guard';
@@ -59,7 +58,6 @@ import { SeederModule } from './modules/seeder/seeder.module';
     AuthModule,
     PlanModule,
     ProfileModule,
-    RbacModule,
     AdminModule,
     AnalyticsModule,
     ChatModule,

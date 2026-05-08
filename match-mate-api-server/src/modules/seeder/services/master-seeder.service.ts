@@ -8,11 +8,8 @@ import { AppLogger } from 'src/common/logger/logger.service';
 import {
   Permission,
   PermissionDocument,
-} from 'src/modules/rbac/schemas/permission.schema';
-import { 
-  Role, 
-  RoleDocument 
-} from 'src/modules/rbac/schemas/role.schema';
+} from 'src/modules/admin/schemas/permission.schema';
+import { Role, RoleDocument } from 'src/modules/admin/schemas/role.schema';
 import {
   Permission as AppPermission,
   Role as AppRole,
@@ -20,10 +17,7 @@ import {
   FeatureKey,
   PlanTier,
 } from 'src/common/enums';
-import { 
-  Plan, 
-  PlanDocument 
-} from 'src/modules/plan/schemas/plan.schema';
+import { Plan, PlanDocument } from 'src/modules/plan/schemas/plan.schema';
 import {
   Feature,
   FeatureDocument,
@@ -121,8 +115,8 @@ export class MasterSeederService implements OnApplicationBootstrap {
         },
       })),
       {
-        ordered: false
-      }
+        ordered: false,
+      },
     );
 
     this.logger.log(`✅ Permissions seeded successfully`, {
@@ -192,8 +186,8 @@ export class MasterSeederService implements OnApplicationBootstrap {
         },
       })),
       {
-        ordered: false
-      }
+        ordered: false,
+      },
     );
 
     this.logger.log(`✅ Roles seeded successfully`, {
@@ -2181,8 +2175,8 @@ export class MasterSeederService implements OnApplicationBootstrap {
         },
       })),
       {
-        ordered: false
-      }
+        ordered: false,
+      },
     );
 
     this.logger.log(`✅ Features seeded successfully`, {
@@ -2348,8 +2342,8 @@ export class MasterSeederService implements OnApplicationBootstrap {
         },
       })),
       {
-        ordered: false
-      }
+        ordered: false,
+      },
     );
 
     this.logger.log(`✅ Plans seeded successfully`, {

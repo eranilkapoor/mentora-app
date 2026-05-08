@@ -1,4 +1,6 @@
 export const COLLECTIONS = {
+  PERMISSIONS: 'permissions',
+  ROLES: 'roles',
   USER: 'users',
   USER_SESSION: 'user_sessions',
   PROFILE: 'profiles',

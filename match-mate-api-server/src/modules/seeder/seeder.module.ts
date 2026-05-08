@@ -4,8 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   Permission,
   PermissionSchema,
-} from 'src/modules/rbac/schemas/permission.schema';
-import { Role, RoleSchema } from 'src/modules/rbac/schemas/role.schema';
+} from 'src/modules/admin/schemas/permission.schema';
+import { Role, RoleSchema } from 'src/modules/admin/schemas/role.schema';
 import { MasterSeederService } from './services/master-seeder.service';
 import { Plan, PlanSchema } from '../plan/schemas/plan.schema';
 import { Feature, FeatureSchema } from '../plan/schemas/feature.schema';
