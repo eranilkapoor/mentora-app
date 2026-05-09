@@ -20,7 +20,6 @@ import { setProfileCompleted } from '@/store/slices/authSlice';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { MAX_PHOTOS } from '@/core/constants';
-import { useOnboardingProfileMutation } from '@/store/services/authApi';
 import {
   ONBOARDING_STEPS,
   OnboardingSteps,
@@ -50,6 +49,7 @@ import { ErrorText } from './components/ErrorText';
 import { DropdownPicker } from './components/DropdownPicker';
 import { StepIndicator } from './components/StepIndicator';
 import { SearchMultiSelect } from './components/SearchMultiSelect';
+import { useOnboardingProfileMutation } from '@/store/services/profileApi';
 
 export default function OnboardingScreen(): React.ReactElement {
   const dispatch = useAppDispatch();
@@ -62,9 +62,7 @@ export default function OnboardingScreen(): React.ReactElement {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
-  const [showDatePickerDropdown, setShowDatePickerDropdown] = useState<
-    string | null
-  >(null);
+  const [showDatePickerDropdown, setShowDatePickerDropdown] = useState<string | null>(null);
 
   const [photos, setPhotos] = useState<ProfileImage[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);

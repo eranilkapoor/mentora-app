@@ -1,16 +1,12 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import Toast from 'react-native-toast-message';
 
 import { useChangePasswordMutation } from '@/store/services/authApi';
-import { SettingsStackParamList } from '@/navigation/types';
 import { validatePasswords } from './ChangePassword.utils';
 import { FormValues, FormErrors } from './ChangePassword.types';
 
-type ChangePasswordNavProp = NativeStackNavigationProp<SettingsStackParamList>;
-
-export const useChangePassword = (navigation: ChangePasswordNavProp) => {
+export const useChangePassword = () => {
   const { t } = useTranslation();
 
   const [values, setValues] = useState<FormValues>({
@@ -101,7 +97,7 @@ export const useChangePassword = (navigation: ChangePasswordNavProp) => {
     } finally {
       setLoading(false);
     }
-  }, [values, navigation, changePassword, t, handleReset]);
+  }, [values, changePassword, t, handleReset]);
 
   return {
     values,

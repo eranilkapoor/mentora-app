@@ -212,7 +212,9 @@ export const registerStyles = (theme: Theme) =>
       fontWeight: '700',
       fontSize: 16,
     },
-    disabledButton: { opacity: 0.6 },
+    disabledButton: { 
+      opacity: 0.6 
+    },
     resendRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -241,7 +243,9 @@ export const registerStyles = (theme: Theme) =>
       fontWeight: '600',
       fontSize: 13,
     },
-    socialContainer: { gap: 10 },
+    socialContainer: { 
+      gap: 10 
+    },
     socialButton: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -252,7 +256,9 @@ export const registerStyles = (theme: Theme) =>
       borderRadius: 10,
       backgroundColor: theme.colors.white,
     },
-    socialIcon: { marginRight: 12 },
+    socialIcon: { 
+      marginRight: 12 
+    },
     socialLabel: {
       fontSize: 15,
       color: theme.colors.textPrimary,
@@ -267,8 +273,13 @@ export const registerStyles = (theme: Theme) =>
       marginTop: 24,
       marginBottom: 12,
     },
-    footerText: { color: theme.colors.textMuted },
-    linkText: { color: theme.colors.link, fontWeight: '700' },
+    footerText: { 
+      color: theme.colors.textMuted 
+    },
+    linkText: { 
+      color: theme.colors.link, 
+      fontWeight: '700' 
+    },
     modalOverlay: {
       flex: 1,
       backgroundColor: theme.colors.modalOverlay,
@@ -280,7 +291,7 @@ export const registerStyles = (theme: Theme) =>
       maxHeight: 300,
       backgroundColor: theme.colors.white,
       borderRadius: 10,
-      boxShadow: `0px 4px 8px ${theme.colors.black}26`, // 15% opacity
+      boxShadow: `0px 4px 8px ${theme.colors.black}26`,
       elevation: 10,
     },
   });

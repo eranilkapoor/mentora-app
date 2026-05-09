@@ -239,7 +239,7 @@ export default function ForgotPasswordScreen({
               <View key={item.text} style={styles.infoRow}>
                 <View style={styles.infoIconWrapper}>
                   <Feather
-                    name={item.icon as any}
+                    name={item.icon}
                     size={14}
                     color={theme.colors.primary}
                   />

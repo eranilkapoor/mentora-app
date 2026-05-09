@@ -18,7 +18,7 @@
   "see_all": "See all",
   "or": "OR",
   "error": "Something went wrong. Please try again.",
-  "something_went_wrong ": "Something went wrong. Please try again.",
+  "something_went_wrong": "Something went wrong. Please try again.",
   "network_error": "Network error. Please check your connection.",
   "validation": {
     "required": "This field is required",

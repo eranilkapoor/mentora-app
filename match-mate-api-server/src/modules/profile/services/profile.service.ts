@@ -38,9 +38,10 @@ import { AppRequest } from 'src/common/interfaces/app-request.interface';
 import { ProfileStatus } from 'src/common/enums';
 import { InjectModel } from '@nestjs/mongoose';
 import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
-import { StorageService } from 'src/modules/storage/services/storage.service';
 import { UserRepository } from 'src/modules/auth/repositories/user.repository';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { MediaService } from './media.service';
+import { PreferenceService } from './preference.service';
 
 interface RegisterRequestContext {
   platform: ActivityPlatform;
@@ -60,7 +61,8 @@ export class ProfileService {
     private readonly privacySettingModel: Model<PrivacySettingDocument>,
     private readonly notificationService: NotificationService,
     private readonly analyticsService: AnalyticsService,
-    private readonly storageService: StorageService,
+    private readonly mediaService: MediaService,
+    private readonly preferenceService: PreferenceService,
   ) {}
 
   // ─── Create ───────────────────────────────────────────────────────────────
@@ -73,6 +75,7 @@ export class ProfileService {
 
       const payload = this.buildCreatePayload(dto);
       const profile = await this.profileRepo.create(userId, payload);
+
       return profile;
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
@@ -95,6 +98,7 @@ export class ProfileService {
 
       const enriched = this.enrichProfile(profile as Record<string, unknown>);
       await this.cache.set(cacheKey, enriched, 300);
+
       return enriched;
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
@@ -371,9 +375,6 @@ export class ProfileService {
     return age;
   }
 
-  /**
-   * Parse "5 ft 6 in" → cm. Falls back to 0 if format is unexpected.
-   */
   private heightLabelToCm(label: string): number {
     const match = /(\d+)\s*ft\s*(\d+)\s*in/.exec(label);
     if (!match) return 0;
@@ -565,21 +566,6 @@ export class ProfileService {
     };
   }
 
-  private async uploadImages(
-    files: Express.Multer.File[],
-    primaryIndex: number,
-  ): Promise<{ filename: string; url: string; isPrimary: boolean }[]> {
-    if (!files || files.length === 0) return [];
-
-    const uploaded = await this.storageService.uploadFiles(files, 'profiles');
-
-    return uploaded.map((result, index) => ({
-      filename: result.filename, // ← just the filename, stored in DB
-      url: result.url, // ← full URL for client use
-      isPrimary: index === primaryIndex,
-    }));
-  }
-
   async onboardingProfile(
     req: AuthenticatedRequest,
     userId: string,
@@ -597,7 +583,9 @@ export class ProfileService {
           ? parseInt(String(dto.primaryImageIndex), 10)
           : 0;
 
-      const uploadedImages = await this.uploadImages(
+      const uploadedImages = await this.mediaService.addImages(
+        req,
+        userId,
         profileImages,
         primaryIndex,
       );
@@ -621,6 +609,19 @@ export class ProfileService {
           occupation: dto.basic.occupation,
         },
       });
+
+      await this.preferenceService.createPreference(
+        userId,
+        {
+          filters: {
+            age: dto.preferences?.ageRange,
+            heightCm: dto.preferences?.heightRange,
+            maritalStatus: dto.preferences?.maritalStatus,
+            religion: dto.preferences?.religion,
+            country: dto.preferences?.country
+          }
+        }
+      );
 
       user.isOnboardingCompleted = true;
       await user.save();

@@ -1,10 +1,11 @@
-import { Controller, Get, Put, Body, Req, UseGuards } from '@nestjs/common';
+import { Controller, Get, Put, Body, Req, UseGuards, Post, HttpCode, HttpStatus } from '@nestjs/common';
 import { PreferenceService } from '../services/preference.service';
 import {
   PartnerFiltersDto,
   MatchSettingsDto,
   MatchWeightsDto,
   UpdateAboutPartnerDto,
+  UpdatePreferenceDto,
 } from '../dto/preference.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
@@ -13,6 +14,15 @@ import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-reques
 @Controller('preference')
 export class PreferenceController {
   constructor(private readonly preferenceService: PreferenceService) {}
+
+  @Post()
+  @HttpCode(HttpStatus.CREATED)
+  createPreference(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdatePreferenceDto,   // all fields optional — works as partial seed
+  ) {
+    return this.preferenceService.createPreference(req.user.sub, dto);
+  }
 
   @Get('me')
   getMyPreference(@Req() req: AuthenticatedRequest) {

@@ -3,9 +3,11 @@ import { View, Text, Platform, StyleSheet } from 'react-native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTranslation } from 'react-i18next';
 import { useAppSelector } from '@/store/hooks';
 import { BottomTabParamList } from './types';
+import { bottomTabsStyles } from '@/core/styles/BottomTabs.styles';
 
 import MembershipScreen from '@/features/Membership/Membership.screen';
 import HomeStack from './HomeStack';
@@ -32,23 +34,27 @@ const TabIcon = React.memo(
     color,
     badge,
     badgeColor,
-  }: TabIconProps): React.ReactElement => (
-    <View style={tabIconStyles.wrapper}>
-      <Feather name={name} size={22} color={color} />
+  }: TabIconProps): React.ReactElement => {
+    const tabIconStyles = useThemedStyles(bottomTabsStyles);
 
-      {badge !== undefined && badge > 0 && (
-        <View style={[tabIconStyles.badge, { backgroundColor: badgeColor }]}>
-          <Text style={tabIconStyles.badgeText}>
-            {badge > 99 ? '99+' : badge}
-          </Text>
-        </View>
-      )}
+    return (
+      <View style={tabIconStyles.wrapper}>
+        <Feather name={name} size={22} color={color} />
 
-      {focused && (
-        <View style={[tabIconStyles.dot, { backgroundColor: color }]} />
-      )}
-    </View>
-  )
+        {badge !== undefined && badge > 0 && (
+          <View style={[tabIconStyles.badge, { backgroundColor: badgeColor }]}>
+            <Text style={tabIconStyles.badgeText}>
+              {badge > 99 ? '99+' : badge}
+            </Text>
+          </View>
+        )}
+
+        {focused && (
+          <View style={[tabIconStyles.dot, { backgroundColor: color }]} />
+        )}
+      </View>
+    );
+  }
 );
 
 TabIcon.displayName = 'TabIcon';
@@ -175,35 +181,3 @@ export default function BottomTabs(): React.ReactElement {
     </Tab.Navigator>
   );
 }
-
-// ─── Styles ───────────────────────────────────────────────────────────────────
-
-const tabIconStyles = StyleSheet.create({
-  wrapper: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  badge: {
-    position: 'absolute',
-    top: -4,
-    right: -8,
-    minWidth: 16,
-    height: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingHorizontal: 3,
-  },
-  badgeText: {
-    fontSize: 9,
-    fontWeight: '800',
-    color: '#fff',
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-    marginTop: 3,
-  },
-});

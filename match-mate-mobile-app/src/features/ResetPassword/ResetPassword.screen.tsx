@@ -54,6 +54,8 @@ const STRENGTH_FILL: Record<StrengthLevel, number> = {
 };
 
 function StrengthBar({ password }: { password: string }) {
+  const styles = useThemedStyles(resetPasswordStyles);
+
   const { theme } = useTheme();
   const { t } = useTranslation();
   const strength = getPasswordStrength(password);
@@ -63,21 +65,21 @@ function StrengthBar({ password }: { password: string }) {
   if (!password) return null;
 
   return (
-    <View style={{ marginTop: 6, marginBottom: 4 }}>
-      <View style={{ flexDirection: 'row', gap: 4 }}>
+    <View style={styles.strengthBarView}>
+      <View style={styles.strengthHeader}>
         {[1, 2, 3, 4].map((i) => (
           <View
             key={i}
-            style={{
-              flex: 1,
-              height: 4,
-              borderRadius: 2,
-              backgroundColor: i <= fill ? color : theme.colors.border,
-            }}
+            style={[
+              styles.strengthBody,
+              {
+                backgroundColor: i <= fill ? color : theme.colors.border,
+              },
+            ]}
           />
         ))}
       </View>
-      <Text style={{ fontSize: 11, color, marginTop: 4, fontWeight: '500' }}>
+      <Text style={[styles.strengthBarBottom, { color }]}>
         {t(`auth.password_strength.${strength}`)}
       </Text>
     </View>
@@ -426,14 +428,15 @@ export default function ResetPasswordScreen({
                   }
                 />
                 <Text
-                  style={{
-                    fontSize: 12,
-                    marginLeft: 5,
-                    color:
-                      password === confirmPassword
-                        ? theme.colors.success
-                        : theme.colors.error,
-                  }}
+                  style={[
+                    styles.confirmBtn,
+                    {
+                      color:
+                        password === confirmPassword
+                          ? theme.colors.success
+                          : theme.colors.error,
+                    },
+                  ]}
                 >
                   {password === confirmPassword
                     ? t('auth.reset.passwords_match')

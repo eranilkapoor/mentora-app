@@ -158,4 +158,26 @@ export const resetPasswordStyles = (theme: Theme) =>
       lineHeight: 20,
       marginBottom: 32,
     },
+    confirmBtn: {
+      fontSize: 12,
+      marginLeft: 5,
+    },
+    strengthBarView: {
+      marginTop: 6,
+      marginBottom: 4,
+    },
+    strengthBarBottom: {
+      fontSize: 11,
+      marginTop: 4,
+      fontWeight: '500',
+    },
+    strengthHeader: {
+      flexDirection: 'row',
+      gap: 4,
+    },
+    strengthBody: {
+      flex: 1,
+      height: 4,
+      borderRadius: 2,
+    },
   });

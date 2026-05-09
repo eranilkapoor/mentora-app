@@ -173,11 +173,11 @@ export const chatStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
     },
     timeMe: {
-      color: 'rgba(255,255,255,0.65)',
+      color: theme.colors.accentLight,
     },
     readTick: {
       fontSize: 11,
-      color: 'rgba(255,255,255,0.85)',
+      color: theme.colors.accentLight,
       fontWeight: '700',
     },
 

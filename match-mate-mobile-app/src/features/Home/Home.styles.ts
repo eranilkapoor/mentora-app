@@ -154,7 +154,7 @@ export const homeStyles = (theme: Theme) =>
       right: 12,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: theme.colors.black,
       borderRadius: 12,
       paddingHorizontal: 8,
       paddingVertical: 4,
@@ -172,7 +172,7 @@ export const homeStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: theme.colors.black,
       paddingHorizontal: 9,
       paddingVertical: 4,
       borderRadius: 20,
@@ -222,7 +222,7 @@ export const homeStyles = (theme: Theme) =>
     },
     heroLocation: {
       fontSize: 13,
-      color: 'rgba(255,255,255,0.9)',
+      color: theme.colors.accentLight,
     },
 
     // ─── Card Content ─────────────────────────────────────────────────────

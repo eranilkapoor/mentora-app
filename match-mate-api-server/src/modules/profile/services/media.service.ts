@@ -31,6 +31,7 @@ export class MediaService {
     _req: AppRequest,
     userId: string,
     files: Express.Multer.File[],
+    primaryIndex?: number
   ) {
     try {
       const currentCount = await this.mediaRepo.countByUser(
@@ -57,11 +58,12 @@ export class MediaService {
       const inputs = uploaded.map((img, index) => ({
         ...img,
         type: MediaType.IMAGE,
-        isPrimary: !hasPrimary && index === 0,
+        isPrimary: !hasPrimary && index === primaryIndex,
       }));
 
       const result = await this.mediaRepo.create(userId, inputs);
       await this.invalidateCache(userId);
+
       return result;
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
@@ -131,6 +133,7 @@ export class MediaService {
       }
 
       await this.invalidateCache(userId);
+
       return { success: true };
     } catch (error) {
       if (
@@ -183,6 +186,7 @@ export class MediaService {
 
       const result = await this.mediaRepo.create(userId, inputs);
       await this.invalidateCache(userId);
+
       return result;
     } catch (error) {
       if (error instanceof BadRequestException) throw error;
@@ -211,6 +215,7 @@ export class MediaService {
         MediaType.VIDEO,
       );
       await this.invalidateCache(userId);
+
       return result;
     } catch (error) {
       if (
@@ -237,6 +242,7 @@ export class MediaService {
       }
 
       await this.invalidateCache(userId);
+
       return { success: true };
     } catch (error) {
       if (
