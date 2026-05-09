@@ -55,7 +55,7 @@ export const matchListStyles = (theme: Theme) =>
       justifyContent: 'center',
     },
     tabBadgeActive: {
-      backgroundColor: 'rgba(255,255,255,0.25)',
+      backgroundColor: theme.colors.accentLight,
     },
     tabBadgeText: {
       fontSize: 10,
@@ -152,7 +152,7 @@ export const matchListStyles = (theme: Theme) =>
     onlineBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: theme.colors.black,
       borderRadius: 20,
       paddingHorizontal: 10,
       paddingVertical: 4,
@@ -186,8 +186,13 @@ export const matchListStyles = (theme: Theme) =>
       alignItems: 'center',
       gap: 5,
     },
-    locationOverlayText: { color: 'rgba(255,255,255,0.9)', fontSize: 13 },
-    info: { padding: 14 },
+    locationOverlayText: {
+      color: theme.colors.accentLight,
+      fontSize: 13,
+    },
+    info: {
+      padding: 14,
+    },
     tagsRow: {
       flexDirection: 'row',
       gap: 7,

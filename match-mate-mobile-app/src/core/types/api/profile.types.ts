@@ -24,6 +24,8 @@ export interface OnboardingProfileRequest {
 
 export interface ProfileData {
   personal: PersonalData;
+  religion: string;
+  caste: string;
   physical: PhysicalData;
   education: EducationData;
   family: FamilyData;

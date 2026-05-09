@@ -18,10 +18,12 @@ import {
 } from '../../core/constants';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { helpSupportStyles } from './HelpSupport.styles';
-import { ContactItem } from './HelpSupport.types';
+import { ContactItem, HelpSupportScreenProps } from './HelpSupport.types';
 import { FAQ_DATA } from './HelpSupport.constants';
 import { FaqCard } from './components/FaqCard';
 import { ContactRow } from './components/ContactRow';
+import Header from '@/core/components/Header';
+import { useTranslation } from 'react-i18next';
 
 // ─── Android LayoutAnimation ──────────────────────────────────────────────────
 if (
@@ -32,8 +34,12 @@ if (
 }
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-export default function HelpSupportScreen(): React.ReactElement {
+export default function HelpSupportScreen({
+  navigation,
+}: HelpSupportScreenProps): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
+  const { t } = useTranslation();
+
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const toggleFaq = useCallback((index: number): void => {
@@ -82,6 +88,11 @@ export default function HelpSupportScreen(): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe}>
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('settings.help_and_support')}
+      />
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}

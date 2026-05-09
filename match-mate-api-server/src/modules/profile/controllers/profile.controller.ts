@@ -46,7 +46,7 @@ export class ProfileController {
 
         cb(null, true);
       },
-      limits: { fileSize: 5 * 1024 * 1024 }, // 5MB per image
+      limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )
   @Post('onboarding')
@@ -96,8 +96,15 @@ export class ProfileController {
   }
 
   @Get('me')
-  getMyProfile(@Req() req: AuthenticatedRequest) {
-    return this.profileService.getMyProfile(req.user.sub);
+  async getMyProfile(@Req() req: AuthenticatedRequest) {
+    try {
+      const data = await this.profileService.getMyProfile(req.user.sub);
+      return new ApiResponse(true, 'Profile data successfully feathed', data);
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to featch profile';
+      return new ApiResponse(false, message);
+    }
   }
 
   @Put('personal')

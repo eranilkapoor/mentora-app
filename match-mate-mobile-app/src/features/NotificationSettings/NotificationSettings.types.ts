@@ -1,3 +1,10 @@
+import { SettingsNavigationProp } from '../../navigation/types';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+export interface NotificationSettingsScreenProps {
+  navigation: SettingsNavigationProp;
+}
+
 export interface NotificationSetting {
   key: string;
   label: string;

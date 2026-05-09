@@ -43,7 +43,10 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    verifyOtp: builder.mutation<ApiResponse<VerifyOtpResponse>, VerifyOtpRequest>({
+    verifyOtp: builder.mutation<
+      ApiResponse<VerifyOtpResponse>,
+      VerifyOtpRequest
+    >({
       query: (body) => ({
         url: '/auth/verify-otp',
         method: 'POST',
@@ -51,7 +54,10 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
-    socialLogin: builder.mutation<ApiResponse<SocialLoginResponse>, SocialLoginRequest>({
+    socialLogin: builder.mutation<
+      ApiResponse<SocialLoginResponse>,
+      SocialLoginRequest
+    >({
       query: (body) => ({
         url: '/auth/social-login',
         method: 'POST',

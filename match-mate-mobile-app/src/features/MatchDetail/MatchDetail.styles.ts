@@ -29,7 +29,7 @@ export const matchDetailStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: theme.colors.black,
       paddingHorizontal: 10,
       paddingVertical: 5,
       borderRadius: 20,
@@ -51,7 +51,7 @@ export const matchDetailStyles = (theme: Theme) =>
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor: 'rgba(255,255,255,0.5)',
+      backgroundColor: theme.colors.secondary,
     },
     dotActive: {
       backgroundColor: theme.colors.white,
@@ -69,7 +69,7 @@ export const matchDetailStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       alignSelf: 'flex-start',
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: theme.colors.black,
       paddingHorizontal: 10,
       paddingVertical: 4,
       borderRadius: 20,
@@ -100,7 +100,7 @@ export const matchDetailStyles = (theme: Theme) =>
     },
     heroLocation: {
       fontSize: 13,
-      color: 'rgba(255,255,255,0.85)',
+      color: theme.colors.accentLight,
     },
 
     // ─── Match Score ──────────────────────────────────────────────────────

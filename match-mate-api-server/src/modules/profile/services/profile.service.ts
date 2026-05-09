@@ -610,18 +610,15 @@ export class ProfileService {
         },
       });
 
-      await this.preferenceService.createPreference(
-        userId,
-        {
-          filters: {
-            age: dto.preferences?.ageRange,
-            heightCm: dto.preferences?.heightRange,
-            maritalStatus: dto.preferences?.maritalStatus,
-            religion: dto.preferences?.religion,
-            country: dto.preferences?.country
-          }
-        }
-      );
+      await this.preferenceService.createPreference(userId, {
+        filters: {
+          age: dto.preferences?.ageRange,
+          heightCm: dto.preferences?.heightRange,
+          maritalStatus: dto.preferences?.maritalStatus,
+          religion: dto.preferences?.religion,
+          country: dto.preferences?.country,
+        },
+      });
 
       user.isOnboardingCompleted = true;
       await user.save();

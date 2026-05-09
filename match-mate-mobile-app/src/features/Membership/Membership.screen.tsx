@@ -6,7 +6,6 @@ import Header from '../../core/components/Header';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { membershipStyles } from './Membership.styles';
 import { Colors } from '../../core/constants/colors';
-import { MembershipScreenProps } from './Membership.types';
 import {
   BENEFITS,
   DURATION_PLANS,
@@ -18,9 +17,7 @@ import { FeatureRow } from './components/FeatureRow';
 import { PlanCard } from './components/PlanCard';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
-export default function MembershipScreen({
-  navigation,
-}: MembershipScreenProps): React.ReactElement {
+export default function MembershipScreen(): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
   const [tab, setTab] = useState<'self' | 'assisted'>('self');
   const [duration, setDuration] = useState<number>(6);
@@ -146,9 +143,7 @@ export default function MembershipScreen({
             <View style={styles.featureTableCard}>
               {/* Header */}
               <View style={styles.featureTableHeader}>
-                <Text style={[styles.featureHeaderLabel, { paddingLeft: 0 }]}>
-                  Features
-                </Text>
+                <Text style={styles.featureHeaderLabel}>Features</Text>
                 <View style={styles.featureValues}>
                   {PLANS.map((p, i) => (
                     <Text

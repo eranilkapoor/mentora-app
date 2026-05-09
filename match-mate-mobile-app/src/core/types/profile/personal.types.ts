@@ -26,14 +26,17 @@ export interface PersonalData {
   lastName: string;
   gender: Gender;
   dateOfBirth: string;
-  religion: Religion;
-  caste: string;
   country: Country;
   state: string;
   city: string;
   motherTongue: string;
   maritalStatus: MaritalStatus;
   aboutMe: string;
+  smoking: string;
+  drinking: string;
+  diet: string;
+  hobbies: [];
+  languagesKnown: [];
 }
 
 export interface MatchProfile {

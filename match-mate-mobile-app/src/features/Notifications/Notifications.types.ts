@@ -1,3 +1,8 @@
+import { HomeNavigationProp } from '@/navigation/types';
+
+export interface NotificationsScreenProps {
+  navigation: HomeNavigationProp;
+}
 export interface Notification {
   id: string;
   title: string;

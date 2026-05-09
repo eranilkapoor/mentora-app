@@ -1,23 +1,17 @@
 {
   "title": "सूचनाएं",
-
   "unread_count": "{{count}} अपठित सूचना",
   "unread_count_plural": "{{count}} अपठित सूचनाएं",
-
   "all_caught_up": "आप पूरी तरह अपडेट हैं!",
   "mark_all_read": "सभी को पढ़ा हुआ चिह्नित करें",
-
   "empty_title": "अभी कोई सूचना नहीं है",
   "empty_subtitle": "जब आपको मैच, संदेश या गतिविधि मिलेगी, तो वे यहां दिखाई देंगी।",
-
   "no_notifications": "कोई सूचना नहीं",
-
   "actions": {
     "mark_read": "पढ़ा हुआ चिह्नित करें",
     "view_profile": "प्रोफ़ाइल देखें",
     "reply": "उत्तर दें"
   },
-
   "types": {
     "new_message": "आपको नया संदेश मिला है",
     "match_request": "आपको मैच रिक्वेस्ट मिली है",
@@ -26,10 +20,10 @@
     "like": "किसी ने आपकी प्रोफ़ाइल पसंद की",
     "super_like": "आपको सुपर लाइक मिला है"
   },
-
   "sections": {
     "today": "आज",
     "yesterday": "कल",
-    "earlier": "पहले"
+    "earlier": "पहले",
+    "new": "नई"
   }
 }

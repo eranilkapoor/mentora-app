@@ -15,7 +15,7 @@ import {
   annualIncomeFormat,
   cmToFeetInches,
   formatAboutMe,
-  formatAgeRange,
+  formatCamelCase,
   formatLifestyleChoice,
   formatMaritalStatus,
   formatWeight,
@@ -24,7 +24,13 @@ import {
 } from '../../core/utils/format';
 import Header from '../../core/components/Header';
 import { useGetMyProfileQuery } from '../../store/services/profileApi';
-import { ProfileData } from '../../core/types';
+import {
+  Countries,
+  Genders,
+  MaritalStatuses,
+  ProfileData,
+  Religions,
+} from '../../core/types';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { profileStyles } from './Profile.styles';
@@ -41,20 +47,25 @@ export default function ProfileScreen({
 }: ProfileScreenProps): React.ReactElement {
   const [profileData, setProfileData] = useState<ProfileData>({
     personal: {
-      profileFor: 'Self',
+      profileFor: 'self',
       firstName: '',
       lastName: '',
-      gender: 'other',
-      dob: '',
-      religion: '',
-      caste: '',
-      country: '',
+      gender: Genders.MALE,
+      dateOfBirth: '',
+      country: Countries.INDIA,
       state: '',
       city: '',
       motherTongue: '',
-      maritalStatus: 'never_married',
+      maritalStatus: MaritalStatuses.NEVER_MARRIED,
       aboutMe: '',
+      smoking: '',
+      drinking: '',
+      diet: '',
+      hobbies: [],
+      languagesKnown: [],
     },
+    religion: Religions.HINDU,
+    caste: '',
     physical: {
       height: '',
       weight: '',
@@ -78,18 +89,7 @@ export default function ProfileScreen({
       familyValues: '',
     },
     preferences: {
-      smoking: 'non_smoker',
-      drinking: 'non_drinker',
-      diet: 'non_vegetarian',
       languagesKnown: [],
-      hobbies: [],
-      music: [],
-      movies: [],
-      sports: [],
-      partnerPreference: {
-        ageRange: { min: 18, max: 100 },
-        heightRange: { min: 150, max: 250 },
-      },
     },
     images: [],
   });
@@ -104,7 +104,6 @@ export default function ProfileScreen({
     setError(null);
     try {
       if (data && !isLoading && !isError) {
-        // Map API response to ProfileData structure
         if (data?.success) {
           setProfileData(data.data);
         }
@@ -128,7 +127,7 @@ export default function ProfileScreen({
           .filter((img) => img.isActive !== false)
           .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
           .map((img) => {
-            return 'http://192.168.1.4:3000' + img.url;
+            return 'http://192.168.1.10:3000' + img.url;
           }) // extract URL string from ProfileImage
       : FALLBACK_PHOTOS;
 
@@ -192,7 +191,10 @@ export default function ProfileScreen({
       <Header
         title="My Profile"
         actions={[
-          { icon: 'settings', onPress: () => navigation.navigate('Settings') },
+          {
+            icon: 'settings',
+            onPress: () => navigation.navigate('Settings'),
+          },
         ]}
       />
       <ScrollView
@@ -248,7 +250,7 @@ export default function ProfileScreen({
             </View>
           </View>
           <Text style={styles.subText}>
-            {getAgeFromDOB(profileData?.personal.dob)} •{' '}
+            {getAgeFromDOB(profileData?.personal.dateOfBirth)} •{' '}
             {cmToFeetInches(profileData?.physical.height ?? 150)} •{' '}
             {formatMaritalStatus(profileData?.personal.maritalStatus)}
           </Text>
@@ -256,9 +258,9 @@ export default function ProfileScreen({
             <Feather name="map-pin" size={13} color={Colors.textMuted} />
             <Text style={styles.locationText}>
               {[
-                profileData?.personal.city,
-                profileData?.personal.state,
-                profileData?.personal.country,
+                formatCamelCase(profileData?.personal.city),
+                formatCamelCase(profileData?.personal.state),
+                formatCamelCase(profileData?.personal.country),
               ]
                 .filter(Boolean)
                 .join(', ') || '—'}
@@ -275,19 +277,31 @@ export default function ProfileScreen({
 
         {/* Religious & Social */}
         <Section title="Religious & Social Background" icon="sun">
-          <Row label="Religion" value={profileData?.personal.religion} />
-          <Row label="Caste" value={profileData?.personal.caste} />
+          <Row
+            label="Religion"
+            value={formatCamelCase(profileData?.religion)}
+          />
+          <Row label="Caste" value={formatCamelCase(profileData?.caste)} />
           <Row
             label="Mother Tongue"
-            value={profileData?.personal.motherTongue}
+            value={formatCamelCase(profileData?.personal.motherTongue)}
           />
         </Section>
 
         {/* Education & Career */}
         <Section title="Education & Career" icon="book">
-          <Row label="Education" value={profileData?.education.qualification} />
-          <Row label="College" value={profileData?.education.university} />
-          <Row label="Profession" value={profileData?.education.occupation} />
+          <Row
+            label="Education"
+            value={formatCamelCase(profileData?.education.qualification)}
+          />
+          <Row
+            label="College"
+            value={formatCamelCase(profileData?.education.university)}
+          />
+          <Row
+            label="Profession"
+            value={formatCamelCase(profileData?.education.occupation)}
+          />
           <Row
             label="Annual Income"
             value={annualIncomeFormat(
@@ -306,136 +320,77 @@ export default function ProfileScreen({
             label="Weight"
             value={formatWeight(profileData?.physical.weight ?? 40)}
           />
-          <Row label="Body Type" value={profileData?.physical.bodyType} />
-          <Row label="Complexion" value={profileData?.physical.complexion} />
+          <Row
+            label="Body Type"
+            value={formatCamelCase(profileData?.physical.bodyType)}
+          />
+          <Row
+            label="Complexion"
+            value={formatCamelCase(profileData?.physical.complexion)}
+          />
         </Section>
 
         {/* Lifestyle */}
         <Section title="Lifestyle" icon="coffee">
           <Row
             label="Smoking"
-            value={formatLifestyleChoice(
-              profileData?.preferences.smoking ?? ''
-            )}
+            value={formatLifestyleChoice(profileData?.personal.smoking ?? '')}
           />
           <Row
             label="Drinking"
-            value={formatLifestyleChoice(
-              profileData?.preferences.drinking ?? ''
-            )}
+            value={formatLifestyleChoice(profileData?.personal.drinking ?? '')}
           />
           <Row
             label="Diet"
-            value={formatLifestyleChoice(profileData?.preferences.diet ?? '')}
+            value={formatLifestyleChoice(profileData?.personal.diet ?? '')}
           />
         </Section>
 
         {/* Family Background */}
         <Section title="Family Background" icon="home">
-          <Row label="Father's Name" value={profileData?.family.fatherName} />
-          <Row label="Mother's Name" value={profileData?.family.motherName} />
+          <Row
+            label="Father's Name"
+            value={formatCamelCase(profileData?.family.fatherName ?? '')}
+          />
+          <Row
+            label="Mother's Name"
+            value={formatCamelCase(profileData?.family.motherName ?? '')}
+          />
           <Row
             label="Father's Occupation"
-            value={profileData?.family.fatherOccupation}
+            value={formatCamelCase(profileData?.family.fatherOccupation ?? '')}
           />
           <Row
             label="Mother's Occupation"
-            value={profileData?.family.motherOccupation}
+            value={formatCamelCase(profileData?.family.motherOccupation ?? '')}
           />
-          <Row label="Family Type" value={profileData?.family.familyType} />
-          <Row label="Family Status" value={profileData?.family.familyStatus} />
-          <Row label="Family Values" value={profileData?.family.familyValues} />
+          <Row
+            label="Family Type"
+            value={formatCamelCase(profileData?.family.familyType ?? '')}
+          />
+          <Row
+            label="Family Status"
+            value={formatCamelCase(profileData?.family.familyStatus ?? '')}
+          />
+          <Row
+            label="Family Values"
+            value={formatCamelCase(profileData?.family.familyValues ?? '')}
+          />
         </Section>
 
         {/* Interests & Hobbies */}
         <Section title="Interests & Hobbies" icon="music">
-          {(profileData?.preferences.hobbies?.length ?? 0) > 0 && (
+          {(profileData?.personal.hobbies?.length ?? 0) > 0 && (
             <View style={styles.tagSection}>
               <Text style={styles.tagSectionLabel}>Hobbies</Text>
-              <TagList items={profileData?.preferences.hobbies ?? []} />
-            </View>
-          )}
-          {(profileData?.preferences.music?.length ?? 0) > 0 && (
-            <View style={styles.tagSection}>
-              <Text style={styles.tagSectionLabel}>Music</Text>
-              <TagList items={profileData?.preferences.music ?? []} />
-            </View>
-          )}
-          {(profileData?.preferences.sports?.length ?? 0) > 0 && (
-            <View style={styles.tagSection}>
-              <Text style={styles.tagSectionLabel}>Sports</Text>
-              <TagList items={profileData?.preferences.sports ?? []} />
+              <TagList items={profileData?.personal.hobbies ?? []} />
             </View>
           )}
           <Row
             label="Languages Known"
-            value={profileData?.preferences.languagesKnown}
+            value={profileData?.personal.languagesKnown}
           />
         </Section>
-
-        {/* Partner Preferences */}
-        <Section title="Partner Preferences" icon="heart">
-          <Row
-            label="Age Range"
-            value={formatAgeRange(
-              profileData?.preferences?.partnerPreference?.ageRange?.min ?? 18,
-              profileData?.preferences?.partnerPreference?.ageRange?.max ?? 35
-            )}
-          />
-          <Row
-            label="Height Range"
-            value={
-              profileData?.preferences.partnerPreference?.heightRange
-                ? `${cmToFeetInches(profileData.preferences.partnerPreference.heightRange.min)} – ${cmToFeetInches(profileData.preferences.partnerPreference.heightRange.max)}`
-                : '—'
-            }
-          />
-          <Row
-            label="Religion"
-            value={profileData?.preferences.partnerPreference?.religion}
-          />
-          <Row
-            label="Caste"
-            value={profileData?.preferences.partnerPreference?.caste}
-          />
-          <Row
-            label="Education"
-            value={profileData?.preferences.partnerPreference?.qualification}
-          />
-          <Row
-            label="Profession"
-            value={profileData?.preferences.partnerPreference?.occupation}
-          />
-          <Row
-            label="Marital Status"
-            value={profileData?.preferences.partnerPreference?.maritalStatus}
-          />
-          <Row
-            label="Location"
-            value={profileData?.preferences.partnerPreference?.country}
-          />
-          <Row
-            label="Body Type"
-            value={profileData?.preferences.partnerPreference?.bodyType}
-          />
-          <Row
-            label="Complexion"
-            value={profileData?.preferences.partnerPreference?.complexion}
-          />
-          <Row
-            label="Diet"
-            value={profileData?.preferences.partnerPreference?.diet}
-          />
-          <Row
-            label="Smoking"
-            value={profileData?.preferences.partnerPreference?.smoking}
-          />
-          <Row
-            label="Drinking"
-            value={profileData?.preferences.partnerPreference?.drinking}
-          />
-        </Section>
-
         <View style={styles.footer} />
       </ScrollView>
     </SafeAreaView>

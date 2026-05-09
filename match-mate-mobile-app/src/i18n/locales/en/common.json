@@ -17,6 +17,8 @@
   "no": "No",
   "see_all": "See all",
   "or": "OR",
+  "close": "Close",
+  "go_back": "Go Back",
   "error": "Something went wrong. Please try again.",
   "something_went_wrong": "Something went wrong. Please try again.",
   "network_error": "Network error. Please check your connection.",

@@ -14,7 +14,10 @@ import {
 import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
 import { ChildPreference, ResidencyPreference } from 'src/common/enums';
-import { PartnerFilters, Preference } from '../schemas/preference/preference.schema';
+import {
+  PartnerFilters,
+  Preference,
+} from '../schemas/preference/preference.schema';
 
 const WEIGHTS_TOTAL = 100;
 @Injectable()
@@ -22,7 +25,7 @@ export class PreferenceService {
   constructor(
     private readonly preferenceRepo: PreferenceRepository,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
-  ) { }
+  ) {}
 
   // ─── Create ───────────────────────────────────────────────────────────────
 
@@ -35,19 +38,13 @@ export class PreferenceService {
         );
       }
 
-      // Build filters — childPreference and residencyPreference are required
-      // in the schema so they must always be present in the payload
       const mergedFilters: PartnerFilters = {
         childPreference:
           dto?.filters?.childPreference ?? ChildPreference.DOES_NOT_MATTER,
         residencyPreference:
-          dto?.filters?.residencyPreference ?? ResidencyPreference.DOES_NOT_MATTER,
-        // Spread remaining optional filter fields
-        ...(dto?.filters
-          ? (({ childPreference, residencyPreference, ...rest }) => rest)(
-            dto.filters,
-          )
-          : {}),
+          dto?.filters?.residencyPreference ??
+          ResidencyPreference.DOES_NOT_MATTER,
+        ...(dto?.filters ?? {}),
       };
 
       const mergedWeights = {
@@ -63,7 +60,6 @@ export class PreferenceService {
         ...(dto?.weights ?? {}),
       };
 
-      // Validate weights only when caller supplied them
       if (dto?.weights) {
         const total = Object.values(mergedWeights).reduce<number>(
           (sum, val) => sum + (typeof val === 'number' ? val : 0),
@@ -92,6 +88,7 @@ export class PreferenceService {
 
       const result = await this.preferenceRepo.upsert(userId, payload);
       await this.invalidateCache(userId);
+
       return result;
     } catch (error) {
       if (
@@ -128,9 +125,15 @@ export class PreferenceService {
           minimumMatchScore: 50,
         },
         weights: {
-          age: 10, height: 10, religion: 15, caste: 10,
-          location: 10, education: 10, occupation: 10,
-          lifestyle: 10, horoscope: 15,
+          age: 10,
+          height: 10,
+          religion: 15,
+          caste: 10,
+          location: 10,
+          education: 10,
+          occupation: 10,
+          lifestyle: 10,
+          horoscope: 15,
         },
         aboutPartner: '',
       };
@@ -139,7 +142,9 @@ export class PreferenceService {
       return preference;
     } catch (error) {
       throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to retrieve preferences',
+        error instanceof Error
+          ? error.message
+          : 'Failed to retrieve preferences',
       );
     }
   }
@@ -210,7 +215,9 @@ export class PreferenceService {
       return result;
     } catch (error) {
       throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to update about partner',
+        error instanceof Error
+          ? error.message
+          : 'Failed to update about partner',
       );
     }
   }

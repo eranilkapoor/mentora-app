@@ -1,3 +1,10 @@
+import { SettingsNavigationProp } from '../../navigation/types';
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+export interface HelpSupportScreenProps {
+  navigation: SettingsNavigationProp;
+}
+
 export interface FaqItem {
   question: string;
   answer: string;

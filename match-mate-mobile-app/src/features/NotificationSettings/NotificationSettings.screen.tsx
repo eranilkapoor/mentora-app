@@ -13,7 +13,10 @@ import Feather from 'react-native-vector-icons/Feather';
 import { Colors } from '../../core/constants/colors';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { notificationSettingsStyles } from './NotificationSettings.styles';
-import { NotificationState } from './NotificationSettings.types';
+import {
+  NotificationSettingsScreenProps,
+  NotificationState,
+} from './NotificationSettings.types';
 import { NOTIFICATION_GROUPS } from './NotificationSettings.constants';
 import { SectionCard } from './components/SectionCard';
 import Header from '@/core/components/Header';
@@ -32,9 +35,7 @@ const buildInitialState = (): NotificationState => {
 
 export default function NotificationSettingsScreen({
   navigation,
-}: {
-  navigation: any;
-}): React.ReactElement {
+}: NotificationSettingsScreenProps): React.ReactElement {
   const [settings, setSettings] =
     useState<NotificationState>(buildInitialState);
   const styles = useThemedStyles(notificationSettingsStyles);
@@ -113,7 +114,7 @@ export default function NotificationSettingsScreen({
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title={t('settings.title')}
+        title={t('settings.notification_settings')}
       />
       <ScrollView
         contentContainerStyle={styles.scrollContent}

@@ -25,7 +25,7 @@ export const membershipStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      backgroundColor: 'rgba(255,255,255,0.2)',
+      backgroundColor: theme.colors.accent,
       alignSelf: 'flex-start',
       paddingHorizontal: 10,
       paddingVertical: 4,
@@ -46,7 +46,7 @@ export const membershipStyles = (theme: Theme) =>
     },
     heroSubtitle: {
       fontSize: 13,
-      color: 'rgba(255,255,255,0.8)',
+      color: theme.colors.accentLight,
       lineHeight: 19,
       marginBottom: 16,
     },
@@ -55,7 +55,7 @@ export const membershipStyles = (theme: Theme) =>
       gap: 12,
     },
     heroStat: {
-      backgroundColor: 'rgba(255,255,255,0.15)',
+      backgroundColor: theme.colors.accent,
       borderRadius: 10,
       paddingHorizontal: 12,
       paddingVertical: 7,
@@ -68,7 +68,7 @@ export const membershipStyles = (theme: Theme) =>
     },
     heroStatLabel: {
       fontSize: 10,
-      color: 'rgba(255,255,255,0.75)',
+      color: theme.colors.accentLight,
       marginTop: 1,
     },
 
@@ -235,6 +235,7 @@ export const membershipStyles = (theme: Theme) =>
       fontSize: 12,
       fontWeight: '700',
       color: theme.colors.textPrimary,
+      paddingLeft: 0,
     },
     featureHeaderCol: {
       flex: 1,
@@ -525,5 +526,7 @@ export const membershipStyles = (theme: Theme) =>
       color: theme.colors.success,
       lineHeight: 19,
     },
-    savingsHighlight: { fontWeight: '800' },
+    savingsHighlight: {
+      fontWeight: '800',
+    },
   });

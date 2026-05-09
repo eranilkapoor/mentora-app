@@ -8,6 +8,7 @@ export const formatPhoneNumber = (phone: string): string => {
   if (match) {
     return `(${match[1]}) ${match[2]}-${match[3]}`;
   }
+
   return phone;
 };
 
@@ -34,6 +35,7 @@ export const formatAgeRange = (minAge: number, maxAge: number): string => {
 
 export const cmToFeetInches = (cm: number | string): string => {
   const cmValue = typeof cm === 'string' ? parseFloat(cm) : cm;
+
   if (!cmValue) return '';
 
   const inchesTotal = cmValue / 2.54;
@@ -59,17 +61,32 @@ export const formatDate = (date: string | Date): string => {
 
 export const formatMaritalStatus = (status: string): string => {
   if (!status) return '';
+
   const formatted = status.replace(/_/g, ' ').toLowerCase();
   const words = formatted.split(' ');
+
   return words
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
 };
 
 export const formatLifestyleChoice = (choice: string): string => {
-  if (!choice) return '';
+  if (!choice) return '—';
+
   const formatted = choice.replace(/_/g, ' ').toLowerCase();
   const words = formatted.split(' ');
+
+  return words
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+};
+
+export const formatCamelCase = (choice: string): string => {
+  if (!choice) return '—';
+
+  const formatted = choice.replace(/_/g, ' ').toLowerCase();
+  const words = formatted.split(' ');
+
   return words
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(' ');
@@ -77,13 +94,17 @@ export const formatLifestyleChoice = (choice: string): string => {
 
 export const formatWeight = (weight: number | string): string => {
   const weightValue = typeof weight === 'string' ? parseFloat(weight) : weight;
+
   if (!weightValue) return '';
+
   return `${weightValue} kg`;
 };
 
 export const annualIncomeFormat = (income: number | string): string => {
   const incomeValue = typeof income === 'string' ? parseFloat(income) : income;
-  if (!incomeValue) return '';
+
+  if (!incomeValue) return '—';
+
   if (incomeValue >= 10000000) {
     return `₹${(incomeValue / 10000000).toFixed(1)} Cr`;
   } else if (incomeValue >= 100000) {
@@ -97,5 +118,6 @@ export const formatAboutMe = (aboutMe: string | undefined): string => {
   if (!aboutMe || aboutMe.trim() === '') {
     return 'I am a calm and positive person who believes in mutual respect and family values. Looking for a compatible life partner.';
   }
+
   return aboutMe;
 };

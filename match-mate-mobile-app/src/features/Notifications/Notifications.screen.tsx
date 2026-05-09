@@ -9,14 +9,14 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { notificationStyles } from './Notifications.styles';
 
-import { NotifSection } from './Notifications.types';
+import { NotifSection, NotificationsScreenProps } from './Notifications.types';
 import { INITIAL_NOTIFICATIONS } from './Notifications.constants';
 import { EmptyState } from './components/EmptyState';
 import { NotifItem } from './components/NotifItem';
 
 export default function NotificationsScreen({
   navigation,
-}: any): React.ReactElement {
+}: NotificationsScreenProps): React.ReactElement {
   const styles = useThemedStyles(notificationStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();

@@ -3,7 +3,7 @@ import { NotifSection } from './Notifications.types';
 
 export const INITIAL_NOTIFICATIONS: NotifSection[] = [
   {
-    title: 'New',
+    title: 'new',
     icon: 'star',
     data: [
       {
@@ -35,7 +35,7 @@ export const INITIAL_NOTIFICATIONS: NotifSection[] = [
     ],
   },
   {
-    title: 'Earlier',
+    title: 'earlier',
     icon: 'clock',
     data: [
       {

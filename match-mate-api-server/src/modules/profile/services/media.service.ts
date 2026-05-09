@@ -31,7 +31,7 @@ export class MediaService {
     _req: AppRequest,
     userId: string,
     files: Express.Multer.File[],
-    primaryIndex?: number
+    primaryIndex?: number,
   ) {
     try {
       const currentCount = await this.mediaRepo.countByUser(

@@ -90,8 +90,13 @@ export const onlineMatchesStyles = (theme: Theme) =>
     },
 
     // ─── Photo ────────────────────────────────────────────────────────────
-    photoWrapper: { position: 'relative' },
-    image: { width: '100%', height: 260 },
+    photoWrapper: {
+      position: 'relative',
+    },
+    image: {
+      width: '100%',
+      height: 260,
+    },
     photoScrim: {
       position: 'absolute',
       bottom: 0,
@@ -111,7 +116,7 @@ export const onlineMatchesStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: theme.colors.black,
       paddingHorizontal: 10,
       paddingVertical: 5,
       borderRadius: 20,
@@ -158,7 +163,7 @@ export const onlineMatchesStyles = (theme: Theme) =>
     },
     cityOverlayText: {
       fontSize: 13,
-      color: 'rgba(255,255,255,0.9)',
+      color: theme.colors.accentLight,
     },
 
     // ─── Info ─────────────────────────────────────────────────────────────

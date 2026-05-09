@@ -1,23 +1,17 @@
 {
   "title": "Notifications",
-
   "unread_count": "{{count}} unread notification",
   "unread_count_plural": "{{count}} unread notifications",
-
   "all_caught_up": "All caught up!",
   "mark_all_read": "Mark all as read",
-
   "empty_title": "No notifications yet",
   "empty_subtitle": "When you get matches, messages or activity, they will appear here.",
-
   "no_notifications": "No notifications",
-
   "actions": {
     "mark_read": "Mark as read",
     "view_profile": "View profile",
     "reply": "Reply"
   },
-
   "types": {
     "new_message": "You have a new message",
     "match_request": "You received a match request",
@@ -26,10 +20,10 @@
     "like": "Someone liked your profile",
     "super_like": "You got a super like"
   },
-
   "sections": {
     "today": "Today",
     "yesterday": "Yesterday",
-    "earlier": "Earlier"
+    "earlier": "Earlier",
+    "new": "New"
   }
 }

@@ -62,7 +62,9 @@ export default function OnboardingScreen(): React.ReactElement {
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const [showDropdown, setShowDropdown] = useState<string | null>(null);
-  const [showDatePickerDropdown, setShowDatePickerDropdown] = useState<string | null>(null);
+  const [showDatePickerDropdown, setShowDatePickerDropdown] = useState<
+    string | null
+  >(null);
 
   const [photos, setPhotos] = useState<ProfileImage[]>([]);
   const [showDatePicker, setShowDatePicker] = useState(false);

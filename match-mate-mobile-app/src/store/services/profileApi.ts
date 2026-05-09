@@ -13,7 +13,10 @@ import { baseApi } from './baseApi';
 // 🔹 Base API (you can also move this to baseApi.ts)
 export const profileApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
-    onboardingProfile: builder.mutation<ApiResponse<OnbardingResponse>, FormData>({
+    onboardingProfile: builder.mutation<
+      ApiResponse<OnbardingResponse>,
+      FormData
+    >({
       query: (body) => ({
         url: '/profile/onboarding',
         method: 'POST',
@@ -27,7 +30,10 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ['Profile'],
     }),
 
-    updatePersonalInfo: builder.mutation<ApiResponse<ProfileData>, PersonalData>({
+    updatePersonalInfo: builder.mutation<
+      ApiResponse<ProfileData>,
+      PersonalData
+    >({
       query: (body) => ({
         url: '/profile/personal',
         method: 'PUT',
@@ -36,7 +42,10 @@ export const profileApi = baseApi.injectEndpoints({
       invalidatesTags: ['Profile'],
     }),
 
-    updatePhysicalInfo: builder.mutation<ApiResponse<ProfileData>, PhysicalData>({
+    updatePhysicalInfo: builder.mutation<
+      ApiResponse<ProfileData>,
+      PhysicalData
+    >({
       query: (body) => ({
         url: '/profile/physical',
         method: 'PUT',
@@ -45,7 +54,10 @@ export const profileApi = baseApi.injectEndpoints({
       invalidatesTags: ['Profile'],
     }),
 
-    updateEducationInfo: builder.mutation<ApiResponse<ProfileData>, EducationData>({
+    updateEducationInfo: builder.mutation<
+      ApiResponse<ProfileData>,
+      EducationData
+    >({
       query: (body) => ({
         url: '/profile/education',
         method: 'PUT',
@@ -63,7 +75,10 @@ export const profileApi = baseApi.injectEndpoints({
       invalidatesTags: ['Profile'],
     }),
 
-    updatePreferences: builder.mutation<ApiResponse<ProfileData>, PreferencesData>({
+    updatePreferences: builder.mutation<
+      ApiResponse<ProfileData>,
+      PreferencesData
+    >({
       query: (body) => ({
         url: '/profile/preferences',
         method: 'PUT',
