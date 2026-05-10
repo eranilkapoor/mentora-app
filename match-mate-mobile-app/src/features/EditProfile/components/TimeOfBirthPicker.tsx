@@ -24,8 +24,17 @@ export function TimeOfBirthPicker({
           <SelectPill
             label={t('edit_profile.time.hour')}
             options={HOURS.map(String)}
-            value={value?.hour != null ? String(value.hour) : undefined}
-            onChange={(v) => onChange({ ...value, hour: Number(v) })}
+            value={
+              value?.hour !== null && value?.hour !== undefined
+                ? String(value.hour)
+                : undefined
+            }
+            onChange={(v) =>
+              onChange({
+                ...(value ?? {}),
+                hour: Number(v),
+              })
+            }
           />
         </View>
 
@@ -34,11 +43,16 @@ export function TimeOfBirthPicker({
             label={t('edit_profile.time.minute')}
             options={MINUTES}
             value={
-              value?.minute != null
+              value?.minute !== null && value?.minute !== undefined
                 ? String(value.minute).padStart(2, '0')
                 : undefined
             }
-            onChange={(v) => onChange({ ...value, minute: Number(v) })}
+            onChange={(v) =>
+              onChange({
+                ...(value ?? {}),
+                minute: Number(v),
+              })
+            }
           />
         </View>
 

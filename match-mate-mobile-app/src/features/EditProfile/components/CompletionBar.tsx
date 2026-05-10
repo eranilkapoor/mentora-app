@@ -31,7 +31,7 @@ export function CompletionBar({ percent }: Props): React.ReactElement {
   return (
     <View style={styles.completionCard}>
       <View style={styles.completionRow}>
-        <View style={{ flex: 1 }}>
+        <View style={styles.flex}>
           <Text style={styles.completionTitle}>
             {t('edit_profile.completion.title')}
           </Text>

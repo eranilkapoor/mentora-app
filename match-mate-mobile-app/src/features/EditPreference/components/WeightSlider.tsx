@@ -33,7 +33,10 @@ export function WeightSlider({
         <Text style={styles.weightLabel}>{label}</Text>
         <View style={styles.weightBtnRow}>
           <TouchableOpacity
-            style={[styles.weightBtn, value <= WEIGHT_MIN && { opacity: 0.4 }]}
+            style={[
+              styles.weightBtn,
+              value <= WEIGHT_MIN ? styles.disabled : null,
+            ]}
             onPress={decrease}
             disabled={value <= WEIGHT_MIN}
             accessibilityRole="button"
@@ -45,7 +48,10 @@ export function WeightSlider({
           <Text style={styles.weightValue}>{value}</Text>
 
           <TouchableOpacity
-            style={[styles.weightBtn, value >= WEIGHT_MAX && { opacity: 0.4 }]}
+            style={[
+              styles.weightBtn,
+              value >= WEIGHT_MAX ? styles.disabled : null,
+            ]}
             onPress={increase}
             disabled={value >= WEIGHT_MAX}
             accessibilityRole="button"

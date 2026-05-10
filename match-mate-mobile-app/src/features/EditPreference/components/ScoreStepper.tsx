@@ -37,7 +37,7 @@ export function ScoreStepper({
 
       <View style={styles.scoreControls}>
         <TouchableOpacity
-          style={[styles.scoreBtn, value <= min && { opacity: 0.4 }]}
+          style={[styles.scoreBtn, value <= min ? styles.disabled : null]}
           onPress={decrease}
           disabled={value <= min}
           accessibilityRole="button"
@@ -51,7 +51,7 @@ export function ScoreStepper({
         </Text>
 
         <TouchableOpacity
-          style={[styles.scoreBtn, value >= max && { opacity: 0.4 }]}
+          style={[styles.scoreBtn, value >= max ? styles.disabled : null]}
           onPress={increase}
           disabled={value >= max}
           accessibilityRole="button"

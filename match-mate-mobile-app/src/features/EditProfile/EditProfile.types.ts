@@ -8,7 +8,6 @@ import {
   FAMILY_STATUS_OPTIONS,
   FAMILY_TYPE_OPTIONS,
   FAMILY_VALUE_OPTIONS,
-  GENDER_OPTIONS,
   MANGLIK_OPTIONS,
   MARITAL_OPTIONS,
   OCCUPATION_TYPE_OPTIONS,
@@ -70,7 +69,6 @@ export interface PersonalSection {
   hasChildren?: boolean;
   sonsCount?: number;
   daughtersCount?: number;
-  // Lifestyle — moved from preferences per schema
   smoking?: (typeof SMOKING_OPTIONS)[number];
   drinking?: (typeof DRINKING_OPTIONS)[number];
   diet?: (typeof DIET_OPTIONS)[number];
@@ -80,8 +78,8 @@ export interface PersonalSection {
 }
 
 export interface PhysicalSection {
-  heightLabel: string; // renamed from height
-  weightKg?: string; // renamed from weight
+  heightLabel: string;
+  weightKg?: string;
   bloodGroup?: (typeof BLOOD_GROUP_OPTIONS)[number];
   bodyType?: (typeof BODY_TYPE_OPTIONS)[number];
   complexion?: (typeof COMPLEXION_OPTIONS)[number];
@@ -97,7 +95,7 @@ export interface EducationSection {
   occupation: string;
   companyName?: string;
   jobRole?: string;
-  annualIncomeAmount?: string; // renamed from annualIncome, numeric on server
+  annualIncomeAmount?: string;
 }
 
 export interface FamilySection {
@@ -117,7 +115,6 @@ export interface ProfileData {
   education: EducationSection;
   family: FamilySection;
   images?: ProfileImage[];
-  // 'preferences' removed — merged into personal per backend schema
 }
 
 export type SectionKey = keyof ProfileData;

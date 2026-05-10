@@ -24,7 +24,7 @@ import {
   useUpdateFamilyInfoMutation,
 } from '@/store/services/profileApi';
 import { SettingsStackParamList } from '@/navigation/types';
-import { MaritalStatus, ProfileImage } from '@/core/types';
+import { Country, MaritalStatus, ProfileImage } from '@/core/types';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { editProfileStyles } from './EditProfile.styles';
@@ -45,7 +45,6 @@ import {
   FAMILY_STATUS_OPTIONS,
   FAMILY_TYPE_OPTIONS,
   FAMILY_VALUE_OPTIONS,
-  GENDER_OPTIONS,
   MANGLIK_OPTIONS,
   MARITAL_OPTIONS,
   INITIAL_PROFILE,
@@ -178,6 +177,7 @@ export default function EditProfileScreen({
   const updateSection = useCallback(
     async (section: SectionKey): Promise<void> => {
       setSectionLoading(section);
+
       try {
         switch (section) {
           case 'personal':
@@ -185,28 +185,11 @@ export default function EditProfileScreen({
             //   firstName: profile.personal.firstName,
             //   lastName: profile.personal.lastName ?? '',
             //   dateOfBirth: profile.personal.dateOfBirth,
-            //   timeOfBirth: profile.personal.timeOfBirth,
             //   maritalStatus: profile.personal.maritalStatus as MaritalStatus,
-            //   hasChildren: profile.personal.hasChildren,
-            //   sonsCount: profile.personal.sonsCount,
-            //   daughtersCount: profile.personal.daughtersCount,
             //   motherTongue: profile.personal.motherTongue ?? '',
-            //   country: profile.personal.country ?? '',
+            //   country: profile.personal.country as Country,
             //   state: profile.personal.state ?? '',
-            //   citizenship: profile.personal.citizenship ?? '',
-            //   willingToRelocate: profile.personal.willingToRelocate,
             //   aboutMe: profile.personal.aboutMe ?? '',
-            //   manglikStatus: profile.personal.manglikStatus,
-            //   rashi: profile.personal.rashi,
-            //   nakshatra: profile.personal.nakshatra,
-            //   subCast: profile.personal.subCast,
-            //   gotra: profile.personal.gotra,
-            //   placeOfBirth: profile.personal.placeOfBirth,
-            //   smoking: profile.personal.smoking,
-            //   drinking: profile.personal.drinking,
-            //   diet: profile.personal.diet,
-            //   hobbies: profile.personal.hobbies,
-            //   languages: profile.personal.languages,
             // }).unwrap();
             break;
           case 'physical':

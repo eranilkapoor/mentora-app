@@ -13,7 +13,7 @@ export function ToggleRow({
 
   return (
     <View style={styles.row}>
-      <View style={{ flex: 1 }}>
+      <View style={styles.safe}>
         <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
           {label}
         </Text>
@@ -39,6 +39,9 @@ export function ToggleRow({
 }
 
 const styles = StyleSheet.create({
+  safe: {
+    flex: 1,
+  },
   row: {
     flexDirection: 'row',
     alignItems: 'center',

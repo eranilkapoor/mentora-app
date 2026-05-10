@@ -1,8 +1,10 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { TextInput, TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
+
 import { TagInputProps } from '../EditProfile.types';
 import { editProfileStyles } from '../EditProfile.styles';
 
@@ -12,23 +14,31 @@ export function TagInput({
   setItems,
   placeholder,
 }: TagInputProps): React.ReactElement {
-  const [text, setText] = useState('');
+  const [text, setText] = useState<string>('');
+
   const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
 
-  // Guard against undefined items throughout
-  const safeItems = items ?? [];
+  const safeItems = useMemo<string[]>(() => items ?? [], [items]);
 
   const handleAdd = useCallback((): void => {
     const trimmed = text.trim();
-    if (trimmed === '' || safeItems.includes(trimmed)) return;
+
+    if (trimmed.length === 0) {
+      return;
+    }
+
+    if (safeItems.includes(trimmed)) {
+      return;
+    }
+
     setItems([...safeItems, trimmed]);
     setText('');
-  }, [text, safeItems, setItems]);
+  }, [safeItems, setItems, text]);
 
   const handleRemove = useCallback(
-    (item: string): void => {
-      setItems(safeItems.filter((i) => i !== item));
+    (itemToRemove: string): void => {
+      setItems(safeItems.filter((item) => item !== itemToRemove));
     },
     [safeItems, setItems]
   );
@@ -36,6 +46,7 @@ export function TagInput({
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
+
       <View style={styles.tagInputRow}>
         <TextInput
           value={text}
@@ -47,6 +58,7 @@ export function TagInput({
           returnKeyType="done"
           accessibilityLabel={label}
         />
+
         <TouchableOpacity
           style={styles.tagAddBtn}
           onPress={handleAdd}
@@ -57,7 +69,7 @@ export function TagInput({
         </TouchableOpacity>
       </View>
 
-      {safeItems.length > 0 && (
+      {safeItems.length > 0 ? (
         <View style={styles.tagList}>
           {safeItems.map((item) => (
             <TouchableOpacity
@@ -68,11 +80,12 @@ export function TagInput({
               accessibilityLabel={`Remove ${item}`}
             >
               <Text style={styles.tagText}>{item}</Text>
+
               <Feather name="x" size={12} color={theme.colors.primary} />
             </TouchableOpacity>
           ))}
         </View>
-      )}
+      ) : null}
     </View>
   );
 }

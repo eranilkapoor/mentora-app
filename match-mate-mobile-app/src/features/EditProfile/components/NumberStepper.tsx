@@ -1,7 +1,9 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+
 import { useTheme } from '@/core/theme/ThemeProvider';
+
 import { NumberStepperProps } from '../EditProfile.types';
 
 export function NumberStepper({
@@ -18,6 +20,7 @@ export function NumberStepper({
       <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
         {label}
       </Text>
+
       <View style={styles.controls}>
         <TouchableOpacity
           onPress={() => onChange(Math.max(min, value - 1))}
@@ -28,7 +31,7 @@ export function NumberStepper({
               borderColor: theme.colors.border,
               backgroundColor: theme.colors.inputBackground,
             },
-            value <= min && { opacity: 0.4 },
+            value <= min ? styles.disabled : null,
           ]}
           accessibilityRole="button"
           accessibilityLabel={`Decrease ${label}`}
@@ -49,7 +52,7 @@ export function NumberStepper({
               borderColor: theme.colors.border,
               backgroundColor: theme.colors.inputBackground,
             },
-            value >= max && { opacity: 0.4 },
+            value >= max ? styles.disabled : null,
           ]}
           accessibilityRole="button"
           accessibilityLabel={`Increase ${label}`}
@@ -91,5 +94,8 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     minWidth: 24,
     textAlign: 'center',
+  },
+  disabled: {
+    opacity: 0.4,
   },
 });

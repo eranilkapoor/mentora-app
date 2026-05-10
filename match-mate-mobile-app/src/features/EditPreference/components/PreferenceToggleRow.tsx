@@ -16,7 +16,7 @@ export function PreferenceToggleRow({
 
   return (
     <View style={styles.toggleRow}>
-      <View style={{ flex: 1, marginRight: 12 }}>
+      <View style={styles.toggleLabelBox}>
         <Text style={styles.toggleLabel}>{label}</Text>
         {sublabel ? (
           <Text style={styles.toggleSublabel}>{sublabel}</Text>

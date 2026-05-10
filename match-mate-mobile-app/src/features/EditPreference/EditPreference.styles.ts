@@ -223,6 +223,10 @@ export const editPreferenceStyles = (theme: Theme) =>
       marginBottom: 14,
       minHeight: 44,
     },
+    toggleLabelBox: {
+      flex: 1,
+      marginRight: 12,
+    },
     toggleLabel: {
       fontSize: 13,
       fontWeight: '600',
@@ -387,4 +391,7 @@ export const editPreferenceStyles = (theme: Theme) =>
     row: { flexDirection: 'row', gap: 10 },
     halfField: { flex: 1 },
     footer: { height: 16 },
+    disabled: {
+      opacity: 0.4,
+    },
   });
