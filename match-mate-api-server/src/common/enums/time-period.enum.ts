@@ -11,7 +11,7 @@ export enum Hour {
   TEN = '10',
   ELEVEN = '11',
   TWELVE = '12',
-};
+}
 
 export enum Minute {
   ZERO = '00',
@@ -26,9 +26,9 @@ export enum Minute {
   FORTY_FIVE = '45',
   FIFTY = '50',
   FIFTY_FIVE = '55',
-};
+}
 
 export enum TimePeriod {
   AM = 'AM',
   PM = 'PM',
-};
+}
