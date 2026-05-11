@@ -2,8 +2,10 @@ import { Prop, Schema } from '@nestjs/mongoose';
 import {
   Diet,
   Drinking,
+  Hour,
   ManglikStatus,
   MaritalStatus,
+  Minute,
   Smoking,
   TimePeriod,
 } from 'src/common/enums';
@@ -22,11 +24,11 @@ class PlaceOfBirth {
 
 @Schema({ _id: false })
 class TimeOfBirth {
-  @Prop({ min: 1, max: 12 })
-  hour?: number;
+  @Prop({ enum: Hour })
+  hour?: Hour;
 
-  @Prop({ min: 0, max: 59 })
-  minute?: number;
+  @Prop({ enum: Minute })
+  minute?: Minute;
 
   @Prop({ enum: TimePeriod })
   period?: TimePeriod;

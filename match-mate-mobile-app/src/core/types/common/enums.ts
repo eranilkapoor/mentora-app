@@ -199,6 +199,22 @@ export const ReligionOptions = Object.values(Religions).map((value) => ({
   value,
 }));
 
+export const Castes = {
+  GENERAL: 'general',
+  OBC: 'obc',
+  SC: 'sc',
+  ST: 'st',
+  OTHER: 'other',
+  NOT_APPLICABLE: 'not_applicable',
+} as const;
+
+export type Caste = (typeof Castes)[keyof typeof Castes];
+
+export const CasteOptions = Object.values(Castes).map((value) => ({
+  value,
+  label: toLabel(value),
+}));
+
 // ─── Qualification ────────────────────────────────────────────────────────────
 
 export const Qualifications = {
@@ -483,12 +499,17 @@ export const ResidencyPreferenceOptions = Object.values(
 // ─── Education / Career ───────────────────────────────────────────────────────
 
 export const OccupationTypes = {
-  GOVERNMENT: 'government',
-  PRIVATE: 'private',
+  GOVERNMENT_JOB: 'government_job',
+  PRIVATE_JOB: 'private_job',
   BUSINESS: 'business',
   SELF_EMPLOYED: 'self_employed',
-  NOT_WORKING: 'not_working',
+  FREELANCER: 'freelancer',
+  PROFESSIONAL: 'professional',
   STUDENT: 'student',
+  HOMEMAKER: 'homemaker',
+  RETIRED: 'retired',
+  NOT_WORKING: 'not_working',
+  OTHER: 'other'
 } as const;
 
 export type OccupationType =

@@ -51,6 +51,7 @@ import { WeightSlider } from './components/WeightSlider';
 import { ScoreStepper } from './components/ScoreStepper';
 import {
   BodyTypeOptions,
+  CasteOptions,
   ChildPreference,
   ChildPreferenceOptions,
   ComplexionOptions,
@@ -360,13 +361,13 @@ export default function EditPreferenceScreen({
               i18nPrefix="options.religion"
             />
 
-            {/* <MultiSelectPill
+            <MultiSelectPill
               label={t('preference.fields.caste')}
-              options={CASTE_OPTIONS}
+              options={CasteOptions}
               value={preference.filters.caste}
               onChange={(v) => setFilters('caste', v)}
               i18nPrefix="options.caste"
-            /> */}
+            />
 
             <PreferenceTagInput
               label={t('preference.fields.sub_caste')}

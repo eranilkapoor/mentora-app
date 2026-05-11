@@ -58,12 +58,17 @@
     "dont_know": "Don't Know"
   },
   "occupation_type": {
-    "government": "Government",
-    "private": "Private",
-    "business": "Business / Self Employed",
-    "self_employed": "Freelance",
+    "government_job": "Government Job",
+    "private_job": "Private Job",
+    "business": "Business",
+    "self_employed": "Self Employed",
+    "freelancer": "Freelancer",
+    "professional": "Professional",
+    "homemaker": "Homemaker",
     "not_working": "Not Working",
-    "student": "Student"
+    "student": "Student",
+    "retired": "Retired",
+    "other": "Other"
   },
   "family_status": {
     "affluent": "Affluent",
@@ -104,17 +109,11 @@
     "prefer_not_to_say": "Prefer Not To Say"
   },
   "caste": {
-    "brahmin": "Brahmin",
-    "kshatriya": "Kshatriya",
-    "vaishya": "Vaishya",
-    "shudra": "Shudra",
-    "kayastha": "Kayastha",
-    "rajput": "Rajput",
-    "maratha": "Maratha",
-    "reddy": "Reddy",
-    "naidu": "Naidu",
-    "nair": "Nair",
+    "general": "General",
+    "obc": "OBC",
+    "sc": "SC",
+    "st": "ST",
     "other": "Other",
-    "does_not_matter": "Doesn't Matter"
+    "not_applicable": "Not Applicable"
   }
 }
