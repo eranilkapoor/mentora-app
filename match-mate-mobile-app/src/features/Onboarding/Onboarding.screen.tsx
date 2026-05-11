@@ -32,14 +32,14 @@ import {
   BasicData,
   PreferencesData,
   MaritalStatus,
-  Religion_Options,
-  Marital_Status_Options,
-  Profile_For_Options,
-  Qualification_Options,
-  Country_Options,
-  Day_Options,
-  Month_Options,
-  Year_Options,
+  ReligionOptions,
+  MaritalStatusOptions,
+  ProfileForOptions,
+  QualificationOptions,
+  CountryOptions,
+  DayOptions,
+  MonthOptions,
+  YearOptions,
   Religion,
   Country,
   Qualification,
@@ -367,7 +367,7 @@ export default function OnboardingScreen(): React.ReactElement {
         <Text style={styles.label}>{t('onboarding.fields.profile_for')} *</Text>
         <DropdownPicker
           label={t('onboarding.fields.profile_for')}
-          options={Profile_For_Options}
+          options={ProfileForOptions}
           value={basic.profileFor}
           onChange={(val) => {
             setBasic((b) => ({ ...b, profileFor: val as ProfileFor }));
@@ -459,7 +459,7 @@ export default function OnboardingScreen(): React.ReactElement {
         </Text>
         <DropdownPicker
           label={t('onboarding.fields.marital_status')}
-          options={Marital_Status_Options}
+          options={MaritalStatusOptions}
           value={basic.maritalStatus}
           onChange={(val) => {
             setBasic((b) => ({ ...b, maritalStatus: val as MaritalStatus }));
@@ -473,7 +473,7 @@ export default function OnboardingScreen(): React.ReactElement {
         <Text style={styles.label}>{t('onboarding.fields.religion')} *</Text>
         <DropdownPicker
           label={t('onboarding.fields.religion')}
-          options={Religion_Options}
+          options={ReligionOptions}
           value={basic.religion}
           onChange={(val) => {
             setBasic((b) => ({ ...b, religion: val as Religion }));
@@ -487,7 +487,7 @@ export default function OnboardingScreen(): React.ReactElement {
         <Text style={styles.label}>{t('onboarding.fields.country')} *</Text>
         <DropdownPicker
           label={t('onboarding.fields.country')}
-          options={Country_Options}
+          options={CountryOptions}
           value={basic.country}
           onChange={(val) => {
             setBasic((b) => ({ ...b, country: val as Country }));
@@ -503,7 +503,7 @@ export default function OnboardingScreen(): React.ReactElement {
         </Text>
         <DropdownPicker
           label={t('onboarding.fields.qualification')}
-          options={Qualification_Options}
+          options={QualificationOptions}
           value={basic.qualification}
           onChange={(val) => {
             setBasic((b) => ({ ...b, qualification: val as Qualification }));
@@ -671,7 +671,7 @@ export default function OnboardingScreen(): React.ReactElement {
 
         <SearchMultiSelect
           label={t('onboarding.fields.marital_status_preference')}
-          options={Marital_Status_Options}
+          options={MaritalStatusOptions}
           selected={preferences.maritalStatus ?? []}
           onChange={(values) => {
             setPreferences((p) => ({
@@ -687,7 +687,7 @@ export default function OnboardingScreen(): React.ReactElement {
 
         <SearchMultiSelect
           label={t('onboarding.fields.religion_preference')}
-          options={Religion_Options}
+          options={ReligionOptions}
           selected={preferences.religion ?? []}
           onChange={(values) => {
             setPreferences((p) => ({
@@ -703,7 +703,7 @@ export default function OnboardingScreen(): React.ReactElement {
 
         <SearchMultiSelect
           label={t('onboarding.fields.location_preference')}
-          options={Country_Options}
+          options={CountryOptions}
           selected={preferences.country ?? []}
           onChange={(values) => {
             setPreferences((p) => ({
@@ -916,7 +916,7 @@ export default function OnboardingScreen(): React.ReactElement {
             <Text style={styles.label}>{t('onboarding.date_picker.day')}</Text>
             <DropdownPicker
               label={t('onboarding.date_picker.day')}
-              options={Day_Options}
+              options={DayOptions}
               value={tempDate.day}
               onChange={(val) => setTempDate((p) => ({ ...p, day: val }))}
               field="day"
@@ -928,7 +928,7 @@ export default function OnboardingScreen(): React.ReactElement {
             </Text>
             <DropdownPicker
               label={t('onboarding.date_picker.month')}
-              options={Month_Options}
+              options={MonthOptions}
               value={tempDate.month}
               onChange={(val) => setTempDate((p) => ({ ...p, month: val }))}
               field="month"
@@ -938,7 +938,7 @@ export default function OnboardingScreen(): React.ReactElement {
             <Text style={styles.label}>{t('onboarding.date_picker.year')}</Text>
             <DropdownPicker
               label={t('onboarding.date_picker.year')}
-              options={Year_Options}
+              options={YearOptions}
               value={tempDate.year}
               onChange={(val) => setTempDate((p) => ({ ...p, year: val }))}
               field="year"

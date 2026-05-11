@@ -6,7 +6,6 @@ import {
   DIET_OPTIONS,
   DRINKING_OPTIONS,
   MANGLIK_OPTIONS,
-  MARITAL_OPTIONS,
   OCCUPATION_TYPE_OPTIONS,
   RELIGION_OPTIONS,
   RESIDENCY_PREFERENCE_OPTIONS,
@@ -14,6 +13,7 @@ import {
 } from './EditPreference.constants';
 import Feather from 'react-native-vector-icons/Feather';
 import React from 'react';
+import { MaritalStatus } from '@/core/types';
 
 // ─── Range ────────────────────────────────────────────────────────────────────
 
@@ -28,7 +28,7 @@ export interface PartnerFilters {
   age?: Range;
   heightCm?: Range;
   annualIncome?: Range;
-  maritalStatus?: (typeof MARITAL_OPTIONS)[number][];
+  maritalStatus?: MaritalStatus[];
   religion?: (typeof RELIGION_OPTIONS)[number][];
   caste?: (typeof CASTE_OPTIONS)[number][];
   subCaste?: string[];
@@ -96,11 +96,16 @@ export interface RangeInputProps {
   unit?: string;
 }
 
+export type SelectOption = {
+  value: string;
+  label: string;
+};
+
 export interface MultiSelectPillProps {
   label: string;
-  options: readonly string[];
-  value?: string[];
-  onChange: (v: string[]) => void;
+  options: SelectOption[];
+  value: string[];
+  onChange: (value: string[]) => void;
   i18nPrefix?: string;
 }
 

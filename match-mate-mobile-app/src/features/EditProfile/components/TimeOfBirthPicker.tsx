@@ -5,7 +5,7 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SelectPill } from './SelectPill';
 import { TimeOfBirthPickerProps } from '../EditProfile.types';
 import { editProfileStyles } from '../EditProfile.styles';
-import { HOURS, MINUTES, PERIODS } from '../EditProfile.constants';
+import { HourOptions, MinuteOptions, PeriodOptions } from '@/core/types';
 
 export function TimeOfBirthPicker({
   value,
@@ -23,7 +23,7 @@ export function TimeOfBirthPicker({
         <View style={styles.timePickerColumn}>
           <SelectPill
             label={t('edit_profile.time.hour')}
-            options={HOURS.map(String)}
+            options={HourOptions}
             value={
               value?.hour !== null && value?.hour !== undefined
                 ? String(value.hour)
@@ -41,7 +41,7 @@ export function TimeOfBirthPicker({
         <View style={styles.timePickerColumn}>
           <SelectPill
             label={t('edit_profile.time.minute')}
-            options={MINUTES}
+            options={MinuteOptions}
             value={
               value?.minute !== null && value?.minute !== undefined
                 ? String(value.minute).padStart(2, '0')
@@ -59,7 +59,7 @@ export function TimeOfBirthPicker({
         <View style={styles.timePickerColumn}>
           <SelectPill
             label={t('edit_profile.time.period')}
-            options={PERIODS as unknown as string[]}
+            options={PeriodOptions}
             value={value?.period}
             onChange={(v) => onChange({ ...value, period: v as 'AM' | 'PM' })}
           />

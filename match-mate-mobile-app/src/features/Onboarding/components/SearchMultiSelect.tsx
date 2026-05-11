@@ -9,12 +9,20 @@ import {
   Platform,
   UIManager,
 } from 'react-native';
+
 import Feather from 'react-native-vector-icons/Feather';
+
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+
 import { onboardingStyles } from '../Onboarding.styles';
+
 import { ErrorText } from './ErrorText';
-import { SearchMultiSelectProps } from '../Onboarding.types';
+
+import {
+  SearchMultiSelectProps,
+  OptionType,
+} from '../Onboarding.types';
 
 // Enable LayoutAnimation on Android
 if (
@@ -25,6 +33,7 @@ if (
 }
 
 const MAX_VISIBLE = 2;
+
 const MAX_SUGGESTIONS = 20;
 
 export function SearchMultiSelect({
@@ -37,41 +46,53 @@ export function SearchMultiSelect({
   placeholder,
 }: SearchMultiSelectProps): React.ReactElement {
   const styles = useThemedStyles(onboardingStyles);
+
   const { theme } = useTheme();
+
   const [query, setQuery] = useState('');
+
   const [expanded, setExpanded] = useState(false);
 
-  // ─── Filtered suggestions ────────────────────────────────────────────────
+  // ─── Filtered suggestions ─────────────────────────────
 
   const filteredOptions = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
-    if (!trimmed) return options.slice(0, MAX_SUGGESTIONS);
-    return options.filter((opt) => opt.label.toLowerCase().includes(trimmed));
+
+    if (!trimmed) {
+      return options.slice(0, MAX_SUGGESTIONS);
+    }
+
+    return options.filter((opt: OptionType) =>
+      opt.label.toLowerCase().includes(trimmed)
+    );
   }, [query, options]);
 
-  // ─── Label lookup ────────────────────────────────────────────────────────
+  // ─── Label lookup ────────────────────────────────────
 
   const getLabel = useCallback(
-    (value: string) => options.find((o) => o.value === value)?.label ?? value,
+    (value: string): string =>
+      options.find((o: OptionType) => o.value === value)?.label ??
+      value,
     [options]
   );
 
-  // ─── Handlers ────────────────────────────────────────────────────────────
+  // ─── Handlers ────────────────────────────────────────
 
   const addItem = useCallback(
-    (value: string) => {
+    (value: string): void => {
       if (!selected.includes(value)) {
         onChange([...selected, value]);
       }
+
       setQuery('');
     },
     [selected, onChange]
   );
 
   const removeItem = useCallback(
-    (value: string) => {
+    (value: string): void => {
       onChange(selected.filter((v) => v !== value));
-      // If removing causes count to drop to ≤ MAX_VISIBLE, collapse
+
       if (selected.length - 1 <= MAX_VISIBLE) {
         setExpanded(false);
       }
@@ -79,18 +100,25 @@ export function SearchMultiSelect({
     [selected, onChange]
   );
 
-  const toggleExpanded = useCallback(() => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+  const toggleExpanded = useCallback((): void => {
+    LayoutAnimation.configureNext(
+      LayoutAnimation.Presets.easeInEaseOut
+    );
+
     setExpanded((prev) => !prev);
   }, []);
 
-  // ─── Chip visibility ──────────────────────────────────────────────────────
+  // ─── Chip visibility ─────────────────────────────────
 
   const hasOverflow = selected.length > MAX_VISIBLE;
-  const visibleChips = expanded ? selected : selected.slice(0, MAX_VISIBLE);
+
+  const visibleChips = expanded
+    ? selected
+    : selected.slice(0, MAX_VISIBLE);
+
   const hiddenCount = selected.length - MAX_VISIBLE;
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  // ─── Render ──────────────────────────────────────────
 
   return (
     <View>
@@ -102,13 +130,17 @@ export function SearchMultiSelect({
         onChangeText={setQuery}
         placeholder={placeholder}
         placeholderTextColor={theme.colors.textMuted}
-        style={[styles.input, errors[field] ? styles.inputError : null]}
+        style={[
+          styles.input,
+          errors[field] ? styles.inputError : null,
+        ]}
         accessibilityLabel={label}
         returnKeyType="done"
       />
+
       <ErrorText field={field} errors={errors} />
 
-      {/* Suggestions — only shown while typing */}
+      {/* Suggestions */}
       {query.trim().length > 0 && (
         <View style={styles.dropdown}>
           <ScrollView
@@ -117,28 +149,34 @@ export function SearchMultiSelect({
             showsVerticalScrollIndicator={false}
           >
             {filteredOptions.length > 0 ? (
-              filteredOptions.map((item) => {
+              filteredOptions.map((item: OptionType) => {
                 const isSelected = selected.includes(item.value);
+
                 return (
                   <TouchableOpacity
                     key={item.value}
                     style={[
                       styles.dropdownItem,
-                      isSelected && styles.dropdownItemActive,
+                      isSelected &&
+                        styles.dropdownItemActive,
                     ]}
                     onPress={() => addItem(item.value)}
                     accessibilityRole="button"
                     accessibilityLabel={item.label}
-                    accessibilityState={{ selected: isSelected }}
+                    accessibilityState={{
+                      selected: isSelected,
+                    }}
                   >
                     <Text
                       style={[
                         styles.dropdownItemText,
-                        isSelected && styles.dropdownItemTextActive,
+                        isSelected &&
+                          styles.dropdownItemTextActive,
                       ]}
                     >
                       {item.label}
                     </Text>
+
                     {isSelected && (
                       <Feather
                         name="check"
@@ -151,17 +189,19 @@ export function SearchMultiSelect({
               })
             ) : (
               <View style={styles.dropdownItem}>
-                <Text style={styles.dropdownPlaceholder}>No results found</Text>
+                <Text style={styles.dropdownPlaceholder}>
+                  No results found
+                </Text>
               </View>
             )}
           </ScrollView>
         </View>
       )}
 
-      {/* Selected chips + expand/collapse */}
+      {/* Selected chips */}
       {selected.length > 0 && (
         <View style={styles.chipRow}>
-          {visibleChips.map((val) => (
+          {visibleChips.map((val: string) => (
             <View key={val} style={styles.chip}>
               <Text
                 style={styles.chipText}
@@ -170,19 +210,31 @@ export function SearchMultiSelect({
               >
                 {getLabel(val)}
               </Text>
+
               <TouchableOpacity
                 onPress={() => removeItem(val)}
                 style={styles.chipRemove}
-                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
+                hitSlop={{
+                  top: 6,
+                  bottom: 6,
+                  left: 6,
+                  right: 6,
+                }}
                 accessibilityRole="button"
-                accessibilityLabel={`Remove ${getLabel(val)}`}
+                accessibilityLabel={`Remove ${getLabel(
+                  val
+                )}`}
               >
-                <Feather name="x" size={10} color={theme.colors.white} />
+                <Feather
+                  name="x"
+                  size={10}
+                  color={theme.colors.white}
+                />
               </TouchableOpacity>
             </View>
           ))}
 
-          {/* Show more button */}
+          {/* Show more */}
           {hasOverflow && !expanded && (
             <TouchableOpacity
               style={styles.chipMore}
@@ -195,11 +247,14 @@ export function SearchMultiSelect({
                 size={13}
                 color={theme.colors.textSecondary}
               />
-              <Text style={styles.chipMoreText}>{hiddenCount} more</Text>
+
+              <Text style={styles.chipMoreText}>
+                {hiddenCount} more
+              </Text>
             </TouchableOpacity>
           )}
 
-          {/* Show less button — only visible when expanded */}
+          {/* Show less */}
           {hasOverflow && expanded && (
             <TouchableOpacity
               style={styles.chipShowLess}
@@ -212,7 +267,10 @@ export function SearchMultiSelect({
                 size={13}
                 color={theme.colors.textSecondary}
               />
-              <Text style={styles.chipMoreText}>Show less</Text>
+
+              <Text style={styles.chipMoreText}>
+                Show less
+              </Text>
             </TouchableOpacity>
           )}
         </View>

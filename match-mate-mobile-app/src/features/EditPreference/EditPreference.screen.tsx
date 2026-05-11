@@ -36,21 +36,17 @@ import {
   AGE_RANGE,
   BODY_TYPE_OPTIONS,
   CASTE_OPTIONS,
-  CHILD_PREFERENCE_OPTIONS,
   COMPLEXION_OPTIONS,
   DIET_OPTIONS,
   DRINKING_OPTIONS,
-  // FAMILY_TYPE_OPTIONS,
   HEIGHT_RANGE,
   INCOME_RANGE,
   INCOME_STEP,
   INITIAL_PREFERENCE,
   MANGLIK_OPTIONS,
-  MARITAL_OPTIONS,
   MATCH_SCORE_RANGE,
   OCCUPATION_TYPE_OPTIONS,
   RELIGION_OPTIONS,
-  RESIDENCY_PREFERENCE_OPTIONS,
   SMOKING_OPTIONS,
   WEIGHT_KEYS,
 } from './EditPreference.constants';
@@ -62,6 +58,7 @@ import { PreferenceTagInput } from './components/PreferenceTagInput';
 import { PreferenceToggleRow } from './components/PreferenceToggleRow';
 import { WeightSlider } from './components/WeightSlider';
 import { ScoreStepper } from './components/ScoreStepper';
+import { MaritalStatusOptions, ReligionOptions } from '@/core/types';
 
 const ABOUT_PARTNER_MAX = 500;
 
@@ -312,8 +309,8 @@ export default function EditPreferenceScreen({
 
             <MultiSelectPill
               label={t('preference.fields.marital_status')}
-              options={MARITAL_OPTIONS}
-              value={preference.filters.maritalStatus}
+              options={MaritalStatusOptions}
+              value={preference.filters.maritalStatus ?? []}
               onChange={(v) => setFilters('maritalStatus', v)}
               i18nPrefix="options.marital"
             />
@@ -344,8 +341,8 @@ export default function EditPreferenceScreen({
           >
             <MultiSelectPill
               label={t('preference.fields.religion')}
-              options={RELIGION_OPTIONS}
-              value={preference.filters.religion}
+              options={ReligionOptions}
+              value={preference.filters.religion ?? []}
               onChange={(v) => setFilters('religion', v)}
               i18nPrefix="options.religion"
             />

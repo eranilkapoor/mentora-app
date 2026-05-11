@@ -24,7 +24,7 @@ import {
   useUpdateFamilyInfoMutation,
 } from '@/store/services/profileApi';
 import { SettingsStackParamList } from '@/navigation/types';
-import { Country, MaritalStatus, ProfileImage } from '@/core/types';
+import { Country, MaritalStatusOptions, MaritalStatus, ProfileImage } from '@/core/types';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { editProfileStyles } from './EditProfile.styles';
@@ -46,7 +46,6 @@ import {
   FAMILY_TYPE_OPTIONS,
   FAMILY_VALUE_OPTIONS,
   MANGLIK_OPTIONS,
-  MARITAL_OPTIONS,
   INITIAL_PROFILE,
   OCCUPATION_TYPE_OPTIONS,
   SMOKING_OPTIONS,
@@ -419,7 +418,7 @@ export default function EditProfileScreen({
 
             <SelectPill
               label={t('edit_profile.fields.marital_status')}
-              options={MARITAL_OPTIONS}
+              options={MaritalStatusOptions}
               value={profile.personal.maritalStatus}
               onChange={(v) => setPersonal('maritalStatus', v)}
               i18nPrefix="options.marital"

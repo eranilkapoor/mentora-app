@@ -19,21 +19,26 @@ export const ONBOARDING_STEPS_ICONS: Record<
   photos: 'camera',
 };
 
-export type Option = {
+export interface OptionType {
   label: string;
   value: string;
-};
+}
 
 export interface DropdownPickerProps {
   label: string;
-  options: Option[];
-  value: string;
-  onChange: (val: string) => void;
+  options: readonly OptionType[];
+  value?: string;
+  onChange: (value: string) => void;
+
   field: string;
-  errors: Record<string, string>;
+
+  errors: Record<string, string | undefined>;
+
   onClearError: (field: string) => void;
+
   showDropdown: string | null;
-  onSetShowDropdown: (val: string | null) => void;
+
+  onSetShowDropdown: (field: string | null) => void;
 }
 
 export interface ErrorTextProps {
@@ -48,10 +53,16 @@ export interface ProfileImage {
 
 export interface SearchMultiSelectProps {
   label: string;
-  options: Option[];
+
+  options: readonly OptionType[];
+
   selected: string[];
+
   onChange: (values: string[]) => void;
-  placeholder?: string;
+
   field: string;
+
   errors: Record<string, string>;
+
+  placeholder?: string;
 }

@@ -1,9 +1,15 @@
 import React from 'react';
 import { TouchableOpacity, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
+
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SelectPillProps } from '../EditProfile.types';
 import { editProfileStyles } from '../EditProfile.styles';
+
+type OptionType = {
+  label: string;
+  value: string;
+};
 
 export function SelectPill({
   label,
@@ -18,27 +24,31 @@ export function SelectPill({
   return (
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
+
       <View style={styles.pillRow}>
-        {options.map((opt) => {
-          const selected = value === opt;
-          // Use i18n key if prefix provided, else humanise the snake_case value
-          const label = i18nPrefix
-            ? t(`${i18nPrefix}.${opt}`)
-            : opt.replace(/_/g, ' ');
+        {options.map((opt: OptionType) => {
+          const selected = value === opt.value;
+
+          const displayLabel = i18nPrefix
+            ? t(`${i18nPrefix}.${opt.value}`)
+            : opt.label;
 
           return (
             <TouchableOpacity
-              key={opt}
+              key={opt.value}
               style={[styles.pill, selected && styles.pillSelected]}
-              onPress={() => onChange(opt)}
+              onPress={() => onChange(opt.value)}
               accessibilityRole="radio"
               accessibilityState={{ checked: selected }}
-              accessibilityLabel={label}
+              accessibilityLabel={displayLabel}
             >
               <Text
-                style={[styles.pillText, selected && styles.pillTextSelected]}
+                style={[
+                  styles.pillText,
+                  selected && styles.pillTextSelected,
+                ]}
               >
-                {label}
+                {displayLabel}
               </Text>
             </TouchableOpacity>
           );

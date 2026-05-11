@@ -1,19 +1,4 @@
-import { ProfileImage } from '@/core/types';
-import {
-  BLOOD_GROUP_OPTIONS,
-  BODY_TYPE_OPTIONS,
-  COMPLEXION_OPTIONS,
-  DIET_OPTIONS,
-  DRINKING_OPTIONS,
-  FAMILY_STATUS_OPTIONS,
-  FAMILY_TYPE_OPTIONS,
-  FAMILY_VALUE_OPTIONS,
-  MANGLIK_OPTIONS,
-  MARITAL_OPTIONS,
-  OCCUPATION_TYPE_OPTIONS,
-  SIBLING_TYPE_OPTIONS,
-  SMOKING_OPTIONS,
-} from './EditProfile.constants';
+import { BloodGroup, BodyType, Complexion, DietType, DrinkingType, FamilyStatus, FamilyType, FamilyValue, ManglikStatus, MaritalStatus, OccupationType, Period, ProfileImage, SiblingType, SmokingType } from '@/core/types';
 import Feather from 'react-native-vector-icons/Feather';
 import React from 'react';
 
@@ -22,7 +7,7 @@ import React from 'react';
 export interface TimeOfBirth {
   hour?: number;
   minute?: number;
-  period?: 'AM' | 'PM';
+  period?: Period;
 }
 
 export interface PlaceOfBirth {
@@ -32,7 +17,7 @@ export interface PlaceOfBirth {
 }
 
 export interface SiblingDetail {
-  type: (typeof SIBLING_TYPE_OPTIONS)[number];
+  type: SiblingType;
   married: boolean;
   occupation?: string;
 }
@@ -51,12 +36,12 @@ export interface Siblings {
 export interface PersonalSection {
   firstName: string;
   lastName?: string;
-  dateOfBirth: string; // stored as ISO string, sent as Date
+  dateOfBirth: string;
   timeOfBirth?: TimeOfBirth;
   placeOfBirth?: PlaceOfBirth;
   subCast?: string;
   gotra?: string;
-  manglikStatus?: (typeof MANGLIK_OPTIONS)[number];
+  manglikStatus?: ManglikStatus;
   rashi?: string;
   nakshatra?: string;
   kundliFileUrl?: string;
@@ -65,13 +50,13 @@ export interface PersonalSection {
   citizenship?: string;
   willingToRelocate?: boolean;
   motherTongue?: string;
-  maritalStatus: (typeof MARITAL_OPTIONS)[number];
+  maritalStatus: MaritalStatus;
   hasChildren?: boolean;
   sonsCount?: number;
   daughtersCount?: number;
-  smoking?: (typeof SMOKING_OPTIONS)[number];
-  drinking?: (typeof DRINKING_OPTIONS)[number];
-  diet?: (typeof DIET_OPTIONS)[number];
+  smoking?: SmokingType;
+  drinking?: DrinkingType;
+  diet?: DietType;
   hobbies?: string[];
   languages?: string[];
   aboutMe?: string;
@@ -80,9 +65,9 @@ export interface PersonalSection {
 export interface PhysicalSection {
   heightLabel: string;
   weightKg?: string;
-  bloodGroup?: (typeof BLOOD_GROUP_OPTIONS)[number];
-  bodyType?: (typeof BODY_TYPE_OPTIONS)[number];
-  complexion?: (typeof COMPLEXION_OPTIONS)[number];
+  bloodGroup?: BloodGroup;
+  bodyType?: BodyType;
+  complexion?: Complexion;
   disabilityStatus?: boolean;
   disabilityNote?: string;
 }
@@ -91,7 +76,7 @@ export interface EducationSection {
   qualification: string;
   field?: string;
   university?: string;
-  occupationType?: (typeof OCCUPATION_TYPE_OPTIONS)[number];
+  occupationType?: OccupationType;
   occupation: string;
   companyName?: string;
   jobRole?: string;
@@ -103,9 +88,9 @@ export interface FamilySection {
   motherName?: string;
   fatherOccupation?: string;
   motherOccupation?: string;
-  familyType?: (typeof FAMILY_TYPE_OPTIONS)[number];
-  familyStatus?: (typeof FAMILY_STATUS_OPTIONS)[number];
-  familyValues?: (typeof FAMILY_VALUE_OPTIONS)[number];
+  familyType?: FamilyType;
+  familyStatus?: FamilyStatus;
+  familyValues?: FamilyValue;
   siblings?: Siblings;
 }
 
@@ -131,11 +116,16 @@ export interface FormInputProps {
   editable?: boolean;
 }
 
+export interface OptionType {
+  label: string;
+  value: string;
+}
+
 export interface SelectPillProps {
   label: string;
-  options: readonly string[];
+  options: readonly OptionType[];
   value?: string;
-  onChange: (v: string) => void;
+  onChange: (value: string) => void;
   i18nPrefix?: string;
 }
 

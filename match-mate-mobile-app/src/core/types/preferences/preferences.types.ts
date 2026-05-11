@@ -1,4 +1,4 @@
-import { MaritalStatus, Smoking, Drinking, Diet } from '../common/enums';
+import { MaritalStatus, SmokingType, DrinkingType, DietType } from '../common/enums';
 import { AgeRange, HeightRange, IncomeRange } from '../common/ranges';
 
 export interface PreferencesData {
@@ -15,9 +15,9 @@ export interface PreferencesData {
   annualIncomeRange?: IncomeRange;
   bodyType?: string[];
   complexion?: string[];
-  smoking?: Smoking[];
-  drinking?: Drinking[];
-  diet?: Diet[];
+  smoking?: SmokingType[];
+  drinking?: DrinkingType[];
+  diet?: DietType[];
   languagesKnown?: string[];
   aboutPartner?: string;
   isStrict?: boolean;

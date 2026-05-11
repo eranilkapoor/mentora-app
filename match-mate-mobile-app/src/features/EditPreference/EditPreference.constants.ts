@@ -2,14 +2,6 @@ import { PreferenceData } from './EditPreference.types';
 
 // ─── Basic Filters ────────────────────────────────────────────────────────────
 
-export const MARITAL_OPTIONS = [
-  'never_married',
-  'divorced',
-  'widowed',
-  'awaiting_divorced',
-  'annulled',
-] as const;
-
 export const RELIGION_OPTIONS = [
   'hindu',
   'muslim',
