@@ -43,10 +43,7 @@ export function SelectPill({
               accessibilityLabel={displayLabel}
             >
               <Text
-                style={[
-                  styles.pillText,
-                  selected && styles.pillTextSelected,
-                ]}
+                style={[styles.pillText, selected && styles.pillTextSelected]}
               >
                 {displayLabel}
               </Text>

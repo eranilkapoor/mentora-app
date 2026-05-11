@@ -48,11 +48,7 @@ export function DropdownPicker({
         activeOpacity={0.8}
       >
         <Text
-          style={
-            value
-              ? styles.dropdownValueText
-              : styles.dropdownPlaceholder
-          }
+          style={value ? styles.dropdownValueText : styles.dropdownPlaceholder}
         >
           {value
             ? selectedLabel
@@ -78,8 +74,7 @@ export function DropdownPicker({
                 key={item.value}
                 style={[
                   styles.dropdownItem,
-                  value === item.value &&
-                    styles.dropdownItemActive,
+                  value === item.value && styles.dropdownItemActive,
                 ]}
                 onPress={() => {
                   onChange(item.value);
@@ -94,8 +89,7 @@ export function DropdownPicker({
                 <Text
                   style={[
                     styles.dropdownItemText,
-                    value === item.value &&
-                      styles.dropdownItemTextActive,
+                    value === item.value && styles.dropdownItemTextActive,
                   ]}
                 >
                   {item.label}

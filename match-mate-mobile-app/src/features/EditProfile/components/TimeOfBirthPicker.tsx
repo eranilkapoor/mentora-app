@@ -5,7 +5,14 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SelectPill } from './SelectPill';
 import { TimeOfBirthPickerProps } from '../EditProfile.types';
 import { editProfileStyles } from '../EditProfile.styles';
-import { HourOptions, MinuteOptions, PeriodOptions } from '@/core/types';
+import {
+  Hour,
+  HourOptions,
+  Minute,
+  MinuteOptions,
+  Period,
+  PeriodOptions,
+} from '@/core/types';
 
 export function TimeOfBirthPicker({
   value,
@@ -32,7 +39,7 @@ export function TimeOfBirthPicker({
             onChange={(v) =>
               onChange({
                 ...(value ?? {}),
-                hour: Number(v),
+                hour: v as Hour,
               })
             }
           />
@@ -50,7 +57,7 @@ export function TimeOfBirthPicker({
             onChange={(v) =>
               onChange({
                 ...(value ?? {}),
-                minute: Number(v),
+                minute: v as Minute,
               })
             }
           />
@@ -61,7 +68,7 @@ export function TimeOfBirthPicker({
             label={t('edit_profile.time.period')}
             options={PeriodOptions}
             value={value?.period}
-            onChange={(v) => onChange({ ...value, period: v as 'AM' | 'PM' })}
+            onChange={(v) => onChange({ ...value, period: v as Period })}
           />
         </View>
       </View>

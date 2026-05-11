@@ -24,7 +24,21 @@ import {
   useUpdateFamilyInfoMutation,
 } from '@/store/services/profileApi';
 import { SettingsStackParamList } from '@/navigation/types';
-import { Country, MaritalStatusOptions, MaritalStatus, ProfileImage } from '@/core/types';
+import {
+  BloodGroupOptions,
+  BodyTypeOptions,
+  ComplexionOptions,
+  DietTypeOptions,
+  DrinkingOptions,
+  FamilyStatusOptions,
+  FamilyTypeOptions,
+  FamilyValueOptions,
+  ManglikStatusOptions,
+  MaritalStatusOptions,
+  OccupationTypeOptions,
+  ProfileImage,
+  SmokingOptions,
+} from '@/core/types';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { editProfileStyles } from './EditProfile.styles';
@@ -36,20 +50,7 @@ import {
   ProfileData,
   SectionKey,
 } from './EditProfile.types';
-import {
-  BLOOD_GROUP_OPTIONS,
-  BODY_TYPE_OPTIONS,
-  COMPLEXION_OPTIONS,
-  DIET_OPTIONS,
-  DRINKING_OPTIONS,
-  FAMILY_STATUS_OPTIONS,
-  FAMILY_TYPE_OPTIONS,
-  FAMILY_VALUE_OPTIONS,
-  MANGLIK_OPTIONS,
-  INITIAL_PROFILE,
-  OCCUPATION_TYPE_OPTIONS,
-  SMOKING_OPTIONS,
-} from './EditProfile.constants';
+import { INITIAL_PROFILE } from './EditProfile.constants';
 import { CompletionBar } from './components/CompletionBar';
 import { SectionCard } from './components/SectionCard';
 import { FormInput } from './components/FormInput';
@@ -502,7 +503,7 @@ export default function EditProfileScreen({
           >
             <SelectPill
               label={t('edit_profile.fields.manglik_status')}
-              options={MANGLIK_OPTIONS}
+              options={ManglikStatusOptions}
               value={profile.personal.manglikStatus}
               onChange={(v) => setPersonal('manglikStatus', v)}
               i18nPrefix="options.manglik"
@@ -613,14 +614,14 @@ export default function EditProfileScreen({
 
             <SelectPill
               label={t('edit_profile.fields.blood_group')}
-              options={BLOOD_GROUP_OPTIONS}
+              options={BloodGroupOptions}
               value={profile.physical.bloodGroup}
               onChange={(v) => setPhysical('bloodGroup', v)}
             />
 
             <SelectPill
               label={t('edit_profile.fields.body_type')}
-              options={BODY_TYPE_OPTIONS}
+              options={BodyTypeOptions}
               value={profile.physical.bodyType}
               onChange={(v) => setPhysical('bodyType', v)}
               i18nPrefix="options.body_type"
@@ -628,7 +629,7 @@ export default function EditProfileScreen({
 
             <SelectPill
               label={t('edit_profile.fields.complexion')}
-              options={COMPLEXION_OPTIONS}
+              options={ComplexionOptions}
               value={profile.physical.complexion}
               onChange={(v) => setPhysical('complexion', v)}
               i18nPrefix="options.complexion"
@@ -679,7 +680,7 @@ export default function EditProfileScreen({
 
             <SelectPill
               label={t('edit_profile.fields.occupation_type')}
-              options={OCCUPATION_TYPE_OPTIONS}
+              options={OccupationTypeOptions}
               value={profile.education.occupationType}
               onChange={(v) => setEducation('occupationType', v)}
               i18nPrefix="options.occupation_type"
@@ -755,21 +756,21 @@ export default function EditProfileScreen({
 
             <SelectPill
               label={t('edit_profile.fields.family_type')}
-              options={FAMILY_TYPE_OPTIONS}
+              options={FamilyTypeOptions}
               value={profile.family.familyType}
               onChange={(v) => setFamily('familyType', v)}
               i18nPrefix="options.family_type"
             />
             <SelectPill
               label={t('edit_profile.fields.family_status')}
-              options={FAMILY_STATUS_OPTIONS}
+              options={FamilyStatusOptions}
               value={profile.family.familyStatus}
               onChange={(v) => setFamily('familyStatus', v)}
               i18nPrefix="options.family_status"
             />
             <SelectPill
               label={t('edit_profile.fields.family_values')}
-              options={FAMILY_VALUE_OPTIONS}
+              options={FamilyValueOptions}
               value={profile.family.familyValues}
               onChange={(v) => setFamily('familyValues', v)}
               i18nPrefix="options.family_values"
@@ -790,21 +791,21 @@ export default function EditProfileScreen({
           >
             <SelectPill
               label={t('edit_profile.fields.smoking')}
-              options={SMOKING_OPTIONS}
+              options={SmokingOptions}
               value={profile.personal.smoking}
               onChange={(v) => setPersonal('smoking', v)}
               i18nPrefix="options.smoking"
             />
             <SelectPill
               label={t('edit_profile.fields.drinking')}
-              options={DRINKING_OPTIONS}
+              options={DrinkingOptions}
               value={profile.personal.drinking}
               onChange={(v) => setPersonal('drinking', v)}
               i18nPrefix="options.drinking"
             />
             <SelectPill
               label={t('edit_profile.fields.diet')}
-              options={DIET_OPTIONS}
+              options={DietTypeOptions}
               value={profile.personal.diet}
               onChange={(v) => setPersonal('diet', v)}
               i18nPrefix="options.diet"

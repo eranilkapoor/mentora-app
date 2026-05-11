@@ -1,16 +1,19 @@
 import React, { useCallback } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { NumberStepper } from './NumberStepper';
 import { FormInput } from './FormInput';
 import { SiblingsEditorProps, Siblings } from '../EditProfile.types';
 import { INITIAL_SIBLINGS } from '../EditProfile.constants';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { editProfileStyles } from '../EditProfile.styles';
 
 export function SiblingsEditor({
   value,
   onChange,
 }: SiblingsEditorProps): React.ReactElement {
+  const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
 
@@ -62,14 +65,3 @@ export function SiblingsEditor({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  subheading: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginBottom: 12,
-    marginTop: 4,
-  },
-});

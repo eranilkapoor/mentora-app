@@ -1,10 +1,12 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
 
 import { NumberStepperProps } from '../EditProfile.types';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { editProfileStyles } from '../EditProfile.styles';
 
 export function NumberStepper({
   label,
@@ -13,10 +15,11 @@ export function NumberStepper({
   min = 0,
   max = 20,
 }: NumberStepperProps): React.ReactElement {
+  const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
 
   return (
-    <View style={styles.row}>
+    <View style={styles.rowNumberSteper}>
       <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
         {label}
       </Text>
@@ -63,39 +66,3 @@ export function NumberStepper({
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: 14,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    flex: 1,
-  },
-  controls: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  btn: {
-    width: 32,
-    height: 32,
-    borderRadius: 8,
-    borderWidth: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  value: {
-    fontSize: 16,
-    fontWeight: '700',
-    minWidth: 24,
-    textAlign: 'center',
-  },
-  disabled: {
-    opacity: 0.4,
-  },
-});

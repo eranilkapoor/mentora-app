@@ -1,120 +1,7 @@
+import { ChildPreferences, ResidencyPreferences } from '@/core/types';
 import { PreferenceData } from './EditPreference.types';
 
-// ─── Basic Filters ────────────────────────────────────────────────────────────
-
-export const RELIGION_OPTIONS = [
-  'hindu',
-  'muslim',
-  'christian',
-  'sikh',
-  'jain',
-  'buddhist',
-  'parsi',
-  'jewish',
-  'other',
-] as const;
-
-export const CASTE_OPTIONS = [
-  'brahmin',
-  'kshatriya',
-  'vaishya',
-  'shudra',
-  'kayastha',
-  'rajput',
-  'maratha',
-  'reddy',
-  'naidu',
-  'nair',
-  'other',
-  'does_not_matter',
-] as const;
-
-export const MANGLIK_OPTIONS = [
-  'non_manglik',
-  'manglik',
-  'anshik_manglik',
-  'dont_know',
-  'does_not_matter',
-] as const;
-
-// ─── Preference Enums ─────────────────────────────────────────────────────────
-
-export const CHILD_PREFERENCE_OPTIONS = [
-  'does_not_matter',
-  'want_children',
-  'do_not_want_children',
-  'open_to_children',
-  'has_children_acceptable',
-] as const;
-
-export const RESIDENCY_PREFERENCE_OPTIONS = [
-  'does_not_matter',
-  'same_city',
-  'same_state',
-  'same_country',
-  'abroad_preferred',
-  'nri_preferred',
-] as const;
-
-// ─── Physical ─────────────────────────────────────────────────────────────────
-
-export const BODY_TYPE_OPTIONS = [
-  'slim',
-  'athletic',
-  'average',
-  'heavy',
-] as const;
-
-export const COMPLEXION_OPTIONS = [
-  'fair',
-  'wheatish',
-  'dusky',
-  'dark',
-] as const;
-
-// ─── Career ───────────────────────────────────────────────────────────────────
-
-export const OCCUPATION_TYPE_OPTIONS = [
-  'government',
-  'private',
-  'business',
-  'self_employed',
-  'not_working',
-  'student',
-] as const;
-
-// ─── Lifestyle ────────────────────────────────────────────────────────────────
-
-export const SMOKING_OPTIONS = [
-  'non_smoker',
-  'occasionally',
-  'regular',
-  'trying_to_quit',
-  'open_to',
-] as const;
-
-export const DRINKING_OPTIONS = [
-  'non_drinker',
-  'occasionally',
-  'socially',
-  'regular',
-  'open_to',
-] as const;
-
-export const DIET_OPTIONS = [
-  'vegetarian',
-  'non_vegetarian',
-  'eggetarian',
-  'vegan',
-  'open_to',
-  'jain',
-  'satvik',
-  'halal',
-  'kosher',
-] as const;
-
 // ─── Range Bounds ─────────────────────────────────────────────────────────────
-
 export const AGE_RANGE = { min: 18, max: 70 } as const;
 export const HEIGHT_RANGE = { min: 140, max: 220 } as const;
 export const INCOME_RANGE = { min: 0, max: 10000000 } as const;
@@ -122,12 +9,10 @@ export const INCOME_STEP = 50000 as const;
 export const MATCH_SCORE_RANGE = { min: 0, max: 100 } as const;
 
 // ─── Weight Bounds ────────────────────────────────────────────────────────────
-
 export const WEIGHT_MIN = 0 as const;
 export const WEIGHT_MAX = 30 as const;
 
 // ─── Weight Labels ────────────────────────────────────────────────────────────
-// Used as i18n keys: preference.weights.{key}
 export const WEIGHT_KEYS = [
   'age',
   'height',
@@ -143,7 +28,6 @@ export const WEIGHT_KEYS = [
 export type WeightKey = (typeof WEIGHT_KEYS)[number];
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
-
 export const INITIAL_PREFERENCE: PreferenceData = {
   filters: {
     age: { min: 22, max: 35 },
@@ -154,8 +38,8 @@ export const INITIAL_PREFERENCE: PreferenceData = {
     caste: [],
     subCaste: [],
     manglikStatus: [],
-    childPreference: 'does_not_matter',
-    residencyPreference: 'does_not_matter',
+    childPreference: ChildPreferences.DOES_NOT_MATTER,
+    residencyPreference: ResidencyPreferences.DOES_NOT_MATTER,
     country: [],
     state: [],
     city: [],

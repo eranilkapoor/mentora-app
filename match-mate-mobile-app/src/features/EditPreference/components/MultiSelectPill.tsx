@@ -52,10 +52,7 @@ export function MultiSelectPill({
           return (
             <TouchableOpacity
               key={option.value}
-              style={[
-                styles.pill,
-                selected ? styles.pillSelected : null,
-              ]}
+              style={[styles.pill, selected ? styles.pillSelected : null]}
               onPress={() => toggle(option.value)}
               accessibilityRole="checkbox"
               accessibilityState={{ checked: selected }}

@@ -3,8 +3,13 @@ import { Platform, StyleSheet } from 'react-native';
 
 export const editProfileStyles = (theme: Theme) =>
   StyleSheet.create({
-    safe: { flex: 1, backgroundColor: theme.colors.backgroundPage },
-    flex: { flex: 1 },
+    safe: {
+      flex: 1,
+      backgroundColor: theme.colors.backgroundPage,
+    },
+    flex: {
+      flex: 1,
+    },
     scrollContent: {
       padding: 16,
       paddingBottom: 48,
@@ -22,7 +27,10 @@ export const editProfileStyles = (theme: Theme) =>
           }
         : {
             shadowColor: theme.colors.black,
-            shadowOffset: { width: 0, height: 1 },
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
             shadowOpacity: 0.04,
             shadowRadius: 4,
             elevation: 1,
@@ -72,7 +80,10 @@ export const editProfileStyles = (theme: Theme) =>
           }
         : {
             shadowColor: theme.colors.black,
-            shadowOffset: { width: 0, height: 1 },
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
             shadowOpacity: 0.04,
             shadowRadius: 4,
           }),
@@ -179,7 +190,9 @@ export const editProfileStyles = (theme: Theme) =>
     },
 
     // ── Form Fields ───────────────────────────────────────────────────────────
-    field: { marginBottom: 14 },
+    field: {
+      marginBottom: 14,
+    },
     fieldLabel: {
       fontSize: 13,
       fontWeight: '600',
@@ -200,9 +213,16 @@ export const editProfileStyles = (theme: Theme) =>
       minHeight: 90,
       paddingTop: 12,
     },
-    inputDisabled: { opacity: 0.5 },
-    row: { flexDirection: 'row', gap: 10 },
-    halfField: { flex: 1 },
+    inputDisabled: {
+      opacity: 0.5,
+    },
+    row: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    halfField: {
+      flex: 1,
+    },
 
     // ── Pills ─────────────────────────────────────────────────────────────────
     pillRow: {
@@ -305,13 +325,17 @@ export const editProfileStyles = (theme: Theme) =>
       paddingVertical: 13,
       borderRadius: 10,
     },
-    saveBtnDisabled: { opacity: 0.6 },
+    saveBtnDisabled: {
+      opacity: 0.6,
+    },
     saveBtnText: {
       color: theme.colors.white,
       fontWeight: '700',
       fontSize: 15,
     },
-    footer: { height: 16 },
+    footer: {
+      height: 16,
+    },
     subSectionLabel: {
       fontSize: 12,
       fontWeight: '600',
@@ -320,5 +344,57 @@ export const editProfileStyles = (theme: Theme) =>
       letterSpacing: 0.5,
       marginTop: 8,
       marginBottom: 10,
+    },
+    rowNumberSteper: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
+    },
+    label: {
+      fontSize: 13,
+      fontWeight: '600',
+      flex: 1,
+    },
+    controls: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+    },
+    btn: {
+      width: 32,
+      height: 32,
+      borderRadius: 8,
+      borderWidth: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    value: {
+      fontSize: 16,
+      fontWeight: '700',
+      minWidth: 24,
+      textAlign: 'center',
+    },
+    disabled: {
+      opacity: 0.4,
+    },
+    subheading: {
+      fontSize: 12,
+      fontWeight: '600',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 12,
+      marginTop: 4,
+    },
+    rowToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
+      minHeight: 44,
+    },
+    sublabel: {
+      fontSize: 12,
+      marginTop: 2,
     },
   });

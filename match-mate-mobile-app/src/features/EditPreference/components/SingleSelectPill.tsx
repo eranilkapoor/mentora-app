@@ -4,9 +4,14 @@ import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { editPreferenceStyles } from '../EditPreference.styles';
 
+type OptionType = {
+  label: string;
+  value: string;
+};
+
 interface Props {
   label: string;
-  options: readonly string[];
+  options: readonly OptionType[];
   value?: string;
   onChange: (v: string) => void;
   i18nPrefix?: string;
@@ -33,17 +38,17 @@ export function SingleSelectPill({
     <View style={styles.field}>
       <Text style={styles.fieldLabel}>{label}</Text>
       <View style={styles.pillRow}>
-        {options.map((opt) => {
-          const selected = value === opt;
+        {options.map((opt: OptionType) => {
+          const selected = value === opt.value;
           const displayLabel = i18nPrefix
-            ? t(`${i18nPrefix}.${opt}`)
-            : opt.replace(/_/g, ' ');
+            ? t(`${i18nPrefix}.${opt.value}`)
+            : opt.label;
 
           return (
             <TouchableOpacity
-              key={opt}
+              key={opt.value}
               style={[styles.pill, selected && styles.pillSelected]}
-              onPress={() => handlePress(opt)}
+              onPress={() => handlePress(opt.value)}
               accessibilityRole="radio"
               accessibilityState={{ checked: selected }}
               accessibilityLabel={displayLabel}

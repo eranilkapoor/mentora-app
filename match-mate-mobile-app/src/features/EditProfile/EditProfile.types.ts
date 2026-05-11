@@ -1,12 +1,28 @@
-import { BloodGroup, BodyType, Complexion, DietType, DrinkingType, FamilyStatus, FamilyType, FamilyValue, ManglikStatus, MaritalStatus, OccupationType, Period, ProfileImage, SiblingType, SmokingType } from '@/core/types';
+import {
+  BloodGroup,
+  BodyType,
+  Complexion,
+  DietType,
+  DrinkingType,
+  FamilyStatus,
+  FamilyType,
+  FamilyValue,
+  Hour,
+  ManglikStatus,
+  MaritalStatus,
+  Minute,
+  OccupationType,
+  Period,
+  ProfileImage,
+  SiblingType,
+  SmokingType,
+} from '@/core/types';
 import Feather from 'react-native-vector-icons/Feather';
 import React from 'react';
 
-// ─── Nested types ─────────────────────────────────────────────────────────────
-
 export interface TimeOfBirth {
-  hour?: number;
-  minute?: number;
+  hour?: Hour;
+  minute?: Minute;
   period?: Period;
 }
 
@@ -30,8 +46,6 @@ export interface Siblings {
   details: SiblingDetail[];
   note?: string;
 }
-
-// ─── Section types ────────────────────────────────────────────────────────────
 
 export interface PersonalSection {
   firstName: string;
@@ -103,8 +117,6 @@ export interface ProfileData {
 }
 
 export type SectionKey = keyof ProfileData;
-
-// ─── Component prop types ─────────────────────────────────────────────────────
 
 export interface FormInputProps {
   label: string;

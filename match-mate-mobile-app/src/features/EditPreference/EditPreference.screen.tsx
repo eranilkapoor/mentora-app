@@ -34,20 +34,11 @@ import {
 } from './EditPreference.types';
 import {
   AGE_RANGE,
-  BODY_TYPE_OPTIONS,
-  CASTE_OPTIONS,
-  COMPLEXION_OPTIONS,
-  DIET_OPTIONS,
-  DRINKING_OPTIONS,
   HEIGHT_RANGE,
   INCOME_RANGE,
   INCOME_STEP,
   INITIAL_PREFERENCE,
-  MANGLIK_OPTIONS,
   MATCH_SCORE_RANGE,
-  OCCUPATION_TYPE_OPTIONS,
-  RELIGION_OPTIONS,
-  SMOKING_OPTIONS,
   WEIGHT_KEYS,
 } from './EditPreference.constants';
 import { PreferenceSectionCard } from './components/PreferenceSectionCard';
@@ -58,7 +49,21 @@ import { PreferenceTagInput } from './components/PreferenceTagInput';
 import { PreferenceToggleRow } from './components/PreferenceToggleRow';
 import { WeightSlider } from './components/WeightSlider';
 import { ScoreStepper } from './components/ScoreStepper';
-import { MaritalStatusOptions, ReligionOptions } from '@/core/types';
+import {
+  BodyTypeOptions,
+  ChildPreference,
+  ChildPreferenceOptions,
+  ComplexionOptions,
+  DietTypeOptions,
+  DrinkingOptions,
+  ManglikStatusOptions,
+  MaritalStatusOptions,
+  OccupationTypeOptions,
+  ReligionOptions,
+  ResidencyPreference,
+  ResidencyPreferenceOptions,
+  SmokingOptions,
+} from '@/core/types';
 
 const ABOUT_PARTNER_MAX = 500;
 
@@ -108,8 +113,12 @@ export default function EditPreferenceScreen({
 
   // ─── Weights total (must always sum to 100) ───────────────────────────────
 
-  const weightsTotal = useMemo(
-    () => Object.values(preference.weights).reduce((sum, v) => sum + v, 0),
+  const weightsTotal: number = useMemo(
+    () =>
+      Object.values(preference.weights).reduce(
+        (sum: number, v: number) => sum + v,
+        0
+      ) as number,
     [preference.weights]
   );
 
@@ -157,7 +166,7 @@ export default function EditPreferenceScreen({
       }
     },
     [
-      preference,
+      // preference,
       weightsTotal,
       //   updateFilters,
       //   updateSettings,
@@ -315,21 +324,25 @@ export default function EditPreferenceScreen({
               i18nPrefix="options.marital"
             />
 
-            {/* <SingleSelectPill
+            <SingleSelectPill
               label={t('preference.fields.child_preference')}
-              options={CHILD_PREFERENCE_OPTIONS}
+              options={ChildPreferenceOptions}
               value={preference.filters.childPreference}
-              onChange={(v) => setFilters('childPreference', v)}
+              onChange={(v) =>
+                setFilters('childPreference', v as ChildPreference)
+              }
               i18nPrefix="options.child_preference"
             />
 
             <SingleSelectPill
               label={t('preference.fields.residency_preference')}
-              options={RESIDENCY_PREFERENCE_OPTIONS}
+              options={ResidencyPreferenceOptions}
               value={preference.filters.residencyPreference}
-              onChange={(v) => setFilters('residencyPreference', v)}
+              onChange={(v) =>
+                setFilters('residencyPreference', v as ResidencyPreference)
+              }
               i18nPrefix="options.residency_preference"
-            /> */}
+            />
           </PreferenceSectionCard>
 
           {/* ── Religion & Culture ──────────────────────────────────────── */}
@@ -347,13 +360,13 @@ export default function EditPreferenceScreen({
               i18nPrefix="options.religion"
             />
 
-            <MultiSelectPill
+            {/* <MultiSelectPill
               label={t('preference.fields.caste')}
               options={CASTE_OPTIONS}
               value={preference.filters.caste}
               onChange={(v) => setFilters('caste', v)}
               i18nPrefix="options.caste"
-            />
+            /> */}
 
             <PreferenceTagInput
               label={t('preference.fields.sub_caste')}
@@ -364,7 +377,7 @@ export default function EditPreferenceScreen({
 
             <MultiSelectPill
               label={t('preference.fields.manglik_status')}
-              options={MANGLIK_OPTIONS}
+              options={ManglikStatusOptions}
               value={preference.filters.manglikStatus}
               onChange={(v) => setFilters('manglikStatus', v)}
               i18nPrefix="options.manglik"
@@ -416,7 +429,7 @@ export default function EditPreferenceScreen({
 
             <MultiSelectPill
               label={t('preference.fields.occupation_type')}
-              options={OCCUPATION_TYPE_OPTIONS}
+              options={OccupationTypeOptions}
               value={preference.filters.occupationType}
               onChange={(v) => setFilters('occupationType', v)}
               i18nPrefix="options.occupation_type"
@@ -439,7 +452,7 @@ export default function EditPreferenceScreen({
           >
             <MultiSelectPill
               label={t('preference.fields.body_type')}
-              options={BODY_TYPE_OPTIONS}
+              options={BodyTypeOptions}
               value={preference.filters.bodyType}
               onChange={(v) => setFilters('bodyType', v)}
               i18nPrefix="options.body_type"
@@ -447,7 +460,7 @@ export default function EditPreferenceScreen({
 
             <MultiSelectPill
               label={t('preference.fields.complexion')}
-              options={COMPLEXION_OPTIONS}
+              options={ComplexionOptions}
               value={preference.filters.complexion}
               onChange={(v) => setFilters('complexion', v)}
               i18nPrefix="options.complexion"
@@ -463,7 +476,7 @@ export default function EditPreferenceScreen({
           >
             <MultiSelectPill
               label={t('preference.fields.smoking')}
-              options={SMOKING_OPTIONS}
+              options={SmokingOptions}
               value={preference.filters.smoking}
               onChange={(v) => setFilters('smoking', v)}
               i18nPrefix="options.smoking"
@@ -471,7 +484,7 @@ export default function EditPreferenceScreen({
 
             <MultiSelectPill
               label={t('preference.fields.drinking')}
-              options={DRINKING_OPTIONS}
+              options={DrinkingOptions}
               value={preference.filters.drinking}
               onChange={(v) => setFilters('drinking', v)}
               i18nPrefix="options.drinking"
@@ -479,7 +492,7 @@ export default function EditPreferenceScreen({
 
             <MultiSelectPill
               label={t('preference.fields.diet')}
-              options={DIET_OPTIONS}
+              options={DietTypeOptions}
               value={preference.filters.diet}
               onChange={(v) => setFilters('diet', v)}
               i18nPrefix="options.diet"

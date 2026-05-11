@@ -1,8 +1,7 @@
 {
   "gender": {
     "male": "Male",
-    "female": "Female",
-    "other": "Other"
+    "female": "Female"
   },
   "marital": {
     "never_married": "Never Married",
@@ -46,11 +45,11 @@
     "non_vegetarian": "Non Vegetarian",
     "eggetarian": "Eggetarian",
     "vegan": "Vegan",
-    "open_to": "Open To",
     "jain": "Jain",
     "satvik": "Satvik",
     "halal": "Halal",
-    "kosher": "Kosher"
+    "kosher": "Kosher",
+    "open_to": "Open To"
   },
   "manglik": {
     "non_manglik": "Non Manglik",
@@ -101,7 +100,8 @@
     "buddhist": "Buddhist",
     "parsi": "Parsi",
     "jewish": "Jewish",
-    "other": "Other"
+    "other": "Other",
+    "prefer_not_to_say": "Prefer Not To Say"
   },
   "caste": {
     "brahmin": "Brahmin",

@@ -3,8 +3,13 @@ import { Platform, StyleSheet } from 'react-native';
 
 export const editPreferenceStyles = (theme: Theme) =>
   StyleSheet.create({
-    safe: { flex: 1, backgroundColor: theme.colors.backgroundPage },
-    flex: { flex: 1 },
+    safe: {
+      flex: 1,
+      backgroundColor: theme.colors.backgroundPage,
+    },
+    flex: {
+      flex: 1,
+    },
     scrollContent: {
       padding: 16,
       paddingBottom: 48,
@@ -22,7 +27,10 @@ export const editPreferenceStyles = (theme: Theme) =>
           }
         : {
             shadowColor: theme.colors.black,
-            shadowOffset: { width: 0, height: 1 },
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
             shadowOpacity: 0.04,
             shadowRadius: 4,
             elevation: 1,
@@ -69,7 +77,9 @@ export const editPreferenceStyles = (theme: Theme) =>
       paddingVertical: 13,
       borderRadius: 10,
     },
-    saveBtnDisabled: { opacity: 0.6 },
+    saveBtnDisabled: {
+      opacity: 0.6,
+    },
     saveBtnText: {
       color: theme.colors.white,
       fontWeight: '700',
@@ -77,7 +87,9 @@ export const editPreferenceStyles = (theme: Theme) =>
     },
 
     // ── Field ─────────────────────────────────────────────────────────────────
-    field: { marginBottom: 14 },
+    field: {
+      marginBottom: 14,
+    },
     fieldLabel: {
       fontSize: 13,
       fontWeight: '600',
@@ -295,7 +307,9 @@ export const editPreferenceStyles = (theme: Theme) =>
       justifyContent: 'space-between',
       marginBottom: 14,
     },
-    scoreLabelBlock: { flex: 1 },
+    scoreLabelBlock: {
+      flex: 1,
+    },
     scoreLabel: {
       fontSize: 13,
       fontWeight: '600',
@@ -388,9 +402,16 @@ export const editPreferenceStyles = (theme: Theme) =>
       fontWeight: '900',
     },
 
-    row: { flexDirection: 'row', gap: 10 },
-    halfField: { flex: 1 },
-    footer: { height: 16 },
+    row: {
+      flexDirection: 'row',
+      gap: 10,
+    },
+    halfField: {
+      flex: 1,
+    },
+    footer: {
+      height: 16,
+    },
     disabled: {
       opacity: 0.4,
     },

@@ -46,8 +46,7 @@ export const SmokingTypes = {
   OPEN_TO: 'open_to',
 } as const;
 
-export type SmokingType =
-  (typeof SmokingTypes)[keyof typeof SmokingTypes];
+export type SmokingType = (typeof SmokingTypes)[keyof typeof SmokingTypes];
 
 export const SmokingOptions = Object.values(SmokingTypes).map((value) => ({
   label: toLabel(value),
@@ -64,8 +63,7 @@ export const DrinkingTypes = {
   OPEN_TO: 'open_to',
 } as const;
 
-export type DrinkingType =
-  (typeof DrinkingTypes)[keyof typeof DrinkingTypes];
+export type DrinkingType = (typeof DrinkingTypes)[keyof typeof DrinkingTypes];
 
 export const DrinkingOptions = Object.values(DrinkingTypes).map((value) => ({
   label: toLabel(value),
@@ -100,15 +98,12 @@ export const SiblingTypes = {
   SISTER: 'sister',
 } as const;
 
-export type SiblingType =
-  (typeof SiblingTypes)[keyof typeof SiblingTypes];
+export type SiblingType = (typeof SiblingTypes)[keyof typeof SiblingTypes];
 
-export const SiblingTypeOptions = Object.values(SiblingTypes).map(
-  (value) => ({
-    label: toLabel(value),
-    value,
-  })
-);
+export const SiblingTypeOptions = Object.values(SiblingTypes).map((value) => ({
+  label: toLabel(value),
+  value,
+}));
 
 // ─── Body Type ────────────────────────────────────────────────────────────────
 
@@ -135,8 +130,7 @@ export const Complexions = {
   DARK: 'dark',
 } as const;
 
-export type Complexion =
-  (typeof Complexions)[keyof typeof Complexions];
+export type Complexion = (typeof Complexions)[keyof typeof Complexions];
 
 export const ComplexionOptions = Object.values(Complexions).map((value) => ({
   label: toLabel(value),
@@ -176,8 +170,7 @@ export const ProfileFors = {
   OTHER: 'other',
 } as const;
 
-export type ProfileFor =
-  (typeof ProfileFors)[keyof typeof ProfileFors];
+export type ProfileFor = (typeof ProfileFors)[keyof typeof ProfileFors];
 
 export const ProfileForOptions = Object.values(ProfileFors).map((value) => ({
   label: toLabel(value),
@@ -397,8 +390,7 @@ export const BloodGroups = {
   ABMINUS: 'AB-',
 } as const;
 
-export type BloodGroup =
-  (typeof BloodGroups)[keyof typeof BloodGroups];
+export type BloodGroup = (typeof BloodGroups)[keyof typeof BloodGroups];
 
 export const BloodGroupOptions = Object.values(BloodGroups).map((value) => ({
   label: value,
@@ -444,12 +436,49 @@ export const FamilyValues = {
 
 export type FamilyValue = (typeof FamilyValues)[keyof typeof FamilyValues];
 
-export const FamilyValueOptions = Object.values(FamilyValues).map(
+export const FamilyValueOptions = Object.values(FamilyValues).map((value) => ({
+  label: toLabel(value),
+  value,
+}));
+
+export const ChildPreferences = {
+  DOES_NOT_MATTER: 'does_not_matter',
+  WANT_CHILDREN: 'want_children',
+  DO_NOT_WANT_CHILDREN: 'do_not_want_children',
+  OPEN_TO_CHILDREN: 'open_to_children',
+  HAS_CHILDREN_ACCEPTABLE: 'has_children_acceptable',
+} as const;
+
+export type ChildPreference =
+  (typeof ChildPreferences)[keyof typeof ChildPreferences];
+
+export const ChildPreferenceOptions = Object.values(ChildPreferences).map(
   (value) => ({
-    label: toLabel(value),
     value,
+    label: toLabel(value),
   })
 );
+
+// ───────────────────────────────────────────────────────
+
+export const ResidencyPreferences = {
+  DOES_NOT_MATTER: 'does_not_matter',
+  SAME_CITY: 'same_city',
+  SAME_STATE: 'same_state',
+  SAME_COUNTRY: 'same_country',
+  ABROAD_PREFERRED: 'abroad_preferred',
+  NRI_PREFERRED: 'nri_preferred',
+} as const;
+
+export type ResidencyPreference =
+  (typeof ResidencyPreferences)[keyof typeof ResidencyPreferences];
+
+export const ResidencyPreferenceOptions = Object.values(
+  ResidencyPreferences
+).map((value) => ({
+  value,
+  label: toLabel(value),
+}));
 
 // ─── Education / Career ───────────────────────────────────────────────────────
 
@@ -462,7 +491,8 @@ export const OccupationTypes = {
   STUDENT: 'student',
 } as const;
 
-export type OccupationType = (typeof OccupationTypes)[keyof typeof OccupationTypes];
+export type OccupationType =
+  (typeof OccupationTypes)[keyof typeof OccupationTypes];
 export const OccupationTypeOptions = Object.values(OccupationTypes).map(
   (value) => ({
     label: toLabel(value),

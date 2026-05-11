@@ -19,10 +19,7 @@ import { onboardingStyles } from '../Onboarding.styles';
 
 import { ErrorText } from './ErrorText';
 
-import {
-  SearchMultiSelectProps,
-  OptionType,
-} from '../Onboarding.types';
+import { SearchMultiSelectProps, OptionType } from '../Onboarding.types';
 
 // Enable LayoutAnimation on Android
 if (
@@ -71,8 +68,7 @@ export function SearchMultiSelect({
 
   const getLabel = useCallback(
     (value: string): string =>
-      options.find((o: OptionType) => o.value === value)?.label ??
-      value,
+      options.find((o: OptionType) => o.value === value)?.label ?? value,
     [options]
   );
 
@@ -101,9 +97,7 @@ export function SearchMultiSelect({
   );
 
   const toggleExpanded = useCallback((): void => {
-    LayoutAnimation.configureNext(
-      LayoutAnimation.Presets.easeInEaseOut
-    );
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
 
     setExpanded((prev) => !prev);
   }, []);
@@ -112,9 +106,7 @@ export function SearchMultiSelect({
 
   const hasOverflow = selected.length > MAX_VISIBLE;
 
-  const visibleChips = expanded
-    ? selected
-    : selected.slice(0, MAX_VISIBLE);
+  const visibleChips = expanded ? selected : selected.slice(0, MAX_VISIBLE);
 
   const hiddenCount = selected.length - MAX_VISIBLE;
 
@@ -130,10 +122,7 @@ export function SearchMultiSelect({
         onChangeText={setQuery}
         placeholder={placeholder}
         placeholderTextColor={theme.colors.textMuted}
-        style={[
-          styles.input,
-          errors[field] ? styles.inputError : null,
-        ]}
+        style={[styles.input, errors[field] ? styles.inputError : null]}
         accessibilityLabel={label}
         returnKeyType="done"
       />
@@ -157,8 +146,7 @@ export function SearchMultiSelect({
                     key={item.value}
                     style={[
                       styles.dropdownItem,
-                      isSelected &&
-                        styles.dropdownItemActive,
+                      isSelected && styles.dropdownItemActive,
                     ]}
                     onPress={() => addItem(item.value)}
                     accessibilityRole="button"
@@ -170,8 +158,7 @@ export function SearchMultiSelect({
                     <Text
                       style={[
                         styles.dropdownItemText,
-                        isSelected &&
-                          styles.dropdownItemTextActive,
+                        isSelected && styles.dropdownItemTextActive,
                       ]}
                     >
                       {item.label}
@@ -189,9 +176,7 @@ export function SearchMultiSelect({
               })
             ) : (
               <View style={styles.dropdownItem}>
-                <Text style={styles.dropdownPlaceholder}>
-                  No results found
-                </Text>
+                <Text style={styles.dropdownPlaceholder}>No results found</Text>
               </View>
             )}
           </ScrollView>
@@ -221,15 +206,9 @@ export function SearchMultiSelect({
                   right: 6,
                 }}
                 accessibilityRole="button"
-                accessibilityLabel={`Remove ${getLabel(
-                  val
-                )}`}
+                accessibilityLabel={`Remove ${getLabel(val)}`}
               >
-                <Feather
-                  name="x"
-                  size={10}
-                  color={theme.colors.white}
-                />
+                <Feather name="x" size={10} color={theme.colors.white} />
               </TouchableOpacity>
             </View>
           ))}
@@ -248,9 +227,7 @@ export function SearchMultiSelect({
                 color={theme.colors.textSecondary}
               />
 
-              <Text style={styles.chipMoreText}>
-                {hiddenCount} more
-              </Text>
+              <Text style={styles.chipMoreText}>{hiddenCount} more</Text>
             </TouchableOpacity>
           )}
 
@@ -268,9 +245,7 @@ export function SearchMultiSelect({
                 color={theme.colors.textSecondary}
               />
 
-              <Text style={styles.chipMoreText}>
-                Show less
-              </Text>
+              <Text style={styles.chipMoreText}>Show less</Text>
             </TouchableOpacity>
           )}
         </View>
