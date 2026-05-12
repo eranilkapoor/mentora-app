@@ -24,100 +24,6 @@ export const COUNTRY_CODES = [
   '49',
 ];
 
-export const QUALIFICATIONS = [
-  'Below 10th',
-  '10th',
-  '12th',
-  'Diploma',
-  'BA',
-  'BSc',
-  'BCom',
-  'BE/BTech',
-  'BCA',
-  'BBA',
-  'LLB',
-  'MBBS',
-  'MA',
-  'MSc',
-  'MCom',
-  'ME/MTech',
-  'MCA',
-  'MBA',
-  'MD',
-  'MS',
-  'PhD',
-  'Post Doctorate',
-  'CA',
-  'CS',
-  'CMA',
-  'CFA',
-  'ACCA',
-  'ITI',
-  'Polytechnic',
-  'Skill Certification',
-  'Other',
-  'Prefer not to say',
-];
-
-export const BODY_TYPES = [
-  'Slim',
-  'Average',
-  'Athletic',
-  'Fit',
-  'Heavy',
-  'Chubby',
-  'Petite',
-  'Curvy',
-  'Muscular',
-  'Stocky',
-  'Other',
-  'Prefer not to say',
-];
-
-export const COMPLEXIONS = ['Fair', 'Wheatish', 'Dark', 'Prefer not to say'];
-
-export const SMOKING_HABITS = [
-  'Non Smoker',
-  'Occasional Smoker',
-  'Regular Smoker',
-  'Prefer not to say',
-];
-
-export const DRINKING_HABITS = [
-  'Non Drinker',
-  'Occasional Drinker',
-  'Regular Drinker',
-  'Prefer not to say',
-];
-
-export const EATING_HABITS = [
-  'Vegetarian',
-  'Non Vegetarian',
-  'Eggetarian',
-  'Prefer not to say',
-];
-
-export const EXERCISE_HABITS = [
-  'Regularly',
-  'Occasionally',
-  'Rarely',
-  'Prefer not to say',
-];
-
-export const SLEEP_HABITS = [
-  'Early to bed, early to rise',
-  'Late to bed, late to rise',
-  'Irregular sleeping pattern',
-  'Prefer not to say',
-];
-
-export const PETS_PREFERENCES = [
-  'Loves Pets',
-  'Okay with Pets',
-  'No Pets',
-  'Prefer not to say',
-];
-
 export const HOBBIES = [
   'Reading',
   'Traveling',
@@ -285,14 +191,6 @@ export const ZODIAC_SIGNS = [
   'Pisces',
 ];
 
-export const MARITAL_STATUSES = [
-  'Single',
-  'Divorced',
-  'Widowed',
-  'Separated',
-  'Prefer not to say',
-];
-
 export const CHILDREN_PREFERENCES = [
   'Want Children',
   "Don't Want Children",
@@ -305,26 +203,6 @@ export const LIVING_ARRANGEMENTS = [
   'Living Alone',
   'Living with Roommates',
   'Living with Partner',
-  'Prefer not to say',
-];
-
-export const EMPLOYMENT_STATUSES = [
-  'Employed Full-time',
-  'Employed Part-time',
-  'Self-employed',
-  'Unemployed',
-  'Student',
-  'Retired',
-  'Prefer not to say',
-];
-
-export const ANNUAL_INCOMES = [
-  'Below $25,000',
-  '$25,000 - $50,000',
-  '$50,000 - $100,000',
-  '$100,000 - $150,000',
-  '$150,000 - $200,000',
-  'Above $200,000',
   'Prefer not to say',
 ];
 

@@ -334,7 +334,7 @@ export const editProfileStyles = (theme: Theme) =>
       fontSize: 15,
     },
     footer: {
-      height: 16,
+      height: 10,
     },
     subSectionLabel: {
       fontSize: 12,

@@ -35,7 +35,7 @@ export default function ChangePasswordScreen({
     toggleVisibility,
     handleSubmit,
     handleReset,
-  } = useChangePassword(navigation);
+  } = useChangePassword();
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -52,7 +52,7 @@ export default function ChangePasswordScreen({
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
         >
-          <InfoBanner styles={styles} />
+          <InfoBanner infoText={t('change_password.info')} />
 
           <View style={styles.card}>
             <PasswordField

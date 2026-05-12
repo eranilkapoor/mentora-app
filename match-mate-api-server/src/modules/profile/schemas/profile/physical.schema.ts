@@ -4,7 +4,7 @@ import { BodyType, Complexion } from 'src/common/enums';
 @Schema({ _id: false })
 export class Physical {
   @Prop({ required: true })
-  heightLabel?: string;
+  heightCm?: string;
 
   @Prop()
   weightKg?: number;

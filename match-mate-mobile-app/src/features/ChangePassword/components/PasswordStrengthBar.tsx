@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { PASSWORD_RULES } from '../ChangePassword.constants';
 import Feather from 'react-native-vector-icons/Feather';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { changePasswordStyles } from '../ChangePassword.styles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
 export function PasswordStrengthBar({
@@ -11,8 +9,45 @@ export function PasswordStrengthBar({
 }: {
   password: string;
 }): React.ReactElement | null {
-  const styles = useThemedStyles(changePasswordStyles);
   const { theme } = useTheme();
+
+  const styles = StyleSheet.create({
+      strengthWrapper: {
+      marginTop: 10,
+      marginBottom: 4,
+    },
+    strengthBarRow: {
+      flexDirection: 'row',
+      gap: 6,
+      marginBottom: 6,
+    },
+    strengthSegment: {
+      flex: 1,
+      height: 4,
+      borderRadius: 2,
+      backgroundColor: theme.colors.border,
+    },
+    strengthLabel: {
+      fontSize: 12,
+      fontWeight: '600',
+      marginBottom: 8,
+    },
+    rulesContainer: {
+      gap: 5,
+    },
+    ruleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    ruleText: {
+      fontSize: 12,
+      color: theme.colors.textMuted,
+    },
+    ruleTextPassed: {
+      color: theme.colors.success,
+    },
+  });
 
   if (!password) return null;
 

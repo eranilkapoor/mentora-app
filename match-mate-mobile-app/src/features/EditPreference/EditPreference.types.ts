@@ -5,13 +5,13 @@ import {
   ChildPreference,
   Complexion,
   DietType,
-  DrinkingType,
+  DrinkingHabit,
   ManglikStatus,
   MaritalStatus,
   OccupationType,
   Religion,
   ResidencyPreference,
-  SmokingType,
+  SmokingHabit,
 } from '@/core/types';
 
 // ─── Range ────────────────────────────────────────────────────────────────────
@@ -40,8 +40,8 @@ export interface PartnerFilters {
   occupation?: string[];
   bodyType?: BodyType[];
   complexion?: Complexion[];
-  smoking?: SmokingType[];
-  drinking?: DrinkingType[];
+  smoking?: SmokingHabit[];
+  drinking?: DrinkingHabit[];
   diet?: DietType[];
   languages?: string[];
 }

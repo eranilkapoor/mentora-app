@@ -36,9 +36,9 @@ export const MaritalStatusOptions = Object.values(MaritalStatuses).map(
   })
 );
 
-// ─── Smoking ──────────────────────────────────────────────────────────────────
+// ─── Smoking Habits ──────────────────────────────────────────────────────────────────
 
-export const SmokingTypes = {
+export const SmokingHabits = {
   NON_SMOKER: 'non_smoker',
   OCCASIONALLY: 'occasionally',
   REGULAR: 'regular',
@@ -46,16 +46,16 @@ export const SmokingTypes = {
   OPEN_TO: 'open_to',
 } as const;
 
-export type SmokingType = (typeof SmokingTypes)[keyof typeof SmokingTypes];
+export type SmokingHabit = (typeof SmokingHabits)[keyof typeof SmokingHabits];
 
-export const SmokingOptions = Object.values(SmokingTypes).map((value) => ({
+export const SmokingOptions = Object.values(SmokingHabits).map((value) => ({
   label: toLabel(value),
   value,
 }));
 
-// ─── Drinking ─────────────────────────────────────────────────────────────────
+// ─── Drinking Habits ─────────────────────────────────────────────────────────────────
 
-export const DrinkingTypes = {
+export const DrinkingHabits = {
   NON_DRINKER: 'non_drinker',
   OCCASIONALLY: 'occasionally',
   REGULAR: 'regular',
@@ -63,9 +63,9 @@ export const DrinkingTypes = {
   OPEN_TO: 'open_to',
 } as const;
 
-export type DrinkingType = (typeof DrinkingTypes)[keyof typeof DrinkingTypes];
+export type DrinkingHabit = (typeof DrinkingHabits)[keyof typeof DrinkingHabits];
 
-export const DrinkingOptions = Object.values(DrinkingTypes).map((value) => ({
+export const DrinkingOptions = Object.values(DrinkingHabits).map((value) => ({
   label: toLabel(value),
   value,
 }));
@@ -111,7 +111,10 @@ export const BodyTypes = {
   SLIM: 'slim',
   ATHLETIC: 'athletic',
   AVERAGE: 'average',
+  CURVY: 'curvy',
+  FIT: 'fit',
   HEAVY: 'heavy',
+  MUSCULAR: 'muscular'
 } as const;
 
 export type BodyType = (typeof BodyTypes)[keyof typeof BodyTypes];

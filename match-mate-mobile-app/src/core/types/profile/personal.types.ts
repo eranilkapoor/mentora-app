@@ -1,10 +1,12 @@
 import {
   Country,
+  DrinkingHabit,
   Gender,
   MaritalStatus,
   ProfileFor,
   Qualification,
   Religion,
+  SmokingHabit,
 } from '../common/enums';
 
 export interface BasicData {
@@ -32,8 +34,8 @@ export interface PersonalData {
   motherTongue: string;
   maritalStatus: MaritalStatus;
   aboutMe: string;
-  smoking: string;
-  drinking: string;
+  smoking: SmokingHabit;
+  drinking: DrinkingHabit;
   diet: string;
   hobbies: [];
   languagesKnown: [];

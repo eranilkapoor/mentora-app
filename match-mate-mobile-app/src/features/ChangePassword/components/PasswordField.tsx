@@ -1,9 +1,19 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { changePasswordStyles } from '../ChangePassword.styles';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { PasswordFieldProps } from '../ChangePassword.types';
+import { useTheme } from '@/core/theme/ThemeProvider';
+
+interface PasswordFieldProps {
+  label: string;
+  value: string;
+  placeholder: string;
+  error?: string;
+  visible: boolean;
+  onChangeText: (text: string) => void;
+  onToggleVisibility: () => void;
+  accessibilityLabel: string;
+  editable?: boolean;
+}
 
 export function PasswordField({
   label,
@@ -16,7 +26,56 @@ export function PasswordField({
   accessibilityLabel,
   editable = true,
 }: PasswordFieldProps): React.ReactElement {
-  const styles = useThemedStyles(changePasswordStyles);
+  const { theme } = useTheme();
+
+   const styles = StyleSheet.create({
+    fieldWrapper: {
+      marginBottom: 4,
+    },
+    label: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 8,
+    },
+    inputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.inputBackground,
+      borderRadius: 10,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingHorizontal: 12,
+    },
+    inputIcon: {
+      marginRight: 10,
+    },
+    input: {
+      flex: 1,
+      paddingVertical: 13,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+    },
+    eyeButton: {
+      padding: 6,
+    },
+    inputError: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorLight,
+    },
+    inputDisabled: {
+      opacity: 0.5,
+    },
+    errorText: {
+      color: theme.colors.error,
+      fontSize: 12,
+      marginTop: 5,
+    },
+    ruleText: {
+      fontSize: 12,
+      color: theme.colors.textMuted,
+    },    
+  });
 
   return (
     <View style={styles.fieldWrapper}>

@@ -263,7 +263,7 @@ export class ProfileService {
       education: dto.education,
       family: dto.family ?? {},
       age,
-      heightCm: this.heightLabelToCm(dto.physical.heightLabel),
+      heightCm: dto.physical.heightCm,
       religion: dto.personal.religion,
       caste: dto.personal.caste,
       city: dto.personal.city,
@@ -304,8 +304,8 @@ export class ProfileService {
         ...dto.physical,
       };
       normalized.physical = merged;
-      if (dto.physical.heightLabel) {
-        normalized.heightCm = this.heightLabelToCm(dto.physical.heightLabel);
+      if (dto.physical.heightCm) {
+        normalized.heightCm = dto.physical.heightCm;
       }
     }
 
@@ -356,7 +356,7 @@ export class ProfileService {
             personal.maritalStatus,
           ),
         },
-        physical: { completed: Boolean(physical.heightLabel) },
+        physical: { completed: Boolean(physical.heightCm) },
         education: {
           completed: Boolean(education.qualification && education.occupation),
         },
@@ -399,7 +399,7 @@ export class ProfileService {
       Boolean(dto.personal.dateOfBirth),
       Boolean(dto.personal.religion),
       Boolean(dto.personal.maritalStatus),
-      Boolean(dto.physical.heightLabel),
+      Boolean(dto.physical.heightCm),
       Boolean(dto.education.qualification),
       Boolean(dto.education.occupation),
       Boolean(dto.personal.aboutMe),
@@ -602,7 +602,7 @@ export class ProfileService {
           country: dto.basic.country,
         },
         physical: {
-          heightLabel: this.cmToFeetInches(dto.basic.height).formatted,
+          heightCm: this.cmToFeetInches(dto.basic.height).formatted,
         },
         education: {
           qualification: dto.basic.qualification,

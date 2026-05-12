@@ -48,7 +48,7 @@ export const INITIAL_PROFILE: ProfileData = {
     motherTongue: '',
   },
   physical: {
-    heightLabel: '',
+    heightCm: '',
     weightKg: '',
     bloodGroup: undefined,
     bodyType: undefined,

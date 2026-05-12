@@ -3,8 +3,7 @@ import { useTranslation } from 'react-i18next';
 import Toast from 'react-native-toast-message';
 
 import { useChangePasswordMutation } from '@/store/services/authApi';
-import { validatePasswords } from './ChangePassword.utils';
-import { FormValues, FormErrors } from './ChangePassword.types';
+import { FormValues, FormErrors, validatePasswords } from './ChangePassword.types';
 
 export const useChangePassword = () => {
   const { t } = useTranslation();

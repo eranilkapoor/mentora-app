@@ -3,7 +3,7 @@ import {
   BodyType,
   Complexion,
   DietType,
-  DrinkingType,
+  DrinkingHabit,
   FamilyStatus,
   FamilyType,
   FamilyValue,
@@ -15,7 +15,7 @@ import {
   Period,
   ProfileImage,
   SiblingType,
-  SmokingType,
+  SmokingHabit,
 } from '@/core/types';
 import Feather from 'react-native-vector-icons/Feather';
 import React from 'react';
@@ -68,8 +68,8 @@ export interface PersonalSection {
   hasChildren?: boolean;
   sonsCount?: number;
   daughtersCount?: number;
-  smoking?: SmokingType;
-  drinking?: DrinkingType;
+  smoking?: SmokingHabit;
+  drinking?: DrinkingHabit;
   diet?: DietType;
   hobbies?: string[];
   languages?: string[];
@@ -77,7 +77,7 @@ export interface PersonalSection {
 }
 
 export interface PhysicalSection {
-  heightLabel: string;
+  heightCm: string;
   weightKg?: string;
   bloodGroup?: BloodGroup;
   bodyType?: BodyType;

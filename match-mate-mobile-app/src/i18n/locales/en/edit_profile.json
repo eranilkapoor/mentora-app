@@ -100,7 +100,14 @@
     "weight": "e.g. 60",
     "disability_note": "Brief description...",
     "company_name": "e.g. Infosys",
-    "job_role": "e.g. Senior Engineer"
+    "job_role": "e.g. Senior Engineer",
+    "select_date": "Select date"
+  },
+  "date_picker": {
+    "title": "Select Date of Birth",
+    "day": "Day",
+    "month": "Month",
+    "year": "Year"
   },
   "time": {
     "hour": "Hour",
@@ -109,7 +116,8 @@
   },
   "errors": {
     "load_failed": "Failed to load profile. Please try again.",
-    "save_failed": "Failed to save. Please try again."
+    "save_failed": "Failed to save. Please try again.",
+    "date_incomplete": "Please select day, month and year."
   },
   "success": {
     "section_saved": "Changes saved successfully."
@@ -121,6 +129,12 @@
     "married_brothers": "Married Brothers",
     "married_sisters": "Married Sisters",
     "siblings_note": "Additional Notes",
-    "siblings_note_placeholder": "e.g. one brother settled abroad..."
+    "siblings_note_placeholder": "e.g. one brother settled abroad...",
+    "sibling_details_title": "Sibling Details",
+    "brother": "Brother",
+    "sister": "Sister",
+    "married": "Married",
+    "unmarried": "Unmarried",
+    "sibling_occupation_placeholder": "e.g. Software Engineer"
   }
 }

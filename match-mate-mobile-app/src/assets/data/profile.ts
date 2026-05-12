@@ -1,4 +1,3 @@
-// src/data/profiles.ts
 export const PROFILES = [
   {
     id: '1',

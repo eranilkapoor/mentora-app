@@ -60,6 +60,7 @@ import { TimeOfBirthPicker } from './components/TimeOfBirthPicker';
 import { ToggleRow } from './components/ToggleRow';
 import { NumberStepper } from './components/NumberStepper';
 import { SiblingsEditor } from './components/SiblingsEditor';
+import { DateOfBirthPicker } from './components/DateOfBirthPicker';
 
 type Props = {
   navigation: NativeStackNavigationProp<SettingsStackParamList, 'EditProfile'>;
@@ -109,7 +110,7 @@ export default function EditProfileScreen({
       profile.personal.maritalStatus,
       profile.personal.motherTongue,
       profile.personal.country,
-      profile.physical.heightLabel,
+      profile.physical.heightCm,
       profile.physical.bodyType,
       profile.education.qualification,
       profile.education.occupation,
@@ -402,12 +403,18 @@ export default function EditProfileScreen({
 
             <View style={styles.row}>
               <View style={styles.halfField}>
-                <FormInput
+                {/* <FormInput
                   label={t('edit_profile.fields.dob')}
                   value={profile.personal.dateOfBirth}
                   onChange={(v) => setPersonal('dateOfBirth', v)}
                   placeholder="YYYY-MM-DD"
+                /> */}
+                <DateOfBirthPicker
+                  label={t('edit_profile.fields.dob')}
+                  value={profile.personal.dateOfBirth}
+                  onChange={(v) => setPersonal('dateOfBirth', v)}
                 />
+
               </View>
               <View style={styles.halfField}>
                 <TimeOfBirthPicker
@@ -596,8 +603,8 @@ export default function EditProfileScreen({
               <View style={styles.halfField}>
                 <FormInput
                   label={t('edit_profile.fields.height')}
-                  value={profile.physical.heightLabel}
-                  onChange={(v) => setPhysical('heightLabel', v)}
+                  value={profile.physical.heightCm}
+                  onChange={(v) => setPhysical('heightCm', v)}
                   placeholder={t('edit_profile.placeholders.height')}
                 />
               </View>

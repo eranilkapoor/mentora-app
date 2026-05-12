@@ -212,7 +212,7 @@ export class PersonalDto {
 export class PhysicalDto {
   @IsString()
   @IsNotEmpty()
-  heightLabel!: string;
+  heightCm!: string;
 
   @IsOptional()
   @Type(() => Number)

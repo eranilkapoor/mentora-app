@@ -13,7 +13,10 @@
     "slim": "Slim",
     "athletic": "Athletic",
     "average": "Average",
-    "heavy": "Heavy"
+    "heavy": "Heavy",
+    "curvy": "Curvy",
+    "fit": "Fit",
+    "muscular": "Muscular"
   },
   "complexion": {
     "fair": "Fair",
