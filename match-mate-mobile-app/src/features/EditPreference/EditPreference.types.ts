@@ -1,5 +1,3 @@
-import Feather from 'react-native-vector-icons/Feather';
-import React from 'react';
 import {
   BodyType,
   ChildPreference,
@@ -13,12 +11,6 @@ import {
   ResidencyPreference,
   SmokingHabit,
 } from '@/core/types';
-
-// ─── Range ────────────────────────────────────────────────────────────────────
-export interface Range {
-  min: number;
-  max: number;
-}
 
 // ─── Filters ──────────────────────────────────────────────────────────────────
 export interface PartnerFilters {
@@ -77,66 +69,3 @@ export interface PreferenceData {
 }
 
 export type PreferenceSectionKey = 'filters' | 'settings' | 'weights' | 'about';
-
-// ─── Component Props ──────────────────────────────────────────────────────────
-export interface RangeInputProps {
-  label: string;
-  value?: Range;
-  onChange: (v: Range) => void;
-  min: number;
-  max: number;
-  step?: number;
-  unit?: string;
-}
-
-export interface OptionType {
-  value: string;
-  label: string;
-}
-
-export interface MultiSelectPillProps {
-  label: string;
-  options: readonly OptionType[];
-  value?: string[];
-  onChange: (value: string[]) => void;
-  i18nPrefix?: string;
-}
-
-export interface WeightSliderProps {
-  label: string;
-  value?: number;
-  onChange: (v: number) => void;
-}
-
-export interface TagInputProps {
-  label: string;
-  items?: string[];
-  setItems: (v: string[]) => void;
-  placeholder?: string;
-}
-
-export interface ToggleRowProps {
-  label: string;
-  sublabel?: string;
-  value: boolean;
-  onChange: (v: boolean) => void;
-}
-
-export interface SectionCardProps {
-  title: string;
-  icon: React.ComponentProps<typeof Feather>['name'];
-  children: React.ReactNode;
-  sectionKey: PreferenceSectionKey;
-  sectionLoading: PreferenceSectionKey | null;
-  onSave: (key: PreferenceSectionKey) => void;
-}
-
-export interface ScoreStepperProps {
-  label: string;
-  sublabel?: string;
-  value: number;
-  onChange: (v: number) => void;
-  min?: number;
-  max?: number;
-  step?: number;
-}

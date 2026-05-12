@@ -3,11 +3,9 @@ import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-nativ
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { NumberStepper } from './NumberStepper';
 import { FormInput } from './FormInput';
 import { SiblingsEditorProps, Siblings, SiblingDetail } from '../EditProfile.types';
-import { editProfileStyles } from '../EditProfile.styles';
 import { INITIAL_SIBLINGS } from '../EditProfile.constants';
 import { Theme } from '@/core/theme/types';
 
@@ -15,7 +13,6 @@ export function SiblingsEditor({
   value,
   onChange,
 }: SiblingsEditorProps): React.ReactElement {
-  const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
 
@@ -29,9 +26,6 @@ export function SiblingsEditor({
     [siblings, onChange]
   );
 
-  // ─── When counts change, sync the details array ──────────────────────────
-  // Add missing entries or trim excess ones to match the new total
-
   const handleBrothersChange = useCallback(
     (count: number) => {
       const currentDetails = siblings.details ?? [];
@@ -39,7 +33,6 @@ export function SiblingsEditor({
       const brothers = currentDetails.filter((d) => d.type === 'brother');
       const sisters = currentDetails.filter((d) => d.type === 'sister');
 
-      // Add or remove brother entries to match the new count
       const updatedBrothers: SiblingDetail[] =
         count > brothers.length
           ? [
@@ -89,8 +82,6 @@ export function SiblingsEditor({
     [siblings, onChange]
   );
 
-  // ─── Update a single sibling detail ──────────────────────────────────────
-
   const updateDetail = useCallback(
     (index: number, key: keyof SiblingDetail, val: string | boolean) => {
       const updatedDetails = (siblings.details ?? []).map((d, i) =>
@@ -100,8 +91,6 @@ export function SiblingsEditor({
     },
     [siblings.details, update]
   );
-
-  // ─── Grouped for display ──────────────────────────────────────────────────
 
   const { brotherDetails, sisterDetails } = useMemo(() => {
     const details = siblings.details ?? [];
@@ -118,7 +107,7 @@ export function SiblingsEditor({
   return (
     <View>
       {/* ── Heading ────────────────────────────────────────────────────── */}
-      <Text style={[styles.subSectionLabel, { marginTop: 4 }]}>
+      <Text style={[detailStyles.subSectionLabel, { marginTop: 4, color: theme.colors.textMuted }]}>
         {t('edit_profile.family.siblings_title')}
       </Text>
 
@@ -195,8 +184,6 @@ export function SiblingsEditor({
     </View>
   );
 }
-
-// ─── Individual sibling detail card ──────────────────────────────────────────
 
 interface SiblingDetailCardProps {
   detail: SiblingDetail;
@@ -327,8 +314,6 @@ function SiblingDetailCard({
   );
 }
 
-// ─── Local styles (not themed — kept minimal) ─────────────────────────────────
-
 const detailStyles = StyleSheet.create({
   section: {
     marginTop: 8,
@@ -390,5 +375,13 @@ const detailStyles = StyleSheet.create({
     paddingHorizontal: 10,
     paddingVertical: 9,
     fontSize: 14,
+  },
+  subSectionLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginTop: 8,
+    marginBottom: 10,
   },
 });

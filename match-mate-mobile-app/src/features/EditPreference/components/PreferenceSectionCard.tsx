@@ -4,8 +4,17 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { SectionCardProps } from '../EditPreference.types';
 import { editPreferenceStyles } from '../EditPreference.styles';
+import { PreferenceSectionKey } from '../EditPreference.types';
+
+export interface SectionCardProps {
+  title: string;
+  icon: React.ComponentProps<typeof Feather>['name'];
+  children: React.ReactNode;
+  sectionKey: PreferenceSectionKey;
+  sectionLoading: PreferenceSectionKey | null;
+  onSave: (key: PreferenceSectionKey) => void;
+}
 
 export function PreferenceSectionCard({
   title,

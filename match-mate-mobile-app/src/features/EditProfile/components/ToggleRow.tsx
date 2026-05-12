@@ -1,9 +1,13 @@
 import React from 'react';
-import { View, Text, Switch } from 'react-native';
+import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { ToggleRowProps } from '../EditProfile.types';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editProfileStyles } from '../EditProfile.styles';
+
+export interface ToggleRowProps {
+  label: string;
+  value?: boolean;
+  onChange: (v: boolean) => void;
+  sublabel?: string;
+}
 
 export function ToggleRow({
   label,
@@ -11,8 +15,29 @@ export function ToggleRow({
   onChange,
   sublabel,
 }: ToggleRowProps): React.ReactElement {
-  const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
+  const styles = StyleSheet.create({
+    rowToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
+      minHeight: 44,
+    },
+    safe: {
+      flex: 1,
+      backgroundColor: theme.colors.backgroundPage,
+    },
+    label: {
+      fontSize: 13,
+      fontWeight: '600',
+      flex: 1,
+    },
+    sublabel: {
+      fontSize: 12,
+      marginTop: 2,
+    },
+  });
 
   return (
     <View style={styles.rowToggle}>

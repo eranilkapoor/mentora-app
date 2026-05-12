@@ -6,14 +6,11 @@ import {
   Modal,
   ScrollView,
   Alert,
+  StyleSheet
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editProfileStyles } from '../EditProfile.styles';
-
-// ─── Option generators ────────────────────────────────────────────────────────
 
 const DAY_OPTIONS = Array.from({ length: 31 }, (_, i) => {
   const d = String(i + 1).padStart(2, '0');
@@ -37,20 +34,16 @@ const MONTH_OPTIONS = [
 
 const currentYear = new Date().getFullYear();
 const YEAR_OPTIONS = Array.from({ length: 60 }, (_, i) => {
-  const y = String(currentYear - 18 - i); // start from 18 years ago
+  const y = String(currentYear - 18 - i);
   return { label: y, value: y };
 });
 
-// ─── Props ────────────────────────────────────────────────────────────────────
-
 interface DateOfBirthPickerProps {
   label: string;
-  value?: string; // "YYYY-MM-DD"
+  value?: string;
   onChange: (value: string) => void;
   hasError?: boolean;
 }
-
-// ─── Inline dropdown list ─────────────────────────────────────────────────────
 
 interface DropdownListProps {
   options: { label: string; value: string }[];
@@ -128,9 +121,30 @@ export function DateOfBirthPicker({
   onChange,
   hasError = false,
 }: DateOfBirthPickerProps): React.ReactElement {
-  const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const styles = StyleSheet.create({
+    field: {
+      marginBottom: 14,
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+      backgroundColor: theme.colors.inputBackground,
+    },
+  });
+
 
   const [visible, setVisible] = useState(false);
   const [tempDay, setTempDay] = useState('');
@@ -197,7 +211,10 @@ export function DateOfBirthPicker({
             justifyContent: 'space-between',
             alignItems: 'center',
           },
-          //hasError && styles.inputError,
+          hasError && {
+            borderColor: theme.colors.error,
+            backgroundColor: theme.colors.errorLight,
+          },
         ]}
         accessibilityRole="button"
         accessibilityLabel={label}

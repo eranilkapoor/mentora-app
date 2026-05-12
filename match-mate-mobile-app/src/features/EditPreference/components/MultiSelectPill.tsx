@@ -3,14 +3,20 @@ import { TouchableOpacity, View, Text } from 'react-native';
 import { useTranslation } from 'react-i18next';
 
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-
-import { MultiSelectPillProps } from '../EditPreference.types';
 import { editPreferenceStyles } from '../EditPreference.styles';
 
-type Option = {
+export interface OptionType {
   value: string;
   label: string;
-};
+}
+
+export interface MultiSelectPillProps {
+  label: string;
+  options: readonly OptionType[];
+  value?: string[];
+  onChange: (value: string[]) => void;
+  i18nPrefix?: string;
+}
 
 export function MultiSelectPill({
   label,
@@ -42,7 +48,7 @@ export function MultiSelectPill({
       </Text>
 
       <View style={styles.pillRow}>
-        {options.map((option: Option) => {
+        {options.map((option: OptionType) => {
           const selected = value.includes(option.value);
 
           const displayLabel = i18nPrefix

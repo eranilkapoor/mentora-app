@@ -118,65 +118,6 @@ export interface ProfileData {
 
 export type SectionKey = keyof ProfileData;
 
-export interface FormInputProps {
-  label: string;
-  value?: string;
-  onChange: (v: string) => void;
-  multiline?: boolean;
-  placeholder?: string;
-  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
-  editable?: boolean;
-}
-
-export interface OptionType {
-  label: string;
-  value: string;
-}
-
-export interface SelectPillProps {
-  label: string;
-  options: readonly OptionType[];
-  value?: string;
-  onChange: (value: string) => void;
-  i18nPrefix?: string;
-}
-
-export interface ToggleRowProps {
-  label: string;
-  value?: boolean;
-  onChange: (v: boolean) => void;
-  sublabel?: string;
-}
-
-export interface NumberStepperProps {
-  label: string;
-  value?: number;
-  onChange: (v: number) => void;
-  min?: number;
-  max?: number;
-}
-
-export interface TagInputProps {
-  label: string;
-  items?: string[];
-  setItems: (v: string[]) => void;
-  placeholder?: string;
-}
-
-export interface SectionCardProps {
-  title: string;
-  icon: React.ComponentProps<typeof Feather>['name'];
-  children: React.ReactNode;
-  sectionKey: SectionKey;
-  sectionLoading: SectionKey | null;
-  onSave: (key: SectionKey) => void;
-}
-
-export interface TimeOfBirthPickerProps {
-  value?: TimeOfBirth;
-  onChange: (val: TimeOfBirth) => void;
-}
-
 export interface SiblingsEditorProps {
   value?: Siblings;
   onChange: (v: Siblings) => void;

@@ -1,8 +1,7 @@
 import React, { useCallback } from 'react';
-import { TouchableOpacity, View, Text } from 'react-native';
+import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { editPreferenceStyles } from '../EditPreference.styles';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 type OptionType = {
   label: string;
@@ -24,8 +23,47 @@ export function SingleSelectPill({
   onChange,
   i18nPrefix,
 }: Props): React.ReactElement {
-  const styles = useThemedStyles(editPreferenceStyles);
   const { t } = useTranslation();
+  const { theme } = useTheme();
+  
+  const styles = StyleSheet.create({
+    field: {
+      marginBottom: 14,
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    pillRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 4,
+    },
+    pill: {
+      paddingVertical: 7,
+      paddingHorizontal: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 20,
+      backgroundColor: theme.colors.inputBackground,
+    },
+    pillSelected: {
+      backgroundColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primary,
+    },
+    pillText: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      textTransform: 'capitalize',
+    },
+    pillTextSelected: {
+      color: theme.colors.primary,
+      fontWeight: '700',
+    },
+  });
 
   const handlePress = useCallback(
     (opt: string) => {

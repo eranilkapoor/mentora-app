@@ -1,10 +1,7 @@
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SelectPill } from './SelectPill';
-import { TimeOfBirthPickerProps } from '../EditProfile.types';
-import { editProfileStyles } from '../EditProfile.styles';
 import {
   Hour,
   HourOptions,
@@ -13,13 +10,51 @@ import {
   Period,
   PeriodOptions,
 } from '@/core/types';
+import { useTheme } from '@/core/theme/ThemeProvider';
+
+export interface TimeOfBirth {
+  hour?: Hour;
+  minute?: Minute;
+  period?: Period;
+}
+
+export interface TimeOfBirthPickerProps {
+  value?: TimeOfBirth;
+  onChange: (val: TimeOfBirth) => void;
+}
 
 export function TimeOfBirthPicker({
   value,
   onChange,
 }: TimeOfBirthPickerProps): React.ReactElement {
-  const styles = useThemedStyles(editProfileStyles);
+  const { theme } = useTheme();
   const { t } = useTranslation();
+
+  const styles = StyleSheet.create({
+    field: {
+      marginBottom: 14,
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    timePickerLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    timePickerRow: {
+      flexDirection: 'row',
+      gap: 8,
+    },
+    timePickerColumn: {
+      flex: 1,
+    },
+  });
+
 
   return (
     <View style={styles.field}>

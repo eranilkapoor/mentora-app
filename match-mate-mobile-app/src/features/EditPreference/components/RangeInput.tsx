@@ -1,10 +1,22 @@
 import React, { useCallback } from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { View, Text, TextInput, StyleSheet } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { RangeInputProps } from '../EditPreference.types';
-import { editPreferenceStyles } from '../EditPreference.styles';
+
+export interface Range {
+  min: number;
+  max: number;
+}
+
+export interface RangeInputProps {
+  label: string;
+  value?: Range;
+  onChange: (v: Range) => void;
+  min: number;
+  max: number;
+  step?: number;
+  unit?: string;
+}
 
 export function RangeInput({
   label,
@@ -14,9 +26,64 @@ export function RangeInput({
   max,
   unit,
 }: RangeInputProps): React.ReactElement {
-  const styles = useThemedStyles(editPreferenceStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+
+  const styles = StyleSheet.create({
+    field: {
+      marginBottom: 14,
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    fieldSublabel: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
+      marginTop: 2,
+    },
+    rangeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginTop: 4,
+    },
+    rangeInput: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+      backgroundColor: theme.colors.inputBackground,
+      textAlign: 'center',
+    },
+    rangeSeparator: {
+      fontSize: 18,
+      color: theme.colors.textMuted,
+      fontWeight: '300',
+    },
+    rangeUnit: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
+      textAlign: 'center',
+      marginTop: 4,
+    },
+    rangeHalfWrapper: {
+      flex: 1,
+      alignItems: 'stretch',
+    },
+    rangeHalfLabel: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
+      marginBottom: 4,
+      textAlign: 'center',
+    },
+  });
 
   const currentMin = value?.min ?? min;
   const currentMax = value?.max ?? max;

@@ -403,18 +403,11 @@ export default function EditProfileScreen({
 
             <View style={styles.row}>
               <View style={styles.halfField}>
-                {/* <FormInput
-                  label={t('edit_profile.fields.dob')}
-                  value={profile.personal.dateOfBirth}
-                  onChange={(v) => setPersonal('dateOfBirth', v)}
-                  placeholder="YYYY-MM-DD"
-                /> */}
                 <DateOfBirthPicker
                   label={t('edit_profile.fields.dob')}
                   value={profile.personal.dateOfBirth}
                   onChange={(v) => setPersonal('dateOfBirth', v)}
                 />
-
               </View>
               <View style={styles.halfField}>
                 <TimeOfBirthPicker

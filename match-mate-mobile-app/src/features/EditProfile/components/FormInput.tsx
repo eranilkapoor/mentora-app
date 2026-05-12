@@ -1,9 +1,16 @@
 import React from 'react';
-import { TextInput, View, Text } from 'react-native';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { TextInput, View, Text, StyleSheet } from 'react-native';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { FormInputProps } from '../EditProfile.types';
-import { editProfileStyles } from '../EditProfile.styles';
+
+export interface FormInputProps {
+  label: string;
+  value?: string;
+  onChange: (v: string) => void;
+  multiline?: boolean;
+  placeholder?: string;
+  keyboardType?: 'default' | 'numeric' | 'email-address' | 'phone-pad';
+  editable?: boolean;
+}
 
 export function FormInput({
   label,
@@ -14,8 +21,36 @@ export function FormInput({
   keyboardType = 'default',
   editable = true,
 }: FormInputProps): React.ReactElement {
-  const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
+
+  const styles = StyleSheet.create({
+    field: {
+      marginBottom: 14,
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+      backgroundColor: theme.colors.inputBackground,
+    },
+    multilineInput: {
+      minHeight: 90,
+      paddingTop: 12,
+    },
+    inputDisabled: {
+      opacity: 0.5,
+    }
+  });
 
   return (
     <View style={styles.field}>

@@ -1,12 +1,14 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { TextInput, TouchableOpacity, View, Text } from 'react-native';
+import { TextInput, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
-import { TagInputProps } from '../EditProfile.types';
-import { editProfileStyles } from '../EditProfile.styles';
+export interface TagInputProps {
+  label: string;
+  items?: string[];
+  setItems: (v: string[]) => void;
+  placeholder?: string;
+}
 
 export function TagInput({
   label,
@@ -15,9 +17,63 @@ export function TagInput({
   placeholder,
 }: TagInputProps): React.ReactElement {
   const [text, setText] = useState<string>('');
-
-  const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
+  
+  const styles = StyleSheet.create({
+    field: {
+      marginBottom: 14,
+    },
+    fieldLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    tagInputRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    tagInput: {
+      flex: 1,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+      backgroundColor: theme.colors.inputBackground,
+    },
+    tagAddBtn: {
+      width: 42,
+      height: 42,
+      borderRadius: 10,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    tagList: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 10,
+    },
+    tag: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: theme.colors.primaryLight,
+      paddingHorizontal: 12,
+      paddingVertical: 6,
+      borderRadius: 20,
+    },
+    tagText: {
+      fontSize: 13,
+      color: theme.colors.primary,
+      fontWeight: '500',
+    },
+  });
 
   const safeItems = useMemo<string[]>(() => items ?? [], [items]);
 

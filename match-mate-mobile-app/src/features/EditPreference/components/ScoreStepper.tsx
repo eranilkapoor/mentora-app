@@ -1,10 +1,17 @@
 import React, { useCallback } from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { ScoreStepperProps } from '../EditPreference.types';
-import { editPreferenceStyles } from '../EditPreference.styles';
+
+export interface ScoreStepperProps {
+  label: string;
+  sublabel?: string;
+  value: number;
+  onChange: (v: number) => void;
+  min?: number;
+  max?: number;
+  step?: number;
+}
 
 export function ScoreStepper({
   label,
@@ -15,8 +22,54 @@ export function ScoreStepper({
   max = 100,
   step = 5,
 }: ScoreStepperProps): React.ReactElement {
-  const styles = useThemedStyles(editPreferenceStyles);
   const { theme } = useTheme();
+  const styles = StyleSheet.create({
+    scoreRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
+    },
+    scoreLabelBlock: {
+      flex: 1,
+    },
+    scoreLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+    },
+    scoreSublabel: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
+      marginTop: 2,
+    },
+    scoreControls: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    scoreBtn: {
+      width: 32,
+      height: 32,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.inputBackground,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    scoreValue: {
+      fontSize: 16,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+      minWidth: 36,
+      textAlign: 'center',
+    },
+    disabled: {
+      opacity: 0.4,
+    },
+  });
+
 
   const decrease = useCallback(
     () => onChange(Math.max(min, value - step)),

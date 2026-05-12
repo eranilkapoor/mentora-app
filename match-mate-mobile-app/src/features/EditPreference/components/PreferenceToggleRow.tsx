@@ -1,9 +1,13 @@
 import React from 'react';
-import { View, Text, Switch } from 'react-native';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { View, Text, Switch, StyleSheet } from 'react-native';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { ToggleRowProps } from '../EditPreference.types';
-import { editPreferenceStyles } from '../EditPreference.styles';
+
+export interface ToggleRowProps {
+  label: string;
+  sublabel?: string;
+  value: boolean;
+  onChange: (v: boolean) => void;
+}
 
 export function PreferenceToggleRow({
   label,
@@ -11,8 +15,32 @@ export function PreferenceToggleRow({
   value,
   onChange,
 }: ToggleRowProps): React.ReactElement {
-  const styles = useThemedStyles(editPreferenceStyles);
   const { theme } = useTheme();
+  
+  const styles = StyleSheet.create({
+    toggleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 14,
+      minHeight: 44,
+    },
+    toggleLabelBox: {
+      flex: 1,
+      marginRight: 12,
+    },
+    toggleLabel: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      flex: 1,
+    },
+    toggleSublabel: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
+      marginTop: 2,
+    },
+  });
 
   return (
     <View style={styles.toggleRow}>
