@@ -30,6 +30,8 @@ import {
   MaritalStatuses,
   ProfileData,
   Religions,
+  SmokingHabits,
+  DrinkingHabits
 } from '../../core/types';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -58,8 +60,8 @@ export default function ProfileScreen({
       motherTongue: '',
       maritalStatus: MaritalStatuses.NEVER_MARRIED,
       aboutMe: '',
-      smoking: '',
-      drinking: '',
+      smoking: SmokingHabits.NON_SMOKER,
+      drinking: DrinkingHabits.NON_DRINKER,
       diet: '',
       hobbies: [],
       languagesKnown: [],

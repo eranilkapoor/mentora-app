@@ -1,10 +1,7 @@
 // ─── Helper ───────────────────────────────────────────────────────────────────
-
-const toLabel = (value: string): string =>
-  value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+const toLabel = (value: string): string => value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 // ─── Gender ───────────────────────────────────────────────────────────────────
-
 export const Genders = {
   MALE: 'male',
   FEMALE: 'female',
@@ -17,8 +14,27 @@ export const GenderOptions = Object.values(Genders).map((value) => ({
   value,
 }));
 
-// ─── Marital Status ───────────────────────────────────────────────────────────
+// ─── Profile For ──────────────────────────────────────────────────────────────
+export const ProfileFors = {
+  SELF: 'self',
+  SON: 'son',
+  DAUGHTER: 'daughter',
+  BROTHER: 'brother',
+  SISTER: 'sister',
+  FRIEND: 'friend',
+  RELATIVE: 'relative',
+  CLIENT: 'client',
+  OTHER: 'other',
+} as const;
 
+export type ProfileFor = (typeof ProfileFors)[keyof typeof ProfileFors];
+
+export const ProfileForOptions = Object.values(ProfileFors).map((value) => ({
+  label: toLabel(value),
+  value,
+}));
+
+// ─── Marital Status ───────────────────────────────────────────────────────────
 export const MaritalStatuses = {
   NEVER_MARRIED: 'never_married',
   DIVORCED: 'divorced',
@@ -37,7 +53,6 @@ export const MaritalStatusOptions = Object.values(MaritalStatuses).map(
 );
 
 // ─── Smoking Habits ──────────────────────────────────────────────────────────────────
-
 export const SmokingHabits = {
   NON_SMOKER: 'non_smoker',
   OCCASIONALLY: 'occasionally',
@@ -54,7 +69,6 @@ export const SmokingOptions = Object.values(SmokingHabits).map((value) => ({
 }));
 
 // ─── Drinking Habits ─────────────────────────────────────────────────────────────────
-
 export const DrinkingHabits = {
   NON_DRINKER: 'non_drinker',
   OCCASIONALLY: 'occasionally',
@@ -159,27 +173,6 @@ export const ManglikStatusOptions = Object.values(ManglikStatuses).map(
     value,
   })
 );
-
-// ─── Profile For ──────────────────────────────────────────────────────────────
-
-export const ProfileFors = {
-  SELF: 'self',
-  SON: 'son',
-  DAUGHTER: 'daughter',
-  BROTHER: 'brother',
-  SISTER: 'sister',
-  FRIEND: 'friend',
-  RELATIVE: 'relative',
-  CLIENT: 'client',
-  OTHER: 'other',
-} as const;
-
-export type ProfileFor = (typeof ProfileFors)[keyof typeof ProfileFors];
-
-export const ProfileForOptions = Object.values(ProfileFors).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
 
 // ─── Religion ─────────────────────────────────────────────────────────────────
 

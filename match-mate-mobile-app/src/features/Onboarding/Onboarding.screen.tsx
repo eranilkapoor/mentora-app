@@ -44,6 +44,11 @@ import {
   Country,
   Qualification,
   ProfileFor,
+  ProfileFors,
+  Religions,
+  Countries,
+  MaritalStatuses,
+  Qualifications,
 } from '@/core/types';
 import { ErrorText } from './components/ErrorText';
 import { DropdownPicker } from './components/DropdownPicker';
@@ -71,15 +76,15 @@ export default function OnboardingScreen(): React.ReactElement {
   const [tempDate, setTempDate] = useState({ day: '', month: '', year: '' });
 
   const [basic, setBasic] = useState<BasicData>({
-    profileFor: 'self',
+    profileFor: ProfileFors.SELF,
     firstName: '',
     lastName: '',
     dateOfBirth: '',
-    gender: 'male',
-    religion: 'hindu',
-    country: 'india',
-    maritalStatus: 'never_married',
-    qualification: 'btech',
+    gender: Genders.MALE,
+    religion: Religions.HINDU,
+    country: Countries.INDIA,
+    maritalStatus: MaritalStatuses.NEVER_MARRIED,
+    qualification: Qualifications.BTECH,
     occupation: '',
     height: '',
   });
