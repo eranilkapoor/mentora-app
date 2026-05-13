@@ -1,98 +1,271 @@
-import React, { useCallback } from 'react';
-import { TouchableOpacity, View, Text, StyleSheet } from 'react-native';
+import React, { memo, useCallback, useMemo } from 'react';
+
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+} from 'react-native';
+
 import { useTranslation } from 'react-i18next';
+
 import { useTheme } from '@/core/theme/ThemeProvider';
 
-type OptionType = {
+export interface SelectOption<T extends string = string> {
   label: string;
-  value: string;
-};
+  value: T;
 
-interface Props {
-  label: string;
-  options: readonly OptionType[];
-  value?: string;
-  onChange: (v: string) => void;
-  i18nPrefix?: string;
+  disabled?: boolean;
 }
 
-export function SingleSelectPill({
+export interface SingleSelectPillProps<T extends string = string> {
+  /**
+   * Main label
+   */
+  label: string;
+
+  /**
+   * Available options
+   */
+  options: readonly SelectOption<T>[];
+
+  /**
+   * Selected value
+   */
+  value?: T;
+
+  /**
+   * Selection callback
+   */
+  onChange: (value: T) => void;
+
+  /**
+   * i18n translation prefix
+   * Example:
+   * i18nPrefix="gender"
+   * -> gender.male
+   */
+  i18nPrefix?: string;
+
+  /**
+   * Optional texts
+   */
+  helperText?: string;
+  error?: string;
+
+  /**
+   * State
+   */
+  disabled?: boolean;
+  required?: boolean;
+
+  /**
+   * Layout
+   */
+  direction?: 'row' | 'column';
+
+  /**
+   * Accessibility
+   */
+  accessibilityLabel?: string;
+  testID?: string;
+
+  /**
+   * Optional styles
+   */
+  containerStyle?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
+  pillContainerStyle?: StyleProp<ViewStyle>;
+  pillStyle?: StyleProp<ViewStyle>;
+  selectedPillStyle?: StyleProp<ViewStyle>;
+  pillTextStyle?: StyleProp<TextStyle>;
+  selectedPillTextStyle?: StyleProp<TextStyle>;
+}
+
+function SingleSelectPillComponent<T extends string = string>({
   label,
   options,
   value,
   onChange,
+
   i18nPrefix,
-}: Props): React.ReactElement {
+
+  helperText,
+  error,
+
+  disabled = false,
+  required = false,
+
+  direction = 'row',
+
+  accessibilityLabel,
+  testID,
+
+  containerStyle,
+  labelStyle,
+  pillContainerStyle,
+  pillStyle,
+  selectedPillStyle,
+  pillTextStyle,
+  selectedPillTextStyle,
+}: SingleSelectPillProps<T>): React.ReactElement {
   const { t } = useTranslation();
   const { theme } = useTheme();
-  
-  const styles = StyleSheet.create({
-    field: {
-      marginBottom: 14,
-    },
-    fieldLabel: {
-      fontSize: 13,
-      fontWeight: '600',
-      color: theme.colors.textSecondary,
-      marginBottom: 6,
-    },
-    pillRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
-      marginTop: 4,
-    },
-    pill: {
-      paddingVertical: 7,
-      paddingHorizontal: 14,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: 20,
-      backgroundColor: theme.colors.inputBackground,
-    },
-    pillSelected: {
-      backgroundColor: theme.colors.primaryLight,
-      borderColor: theme.colors.primary,
-    },
-    pillText: {
-      fontSize: 13,
-      color: theme.colors.textSecondary,
-      textTransform: 'capitalize',
-    },
-    pillTextSelected: {
-      color: theme.colors.primary,
-      fontWeight: '700',
-    },
-  });
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          marginBottom: 16,
+          opacity: disabled ? 0.6 : 1,
+        },
+
+        label: {
+          marginBottom: 6,
+          fontSize: 13,
+          fontWeight: '600',
+          color: theme.colors.textSecondary,
+        },
+
+        required: {
+          color: theme.colors.error,
+        },
+
+        helperText: {
+          marginBottom: 8,
+          fontSize: 11,
+          color: error ? theme.colors.error : theme.colors.textMuted,
+        },
+
+        pillContainer: {
+          flexDirection: direction === 'column' ? 'column' : 'row',
+
+          flexWrap: direction === 'row' ? 'wrap' : 'nowrap',
+
+          gap: 8,
+          marginTop: 4,
+        },
+
+        pill: {
+          paddingVertical: 9,
+          paddingHorizontal: 14,
+
+          borderWidth: 1,
+          borderRadius: 999,
+
+          borderColor: theme.colors.border,
+
+          backgroundColor: theme.colors.inputBackground,
+
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+
+        selectedPill: {
+          backgroundColor: theme.colors.primaryLight,
+
+          borderColor: theme.colors.primary,
+        },
+
+        disabledPill: {
+          opacity: 0.4,
+        },
+
+        pillText: {
+          fontSize: 13,
+          fontWeight: '500',
+
+          color: theme.colors.textSecondary,
+
+          textTransform: 'capitalize',
+        },
+
+        selectedPillText: {
+          color: theme.colors.primary,
+          fontWeight: '700',
+        },
+
+        errorText: {
+          marginTop: 6,
+          fontSize: 11,
+          color: theme.colors.error,
+        },
+      }),
+    [direction, disabled, error, theme]
+  );
 
   const handlePress = useCallback(
-    (opt: string) => {
-      onChange(opt);
+    (option: SelectOption<T>): void => {
+      if (disabled || option.disabled) {
+        return;
+      }
+
+      onChange(option.value);
     },
-    [onChange]
+    [disabled, onChange]
   );
 
   return (
-    <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      <View style={styles.pillRow}>
-        {options.map((opt: OptionType) => {
-          const selected = value === opt.value;
+    <View style={[styles.container, containerStyle]} testID={testID}>
+      <Text style={[styles.label, labelStyle]}>
+        {label}
+
+        {required ? <Text style={styles.required}> *</Text> : null}
+      </Text>
+
+      {helperText ? <Text style={styles.helperText}>{helperText}</Text> : null}
+
+      <View
+        accessibilityRole="radiogroup"
+        accessibilityLabel={accessibilityLabel ?? label}
+        style={[styles.pillContainer, pillContainerStyle]}
+      >
+        {options.map((option) => {
+          const selected = value === option.value;
+
+          const optionDisabled = disabled || option.disabled;
+
           const displayLabel = i18nPrefix
-            ? t(`${i18nPrefix}.${opt.value}`)
-            : opt.label;
+            ? t(`${i18nPrefix}.${option.value}`)
+            : option.label;
 
           return (
             <TouchableOpacity
-              key={opt.value}
-              style={[styles.pill, selected && styles.pillSelected]}
-              onPress={() => handlePress(opt.value)}
+              key={option.value}
+              activeOpacity={0.8}
+              disabled={optionDisabled}
+              onPress={() => handlePress(option)}
               accessibilityRole="radio"
-              accessibilityState={{ checked: selected }}
+              accessibilityState={{
+                checked: selected,
+                disabled: optionDisabled,
+              }}
               accessibilityLabel={displayLabel}
+              style={[
+                styles.pill,
+
+                selected && styles.selectedPill,
+
+                optionDisabled && styles.disabledPill,
+
+                pillStyle,
+
+                selected && selectedPillStyle,
+              ]}
             >
               <Text
-                style={[styles.pillText, selected && styles.pillTextSelected]}
+                style={[
+                  styles.pillText,
+
+                  selected && styles.selectedPillText,
+
+                  pillTextStyle,
+
+                  selected && selectedPillTextStyle,
+                ]}
               >
                 {displayLabel}
               </Text>
@@ -100,6 +273,14 @@ export function SingleSelectPill({
           );
         })}
       </View>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }
+
+SingleSelectPillComponent.displayName = 'SingleSelectPill';
+
+export const SingleSelectPill = memo(
+  SingleSelectPillComponent
+) as typeof SingleSelectPillComponent;

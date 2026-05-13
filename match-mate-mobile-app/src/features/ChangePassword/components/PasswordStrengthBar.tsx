@@ -12,7 +12,7 @@ export function PasswordStrengthBar({
   const { theme } = useTheme();
 
   const styles = StyleSheet.create({
-      strengthWrapper: {
+    strengthWrapper: {
       marginTop: 10,
       marginBottom: 4,
     },

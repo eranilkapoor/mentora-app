@@ -60,15 +60,15 @@ import { TimeOfBirthPicker } from './components/TimeOfBirthPicker';
 import { ToggleRow } from './components/ToggleRow';
 import { NumberStepper } from './components/NumberStepper';
 import { SiblingsEditor } from './components/SiblingsEditor';
-import { DateOfBirthPicker } from './components/DateOfBirthPicker';
+import { DatePicker } from './components/DateOfBirthPicker';
 
-type Props = {
+type EditProfileScreenProps = {
   navigation: NativeStackNavigationProp<SettingsStackParamList, 'EditProfile'>;
 };
 
 export default function EditProfileScreen({
   navigation,
-}: Props): React.ReactElement {
+}: EditProfileScreenProps): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -403,12 +403,15 @@ export default function EditProfileScreen({
 
             <View style={styles.row}>
               <View style={styles.halfField}>
-                <DateOfBirthPicker
+                <DatePicker
                   label={t('edit_profile.fields.dob')}
                   value={profile.personal.dateOfBirth}
                   onChange={(v) => setPersonal('dateOfBirth', v)}
                 />
               </View>
+            </View>
+
+            <View style={styles.row}>
               <View style={styles.halfField}>
                 <TimeOfBirthPicker
                   value={profile.personal.timeOfBirth}
@@ -812,14 +815,14 @@ export default function EditProfileScreen({
             />
             <TagInput
               label={t('edit_profile.fields.hobbies')}
-              items={profile.personal.hobbies}
-              setItems={(v) => setPersonal('hobbies', v)}
+              value={profile.personal.hobbies}
+              onChange={(v) => setPersonal('hobbies', v)}
               placeholder={t('edit_profile.placeholders.hobbies')}
             />
             <TagInput
               label={t('edit_profile.fields.languages_known')}
-              items={profile.personal.languages}
-              setItems={(v) => setPersonal('languages', v)}
+              value={profile.personal.languages}
+              onChange={(v) => setPersonal('languages', v)}
               placeholder={t('edit_profile.placeholders.languages_known')}
             />
           </SectionCard>

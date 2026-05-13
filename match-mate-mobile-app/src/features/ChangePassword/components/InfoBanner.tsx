@@ -8,9 +8,7 @@ interface InfoBannerProps {
   infoText: string;
 }
 
-export function InfoBanner({
-  infoText,
-}: InfoBannerProps): React.ReactElement {
+export function InfoBanner({ infoText }: InfoBannerProps): React.ReactElement {
   const { theme } = useTheme();
 
   const styles = React.useMemo(

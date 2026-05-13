@@ -1,67 +1,117 @@
-import React from 'react';
-import { View, Text, Switch, StyleSheet } from 'react-native';
+import React, { useMemo } from 'react';
+import {
+  View,
+  Text,
+  Switch,
+  StyleSheet,
+  type ViewStyle,
+  type TextStyle,
+  type StyleProp,
+} from 'react-native';
+
 import { useTheme } from '@/core/theme/ThemeProvider';
 
 export interface ToggleRowProps {
   label: string;
   value?: boolean;
-  onChange: (v: boolean) => void;
+  onChange: (value: boolean) => void;
+
   sublabel?: string;
+
+  disabled?: boolean;
+
+  containerStyle?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
+  sublabelStyle?: StyleProp<TextStyle>;
+
+  testID?: string;
+}
+
+interface Styles {
+  container: ViewStyle;
+  content: ViewStyle;
+  label: TextStyle;
+  sublabel: TextStyle;
 }
 
 export function ToggleRow({
   label,
-  value,
+  value = false,
   onChange,
+
   sublabel,
+
+  disabled = false,
+
+  containerStyle,
+  labelStyle,
+  sublabelStyle,
+
+  testID,
 }: ToggleRowProps): React.ReactElement {
   const { theme } = useTheme();
-  const styles = StyleSheet.create({
-    rowToggle: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      marginBottom: 14,
-      minHeight: 44,
-    },
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
-    label: {
-      fontSize: 13,
-      fontWeight: '600',
-      flex: 1,
-    },
-    sublabel: {
-      fontSize: 12,
-      marginTop: 2,
-    },
-  });
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create<Styles>({
+        container: {
+          minHeight: 52,
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: 14,
+        },
+
+        content: {
+          flex: 1,
+          paddingRight: 12,
+        },
+
+        label: {
+          fontSize: 14,
+          fontWeight: '600',
+          color: theme.colors.textSecondary,
+        },
+
+        sublabel: {
+          marginTop: 4,
+          fontSize: 12,
+          lineHeight: 16,
+          color: theme.colors.textMuted,
+        },
+      }),
+    [theme]
+  );
 
   return (
-    <View style={styles.rowToggle}>
-      <View style={styles.safe}>
-        <Text style={[styles.label, { color: theme.colors.textSecondary }]}>
-          {label}
-        </Text>
-        {sublabel && (
-          <Text style={[styles.sublabel, { color: theme.colors.textMuted }]}>
-            {sublabel}
-          </Text>
-        )}
+    <View style={[styles.container, containerStyle]}>
+      <View style={styles.content}>
+        <Text style={[styles.label, labelStyle]}>{label}</Text>
+
+        {sublabel ? (
+          <Text style={[styles.sublabel, sublabelStyle]}>{sublabel}</Text>
+        ) : null}
       </View>
+
       <Switch
-        value={value ?? false}
+        value={value}
         onValueChange={onChange}
+        disabled={disabled}
         trackColor={{
           false: theme.colors.switchTrackOff,
           true: theme.colors.primary,
         }}
         thumbColor={theme.colors.white}
-        accessibilityLabel={label}
         accessibilityRole="switch"
+        accessibilityLabel={label}
+        accessibilityState={{
+          checked: value,
+          disabled,
+        }}
+        testID={testID}
       />
     </View>
   );
 }
+
+ToggleRow.displayName = 'ToggleRow';

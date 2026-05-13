@@ -1,15 +1,38 @@
-import React, { useCallback, useMemo } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import React, { memo, useCallback, useMemo } from 'react';
+
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
+
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { NumberStepper } from './NumberStepper';
+
 import { FormInput } from './FormInput';
-import { SiblingsEditorProps, Siblings, SiblingDetail } from '../EditProfile.types';
+import { NumberStepper } from './NumberStepper';
+
 import { INITIAL_SIBLINGS } from '../EditProfile.constants';
+
+import {
+  SiblingDetail,
+  Siblings,
+  SiblingsEditorProps,
+} from '../EditProfile.types';
 import { Theme } from '@/core/theme/types';
 
-export function SiblingsEditor({
+type SiblingType = 'brother' | 'sister';
+
+interface IndexedSibling {
+  detail: SiblingDetail;
+  index: number;
+}
+
+export const SiblingsEditor = memo(function SiblingsEditor({
   value,
   onChange,
 }: SiblingsEditorProps): React.ReactElement {
@@ -17,269 +40,290 @@ export function SiblingsEditor({
   const { t } = useTranslation();
 
   const siblings = value ?? INITIAL_SIBLINGS;
-  const totalSiblings = siblings.brothersCount + siblings.sistersCount;
 
-  const update = useCallback(
-    (key: keyof Siblings, val: Siblings[keyof Siblings]) => {
-      onChange({ ...siblings, [key]: val });
-    },
-    [siblings, onChange]
-  );
+  const styles = useMemo(() => createStyles(theme), [theme]);
 
-  const handleBrothersChange = useCallback(
-    (count: number) => {
-      const currentDetails = siblings.details ?? [];
-
-      const brothers = currentDetails.filter((d) => d.type === 'brother');
-      const sisters = currentDetails.filter((d) => d.type === 'sister');
-
-      const updatedBrothers: SiblingDetail[] =
-        count > brothers.length
-          ? [
-              ...brothers,
-              ...Array.from({ length: count - brothers.length }, () => ({
-                type: 'brother' as const,
-                married: false,
-                occupation: '',
-              })),
-            ]
-          : brothers.slice(0, count);
-
+  const updateSiblings = useCallback(
+    (patch: Partial<Siblings>): void => {
       onChange({
         ...siblings,
-        brothersCount: count,
-        details: [...updatedBrothers, ...sisters],
+        ...patch,
       });
     },
-    [siblings, onChange]
+    [onChange, siblings]
   );
 
-  const handleSistersChange = useCallback(
-    (count: number) => {
+  /**
+   * Generic sibling count updater
+   */
+  const updateSiblingCount = useCallback(
+    (type: SiblingType, count: number): void => {
       const currentDetails = siblings.details ?? [];
 
-      const brothers = currentDetails.filter((d) => d.type === 'brother');
-      const sisters = currentDetails.filter((d) => d.type === 'sister');
+      const sameType = currentDetails.filter((item) => item.type === type);
 
-      const updatedSisters: SiblingDetail[] =
-        count > sisters.length
+      const otherType = currentDetails.filter((item) => item.type !== type);
+
+      const nextSameType =
+        count > sameType.length
           ? [
-              ...sisters,
-              ...Array.from({ length: count - sisters.length }, () => ({
-                type: 'sister' as const,
-                married: false,
-                occupation: '',
-              })),
+              ...sameType,
+              ...Array.from(
+                {
+                  length: count - sameType.length,
+                },
+                (): SiblingDetail => ({
+                  type,
+                  married: false,
+                  occupation: '',
+                })
+              ),
             ]
-          : sisters.slice(0, count);
+          : sameType.slice(0, count);
 
-      onChange({
-        ...siblings,
-        sistersCount: count,
-        details: [...brothers, ...updatedSisters],
+      const details = [...nextSameType, ...otherType];
+
+      const isBrother = type === 'brother';
+
+      updateSiblings({
+        details,
+        brothersCount: isBrother ? count : siblings.brothersCount,
+        sistersCount: isBrother ? siblings.sistersCount : count,
+
+        /**
+         * Prevent invalid values
+         */
+        marriedBrothersCount: Math.min(
+          siblings.marriedBrothersCount,
+          isBrother ? count : siblings.brothersCount
+        ),
+
+        marriedSistersCount: Math.min(
+          siblings.marriedSistersCount,
+          isBrother ? siblings.sistersCount : count
+        ),
       });
     },
-    [siblings, onChange]
+    [siblings, updateSiblings]
   );
 
   const updateDetail = useCallback(
-    (index: number, key: keyof SiblingDetail, val: string | boolean) => {
-      const updatedDetails = (siblings.details ?? []).map((d, i) =>
-        i === index ? { ...d, [key]: val } : d
+    (index: number, patch: Partial<SiblingDetail>): void => {
+      const updated = (siblings.details ?? []).map((item, i) =>
+        i === index
+          ? {
+              ...item,
+              ...patch,
+            }
+          : item
       );
-      update('details', updatedDetails);
+
+      updateSiblings({
+        details: updated,
+      });
     },
-    [siblings.details, update]
+    [siblings.details, updateSiblings]
   );
 
-  const { brotherDetails, sisterDetails } = useMemo(() => {
+  const groupedDetails = useMemo(() => {
     const details = siblings.details ?? [];
+
+    const brothers: IndexedSibling[] = [];
+
+    const sisters: IndexedSibling[] = [];
+
+    details.forEach((detail, index) => {
+      if (detail.type === 'brother') {
+        brothers.push({
+          detail,
+          index,
+        });
+      } else {
+        sisters.push({
+          detail,
+          index,
+        });
+      }
+    });
+
     return {
-      brotherDetails: details
-        .map((d, i) => ({ detail: d, index: i }))
-        .filter(({ detail }) => detail.type === 'brother'),
-      sisterDetails: details
-        .map((d, i) => ({ detail: d, index: i }))
-        .filter(({ detail }) => detail.type === 'sister'),
+      brothers,
+      sisters,
     };
   }, [siblings.details]);
 
+  const totalSiblings = siblings.brothersCount + siblings.sistersCount;
+
   return (
     <View>
-      {/* ── Heading ────────────────────────────────────────────────────── */}
-      <Text style={[detailStyles.subSectionLabel, { marginTop: 4, color: theme.colors.textMuted }]}>
+      <Text style={styles.sectionLabel}>
         {t('edit_profile.family.siblings_title')}
       </Text>
 
-      {/* ── Counts ─────────────────────────────────────────────────────── */}
       <NumberStepper
         label={t('edit_profile.family.brothers')}
         value={siblings.brothersCount}
-        onChange={handleBrothersChange}
+        onChange={(count) => updateSiblingCount('brother', count)}
       />
+
       <NumberStepper
         label={t('edit_profile.family.sisters')}
         value={siblings.sistersCount}
-        onChange={handleSistersChange}
+        onChange={(count) => updateSiblingCount('sister', count)}
       />
+
       <NumberStepper
         label={t('edit_profile.family.married_brothers')}
         value={siblings.marriedBrothersCount}
-        onChange={(v) => update('marriedBrothersCount', v)}
         max={siblings.brothersCount}
+        onChange={(count) =>
+          updateSiblings({
+            marriedBrothersCount: count,
+          })
+        }
       />
+
       <NumberStepper
         label={t('edit_profile.family.married_sisters')}
         value={siblings.marriedSistersCount}
-        onChange={(v) => update('marriedSistersCount', v)}
         max={siblings.sistersCount}
+        onChange={(count) =>
+          updateSiblings({
+            marriedSistersCount: count,
+          })
+        }
       />
 
-      {/* ── Sibling Details — only shown when total > 0 ─────────────────── */}
-      {totalSiblings > 0 && (
-        <View style={detailStyles.section}>
-          <View style={detailStyles.sectionHeaderRow}>
-            <Feather name="users" size={14} color={theme.colors.primary} />
-            <Text style={[detailStyles.sectionHeading, { color: theme.colors.textSecondary }]}>
+      {totalSiblings > 0 ? (
+        <View style={styles.detailsSection}>
+          <View style={styles.headerRow}>
+            <Feather color={theme.colors.primary} name="users" size={14} />
+
+            <Text style={styles.headerText}>
               {t('edit_profile.family.sibling_details_title')}
             </Text>
           </View>
 
-          {/* Brothers */}
-          {brotherDetails.map(({ detail, index }, displayIndex) => (
-            <SiblingDetailCard
+          {groupedDetails.brothers.map(({ detail, index }, displayIndex) => (
+            <SiblingCard
               key={`brother-${index}`}
               detail={detail}
               displayIndex={displayIndex + 1}
-              globalIndex={index}
+              index={index}
               onUpdate={updateDetail}
-              theme={theme}
-              t={t}
             />
           ))}
 
-          {/* Sisters */}
-          {sisterDetails.map(({ detail, index }, displayIndex) => (
-            <SiblingDetailCard
+          {groupedDetails.sisters.map(({ detail, index }, displayIndex) => (
+            <SiblingCard
               key={`sister-${index}`}
               detail={detail}
               displayIndex={displayIndex + 1}
-              globalIndex={index}
+              index={index}
               onUpdate={updateDetail}
-              theme={theme}
-              t={t}
             />
           ))}
         </View>
-      )}
+      ) : null}
 
-      {/* ── Note ───────────────────────────────────────────────────────── */}
       <FormInput
         label={t('edit_profile.family.siblings_note')}
-        value={siblings.note}
-        onChange={(v) => update('note', v)}
         multiline
         placeholder={t('edit_profile.family.siblings_note_placeholder')}
+        value={siblings.note}
+        onChange={(note) => updateSiblings({ note })}
       />
     </View>
   );
-}
+});
 
-interface SiblingDetailCardProps {
+interface SiblingCardProps {
   detail: SiblingDetail;
   displayIndex: number;
-  globalIndex: number;
-  onUpdate: (index: number, key: keyof SiblingDetail, val: string | boolean) => void;
-  theme: Theme;
-  t: (key: string) => string;
+  index: number;
+  onUpdate: (index: number, patch: Partial<SiblingDetail>) => void;
 }
 
-function SiblingDetailCard({
+const SiblingCard = memo(function SiblingCard({
   detail,
   displayIndex,
-  globalIndex,
+  index,
   onUpdate,
-  theme,
-  t,
-}: SiblingDetailCardProps): React.ReactElement {
-  const typeLabel =
-    detail.type === 'brother'
-      ? t('edit_profile.family.brother')
-      : t('edit_profile.family.sister');
+}: SiblingCardProps): React.ReactElement {
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
+  const styles = useMemo(() => createStyles(theme), [theme]);
+
+  const isBrother = detail.type === 'brother';
+
+  const badgeColor = isBrother ? theme.colors.primary : theme.colors.accent;
+
+  const badgeBackground = isBrother
+    ? theme.colors.primaryLight
+    : theme.colors.accentLight;
+
+  const label = isBrother
+    ? t('edit_profile.family.brother')
+    : t('edit_profile.family.sister');
 
   return (
-    <View
-      style={[
-        detailStyles.card,
-        {
-          backgroundColor: theme.colors.backgroundLight,
-          borderColor: theme.colors.border,
-        },
-      ]}
-    >
-      {/* Header row — type + number */}
-      <View style={detailStyles.cardHeader}>
+    <View style={styles.card}>
+      <View style={styles.cardHeader}>
         <View
           style={[
-            detailStyles.typeBadge,
+            styles.badge,
             {
-              backgroundColor:
-                detail.type === 'brother'
-                  ? theme.colors.primaryLight
-                  : theme.colors.accentLight,
+              backgroundColor: badgeBackground,
             },
           ]}
         >
-          <Feather
-            name={detail.type === 'brother' ? 'user' : 'user'}
-            size={11}
-            color={
-              detail.type === 'brother'
-                ? theme.colors.primary
-                : theme.colors.accent
-            }
-          />
+          <Feather color={badgeColor} name="user" size={11} />
+
           <Text
             style={[
-              detailStyles.typeBadgeText,
+              styles.badgeText,
               {
-                color:
-                  detail.type === 'brother'
-                    ? theme.colors.primary
-                    : theme.colors.accent,
+                color: badgeColor,
               },
             ]}
           >
-            {typeLabel} {displayIndex}
+            {label} {displayIndex}
           </Text>
         </View>
 
-        {/* Married toggle */}
         <TouchableOpacity
+          accessibilityRole="switch"
+          accessibilityState={{
+            checked: detail.married,
+          }}
+          onPress={() =>
+            onUpdate(index, {
+              married: !detail.married,
+            })
+          }
           style={[
-            detailStyles.marriedToggle,
+            styles.toggle,
             {
               backgroundColor: detail.married
                 ? theme.colors.success
                 : theme.colors.inputBackground,
+
               borderColor: detail.married
                 ? theme.colors.success
                 : theme.colors.border,
             },
           ]}
-          onPress={() => onUpdate(globalIndex, 'married', !detail.married)}
-          accessibilityRole="switch"
-          accessibilityState={{ checked: detail.married }}
-          accessibilityLabel={t('edit_profile.family.married')}
         >
           <Feather
+            color={detail.married ? theme.colors.white : theme.colors.textMuted}
             name={detail.married ? 'check' : 'circle'}
             size={12}
-            color={detail.married ? theme.colors.white : theme.colors.textMuted}
           />
+
           <Text
             style={[
-              detailStyles.marriedToggleText,
+              styles.toggleText,
               {
                 color: detail.married
                   ? theme.colors.white
@@ -294,94 +338,108 @@ function SiblingDetailCard({
         </TouchableOpacity>
       </View>
 
-      {/* Occupation input */}
       <TextInput
-        value={detail.occupation ?? ''}
-        onChangeText={(v) => onUpdate(globalIndex, 'occupation', v)}
+        accessibilityLabel={`${label} occupation`}
+        onChangeText={(occupation) =>
+          onUpdate(index, {
+            occupation,
+          })
+        }
         placeholder={t('edit_profile.family.sibling_occupation_placeholder')}
         placeholderTextColor={theme.colors.textMuted}
-        style={[
-          detailStyles.occupationInput,
-          {
-            color: theme.colors.textPrimary,
-            backgroundColor: theme.colors.inputBackground,
-            borderColor: theme.colors.border,
-          },
-        ]}
-        accessibilityLabel={`${typeLabel} ${displayIndex} ${t('edit_profile.fields.occupation')}`}
+        style={styles.input}
+        value={detail.occupation ?? ''}
       />
     </View>
   );
-}
-
-const detailStyles = StyleSheet.create({
-  section: {
-    marginTop: 8,
-    marginBottom: 12,
-  },
-  sectionHeaderRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    marginBottom: 10,
-  },
-  sectionHeading: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-  },
-  card: {
-    borderRadius: 10,
-    borderWidth: 1,
-    padding: 12,
-    marginBottom: 10,
-    gap: 10,
-  },
-  cardHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  },
-  typeBadge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-  },
-  typeBadgeText: {
-    fontSize: 12,
-    fontWeight: '700',
-    textTransform: 'capitalize',
-  },
-  marriedToggle: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 5,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
-    borderRadius: 20,
-    borderWidth: 1,
-  },
-  marriedToggleText: {
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  occupationInput: {
-    borderWidth: 1,
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    paddingVertical: 9,
-    fontSize: 14,
-  },
-  subSectionLabel: {
-    fontSize: 12,
-    fontWeight: '600',
-    textTransform: 'uppercase',
-    letterSpacing: 0.5,
-    marginTop: 8,
-    marginBottom: 10,
-  },
 });
+
+function createStyles(theme: Theme) {
+  return StyleSheet.create({
+    sectionLabel: {
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      marginBottom: 12,
+      color: theme.colors.textMuted,
+    },
+
+    detailsSection: {
+      marginTop: 10,
+      marginBottom: 12,
+    },
+
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginBottom: 10,
+    },
+
+    headerText: {
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'uppercase',
+      letterSpacing: 0.5,
+      color: theme.colors.textSecondary,
+    },
+
+    card: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.backgroundLight,
+      borderRadius: 12,
+      padding: 12,
+      marginBottom: 10,
+      gap: 10,
+    },
+
+    cardHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+
+    badge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 999,
+    },
+
+    badgeText: {
+      fontSize: 12,
+      fontWeight: '700',
+      textTransform: 'capitalize',
+    },
+
+    toggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 999,
+      borderWidth: 1,
+    },
+
+    toggleText: {
+      fontSize: 12,
+      fontWeight: '600',
+    },
+
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.inputBackground,
+      color: theme.colors.textPrimary,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+      fontSize: 14,
+    },
+  });
+}

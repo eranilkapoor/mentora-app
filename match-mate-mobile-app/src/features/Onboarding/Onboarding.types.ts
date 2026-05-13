@@ -19,50 +19,7 @@ export const ONBOARDING_STEPS_ICONS: Record<
   photos: 'camera',
 };
 
-export interface OptionType {
-  label: string;
-  value: string;
-}
-
-export interface DropdownPickerProps {
-  label: string;
-  options: readonly OptionType[];
-  value?: string;
-  onChange: (value: string) => void;
-
-  field: string;
-
-  errors: Record<string, string | undefined>;
-
-  onClearError: (field: string) => void;
-
-  showDropdown: string | null;
-
-  onSetShowDropdown: (field: string | null) => void;
-}
-
-export interface ErrorTextProps {
-  field: string;
-  errors: Record<string, string>;
-}
-
 export interface ProfileImage {
   uri: string;
   isPrimary?: boolean;
-}
-
-export interface SearchMultiSelectProps {
-  label: string;
-
-  options: readonly OptionType[];
-
-  selected: string[];
-
-  onChange: (values: string[]) => void;
-
-  field: string;
-
-  errors: Record<string, string>;
-
-  placeholder?: string;
 }

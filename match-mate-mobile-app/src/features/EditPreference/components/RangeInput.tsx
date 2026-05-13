@@ -1,148 +1,358 @@
-import React, { useCallback } from 'react';
-import { View, Text, TextInput, StyleSheet } from 'react-native';
+import React, { memo, useCallback, useMemo } from 'react';
+
+import {
+  View,
+  Text,
+  TextInput,
+  StyleSheet,
+  StyleProp,
+  ViewStyle,
+  TextStyle,
+  KeyboardTypeOptions,
+} from 'react-native';
+
 import { useTranslation } from 'react-i18next';
+
 import { useTheme } from '@/core/theme/ThemeProvider';
 
-export interface Range {
+export interface RangeValue {
   min: number;
   max: number;
 }
 
 export interface RangeInputProps {
   label: string;
-  value?: Range;
-  onChange: (v: Range) => void;
-  min: number;
-  max: number;
+
+  value?: RangeValue;
+
+  onChange: (value: RangeValue) => void;
+
+  /**
+   * Allowed limits
+   */
+  minLimit: number;
+  maxLimit: number;
+
+  /**
+   * Step increment
+   * default: 1
+   */
   step?: number;
+
+  /**
+   * Unit label
+   * Example: kg, cm, years
+   */
   unit?: string;
+
+  /**
+   * Input configs
+   */
+  keyboardType?: KeyboardTypeOptions;
+
+  /**
+   * State
+   */
+  disabled?: boolean;
+  required?: boolean;
+
+  /**
+   * Validation
+   */
+  error?: string;
+  helperText?: string;
+
+  /**
+   * Labels
+   */
+  minLabel?: string;
+  maxLabel?: string;
+
+  /**
+   * Allow empty typing temporarily
+   * default: true
+   */
+  allowEmpty?: boolean;
+
+  /**
+   * Styling
+   */
+  containerStyle?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
+  inputStyle?: StyleProp<TextStyle>;
+
+  /**
+   * Accessibility
+   */
+  accessibilityLabel?: string;
+  testID?: string;
 }
 
-export function RangeInput({
+function RangeInputComponent({
   label,
   value,
   onChange,
-  min,
-  max,
+
+  minLimit,
+  maxLimit,
+
+  step = 1,
   unit,
+
+  keyboardType = 'numeric',
+
+  disabled = false,
+  required = false,
+
+  error,
+  helperText,
+
+  minLabel,
+  maxLabel,
+
+  allowEmpty = true,
+
+  containerStyle,
+  labelStyle,
+  inputStyle,
+
+  accessibilityLabel,
+  testID,
 }: RangeInputProps): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const styles = StyleSheet.create({
-    field: {
-      marginBottom: 14,
-    },
-    fieldLabel: {
-      fontSize: 13,
-      fontWeight: '600',
-      color: theme.colors.textSecondary,
-      marginBottom: 6,
-    },
-    fieldSublabel: {
-      fontSize: 11,
-      color: theme.colors.textMuted,
-      marginTop: 2,
-    },
-    rangeRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      marginTop: 4,
-    },
-    rangeInput: {
-      flex: 1,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 11,
-      fontSize: 15,
-      color: theme.colors.textPrimary,
-      backgroundColor: theme.colors.inputBackground,
-      textAlign: 'center',
-    },
-    rangeSeparator: {
-      fontSize: 18,
-      color: theme.colors.textMuted,
-      fontWeight: '300',
-    },
-    rangeUnit: {
-      fontSize: 11,
-      color: theme.colors.textMuted,
-      textAlign: 'center',
-      marginTop: 4,
-    },
-    rangeHalfWrapper: {
-      flex: 1,
-      alignItems: 'stretch',
-    },
-    rangeHalfLabel: {
-      fontSize: 11,
-      color: theme.colors.textMuted,
-      marginBottom: 4,
-      textAlign: 'center',
-    },
-  });
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          marginBottom: 16,
+          opacity: disabled ? 0.6 : 1,
+        },
 
-  const currentMin = value?.min ?? min;
-  const currentMax = value?.max ?? max;
+        labelRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginBottom: 6,
+        },
+
+        label: {
+          flex: 1,
+          fontSize: 13,
+          fontWeight: '600',
+          color: theme.colors.textSecondary,
+        },
+
+        required: {
+          color: theme.colors.error,
+        },
+
+        helper: {
+          marginTop: 4,
+          fontSize: 11,
+          color: theme.colors.textMuted,
+        },
+
+        errorText: {
+          marginTop: 4,
+          fontSize: 11,
+          color: theme.colors.error,
+        },
+
+        row: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          marginTop: 8,
+        },
+
+        rangeBox: {
+          flex: 1,
+        },
+
+        rangeLabel: {
+          marginBottom: 6,
+          fontSize: 11,
+          fontWeight: '500',
+          color: theme.colors.textMuted,
+          textAlign: 'center',
+          textTransform: 'uppercase',
+          letterSpacing: 0.4,
+        },
+
+        input: {
+          borderWidth: 1,
+          borderColor: error ? theme.colors.error : theme.colors.border,
+          borderRadius: 12,
+          paddingHorizontal: 12,
+          paddingVertical: 12,
+          fontSize: 15,
+          color: theme.colors.textPrimary,
+          backgroundColor: theme.colors.inputBackground,
+          textAlign: 'center',
+        },
+
+        separator: {
+          marginHorizontal: 10,
+          marginTop: 22,
+          fontSize: 18,
+          color: theme.colors.textMuted,
+          fontWeight: '300',
+        },
+
+        unitText: {
+          marginTop: 6,
+          fontSize: 11,
+          color: theme.colors.textMuted,
+          textAlign: 'center',
+        },
+      }),
+    [disabled, error, theme]
+  );
+
+  const currentMin = value?.min ?? minLimit;
+  const currentMax = value?.max ?? maxLimit;
+
+  const clampValue = useCallback(
+    (num: number): number => {
+      const stepped = Math.round(num / step) * step;
+
+      return Math.min(Math.max(stepped, minLimit), maxLimit);
+    },
+    [maxLimit, minLimit, step]
+  );
+
+  const parseValue = useCallback(
+    (text: string): number | null => {
+      if (allowEmpty && text.trim() === '') {
+        return null;
+      }
+
+      const parsed = Number(text);
+
+      if (Number.isNaN(parsed)) {
+        return null;
+      }
+
+      return clampValue(parsed);
+    },
+    [allowEmpty, clampValue]
+  );
 
   const handleMinChange = useCallback(
-    (text: string) => {
-      const parsed = parseInt(text, 10);
-      if (isNaN(parsed)) return;
-      const clamped = Math.min(Math.max(parsed, min), currentMax);
-      onChange({ min: clamped, max: currentMax });
+    (text: string): void => {
+      const parsed = parseValue(text);
+
+      if (parsed === null) {
+        return;
+      }
+
+      const nextMin = Math.min(parsed, currentMax);
+
+      onChange({
+        min: nextMin,
+        max: currentMax,
+      });
     },
-    [currentMax, min, onChange]
+    [currentMax, onChange, parseValue]
   );
 
   const handleMaxChange = useCallback(
-    (text: string) => {
-      const parsed = parseInt(text, 10);
-      if (isNaN(parsed)) return;
-      const clamped = Math.max(Math.min(parsed, max), currentMin);
-      onChange({ min: currentMin, max: clamped });
+    (text: string): void => {
+      const parsed = parseValue(text);
+
+      if (parsed === null) {
+        return;
+      }
+
+      const nextMax = Math.max(parsed, currentMin);
+
+      onChange({
+        min: currentMin,
+        max: nextMax,
+      });
     },
-    [currentMin, max, onChange]
+    [currentMin, onChange, parseValue]
   );
 
   return (
-    <View style={styles.field}>
-      <Text style={styles.fieldLabel}>{label}</Text>
-      {unit && (
-        <Text style={styles.fieldSublabel}>
-          {t('preference.range.unit_hint', { unit })}
+    <View style={[styles.container, containerStyle]} testID={testID}>
+      <View style={styles.labelRow}>
+        <Text style={[styles.label, labelStyle]}>
+          {label}
+
+          {required ? <Text style={styles.required}> *</Text> : null}
         </Text>
-      )}
-      <View style={styles.rangeRow}>
-        <View style={styles.rangeHalfWrapper}>
-          <Text style={styles.rangeHalfLabel}>{t('preference.range.min')}</Text>
+      </View>
+
+      {unit ? (
+        <Text style={styles.helper}>
+          {t('preference.range.unit_hint', {
+            unit,
+          })}
+        </Text>
+      ) : helperText ? (
+        <Text style={styles.helper}>{helperText}</Text>
+      ) : null}
+
+      <View style={styles.row}>
+        <View style={styles.rangeBox}>
+          <Text style={styles.rangeLabel}>
+            {minLabel ?? t('preference.range.min')}
+          </Text>
+
           <TextInput
-            style={styles.rangeInput}
+            editable={!disabled}
             value={String(currentMin)}
             onChangeText={handleMinChange}
-            keyboardType="numeric"
-            accessibilityLabel={`${label} minimum`}
+            keyboardType={keyboardType}
+            placeholder={String(minLimit)}
             placeholderTextColor={theme.colors.textMuted}
+            accessibilityLabel={
+              accessibilityLabel
+                ? `${accessibilityLabel} minimum`
+                : `${label} minimum`
+            }
+            style={[styles.input, inputStyle]}
+            returnKeyType="done"
           />
+
+          {unit ? <Text style={styles.unitText}>{unit}</Text> : null}
         </View>
 
-        <Text style={styles.rangeSeparator}>—</Text>
+        <Text style={styles.separator}>—</Text>
 
-        <View style={styles.rangeHalfWrapper}>
-          <Text style={styles.rangeHalfLabel}>{t('preference.range.max')}</Text>
+        <View style={styles.rangeBox}>
+          <Text style={styles.rangeLabel}>
+            {maxLabel ?? t('preference.range.max')}
+          </Text>
+
           <TextInput
-            style={styles.rangeInput}
+            editable={!disabled}
             value={String(currentMax)}
             onChangeText={handleMaxChange}
-            keyboardType="numeric"
-            accessibilityLabel={`${label} maximum`}
+            keyboardType={keyboardType}
+            placeholder={String(maxLimit)}
             placeholderTextColor={theme.colors.textMuted}
+            accessibilityLabel={
+              accessibilityLabel
+                ? `${accessibilityLabel} maximum`
+                : `${label} maximum`
+            }
+            style={[styles.input, inputStyle]}
+            returnKeyType="done"
           />
+
+          {unit ? <Text style={styles.unitText}>{unit}</Text> : null}
         </View>
       </View>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }
+
+RangeInputComponent.displayName = 'RangeInput';
+
+export const RangeInput = memo(
+  RangeInputComponent
+) as typeof RangeInputComponent;

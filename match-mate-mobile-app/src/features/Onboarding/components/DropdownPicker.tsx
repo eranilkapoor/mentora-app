@@ -1,13 +1,31 @@
 import React, { useMemo } from 'react';
-import { ScrollView, TouchableOpacity, View, Text } from 'react-native';
+import { ScrollView, TouchableOpacity, View, Text, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
 
-import { DropdownPickerProps, OptionType } from '../Onboarding.types';
-import { onboardingStyles } from '../Onboarding.styles';
+export interface OptionType {
+  label: string;
+  value: string;
+}
+
+export interface DropdownPickerProps {
+  label: string;
+  options: readonly OptionType[];
+  value?: string;
+  onChange: (value: string) => void;
+
+  field: string;
+
+  errors: Record<string, string | undefined>;
+
+  onClearError: (field: string) => void;
+
+  showDropdown: string | null;
+
+  onSetShowDropdown: (field: string | null) => void;
+}
 
 export function DropdownPicker({
   label,
@@ -21,12 +39,74 @@ export function DropdownPicker({
   onSetShowDropdown,
 }: DropdownPickerProps): React.ReactElement {
   const isOpen = showDropdown === field;
-
-  const styles = useThemedStyles(onboardingStyles);
-
   const { theme } = useTheme();
-
   const { t } = useTranslation();
+
+  const styles = StyleSheet.create({
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 13,
+      marginBottom: 12,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+      backgroundColor: theme.colors.inputBackground,
+    },
+    inputError: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorLight,
+    },
+    dropdownTrigger: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+    },
+    dropdownValueText: {
+      color: theme.colors.textPrimary,
+      fontSize: 15,
+    },
+    dropdownPlaceholder: {
+      color: theme.colors.textMuted,
+      fontSize: 15,
+    },
+    dropdown: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      marginBottom: 12,
+      backgroundColor: theme.colors.surface,
+      maxHeight: 220,
+      // Fixed: boxShadow is CSS web-only — use RN shadow props
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 4,
+    },
+    dropdownItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 14,
+      paddingVertical: 13,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+    },
+    dropdownItemActive: {
+      backgroundColor: theme.colors.primaryLight,
+    },
+    dropdownItemText: {
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+    },
+    dropdownItemTextActive: {
+      color: theme.colors.primary,
+      fontWeight: '600',
+    },
+  });
+
 
   const selectedLabel = useMemo(
     () => options.find((opt: OptionType) => opt.value === value)?.label ?? '',

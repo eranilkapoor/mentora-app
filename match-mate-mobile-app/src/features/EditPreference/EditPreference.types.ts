@@ -12,6 +12,11 @@ import {
   SmokingHabit,
 } from '@/core/types';
 
+export interface Range {
+  min: number;
+  max: number;
+}
+
 // ─── Filters ──────────────────────────────────────────────────────────────────
 export interface PartnerFilters {
   age?: Range;

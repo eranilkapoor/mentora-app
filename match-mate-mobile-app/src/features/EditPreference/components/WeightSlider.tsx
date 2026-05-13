@@ -1,4 +1,5 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { memo, useCallback, useMemo } from 'react';
+
 import {
   View,
   Text,
@@ -6,35 +7,143 @@ import {
   StyleSheet,
   type ViewStyle,
   type TextStyle,
+  type StyleProp,
 } from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { WEIGHT_MAX, WEIGHT_MIN } from '../EditPreference.constants';
 
 export interface WeightSliderProps {
+  /**
+   * Main label
+   */
   label: string;
+
+  /**
+   * Current value
+   */
   value?: number;
-  onChange: (v: number) => void;
+
+  /**
+   * Change callback
+   */
+  onChange: (value: number) => void;
+
+  /**
+   * Limits
+   */
+  min?: number;
+  max?: number;
+
+  /**
+   * Increment step
+   */
+  step?: number;
+
+  /**
+   * Unit
+   * Example: kg, lbs
+   */
+  unit?: string;
+
+  /**
+   * Optional helper text
+   */
+  helperText?: string;
+
+  /**
+   * Validation
+   */
+  error?: string;
+
+  /**
+   * States
+   */
+  disabled?: boolean;
+  required?: boolean;
+
+  /**
+   * Accessibility
+   */
+  accessibilityLabel?: string;
+  testID?: string;
+
+  /**
+   * Display
+   */
+  showButtons?: boolean;
+  showValue?: boolean;
+
+  /**
+   * Styles
+   */
+  containerStyle?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
+  valueStyle?: StyleProp<TextStyle>;
+  trackStyle?: StyleProp<ViewStyle>;
+  fillStyle?: StyleProp<ViewStyle>;
 }
 
 interface Styles {
   container: ViewStyle;
-  weightRow: ViewStyle;
-  weightLabel: TextStyle;
-  weightValue: TextStyle;
-  weightTrack: ViewStyle;
-  weightFill: ViewStyle;
-  weightBtnRow: ViewStyle;
-  weightBtn: ViewStyle;
-  disabled: ViewStyle;
+
+  headerRow: ViewStyle;
+
+  labelWrapper: ViewStyle;
+
+  label: TextStyle;
+
+  helperText: TextStyle;
+
+  errorText: TextStyle;
+
+  required: TextStyle;
+
+  controlsRow: ViewStyle;
+
+  button: ViewStyle;
+
+  buttonDisabled: ViewStyle;
+
+  value: TextStyle;
+
+  track: ViewStyle;
+
+  fill: ViewStyle;
 }
 
-export function WeightSlider({
+function WeightSliderComponent({
   label,
-  value = WEIGHT_MIN,
+
+  value = 0,
+
   onChange,
+
+  min = 0,
+  max = 100,
+
+  step = 1,
+
+  unit = 'kg',
+
+  helperText,
+  error,
+
+  disabled = false,
+  required = false,
+
+  accessibilityLabel,
+  testID,
+
+  showButtons = true,
+  showValue = true,
+
+  containerStyle,
+  labelStyle,
+  valueStyle,
+  trackStyle,
+  fillStyle,
 }: WeightSliderProps): React.ReactElement {
   const { theme } = useTheme();
 
@@ -43,134 +152,209 @@ export function WeightSlider({
       StyleSheet.create<Styles>({
         container: {
           marginBottom: 16,
+          opacity: disabled ? 0.6 : 1,
         },
 
-        weightRow: {
+        headerRow: {
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
           marginBottom: 12,
         },
 
-        weightLabel: {
+        labelWrapper: {
           flex: 1,
+          paddingRight: 12,
+        },
+
+        label: {
           fontSize: 13,
           fontWeight: '600',
           color: theme.colors.textSecondary,
         },
 
-        weightValue: {
-          minWidth: 32,
-          fontSize: 13,
-          fontWeight: '700',
-          color: theme.colors.primary,
-          textAlign: 'right',
+        helperText: {
+          marginTop: 4,
+          fontSize: 11,
+          color: error ? theme.colors.error : theme.colors.textMuted,
         },
 
-        weightTrack: {
-          height: 6,
-          borderRadius: 3,
-          backgroundColor: theme.colors.backgroundLight,
-          overflow: 'hidden',
+        errorText: {
+          marginTop: 6,
+          fontSize: 11,
+          color: theme.colors.error,
         },
 
-        weightFill: {
-          height: 6,
-          borderRadius: 3,
-          backgroundColor: theme.colors.primary,
+        required: {
+          color: theme.colors.error,
         },
 
-        weightBtnRow: {
+        controlsRow: {
           flexDirection: 'row',
           alignItems: 'center',
         },
 
-        weightBtn: {
-          width: 28,
-          height: 28,
-          borderRadius: 7,
+        button: {
+          width: 32,
+          height: 32,
+          borderRadius: 10,
+
           borderWidth: 1,
           borderColor: theme.colors.border,
+
           backgroundColor: theme.colors.inputBackground,
+
           alignItems: 'center',
           justifyContent: 'center',
         },
 
-        disabled: {
+        buttonDisabled: {
           opacity: 0.4,
         },
+
+        value: {
+          minWidth: 64,
+          marginHorizontal: 12,
+
+          fontSize: 15,
+          fontWeight: '700',
+
+          color: theme.colors.primary,
+          textAlign: 'center',
+        },
+
+        track: {
+          height: 8,
+          borderRadius: 999,
+
+          overflow: 'hidden',
+
+          backgroundColor: theme.colors.backgroundLight,
+        },
+
+        fill: {
+          height: '100%',
+          borderRadius: 999,
+          backgroundColor: theme.colors.primary,
+        },
       }),
-    [theme]
+    [disabled, error, theme]
   );
 
+  const safeValue = useMemo<number>(() => {
+    return Math.min(Math.max(value, min), max);
+  }, [max, min, value]);
+
+  const canDecrease = !disabled && safeValue > min;
+
+  const canIncrease = !disabled && safeValue < max;
+
   const decrease = useCallback((): void => {
-    onChange(Math.max(WEIGHT_MIN, value - 1));
-  }, [onChange, value]);
+    if (!canDecrease) {
+      return;
+    }
+
+    onChange(Math.max(min, safeValue - step));
+  }, [canDecrease, min, onChange, safeValue, step]);
 
   const increase = useCallback((): void => {
-    onChange(Math.min(WEIGHT_MAX, value + 1));
-  }, [onChange, value]);
+    if (!canIncrease) {
+      return;
+    }
+
+    onChange(Math.min(max, safeValue + step));
+  }, [canIncrease, max, onChange, safeValue, step]);
 
   const fillPercent = useMemo<number>(() => {
-    return (
-      ((value - WEIGHT_MIN) / (WEIGHT_MAX - WEIGHT_MIN)) * 100
-    );
-  }, [value]);
+    if (max === min) {
+      return 0;
+    }
+
+    return ((safeValue - min) / (max - min)) * 100;
+  }, [max, min, safeValue]);
 
   return (
-    <View style={styles.container}>
-      <View style={styles.weightRow}>
-        <Text style={styles.weightLabel}>{label}</Text>
+    <View style={[styles.container, containerStyle]} testID={testID}>
+      <View style={styles.headerRow}>
+        <View style={styles.labelWrapper}>
+          <Text style={[styles.label, labelStyle]}>
+            {label}
 
-        <View style={styles.weightBtnRow}>
-          <TouchableOpacity
-            style={[
-              styles.weightBtn,
-              value <= WEIGHT_MIN ? styles.disabled : null,
-            ]}
-            onPress={decrease}
-            disabled={value <= WEIGHT_MIN}
-            accessibilityRole="button"
-            accessibilityLabel={`Decrease ${label} weight`}
-          >
-            <Feather
-              name="minus"
-              size={12}
-              color={theme.colors.textPrimary}
-            />
-          </TouchableOpacity>
+            {required ? <Text style={styles.required}> *</Text> : null}
+          </Text>
 
-          <Text style={styles.weightValue}>{value}</Text>
+          {helperText ? (
+            <Text style={styles.helperText}>{helperText}</Text>
+          ) : null}
+        </View>
 
-          <TouchableOpacity
-            style={[
-              styles.weightBtn,
-              value >= WEIGHT_MAX ? styles.disabled : null,
-            ]}
-            onPress={increase}
-            disabled={value >= WEIGHT_MAX}
-            accessibilityRole="button"
-            accessibilityLabel={`Increase ${label} weight`}
-          >
-            <Feather
-              name="plus"
-              size={12}
-              color={theme.colors.textPrimary}
-            />
-          </TouchableOpacity>
+        <View style={styles.controlsRow}>
+          {showButtons ? (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              disabled={!canDecrease}
+              onPress={decrease}
+              accessibilityRole="button"
+              accessibilityLabel={
+                accessibilityLabel
+                  ? `Decrease ${accessibilityLabel}`
+                  : `Decrease ${label}`
+              }
+              style={[styles.button, !canDecrease && styles.buttonDisabled]}
+            >
+              <Feather
+                name="minus"
+                size={14}
+                color={theme.colors.textPrimary}
+              />
+            </TouchableOpacity>
+          ) : null}
+
+          {showValue ? (
+            <Text style={[styles.value, valueStyle]}>
+              {safeValue}
+              {unit ? ` ${unit}` : ''}
+            </Text>
+          ) : null}
+
+          {showButtons ? (
+            <TouchableOpacity
+              activeOpacity={0.8}
+              disabled={!canIncrease}
+              onPress={increase}
+              accessibilityRole="button"
+              accessibilityLabel={
+                accessibilityLabel
+                  ? `Increase ${accessibilityLabel}`
+                  : `Increase ${label}`
+              }
+              style={[styles.button, !canIncrease && styles.buttonDisabled]}
+            >
+              <Feather name="plus" size={14} color={theme.colors.textPrimary} />
+            </TouchableOpacity>
+          ) : null}
         </View>
       </View>
 
-      <View style={styles.weightTrack}>
+      <View style={[styles.track, trackStyle]}>
         <View
           style={[
-            styles.weightFill,
+            styles.fill,
             {
               width: `${fillPercent}%`,
             },
+            fillStyle,
           ]}
         />
       </View>
+
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }
+
+WeightSliderComponent.displayName = 'WeightSlider';
+
+export const WeightSlider = memo(
+  WeightSliderComponent
+) as typeof WeightSliderComponent;

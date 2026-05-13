@@ -293,8 +293,8 @@ export default function EditPreferenceScreen({
               label={t('preference.fields.age')}
               value={preference.filters.age}
               onChange={(v) => setFilters('age', v)}
-              min={AGE_RANGE.min}
-              max={AGE_RANGE.max}
+              minLimit={AGE_RANGE.min}
+              maxLimit={AGE_RANGE.max}
               unit={t('preference.units.years')}
             />
 
@@ -302,8 +302,8 @@ export default function EditPreferenceScreen({
               label={t('preference.fields.height')}
               value={preference.filters.heightCm}
               onChange={(v) => setFilters('heightCm', v)}
-              min={HEIGHT_RANGE.min}
-              max={HEIGHT_RANGE.max}
+              minLimit={HEIGHT_RANGE.min}
+              maxLimit={HEIGHT_RANGE.max}
               unit="cm"
             />
 
@@ -311,8 +311,8 @@ export default function EditPreferenceScreen({
               label={t('preference.fields.annual_income')}
               value={preference.filters.annualIncome}
               onChange={(v) => setFilters('annualIncome', v)}
-              min={INCOME_RANGE.min}
-              max={INCOME_RANGE.max}
+              minLimit={INCOME_RANGE.min}
+              maxLimit={INCOME_RANGE.max}
               step={INCOME_STEP}
               unit={t('preference.units.currency')}
             />
@@ -371,8 +371,8 @@ export default function EditPreferenceScreen({
 
             <PreferenceTagInput
               label={t('preference.fields.sub_caste')}
-              items={preference.filters.subCaste}
-              setItems={(v) => setFilters('subCaste', v)}
+              value={preference.filters.subCaste}
+              onChange={(v) => setFilters('subCaste', v)}
               placeholder={t('preference.placeholders.sub_caste')}
             />
 
@@ -394,22 +394,22 @@ export default function EditPreferenceScreen({
           >
             <PreferenceTagInput
               label={t('preference.fields.country')}
-              items={preference.filters.country}
-              setItems={(v) => setFilters('country', v)}
+              value={preference.filters.country}
+              onChange={(v) => setFilters('country', v)}
               placeholder={t('preference.placeholders.country')}
             />
 
             <PreferenceTagInput
               label={t('preference.fields.state')}
-              items={preference.filters.state}
-              setItems={(v) => setFilters('state', v)}
+              value={preference.filters.state}
+              onChange={(v) => setFilters('state', v)}
               placeholder={t('preference.placeholders.state')}
             />
 
             <PreferenceTagInput
               label={t('preference.fields.city')}
-              items={preference.filters.city}
-              setItems={(v) => setFilters('city', v)}
+              value={preference.filters.city}
+              onChange={(v) => setFilters('city', v)}
               placeholder={t('preference.placeholders.city')}
             />
           </PreferenceSectionCard>
@@ -423,8 +423,8 @@ export default function EditPreferenceScreen({
           >
             <PreferenceTagInput
               label={t('preference.fields.qualification')}
-              items={preference.filters.qualification}
-              setItems={(v) => setFilters('qualification', v)}
+              value={preference.filters.qualification}
+              onChange={(v) => setFilters('qualification', v)}
               placeholder={t('preference.placeholders.qualification')}
             />
 
@@ -438,8 +438,8 @@ export default function EditPreferenceScreen({
 
             <PreferenceTagInput
               label={t('preference.fields.occupation')}
-              items={preference.filters.occupation}
-              setItems={(v) => setFilters('occupation', v)}
+              value={preference.filters.occupation}
+              onChange={(v) => setFilters('occupation', v)}
               placeholder={t('preference.placeholders.occupation')}
             />
           </PreferenceSectionCard>
@@ -501,8 +501,8 @@ export default function EditPreferenceScreen({
 
             <PreferenceTagInput
               label={t('preference.fields.languages')}
-              items={preference.filters.languages}
-              setItems={(v) => setFilters('languages', v)}
+              value={preference.filters.languages}
+              onChange={(v) => setFilters('languages', v)}
               placeholder={t('preference.placeholders.languages')}
             />
           </PreferenceSectionCard>

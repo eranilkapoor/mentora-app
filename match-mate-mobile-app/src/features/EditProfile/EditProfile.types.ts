@@ -17,8 +17,6 @@ import {
   SiblingType,
   SmokingHabit,
 } from '@/core/types';
-import Feather from 'react-native-vector-icons/Feather';
-import React from 'react';
 
 export interface TimeOfBirth {
   hour?: Hour;

@@ -1,5 +1,11 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
@@ -28,7 +34,7 @@ export function PasswordField({
 }: PasswordFieldProps): React.ReactElement {
   const { theme } = useTheme();
 
-   const styles = StyleSheet.create({
+  const styles = StyleSheet.create({
     fieldWrapper: {
       marginBottom: 4,
     },
@@ -74,7 +80,7 @@ export function PasswordField({
     ruleText: {
       fontSize: 12,
       color: theme.colors.textMuted,
-    },    
+    },
   });
 
   return (

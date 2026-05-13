@@ -8,18 +8,35 @@ import {
   LayoutAnimation,
   Platform,
   UIManager,
+  StyleSheet
 } from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-
-import { onboardingStyles } from '../Onboarding.styles';
 
 import { ErrorText } from './ErrorText';
 
-import { SearchMultiSelectProps, OptionType } from '../Onboarding.types';
+export interface OptionType {
+  label: string;
+  value: string;
+}
+
+export interface SearchMultiSelectProps {
+  label: string;
+
+  options: readonly OptionType[];
+
+  selected: string[];
+
+  onChange: (values: string[]) => void;
+
+  field: string;
+
+  errors: Record<string, string>;
+
+  placeholder?: string;
+}
 
 // Enable LayoutAnimation on Android
 if (
@@ -42,15 +59,141 @@ export function SearchMultiSelect({
   errors,
   placeholder,
 }: SearchMultiSelectProps): React.ReactElement {
-  const styles = useThemedStyles(onboardingStyles);
-
   const { theme } = useTheme();
+
+  const styles = StyleSheet.create({
+    label: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.textSecondary,
+      marginBottom: 6,
+    },
+    input: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      paddingHorizontal: 12,
+      paddingVertical: 13,
+      marginBottom: 12,
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+      backgroundColor: theme.colors.inputBackground,
+    },
+    inputError: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorLight,
+    },
+    dropdown: {
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderRadius: 10,
+      marginBottom: 12,
+      backgroundColor: theme.colors.surface,
+      maxHeight: 220,
+      // Fixed: boxShadow is CSS web-only — use RN shadow props
+      shadowColor: theme.colors.black,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.08,
+      shadowRadius: 6,
+      elevation: 4,
+    },
+    dropdownPlaceholder: {
+      color: theme.colors.textMuted,
+      fontSize: 15,
+    },
+    dropdownItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingHorizontal: 14,
+      paddingVertical: 13,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+    },
+    dropdownItemActive: {
+      backgroundColor: theme.colors.primaryLight,
+    },
+    dropdownItemText: {
+      fontSize: 15,
+      color: theme.colors.textPrimary,
+    },
+    dropdownItemTextActive: {
+      color: theme.colors.primary,
+      fontWeight: '600',
+    },
+    chipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginBottom: 12,
+      marginTop: 4,
+    },
+    chip: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: theme.colors.inputBackground,
+      gap: 5,
+    },
+    chipActive: {
+      backgroundColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primary,
+    },
+    chipText: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      fontWeight: '500',
+    },
+    chipTextActive: {
+      color: theme.colors.primary,
+      fontWeight: '700',
+    },
+    chipRemove: {
+      width: 16,
+      height: 16,
+      borderRadius: 8,
+      backgroundColor: theme.colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    chipMore: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderStyle: 'dashed',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: theme.colors.backgroundLight,
+      gap: 4,
+    },
+    chipMoreText: {
+      fontSize: 13,
+      color: theme.colors.textSecondary,
+      fontWeight: '600',
+    },
+    chipShowLess: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      borderStyle: 'dashed',
+      paddingHorizontal: 10,
+      paddingVertical: 6,
+      borderRadius: 20,
+      backgroundColor: theme.colors.backgroundLight,
+      gap: 4,
+    },
+  });
 
   const [query, setQuery] = useState('');
 
   const [expanded, setExpanded] = useState(false);
-
-  // ─── Filtered suggestions ─────────────────────────────
 
   const filteredOptions = useMemo(() => {
     const trimmed = query.trim().toLowerCase();
