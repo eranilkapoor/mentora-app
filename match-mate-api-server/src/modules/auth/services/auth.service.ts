@@ -114,11 +114,12 @@ export class AuthService {
     // 🌐 WEB → cookie
     if (platform === 'web') {
       res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        secure: true,
-        sameSite: 'strict',
-        path: '/auth/refresh',
-        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true, // JS cannot read it — security
+        secure: false, // set true in production (HTTPS only)
+        sameSite: 'lax', // 'none' in production with secure: true
+        domain: 'localhost', // must match the browser's origin domain
+        path: '/', // available on all routes
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
       });
 
       return { accessToken };
@@ -187,11 +188,12 @@ export class AuthService {
       // 🌐 WEB → set cookie
       if (platform === 'web') {
         res.cookie('refreshToken', refreshToken, {
-          httpOnly: true,
-          secure: true,
-          sameSite: 'strict',
-          path: '/auth/refresh',
-          maxAge: 7 * 24 * 60 * 60 * 1000,
+          httpOnly: true, // JS cannot read it — security
+          secure: false, // set true in production (HTTPS only)
+          sameSite: 'lax', // 'none' in production with secure: true
+          domain: 'localhost', // must match the browser's origin domain
+          path: '/', // available on all routes
+          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
         });
 
         return { accessToken };

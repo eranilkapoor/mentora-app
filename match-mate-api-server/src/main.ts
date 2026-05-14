@@ -14,6 +14,7 @@ import { NestExpressApplication } from '@nestjs/platform-express';
 import 'dotenv/config';
 import * as path from 'path';
 import * as express from 'express';
+import cookieParser from 'cookie-parser';
 import { AppLogger } from './common/logger/logger.service';
 import { LoggingInterceptor } from './common/logger/logger.interceptor';
 import { HybridSocketIoAdapter } from './common/adapters/hybrid-socket-io.adapter';
@@ -44,6 +45,7 @@ async function bootstrap() {
   // Body Size Limit
   app.use(express.json({ limit: '2mb' }));
   app.use(express.urlencoded({ limit: '2mb', extended: true }));
+  app.use(cookieParser()); // MUST be before any routes
 
   // CORS (secure)
   const allowedOrigins = configService.get<string[]>('cors.origins') ?? [];
@@ -58,7 +60,7 @@ async function bootstrap() {
       }
     },
     credentials: true,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    methods: ['GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'],
     allowedHeaders: [
       'Content-Type',
       'Authorization',

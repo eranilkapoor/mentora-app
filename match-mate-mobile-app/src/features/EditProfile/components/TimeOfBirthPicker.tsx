@@ -1,12 +1,16 @@
-import React, { useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo, useState } from 'react';
+
 import {
-  View,
+  FlatList,
+  Modal,
+  Platform,
+  Pressable,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  ScrollView,
-  StyleSheet,
-  type ViewStyle,
+  View,
   type TextStyle,
+  type ViewStyle,
 } from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
@@ -23,6 +27,10 @@ import {
   PeriodOptions,
 } from '@/core/types';
 
+// ─────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────
+
 export interface TimeOfBirth {
   hour?: Hour;
   minute?: Minute;
@@ -31,272 +39,502 @@ export interface TimeOfBirth {
 
 export interface TimeOfBirthPickerProps {
   value?: TimeOfBirth;
-  onChange: (val: TimeOfBirth) => void;
+  onChange: (value: TimeOfBirth) => void;
+
+  disabled?: boolean;
+  error?: string;
+
+  containerStyle?: ViewStyle;
 }
 
 type DropdownType = 'hour' | 'minute' | 'period' | null;
 
-interface Styles {
-  field: ViewStyle;
-  timePickerLabel: TextStyle;
-  timePickerRow: ViewStyle;
-  timePickerColumn: ViewStyle;
-
-  dropdownTrigger: ViewStyle;
-  dropdownTriggerActive: ViewStyle;
-
-  dropdownValue: TextStyle;
-  dropdownPlaceholder: TextStyle;
-
-  dropdown: ViewStyle;
-  dropdownItem: ViewStyle;
-  dropdownItemActive: ViewStyle;
-
-  dropdownItemText: TextStyle;
-  dropdownItemTextActive: TextStyle;
-
-  iconRow: ViewStyle;
+interface DropdownOption<T extends string = string> {
+  label: string;
+  value: T;
 }
 
-export function TimeOfBirthPicker({
+interface Styles {
+  container: ViewStyle;
+
+  label: TextStyle;
+
+  row: ViewStyle;
+
+  column: ViewStyle;
+
+  trigger: ViewStyle;
+  triggerActive: ViewStyle;
+  triggerDisabled: ViewStyle;
+  triggerError: ViewStyle;
+
+  triggerText: TextStyle;
+  placeholderText: TextStyle;
+
+  modalOverlay: ViewStyle;
+
+  dropdownContainer: ViewStyle;
+
+  dropdownHeader: ViewStyle;
+
+  dropdownTitle: TextStyle;
+
+  closeButton: ViewStyle;
+
+  dropdownList: ViewStyle;
+
+  dropdownItem: ViewStyle;
+  dropdownItemSelected: ViewStyle;
+
+  dropdownItemText: TextStyle;
+  dropdownItemTextSelected: TextStyle;
+
+  divider: ViewStyle;
+
+  errorText: TextStyle;
+}
+
+// ─────────────────────────────────────────────────────────────
+// Component
+// ─────────────────────────────────────────────────────────────
+
+function TimeOfBirthPickerComponent({
   value,
   onChange,
+  disabled = false,
+  error,
+  containerStyle,
 }: TimeOfBirthPickerProps): React.ReactElement {
   const { theme } = useTheme();
+
   const { t } = useTranslation();
 
   const [openDropdown, setOpenDropdown] = useState<DropdownType>(null);
 
+  // ───────────────────────────────────────────────────────────
+  // Styles
+  // ───────────────────────────────────────────────────────────
+
   const styles = useMemo(
     () =>
       StyleSheet.create<Styles>({
-        field: {
-          marginBottom: 16,
+        container: {
+          marginBottom: 18,
+
+          // IMPORTANT
+          overflow: 'visible',
+
+          ...(Platform.OS === 'web'
+            ? {
+                zIndex: 9999,
+              }
+            : {}),
         },
 
-        timePickerLabel: {
+        label: {
           marginBottom: 8,
           fontSize: 13,
           fontWeight: '600',
           color: theme.colors.textSecondary,
         },
 
-        timePickerRow: {
+        row: {
           flexDirection: 'row',
-          gap: 8,
+          gap: 10,
+
+          // IMPORTANT
+          overflow: 'visible',
+
+          ...(Platform.OS === 'web'
+            ? {
+                zIndex: 9999,
+              }
+            : {}),
         },
 
-        timePickerColumn: {
+        column: {
           flex: 1,
+
+          // IMPORTANT
+          position: 'relative',
+          overflow: 'visible',
+
+          ...(Platform.OS === 'web'
+            ? {
+                zIndex: 9999,
+              }
+            : {}),
         },
 
-        dropdownTrigger: {
-          minHeight: 46,
-          paddingHorizontal: 12,
+        trigger: {
+          minHeight: 48,
+
+          paddingHorizontal: 14,
+
           borderWidth: 1,
-          borderRadius: 10,
+          borderRadius: 12,
+
           borderColor: theme.colors.border,
+
           backgroundColor: theme.colors.inputBackground,
+
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
         },
 
-        dropdownTriggerActive: {
+        triggerActive: {
           borderColor: theme.colors.primary,
         },
 
-        dropdownValue: {
-          fontSize: 14,
-          color: theme.colors.textPrimary,
-          fontWeight: '500',
+        triggerDisabled: {
+          opacity: 0.5,
         },
 
-        dropdownPlaceholder: {
+        triggerError: {
+          borderColor: theme.colors.error,
+        },
+
+        triggerText: {
+          flex: 1,
+
           fontSize: 14,
+          fontWeight: '500',
+
+          color: theme.colors.textPrimary,
+        },
+
+        placeholderText: {
           color: theme.colors.textMuted,
         },
 
-        dropdown: {
-          marginTop: 6,
-          maxHeight: 180,
-          borderWidth: 1,
-          borderRadius: 10,
-          borderColor: theme.colors.border,
-          backgroundColor: theme.colors.surface,
-          overflow: 'hidden',
+        modalOverlay: {
+          flex: 1,
+          backgroundColor: theme.colors.modalOverlay,
+          justifyContent: 'center',
+          alignItems: 'center',
+          padding: 20,
         },
 
-        dropdownItem: {
-          minHeight: 42,
-          paddingHorizontal: 12,
+        dropdownContainer: {
+          width: '100%',
+          maxWidth: 340,
+
+          maxHeight: 360,
+
+          borderRadius: 16,
+
+          overflow: 'hidden',
+
+          backgroundColor: theme.colors.surface,
+
+          shadowColor: theme.colors.black,
+          shadowOffset: {
+            width: 0,
+            height: 6,
+          },
+          shadowOpacity: 0.12,
+          shadowRadius: 10,
+
+          elevation: 10,
+        },
+
+        dropdownHeader: {
+          minHeight: 54,
+
+          paddingHorizontal: 16,
+
+          borderBottomWidth: StyleSheet.hairlineWidth,
+          borderBottomColor: theme.colors.divider,
+
           flexDirection: 'row',
           alignItems: 'center',
           justifyContent: 'space-between',
         },
 
-        dropdownItemActive: {
+        dropdownTitle: {
+          fontSize: 16,
+          fontWeight: '700',
+          color: theme.colors.textPrimary,
+        },
+
+        closeButton: {
+          width: 34,
+          height: 34,
+
+          borderRadius: 17,
+
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+
+        dropdownList: {
+          maxHeight: 300,
+        },
+
+        dropdownItem: {
+          minHeight: 48,
+
+          paddingHorizontal: 16,
+          paddingVertical: 12,
+
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+        },
+
+        dropdownItemSelected: {
           backgroundColor: theme.colors.primaryLight,
         },
 
         dropdownItemText: {
-          fontSize: 14,
+          flex: 1,
+
+          fontSize: 15,
           color: theme.colors.textPrimary,
         },
 
-        dropdownItemTextActive: {
+        dropdownItemTextSelected: {
           color: theme.colors.primary,
           fontWeight: '600',
         },
 
-        iconRow: {
-          flexDirection: 'row',
-          alignItems: 'center',
+        divider: {
+          height: StyleSheet.hairlineWidth,
+          backgroundColor: theme.colors.divider,
+        },
+
+        errorText: {
+          marginTop: 6,
+          fontSize: 12,
+          color: theme.colors.error,
         },
       }),
     [theme]
   );
 
-  const renderDropdown = (
+  // ───────────────────────────────────────────────────────────
+  // Helpers
+  // ───────────────────────────────────────────────────────────
+
+  const handleClose = useCallback(() => {
+    setOpenDropdown(null);
+  }, []);
+
+  const updateValue = useCallback(
+    (type: DropdownType, selectedValue: string): void => {
+      if (type === 'hour') {
+        onChange({
+          ...(value ?? {}),
+          hour: selectedValue as Hour,
+        });
+      }
+
+      if (type === 'minute') {
+        onChange({
+          ...(value ?? {}),
+          minute: selectedValue as Minute,
+        });
+      }
+
+      if (type === 'period') {
+        onChange({
+          ...(value ?? {}),
+          period: selectedValue as Period,
+        });
+      }
+
+      handleClose();
+    },
+    [handleClose, onChange, value]
+  );
+
+  // ───────────────────────────────────────────────────────────
+  // Render Trigger
+  // ───────────────────────────────────────────────────────────
+
+  const renderTrigger = (
     type: DropdownType,
     label: string,
-    options: readonly { label: string; value: string }[],
     selectedValue?: string
   ): React.ReactElement => {
     const isOpen = openDropdown === type;
 
-    const selectedLabel =
-      options.find((opt) => opt.value === selectedValue)?.label ?? '';
-
     return (
-      <View style={styles.timePickerColumn}>
-        <Text style={styles.timePickerLabel}>{label}</Text>
+      <View style={styles.column}>
+        <Text style={styles.label}>{label}</Text>
 
         <TouchableOpacity
-          style={[
-            styles.dropdownTrigger,
-            isOpen ? styles.dropdownTriggerActive : null,
-          ]}
-          onPress={() => setOpenDropdown(isOpen ? null : type)}
+          activeOpacity={0.8}
+          disabled={disabled}
           accessibilityRole="button"
           accessibilityLabel={label}
-          accessibilityState={{ expanded: isOpen }}
-          activeOpacity={0.8}
+          accessibilityState={{
+            expanded: isOpen,
+            disabled,
+          }}
+          style={[
+            styles.trigger,
+            isOpen && styles.triggerActive,
+            disabled && styles.triggerDisabled,
+            error && styles.triggerError,
+          ]}
+          onPress={() => setOpenDropdown(type)}
         >
           <Text
-            style={
-              selectedValue ? styles.dropdownValue : styles.dropdownPlaceholder
-            }
+            numberOfLines={1}
+            style={[
+              styles.triggerText,
+              !selectedValue && styles.placeholderText,
+            ]}
           >
-            {selectedLabel || label}
+            {selectedValue ?? label}
           </Text>
 
           <Feather
-            name={isOpen ? 'chevron-up' : 'chevron-down'}
+            name="chevron-down"
             size={16}
             color={theme.colors.textMuted}
           />
         </TouchableOpacity>
-
-        {isOpen ? (
-          <View style={styles.dropdown}>
-            <ScrollView
-              nestedScrollEnabled
-              keyboardShouldPersistTaps="handled"
-              showsVerticalScrollIndicator={false}
-            >
-              {options.map((item) => {
-                const selected = item.value === selectedValue;
-
-                return (
-                  <TouchableOpacity
-                    key={item.value}
-                    style={[
-                      styles.dropdownItem,
-                      selected ? styles.dropdownItemActive : null,
-                    ]}
-                    onPress={() => {
-                      if (type === 'hour') {
-                        onChange({
-                          ...(value ?? {}),
-                          hour: item.value as Hour,
-                        });
-                      }
-
-                      if (type === 'minute') {
-                        onChange({
-                          ...(value ?? {}),
-                          minute: item.value as Minute,
-                        });
-                      }
-
-                      if (type === 'period') {
-                        onChange({
-                          ...(value ?? {}),
-                          period: item.value as Period,
-                        });
-                      }
-
-                      setOpenDropdown(null);
-                    }}
-                    accessibilityRole="button"
-                    accessibilityLabel={item.label}
-                    accessibilityState={{ selected }}
-                  >
-                    <Text
-                      style={[
-                        styles.dropdownItemText,
-                        selected ? styles.dropdownItemTextActive : null,
-                      ]}
-                    >
-                      {item.label}
-                    </Text>
-
-                    {selected ? (
-                      <Feather
-                        name="check"
-                        size={14}
-                        color={theme.colors.primary}
-                      />
-                    ) : null}
-                  </TouchableOpacity>
-                );
-              })}
-            </ScrollView>
-          </View>
-        ) : null}
       </View>
     );
   };
 
+  // ───────────────────────────────────────────────────────────
+  // Current Dropdown Data
+  // ───────────────────────────────────────────────────────────
+
+  const currentDropdown = useMemo(() => {
+    if (openDropdown === 'hour') {
+      return {
+        title: t('edit_profile.time.hour'),
+        options: HourOptions,
+        selected: value?.hour,
+      };
+    }
+
+    if (openDropdown === 'minute') {
+      return {
+        title: t('edit_profile.time.minute'),
+        options: MinuteOptions,
+        selected: value?.minute,
+      };
+    }
+
+    if (openDropdown === 'period') {
+      return {
+        title: t('edit_profile.time.period'),
+        options: PeriodOptions,
+        selected: value?.period,
+      };
+    }
+
+    return null;
+  }, [openDropdown, t, value]);
+
+  // ───────────────────────────────────────────────────────────
+  // Render Item
+  // ───────────────────────────────────────────────────────────
+
+  const renderItem = useCallback(
+    ({ item }: { item: DropdownOption }): React.ReactElement => {
+      const isSelected = item.value === currentDropdown?.selected;
+
+      return (
+        <TouchableOpacity
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={item.label}
+          accessibilityState={{
+            selected: isSelected,
+          }}
+          style={[
+            styles.dropdownItem,
+            isSelected && styles.dropdownItemSelected,
+          ]}
+          onPress={() => updateValue(openDropdown, item.value)}
+        >
+          <Text
+            style={[
+              styles.dropdownItemText,
+              isSelected && styles.dropdownItemTextSelected,
+            ]}
+          >
+            {item.label}
+          </Text>
+
+          {isSelected && (
+            <Feather name="check" size={16} color={theme.colors.primary} />
+          )}
+        </TouchableOpacity>
+      );
+    },
+    [
+      currentDropdown?.selected,
+      openDropdown,
+      styles,
+      theme.colors.primary,
+      updateValue,
+    ]
+  );
+
+  // ───────────────────────────────────────────────────────────
+  // Render
+  // ───────────────────────────────────────────────────────────
+
   return (
-    <View style={styles.field}>
-      <Text style={styles.timePickerLabel}>
-        {t('edit_profile.fields.time_of_birth')}
-      </Text>
+    <View style={[styles.container, containerStyle]}>
+      <Text style={styles.label}>{t('edit_profile.fields.time_of_birth')}</Text>
 
-      <View style={styles.timePickerRow}>
-        {renderDropdown(
-          'hour',
-          t('edit_profile.time.hour'),
-          HourOptions,
-          value?.hour
-        )}
+      <View style={styles.row}>
+        {renderTrigger('hour', t('edit_profile.time.hour'), value?.hour)}
 
-        {renderDropdown(
-          'minute',
-          t('edit_profile.time.minute'),
-          MinuteOptions,
-          value?.minute
-        )}
+        {renderTrigger('minute', t('edit_profile.time.minute'), value?.minute)}
 
-        {renderDropdown(
-          'period',
-          t('edit_profile.time.period'),
-          PeriodOptions,
-          value?.period
-        )}
+        {renderTrigger('period', t('edit_profile.time.period'), value?.period)}
       </View>
+
+      {!!error && <Text style={styles.errorText}>{error}</Text>}
+
+      {/* GLOBAL MODAL DROPDOWN */}
+
+      <Modal
+        visible={!!openDropdown}
+        transparent
+        animationType="fade"
+        onRequestClose={handleClose}
+      >
+        <Pressable style={styles.modalOverlay} onPress={handleClose}>
+          <Pressable style={styles.dropdownContainer}>
+            <View style={styles.dropdownHeader}>
+              <Text style={styles.dropdownTitle}>{currentDropdown?.title}</Text>
+
+              <TouchableOpacity
+                activeOpacity={0.8}
+                style={styles.closeButton}
+                onPress={handleClose}
+              >
+                <Feather name="x" size={18} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
+            </View>
+
+            <FlatList
+              data={currentDropdown?.options ?? []}
+              keyExtractor={(item) => item.value}
+              renderItem={renderItem}
+              keyboardShouldPersistTaps="handled"
+              showsVerticalScrollIndicator={false}
+              style={styles.dropdownList}
+              ItemSeparatorComponent={() => <View style={styles.divider} />}
+            />
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 }
+
+TimeOfBirthPickerComponent.displayName = 'TimeOfBirthPicker';
+
+export const TimeOfBirthPicker = memo(TimeOfBirthPickerComponent);

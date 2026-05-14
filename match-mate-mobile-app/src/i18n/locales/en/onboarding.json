@@ -4,6 +4,12 @@
     "preferences": "Preferences",
     "photos": "Photos"
   },
+  "step_indicator": {
+    "label": "Step {{current}} of {{total}}",
+    "completed": "{{step}}, completed",
+    "current": "{{step}}, current step",
+    "upcoming": "{{step}}, upcoming"
+  },
   "select_label": "Select {{label}}",
   "select_placeholder": "Select {{label}}",
   "basic": {

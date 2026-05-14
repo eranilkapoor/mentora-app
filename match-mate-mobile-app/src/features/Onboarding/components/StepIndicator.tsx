@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { ScrollView, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
@@ -15,11 +15,23 @@ interface Props {
   currentStep: OnboardingSteps;
 }
 
-export function StepIndicator({ currentStep }: Props): React.ReactElement {
-  const currentIndex = ONBOARDING_STEPS.indexOf(currentStep);
+const STEP_LABEL_KEYS: Record<OnboardingSteps, string> = {
+  basic: 'onboarding.steps.basic',
+  preferences: 'onboarding.steps.preferences',
+  photos: 'onboarding.steps.photos',
+};
+
+function StepIndicatorComponent({ currentStep }: Props): React.ReactElement {
   const styles = useThemedStyles(onboardingStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+
+  const currentIndex = useMemo(() => {
+    const index = ONBOARDING_STEPS.indexOf(currentStep);
+    return index === -1 ? 0 : index;
+  }, [currentStep]);
+
+  const totalSteps = ONBOARDING_STEPS.length;
 
   return (
     <ScrollView
@@ -27,13 +39,36 @@ export function StepIndicator({ currentStep }: Props): React.ReactElement {
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.stepIndicatorContent}
       style={styles.stepIndicatorContainer}
+      accessibilityRole="progressbar"
+      accessibilityLabel={t('onboarding.step_indicator.label', {
+        current: currentIndex + 1,
+        total: totalSteps,
+      })}
+      accessibilityValue={{
+        min: 1,
+        max: totalSteps,
+        now: currentIndex + 1,
+        text: t(STEP_LABEL_KEYS[currentStep]),
+      }}
     >
       {ONBOARDING_STEPS.map((step, index) => {
         const isCompleted = index < currentIndex;
         const isActive = index === currentIndex;
+        const stepLabel = t(STEP_LABEL_KEYS[step]);
 
         return (
-          <View key={step} style={styles.stepIndicatorItem}>
+          <View
+            key={step}
+            style={styles.stepIndicatorItem}
+            accessibilityRole="text"
+            accessibilityLabel={
+              isCompleted
+                ? t('onboarding.step_indicator.completed', { step: stepLabel })
+                : isActive
+                  ? t('onboarding.step_indicator.current', { step: stepLabel })
+                  : t('onboarding.step_indicator.upcoming', { step: stepLabel })
+            }
+          >
             <View
               style={[
                 styles.stepDot,
@@ -58,11 +93,12 @@ export function StepIndicator({ currentStep }: Props): React.ReactElement {
                 isActive && styles.stepDotLabelActive,
                 isCompleted && styles.stepDotLabelCompleted,
               ]}
+              numberOfLines={1}
             >
-              {t(`onboarding.steps.${step}`)}
+              {stepLabel}
             </Text>
 
-            {index < ONBOARDING_STEPS.length - 1 && (
+            {index < totalSteps - 1 && (
               <View
                 style={[
                   styles.stepConnector,
@@ -76,3 +112,5 @@ export function StepIndicator({ currentStep }: Props): React.ReactElement {
     </ScrollView>
   );
 }
+
+export const StepIndicator = React.memo(StepIndicatorComponent);

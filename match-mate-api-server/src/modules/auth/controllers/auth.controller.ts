@@ -6,6 +6,7 @@ import {
   Get,
   Req,
   Res,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
@@ -185,8 +186,23 @@ export class AuthController {
   refresh(
     @Req() req: AppRequest,
     @Res({ passthrough: true }) res: Response,
-    @Body('refreshToken') refreshToken?: string,
+    // @Body('refreshToken') refreshToken?: string,
   ) {
+    // Web: read from cookie
+    // Mobile: read from Authorization header or request body
+    const tokenFromCookie = req.cookies?.refreshTtoken as string | undefined;
+    const tokenFromBody = (req.body as { refreshTtoken?: string })
+      .refreshTtoken;
+    const tokenFromHeader = req.headers['x-refresh-token'] as
+      | string
+      | undefined;
+
+    const refreshToken = tokenFromCookie ?? tokenFromBody ?? tokenFromHeader;
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+
     return this.authService.refresh(req, res, refreshToken);
   }
 
@@ -194,8 +210,23 @@ export class AuthController {
   refreshMobile(
     @Req() req: AppRequest,
     @Res({ passthrough: true }) res: Response,
-    @Body('refreshToken') refreshToken: string,
+    // @Body('refreshToken') refreshToken: string,
   ) {
+    // Web: read from cookie
+    // Mobile: read from Authorization header or request body
+    const tokenFromCookie = req.cookies?.refreshTtoken as string | undefined;
+    const tokenFromBody = (req.body as { refreshTtoken?: string })
+      .refreshTtoken;
+    const tokenFromHeader = req.headers['x-refresh-token'] as
+      | string
+      | undefined;
+
+    const refreshToken = tokenFromCookie ?? tokenFromBody ?? tokenFromHeader;
+
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token not found');
+    }
+
     return this.authService.refresh(req, res, refreshToken);
   }
 

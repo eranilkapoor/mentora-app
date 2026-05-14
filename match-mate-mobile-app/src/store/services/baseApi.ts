@@ -27,7 +27,7 @@ const getRefreshToken = async (): Promise<string | null> => {
 // 🔹 Base Query
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL as string,
-  credentials: 'include',
+  credentials: 'include', // sends cookies on every request
   prepareHeaders: async (headers, { getState }) => {
     const accessToken = (getState() as RootState).auth.accessToken;
 
@@ -71,7 +71,7 @@ const baseQueryWithAuth: BaseQueryFn<
             ...(Platform.OS !== 'web'
               ? {
                   body: {
-                    refreshToken: await getRefreshToken(),
+                    refreshToken: await getRefreshToken(), // from SecureStore / AsyncStorage
                   },
                 }
               : {}),

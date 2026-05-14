@@ -3,8 +3,13 @@ import { StyleSheet } from 'react-native';
 
 export const onboardingStyles = (theme: Theme) =>
   StyleSheet.create({
-    safe: { flex: 1, backgroundColor: theme.colors.background },
-    container: { flex: 1 },
+    safe: {
+      flex: 1,
+      backgroundColor: theme.colors.background,
+    },
+    container: {
+      flex: 1,
+    },
     content: {
       flexGrow: 1,
       paddingVertical: 24,
@@ -144,9 +149,11 @@ export const onboardingStyles = (theme: Theme) =>
       marginBottom: 12,
       backgroundColor: theme.colors.surface,
       maxHeight: 220,
-      // Fixed: boxShadow is CSS web-only — use RN shadow props
       shadowColor: theme.colors.black,
-      shadowOffset: { width: 0, height: 2 },
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
       shadowOpacity: 0.08,
       shadowRadius: 6,
       elevation: 4,
@@ -409,7 +416,6 @@ export const onboardingStyles = (theme: Theme) =>
       marginTop: 16,
       gap: 16,
     },
-    // Fixed: moved from inline styles in screen
     datePickerCancelText: {
       fontSize: 15,
       fontWeight: '500',

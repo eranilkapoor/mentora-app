@@ -9,7 +9,6 @@ export const ONBOARDING_STEPS: OnboardingSteps[] = [
   'photos',
 ];
 
-// Properly typed instead of plain string
 export const ONBOARDING_STEPS_ICONS: Record<
   OnboardingSteps,
   React.ComponentProps<typeof Feather>['name']
@@ -18,8 +17,3 @@ export const ONBOARDING_STEPS_ICONS: Record<
   preferences: 'heart',
   photos: 'camera',
 };
-
-export interface ProfileImage {
-  uri: string;
-  isPrimary?: boolean;
-}

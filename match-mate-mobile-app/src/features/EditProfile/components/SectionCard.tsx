@@ -75,7 +75,9 @@ function SectionCardComponent({
           backgroundColor: theme.colors.surface,
           borderRadius: 16,
           marginBottom: 16,
-          overflow: 'hidden',
+          overflow: 'visible',
+          zIndex: 1,
+          elevation: 1,
 
           ...Platform.select({
             ios: {

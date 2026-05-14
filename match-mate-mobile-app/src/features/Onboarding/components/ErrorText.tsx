@@ -12,7 +12,7 @@ export function ErrorText({
   errors,
 }: ErrorTextProps): React.ReactElement | null {
   const { theme } = useTheme();
-  
+
   const styles = StyleSheet.create({
     error: {
       color: theme.colors.error,

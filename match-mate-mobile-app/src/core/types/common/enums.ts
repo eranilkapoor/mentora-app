@@ -1,5 +1,8 @@
+import { useEnumOptions } from '@/core/hooks/useEnumOptions';
+
 // ─── Helper ───────────────────────────────────────────────────────────────────
-const toLabel = (value: string): string => value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
+const toLabel = (value: string): string =>
+  value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
 
 // ─── Gender ───────────────────────────────────────────────────────────────────
 export const Genders = {
@@ -8,6 +11,7 @@ export const Genders = {
 } as const;
 
 export type Gender = (typeof Genders)[keyof typeof Genders];
+// export const GenderOptions = useEnumOptions(Genders, 'common.gender');
 
 export const GenderOptions = Object.values(Genders).map((value) => ({
   label: toLabel(value),

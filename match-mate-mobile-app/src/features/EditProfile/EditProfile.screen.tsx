@@ -54,13 +54,13 @@ import { INITIAL_PROFILE } from './EditProfile.constants';
 import { CompletionBar } from './components/CompletionBar';
 import { SectionCard } from './components/SectionCard';
 import { FormInput } from './components/FormInput';
-import { SelectPill } from './components/SelectPill';
-import { TagInput } from './components/TagInput';
+import { TagInput } from '../../core/components/TagInput';
 import { TimeOfBirthPicker } from './components/TimeOfBirthPicker';
-import { ToggleRow } from './components/ToggleRow';
 import { NumberStepper } from './components/NumberStepper';
 import { SiblingsEditor } from './components/SiblingsEditor';
 import { DatePicker } from './components/DateOfBirthPicker';
+import { SelectPill } from '@/core/components/SelectPill';
+import { ToggleRow } from '@/core/components/ToggleRow';
 
 type EditProfileScreenProps = {
   navigation: NativeStackNavigationProp<SettingsStackParamList, 'EditProfile'>;

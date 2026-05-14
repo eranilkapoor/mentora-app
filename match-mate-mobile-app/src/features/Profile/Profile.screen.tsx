@@ -31,7 +31,7 @@ import {
   ProfileData,
   Religions,
   SmokingHabits,
-  DrinkingHabits
+  DrinkingHabits,
 } from '../../core/types';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -130,7 +130,7 @@ export default function ProfileScreen({
           .sort((a, b) => (b.isPrimary ? 1 : 0) - (a.isPrimary ? 1 : 0))
           .map((img) => {
             return 'http://192.168.1.10:3000' + img.url;
-          }) // extract URL string from ProfileImage
+          })
       : FALLBACK_PHOTOS;
 
   const renderPhoto: ListRenderItem<string> = useCallback(
