@@ -39,6 +39,19 @@ import {
   ProfileImage,
   SmokingOptions,
 } from '@/core/types';
+import type {
+  BodyType,
+  Complexion,
+  DietType,
+  EducationData,
+  FamilyData,
+  FamilyStatus,
+  FamilyType,
+  FamilyValue,
+  PersonalData,
+  PhysicalData,
+  ProfileData as ApiProfileData,
+} from '@/core/types';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { editProfileStyles } from './EditProfile.styles';
@@ -47,10 +60,11 @@ import {
   FamilySection,
   PersonalSection,
   PhysicalSection,
-  ProfileData,
+  ProfileData as EditableProfileData,
   SectionKey,
+  Siblings,
 } from './EditProfile.types';
-import { INITIAL_PROFILE } from './EditProfile.constants';
+import { INITIAL_PROFILE, INITIAL_SIBLINGS } from './EditProfile.constants';
 import { CompletionBar } from './components/CompletionBar';
 import { SectionCard } from './components/SectionCard';
 import { FormInput } from './components/FormInput';
@@ -66,6 +80,122 @@ type EditProfileScreenProps = {
   navigation: NativeStackNavigationProp<SettingsStackParamList, 'EditProfile'>;
 };
 
+const toStringArray = (value: unknown): string[] =>
+  Array.isArray(value)
+    ? value.filter((item): item is string => typeof item === 'string')
+    : [];
+
+const toEditableSiblings = (value: FamilyData['siblings']): Siblings => ({
+  ...INITIAL_SIBLINGS,
+  brothersCount: value?.brothers ?? INITIAL_SIBLINGS.brothersCount,
+  sistersCount: value?.sisters ?? INITIAL_SIBLINGS.sistersCount,
+  marriedBrothersCount:
+    value?.marriedBrothers ?? INITIAL_SIBLINGS.marriedBrothersCount,
+  marriedSistersCount:
+    value?.marriedSisters ?? INITIAL_SIBLINGS.marriedSistersCount,
+});
+
+const toEditableProfile = (
+  apiProfile: ApiProfileData
+): EditableProfileData => ({
+  personal: {
+    ...INITIAL_PROFILE.personal,
+    firstName: apiProfile.personal.firstName ?? '',
+    lastName: apiProfile.personal.lastName ?? '',
+    dateOfBirth: apiProfile.personal.dateOfBirth ?? '',
+    country: apiProfile.personal.country ?? '',
+    state: apiProfile.personal.state ?? '',
+    motherTongue: apiProfile.personal.motherTongue ?? '',
+    maritalStatus: apiProfile.personal.maritalStatus,
+    aboutMe: apiProfile.personal.aboutMe ?? '',
+    smoking: apiProfile.personal.smoking,
+    drinking: apiProfile.personal.drinking,
+    diet: apiProfile.personal.diet as DietType | undefined,
+    hobbies: toStringArray(apiProfile.personal.hobbies),
+    languages: toStringArray(apiProfile.personal.languagesKnown),
+  },
+  physical: {
+    ...INITIAL_PROFILE.physical,
+    heightCm: apiProfile.physical.height ?? '',
+    weightKg: apiProfile.physical.weight ?? '',
+    bodyType: apiProfile.physical.bodyType as BodyType | undefined,
+    complexion: apiProfile.physical.complexion as Complexion | undefined,
+  },
+  education: {
+    ...INITIAL_PROFILE.education,
+    qualification: apiProfile.education.qualification ?? '',
+    field: apiProfile.education.field ?? '',
+    university: apiProfile.education.university ?? '',
+    occupation: apiProfile.education.occupation ?? '',
+    annualIncomeAmount: apiProfile.education.annualIncome ?? '',
+  },
+  family: {
+    ...INITIAL_PROFILE.family,
+    fatherName: apiProfile.family.fatherName ?? '',
+    motherName: apiProfile.family.motherName ?? '',
+    fatherOccupation: apiProfile.family.fatherOccupation ?? '',
+    motherOccupation: apiProfile.family.motherOccupation ?? '',
+    familyType: apiProfile.family.familyType as FamilyType | undefined,
+    familyStatus: apiProfile.family.familyStatus as FamilyStatus | undefined,
+    familyValues: apiProfile.family.familyValues as FamilyValue | undefined,
+    siblings: toEditableSiblings(apiProfile.family.siblings),
+  },
+  images: apiProfile.images ?? [],
+});
+
+const toPersonalPayload = (
+  profile: EditableProfileData,
+  current: PersonalData
+): PersonalData => ({
+  ...current,
+  firstName: profile.personal.firstName.trim(),
+  lastName: profile.personal.lastName?.trim() ?? '',
+  dateOfBirth: profile.personal.dateOfBirth,
+  country: (profile.personal.country ??
+    current.country) as PersonalData['country'],
+  state: profile.personal.state?.trim() ?? '',
+  motherTongue: profile.personal.motherTongue?.trim() ?? '',
+  maritalStatus: profile.personal.maritalStatus,
+  aboutMe: profile.personal.aboutMe?.trim() ?? '',
+  smoking: profile.personal.smoking ?? current.smoking,
+  drinking: profile.personal.drinking ?? current.drinking,
+  diet: profile.personal.diet ?? current.diet,
+  hobbies: (profile.personal.hobbies ?? []) as PersonalData['hobbies'],
+  languagesKnown: (profile.personal.languages ??
+    []) as PersonalData['languagesKnown'],
+});
+
+const toPhysicalPayload = (profile: EditableProfileData): PhysicalData => ({
+  height: profile.physical.heightCm.trim(),
+  weight: profile.physical.weightKg?.trim() ?? '',
+  bodyType: profile.physical.bodyType ?? '',
+  complexion: profile.physical.complexion ?? '',
+});
+
+const toEducationPayload = (profile: EditableProfileData): EducationData => ({
+  qualification: profile.education.qualification.trim(),
+  field: profile.education.field?.trim() ?? '',
+  university: profile.education.university?.trim() ?? '',
+  occupation: profile.education.occupation.trim(),
+  annualIncome: profile.education.annualIncomeAmount?.trim() ?? '',
+});
+
+const toFamilyPayload = (profile: EditableProfileData): FamilyData => ({
+  fatherName: profile.family.fatherName?.trim() ?? '',
+  motherName: profile.family.motherName?.trim() ?? '',
+  fatherOccupation: profile.family.fatherOccupation?.trim() ?? '',
+  motherOccupation: profile.family.motherOccupation?.trim() ?? '',
+  familyType: profile.family.familyType,
+  familyStatus: profile.family.familyStatus,
+  familyValues: profile.family.familyValues,
+  siblings: {
+    brothers: profile.family.siblings?.brothersCount ?? 0,
+    sisters: profile.family.siblings?.sistersCount ?? 0,
+    marriedBrothers: profile.family.siblings?.marriedBrothersCount ?? 0,
+    marriedSisters: profile.family.siblings?.marriedSistersCount ?? 0,
+  },
+});
+
 export default function EditProfileScreen({
   navigation,
 }: EditProfileScreenProps): React.ReactElement {
@@ -73,7 +203,7 @@ export default function EditProfileScreen({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
+  const [profile, setProfile] = useState<EditableProfileData>(INITIAL_PROFILE);
   const [sectionLoading, setSectionLoading] = useState<SectionKey | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
 
@@ -95,7 +225,7 @@ export default function EditProfileScreen({
     }
 
     if (data?.success && data?.data) {
-      // setProfile((prev) => ({ ...prev, ...data.data }));
+      setProfile(toEditableProfile(data.data));
     }
 
     setPageLoading(false);
@@ -180,30 +310,27 @@ export default function EditProfileScreen({
       setSectionLoading(section);
 
       try {
+        const currentProfile = data?.success ? data.data : undefined;
+
         switch (section) {
           case 'personal':
-            // await updatePersonalInfo({
-            //   firstName: profile.personal.firstName,
-            //   lastName: profile.personal.lastName ?? '',
-            //   dateOfBirth: profile.personal.dateOfBirth,
-            //   maritalStatus: profile.personal.maritalStatus as MaritalStatus,
-            //   motherTongue: profile.personal.motherTongue ?? '',
-            //   country: profile.personal.country as Country,
-            //   state: profile.personal.state ?? '',
-            //   aboutMe: profile.personal.aboutMe ?? '',
-            // }).unwrap();
+            if (!currentProfile?.personal) {
+              throw new Error('Current profile is not available');
+            }
+            await updatePersonalInfo(
+              toPersonalPayload(profile, currentProfile.personal)
+            ).unwrap();
             break;
           case 'physical':
-            // await updatePhysicalInfo(profile.physical).unwrap();
+            await updatePhysicalInfo(toPhysicalPayload(profile)).unwrap();
             break;
           case 'education':
-            // await updateEducationInfo(profile.education).unwrap();
+            await updateEducationInfo(toEducationPayload(profile)).unwrap();
             break;
           case 'family':
-            // await updateFamilyInfo(profile.family).unwrap();
+            await updateFamilyInfo(toFamilyPayload(profile)).unwrap();
             break;
           case 'images':
-            // Handled inline
             break;
         }
         Alert.alert(t('common.saved'), t('edit_profile.success.section_saved'));
@@ -219,6 +346,7 @@ export default function EditProfileScreen({
       updatePhysicalInfo,
       updateEducationInfo,
       updateFamilyInfo,
+      data,
       t,
     ]
   );
@@ -272,7 +400,7 @@ export default function EditProfileScreen({
     []
   );
 
-  const sectionProps = { sectionLoading, onSave: handleSave };
+  const sectionProps = { loadingKey: sectionLoading, onSave: handleSave };
 
   if (pageLoading) {
     return (

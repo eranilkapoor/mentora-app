@@ -12,7 +12,7 @@ export const profileStyles = (theme: Theme) =>
       flex: 1,
     },
     scrollContent: {
-      paddingBottom: 32,
+      paddingBottom: 112,
     },
     centerContainer: {
       flex: 1,
@@ -85,6 +85,34 @@ export const profileStyles = (theme: Theme) =>
     locationText: {
       fontSize: 13,
       color: theme.colors.textMuted,
+    },
+    profileMetaGrid: {
+      flexDirection: 'row',
+      gap: 10,
+      marginTop: 14,
+    },
+    profileMetaItem: {
+      flex: 1,
+      minHeight: 58,
+      borderRadius: 8,
+      backgroundColor: theme.colors.backgroundLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 8,
+      paddingVertical: 8,
+    },
+    profileMetaValue: {
+      color: theme.colors.textPrimary,
+      fontSize: 15,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
+    profileMetaLabel: {
+      color: theme.colors.textMuted,
+      fontSize: 11,
+      fontWeight: '600',
+      marginTop: 2,
+      textAlign: 'center',
     },
     section: {
       marginTop: 12,
@@ -168,6 +196,11 @@ export const profileStyles = (theme: Theme) =>
       color: theme.colors.primary,
       fontWeight: '500',
     },
+    tagEmptyText: {
+      color: theme.colors.textMuted,
+      fontSize: 14,
+      paddingVertical: 4,
+    },
     errorTitle: {
       fontSize: 18,
       fontWeight: '700',
@@ -221,5 +254,43 @@ export const profileStyles = (theme: Theme) =>
     },
     footer: {
       height: 24,
+    },
+    pdfActionBar: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      bottom: 0,
+      flexDirection: 'row',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 16,
+      backgroundColor: theme.colors.surface,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: theme.colors.divider,
+    },
+    pdfActionButton: {
+      flex: 1,
+      minHeight: 48,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      flexDirection: 'row',
+      gap: 8,
+      paddingHorizontal: 12,
+    },
+    pdfDownloadButton: {
+      backgroundColor: theme.colors.primary,
+    },
+    pdfShareButton: {
+      backgroundColor: theme.colors.accent,
+    },
+    pdfActionButtonDisabled: {
+      opacity: 0.65,
+    },
+    pdfActionButtonText: {
+      color: theme.colors.white,
+      fontSize: 14,
+      fontWeight: '700',
     },
   });
