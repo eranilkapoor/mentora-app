@@ -1,11 +1,11 @@
 import React from 'react';
-import { CountryCodeDropdownProps } from '../Login.types';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { loginStyles } from '../Login.styles';
-import { useTheme } from '@/core/theme/ThemeProvider';
 import { Modal, ScrollView, TouchableOpacity, View, Text } from 'react-native';
-import { COUNTRY_CODES } from '@/core/constants';
 import Feather from 'react-native-vector-icons/Feather';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { loginStyles } from '../Login.styles';
+import { CountryCodeDropdownProps } from '../Login.types';
+import { COUNTRY_CODES } from '@/core/constants';
 
 export const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
   ({ visible, onClose, selectedCode, onSelectCode }) => {
@@ -23,42 +23,53 @@ export const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={onClose}
+          accessibilityRole="button"
+          accessibilityLabel="Close country code dropdown"
         >
-          <View style={styles.modalDropdown}>
-            <ScrollView keyboardShouldPersistTaps="handled">
-              {COUNTRY_CODES.map((code) => (
-                <TouchableOpacity
-                  key={code}
-                  style={[
-                    styles.countryCodeItem,
-                    selectedCode === code && styles.countryCodeItemActive,
-                  ]}
-                  onPress={() => {
-                    onSelectCode(code);
-                    onClose();
-                  }}
-                  accessibilityRole="button"
-                  accessibilityLabel={`Country code ${code}`}
-                >
-                  <Text
+          {/* Inner TouchableOpacity stops close-on-tap propagating inside the list */}
+          <TouchableOpacity activeOpacity={1} onPress={() => {}}>
+            <View style={styles.modalDropdown}>
+              <ScrollView
+                keyboardShouldPersistTaps="handled"
+                showsVerticalScrollIndicator={false}
+              >
+                {COUNTRY_CODES.map((code) => (
+                  <TouchableOpacity
+                    key={code}
                     style={[
-                      styles.countryCodeItemText,
-                      selectedCode === code && styles.countryCodeItemTextActive,
+                      styles.countryCodeItem,
+                      selectedCode === code && styles.countryCodeItemActive,
                     ]}
+                    onPress={() => {
+                      onSelectCode(code);
+                      onClose();
+                    }}
+                    activeOpacity={0.7}
+                    accessibilityRole="button"
+                    accessibilityLabel={`Country code +${code}`}
+                    accessibilityState={{ selected: selectedCode === code }}
                   >
-                    +{code}
-                  </Text>
-                  {selectedCode === code && (
-                    <Feather
-                      name="check"
-                      size={14}
-                      color={theme.colors.primary}
-                    />
-                  )}
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-          </View>
+                    <Text
+                      style={[
+                        styles.countryCodeItemText,
+                        selectedCode === code &&
+                          styles.countryCodeItemTextActive,
+                      ]}
+                    >
+                      +{code}
+                    </Text>
+                    {selectedCode === code && (
+                      <Feather
+                        name="check"
+                        size={14}
+                        color={theme.colors.primary}
+                      />
+                    )}
+                  </TouchableOpacity>
+                ))}
+              </ScrollView>
+            </View>
+          </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
     );

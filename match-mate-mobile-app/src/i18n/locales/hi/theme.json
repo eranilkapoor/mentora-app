@@ -1,13 +1,13 @@
 {
   "select_theme": "थीम चुनें",
-  "theme_subtitle": "Choose how Match Mate looks. You can change this anytime.",
-  "theme_info": "System theme automatically switches between light and dark based on your device settings.",
+  "theme_subtitle": "मैचमेट कैसा दिखे, यह चुनें। आप इसे कभी भी बदल सकते हैं।",
+  "theme_info": "सिस्टम थीम आपके डिवाइस की सेटिंग के आधार पर अपने आप लाइट और डार्क मोड के बीच बदलती है।",
   "light": "लाइट",
-  "light_description": "Clean white background",
+  "light_description": "साफ़ सफेद पृष्ठभूमि",
   "dark": "डार्क",
-  "dark_description": "Easy on the eyes at night",
+  "dark_description": "रात में आंखों के लिए आरामदायक",
   "system": "सिस्टम",
-  "system_description": "Follows your device settings",
+  "system_description": "आपके डिवाइस की सेटिंग का पालन करता है",
   "dark_mode": "डार्क मोड",
-  "appearance": "Appearance"
+  "appearance": "दिखावट"
 }

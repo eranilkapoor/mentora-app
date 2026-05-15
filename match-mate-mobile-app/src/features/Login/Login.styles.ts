@@ -7,9 +7,7 @@ export const loginStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    container: {
-      flex: 1,
-    },
+    container: { flex: 1 },
     scrollContent: {
       padding: 20,
       paddingTop: 80,
@@ -67,29 +65,21 @@ export const loginStyles = (theme: Theme) =>
       borderColor: theme.colors.primary,
       elevation: 2,
     },
-    tabIcon: {
-      marginRight: 2,
-    },
+    tabIcon: { marginRight: 2 },
     tabText: {
       color: theme.colors.textSecondary,
       fontWeight: '600',
       fontSize: 13,
     },
-    tabTextActive: {
-      color: theme.colors.primary,
-    },
-    form: {
-      marginTop: 4,
-    },
+    tabTextActive: { color: theme.colors.primary },
+    form: { marginTop: 4 },
     label: {
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.textSecondary,
       marginBottom: 6,
     },
-    labelSpacing: {
-      marginTop: 12,
-    },
+    labelSpacing: { marginTop: 12 },
     inputWrapper: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -100,18 +90,14 @@ export const loginStyles = (theme: Theme) =>
       paddingHorizontal: 12,
       marginBottom: 4,
     },
-    inputIcon: {
-      marginRight: 10,
-    },
+    inputIcon: { marginRight: 10 },
     input: {
       flex: 1,
       paddingVertical: 13,
       fontSize: 15,
       color: theme.colors.textPrimary,
     },
-    eyeButton: {
-      padding: 6,
-    },
+    eyeButton: { padding: 6 },
     phoneRow: {
       flexDirection: 'row',
       marginBottom: 4,
@@ -227,9 +213,7 @@ export const loginStyles = (theme: Theme) =>
       fontWeight: '700',
       fontSize: 16,
     },
-    disabledButton: {
-      opacity: 0.6,
-    },
+    disabledButton: { opacity: 0.6 },
     resendRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -258,9 +242,7 @@ export const loginStyles = (theme: Theme) =>
       fontWeight: '600',
       fontSize: 13,
     },
-    socialContainer: {
-      gap: 10,
-    },
+    socialContainer: { gap: 10 },
     socialButton: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -271,9 +253,7 @@ export const loginStyles = (theme: Theme) =>
       borderRadius: 10,
       backgroundColor: theme.colors.white,
     },
-    socialIcon: {
-      marginRight: 12,
-    },
+    socialIcon: { marginRight: 12 },
     socialLabel: {
       fontSize: 15,
       color: theme.colors.textPrimary,
@@ -288,9 +268,7 @@ export const loginStyles = (theme: Theme) =>
       marginTop: 24,
       marginBottom: 12,
     },
-    footerText: {
-      color: theme.colors.textMuted,
-    },
+    footerText: { color: theme.colors.textMuted },
     linkText: {
       color: theme.colors.link,
       fontWeight: '700',
@@ -306,16 +284,16 @@ export const loginStyles = (theme: Theme) =>
       maxHeight: 300,
       backgroundColor: theme.colors.surface,
       borderRadius: 10,
-      ...(Platform.OS === 'ios' || Platform.OS === 'android'
-        ? {
-            boxShadow: '0px 4px 8px rgba(0, 0, 0, 0.15)',
-          }
-        : {
-            shadowColor: theme.colors.black,
-            shadowOffset: { width: 0, height: 4 },
-            shadowOpacity: 0.15,
-            shadowRadius: 8,
-          }),
+      // Fixed: RN shadow props for native, web uses elevation only
+      ...Platform.select({
+        web: {},
+        default: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.15,
+          shadowRadius: 8,
+        },
+      }),
       elevation: 10,
     },
   });

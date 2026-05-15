@@ -182,14 +182,12 @@ export class AuthController {
     }
   }
 
+  @Public()
   @Post('refresh')
   refresh(
     @Req() req: AppRequest,
     @Res({ passthrough: true }) res: Response,
-    // @Body('refreshToken') refreshToken?: string,
   ) {
-    // Web: read from cookie
-    // Mobile: read from Authorization header or request body
     const tokenFromCookie = req.cookies?.refreshTtoken as string | undefined;
     const tokenFromBody = (req.body as { refreshTtoken?: string })
       .refreshTtoken;
@@ -206,14 +204,12 @@ export class AuthController {
     return this.authService.refresh(req, res, refreshToken);
   }
 
+  @Public()
   @Post('refresh')
   refreshMobile(
     @Req() req: AppRequest,
     @Res({ passthrough: true }) res: Response,
-    // @Body('refreshToken') refreshToken: string,
   ) {
-    // Web: read from cookie
-    // Mobile: read from Authorization header or request body
     const tokenFromCookie = req.cookies?.refreshTtoken as string | undefined;
     const tokenFromBody = (req.body as { refreshTtoken?: string })
       .refreshTtoken;
@@ -230,13 +226,28 @@ export class AuthController {
     return this.authService.refresh(req, res, refreshToken);
   }
 
+  @Public()
   @Post('logout')
-  logout(
-    @Req() req: AuthenticatedRequest,
-    @Body('refreshToken') refreshToken: string,
+  async logout(
+    @Req() req: AppRequest,
+    @Res({ passthrough: true }) res: Response,
+    @Body() body: { refreshToken?: string },
   ) {
     try {
-      return this.authService.logout(req, req.user.sub, refreshToken);
+      const refreshToken = req.cookies?.refreshToken || body?.refreshToken;
+      if(refreshToken){
+        await this.authService.logout(req, refreshToken);
+      }
+
+      // Clear cookie for web
+      res.clearCookie('refreshToken', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+      });
+
+      return new ApiResponse(true, 'Logged out successfully');
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Logout failed';
       return new ApiResponse(false, message);
@@ -244,7 +255,20 @@ export class AuthController {
   }
 
   @Post('logout-all')
-  logoutAll(@Req() req: AuthenticatedRequest) {
-    return this.authService.logoutAll(req, req.user.sub);
+  async logoutAll(
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      await this.authService.logoutAll(req, req.user.sub);
+      
+      res.clearCookie('refreshToken');
+      
+      return new ApiResponse(true, 'Logged out from all devices successfully');
+    } catch(error) {
+      const message = error instanceof Error ? error.message : 'Logout failed';
+
+      return new ApiResponse(false, message);
+    }
   }
 }

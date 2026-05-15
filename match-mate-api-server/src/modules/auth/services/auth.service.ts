@@ -77,7 +77,7 @@ export class AuthService {
     private readonly activityLogModel: Model<ActivityLogDocument>,
     private readonly notificationService: NotificationService,
     private readonly analyticsService: AnalyticsService,
-  ) {}
+  ) { }
 
   private async attachToken(
     req: AppRequest,
@@ -892,7 +892,7 @@ export class AuthService {
         await this.completeLoginFlow(req, existingUser._id.toString(), {
           provider:
             AuthProvider[
-              dto.provider.toUpperCase() as keyof typeof AuthProvider
+            dto.provider.toUpperCase() as keyof typeof AuthProvider
             ],
           source: `login-social-${dto.provider}`,
         });
@@ -931,7 +931,7 @@ export class AuthService {
           {
             provider:
               AuthProvider[
-                dto.provider.toUpperCase() as keyof typeof AuthProvider
+              dto.provider.toUpperCase() as keyof typeof AuthProvider
               ],
             providerId: dto.provider_id,
             isVerified: true,
@@ -1241,16 +1241,34 @@ export class AuthService {
     }
   }
 
-  async logout(req: AppRequest, userId: string, refreshToken: string) {
-    if (!Types.ObjectId.isValid(userId)) {
+  async logout(
+    req: AppRequest,
+    refreshToken: string,
+  ): Promise<{ success: true }> {
+    if (!refreshToken) {
+      throw new UnauthorizedException('Refresh token missing');
+    }
+
+    const session = await this.userSessionModel.findOne({
+      refreshToken,
+      isActive: true,
+    });
+
+    if (!session) {
+      throw new UnauthorizedException(
+        'Session not found or already logged out',
+      );
+    }
+
+    const userId = session.userId?.toString();
+
+    if (!userId || !Types.ObjectId.isValid(userId)) {
       throw new UnauthorizedException('Invalid user');
     }
 
-    const result = await this.userSessionModel.updateOne(
+    await this.userSessionModel.updateOne(
       {
-        userId: new Types.ObjectId(userId),
-        refreshToken,
-        isActive: true,
+        _id: session._id,
       },
       {
         $set: {
@@ -1260,18 +1278,14 @@ export class AuthService {
       },
     );
 
-    if (result.matchedCount === 0) {
-      throw new UnauthorizedException(
-        'Session not found or already logged out',
-      );
-    }
-
     await this.completeLogoutFlow(req, userId, {
       source: 'logout-current-device',
       action: ActivityAction.LOGOUT,
     });
 
-    return { success: true };
+    return {
+      success: true,
+    };
   }
 
   async logoutAll(req: AppRequest, userId: string) {

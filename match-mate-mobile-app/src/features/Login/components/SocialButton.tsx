@@ -1,10 +1,10 @@
 import React from 'react';
-import { SocialButtonProps } from '../Login.types';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { loginStyles } from '../Login.styles';
-import { useTheme } from '@/core/theme/ThemeProvider';
 import { TouchableOpacity, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { loginStyles } from '../Login.styles';
+import { SocialButtonProps } from '../Login.types';
 
 export const SocialButton = React.memo<SocialButtonProps>(
   ({ label, onPress, disabled = false, icon, iconColor }) => {
@@ -16,8 +16,10 @@ export const SocialButton = React.memo<SocialButtonProps>(
         style={[styles.socialButton, disabled && styles.disabledButton]}
         onPress={onPress}
         disabled={disabled}
+        activeOpacity={0.8}
         accessibilityRole="button"
         accessibilityLabel={label}
+        accessibilityState={{ disabled }}
       >
         <Feather
           name={icon}

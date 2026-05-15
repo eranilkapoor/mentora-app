@@ -1,8 +1,8 @@
 {
   "select_language": "भाषा चुनें",
-  "language_subtitle": "Choose your preferred language for the app interface.",
-  "language_notice": "Some content may require a restart to fully apply the new language.",
-  "available_languages": "Available Languages",
+  "language_subtitle": "ऐप इंटरफ़ेस के लिए अपनी पसंदीदा भाषा चुनें।",
+  "language_notice": "नई भाषा पूरी तरह लागू करने के लिए कुछ सामग्री को रीस्टार्ट की आवश्यकता हो सकती है।",
+  "available_languages": "उपलब्ध भाषाएं",
   "english": "अंग्रेज़ी",
-  "hindi": "हिंदी"
+  "hindi": "हिन्दी"
 }

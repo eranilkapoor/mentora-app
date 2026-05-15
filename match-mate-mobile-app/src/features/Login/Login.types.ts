@@ -31,3 +31,40 @@ export interface CountryCodeDropdownProps {
   selectedCode: string;
   onSelectCode: (code: string) => void;
 }
+
+export interface EmailFormProps {
+  errors: FormErrors;
+  loading: boolean;
+  onSubmit: () => void;
+  onNavigateForgot: () => void;
+  email: string;
+  password: string;
+  showPassword: boolean;
+  onEmailChange: (v: string) => void;
+  onPasswordChange: (v: string) => void;
+  onTogglePassword: () => void;
+}
+
+export interface PhoneFormProps {
+  errors: FormErrors;
+  loading: boolean;
+  phone: string;
+  otp: string;
+  otpSent: boolean;
+  countryCode: string;
+  showCountryCodeDropdown: boolean;
+  onPhoneChange: (v: string) => void;
+  onOtpChange: (v: string) => void;
+  onGetOtp: () => void;
+  onVerifyOtp: () => void;
+  onResendOtp: () => void;
+  onToggleDropdown: () => void;
+  onCloseDropdown: () => void;
+  onSelectCountryCode: (code: string) => void;
+}
+
+// Pre-mapped tab labels — lets i18n extraction tools find every key statically
+export const TAB_LABEL_KEYS: Record<ActiveTab, string> = {
+  email: 'auth.tabs.email',
+  phone: 'auth.tabs.phone',
+};

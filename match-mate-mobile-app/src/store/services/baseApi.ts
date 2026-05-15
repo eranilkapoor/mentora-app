@@ -6,125 +6,280 @@ import {
   FetchBaseQueryError,
 } from '@reduxjs/toolkit/query/react';
 
-import { RootState } from '../index';
 import { Platform } from 'react-native';
-import { getDeviceId, generateUUID } from '../../core/utils/device';
-import { logout, setAccessToken } from '../slices/authSlice';
+import * as SecureStore from 'expo-secure-store';
 
 import { Mutex } from 'async-mutex';
 
-// 👉 For mobile secure storage
-import * as SecureStore from 'expo-secure-store';
+import { RootState } from '../index';
+
+import { logout, setAccessToken } from '../slices/authSlice';
+
+import {
+  generateUUID,
+  getDeviceId,
+} from '../../core/utils/device';
 
 const mutex = new Mutex();
 
-// 🔐 Refresh token getter (Mobile only)
-const getRefreshToken = async (): Promise<string | null> => {
-  if (Platform.OS === 'web') return null;
-  return await SecureStore.getItemAsync('refreshToken');
-};
+/* ──────────────────────────────────────────────
+ * Secure Storage Helpers
+ * ────────────────────────────────────────────── */
 
-// 🔹 Base Query
+export async function getRefreshToken(): Promise<string | null> {
+  if (Platform.OS === 'web') {
+    return null;
+  }
+
+  return SecureStore.getItemAsync('refreshToken');
+}
+
+export async function setRefreshToken(
+  token: string,
+): Promise<void> {
+  if (Platform.OS === 'web') {
+    return;
+  }
+
+  await SecureStore.setItemAsync(
+    'refreshToken',
+    token,
+  );
+}
+
+export async function clearRefreshToken(): Promise<void> {
+  if (Platform.OS === 'web') {
+    return;
+  }
+
+  await SecureStore.deleteItemAsync(
+    'refreshToken',
+  );
+}
+
+/* ──────────────────────────────────────────────
+ * Base Query
+ * ────────────────────────────────────────────── */
+
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: process.env.EXPO_PUBLIC_API_BASE_URL as string,
-  credentials: 'include', // sends cookies on every request
-  prepareHeaders: async (headers, { getState }) => {
-    const accessToken = (getState() as RootState).auth.accessToken;
+
+  credentials: 'include',
+
+  prepareHeaders: async (
+    headers,
+    { getState },
+  ) => {
+    const accessToken = (
+      getState() as RootState
+    ).auth.accessToken;
 
     if (accessToken) {
-      headers.set('Authorization', `Bearer ${accessToken}`);
+      headers.set(
+        'Authorization',
+        `Bearer ${accessToken}`,
+      );
     }
 
     const deviceId = await getDeviceId();
 
     headers.set('X-Device-Id', deviceId);
-    headers.set('X-Platform', Platform.OS);
+
+    headers.set(
+      'X-Platform',
+      Platform.OS,
+    );
+
     headers.set(
       'X-Client-Version',
-      (process.env.EXPO_PUBLIC_CLIENT_VERSION as string) ?? '1.0.0'
+      process.env.EXPO_PUBLIC_CLIENT_VERSION ??
+        '1.0.0',
     );
-    headers.set('X-Correlation-Id', generateUUID());
-    headers.set('X-Request-Id', generateUUID());
+
+    headers.set(
+      'X-Correlation-Id',
+      generateUUID(),
+    );
+
+    headers.set(
+      'X-Request-Id',
+      generateUUID(),
+    );
 
     return headers;
   },
 });
 
+/* ──────────────────────────────────────────────
+ * Perform Logout Cleanup
+ * ────────────────────────────────────────────── */
+
+async function performLogout(
+  api: Parameters<BaseQueryFn>[1],
+): Promise<void> {
+  try {
+    const refreshToken =
+      Platform.OS !== 'web'
+        ? await getRefreshToken()
+        : undefined;
+
+    // Call logout API
+    await rawBaseQuery(
+      {
+        url: '/auth/logout',
+        method: 'POST',
+        credentials: 'include',
+        body:
+          Platform.OS !== 'web'
+            ? { refreshToken }
+            : undefined,
+      },
+      api,
+      {},
+    );
+  } catch (error) {
+    console.error(
+      'Logout API failed:',
+      error,
+    );
+  }
+
+  await clearRefreshToken();
+
+  api.dispatch(logout());
+}
+
+/* ──────────────────────────────────────────────
+ * Base Query With Refresh Logic
+ * ────────────────────────────────────────────── */
+
 const baseQueryWithAuth: BaseQueryFn<
   string | FetchArgs,
   unknown,
   FetchBaseQueryError
-> = async (args, api, extraOptions) => {
+> = async (
+  args,
+  api,
+  extraOptions,
+) => {
   await mutex.waitForUnlock();
 
-  let result = await rawBaseQuery(args, api, extraOptions);
+  let result = await rawBaseQuery(
+    args,
+    api,
+    extraOptions,
+  );
 
-  if (result.error?.status === 401) {
+  const isRefreshRequest =
+    typeof args !== 'string' &&
+    args.url === '/auth/refresh';
+
+  if (
+    result.error?.status === 401 &&
+    !isRefreshRequest
+  ) {
     if (!mutex.isLocked()) {
-      const release = await mutex.acquire();
+      const release =
+        await mutex.acquire();
 
       try {
-        const refreshResult = await rawBaseQuery(
-          {
-            url: '/auth/refresh',
-            method: 'POST',
-            ...(Platform.OS !== 'web'
-              ? {
-                  body: {
-                    refreshToken: await getRefreshToken(), // from SecureStore / AsyncStorage
-                  },
-                }
-              : {}),
-          },
-          api,
-          extraOptions
-        );
+        const refreshToken =
+          Platform.OS !== 'web'
+            ? await getRefreshToken()
+            : undefined;
+
+        const refreshResult =
+          await rawBaseQuery(
+            {
+              url: '/auth/refresh',
+              method: 'POST',
+              credentials: 'include',
+
+              body:
+                Platform.OS !== 'web'
+                  ? { refreshToken }
+                  : undefined,
+            },
+            api,
+            extraOptions,
+          );
 
         if (refreshResult.data) {
-          const data = refreshResult.data as {
-            accessToken: string;
-            refreshToken?: string;
-          };
+          const data =
+            refreshResult.data as {
+              accessToken: string;
+              refreshToken?: string;
+            };
 
-          // ✅ Update access token
-          api.dispatch(setAccessToken(data.accessToken));
+          /* Update Access Token */
 
-          // 🔄 Update refresh token (if provided)
-          if (Platform.OS !== 'web' && data.refreshToken) {
-            await SecureStore.setItemAsync('refreshToken', data.refreshToken);
+          api.dispatch(
+            setAccessToken(
+              data.accessToken,
+            ),
+          );
+
+          /* Update Refresh Token */
+
+          if (
+            Platform.OS !== 'web' &&
+            data.refreshToken
+          ) {
+            await setRefreshToken(
+              data.refreshToken,
+            );
           }
 
-          // 🔁 Retry original request
-          result = await rawBaseQuery(args, api, extraOptions);
+          /* Retry Original Request */
+
+          result = await rawBaseQuery(
+            args,
+            api,
+            extraOptions,
+          );
         } else {
-          // ❌ Refresh failed → logout
-          api.dispatch(logout());
-          if (Platform.OS !== 'web') {
-            await SecureStore.deleteItemAsync('refreshToken');
-          }
+          /* Refresh Failed */
+
+          await performLogout(api);
         }
       } catch (error) {
-        console.error('Token refresh error:', error);
-        api.dispatch(logout());
-        if (Platform.OS !== 'web') {
-          await SecureStore.deleteItemAsync('refreshToken');
-        }
+        console.error(
+          'Refresh token error:',
+          error,
+        );
+
+        await performLogout(api);
       } finally {
         release();
       }
     } else {
       await mutex.waitForUnlock();
-      result = await rawBaseQuery(args, api, extraOptions);
+
+      result = await rawBaseQuery(
+        args,
+        api,
+        extraOptions,
+      );
     }
   }
 
   return result;
 };
 
-// 🔹 Base API
+/* ──────────────────────────────────────────────
+ * API
+ * ────────────────────────────────────────────── */
+
 export const baseApi = createApi({
   reducerPath: 'baseApi',
+
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['Preference', 'Profile', 'Auth'],
+
+  tagTypes: [
+    'Preference',
+    'Profile',
+    'Auth',
+  ],
+
   endpoints: () => ({}),
 });

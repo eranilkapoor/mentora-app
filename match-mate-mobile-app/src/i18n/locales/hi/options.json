@@ -1,154 +1,157 @@
 {
   "gender": {
-    "male": "Male",
-    "female": "Female"
+    "male": "पुरुष",
+    "female": "महिला"
   },
   "marital": {
-    "never_married": "Never Married",
-    "divorced": "Divorced",
-    "widowed": "Widowed",
-    "awaiting_divorced": "Awaiting Divorce"
+    "never_married": "कभी विवाह नहीं हुआ",
+    "divorced": "तलाकशुदा",
+    "widowed": "विधुर/विधवा",
+    "awaiting_divorced": "तलाक की प्रतीक्षा में"
   },
   "body_type": {
-    "slim": "Slim",
-    "athletic": "Athletic",
-    "average": "Average",
-    "heavy": "Heavy"
+    "slim": "पतला",
+    "athletic": "एथलेटिक",
+    "average": "औसत",
+    "heavy": "भारी",
+    "curvy": "कर्वी",
+    "fit": "फिट",
+    "muscular": "मांसल"
   },
   "complexion": {
-    "fair": "Fair",
-    "wheatish": "Wheatish",
-    "dusky": "Dusky",
-    "dark": "Dark"
+    "fair": "गोरा",
+    "wheatish": "गेहुँआ",
+    "dusky": "सांवला",
+    "dark": "गहरा रंग"
   },
   "family_type": {
-    "joint": "Joint",
-    "nuclear": "Nuclear",
-    "extended": "Extended"
+    "joint": "संयुक्त",
+    "nuclear": "एकल",
+    "extended": "विस्तारित"
   },
   "smoking": {
-    "non_smoker": "Non Smoker",
-    "occasionally": "Occasionally",
-    "regular": "Regular",
-    "trying_to_quit": "Trying to Quit",
-    "open_to": "Open To"
+    "non_smoker": "धूम्रपान नहीं करते",
+    "occasionally": "कभी-कभी",
+    "regular": "नियमित",
+    "trying_to_quit": "छोड़ने की कोशिश में",
+    "open_to": "स्वीकार्य"
   },
   "drinking": {
-    "non_drinker": "Non Drinker",
-    "occasionally": "Occasionally",
-    "regular": "Regular",
-    "open_to": "Open To",
-    "socially": "Socially"
+    "non_drinker": "शराब नहीं पीते",
+    "occasionally": "कभी-कभी",
+    "regular": "नियमित",
+    "open_to": "स्वीकार्य",
+    "socially": "सामाजिक अवसरों पर"
   },
   "diet": {
-    "vegetarian": "Vegetarian",
-    "non_vegetarian": "Non Vegetarian",
-    "eggetarian": "Eggetarian",
-    "vegan": "Vegan",
-    "jain": "Jain",
-    "satvik": "Satvik",
-    "halal": "Halal",
-    "kosher": "Kosher",
-    "open_to": "Open To"
+    "vegetarian": "शाकाहारी",
+    "non_vegetarian": "मांसाहारी",
+    "eggetarian": "अंडाहारी",
+    "vegan": "वीगन",
+    "jain": "जैन",
+    "satvik": "सात्विक",
+    "halal": "हलाल",
+    "kosher": "कोशर",
+    "open_to": "स्वीकार्य"
   },
   "manglik": {
-    "non_manglik": "Non Manglik",
-    "manglik": "Manglik",
-    "anshik_manglik": "Anshik Manglik",
-    "dont_know": "Don't Know"
+    "non_manglik": "गैर-मांगलिक",
+    "manglik": "मांगलिक",
+    "anshik_manglik": "आंशिक मांगलिक",
+    "dont_know": "पता नहीं"
   },
   "occupation_type": {
-    "government_job": "Government Job",
-    "private_job": "Private Job",
-    "business": "Business",
-    "self_employed": "Self Employed",
-    "freelancer": "Freelancer",
-    "professional": "Professional",
-    "homemaker": "Homemaker",
-    "not_working": "Not Working",
-    "student": "Student",
-    "retired": "Retired",
-    "other": "Other"
+    "government_job": "सरकारी नौकरी",
+    "private_job": "निजी नौकरी",
+    "business": "व्यवसाय",
+    "self_employed": "स्व-रोज़गार",
+    "freelancer": "फ़्रीलांसर",
+    "professional": "प्रोफ़ेशनल",
+    "homemaker": "गृहिणी/गृहस्थ",
+    "not_working": "कार्यरत नहीं",
+    "student": "विद्यार्थी",
+    "retired": "सेवानिवृत्त",
+    "other": "अन्य"
   },
   "family_status": {
-    "affluent": "Affluent",
-    "upper_middle_class": "Upper Middle Class",
-    "middle_class": "Middle Class",
-    "lower_middle_class": "Lower Middle Class"
+    "affluent": "समृद्ध",
+    "upper_middle_class": "उच्च मध्यम वर्ग",
+    "middle_class": "मध्यम वर्ग",
+    "lower_middle_class": "निम्न मध्यम वर्ग"
   },
   "family_values": {
-    "traditional": "Traditional",
-    "moderate": "Moderate",
-    "liberal": "Liberal"
+    "traditional": "पारंपरिक",
+    "moderate": "मध्यम",
+    "liberal": "उदार"
   },
   "child_preference": {
-    "does_not_matter": "Doesn't Matter",
-    "want_children": "Want Children",
-    "do_not_want_children": "Don't Want Children",
-    "open_to_children": "Open to It",
-    "has_children_acceptable": "Has Children OK"
+    "does_not_matter": "कोई फर्क नहीं पड़ता",
+    "want_children": "बच्चे चाहते हैं",
+    "do_not_want_children": "बच्चे नहीं चाहते",
+    "open_to_children": "इसके लिए खुले हैं",
+    "has_children_acceptable": "बच्चे होना स्वीकार्य"
   },
   "residency_preference": {
-    "does_not_matter": "Doesn't Matter",
-    "same_city": "Same City",
-    "same_state": "Same State",
-    "same_country": "Same Country",
-    "abroad_preferred": "Abroad Preferred",
-    "nri_preferred": "NRI Preferred"
+    "does_not_matter": "कोई फर्क नहीं पड़ता",
+    "same_city": "उसी शहर में",
+    "same_state": "उसी राज्य में",
+    "same_country": "उसी देश में",
+    "abroad_preferred": "विदेश प्राथमिकता",
+    "nri_preferred": "NRI प्राथमिकता"
   },
   "religion": {
-    "hindu": "Hindu",
-    "muslim": "Muslim",
-    "christian": "Christian",
-    "sikh": "Sikh",
-    "jain": "Jain",
-    "buddhist": "Buddhist",
-    "parsi": "Parsi",
-    "jewish": "Jewish",
-    "other": "Other",
-    "prefer_not_to_say": "Prefer Not To Say"
+    "hindu": "हिन्दू",
+    "muslim": "मुस्लिम",
+    "christian": "ईसाई",
+    "sikh": "सिख",
+    "jain": "जैन",
+    "buddhist": "बौद्ध",
+    "parsi": "पारसी",
+    "jewish": "यहूदी",
+    "other": "अन्य",
+    "prefer_not_to_say": "बताना नहीं चाहते"
   },
   "caste": {
-    "general": "General",
+    "general": "सामान्य",
     "obc": "OBC",
     "sc": "SC",
     "st": "ST",
-    "other": "Other",
-    "not_applicable": "Not Applicable"
+    "other": "अन्य",
+    "not_applicable": "लागू नहीं"
   },
   "qualification": {
     "below_10th": "10वीं से कम",
     "10th": "10वीं पास",
     "12th": "12वीं पास",
     "diploma": "डिप्लोमा",
-    "ba": "बी.ए. (कला स्नातक)",
-    "bsc": "बी.एससी. (विज्ञान स्नातक)",
-    "bcom": "बी.कॉम (वाणिज्य स्नातक)",
-    "be": "बी.ई. (अभियांत्रिकी स्नातक)",
-    "btech": "बी.टेक (प्रौद्योगिकी स्नातक)",
-    "bca": "बीसीए (कंप्यूटर अनुप्रयोग स्नातक)",
-    "bba": "बीबीए (व्यवसाय प्रशासन स्नातक)",
-    "llb": "एलएलबी (कानून स्नातक)",
-    "mbbs": "एमबीबीएस (चिकित्सा स्नातक)",
-    "ma": "एम.ए. (कला परास्नातक)",
-    "msc": "एम.एससी. (विज्ञान परास्नातक)",
-    "mcom": "एम.कॉम (वाणिज्य परास्नातक)",
-    "me": "एम.ई. (अभियांत्रिकी परास्नातक)",
-    "mtech": "एम.टेक (प्रौद्योगिकी परास्नातक)",
-    "mca": "एमसीए (कंप्यूटर अनुप्रयोग परास्नातक)",
-    "mba": "एमबीए (व्यवसाय प्रशासन परास्नातक)",
-    "md": "एमडी (चिकित्सा डॉक्टरेट)",
-    "ms": "एमएस (शल्य चिकित्सा परास्नातक)",
-    "phd": "पीएचडी (डॉक्टरेट)",
+    "ba": "B.A. (कला स्नातक)",
+    "bsc": "B.Sc. (विज्ञान स्नातक)",
+    "bcom": "B.Com (वाणिज्य स्नातक)",
+    "be": "B.E. (इंजीनियरिंग स्नातक)",
+    "btech": "B.Tech (प्रौद्योगिकी स्नातक)",
+    "bca": "BCA (कंप्यूटर एप्लिकेशन स्नातक)",
+    "bba": "BBA (बिजनेस एडमिनिस्ट्रेशन स्नातक)",
+    "llb": "LLB (कानून स्नातक)",
+    "mbbs": "MBBS (चिकित्सा स्नातक)",
+    "ma": "M.A. (कला स्नातकोत्तर)",
+    "msc": "M.Sc. (विज्ञान स्नातकोत्तर)",
+    "mcom": "M.Com (वाणिज्य स्नातकोत्तर)",
+    "me": "M.E. (इंजीनियरिंग स्नातकोत्तर)",
+    "mtech": "M.Tech (प्रौद्योगिकी स्नातकोत्तर)",
+    "mca": "MCA (कंप्यूटर एप्लिकेशन स्नातकोत्तर)",
+    "mba": "MBA (बिजनेस एडमिनिस्ट्रेशन स्नातकोत्तर)",
+    "md": "MD (डॉक्टर ऑफ मेडिसिन)",
+    "ms": "MS (मास्टर ऑफ सर्जरी)",
+    "phd": "Ph.D (डॉक्टरेट)",
     "post_doctorate": "पोस्ट डॉक्टरेट",
-    "ca": "सीए (चार्टर्ड अकाउंटेंट)",
-    "cs": "सीएस (कंपनी सचिव)",
-    "cma": "सीएमए (लागत एवं प्रबंधन लेखाकार)",
-    "cfa": "सीएफए (चार्टर्ड वित्तीय विश्लेषक)",
-    "acca": "एसीसीए (प्रमाणित चार्टर्ड अकाउंटेंट)",
-    "iti": "आईटीआई (औद्योगिक प्रशिक्षण संस्थान)",
+    "ca": "CA (चार्टर्ड अकाउंटेंट)",
+    "cs": "CS (कंपनी सेक्रेटरी)",
+    "cma": "CMA (कॉस्ट एंड मैनेजमेंट अकाउंटेंट)",
+    "cfa": "CFA (चार्टर्ड फाइनेंशियल एनालिस्ट)",
+    "acca": "ACCA (सर्टिफाइड चार्टर्ड अकाउंटेंट)",
+    "iti": "ITI (औद्योगिक प्रशिक्षण संस्थान)",
     "polytechnic": "पॉलिटेक्निक",
-    "skill_certification": "कौशल / व्यावसायिक प्रमाणपत्र",
+    "skill_certification": "कौशल / व्यावसायिक प्रमाणन",
     "other": "अन्य",
     "prefer_not_to_say": "बताना नहीं चाहते"
   }

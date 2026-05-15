@@ -1,3 +1,4 @@
+import { Platform } from 'react-native';
 import {
   LoginRequest,
   RegisterRequest,
@@ -15,7 +16,7 @@ import {
   User,
   ResetPasswordRequest,
 } from '../../core/types';
-import { baseApi } from './baseApi';
+import { baseApi, getRefreshToken } from './baseApi';
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -92,6 +93,52 @@ export const authApi = baseApi.injectEndpoints({
     verifyUser: builder.query<ApiResponse<User>, void>({
       query: () => '/auth/verify-user',
     }),
+    logout: builder.mutation<{ success: boolean }, void>({
+      async queryFn(_arg, _api, _extraOptions, baseQuery) {
+        try {
+          const refreshToken =
+            Platform.OS !== 'web'
+              ? await getRefreshToken()
+              : undefined;
+
+          const result = await baseQuery({
+            url: '/auth/logout',
+            method: 'POST',
+            credentials: 'include',
+            body:
+              Platform.OS !== 'web'
+                ? {
+                  refreshToken,
+                }
+                : undefined,
+          });
+
+          // API Error
+          if (result.error) {
+            return {
+              error: result.error,
+            };
+          }
+
+          // Success
+          return {
+            data: {
+              success: true,
+            },
+          };
+        } catch (error) {
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              error:
+                error instanceof Error
+                  ? error.message
+                  : 'Logout failed',
+            },
+          };
+        }
+      },
+    }),
   }),
 });
 
@@ -105,4 +152,5 @@ export const {
   useResetPasswordMutation,
   useChangePasswordMutation,
   useVerifyUserQuery,
+  useLogoutMutation,
 } = authApi;
