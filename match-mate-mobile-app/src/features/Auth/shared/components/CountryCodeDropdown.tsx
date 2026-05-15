@@ -3,13 +3,13 @@ import { Modal, ScrollView, TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { loginStyles } from '../Login.styles';
-import { CountryCodeDropdownProps } from '../Login.types';
+import { authSharedStyles } from '../auth.styles';
+import { CountryCodeDropdownProps } from '../auth.types';
 import { COUNTRY_CODES } from '@/core/constants';
 
 export const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
   ({ visible, onClose, selectedCode, onSelectCode }) => {
-    const styles = useThemedStyles(loginStyles);
+    const styles = useThemedStyles(authSharedStyles);
     const { theme } = useTheme();
 
     return (
@@ -26,7 +26,6 @@ export const CountryCodeDropdown = React.memo<CountryCodeDropdownProps>(
           accessibilityRole="button"
           accessibilityLabel="Close country code dropdown"
         >
-          {/* Inner TouchableOpacity stops close-on-tap propagating inside the list */}
           <TouchableOpacity activeOpacity={1} onPress={() => {}}>
             <View style={styles.modalDropdown}>
               <ScrollView

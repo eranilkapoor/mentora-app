@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
 import {
-  useLoginMutation,
+  useRegisterMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
 } from '@/store/services/authApi';
@@ -20,11 +20,11 @@ import {
 import { User } from '@/core/types';
 import { ActiveTab, FormErrors, SocialProvider } from '@/features/Auth/shared/auth.types';
 
-export function useLoginForm() {
+export function useRegisterForm() {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
-  const [login] = useLoginMutation();
+  const [register] = useRegisterMutation();
   const [sendOtp] = useSendOtpMutation();
   const [verifyOtp] = useVerifyOtpMutation();
 
@@ -69,9 +69,9 @@ export function useLoginForm() {
   }, []);
 
   const applyCredentials = useCallback(
-    async (data: { 
-      accessToken: string; 
-      refreshToken?: string; 
+    async (data: {
+      accessToken: string;
+      refreshToken?: string;
       user: unknown;
     }) => {
       dispatch(
@@ -95,19 +95,19 @@ export function useLoginForm() {
       setOtpSent(false);
       setOtp('');
       clearAllErrors();
-    }, 
+    },
     [clearAllErrors]
   );
 
   const handleResendOtp = useCallback(() => {
-      setOtpSent(false);
-      setOtp('');
-      clearAllErrors();
-    }, [clearAllErrors]);
+    setOtpSent(false);
+    setOtp('');
+    clearAllErrors();
+  }, [clearAllErrors]);
 
-  // ─── Email login ──────────────────────────────────────────────────────────
+  // ─── Email register ───────────────────────────────────────────────────────
 
-  const handleEmailLogin = useCallback(async () => {
+  const handleEmailRegister = useCallback(async () => {
     const newErrors: FormErrors = {};
 
     if (!email.trim()) {
@@ -131,13 +131,13 @@ export function useLoginForm() {
 
     setLoading(true);
     try {
-      const response = await login({ 
-        email: email.trim(), 
+      const response = await register({
+        email: email.trim(),
         password,
       }).unwrap();
 
       if (!response.success) {
-        setErrors({ error: t('auth.errors.invalid_credentials') });
+        setErrors({ email: t('auth.errors.email_already_registered') });
         return;
       }
 
@@ -146,16 +146,14 @@ export function useLoginForm() {
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
-    } catch (err) {
-      setErrors({
-        error: t('auth.errors.login_failed', {
-          message: err instanceof Error ? err.message : t('auth.errors.unknown'),
-        }),
+    } catch {
+      setErrors({ 
+        error: t('auth.errors.register_failed') 
       });
     } finally {
       setLoading(false);
     }
-  }, [email, password, login, applyCredentials, t]);
+  }, [email, password, register, applyCredentials, t]);
 
   // ─── Phone / OTP ──────────────────────────────────────────────────────────
 
@@ -171,8 +169,8 @@ export function useLoginForm() {
 
     setLoading(true);
     try {
-      const response = await sendOtp({ 
-        country_code: countryCode, 
+      const response = await sendOtp({
+        country_code: countryCode,
         phone,
       }).unwrap();
       if (!response.success) {
@@ -224,7 +222,7 @@ export function useLoginForm() {
 
   // ─── Social ───────────────────────────────────────────────────────────────
 
-  const handleSocialLogin = useCallback(
+  const handleSocialRegister = useCallback(
     async (provider: SocialProvider) => {
       setLoading(true);
       clearAllErrors();
@@ -301,10 +299,10 @@ export function useLoginForm() {
     showCountryCodeDropdown,
     handleTabSwitch,
     handleResendOtp,
-    handleEmailLogin,
+    handleEmailRegister,
     handleGetOtp,
     handleVerifyOtp,
-    handleSocialLogin,
+    handleSocialRegister,
     handleEmailChange,
     handlePasswordChange,
     handlePhoneChange,

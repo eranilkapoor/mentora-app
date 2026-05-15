@@ -12,11 +12,23 @@ import { useTranslation } from 'react-i18next';
 
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { PASSWORD_MIN_LENGTH } from '@/core/constants';
+import { FormErrors } from '@/features/Auth/shared/auth.types';
+import { authSharedStyles } from '@/features/Auth/shared/auth.styles';
 
-import { loginStyles } from '../Login.styles';
-import { EmailFormProps } from '../Login.types';
+interface Props {
+  errors: FormErrors;
+  loading: boolean;
+  email: string;
+  password: string;
+  showPassword: boolean;
+  onEmailChange: (v: string) => void;
+  onPasswordChange: (v: string) => void;
+  onTogglePassword: () => void;
+  onSubmit: () => void;
+}
 
-export function EmailForm({
+export function RegisterEmailForm({
   errors,
   loading,
   email,
@@ -26,15 +38,14 @@ export function EmailForm({
   onPasswordChange,
   onTogglePassword,
   onSubmit,
-  onNavigateForgot,
-}: EmailFormProps): React.ReactElement {
-  const styles = useThemedStyles(loginStyles);
+}: Props): React.ReactElement {
+  const styles = useThemedStyles(authSharedStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
 
   const [focusedField, setFocusedField] = useState<
-    'email' | 'password' | null
-  >(null);
+      'email' | 'password' | null
+    >(null);
 
   return (
     <>
@@ -43,7 +54,7 @@ export function EmailForm({
 
       <View
         style={[
-          styles.inputWrapper,
+          styles.inputWrapper, 
           focusedField === 'email' && styles.inputFocused,
           errors.email && styles.inputError,
         ]}
@@ -88,7 +99,7 @@ export function EmailForm({
 
       <View
         style={[
-          styles.inputWrapper,
+          styles.inputWrapper, 
           focusedField === 'password' && styles.inputFocused,
           errors.password && styles.inputError,
         ]}
@@ -106,13 +117,15 @@ export function EmailForm({
 
         <TextInput
           style={styles.input}
-          placeholder={t('auth.placeholders.password')}
+          placeholder={t('auth.placeholders.new_password', {
+            min: PASSWORD_MIN_LENGTH,
+          })}
           placeholderTextColor={theme.colors.textMuted}
           secureTextEntry={!showPassword}
           value={password}
           onChangeText={onPasswordChange}
           editable={!loading}
-          textContentType="password"
+          textContentType="newPassword"
           returnKeyType="done"
           onSubmitEditing={onSubmit}
           accessibilityLabel={t('auth.fields.password')}
@@ -148,28 +161,14 @@ export function EmailForm({
         <Text style={styles.errorText}>{errors.password}</Text>
       ) : null}
 
-      {/* Forgot password */}
-      <TouchableOpacity
-        onPress={onNavigateForgot}
-        disabled={loading}
-        style={styles.forgotRow}
-        activeOpacity={0.7}
-        accessibilityRole="button"
-        accessibilityLabel={t('auth.actions.forgot_password')}
-      >
-        <Text style={styles.forgotText}>
-          {t('auth.actions.forgot_password')}
-        </Text>
-      </TouchableOpacity>
-
-      {/* Sign in button */}
+      {/* Create account button */}
       <TouchableOpacity
         style={[styles.primaryButton, loading && styles.disabledButton]}
         onPress={onSubmit}
         disabled={loading}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel={t('auth.actions.sign_in')}
+        accessibilityLabel={t('auth.actions.create_account')}
         accessibilityState={{ disabled: loading }}
       >
         {loading ? (
@@ -177,14 +176,9 @@ export function EmailForm({
         ) : (
           <>
             <Text style={styles.primaryButtonText}>
-              {t('auth.actions.sign_in')}
+              {t('auth.actions.create_account')}
             </Text>
-
-            <Feather
-              name="arrow-right"
-              size={18}
-              color={theme.colors.white}
-            />
+            <Feather name="arrow-right" size={18} color={theme.colors.white} />
           </>
         )}
       </TouchableOpacity>

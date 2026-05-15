@@ -2,10 +2,6 @@ import { AuthNavigationProp } from '@/navigation/types';
 import Feather from 'react-native-vector-icons/Feather';
 import React from 'react';
 
-export interface LoginScreenProps {
-  navigation: AuthNavigationProp;
-}
-
 export type ActiveTab = 'email' | 'phone';
 export type SocialProvider = 'google' | 'apple' | 'facebook';
 
@@ -53,6 +49,8 @@ export interface PhoneFormProps {
   otpSent: boolean;
   countryCode: string;
   showCountryCodeDropdown: boolean;
+  submitLabel: string;           // "Sign In" vs "Create Account"
+  verifyLabel: string;           // "Verify & Sign In" vs "Verify & Create Account"
   onPhoneChange: (v: string) => void;
   onOtpChange: (v: string) => void;
   onGetOtp: () => void;
@@ -63,8 +61,15 @@ export interface PhoneFormProps {
   onSelectCountryCode: (code: string) => void;
 }
 
-// Pre-mapped tab labels — lets i18n extraction tools find every key statically
 export const TAB_LABEL_KEYS: Record<ActiveTab, string> = {
   email: 'auth.tabs.email',
   phone: 'auth.tabs.phone',
 };
+
+export interface LoginScreenProps {
+  navigation: AuthNavigationProp;
+}
+
+export interface RegisterScreenProps {
+  navigation: AuthNavigationProp;
+}

@@ -12,17 +12,17 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { loginStyles } from './Login.styles';
-import { LoginScreenProps, TAB_LABEL_KEYS } from './Login.types';
-import { EmailForm } from './components/EmailForm';
-import { PhoneForm } from './components/PhoneForm';
-import { SocialButton } from './components/SocialButton';
+import { LoginEmailForm } from './components/LoginEmailForm';
 import { useLoginForm } from './hooks/useLoginForm';
+import { LoginScreenProps, TAB_LABEL_KEYS } from '@/features/Auth/shared/auth.types'
+import { SocialButton } from '../Auth/shared/components/SocialButton';
+import { PhoneForm } from '../Auth/shared/components/PhoneForm';
+import { authSharedStyles } from '../Auth/shared/auth.styles';
 
 export default function LoginScreen({
   navigation,
 }: LoginScreenProps): React.ReactElement {
-  const styles = useThemedStyles(loginStyles);
+  const styles = useThemedStyles(authSharedStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
 
@@ -122,7 +122,7 @@ export default function LoginScreen({
           {/* Active form */}
           <View style={styles.form}>
             {activeTab === 'email' ? (
-              <EmailForm
+              <LoginEmailForm
                 errors={errors}
                 loading={loading}
                 email={email}
@@ -143,6 +143,8 @@ export default function LoginScreen({
                 otpSent={otpSent}
                 countryCode={countryCode}
                 showCountryCodeDropdown={showCountryCodeDropdown}
+                submitLabel={t('auth.actions.get_otp')}
+                verifyLabel={t('auth.actions.verify_create')}
                 onPhoneChange={handlePhoneChange}
                 onOtpChange={handleOtpChange}
                 onGetOtp={() => { void handleGetOtp(); }}

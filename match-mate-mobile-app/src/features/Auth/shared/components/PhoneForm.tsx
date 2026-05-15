@@ -13,9 +13,8 @@ import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
-import { loginStyles } from '../Login.styles';
-import { PhoneFormProps } from '../Login.types';
-
+import { authSharedStyles } from '../auth.styles';
+import { PhoneFormProps } from '../auth.types';
 import { CountryCodeDropdown } from './CountryCodeDropdown';
 
 import { OTP_LENGTH, PHONE_MAX_LENGTH } from '@/core/constants';
@@ -28,6 +27,8 @@ export function PhoneForm({
   otpSent,
   countryCode,
   showCountryCodeDropdown,
+  submitLabel,
+  verifyLabel,
   onPhoneChange,
   onOtpChange,
   onGetOtp,
@@ -37,23 +38,22 @@ export function PhoneForm({
   onCloseDropdown,
   onSelectCountryCode,
 }: PhoneFormProps): React.ReactElement {
-  const styles = useThemedStyles(loginStyles);
+  const styles = useThemedStyles(authSharedStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
 
   const [phoneFocused, setPhoneFocused] = useState(false);
-  const [otpFocused, setOtpFocused] = useState(false);
+    const [otpFocused, setOtpFocused] = useState(false);
 
   return (
     <>
-      {/* Phone number input */}
       <Text style={styles.label}>{t('auth.fields.phone')}</Text>
 
-      <View
+      <View 
         style={[
-          styles.phoneRow,
+          styles.phoneRow, 
           phoneFocused && styles.inputFocused,
-          errors.phone && styles.inputError,
+          errors.phone && styles.inputError
         ]}
       >
         <TouchableOpacity
@@ -101,7 +101,6 @@ export function PhoneForm({
         <Text style={styles.errorText}>{errors.phone}</Text>
       ) : null}
 
-      {/* Get OTP button */}
       {!otpSent ? (
         <TouchableOpacity
           style={[styles.primaryButton, loading && styles.disabledButton]}
@@ -120,17 +119,16 @@ export function PhoneForm({
                 {t('auth.actions.get_otp')}
               </Text>
 
-              <Feather
-                name="send"
-                size={16}
-                color={theme.colors.white}
+              <Feather 
+                name="send" 
+                size={16} 
+                color={theme.colors.white} 
               />
             </>
           )}
         </TouchableOpacity>
       ) : (
         <>
-          {/* OTP sent banner */}
           <View style={styles.otpInfoBanner}>
             <Feather
               name="check-circle"
@@ -139,21 +137,20 @@ export function PhoneForm({
             />
 
             <Text style={styles.otpInfoText}>
-              {t('auth.otp.sent_to', {
-                code: countryCode,
+              {t('auth.otp.sent_to', { 
+                code: countryCode, 
                 phone,
               })}
             </Text>
           </View>
 
-          {/* OTP input */}
           <Text style={[styles.label, styles.labelSpacing]}>
             {t('auth.fields.otp')}
           </Text>
 
           <TextInput
             style={[
-              styles.otpInput,
+              styles.otpInput, 
               otpFocused && styles.inputFocused,
               errors.otp && styles.inputError,
             ]}
@@ -175,14 +172,13 @@ export function PhoneForm({
             <Text style={styles.errorText}>{errors.otp}</Text>
           ) : null}
 
-          {/* Verify button */}
           <TouchableOpacity
             style={[styles.primaryButton, loading && styles.disabledButton]}
             onPress={onVerifyOtp}
             disabled={loading}
             activeOpacity={0.8}
             accessibilityRole="button"
-            accessibilityLabel={t('auth.actions.verify_sign_in')}
+            accessibilityLabel={verifyLabel}
             accessibilityState={{ disabled: loading }}
           >
             {loading ? (
@@ -190,9 +186,9 @@ export function PhoneForm({
             ) : (
               <>
                 <Text style={styles.primaryButtonText}>
-                  {t('auth.actions.verify_sign_in')}
+                  {verifyLabel}
                 </Text>
-
+                
                 <Feather
                   name="arrow-right"
                   size={18}
@@ -202,7 +198,6 @@ export function PhoneForm({
             )}
           </TouchableOpacity>
 
-          {/* Resend */}
           <TouchableOpacity
             style={styles.resendRow}
             onPress={onResendOtp}
@@ -211,10 +206,10 @@ export function PhoneForm({
             accessibilityRole="button"
             accessibilityLabel={t('auth.actions.resend_otp')}
           >
-            <Feather
-              name="refresh-cw"
-              size={13}
-              color={theme.colors.link}
+            <Feather 
+              name="refresh-cw" 
+              size={13} 
+              color={theme.colors.link} 
             />
 
             <Text style={styles.resendText}>
