@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,10 +6,13 @@ import {
   TouchableOpacity,
   ActivityIndicator,
 } from 'react-native';
+
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
+
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
+
 import { loginStyles } from '../Login.styles';
 import { EmailFormProps } from '../Login.types';
 
@@ -29,19 +32,33 @@ export function EmailForm({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
+  const [focusedField, setFocusedField] = useState<
+    'email' | 'password' | null
+  >(null);
+
   return (
     <>
       {/* Email */}
       <Text style={styles.label}>{t('auth.fields.email')}</Text>
+
       <View
-        style={[styles.inputWrapper, errors.email && styles.inputError]}
+        style={[
+          styles.inputWrapper,
+          focusedField === 'email' && styles.inputFocused,
+          errors.email && styles.inputError,
+        ]}
       >
         <Feather
           name="mail"
           size={16}
-          color={theme.colors.textMuted}
+          color={
+            focusedField === 'email'
+              ? theme.colors.primary
+              : theme.colors.textMuted
+          }
           style={styles.inputIcon}
         />
+
         <TextInput
           style={styles.input}
           placeholder={t('auth.placeholders.email')}
@@ -55,8 +72,11 @@ export function EmailForm({
           textContentType="username"
           returnKeyType="next"
           accessibilityLabel={t('auth.fields.email')}
+          onFocus={() => setFocusedField('email')}
+          onBlur={() => setFocusedField(null)}
         />
       </View>
+
       {errors.email ? (
         <Text style={styles.errorText}>{errors.email}</Text>
       ) : null}
@@ -65,15 +85,25 @@ export function EmailForm({
       <Text style={[styles.label, styles.labelSpacing]}>
         {t('auth.fields.password')}
       </Text>
+
       <View
-        style={[styles.inputWrapper, errors.password && styles.inputError]}
+        style={[
+          styles.inputWrapper,
+          focusedField === 'password' && styles.inputFocused,
+          errors.password && styles.inputError,
+        ]}
       >
         <Feather
           name="lock"
           size={16}
-          color={theme.colors.textMuted}
+          color={
+            focusedField === 'password'
+              ? theme.colors.primary
+              : theme.colors.textMuted
+          }
           style={styles.inputIcon}
         />
+
         <TextInput
           style={styles.input}
           placeholder={t('auth.placeholders.password')}
@@ -86,7 +116,10 @@ export function EmailForm({
           returnKeyType="done"
           onSubmitEditing={onSubmit}
           accessibilityLabel={t('auth.fields.password')}
+          onFocus={() => setFocusedField('password')}
+          onBlur={() => setFocusedField(null)}
         />
+
         <TouchableOpacity
           onPress={onTogglePassword}
           style={styles.eyeButton}
@@ -102,10 +135,15 @@ export function EmailForm({
           <Feather
             name={showPassword ? 'eye-off' : 'eye'}
             size={18}
-            color={theme.colors.textMuted}
+            color={
+              focusedField === 'password'
+                ? theme.colors.primary
+                : theme.colors.textMuted
+            }
           />
         </TouchableOpacity>
       </View>
+
       {errors.password ? (
         <Text style={styles.errorText}>{errors.password}</Text>
       ) : null}
@@ -141,7 +179,12 @@ export function EmailForm({
             <Text style={styles.primaryButtonText}>
               {t('auth.actions.sign_in')}
             </Text>
-            <Feather name="arrow-right" size={18} color={theme.colors.white} />
+
+            <Feather
+              name="arrow-right"
+              size={18}
+              color={theme.colors.white}
+            />
           </>
         )}
       </TouchableOpacity>
