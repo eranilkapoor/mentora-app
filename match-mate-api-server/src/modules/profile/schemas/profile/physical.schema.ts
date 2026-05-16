@@ -4,10 +4,10 @@ import { BloodGroup, BodyType, Complexion } from 'src/common/enums';
 @Schema({ _id: false })
 export class Physical {
   @Prop({ required: true })
-  heightCm?: number;
+  height?: number;
 
   @Prop()
-  weightKg?: number;
+  weight?: number;
 
   @Prop()
   bloodGroup?: BloodGroup;

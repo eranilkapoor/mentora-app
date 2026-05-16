@@ -20,7 +20,7 @@ export interface Range {
 // ─── Filters ──────────────────────────────────────────────────────────────────
 export interface PartnerFilters {
   age?: Range;
-  heightCm?: Range;
+  height?: Range;
   annualIncome?: Range;
   maritalStatus?: MaritalStatus[];
   religion?: Religion[];

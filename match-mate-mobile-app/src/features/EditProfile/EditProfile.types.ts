@@ -80,7 +80,7 @@ export interface PersonalSection {
 
 export interface PhysicalSection {
   heightLabel: string;
-  weightKg?: string;
+  weight?: string;
   bloodGroup?: BloodGroup;
   bodyType?: BodyType;
   complexion?: Complexion;

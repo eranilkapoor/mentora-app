@@ -18,14 +18,21 @@ import { Eating } from 'src/common/enums/eating.enum';
 import { Drinking } from 'src/common/enums/drinking.enum';
 import { Smoking } from 'src/common/enums/smoking.enum';
 import {
+  BloodGroup,
   BodyType,
+  Caste,
   Complexion,
+  Country,
   FamilyStatus,
   FamilyType,
   FamilyValue,
+  Hour,
   ManglikStatus,
   MaritalStatus,
+  Minute,
   OccupationType,
+  ProfileFor,
+  Qualification,
   Religion,
   SiblingType,
   TimePeriod,
@@ -47,13 +54,13 @@ export class TimeOfBirthDto {
   @IsNumber()
   @Min(1)
   @Max(12)
-  hour?: number;
+  hour?: Hour;
 
   @IsOptional()
   @IsNumber()
   @Min(0)
   @Max(59)
-  minute?: number;
+  minute?: Minute;
 
   @IsOptional()
   @IsEnum(TimePeriod)
@@ -71,13 +78,13 @@ export class PlaceOfBirthDto {
 
   @IsOptional()
   @IsString()
-  country?: string;
+  country?: Country;
 }
 
 export class PersonalDto {
   @IsString()
   @IsNotEmpty()
-  profileFor!: string;
+  profileFor!: ProfileFor;
 
   @IsString()
   @IsNotEmpty()
@@ -139,11 +146,11 @@ export class PersonalDto {
 
   @IsOptional()
   @IsString()
-  caste?: string;
+  caste?: Caste;
 
   @IsOptional()
-  @IsString()
-  country?: string;
+  @IsEnum(Country)
+  country?: Country;
 
   @IsOptional()
   @IsString()
@@ -210,19 +217,19 @@ export class PersonalDto {
 }
 
 export class PhysicalDto {
-  @IsString()
-  @IsNotEmpty()
-  heightCm!: string;
+  @Type(() => Number)
+  @IsNumber()
+  height!: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
   @Min(0)
-  weightKg?: number;
+  weight?: number;
 
   @IsOptional()
-  @IsString()
-  bloodGroup?: string;
+  @IsEnum(BloodGroup)
+  bloodGroup?: BloodGroup;
 
   @IsOptional()
   @IsEnum(BodyType)
@@ -242,9 +249,9 @@ export class PhysicalDto {
 }
 
 export class EducationDto {
-  @IsString()
   @IsNotEmpty()
-  qualification!: string;
+  @IsEnum(Qualification)
+  qualification!: Qualification;
 
   @IsOptional()
   @IsString()

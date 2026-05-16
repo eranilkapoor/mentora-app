@@ -33,7 +33,7 @@ export class PartnerFilters {
   age?: Range;
 
   @Prop({ type: Range })
-  heightCm?: Range;
+  height?: Range;
 
   @Prop({ type: Range })
   annualIncome?: Range;

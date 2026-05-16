@@ -45,7 +45,7 @@ export class PartnerFiltersDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => RangeDto)
-  heightCm?: RangeDto;
+  height?: RangeDto;
 
   @IsOptional()
   @ValidateNested()

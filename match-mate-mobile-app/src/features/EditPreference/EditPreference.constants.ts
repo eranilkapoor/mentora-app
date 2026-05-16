@@ -31,7 +31,7 @@ export type WeightKey = (typeof WEIGHT_KEYS)[number];
 export const INITIAL_PREFERENCE: PreferenceData = {
   filters: {
     age: { min: 22, max: 35 },
-    heightCm: { min: 150, max: 185 },
+    height: { min: 150, max: 185 },
     annualIncome: { min: 0, max: 1000000 },
     maritalStatus: ['never_married'],
     religion: [],

@@ -53,8 +53,8 @@ export function PhysicalSection({
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.weight')}
-            value={physical.weightKg}
-            onChange={(v) => onSet('weightKg', v)}
+            value={physical.weight}
+            onChange={(v) => onSet('weight', v)}
             keyboardType="numeric"
             placeholder={t('edit_profile.placeholders.weight')}
           />

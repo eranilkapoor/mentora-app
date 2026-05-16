@@ -312,8 +312,8 @@ export default function EditPreferenceScreen({
 
             <RangeInput
               label={t('preference.fields.height')}
-              value={preference.filters.heightCm}
-              onChange={(v) => setFilters('heightCm', v)}
+              value={preference.filters.height}
+              onChange={(v) => setFilters('height', v)}
               minLimit={HEIGHT_RANGE.min}
               maxLimit={HEIGHT_RANGE.max}
               unit="cm"

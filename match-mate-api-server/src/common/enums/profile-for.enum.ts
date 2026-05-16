@@ -8,4 +8,4 @@ export enum ProfileFor {
   RELATIVE = 'relative',
   CLIENT = 'client',
   OTHER = 'other',
-};
+}

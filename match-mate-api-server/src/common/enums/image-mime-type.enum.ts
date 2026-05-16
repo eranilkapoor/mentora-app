@@ -3,6 +3,6 @@ export enum ImageMimeType {
   JPG = 'image/jpg',
   PNG = 'image/png',
   WEBP = 'image/webp',
-  HEIC = 'image/heic', // iPhone support
-  HEIF = 'image/heif', // modern format
+  HEIC = 'image/heic',
+  HEIF = 'image/heif',
 }

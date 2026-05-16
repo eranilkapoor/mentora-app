@@ -9,6 +9,7 @@ import {
   IsBoolean,
   Matches,
   ValidateBy,
+  Min,
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { Gender } from 'src/common/enums/gender.enum';
@@ -24,6 +25,7 @@ import {
   FamilyType,
   FamilyValue,
   MaritalStatus,
+  ProfileFor,
   Qualification,
   Religion,
   SiblingType,
@@ -43,7 +45,7 @@ function isValidDateString(date: string): boolean {
 export class BasicDto {
   @IsString()
   @IsNotEmpty()
-  profileFor!: string;
+  profileFor!: ProfileFor;
 
   @IsString()
   @IsNotEmpty()
@@ -57,7 +59,7 @@ export class BasicDto {
   gender!: Gender;
 
   @IsString()
-  @Matches(/^\d{4}-\d{2}-\d{2}$/)
+  @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'dateOfBirth must be YYYY-MM-DD' })
   @ValidateBy({
     name: 'isValidDate',
     validator: {
@@ -70,8 +72,8 @@ export class BasicDto {
   religion!: Religion;
 
   @IsOptional()
-  @IsString()
-  country?: string;
+  @IsEnum(Country)
+  country?: Country;
 
   @IsEnum(MaritalStatus)
   maritalStatus!: MaritalStatus;
@@ -97,6 +99,7 @@ export class PhysicalDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(0)
   weight?: number;
 
   @IsOptional()
@@ -109,9 +112,9 @@ export class PhysicalDto {
 }
 
 export class EducationDto {
-  @IsString()
   @IsNotEmpty()
-  qualification!: string;
+  @IsEnum(Qualification)
+  qualification!: Qualification;
 
   @IsOptional()
   @IsString()
@@ -130,7 +133,7 @@ export class EducationDto {
   annualIncome?: string;
 }
 
-class SiblingDetail {
+export class SiblingDetailDto {
   @IsNotEmpty()
   @IsEnum(SiblingType, {
     message: 'Type must be either brother or sister',
@@ -150,25 +153,32 @@ export class SiblingsDto {
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(0)
   brothersCount?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(0)
   sistersCount?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(0)
   marriedBrothersCount?: number;
 
   @IsOptional()
   @Type(() => Number)
   @IsNumber()
+  @Min(0)
   marriedSistersCount?: number;
 
   @IsOptional()
-  details?: SiblingDetail[];
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => SiblingDetailDto)
+  details?: SiblingDetailDto[];
 
   @IsOptional()
   @IsString()
@@ -204,6 +214,7 @@ export class FamilyDto {
   @IsEnum(FamilyValue)
   familyValues?: FamilyValue;
 
+  @IsOptional()
   @ValidateNested()
   @Type(() => SiblingsDto)
   siblings?: SiblingsDto;

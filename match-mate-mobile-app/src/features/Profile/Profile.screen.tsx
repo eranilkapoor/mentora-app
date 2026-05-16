@@ -97,9 +97,7 @@ type SchemaProfile = {
     gender?: string;
   };
   physical: {
-    heightCm?: string | number;
     height?: string | number;
-    weightKg?: string | number;
     weight?: string | number;
     bloodGroup?: string;
     bodyType?: string;
@@ -148,7 +146,7 @@ type SchemaProfile = {
   };
   images?: ProfileImage[];
   age?: number;
-  heightCm?: number;
+  height?: number;
   religion?: string;
   caste?: string;
   city?: string;
@@ -194,9 +192,7 @@ const DEFAULT_PROFILE: SchemaProfile = {
   caste: '',
   gender: Genders.MALE,
   physical: {
-    heightCm: '',
     height: '',
-    weightKg: '',
     weight: '',
     bodyType: '',
     complexion: '',
@@ -313,12 +309,12 @@ const getFormattedWeight = (weight: string | number | undefined): string => {
 const getProfileHeight = (
   profile: SchemaProfile
 ): string | number | undefined =>
-  profile.physical.heightCm ?? profile.physical.height ?? profile.heightCm;
+  profile.physical.height ?? profile.physical.height ?? profile.height;
 
 const getProfileWeight = (
   profile: SchemaProfile
 ): string | number | undefined =>
-  profile.physical.weightKg ?? profile.physical.weight;
+  profile.physical.weight ?? profile.physical.weight;
 
 const getProfileIncome = (
   profile: SchemaProfile

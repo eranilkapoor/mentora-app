@@ -35,7 +35,7 @@ import {
 } from '../schemas/settings/privacy-setting.schema';
 import { UpdatePrivacySettingsDto } from '../dto/privacy-media.dto';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
-import { Country, ProfileStatus } from 'src/common/enums';
+import { Country, ProfileStatus, Qualification } from 'src/common/enums';
 import { InjectModel } from '@nestjs/mongoose';
 import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
 import { UserRepository } from 'src/modules/auth/repositories/user.repository';
@@ -263,7 +263,7 @@ export class ProfileService {
       education: dto.education,
       family: dto.family ?? {},
       age,
-      heightCm: dto.physical.heightCm,
+      height: dto.physical.height,
       religion: dto.personal.religion,
       caste: dto.personal.caste,
       city: dto.personal.city,
@@ -304,8 +304,8 @@ export class ProfileService {
         ...dto.physical,
       };
       normalized.physical = merged;
-      if (dto.physical.heightCm) {
-        normalized.heightCm = dto.physical.heightCm;
+      if (dto.physical.height) {
+        normalized.height = dto.physical.height;
       }
     }
 
@@ -356,7 +356,7 @@ export class ProfileService {
             personal.maritalStatus,
           ),
         },
-        physical: { completed: Boolean(physical.heightCm) },
+        physical: { completed: Boolean(physical.height) },
         education: {
           completed: Boolean(education.qualification && education.occupation),
         },
@@ -399,7 +399,7 @@ export class ProfileService {
       Boolean(dto.personal.dateOfBirth),
       Boolean(dto.personal.religion),
       Boolean(dto.personal.maritalStatus),
-      Boolean(dto.physical.heightCm),
+      Boolean(dto.physical.height),
       Boolean(dto.education.qualification),
       Boolean(dto.education.occupation),
       Boolean(dto.personal.aboutMe),
@@ -602,10 +602,10 @@ export class ProfileService {
           country: dto.basic.country,
         },
         physical: {
-          heightCm: this.cmToFeetInches(dto.basic.height).formatted,
+          height: dto.basic.height,
         },
         education: {
-          qualification: dto.basic.qualification,
+          qualification: dto.basic.qualification as Qualification,
           occupation: dto.basic.occupation,
         },
       });
@@ -613,7 +613,7 @@ export class ProfileService {
       await this.preferenceService.createPreference(userId, {
         filters: {
           age: dto.preferences?.ageRange,
-          heightCm: dto.preferences?.heightRange,
+          height: dto.preferences?.heightRange,
           maritalStatus: dto.preferences?.maritalStatus,
           religion: dto.preferences?.religion,
           country: dto.preferences?.country,

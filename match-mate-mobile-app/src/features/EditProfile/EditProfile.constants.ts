@@ -52,7 +52,7 @@ export const INITIAL_PROFILE: ProfileData = {
   },
   physical: {
     heightLabel: '',
-    weightKg: '',
+    weight: '',
     bloodGroup: undefined,
     bodyType: undefined,
     complexion: undefined,

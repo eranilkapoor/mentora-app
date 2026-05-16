@@ -33,4 +33,4 @@ export enum Qualification {
   SKILL_CERTIFICATION = 'skill_certification',
   OTHER = 'other',
   PREFER_NOT_TO_SAY = 'prefer_not_to_say',
-};
+}
