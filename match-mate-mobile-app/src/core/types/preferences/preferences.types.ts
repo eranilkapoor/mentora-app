@@ -2,7 +2,7 @@ import {
   MaritalStatus,
   SmokingHabit,
   DrinkingHabit,
-  DietType,
+  EatingHabit,
 } from '../common/enums';
 import { AgeRange, HeightRange, IncomeRange } from '../common/ranges';
 
@@ -22,7 +22,7 @@ export interface PreferencesData {
   complexion?: string[];
   smoking?: SmokingHabit[];
   drinking?: DrinkingHabit[];
-  diet?: DietType[];
+  eating?: EatingHabit[];
   languagesKnown?: string[];
   aboutPartner?: string;
   isStrict?: boolean;

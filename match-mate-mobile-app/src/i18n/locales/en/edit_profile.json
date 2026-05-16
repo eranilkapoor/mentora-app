@@ -57,7 +57,7 @@
     "family_type": "Family Type",
     "smoking": "Smoking",
     "drinking": "Drinking",
-    "diet": "Diet",
+    "eating": "Eating",
     "hobbies": "Hobbies",
     "languages_known": "Languages Known",
     "has_children": "Has Children",
@@ -101,7 +101,11 @@
     "disability_note": "Brief description...",
     "company_name": "e.g. Infosys",
     "job_role": "e.g. Senior Engineer",
-    "select_date": "Select date"
+    "select_date": "Select date",
+    "mother_tongue": "e.g Hindi",
+    "country": "e.g India",
+    "state": "e.g Delhi",
+    "citizenship": "e.g Indian"
   },
   "date_picker": {
     "title": "Select Date of Birth",

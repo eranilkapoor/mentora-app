@@ -22,16 +22,17 @@ import {
   Country,
   Qualification,
   ProfileFor,
-  GenderOptions,
-  MaritalStatusOptions,
-  ReligionOptions,
-  CountryOptions,
-  QualificationOptions,
-  ProfileForOptions,
-  DayOptions,
-  MonthOptions,
-  YearOptions,
+  Genders,
+  ProfileFors,
+  MaritalStatuses,
+  Religions,
+  Qualifications,
+  Countries,
+  Days,
+  Months,
+  Years,
 } from '@/core/types';
+import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 
 interface Props {
   basic: BasicData;
@@ -55,6 +56,9 @@ function DatePickerModal({
 }: DatePickerModalProps): React.ReactElement {
   const { t } = useTranslation();
   const styles = useThemedStyles(onboardingStyles);
+  const DayOptions = useEnumOptions(Days, 'options.days');
+  const MonthOptions = useEnumOptions(Months, 'options.months');
+  const YearOptions = useEnumOptions(Years, 'options.years');
 
   const initialParts = currentValue ? currentValue.split('-') : [];
   const [day, setDay] = useState(initialParts[2] ?? '');
@@ -146,7 +150,13 @@ export function BasicStep({
   const styles = useThemedStyles(onboardingStyles);
 
   const [datePickerVisible, setDatePickerVisible] = useState(false);
-
+  const GenderOptions = useEnumOptions(Genders, 'options.gender');
+  const ProfileForOptions = useEnumOptions(ProfileFors, 'options.profile_for');
+  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital');
+  const ReligionOptions = useEnumOptions(Religions, 'options.religion');
+  const QualificationOptions = useEnumOptions(Qualifications, 'options.qualification');
+  const CountryOptions = useEnumOptions(Countries, 'options.countries');
+  
   const inputStyle = useCallback(
     (field: string) =>
       errors[field] ? [styles.input, styles.inputError] : [styles.input],

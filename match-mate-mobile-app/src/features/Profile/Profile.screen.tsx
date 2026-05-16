@@ -88,7 +88,7 @@ type SchemaProfile = {
     daughtersCount?: number;
     smoking?: string;
     drinking?: string;
-    diet?: string;
+    eating?: string;
     hobbies?: string[];
     languages?: string[];
     languagesKnown?: string[];
@@ -185,7 +185,7 @@ const DEFAULT_PROFILE: SchemaProfile = {
     aboutMe: '',
     smoking: SmokingHabits.NON_SMOKER,
     drinking: DrinkingHabits.NON_DRINKER,
-    diet: '',
+    eating: '',
     hobbies: [],
     languages: [],
     languagesKnown: [],
@@ -488,7 +488,7 @@ const getPdfRows = (profile: SchemaProfile): Array<[string, string]> => [
   ['Disability', toDisplayText(profile.physical.disabilityStatus)],
   ['Smoking', formatLifestyleChoice(profile.personal.smoking ?? '')],
   ['Drinking', formatLifestyleChoice(profile.personal.drinking ?? '')],
-  ['Diet', formatLifestyleChoice(profile.personal.diet ?? '')],
+  ['Eating', formatLifestyleChoice(profile.personal.eating ?? '')],
   ['Father', formatProfileText(profile.family?.fatherName)],
   ['Mother', formatProfileText(profile.family?.motherName)],
   ['Father Occupation', formatProfileText(profile.family?.fatherOccupation)],
@@ -1083,8 +1083,8 @@ export default function ProfileScreen({
             value={formatLifestyleChoice(profileData.personal.drinking ?? '')}
           />
           <Row
-            label="Diet"
-            value={formatLifestyleChoice(profileData.personal.diet ?? '')}
+            label="Eating"
+            value={formatLifestyleChoice(profileData.personal.eating ?? '')}
           />
         </Section>
 

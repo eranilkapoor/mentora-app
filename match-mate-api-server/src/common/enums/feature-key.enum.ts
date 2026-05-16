@@ -202,7 +202,7 @@ export enum FeatureKey {
   MARRIAGE_TIMELINE_PREFERENCE = 'marriage_timeline_preference',
   CHILDREN_PREFERENCE = 'children_preference',
 
-  DIET_PREFERENCES = 'diet_preferences',
+  EATING_PREFERENCES = 'eating_preferences',
   LIFESTYLE_PREFERENCES = 'lifestyle_preferences',
 
   // ==========================================

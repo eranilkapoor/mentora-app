@@ -3,6 +3,17 @@
     "male": "Male",
     "female": "Female"
   },
+  "profile_for": {
+    "self": "Self",
+    "son": "Son",
+    "daughter": "Daughter",
+    "brother": "Brother",
+    "sister": "Sister",
+    "friend": "Friend",
+    "relative": "Relative",
+    "client": "Client",
+    "other": "Other"
+  },
   "marital": {
     "never_married": "Never Married",
     "divorced": "Divorced",
@@ -29,21 +40,21 @@
     "nuclear": "Nuclear",
     "extended": "Extended"
   },
-  "smoking": {
+  "smoking_habits": {
     "non_smoker": "Non Smoker",
     "occasionally": "Occasionally",
     "regular": "Regular",
     "trying_to_quit": "Trying to Quit",
     "open_to": "Open To"
   },
-  "drinking": {
+  "drinking_habits": {
     "non_drinker": "Non Drinker",
     "occasionally": "Occasionally",
     "regular": "Regular",
     "open_to": "Open To",
     "socially": "Socially"
   },
-  "diet": {
+  "eating_habits": {
     "vegetarian": "Vegetarian",
     "non_vegetarian": "Non Vegetarian",
     "eggetarian": "Eggetarian",

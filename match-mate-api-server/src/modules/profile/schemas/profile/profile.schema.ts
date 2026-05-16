@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
-import { Caste, Gender, ProfileStatus, Religion } from 'src/common/enums';
+import { ProfileFor, ProfileStatus } from 'src/common/enums';
 import { Education } from './education.schema';
 import { Physical } from './physical.schema';
 import { Personal } from './personal.schema';
@@ -25,8 +25,8 @@ export class Profile {
   @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
 
-  @Prop({ required: true })
-  profileFor!: string;
+  @Prop({ enum: ProfileFor, required: true })
+  profileFor!: ProfileFor;
 
   @Prop({ type: Personal, required: true })
   personal!: Personal;
@@ -43,23 +43,8 @@ export class Profile {
   @Prop()
   age!: number;
 
-  @Prop({ index: true })
-  heightCm!: number;
-
-  @Prop({ enum: Religion })
-  religion!: Religion;
-
-  @Prop({ enum: Caste })
-  caste?: Caste;
-
-  @Prop()
-  city?: string;
-
   @Prop({ type: GeoLocation })
   location?: GeoLocation;
-
-  @Prop({ enum: Gender })
-  gender!: Gender;
 
   @Prop({ default: 0 })
   profileScore!: number;
@@ -103,11 +88,7 @@ export type ProfileDocument = Profile & Document;
 export const ProfileSchema = SchemaFactory.createForClass(Profile);
 
 ProfileSchema.index({
-  gender: 1,
   age: 1,
-  religion: 1,
-  caste: 1,
-  city: 1,
   status: 1,
 });
 ProfileSchema.index({

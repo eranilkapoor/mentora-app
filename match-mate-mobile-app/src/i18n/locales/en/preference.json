@@ -8,7 +8,7 @@
   "education": "Education",
   "occupation": "Occupation",
   "income": "Income",
-  "diet": "Diet",
+  "eating": "Eating",
   "smoking": "Smoking",
   "drinking": "Drinking",
   "languages_known": "Languages Known",
@@ -52,7 +52,7 @@
     "complexion": "Complexion",
     "smoking": "Smoking",
     "drinking": "Drinking",
-    "diet": "Diet",
+    "eating": "Eating",
     "languages": "Languages"
   },
   "placeholders": {

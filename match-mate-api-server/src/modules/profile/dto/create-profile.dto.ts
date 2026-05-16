@@ -14,7 +14,7 @@ import {
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { Gender } from 'src/common/enums/gender.enum';
-import { Diet } from 'src/common/enums/diet.enum';
+import { Eating } from 'src/common/enums/eating.enum';
 import { Drinking } from 'src/common/enums/drinking.enum';
 import { Smoking } from 'src/common/enums/smoking.enum';
 import {
@@ -191,8 +191,8 @@ export class PersonalDto {
   drinking?: Drinking;
 
   @IsOptional()
-  @IsEnum(Diet)
-  diet?: Diet;
+  @IsEnum(Eating)
+  eating?: Eating;
 
   @IsOptional()
   @IsArray()

@@ -303,18 +303,6 @@ export const CUISINES = [
   'Spanish',
 ];
 
-export const DIETARY_RESTRICTIONS = [
-  'Vegetarian',
-  'Vegan',
-  'Gluten-Free',
-  'Lactose-Free',
-  'Nut-Free',
-  'Halal',
-  'Kosher',
-  'No Restrictions',
-  'Prefer not to say',
-];
-
 export const FAMILY_TYPES = [
   'Joint',
   'Nuclear',

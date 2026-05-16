@@ -50,7 +50,7 @@ export const INITIAL_PREFERENCE: PreferenceData = {
     complexion: [],
     smoking: [],
     drinking: [],
-    diet: [],
+    eating: [],
     languages: [],
   },
   settings: {

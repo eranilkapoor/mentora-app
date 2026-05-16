@@ -1710,10 +1710,10 @@ export class MasterSeederService implements OnApplicationBootstrap {
       },
 
       {
-        key: FeatureKey.DIET_PREFERENCES,
-        name: 'Diet Preferences',
+        key: FeatureKey.EATING_PREFERENCES,
+        name: 'Eating Preferences',
         category: FeatureCategory.MATRIMONY,
-        description: 'Filter matches by diet preferences',
+        description: 'Filter matches by eating preferences',
         type: 'boolean',
         defaultValue: false,
         isActive: true,
@@ -2559,7 +2559,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
       [FeatureKey.COMMUNITY_BASED_MATCHING, 1],
       [FeatureKey.MARRIAGE_TIMELINE_PREFERENCE, 1],
       [FeatureKey.CHILDREN_PREFERENCE, 1],
-      [FeatureKey.DIET_PREFERENCES, 1],
+      [FeatureKey.EATING_PREFERENCES, 1],
       [FeatureKey.LIFESTYLE_PREFERENCES, 1],
 
       [FeatureKey.FAMILY_MANAGED_PROFILE, 1],

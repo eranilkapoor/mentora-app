@@ -8,7 +8,7 @@
   "education": "शिक्षा",
   "occupation": "पेशा",
   "income": "आय",
-  "diet": "आहार",
+  "eating": "आहार",
   "smoking": "धूम्रपान",
   "drinking": "शराब सेवन",
   "languages_known": "ज्ञात भाषाएं",
@@ -52,7 +52,7 @@
     "complexion": "रंग-रूप",
     "smoking": "धूम्रपान",
     "drinking": "शराब सेवन",
-    "diet": "आहार",
+    "eating": "आहार",
     "languages": "भाषाएं"
   },
   "placeholders": {

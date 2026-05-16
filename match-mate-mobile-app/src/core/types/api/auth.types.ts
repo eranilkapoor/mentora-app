@@ -7,7 +7,7 @@ export interface LoginRequest {
 
 export interface LoginResponse {
   accessToken: string;
-  refreshToken?: string; // Optional: only for mobile
+  refreshToken?: string;
   user: User;
 }
 
@@ -18,7 +18,7 @@ export interface RegisterRequest {
 
 export interface RegisterResponse {
   accessToken: string;
-  refreshToken?: string; // Optional: only for mobile
+  refreshToken?: string;
   user: User;
 }
 
@@ -45,7 +45,7 @@ export interface SocialLoginRequest {
 
 export interface SocialLoginResponse {
   accessToken: string;
-  refreshToken?: string; // Optional: only for mobile
+  refreshToken?: string;
   user: User;
 }
 

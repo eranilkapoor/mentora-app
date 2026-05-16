@@ -14,13 +14,15 @@ import {
   BodyType,
   Caste,
   Complexion,
-  Diet,
+  Eating,
   Drinking,
   ManglikStatus,
   MaritalStatus,
   OccupationType,
   Religion,
   Smoking,
+  Qualification,
+  Country,
 } from 'src/common/enums';
 import { ChildPreference, ResidencyPreference } from 'src/common/enums';
 
@@ -85,8 +87,8 @@ export class PartnerFiltersDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  country?: string[];
+  @IsEnum(Country, { each: true })
+  country?: Country[];
 
   @IsOptional()
   @IsArray()
@@ -100,8 +102,8 @@ export class PartnerFiltersDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  qualification?: string[];
+  @IsEnum(Qualification, { each: true })
+  qualification?: Qualification[];
 
   @IsOptional()
   @IsArray()
@@ -135,8 +137,8 @@ export class PartnerFiltersDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(Diet, { each: true })
-  diet?: Diet[];
+  @IsEnum(Eating, { each: true })
+  eating?: Eating[];
 
   @IsOptional()
   @IsArray()

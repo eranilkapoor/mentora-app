@@ -2,11 +2,13 @@ import {
   BloodGroup,
   BodyType,
   Complexion,
-  DietType,
+  Country,
+  EatingHabit,
   DrinkingHabit,
   FamilyStatus,
   FamilyType,
   FamilyValue,
+  Gender,
   Hour,
   ManglikStatus,
   MaritalStatus,
@@ -48,6 +50,7 @@ export interface Siblings {
 export interface PersonalSection {
   firstName: string;
   lastName?: string;
+  gender: Gender;
   dateOfBirth: string;
   timeOfBirth?: TimeOfBirth;
   placeOfBirth?: PlaceOfBirth;
@@ -57,8 +60,9 @@ export interface PersonalSection {
   rashi?: string;
   nakshatra?: string;
   kundliFileUrl?: string;
-  country?: string;
+  country: Country;
   state?: string;
+  city?: string;
   citizenship?: string;
   willingToRelocate?: boolean;
   motherTongue?: string;
@@ -68,14 +72,14 @@ export interface PersonalSection {
   daughtersCount?: number;
   smoking?: SmokingHabit;
   drinking?: DrinkingHabit;
-  diet?: DietType;
+  eating: EatingHabit;
   hobbies?: string[];
   languages?: string[];
   aboutMe?: string;
 }
 
 export interface PhysicalSection {
-  heightCm: string;
+  heightLabel: string;
   weightKg?: string;
   bloodGroup?: BloodGroup;
   bodyType?: BodyType;

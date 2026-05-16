@@ -1,5 +1,5 @@
 export interface PhysicalData {
-  height: string;
+  heightLabel: string;
   weight: string;
   bodyType: string;
   complexion: string;

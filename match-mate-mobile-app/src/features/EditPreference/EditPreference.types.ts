@@ -2,7 +2,7 @@ import {
   BodyType,
   ChildPreference,
   Complexion,
-  DietType,
+  EatingHabit,
   DrinkingHabit,
   ManglikStatus,
   MaritalStatus,
@@ -39,7 +39,7 @@ export interface PartnerFilters {
   complexion?: Complexion[];
   smoking?: SmokingHabit[];
   drinking?: DrinkingHabit[];
-  diet?: DietType[];
+  eating?: EatingHabit[];
   languages?: string[];
 }
 

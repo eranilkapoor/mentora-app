@@ -16,6 +16,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { MediaService } from '../services/media.service';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { ApiResponse } from 'src/common/dto/api-response.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('profile/media')
@@ -25,18 +26,20 @@ export class MediaController {
   // ─── Images ────────────────────────────────────────────────────────────────
 
   @Get('images')
-  getImages(@Req() req: AuthenticatedRequest) {
-    return this.mediaService.getImages(req.user.sub);
+  async getImages(@Req() req: AuthenticatedRequest) {
+    const data = await this.mediaService.getImages(req.user.sub);
+    return new ApiResponse(true, 'Profile images successfully feathed', data);
   }
 
   @Post('images')
   @UseInterceptors(FilesInterceptor('images', 10))
   @HttpCode(HttpStatus.CREATED)
-  uploadImages(
+  async uploadImages(
     @Req() req: AuthenticatedRequest,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.mediaService.addImages(req, req.user.sub, files);
+    const data = await this.mediaService.addImages(req, req.user.sub, files);
+    return new ApiResponse(true, 'Profile images successfully added', data);
   }
 
   @Patch('images/:mediaId/primary')

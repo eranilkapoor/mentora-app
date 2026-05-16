@@ -29,7 +29,7 @@ export class ProfileRepository {
       return await this.profileModel
         .findOne(
           { userId: new Types.ObjectId(userId), deletedAt: { $exists: false } },
-          { __v: 0 },
+          { __v: 0, _id: 0, createdAt:0, updatedAt: 0 },
         )
         .lean();
     } catch (error) {

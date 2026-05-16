@@ -6,7 +6,7 @@ import {
   Caste,
   ChildPreference,
   Complexion,
-  Diet,
+  Eating,
   Drinking,
   ManglikStatus,
   MaritalStatus,
@@ -14,6 +14,8 @@ import {
   Religion,
   ResidencyPreference,
   Smoking,
+  Qualification,
+  Country,
 } from 'src/common/enums';
 
 @Schema({ _id: false })
@@ -60,8 +62,8 @@ export class PartnerFilters {
   })
   residencyPreference!: ResidencyPreference;
 
-  @Prop({ type: [String], default: [] })
-  country?: string[];
+  @Prop({ type: [String], enum: Country, default: [] })
+  country?: Country[];
 
   @Prop({ type: [String], default: [] })
   state?: string[];
@@ -69,8 +71,8 @@ export class PartnerFilters {
   @Prop({ type: [String], default: [] })
   city?: string[];
 
-  @Prop({ type: [String], default: [] })
-  qualification?: string[];
+  @Prop({ type: [String], enum: Qualification, default: [] })
+  qualification?: Qualification[];
 
   @Prop({ type: [String], enum: OccupationType, default: [] })
   occupationType?: OccupationType[];
@@ -90,8 +92,8 @@ export class PartnerFilters {
   @Prop({ type: [String], enum: Drinking, default: [] })
   drinking?: Drinking[];
 
-  @Prop({ type: [String], enum: Diet, default: [] })
-  diet?: Diet[];
+  @Prop({ type: [String], enum: Eating, default: [] })
+  eating?: Eating[];
 
   @Prop({ type: [String], default: [] })
   languages?: string[];

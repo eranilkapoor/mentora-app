@@ -1,3 +1,4 @@
+import { Countries, EatingHabits, DrinkingHabits, Genders, ManglikStatuses, MaritalStatuses, SmokingHabits } from '@/core/types';
 import { ProfileData, Siblings } from './EditProfile.types';
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -14,16 +15,17 @@ export const INITIAL_PROFILE: ProfileData = {
   personal: {
     firstName: '',
     lastName: '',
+    gender: Genders.MALE,
     dateOfBirth: '',
-    maritalStatus: 'never_married',
+    maritalStatus: MaritalStatuses.NEVER_MARRIED,
     willingToRelocate: false,
     hasChildren: false,
     sonsCount: 0,
     daughtersCount: 0,
-    manglikStatus: 'non_manglik',
-    smoking: 'non_smoker',
-    drinking: 'non_drinker',
-    diet: 'vegetarian',
+    manglikStatus: ManglikStatuses.NON_MANGLIK,
+    smoking: SmokingHabits.NON_SMOKER,
+    drinking: DrinkingHabits.NON_DRINKER,
+    eating: EatingHabits.VEGETARIAN,
     hobbies: [],
     languages: [],
     aboutMe: '',
@@ -42,13 +44,14 @@ export const INITIAL_PROFILE: ProfileData = {
     rashi: '',
     nakshatra: '',
     kundliFileUrl: '',
-    country: '',
+    country: Countries.INDIA,
     state: '',
+    city: '',
     citizenship: '',
     motherTongue: '',
   },
   physical: {
-    heightCm: '',
+    heightLabel: '',
     weightKg: '',
     bloodGroup: undefined,
     bodyType: undefined,

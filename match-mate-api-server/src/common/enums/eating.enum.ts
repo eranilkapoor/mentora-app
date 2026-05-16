@@ -1,4 +1,4 @@
-export enum Diet {
+export enum Eating {
   VEGETARIAN = 'vegetarian',
   NON_VEGETARIAN = 'non_vegetarian',
   EGGETARIAN = 'eggetarian',

@@ -7,6 +7,7 @@ import {
   FamilyData,
   PreferencesData,
   OnbardingResponse,
+  ProfileImage,
 } from '../../core/types';
 import { baseApi } from './baseApi';
 
@@ -86,6 +87,23 @@ export const profileApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Profile'],
     }),
+
+    getMyProfileMediaImages: builder.query<ApiResponse<ProfileImage[]>, void>({
+      query: () => '/profile/media/images',
+      providesTags: ['Profile'],
+    }),
+
+    addProfileMediaImages: builder.mutation<
+      ApiResponse<ProfileImage[]>,
+      FormData
+    >({
+      query: (body) => ({
+        url: '/profile/media/images',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Profile'],
+    }),
   }),
 
   overrideExisting: false,
@@ -100,4 +118,6 @@ export const {
   useUpdateEducationInfoMutation,
   useUpdateFamilyInfoMutation,
   useUpdatePreferencesMutation,
+  useGetMyProfileMediaImagesQuery,
+  useAddProfileMediaImagesMutation
 } = profileApi;

@@ -12,17 +12,19 @@ import {
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { Gender } from 'src/common/enums/gender.enum';
-import { Diet } from 'src/common/enums/diet.enum';
+import { Eating } from 'src/common/enums/eating.enum';
 import { Drinking } from 'src/common/enums/drinking.enum';
 import { Smoking } from 'src/common/enums/smoking.enum';
 import {
   BodyType,
   Caste,
   Complexion,
+  Country,
   FamilyStatus,
   FamilyType,
   FamilyValue,
   MaritalStatus,
+  Qualification,
   Religion,
   SiblingType,
 } from 'src/common/enums';
@@ -245,8 +247,8 @@ export class PreferencesDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  country?: string[];
+  @IsEnum(Country, { each: true })
+  country?: Country[];
 
   @IsOptional()
   @IsArray()
@@ -260,8 +262,8 @@ export class PreferencesDto {
 
   @IsOptional()
   @IsArray()
-  @IsString({ each: true })
-  qualification?: string[];
+  @IsEnum(Qualification, { each: true })
+  qualification?: Qualification[];
 
   @IsOptional()
   @IsArray()
@@ -295,8 +297,8 @@ export class PreferencesDto {
 
   @IsOptional()
   @IsArray()
-  @IsEnum(Diet, { each: true })
-  diet?: Diet[];
+  @IsEnum(Eating, { each: true })
+  eating?: Eating[];
 
   @IsOptional()
   @IsArray()

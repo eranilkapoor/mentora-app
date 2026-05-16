@@ -39,12 +39,13 @@ async function bootstrap() {
   app.use(
     helmet({
       contentSecurityPolicy: false, // Swagger compatibility
+      crossOriginResourcePolicy: false, // IMPORTANT
     }),
   );
 
   // Body Size Limit
-  app.use(express.json({ limit: '2mb' }));
-  app.use(express.urlencoded({ limit: '2mb', extended: true }));
+  app.use(express.json({ limit: '10mb' }));
+  app.use(express.urlencoded({ limit: '10mb', extended: true }));
   app.use(cookieParser()); // MUST be before any routes
 
   // CORS (secure)
@@ -60,7 +61,7 @@ async function bootstrap() {
       }
     },
     credentials: true,
-    methods: ['GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS'],
+    methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'],
     allowedHeaders: [
       'Content-Type',
       'Authorization',
@@ -169,6 +170,22 @@ async function bootstrap() {
     prefix: '/uploads',
   });
 
+  const uploadsPath = path.join(process.cwd(), 'uploads');
+
+  app.use(
+    '/uploads',
+    express.static(uploadsPath, {
+      maxAge: '7d',
+      etag: true,
+      lastModified: true,
+
+      setHeaders: (res) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      },
+    }),
+  );
+  
   // ==========================================
   // START SERVER
   // ==========================================

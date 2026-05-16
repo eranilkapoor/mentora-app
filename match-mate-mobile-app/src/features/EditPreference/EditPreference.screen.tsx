@@ -50,21 +50,21 @@ import { PreferenceToggleRow } from './components/PreferenceToggleRow';
 import { WeightSlider } from './components/WeightSlider';
 import { ScoreStepper } from './components/ScoreStepper';
 import {
-  BodyTypeOptions,
-  CasteOptions,
   ChildPreference,
-  ChildPreferenceOptions,
-  ComplexionOptions,
-  DietTypeOptions,
-  DrinkingOptions,
-  ManglikStatusOptions,
-  MaritalStatusOptions,
-  OccupationTypeOptions,
-  ReligionOptions,
+  EatingHabits,
+  DrinkingHabits,
+  MaritalStatuses,
   ResidencyPreference,
-  ResidencyPreferenceOptions,
-  SmokingOptions,
+  SmokingHabits,
+  BodyTypes,
+  Complexions,
+  Religions,
+  Castes,
+  ChildPreferences,
+  ResidencyPreferences,
+  OccupationTypes,
 } from '@/core/types';
+import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 
 const ABOUT_PARTNER_MAX = 500;
 
@@ -81,6 +81,18 @@ export default function EditPreferenceScreen({
   const styles = useThemedStyles(editPreferenceStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital');
+  const SmokingHabitsOptions = useEnumOptions(SmokingHabits, 'options.smoking_habits');
+  const DrinkingHabitsOptions = useEnumOptions(DrinkingHabits, 'options.drinking_habits');
+  const EatingHabitsOptions = useEnumOptions(EatingHabits, 'options.eating_habits');
+  const BodyTypeOptions = useEnumOptions(BodyTypes, 'options.body_types');
+  const ComplexionOptions = useEnumOptions(Complexions, 'options.complexion');
+  const ManglikStatusOptions = useEnumOptions(MaritalStatuses, 'options.manglik_status');
+  const ReligionOptions = useEnumOptions(Religions, 'options.religion');
+  const CasteOptions = useEnumOptions(Castes, 'options.caste');
+  const ChildPreferenceOptions = useEnumOptions(ChildPreferences, 'options.child_preferences');
+  const ResidencyPreferenceOptions = useEnumOptions(ResidencyPreferences, 'options.residency_preferences');
+  const OccupationTypeOptions = useEnumOptions(OccupationTypes, 'options.occupation_types');
 
   const [preference, setPreference] =
     useState<PreferenceData>(INITIAL_PREFERENCE);
@@ -477,7 +489,7 @@ export default function EditPreferenceScreen({
           >
             <MultiSelectPill
               label={t('preference.fields.smoking')}
-              options={SmokingOptions}
+              options={SmokingHabitsOptions}
               value={preference.filters.smoking}
               onChange={(v) => setFilters('smoking', v)}
               i18nPrefix="options.smoking"
@@ -485,18 +497,18 @@ export default function EditPreferenceScreen({
 
             <MultiSelectPill
               label={t('preference.fields.drinking')}
-              options={DrinkingOptions}
+              options={DrinkingHabitsOptions}
               value={preference.filters.drinking}
               onChange={(v) => setFilters('drinking', v)}
               i18nPrefix="options.drinking"
             />
 
             <MultiSelectPill
-              label={t('preference.fields.diet')}
-              options={DietTypeOptions}
-              value={preference.filters.diet}
-              onChange={(v) => setFilters('diet', v)}
-              i18nPrefix="options.diet"
+              label={t('preference.fields.eating')}
+              options={EatingHabitsOptions}
+              value={preference.filters.eating}
+              onChange={(v) => setFilters('eating', v)}
+              i18nPrefix="options.eating"
             />
 
             <PreferenceTagInput

@@ -1,6 +1,7 @@
 import {
   Country,
   DrinkingHabit,
+  EatingHabit,
   Gender,
   MaritalStatus,
   ProfileFor,
@@ -23,22 +24,21 @@ export interface BasicData {
   height: string;
 }
 export interface PersonalData {
-  profileFor: ProfileFor;
   firstName: string;
-  lastName: string;
+  lastName?: string;
   gender: Gender;
   dateOfBirth: string;
-  country: Country;
-  state: string;
-  city: string;
-  motherTongue: string;
+  country?: Country;
+  state?: string;
+  city?: string;
+  motherTongue?: string;
   maritalStatus: MaritalStatus;
-  aboutMe: string;
+  aboutMe?: string;
   smoking: SmokingHabit;
   drinking: DrinkingHabit;
-  diet: string;
+  eating: EatingHabit;
   hobbies: [];
-  languagesKnown: [];
+  languages: [];
 }
 
 export interface MatchProfile {

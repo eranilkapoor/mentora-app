@@ -29,5 +29,5 @@ export interface VerifyOtpResponse {
     isOnboardingCompleted: boolean;
   };
   accessToken: string;
-  refreshToken?: string; // Optional: only for mobile
+  refreshToken?: string;
 }

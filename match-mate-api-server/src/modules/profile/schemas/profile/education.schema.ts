@@ -1,10 +1,10 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { OccupationType } from 'src/common/enums';
+import { OccupationType, Qualification } from 'src/common/enums';
 
 @Schema({ _id: false })
 export class Education {
-  @Prop({ required: true })
-  qualification!: string;
+  @Prop({ enum: Qualification, required: true })
+  qualification!: Qualification;
 
   @Prop()
   field?: string;

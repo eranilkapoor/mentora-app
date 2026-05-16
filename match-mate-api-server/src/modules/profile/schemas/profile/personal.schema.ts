@@ -1,6 +1,6 @@
 import { Prop, Schema } from '@nestjs/mongoose';
 import {
-  Diet,
+  Eating,
   Drinking,
   Hour,
   ManglikStatus,
@@ -8,6 +8,10 @@ import {
   Minute,
   Smoking,
   TimePeriod,
+  Gender,
+  Religion,
+  Caste,
+  Country,
 } from 'src/common/enums';
 
 @Schema({ _id: false })
@@ -19,7 +23,7 @@ class PlaceOfBirth {
   state?: string;
 
   @Prop()
-  country?: string;
+  country?: Country;
 }
 
 @Schema({ _id: false })
@@ -42,6 +46,9 @@ export class Personal {
   @Prop()
   lastName?: string;
 
+  @Prop({ enum: Gender })
+  gender!: Gender;
+
   @Prop({
     type: String,
     required: true,
@@ -54,6 +61,12 @@ export class Personal {
 
   @Prop({ type: PlaceOfBirth })
   placeOfBirth?: PlaceOfBirth;
+
+  @Prop({ enum: Religion })
+  religion!: Religion;
+
+  @Prop({ enum: Caste })
+  caste?: Caste;
 
   @Prop()
   subCast?: string;
@@ -74,10 +87,13 @@ export class Personal {
   kundliFileUrl?: string;
 
   @Prop()
-  country?: string;
+  country?: Country;
 
   @Prop()
   state?: string;
+
+  @Prop()
+  city?: string;
 
   @Prop()
   citizenship?: string;
@@ -106,8 +122,8 @@ export class Personal {
   @Prop({ enum: Drinking })
   drinking?: Drinking;
 
-  @Prop({ enum: Diet })
-  diet?: Diet;
+  @Prop({ enum: Eating })
+  eating?: Eating;
 
   @Prop({ type: [String], default: [] })
   hobbies?: string[];

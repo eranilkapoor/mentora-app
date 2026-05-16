@@ -1,24 +1,14 @@
-import { useEnumOptions } from '@/core/hooks/useEnumOptions';
-
-// ─── Helper ───────────────────────────────────────────────────────────────────
-const toLabel = (value: string): string =>
-  value.replace(/_/g, ' ').replace(/\b\w/g, (c) => c.toUpperCase());
-
 // ─── Gender ───────────────────────────────────────────────────────────────────
+
 export const Genders = {
   MALE: 'male',
   FEMALE: 'female',
 } as const;
 
 export type Gender = (typeof Genders)[keyof typeof Genders];
-// export const GenderOptions = useEnumOptions(Genders, 'common.gender');
-
-export const GenderOptions = Object.values(Genders).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
 
 // ─── Profile For ──────────────────────────────────────────────────────────────
+
 export const ProfileFors = {
   SELF: 'self',
   SON: 'son',
@@ -33,12 +23,8 @@ export const ProfileFors = {
 
 export type ProfileFor = (typeof ProfileFors)[keyof typeof ProfileFors];
 
-export const ProfileForOptions = Object.values(ProfileFors).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
-
 // ─── Marital Status ───────────────────────────────────────────────────────────
+
 export const MaritalStatuses = {
   NEVER_MARRIED: 'never_married',
   DIVORCED: 'divorced',
@@ -49,14 +35,8 @@ export const MaritalStatuses = {
 export type MaritalStatus =
   (typeof MaritalStatuses)[keyof typeof MaritalStatuses];
 
-export const MaritalStatusOptions = Object.values(MaritalStatuses).map(
-  (value) => ({
-    label: toLabel(value),
-    value,
-  })
-);
+// ─── Smoking Habit ──────────────────────────────────────────────────────────────────
 
-// ─── Smoking Habits ──────────────────────────────────────────────────────────────────
 export const SmokingHabits = {
   NON_SMOKER: 'non_smoker',
   OCCASIONALLY: 'occasionally',
@@ -67,12 +47,8 @@ export const SmokingHabits = {
 
 export type SmokingHabit = (typeof SmokingHabits)[keyof typeof SmokingHabits];
 
-export const SmokingOptions = Object.values(SmokingHabits).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
+// ─── Drinking Habit ─────────────────────────────────────────────────────────────────
 
-// ─── Drinking Habits ─────────────────────────────────────────────────────────────────
 export const DrinkingHabits = {
   NON_DRINKER: 'non_drinker',
   OCCASIONALLY: 'occasionally',
@@ -84,14 +60,9 @@ export const DrinkingHabits = {
 export type DrinkingHabit =
   (typeof DrinkingHabits)[keyof typeof DrinkingHabits];
 
-export const DrinkingOptions = Object.values(DrinkingHabits).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
+// ─── Eating Habit ─────────────────────────────────────────────────────────────────────
 
-// ─── Diet ─────────────────────────────────────────────────────────────────────
-
-export const DietTypes = {
+export const EatingHabits = {
   VEGETARIAN: 'vegetarian',
   NON_VEGETARIAN: 'non_vegetarian',
   EGGETARIAN: 'eggetarian',
@@ -103,12 +74,7 @@ export const DietTypes = {
   OPEN_TO: 'open_to',
 } as const;
 
-export type DietType = (typeof DietTypes)[keyof typeof DietTypes];
-
-export const DietTypeOptions = Object.values(DietTypes).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
+export type EatingHabit = (typeof EatingHabits)[keyof typeof EatingHabits];
 
 // ─── Sibling Type ─────────────────────────────────────────────────────────────
 
@@ -118,11 +84,6 @@ export const SiblingTypes = {
 } as const;
 
 export type SiblingType = (typeof SiblingTypes)[keyof typeof SiblingTypes];
-
-export const SiblingTypeOptions = Object.values(SiblingTypes).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
 
 // ─── Body Type ────────────────────────────────────────────────────────────────
 
@@ -138,11 +99,6 @@ export const BodyTypes = {
 
 export type BodyType = (typeof BodyTypes)[keyof typeof BodyTypes];
 
-export const BodyTypeOptions = Object.values(BodyTypes).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
-
 // ─── Complexion ───────────────────────────────────────────────────────────────
 
 export const Complexions = {
@@ -153,11 +109,6 @@ export const Complexions = {
 } as const;
 
 export type Complexion = (typeof Complexions)[keyof typeof Complexions];
-
-export const ComplexionOptions = Object.values(Complexions).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
 
 // ─── Manglik Status ───────────────────────────────────────────────────────────
 
@@ -170,13 +121,6 @@ export const ManglikStatuses = {
 
 export type ManglikStatus =
   (typeof ManglikStatuses)[keyof typeof ManglikStatuses];
-
-export const ManglikStatusOptions = Object.values(ManglikStatuses).map(
-  (value) => ({
-    label: toLabel(value),
-    value,
-  })
-);
 
 // ─── Religion ─────────────────────────────────────────────────────────────────
 
@@ -195,10 +139,7 @@ export const Religions = {
 
 export type Religion = (typeof Religions)[keyof typeof Religions];
 
-export const ReligionOptions = Object.values(Religions).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
+// ─── Caste ─────────────────────────────────────────────────────────────────
 
 export const Castes = {
   GENERAL: 'general',
@@ -210,11 +151,6 @@ export const Castes = {
 } as const;
 
 export type Caste = (typeof Castes)[keyof typeof Castes];
-
-export const CasteOptions = Object.values(Castes).map((value) => ({
-  value,
-  label: toLabel(value),
-}));
 
 // ─── Qualification ────────────────────────────────────────────────────────────
 
@@ -258,13 +194,6 @@ export const Qualifications = {
 export type Qualification =
   (typeof Qualifications)[keyof typeof Qualifications];
 
-export const QualificationOptions = Object.values(Qualifications).map(
-  (value) => ({
-    label: toLabel(value),
-    value,
-  })
-);
-
 // ─── Country ──────────────────────────────────────────────────────────────────
 
 export const Countries = {
@@ -292,11 +221,6 @@ export const Countries = {
 } as const;
 
 export type Country = (typeof Countries)[keyof typeof Countries];
-
-export const CountryOptions = Object.values(Countries).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
 
 // ─── Day ──────────────────────────────────────────────────────────────────────
 
@@ -336,11 +260,6 @@ export const Days = {
 
 export type Day = (typeof Days)[keyof typeof Days];
 
-export const DayOptions = Object.values(Days).map((value) => ({
-  label: value,
-  value,
-}));
-
 // ─── Month ────────────────────────────────────────────────────────────────────
 
 export const Months = {
@@ -360,21 +279,6 @@ export const Months = {
 
 export type Month = (typeof Months)[keyof typeof Months];
 
-export const MonthOptions = [
-  { label: 'January', value: Months.JANUARY },
-  { label: 'February', value: Months.FEBRUARY },
-  { label: 'March', value: Months.MARCH },
-  { label: 'April', value: Months.APRIL },
-  { label: 'May', value: Months.MAY },
-  { label: 'June', value: Months.JUNE },
-  { label: 'July', value: Months.JULY },
-  { label: 'August', value: Months.AUGUST },
-  { label: 'September', value: Months.SEPTEMBER },
-  { label: 'October', value: Months.OCTOBER },
-  { label: 'November', value: Months.NOVEMBER },
-  { label: 'December', value: Months.DECEMBER },
-] as const;
-
 // ─── Year ─────────────────────────────────────────────────────────────────────
 
 const CurrentYear = new Date().getFullYear();
@@ -388,11 +292,6 @@ export const Years = Object.fromEntries(
 ) as Record<string, string>;
 
 export type Year = keyof typeof Years;
-
-export const YearOptions = Object.values(Years).map((value) => ({
-  label: value,
-  value,
-}));
 
 // ─── Blood Group ──────────────────────────────────────────────────────────────
 
@@ -409,12 +308,7 @@ export const BloodGroups = {
 
 export type BloodGroup = (typeof BloodGroups)[keyof typeof BloodGroups];
 
-export const BloodGroupOptions = Object.values(BloodGroups).map((value) => ({
-  label: value,
-  value,
-}));
-
-// ─── Family ───────────────────────────────────────────────────────────────────
+// ─── Family Type ─────────────────────────────────────────────────────────────────
 
 export const FamilyTypes = {
   JOINT: 'joint',
@@ -424,10 +318,7 @@ export const FamilyTypes = {
 
 export type FamilyType = (typeof FamilyTypes)[keyof typeof FamilyTypes];
 
-export const FamilyTypeOptions = Object.values(FamilyTypes).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
+// ─── Family Status ─────────────────────────────────────────────────────────────────
 
 export const FamilyStatuses = {
   AFFLUENT: 'affluent',
@@ -438,12 +329,7 @@ export const FamilyStatuses = {
 
 export type FamilyStatus = (typeof FamilyStatuses)[keyof typeof FamilyStatuses];
 
-export const FamilyStatusOptions = Object.values(FamilyStatuses).map(
-  (value) => ({
-    label: toLabel(value),
-    value,
-  })
-);
+// ─── Family Value ─────────────────────────────────────────────────────────────────
 
 export const FamilyValues = {
   TRADITIONAL: 'traditional',
@@ -453,10 +339,7 @@ export const FamilyValues = {
 
 export type FamilyValue = (typeof FamilyValues)[keyof typeof FamilyValues];
 
-export const FamilyValueOptions = Object.values(FamilyValues).map((value) => ({
-  label: toLabel(value),
-  value,
-}));
+// ─── Child Preferences ─────────────────────────────────────────────────────────────────
 
 export const ChildPreferences = {
   DOES_NOT_MATTER: 'does_not_matter',
@@ -469,14 +352,7 @@ export const ChildPreferences = {
 export type ChildPreference =
   (typeof ChildPreferences)[keyof typeof ChildPreferences];
 
-export const ChildPreferenceOptions = Object.values(ChildPreferences).map(
-  (value) => ({
-    value,
-    label: toLabel(value),
-  })
-);
-
-// ───────────────────────────────────────────────────────
+// ─── Residency Preferences ─────────────────────────────────────────────────────────────────
 
 export const ResidencyPreferences = {
   DOES_NOT_MATTER: 'does_not_matter',
@@ -490,14 +366,7 @@ export const ResidencyPreferences = {
 export type ResidencyPreference =
   (typeof ResidencyPreferences)[keyof typeof ResidencyPreferences];
 
-export const ResidencyPreferenceOptions = Object.values(
-  ResidencyPreferences
-).map((value) => ({
-  value,
-  label: toLabel(value),
-}));
-
-// ─── Education / Career ───────────────────────────────────────────────────────
+// ─── Occupation Type ───────────────────────────────────────────────────────
 
 export const OccupationTypes = {
   GOVERNMENT_JOB: 'government_job',
@@ -515,14 +384,8 @@ export const OccupationTypes = {
 
 export type OccupationType =
   (typeof OccupationTypes)[keyof typeof OccupationTypes];
-export const OccupationTypeOptions = Object.values(OccupationTypes).map(
-  (value) => ({
-    label: toLabel(value),
-    value,
-  })
-);
 
-// ─── Time Picker ──────────────────────────────────────────────────────────────
+// ─── Hour ──────────────────────────────────────────────────────────────
 
 export const Hours = {
   ONE: '1',
@@ -556,6 +419,8 @@ export const HourOptions = [
   { label: '12', value: Hours.TWELVE },
 ] as const;
 
+// ─── Minute ──────────────────────────────────────────────────────────────
+
 export const Minutes = {
   ZERO: '00',
   FIVE: '05',
@@ -587,6 +452,8 @@ export const MinuteOptions = [
   { label: '50', value: Minutes.FIFTY },
   { label: '55', value: Minutes.FIFTY_FIVE },
 ] as const;
+
+// ─── Period ──────────────────────────────────────────────────────────────
 
 export const Periods = {
   AM: 'AM',
