@@ -24,6 +24,7 @@ import { NotificationDlqPurgeDto } from '../dto/notification-dlq-purge.dto';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { Permission } from 'src/common/enums';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
+import { SuccessCode } from 'src/common/constants';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)
@@ -36,15 +37,25 @@ export class NotificationController {
     @Query() query: ListNotificationsDto,
   ) {
     const data = await this.service.getUserNotifications(userId, query);
-    return new ApiResponse(true, 'Notifications fetched successfully', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.NOTIFICATION_FETCHED,
+      'Notifications fetched successfully',
+      data,
+    );
   }
 
   @Get('unread-count')
   async getUnreadCount(@CurrentUser('sub') userId: string) {
     const data = await this.service.getUnreadCount(userId);
-    return new ApiResponse(true, 'Unread count fetched successfully', {
-      unreadCount: data,
-    });
+    return new ApiResponse(
+      true,
+      SuccessCode.NOTIFICATION_FETCHED,
+      'Unread count fetched successfully',
+      {
+        unreadCount: data,
+      },
+    );
   }
 
   @Get('settings')
@@ -52,6 +63,7 @@ export class NotificationController {
     const data = await this.service.getSettings(userId);
     return new ApiResponse(
       true,
+      SuccessCode.NOTIFICATION_ALL_READ,
       'Notification settings fetched successfully',
       data,
     );
@@ -63,7 +75,12 @@ export class NotificationController {
     @Body() dto: UpdateNotificationSettingsDto,
   ) {
     const data = await this.service.updateSettings(userId, dto);
-    return new ApiResponse(true, 'Notification settings updated', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.NOTIFICATION_FETCHED,
+      'Notification settings updated',
+      data,
+    );
   }
 
   @Post()
@@ -71,7 +88,12 @@ export class NotificationController {
   @Permissions(Permission.NOTIFICATION_SEND)
   async create(@Body() dto: CreateNotificationDto) {
     const data = await this.service.notify(dto);
-    return new ApiResponse(true, 'Notification queued successfully', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.NOTIFICATION_FETCHED,
+      'Notification queued successfully',
+      data,
+    );
   }
 
   @Post('dispatch/template')
@@ -81,6 +103,7 @@ export class NotificationController {
     const data = await this.service.sendTemplateNotification(dto);
     return new ApiResponse(
       true,
+      SuccessCode.NOTIFICATION_ALL_READ,
       'Template notification queued successfully',
       data,
     );
@@ -91,7 +114,12 @@ export class NotificationController {
   @Permissions(Permission.NOTIFICATION_MANAGE)
   async listTemplates(@Query('includeInactive') includeInactive?: string) {
     const data = await this.service.listTemplates(includeInactive === 'true');
-    return new ApiResponse(true, 'Templates fetched successfully', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.NOTIFICATION_FETCHED,
+      'Templates fetched successfully',
+      data,
+    );
   }
 
   @Get('analytics')
@@ -101,6 +129,7 @@ export class NotificationController {
     const data = await this.service.getAnalytics(query);
     return new ApiResponse(
       true,
+      SuccessCode.NOTIFICATION_ALL_READ,
       'Notification analytics fetched successfully',
       data,
     );
@@ -113,6 +142,7 @@ export class NotificationController {
     const data = await this.service.listDeadLetterJobs(query);
     return new ApiResponse(
       true,
+      SuccessCode.NOTIFICATION_READ,
       'Notification DLQ jobs fetched successfully',
       data,
     );
@@ -125,6 +155,7 @@ export class NotificationController {
     const data = await this.service.getDeadLetterJob(jobId);
     return new ApiResponse(
       true,
+      SuccessCode.NOTIFICATION_READ,
       'Notification DLQ job fetched successfully',
       data,
     );
@@ -140,6 +171,7 @@ export class NotificationController {
     const data = await this.service.replayDeadLetterJob(jobId, adminUserId);
     return new ApiResponse(
       true,
+      SuccessCode.NOTIFICATION_ALL_READ,
       'Notification DLQ job replay queued successfully',
       data,
     );
@@ -155,6 +187,7 @@ export class NotificationController {
     const data = await this.service.replayAllDeadLetterJobs(dto, adminUserId);
     return new ApiResponse(
       true,
+      SuccessCode.NOTIFICATION_ALL_READ,
       'Notification DLQ bulk replay queued successfully',
       data,
     );
@@ -167,6 +200,7 @@ export class NotificationController {
     const data = await this.service.purgeDeadLetterJobs(dto);
     return new ApiResponse(
       true,
+      SuccessCode.NOTIFICATION_ALL_READ,
       'Notification DLQ purge completed successfully',
       data,
     );
@@ -180,18 +214,33 @@ export class NotificationController {
     @Body() dto: UpsertNotificationTemplateDto,
   ) {
     const data = await this.service.upsertTemplate(key, dto);
-    return new ApiResponse(true, 'Template saved successfully', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.NOTIFICATION_ALL_READ,
+      'Template saved successfully',
+      data,
+    );
   }
 
   @Post(':id/read')
   async markRead(@CurrentUser('sub') userId: string, @Param('id') id: string) {
     const data = await this.service.markRead(userId, id);
-    return new ApiResponse(true, 'Notification marked as read', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.NOTIFICATION_FETCHED,
+      'Notification marked as read',
+      data,
+    );
   }
 
   @Post('read-all')
   async markAllRead(@CurrentUser('sub') userId: string) {
     const data = await this.service.markAllRead(userId);
-    return new ApiResponse(true, 'All notifications marked as read', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.NOTIFICATION_ALL_READ,
+      'All notifications marked as read',
+      data,
+    );
   }
 }

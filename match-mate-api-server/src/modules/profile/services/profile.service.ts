@@ -35,7 +35,7 @@ import {
 } from '../schemas/settings/privacy-setting.schema';
 import { UpdatePrivacySettingsDto } from '../dto/privacy-media.dto';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
-import { Country, ProfileStatus, Qualification } from 'src/common/enums';
+import { ProfileStatus, Qualification } from 'src/common/enums';
 import { InjectModel } from '@nestjs/mongoose';
 import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
 import { UserRepository } from 'src/modules/auth/repositories/user.repository';

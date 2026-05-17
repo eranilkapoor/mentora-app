@@ -61,7 +61,7 @@ async function bootstrap() {
       }
     },
     credentials: true,
-    methods: ['GET','HEAD','PUT','PATCH','POST','DELETE','OPTIONS'],
+    methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
     allowedHeaders: [
       'Content-Type',
       'Authorization',
@@ -185,7 +185,7 @@ async function bootstrap() {
       },
     }),
   );
-  
+
   // ==========================================
   // START SERVER
   // ==========================================

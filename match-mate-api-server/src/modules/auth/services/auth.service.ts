@@ -77,7 +77,7 @@ export class AuthService {
     private readonly activityLogModel: Model<ActivityLogDocument>,
     private readonly notificationService: NotificationService,
     private readonly analyticsService: AnalyticsService,
-  ) { }
+  ) {}
 
   private async attachToken(
     req: AppRequest,
@@ -892,7 +892,7 @@ export class AuthService {
         await this.completeLoginFlow(req, existingUser._id.toString(), {
           provider:
             AuthProvider[
-            dto.provider.toUpperCase() as keyof typeof AuthProvider
+              dto.provider.toUpperCase() as keyof typeof AuthProvider
             ],
           source: `login-social-${dto.provider}`,
         });
@@ -931,7 +931,7 @@ export class AuthService {
           {
             provider:
               AuthProvider[
-              dto.provider.toUpperCase() as keyof typeof AuthProvider
+                dto.provider.toUpperCase() as keyof typeof AuthProvider
               ],
             providerId: dto.provider_id,
             isVerified: true,

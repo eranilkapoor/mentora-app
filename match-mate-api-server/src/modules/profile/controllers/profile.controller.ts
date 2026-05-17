@@ -28,6 +28,7 @@ import { memoryStorage } from 'multer';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
+import { SuccessCode } from 'src/common/constants';
 
 @UseGuards(JwtAuthGuard)
 @Controller('profile')
@@ -74,6 +75,7 @@ export class ProfileController {
       );
       return new ApiResponse(
         true,
+        SuccessCode.PROFILE_CREATED,
         'Onboarding profile saved successfully',
         data,
       );
@@ -99,7 +101,12 @@ export class ProfileController {
   async getMyProfile(@Req() req: AuthenticatedRequest) {
     try {
       const data = await this.profileService.getMyProfile(req.user.sub);
-      return new ApiResponse(true, 'Profile data successfully feathed', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.PROFILE_FETCHED,
+        'Profile data successfully feathed',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to featch profile';

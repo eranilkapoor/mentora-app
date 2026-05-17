@@ -23,7 +23,7 @@ export class MediaRepository {
   constructor(
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
-  ) { }
+  ) {}
 
   async create(userId: string, inputs: CreateMediaInput[]) {
     const docs = inputs.map((input) => ({
@@ -38,18 +38,19 @@ export class MediaRepository {
 
   async findAllByUser(userId: string, type: MediaType) {
     return this.mediaModel
-      .find({
-        userId: new Types.ObjectId(userId),
-        type,
-        status: MediaStatus.ACTIVE,
-      },
+      .find(
+        {
+          userId: new Types.ObjectId(userId),
+          type,
+          status: MediaStatus.ACTIVE,
+        },
         {
           _id: 0,
           __v: 0,
           uploadedAt: 0,
           createdAt: 0,
-          updatedAt: 0
-        }
+          updatedAt: 0,
+        },
       )
       .sort({ isPrimary: -1, uploadedAt: -1 })
       .lean();

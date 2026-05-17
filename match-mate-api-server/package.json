@@ -8,8 +8,8 @@
   "scripts": {
     "prepare": "husky install",
     "build": "npm run clean && nest build",
-    "format:check": "prettier --check \"src/**/*.ts\" \"test/**/*.ts\"",
-    "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
+    "format:check": "prettier --check \"src/**/*.ts\"",
+    "format": "prettier --write \"src/**/*.ts\"",
     "start": "nest start",
     "start:dev": "npm run clean && cross-env NODE_ENV=development nest start --watch",
     "start:debug": "npm run clean && nest start --debug --watch",

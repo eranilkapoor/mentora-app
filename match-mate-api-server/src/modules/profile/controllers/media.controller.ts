@@ -17,6 +17,7 @@ import { MediaService } from '../services/media.service';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
+import { SuccessCode } from 'src/common/constants';
 
 @UseGuards(JwtAuthGuard)
 @Controller('profile/media')
@@ -28,7 +29,12 @@ export class MediaController {
   @Get('images')
   async getImages(@Req() req: AuthenticatedRequest) {
     const data = await this.mediaService.getImages(req.user.sub);
-    return new ApiResponse(true, 'Profile images successfully feathed', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_IMAGE_FETCHED,
+      'Profile images successfully feathed',
+      data,
+    );
   }
 
   @Post('images')
@@ -39,7 +45,12 @@ export class MediaController {
     @UploadedFiles() files: Express.Multer.File[],
   ) {
     const data = await this.mediaService.addImages(req, req.user.sub, files);
-    return new ApiResponse(true, 'Profile images successfully added', data);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_IMAGE_UPLOADED,
+      'Profile images successfully added',
+      data,
+    );
   }
 
   @Patch('images/:mediaId/primary')

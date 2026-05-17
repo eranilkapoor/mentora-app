@@ -26,6 +26,7 @@ import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { ErrorCode, SuccessCode } from 'src/common/constants';
 
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
@@ -41,11 +42,16 @@ export class AuthController {
   ) {
     try {
       const data = await this.authService.register(req, res, dto);
-      return new ApiResponse(true, 'User registered successfully', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_REGISTERED,
+        'User registered successfully',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Registration failed';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
@@ -59,10 +65,20 @@ export class AuthController {
     req.res = res;
     try {
       const data = await this.authService.login(req, res, dto);
-      return new ApiResponse(true, 'Login successful', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_LOGIN_SUCCESS,
+        'Login successful',
+        data,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Login failed';
-      return new ApiResponse(false, message);
+      return new ApiResponse(
+        false,
+        ErrorCode.AUTH_INVALID_CREDENTIALS,
+        message,
+        null,
+      );
     }
   }
 
@@ -71,11 +87,16 @@ export class AuthController {
   sendOtp(@Body() dto: PhoneSendOtpDto) {
     try {
       const data = this.authService.sendOtp(dto.country_code, dto.phone);
-      return new ApiResponse(true, 'OTP sent successfully', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_OTP_SENT,
+        'OTP sent successfully',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to send OTP';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
@@ -94,11 +115,16 @@ export class AuthController {
         dto.phone,
         dto.otp,
       );
-      return new ApiResponse(true, 'OTP verified successfully', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_OTP_VERIFIED,
+        'OTP verified successfully',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'OTP verification failed';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
@@ -111,11 +137,16 @@ export class AuthController {
   ) {
     try {
       const data = await this.authService.socialLogin(req, res, dto);
-      return new ApiResponse(true, 'Social login successful', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_LOGIN_SUCCESS,
+        'Social login successful',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Social login failed';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
@@ -124,13 +155,18 @@ export class AuthController {
   async forgotPassword(@Req() req: AppRequest, @Body() dto: ForgotPasswordDto) {
     try {
       const data = await this.authService.forgotPassword(req, dto.email);
-      return new ApiResponse(true, 'Password reset link sent to email', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_PASSWORD_RESET_SENT,
+        'Password reset link sent to email',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error
           ? error.message
           : 'Failed to process password reset';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
@@ -141,13 +177,14 @@ export class AuthController {
       const data = await this.authService.resetPassword(req, dto);
       return new ApiResponse(
         true,
+        SuccessCode.AUTH_PASSWORD_RESET_SUCCESS,
         'Password has been reset successfully',
         data,
       );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Password reset failed';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
@@ -162,11 +199,16 @@ export class AuthController {
         req.user.sub,
         dto,
       );
-      return new ApiResponse(true, 'Password changed successfully', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_PASSWORD_CHANGED,
+        'Password changed successfully',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to change password';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
@@ -174,20 +216,22 @@ export class AuthController {
   async verifyUser(@CurrentUser('sub') userId: string) {
     try {
       const data = await this.authService.verifyUser(userId);
-      return new ApiResponse(true, 'User verified successfully', data);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_EMAIL_VERIFIED,
+        'User verified successfully',
+        data,
+      );
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Failed to verify user';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
   @Public()
   @Post('refresh')
-  refresh(
-    @Req() req: AppRequest,
-    @Res({ passthrough: true }) res: Response,
-  ) {
+  refresh(@Req() req: AppRequest, @Res({ passthrough: true }) res: Response) {
     const tokenFromCookie = req.cookies?.refreshTtoken as string | undefined;
     const tokenFromBody = (req.body as { refreshTtoken?: string })
       .refreshTtoken;
@@ -234,12 +278,12 @@ export class AuthController {
     @Body() body: { refreshToken?: string },
   ) {
     try {
-      const refreshToken = req.cookies?.refreshToken || body?.refreshToken;
-      if(refreshToken){
+      const refreshToken =
+        (req.cookies?.refreshToken as string) || body?.refreshToken;
+      if (refreshToken) {
         await this.authService.logout(req, refreshToken);
       }
 
-      // Clear cookie for web
       res.clearCookie('refreshToken', {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
@@ -247,10 +291,15 @@ export class AuthController {
         path: '/',
       });
 
-      return new ApiResponse(true, 'Logged out successfully');
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_LOGOUT_SUCCESS,
+        'Logged out successfully',
+        null,
+      );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Logout failed';
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 
@@ -261,14 +310,19 @@ export class AuthController {
   ) {
     try {
       await this.authService.logoutAll(req, req.user.sub);
-      
+
       res.clearCookie('refreshToken');
-      
-      return new ApiResponse(true, 'Logged out from all devices successfully');
-    } catch(error) {
+
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_LOGOUT_SUCCESS,
+        'Logged out from all devices successfully',
+        null,
+      );
+    } catch (error) {
       const message = error instanceof Error ? error.message : 'Logout failed';
 
-      return new ApiResponse(false, message);
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }
 }
