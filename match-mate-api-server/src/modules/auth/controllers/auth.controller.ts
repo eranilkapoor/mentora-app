@@ -279,7 +279,7 @@ export class AuthController {
   ) {
     try {
       const refreshToken =
-        (req.cookies?.refreshToken as string) || body?.refreshToken;
+        (req.cookies?.refreshToken as string | undefined) || body?.refreshToken;
       if (refreshToken) {
         await this.authService.logout(req, refreshToken);
       }

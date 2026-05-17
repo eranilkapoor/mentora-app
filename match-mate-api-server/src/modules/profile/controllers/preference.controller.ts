@@ -19,6 +19,8 @@ import {
 } from '../dto/preference.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { ApiResponse } from 'src/common/dto/api-response.dto';
+import { SuccessCode } from 'src/common/constants';
 
 @UseGuards(JwtAuthGuard)
 @Controller('preference')
@@ -27,50 +29,89 @@ export class PreferenceController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createPreference(
+  async createPreference(
     @Req() req: AuthenticatedRequest,
-    @Body() dto: UpdatePreferenceDto, // all fields optional — works as partial seed
+    @Body() dto: UpdatePreferenceDto,
   ) {
-    return this.preferenceService.createPreference(req.user.sub, dto);
+    const data = await this.preferenceService.createPreference(
+      req.user.sub,
+      dto,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PREFERENCES_FETCHED,
+      'Preferences successfully updated',
+      data,
+    );
   }
 
   @Get('me')
-  getMyPreference(@Req() req: AuthenticatedRequest) {
-    return this.preferenceService.getMyPreference(req.user.sub);
+  async getMyPreference(@Req() req: AuthenticatedRequest) {
+    const data = await this.preferenceService.getMyPreference(req.user.sub);
+    return new ApiResponse(
+      true,
+      SuccessCode.PREFERENCES_FETCHED,
+      'Preferences successfully fetched',
+      data,
+    );
   }
 
   @Put('filters')
-  updateFilters(
+  async updateFilters(
     @Req() req: AuthenticatedRequest,
     @Body() dto: PartnerFiltersDto,
   ) {
-    return this.preferenceService.updateFilters(req.user.sub, dto);
+    const data = await this.preferenceService.updateFilters(req.user.sub, dto);
+    return new ApiResponse(
+      true,
+      SuccessCode.PREFERENCES_FETCHED,
+      'Preferences successfully updated',
+      data,
+    );
   }
 
   @Put('settings')
-  updateSettings(
+  async updateSettings(
     @Req() req: AuthenticatedRequest,
     @Body() dto: MatchSettingsDto,
   ) {
-    return this.preferenceService.updateSettings(req.user.sub, dto);
+    const data = await this.preferenceService.updateSettings(req.user.sub, dto);
+    return new ApiResponse(
+      true,
+      SuccessCode.PREFERENCES_FETCHED,
+      'Preferences successfully updated',
+      data,
+    );
   }
 
   @Put('weights')
-  updateWeights(
+  async updateWeights(
     @Req() req: AuthenticatedRequest,
     @Body() dto: MatchWeightsDto,
   ) {
-    return this.preferenceService.updateWeights(req.user.sub, dto);
+    const data = await this.preferenceService.updateWeights(req.user.sub, dto);
+    return new ApiResponse(
+      true,
+      SuccessCode.PREFERENCES_FETCHED,
+      'Preferences successfully updated',
+      data,
+    );
   }
 
   @Put('about')
-  updateAbout(
+  async updateAbout(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdateAboutPartnerDto,
   ) {
-    return this.preferenceService.updateAboutPartner(
+    const data = await this.preferenceService.updateAboutPartner(
       req.user.sub,
       dto.aboutPartner,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PREFERENCES_FETCHED,
+      'Preferences successfully updated',
+      data,
     );
   }
 }

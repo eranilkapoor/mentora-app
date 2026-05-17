@@ -65,85 +65,141 @@ export class ProfileController {
     @UploadedFiles() profileImages: Express.Multer.File[],
   ) {
     const safeImages = profileImages ?? [];
-
-    try {
-      const data = await this.profileService.onboardingProfile(
-        req,
-        userId,
-        dto,
-        safeImages,
-      );
-      return new ApiResponse(
-        true,
-        SuccessCode.PROFILE_CREATED,
-        'Onboarding profile saved successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to save onboarding profile';
-      return new ApiResponse(false, message);
-    }
+    const data = await this.profileService.onboardingProfile(
+      req,
+      userId,
+      dto,
+      safeImages,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_CREATED,
+      'Onboarding profile saved successfully',
+      data,
+    );
   }
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  createProfile(
+  async createProfile(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateProfileDto,
   ) {
-    return this.profileService.createProfile(req.user.sub, dto);
+    const data = await this.profileService.createProfile(req.user.sub, dto);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_CREATED,
+      'Onboarding profile saved successfully',
+      data,
+    );
   }
 
   @Get('me')
   async getMyProfile(@Req() req: AuthenticatedRequest) {
-    try {
-      const data = await this.profileService.getMyProfile(req.user.sub);
-      return new ApiResponse(
-        true,
-        SuccessCode.PROFILE_FETCHED,
-        'Profile data successfully feathed',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to featch profile';
-      return new ApiResponse(false, message);
-    }
+    const data = await this.profileService.getMyProfile(req.user.sub);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_FETCHED,
+      'Profile data successfully feathed',
+      data,
+    );
   }
 
   @Put('personal')
-  updatePersonal(@Req() req: AuthenticatedRequest, @Body() dto: PersonalDto) {
-    return this.profileService.updatePersonalInfo(req, req.user.sub, dto);
+  async updatePersonal(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: PersonalDto,
+  ) {
+    const data = await this.profileService.updatePersonalInfo(
+      req,
+      req.user.sub,
+      dto,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_UPDATED,
+      'Profile successfully updated',
+      data,
+    );
   }
 
   @Put('physical')
-  updatePhysical(@Req() req: AuthenticatedRequest, @Body() dto: PhysicalDto) {
-    return this.profileService.updatePhysicalInfo(req, req.user.sub, dto);
+  async updatePhysical(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: PhysicalDto,
+  ) {
+    const data = await this.profileService.updatePhysicalInfo(
+      req,
+      req.user.sub,
+      dto,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_UPDATED,
+      'Profile successfully updated',
+      data,
+    );
   }
 
   @Put('education')
-  updateEducation(@Req() req: AuthenticatedRequest, @Body() dto: EducationDto) {
-    return this.profileService.updateEducationInfo(req, req.user.sub, dto);
+  async updateEducation(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: EducationDto,
+  ) {
+    const data = await this.profileService.updateEducationInfo(
+      req,
+      req.user.sub,
+      dto,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_UPDATED,
+      'Profile successfully updated',
+      data,
+    );
   }
 
   @Put('family')
-  updateFamily(@Req() req: AuthenticatedRequest, @Body() dto: FamilyDto) {
-    return this.profileService.updateFamilyInfo(req, req.user.sub, dto);
+  async updateFamily(@Req() req: AuthenticatedRequest, @Body() dto: FamilyDto) {
+    const data = await this.profileService.updateFamilyInfo(
+      req,
+      req.user.sub,
+      dto,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_UPDATED,
+      'Profile successfully updated',
+      data,
+    );
   }
 
   @Get('privacy')
-  getPrivacy(@Req() req: AuthenticatedRequest) {
-    return this.profileService.getPrivacySettings(req.user.sub);
+  async getPrivacy(@Req() req: AuthenticatedRequest) {
+    const data = await this.profileService.getPrivacySettings(req.user.sub);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_PRIVACY_SETTINGS_FETCHED,
+      'Profile privacy successfully fetched',
+      data,
+    );
   }
 
   @Put('privacy')
-  updatePrivacy(
+  async updatePrivacy(
     @Req() req: AuthenticatedRequest,
     @Body() dto: UpdatePrivacySettingsDto,
   ) {
-    return this.profileService.updatePrivacySettings(req, req.user.sub, dto);
+    const data = await this.profileService.updatePrivacySettings(
+      req,
+      req.user.sub,
+      dto,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_PRIVACY_SETTINGS_UPDATED,
+      'Profile privacy successfully updated',
+      data,
+    );
   }
 }

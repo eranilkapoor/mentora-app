@@ -58,7 +58,13 @@ export class MediaController {
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
   ) {
-    return this.mediaService.setPrimaryImage(req, req.user.sub, mediaId);
+    const data = this.mediaService.setPrimaryImage(req, req.user.sub, mediaId);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_IMAGE_REORDERED,
+      'Profile image set successfully',
+      data,
+    );
   }
 
   @Delete('images/:mediaId')
@@ -67,14 +73,26 @@ export class MediaController {
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
   ) {
-    return this.mediaService.removeImage(req, req.user.sub, mediaId);
+    const data = this.mediaService.removeImage(req, req.user.sub, mediaId);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_IMAGE_DELETED,
+      'Profile images successfully deleted',
+      data,
+    );
   }
 
   // ─── Videos ────────────────────────────────────────────────────────────────
 
   @Get('videos')
   getVideos(@Req() req: AuthenticatedRequest) {
-    return this.mediaService.getVideos(req.user.sub);
+    const data = this.mediaService.getVideos(req.user.sub);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_VIDEO_FETCHED,
+      'Profile videos successfully fetched',
+      data,
+    );
   }
 
   @Post('videos')
@@ -84,7 +102,13 @@ export class MediaController {
     @Req() req: AuthenticatedRequest,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    return this.mediaService.addVideos(req, req.user.sub, files);
+    const data = this.mediaService.addVideos(req, req.user.sub, files);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_VIDEO_UPLOADED,
+      'Profile videos successfully added',
+      data,
+    );
   }
 
   @Patch('videos/:mediaId/primary')
@@ -92,7 +116,13 @@ export class MediaController {
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
   ) {
-    return this.mediaService.setPrimaryVideo(req, req.user.sub, mediaId);
+    const data = this.mediaService.setPrimaryVideo(req, req.user.sub, mediaId);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_VIDEO_REORDERED,
+      'Profile video set successfully',
+      data,
+    );
   }
 
   @Delete('videos/:mediaId')
@@ -101,6 +131,12 @@ export class MediaController {
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
   ) {
-    return this.mediaService.removeVideo(req, req.user.sub, mediaId);
+    const data = this.mediaService.removeVideo(req, req.user.sub, mediaId);
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_VIDEO_DELETED,
+      'Profile video successfully deleted',
+      data,
+    );
   }
 }
