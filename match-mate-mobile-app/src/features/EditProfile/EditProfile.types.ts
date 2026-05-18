@@ -18,6 +18,8 @@ import {
   ProfileImage,
   SiblingType,
   SmokingHabit,
+  ProfileFor,
+  Qualification,
 } from '@/core/types';
 
 export interface TimeOfBirth {
@@ -48,6 +50,7 @@ export interface Siblings {
 }
 
 export interface PersonalSection {
+  profileFor: ProfileFor;
   firstName: string;
   lastName?: string;
   gender: Gender;
@@ -70,8 +73,8 @@ export interface PersonalSection {
   hasChildren?: boolean;
   sonsCount?: number;
   daughtersCount?: number;
-  smoking?: SmokingHabit;
-  drinking?: DrinkingHabit;
+  smoking: SmokingHabit;
+  drinking: DrinkingHabit;
   eating: EatingHabit;
   hobbies?: string[];
   languages?: string[];
@@ -79,7 +82,7 @@ export interface PersonalSection {
 }
 
 export interface PhysicalSection {
-  heightLabel: string;
+  height: string;
   weight?: string;
   bloodGroup?: BloodGroup;
   bodyType?: BodyType;
@@ -89,14 +92,14 @@ export interface PhysicalSection {
 }
 
 export interface EducationSection {
-  qualification: string;
+  qualification: Qualification;
   field?: string;
   university?: string;
   occupationType?: OccupationType;
   occupation: string;
   companyName?: string;
   jobRole?: string;
-  annualIncomeAmount?: string;
+  annualIncomeAmount?: number;
 }
 
 export interface FamilySection {

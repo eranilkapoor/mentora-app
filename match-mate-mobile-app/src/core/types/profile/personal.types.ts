@@ -24,6 +24,7 @@ export interface BasicData {
   height: string;
 }
 export interface PersonalData {
+  profileFor: ProfileFor;
   firstName: string;
   lastName?: string;
   gender: Gender;
@@ -33,12 +34,12 @@ export interface PersonalData {
   city?: string;
   motherTongue?: string;
   maritalStatus: MaritalStatus;
-  aboutMe?: string;
   smoking: SmokingHabit;
   drinking: DrinkingHabit;
   eating: EatingHabit;
-  hobbies: [];
-  languages: [];
+  hobbies?: string[];
+  languages?: string[];
+  aboutMe?: string;
 }
 
 export interface MatchProfile {

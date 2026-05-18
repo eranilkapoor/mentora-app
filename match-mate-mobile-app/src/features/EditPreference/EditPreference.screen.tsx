@@ -63,6 +63,7 @@ import {
   ChildPreferences,
   ResidencyPreferences,
   OccupationTypes,
+  ManglikStatuses,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 
@@ -81,13 +82,13 @@ export default function EditPreferenceScreen({
   const styles = useThemedStyles(editPreferenceStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital');
-  const SmokingHabitsOptions = useEnumOptions(SmokingHabits, 'options.smoking_habits');
-  const DrinkingHabitsOptions = useEnumOptions(DrinkingHabits, 'options.drinking_habits');
-  const EatingHabitsOptions = useEnumOptions(EatingHabits, 'options.eating_habits');
+  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital_status');
+  const SmokingHabitsOptions = useEnumOptions(SmokingHabits, 'options.smoking');
+  const DrinkingHabitsOptions = useEnumOptions(DrinkingHabits, 'options.drinking');
+  const EatingHabitsOptions = useEnumOptions(EatingHabits, 'options.eating');
   const BodyTypeOptions = useEnumOptions(BodyTypes, 'options.body_types');
   const ComplexionOptions = useEnumOptions(Complexions, 'options.complexion');
-  const ManglikStatusOptions = useEnumOptions(MaritalStatuses, 'options.manglik_status');
+  const ManglikStatusOptions = useEnumOptions(ManglikStatuses, 'options.manglik_status');
   const ReligionOptions = useEnumOptions(Religions, 'options.religion');
   const CasteOptions = useEnumOptions(Castes, 'options.caste');
   const ChildPreferenceOptions = useEnumOptions(ChildPreferences, 'options.child_preferences');
@@ -334,7 +335,7 @@ export default function EditPreferenceScreen({
               options={MaritalStatusOptions}
               value={preference.filters.maritalStatus ?? []}
               onChange={(v) => setFilters('maritalStatus', v)}
-              i18nPrefix="options.marital"
+              i18nPrefix="options.marital_status"
             />
 
             <SingleSelectPill
@@ -445,7 +446,7 @@ export default function EditPreferenceScreen({
               options={OccupationTypeOptions}
               value={preference.filters.occupationType}
               onChange={(v) => setFilters('occupationType', v)}
-              i18nPrefix="options.occupation_type"
+              i18nPrefix="options.occupation_types"
             />
 
             <PreferenceTagInput
@@ -468,7 +469,7 @@ export default function EditPreferenceScreen({
               options={BodyTypeOptions}
               value={preference.filters.bodyType}
               onChange={(v) => setFilters('bodyType', v)}
-              i18nPrefix="options.body_type"
+              i18nPrefix="options.body_types"
             />
 
             <MultiSelectPill

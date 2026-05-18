@@ -105,6 +105,7 @@
     "mother_tongue": "e.g Hindi",
     "country": "e.g India",
     "state": "e.g Delhi",
+    "city": "e.g New Delhi",
     "citizenship": "e.g Indian"
   },
   "date_picker": {

@@ -1,6 +1,11 @@
+import { BloodGroup, BodyType, Complexion } from "../common/enums";
+
 export interface PhysicalData {
-  heightLabel: string;
-  weight: string;
-  bodyType: string;
-  complexion: string;
+  height: string;
+  weight?: string;
+  bloodGroup?: BloodGroup;
+  bodyType?: BodyType;
+  complexion?: Complexion;
+  disabilityStatus?: boolean;
+  disabilityNote?: string;
 }

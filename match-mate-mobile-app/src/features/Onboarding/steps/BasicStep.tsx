@@ -31,6 +31,7 @@ import {
   Days,
   Months,
   Years,
+  YearOptions,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 
@@ -58,7 +59,6 @@ function DatePickerModal({
   const styles = useThemedStyles(onboardingStyles);
   const DayOptions = useEnumOptions(Days, 'options.days');
   const MonthOptions = useEnumOptions(Months, 'options.months');
-  const YearOptions = useEnumOptions(Years, 'options.years');
 
   const initialParts = currentValue ? currentValue.split('-') : [];
   const [day, setDay] = useState(initialParts[2] ?? '');
@@ -152,9 +152,9 @@ export function BasicStep({
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const GenderOptions = useEnumOptions(Genders, 'options.gender');
   const ProfileForOptions = useEnumOptions(ProfileFors, 'options.profile_for');
-  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital');
+  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital_status');
   const ReligionOptions = useEnumOptions(Religions, 'options.religion');
-  const QualificationOptions = useEnumOptions(Qualifications, 'options.qualification');
+  const QualificationOptions = useEnumOptions(Qualifications, 'options.qualifications');
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
   
   const inputStyle = useCallback(
@@ -248,7 +248,7 @@ export function BasicStep({
         options={MaritalStatusOptions}
         value={basic.maritalStatus}
         onChange={(v) => onSetField('maritalStatus', v as MaritalStatus)}
-        i18nPrefix="options.marital"
+        i18nPrefix="options.marital_status"
       />
       <ErrorText field="maritalStatus" errors={errors} />
 

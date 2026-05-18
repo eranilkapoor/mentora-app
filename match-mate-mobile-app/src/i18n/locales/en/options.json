@@ -14,13 +14,13 @@
     "client": "Client",
     "other": "Other"
   },
-  "marital": {
+  "marital_status": {
     "never_married": "Never Married",
     "divorced": "Divorced",
     "widowed": "Widowed",
     "awaiting_divorced": "Awaiting Divorce"
   },
-  "body_type": {
+  "body_types": {
     "slim": "Slim",
     "athletic": "Athletic",
     "average": "Average",
@@ -35,26 +35,26 @@
     "dusky": "Dusky",
     "dark": "Dark"
   },
-  "family_type": {
+  "family_types": {
     "joint": "Joint",
     "nuclear": "Nuclear",
     "extended": "Extended"
   },
-  "smoking_habits": {
+  "smoking": {
     "non_smoker": "Non Smoker",
     "occasionally": "Occasionally",
     "regular": "Regular",
     "trying_to_quit": "Trying to Quit",
     "open_to": "Open To"
   },
-  "drinking_habits": {
+  "drinking": {
     "non_drinker": "Non Drinker",
     "occasionally": "Occasionally",
     "regular": "Regular",
     "open_to": "Open To",
     "socially": "Socially"
   },
-  "eating_habits": {
+  "eating": {
     "vegetarian": "Vegetarian",
     "non_vegetarian": "Non Vegetarian",
     "eggetarian": "Eggetarian",
@@ -71,7 +71,7 @@
     "anshik_manglik": "Anshik Manglik",
     "dont_know": "Don't Know"
   },
-  "occupation_type": {
+  "occupation_types": {
     "government_job": "Government Job",
     "private_job": "Private Job",
     "business": "Business",
@@ -130,7 +130,7 @@
     "other": "Other",
     "not_applicable": "Not Applicable"
   },
-  "qualification": {
+  "qualifications": {
     "below_10th": "Below 10th",
     "10th": "10th Pass",
     "12th": "12th Pass",
@@ -165,5 +165,85 @@
     "skill_certification": "Skill / Vocational Certification",
     "other": "Other",
     "prefer_not_to_say": "Prefer Not to Say"
+  },
+  "countries": {
+    "united_states": "United States",
+    "india": "India",
+    "china": "China",
+    "united_kingdom": "United Kingdom",
+    "canada": "Canada",
+    "australia": "Australia",
+    "germany": "Germany",
+    "france": "France",
+    "brazil": "Brazil",
+    "japan": "Japan",
+    "russia": "Russia",
+    "south_africa": "South Africa",
+    "italy": "Italy",
+    "spain": "Spain",
+    "mexico": "Mexico",
+    "netherlands": "Netherlands",
+    "sweden": "Sweden",
+    "switzerland": "Switzerland",
+    "new_zealand": "New Zealand",
+    "singapore": "Singapore",
+    "united_arab_emirates": "United Arab Emirates"
+  },
+  "days": {
+    "01": "01",
+    "02": "02",
+    "03": "03",
+    "04": "04",
+    "05": "05",
+    "06": "06",
+    "07": "07",
+    "08": "08",
+    "09": "09",
+    "10": "10",
+    "11": "11",
+    "12": "12",
+    "13": "13",
+    "14": "14",
+    "15": "15",
+    "16": "16",
+    "17": "17",
+    "18": "18",
+    "19": "19",
+    "20": "20",
+    "21": "21",
+    "22": "22",
+    "23": "23",
+    "24": "24",
+    "25": "25",
+    "26": "26",
+    "27": "27",
+    "28": "28",
+    "29": "29",
+    "30": "30",
+    "31": "31"
+  },
+  "months": {
+    "01": "January",
+    "02": "February",
+    "03": "March",
+    "04": "April",
+    "05": "May",
+    "06": "June",
+    "07": "July",
+    "08": "August",
+    "09": "September",
+    "10": "October",
+    "11": "November",
+    "12": "December"
+  },
+  "blood_groups": {
+    "A+": "A Positive",
+    "A-": "A Negative",
+    "B+": "B Positive",
+    "B-": "B Negative",
+    "O+": "O Positive",
+    "O-": "O Negative",
+    "AB+": "AB Positive",
+    "AB-": "AB Negative"
   }
 }

@@ -45,8 +45,8 @@ export function PhysicalSection({
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.height')}
-            value={physical.heightLabel}
-            onChange={(v) => onSet('heightLabel', v)}
+            value={physical.height}
+            onChange={(v) => onSet('height', v)}
             placeholder={t('edit_profile.placeholders.height')}
           />
         </View>
@@ -73,7 +73,7 @@ export function PhysicalSection({
         options={BodyTypeOptions}
         value={physical.bodyType}
         onChange={(v) => onSet('bodyType', v as PhysicalSectionType['bodyType'])}
-        i18nPrefix="options.body_type"
+        i18nPrefix="options.body_types"
       />
 
       <SelectPill

@@ -293,6 +293,11 @@ export const Years = Object.fromEntries(
 
 export type Year = keyof typeof Years;
 
+export const YearOptions = Object.values(Years).map((value) => ({
+  label: value,
+  value,
+}));
+
 // ─── Blood Group ──────────────────────────────────────────────────────────────
 
 export const BloodGroups = {

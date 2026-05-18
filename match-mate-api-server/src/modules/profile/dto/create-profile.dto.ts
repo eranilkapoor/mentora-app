@@ -51,15 +51,11 @@ function isValidDateString(date: string): boolean {
 
 export class TimeOfBirthDto {
   @IsOptional()
-  @IsNumber()
-  @Min(1)
-  @Max(12)
+  @IsString()
   hour?: Hour;
 
   @IsOptional()
-  @IsNumber()
-  @Min(0)
-  @Max(59)
+  @IsString()
   minute?: Minute;
 
   @IsOptional()

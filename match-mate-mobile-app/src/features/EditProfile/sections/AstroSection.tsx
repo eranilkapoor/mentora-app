@@ -8,7 +8,8 @@ import { editProfileStyles } from '../EditProfile.styles';
 import { PersonalSection, SectionKey } from '../EditProfile.types';
 import { SelectPill } from '@/core/components/SelectPill';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
-import { MaritalStatuses } from '@/core/types';
+import { Countries, Country, ManglikStatuses } from '@/core/types';
+import { DropdownPicker } from '@/core/components/DropdownPicker';
 
 interface Props {
   personal: PersonalSection;
@@ -28,7 +29,8 @@ export function AstroSection({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
-  const ManglikStatusOptions = useEnumOptions(MaritalStatuses, 'options.manglik_status');
+  const ManglikStatusOptions = useEnumOptions(ManglikStatuses, 'options.manglik');
+  const CountryOptions = useEnumOptions(Countries, 'options.countries');
 
   return (
     <SectionCard
@@ -38,6 +40,39 @@ export function AstroSection({
       loadingKey={sectionLoading}
       onSave={onSave}
     >
+      <Text style={styles.subSectionLabel}>
+        {t('edit_profile.fields.place_of_birth')}
+      </Text>
+      <DropdownPicker
+        label={t('edit_profile.fields.birth_country')}
+        options={CountryOptions}
+        value={personal.placeOfBirth?.country}
+        onChange={(val) => onSet('placeOfBirth', { ...personal.placeOfBirth, country: val as Country})}
+        placeholder={t('edit_profile.placeholders.country')}
+        required
+      />
+      <View style={styles.row}>
+        <View style={styles.halfField}>
+          <FormInput
+            label={t('edit_profile.fields.birth_state')}
+            value={personal.placeOfBirth?.state}
+            onChange={(v) =>
+              onSet('placeOfBirth', { ...personal.placeOfBirth, state: v })
+            }
+            placeholder={t('edit_profile.placeholders.state')}
+          />
+        </View>
+        <View style={styles.halfField}>
+          <FormInput
+            label={t('edit_profile.fields.birth_city')}
+            value={personal.placeOfBirth?.city}
+            onChange={(v) =>
+              onSet('placeOfBirth', { ...personal.placeOfBirth, city: v })
+            }
+            placeholder={t('edit_profile.placeholders.city')}
+          />
+        </View>
+      </View>
       <SelectPill
         label={t('edit_profile.fields.manglik_status')}
         options={ManglikStatusOptions}
@@ -79,37 +114,6 @@ export function AstroSection({
           />
         </View>
       </View>
-
-      <Text style={styles.subSectionLabel}>
-        {t('edit_profile.fields.place_of_birth')}
-      </Text>
-      <View style={styles.row}>
-        <View style={styles.halfField}>
-          <FormInput
-            label={t('edit_profile.fields.birth_city')}
-            value={personal.placeOfBirth?.city}
-            onChange={(v) =>
-              onSet('placeOfBirth', { ...personal.placeOfBirth, city: v })
-            }
-          />
-        </View>
-        <View style={styles.halfField}>
-          <FormInput
-            label={t('edit_profile.fields.birth_state')}
-            value={personal.placeOfBirth?.state}
-            onChange={(v) =>
-              onSet('placeOfBirth', { ...personal.placeOfBirth, state: v })
-            }
-          />
-        </View>
-      </View>
-      <FormInput
-        label={t('edit_profile.fields.birth_country')}
-        value={personal.placeOfBirth?.country}
-        onChange={(v) =>
-          onSet('placeOfBirth', { ...personal.placeOfBirth, country: v })
-        }
-      />
     </SectionCard>
   );
 }

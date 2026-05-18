@@ -79,7 +79,7 @@ export function useEditProfileForm() {
             profile.personal.maritalStatus,
             profile.personal.motherTongue,
             profile.personal.country,
-            profile.physical.heightLabel,
+            profile.physical.height,
             profile.physical.bodyType,
             profile.education.qualification,
             profile.education.occupation,
@@ -189,13 +189,13 @@ export function useEditProfileForm() {
                         await updatePersonalInfo(profile.personal).unwrap();
                         break;
                     case 'physical':
-                        //await updatePhysicalInfo(profile.physical).unwrap();
+                        await updatePhysicalInfo(profile.physical).unwrap();
                         break;
                     case 'education':
-                        //await updateEducationInfo(profile.education).unwrap();
+                        await updateEducationInfo(profile.education).unwrap();
                         break;
                     case 'family':
-                        //await updateFamilyInfo(profile.family).unwrap();
+                        await updateFamilyInfo(profile.family).unwrap();
                         break;
                     case 'images':
                         // Images are uploaded inline via media endpoint

@@ -28,9 +28,9 @@ export function LifestyleSection({
   onSet,
 }: Props): React.ReactElement {
   const { t } = useTranslation();
-  const SmokingHabitsOptions = useEnumOptions(SmokingHabits, 'options.smoking_habits');
-  const DrinkingHabitsOptions = useEnumOptions(DrinkingHabits, 'options.drinking_habits');
-  const EatingHabitsOptions = useEnumOptions(EatingHabits, 'options.eating_habits');
+  const SmokingHabitsOptions = useEnumOptions(SmokingHabits, 'options.smoking');
+  const DrinkingHabitsOptions = useEnumOptions(DrinkingHabits, 'options.drinking');
+  const EatingHabitsOptions = useEnumOptions(EatingHabits, 'options.eating');
 
   return (
     <SectionCard

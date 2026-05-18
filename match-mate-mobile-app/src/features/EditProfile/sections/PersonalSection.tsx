@@ -2,7 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { Country, Genders, MaritalStatuses } from '@/core/types';
+import { Countries, Country, Genders, MaritalStatuses } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
 import { NumberStepper } from '../components/NumberStepper';
@@ -13,6 +13,7 @@ import { SelectPill } from '@/core/components/SelectPill';
 import { ToggleRow } from '@/core/components/ToggleRow';
 import { DatePicker } from '../components/DateOfBirthPicker';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
+import { DropdownPicker } from '@/core/components/DropdownPicker';
 
 interface Props {
   personal: PersonalSectionType;
@@ -32,8 +33,9 @@ export function PersonalSection({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
-  const GenderOptions = useEnumOptions(Genders, 'common.gender');
-  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital');
+  const GenderOptions = useEnumOptions(Genders, 'options.gender');
+  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital_status');
+  const CountryOptions = useEnumOptions(Countries, 'options.countries');
 
   return (
     <SectionCard
@@ -86,7 +88,7 @@ export function PersonalSection({
         options={MaritalStatusOptions}
         value={personal.maritalStatus}
         onChange={(v) => onSet('maritalStatus', v as PersonalSectionType['maritalStatus'])}
-        i18nPrefix="options.marital"
+        i18nPrefix="options.marital_status"
       />
 
       <ToggleRow
@@ -124,22 +126,29 @@ export function PersonalSection({
         onChange={(v) => onSet('motherTongue', v)}
         placeholder={t('edit_profile.placeholders.mother_tongue')}
       />
+      <DropdownPicker
+        label={t('onboarding.fields.country')}
+        options={CountryOptions}
+        value={personal.country}
+        onChange={(val) => onSet('country', val as Country)}
+        required
+      />
 
       <View style={styles.row}>
-        <View style={styles.halfField}>
-          <FormInput
-            label={t('edit_profile.fields.country')}
-            value={personal.country}
-            onChange={(v) => onSet('country', v as Country)}
-            placeholder={t('edit_profile.placeholders.country')}
-          />
-        </View>
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.state')}
             value={personal.state}
             onChange={(v) => onSet('state', v)}
             placeholder={t('edit_profile.placeholders.state')}
+          />          
+        </View>
+        <View style={styles.halfField}>
+          <FormInput
+            label={t('edit_profile.fields.city')}
+            value={personal.city}
+            onChange={(v) => onSet('city', v)}
+            placeholder={t('edit_profile.placeholders.city')}
           />
         </View>
       </View>

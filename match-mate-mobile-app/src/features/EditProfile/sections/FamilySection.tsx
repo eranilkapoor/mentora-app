@@ -84,7 +84,7 @@ export function FamilySection({
         options={FamilyTypeOptions}
         value={family.familyType}
         onChange={(v) => onSet('familyType', v as FamilySectionType['familyType'])}
-        i18nPrefix="options.family_type"
+        i18nPrefix="options.family_types"
       />
       <SelectPill
         label={t('edit_profile.fields.family_status')}

@@ -5,7 +5,8 @@ import { FormInput } from '../components/FormInput';
 import { EducationSection as EducationSectionType, SectionKey } from '../EditProfile.types';
 import { SelectPill } from '@/core/components/SelectPill';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
-import { OccupationTypes } from '@/core/types';
+import { OccupationTypes, Qualifications } from '@/core/types';
+import { DropdownPicker } from '@/core/components/DropdownPicker';
 
 interface Props {
   education: EducationSectionType;
@@ -25,6 +26,7 @@ export function EducationSection({
 }: Props): React.ReactElement {
   const { t } = useTranslation();
   const OccupationTypeOptions = useEnumOptions(OccupationTypes, 'options.occupation_types');
+  const QualificationOptions = useEnumOptions(Qualifications, 'options.qualifications');
 
   return (
     <SectionCard
@@ -34,12 +36,14 @@ export function EducationSection({
       loadingKey={sectionLoading}
       onSave={onSave}
     >
-      <FormInput
-        label={t('edit_profile.fields.qualification')}
+      <DropdownPicker
+        label={t('onboarding.fields.qualification')}
+        options={QualificationOptions}
         value={education.qualification}
-        onChange={(v) => onSet('qualification', v)}
-        placeholder={t('edit_profile.placeholders.qualification')}
+        onChange={(val) => onSet('qualification', val)}
+        required
       />
+
       <FormInput
         label={t('edit_profile.fields.field_of_study')}
         value={education.field}
@@ -58,7 +62,7 @@ export function EducationSection({
         options={OccupationTypeOptions}
         value={education.occupationType}
         onChange={(v) => onSet('occupationType', v as EducationSectionType['occupationType'])}
-        i18nPrefix="options.occupation_type"
+        i18nPrefix="options.occupation_types"
       />
 
       <FormInput
@@ -81,8 +85,19 @@ export function EducationSection({
       />
       <FormInput
         label={t('edit_profile.fields.annual_income')}
-        value={education.annualIncomeAmount}
-        onChange={(v) => onSet('annualIncomeAmount', v)}
+        value={
+          education.annualIncomeAmount != null
+            ? String(education.annualIncomeAmount)
+            : ''
+        }
+        onChange={(v) => {
+          const cleaned = v.replace(/[^0-9]/g, '');
+
+          onSet(
+            'annualIncomeAmount',
+            cleaned ? Number(cleaned) : undefined
+          );
+        }}
         keyboardType="numeric"
         placeholder={t('edit_profile.placeholders.annual_income')}
       />

@@ -37,6 +37,18 @@ import {
   SmokingHabits,
   DrinkingHabits,
   ProfileImage,
+  Hour,
+  Minute,
+  Period,
+  Country,
+  ProfileFor,
+  ManglikStatus,
+  SmokingHabit,
+  DrinkingHabit,
+  EatingHabit,
+  Gender,
+  EatingHabits,
+  MaritalStatus,
 } from '../../core/types';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -55,46 +67,45 @@ type Primitive = string | number | boolean | null | undefined;
 
 type SchemaProfile = {
   userId?: string;
-  profileFor?: string;
+  profileFor?: ProfileFor;
   personal: {
     firstName?: string;
     lastName?: string;
     dateOfBirth?: string;
     timeOfBirth?: {
-      hour?: string;
-      minute?: string;
-      period?: string;
+      hour?: Hour;
+      minute?: Minute;
+      period?: Period;
     };
     placeOfBirth?: {
       city?: string;
       state?: string;
-      country?: string;
+      country?: Country;
     };
     subCast?: string;
     gotra?: string;
-    manglikStatus?: string;
+    manglikStatus?: ManglikStatus;
     rashi?: string;
     nakshatra?: string;
     kundliFileUrl?: string;
-    country?: string;
+    country?: Country;
     state?: string;
     city?: string;
     citizenship?: string;
     willingToRelocate?: boolean;
     motherTongue?: string;
-    maritalStatus?: string;
+    maritalStatus?: MaritalStatus;
     hasChildren?: boolean;
     sonsCount?: number;
     daughtersCount?: number;
-    smoking?: string;
-    drinking?: string;
-    eating?: string;
+    smoking?: SmokingHabit;
+    drinking?: DrinkingHabit;
+    eating?: EatingHabit;
     hobbies?: string[];
     languages?: string[];
     languagesKnown?: string[];
     aboutMe?: string;
-    profileFor?: string;
-    gender?: string;
+    gender?: Gender;
   };
   physical: {
     height?: string | number;
@@ -113,8 +124,7 @@ type SchemaProfile = {
     occupation?: string;
     companyName?: string;
     jobRole?: string;
-    annualIncomeAmount?: string | number;
-    annualIncome?: string | number;
+    annualIncomeAmount?: number;
   };
   family?: {
     fatherName?: string;
@@ -183,7 +193,7 @@ const DEFAULT_PROFILE: SchemaProfile = {
     aboutMe: '',
     smoking: SmokingHabits.NON_SMOKER,
     drinking: DrinkingHabits.NON_DRINKER,
-    eating: '',
+    eating: EatingHabits.EGGETARIAN,
     hobbies: [],
     languages: [],
     languagesKnown: [],
@@ -202,7 +212,7 @@ const DEFAULT_PROFILE: SchemaProfile = {
     field: '',
     university: '',
     occupation: '',
-    annualIncome: '',
+    annualIncomeAmount: 0,
   },
   family: {
     fatherName: '',
@@ -314,12 +324,12 @@ const getProfileHeight = (
 const getProfileWeight = (
   profile: SchemaProfile
 ): string | number | undefined =>
-  profile.physical.weight ?? profile.physical.weight;
+  profile.physical.weight;
 
 const getProfileIncome = (
   profile: SchemaProfile
 ): string | number | undefined =>
-  profile.education.annualIncomeAmount ?? profile.education.annualIncome;
+  profile.education.annualIncomeAmount;
 
 const getDisplayName = (profile: SchemaProfile): string => {
   const name = getFullName(
@@ -450,7 +460,7 @@ const getPdfRows = (profile: SchemaProfile): Array<[string, string]> => [
   ['Name', getDisplayName(profile)],
   [
     'Profile For',
-    formatProfileText(profile.profileFor ?? profile.personal.profileFor),
+    formatProfileText(profile.profileFor),
   ],
   [
     'Age',
@@ -918,7 +928,7 @@ export default function ProfileScreen({
           <Row
             label="Profile For"
             value={formatProfileText(
-              profileData.profileFor ?? profileData.personal.profileFor
+              profileData.profileFor
             )}
           />
           <Row

@@ -1,4 +1,4 @@
-import { Countries, EatingHabits, DrinkingHabits, Genders, ManglikStatuses, MaritalStatuses, SmokingHabits } from '@/core/types';
+import { Countries, EatingHabits, DrinkingHabits, Genders, ManglikStatuses, MaritalStatuses, SmokingHabits, ProfileFors, Hours, Minutes, Periods, Qualifications, OccupationTypes } from '@/core/types';
 import { ProfileData, Siblings } from './EditProfile.types';
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -13,6 +13,7 @@ export const INITIAL_SIBLINGS: Siblings = {
 
 export const INITIAL_PROFILE: ProfileData = {
   personal: {
+    profileFor: ProfileFors.SELF,
     firstName: '',
     lastName: '',
     gender: Genders.MALE,
@@ -35,9 +36,9 @@ export const INITIAL_PROFILE: ProfileData = {
       country: '',
     },
     timeOfBirth: {
-      hour: undefined,
-      minute: undefined,
-      period: undefined,
+      hour: Hours.ONE,
+      minute: Minutes.ZERO,
+      period: Periods.AM,
     },
     subCast: '',
     gotra: '',
@@ -51,7 +52,7 @@ export const INITIAL_PROFILE: ProfileData = {
     motherTongue: '',
   },
   physical: {
-    heightLabel: '',
+    height: '',
     weight: '',
     bloodGroup: undefined,
     bodyType: undefined,
@@ -60,14 +61,14 @@ export const INITIAL_PROFILE: ProfileData = {
     disabilityNote: '',
   },
   education: {
-    qualification: '',
+    qualification: Qualifications.BA,
     field: '',
     university: '',
-    occupationType: undefined,
+    occupationType: OccupationTypes.BUSINESS,
     occupation: '',
     companyName: '',
     jobRole: '',
-    annualIncomeAmount: '',
+    annualIncomeAmount: 0,
   },
   family: {
     fatherName: '',

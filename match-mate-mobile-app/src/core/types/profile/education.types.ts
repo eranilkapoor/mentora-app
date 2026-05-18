@@ -1,7 +1,12 @@
+import { OccupationType, Qualification } from "../common/enums";
+
 export interface EducationData {
-  qualification: string;
-  field: string;
-  university: string;
+  qualification: Qualification;
+  field?: string;
+  university?: string;
+  occupationType?: OccupationType;
   occupation: string;
-  annualIncome: string;
+  companyName?: string;
+  jobRole?: string;
+  annualIncomeAmount?: number;
 }
