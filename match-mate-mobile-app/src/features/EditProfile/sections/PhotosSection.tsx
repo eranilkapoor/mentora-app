@@ -63,11 +63,10 @@ export function PhotosSection({
           contentContainerStyle={styles.photoRow}
         >
           {images.map((img) => {
-            // Use server-provided mediaId for all operations
-            const mediaId = img._id ?? img.id ?? '';
+            const mediaId = img._id;
 
             return (
-              <View key={mediaId || img.url} style={styles.photoWrapper}>
+              <View key={mediaId ?? img.url} style={styles.photoWrapper}>
                 <Image source={{ uri: img.url }} style={styles.photo} />
 
                 {img.isPrimary && (
@@ -84,8 +83,12 @@ export function PhotosSection({
                       styles.photoActionBtn,
                       img.isPrimary && styles.photoActionBtnDisabled,
                     ]}
-                    onPress={() => onSetPrimary(mediaId)}
-                    disabled={img.isPrimary || !mediaId}
+                    onPress={() => {
+                      if (mediaId) {
+                        onSetPrimary(mediaId);
+                      }
+                    }}
+                    disabled={img.isPrimary}
                     activeOpacity={0.7}
                     accessibilityRole="button"
                     accessibilityLabel={t('edit_profile.photos.set_primary')}
@@ -104,8 +107,11 @@ export function PhotosSection({
 
                   <TouchableOpacity
                     style={[styles.photoActionBtn, styles.photoActionBtnDanger]}
-                    onPress={() => onRemove(mediaId)}
-                    disabled={!mediaId}
+                    onPress={() => {
+                      if (mediaId) {
+                        onRemove(mediaId);
+                      }
+                    }}
                     activeOpacity={0.7}
                     accessibilityRole="button"
                     accessibilityLabel={t('edit_profile.photos.remove')}

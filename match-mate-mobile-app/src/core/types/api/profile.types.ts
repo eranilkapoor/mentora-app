@@ -8,10 +8,12 @@ import {
 
 export interface ProfileImage {
   _id?: string;
-  id?: string;
   url: string;
   isPrimary?: boolean;
   isActive?: boolean;
+  filename?: string;
+  mimeType?: string;
+  size?: number;
   uploadedAt?: Date;
 }
 

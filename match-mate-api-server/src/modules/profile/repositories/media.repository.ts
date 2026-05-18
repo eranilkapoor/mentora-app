@@ -45,7 +45,6 @@ export class MediaRepository {
           status: MediaStatus.ACTIVE,
         },
         {
-          _id: 0,
           __v: 0,
           uploadedAt: 0,
           createdAt: 0,

@@ -8,7 +8,7 @@ import { editProfileStyles } from '../EditProfile.styles';
 import { PersonalSection, SectionKey } from '../EditProfile.types';
 import { SelectPill } from '@/core/components/SelectPill';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
-import { Countries, Country, ManglikStatuses } from '@/core/types';
+import { Castes, Countries, ManglikStatuses, Religions } from '@/core/types';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
 
 interface Props {
@@ -31,6 +31,8 @@ export function AstroSection({
   const { t } = useTranslation();
   const ManglikStatusOptions = useEnumOptions(ManglikStatuses, 'options.manglik_status');
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
+  const ReligionOptions = useEnumOptions(Religions, 'options.religion');
+  const CasteOptions = useEnumOptions(Castes, 'options.caste');
 
   return (
     <SectionCard
@@ -47,7 +49,7 @@ export function AstroSection({
         label={t('edit_profile.fields.birth_country')}
         options={CountryOptions}
         value={personal.placeOfBirth?.country}
-        onChange={(val) => onSet('placeOfBirth', { ...personal.placeOfBirth, country: val as Country})}
+        onChange={(val) => onSet('placeOfBirth', { ...personal.placeOfBirth, country: val })}
         placeholder={t('edit_profile.placeholders.country')}
         required
       />
@@ -74,30 +76,19 @@ export function AstroSection({
         </View>
       </View>
       <SelectPill
-        label={t('edit_profile.fields.manglik_status')}
-        options={ManglikStatusOptions}
-        value={personal.manglikStatus}
-        onChange={(v) => onSet('manglikStatus', v as PersonalSection['manglikStatus'])}
-        i18nPrefix="options.manglik_status"
+        label={t('edit_profile.fields.religion')}
+        options={ReligionOptions}
+        value={personal.religion}
+        onChange={(v) => onSet('religion', v as PersonalSection['religion'])}
+        i18nPrefix="options.religion"
       />
-
-      <View style={styles.row}>
-        <View style={styles.halfField}>
-          <FormInput
-            label={t('edit_profile.fields.rashi')}
-            value={personal.rashi}
-            onChange={(v) => onSet('rashi', v)}
-          />
-        </View>
-        <View style={styles.halfField}>
-          <FormInput
-            label={t('edit_profile.fields.nakshatra')}
-            value={personal.nakshatra}
-            onChange={(v) => onSet('nakshatra', v)}
-          />
-        </View>
-      </View>
-
+      <SelectPill
+        label={t('edit_profile.fields.caste')}
+        options={CasteOptions}
+        value={personal.caste}
+        onChange={(v) => onSet('caste', v as PersonalSection['caste'])}
+        i18nPrefix="options.caste"
+      />
       <View style={styles.row}>
         <View style={styles.halfField}>
           <FormInput
@@ -111,6 +102,29 @@ export function AstroSection({
             label={t('edit_profile.fields.gotra')}
             value={personal.gotra}
             onChange={(v) => onSet('gotra', v)}
+          />
+        </View>
+      </View>
+      <SelectPill
+        label={t('edit_profile.fields.manglik_status')}
+        options={ManglikStatusOptions}
+        value={personal.manglikStatus}
+        onChange={(v) => onSet('manglikStatus', v as PersonalSection['manglikStatus'])}
+        i18nPrefix="options.manglik_status"
+      />
+      <View style={styles.row}>
+        <View style={styles.halfField}>
+          <FormInput
+            label={t('edit_profile.fields.rashi')}
+            value={personal.rashi}
+            onChange={(v) => onSet('rashi', v)}
+          />
+        </View>
+        <View style={styles.halfField}>
+          <FormInput
+            label={t('edit_profile.fields.nakshatra')}
+            value={personal.nakshatra}
+            onChange={(v) => onSet('nakshatra', v)}
           />
         </View>
       </View>

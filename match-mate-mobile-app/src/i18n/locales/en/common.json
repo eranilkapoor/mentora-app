@@ -32,5 +32,7 @@
     "invalid_email": "Please enter a valid email address",
     "password_length": "Password must be at least 6 characters",
     "password_mismatch": "Passwords do not match"
-  }
+  },
+  "saved": "Saved",
+  "saving": "Saving..."
 }

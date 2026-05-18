@@ -20,6 +20,8 @@ import {
   SmokingHabit,
   ProfileFor,
   Qualification,
+  Religion,
+  Caste,
 } from '@/core/types';
 
 export interface TimeOfBirth {
@@ -31,7 +33,7 @@ export interface TimeOfBirth {
 export interface PlaceOfBirth {
   city?: string;
   state?: string;
-  country?: string;
+  country?: Country;
 }
 
 export interface SiblingDetail {
@@ -57,6 +59,8 @@ export interface PersonalSection {
   dateOfBirth: string;
   timeOfBirth?: TimeOfBirth;
   placeOfBirth?: PlaceOfBirth;
+  religion: Religion;
+  caste: Caste;
   subCast?: string;
   gotra?: string;
   manglikStatus?: ManglikStatus;

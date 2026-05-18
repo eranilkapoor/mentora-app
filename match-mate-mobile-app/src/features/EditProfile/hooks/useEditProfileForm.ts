@@ -227,7 +227,6 @@ export function useEditProfileForm() {
       if (!mediaId) return;
       try {
         await setPrimaryImage({ mediaId }).unwrap();
-        // RTK invalidates 'ProfileMedia' → list refetches automatically
       } catch {
         Alert.alert(
           t('common.error'),
@@ -243,6 +242,36 @@ export function useEditProfileForm() {
   const handleRemoveImage = useCallback(
     async (mediaId: string): Promise<void> => {
       if (!mediaId) return;
+
+      const handleDelete = async (): Promise<void> => {
+        try {
+          await removeMediaImage({ mediaId }).unwrap();
+        } catch (error) {
+          console.error(error);
+
+          if (Platform.OS === 'web') {
+            window.alert(t('edit_profile.photos.remove_failed'));
+          } else {
+            Alert.alert(
+              t('common.error'),
+              t('edit_profile.photos.remove_failed')
+            );
+          }
+        }
+      };
+
+      if (Platform.OS === 'web') {
+        const confirmed = window.confirm(
+          t('edit_profile.photos.remove_confirm_message')
+        );
+
+        if (confirmed) {
+          await handleDelete();
+        }
+
+        return;
+      }
+
       Alert.alert(
         t('edit_profile.photos.remove_confirm_title'),
         t('edit_profile.photos.remove_confirm_message'),
@@ -254,16 +283,8 @@ export function useEditProfileForm() {
           {
             text: t('common.delete'),
             style: 'destructive',
-            onPress: async () => {
-              try {
-                await removeMediaImage({ mediaId }).unwrap();
-                // RTK invalidates 'ProfileMedia' → list refetches automatically
-              } catch {
-                Alert.alert(
-                  t('common.error'),
-                  t('edit_profile.photos.remove_failed')
-                );
-              }
+            onPress: () => {
+              void handleDelete();
             },
           },
         ]

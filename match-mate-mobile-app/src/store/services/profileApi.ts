@@ -117,9 +117,7 @@ export const profileApi = baseApi.injectEndpoints({
       invalidatesTags: ['ProfileMedia'],
     }),
 
-    // Fixed: was missing entirely
-    removeProfileMediaImage: builder.mutation<
-      ApiResponse<void>,
+    removeProfileMediaImage: builder.mutation<ApiResponse<void>,
       { mediaId: string }
     >({
       query: ({ mediaId }) => ({
