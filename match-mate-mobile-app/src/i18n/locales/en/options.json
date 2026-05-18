@@ -65,7 +65,7 @@
     "kosher": "Kosher",
     "open_to": "Open To"
   },
-  "manglik": {
+  "manglik_status": {
     "non_manglik": "Non Manglik",
     "manglik": "Manglik",
     "anshik_manglik": "Anshik Manglik",
@@ -95,14 +95,14 @@
     "moderate": "Moderate",
     "liberal": "Liberal"
   },
-  "child_preference": {
+  "child_preferences": {
     "does_not_matter": "Doesn't Matter",
     "want_children": "Want Children",
     "do_not_want_children": "Don't Want Children",
     "open_to_children": "Open to It",
     "has_children_acceptable": "Has Children OK"
   },
-  "residency_preference": {
+  "residency_preferences": {
     "does_not_matter": "Doesn't Matter",
     "same_city": "Same City",
     "same_state": "Same State",

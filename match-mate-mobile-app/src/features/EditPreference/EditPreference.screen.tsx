@@ -345,7 +345,7 @@ export default function EditPreferenceScreen({
               onChange={(v) =>
                 setFilters('childPreference', v as ChildPreference)
               }
-              i18nPrefix="options.child_preference"
+              i18nPrefix="options.child_preferences"
             />
 
             <SingleSelectPill
@@ -355,7 +355,7 @@ export default function EditPreferenceScreen({
               onChange={(v) =>
                 setFilters('residencyPreference', v as ResidencyPreference)
               }
-              i18nPrefix="options.residency_preference"
+              i18nPrefix="options.residency_preferences"
             />
           </PreferenceSectionCard>
 
@@ -394,7 +394,7 @@ export default function EditPreferenceScreen({
               options={ManglikStatusOptions}
               value={preference.filters.manglikStatus}
               onChange={(v) => setFilters('manglikStatus', v)}
-              i18nPrefix="options.manglik"
+              i18nPrefix="options.manglik_status"
             />
           </PreferenceSectionCard>
 

@@ -54,7 +54,7 @@
     "kosher": "कोशर",
     "open_to": "स्वीकार्य"
   },
-  "manglik": {
+  "manglik_status": {
     "non_manglik": "गैर-मांगलिक",
     "manglik": "मांगलिक",
     "anshik_manglik": "आंशिक मांगलिक",
@@ -84,14 +84,14 @@
     "moderate": "मध्यम",
     "liberal": "उदार"
   },
-  "child_preference": {
+  "child_preferences": {
     "does_not_matter": "कोई फर्क नहीं पड़ता",
     "want_children": "बच्चे चाहते हैं",
     "do_not_want_children": "बच्चे नहीं चाहते",
     "open_to_children": "इसके लिए खुले हैं",
     "has_children_acceptable": "बच्चे होना स्वीकार्य"
   },
-  "residency_preference": {
+  "residency_preferences": {
     "does_not_matter": "कोई फर्क नहीं पड़ता",
     "same_city": "उसी शहर में",
     "same_state": "उसी राज्य में",

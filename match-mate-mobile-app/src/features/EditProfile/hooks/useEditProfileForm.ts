@@ -1,245 +1,343 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert } from 'react-native';
+import { Alert, Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { MAX_PHOTOS } from '@/core/constants';
-import { ProfileImage } from '@/core/types';
 import {
-    useGetMyProfileQuery,
-    useUpdatePersonalInfoMutation,
-    useUpdatePhysicalInfoMutation,
-    useUpdateEducationInfoMutation,
-    useUpdateFamilyInfoMutation,
+  useGetMyProfileQuery,
+  useUpdatePersonalInfoMutation,
+  useUpdatePhysicalInfoMutation,
+  useUpdateEducationInfoMutation,
+  useUpdateFamilyInfoMutation,
+  useGetMyProfileMediaImagesQuery,
+  useAddProfileMediaImagesMutation,
+  useSetPrimaryProfileMediaImageMutation,
+  useRemoveProfileMediaImageMutation,
 } from '@/store/services/profileApi';
 import {
-    ProfileData,
-    PersonalSection,
-    PhysicalSection,
-    EducationSection,
-    FamilySection,
-    SectionKey,
+  ProfileData,
+  PersonalSection,
+  PhysicalSection,
+  EducationSection,
+  FamilySection,
+  SectionKey,
 } from '../EditProfile.types';
 import { INITIAL_PROFILE } from '../EditProfile.constants';
 
 export function useEditProfileForm() {
-    const { t } = useTranslation();
+  const { t } = useTranslation();
 
-    const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
-    const [sectionLoading, setSectionLoading] = useState<SectionKey | null>(null);
-    const [pageLoading, setPageLoading] = useState(true);
+  const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
+  const [sectionLoading, setSectionLoading] = useState<SectionKey | null>(null);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [imageUploading, setImageUploading] = useState(false);
 
-    const { data, error, isLoading } = useGetMyProfileQuery();
-    const [updatePersonalInfo] = useUpdatePersonalInfoMutation();
-    const [updatePhysicalInfo] = useUpdatePhysicalInfoMutation();
-    const [updateEducationInfo] = useUpdateEducationInfoMutation();
-    const [updateFamilyInfo] = useUpdateFamilyInfoMutation();
+  // ─── Queries ──────────────────────────────────────────────────────────────
 
-    // ─── Load from API ──────────────────────────────────────────────────────
+  const { data, error, isLoading } = useGetMyProfileQuery();
 
-    useEffect(() => {
-        if (isLoading) return;
+  // Images are driven entirely by the server — no local image state
+  const {
+    data: imagesData,
+    isLoading: imagesLoading,
+    isFetching: imagesFetching,
+  } = useGetMyProfileMediaImagesQuery();
 
-        if (error) {
-            Alert.alert(t('common.error'), t('edit_profile.errors.load_failed'));
-            setPageLoading(false);
-            return;
-        }
+  // ─── Mutations ────────────────────────────────────────────────────────────
 
-        if (data?.success && data?.data) {
-            setProfile((prev) => ({
-                ...prev,
-                personal: {
-                    ...prev.personal,
-                    ...(data.data.personal as typeof prev.personal),
-                },
-                physical: {
-                    ...prev.physical,
-                    ...(data.data.physical as typeof prev.physical),
-                },
-                education: {
-                    ...prev.education,
-                    ...(data.data.education as typeof prev.education),
-                },
-                family: {
-                    ...prev.family,
-                    ...(data.data.family as typeof prev.family),
-                },
-            }));
-        }
+  const [updatePersonalInfo] = useUpdatePersonalInfoMutation();
+  const [updatePhysicalInfo] = useUpdatePhysicalInfoMutation();
+  const [updateEducationInfo] = useUpdateEducationInfoMutation();
+  const [updateFamilyInfo] = useUpdateFamilyInfoMutation();
+  const [addMediaImages] = useAddProfileMediaImagesMutation();
+  const [setPrimaryImage] = useSetPrimaryProfileMediaImageMutation();
+  const [removeMediaImage] = useRemoveProfileMediaImageMutation();
 
-        setPageLoading(false);
-    }, [data, error, isLoading, t]);
+  // ─── Server images (source of truth) ─────────────────────────────────────
 
-    // ─── Profile completion ─────────────────────────────────────────────────
+  const serverImages = useMemo(
+    () => (imagesData?.success ? (imagesData.data ?? []) : []),
+    [imagesData]
+  );
 
-    const profileCompletion = useMemo((): number => {
-        const checks: unknown[] = [
-            profile.personal.firstName,
-            profile.personal.dateOfBirth,
-            profile.personal.maritalStatus,
-            profile.personal.motherTongue,
-            profile.personal.country,
-            profile.physical.height,
-            profile.physical.bodyType,
-            profile.education.qualification,
-            profile.education.occupation,
-            profile.family.familyType,
-            (profile.images ?? []).length > 0 ? 'yes' : '',
-        ];
-        const filled = checks.filter(
-            (v) => v !== '' && v !== null && v !== undefined
-        ).length;
-        return Math.round((filled / checks.length) * 100);
-    }, [profile]);
+  // ─── Load profile from API ─────────────────────────────────────────────────
 
-    // ─── Section setters ────────────────────────────────────────────────────
+  useEffect(() => {
+    if (isLoading) return;
 
-    const setPersonal = useCallback(
-        <K extends keyof PersonalSection>(key: K, value: PersonalSection[K]) => {
-            setProfile((p) => ({ ...p, personal: { ...p.personal, [key]: value } }));
+    if (error) {
+      Alert.alert(t('common.error'), t('edit_profile.errors.load_failed'));
+      setPageLoading(false);
+      return;
+    }
+
+    if (data?.success && data?.data) {
+      setProfile((prev) => ({
+        ...prev,
+        personal: {
+          ...prev.personal,
+          ...(data.data.personal as typeof prev.personal),
         },
-        []
-    );
-
-    const setPhysical = useCallback(
-        <K extends keyof PhysicalSection>(key: K, value: PhysicalSection[K]) => {
-            setProfile((p) => ({ ...p, physical: { ...p.physical, [key]: value } }));
+        physical: {
+          ...prev.physical,
+          ...(data.data.physical as typeof prev.physical),
         },
-        []
-    );
-
-    const setEducation = useCallback(
-        <K extends keyof EducationSection>(key: K, value: EducationSection[K]) => {
-            setProfile((p) => ({ ...p, education: { ...p.education, [key]: value } }));
+        education: {
+          ...prev.education,
+          ...(data.data.education as typeof prev.education),
         },
-        []
-    );
-
-    const setFamily = useCallback(
-        <K extends keyof FamilySection>(key: K, value: FamilySection[K]) => {
-            setProfile((p) => ({ ...p, family: { ...p.family, [key]: value } }));
+        family: {
+          ...prev.family,
+          ...(data.data.family as typeof prev.family),
         },
-        []
-    );
+      }));
+    }
 
-    // ─── Image handlers ─────────────────────────────────────────────────────
+    setPageLoading(false);
+  }, [data, error, isLoading, t]);
 
-    const pickImage = useCallback(async (): Promise<void> => {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        if (status !== 'granted') {
-            Alert.alert(
-                t('edit_profile.photos.permission_title'),
-                t('edit_profile.photos.permission_message')
-            );
-            return;
-        }
+  // ─── Profile completion ──────────────────────────────────────────────────
 
-        if ((profile.images ?? []).length >= MAX_PHOTOS) {
-            Alert.alert(
-                t('edit_profile.photos.limit_title'),
-                t('edit_profile.photos.limit_message', { max: MAX_PHOTOS })
-            );
-            return;
-        }
+  const profileCompletion = useMemo((): number => {
+    const checks: unknown[] = [
+      profile.personal.firstName,
+      profile.personal.dateOfBirth,
+      profile.personal.maritalStatus,
+      profile.personal.motherTongue,
+      profile.personal.country,
+      profile.physical.height,
+      profile.physical.bodyType,
+      profile.education.qualification,
+      profile.education.occupation,
+      profile.family.familyType,
+      serverImages.length > 0 ? 'yes' : '',
+    ];
+    const filled = checks.filter(
+      (v) => v !== '' && v !== null && v !== undefined
+    ).length;
+    return Math.round((filled / checks.length) * 100);
+  }, [profile, serverImages]);
 
-        const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ImagePicker.MediaTypeOptions.Images,
-            quality: 0.8,
-            allowsEditing: true,
-            aspect: [4, 5] as [number, number],
-        });
+  // ─── Section setters ─────────────────────────────────────────────────────
 
-        if (!result.canceled && result.assets[0]) {
-            const newImage: ProfileImage = {
-                url: result.assets[0].uri,
-                isPrimary: (profile.images ?? []).length === 0,
-            };
-            setProfile((p) => ({ ...p, images: [...(p.images ?? []), newImage] }));
-        }
-    }, [profile.images, t]);
+  const setPersonal = useCallback(
+    <K extends keyof PersonalSection>(key: K, value: PersonalSection[K]) => {
+      setProfile((p) => ({ ...p, personal: { ...p.personal, [key]: value } }));
+    },
+    []
+  );
 
-    const setPrimary = useCallback((index: number) => {
-        setProfile((p) => ({
-            ...p,
-            images: (p.images ?? []).map((img, i) => ({
-                ...img,
-                isPrimary: i === index,
-            })),
-        }));
-    }, []);
+  const setPhysical = useCallback(
+    <K extends keyof PhysicalSection>(key: K, value: PhysicalSection[K]) => {
+      setProfile((p) => ({ ...p, physical: { ...p.physical, [key]: value } }));
+    },
+    []
+  );
 
-    const removeImage = useCallback((index: number) => {
-        setProfile((p) => {
-            const updated = (p.images ?? []).filter((_, i) => i !== index);
-            if (updated.length > 0 && !updated.some((img) => img.isPrimary)) {
-                updated[0] = { ...updated[0], isPrimary: true };
-            }
-            return { ...p, images: updated };
-        });
-    }, []);
+  const setEducation = useCallback(
+    <K extends keyof EducationSection>(key: K, value: EducationSection[K]) => {
+      setProfile((p) => ({
+        ...p,
+        education: { ...p.education, [key]: value },
+      }));
+    },
+    []
+  );
 
-    // ─── Save ───────────────────────────────────────────────────────────────
+  const setFamily = useCallback(
+    <K extends keyof FamilySection>(key: K, value: FamilySection[K]) => {
+      setProfile((p) => ({ ...p, family: { ...p.family, [key]: value } }));
+    },
+    []
+  );
 
-    const updateSection = useCallback(
-        async (section: SectionKey): Promise<void> => {
-            setSectionLoading(section);
-            try {
-                switch (section) {
-                    case 'personal':
-                        await updatePersonalInfo(profile.personal).unwrap();
-                        break;
-                    case 'physical':
-                        await updatePhysicalInfo(profile.physical).unwrap();
-                        break;
-                    case 'education':
-                        await updateEducationInfo(profile.education).unwrap();
-                        break;
-                    case 'family':
-                        await updateFamilyInfo(profile.family).unwrap();
-                        break;
-                    case 'images':
-                        // Images are uploaded inline via media endpoint
-                        break;
-                }
-                Alert.alert(t('common.saved'), t('edit_profile.success.section_saved'));
-            } catch {
-                Alert.alert(t('common.error'), t('edit_profile.errors.save_failed'));
-            } finally {
-                setSectionLoading(null);
-            }
-        },
+  // ─── Image: Upload ────────────────────────────────────────────────────────
+
+  const pickImage = useCallback(async (): Promise<void> => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      Alert.alert(
+        t('edit_profile.photos.permission_title'),
+        t('edit_profile.photos.permission_message')
+      );
+      return;
+    }
+
+    if (serverImages.length >= MAX_PHOTOS) {
+      Alert.alert(
+        t('edit_profile.photos.limit_title'),
+        t('edit_profile.photos.limit_message', { max: MAX_PHOTOS })
+      );
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.8,
+      allowsEditing: true,
+      aspect: [4, 5] as [number, number],
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    const asset = result.assets[0];
+
+    setImageUploading(true);
+    try {
+      const formData = new FormData();
+
+      if (Platform.OS === 'web') {
+        // Web: fetch blob from URI and append as File
+        const res = await fetch(asset.uri);
+        const blob = await res.blob();
+        formData.append(
+          'images',
+          new File([blob], asset.fileName ?? `photo-${Date.now()}.jpg`, {
+            type: asset.mimeType ?? 'image/jpeg',
+          })
+        );
+      } else {
+        // Native: append the file object directly
+        formData.append('images', {
+          uri: asset.uri,
+          type: asset.mimeType ?? 'image/jpeg',
+          name: asset.fileName ?? `photo-${Date.now()}.jpg`,
+        } as unknown as Blob);
+      }
+
+      const response = await addMediaImages(formData).unwrap();
+
+      if (!response.success) {
+        throw new Error(t('edit_profile.photos.upload_failed'));
+      }
+
+      // RTK invalidates 'ProfileMedia' → useGetMyProfileMediaImagesQuery
+      // refetches automatically — no local state update needed
+    } catch {
+      Alert.alert(t('common.error'), t('edit_profile.photos.upload_failed'));
+    } finally {
+      setImageUploading(false);
+    }
+  }, [serverImages.length, addMediaImages, t]);
+
+  // ─── Image: Set Primary ───────────────────────────────────────────────────
+
+  const handleSetPrimary = useCallback(
+    async (mediaId: string): Promise<void> => {
+      if (!mediaId) return;
+      try {
+        await setPrimaryImage({ mediaId }).unwrap();
+        // RTK invalidates 'ProfileMedia' → list refetches automatically
+      } catch {
+        Alert.alert(
+          t('common.error'),
+          t('edit_profile.photos.set_primary_failed')
+        );
+      }
+    },
+    [setPrimaryImage, t]
+  );
+
+  // ─── Image: Remove ────────────────────────────────────────────────────────
+
+  const handleRemoveImage = useCallback(
+    async (mediaId: string): Promise<void> => {
+      if (!mediaId) return;
+      Alert.alert(
+        t('edit_profile.photos.remove_confirm_title'),
+        t('edit_profile.photos.remove_confirm_message'),
         [
-            profile,
-            updatePersonalInfo,
-            updatePhysicalInfo,
-            updateEducationInfo,
-            updateFamilyInfo,
-            t,
+          {
+            text: t('common.cancel'),
+            style: 'cancel',
+          },
+          {
+            text: t('common.delete'),
+            style: 'destructive',
+            onPress: async () => {
+              try {
+                await removeMediaImage({ mediaId }).unwrap();
+                // RTK invalidates 'ProfileMedia' → list refetches automatically
+              } catch {
+                Alert.alert(
+                  t('common.error'),
+                  t('edit_profile.photos.remove_failed')
+                );
+              }
+            },
+          },
         ]
-    );
+      );
+    },
+    [removeMediaImage, t]
+  );
 
-    const handleSave = useCallback(
-        (key: SectionKey) => {
-            void updateSection(key);
-        },
-        [updateSection]
-    );
+  // ─── Save section ─────────────────────────────────────────────────────────
 
-    return {
-        profile,
-        sectionLoading,
-        pageLoading,
-        profileCompletion,
-        // Section setters
-        setPersonal,
-        setPhysical,
-        setEducation,
-        setFamily,
-        // Image handlers
-        pickImage,
-        setPrimary,
-        removeImage,
-        // Save
-        handleSave,
-    };
+  const updateSection = useCallback(
+    async (section: SectionKey): Promise<void> => {
+      setSectionLoading(section);
+      try {
+        switch (section) {
+          case 'personal':
+            await updatePersonalInfo(profile.personal).unwrap();
+            break;
+          case 'physical':
+            await updatePhysicalInfo(profile.physical).unwrap();
+            break;
+          case 'education':
+            await updateEducationInfo(profile.education).unwrap();
+            break;
+          case 'family':
+            await updateFamilyInfo(profile.family).unwrap();
+            break;
+          case 'images':
+            // Images are managed via their own handlers — no-op here
+            break;
+        }
+        Alert.alert(t('common.saved'), t('edit_profile.success.section_saved'));
+      } catch {
+        Alert.alert(t('common.error'), t('edit_profile.errors.save_failed'));
+      } finally {
+        setSectionLoading(null);
+      }
+    },
+    [
+      profile,
+      updatePersonalInfo,
+      updatePhysicalInfo,
+      updateEducationInfo,
+      updateFamilyInfo,
+      t,
+    ]
+  );
+
+  const handleSave = useCallback(
+    (key: SectionKey) => {
+      void updateSection(key);
+    },
+    [updateSection]
+  );
+
+  return {
+    profile,
+    sectionLoading,
+    pageLoading,
+    profileCompletion,
+    // Images (server-driven)
+    images: serverImages,
+    imagesLoading: imagesLoading || imagesFetching,
+    imageUploading,
+    // Section setters
+    setPersonal,
+    setPhysical,
+    setEducation,
+    setFamily,
+    // Image handlers
+    pickImage,
+    handleSetPrimary,
+    handleRemoveImage,
+    // Save
+    handleSave,
+  };
 }

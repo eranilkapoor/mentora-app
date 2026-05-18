@@ -278,6 +278,7 @@ export const baseApi = createApi({
   tagTypes: [
     'Preference',
     'Profile',
+    'ProfileMedia',
     'Auth',
   ],
 

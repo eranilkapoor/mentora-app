@@ -25,7 +25,11 @@
     "add": "Add Photo",
     "hint": "Tap star to set as primary. First photo appears on your profile card.",
     "permission_title": "Permission Required",
-    "permission_message": "Please allow access to your photo library."
+    "permission_message": "Please allow access to your photo library.",
+    "set_primary_failed": "Failed to set primary image. Please try again.",
+    "remove_failed": "Failed to remove image. Please try again.",
+    "remove_confirm_title": "Remove Photo",
+    "remove_confirm_message": "Are you sure you want to remove this photo?"
   },
   "fields": {
     "first_name": "First Name *",

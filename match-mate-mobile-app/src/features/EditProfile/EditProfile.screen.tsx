@@ -42,10 +42,13 @@ export default function EditProfileScreen({
     setPhysical,
     setEducation,
     setFamily,
+    images,
+    imagesLoading,
+    imageUploading,
     pickImage,
-    setPrimary,
-    removeImage,
     handleSave,
+    handleSetPrimary,
+    handleRemoveImage
   } = useEditProfileForm();
 
   if (pageLoading) {
@@ -81,10 +84,12 @@ export default function EditProfileScreen({
           <CompletionBar percent={profileCompletion} />
 
           <PhotosSection
-            images={profile.images ?? []}
+            images={images}
+            imagesLoading={imagesLoading}
+            imageUploading={imageUploading}
             onPickImage={() => { void pickImage(); }}
-            onSetPrimary={setPrimary}
-            onRemove={removeImage}
+            onSetPrimary={(mediaId) => { void handleSetPrimary(mediaId); }}
+            onRemove={(mediaId) => { void handleRemoveImage(mediaId); }}
             {...sectionProps}
           />
 

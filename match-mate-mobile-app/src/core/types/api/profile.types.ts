@@ -7,6 +7,8 @@ import {
 } from './../../types/index';
 
 export interface ProfileImage {
+  _id?: string;
+  id?: string;
   url: string;
   isPrimary?: boolean;
   isActive?: boolean;

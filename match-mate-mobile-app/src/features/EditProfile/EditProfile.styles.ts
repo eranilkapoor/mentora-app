@@ -60,6 +60,10 @@ export const editProfileStyles = (theme: Theme) =>
     photoActionBtnDanger: {
       backgroundColor: theme.colors.errorLight,
     },
+    photoActionBtnDisabled: {
+      backgroundColor: theme.colors.backgroundLight,
+      opacity: 0.4,
+    },
     addPhotoBtn: {
       width: 100,
       height: 125,

@@ -29,7 +29,7 @@ export function AstroSection({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
-  const ManglikStatusOptions = useEnumOptions(ManglikStatuses, 'options.manglik');
+  const ManglikStatusOptions = useEnumOptions(ManglikStatuses, 'options.manglik_status');
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
 
   return (
@@ -78,7 +78,7 @@ export function AstroSection({
         options={ManglikStatusOptions}
         value={personal.manglikStatus}
         onChange={(v) => onSet('manglikStatus', v as PersonalSection['manglikStatus'])}
-        i18nPrefix="options.manglik"
+        i18nPrefix="options.manglik_status"
       />
 
       <View style={styles.row}>

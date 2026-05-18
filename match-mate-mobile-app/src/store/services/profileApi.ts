@@ -90,7 +90,7 @@ export const profileApi = baseApi.injectEndpoints({
 
     getMyProfileMediaImages: builder.query<ApiResponse<ProfileImage[]>, void>({
       query: () => '/profile/media/images',
-      providesTags: ['Profile'],
+      providesTags: ['ProfileMedia'],
     }),
 
     addProfileMediaImages: builder.mutation<
@@ -101,8 +101,32 @@ export const profileApi = baseApi.injectEndpoints({
         url: '/profile/media/images',
         method: 'POST',
         body,
+        formData: true,
       }),
-      invalidatesTags: ['Profile'],
+      invalidatesTags: ['ProfileMedia', 'Profile'],
+    }),
+
+    setPrimaryProfileMediaImage: builder.mutation<
+      ApiResponse<void>,
+      { mediaId: string }
+    >({
+      query: ({ mediaId }) => ({
+        url: `/profile/media/images/${mediaId}/primary`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['ProfileMedia'],
+    }),
+
+    // Fixed: was missing entirely
+    removeProfileMediaImage: builder.mutation<
+      ApiResponse<void>,
+      { mediaId: string }
+    >({
+      query: ({ mediaId }) => ({
+        url: `/profile/media/images/${mediaId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['ProfileMedia', 'Profile'],
     }),
   }),
 
@@ -119,5 +143,7 @@ export const {
   useUpdateFamilyInfoMutation,
   useUpdatePreferencesMutation,
   useGetMyProfileMediaImagesQuery,
-  useAddProfileMediaImagesMutation
+  useAddProfileMediaImagesMutation,
+  useSetPrimaryProfileMediaImageMutation,
+  useRemoveProfileMediaImageMutation,
 } = profileApi;
