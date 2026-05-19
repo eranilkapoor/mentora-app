@@ -1,41 +1,86 @@
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { SettingToggleProps } from '../Settings.types';
-import { settingsStyles } from '../Settings.styles';
-import { Switch, View, Text } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
+import React, { memo } from 'react';
 
-export function SettingToggle({
+import {
+  View,
+  Text,
+  Switch,
+  Platform,
+} from 'react-native';
+
+import Feather from 'react-native-vector-icons/Feather';
+
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+
+import { settingsStyles } from '../Settings.styles';
+import { SettingToggleProps } from '../Settings.types';
+
+export const SettingToggle = memo(function SettingToggle({
   icon,
   label,
   subLabel,
   value,
   onValueChange,
-  isLast,
+  isLast = false,
+  disabled
 }: SettingToggleProps): React.ReactElement {
   const styles = useThemedStyles(settingsStyles);
+
+  const { theme } = useTheme();
+
   return (
-    <View style={[styles.row, isLast && styles.rowLast]}>
+    <View
+      style={[
+        styles.row,
+        isLast && styles.rowLast,
+      ]}
+    >
       <View style={styles.rowLeft}>
         <View style={styles.rowIconWrapper}>
-          <Feather name={icon} size={16} color={Colors.textSecondary} />
+          <Feather
+            name={icon}
+            size={16}
+            color={theme.colors.textSecondary}
+          />
         </View>
+
         <View style={styles.rowLabelWrapper}>
-          <Text style={styles.rowLabel}>{label}</Text>
-          {subLabel !== undefined && (
-            <Text style={styles.rowSubLabel}>{subLabel}</Text>
-          )}
+          <Text style={styles.rowLabel}>
+            {label}
+          </Text>
+
+          {subLabel ? (
+            <Text style={styles.rowSubLabel}>
+              {subLabel}
+            </Text>
+          ) : null}
         </View>
       </View>
+
       <Switch
-        value={value}
-        onValueChange={onValueChange}
-        trackColor={{ false: Colors.switchTrackOff, true: Colors.primary }}
-        thumbColor={Colors.white}
-        accessibilityLabel={label}
+        value={value ?? false}
+        onValueChange={onValueChange ?? (() => {})}
+        disabled={disabled}
         accessibilityRole="switch"
-        accessibilityState={{ checked: value }}
+        accessibilityLabel={label}
+        accessibilityHint={subLabel}
+        accessibilityState={{
+          checked: value ?? false,
+          disabled
+        }}
+        trackColor={{
+          false: theme.colors.switchTrackOff,
+          true: theme.colors.primary,
+        }}
+        thumbColor={
+          Platform.OS === 'android'
+            ? theme.colors.white
+            : undefined
+        }
+        ios_backgroundColor={
+          theme.colors.switchTrackOff
+        }
       />
     </View>
   );
-}
+});

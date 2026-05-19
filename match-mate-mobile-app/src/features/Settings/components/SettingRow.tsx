@@ -1,43 +1,103 @@
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { SettingRowProps } from '../Settings.types';
-import { settingsStyles } from '../Settings.styles';
-import { TouchableOpacity, View, Text } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
+import React, { memo } from 'react';
 
-export function SettingRow({
+import {
+  TouchableOpacity,
+  View,
+  Text,
+} from 'react-native';
+
+import Feather from 'react-native-vector-icons/Feather';
+
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+
+import { settingsStyles } from '../Settings.styles';
+import { SettingRowProps } from '../Settings.types';
+
+export const SettingRow = memo(function SettingRow({
   icon,
   label,
   subLabel,
   badge,
   onPress,
-  isLast,
+  isLast = false,
+  isDanger = false,
+  disabled
 }: SettingRowProps): React.ReactElement {
   const styles = useThemedStyles(settingsStyles);
+
+  const { theme } = useTheme();
+
   return (
     <TouchableOpacity
-      style={[styles.row, isLast && styles.rowLast]}
+      activeOpacity={0.7}
+      disabled={disabled}
+      style={[
+        styles.row,
+        isLast && styles.rowLast,
+        disabled && styles.rowDisabled,
+      ]}
       onPress={onPress}
       accessibilityRole="button"
       accessibilityLabel={label}
+      accessibilityHint={subLabel}
     >
       <View style={styles.rowLeft}>
-        <View style={styles.rowIconWrapper}>
-          <Feather name={icon} size={16} color={Colors.textSecondary} />
+        <View
+          style={[
+            styles.rowIconWrapper,
+            isDanger && {
+              backgroundColor:
+                theme.colors.danger,
+            },
+          ]}
+        >
+          <Feather
+            name={icon}
+            size={16}
+            color={
+              isDanger
+                ? theme.colors.danger
+                : theme.colors.textSecondary
+            }
+          />
         </View>
+
         <View style={styles.rowLabelWrapper}>
-          <Text style={styles.rowLabel}>{label}</Text>
-          {subLabel !== undefined && (
-            <Text style={styles.rowSubLabel}>{subLabel}</Text>
-          )}
+          <Text
+            style={[
+              styles.rowLabel,
+              isDanger && {
+                color: theme.colors.danger,
+              },
+            ]}
+          >
+            {label}
+          </Text>
+
+          {subLabel ? (
+            <Text style={styles.rowSubLabel}>
+              {subLabel}
+            </Text>
+          ) : null}
         </View>
       </View>
-      {badge !== undefined && (
-        <View style={styles.rowBadge}>
-          <Text style={styles.rowBadgeText}>{badge}</Text>
-        </View>
-      )}
-      <Feather name="chevron-right" size={16} color={Colors.textMuted} />
+
+      <View style={styles.rowRight}>
+        {badge ? (
+          <View style={styles.rowBadge}>
+            <Text style={styles.rowBadgeText}>
+              {badge}
+            </Text>
+          </View>
+        ) : null}
+
+        <Feather
+          name="chevron-right"
+          size={16}
+          color={theme.colors.textMuted}
+        />
+      </View>
     </TouchableOpacity>
   );
-}
+});

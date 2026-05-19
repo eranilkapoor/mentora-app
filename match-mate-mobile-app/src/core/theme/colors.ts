@@ -1,101 +1,236 @@
 import { ColorPalette } from './types';
 
 export const LIGHTCOLORS: ColorPalette = {
+  // ─────────────────────────────────────────────
   // Brand
-  primary: '#4F46E5',
-  primaryLight: '#EDE9FE',
-  primaryBorder: '#C4B5FD',
-  transparent: 'transparent',
-  accent: '#f59e0b',
-  accentLight: '#ffedd5',
-  secondary: '#6b7280',
-  secondaryLight: '#f3f4f6',
+  // ─────────────────────────────────────────────
+  primary: '#5B4CF0',
+  primaryLight: '#EEF2FF',
+  primaryBorder: '#C7D2FE',
+
+  secondary: '#64748B',
+  secondaryLight: '#F1F5F9',
+
+  accent: '#F59E0B',
+  accentLight: '#FEF3C7',
+
   whatsapp: '#25D366',
 
-  // Backgrounds
-  background: '#FFFFFF',
-  backgroundLight: '#F2F2F2',
-  backgroundPage: '#F8FAFC',
-  surface: '#FFFFFF',
-  modalOverlay: 'rgba(0,0,0,0.2)',
-  overlayDark: 'rgba(0,0,0,0.45)',
+  transparent: 'transparent',
 
+  // ─────────────────────────────────────────────
+  // Backgrounds
+  // ─────────────────────────────────────────────
+  background: '#FFFFFF',
+
+  /**
+   * Main app page background
+   */
+  backgroundPage: '#F8FAFC',
+
+  /**
+   * Secondary backgrounds
+   * Used for chips / inputs / icon wrappers
+   */
+  backgroundLight: '#F1F5F9',
+
+  /**
+   * Cards / modals / sections
+   */
+  surface: '#FFFFFF',
+
+  /**
+   * Elevated cards
+   */
+  surfaceElevated: '#FFFFFF',
+
+  modalOverlay: 'rgba(15,23,42,0.45)',
+  overlayDark: 'rgba(0,0,0,0.55)',
+
+  // ─────────────────────────────────────────────
   // Text
+  // ─────────────────────────────────────────────
   textPrimary: '#0F172A',
+
+  /**
+   * Titles / subtitles
+   */
   textSecondary: '#475569',
-  textMuted: '#9AA4B2',
-  textBody: '#555555',
+
+  /**
+   * Muted labels / placeholders
+   */
+  textMuted: '#94A3B8',
+
+  textBody: '#334155',
+
   textInverse: '#FFFFFF',
 
-  // UI
-  border: '#E6E6E6',
-  divider: '#EEF2F7',
-  inputBackground: '#F7F7F8',
-  switchTrackOff: '#cccccc',
+  // ─────────────────────────────────────────────
+  // Borders
+  // ─────────────────────────────────────────────
+  border: '#E2E8F0',
 
+  divider: '#EDF2F7',
+
+  /**
+   * Input borders
+   */
+  borderStrong: '#CBD5E1',
+
+  // ─────────────────────────────────────────────
+  // Inputs
+  // ─────────────────────────────────────────────
+  inputBackground: '#FFFFFF',
+
+  inputBorder: '#CBD5E1',
+
+  inputPlaceholder: '#94A3B8',
+
+  switchTrackOff: '#CBD5E1',
+
+  // ─────────────────────────────────────────────
   // States
+  // ─────────────────────────────────────────────
   success: '#16A34A',
-  successLight: '#F0FDF4',
-  error: '#D9534F',
-  errorLight: '#FFF5F5',
-  danger: '#ef4444',
+  successLight: '#DCFCE7',
+
   warning: '#F59E0B',
+  warningLight: '#FEF3C7',
 
+  error: '#DC2626',
+  errorLight: '#FEE2E2',
+
+  danger: '#DC2626',
+
+  info: '#2563EB',
+  infoLight: '#DBEAFE',
+
+  // ─────────────────────────────────────────────
   // Links / CTA
-  link: '#007AFF',
-  chatBtn: '#ff6b6b',
-  shortlistBg: '#fff5e6',
+  // ─────────────────────────────────────────────
+  link: '#2563EB',
 
+  chatBtn: '#FF6B6B',
+
+  shortlistBg: '#FFF7ED',
+
+  // ─────────────────────────────────────────────
   // Status
+  // ─────────────────────────────────────────────
   online: '#22C55E',
-  offline: '#9CA3AF',
+  offline: '#94A3B8',
   verified: '#3B82F6',
 
+  // ─────────────────────────────────────────────
   // Membership
+  // ─────────────────────────────────────────────
   gold: '#FFD700',
-  platinum: '#E5E4E2',
+  platinum: '#E5E7EB',
 
+  // ─────────────────────────────────────────────
   // Static
+  // ─────────────────────────────────────────────
   white: '#FFFFFF',
   black: '#000000',
 
+  // ─────────────────────────────────────────────
   // Gradients
+  // ─────────────────────────────────────────────
   gradients: {
-    primary: ['#E94057', '#F27121'],
+    primary: ['#5B4CF0', '#7C3AED'],
   },
 };
 
-// Only override what actually changes in dark mode
-// Every key not listed here inherits from LIGHTCOLORS in darkTheme.ts
 export const DARKCOLORS: Partial<ColorPalette> = {
-  // Backgrounds
-  background: '#121212',
-  backgroundLight: '#2A2A2A',
-  backgroundPage: '#1E1E1E',
-  surface: '#1E1E1E',
-  modalOverlay: 'rgba(0,0,0,0.5)',
-  overlayDark: 'rgba(0,0,0,0.7)',
+  // ─────────────────────────────────────────────
+  // Brand
+  // ─────────────────────────────────────────────
+  primary: '#7C6CFF',
 
+  primaryLight: 'rgba(124,108,255,0.14)',
+
+  primaryBorder: 'rgba(124,108,255,0.35)',
+
+  secondary: '#A1A1AA',
+
+  secondaryLight: '#27272A',
+
+  accentLight: 'rgba(245,158,11,0.12)',
+
+  // ─────────────────────────────────────────────
+  // Backgrounds
+  // ─────────────────────────────────────────────
+  background: '#0F172A',
+
+  backgroundPage: '#020617',
+
+  backgroundLight: '#1E293B',
+
+  /**
+   * Cards
+   */
+  surface: '#111827',
+
+  /**
+   * Elevated cards/modals
+   */
+  surfaceElevated: '#1E293B',
+
+  modalOverlay: 'rgba(0,0,0,0.7)',
+
+  overlayDark: 'rgba(0,0,0,0.75)',
+
+  // ─────────────────────────────────────────────
   // Text
-  textPrimary: '#F1F5F9',
-  textSecondary: '#A1A1AA',
-  textMuted: '#71717A',
-  textBody: '#A1A1AA',
+  // ─────────────────────────────────────────────
+  textPrimary: '#F8FAFC',
+
+  textSecondary: '#CBD5E1',
+
+  textMuted: '#94A3B8',
+
+  textBody: '#E2E8F0',
+
   textInverse: '#000000',
 
-  // UI
-  border: '#2C2C2E',
-  divider: '#2C2C2E',
-  inputBackground: '#2A2A2A',
-  switchTrackOff: '#555555',
+  // ─────────────────────────────────────────────
+  // Borders
+  // ─────────────────────────────────────────────
+  border: '#1E293B',
 
+  divider: '#273449',
+
+  borderStrong: '#334155',
+
+  // ─────────────────────────────────────────────
+  // Inputs
+  // ─────────────────────────────────────────────
+  inputBackground: '#0F172A',
+
+  inputBorder: '#334155',
+
+  inputPlaceholder: '#64748B',
+
+  switchTrackOff: '#475569',
+
+  // ─────────────────────────────────────────────
   // States
-  errorLight: '#3B1A1A',
-  successLight: '#1A2E22',
+  // ─────────────────────────────────────────────
+  successLight: 'rgba(34,197,94,0.15)',
 
+  warningLight: 'rgba(245,158,11,0.15)',
+
+  errorLight: 'rgba(239,68,68,0.15)',
+
+  infoLight: 'rgba(37,99,235,0.15)',
+
+  // ─────────────────────────────────────────────
   // Status
+  // ─────────────────────────────────────────────
   online: '#4ADE80',
 
-  // Membership
-  platinum: '#C0C0C0',
+  offline: '#64748B',
+
+  platinum: '#D4D4D8',
 };

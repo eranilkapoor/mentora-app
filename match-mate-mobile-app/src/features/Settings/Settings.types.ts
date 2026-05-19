@@ -15,18 +15,20 @@ export interface SettingRowProps {
   label: string;
   subLabel?: string;
   badge?: string;
-  onPress: () => void;
+  onPress?: () => void;
   isLast?: boolean;
   isDanger?: boolean;
+  disabled?: boolean;
 }
 
 export interface SettingToggleProps {
   icon: string;
   label: string;
   subLabel?: string;
-  value: boolean;
-  onValueChange: (val: boolean) => void;
+  value?: boolean;
+  onValueChange?: (val: boolean) => void;
   isLast?: boolean;
+  disabled?: boolean;
 }
 
 export interface SectionProps {

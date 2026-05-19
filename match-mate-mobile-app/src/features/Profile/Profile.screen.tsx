@@ -167,8 +167,6 @@ type SchemaProfile = {
   gender?: string;
   profileScore?: number;
   profileCompletionPercentage?: number;
-  searchTags?: string[];
-  aiTags?: string[];
   isPremium?: boolean;
   isVerified?: boolean;
   status?: string;
@@ -508,8 +506,6 @@ const getPdfRows = (profile: SchemaProfile): Array<[string, string]> => [
     'Languages Known',
     formatList(profile.personal.languages ?? profile.personal.languagesKnown),
   ],
-  ['Search Tags', formatList(profile.searchTags)],
-  ['AI Tags', formatList(profile.aiTags)],
 ];
 
 const createProfilePdfHtml = (
@@ -1146,17 +1142,6 @@ export default function ProfileScreen({
             </View>
           )}
           <Row label="Languages Known" value={languagesKnown} />
-        </Section>
-
-        <Section title="Discovery Tags" icon="hash">
-          <View style={styles.tagSection}>
-            <Text style={styles.tagSectionLabel}>Search Tags</Text>
-            <TagList items={toStringList(profileData.searchTags)} />
-          </View>
-          <View style={styles.tagSection}>
-            <Text style={styles.tagSectionLabel}>AI Tags</Text>
-            <TagList items={toStringList(profileData.aiTags)} />
-          </View>
         </Section>
         <View style={styles.footer} />
       </ScrollView>
