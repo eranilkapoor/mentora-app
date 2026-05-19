@@ -27,4 +27,6 @@ export const Z_INDEX = {
   dropdown: 10,
   modal: 100,
   toast: 1000,
+  sticky: 2000,
+  tooltip: 3000
 };

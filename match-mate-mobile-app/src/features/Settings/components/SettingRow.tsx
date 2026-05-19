@@ -48,7 +48,7 @@ export const SettingRow = memo(function SettingRow({
             styles.rowIconWrapper,
             isDanger && {
               backgroundColor:
-                theme.colors.danger,
+                theme.colors.primaryLight,
             },
           ]}
         >

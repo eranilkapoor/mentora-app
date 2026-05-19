@@ -8,5 +8,4 @@ export const darkTheme: Theme = {
     ...lightTheme.colors, // start with all light colors
     ...DARKCOLORS, // override only what changes
   },
-  // layout is already included via ...lightTheme — no need to re-declare
 };
