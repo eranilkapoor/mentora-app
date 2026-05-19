@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { logout, setUser } from '@/store/slices/authSlice';
+import { setUser } from '@/store/slices/authSlice';
 import { useVerifyUserQuery } from '@/store/services/authApi';
 import Loader from '@/core/components/Loader';
 import i18n from '@/i18n';
@@ -18,7 +18,7 @@ export default function AppInitializer({ children }: Props) {
   const [langReady, setLangReady] = useState(false);
   const isFirstLoad = useRef(true);
 
-  const { data, error, isLoading } = useVerifyUserQuery(undefined, {
+  const { data, isLoading } = useVerifyUserQuery(undefined, {
     // Only call the endpoint when a token exists
     skip: !accessToken,
   });
@@ -57,12 +57,7 @@ export default function AppInitializer({ children }: Props) {
     if (data?.success && data?.data) {
       dispatch(setUser(data.data));
     }
-
-    if (error) {
-      // Token is invalid or expired — force logout
-      dispatch(logout());
-    }
-  }, [data, error, dispatch]);
+  }, [data, dispatch]);
 
   if (!langReady || (accessToken && isLoading)) {
     return <Loader fullScreen size="large" loadingText="App initializing..." />;

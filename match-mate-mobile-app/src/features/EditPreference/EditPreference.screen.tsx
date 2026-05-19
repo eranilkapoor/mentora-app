@@ -19,10 +19,10 @@ import Loader from '@/core/components/Loader';
 import { SettingsStackParamList } from '@/navigation/types';
 import {
   useGetMyPreferenceQuery,
-  //   useUpdatePreferenceFiltersMutation,
-  //   useUpdatePreferenceSettingsMutation,
-  //   useUpdatePreferenceWeightsMutation,
-  //   useUpdateAboutPartnerMutation,
+  useUpdatePreferenceFiltersMutation,
+  useUpdatePreferenceSettingsMutation,
+  useUpdatePreferenceWeightsMutation,
+  useUpdateAboutPartnerMutation,
 } from '@/store/services/preferenceApi';
 import { editPreferenceStyles } from './EditPreference.styles';
 import {
@@ -50,11 +50,9 @@ import { PreferenceToggleRow } from './components/PreferenceToggleRow';
 import { WeightSlider } from './components/WeightSlider';
 import { ScoreStepper } from './components/ScoreStepper';
 import {
-  ChildPreference,
   EatingHabits,
   DrinkingHabits,
   MaritalStatuses,
-  ResidencyPreference,
   SmokingHabits,
   BodyTypes,
   Complexions,
@@ -102,10 +100,10 @@ export default function EditPreferenceScreen({
   const [pageLoading, setPageLoading] = useState(true);
 
   const { data, error, isLoading } = useGetMyPreferenceQuery();
-  //   const [updateFilters] = useUpdatePreferenceFiltersMutation();
-  //   const [updateSettings] = useUpdatePreferenceSettingsMutation();
-  //   const [updateWeights] = useUpdatePreferenceWeightsMutation();
-  //   const [updateAboutPartner] = useUpdateAboutPartnerMutation();
+  const [updateFilters] = useUpdatePreferenceFiltersMutation();
+  const [updateSettings] = useUpdatePreferenceSettingsMutation();
+  const [updateWeights] = useUpdatePreferenceWeightsMutation();
+  const [updateAboutPartner] = useUpdateAboutPartnerMutation();
 
   // ─── Load ─────────────────────────────────────────────────────────────────
 
@@ -151,10 +149,10 @@ export default function EditPreferenceScreen({
       try {
         switch (section) {
           case 'filters':
-            // await updateFilters(preference.filters).unwrap();
+            await updateFilters(preference.filters).unwrap();
             break;
           case 'settings':
-            // await updateSettings(preference.settings).unwrap();
+            await updateSettings(preference.settings).unwrap();
             break;
           case 'weights':
             if (weightsTotal !== 100) {
@@ -164,12 +162,12 @@ export default function EditPreferenceScreen({
               );
               return;
             }
-            // await updateWeights(preference.weights).unwrap();
+            await updateWeights(preference.weights).unwrap();
             break;
           case 'about':
-            // await updateAboutPartner({
-            //   aboutPartner: preference.aboutPartner ?? '',
-            // }).unwrap();
+            await updateAboutPartner({
+              aboutPartner: preference.aboutPartner ?? '',
+            }).unwrap();
             break;
         }
         Alert.alert(t('common.saved'), t('preference.success.section_saved'));
@@ -180,12 +178,12 @@ export default function EditPreferenceScreen({
       }
     },
     [
-      // preference,
+      preference,
       weightsTotal,
-      //   updateFilters,
-      //   updateSettings,
-      //   updateWeights,
-      //   updateAboutPartner,
+      updateFilters,
+      updateSettings,
+      updateWeights,
+      updateAboutPartner,
       t,
     ]
   );
@@ -343,7 +341,7 @@ export default function EditPreferenceScreen({
               options={ChildPreferenceOptions}
               value={preference.filters.childPreference}
               onChange={(v) =>
-                setFilters('childPreference', v as ChildPreference)
+                setFilters('childPreference', v)
               }
               i18nPrefix="options.child_preferences"
             />
@@ -353,7 +351,7 @@ export default function EditPreferenceScreen({
               options={ResidencyPreferenceOptions}
               value={preference.filters.residencyPreference}
               onChange={(v) =>
-                setFilters('residencyPreference', v as ResidencyPreference)
+                setFilters('residencyPreference', v)
               }
               i18nPrefix="options.residency_preferences"
             />
@@ -377,7 +375,7 @@ export default function EditPreferenceScreen({
             <MultiSelectPill
               label={t('preference.fields.caste')}
               options={CasteOptions}
-              value={preference.filters.caste}
+              value={preference.filters.caste ?? []}
               onChange={(v) => setFilters('caste', v)}
               i18nPrefix="options.caste"
             />
@@ -586,6 +584,7 @@ export default function EditPreferenceScreen({
                 label={t(`preference.weights.${key}`)}
                 value={preference.weights[key]}
                 onChange={(v) => setWeight(key, v)}
+                unit='%'
               />
             ))}
 

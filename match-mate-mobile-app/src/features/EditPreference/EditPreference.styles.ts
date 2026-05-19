@@ -227,10 +227,6 @@ export const editPreferenceStyles = (theme: Theme) =>
       fontWeight: '500',
     },
 
-    // ── Weight Slider ─────────────────────────────────────────────────────────
-
-    // ── Score Stepper ─────────────────────────────────────────────────────────
-
     // ── About Partner ─────────────────────────────────────────────────────────
     textArea: {
       borderWidth: 1,
