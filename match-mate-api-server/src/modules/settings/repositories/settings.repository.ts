@@ -1,0 +1,361 @@
+import { Injectable } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+import {
+  AccountSettings,
+  AccountSettingsDocument,
+} from '../schemas/account-settings.schema';
+import {
+  PrivacySettings,
+  PrivacySettingsDocument,
+} from '../schemas/privacy-settings.schema';
+import {
+  NotificationSettings,
+  NotificationSettingsDocument,
+} from '../schemas/notification-settings.schema';
+import {
+  CommunicationSettings,
+  CommunicationSettingsDocument,
+} from '../schemas/communication-settings.schema';
+import {
+  SecuritySettings,
+  SecuritySettingsDocument,
+} from '../schemas/security-settings.schema';
+import {
+  LocalizationSettings,
+  LocalizationSettingsDocument,
+} from '../schemas/localization-settings.schema';
+import {
+  AccessibilitySettings,
+  AccessibilitySettingsDocument,
+} from '../schemas/accessibility-settings.schema';
+import {
+  MediaSettings,
+  MediaSettingsDocument,
+} from '../schemas/media-settings.schema';
+import { AiSettings, AiSettingsDocument } from '../schemas/ai-settings.schema';
+
+function buildDotNotation(
+  obj: Record<string, unknown>,
+  prefix = '',
+): Record<string, unknown> {
+  const result: Record<string, unknown> = {};
+  for (const [key, value] of Object.entries(obj)) {
+    const fullKey = prefix ? `${prefix}.${key}` : key;
+    if (
+      value !== null &&
+      typeof value === 'object' &&
+      !Array.isArray(value) &&
+      !(value instanceof Types.ObjectId) &&
+      !(value instanceof Date)
+    ) {
+      Object.assign(
+        result,
+        buildDotNotation(value as Record<string, unknown>, fullKey),
+      );
+    } else {
+      result[fullKey] = value;
+    }
+  }
+  return result;
+}
+
+const upsertOptions = {
+  upsert: true,
+  new: true,
+  runValidators: true,
+  setDefaultsOnInsert: true,
+} as const;
+
+@Injectable()
+export class SettingsRepository {
+  constructor(
+    @InjectModel(AccountSettings.name)
+    private readonly accountModel: Model<AccountSettingsDocument>,
+
+    @InjectModel(PrivacySettings.name)
+    private readonly privacyModel: Model<PrivacySettingsDocument>,
+
+    @InjectModel(NotificationSettings.name)
+    private readonly notificationModel: Model<NotificationSettingsDocument>,
+
+    @InjectModel(CommunicationSettings.name)
+    private readonly communicationModel: Model<CommunicationSettingsDocument>,
+
+    @InjectModel(SecuritySettings.name)
+    private readonly securityModel: Model<SecuritySettingsDocument>,
+
+    @InjectModel(LocalizationSettings.name)
+    private readonly localizationModel: Model<LocalizationSettingsDocument>,
+
+    @InjectModel(AccessibilitySettings.name)
+    private readonly accessibilityModel: Model<AccessibilitySettingsDocument>,
+
+    @InjectModel(MediaSettings.name)
+    private readonly mediaModel: Model<MediaSettingsDocument>,
+
+    @InjectModel(AiSettings.name)
+    private readonly aiModel: Model<AiSettingsDocument>,
+  ) {}
+
+  async getOrCreateUserSettings(userId: string) {
+    const existing = await this.getNotification(userId);
+
+    if (existing) {
+      return existing;
+    }
+
+    const created = await this.updateNotification(userId, {
+      inAppEnabled: true,
+      pushEnabled: true,
+      emailEnabled: true,
+      smsEnabled: false,
+      doNotDisturb: false,
+      quietHours: {
+        enabled: false,
+        start: '22:00',
+        end: '07:00',
+        timezone: 'UTC',
+      },
+      preferences: {
+        interestReceived: { inApp: true, push: true, email: true, sms: false },
+        interestAccepted: { inApp: true, push: true, email: true, sms: false },
+        profileView: { inApp: true, push: false, email: false, sms: false },
+        matchFound: { inApp: true, push: true, email: true, sms: false },
+        messageReceived: { inApp: true, push: true, email: false, sms: false },
+        subscription: { inApp: true, push: true, email: true, sms: false },
+        system: { inApp: true, push: true, email: true, sms: false },
+        marketing: { inApp: false, push: false, email: true, sms: false },
+      },
+    });
+
+    return created.toObject();
+  }
+
+  // ─── Getters ────────────────────────────────────────────────────────────────
+
+  getAccount(userId: string) {
+    return this.accountModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
+  getPrivacy(userId: string) {
+    return this.privacyModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
+  getNotification(userId: string) {
+    return this.notificationModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
+  getCommunication(userId: string) {
+    return this.communicationModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
+  getSecurity(userId: string) {
+    return this.securityModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .select('-appPinHash') // never expose pin hash
+      .lean()
+      .exec();
+  }
+
+  getLocalization(userId: string) {
+    return this.localizationModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
+  getAccessibility(userId: string) {
+    return this.accessibilityModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
+  getMedia(userId: string) {
+    return this.mediaModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
+  getAi(userId: string) {
+    return this.aiModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
+  // ─── Updaters ────────────────────────────────────────────────────────────────
+
+  private uid(userId: string) {
+    return { userId: new Types.ObjectId(userId) };
+  }
+
+  updateAccount(userId: string, data: Partial<AccountSettings>) {
+    return this.accountModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+  }
+
+  updatePrivacy(userId: string, data: Partial<PrivacySettings>) {
+    return this.privacyModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+  }
+
+  async updateNotification(
+    userId: string,
+    data: Partial<NotificationSettings>,
+  ) {
+    const updated = await this.notificationModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+
+    if (!updated) {
+      throw new Error('Failed to update notification settings');
+    }
+
+    return updated;
+  }
+
+  updateCommunication(userId: string, data: Partial<CommunicationSettings>) {
+    return this.communicationModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+  }
+
+  updateSecurity(userId: string, data: Partial<SecuritySettings>) {
+    return this.securityModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+  }
+
+  updateLocalization(userId: string, data: Partial<LocalizationSettings>) {
+    return this.localizationModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+  }
+
+  updateAccessibility(userId: string, data: Partial<AccessibilitySettings>) {
+    return this.accessibilityModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+  }
+
+  updateMedia(userId: string, data: Partial<MediaSettings>) {
+    return this.mediaModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+  }
+
+  updateAi(userId: string, data: Partial<AiSettings>) {
+    return this.aiModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: buildDotNotation(data as Record<string, unknown>) },
+      upsertOptions,
+    );
+  }
+
+  // ─── Block / unblock ─────────────────────────────────────────────────────────
+
+  blockUser(userId: string, targetUserId: string) {
+    return this.privacyModel.findOneAndUpdate(
+      this.uid(userId),
+      { $addToSet: { blockedUsers: new Types.ObjectId(targetUserId) } },
+      upsertOptions,
+    );
+  }
+
+  unblockUser(userId: string, targetUserId: string) {
+    return this.privacyModel.findOneAndUpdate(
+      this.uid(userId),
+      { $pull: { blockedUsers: new Types.ObjectId(targetUserId) } },
+      { new: true },
+    );
+  }
+
+  // ─── Security: Device management ─────────────────────────────────────────────
+
+  revokeDevice(userId: string, deviceId: string) {
+    return this.securityModel.findOneAndUpdate(
+      this.uid(userId),
+      { $pull: { loginDevices: { deviceId } } },
+      { new: true },
+    );
+  }
+
+  revokeAllDevices(userId: string) {
+    return this.securityModel.findOneAndUpdate(
+      this.uid(userId),
+      { $set: { loginDevices: [] } },
+      { new: true },
+    );
+  }
+
+  // ─── Get all settings in one call ────────────────────────────────────────────
+
+  async getAllSettings(userId: string) {
+    const [
+      account,
+      privacy,
+      notification,
+      communication,
+      security,
+      localization,
+      accessibility,
+      media,
+      ai,
+    ] = await Promise.all([
+      this.getAccount(userId),
+      this.getPrivacy(userId),
+      this.getNotification(userId),
+      this.getCommunication(userId),
+      this.getSecurity(userId),
+      this.getLocalization(userId),
+      this.getAccessibility(userId),
+      this.getMedia(userId),
+      this.getAi(userId),
+    ]);
+
+    return {
+      account: account ?? {},
+      privacy: privacy ?? {},
+      notification: notification ?? {},
+      communication: communication ?? {},
+      security: security ?? {},
+      localization: localization ?? {},
+      accessibility: accessibility ?? {},
+      media: media ?? {},
+      ai: ai ?? {},
+    };
+  }
+}
