@@ -4,82 +4,96 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FlattenMaps, Model, Types } from 'mongoose';
 
-import { Plan } from '../schemas/plan.schema';
-import { PlanFeature } from '../schemas/plan-feature.schema';
-import { Feature } from '../schemas/feature.schema';
+import { Plan, PlanDocument } from '../schemas/plan.schema';
+import {
+  PlanFeature,
+  PlanFeatureDocument,
+} from '../schemas/plan-feature.schema';
+import { Feature, FeatureDocument } from '../schemas/feature.schema';
 
 import { CreatePlanDto } from '../dto/create-plan.dto';
 import { UpdatePlanDto } from '../dto/update-plan.dto';
 import { CreateFeatureDto } from '../dto/create-feature.dto';
 import { AssignFeatureDto } from '../dto/assign-feature.dto';
 
+type LeanPlan = FlattenMaps<Plan> & { _id: Types.ObjectId };
+type LeanFeature = FlattenMaps<Feature> & { _id: Types.ObjectId };
 @Injectable()
 export class PlanService {
   constructor(
-    @InjectModel(Plan.name) private planModel: Model<Plan>,
-    @InjectModel(PlanFeature.name) private pfModel: Model<PlanFeature>,
-    @InjectModel(Feature.name) private featureModel: Model<Feature>,
+    @InjectModel(Plan.name)
+    private planModel: Model<PlanDocument>,
+    @InjectModel(PlanFeature.name)
+    private pfModel: Model<PlanFeatureDocument>,
+    @InjectModel(Feature.name)
+    private featureModel: Model<FeatureDocument>,
   ) {}
 
   // ==========================================
   // PLAN CRUD
   // ==========================================
 
-  async createPlan(dto: CreatePlanDto) {
-    const exists = await this.planModel.findOne({ name: dto.name });
-
-    if (exists) {
-      throw new ConflictException('Plan already exists');
-    }
-
-    return this.planModel.create(dto);
+  async createPlan(dto: CreatePlanDto): Promise<LeanPlan> {
+    const exists = await this.planModel
+      .findOne({ name: dto.name })
+      .lean()
+      .exec();
+    if (exists) throw new ConflictException('Plan already exists');
+    const plan = await this.planModel.create(dto);
+    return plan.toObject() as LeanPlan;
   }
 
-  async updatePlan(planId: string, dto: UpdatePlanDto) {
-    const plan = await this.planModel.findByIdAndUpdate(planId, dto, {
-      new: true,
-    });
-
+  async updatePlan(planId: string, dto: UpdatePlanDto): Promise<LeanPlan> {
+    const plan = await this.planModel
+      .findByIdAndUpdate(
+        planId,
+        { $set: dto },
+        { new: true, runValidators: true },
+      )
+      .lean<LeanPlan>()
+      .exec();
     if (!plan) throw new NotFoundException('Plan not found');
-
     return plan;
   }
 
-  async getPlans() {
-    return this.planModel.find({ isActive: true }).lean();
+  async getPlans(): Promise<LeanPlan[]> {
+    return this.planModel
+      .find({ isActive: true })
+      .sort({ sortOrder: 1 })
+      .lean<LeanPlan[]>()
+      .exec();
   }
 
-  async getPlanById(planId: string) {
-    const plan = await this.planModel.findById(planId).lean();
-
+  async getPlanById(
+    planId: string,
+  ): Promise<LeanPlan & { features: unknown[] }> {
+    const plan = await this.planModel.findById(planId).lean<LeanPlan>().exec();
     if (!plan) throw new NotFoundException('Plan not found');
-
     const features = await this.getPlanFeatures(planId);
-
-    return {
-      ...plan,
-      features,
-    };
+    return { ...plan, features };
   }
 
   // ==========================================
   // FEATURE CRUD
   // ==========================================
 
-  async createFeature(dto: CreateFeatureDto) {
-    const exists = await this.featureModel.findOne({ key: dto.key });
-
-    if (exists) {
-      throw new ConflictException('Feature already exists');
-    }
-
-    return this.featureModel.create(dto);
+  async createFeature(dto: CreateFeatureDto): Promise<LeanFeature> {
+    const exists = await this.featureModel
+      .findOne({ key: dto.key })
+      .lean()
+      .exec();
+    if (exists) throw new ConflictException('Feature already exists');
+    const feature = await this.featureModel.create(dto);
+    return feature.toObject() as LeanFeature;
   }
 
-  async getFeatures() {
-    return this.featureModel.find().lean();
+  async getFeatures(): Promise<LeanFeature[]> {
+    return this.featureModel
+      .find({ isActive: true })
+      .lean<LeanFeature[]>()
+      .exec();
   }
 
   // ==========================================
@@ -89,31 +103,35 @@ export class PlanService {
   async assignFeatureToPlan(dto: AssignFeatureDto) {
     const { planId, featureId, value } = dto;
 
-    const exists = await this.pfModel.findOne({
-      planId,
-      featureId,
-    });
-
-    if (exists) {
-      // update instead
-      exists.value = value;
-      return exists.save();
-    }
-
-    return this.pfModel.create({
-      planId: new Types.ObjectId(planId),
-      featureId: new Types.ObjectId(featureId),
-      value,
-    });
+    return this.pfModel
+      .findOneAndUpdate(
+        {
+          planId: new Types.ObjectId(planId),
+          featureId: new Types.ObjectId(featureId),
+        },
+        { $set: { value } },
+        { upsert: true, new: true, runValidators: true },
+      )
+      .lean()
+      .exec();
   }
 
   async removeFeatureFromPlan(planId: string, featureId: string) {
-    await this.pfModel.deleteOne({ planId, featureId });
+    await this.pfModel
+      .deleteOne({
+        planId: new Types.ObjectId(planId),
+        featureId: new Types.ObjectId(featureId),
+      })
+      .exec();
     return { success: true };
   }
 
   async getPlanFeatures(planId: string) {
-    return this.pfModel.find({ planId }).populate('featureId').lean();
+    return this.pfModel
+      .find({ planId: new Types.ObjectId(planId) })
+      .populate('featureId')
+      .lean()
+      .exec();
   }
 
   // ==========================================
@@ -121,19 +139,23 @@ export class PlanService {
   // ==========================================
 
   async getAllPlansWithFeatures() {
-    const plans = await this.planModel.find().lean();
+    const [plans, allPlanFeatures] = await Promise.all([
+      this.planModel.find().sort({ sortOrder: 1 }).lean<LeanPlan[]>().exec(),
+      this.pfModel.find().populate('featureId').lean().exec(),
+    ]);
 
-    const result = await Promise.all(
-      plans.map(async (plan) => {
-        const features = await this.getPlanFeatures(plan._id.toString());
+    const featuresByPlan = new Map<string, unknown[]>();
 
-        return {
-          ...plan,
-          features,
-        };
-      }),
-    );
+    for (const pf of allPlanFeatures) {
+      const key = String(pf.planId);
+      const existing = featuresByPlan.get(key) ?? [];
+      existing.push(pf);
+      featuresByPlan.set(key, existing);
+    }
 
-    return result;
+    return plans.map((plan) => ({
+      ...plan,
+      features: featuresByPlan.get(String(plan._id)) ?? [],
+    }));
   }
 }

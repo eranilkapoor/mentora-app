@@ -8,13 +8,11 @@ import {
   Delete,
   UseGuards,
 } from '@nestjs/common';
-
 import { PlanService } from '../services/plan.service';
 import { CreatePlanDto } from '../dto/create-plan.dto';
 import { UpdatePlanDto } from '../dto/update-plan.dto';
 import { CreateFeatureDto } from '../dto/create-feature.dto';
 import { AssignFeatureDto } from '../dto/assign-feature.dto';
-
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
@@ -27,7 +25,29 @@ import { Permission, Role } from 'src/common/enums';
 export class PlanController {
   constructor(private readonly planService: PlanService) {}
 
-  // ================= PLAN =================
+  // ─── Static routes MUST come before :id param routes ───────────────────────
+
+  // GET /admin/plans
+  @Get()
+  getPlans() {
+    return this.planService.getPlans();
+  }
+
+  // GET /admin/plans/full/all
+  // Fixed: was after :id — NestJS would match 'full' as the planId
+  @Get('full/all')
+  getAllPlansWithFeatures() {
+    return this.planService.getAllPlansWithFeatures();
+  }
+
+  // GET /admin/plans/feature/all
+  // Fixed: was after :id — NestJS would match 'feature' as the planId
+  @Get('feature/all')
+  getFeatures() {
+    return this.planService.getFeatures();
+  }
+
+  // ─── Plan mutations ────────────────────────────────────────────────────────
 
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles(Role.ADMIN)
@@ -45,22 +65,7 @@ export class PlanController {
     return this.planService.updatePlan(id, dto);
   }
 
-  @Get()
-  getPlans() {
-    return this.planService.getPlans();
-  }
-
-  @Get(':id')
-  getPlan(@Param('id') id: string) {
-    return this.planService.getPlanById(id);
-  }
-
-  @Get('full/all')
-  getAllPlansWithFeatures() {
-    return this.planService.getAllPlansWithFeatures();
-  }
-
-  // ================= FEATURE =================
+  // ─── Feature mutations ─────────────────────────────────────────────────────
 
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles(Role.ADMIN)
@@ -69,13 +74,6 @@ export class PlanController {
   createFeature(@Body() dto: CreateFeatureDto) {
     return this.planService.createFeature(dto);
   }
-
-  @Get('feature/all')
-  getFeatures() {
-    return this.planService.getFeatures();
-  }
-
-  // ================= ASSIGN =================
 
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles(Role.ADMIN)
@@ -94,5 +92,14 @@ export class PlanController {
     @Param('featureId') featureId: string,
   ) {
     return this.planService.removeFeatureFromPlan(planId, featureId);
+  }
+
+  // ─── :id param route LAST ──────────────────────────────────────────────────
+
+  // GET /admin/plans/:id
+  // Must be last so 'full', 'feature' don't match here
+  @Get(':id')
+  getPlan(@Param('id') id: string) {
+    return this.planService.getPlanById(id);
   }
 }

@@ -19,18 +19,20 @@ export class PaymentRepository {
   }
 
   findByOrderId(orderId: string) {
-    return this.model.findOne({ orderId }).exec();
+    return this.model.findOne({ orderId }).lean().exec();
   }
 
   findByOrderIdAndUser(orderId: string, userId: string) {
     return this.model
       .findOne({ orderId, userId: new Types.ObjectId(userId) })
+      .lean()
       .exec();
   }
 
   findByIdempotencyKey(userId: string, idempotencyKey: string) {
     return this.model
       .findOne({ userId: new Types.ObjectId(userId), idempotencyKey })
+      .lean()
       .exec();
   }
 
@@ -61,6 +63,7 @@ export class PaymentRepository {
         },
         { new: true },
       )
+      .lean()
       .exec();
   }
 

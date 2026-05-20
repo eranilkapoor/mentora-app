@@ -4,7 +4,7 @@ export enum SubscriptionStatus {
   CANCELLED = 'cancelled',
   TRIAL = 'trial',
   PENDING = 'pending',
-  GRACE_PERIOD = 'grace_period'
+  GRACE_PERIOD = 'grace_period',
 }
 
 export enum PaymentProvider {

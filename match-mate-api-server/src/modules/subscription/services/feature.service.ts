@@ -1,61 +1,72 @@
 import { Injectable, ForbiddenException, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { FlattenMaps, Model, Types } from 'mongoose';
 import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
-import { PlanFeature } from '../schemas/plan-feature.schema';
-import { Subscription } from '../schemas/subscription.schema';
+import {
+  PlanFeature,
+  PlanFeatureDocument,
+} from '../schemas/plan-feature.schema';
+import {
+  Subscription,
+  SubscriptionDocument,
+} from '../schemas/subscription.schema';
 import { FeatureKey } from 'src/common/enums';
 import { FeatureContext } from '../interfaces/feature-context.interface';
 import { PlanService } from './plan.service';
 
-type PopulatedFeature = {
-  key: FeatureKey;
+// ─── Types ─────────────────────────────────────────────────────────────────────
+
+type LeanPlanFeature = FlattenMaps<PlanFeature> & {
+  _id: Types.ObjectId;
+  featureId: { key: FeatureKey };
 };
 
-type PlanFeatureWithPopulatedFeature = {
-  featureId: PopulatedFeature;
-  value?: number;
-};
+const PLAN_FEATURES_CACHE_TTL = 300; // 5 minutes — plan features rarely change
+const USAGE_CACHE_TTL = 86_400; // 24 hours — daily limit window
 
 @Injectable()
 export class FeatureService {
   constructor(
     @InjectModel(PlanFeature.name)
-    private pfModel: Model<PlanFeature>,
+    private readonly pfModel: Model<PlanFeatureDocument>,
 
     @InjectModel(Subscription.name)
-    private subModel: Model<Subscription>,
+    private readonly subModel: Model<SubscriptionDocument>,
 
-    @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
+    @Inject(CACHE_SERVICE)
+    private readonly cache: ICacheService,
 
     private readonly planService: PlanService,
   ) {}
 
+  // ─── Feature gate ───────────────────────────────────────────────────────────
+
   async checkAccess(featureKey: FeatureKey, context: FeatureContext) {
     const { userId } = context;
 
-    const subscription = await this.subModel.findOne({
-      userId,
-      status: 'active',
-    });
+    const subscription = await this.subModel
+      .findOne({ userId, status: 'active', endDate: { $gt: new Date() } })
+      .lean()
+      .exec();
 
     if (!subscription) {
       throw new ForbiddenException('No active subscription');
     }
 
-    const planFeatures = await this.pfModel
-      .find({ planId: subscription.planId })
-      .populate('featureId')
-      .lean<PlanFeatureWithPopulatedFeature[]>();
+    const planFeatures = await this.getCachedPlanFeatures(
+      subscription.planId.toString(),
+    );
 
     const feature = planFeatures.find((pf) => pf.featureId.key === featureKey);
 
     if (!feature) {
-      throw new ForbiddenException('Upgrade your plan');
+      throw new ForbiddenException(
+        'This feature is not available on your current plan. Please upgrade.',
+      );
     }
 
-    // Handle limits for finite feature values.
+    // -1 means unlimited
     if (typeof feature.value === 'number' && feature.value !== -1) {
       await this.checkUsageLimit(userId, featureKey, feature.value);
     }
@@ -63,96 +74,88 @@ export class FeatureService {
     return { allowed: true };
   }
 
-  async checkUsageLimit(userId: string, featureKey: FeatureKey, limit: number) {
-    const key = `usage:${userId}:${featureKey}:${this.getTodayKey()}`;
+  // ─── Usage tracking (Redis) ─────────────────────────────────────────────────
 
+  async checkUsageLimit(
+    userId: string,
+    featureKey: FeatureKey,
+    limit: number,
+  ): Promise<void> {
+    const key = `usage:${userId}:${featureKey}:${this.getTodayKey()}`;
     const current = await this.cache.get<number>(key);
 
-    if (current && current >= limit) {
-      throw new ForbiddenException('Limit exceeded');
+    if (current !== null && current !== undefined && current >= limit) {
+      throw new ForbiddenException(
+        `Daily limit of ${limit} reached for this feature. Resets at midnight.`,
+      );
     }
 
     await this.cache.incr(key);
-
-    // expire in 24h
-    await this.cache.expire(key, 86400);
-
-    return current;
+    await this.cache.expire(key, USAGE_CACHE_TTL);
   }
 
-  private getTodayKey() {
-    return new Date().toISOString().slice(0, 10);
+  async getRemainingUsage(
+    userId: string,
+    featureKey: FeatureKey,
+    limit: number,
+  ): Promise<number> {
+    const key = `usage:${userId}:${featureKey}:${this.getTodayKey()}`;
+    const current = await this.cache.get<number>(key);
+    return Math.max(0, limit - (current ?? 0));
   }
 
-  async getFeaturesForUser(user: unknown): Promise<Record<string, unknown>> {
-    const planId = this.getPlanIdFromUser(user);
-    const features = await this.planService.getPlanFeatures(planId);
+  // ─── Feature map for a user ─────────────────────────────────────────────────
 
-    const map: Record<string, unknown> = {};
+  async getFeaturesForUser(userId: string): Promise<Record<string, unknown>> {
+    const subscription = await this.subModel
+      .findOne({ userId, status: 'active', endDate: { $gt: new Date() } })
+      .lean()
+      .exec();
 
-    for (const feature of features as unknown[]) {
-      if (this.isPlanFeatureWithPopulatedFeature(feature)) {
-        map[feature.featureId.key] = feature.value ?? true;
-      }
+    if (!subscription) {
+      return {}; // Free tier — no features
     }
 
+    const features = await this.getCachedPlanFeatures(
+      subscription.planId.toString(),
+    );
+
+    const map: Record<string, unknown> = {};
+    for (const feature of features) {
+      map[feature.featureId.key] = feature.value ?? true;
+    }
     return map;
   }
 
-  hasFeature(features: Record<string, unknown>, key: string) {
+  hasFeature(features: Record<string, unknown>, key: FeatureKey): boolean {
     return Boolean(features[key]);
   }
 
-  private getPlanIdFromUser(user: unknown): string {
-    if (typeof user !== 'object' || user === null || !('membership' in user)) {
-      throw new ForbiddenException('No active subscription');
-    }
+  // ─── Cached plan features ───────────────────────────────────────────────────
 
-    const membership = (user as { membership: unknown }).membership;
-    if (
-      typeof membership !== 'object' ||
-      membership === null ||
-      !('planId' in membership)
-    ) {
-      throw new ForbiddenException('No active subscription');
-    }
+  private async getCachedPlanFeatures(
+    planId: string,
+  ): Promise<LeanPlanFeature[]> {
+    const cacheKey = `plan_features:${planId}`;
+    const cached = await this.cache.get<LeanPlanFeature[]>(cacheKey);
+    if (cached) return cached;
 
-    const planId = (membership as { planId: unknown }).planId;
-    if (planId === undefined || planId === null) {
-      throw new ForbiddenException('No active subscription');
-    }
+    const features = await this.pfModel
+      .find({ planId: new Types.ObjectId(planId) })
+      .populate<{ featureId: { key: FeatureKey } }>('featureId')
+      .lean<LeanPlanFeature[]>()
+      .exec();
 
-    if (typeof planId === 'string') {
-      return planId;
-    }
-
-    if (planId instanceof Types.ObjectId) {
-      return planId.toHexString();
-    }
-
-    throw new ForbiddenException('No active subscription');
+    await this.cache.set(cacheKey, features, PLAN_FEATURES_CACHE_TTL);
+    return features;
   }
 
-  private isPlanFeatureWithPopulatedFeature(
-    feature: unknown,
-  ): feature is PlanFeatureWithPopulatedFeature {
-    if (
-      typeof feature !== 'object' ||
-      feature === null ||
-      !('featureId' in feature)
-    ) {
-      return false;
-    }
+  // Invalidate cache when plan features change (call from PlanService)
+  async invalidatePlanFeaturesCache(planId: string): Promise<void> {
+    await this.cache.del(`plan_features:${planId}`);
+  }
 
-    const featureId = (feature as { featureId: unknown }).featureId;
-    if (
-      typeof featureId !== 'object' ||
-      featureId === null ||
-      !('key' in featureId)
-    ) {
-      return false;
-    }
-
-    return typeof (featureId as { key: unknown }).key === 'string';
+  private getTodayKey(): string {
+    return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
   }
 }

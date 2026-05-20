@@ -24,6 +24,9 @@ import { FeatureGuard } from './guards/feature.guard';
 import { CacheModule } from '../cache/cache.module';
 import { AuthModule } from '../auth/auth.module';
 
+// Tasks
+import { SubscriptionExpiryTask } from './tasks/subscription-expiry.task';
+
 @Module({
   imports: [
     MongooseModule.forFeature([
@@ -36,7 +39,13 @@ import { AuthModule } from '../auth/auth.module';
     // 🔥 REQUIRED for usage tracking (redis)
     CacheModule,
   ],
-  providers: [SubscriptionService, PlanService, FeatureService, FeatureGuard],
+  providers: [
+    SubscriptionService,
+    PlanService,
+    FeatureService,
+    FeatureGuard,
+    SubscriptionExpiryTask,
+  ],
   controllers: [PlanController],
   exports: [
     SubscriptionService,

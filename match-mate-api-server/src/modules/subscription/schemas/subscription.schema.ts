@@ -1,7 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
-import { PaymentProvider, SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
+import {
+  PaymentProvider,
+  SubscriptionStatus,
+} from 'src/common/enums/subscription-status.enum';
 
 @Schema({ collection: COLLECTIONS.SUBSCRIPTION, timestamps: true })
 export class Subscription {
@@ -19,6 +22,9 @@ export class Subscription {
 
   @Prop()
   cancelledAt?: Date;
+
+  @Prop()
+  cancelledReason?: string;
 
   @Prop()
   paymentId?: string;
