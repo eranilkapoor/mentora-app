@@ -14,7 +14,6 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../../auth/decorators/current-user.decorator';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
 import { ListNotificationsDto } from '../dto/list-notifications.dto';
-import { UpdateNotificationSettingsDto } from '../dto/update-notification-settings.dto';
 import { UpsertNotificationTemplateDto } from '../dto/upsert-notification-template.dto';
 import { SendTemplateNotificationDto } from '../dto/send-template-notification.dto';
 import { NotificationAnalyticsQueryDto } from '../dto/notification-analytics-query.dto';
@@ -55,31 +54,6 @@ export class NotificationController {
       {
         unreadCount: data,
       },
-    );
-  }
-
-  @Get('settings')
-  async getSettings(@CurrentUser('sub') userId: string) {
-    const data = await this.service.getSettings(userId);
-    return new ApiResponse(
-      true,
-      SuccessCode.NOTIFICATION_ALL_READ,
-      'Notification settings fetched successfully',
-      data,
-    );
-  }
-
-  @Patch('settings')
-  async updateSettings(
-    @CurrentUser('sub') userId: string,
-    @Body() dto: UpdateNotificationSettingsDto,
-  ) {
-    const data = await this.service.updateSettings(userId, dto);
-    return new ApiResponse(
-      true,
-      SuccessCode.NOTIFICATION_FETCHED,
-      'Notification settings updated',
-      data,
     );
   }
 

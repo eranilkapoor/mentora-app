@@ -22,6 +22,7 @@ import { MatchModule } from './modules/match/match.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { PaymentModule } from './modules/payment/payment.module';
 import { SeederModule } from './modules/seeder/seeder.module';
+import { SettingsModule } from './modules/settings/settings.module';
 
 @Module({
   imports: [
@@ -62,6 +63,7 @@ import { SeederModule } from './modules/seeder/seeder.module';
     MatchModule,
     NotificationModule,
     PaymentModule,
+    SettingsModule,
   ],
   controllers: [AppController],
   providers: [

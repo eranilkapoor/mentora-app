@@ -13,10 +13,6 @@ import {
   NotificationLogs,
   NotificationLogsDocument,
 } from '../schemas/notification-logs.schema';
-import {
-  UserNotificationSettings,
-  UserNotificationSettingsDocument,
-} from '../schemas/user-notification-settings.schema';
 import { User, UserDocument } from '../../auth/schemas/user.schema';
 import {
   DeliveryLogChannel,
@@ -34,9 +30,6 @@ export class NotificationRepository {
 
     @InjectModel(NotificationLogs.name)
     private readonly logModel: Model<NotificationLogsDocument>,
-
-    @InjectModel(UserNotificationSettings.name)
-    private readonly settingsModel: Model<UserNotificationSettingsDocument>,
 
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
@@ -194,49 +187,6 @@ export class NotificationRepository {
       logId,
       { $set: patch },
       { new: true },
-    );
-  }
-
-  async getOrCreateUserSettings(userId: string) {
-    const objectId = new Types.ObjectId(userId);
-    const existing = await this.settingsModel
-      .findOne({ userId: objectId })
-      .lean();
-
-    if (existing) {
-      return existing;
-    }
-
-    const created = await this.settingsModel.create({
-      userId: objectId,
-      inAppEnabled: true,
-      pushEnabled: true,
-      emailEnabled: true,
-      smsEnabled: false,
-      doNotDisturb: false,
-      quietHours: {
-        enabled: false,
-        timezone: 'UTC',
-      },
-      preferences: {
-        interestReceived: { inApp: true, push: true, email: true, sms: false },
-        interestAccepted: { inApp: true, push: true, email: true, sms: false },
-        profileView: { inApp: true, push: false, email: false, sms: false },
-        matchFound: { inApp: true, push: true, email: true, sms: false },
-        messageReceived: { inApp: true, push: true, email: false, sms: false },
-        subscription: { inApp: true, push: true, email: true, sms: false },
-        system: { inApp: true, push: true, email: true, sms: false },
-      },
-    });
-
-    return created.toObject();
-  }
-
-  updateUserSettings(userId: string, patch: Partial<UserNotificationSettings>) {
-    return this.settingsModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId) },
-      { $set: patch },
-      { new: true, upsert: true },
     );
   }
 

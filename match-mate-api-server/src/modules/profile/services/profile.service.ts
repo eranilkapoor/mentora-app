@@ -553,7 +553,6 @@ export class ProfileService {
     let feet = Math.floor(totalInches / 12);
     let inches = Math.round(totalInches % 12);
 
-    // Fix rounding issue (e.g., 11.8 → 12)
     if (inches === 12) {
       feet += 1;
       inches = 0;

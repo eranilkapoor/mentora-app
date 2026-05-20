@@ -12,7 +12,6 @@ import { NotificationDlqQueryDto } from '../dto/notification-dlq-query.dto';
 import { NotificationDlqPurgeDto } from '../dto/notification-dlq-purge.dto';
 import { NotificationDlqReplayAllDto } from '../dto/notification-dlq-replay-all.dto';
 import { SendTemplateNotificationDto } from '../dto/send-template-notification.dto';
-import { UpdateNotificationSettingsDto } from '../dto/update-notification-settings.dto';
 import { UpsertNotificationTemplateDto } from '../dto/upsert-notification-template.dto';
 import {
   DeliveryLogChannel,
@@ -32,6 +31,8 @@ import {
   NotificationDispatchJobData,
   NotificationQueueService,
 } from './notification-queue.service';
+import { SettingsService } from 'src/modules/settings/services/settings.service';
+import { NotificationPreferencesType } from 'src/modules/settings/schemas/notification-settings.schema';
 
 interface DeliveryDecision {
   inApp: boolean;
@@ -55,6 +56,7 @@ export class NotificationService {
     private readonly smsProvider: SmsNotificationProvider,
     private readonly pushProvider: PushNotificationProvider,
     private readonly queueService: NotificationQueueService,
+    private readonly settingsService: SettingsService,
   ) {
     this.channelProviders = [
       this.pushProvider,
@@ -86,7 +88,7 @@ export class NotificationService {
       throw new NotFoundException('Notification user not found');
     }
 
-    const settings = await this.notificationRepo.getOrCreateUserSettings(
+    const settings = await this.settingsService.getOrCreateUserSettings(
       dto.userId,
     );
     const decision = this.resolveDeliveryDecision(
@@ -151,26 +153,6 @@ export class NotificationService {
 
   markAllRead(userId: string) {
     return this.notificationRepo.markAllAsRead(userId);
-  }
-
-  getSettings(userId: string) {
-    return this.notificationRepo.getOrCreateUserSettings(userId);
-  }
-
-  updateSettings(userId: string, dto: UpdateNotificationSettingsDto) {
-    const patch: Record<string, unknown> = {};
-
-    if (dto.inAppEnabled !== undefined) patch.inAppEnabled = dto.inAppEnabled;
-    if (dto.pushEnabled !== undefined) patch.pushEnabled = dto.pushEnabled;
-    if (dto.emailEnabled !== undefined) patch.emailEnabled = dto.emailEnabled;
-    if (dto.smsEnabled !== undefined) patch.smsEnabled = dto.smsEnabled;
-    if (dto.doNotDisturb !== undefined) patch.doNotDisturb = dto.doNotDisturb;
-    if (dto.quietHours) patch.quietHours = dto.quietHours;
-    if (dto.preferences) patch.preferences = dto.preferences;
-    if (dto.dndStart !== undefined) patch.dndStart = dto.dndStart;
-    if (dto.dndEnd !== undefined) patch.dndEnd = dto.dndEnd;
-
-    return this.notificationRepo.updateUserSettings(userId, patch);
   }
 
   listTemplates(includeInactive = false) {
@@ -273,7 +255,7 @@ export class NotificationService {
       throw new NotFoundException('Notification user not found');
     }
 
-    const settings = await this.notificationRepo.getOrCreateUserSettings(
+    const settings = await this.settingsService.getOrCreateUserSettings(
       dto.userId,
     );
     const variables = dto.variables ?? {};
@@ -553,26 +535,28 @@ export class NotificationService {
 
   private resolveDeliveryDecision(
     category: NotificationCategory,
+
     settings: {
       inAppEnabled?: boolean;
       pushEnabled?: boolean;
       emailEnabled?: boolean;
       smsEnabled?: boolean;
+
       doNotDisturb?: boolean;
+
       quietHours?: {
         enabled?: boolean;
         start?: string;
         end?: string;
       };
-      dndStart?: string;
-      dndEnd?: string;
-      preferences?: Record<
-        string,
-        { inApp?: boolean; push?: boolean; email?: boolean; sms?: boolean }
-      >;
+
+      preferences?: Partial<NotificationPreferencesType>;
     },
+
     requestedChannels?: NotificationChannel[],
+
     priority: NotificationPriority = 'normal',
+
     templateChannels?: {
       inApp?: boolean;
       push?: boolean;
@@ -581,11 +565,13 @@ export class NotificationService {
     },
   ): DeliveryDecision {
     const preferenceKey = this.preferenceKeyFromCategory(category);
-    const preference = settings.preferences?.[preferenceKey] ?? {};
-    const inRequested = (channel: NotificationChannel) =>
+
+    const preference = settings.preferences?.[preferenceKey];
+
+    const inRequested = (channel: NotificationChannel): boolean =>
       !requestedChannels || requestedChannels.includes(channel);
 
-    const inTemplate = (channel: NotificationChannel) => {
+    const inTemplate = (channel: NotificationChannel): boolean => {
       if (!templateChannels) {
         return true;
       }
@@ -593,18 +579,23 @@ export class NotificationService {
       switch (channel) {
         case 'in_app':
           return templateChannels.inApp !== false;
+
         case 'push':
           return templateChannels.push !== false;
+
         case 'email':
           return templateChannels.email !== false;
+
         case 'sms':
           return templateChannels.sms !== false;
+
         default:
           return true;
       }
     };
 
     const inDnd = this.isInDndWindow(settings);
+
     const canBypassDnd = priority === 'critical';
 
     return {
@@ -612,24 +603,27 @@ export class NotificationService {
         inRequested('in_app') &&
         inTemplate('in_app') &&
         settings.inAppEnabled !== false &&
-        preference.inApp !== false,
+        preference?.inApp !== false,
+
       push:
         inRequested('push') &&
         inTemplate('push') &&
         settings.pushEnabled !== false &&
-        preference.push !== false &&
+        preference?.push !== false &&
         (!inDnd || canBypassDnd),
+
       email:
         inRequested('email') &&
         inTemplate('email') &&
         settings.emailEnabled !== false &&
-        preference.email !== false &&
+        preference?.email !== false &&
         (!inDnd || canBypassDnd),
+
       sms:
         inRequested('sms') &&
         inTemplate('sms') &&
         settings.smsEnabled === true &&
-        preference.sms === true &&
+        preference?.sms === true &&
         (!inDnd || canBypassDnd),
     };
   }
@@ -637,15 +631,13 @@ export class NotificationService {
   private isInDndWindow(settings: {
     doNotDisturb?: boolean;
     quietHours?: { enabled?: boolean; start?: string; end?: string };
-    dndStart?: string;
-    dndEnd?: string;
   }) {
     if (!settings.doNotDisturb && !settings.quietHours?.enabled) {
       return false;
     }
 
-    const start = settings.quietHours?.start ?? settings.dndStart;
-    const end = settings.quietHours?.end ?? settings.dndEnd;
+    const start = settings.quietHours?.start;
+    const end = settings.quietHours?.end;
 
     if (!start || !end) {
       return Boolean(settings.doNotDisturb || settings.quietHours?.enabled);

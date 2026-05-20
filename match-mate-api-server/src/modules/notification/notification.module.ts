@@ -13,10 +13,6 @@ import {
   NotificationLogs,
   NotificationLogsSchema,
 } from './schemas/notification-logs.schema';
-import {
-  UserNotificationSettings,
-  UserNotificationSettingsSchema,
-} from './schemas/user-notification-settings.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import { NotificationService } from './services/notification.service';
 import { NotificationRepository } from './repositories/notification.repository';
@@ -26,10 +22,12 @@ import { SmsNotificationProvider } from './providers/sms-notification.provider';
 import { PushNotificationProvider } from './providers/push-notification.provider';
 import { NotificationQueueService } from './services/notification-queue.service';
 import { NotificationDispatchWorker } from './notification-dispatch.worker';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [
     ConfigModule,
+    SettingsModule,
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
       {
@@ -37,10 +35,6 @@ import { NotificationDispatchWorker } from './notification-dispatch.worker';
         schema: NotificationTemplatesSchema,
       },
       { name: NotificationLogs.name, schema: NotificationLogsSchema },
-      {
-        name: UserNotificationSettings.name,
-        schema: UserNotificationSettingsSchema,
-      },
       { name: User.name, schema: UserSchema },
     ]),
   ],

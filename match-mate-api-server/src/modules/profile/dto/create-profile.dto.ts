@@ -10,7 +10,6 @@ import {
   Matches,
   ValidateBy,
   Min,
-  Max,
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { Gender } from 'src/common/enums/gender.enum';
