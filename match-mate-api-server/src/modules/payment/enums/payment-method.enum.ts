@@ -1,7 +1,7 @@
 export enum PaymentMethod {
-  CARD = 'CARD',
-  UPI = 'UPI',
-  NETBANKING = 'NETBANKING',
-  WALLET = 'WALLET',
-  BANK_TRANSFER = 'BANK_TRANSFER',
+  CARD = 'card',
+  UPI = 'upi',
+  NETBANKING = 'netbanking',
+  WALLET = 'wallet',
+  BANK_TRANSFER = 'bank_transfer',
 }

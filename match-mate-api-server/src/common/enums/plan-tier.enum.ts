@@ -1,5 +1,6 @@
 export enum PlanTier {
   FREE = 'free',
+  SILVER = 'silver',
   GOLD = 'gold',
   PLATINUM = 'platinum',
 }

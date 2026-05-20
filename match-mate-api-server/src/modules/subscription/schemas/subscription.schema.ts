@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
-import { SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
+import { PaymentProvider, SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
 
 @Schema({ collection: COLLECTIONS.SUBSCRIPTION, timestamps: true })
 export class Subscription {
@@ -23,10 +23,8 @@ export class Subscription {
   @Prop()
   paymentId?: string;
 
-  @Prop({
-    enum: ['stripe', 'razorpay'],
-  })
-  paymentProvider?: string;
+  @Prop({ type: String, enum: PaymentProvider })
+  paymentProvider?: PaymentProvider;
 
   @Prop({ default: false })
   autoRenew?: boolean;
@@ -40,5 +38,3 @@ export class Subscription {
 
 export type SubscriptionDocument = Subscription & Document;
 export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);
-
-SubscriptionSchema.index({ plan: 1 });

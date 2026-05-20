@@ -1,4 +1,7 @@
 export enum PaymentGateway {
-  RAZORPAY = 'RAZORPAY',
-  STRIPE = 'STRIPE',
+  RAZORPAY = 'razorpay',
+  STRIPE = 'stripe',
+  APPLE_IAP = 'apple_iap',
+  GOOGLE_PLAY = 'google_play',
+  MANUAL = 'manual',
 }

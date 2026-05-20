@@ -1,5 +1,5 @@
 export enum PaymentPurpose {
-  SUBSCRIPTION = 'SUBSCRIPTION',
-  PROFILE_BOOST = 'PROFILE_BOOST',
-  PRIORITY_SUPPORT = 'PRIORITY_SUPPORT',
+  SUBSCRIPTION = 'subscription',
+  PROFILE_BOOST = 'profile_boost',
+  PRIORITY_SUPPORT = 'priority_support',
 }

@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants';
-import { PlanTier } from 'src/common/enums';
+import { BillingCycle, PlanTier } from 'src/common/enums';
 
 @Schema({ collection: COLLECTIONS.PLAN, timestamps: true })
 export class Plan {
@@ -13,6 +13,9 @@ export class Plan {
 
   @Prop({ enum: PlanTier, required: true })
   tier!: PlanTier;
+
+  @Prop({ type: String, enum: BillingCycle, required: true })
+  billingCycle!: BillingCycle;
 
   @Prop({ required: true })
   price!: number;
