@@ -85,7 +85,7 @@ class NotificationPreferences {
 }
 
 @Schema({
-  collection: COLLECTIONS.NOTIFICATION_SETTINGS,
+  collection: COLLECTIONS.NOTIFICATION_SETTING,
   timestamps: true,
 })
 export class NotificationSettings {

@@ -8,7 +8,7 @@ export type VisibilityLevel =
   | 'contacts_only'
   | 'no_one';
 
-@Schema({ collection: COLLECTIONS.PRIVACY_SETTINGS, timestamps: true })
+@Schema({ collection: COLLECTIONS.PRIVACY_SETTING, timestamps: true })
 export class PrivacySettings {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;

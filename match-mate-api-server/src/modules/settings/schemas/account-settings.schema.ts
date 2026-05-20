@@ -10,7 +10,7 @@ class LinkedAccount {
   @Prop() connectedAt?: Date;
 }
 
-@Schema({ collection: COLLECTIONS.ACCOUNT_SETTINGS, timestamps: true })
+@Schema({ collection: COLLECTIONS.ACCOUNT_SETTING, timestamps: true })
 export class AccountSettings {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;

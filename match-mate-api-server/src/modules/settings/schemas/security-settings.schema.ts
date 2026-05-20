@@ -12,7 +12,7 @@ class LoginDevice {
   @Prop({ default: false }) isCurrent!: boolean;
 }
 
-@Schema({ collection: COLLECTIONS.SECURITY_SETTINGS, timestamps: true })
+@Schema({ collection: COLLECTIONS.SECURITY_SETTING, timestamps: true })
 export class SecuritySettings {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;

@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
 
-@Schema({ collection: COLLECTIONS.COMMUNICATION_SETTINGS, timestamps: true })
+@Schema({ collection: COLLECTIONS.COMMUNICATION_SETTING, timestamps: true })
 export class CommunicationSettings {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;

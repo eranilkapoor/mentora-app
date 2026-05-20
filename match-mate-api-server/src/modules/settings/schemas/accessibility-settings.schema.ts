@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
 
-@Schema({ collection: COLLECTIONS.ACCESSIBILITY_SETTINGS, timestamps: true })
+@Schema({ collection: COLLECTIONS.ACCESSIBILITY_SETTING, timestamps: true })
 export class AccessibilitySettings {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
