@@ -1,7 +1,6 @@
 import React, { memo, useCallback, useMemo, useState } from 'react';
 
 import {
-  Alert,
   Modal,
   Pressable,
   ScrollView,
@@ -19,6 +18,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { showError } from '@/core/utils/toast';
 
 /* ──────────────────────────────────────────────────────────────
  * Types
@@ -561,13 +561,19 @@ export const DatePicker = memo(function DatePicker({
 
   const handleConfirm = useCallback(() => {
     if (!tempDay || !tempMonth || !tempYear) {
-      Alert.alert(t('common.error'), t('edit_profile.errors.date_incomplete'));
+      showError({
+        title: t('common.error'),
+        message: t('edit_profile.errors.date_incomplete'),
+      });
 
       return;
     }
 
     if (!isValidDate(tempYear, tempMonth, tempDay)) {
-      Alert.alert(t('common.error'), t('edit_profile.errors.invalid_date'));
+      showError({
+        title: t('common.error'),
+        message: t('edit_profile.errors.invalid_date'),
+      });
 
       return;
     }

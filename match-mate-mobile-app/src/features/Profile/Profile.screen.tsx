@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   View,
   Text,
   ScrollView,
@@ -59,6 +58,7 @@ import { ProfileSkeleton } from './components/ProfileSkeleton';
 import { Section } from './components/Section';
 import { Row } from './components/Row';
 import { TagList } from './components/TagList';
+import { showError } from '@/core/utils/toast';
 
 const EMPTY_VALUE = '—';
 type PdfAction = 'download' | 'share';
@@ -739,10 +739,10 @@ export default function ProfileScreen({
 
         const isAvailable = await Sharing.isAvailableAsync();
         if (!isAvailable) {
-          Alert.alert(
-            'Sharing is unavailable',
-            `Your profile PDF was created at ${pdfUri}`
-          );
+          showError({
+            title: 'Sharing is unavailable',
+            message: `Your profile PDF was created at ${pdfUri}`
+          });
           return;
         }
 
@@ -756,10 +756,10 @@ export default function ProfileScreen({
         if (__DEV__) {
           console.warn('Profile PDF generation failed', error);
         }
-        Alert.alert(
-          'PDF failed',
-          'We could not create your profile PDF. Please try again.'
-        );
+        showError({
+          title: 'PDF failed',
+          message: 'We could not create your profile PDF. Please try again.'
+        });
       } finally {
         setPdfAction(null);
       }

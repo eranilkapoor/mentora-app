@@ -6,7 +6,6 @@ import {
   Switch,
   TouchableOpacity,
   ScrollView,
-  Alert,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Feather from 'react-native-vector-icons/Feather';
@@ -20,6 +19,7 @@ import {
 import { NOTIFICATION_GROUPS } from './NotificationSettings.constants';
 import { SectionCard } from './components/SectionCard';
 import Header from '@/core/components/Header';
+import { showConfirm } from '@/core/utils/confirm';
 
 const buildInitialState = (): NotificationState => {
   const state: NotificationState = { masterToggle: true };
@@ -74,28 +74,23 @@ export default function NotificationSettingsScreen({
   }, []);
 
   const handleDisableAll = useCallback((): void => {
-    Alert.alert(
-      'Disable All Notifications',
-      'Are you sure you want to turn off all notifications? You may miss important match and message updates.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Disable All',
-          style: 'destructive',
-          onPress: () => {
-            setSettings(() => {
-              const updated: NotificationState = { masterToggle: false };
-              for (const group of NOTIFICATION_GROUPS) {
-                for (const setting of group.settings) {
-                  updated[setting.key] = false;
-                }
-              }
-              return updated;
-            });
-          },
-        },
-      ]
-    );
+    showConfirm({
+      title: t('settings.disable_all'),
+      message: t('settings.disable_all_confirm'),
+      confirmText: t('settings.disable_all'),
+      destructive: true,
+      onConfirm: () => {
+        setSettings(() => {
+          const updated: NotificationState = { masterToggle: false };
+          for (const group of NOTIFICATION_GROUPS) {
+            for (const setting of group.settings) {
+              updated[setting.key] = false;
+            }
+          }
+          return updated;
+        });
+      },
+    });
   }, []);
 
   const enabledCount = Object.entries(settings).filter(

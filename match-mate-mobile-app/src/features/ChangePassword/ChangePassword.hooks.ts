@@ -1,6 +1,5 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import Toast from 'react-native-toast-message';
 
 import { useChangePasswordMutation } from '@/store/services/authApi';
 import {
@@ -8,6 +7,7 @@ import {
   FormErrors,
   validatePasswords,
 } from './ChangePassword.types';
+import { showError, showSuccess } from '@/core/utils/toast';
 
 export const useChangePassword = () => {
   const { t } = useTranslation();
@@ -69,10 +69,9 @@ export const useChangePassword = () => {
       }).unwrap();
 
       // ✅ Show success toast
-      Toast.show({
-        type: 'success',
-        text1: t('change_password.success.title') || 'Success',
-        text2:
+      showSuccess({
+        title: t('change_password.success.title') || 'Success',
+        message:
           t('change_password.success.message') ||
           'Password changed successfully',
         position: 'bottom',
@@ -91,10 +90,9 @@ export const useChangePassword = () => {
         });
       } else {
         // ❌ Error toast
-        Toast.show({
-          type: 'error',
-          text1: t('common.error') || 'Error',
-          text2: message,
+        showError({
+          title: t('common.error') || 'Error',
+          message: message,
         });
       }
     } finally {

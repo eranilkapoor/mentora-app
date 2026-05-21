@@ -4,7 +4,6 @@ import {
   Text,
   ScrollView,
   Platform,
-  Alert,
   Pressable,
   ActivityIndicator,
 } from 'react-native';
@@ -46,6 +45,7 @@ import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
 import { SettingToggle } from './components/SettingToggle';
 import { SettingsScreenProps } from './Settings.types';
+import { showConfirm } from '@/core/utils/confirm';
 
 export default function SettingsScreen({
   navigation,
@@ -151,23 +151,14 @@ export default function SettingsScreen({
       return;
     }
 
-    Alert.alert(
-      t('settings.sign_out'),
-      t('settings.sign_out_confirm'),
-      [
-        {
-          text: t('common.cancel'),
-          style: 'cancel',
-        },
-        {
-          text: t('settings.sign_out'),
-          style: 'destructive',
-          onPress: () => {
-            void performLogout();
-          },
-        },
-      ]
-    );
+    showConfirm({
+      title: t('settings.sign_out'),
+      message: t('settings.sign_out_confirm'),
+      confirmText: t('settings.sign_out'),
+      onConfirm: () => {
+        void performLogout();
+      },
+    });
   }, [isLoggingOut, performLogout, t]);
 
   // ─────────────────────────────────────────────

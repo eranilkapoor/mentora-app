@@ -1,5 +1,5 @@
 import { useCallback, useState } from 'react';
-import { Platform, Alert } from 'react-native';
+import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '@/store/hooks';
 import { setProfileCompleted } from '@/store/slices/authSlice';
@@ -17,6 +17,7 @@ import {
   Qualifications,
 } from '@/core/types';
 import { useOnboardingProfileMutation } from '@/store/services/profileApi';
+import { showError } from '@/core/utils/toast';
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
@@ -93,18 +94,18 @@ export function useOnboardingForm() {
   const pickImage = useCallback(async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(
-        t('onboarding.photos.permission_title'),
-        t('onboarding.photos.permission_message')
-      );
+      showError({
+        title: t('onboarding.photos.permission_title'),
+        message: t('onboarding.photos.permission_message'),
+      });
       return;
     }
 
     if (photos.length >= MAX_PHOTOS) {
-      Alert.alert(
-        t('onboarding.photos.limit_title'),
-        t('onboarding.photos.limit_message', { max: MAX_PHOTOS })
-      );
+      showError({
+        title: t('onboarding.photos.limit_title'),
+        message: t('onboarding.photos.limit_message', { max: MAX_PHOTOS }),
+      });
       return;
     }
 
@@ -227,16 +228,19 @@ export function useOnboardingForm() {
       const response = await onboardingProfile(formData).unwrap();
 
       if (!response.success) {
-        Alert.alert(t('common.error'), t('onboarding.errors.submit_failed'));
+        showError({
+          title: t('common.error'),
+          message: t('onboarding.errors.submit_failed'),
+        });
         return;
       }
 
       dispatch(setProfileCompleted(true));
     } catch (err: unknown) {
-      Alert.alert(
-        t('common.error'),
-        err instanceof Error ? err.message : t('common.something_went_wrong')
-      );
+      showError({
+        title: t('common.error'),
+        message: err instanceof Error ? err.message : t('common.something_went_wrong'),
+      });
     } finally {
       setLoading(false);
     }

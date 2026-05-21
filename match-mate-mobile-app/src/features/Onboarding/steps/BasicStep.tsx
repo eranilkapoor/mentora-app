@@ -5,7 +5,6 @@ import {
   TextInput,
   TouchableOpacity,
   Modal,
-  Alert,
 } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
@@ -34,6 +33,7 @@ import {
   YearOptions,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
+import { showError } from '@/core/utils/toast';
 
 interface Props {
   basic: BasicData;
@@ -67,7 +67,10 @@ function DatePickerModal({
 
   const handleConfirm = useCallback(() => {
     if (!day || !month || !year) {
-      Alert.alert(t('common.error'), t('onboarding.errors.date_incomplete'));
+      showError({
+        title: t('common.error'),
+        message: t('onboarding.errors.date_incomplete'),
+      });
       return;
     }
     onConfirm(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);

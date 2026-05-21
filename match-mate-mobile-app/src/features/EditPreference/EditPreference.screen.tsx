@@ -1,6 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
-  Alert,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
@@ -64,6 +63,7 @@ import {
   ManglikStatuses,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
+import { showError, showSuccess } from '@/core/utils/toast';
 
 const ABOUT_PARTNER_MAX = 500;
 
@@ -111,7 +111,10 @@ export default function EditPreferenceScreen({
     if (isLoading) return;
 
     if (error) {
-      Alert.alert(t('common.error'), t('preference.errors.load_failed'));
+      showError({
+        title: t('common.error') || 'Error',
+        message: t('preference.errors.load_failed'),
+      });
       setPageLoading(false);
       return;
     }
@@ -156,10 +159,10 @@ export default function EditPreferenceScreen({
             break;
           case 'weights':
             if (weightsTotal !== 100) {
-              Alert.alert(
-                t('preference.weights.invalid_title'),
-                t('preference.weights.invalid_message', { total: weightsTotal })
-              );
+              showError({
+                title: t('preference.weights.invalid_title'),
+                message: t('preference.weights.invalid_message', { total: weightsTotal }),
+              });
               return;
             }
             await updateWeights(preference.weights).unwrap();
@@ -170,9 +173,15 @@ export default function EditPreferenceScreen({
             }).unwrap();
             break;
         }
-        Alert.alert(t('common.saved'), t('preference.success.section_saved'));
+        showSuccess({
+          title: t('common.saved'),
+          message: t('preference.success.section_saved'),
+        });
       } catch {
-        Alert.alert(t('common.error'), t('preference.errors.save_failed'));
+        showError({
+          title: t('common.error'),
+          message: t('preference.errors.save_failed'),
+        });
       } finally {
         setSectionLoading(null);
       }

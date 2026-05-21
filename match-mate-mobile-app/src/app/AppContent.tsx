@@ -14,7 +14,7 @@ export default function AppContent() {
       <NavigationContainer ref={navigationRef} linking={linkingConfig}>
         <RootNavigator />
       </NavigationContainer>
-      <Toast />
+      <Toast topOffset={60} />
     </ThemeProvider>
   );
 }

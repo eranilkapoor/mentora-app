@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Alert, Platform } from 'react-native';
+import { Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { MAX_PHOTOS } from '@/core/constants';
@@ -23,6 +23,8 @@ import {
   SectionKey,
 } from '../EditProfile.types';
 import { INITIAL_PROFILE } from '../EditProfile.constants';
+import { showError, showSuccess } from '@/core/utils/toast';
+import { showConfirm } from '@/core/utils/confirm';
 
 export function useEditProfileForm() {
   const { t } = useTranslation();
@@ -66,7 +68,10 @@ export function useEditProfileForm() {
     if (isLoading) return;
 
     if (error) {
-      Alert.alert(t('common.error'), t('edit_profile.errors.load_failed'));
+      showError({
+        title: t('common.error'),
+        message: t('edit_profile.errors.load_failed'),
+      });
       setPageLoading(false);
       return;
     }
@@ -156,18 +161,18 @@ export function useEditProfileForm() {
   const pickImage = useCallback(async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
-      Alert.alert(
-        t('edit_profile.photos.permission_title'),
-        t('edit_profile.photos.permission_message')
-      );
+      showError({
+        title: t('edit_profile.photos.permission_title'),
+        message: t('edit_profile.photos.permission_message'),
+      });
       return;
     }
 
     if (serverImages.length >= MAX_PHOTOS) {
-      Alert.alert(
-        t('edit_profile.photos.limit_title'),
-        t('edit_profile.photos.limit_message', { max: MAX_PHOTOS })
-      );
+      showError({
+        title: t('edit_profile.photos.limit_title'),
+        message: t('edit_profile.photos.limit_message', { max: MAX_PHOTOS }),
+      });
       return;
     }
 
@@ -214,7 +219,10 @@ export function useEditProfileForm() {
       // RTK invalidates 'ProfileMedia' → useGetMyProfileMediaImagesQuery
       // refetches automatically — no local state update needed
     } catch {
-      Alert.alert(t('common.error'), t('edit_profile.photos.upload_failed'));
+      showError({
+        title: t('common.error'),
+        message: t('edit_profile.photos.upload_failed'),
+      });
     } finally {
       setImageUploading(false);
     }
@@ -228,10 +236,10 @@ export function useEditProfileForm() {
       try {
         await setPrimaryImage({ mediaId }).unwrap();
       } catch {
-        Alert.alert(
-          t('common.error'),
-          t('edit_profile.photos.set_primary_failed')
-        );
+        showError({
+          title: t('common.error'),
+          message: t('edit_profile.photos.set_primary_failed'),
+        });
       }
     },
     [setPrimaryImage, t]
@@ -252,10 +260,10 @@ export function useEditProfileForm() {
           if (Platform.OS === 'web') {
             window.alert(t('edit_profile.photos.remove_failed'));
           } else {
-            Alert.alert(
-              t('common.error'),
-              t('edit_profile.photos.remove_failed')
-            );
+            showError({
+              title: t('common.error'),
+              message: t('edit_profile.photos.remove_failed'),
+            });
           }
         }
       };
@@ -272,23 +280,15 @@ export function useEditProfileForm() {
         return;
       }
 
-      Alert.alert(
-        t('edit_profile.photos.remove_confirm_title'),
-        t('edit_profile.photos.remove_confirm_message'),
-        [
-          {
-            text: t('common.cancel'),
-            style: 'cancel',
-          },
-          {
-            text: t('common.delete'),
-            style: 'destructive',
-            onPress: () => {
-              void handleDelete();
-            },
-          },
-        ]
-      );
+      showConfirm({
+        title: t('edit_profile.photos.remove_confirm_title'),
+        message: t('edit_profile.photos.remove_confirm_message'),
+        confirmText: t('common.delete'),
+        destructive: true,
+        onConfirm: () => {
+          void handleDelete();
+        },
+      });
     },
     [removeMediaImage, t]
   );
@@ -316,9 +316,15 @@ export function useEditProfileForm() {
             // Images are managed via their own handlers — no-op here
             break;
         }
-        Alert.alert(t('common.saved'), t('edit_profile.success.section_saved'));
+        showSuccess({
+          title: t('common.saved'),
+          message: t('edit_profile.success.section_saved'),
+        });
       } catch {
-        Alert.alert(t('common.error'), t('edit_profile.errors.save_failed'));
+        showError({
+          title: t('common.error'),
+          message: t('edit_profile.errors.save_failed'),
+        });
       } finally {
         setSectionLoading(null);
       }
