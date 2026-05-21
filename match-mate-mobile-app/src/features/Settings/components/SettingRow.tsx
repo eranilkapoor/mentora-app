@@ -1,10 +1,6 @@
 import React, { memo } from 'react';
 
-import {
-  TouchableOpacity,
-  View,
-  Text,
-} from 'react-native';
+import { TouchableOpacity, View, Text } from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
 
@@ -22,7 +18,7 @@ export const SettingRow = memo(function SettingRow({
   onPress,
   isLast = false,
   isDanger = false,
-  disabled
+  disabled,
 }: SettingRowProps): React.ReactElement {
   const styles = useThemedStyles(settingsStyles);
 
@@ -47,19 +43,14 @@ export const SettingRow = memo(function SettingRow({
           style={[
             styles.rowIconWrapper,
             isDanger && {
-              backgroundColor:
-                theme.colors.primaryLight,
+              backgroundColor: theme.colors.primaryLight,
             },
           ]}
         >
           <Feather
             name={icon}
             size={16}
-            color={
-              isDanger
-                ? theme.colors.danger
-                : theme.colors.textSecondary
-            }
+            color={isDanger ? theme.colors.danger : theme.colors.textSecondary}
           />
         </View>
 
@@ -75,20 +66,14 @@ export const SettingRow = memo(function SettingRow({
             {label}
           </Text>
 
-          {subLabel ? (
-            <Text style={styles.rowSubLabel}>
-              {subLabel}
-            </Text>
-          ) : null}
+          {subLabel ? <Text style={styles.rowSubLabel}>{subLabel}</Text> : null}
         </View>
       </View>
 
       <View style={styles.rowRight}>
         {badge ? (
           <View style={styles.rowBadge}>
-            <Text style={styles.rowBadgeText}>
-              {badge}
-            </Text>
+            <Text style={styles.rowBadgeText}>{badge}</Text>
           </View>
         ) : null}
 

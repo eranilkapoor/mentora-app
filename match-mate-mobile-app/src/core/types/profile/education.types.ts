@@ -1,4 +1,4 @@
-import { OccupationType, Qualification } from "../common/enums";
+import { OccupationType, Qualification } from '../common/enums';
 
 export interface EducationData {
   qualification: Qualification;

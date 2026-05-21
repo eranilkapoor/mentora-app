@@ -43,9 +43,9 @@ export function RegisterEmailForm({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const [focusedField, setFocusedField] = useState<
-      'email' | 'password' | null
-    >(null);
+  const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(
+    null
+  );
 
   return (
     <>
@@ -54,7 +54,7 @@ export function RegisterEmailForm({
 
       <View
         style={[
-          styles.inputWrapper, 
+          styles.inputWrapper,
           focusedField === 'email' && styles.inputFocused,
           errors.email && styles.inputError,
         ]}
@@ -99,7 +99,7 @@ export function RegisterEmailForm({
 
       <View
         style={[
-          styles.inputWrapper, 
+          styles.inputWrapper,
           focusedField === 'password' && styles.inputFocused,
           errors.password && styles.inputError,
         ]}

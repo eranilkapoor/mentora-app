@@ -5,7 +5,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../core/components/Header';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { membershipStyles } from './Membership.styles';
-import { Colors } from '../../core/constants/colors';
 import {
   BENEFITS,
   DURATION_PLANS,
@@ -15,10 +14,12 @@ import {
 } from './Membership.constants';
 import { FeatureRow } from './components/FeatureRow';
 import { PlanCard } from './components/PlanCard';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function MembershipScreen(): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
+  const { theme } = useTheme();
   const [tab, setTab] = useState<'self' | 'assisted'>('self');
   const [duration, setDuration] = useState<number>(6);
   const [selectedPlan, setSelectedPlan] = useState<string>('Pro Max');
@@ -35,7 +36,7 @@ export default function MembershipScreen(): React.ReactElement {
         {/* ── Hero Card ────────────────────────────────────────────── */}
         <View style={styles.heroCard}>
           <View style={styles.heroBadge}>
-            <Feather name="star" size={11} color={Colors.white} />
+            <Feather name="star" size={11} color={theme.colors.white} />
             <Text style={styles.heroBadgeText}>PREMIUM MEMBERSHIP</Text>
           </View>
           <Text style={styles.heroTitle}>Find Your Perfect Match</Text>
@@ -72,7 +73,9 @@ export default function MembershipScreen(): React.ReactElement {
               <Feather
                 name={t === 'self' ? 'user' : 'users'}
                 size={14}
-                color={tab === t ? Colors.primary : Colors.textMuted}
+                color={
+                  tab === t ? theme.colors.primary : theme.colors.textMuted
+                }
               />
               <Text style={[styles.tabText, tab === t && styles.activeTabText]}>
                 {t === 'self' ? 'Self-Service' : 'Assisted'}

@@ -1,10 +1,4 @@
-import React, {
-  memo,
-  useCallback,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
 
 import {
   View,
@@ -140,13 +134,9 @@ function RangeInputComponent({
    * Local text state
    * Prevents cursor jumping and typing lag
    */
-  const [minText, setMinText] = useState(
-    String(value?.min ?? minLimit)
-  );
+  const [minText, setMinText] = useState(String(value?.min ?? minLimit));
 
-  const [maxText, setMaxText] = useState(
-    String(value?.max ?? maxLimit)
-  );
+  const [maxText, setMaxText] = useState(String(value?.max ?? maxLimit));
 
   /**
    * Sync external updates safely
@@ -226,9 +216,7 @@ function RangeInputComponent({
 
         input: {
           borderWidth: 1,
-          borderColor: error
-            ? theme.colors.error
-            : theme.colors.border,
+          borderColor: error ? theme.colors.error : theme.colors.border,
           borderRadius: 12,
           paddingHorizontal: 12,
           paddingVertical: Platform.OS === 'web' ? 10 : 12,
@@ -258,13 +246,9 @@ function RangeInputComponent({
 
   const clampValue = useCallback(
     (num: number): number => {
-      const stepped =
-        Math.round(num / step) * step;
+      const stepped = Math.round(num / step) * step;
 
-      return Math.min(
-        Math.max(stepped, minLimit),
-        maxLimit
-      );
+      return Math.min(Math.max(stepped, minLimit), maxLimit);
     },
     [maxLimit, minLimit, step]
   );
@@ -307,27 +291,16 @@ function RangeInputComponent({
         return;
       }
 
-      const currentMax =
-        value?.max ?? maxLimit;
+      const currentMax = value?.max ?? maxLimit;
 
-      const nextMin = Math.min(
-        parsed,
-        currentMax
-      );
+      const nextMin = Math.min(parsed, currentMax);
 
       onChange({
         min: nextMin,
         max: currentMax,
       });
     },
-    [
-      allowEmpty,
-      maxLimit,
-      minLimit,
-      onChange,
-      parseValue,
-      value?.max,
-    ]
+    [allowEmpty, maxLimit, minLimit, onChange, parseValue, value?.max]
   );
 
   const handleMaxChange = useCallback(
@@ -349,27 +322,16 @@ function RangeInputComponent({
         return;
       }
 
-      const currentMin =
-        value?.min ?? minLimit;
+      const currentMin = value?.min ?? minLimit;
 
-      const nextMax = Math.max(
-        parsed,
-        currentMin
-      );
+      const nextMax = Math.max(parsed, currentMin);
 
       onChange({
         min: currentMin,
         max: nextMax,
       });
     },
-    [
-      allowEmpty,
-      maxLimit,
-      minLimit,
-      onChange,
-      parseValue,
-      value?.min,
-    ]
+    [allowEmpty, maxLimit, minLimit, onChange, parseValue, value?.min]
   );
 
   const handleMinBlur = useCallback(() => {
@@ -381,13 +343,7 @@ function RangeInputComponent({
         max: value?.max ?? maxLimit,
       });
     }
-  }, [
-    maxLimit,
-    minLimit,
-    minText,
-    onChange,
-    value?.max,
-  ]);
+  }, [maxLimit, minLimit, minText, onChange, value?.max]);
 
   const handleMaxBlur = useCallback(() => {
     if (maxText.trim() === '') {
@@ -398,29 +354,15 @@ function RangeInputComponent({
         max: maxLimit,
       });
     }
-  }, [
-    maxLimit,
-    maxText,
-    minLimit,
-    onChange,
-    value?.min,
-  ]);
+  }, [maxLimit, maxText, minLimit, onChange, value?.min]);
 
   return (
-    <View
-      style={[styles.container, containerStyle]}
-      testID={testID}
-    >
+    <View style={[styles.container, containerStyle]} testID={testID}>
       <View style={styles.labelRow}>
         <Text style={[styles.label, labelStyle]}>
           {label}
 
-          {required ? (
-            <Text style={styles.required}>
-              {' '}
-              *
-            </Text>
-          ) : null}
+          {required ? <Text style={styles.required}> *</Text> : null}
         </Text>
       </View>
 
@@ -431,17 +373,14 @@ function RangeInputComponent({
           })}
         </Text>
       ) : helperText ? (
-        <Text style={styles.helper}>
-          {helperText}
-        </Text>
+        <Text style={styles.helper}>{helperText}</Text>
       ) : null}
 
       <View style={styles.row}>
         {/* MIN */}
         <View style={styles.rangeBox}>
           <Text style={styles.rangeLabel}>
-            {minLabel ??
-              t('preference.range.min')}
+            {minLabel ?? t('preference.range.min')}
           </Text>
 
           <TextInput
@@ -450,15 +389,10 @@ function RangeInputComponent({
             onChangeText={handleMinChange}
             onBlur={handleMinBlur}
             keyboardType={
-              keyboardType ??
-              (Platform.OS === 'ios'
-                ? 'number-pad'
-                : 'numeric')
+              keyboardType ?? (Platform.OS === 'ios' ? 'number-pad' : 'numeric')
             }
             placeholder={String(minLimit)}
-            placeholderTextColor={
-              theme.colors.textMuted
-            }
+            placeholderTextColor={theme.colors.textMuted}
             accessibilityLabel={
               accessibilityLabel
                 ? `${accessibilityLabel} minimum`
@@ -469,11 +403,7 @@ function RangeInputComponent({
             maxLength={maxLength}
           />
 
-          {unit ? (
-            <Text style={styles.unitText}>
-              {unit}
-            </Text>
-          ) : null}
+          {unit ? <Text style={styles.unitText}>{unit}</Text> : null}
         </View>
 
         <Text style={styles.separator}>—</Text>
@@ -481,8 +411,7 @@ function RangeInputComponent({
         {/* MAX */}
         <View style={styles.rangeBox}>
           <Text style={styles.rangeLabel}>
-            {maxLabel ??
-              t('preference.range.max')}
+            {maxLabel ?? t('preference.range.max')}
           </Text>
 
           <TextInput
@@ -491,15 +420,10 @@ function RangeInputComponent({
             onChangeText={handleMaxChange}
             onBlur={handleMaxBlur}
             keyboardType={
-              keyboardType ??
-              (Platform.OS === 'ios'
-                ? 'number-pad'
-                : 'numeric')
+              keyboardType ?? (Platform.OS === 'ios' ? 'number-pad' : 'numeric')
             }
             placeholder={String(maxLimit)}
-            placeholderTextColor={
-              theme.colors.textMuted
-            }
+            placeholderTextColor={theme.colors.textMuted}
             accessibilityLabel={
               accessibilityLabel
                 ? `${accessibilityLabel} maximum`
@@ -510,25 +434,16 @@ function RangeInputComponent({
             maxLength={maxLength}
           />
 
-          {unit ? (
-            <Text style={styles.unitText}>
-              {unit}
-            </Text>
-          ) : null}
+          {unit ? <Text style={styles.unitText}>{unit}</Text> : null}
         </View>
       </View>
 
-      {error ? (
-        <Text style={styles.errorText}>
-          {error}
-        </Text>
-      ) : null}
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }
 
-RangeInputComponent.displayName =
-  'RangeInput';
+RangeInputComponent.displayName = 'RangeInput';
 
 export const RangeInput = memo(
   RangeInputComponent

@@ -36,10 +36,10 @@ import {
   HEIGHT_RANGE,
   INCOME_RANGE,
   INCOME_STEP,
-  INITIAL_PREFERENCE,
   MATCH_SCORE_RANGE,
   WEIGHT_KEYS,
-} from './EditPreference.constants';
+  ABOUT_PARTNER_MAX,
+} from '@/core/constants';
 import { PreferenceSectionCard } from './components/PreferenceSectionCard';
 import { RangeInput } from './components/RangeInput';
 import { WeightSlider } from './components/WeightSlider';
@@ -58,6 +58,8 @@ import {
   ManglikStatuses,
   Qualifications,
   Countries,
+  ChildPreference,
+  ResidencyPreference,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { showError, showSuccess } from '@/core/utils/toast';
@@ -68,7 +70,51 @@ import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 import { NumberStepper } from '@/core/components/NumberStepper';
 import { ToggleRow } from '@/core/components/ToggleRow';
 
-const ABOUT_PARTNER_MAX = 500;
+const INITIAL_PREFERENCE: PreferenceData = {
+  filters: {
+    age: { min: 0, max: 0 },
+    height: { min: 0, max: 0 },
+    annualIncome: { min: 0, max: 0 },
+    maritalStatus: ['never_married'],
+    religion: [],
+    caste: [],
+    subCaste: [],
+    manglikStatus: [],
+    childPreference: 'does_not_matter',
+    residencyPreference: 'does_not_matter',
+    country: [],
+    state: [],
+    city: [],
+    qualification: [],
+    occupationType: [],
+    occupation: [],
+    bodyType: [],
+    complexion: [],
+    smoking: [],
+    drinking: [],
+    eating: [],
+    languages: [],
+  },
+  settings: {
+    isStrict: false,
+    allowPartialMatches: true,
+    horoscopeRequired: false,
+    profileVerificationRequired: false,
+    minimumMatchScore: 50,
+  },
+  weights: {
+    age: 10,
+    height: 10,
+    religion: 15,
+    caste: 10,
+    location: 10,
+    education: 10,
+    occupation: 10,
+    lifestyle: 10,
+    horoscope: 15,
+  },
+  aboutPartner: '',
+};
 
 type Props = {
   navigation: NativeStackNavigationProp<
@@ -83,19 +129,41 @@ export default function EditPreferenceScreen({
   const styles = useThemedStyles(editPreferenceStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital_status');
+
+  const MaritalStatusOptions = useEnumOptions(
+    MaritalStatuses,
+    'options.marital_status'
+  );
   const SmokingHabitsOptions = useEnumOptions(SmokingHabits, 'options.smoking');
-  const DrinkingHabitsOptions = useEnumOptions(DrinkingHabits, 'options.drinking');
+  const DrinkingHabitsOptions = useEnumOptions(
+    DrinkingHabits,
+    'options.drinking'
+  );
   const EatingHabitsOptions = useEnumOptions(EatingHabits, 'options.eating');
   const BodyTypeOptions = useEnumOptions(BodyTypes, 'options.body_types');
   const ComplexionOptions = useEnumOptions(Complexions, 'options.complexion');
-  const ManglikStatusOptions = useEnumOptions(ManglikStatuses, 'options.manglik_status');
+  const ManglikStatusOptions = useEnumOptions(
+    ManglikStatuses,
+    'options.manglik_status'
+  );
   const ReligionOptions = useEnumOptions(Religions, 'options.religion');
   const CasteOptions = useEnumOptions(Castes, 'options.caste');
-  const ChildPreferenceOptions = useEnumOptions(ChildPreferences, 'options.child_preferences');
-  const ResidencyPreferenceOptions = useEnumOptions(ResidencyPreferences, 'options.residency_preferences');
-  const OccupationTypeOptions = useEnumOptions(OccupationTypes, 'options.occupation_types');
-  const QualificationOptions = useEnumOptions(Qualifications, 'options.qualifications');
+  const ChildPreferenceOptions = useEnumOptions(
+    ChildPreferences,
+    'options.child_preferences'
+  );
+  const ResidencyPreferenceOptions = useEnumOptions(
+    ResidencyPreferences,
+    'options.residency_preferences'
+  );
+  const OccupationTypeOptions = useEnumOptions(
+    OccupationTypes,
+    'options.occupation_types'
+  );
+  const QualificationOptions = useEnumOptions(
+    Qualifications,
+    'options.qualifications'
+  );
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
 
   const [preference, setPreference] =
@@ -125,7 +193,24 @@ export default function EditPreferenceScreen({
     }
 
     if (data?.success && data?.data) {
-      setPreference((prev) => ({ ...prev, ...data.data }));
+      const incoming = data.data as PreferenceData;
+
+      setPreference((prev) => ({
+        ...prev,
+        filters: {
+          ...prev.filters,
+          ...(incoming.filters ?? {}),
+        },
+        settings: {
+          ...prev.settings,
+          ...(incoming.settings ?? {}),
+        },
+        weights: {
+          ...prev.weights,
+          ...(incoming.weights ?? {}),
+        },
+        aboutPartner: incoming.aboutPartner ?? prev.aboutPartner,
+      }));
     }
 
     setPageLoading(false);
@@ -157,20 +242,22 @@ export default function EditPreferenceScreen({
       try {
         switch (section) {
           case 'filters':
-            await updateFilters(preference.filters).unwrap();
+            await updateFilters(preference.filters as PartnerFilters).unwrap();
             break;
           case 'settings':
-            await updateSettings(preference.settings).unwrap();
+            await updateSettings(preference.settings as MatchSettings).unwrap();
             break;
           case 'weights':
             if (weightsTotal !== 100) {
               showError({
                 title: t('preference.weights.invalid_title'),
-                message: t('preference.weights.invalid_message', { total: weightsTotal }),
+                message: t('preference.weights.invalid_message', {
+                  total: weightsTotal,
+                }),
               });
               return;
             }
-            await updateWeights(preference.weights).unwrap();
+            await updateWeights(preference.weights as MatchWeights).unwrap();
             break;
           case 'about':
             await updateAboutPartner({
@@ -355,7 +442,7 @@ export default function EditPreferenceScreen({
               options={ChildPreferenceOptions}
               value={preference.filters.childPreference}
               onChange={(v) =>
-                setFilters('childPreference', v)
+                setFilters('childPreference', v as ChildPreference)
               }
               i18nPrefix="options.child_preferences"
             />
@@ -365,7 +452,7 @@ export default function EditPreferenceScreen({
               options={ResidencyPreferenceOptions}
               value={preference.filters.residencyPreference}
               onChange={(v) =>
-                setFilters('residencyPreference', v)
+                setFilters('residencyPreference', v as ResidencyPreference)
               }
               i18nPrefix="options.residency_preferences"
             />
@@ -606,7 +693,7 @@ export default function EditPreferenceScreen({
                 label={t(`preference.weights.${key}`)}
                 value={preference.weights[key]}
                 onChange={(v) => setWeight(key, v)}
-                unit='%'
+                unit="%"
               />
             ))}
 

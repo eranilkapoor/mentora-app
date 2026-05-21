@@ -167,9 +167,7 @@ function ToggleRowComponent({
 
         lineHeight: isSmall ? 16 : isLarge ? 20 : 18,
 
-        color: error
-          ? theme.colors.error
-          : theme.colors.textMuted,
+        color: error ? theme.colors.error : theme.colors.textMuted,
       },
 
       helperText: {
@@ -227,15 +225,11 @@ function ToggleRowComponent({
           <Text style={[styles.label, labelStyle]}>
             {label}
 
-            {required ? (
-              <Text style={styles.required}> *</Text>
-            ) : null}
+            {required ? <Text style={styles.required}> *</Text> : null}
           </Text>
 
           {sublabel ? (
-            <Text style={[styles.sublabel, sublabelStyle]}>
-              {sublabel}
-            </Text>
+            <Text style={[styles.sublabel, sublabelStyle]}>{sublabel}</Text>
           ) : null}
         </View>
 
@@ -245,13 +239,9 @@ function ToggleRowComponent({
           onValueChange={onChange}
           thumbColor={thumbColor ?? theme.colors.white}
           trackColor={{
-            false:
-              inactiveTrackColor ??
-              theme.colors.switchTrackOff,
+            false: inactiveTrackColor ?? theme.colors.switchTrackOff,
 
-            true:
-              activeTrackColor ??
-              theme.colors.primary,
+            true: activeTrackColor ?? theme.colors.primary,
           }}
           accessibilityRole="switch"
           accessibilityLabel={accessibilityLabel ?? label}
@@ -270,11 +260,7 @@ function ToggleRowComponent({
           {error}
         </Text>
       ) : helperText ? (
-        <Text
-          style={[styles.helperText, helperTextStyle]}
-        >
-          {helperText}
-        </Text>
+        <Text style={[styles.helperText, helperTextStyle]}>{helperText}</Text>
       ) : null}
     </View>
   );
@@ -282,6 +268,4 @@ function ToggleRowComponent({
 
 ToggleRowComponent.displayName = 'ToggleRow';
 
-export const ToggleRow = memo(
-  ToggleRowComponent
-) as typeof ToggleRowComponent;
+export const ToggleRow = memo(ToggleRowComponent) as typeof ToggleRowComponent;

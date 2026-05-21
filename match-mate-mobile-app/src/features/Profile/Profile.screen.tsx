@@ -14,7 +14,6 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../../core/constants/colors';
 import {
   annualIncomeFormat,
   cmToFeetInches,
@@ -59,6 +58,7 @@ import { Section } from './components/Section';
 import { Row } from './components/Row';
 import { TagList } from './components/TagList';
 import { showError } from '@/core/utils/toast';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 const EMPTY_VALUE = '—';
 type PdfAction = 'download' | 'share';
@@ -321,13 +321,11 @@ const getProfileHeight = (
 
 const getProfileWeight = (
   profile: SchemaProfile
-): string | number | undefined =>
-  profile.physical.weight;
+): string | number | undefined => profile.physical.weight;
 
 const getProfileIncome = (
   profile: SchemaProfile
-): string | number | undefined =>
-  profile.education.annualIncomeAmount;
+): string | number | undefined => profile.education.annualIncomeAmount;
 
 const getDisplayName = (profile: SchemaProfile): string => {
   const name = getFullName(
@@ -456,10 +454,7 @@ const copyPdfToDocumentDirectory = async (
 
 const getPdfRows = (profile: SchemaProfile): Array<[string, string]> => [
   ['Name', getDisplayName(profile)],
-  [
-    'Profile For',
-    formatProfileText(profile.profileFor),
-  ],
+  ['Profile For', formatProfileText(profile.profileFor)],
   [
     'Age',
     toDisplayText(profile.age) !== EMPTY_VALUE
@@ -645,6 +640,7 @@ export default function ProfileScreen({
   navigation,
 }: ProfileScreenProps): React.ReactElement {
   const styles = useThemedStyles(profileStyles);
+  const { theme } = useTheme();
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [pdfAction, setPdfAction] = useState<PdfAction | null>(null);
   const { data, isLoading, isFetching, isError, refetch } =
@@ -741,7 +737,7 @@ export default function ProfileScreen({
         if (!isAvailable) {
           showError({
             title: 'Sharing is unavailable',
-            message: `Your profile PDF was created at ${pdfUri}`
+            message: `Your profile PDF was created at ${pdfUri}`,
           });
           return;
         }
@@ -758,7 +754,7 @@ export default function ProfileScreen({
         }
         showError({
           title: 'PDF failed',
-          message: 'We could not create your profile PDF. Please try again.'
+          message: 'We could not create your profile PDF. Please try again.',
         });
       } finally {
         setPdfAction(null);
@@ -784,7 +780,7 @@ export default function ProfileScreen({
   if (!isLoading && (isError || data?.success === false)) {
     return (
       <SafeAreaView style={styles.centerContainer}>
-        <Feather name="alert-circle" size={48} color={Colors.danger} />
+        <Feather name="alert-circle" size={48} color={theme.colors.danger} />
         <Text style={styles.errorTitle}>Something went wrong</Text>
         <Text style={styles.errorSubtitle}>
           {data?.success === false
@@ -880,7 +876,11 @@ export default function ProfileScreen({
           <View style={styles.nameRow}>
             <Text style={styles.name}>{getDisplayName(profileData)}</Text>
             <View style={styles.verifiedBadge}>
-              <Feather name="check-circle" size={14} color={Colors.primary} />
+              <Feather
+                name="check-circle"
+                size={14}
+                color={theme.colors.primary}
+              />
               <Text style={styles.verifiedText}>
                 {profileData.isVerified ? 'Verified' : 'Unverified'}
               </Text>
@@ -888,7 +888,7 @@ export default function ProfileScreen({
           </View>
           <Text style={styles.subText}>{profileSummary}</Text>
           <View style={styles.locationRow}>
-            <Feather name="map-pin" size={13} color={Colors.textMuted} />
+            <Feather name="map-pin" size={13} color={theme.colors.textMuted} />
             <Text style={styles.locationText}>{getLocation(profileData)}</Text>
           </View>
           <View style={styles.profileMetaGrid}>
@@ -923,9 +923,7 @@ export default function ProfileScreen({
         <Section title="Profile Overview" icon="award">
           <Row
             label="Profile For"
-            value={formatProfileText(
-              profileData.profileFor
-            )}
+            value={formatProfileText(profileData.profileFor)}
           />
           <Row
             label="Gender"
@@ -1162,9 +1160,9 @@ export default function ProfileScreen({
           ]}
         >
           {pdfAction === 'download' ? (
-            <ActivityIndicator color={Colors.white} size="small" />
+            <ActivityIndicator color={theme.colors.white} size="small" />
           ) : (
-            <Feather name="download" size={18} color={Colors.white} />
+            <Feather name="download" size={18} color={theme.colors.white} />
           )}
           <Text style={styles.pdfActionButtonText}>
             {pdfAction === 'download' ? 'Preparing...' : 'Download PDF'}
@@ -1186,9 +1184,9 @@ export default function ProfileScreen({
           ]}
         >
           {pdfAction === 'share' ? (
-            <ActivityIndicator color={Colors.white} size="small" />
+            <ActivityIndicator color={theme.colors.white} size="small" />
           ) : (
-            <Feather name="share-2" size={18} color={Colors.white} />
+            <Feather name="share-2" size={18} color={theme.colors.white} />
           )}
           <Text style={styles.pdfActionButtonText}>
             {pdfAction === 'share' ? 'Preparing...' : 'Share PDF'}

@@ -6,7 +6,10 @@ import { BloodGroups, BodyTypes, Complexions } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
 import { editProfileStyles } from '../EditProfile.styles';
-import { PhysicalSection as PhysicalSectionType, SectionKey } from '../EditProfile.types';
+import {
+  PhysicalSection as PhysicalSectionType,
+  SectionKey,
+} from '../EditProfile.types';
 import { ToggleRow } from '@/core/components/ToggleRow';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
@@ -65,14 +68,18 @@ export function PhysicalSection({
         label={t('edit_profile.fields.blood_group')}
         options={BloodGroupOptions}
         value={physical.bloodGroup}
-        onChange={(v) => onSet('bloodGroup', v as PhysicalSectionType['bloodGroup'])}
+        onChange={(v) =>
+          onSet('bloodGroup', v as PhysicalSectionType['bloodGroup'])
+        }
       />
 
       <SingleSelectPill
         label={t('edit_profile.fields.body_type')}
         options={BodyTypeOptions}
         value={physical.bodyType}
-        onChange={(v) => onSet('bodyType', v as PhysicalSectionType['bodyType'])}
+        onChange={(v) =>
+          onSet('bodyType', v as PhysicalSectionType['bodyType'])
+        }
         i18nPrefix="options.body_types"
       />
 
@@ -80,7 +87,9 @@ export function PhysicalSection({
         label={t('edit_profile.fields.complexion')}
         options={ComplexionOptions}
         value={physical.complexion}
-        onChange={(v) => onSet('complexion', v as PhysicalSectionType['complexion'])}
+        onChange={(v) =>
+          onSet('complexion', v as PhysicalSectionType['complexion'])
+        }
         i18nPrefix="options.complexion"
       />
 

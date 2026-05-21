@@ -84,9 +84,9 @@ export const forgotPasswordStyles = (theme: Theme) =>
       outlineStyle: 'none',
       ...(Platform.OS === 'web'
         ? ({
-          outlineWidth: 0,
-          boxShadow: 'none',
-        } as any)
+            outlineWidth: 0,
+            boxShadow: 'none',
+          } as any)
         : {}),
     },
     inputError: {

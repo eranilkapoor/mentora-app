@@ -18,7 +18,11 @@ import {
   PHONE_REGEX,
 } from '@/core/constants';
 import { User } from '@/core/types';
-import { ActiveTab, FormErrors, SocialProvider } from '@/features/Auth/shared/auth.types';
+import {
+  ActiveTab,
+  FormErrors,
+  SocialProvider,
+} from '@/features/Auth/shared/auth.types';
 
 export function useLoginForm() {
   const dispatch = useAppDispatch();
@@ -69,9 +73,9 @@ export function useLoginForm() {
   }, []);
 
   const applyCredentials = useCallback(
-    async (data: { 
-      accessToken: string; 
-      refreshToken?: string; 
+    async (data: {
+      accessToken: string;
+      refreshToken?: string;
       user: unknown;
     }) => {
       dispatch(
@@ -95,15 +99,15 @@ export function useLoginForm() {
       setOtpSent(false);
       setOtp('');
       clearAllErrors();
-    }, 
+    },
     [clearAllErrors]
   );
 
   const handleResendOtp = useCallback(() => {
-      setOtpSent(false);
-      setOtp('');
-      clearAllErrors();
-    }, [clearAllErrors]);
+    setOtpSent(false);
+    setOtp('');
+    clearAllErrors();
+  }, [clearAllErrors]);
 
   // ─── Email login ──────────────────────────────────────────────────────────
 
@@ -131,8 +135,8 @@ export function useLoginForm() {
 
     setLoading(true);
     try {
-      const response = await login({ 
-        email: email.trim(), 
+      const response = await login({
+        email: email.trim(),
         password,
       }).unwrap();
 
@@ -149,7 +153,8 @@ export function useLoginForm() {
     } catch (err) {
       setErrors({
         error: t('auth.errors.login_failed', {
-          message: err instanceof Error ? err.message : t('auth.errors.unknown'),
+          message:
+            err instanceof Error ? err.message : t('auth.errors.unknown'),
         }),
       });
     } finally {
@@ -171,8 +176,8 @@ export function useLoginForm() {
 
     setLoading(true);
     try {
-      const response = await sendOtp({ 
-        country_code: countryCode, 
+      const response = await sendOtp({
+        country_code: countryCode,
         phone,
       }).unwrap();
       if (!response.success) {

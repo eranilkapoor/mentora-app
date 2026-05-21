@@ -12,11 +12,11 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../../core/constants/colors';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchListStyles } from './MatchList.styles';
 import Header from '../../core/components/Header';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -143,6 +143,7 @@ const MatchCard = React.memo(function MatchCard({
   onChat: () => void;
 }): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
+  const { theme } = useTheme();
 
   return (
     <View style={styles.card}>
@@ -190,11 +191,15 @@ const MatchCard = React.memo(function MatchCard({
 
         <View style={styles.metaRow}>
           <View style={styles.metaItem}>
-            <Feather name="book" size={13} color={Colors.textMuted} />
+            <Feather name="book" size={13} color={theme.colors.textMuted} />
             <Text style={styles.metaText}>{item.education}</Text>
           </View>
           <View style={styles.metaItem}>
-            <Feather name="briefcase" size={13} color={Colors.textMuted} />
+            <Feather
+              name="briefcase"
+              size={13}
+              color={theme.colors.textMuted}
+            />
             <Text style={styles.metaText}>{item.profession}</Text>
           </View>
         </View>
@@ -206,7 +211,7 @@ const MatchCard = React.memo(function MatchCard({
             activeOpacity={0.7}
             accessibilityRole="button"
           >
-            <Feather name="user" size={14} color={Colors.primary} />
+            <Feather name="user" size={14} color={theme.colors.primary} />
             <Text style={styles.outlineText}>Profile</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -215,7 +220,11 @@ const MatchCard = React.memo(function MatchCard({
             activeOpacity={0.7}
             accessibilityRole="button"
           >
-            <Feather name="message-circle" size={14} color={Colors.white} />
+            <Feather
+              name="message-circle"
+              size={14}
+              color={theme.colors.white}
+            />
             <Text style={styles.primaryText}>Chat</Text>
           </TouchableOpacity>
         </View>
@@ -232,6 +241,7 @@ export default function MatchListScreen({
   navigation: NativeStackNavigationProp<MatchesStackParamList>;
 }): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
+  const { theme } = useTheme();
   const [matches, setMatches] = useState<Match[]>([]);
   const [query, setQuery] = useState('');
   const [loading, setLoading] = useState(true);
@@ -333,10 +343,10 @@ export default function MatchListScreen({
     () => (
       <View style={styles.searchWrapper}>
         <View style={styles.searchBox}>
-          <Feather name="search" size={16} color={Colors.textMuted} />
+          <Feather name="search" size={16} color={theme.colors.textMuted} />
           <TextInput
             placeholder="Search by name, location, profession…"
-            placeholderTextColor={Colors.textMuted}
+            placeholderTextColor={theme.colors.textMuted}
             style={styles.searchInput}
             value={query}
             onChangeText={setQuery}
@@ -346,7 +356,7 @@ export default function MatchListScreen({
           />
           {query.length > 0 && (
             <TouchableOpacity onPress={() => setQuery('')}>
-              <Feather name="x" size={16} color={Colors.textMuted} />
+              <Feather name="x" size={16} color={theme.colors.textMuted} />
             </TouchableOpacity>
           )}
         </View>
@@ -386,7 +396,9 @@ export default function MatchListScreen({
                 <Feather
                   name={t.icon}
                   size={13}
-                  color={isActive ? Colors.white : Colors.textSecondary}
+                  color={
+                    isActive ? theme.colors.white : theme.colors.textSecondary
+                  }
                 />
                 <Text
                   style={[styles.tabText, isActive && styles.tabTextActive]}
@@ -430,7 +442,7 @@ export default function MatchListScreen({
           ListEmptyComponent={
             <View style={styles.emptyContainer}>
               <View style={styles.emptyIconWrapper}>
-                <Feather name="search" size={36} color={Colors.primary} />
+                <Feather name="search" size={36} color={theme.colors.primary} />
               </View>
               <Text style={styles.emptyTitle}>
                 {query ? 'No results found' : 'No matches yet'}
@@ -453,8 +465,8 @@ export default function MatchListScreen({
             <RefreshControl
               refreshing={refreshing}
               onRefresh={onRefresh}
-              colors={[Colors.primary]}
-              tintColor={Colors.primary}
+              colors={[theme.colors.primary]}
+              tintColor={theme.colors.primary}
             />
           }
           initialNumToRender={5}

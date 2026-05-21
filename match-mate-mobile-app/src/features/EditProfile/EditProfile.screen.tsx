@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
-} from 'react-native';
+import { View, ScrollView, KeyboardAvoidingView, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -48,16 +43,12 @@ export default function EditProfileScreen({
     pickImage,
     handleSave,
     handleSetPrimary,
-    handleRemoveImage
+    handleRemoveImage,
   } = useEditProfileForm();
 
   if (pageLoading) {
     return (
-      <Loader
-        fullScreen
-        size="large"
-        loadingText={t('edit_profile.loading')}
-      />
+      <Loader fullScreen size="large" loadingText={t('edit_profile.loading')} />
     );
   }
 
@@ -87,9 +78,15 @@ export default function EditProfileScreen({
             images={images}
             imagesLoading={imagesLoading}
             imageUploading={imageUploading}
-            onPickImage={() => { void pickImage(); }}
-            onSetPrimary={(mediaId) => { void handleSetPrimary(mediaId); }}
-            onRemove={(mediaId) => { void handleRemoveImage(mediaId); }}
+            onPickImage={() => {
+              void pickImage();
+            }}
+            onSetPrimary={(mediaId) => {
+              void handleSetPrimary(mediaId);
+            }}
+            onRemove={(mediaId) => {
+              void handleRemoveImage(mediaId);
+            }}
             {...sectionProps}
           />
 

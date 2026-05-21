@@ -239,7 +239,8 @@ export function useOnboardingForm() {
     } catch (err: unknown) {
       showError({
         title: t('common.error'),
-        message: err instanceof Error ? err.message : t('common.something_went_wrong'),
+        message:
+          err instanceof Error ? err.message : t('common.something_went_wrong'),
       });
     } finally {
       setLoading(false);

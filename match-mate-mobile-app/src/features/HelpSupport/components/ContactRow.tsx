@@ -3,7 +3,7 @@ import { ContactItem } from '../HelpSupport.types';
 import { helpSupportStyles } from '../HelpSupport.styles';
 import { TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 export function ContactRow({
   icon,
@@ -14,6 +14,7 @@ export function ContactRow({
   isLast,
 }: ContactItem): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
+  const { theme } = useTheme();
 
   return (
     <TouchableOpacity
@@ -26,14 +27,14 @@ export function ContactRow({
         <Feather
           name={icon}
           size={18}
-          color={iconColor ?? Colors.textSecondary}
+          color={iconColor ?? theme.colors.textSecondary}
         />
       </View>
       <View style={styles.contactTextWrapper}>
         <Text style={styles.contactLabel}>{label}</Text>
         <Text style={styles.contactValue}>{value}</Text>
       </View>
-      <Feather name="chevron-right" size={15} color={Colors.textMuted} />
+      <Feather name="chevron-right" size={15} color={theme.colors.textMuted} />
     </TouchableOpacity>
   );
 }

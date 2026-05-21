@@ -1,6 +1,5 @@
 import { SettingsNavigationProp } from '../../navigation/types';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
 export interface NotificationSettingsScreenProps {
   navigation: SettingsNavigationProp;
 }
@@ -19,12 +18,3 @@ export interface NotificationGroup {
 }
 
 export type NotificationState = Record<string, boolean>;
-
-export interface ToggleRowProps {
-  icon: string;
-  label: string;
-  description: string;
-  value: boolean;
-  onValueChange: (val: boolean) => void;
-  disabled?: boolean;
-}

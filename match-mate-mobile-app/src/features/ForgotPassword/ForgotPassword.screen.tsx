@@ -1,8 +1,4 @@
-import React, {
-  useState,
-  useCallback,
-  useMemo,
-} from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 
 import {
   View,
@@ -27,10 +23,7 @@ import { EMAIL_REGEX } from '@/core/constants';
 
 import { useForgotPasswordMutation } from '@/store/services/authApi';
 
-import {
-  ForgotPasswordScreenProps,
-  FormErrors,
-} from './ForgotPassword.types';
+import { ForgotPasswordScreenProps, FormErrors } from './ForgotPassword.types';
 
 import { forgotPasswordStyles } from './ForgotPassword.styles';
 
@@ -53,8 +46,7 @@ export default function ForgotPasswordScreen({
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  const [forgotPassword, { isLoading: loading }] =
-    useForgotPasswordMutation();
+  const [forgotPassword, { isLoading: loading }] = useForgotPasswordMutation();
 
   const clearError = useCallback((field: keyof FormErrors) => {
     setErrors((prev) => {
@@ -135,9 +127,7 @@ export default function ForgotPasswordScreen({
       <KeyboardAvoidingView
         style={styles.container}
         behavior={keyboardBehavior}
-        keyboardVerticalOffset={
-          Platform.OS === 'ios' ? 80 : 0
-        }
+        keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
         <ScrollView
           contentContainerStyle={styles.scrollContent}
@@ -145,20 +135,12 @@ export default function ForgotPasswordScreen({
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.iconWrapper}>
-            <Feather
-              name="lock"
-              size={32}
-              color={theme.colors.primary}
-            />
+            <Feather name="lock" size={32} color={theme.colors.primary} />
           </View>
 
-          <Text style={styles.title}>
-            {t('auth.forgot.title')}
-          </Text>
+          <Text style={styles.title}>{t('auth.forgot.title')}</Text>
 
-          <Text style={styles.subtitle}>
-            {t('auth.forgot.subtitle')}
-          </Text>
+          <Text style={styles.subtitle}>{t('auth.forgot.subtitle')}</Text>
 
           {!!errors.error && (
             <View style={styles.errorBanner}>
@@ -168,9 +150,7 @@ export default function ForgotPasswordScreen({
                 color={theme.colors.error}
               />
 
-              <Text style={styles.errorBannerText}>
-                {errors.error}
-              </Text>
+              <Text style={styles.errorBannerText}>{errors.error}</Text>
             </View>
           )}
 
@@ -186,30 +166,21 @@ export default function ForgotPasswordScreen({
             />
 
             <TouchableOpacity
-              style={[
-                styles.primaryButton,
-                loading && styles.disabledButton,
-              ]}
+              style={[styles.primaryButton, loading && styles.disabledButton]}
               onPress={() => {
                 void handleSubmit();
               }}
               disabled={loading}
             >
               {loading ? (
-                <ActivityIndicator
-                  color={theme.colors.white}
-                />
+                <ActivityIndicator color={theme.colors.white} />
               ) : (
                 <>
                   <Text style={styles.primaryButtonText}>
                     {t('auth.actions.send_reset_link')}
                   </Text>
 
-                  <Feather
-                    name="send"
-                    size={16}
-                    color={theme.colors.white}
-                  />
+                  <Feather name="send" size={16} color={theme.colors.white} />
                 </>
               )}
             </TouchableOpacity>
@@ -219,11 +190,7 @@ export default function ForgotPasswordScreen({
               onPress={navigation.goBack}
               disabled={loading}
             >
-              <Feather
-                name="arrow-left"
-                size={14}
-                color={theme.colors.link}
-              />
+              <Feather name="arrow-left" size={14} color={theme.colors.link} />
 
               <Text style={styles.backLinkText}>
                 {t('auth.actions.back_to_sign_in')}

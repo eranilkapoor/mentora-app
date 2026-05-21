@@ -1,7 +1,6 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, ScrollView } from 'react-native';
-import { Colors } from '../../core/constants/colors';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { privacyPolicyStyles } from './PrivacyPolicy.styles';
 import { PolicySection } from './components/PolicySection';
@@ -9,6 +8,7 @@ import { POLICY_SECTIONS } from './PrivacyPolicy.constants';
 import Header from '@/core/components/Header';
 import { PrivacyPolicyScreenProps } from './PrivacyPolicy.types';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 
@@ -17,10 +17,11 @@ export default function PrivacyPolicyScreen({
 }: PrivacyPolicyScreenProps): React.ReactElement {
   const styles = useThemedStyles(privacyPolicyStyles);
   const { t } = useTranslation();
+  const { theme } = useTheme();
 
   return (
     <SafeAreaView
-      style={[styles.safe, { backgroundColor: Colors.backgroundPage }]}
+      style={[styles.safe, { backgroundColor: theme.colors.backgroundPage }]}
     >
       <Header
         showBack

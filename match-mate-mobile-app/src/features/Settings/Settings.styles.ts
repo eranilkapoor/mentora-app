@@ -6,8 +6,7 @@ export const settingsStyles = (theme: Theme) =>
   StyleSheet.create({
     safe: {
       flex: 1,
-      backgroundColor:
-        theme.colors.backgroundPage,
+      backgroundColor: theme.colors.backgroundPage,
     },
 
     container: {
@@ -44,8 +43,8 @@ export const settingsStyles = (theme: Theme) =>
 
       ...(Platform.OS === 'web'
         ? ({
-          cursor: 'pointer',
-        } as never)
+            cursor: 'pointer',
+          } as never)
         : {}),
     },
 
@@ -53,8 +52,7 @@ export const settingsStyles = (theme: Theme) =>
       width: 62,
       height: 62,
       borderRadius: 31,
-      backgroundColor:
-        theme.colors.primaryLight,
+      backgroundColor: theme.colors.primaryLight,
 
       alignItems: 'center',
       justifyContent: 'center',
@@ -84,15 +82,13 @@ export const settingsStyles = (theme: Theme) =>
       height: 6,
       borderRadius: 999,
       overflow: 'hidden',
-      backgroundColor:
-        theme.colors.backgroundLight,
+      backgroundColor: theme.colors.backgroundLight,
     },
 
     progressFill: {
       height: '100%',
       borderRadius: 999,
-      backgroundColor:
-        theme.colors.primary,
+      backgroundColor: theme.colors.primary,
     },
 
     progressText: {
@@ -133,11 +129,9 @@ export const settingsStyles = (theme: Theme) =>
       paddingHorizontal: 16,
       paddingVertical: 13,
 
-      borderBottomWidth:
-        StyleSheet.hairlineWidth,
+      borderBottomWidth: StyleSheet.hairlineWidth,
 
-      borderBottomColor:
-        theme.colors.divider,
+      borderBottomColor: theme.colors.divider,
     },
 
     sectionIconWrapper: {
@@ -148,8 +142,7 @@ export const settingsStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
 
-      backgroundColor:
-        theme.colors.primaryLight,
+      backgroundColor: theme.colors.primaryLight,
     },
 
     sectionTitle: {
@@ -168,16 +161,14 @@ export const settingsStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'space-between',
 
-      borderBottomWidth:
-        StyleSheet.hairlineWidth,
+      borderBottomWidth: StyleSheet.hairlineWidth,
 
-      borderBottomColor:
-        theme.colors.divider,
+      borderBottomColor: theme.colors.divider,
 
       ...(Platform.OS === 'web'
         ? ({
-          cursor: 'pointer',
-        } as never)
+            cursor: 'pointer',
+          } as never)
         : {}),
     },
 
@@ -200,8 +191,7 @@ export const settingsStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
 
-      backgroundColor:
-        theme.colors.backgroundLight,
+      backgroundColor: theme.colors.backgroundLight,
     },
 
     rowLabelWrapper: {
@@ -226,8 +216,7 @@ export const settingsStyles = (theme: Theme) =>
     },
 
     rowBadge: {
-      backgroundColor:
-        theme.colors.primaryLight,
+      backgroundColor: theme.colors.primaryLight,
 
       borderRadius: 8,
 

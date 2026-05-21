@@ -14,7 +14,10 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { RegisterEmailForm } from './components/RegisterEmailForm';
 import { useRegisterForm } from './hooks/useRegisterForm';
-import { RegisterScreenProps, TAB_LABEL_KEYS } from '@/features/Auth/shared/auth.types'
+import {
+  RegisterScreenProps,
+  TAB_LABEL_KEYS,
+} from '@/features/Auth/shared/auth.types';
 import { SocialButton } from '../Auth/shared/components/SocialButton';
 import { PhoneForm } from '../Auth/shared/components/PhoneForm';
 import { authSharedStyles } from '../Auth/shared/auth.styles';
@@ -131,7 +134,9 @@ export default function RegisterScreen({
                 onEmailChange={handleEmailChange}
                 onPasswordChange={handlePasswordChange}
                 onTogglePassword={togglePasswordVisibility}
-                onSubmit={() => { void handleEmailRegister(); }}
+                onSubmit={() => {
+                  void handleEmailRegister();
+                }}
               />
             ) : (
               <PhoneForm
@@ -146,8 +151,12 @@ export default function RegisterScreen({
                 verifyLabel={t('auth.actions.verify_create')}
                 onPhoneChange={handlePhoneChange}
                 onOtpChange={handleOtpChange}
-                onGetOtp={() => { void handleGetOtp(); }}
-                onVerifyOtp={() => { void handleVerifyOtp(); }}
+                onGetOtp={() => {
+                  void handleGetOtp();
+                }}
+                onVerifyOtp={() => {
+                  void handleVerifyOtp();
+                }}
                 onResendOtp={handleResendOtp}
                 onToggleDropdown={toggleCountryCodeDropdown}
                 onCloseDropdown={closeCountryCodeDropdown}
@@ -168,7 +177,9 @@ export default function RegisterScreen({
             {Platform.OS !== 'ios' && (
               <SocialButton
                 label={t('auth.social.google')}
-                onPress={() => { void handleSocialRegister('google'); }}
+                onPress={() => {
+                  void handleSocialRegister('google');
+                }}
                 disabled={loading}
                 icon="search"
                 iconColor="#EA4335"
@@ -177,14 +188,18 @@ export default function RegisterScreen({
             {Platform.OS === 'ios' && (
               <SocialButton
                 label={t('auth.social.apple')}
-                onPress={() => { void handleSocialRegister('apple'); }}
+                onPress={() => {
+                  void handleSocialRegister('apple');
+                }}
                 disabled={loading}
                 icon="smartphone"
               />
             )}
             <SocialButton
               label={t('auth.social.facebook')}
-              onPress={() => { void handleSocialRegister('facebook'); }}
+              onPress={() => {
+                void handleSocialRegister('facebook');
+              }}
               disabled={loading}
               icon="facebook"
               iconColor="#1877F2"
@@ -203,9 +218,7 @@ export default function RegisterScreen({
               accessibilityRole="button"
               accessibilityLabel={t('auth.actions.sign_in')}
             >
-              <Text style={styles.linkText}>
-                {' '}{t('auth.actions.sign_in')}
-              </Text>
+              <Text style={styles.linkText}> {t('auth.actions.sign_in')}</Text>
             </TouchableOpacity>
           </View>
         </ScrollView>

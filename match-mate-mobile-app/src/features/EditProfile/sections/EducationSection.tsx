@@ -2,7 +2,10 @@ import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
-import { EducationSection as EducationSectionType, SectionKey } from '../EditProfile.types';
+import {
+  EducationSection as EducationSectionType,
+  SectionKey,
+} from '../EditProfile.types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { OccupationTypes, Qualifications } from '@/core/types';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
@@ -25,8 +28,14 @@ export function EducationSection({
   onSet,
 }: Props): React.ReactElement {
   const { t } = useTranslation();
-  const OccupationTypeOptions = useEnumOptions(OccupationTypes, 'options.occupation_types');
-  const QualificationOptions = useEnumOptions(Qualifications, 'options.qualifications');
+  const OccupationTypeOptions = useEnumOptions(
+    OccupationTypes,
+    'options.occupation_types'
+  );
+  const QualificationOptions = useEnumOptions(
+    Qualifications,
+    'options.qualifications'
+  );
 
   return (
     <SectionCard
@@ -61,7 +70,9 @@ export function EducationSection({
         label={t('edit_profile.fields.occupation_type')}
         options={OccupationTypeOptions}
         value={education.occupationType}
-        onChange={(v) => onSet('occupationType', v as EducationSectionType['occupationType'])}
+        onChange={(v) =>
+          onSet('occupationType', v as EducationSectionType['occupationType'])
+        }
         i18nPrefix="options.occupation_types"
       />
 
@@ -93,10 +104,7 @@ export function EducationSection({
         onChange={(v) => {
           const cleaned = v.replace(/[^0-9]/g, '');
 
-          onSet(
-            'annualIncomeAmount',
-            cleaned ? Number(cleaned) : undefined
-          );
+          onSet('annualIncomeAmount', cleaned ? Number(cleaned) : undefined);
         }}
         keyboardType="numeric"
         placeholder={t('edit_profile.placeholders.annual_income')}

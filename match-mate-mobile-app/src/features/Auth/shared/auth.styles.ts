@@ -1,7 +1,6 @@
 import { Theme } from '@/core/theme/types';
 import { Platform, StyleSheet } from 'react-native';
 
-// Shared styles used by both Login and Register
 export const authSharedStyles = (theme: Theme) =>
   StyleSheet.create({
     safe: {
@@ -103,12 +102,12 @@ export const authSharedStyles = (theme: Theme) =>
       fontSize: 15,
       color: theme.colors.textPrimary,
       outlineStyle: 'none',
-            ...(Platform.OS === 'web'
-              ? ({
-                  outlineWidth: 0,
-                  boxShadow: 'none',
-                } as any)
-              : {}),
+      ...(Platform.OS === 'web'
+        ? ({
+            outlineWidth: 0,
+            boxShadow: 'none',
+          } as any)
+        : {}),
     },
     eyeButton: { padding: 6 },
     phoneRow: {
@@ -165,7 +164,7 @@ export const authSharedStyles = (theme: Theme) =>
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.colors.divider,
     },
-    countryCodeItemActive: { 
+    countryCodeItemActive: {
       backgroundColor: theme.colors.primaryLight,
     },
     countryCodeItemText: {

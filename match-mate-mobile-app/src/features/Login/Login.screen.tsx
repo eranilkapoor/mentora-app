@@ -14,7 +14,10 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { LoginEmailForm } from './components/LoginEmailForm';
 import { useLoginForm } from './hooks/useLoginForm';
-import { LoginScreenProps, TAB_LABEL_KEYS } from '@/features/Auth/shared/auth.types'
+import {
+  LoginScreenProps,
+  TAB_LABEL_KEYS,
+} from '@/features/Auth/shared/auth.types';
 import { SocialButton } from '../Auth/shared/components/SocialButton';
 import { PhoneForm } from '../Auth/shared/components/PhoneForm';
 import { authSharedStyles } from '../Auth/shared/auth.styles';
@@ -131,7 +134,9 @@ export default function LoginScreen({
                 onEmailChange={handleEmailChange}
                 onPasswordChange={handlePasswordChange}
                 onTogglePassword={togglePasswordVisibility}
-                onSubmit={() => { void handleEmailLogin(); }}
+                onSubmit={() => {
+                  void handleEmailLogin();
+                }}
                 onNavigateForgot={() => navigation.navigate('ForgotPassword')}
               />
             ) : (
@@ -147,8 +152,12 @@ export default function LoginScreen({
                 verifyLabel={t('auth.actions.verify_create')}
                 onPhoneChange={handlePhoneChange}
                 onOtpChange={handleOtpChange}
-                onGetOtp={() => { void handleGetOtp(); }}
-                onVerifyOtp={() => { void handleVerifyOtp(); }}
+                onGetOtp={() => {
+                  void handleGetOtp();
+                }}
+                onVerifyOtp={() => {
+                  void handleVerifyOtp();
+                }}
                 onResendOtp={handleResendOtp}
                 onToggleDropdown={toggleCountryCodeDropdown}
                 onCloseDropdown={closeCountryCodeDropdown}
@@ -169,7 +178,9 @@ export default function LoginScreen({
             {Platform.OS !== 'ios' && (
               <SocialButton
                 label={t('auth.social.google')}
-                onPress={() => { void handleSocialLogin('google'); }}
+                onPress={() => {
+                  void handleSocialLogin('google');
+                }}
                 disabled={loading}
                 icon="search"
                 iconColor="#EA4335"
@@ -178,14 +189,18 @@ export default function LoginScreen({
             {Platform.OS === 'ios' && (
               <SocialButton
                 label={t('auth.social.apple')}
-                onPress={() => { void handleSocialLogin('apple'); }}
+                onPress={() => {
+                  void handleSocialLogin('apple');
+                }}
                 disabled={loading}
                 icon="smartphone"
               />
             )}
             <SocialButton
               label={t('auth.social.facebook')}
-              onPress={() => { void handleSocialLogin('facebook'); }}
+              onPress={() => {
+                void handleSocialLogin('facebook');
+              }}
               disabled={loading}
               icon="facebook"
               iconColor="#1877F2"
@@ -194,9 +209,7 @@ export default function LoginScreen({
 
           {/* Footer */}
           <View style={styles.footer}>
-            <Text style={styles.footerText}>
-              {t('auth.login.no_account')}
-            </Text>
+            <Text style={styles.footerText}>{t('auth.login.no_account')}</Text>
             <TouchableOpacity
               onPress={() => navigation.navigate('Register')}
               disabled={loading}
@@ -205,7 +218,8 @@ export default function LoginScreen({
               accessibilityLabel={t('auth.actions.create_account')}
             >
               <Text style={styles.linkText}>
-                {' '}{t('auth.actions.create_account')}
+                {' '}
+                {t('auth.actions.create_account')}
               </Text>
             </TouchableOpacity>
           </View>

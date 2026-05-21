@@ -232,9 +232,7 @@ function TagInputComponent({
   const handleAdd = useCallback((): void => {
     if (isDisabled || !canAdd) return;
 
-    const formatted = formatTag
-      ? formatTag(normalizedInput)
-      : normalizedInput;
+    const formatted = formatTag ? formatTag(normalizedInput) : normalizedInput;
 
     if (!allowDuplicates) {
       const exists = caseSensitive
@@ -300,9 +298,7 @@ function TagInputComponent({
         ) : null}
       </View>
 
-      {helperText ? (
-        <Text style={styles.helperText}>{helperText}</Text>
-      ) : null}
+      {helperText ? <Text style={styles.helperText}>{helperText}</Text> : null}
 
       {/* ── Input row ──────────────────────────────────────────────────── */}
       <View style={styles.inputRow}>

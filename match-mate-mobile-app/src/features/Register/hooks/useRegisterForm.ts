@@ -18,7 +18,11 @@ import {
   PHONE_REGEX,
 } from '@/core/constants';
 import { User } from '@/core/types';
-import { ActiveTab, FormErrors, SocialProvider } from '@/features/Auth/shared/auth.types';
+import {
+  ActiveTab,
+  FormErrors,
+  SocialProvider,
+} from '@/features/Auth/shared/auth.types';
 
 export function useRegisterForm() {
   const dispatch = useAppDispatch();
@@ -147,8 +151,8 @@ export function useRegisterForm() {
         setErrors({ error: t('auth.errors.server_error') });
       }
     } catch {
-      setErrors({ 
-        error: t('auth.errors.register_failed') 
+      setErrors({
+        error: t('auth.errors.register_failed'),
       });
     } finally {
       setLoading(false);

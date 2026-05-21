@@ -60,8 +60,7 @@ export default function SettingsScreen({
 
   const { t } = useTranslation();
 
-  const [logoutMutation, { isLoading: isLoggingOut }] =
-    useLogoutMutation();
+  const [logoutMutation, { isLoading: isLoggingOut }] = useLogoutMutation();
 
   // ─────────────────────────────────────────────
   // Redux State
@@ -84,11 +83,9 @@ export default function SettingsScreen({
   // Derived
   // ─────────────────────────────────────────────
 
-  const fullName =
-    `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim();
+  const fullName = `${user?.firstName ?? ''} ${user?.lastName ?? ''}`.trim();
 
-  const appVersion =
-    Constants.expoConfig?.version ?? '1.0.0';
+  const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
   const profileCompletion = 78;
 
@@ -100,16 +97,10 @@ export default function SettingsScreen({
         : t('theme.system');
 
   const themeIcon =
-    themeMode === 'light'
-      ? 'sun'
-      : themeMode === 'dark'
-        ? 'moon'
-        : 'monitor';
+    themeMode === 'light' ? 'sun' : themeMode === 'dark' ? 'moon' : 'monitor';
 
   const langBadge =
-    language === 'en'
-      ? t('language.english') 
-      : t('language.hindi');
+    language === 'en' ? t('language.english') : t('language.hindi');
 
   // ─────────────────────────────────────────────
   // Logout
@@ -122,9 +113,7 @@ export default function SettingsScreen({
       console.error('Logout Error:', error);
     } finally {
       if (Platform.OS !== 'web') {
-        await SecureStore.deleteItemAsync(
-          'refreshToken'
-        );
+        await SecureStore.deleteItemAsync('refreshToken');
       }
 
       dispatch(logoutAction());
@@ -140,9 +129,7 @@ export default function SettingsScreen({
     if (isLoggingOut) return;
 
     if (Platform.OS === 'web') {
-      const confirmed = window.confirm(
-        t('settings.sign_out_confirm')
-      );
+      const confirmed = window.confirm(t('settings.sign_out_confirm'));
 
       if (confirmed) {
         void performLogout();
@@ -173,8 +160,7 @@ export default function SettingsScreen({
         label: t('settings.language'),
         subLabel: t('settings.language_sub'),
         badge: langBadge,
-        onPress: () =>
-          navigation.navigate('Languages'),
+        onPress: () => navigation.navigate('Languages'),
       },
       {
         type: 'row',
@@ -182,8 +168,7 @@ export default function SettingsScreen({
         label: t('settings.theme'),
         subLabel: t('settings.theme_sub'),
         badge: themeBadge,
-        onPress: () =>
-          navigation.navigate('Themes'),
+        onPress: () => navigation.navigate('Themes'),
       },
       {
         type: 'toggle',
@@ -191,8 +176,7 @@ export default function SettingsScreen({
         label: t('settings.sound'),
         subLabel: t('settings.sound_sub'),
         value: soundEnabled,
-        onValueChange: () =>
-          dispatch(toggleSound()),
+        onValueChange: () => dispatch(toggleSound()),
       },
       {
         type: 'toggle',
@@ -200,19 +184,15 @@ export default function SettingsScreen({
         label: t('settings.vibration'),
         subLabel: t('settings.vibration_sub'),
         value: vibrationEnabled,
-        onValueChange: () =>
-          dispatch(toggleVibration()),
+        onValueChange: () => dispatch(toggleVibration()),
       },
       {
         type: 'toggle',
         icon: 'map-pin',
         label: t('settings.share_location'),
-        subLabel: t(
-          'settings.share_location_sub'
-        ),
+        subLabel: t('settings.share_location_sub'),
         value: locationSharing,
-        onValueChange: () =>
-          dispatch(toggleLocationSharing()),
+        onValueChange: () => dispatch(toggleLocationSharing()),
       },
     ],
     [
@@ -249,27 +229,19 @@ export default function SettingsScreen({
             styles.profileBanner,
             pressed && styles.pressed,
           ]}
-          onPress={() =>
-            appNavigation.navigate('Tabs')
-          }
+          onPress={() => appNavigation.navigate('Tabs')}
         >
           <View style={styles.profileAvatar}>
-            <Feather
-              name="user"
-              size={26}
-              color={theme.colors.primary}
-            />
+            <Feather name="user" size={26} color={theme.colors.primary} />
           </View>
 
           <View style={styles.profileContent}>
             <Text style={styles.profileName}>
-              {fullName ||
-                t('profile.your_profile')}
+              {fullName || t('profile.your_profile')}
             </Text>
 
             <Text style={styles.profileEmail}>
-              {user?.email ??
-                t('profile.tap_to_view')}
+              {user?.email ?? t('profile.tap_to_view')}
             </Text>
 
             <View style={styles.progressWrapper}>
@@ -299,69 +271,38 @@ export default function SettingsScreen({
 
         {/* Account */}
 
-        <Section
-          icon="user"
-          title={t('settings.account')}
-        >
+        <Section icon="user" title={t('settings.account')}>
           <SettingRow
             icon="edit-3"
             label={t('settings.edit_profile')}
-            subLabel={t(
-              'settings.edit_profile_sub'
-            )}
-            onPress={() =>
-              navigation.navigate('EditProfile')
-            }
+            subLabel={t('settings.edit_profile_sub')}
+            onPress={() => navigation.navigate('EditProfile')}
           />
 
           <SettingRow
             icon="lock"
-            label={t(
-              'settings.change_password'
-            )}
-            subLabel={t(
-              'settings.change_password_sub'
-            )}
-            onPress={() =>
-              navigation.navigate(
-                'ChangePassword'
-              )
-            }
+            label={t('settings.change_password')}
+            subLabel={t('settings.change_password_sub')}
+            onPress={() => navigation.navigate('ChangePassword')}
             isLast
           />
         </Section>
 
         {/* Partner Preferences */}
 
-        <Section
-          icon="heart"
-          title={t(
-            'settings.partner_preferences'
-          )}
-        >
+        <Section icon="heart" title={t('settings.partner_preferences')}>
           <SettingRow
             icon="sliders"
-            label={t(
-              'settings.edit_preferences'
-            )}
-            subLabel={t(
-              'settings.edit_preferences_sub'
-            )}
-            onPress={() =>
-              navigation.navigate(
-                'EditPreference'
-              )
-            }
+            label={t('settings.edit_preferences')}
+            subLabel={t('settings.edit_preferences_sub')}
+            onPress={() => navigation.navigate('EditPreference')}
             isLast
           />
         </Section>
 
         {/* Privacy */}
 
-        <Section
-          icon="shield"
-          title="Privacy & Safety"
-        >
+        <Section icon="shield" title="Privacy & Safety">
           <SettingRow
             icon="eye-off"
             label="Profile Visibility"
@@ -387,15 +328,9 @@ export default function SettingsScreen({
 
         {/* App Settings */}
 
-        <Section
-          icon="settings"
-          title={t(
-            'settings.app_settings'
-          )}
-        >
+        <Section icon="settings" title={t('settings.app_settings')}>
           {appSettings.map((item, index) => {
-            const isLast =
-              index === appSettings.length - 1;
+            const isLast = index === appSettings.length - 1;
 
             if (item.type === 'row') {
               return (
@@ -418,9 +353,7 @@ export default function SettingsScreen({
                 label={item.label}
                 subLabel={item.subLabel}
                 value={item.value}
-                onValueChange={
-                  item.onValueChange
-                }
+                onValueChange={item.onValueChange}
                 isLast={isLast}
               />
             );
@@ -429,20 +362,13 @@ export default function SettingsScreen({
 
         {/* Notifications */}
 
-        <Section
-          icon="bell"
-          title={t(
-            'settings.notifications'
-          )}
-        >
+        <Section icon="bell" title={t('settings.notifications')}>
           <SettingToggle
             icon="bell"
             label="App Notifications"
             subLabel="Messages, matches & updates"
             value={notificationsEnabled}
-            onValueChange={() =>
-              dispatch(toggleNotifications())
-            }
+            onValueChange={() => dispatch(toggleNotifications())}
           />
 
           <SettingRow
@@ -450,54 +376,36 @@ export default function SettingsScreen({
             label="Notification Settings"
             subLabel="Customize alerts"
             disabled={!notificationsEnabled}
-            onPress={() =>
-              navigation.navigate(
-                'NotificationSettings'
-              )
-            }
+            onPress={() => navigation.navigate('NotificationSettings')}
             isLast
           />
         </Section>
 
         {/* Support */}
 
-        <Section
-          icon="help-circle"
-          title={t('settings.support')}
-        >
+        <Section icon="help-circle" title={t('settings.support')}>
           <SettingRow
             icon="life-buoy"
             label="Help & Support"
             subLabel="FAQs and contact support"
-            onPress={() =>
-              navigation.navigate('HelpSupport')
-            }
+            onPress={() => navigation.navigate('HelpSupport')}
           />
 
           <SettingRow
             icon="shield"
             label="Privacy Policy"
             subLabel="How we handle your data"
-            onPress={() =>
-              navigation.navigate('PrivacyPolicy')
-            }
+            onPress={() => navigation.navigate('PrivacyPolicy')}
             isLast
           />
         </Section>
 
         {/* Danger Zone */}
 
-        <Section
-          icon="alert-triangle"
-          title="Danger Zone"
-        >
+        <Section icon="alert-triangle" title="Danger Zone">
           <SettingRow
             icon="log-out"
-            label={
-              isLoggingOut
-                ? 'Signing Out...'
-                : 'Sign Out'
-            }
+            label={isLoggingOut ? 'Signing Out...' : 'Sign Out'}
             subLabel="Logout from this device"
             onPress={handleSignOut}
             isDanger
@@ -516,22 +424,15 @@ export default function SettingsScreen({
         {/* Footer */}
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>
-            MatchMate v{appVersion}
-          </Text>
+          <Text style={styles.footerText}>MatchMate v{appVersion}</Text>
 
-          <Text style={styles.footerSubtext}>
-            Made with ❤️ by Webnza
-          </Text>
+          <Text style={styles.footerSubtext}>Made with ❤️ by Webnza</Text>
         </View>
       </ScrollView>
 
       {isLoggingOut && (
         <View style={styles.loadingOverlay}>
-          <ActivityIndicator
-            size="large"
-            color={theme.colors.primary}
-          />
+          <ActivityIndicator size="large" color={theme.colors.primary} />
         </View>
       )}
     </SafeAreaView>

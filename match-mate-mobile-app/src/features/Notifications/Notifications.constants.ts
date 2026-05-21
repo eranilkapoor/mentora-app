@@ -1,4 +1,3 @@
-import { Colors } from '@/core/constants/colors';
 import { NotifSection } from './Notifications.types';
 
 export const INITIAL_NOTIFICATIONS: NotifSection[] = [
@@ -13,7 +12,7 @@ export const INITIAL_NOTIFICATIONS: NotifSection[] = [
         time: '2 min ago',
         unread: true,
         icon: 'heart',
-        iconColor: Colors.danger,
+        iconColor: '#ef4444',
       },
       {
         id: '2',
@@ -22,6 +21,7 @@ export const INITIAL_NOTIFICATIONS: NotifSection[] = [
         time: '15 min ago',
         unread: true,
         icon: 'eye',
+        iconColor: '#f59e0b',
       },
       {
         id: '3',
@@ -30,7 +30,7 @@ export const INITIAL_NOTIFICATIONS: NotifSection[] = [
         time: '1 hour ago',
         unread: true,
         icon: 'check-circle',
-        iconColor: Colors.success,
+        iconColor: '#10b981',
       },
     ],
   },
@@ -45,6 +45,7 @@ export const INITIAL_NOTIFICATIONS: NotifSection[] = [
         time: 'Yesterday',
         unread: false,
         icon: 'bookmark',
+        iconColor: '#6b7280',
       },
       {
         id: '5',
@@ -53,6 +54,7 @@ export const INITIAL_NOTIFICATIONS: NotifSection[] = [
         time: '2 days ago',
         unread: false,
         icon: 'user',
+        iconColor: '#6b7280',
       },
       {
         id: '6',
@@ -61,6 +63,7 @@ export const INITIAL_NOTIFICATIONS: NotifSection[] = [
         time: '3 days ago',
         unread: false,
         icon: 'message-circle',
+        iconColor: '#6b7280',
       },
     ],
   },

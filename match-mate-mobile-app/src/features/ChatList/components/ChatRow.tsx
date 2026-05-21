@@ -3,7 +3,7 @@ import { ChatMatch, formatTime } from '../ChatList.types';
 import { chatListStyles } from '../ChatList.styles';
 import { Image, TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 export function ChatRow({
   item,
@@ -13,6 +13,7 @@ export function ChatRow({
   onPress: () => void;
 }): React.ReactElement {
   const styles = useThemedStyles(chatListStyles);
+  const { theme } = useTheme();
 
   return (
     <TouchableOpacity
@@ -48,7 +49,7 @@ export function ChatRow({
         </View>
 
         <View style={styles.cityRow}>
-          <Feather name="map-pin" size={11} color={Colors.textMuted} />
+          <Feather name="map-pin" size={11} color={theme.colors.textMuted} />
           <Text style={styles.city}>{item.city}</Text>
         </View>
 

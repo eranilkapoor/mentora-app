@@ -1,10 +1,6 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import {
-  EatingHabits,
-  DrinkingHabits,
-  SmokingHabits,
-} from '@/core/types';
+import { EatingHabits, DrinkingHabits, SmokingHabits } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { PersonalSection, SectionKey } from '../EditProfile.types';
 import { TagInput } from '@/core/components/TagInput';
@@ -29,7 +25,10 @@ export function LifestyleSection({
 }: Props): React.ReactElement {
   const { t } = useTranslation();
   const SmokingHabitsOptions = useEnumOptions(SmokingHabits, 'options.smoking');
-  const DrinkingHabitsOptions = useEnumOptions(DrinkingHabits, 'options.drinking');
+  const DrinkingHabitsOptions = useEnumOptions(
+    DrinkingHabits,
+    'options.drinking'
+  );
   const EatingHabitsOptions = useEnumOptions(EatingHabits, 'options.eating');
 
   return (

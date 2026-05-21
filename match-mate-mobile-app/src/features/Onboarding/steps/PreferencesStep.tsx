@@ -36,7 +36,10 @@ export function PreferencesStep({
   const { t } = useTranslation();
   const { theme } = useTheme();
   const styles = useThemedStyles(onboardingStyles);
-  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital_status');
+  const MaritalStatusOptions = useEnumOptions(
+    MaritalStatuses,
+    'options.marital_status'
+  );
   const ReligionOptions = useEnumOptions(Religions, 'options.religion');
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
 

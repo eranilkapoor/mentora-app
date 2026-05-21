@@ -10,7 +10,6 @@ import {
   Linking,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '../../core/constants/colors';
 import {
   SUPPORT_EMAIL,
   SUPPORT_PHONE,
@@ -24,6 +23,7 @@ import { FaqCard } from './components/FaqCard';
 import { ContactRow } from './components/ContactRow';
 import Header from '@/core/components/Header';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 // ─── Android LayoutAnimation ──────────────────────────────────────────────────
 if (
@@ -38,6 +38,7 @@ export default function HelpSupportScreen({
   navigation,
 }: HelpSupportScreenProps): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
+  const { theme } = useTheme();
   const { t } = useTranslation();
 
   const [expanded, setExpanded] = useState<number | null>(null);
@@ -81,7 +82,7 @@ export default function HelpSupportScreen({
       label: 'WhatsApp',
       value: 'Chat with us on WhatsApp',
       action: openWhatsApp,
-      iconColor: Colors.whatsapp,
+      iconColor: theme.colors.whatsapp,
       isLast: true,
     },
   ];
@@ -100,7 +101,7 @@ export default function HelpSupportScreen({
         {/* ── Header Card ──────────────────────────────────────────── */}
         <View style={styles.headerCard}>
           <View style={styles.headerIconWrapper}>
-            <Feather name="life-buoy" size={22} color={Colors.primary} />
+            <Feather name="life-buoy" size={22} color={theme.colors.primary} />
           </View>
           <Text style={styles.headerTitle}>Help & Support</Text>
           <Text style={styles.headerSubtitle}>
@@ -112,7 +113,7 @@ export default function HelpSupportScreen({
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionIconWrapper}>
-              <Feather name="phone" size={13} color={Colors.primary} />
+              <Feather name="phone" size={13} color={theme.colors.primary} />
             </View>
             <Text style={styles.sectionTitle}>Contact Support</Text>
           </View>
@@ -126,7 +127,11 @@ export default function HelpSupportScreen({
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionIconWrapper}>
-              <Feather name="help-circle" size={13} color={Colors.primary} />
+              <Feather
+                name="help-circle"
+                size={13}
+                color={theme.colors.primary}
+              />
             </View>
             <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
           </View>

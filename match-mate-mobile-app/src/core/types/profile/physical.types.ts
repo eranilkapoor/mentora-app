@@ -1,4 +1,4 @@
-import { BloodGroup, BodyType, Complexion } from "../common/enums";
+import { BloodGroup, BodyType, Complexion } from '../common/enums';
 
 export interface PhysicalData {
   height: string;

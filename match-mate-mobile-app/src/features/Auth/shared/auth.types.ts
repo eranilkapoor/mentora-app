@@ -49,8 +49,8 @@ export interface PhoneFormProps {
   otpSent: boolean;
   countryCode: string;
   showCountryCodeDropdown: boolean;
-  submitLabel: string;           // "Sign In" vs "Create Account"
-  verifyLabel: string;           // "Verify & Sign In" vs "Verify & Create Account"
+  submitLabel: string;
+  verifyLabel: string;
   onPhoneChange: (v: string) => void;
   onOtpChange: (v: string) => void;
   onGetOtp: () => void;

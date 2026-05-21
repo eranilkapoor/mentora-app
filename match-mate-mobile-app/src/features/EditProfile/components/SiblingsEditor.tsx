@@ -164,7 +164,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
         label={t('edit_profile.family.brothers')}
         value={siblings.brothersCount}
         onChange={(count) => updateSiblingCount('brother', count)}
-        suffix=''
+        suffix=""
         step={1}
       />
 
@@ -172,7 +172,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
         label={t('edit_profile.family.sisters')}
         value={siblings.sistersCount}
         onChange={(count) => updateSiblingCount('sister', count)}
-        suffix=''
+        suffix=""
         step={1}
       />
 
@@ -185,7 +185,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
             marriedBrothersCount: count,
           })
         }
-        suffix=''
+        suffix=""
         step={1}
       />
 
@@ -198,7 +198,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
             marriedSistersCount: count,
           })
         }
-        suffix=''
+        suffix=""
         step={1}
       />
 

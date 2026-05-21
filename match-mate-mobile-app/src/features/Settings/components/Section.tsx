@@ -18,16 +18,10 @@ export const Section = memo(function Section({
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionIconWrapper}>
-          <Feather
-            name={icon}
-            size={14}
-            color={styles.sectionTitle.color}
-          />
+          <Feather name={icon} size={14} color={styles.sectionTitle.color} />
         </View>
 
-        <Text style={styles.sectionTitle}>
-          {title}
-        </Text>
+        <Text style={styles.sectionTitle}>{title}</Text>
       </View>
 
       {children}

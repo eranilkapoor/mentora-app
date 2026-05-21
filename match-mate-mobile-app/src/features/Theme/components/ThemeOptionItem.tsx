@@ -8,9 +8,9 @@ import {
   TextStyle,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
 import { ThemeOption } from '../Theme.types';
 import { ThemeMode } from '@/store/slices/settingsSlice';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 interface Styles {
   optionRow: StyleProp<ViewStyle>;
@@ -44,6 +44,7 @@ const ThemeOptionItemComponent = ({
   const handlePress = useCallback(() => {
     onPress(item.code);
   }, [item.code, onPress]);
+  const { theme } = useTheme();
 
   return (
     <TouchableOpacity
@@ -67,7 +68,7 @@ const ThemeOptionItemComponent = ({
           <Feather
             name={item.icon}
             size={16}
-            color={isActive ? Colors.primary : Colors.textMuted}
+            color={isActive ? theme.colors.primary : theme.colors.textMuted}
           />
         </View>
 

@@ -1,5 +1,5 @@
 import { Theme } from '@/core/theme/types';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const editProfileStyles = (theme: Theme) =>
   StyleSheet.create({

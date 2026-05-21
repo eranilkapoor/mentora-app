@@ -15,8 +15,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchDetailStyles } from './MatchDetail.styles';
-import { Colors } from '../../core/constants/colors';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -59,11 +59,12 @@ const CHIPS = [
 
 function Section({ title, icon, children }: SectionProps): React.ReactElement {
   const styles = useThemedStyles(matchDetailStyles);
+  const { theme } = useTheme();
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionIconWrapper}>
-          <Feather name={icon} size={14} color={Colors.primary} />
+          <Feather name={icon} size={14} color={theme.colors.primary} />
         </View>
         <Text style={styles.sectionTitle}>{title}</Text>
       </View>
@@ -74,11 +75,12 @@ function Section({ title, icon, children }: SectionProps): React.ReactElement {
 
 function Row({ label, value, icon, isLast }: RowProps): React.ReactElement {
   const styles = useThemedStyles(matchDetailStyles);
+  const { theme } = useTheme();
   return (
     <View style={[styles.row, isLast && styles.rowLast]}>
       <View style={styles.rowLeft}>
         {icon !== undefined && (
-          <Feather name={icon} size={13} color={Colors.textMuted} />
+          <Feather name={icon} size={13} color={theme.colors.textMuted} />
         )}
         <Text style={styles.label}>{label}</Text>
       </View>
@@ -93,6 +95,7 @@ export default function MatchDetailsScreen({
   navigation,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(matchDetailStyles);
+  const { theme } = useTheme();
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList<string>>(null);
 
@@ -125,7 +128,7 @@ export default function MatchDetailsScreen({
 
           {/* Counter */}
           <View style={styles.counterPill}>
-            <Feather name="image" size={11} color={Colors.white} />
+            <Feather name="image" size={11} color={theme.colors.white} />
             <Text style={styles.counterText}>
               {activeIndex + 1} / {PHOTOS.length}
             </Text>
@@ -163,7 +166,7 @@ export default function MatchDetailsScreen({
         <View style={styles.matchScoreBar}>
           <View style={styles.matchScoreLeft}>
             <View style={styles.matchScoreIconWrapper}>
-              <Feather name="heart" size={18} color={Colors.primary} />
+              <Feather name="heart" size={18} color={theme.colors.primary} />
             </View>
             <View>
               <Text style={styles.matchScoreLabel}>Match Score</Text>
@@ -173,7 +176,7 @@ export default function MatchDetailsScreen({
           <View style={styles.matchScoreDivider} />
           <View style={styles.matchScoreLeft}>
             <View style={styles.matchScoreIconWrapper}>
-              <Feather name="eye" size={18} color={Colors.primary} />
+              <Feather name="eye" size={18} color={theme.colors.primary} />
             </View>
             <View>
               <Text style={styles.matchScoreLabel}>Profile Views</Text>
@@ -183,7 +186,7 @@ export default function MatchDetailsScreen({
           <View style={styles.matchScoreDivider} />
           <View style={styles.matchScoreLeft}>
             <View style={styles.matchScoreIconWrapper}>
-              <Feather name="star" size={18} color={Colors.primary} />
+              <Feather name="star" size={18} color={theme.colors.primary} />
             </View>
             <View>
               <Text style={styles.matchScoreLabel}>Shortlists</Text>
@@ -196,7 +199,11 @@ export default function MatchDetailsScreen({
         <View style={styles.chipsRow}>
           {CHIPS.map((chip) => (
             <View key={chip.label} style={styles.chip}>
-              <Feather name={chip.icon} size={12} color={Colors.primary} />
+              <Feather
+                name={chip.icon}
+                size={12}
+                color={theme.colors.primary}
+              />
               <Text style={styles.chipText}>{chip.label}</Text>
             </View>
           ))}
@@ -260,7 +267,11 @@ export default function MatchDetailsScreen({
           }
           accessibilityRole="button"
         >
-          <Feather name="message-circle" size={16} color={Colors.primary} />
+          <Feather
+            name="message-circle"
+            size={16}
+            color={theme.colors.primary}
+          />
           <Text style={styles.ctaOutlineText}>Chat</Text>
         </TouchableOpacity>
 
@@ -269,7 +280,7 @@ export default function MatchDetailsScreen({
           onPress={() => navigation.navigate('RequestContact', { userId: '1' })}
           accessibilityRole="button"
         >
-          <Feather name="heart" size={16} color={Colors.white} />
+          <Feather name="heart" size={16} color={theme.colors.white} />
           <Text style={styles.ctaPrimaryText}>Send Interest</Text>
         </TouchableOpacity>
       </View>

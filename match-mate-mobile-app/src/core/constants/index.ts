@@ -12,6 +12,33 @@ export const OTP_LENGTH = 6;
 export const EMOJIS = ['😀', '😂', '❤️', '👍', '😍', '🙏', '🎉', '😊'];
 export const MAX_PHOTOS = 6;
 
+export const ABOUT_PARTNER_MAX = 500;
+// ─── Range Bounds ─────────────────────────────────────────────────────────────
+export const AGE_RANGE = { min: 18, max: 70 } as const;
+export const HEIGHT_RANGE = { min: 140, max: 220 } as const;
+export const INCOME_RANGE = { min: 0, max: 10000000 } as const;
+export const INCOME_STEP = 50000 as const;
+export const MATCH_SCORE_RANGE = { min: 0, max: 100 } as const;
+
+// ─── Weight Bounds ────────────────────────────────────────────────────────────
+export const WEIGHT_MIN = 0 as const;
+export const WEIGHT_MAX = 30 as const;
+
+// ─── Weight Labels ────────────────────────────────────────────────────────────
+export const WEIGHT_KEYS = [
+  'age',
+  'height',
+  'religion',
+  'caste',
+  'location',
+  'education',
+  'occupation',
+  'lifestyle',
+  'horoscope',
+] as const;
+
+export type WeightKey = (typeof WEIGHT_KEYS)[number];
+
 export const COUNTRY_CODES = [
   '1',
   '44',
@@ -91,29 +118,58 @@ export const PROFESSIONS = [
   'Pharmacist',
   'Journalist',
   'Pilot',
-];
-
-export const INDUSTRIES = [
-  'Information Technology',
-  'Healthcare',
-  'Education',
-  'Finance',
-  'Manufacturing',
-  'Retail',
-  'Hospitality',
-  'Construction',
-  'Transportation',
-  'Entertainment',
-  'Real Estate',
-  'Telecommunications',
-  'Energy',
-  'Agriculture',
-  'Marketing',
-  'Legal',
-  'Consulting',
-  'Non-Profit',
-  'Government',
-  'Media',
+  'Social Worker',
+  'Therapist',
+  'Developer',
+  'Marketer',
+  'Salesperson',
+  'HR Manager',
+  'Financial Analyst',
+  'Project Manager',
+  'Data Analyst',
+  'UX/UI Designer',
+  'Content Creator',
+  'Digital Marketer',
+  'Product Manager',
+  'Business Analyst',
+  'Customer Support',
+  'Operations Manager',
+  'Supply Chain Manager',
+  'Quality Assurance',
+  'Legal Advisor',
+  'Event Planner',
+  'Real Estate Agent',
+  'Fitness Trainer',
+  'Nutritionist',
+  'Veterinarian',
+  'Translator',
+  'Interpreter',
+  'Librarian',
+  'Archivist',
+  'Curator',
+  'Animator',
+  'Game Developer',
+  'Film Director',
+  'Actor/Actress',
+  'Comedian',
+  'Dancer/Choreographer',
+  'Musician/Singer',
+  'Writer/Author',
+  'Poet',
+  'Journalist/Reporter',
+  'Photographer/Videographer',
+  'Artist/Painter',
+  'Sculptor',
+  'Graphic Designer',
+  'Fashion Designer',
+  'Interior Designer',
+  'Architect/Urban Planner',
+  'Chef/Baker',
+  'Food Critic',
+  'Nutritionist/Dietitian',
+  'Fitness Trainer/Coach',
+  'Yoga Instructor',
+  'Other',
 ];
 
 export const GOALS = [
@@ -189,141 +245,4 @@ export const ZODIAC_SIGNS = [
   'Capricorn',
   'Aquarius',
   'Pisces',
-];
-
-export const CHILDREN_PREFERENCES = [
-  'Want Children',
-  "Don't Want Children",
-  'Open to Discussion',
-];
-
-export const LIVING_ARRANGEMENTS = [
-  'Living with Parents',
-  'Living Alone',
-  'Living with Roommates',
-  'Living with Partner',
-];
-
-export const HOUSING_TYPES = [
-  'Owned Apartment/House',
-  'Rented Apartment/House',
-  'Living with Family',
-  'Company Provided Accommodation',
-];
-
-export const TRANSPORT_TYPES = [
-  'Owns a Car',
-  'Owns a Bike/Scooter',
-  'Uses Public Transport',
-  'Walks/Cycles',
-];
-
-export const TRAVEL_FREQUENCIES = [
-  'Frequently',
-  'Occasionally',
-  'Rarely',
-];
-
-export const VACATION_PREFERENCES = [
-  'Beach Destinations',
-  'Mountain Destinations',
-  'City Tours',
-  'Adventure Trips',
-  'Cultural Experiences',
-];
-
-export const MUSIC_PREFERENCES = [
-  'Pop',
-  'Rock',
-  'Classical',
-  'Jazz',
-  'Hip-Hop',
-  'Country',
-  'Electronic',
-  'Reggae',
-  'Blues',
-];
-
-export const MOVIE_GENRES = [
-  'Action',
-  'Comedy',
-  'Drama',
-  'Horror',
-  'Romance',
-  'Science Fiction',
-  'Documentary',
-  'Thriller',
-  'Animation',
-];
-
-export const BOOK_GENRES = [
-  'Fiction',
-  'Non-Fiction',
-  'Mystery',
-  'Fantasy',
-  'Biography',
-  'Science Fiction',
-  'Romance',
-  'Historical',
-  'Self-Help',
-];
-
-export const SPORTS_PREFERENCES = [
-  'Football',
-  'Basketball',
-  'Tennis',
-  'Cricket',
-  'Swimming',
-  'Running',
-  'Cycling',
-  'Yoga',
-  'Gymnastics',
-];
-
-export const CUISINES = [
-  'Italian',
-  'Chinese',
-  'Indian',
-  'Mexican',
-  'Thai',
-  'Japanese',
-  'Mediterranean',
-  'French',
-  'Greek',
-  'Spanish',
-];
-
-export const FAMILY_TYPES = [
-  'Joint',
-  'Nuclear',
-  'Extended',
-  'Single Parent',
-  'Blended',
-  'Multigenerational',
-  'Adoptive',
-  'Same-Sex Parent',
-  'Grandparent-Led',
-  'Childless',
-];
-
-export const FAMILY_VALUES = [
-  'Traditional',
-  'Conservative',
-  'Moderate',
-  'Progressive',
-  'Liberal',
-  'Secular',
-  'Religious',
-  'Spiritual',
-  'Mixed Values',
-];
-
-export const FAMILY_STATUSES = [
-  'Affluent',
-  'Upper Class',
-  'Upper-Middle Class',
-  'Middle Class',
-  'Lower-Middle Class',
-  'Working Class',
-  'Economically Challenged',
 ];

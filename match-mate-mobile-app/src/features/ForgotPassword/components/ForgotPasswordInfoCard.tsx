@@ -17,9 +17,7 @@ export function ForgotPasswordInfoCard(): React.ReactElement {
 
   return (
     <View style={styles.infoCard}>
-      <Text style={styles.infoCardTitle}>
-        {t('auth.forgot.what_happens')}
-      </Text>
+      <Text style={styles.infoCardTitle}>{t('auth.forgot.what_happens')}</Text>
 
       {(
         t('auth.forgot.steps', {
@@ -31,11 +29,7 @@ export function ForgotPasswordInfoCard(): React.ReactElement {
       ).map((item) => (
         <View key={item.text} style={styles.infoRow}>
           <View style={styles.infoIconWrapper}>
-            <Feather
-              name={item.icon}
-              size={14}
-              color={theme.colors.primary}
-            />
+            <Feather name={item.icon} size={14} color={theme.colors.primary} />
           </View>
 
           <Text style={styles.infoText}>{item.text}</Text>

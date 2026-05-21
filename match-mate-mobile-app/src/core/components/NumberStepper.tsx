@@ -153,12 +153,7 @@ function NumberStepperComponent({
         },
 
         label: {
-          fontSize:
-            size === 'small'
-              ? 12
-              : size === 'large'
-                ? 15
-                : 13,
+          fontSize: size === 'small' ? 12 : size === 'large' ? 15 : 13,
 
           fontWeight: '600',
           color: theme.colors.textSecondary,
@@ -170,7 +165,7 @@ function NumberStepperComponent({
 
         sublabel: {
           marginTop: 4,
-          
+
           fontSize: size === 'small' ? 10 : size === 'large' ? 13 : 11,
 
           lineHeight: size === 'small' ? 14 : size === 'large' ? 18 : 16,
@@ -184,26 +179,11 @@ function NumberStepperComponent({
         },
 
         button: {
-          width:
-            size === 'small'
-              ? 30
-              : size === 'large'
-                ? 40
-                : 34,
+          width: size === 'small' ? 30 : size === 'large' ? 40 : 34,
 
-          height:
-            size === 'small'
-              ? 30
-              : size === 'large'
-                ? 40
-                : 34,
+          height: size === 'small' ? 30 : size === 'large' ? 40 : 34,
 
-          borderRadius:
-            size === 'small'
-              ? 8
-              : size === 'large'
-                ? 12
-                : 10,
+          borderRadius: size === 'small' ? 8 : size === 'large' ? 12 : 10,
 
           borderWidth: 1,
           borderColor: theme.colors.border,
@@ -228,12 +208,7 @@ function NumberStepperComponent({
           minWidth: 64,
           textAlign: 'center',
 
-          fontSize:
-            size === 'small'
-              ? 14
-              : size === 'large'
-                ? 20
-                : 16,
+          fontSize: size === 'small' ? 14 : size === 'large' ? 20 : 16,
 
           fontWeight: '700',
           color: theme.colors.primary,
@@ -242,23 +217,11 @@ function NumberStepperComponent({
         helperText: {
           marginTop: 6,
 
-          fontSize:
-            size === 'small'
-              ? 10
-              : size === 'large'
-                ? 13
-                : 11,
+          fontSize: size === 'small' ? 10 : size === 'large' ? 13 : 11,
 
-          lineHeight:
-            size === 'small'
-              ? 14
-              : size === 'large'
-                ? 18
-                : 16,
+          lineHeight: size === 'small' ? 14 : size === 'large' ? 18 : 16,
 
-          color: error
-            ? theme.colors.error
-            : theme.colors.textMuted,
+          color: error ? theme.colors.error : theme.colors.textMuted,
         },
       }),
     [disabled, bordered, error, size, theme]
@@ -308,20 +271,14 @@ function NumberStepperComponent({
           <Text style={[styles.label, labelStyle]}>
             {label}
 
-            {required ? (
-              <Text style={styles.required}> *</Text>
-            ) : null}
+            {required ? <Text style={styles.required}> *</Text> : null}
           </Text>
           {sublabel ? (
-            <Text style={[styles.sublabel, sublabelStyle]}>
-              {sublabel}
-            </Text>
+            <Text style={[styles.sublabel, sublabelStyle]}>{sublabel}</Text>
           ) : null}
 
           {(helperText || error) && (
-            <Text style={styles.helperText}>
-              {error ?? helperText}
-            </Text>
+            <Text style={styles.helperText}>{error ?? helperText}</Text>
           )}
         </View>
 
@@ -345,8 +302,7 @@ function NumberStepperComponent({
             style={({ pressed }) => [
               styles.button,
 
-              decreaseDisabled &&
-                styles.buttonDisabled,
+              decreaseDisabled && styles.buttonDisabled,
 
               pressed && !decreaseDisabled
                 ? {
@@ -358,21 +314,13 @@ function NumberStepperComponent({
           >
             <Feather
               name="minus"
-              size={
-                size === 'small'
-                  ? 12
-                  : size === 'large'
-                    ? 18
-                    : 15
-              }
+              size={size === 'small' ? 12 : size === 'large' ? 18 : 15}
               color={theme.colors.textPrimary}
             />
           </Pressable>
 
           <View style={styles.valueContainer}>
-            <Text style={[styles.value, valueStyle]}>
-              {displayValue}
-            </Text>
+            <Text style={[styles.value, valueStyle]}>{displayValue}</Text>
           </View>
 
           <Pressable
@@ -394,8 +342,7 @@ function NumberStepperComponent({
             style={({ pressed }) => [
               styles.button,
 
-              increaseDisabled &&
-                styles.buttonDisabled,
+              increaseDisabled && styles.buttonDisabled,
 
               pressed && !increaseDisabled
                 ? {
@@ -407,13 +354,7 @@ function NumberStepperComponent({
           >
             <Feather
               name="plus"
-              size={
-                size === 'small'
-                  ? 12
-                  : size === 'large'
-                    ? 18
-                    : 15
-              }
+              size={size === 'small' ? 12 : size === 'large' ? 18 : 15}
               color={theme.colors.textPrimary}
             />
           </Pressable>

@@ -28,5 +28,5 @@ export const Z_INDEX = {
   modal: 100,
   toast: 1000,
   sticky: 2000,
-  tooltip: 3000
+  tooltip: 3000,
 };

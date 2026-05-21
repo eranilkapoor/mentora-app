@@ -138,10 +138,7 @@ export function PhotosSection({
               accessibilityLabel={t('edit_profile.photos.add')}
             >
               {imageUploading ? (
-                <ActivityIndicator
-                  size="small"
-                  color={theme.colors.primary}
-                />
+                <ActivityIndicator size="small" color={theme.colors.primary} />
               ) : (
                 <>
                   <Feather

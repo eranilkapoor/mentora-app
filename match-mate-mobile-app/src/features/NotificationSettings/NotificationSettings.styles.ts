@@ -1,5 +1,5 @@
 import { Theme } from '@/core/theme/types';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const notificationSettingsStyles = (theme: Theme) =>
   StyleSheet.create({
@@ -11,6 +11,8 @@ export const notificationSettingsStyles = (theme: Theme) =>
       padding: 16,
       paddingBottom: 48,
     },
+
+    // ── Master card ───────────────────────────────────────────────────────────
     masterCard: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -45,9 +47,11 @@ export const notificationSettingsStyles = (theme: Theme) =>
       color: theme.colors.textSecondary,
       marginTop: 2,
     },
+
+    // ── Quick actions ─────────────────────────────────────────────────────────
     quickActions: {
       flexDirection: 'row',
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 10,
       marginBottom: 20,
       overflow: 'hidden',
@@ -74,13 +78,24 @@ export const notificationSettingsStyles = (theme: Theme) =>
     quickActionTextDanger: {
       color: theme.colors.danger,
     },
+
+    // ── Section card ──────────────────────────────────────────────────────────
     card: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 12,
       marginBottom: 16,
       overflow: 'hidden',
-      elevation: 1,
-      boxShadow: `0px 1px 4px rgba(0, 0, 0, 0.04)`,
+      // Fixed: RN shadow instead of CSS boxShadow
+      ...Platform.select({
+        web: {},
+        default: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.04,
+          shadowRadius: 4,
+          elevation: 1,
+        },
+      }),
     },
     cardHeader: {
       paddingHorizontal: 14,
@@ -101,14 +116,12 @@ export const notificationSettingsStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
       marginTop: 2,
     },
-    row: {
+
+    // ── Notification row ──────────────────────────────────────────────────────
+    notifRow: {
       flexDirection: 'row',
       alignItems: 'center',
-      paddingHorizontal: 14,
-      paddingVertical: 12,
-    },
-    rowDisabled: {
-      opacity: 0.5,
+      paddingLeft: 14,
     },
     rowIconWrapper: {
       width: 34,
@@ -117,29 +130,18 @@ export const notificationSettingsStyles = (theme: Theme) =>
       backgroundColor: theme.colors.primaryLight,
       alignItems: 'center',
       justifyContent: 'center',
-      marginRight: 12,
+      marginRight: 10,
     },
-    rowTextWrapper: {
+    rowIconWrapperDisabled: {
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    toggleWrapper: {
       flex: 1,
-      marginRight: 8,
-    },
-    rowLabel: {
-      fontSize: 15,
-      fontWeight: '600',
-      color: theme.colors.textPrimary,
-    },
-    rowDescription: {
-      fontSize: 12,
-      color: theme.colors.textMuted,
-      marginTop: 2,
     },
     rowDivider: {
       height: StyleSheet.hairlineWidth,
       backgroundColor: theme.colors.divider,
-      marginLeft: 60,
-    },
-    textDisabled: {
-      color: theme.colors.textMuted,
+      marginLeft: 58,
     },
     footer: {
       height: 24,

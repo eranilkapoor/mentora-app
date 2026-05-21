@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  View,
-  Text,
-  TouchableOpacity,
-} from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
 
@@ -33,61 +29,39 @@ export function ForgotPasswordSuccess({
   return (
     <View style={styles.successContainer}>
       <View style={styles.successIconWrapper}>
-        <Feather
-          name="mail"
-          size={36}
-          color={theme.colors.primary}
-        />
+        <Feather name="mail" size={36} color={theme.colors.primary} />
       </View>
 
-      <Text style={styles.successTitle}>
-        {t('auth.forgot.success_title')}
-      </Text>
+      <Text style={styles.successTitle}>{t('auth.forgot.success_title')}</Text>
 
       <Text style={styles.successSubtitle}>
         {t('auth.forgot.success_subtitle', { email })}
       </Text>
 
       <View style={styles.successTips}>
-        {(t('auth.forgot.tips', {
-          returnObjects: true,
-        }) as string[]).map((tip) => (
+        {(
+          t('auth.forgot.tips', {
+            returnObjects: true,
+          }) as string[]
+        ).map((tip) => (
           <View key={tip} style={styles.tipRow}>
-            <Feather
-              name="info"
-              size={13}
-              color={theme.colors.textMuted}
-            />
+            <Feather name="info" size={13} color={theme.colors.textMuted} />
 
             <Text style={styles.tipText}>{tip}</Text>
           </View>
         ))}
       </View>
 
-      <TouchableOpacity
-        style={styles.primaryButton}
-        onPress={onBack}
-      >
-        <Feather
-          name="arrow-left"
-          size={16}
-          color={theme.colors.white}
-        />
+      <TouchableOpacity style={styles.primaryButton} onPress={onBack}>
+        <Feather name="arrow-left" size={16} color={theme.colors.white} />
 
         <Text style={styles.primaryButtonText}>
           {t('auth.actions.back_to_sign_in')}
         </Text>
       </TouchableOpacity>
 
-      <TouchableOpacity
-        style={styles.resendRow}
-        onPress={onResend}
-      >
-        <Feather
-          name="refresh-cw"
-          size={13}
-          color={theme.colors.link}
-        />
+      <TouchableOpacity style={styles.resendRow} onPress={onResend}>
+        <Feather name="refresh-cw" size={13} color={theme.colors.link} />
 
         <Text style={styles.resendText}>
           {t('auth.actions.resend_reset_link')}

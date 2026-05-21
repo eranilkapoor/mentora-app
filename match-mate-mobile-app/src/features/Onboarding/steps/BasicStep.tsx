@@ -1,11 +1,5 @@
 import React, { useCallback, useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  Modal,
-} from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, Modal } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -154,11 +148,17 @@ export function BasicStep({
   const [datePickerVisible, setDatePickerVisible] = useState(false);
   const GenderOptions = useEnumOptions(Genders, 'options.gender');
   const ProfileForOptions = useEnumOptions(ProfileFors, 'options.profile_for');
-  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital_status');
+  const MaritalStatusOptions = useEnumOptions(
+    MaritalStatuses,
+    'options.marital_status'
+  );
   const ReligionOptions = useEnumOptions(Religions, 'options.religion');
-  const QualificationOptions = useEnumOptions(Qualifications, 'options.qualifications');
+  const QualificationOptions = useEnumOptions(
+    Qualifications,
+    'options.qualifications'
+  );
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
-  
+
   const inputStyle = useCallback(
     (field: string) =>
       errors[field] ? [styles.input, styles.inputError] : [styles.input],

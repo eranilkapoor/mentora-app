@@ -18,7 +18,6 @@
   "notifications": "Notifications",
   "app_notifications": "App Notifications",
   "notifications_sub": "Messages, matches & updates",
-  "notification_settings": "Notification Settings",
   "notification_settings_sub": "Customize what you receive",
   "support": "Support",
   "help_and_support": "Help & Support",
@@ -34,5 +33,13 @@
   "partner_preferences": "Partner Preferences",
   "danger_zone": "Account",
   "sign_out_sub": "You will be logged out of this device",
-  "version": "MatchMate v{{version}}"
+  "version": "MatchMate v{{version}}",
+  "notification_settings": {
+    "title": "Notification Settings",
+    "all_notifications": "All Notifications",
+    "enabled_count": "{{count}} of {{total}} enabled",
+    "enable_all": "Enable All",
+    "disable_all": "Disable All",
+    "disable_all_confirm": "This will turn off all notifications. You can re-enable them anytime."
+  }
 }

@@ -1,11 +1,6 @@
 import React, { memo } from 'react';
 
-import {
-  View,
-  Text,
-  Switch,
-  Platform,
-} from 'react-native';
+import { View, Text, Switch, Platform } from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
 
@@ -22,38 +17,23 @@ export const SettingToggle = memo(function SettingToggle({
   value,
   onValueChange,
   isLast = false,
-  disabled
+  disabled,
 }: SettingToggleProps): React.ReactElement {
   const styles = useThemedStyles(settingsStyles);
 
   const { theme } = useTheme();
 
   return (
-    <View
-      style={[
-        styles.row,
-        isLast && styles.rowLast,
-      ]}
-    >
+    <View style={[styles.row, isLast && styles.rowLast]}>
       <View style={styles.rowLeft}>
         <View style={styles.rowIconWrapper}>
-          <Feather
-            name={icon}
-            size={16}
-            color={theme.colors.textSecondary}
-          />
+          <Feather name={icon} size={16} color={theme.colors.textSecondary} />
         </View>
 
         <View style={styles.rowLabelWrapper}>
-          <Text style={styles.rowLabel}>
-            {label}
-          </Text>
+          <Text style={styles.rowLabel}>{label}</Text>
 
-          {subLabel ? (
-            <Text style={styles.rowSubLabel}>
-              {subLabel}
-            </Text>
-          ) : null}
+          {subLabel ? <Text style={styles.rowSubLabel}>{subLabel}</Text> : null}
         </View>
       </View>
 
@@ -66,20 +46,14 @@ export const SettingToggle = memo(function SettingToggle({
         accessibilityHint={subLabel}
         accessibilityState={{
           checked: value ?? false,
-          disabled
+          disabled,
         }}
         trackColor={{
           false: theme.colors.switchTrackOff,
           true: theme.colors.primary,
         }}
-        thumbColor={
-          Platform.OS === 'android'
-            ? theme.colors.white
-            : undefined
-        }
-        ios_backgroundColor={
-          theme.colors.switchTrackOff
-        }
+        thumbColor={Platform.OS === 'android' ? theme.colors.white : undefined}
+        ios_backgroundColor={theme.colors.switchTrackOff}
       />
     </View>
   );

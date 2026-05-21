@@ -75,14 +75,21 @@
   },
   "family_status": {
     "affluent": "समृद्ध",
+    "upper_class": "उच्च वर्ग",
     "upper_middle_class": "उच्च मध्यम वर्ग",
     "middle_class": "मध्यम वर्ग",
     "lower_middle_class": "निम्न मध्यम वर्ग"
   },
   "family_values": {
     "traditional": "पारंपरिक",
+    "conservative": "संरक्षणात्मक",
     "moderate": "मध्यम",
-    "liberal": "उदार"
+    "progressive": "उन्नतिशील",
+    "liberal": "उदार",
+    "religious": "धार्मिक",
+    "secular": "सेक्यूलर",
+    "spiritual": "आध्यात्मिक",
+    "mixed": "मिश्रित मूल्यों"
   },
   "child_preferences": {
     "does_not_matter": "कोई फर्क नहीं पड़ता",

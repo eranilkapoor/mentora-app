@@ -1,4 +1,4 @@
-import { Countries, EatingHabits, DrinkingHabits, Genders, ManglikStatuses, MaritalStatuses, SmokingHabits, ProfileFors, Hours, Minutes, Periods, Qualifications, OccupationTypes } from '@/core/types';
+import { Countries, EatingHabits, DrinkingHabits, Genders, ManglikStatuses, MaritalStatuses, SmokingHabits, ProfileFors, Hours, Minutes, Periods, Qualifications, OccupationTypes, Religions, Castes } from '@/core/types';
 import { ProfileData, Siblings } from './EditProfile.types';
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────
@@ -33,13 +33,15 @@ export const INITIAL_PROFILE: ProfileData = {
     placeOfBirth: {
       city: '',
       state: '',
-      country: '',
+      country: Countries.INDIA,
     },
     timeOfBirth: {
       hour: Hours.ONE,
       minute: Minutes.ZERO,
       period: Periods.AM,
     },
+    religion: Religions.HINDU,
+    caste: Castes.GENERAL,
     subCast: '',
     gotra: '',
     rashi: '',

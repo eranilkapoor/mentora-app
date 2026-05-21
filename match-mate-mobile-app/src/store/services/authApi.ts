@@ -97,9 +97,7 @@ export const authApi = baseApi.injectEndpoints({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
         try {
           const refreshToken =
-            Platform.OS !== 'web'
-              ? await getRefreshToken()
-              : undefined;
+            Platform.OS !== 'web' ? await getRefreshToken() : undefined;
 
           const result = await baseQuery({
             url: '/auth/logout',
@@ -108,8 +106,8 @@ export const authApi = baseApi.injectEndpoints({
             body:
               Platform.OS !== 'web'
                 ? {
-                  refreshToken,
-                }
+                    refreshToken,
+                  }
                 : undefined,
           });
 
@@ -130,10 +128,7 @@ export const authApi = baseApi.injectEndpoints({
           return {
             error: {
               status: 'CUSTOM_ERROR',
-              error:
-                error instanceof Error
-                  ? error.message
-                  : 'Logout failed',
+              error: error instanceof Error ? error.message : 'Logout failed',
             },
           };
         }

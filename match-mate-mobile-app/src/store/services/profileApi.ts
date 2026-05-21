@@ -117,7 +117,8 @@ export const profileApi = baseApi.injectEndpoints({
       invalidatesTags: ['ProfileMedia'],
     }),
 
-    removeProfileMediaImage: builder.mutation<ApiResponse<void>,
+    removeProfileMediaImage: builder.mutation<
+      ApiResponse<void>,
       { mediaId: string }
     >({
       query: ({ mediaId }) => ({

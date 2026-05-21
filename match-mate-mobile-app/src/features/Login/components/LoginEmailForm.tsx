@@ -31,9 +31,9 @@ export function LoginEmailForm({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const [focusedField, setFocusedField] = useState<
-    'email' | 'password' | null
-  >(null);
+  const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(
+    null
+  );
 
   return (
     <>
@@ -179,11 +179,7 @@ export function LoginEmailForm({
               {t('auth.actions.sign_in')}
             </Text>
 
-            <Feather
-              name="arrow-right"
-              size={18}
-              color={theme.colors.white}
-            />
+            <Feather name="arrow-right" size={18} color={theme.colors.white} />
           </>
         )}
       </TouchableOpacity>

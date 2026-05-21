@@ -43,17 +43,17 @@ export function PhoneForm({
   const { t } = useTranslation();
 
   const [phoneFocused, setPhoneFocused] = useState(false);
-    const [otpFocused, setOtpFocused] = useState(false);
+  const [otpFocused, setOtpFocused] = useState(false);
 
   return (
     <>
       <Text style={styles.label}>{t('auth.fields.phone')}</Text>
 
-      <View 
+      <View
         style={[
-          styles.phoneRow, 
+          styles.phoneRow,
           phoneFocused && styles.inputFocused,
-          errors.phone && styles.inputError
+          errors.phone && styles.inputError,
         ]}
       >
         <TouchableOpacity
@@ -119,11 +119,7 @@ export function PhoneForm({
                 {t('auth.actions.get_otp')}
               </Text>
 
-              <Feather 
-                name="send" 
-                size={16} 
-                color={theme.colors.white} 
-              />
+              <Feather name="send" size={16} color={theme.colors.white} />
             </>
           )}
         </TouchableOpacity>
@@ -137,8 +133,8 @@ export function PhoneForm({
             />
 
             <Text style={styles.otpInfoText}>
-              {t('auth.otp.sent_to', { 
-                code: countryCode, 
+              {t('auth.otp.sent_to', {
+                code: countryCode,
                 phone,
               })}
             </Text>
@@ -150,7 +146,7 @@ export function PhoneForm({
 
           <TextInput
             style={[
-              styles.otpInput, 
+              styles.otpInput,
               otpFocused && styles.inputFocused,
               errors.otp && styles.inputError,
             ]}
@@ -185,10 +181,8 @@ export function PhoneForm({
               <ActivityIndicator color={theme.colors.white} />
             ) : (
               <>
-                <Text style={styles.primaryButtonText}>
-                  {verifyLabel}
-                </Text>
-                
+                <Text style={styles.primaryButtonText}>{verifyLabel}</Text>
+
                 <Feather
                   name="arrow-right"
                   size={18}
@@ -206,11 +200,7 @@ export function PhoneForm({
             accessibilityRole="button"
             accessibilityLabel={t('auth.actions.resend_otp')}
           >
-            <Feather 
-              name="refresh-cw" 
-              size={13} 
-              color={theme.colors.link} 
-            />
+            <Feather name="refresh-cw" size={13} color={theme.colors.link} />
 
             <Text style={styles.resendText}>
               {t('auth.actions.resend_otp')}

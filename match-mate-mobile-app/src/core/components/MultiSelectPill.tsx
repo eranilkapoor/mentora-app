@@ -217,9 +217,7 @@ function MultiSelectPillComponent<T extends string = string>({
 
           lineHeight: 16,
 
-          color: error
-            ? theme.colors.error
-            : theme.colors.textMuted,
+          color: error ? theme.colors.error : theme.colors.textMuted,
         },
 
         errorText: {
@@ -233,11 +231,9 @@ function MultiSelectPillComponent<T extends string = string>({
         },
 
         pillContainer: {
-          flexDirection:
-            direction === 'column' ? 'column' : 'row',
+          flexDirection: direction === 'column' ? 'column' : 'row',
 
-          flexWrap:
-            direction === 'row' ? 'wrap' : 'nowrap',
+          flexWrap: direction === 'row' ? 'wrap' : 'nowrap',
 
           gap: 8,
         },
@@ -302,10 +298,7 @@ function MultiSelectPillComponent<T extends string = string>({
   /**
    * Fast lookup
    */
-  const selectedSet = useMemo(
-    () => new Set(value),
-    [value]
-  );
+  const selectedSet = useMemo(() => new Set(value), [value]);
 
   /**
    * Empty state
@@ -317,15 +310,11 @@ function MultiSelectPillComponent<T extends string = string>({
           <Text style={[styles.label, labelStyle]}>
             {label}
 
-            {required ? (
-              <Text style={styles.required}> *</Text>
-            ) : null}
+            {required ? <Text style={styles.required}> *</Text> : null}
           </Text>
         ) : null}
 
-        <Text style={styles.emptyText}>
-          {emptyText}
-        </Text>
+        <Text style={styles.emptyText}>{emptyText}</Text>
       </View>
     );
   }
@@ -339,8 +328,7 @@ function MultiSelectPillComponent<T extends string = string>({
         return;
       }
 
-      const alreadySelected =
-        selectedSet.has(selectedValue);
+      const alreadySelected = selectedSet.has(selectedValue);
 
       /**
        * Remove
@@ -350,9 +338,7 @@ function MultiSelectPillComponent<T extends string = string>({
           return;
         }
 
-        onChange(
-          value.filter((v) => v !== selectedValue)
-        );
+        onChange(value.filter((v) => v !== selectedValue));
 
         return;
       }
@@ -360,10 +346,7 @@ function MultiSelectPillComponent<T extends string = string>({
       /**
        * Max limit
        */
-      if (
-        maxSelection &&
-        value.length >= maxSelection
-      ) {
+      if (maxSelection && value.length >= maxSelection) {
         onMaxSelectionReached?.();
 
         return;
@@ -372,11 +355,7 @@ function MultiSelectPillComponent<T extends string = string>({
       /**
        * Add safely
        */
-      onChange(
-        Array.from(
-          new Set([...value, selectedValue])
-        )
-      );
+      onChange(Array.from(new Set([...value, selectedValue])));
     },
     [
       disabled,
@@ -393,10 +372,7 @@ function MultiSelectPillComponent<T extends string = string>({
    * Web keyboard support
    */
   const handleKeyPress = useCallback(
-    (
-      event: GestureResponderEvent,
-      optionValue: T
-    ): void => {
+    (event: GestureResponderEvent, optionValue: T): void => {
       if (Platform.OS !== 'web') {
         return;
       }
@@ -412,71 +388,43 @@ function MultiSelectPillComponent<T extends string = string>({
   );
 
   return (
-    <View
-      style={[styles.container, containerStyle]}
-      testID={testID}
-    >
+    <View style={[styles.container, containerStyle]} testID={testID}>
       {(label || showSelectedCount) && (
         <View style={styles.headerRow}>
           {label ? (
             <Text style={[styles.label, labelStyle]}>
               {label}
 
-              {required ? (
-                <Text style={styles.required}>
-                  {' '}
-                  *
-                </Text>
-              ) : null}
+              {required ? <Text style={styles.required}> *</Text> : null}
             </Text>
           ) : null}
 
           {showSelectedCount ? (
             <Text style={styles.selectedCount}>
               {value.length}
-              {maxSelection
-                ? `/${maxSelection}`
-                : ''}
+              {maxSelection ? `/${maxSelection}` : ''}
             </Text>
           ) : null}
         </View>
       )}
 
       {helperText ? (
-        <Text
-          style={[
-            styles.helperText,
-            helperTextStyle,
-          ]}
-        >
-          {helperText}
-        </Text>
+        <Text style={[styles.helperText, helperTextStyle]}>{helperText}</Text>
       ) : null}
 
       <View
         accessible
-        accessibilityLabel={
-          accessibilityLabel ?? label
-        }
-        style={[
-          styles.pillContainer,
-          pillContainerStyle,
-        ]}
+        accessibilityLabel={accessibilityLabel ?? label}
+        style={[styles.pillContainer, pillContainerStyle]}
       >
         {options.map((option) => {
-          const selected = selectedSet.has(
-            option.value
-          );
+          const selected = selectedSet.has(option.value);
 
           const selectionLimitReached =
-            !selected &&
-            !!maxSelection &&
-            value.length >= maxSelection;
+            !selected && !!maxSelection && value.length >= maxSelection;
 
           const optionDisabled =
-            disabled ||
-            option.disabled ||
-            selectionLimitReached;
+            disabled || option.disabled || selectionLimitReached;
 
           const displayLabel = i18nPrefix
             ? t(`${i18nPrefix}.${option.value}`)
@@ -485,19 +433,11 @@ function MultiSelectPillComponent<T extends string = string>({
           return (
             <Pressable
               key={option.value}
-              testID={
-                testID
-                  ? `${testID}-${option.value}`
-                  : undefined
-              }
+              testID={testID ? `${testID}-${option.value}` : undefined}
               disabled={optionDisabled}
-              onPress={() =>
-                toggleOption(option.value)
-              }
+              onPress={() => toggleOption(option.value)}
               accessibilityRole="checkbox"
-              accessibilityLabel={`${
-                label ?? 'Option'
-              }: ${displayLabel}`}
+              accessibilityLabel={`${label ?? 'Option'}: ${displayLabel}`}
               accessibilityState={{
                 checked: selected,
                 disabled: optionDisabled,
@@ -507,32 +447,26 @@ function MultiSelectPillComponent<T extends string = string>({
 
                 selected && styles.selectedPill,
 
-                optionDisabled &&
-                  styles.disabledPill,
+                optionDisabled && styles.disabledPill,
 
-                pressed &&
-                  !optionDisabled &&
-                  styles.pillPressed,
+                pressed && !optionDisabled && styles.pillPressed,
 
                 pillStyle,
 
                 selected && selectedPillStyle,
 
-                optionDisabled &&
-                  disabledPillStyle,
+                optionDisabled && disabledPillStyle,
               ]}
             >
               <Text
                 style={[
                   styles.pillText,
 
-                  selected &&
-                    styles.selectedPillText,
+                  selected && styles.selectedPillText,
 
                   pillTextStyle,
 
-                  selected &&
-                    selectedPillTextStyle,
+                  selected && selectedPillTextStyle,
                 ]}
               >
                 {displayLabel}
@@ -545,10 +479,7 @@ function MultiSelectPillComponent<T extends string = string>({
       {error ? (
         <Text
           accessibilityRole="alert"
-          style={[
-            styles.errorText,
-            errorTextStyle,
-          ]}
+          style={[styles.errorText, errorTextStyle]}
         >
           {error}
         </Text>
@@ -557,8 +488,7 @@ function MultiSelectPillComponent<T extends string = string>({
   );
 }
 
-MultiSelectPillComponent.displayName =
-  'MultiSelectPill';
+MultiSelectPillComponent.displayName = 'MultiSelectPill';
 
 export const MultiSelectPill = memo(
   MultiSelectPillComponent

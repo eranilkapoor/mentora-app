@@ -1,4 +1,9 @@
-import { FamilyStatus, FamilyType, FamilyValue, SiblingType } from '../common/enums';
+import {
+  FamilyStatus,
+  FamilyType,
+  FamilyValue,
+  SiblingType,
+} from '../common/enums';
 
 export interface SiblingDetail {
   type: SiblingType;

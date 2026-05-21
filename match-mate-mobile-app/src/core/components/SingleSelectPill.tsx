@@ -153,17 +153,13 @@ function SingleSelectPillComponent<T extends string = string>({
           marginBottom: 8,
           fontSize: 11,
           lineHeight: 16,
-          color: error
-            ? theme.colors.error
-            : theme.colors.textMuted,
+          color: error ? theme.colors.error : theme.colors.textMuted,
         },
 
         pillContainer: {
-          flexDirection:
-            direction === 'column' ? 'column' : 'row',
+          flexDirection: direction === 'column' ? 'column' : 'row',
 
-          flexWrap:
-            direction === 'row' ? 'wrap' : 'nowrap',
+          flexWrap: direction === 'row' ? 'wrap' : 'nowrap',
 
           gap: 8,
         },
@@ -257,9 +253,7 @@ function SingleSelectPillComponent<T extends string = string>({
           <Text style={[styles.label, labelStyle]}>
             {label}
 
-            {required ? (
-              <Text style={styles.required}> *</Text>
-            ) : null}
+            {required ? <Text style={styles.required}> *</Text> : null}
           </Text>
         ) : null}
 
@@ -269,39 +263,26 @@ function SingleSelectPillComponent<T extends string = string>({
   }
 
   return (
-    <View
-      style={[styles.container, containerStyle]}
-      testID={testID}
-    >
+    <View style={[styles.container, containerStyle]} testID={testID}>
       {label ? (
         <Text style={[styles.label, labelStyle]}>
           {label}
 
-          {required ? (
-            <Text style={styles.required}> *</Text>
-          ) : null}
+          {required ? <Text style={styles.required}> *</Text> : null}
         </Text>
       ) : null}
 
-      {helperText ? (
-        <Text style={styles.helperText}>
-          {helperText}
-        </Text>
-      ) : null}
+      {helperText ? <Text style={styles.helperText}>{helperText}</Text> : null}
 
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={accessibilityLabel ?? label}
-        style={[
-          styles.pillContainer,
-          pillContainerStyle,
-        ]}
+        style={[styles.pillContainer, pillContainerStyle]}
       >
         {options.map((option) => {
           const selected = value === option.value;
 
-          const optionDisabled =
-            disabled || option.disabled;
+          const optionDisabled = disabled || option.disabled;
 
           const displayLabel = renderLabel(option);
 
@@ -349,15 +330,12 @@ function SingleSelectPillComponent<T extends string = string>({
         })}
       </View>
 
-      {error ? (
-        <Text style={styles.errorText}>{error}</Text>
-      ) : null}
+      {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>
   );
 }
 
-SingleSelectPillComponent.displayName =
-  'SingleSelectPill';
+SingleSelectPillComponent.displayName = 'SingleSelectPill';
 
 export const SingleSelectPill = memo(
   SingleSelectPillComponent

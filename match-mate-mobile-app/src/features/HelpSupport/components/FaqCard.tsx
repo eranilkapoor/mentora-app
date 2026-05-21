@@ -3,7 +3,7 @@ import { FaqItem } from '../HelpSupport.types';
 import { helpSupportStyles } from '../HelpSupport.styles';
 import { TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 export function FaqCard({
   faq,
@@ -19,6 +19,7 @@ export function FaqCard({
   isLast: boolean;
 }): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
+  const { theme } = useTheme();
 
   return (
     <View style={[styles.faqContainer, isLast && styles.faqContainerLast]}>
@@ -38,7 +39,7 @@ export function FaqCard({
           <Feather
             name={faq.icon}
             size={13}
-            color={expanded ? Colors.primary : Colors.textMuted}
+            color={expanded ? theme.colors.primary : theme.colors.textMuted}
           />
         </View>
         <Text
@@ -49,7 +50,7 @@ export function FaqCard({
         <Feather
           name={expanded ? 'chevron-up' : 'chevron-down'}
           size={16}
-          color={expanded ? Colors.primary : Colors.textMuted}
+          color={expanded ? theme.colors.primary : theme.colors.textMuted}
         />
       </TouchableOpacity>
 

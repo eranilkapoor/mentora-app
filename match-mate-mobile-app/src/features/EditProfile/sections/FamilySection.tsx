@@ -2,16 +2,15 @@ import React from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import {
-  FamilyStatuses,
-  FamilyTypes,
-  FamilyValues,
-} from '@/core/types';
+import { FamilyStatuses, FamilyTypes, FamilyValues } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
 import { SiblingsEditor } from '../components/SiblingsEditor';
 import { editProfileStyles } from '../EditProfile.styles';
-import { FamilySection as FamilySectionType, SectionKey } from '../EditProfile.types';
+import {
+  FamilySection as FamilySectionType,
+  SectionKey,
+} from '../EditProfile.types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 
@@ -34,8 +33,14 @@ export function FamilySection({
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
   const FamilyTypeOptions = useEnumOptions(FamilyTypes, 'options.family_types');
-  const FamilyStatusOptions = useEnumOptions(FamilyStatuses, 'options.family_status');
-  const FamilyValueOptions = useEnumOptions(FamilyValues, 'options.family_values');
+  const FamilyStatusOptions = useEnumOptions(
+    FamilyStatuses,
+    'options.family_status'
+  );
+  const FamilyValueOptions = useEnumOptions(
+    FamilyValues,
+    'options.family_values'
+  );
 
   return (
     <SectionCard
@@ -83,21 +88,27 @@ export function FamilySection({
         label={t('edit_profile.fields.family_type')}
         options={FamilyTypeOptions}
         value={family.familyType}
-        onChange={(v) => onSet('familyType', v as FamilySectionType['familyType'])}
+        onChange={(v) =>
+          onSet('familyType', v as FamilySectionType['familyType'])
+        }
         i18nPrefix="options.family_types"
       />
       <SingleSelectPill
         label={t('edit_profile.fields.family_status')}
         options={FamilyStatusOptions}
         value={family.familyStatus}
-        onChange={(v) => onSet('familyStatus', v as FamilySectionType['familyStatus'])}
+        onChange={(v) =>
+          onSet('familyStatus', v as FamilySectionType['familyStatus'])
+        }
         i18nPrefix="options.family_status"
       />
       <SingleSelectPill
         label={t('edit_profile.fields.family_values')}
         options={FamilyValueOptions}
         value={family.familyValues}
-        onChange={(v) => onSet('familyValues', v as FamilySectionType['familyValues'])}
+        onChange={(v) =>
+          onSet('familyValues', v as FamilySectionType['familyValues'])
+        }
         i18nPrefix="options.family_values"
       />
 

@@ -3,7 +3,7 @@ import { SectionProps } from '../Profile.types';
 import { profileStyles } from '../Profile.styles';
 import { View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
-import { Colors } from '@/core/constants/colors';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 export function Section({
   title,
@@ -11,12 +11,13 @@ export function Section({
   children,
 }: SectionProps): React.ReactElement {
   const styles = useThemedStyles(profileStyles);
+  const { theme } = useTheme();
 
   return (
     <View style={styles.section}>
       <View style={styles.sectionHeader}>
         <View style={styles.sectionIconWrapper}>
-          <Feather name={icon} size={14} color={Colors.primary} />
+          <Feather name={icon} size={14} color={theme.colors.primary} />
         </View>
         <Text style={styles.sectionTitle}>{title}</Text>
       </View>

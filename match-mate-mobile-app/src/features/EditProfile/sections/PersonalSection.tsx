@@ -8,7 +8,10 @@ import { FormInput } from '../components/FormInput';
 import { NumberStepper } from '../../../core/components/NumberStepper';
 import { TimeOfBirthPicker } from '../components/TimeOfBirthPicker';
 import { editProfileStyles } from '../EditProfile.styles';
-import { PersonalSection as PersonalSectionType, SectionKey } from '../EditProfile.types';
+import {
+  PersonalSection as PersonalSectionType,
+  SectionKey,
+} from '../EditProfile.types';
 import { ToggleRow } from '@/core/components/ToggleRow';
 import { DatePicker } from '../components/DateOfBirthPicker';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
@@ -34,7 +37,10 @@ export function PersonalSection({
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
   const GenderOptions = useEnumOptions(Genders, 'options.gender');
-  const MaritalStatusOptions = useEnumOptions(MaritalStatuses, 'options.marital_status');
+  const MaritalStatusOptions = useEnumOptions(
+    MaritalStatuses,
+    'options.marital_status'
+  );
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
 
   return (
@@ -87,7 +93,9 @@ export function PersonalSection({
         label={t('edit_profile.fields.marital_status')}
         options={MaritalStatusOptions}
         value={personal.maritalStatus}
-        onChange={(v) => onSet('maritalStatus', v as PersonalSectionType['maritalStatus'])}
+        onChange={(v) =>
+          onSet('maritalStatus', v as PersonalSectionType['maritalStatus'])
+        }
         i18nPrefix="options.marital_status"
       />
 
@@ -99,28 +107,28 @@ export function PersonalSection({
 
       {personal.hasChildren && (
         <>
-        <View style={styles.row}>
-          <View style={styles.halfField}>
-            <NumberStepper
-              label={t('edit_profile.fields.sons_count')}
-              value={personal.sonsCount ?? 0}
-              onChange={(v) => onSet('sonsCount', v)}
-              suffix=''
-              step={1}
-            />
+          <View style={styles.row}>
+            <View style={styles.halfField}>
+              <NumberStepper
+                label={t('edit_profile.fields.sons_count')}
+                value={personal.sonsCount ?? 0}
+                onChange={(v) => onSet('sonsCount', v)}
+                suffix=""
+                step={1}
+              />
+            </View>
           </View>
-        </View>
-        <View style={styles.row}>
-          <View style={styles.halfField}>
-            <NumberStepper
-              label={t('edit_profile.fields.daughters_count')}
-              value={personal.daughtersCount ?? 0}
-              onChange={(v) => onSet('daughtersCount', v)}
-              suffix=''
-              step={1}
-            />
+          <View style={styles.row}>
+            <View style={styles.halfField}>
+              <NumberStepper
+                label={t('edit_profile.fields.daughters_count')}
+                value={personal.daughtersCount ?? 0}
+                onChange={(v) => onSet('daughtersCount', v)}
+                suffix=""
+                step={1}
+              />
+            </View>
           </View>
-        </View>
         </>
       )}
 
@@ -145,7 +153,7 @@ export function PersonalSection({
             value={personal.state}
             onChange={(v) => onSet('state', v)}
             placeholder={t('edit_profile.placeholders.state')}
-          />          
+          />
         </View>
         <View style={styles.halfField}>
           <FormInput

@@ -9,10 +9,10 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '../../core/constants/colors';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { onlineMatchesStyles } from './OnlineMatches.styles';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTheme } from '@/core/theme/ThemeProvider';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -111,6 +111,7 @@ const MatchCard = React.memo(function MatchCard({
   onViewProfile: () => void;
 }): React.ReactElement {
   const styles = useThemedStyles(onlineMatchesStyles);
+  const { theme } = useTheme();
 
   return (
     <View style={styles.card}>
@@ -163,7 +164,11 @@ const MatchCard = React.memo(function MatchCard({
             activeOpacity={0.85}
             accessibilityRole="button"
           >
-            <Feather name="message-circle" size={15} color={Colors.white} />
+            <Feather
+              name="message-circle"
+              size={15}
+              color={theme.colors.white}
+            />
             <Text style={styles.chatText}>Chat</Text>
           </TouchableOpacity>
           <TouchableOpacity
@@ -172,7 +177,7 @@ const MatchCard = React.memo(function MatchCard({
             activeOpacity={0.8}
             accessibilityRole="button"
           >
-            <Feather name="user" size={15} color={Colors.primary} />
+            <Feather name="user" size={15} color={theme.colors.primary} />
             <Text style={styles.profileText}>View Profile</Text>
           </TouchableOpacity>
         </View>
@@ -187,6 +192,7 @@ export default function OnlineMatchesScreen({
   navigation,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(onlineMatchesStyles);
+  const { theme } = useTheme();
   const [matches, setMatches] = useState<OnlineMatch[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -228,7 +234,7 @@ export default function OnlineMatchesScreen({
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.headerIconWrapper}>
-            <Feather name="wifi" size={20} color={Colors.primary} />
+            <Feather name="wifi" size={20} color={theme.colors.primary} />
           </View>
           <View>
             <Text style={styles.headerTitle}>Online Now</Text>
@@ -259,7 +265,7 @@ export default function OnlineMatchesScreen({
       ) : matches.length === 0 ? (
         <View style={styles.center}>
           <View style={styles.emptyIconWrapper}>
-            <Feather name="wifi-off" size={34} color={Colors.primary} />
+            <Feather name="wifi-off" size={34} color={theme.colors.primary} />
           </View>
           <Text style={styles.emptyTitle}>No one online right now</Text>
           <Text style={styles.emptySub}>
