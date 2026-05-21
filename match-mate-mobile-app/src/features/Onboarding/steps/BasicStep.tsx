@@ -11,7 +11,6 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { onboardingStyles } from '../Onboarding.styles';
 import { ErrorText } from '../components/ErrorText';
-import { SelectPill } from '@/core/components/SelectPill';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
 import {
   BasicData,
@@ -29,11 +28,11 @@ import {
   Countries,
   Days,
   Months,
-  Years,
   YearOptions,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { showError } from '@/core/utils/toast';
+import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 
 interface Props {
   basic: BasicData;
@@ -216,7 +215,7 @@ export function BasicStep({
       />
 
       {/* Gender */}
-      <SelectPill
+      <SingleSelectPill
         label={t('onboarding.fields.gender')}
         options={GenderOptions}
         value={basic.gender}
@@ -246,7 +245,7 @@ export function BasicStep({
       <ErrorText field="dateOfBirth" errors={errors} />
 
       {/* Marital Status */}
-      <SelectPill
+      <SingleSelectPill
         label={t('onboarding.fields.marital_status')}
         options={MaritalStatusOptions}
         value={basic.maritalStatus}

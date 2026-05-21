@@ -17,18 +17,17 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 export interface SelectOption<T extends string = string> {
   label: string;
   value: T;
-
   disabled?: boolean;
 }
 
 export interface SingleSelectPillProps<T extends string = string> {
   /**
-   * Main label
+   * Label
    */
-  label: string;
+  label?: string;
 
   /**
-   * Available options
+   * Options
    */
   options: readonly SelectOption<T>[];
 
@@ -38,29 +37,29 @@ export interface SingleSelectPillProps<T extends string = string> {
   value?: T;
 
   /**
-   * Selection callback
+   * Change handler
    */
   onChange: (value: T) => void;
 
   /**
-   * i18n translation prefix
+   * Translation support
    * Example:
    * i18nPrefix="gender"
-   * -> gender.male
+   * => gender.male
    */
   i18nPrefix?: string;
 
   /**
-   * Optional texts
-   */
-  helperText?: string;
-  error?: string;
-
-  /**
-   * State
+   * UI States
    */
   disabled?: boolean;
   required?: boolean;
+
+  /**
+   * Validation
+   */
+  helperText?: string;
+  error?: string;
 
   /**
    * Layout
@@ -68,21 +67,30 @@ export interface SingleSelectPillProps<T extends string = string> {
   direction?: 'row' | 'column';
 
   /**
+   * Empty state
+   */
+  emptyText?: string;
+
+  /**
+   * Styling
+   */
+  containerStyle?: StyleProp<ViewStyle>;
+  labelStyle?: StyleProp<TextStyle>;
+
+  pillContainerStyle?: StyleProp<ViewStyle>;
+
+  pillStyle?: StyleProp<ViewStyle>;
+  selectedPillStyle?: StyleProp<ViewStyle>;
+  disabledPillStyle?: StyleProp<ViewStyle>;
+
+  textStyle?: StyleProp<TextStyle>;
+  selectedTextStyle?: StyleProp<TextStyle>;
+
+  /**
    * Accessibility
    */
   accessibilityLabel?: string;
   testID?: string;
-
-  /**
-   * Optional styles
-   */
-  containerStyle?: StyleProp<ViewStyle>;
-  labelStyle?: StyleProp<TextStyle>;
-  pillContainerStyle?: StyleProp<ViewStyle>;
-  pillStyle?: StyleProp<ViewStyle>;
-  selectedPillStyle?: StyleProp<ViewStyle>;
-  pillTextStyle?: StyleProp<TextStyle>;
-  selectedPillTextStyle?: StyleProp<TextStyle>;
 }
 
 function SingleSelectPillComponent<T extends string = string>({
@@ -93,34 +101,41 @@ function SingleSelectPillComponent<T extends string = string>({
 
   i18nPrefix,
 
-  helperText,
-  error,
-
   disabled = false,
   required = false,
 
+  helperText,
+  error,
+
   direction = 'row',
 
-  accessibilityLabel,
-  testID,
+  emptyText = 'No options available',
 
   containerStyle,
   labelStyle,
+
   pillContainerStyle,
+
   pillStyle,
   selectedPillStyle,
-  pillTextStyle,
-  selectedPillTextStyle,
+  disabledPillStyle,
+
+  textStyle,
+  selectedTextStyle,
+
+  accessibilityLabel,
+  testID,
 }: SingleSelectPillProps<T>): React.ReactElement {
-  const { t } = useTranslation();
   const { theme } = useTheme();
+
+  const { t } = useTranslation();
 
   const styles = useMemo(
     () =>
       StyleSheet.create({
         container: {
           marginBottom: 16,
-          opacity: disabled ? 0.6 : 1,
+          opacity: disabled ? 0.7 : 1,
         },
 
         label: {
@@ -137,24 +152,31 @@ function SingleSelectPillComponent<T extends string = string>({
         helperText: {
           marginBottom: 8,
           fontSize: 11,
-          color: error ? theme.colors.error : theme.colors.textMuted,
+          lineHeight: 16,
+          color: error
+            ? theme.colors.error
+            : theme.colors.textMuted,
         },
 
         pillContainer: {
-          flexDirection: direction === 'column' ? 'column' : 'row',
+          flexDirection:
+            direction === 'column' ? 'column' : 'row',
 
-          flexWrap: direction === 'row' ? 'wrap' : 'nowrap',
+          flexWrap:
+            direction === 'row' ? 'wrap' : 'nowrap',
 
           gap: 8,
-          marginTop: 4,
         },
 
         pill: {
-          paddingVertical: 9,
+          minHeight: 40,
+
           paddingHorizontal: 14,
+          paddingVertical: 10,
+
+          borderRadius: 999,
 
           borderWidth: 1,
-          borderRadius: 999,
 
           borderColor: theme.colors.border,
 
@@ -166,15 +188,14 @@ function SingleSelectPillComponent<T extends string = string>({
 
         selectedPill: {
           backgroundColor: theme.colors.primaryLight,
-
           borderColor: theme.colors.primary,
         },
 
         disabledPill: {
-          opacity: 0.4,
+          opacity: 0.45,
         },
 
-        pillText: {
+        text: {
           fontSize: 13,
           fontWeight: '500',
 
@@ -183,14 +204,20 @@ function SingleSelectPillComponent<T extends string = string>({
           textTransform: 'capitalize',
         },
 
-        selectedPillText: {
+        selectedText: {
           color: theme.colors.primary,
           fontWeight: '700',
+        },
+
+        emptyText: {
+          fontSize: 13,
+          color: theme.colors.textMuted,
         },
 
         errorText: {
           marginTop: 6,
           fontSize: 11,
+          lineHeight: 16,
           color: theme.colors.error,
         },
       }),
@@ -203,34 +230,80 @@ function SingleSelectPillComponent<T extends string = string>({
         return;
       }
 
+      if (option.value === value) {
+        return;
+      }
+
       onChange(option.value);
     },
-    [disabled, onChange]
+    [disabled, onChange, value]
   );
 
+  const renderLabel = useCallback(
+    (option: SelectOption<T>): string => {
+      if (i18nPrefix) {
+        return t(`${i18nPrefix}.${option.value}`);
+      }
+
+      return option.label;
+    },
+    [i18nPrefix, t]
+  );
+
+  if (options.length === 0) {
+    return (
+      <View style={[styles.container, containerStyle]}>
+        {label ? (
+          <Text style={[styles.label, labelStyle]}>
+            {label}
+
+            {required ? (
+              <Text style={styles.required}> *</Text>
+            ) : null}
+          </Text>
+        ) : null}
+
+        <Text style={styles.emptyText}>{emptyText}</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={[styles.container, containerStyle]} testID={testID}>
-      <Text style={[styles.label, labelStyle]}>
-        {label}
+    <View
+      style={[styles.container, containerStyle]}
+      testID={testID}
+    >
+      {label ? (
+        <Text style={[styles.label, labelStyle]}>
+          {label}
 
-        {required ? <Text style={styles.required}> *</Text> : null}
-      </Text>
+          {required ? (
+            <Text style={styles.required}> *</Text>
+          ) : null}
+        </Text>
+      ) : null}
 
-      {helperText ? <Text style={styles.helperText}>{helperText}</Text> : null}
+      {helperText ? (
+        <Text style={styles.helperText}>
+          {helperText}
+        </Text>
+      ) : null}
 
       <View
         accessibilityRole="radiogroup"
         accessibilityLabel={accessibilityLabel ?? label}
-        style={[styles.pillContainer, pillContainerStyle]}
+        style={[
+          styles.pillContainer,
+          pillContainerStyle,
+        ]}
       >
         {options.map((option) => {
           const selected = value === option.value;
 
-          const optionDisabled = disabled || option.disabled;
+          const optionDisabled =
+            disabled || option.disabled;
 
-          const displayLabel = i18nPrefix
-            ? t(`${i18nPrefix}.${option.value}`)
-            : option.label;
+          const displayLabel = renderLabel(option);
 
           return (
             <TouchableOpacity
@@ -239,11 +312,11 @@ function SingleSelectPillComponent<T extends string = string>({
               disabled={optionDisabled}
               onPress={() => handlePress(option)}
               accessibilityRole="radio"
+              accessibilityLabel={displayLabel}
               accessibilityState={{
                 checked: selected,
                 disabled: optionDisabled,
               }}
-              accessibilityLabel={displayLabel}
               style={[
                 styles.pill,
 
@@ -254,17 +327,19 @@ function SingleSelectPillComponent<T extends string = string>({
                 pillStyle,
 
                 selected && selectedPillStyle,
+
+                optionDisabled && disabledPillStyle,
               ]}
             >
               <Text
                 style={[
-                  styles.pillText,
+                  styles.text,
 
-                  selected && styles.selectedPillText,
+                  selected && styles.selectedText,
 
-                  pillTextStyle,
+                  textStyle,
 
-                  selected && selectedPillTextStyle,
+                  selected && selectedTextStyle,
                 ]}
               >
                 {displayLabel}
@@ -274,12 +349,15 @@ function SingleSelectPillComponent<T extends string = string>({
         })}
       </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
+      {error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : null}
     </View>
   );
 }
 
-SingleSelectPillComponent.displayName = 'SingleSelectPill';
+SingleSelectPillComponent.displayName =
+  'SingleSelectPill';
 
 export const SingleSelectPill = memo(
   SingleSelectPillComponent

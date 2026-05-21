@@ -12,8 +12,8 @@ import { FormInput } from '../components/FormInput';
 import { SiblingsEditor } from '../components/SiblingsEditor';
 import { editProfileStyles } from '../EditProfile.styles';
 import { FamilySection as FamilySectionType, SectionKey } from '../EditProfile.types';
-import { SelectPill } from '@/core/components/SelectPill';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
+import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 
 interface Props {
   family: FamilySectionType;
@@ -79,21 +79,21 @@ export function FamilySection({
         </View>
       </View>
 
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.family_type')}
         options={FamilyTypeOptions}
         value={family.familyType}
         onChange={(v) => onSet('familyType', v as FamilySectionType['familyType'])}
         i18nPrefix="options.family_types"
       />
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.family_status')}
         options={FamilyStatusOptions}
         value={family.familyStatus}
         onChange={(v) => onSet('familyStatus', v as FamilySectionType['familyStatus'])}
         i18nPrefix="options.family_status"
       />
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.family_values')}
         options={FamilyValueOptions}
         value={family.familyValues}

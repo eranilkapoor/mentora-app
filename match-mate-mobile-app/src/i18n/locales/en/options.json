@@ -119,8 +119,7 @@
     "buddhist": "Buddhist",
     "parsi": "Parsi",
     "jewish": "Jewish",
-    "other": "Other",
-    "prefer_not_to_say": "Prefer Not To Say"
+    "other": "Other"
   },
   "caste": {
     "general": "General",
@@ -163,8 +162,7 @@
     "iti": "ITI (Industrial Training Institute)",
     "polytechnic": "Polytechnic",
     "skill_certification": "Skill / Vocational Certification",
-    "other": "Other",
-    "prefer_not_to_say": "Prefer Not to Say"
+    "other": "Other"
   },
   "countries": {
     "united_states": "United States",

@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
 import { FormInput } from './FormInput';
-import { NumberStepper } from './NumberStepper';
+import { NumberStepper } from '../../../core/components/NumberStepper';
 
 import { INITIAL_SIBLINGS } from '../EditProfile.constants';
 
@@ -164,12 +164,16 @@ export const SiblingsEditor = memo(function SiblingsEditor({
         label={t('edit_profile.family.brothers')}
         value={siblings.brothersCount}
         onChange={(count) => updateSiblingCount('brother', count)}
+        suffix=''
+        step={1}
       />
 
       <NumberStepper
         label={t('edit_profile.family.sisters')}
         value={siblings.sistersCount}
         onChange={(count) => updateSiblingCount('sister', count)}
+        suffix=''
+        step={1}
       />
 
       <NumberStepper
@@ -181,6 +185,8 @@ export const SiblingsEditor = memo(function SiblingsEditor({
             marriedBrothersCount: count,
           })
         }
+        suffix=''
+        step={1}
       />
 
       <NumberStepper
@@ -192,6 +198,8 @@ export const SiblingsEditor = memo(function SiblingsEditor({
             marriedSistersCount: count,
           })
         }
+        suffix=''
+        step={1}
       />
 
       {totalSiblings > 0 ? (

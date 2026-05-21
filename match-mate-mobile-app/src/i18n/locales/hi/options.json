@@ -108,8 +108,7 @@
     "buddhist": "बौद्ध",
     "parsi": "पारसी",
     "jewish": "यहूदी",
-    "other": "अन्य",
-    "prefer_not_to_say": "बताना नहीं चाहते"
+    "other": "अन्य"
   },
   "caste": {
     "general": "सामान्य",
@@ -152,8 +151,7 @@
     "iti": "ITI (औद्योगिक प्रशिक्षण संस्थान)",
     "polytechnic": "पॉलिटेक्निक",
     "skill_certification": "कौशल / व्यावसायिक प्रमाणन",
-    "other": "अन्य",
-    "prefer_not_to_say": "बताना नहीं चाहते"
+    "other": "अन्य"
   },
   "countries": {
     "united_states": "संयुक्त राज्य अमेरिका",

@@ -6,10 +6,10 @@ import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
 import { editProfileStyles } from '../EditProfile.styles';
 import { PersonalSection, SectionKey } from '../EditProfile.types';
-import { SelectPill } from '@/core/components/SelectPill';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { Castes, Countries, ManglikStatuses, Religions } from '@/core/types';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
+import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 
 interface Props {
   personal: PersonalSection;
@@ -75,14 +75,14 @@ export function AstroSection({
           />
         </View>
       </View>
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.religion')}
         options={ReligionOptions}
         value={personal.religion}
         onChange={(v) => onSet('religion', v as PersonalSection['religion'])}
         i18nPrefix="options.religion"
       />
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.caste')}
         options={CasteOptions}
         value={personal.caste}
@@ -105,7 +105,7 @@ export function AstroSection({
           />
         </View>
       </View>
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.manglik_status')}
         options={ManglikStatusOptions}
         value={personal.manglikStatus}

@@ -7,9 +7,9 @@ import {
 } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { PersonalSection, SectionKey } from '../EditProfile.types';
-import { SelectPill } from '@/core/components/SelectPill';
 import { TagInput } from '@/core/components/TagInput';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
+import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 
 interface Props {
   personal: PersonalSection;
@@ -40,21 +40,21 @@ export function LifestyleSection({
       loadingKey={sectionLoading}
       onSave={onSave}
     >
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.smoking')}
         options={SmokingHabitsOptions}
         value={personal.smoking}
         onChange={(v) => onSet('smoking', v as PersonalSection['smoking'])}
         i18nPrefix="options.smoking"
       />
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.drinking')}
         options={DrinkingHabitsOptions}
         value={personal.drinking}
         onChange={(v) => onSet('drinking', v as PersonalSection['drinking'])}
         i18nPrefix="options.drinking"
       />
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.eating')}
         options={EatingHabitsOptions}
         value={personal.eating}

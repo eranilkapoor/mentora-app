@@ -5,15 +5,15 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { Countries, Country, Genders, MaritalStatuses } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
-import { NumberStepper } from '../components/NumberStepper';
+import { NumberStepper } from '../../../core/components/NumberStepper';
 import { TimeOfBirthPicker } from '../components/TimeOfBirthPicker';
 import { editProfileStyles } from '../EditProfile.styles';
 import { PersonalSection as PersonalSectionType, SectionKey } from '../EditProfile.types';
-import { SelectPill } from '@/core/components/SelectPill';
 import { ToggleRow } from '@/core/components/ToggleRow';
 import { DatePicker } from '../components/DateOfBirthPicker';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
+import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 
 interface Props {
   personal: PersonalSectionType;
@@ -64,7 +64,7 @@ export function PersonalSection({
         </View>
       </View>
 
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.gender')}
         options={GenderOptions}
         value={personal.gender}
@@ -83,7 +83,7 @@ export function PersonalSection({
         onChange={(val) => onSet('timeOfBirth', val)}
       />
 
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.marital_status')}
         options={MaritalStatusOptions}
         value={personal.maritalStatus}
@@ -103,8 +103,10 @@ export function PersonalSection({
           <View style={styles.halfField}>
             <NumberStepper
               label={t('edit_profile.fields.sons_count')}
-              value={personal.sonsCount}
+              value={personal.sonsCount ?? 0}
               onChange={(v) => onSet('sonsCount', v)}
+              suffix=''
+              step={1}
             />
           </View>
         </View>
@@ -112,8 +114,10 @@ export function PersonalSection({
           <View style={styles.halfField}>
             <NumberStepper
               label={t('edit_profile.fields.daughters_count')}
-              value={personal.daughtersCount}
+              value={personal.daughtersCount ?? 0}
               onChange={(v) => onSet('daughtersCount', v)}
+              suffix=''
+              step={1}
             />
           </View>
         </View>

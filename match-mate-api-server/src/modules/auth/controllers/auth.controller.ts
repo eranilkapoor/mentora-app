@@ -27,11 +27,15 @@ import { CurrentUser } from '../decorators/current-user.decorator';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { ErrorCode, SuccessCode } from 'src/common/constants';
+import { AppLogger } from 'src/common/logger/logger.service';
 
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly logger: AppLogger,
+  ) { }
 
   @Public()
   @Post('register')
@@ -229,45 +233,93 @@ export class AuthController {
     }
   }
 
-  @Public()
-  @Post('refresh')
-  refresh(@Req() req: AppRequest, @Res({ passthrough: true }) res: Response) {
-    const tokenFromCookie = req.cookies?.refreshTtoken as string | undefined;
-    const tokenFromBody = (req.body as { refreshTtoken?: string })
-      .refreshTtoken;
+  private extractRefreshToken(req: AppRequest): string {
+    const tokenFromCookie = req.cookies?.refreshToken as
+      | string
+      | undefined;
+
+    const tokenFromBody = (req.body as {
+      refreshToken?: string;
+    })?.refreshToken;
+
     const tokenFromHeader = req.headers['x-refresh-token'] as
       | string
       | undefined;
 
-    const refreshToken = tokenFromCookie ?? tokenFromBody ?? tokenFromHeader;
+    const refreshToken =
+      tokenFromCookie ?? tokenFromBody ?? tokenFromHeader;
 
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token not found');
+      throw new UnauthorizedException(
+        'Refresh token not found',
+      );
     }
 
-    return this.authService.refresh(req, res, refreshToken);
+    return refreshToken;
   }
 
   @Public()
   @Post('refresh')
-  refreshMobile(
+  async refresh(
     @Req() req: AppRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    const tokenFromCookie = req.cookies?.refreshTtoken as string | undefined;
-    const tokenFromBody = (req.body as { refreshTtoken?: string })
-      .refreshTtoken;
-    const tokenFromHeader = req.headers['x-refresh-token'] as
-      | string
-      | undefined;
+    try {
+      const refreshToken = this.extractRefreshToken(req);
 
-    const refreshToken = tokenFromCookie ?? tokenFromBody ?? tokenFromHeader;
+      return await this.authService.refresh(
+        req,
+        res,
+        refreshToken,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Refresh token failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        error instanceof Error ? error.stack : undefined,
+      );
 
-    if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token not found');
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
+      throw new UnauthorizedException(
+        'Unable to refresh access token',
+      );
     }
+  }
 
-    return this.authService.refresh(req, res, refreshToken);
+  @Public()
+  @Post('refresh/mobile')
+  async refreshMobile(
+    @Req() req: AppRequest,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    try {
+      const refreshToken = this.extractRefreshToken(req);
+
+      return await this.authService.refresh(
+        req,
+        res,
+        refreshToken,
+      );
+    } catch (error) {
+      this.logger.error(
+        `Mobile refresh token failed: ${
+          error instanceof Error ? error.message : 'Unknown error'
+        }`,
+        error instanceof Error ? error.stack : undefined,
+      );
+
+      if (error instanceof UnauthorizedException) {
+        throw error;
+      }
+
+      throw new UnauthorizedException(
+        'Unable to refresh access token',
+      );
+    }
   }
 
   @Public()
@@ -275,11 +327,10 @@ export class AuthController {
   async logout(
     @Req() req: AppRequest,
     @Res({ passthrough: true }) res: Response,
-    @Body() body: { refreshToken?: string },
   ) {
     try {
-      const refreshToken =
-        (req.cookies?.refreshToken as string | undefined) || body?.refreshToken;
+      const refreshToken = this.extractRefreshToken(req);
+      
       if (refreshToken) {
         await this.authService.logout(req, refreshToken);
       }

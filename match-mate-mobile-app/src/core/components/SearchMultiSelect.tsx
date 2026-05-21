@@ -15,6 +15,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
+import { RemoveChipButton } from './RemoveChipButton';
 
 // ─── Enable LayoutAnimation on Android ───────────────────────────────────────
 
@@ -44,7 +45,7 @@ export interface SearchMultiSelectProps {
   /** Field key used to look up errors */
   field: string;
   /** Validation errors map */
-  errors: Record<string, string>;
+  errors?: Record<string, string>;
   /** Placeholder shown in the search input */
   placeholder?: string;
   /** How many chips to show before collapsing. Default: 2 */
@@ -162,14 +163,6 @@ const createStyles = (theme: Theme) =>
       fontWeight: '500',
       flexShrink: 1,
     },
-    chipRemove: {
-      width: 16,
-      height: 16,
-      borderRadius: 8,
-      backgroundColor: theme.colors.primary,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
     chipOverflow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -264,7 +257,7 @@ function SearchMultiSelectComponent(
 
   // ─── Render ────────────────────────────────────────────────────────────────
 
-  const errorMessage = errors[field];
+  const errorMessage = errors?.[field];
   const showDropdown = query.trim().length > 0;
 
   return (
@@ -359,18 +352,11 @@ function SearchMultiSelectComponent(
               >
                 {getLabel(val)}
               </Text>
-              <TouchableOpacity
+              <RemoveChipButton
                 onPress={() => removeItem(val)}
-                style={styles.chipRemove}
-                hitSlop={{ top: 6, bottom: 6, left: 6, right: 6 }}
-                accessibilityRole="button"
-                accessibilityLabel={t('common.remove_item', {
-                  item: getLabel(val),
-                })}
-                activeOpacity={0.8}
-              >
-                <Feather name="x" size={10} color={theme.colors.white} />
-              </TouchableOpacity>
+                label={t('common.remove_item', { item: getLabel(val) })}
+                size="sm"
+              />
             </View>
           ))}
 

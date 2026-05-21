@@ -13,6 +13,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
+import { RemoveChipButton } from './RemoveChipButton';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -23,14 +24,27 @@ export interface TagInputProps {
   placeholder?: string;
   helperText?: string;
   error?: string;
+  /** Fully disables interaction */
   disabled?: boolean;
+  /** Allows disabling just the input while keeping tags visible */
+  editable?: boolean;
+  /** Shows a red asterisk after the label */
+  required?: boolean;
+  /** Max number of tags. Shows a count badge when set */
   maxTags?: number;
+  /** Minimum character length before a tag can be added. Default: 1 */
+  minLength?: number;
   maxLength?: number;
-  /** Convert every tag to lowercase before storing */
   lowercase?: boolean;
-  /** When false (default), duplicate detection ignores case */
   caseSensitive?: boolean;
   allowDuplicates?: boolean;
+  /** Trim whitespace before adding. Default: true */
+  trimOnAdd?: boolean;
+  /** Sort tags alphabetically after every add. Default: false */
+  sortItems?: boolean;
+  /** Submit input on keyboard return. Default: true */
+  addOnSubmit?: boolean;
+  removable?: boolean;
   validateTag?: (tag: string) => boolean;
   formatTag?: (tag: string) => string;
   onAddTag?: (tag: string) => void;
@@ -41,20 +55,42 @@ export interface TagInputProps {
   tagStyle?: StyleProp<ViewStyle>;
   tagTextStyle?: StyleProp<TextStyle>;
   accessibilityLabel?: string;
+  /** Shown when tag list is empty */
   emptyMessage?: string;
-  removable?: boolean;
 }
 
-const createStyles = (theme: Theme, hasError: boolean, disabled: boolean) =>
+// ─── Styles factory ───────────────────────────────────────────────────────────
+
+const createStyles = (theme: Theme, hasError: boolean, isDisabled: boolean) =>
   StyleSheet.create({
-    container: {
-      marginBottom: 16,
+    container: { marginBottom: 16 },
+    headerRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 6,
+    },
+    labelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
     },
     label: {
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.textSecondary,
-      marginBottom: 6,
+    },
+    required: {
+      fontSize: 13,
+      fontWeight: '600',
+      color: theme.colors.error,
+    },
+    countText: {
+      fontSize: 12,
+      color: theme.colors.textMuted,
+    },
+    countAtLimit: {
+      color: theme.colors.error,
+      fontWeight: '600',
     },
     helperText: {
       fontSize: 12,
@@ -75,9 +111,11 @@ const createStyles = (theme: Theme, hasError: boolean, disabled: boolean) =>
       paddingVertical: 11,
       fontSize: 15,
       color: theme.colors.textPrimary,
-      backgroundColor: disabled
-        ? theme.colors.backgroundLight
-        : theme.colors.inputBackground,
+      backgroundColor: hasError
+        ? theme.colors.errorLight
+        : isDisabled
+          ? theme.colors.backgroundLight
+          : theme.colors.inputBackground,
     },
     addButton: {
       width: 44,
@@ -86,11 +124,22 @@ const createStyles = (theme: Theme, hasError: boolean, disabled: boolean) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    addButtonEnabled: {
-      backgroundColor: theme.colors.primary,
+    addButtonEnabled: { backgroundColor: theme.colors.primary },
+    addButtonDisabled: { backgroundColor: theme.colors.border },
+    errorText: {
+      marginTop: 6,
+      fontSize: 12,
+      color: theme.colors.error,
     },
-    addButtonDisabled: {
-      backgroundColor: theme.colors.border,
+    limitText: {
+      marginTop: 6,
+      fontSize: 12,
+      color: theme.colors.textMuted,
+    },
+    emptyText: {
+      marginTop: 10,
+      fontSize: 12,
+      color: theme.colors.textMuted,
     },
     tagList: {
       marginTop: 12,
@@ -102,10 +151,13 @@ const createStyles = (theme: Theme, hasError: boolean, disabled: boolean) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 6,
-      backgroundColor: theme.colors.primaryLight,
-      borderRadius: 20,
-      paddingHorizontal: 12,
+      paddingLeft: 12,
+      paddingRight: 8,
       paddingVertical: 7,
+      borderRadius: 20,
+      backgroundColor: theme.colors.primaryLight,
+      borderWidth: 1,
+      borderColor: theme.colors.primaryBorder,
     },
     tagText: {
       fontSize: 13,
@@ -113,24 +165,7 @@ const createStyles = (theme: Theme, hasError: boolean, disabled: boolean) =>
       fontWeight: '500',
       flexShrink: 1,
     },
-    errorText: {
-      marginTop: 6,
-      fontSize: 12,
-      color: theme.colors.error,
-    },
-    emptyText: {
-      marginTop: 10,
-      fontSize: 12,
-      color: theme.colors.textMuted,
-    },
-    limitText: {
-      marginTop: 6,
-      fontSize: 12,
-      color: theme.colors.textMuted,
-    },
-    dimmed: {
-      opacity: 0.6,
-    },
+    dimmed: { opacity: 0.5 },
   });
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -143,11 +178,18 @@ function TagInputComponent({
   helperText,
   error,
   disabled = false,
+  editable = true,
+  required = false,
   maxTags,
+  minLength = 1,
   maxLength = 40,
   lowercase = false,
   caseSensitive = false,
   allowDuplicates = false,
+  trimOnAdd = true,
+  sortItems = false,
+  addOnSubmit = true,
+  removable = true,
   validateTag,
   formatTag,
   onAddTag,
@@ -159,35 +201,40 @@ function TagInputComponent({
   tagTextStyle,
   accessibilityLabel,
   emptyMessage,
-  removable = true,
 }: TagInputProps): React.ReactElement {
   const { theme } = useTheme();
   const inputRef = useRef<TextInput>(null);
   const [text, setText] = useState('');
 
+  // Both disabled and editable=false lock the component
+  const isDisabled = disabled || !editable;
+
   const styles = useMemo(
-    () => createStyles(theme, Boolean(error), disabled),
-    [theme, error, disabled]
+    () => createStyles(theme, Boolean(error), isDisabled),
+    [theme, error, isDisabled]
   );
 
   const tags = useMemo<string[]>(() => value ?? [], [value]);
 
   const normalizedInput = useMemo(() => {
-    const trimmed = text.trim();
+    const trimmed = trimOnAdd ? text.trim() : text;
     return lowercase ? trimmed.toLowerCase() : trimmed;
-  }, [text, lowercase]);
+  }, [text, trimOnAdd, lowercase]);
 
-  const canAddMore = maxTags === undefined || tags.length < maxTags;
   const atLimit = maxTags !== undefined && tags.length >= maxTags;
+  const canAdd =
+    normalizedInput.length >= minLength &&
+    normalizedInput.length <= maxLength &&
+    !atLimit;
 
-  // ─── Add ─────────────────────────────────────────────────────────────────
+  // ─── Add ──────────────────────────────────────────────────────────────────
 
   const handleAdd = useCallback((): void => {
-    if (disabled || normalizedInput.length === 0) return;
-    if (normalizedInput.length > maxLength) return;
-    if (!canAddMore) return;
+    if (isDisabled || !canAdd) return;
 
-    const formatted = formatTag ? formatTag(normalizedInput) : normalizedInput;
+    const formatted = formatTag
+      ? formatTag(normalizedInput)
+      : normalizedInput;
 
     if (!allowDuplicates) {
       const exists = caseSensitive
@@ -201,61 +248,76 @@ function TagInputComponent({
 
     if (validateTag && !validateTag(formatted)) return;
 
-    onChange([...tags, formatted]);
+    const next = [...tags, formatted];
+    onChange(sortItems ? [...next].sort((a, b) => a.localeCompare(b)) : next);
     onAddTag?.(formatted);
     setText('');
     inputRef.current?.focus();
   }, [
-    disabled,
-    normalizedInput,
-    maxLength,
-    canAddMore,
+    isDisabled,
+    canAdd,
     formatTag,
+    normalizedInput,
     allowDuplicates,
     caseSensitive,
     tags,
     validateTag,
+    sortItems,
     onChange,
     onAddTag,
   ]);
 
-  // ─── Remove ───────────────────────────────────────────────────────────────
+  // ─── Remove by index — safe when allowDuplicates is true ─────────────────
 
   const handleRemove = useCallback(
     (index: number): void => {
+      if (isDisabled) return;
       const removed = tags[index];
       if (removed === undefined) return;
-
       const next = tags.filter((_, i) => i !== index);
       onChange(next);
       onRemoveTag?.(removed, index);
     },
-    [tags, onChange, onRemoveTag]
+    [isDisabled, tags, onChange, onRemoveTag]
   );
 
-  // ─── Render ───────────────────────────────────────────────────────────────
-
-  const isAddDisabled = disabled || normalizedInput.length === 0 || !canAddMore;
+  const isAddDisabled = isDisabled || !canAdd;
 
   return (
     <View style={[styles.container, containerStyle]}>
-      <Text style={styles.label}>{label}</Text>
+      {/* ── Header ─────────────────────────────────────────────────────── */}
+      <View style={styles.headerRow}>
+        <View style={styles.labelRow}>
+          <Text style={styles.label}>{label}</Text>
+          {required ? <Text style={styles.required}> *</Text> : null}
+        </View>
 
-      {helperText ? <Text style={styles.helperText}>{helperText}</Text> : null}
+        {/* Count badge — only shown when maxTags is set */}
+        {maxTags !== undefined ? (
+          <Text style={[styles.countText, atLimit && styles.countAtLimit]}>
+            {tags.length}/{maxTags}
+          </Text>
+        ) : null}
+      </View>
 
+      {helperText ? (
+        <Text style={styles.helperText}>{helperText}</Text>
+      ) : null}
+
+      {/* ── Input row ──────────────────────────────────────────────────── */}
       <View style={styles.inputRow}>
         <TextInput
           ref={inputRef}
           accessibilityLabel={accessibilityLabel ?? label}
           autoCapitalize="none"
-          editable={!disabled}
+          editable={!isDisabled}
           maxLength={maxLength}
           onChangeText={setText}
-          onSubmitEditing={handleAdd}
+          onSubmitEditing={addOnSubmit ? handleAdd : undefined}
           placeholder={placeholder}
           placeholderTextColor={theme.colors.textMuted}
           returnKeyType="done"
-          style={[styles.input, inputStyle]}
+          style={[styles.input, isDisabled && styles.dimmed, inputStyle]}
           value={text}
           {...inputProps}
         />
@@ -275,26 +337,22 @@ function TagInputComponent({
         </TouchableOpacity>
       </View>
 
-      {error ? <Text style={styles.errorText}>{error}</Text> : null}
-
-      {/* Max tags reached hint */}
-      {atLimit && (
+      {/* ── Feedback ───────────────────────────────────────────────────── */}
+      {error ? (
+        <Text style={styles.errorText}>{error}</Text>
+      ) : atLimit ? (
         <Text style={styles.limitText}>
           {`Maximum ${maxTags} items reached`}
         </Text>
-      )}
+      ) : null}
 
+      {/* ── Tags ───────────────────────────────────────────────────────── */}
       {tags.length > 0 ? (
         <View style={styles.tagList}>
           {tags.map((tag, index) => (
-            <TouchableOpacity
+            <View
               key={`${tag}-${index}`}
-              activeOpacity={removable && !disabled ? 0.7 : 1}
-              accessibilityRole="button"
-              accessibilityLabel={`Remove ${tag}`}
-              disabled={!removable || disabled}
-              onPress={() => handleRemove(index)}
-              style={[styles.tag, disabled && styles.dimmed, tagStyle]}
+              style={[styles.tag, isDisabled && styles.dimmed, tagStyle]}
             >
               <Text
                 numberOfLines={1}
@@ -304,9 +362,14 @@ function TagInputComponent({
                 {tag}
               </Text>
               {removable && (
-                <Feather color={theme.colors.primary} name="x" size={12} />
+                <RemoveChipButton
+                  onPress={() => handleRemove(index)}
+                  label={`Remove ${tag}`}
+                  disabled={isDisabled}
+                  size="sm"
+                />
               )}
-            </TouchableOpacity>
+            </View>
           ))}
         </View>
       ) : emptyMessage ? (
@@ -316,6 +379,5 @@ function TagInputComponent({
   );
 }
 
-TagInputComponent.displayName = 'TagInput';
-
 export const TagInput = React.memo(TagInputComponent);
+TagInput.displayName = 'TagInput';

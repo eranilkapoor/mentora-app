@@ -3,10 +3,10 @@ import { useTranslation } from 'react-i18next';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
 import { EducationSection as EducationSectionType, SectionKey } from '../EditProfile.types';
-import { SelectPill } from '@/core/components/SelectPill';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { OccupationTypes, Qualifications } from '@/core/types';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
+import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 
 interface Props {
   education: EducationSectionType;
@@ -57,7 +57,7 @@ export function EducationSection({
         placeholder={t('edit_profile.placeholders.university')}
       />
 
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.occupation_type')}
         options={OccupationTypeOptions}
         value={education.occupationType}

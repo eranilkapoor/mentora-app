@@ -7,9 +7,9 @@ import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
 import { editProfileStyles } from '../EditProfile.styles';
 import { PhysicalSection as PhysicalSectionType, SectionKey } from '../EditProfile.types';
-import { SelectPill } from '@/core/components/SelectPill';
 import { ToggleRow } from '@/core/components/ToggleRow';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
+import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 
 interface Props {
   physical: PhysicalSectionType;
@@ -61,14 +61,14 @@ export function PhysicalSection({
         </View>
       </View>
 
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.blood_group')}
         options={BloodGroupOptions}
         value={physical.bloodGroup}
         onChange={(v) => onSet('bloodGroup', v as PhysicalSectionType['bloodGroup'])}
       />
 
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.body_type')}
         options={BodyTypeOptions}
         value={physical.bodyType}
@@ -76,7 +76,7 @@ export function PhysicalSection({
         i18nPrefix="options.body_types"
       />
 
-      <SelectPill
+      <SingleSelectPill
         label={t('edit_profile.fields.complexion')}
         options={ComplexionOptions}
         value={physical.complexion}

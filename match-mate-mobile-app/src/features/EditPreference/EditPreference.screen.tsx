@@ -42,12 +42,7 @@ import {
 } from './EditPreference.constants';
 import { PreferenceSectionCard } from './components/PreferenceSectionCard';
 import { RangeInput } from './components/RangeInput';
-import { MultiSelectPill } from './components/MultiSelectPill';
-import { SingleSelectPill } from './components/SingleSelectPill';
-import { PreferenceTagInput } from './components/PreferenceTagInput';
-import { PreferenceToggleRow } from './components/PreferenceToggleRow';
 import { WeightSlider } from './components/WeightSlider';
-import { ScoreStepper } from './components/ScoreStepper';
 import {
   EatingHabits,
   DrinkingHabits,
@@ -61,9 +56,17 @@ import {
   ResidencyPreferences,
   OccupationTypes,
   ManglikStatuses,
+  Qualifications,
+  Countries,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { showError, showSuccess } from '@/core/utils/toast';
+import { SearchMultiSelect } from '@/core/components/SearchMultiSelect';
+import { TagInput } from '@/core/components/TagInput';
+import { MultiSelectPill } from '@/core/components/MultiSelectPill';
+import { SingleSelectPill } from '@/core/components/SingleSelectPill';
+import { NumberStepper } from '@/core/components/NumberStepper';
+import { ToggleRow } from '@/core/components/ToggleRow';
 
 const ABOUT_PARTNER_MAX = 500;
 
@@ -92,6 +95,8 @@ export default function EditPreferenceScreen({
   const ChildPreferenceOptions = useEnumOptions(ChildPreferences, 'options.child_preferences');
   const ResidencyPreferenceOptions = useEnumOptions(ResidencyPreferences, 'options.residency_preferences');
   const OccupationTypeOptions = useEnumOptions(OccupationTypes, 'options.occupation_types');
+  const QualificationOptions = useEnumOptions(Qualifications, 'options.qualifications');
+  const CountryOptions = useEnumOptions(Countries, 'options.countries');
 
   const [preference, setPreference] =
     useState<PreferenceData>(INITIAL_PREFERENCE);
@@ -389,7 +394,7 @@ export default function EditPreferenceScreen({
               i18nPrefix="options.caste"
             />
 
-            <PreferenceTagInput
+            <TagInput
               label={t('preference.fields.sub_caste')}
               value={preference.filters.subCaste}
               onChange={(v) => setFilters('subCaste', v)}
@@ -412,21 +417,25 @@ export default function EditPreferenceScreen({
             sectionKey="filters"
             {...sectionProps}
           >
-            <PreferenceTagInput
+            <SearchMultiSelect
               label={t('preference.fields.country')}
-              value={preference.filters.country}
-              onChange={(v) => setFilters('country', v)}
+              options={CountryOptions}
+              selected={preference.filters.country ?? []}
+              onChange={(values) => {
+                setFilters('country', values);
+              }}
               placeholder={t('preference.placeholders.country')}
+              field="country"
             />
 
-            <PreferenceTagInput
+            <TagInput
               label={t('preference.fields.state')}
               value={preference.filters.state}
               onChange={(v) => setFilters('state', v)}
               placeholder={t('preference.placeholders.state')}
             />
 
-            <PreferenceTagInput
+            <TagInput
               label={t('preference.fields.city')}
               value={preference.filters.city}
               onChange={(v) => setFilters('city', v)}
@@ -441,11 +450,15 @@ export default function EditPreferenceScreen({
             sectionKey="filters"
             {...sectionProps}
           >
-            <PreferenceTagInput
+            <SearchMultiSelect
               label={t('preference.fields.qualification')}
-              value={preference.filters.qualification}
-              onChange={(v) => setFilters('qualification', v)}
+              options={QualificationOptions}
+              selected={preference.filters.qualification ?? []}
+              onChange={(values) => {
+                setFilters('qualification', values);
+              }}
               placeholder={t('preference.placeholders.qualification')}
+              field="qualification"
             />
 
             <MultiSelectPill
@@ -456,7 +469,7 @@ export default function EditPreferenceScreen({
               i18nPrefix="options.occupation_types"
             />
 
-            <PreferenceTagInput
+            <TagInput
               label={t('preference.fields.occupation')}
               value={preference.filters.occupation}
               onChange={(v) => setFilters('occupation', v)}
@@ -519,7 +532,7 @@ export default function EditPreferenceScreen({
               i18nPrefix="options.eating"
             />
 
-            <PreferenceTagInput
+            <TagInput
               label={t('preference.fields.languages')}
               value={preference.filters.languages}
               onChange={(v) => setFilters('languages', v)}
@@ -534,35 +547,35 @@ export default function EditPreferenceScreen({
             sectionKey="settings"
             {...sectionProps}
           >
-            <PreferenceToggleRow
+            <ToggleRow
               label={t('preference.settings.strict_mode')}
               sublabel={t('preference.settings.strict_mode_hint')}
               value={preference.settings.isStrict}
               onChange={(v) => setSettings('isStrict', v)}
             />
 
-            <PreferenceToggleRow
+            <ToggleRow
               label={t('preference.settings.allow_partial')}
               sublabel={t('preference.settings.allow_partial_hint')}
               value={preference.settings.allowPartialMatches}
               onChange={(v) => setSettings('allowPartialMatches', v)}
             />
 
-            <PreferenceToggleRow
+            <ToggleRow
               label={t('preference.settings.horoscope_required')}
               sublabel={t('preference.settings.horoscope_required_hint')}
               value={preference.settings.horoscopeRequired}
               onChange={(v) => setSettings('horoscopeRequired', v)}
             />
 
-            <PreferenceToggleRow
+            <ToggleRow
               label={t('preference.settings.verification_required')}
               sublabel={t('preference.settings.verification_required_hint')}
               value={preference.settings.profileVerificationRequired}
               onChange={(v) => setSettings('profileVerificationRequired', v)}
             />
 
-            <ScoreStepper
+            <NumberStepper
               label={t('preference.settings.min_match_score')}
               sublabel={t('preference.settings.min_match_score_hint')}
               value={preference.settings.minimumMatchScore}

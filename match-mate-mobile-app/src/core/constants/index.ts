@@ -195,7 +195,6 @@ export const CHILDREN_PREFERENCES = [
   'Want Children',
   "Don't Want Children",
   'Open to Discussion',
-  'Prefer not to say',
 ];
 
 export const LIVING_ARRANGEMENTS = [
@@ -203,7 +202,6 @@ export const LIVING_ARRANGEMENTS = [
   'Living Alone',
   'Living with Roommates',
   'Living with Partner',
-  'Prefer not to say',
 ];
 
 export const HOUSING_TYPES = [
@@ -211,7 +209,6 @@ export const HOUSING_TYPES = [
   'Rented Apartment/House',
   'Living with Family',
   'Company Provided Accommodation',
-  'Prefer not to say',
 ];
 
 export const TRANSPORT_TYPES = [
@@ -219,14 +216,12 @@ export const TRANSPORT_TYPES = [
   'Owns a Bike/Scooter',
   'Uses Public Transport',
   'Walks/Cycles',
-  'Prefer not to say',
 ];
 
 export const TRAVEL_FREQUENCIES = [
   'Frequently',
   'Occasionally',
   'Rarely',
-  'Prefer not to say',
 ];
 
 export const VACATION_PREFERENCES = [
@@ -235,7 +230,6 @@ export const VACATION_PREFERENCES = [
   'City Tours',
   'Adventure Trips',
   'Cultural Experiences',
-  'Prefer not to say',
 ];
 
 export const MUSIC_PREFERENCES = [
@@ -248,7 +242,6 @@ export const MUSIC_PREFERENCES = [
   'Electronic',
   'Reggae',
   'Blues',
-  'Prefer not to say',
 ];
 
 export const MOVIE_GENRES = [
@@ -261,7 +254,6 @@ export const MOVIE_GENRES = [
   'Documentary',
   'Thriller',
   'Animation',
-  'Prefer not to say',
 ];
 
 export const BOOK_GENRES = [
@@ -274,7 +266,6 @@ export const BOOK_GENRES = [
   'Romance',
   'Historical',
   'Self-Help',
-  'Prefer not to say',
 ];
 
 export const SPORTS_PREFERENCES = [
@@ -287,7 +278,6 @@ export const SPORTS_PREFERENCES = [
   'Cycling',
   'Yoga',
   'Gymnastics',
-  'Prefer not to say',
 ];
 
 export const CUISINES = [
@@ -314,7 +304,6 @@ export const FAMILY_TYPES = [
   'Same-Sex Parent',
   'Grandparent-Led',
   'Childless',
-  'Prefer not to say',
 ];
 
 export const FAMILY_VALUES = [
@@ -327,7 +316,6 @@ export const FAMILY_VALUES = [
   'Religious',
   'Spiritual',
   'Mixed Values',
-  'Prefer not to say',
 ];
 
 export const FAMILY_STATUSES = [
@@ -338,5 +326,4 @@ export const FAMILY_STATUSES = [
   'Lower-Middle Class',
   'Working Class',
   'Economically Challenged',
-  'Prefer not to say',
 ];
