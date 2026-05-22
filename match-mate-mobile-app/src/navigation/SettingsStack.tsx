@@ -52,7 +52,7 @@ export default function SettingsStack(): React.ReactElement {
       <Stack.Screen
         name="NotificationSettings"
         component={NotificationSettingsScreen}
-        options={{ title: t('settings.notifications') }}
+        options={{ title: t('settings.notifications.title') }}
       />
       <Stack.Screen
         name="AccountSettings"

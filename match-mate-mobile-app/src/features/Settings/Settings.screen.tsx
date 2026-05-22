@@ -312,7 +312,7 @@ export default function SettingsScreen({
 
         {/* Privacy */}
 
-        <Section icon="shield" title={t('settings.privacy')}>
+        <Section icon="shield" title={t('settings.privacy.title')}>
           <SettingRow
             icon="shield"
             label={t('settings.privacy_settings')}
@@ -324,24 +324,20 @@ export default function SettingsScreen({
             icon="slash"
             label={t('settings.blocked_users')}
             subLabel={t('settings.blocked_users_sub')}
-            onPress={() => { }}
+            onPress={() => {}}
             isLast
           />
         </Section>
 
         <Section
           icon="message-circle"
-          title={t('settings.communication')}
+          title={t('settings.communication.title')}
         >
           <SettingRow
             icon="message-square"
             label={t('settings.communication_settings')}
             subLabel={t('settings.communication_settings_sub')}
-            onPress={() =>
-              navigation.navigate(
-                'CommunicationSettings'
-              )
-            }
+            onPress={() => navigation.navigate('CommunicationSettings')}
             isLast
           />
         </Section>
@@ -382,19 +378,19 @@ export default function SettingsScreen({
 
         {/* Notifications */}
 
-        <Section icon="bell" title={t('settings.notifications')}>
+        <Section icon="bell" title={t('settings.notifications.title')}>
           <SettingToggle
             icon="bell"
-            label="App Notifications"
-            subLabel="Messages, matches & updates"
+            label={t('settings.app_notifications')}
+            subLabel={t('settings.notifications_sub')}
             value={notificationsEnabled}
             onValueChange={() => dispatch(toggleNotifications())}
           />
 
           <SettingRow
             icon="sliders"
-            label="Notification Settings"
-            subLabel="Customize alerts"
+            label={t('settings.notification_settings.title')}
+            subLabel={t('settings.notification_settings_sub')}
             disabled={!notificationsEnabled}
             onPress={() => navigation.navigate('NotificationSettings')}
             isLast
@@ -406,15 +402,15 @@ export default function SettingsScreen({
         <Section icon="help-circle" title={t('settings.support')}>
           <SettingRow
             icon="life-buoy"
-            label="Help & Support"
-            subLabel="FAQs and contact support"
+            label={t('settings.help_and_support')}
+            subLabel={t('settings.help_sub')}
             onPress={() => navigation.navigate('HelpSupport')}
           />
 
           <SettingRow
             icon="shield"
-            label="Privacy Policy"
-            subLabel="How we handle your data"
+            label={t('settings.privacy_policy')}
+            subLabel={t('settings.privacy_sub')}
             onPress={() => navigation.navigate('PrivacyPolicy')}
             isLast
           />
@@ -422,7 +418,7 @@ export default function SettingsScreen({
 
         {/* Accessibility */}
 
-        <Section icon="accessibility" title={t('settings.accessibility')}>
+        <Section icon="accessibility" title={t('settings.accessibility.title')}>
           <SettingRow
             icon="accessibility"
             label={t('settings.accessibility_settings')}
@@ -480,7 +476,9 @@ export default function SettingsScreen({
         <Section icon="alert-triangle" title={t('settings.danger_zone')}>
           <SettingRow
             icon="log-out"
-            label={isLoggingOut ? t('settings.signing_out') : t('settings.sign_out')}
+            label={
+              isLoggingOut ? t('settings.signing_out') : t('settings.sign_out')
+            }
             subLabel={t('settings.sign_out_sub')}
             onPress={handleSignOut}
             isDanger
@@ -490,7 +488,7 @@ export default function SettingsScreen({
             icon="trash-2"
             label={t('settings.account.delete')}
             subLabel={t('settings.account.delete_sub')}
-            onPress={() => { }}
+            onPress={() => {}}
             isDanger
             isLast
           />
@@ -501,7 +499,9 @@ export default function SettingsScreen({
         <View style={styles.footer}>
           <Text style={styles.footerText}>MatchMate v{appVersion}</Text>
 
-          <Text style={styles.footerSubtext}>Made with ❤️ by Webnza</Text>
+          <Text style={styles.footerSubtext}>
+            {t('settings.footer_credit')}
+          </Text>
         </View>
       </ScrollView>
 

@@ -18,7 +18,10 @@
   "see_all": "See all",
   "or": "OR",
   "close": "Close",
+  "clear": "Clear",
   "go_back": "Go Back",
+  "go_back_hint": "Return to the previous screen",
+  "avatar": "Avatar",
   "select_option": "Select option",
   "no_results_found": "No results found",
   "show_more_count": "+{{count}} more",
@@ -33,6 +36,7 @@
     "password_length": "Password must be at least 6 characters",
     "password_mismatch": "Passwords do not match"
   },
+  "success": "Success",
   "saved": "Saved",
   "saving": "Saving..."
 }

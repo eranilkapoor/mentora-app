@@ -26,6 +26,9 @@
     "hint": "Tap star to set as primary. First photo appears on your profile card.",
     "permission_title": "Permission Required",
     "permission_message": "Please allow access to your photo library.",
+    "limit_title": "Photo Limit Reached",
+    "limit_message": "You can upload up to {{max}} photos.",
+    "upload_failed": "Failed to upload image. Please try again.",
     "set_primary_failed": "Failed to set primary image. Please try again.",
     "remove_failed": "Failed to remove image. Please try again.",
     "remove_confirm_title": "Remove Photo",
@@ -126,7 +129,8 @@
   "errors": {
     "load_failed": "Failed to load profile. Please try again.",
     "save_failed": "Failed to save. Please try again.",
-    "date_incomplete": "Please select day, month and year."
+    "date_incomplete": "Please select day, month and year.",
+    "invalid_date": "Please select a valid date."
   },
   "success": {
     "section_saved": "Changes saved successfully."
