@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -8,13 +8,28 @@ import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import {
+  SettingsOption,
+  SettingsOptionSheet,
+} from '@/core/components/settings/SettingsOptionSheet';
+import {
   useGetCommunicationSettingsQuery,
   useUpdateCommunicationSettingsMutation,
 } from '@/store/services/communicationSettings.service';
 import Loader from '@/core/components/Loader';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
-import { CommunicationSettingsScreenProps } from './CommunicationSettings.types';
+import {
+  CommunicationPermission,
+  CommunicationSettings,
+  CommunicationSettingsScreenProps,
+} from './CommunicationSettings.types';
 import { AutoReplyInput } from './components/AutoReplyInput';
+
+type SelectKey = 'whoCanMessage' | 'whoCanCall';
+
+const formatValue = <T extends string>(
+  options: SettingsOption<T>[],
+  value?: T
+): string => options.find((option) => option.value === value)?.label ?? '';
 
 export default function CommunicationSettingsScreen({
   navigation,
@@ -26,32 +41,43 @@ export default function CommunicationSettingsScreen({
   const [updateSettings] = useUpdateCommunicationSettingsMutation();
 
   const settings = data?.communication;
+  const [activeSelect, setActiveSelect] = useState<SelectKey | null>(null);
 
-  const [autoReplyMessage, setAutoReplyMessage] =
-    useState(
-      settings?.autoReplyMessage ?? ''
-    );
+  const [autoReplyMessage, setAutoReplyMessage] = useState(
+    settings?.autoReplyMessage ?? ''
+  );
+
+  useEffect(() => {
+    setAutoReplyMessage(settings?.autoReplyMessage ?? '');
+  }, [settings?.autoReplyMessage]);
+
+  const permissionOptions = useMemo<SettingsOption<CommunicationPermission>[]>(
+    () => [
+      { value: 'all', label: t('settings.options.everyone') },
+      { value: 'matches_only', label: t('settings.options.matches_only') },
+      { value: 'contacts_only', label: t('settings.options.contacts_only') },
+      { value: 'no_one', label: t('settings.options.no_one') },
+    ],
+    [t]
+  );
 
   const handleToggle = useCallback(
-    async (key: string, value: boolean) => {
+    async (key: keyof CommunicationSettings, value: boolean) => {
       try {
         await updateSettings({
           [key]: value,
         }).unwrap();
       } catch (error) {
-        console.error(
-          'Communication Settings Error:',
-          error
-        );
+        console.error('Communication Settings Error:', error);
       }
     },
     [updateSettings]
   );
 
   const handleUpdate = useCallback(
-    async (
-      key: string,
-      value: string
+    async <K extends keyof CommunicationSettings>(
+      key: K,
+      value: CommunicationSettings[K]
     ) => {
       try {
         await updateSettings({
@@ -89,8 +115,8 @@ export default function CommunicationSettingsScreen({
           <SettingsSelectItem
             icon="send"
             label={t('settings.communication.who_can_message')}
-            value={settings?.whoCanMessage ?? 'Everyone'}
-            onPress={() => {}}
+            value={formatValue(permissionOptions, settings?.whoCanMessage)}
+            onPress={() => setActiveSelect('whoCanMessage')}
           />
           <SettingsToggleItem
             icon="check-circle"
@@ -131,10 +157,7 @@ export default function CommunicationSettingsScreen({
                 onChangeText={(text) => {
                   setAutoReplyMessage(text);
 
-                  void handleUpdate(
-                    'autoReplyMessage',
-                    text
-                  );
+                  void handleUpdate('autoReplyMessage', text);
                 }}
               />
             </>
@@ -150,8 +173,8 @@ export default function CommunicationSettingsScreen({
           <SettingsSelectItem
             icon="phone"
             label={t('settings.communication.who_can_call')}
-            value={settings?.whoCanCall ?? 'Everyone'}
-            onPress={() => {}}
+            value={formatValue(permissionOptions, settings?.whoCanCall)}
+            onPress={() => setActiveSelect('whoCanCall')}
           />
           <SettingsToggleItem
             icon="phone-call"
@@ -170,6 +193,23 @@ export default function CommunicationSettingsScreen({
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={activeSelect === 'whoCanMessage'}
+        title={t('settings.communication.who_can_message')}
+        options={permissionOptions}
+        selectedValue={settings.whoCanMessage}
+        onSelect={(value) => void handleUpdate('whoCanMessage', value)}
+        onClose={() => setActiveSelect(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeSelect === 'whoCanCall'}
+        title={t('settings.communication.who_can_call')}
+        options={permissionOptions}
+        selectedValue={settings.whoCanCall}
+        onSelect={(value) => void handleUpdate('whoCanCall', value)}
+        onClose={() => setActiveSelect(null)}
+      />
     </SafeAreaView>
   );
 }

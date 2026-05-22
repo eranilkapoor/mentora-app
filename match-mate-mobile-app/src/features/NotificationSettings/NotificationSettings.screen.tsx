@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, Text, Switch, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -11,19 +11,28 @@ import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { ChannelPreferenceRow } from '@/core/components/settings/ChannelPreferenceRow';
+import {
+  SettingsOption,
+  SettingsOptionSheet,
+} from '@/core/components/settings/SettingsOptionSheet';
 import { showConfirm } from '@/core/utils/confirm';
 import {
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation,
   useUpdateNotificationChannelMutation,
 } from '@/store/services/notificationSettings.service';
-import { ChannelPreference, NotificationSettings, NotificationSettingsScreenProps } from './NotificationSettings.types';
+import {
+  ChannelPreference,
+  NotificationSettings,
+  NotificationSettingsScreenProps,
+  QuietHours,
+} from './NotificationSettings.types';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
-
 
 // ─── Per-event notification config ───────────────────────────────────────────
 
 type EventKey = keyof NotificationSettings['preferences'];
+type QuietHoursKey = 'start' | 'end' | 'timezone';
 
 interface EventConfig {
   key: EventKey;
@@ -93,8 +102,29 @@ export default function NotificationSettingsScreen({
   const { data, isLoading } = useGetNotificationSettingsQuery();
   const [update] = useUpdateNotificationSettingsMutation();
   const [updateChannel] = useUpdateNotificationChannelMutation();
+  const [activeQuietField, setActiveQuietField] =
+    useState<QuietHoursKey | null>(null);
 
   const settings = data?.notification as NotificationSettings;
+
+  const timeOptions = useMemo<SettingsOption<string>[]>(
+    () =>
+      Array.from({ length: 24 }, (_, hour) => {
+        const value = `${hour.toString().padStart(2, '0')}:00`;
+        return { value, label: value };
+      }),
+    []
+  );
+
+  const timezoneOptions = useMemo<SettingsOption<string>[]>(
+    () => [
+      { value: 'Asia/Kolkata', label: 'Asia/Kolkata' },
+      { value: 'UTC', label: 'UTC' },
+      { value: 'America/New_York', label: 'America/New_York' },
+      { value: 'Europe/London', label: 'Europe/London' },
+    ],
+    []
+  );
 
   // ─── Global toggle ────────────────────────────────────────────────────────
 
@@ -108,14 +138,25 @@ export default function NotificationSettingsScreen({
   // ─── Per-event per-channel toggle ────────────────────────────────────────
 
   const handleChannelToggle = useCallback(
-    (
-      event: EventKey,
-      channel: keyof ChannelPreference,
-      value: boolean
-    ) => {
+    (event: EventKey, channel: keyof ChannelPreference, value: boolean) => {
       void updateChannel({ event, channel, value });
     },
     [updateChannel]
+  );
+
+  const handleQuietHoursChange = useCallback(
+    <K extends keyof QuietHours>(key: K, value: QuietHours[K]) => {
+      void update({
+        quietHours: {
+          enabled: settings?.quietHours?.enabled ?? false,
+          start: settings?.quietHours?.start ?? '22:00',
+          end: settings?.quietHours?.end ?? '07:00',
+          timezone: settings?.quietHours?.timezone ?? 'Asia/Kolkata',
+          [key]: value,
+        },
+      });
+    },
+    [settings?.quietHours, update]
   );
 
   // ─── Disable all ─────────────────────────────────────────────────────────
@@ -143,7 +184,8 @@ export default function NotificationSettingsScreen({
     return <Loader fullScreen size="large" />;
   }
 
-  const globalEnabled = settings?.inAppEnabled || settings?.pushEnabled || settings?.emailEnabled;
+  const globalEnabled =
+    settings?.inAppEnabled || settings?.pushEnabled || settings?.emailEnabled;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -205,7 +247,10 @@ export default function NotificationSettingsScreen({
         <View
           style={[
             masterStyles.quickActions,
-            { backgroundColor: theme.colors.surface, borderColor: theme.colors.divider },
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.divider,
+            },
           ]}
         >
           <SettingsSelectItem
@@ -339,14 +384,14 @@ export default function NotificationSettingsScreen({
             label={t('settings.notifications.quiet_start')}
             value={settings?.quietHours?.start}
             disabled={!settings?.quietHours?.enabled}
-            onPress={() => {}}
+            onPress={() => setActiveQuietField('start')}
           />
           <SettingsSelectItem
             icon="sunset"
             label={t('settings.notifications.quiet_end')}
             value={settings?.quietHours?.end}
             disabled={!settings?.quietHours?.enabled}
-            onPress={() => {}}
+            onPress={() => setActiveQuietField('end')}
           />
           <SettingsSelectItem
             icon="clock"
@@ -354,12 +399,37 @@ export default function NotificationSettingsScreen({
             value={settings?.quietHours?.timezone}
             disabled={!settings?.quietHours?.enabled}
             isLast
-            onPress={() => {}}
+            onPress={() => setActiveQuietField('timezone')}
           />
         </SettingsCard>
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={activeQuietField === 'start'}
+        title={t('settings.notifications.quiet_start')}
+        options={timeOptions}
+        selectedValue={settings?.quietHours?.start}
+        onSelect={(value) => handleQuietHoursChange('start', value)}
+        onClose={() => setActiveQuietField(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeQuietField === 'end'}
+        title={t('settings.notifications.quiet_end')}
+        options={timeOptions}
+        selectedValue={settings?.quietHours?.end}
+        onSelect={(value) => handleQuietHoursChange('end', value)}
+        onClose={() => setActiveQuietField(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeQuietField === 'timezone'}
+        title={t('settings.notifications.timezone')}
+        options={timezoneOptions}
+        selectedValue={settings?.quietHours?.timezone}
+        onSelect={(value) => handleQuietHoursChange('timezone', value)}
+        onClose={() => setActiveQuietField(null)}
+      />
     </SafeAreaView>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -9,11 +9,24 @@ import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import {
+  SettingsOption,
+  SettingsOptionSheet,
+} from '@/core/components/settings/SettingsOptionSheet';
+import {
   useGetAccessibilitySettingsQuery,
   useUpdateAccessibilitySettingsMutation,
 } from '@/store/services/accessibilitySettings.service';
 import Loader from '@/core/components/Loader';
-import { AccessibilitySettingsScreenProps } from './AccessibilitySettings.types';
+import {
+  AccessibilityFontSize,
+  AccessibilitySettings,
+  AccessibilitySettingsScreenProps,
+} from './AccessibilitySettings.types';
+
+const formatValue = <T extends string>(
+  options: SettingsOption<T>[],
+  value?: T
+): string => options.find((option) => option.value === value)?.label ?? '';
 
 export default function AccessibilitySettingsScreen({
   navigation,
@@ -23,11 +36,32 @@ export default function AccessibilitySettingsScreen({
 
   const { data, isLoading } = useGetAccessibilitySettingsQuery();
   const [update] = useUpdateAccessibilitySettingsMutation();
+  const [fontSizeOpen, setFontSizeOpen] = useState(false);
 
   const settings = data?.accessibility;
 
+  const fontSizeOptions = useMemo<SettingsOption<AccessibilityFontSize>[]>(
+    () => [
+      { value: 'small', label: t('settings.options.small') },
+      { value: 'medium', label: t('settings.options.medium') },
+      { value: 'large', label: t('settings.options.large') },
+      { value: 'extra_large', label: t('settings.options.extra_large') },
+    ],
+    [t]
+  );
+
   const handleToggle = useCallback(
-    (key: string, value: boolean) => {
+    (key: keyof AccessibilitySettings, value: boolean) => {
+      void update({ [key]: value });
+    },
+    [update]
+  );
+
+  const handleUpdate = useCallback(
+    <K extends keyof AccessibilitySettings>(
+      key: K,
+      value: AccessibilitySettings[K]
+    ) => {
       void update({ [key]: value });
     },
     [update]
@@ -58,8 +92,8 @@ export default function AccessibilitySettingsScreen({
           <SettingsSelectItem
             icon="type"
             label={t('settings.accessibility.font_size')}
-            value={settings?.fontSize ?? 'medium'}
-            onPress={() => {}}
+            value={formatValue(fontSizeOptions, settings?.fontSize)}
+            onPress={() => setFontSizeOpen(true)}
           />
           <SettingsToggleItem
             icon="bold"
@@ -112,6 +146,15 @@ export default function AccessibilitySettingsScreen({
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={fontSizeOpen}
+        title={t('settings.accessibility.font_size')}
+        options={fontSizeOptions}
+        selectedValue={settings?.fontSize}
+        onSelect={(value) => handleUpdate('fontSize', value)}
+        onClose={() => setFontSizeOpen(false)}
+      />
     </SafeAreaView>
   );
 }

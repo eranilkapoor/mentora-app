@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -8,10 +8,30 @@ import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import {
+  SettingsOption,
+  SettingsOptionSheet,
+} from '@/core/components/settings/SettingsOptionSheet';
+import {
   useGetLocalizationSettingsQuery,
+  useUpdateLocalizationSettingsMutation,
 } from '@/store/services/localizationSettings.service';
 import Loader from '@/core/components/Loader';
-import { LocalizationSettingsScreenProps } from './LocalizationSettings.types';
+import {
+  LocalizationSettings,
+  LocalizationSettingsScreenProps,
+} from './LocalizationSettings.types';
+
+type SelectKey =
+  | 'appLanguage'
+  | 'region'
+  | 'timezone'
+  | 'dateFormat'
+  | 'currency';
+
+const formatValue = <T extends string>(
+  options: SettingsOption<T>[],
+  value?: T
+): string => options.find((option) => option.value === value)?.label ?? '';
 
 export default function LocalizationSettingsScreen({
   navigation,
@@ -19,10 +39,70 @@ export default function LocalizationSettingsScreen({
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
   const { data, isLoading } = useGetLocalizationSettingsQuery();
+  const [updateLocalizationSettings] = useUpdateLocalizationSettingsMutation();
+  const [activeSelect, setActiveSelect] = useState<SelectKey | null>(null);
 
   const settings = data?.localization;
 
-  if (isLoading || !data) {
+  const languageOptions = useMemo<SettingsOption<string>[]>(
+    () => [
+      { value: 'en', label: t('language.english') },
+      { value: 'hi', label: t('language.hindi') },
+    ],
+    [t]
+  );
+
+  const regionOptions = useMemo<SettingsOption<string>[]>(
+    () => [
+      { value: 'IN', label: t('settings.options.india') },
+      { value: 'US', label: t('settings.options.united_states') },
+      { value: 'GB', label: t('settings.options.united_kingdom') },
+      { value: 'GLOBAL', label: t('settings.options.global') },
+    ],
+    [t]
+  );
+
+  const timezoneOptions = useMemo<SettingsOption<string>[]>(
+    () => [
+      { value: 'Asia/Kolkata', label: 'Asia/Kolkata' },
+      { value: 'UTC', label: 'UTC' },
+      { value: 'America/New_York', label: 'America/New_York' },
+      { value: 'Europe/London', label: 'Europe/London' },
+    ],
+    []
+  );
+
+  const dateFormatOptions = useMemo<
+    SettingsOption<LocalizationSettings['dateFormat']>[]
+  >(
+    () => [
+      { value: 'DD/MM/YYYY', label: 'DD/MM/YYYY' },
+      { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
+      { value: 'YYYY-MM-DD', label: 'YYYY-MM-DD' },
+    ],
+    []
+  );
+
+  const currencyOptions = useMemo<SettingsOption<string>[]>(
+    () => [
+      { value: 'INR', label: 'INR' },
+      { value: 'USD', label: 'USD' },
+      { value: 'GBP', label: 'GBP' },
+    ],
+    []
+  );
+
+  const handleUpdate = useCallback(
+    <K extends keyof LocalizationSettings>(
+      key: K,
+      value: LocalizationSettings[K]
+    ) => {
+      void updateLocalizationSettings({ [key]: value });
+    },
+    [updateLocalizationSettings]
+  );
+
+  if (isLoading || !settings) {
     return <Loader fullScreen size="large" />;
   }
 
@@ -47,15 +127,17 @@ export default function LocalizationSettingsScreen({
           <SettingsSelectItem
             icon="message-square"
             label={t('settings.localization.app_language')}
-            value={settings?.appLanguage?.toUpperCase() ?? 'ENGLISH'}
-            onPress={() => {}}
+            value={formatValue(languageOptions, settings?.appLanguage)}
+            onPress={() => setActiveSelect('appLanguage')}
           />
           <SettingsSelectItem
             icon="list"
             label={t('settings.localization.preferred_languages')}
-            value={`${settings?.preferredLanguages?.length ?? 0} selected`}
+            value={t('settings.options.selected_count', {
+              count: settings?.preferredLanguages?.length ?? 0,
+            })}
             isLast
-            onPress={() => {}}
+            onPress={() => setActiveSelect('appLanguage')}
           />
         </SettingsCard>
 
@@ -68,15 +150,15 @@ export default function LocalizationSettingsScreen({
           <SettingsSelectItem
             icon="map"
             label={t('settings.localization.region_label')}
-            value={settings?.region ?? 'Global'}
-            onPress={() => {}}
+            value={formatValue(regionOptions, settings?.region)}
+            onPress={() => setActiveSelect('region')}
           />
           <SettingsSelectItem
             icon="clock"
             label={t('settings.localization.timezone')}
             value={settings?.timezone ?? 'UTC'}
             isLast
-            onPress={() => {}}
+            onPress={() => setActiveSelect('timezone')}
           />
         </SettingsCard>
 
@@ -89,24 +171,64 @@ export default function LocalizationSettingsScreen({
           <SettingsSelectItem
             icon="calendar"
             label={t('settings.localization.date_format')}
-            value={settings?.dateFormat === 'DD/MM/YYYY'
-              ? 'DD/MM/YYYY'
-              : settings?.dateFormat === 'MM/DD/YYYY'
-                ? 'MM/DD/YYYY'
-                : 'YYYY-MM-DD'}
-            onPress={() => {}}
+            value={settings?.dateFormat ?? 'YYYY-MM-DD'}
+            onPress={() => setActiveSelect('dateFormat')}
           />
           <SettingsSelectItem
             icon="dollar-sign"
             label={t('settings.localization.currency')}
             value={settings?.currency?.toUpperCase() ?? 'INR'}
             isLast
-            onPress={() => {}}
+            onPress={() => setActiveSelect('currency')}
           />
         </SettingsCard>
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={activeSelect === 'appLanguage'}
+        title={t('settings.localization.app_language')}
+        options={languageOptions}
+        selectedValue={settings.appLanguage}
+        onSelect={(value) => {
+          handleUpdate('appLanguage', value);
+          handleUpdate('preferredLanguages', [value]);
+        }}
+        onClose={() => setActiveSelect(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeSelect === 'region'}
+        title={t('settings.localization.region_label')}
+        options={regionOptions}
+        selectedValue={settings.region}
+        onSelect={(value) => handleUpdate('region', value)}
+        onClose={() => setActiveSelect(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeSelect === 'timezone'}
+        title={t('settings.localization.timezone')}
+        options={timezoneOptions}
+        selectedValue={settings.timezone}
+        onSelect={(value) => handleUpdate('timezone', value)}
+        onClose={() => setActiveSelect(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeSelect === 'dateFormat'}
+        title={t('settings.localization.date_format')}
+        options={dateFormatOptions}
+        selectedValue={settings.dateFormat}
+        onSelect={(value) => handleUpdate('dateFormat', value)}
+        onClose={() => setActiveSelect(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeSelect === 'currency'}
+        title={t('settings.localization.currency')}
+        options={currencyOptions}
+        selectedValue={settings.currency}
+        onSelect={(value) => handleUpdate('currency', value)}
+        onClose={() => setActiveSelect(null)}
+      />
     </SafeAreaView>
   );
 }

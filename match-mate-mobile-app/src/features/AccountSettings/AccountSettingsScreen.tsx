@@ -11,6 +11,7 @@ import { VerificationStatusRow } from '@/core/components/settings/VerificationSt
 import { showConfirm } from '@/core/utils/confirm';
 import {
   useGetAccountSettingsQuery,
+  useConnectProviderMutation,
   useDeactivateAccountMutation,
   useDeleteAccountRequestMutation,
   useDisconnectLinkedAccountMutation,
@@ -38,6 +39,7 @@ export default function AccountSettingsScreen({
   const { data, isLoading } = useGetAccountSettingsQuery();
   const [deactivateAccount] = useDeactivateAccountMutation();
   const [deleteAccountRequest] = useDeleteAccountRequestMutation();
+  const [connectProvider] = useConnectProviderMutation();
   const [disconnectLinked] = useDisconnectLinkedAccountMutation();
 
   const settings = data?.account;
@@ -97,6 +99,15 @@ export default function AccountSettingsScreen({
     [disconnectLinked, t]
   );
 
+  const handleConnect = useCallback(
+    (provider: string) => {
+      void connectProvider({ provider }).catch((error: unknown) => {
+        console.error('Connect provider error:', error);
+      });
+    },
+    [connectProvider]
+  );
+
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
   }
@@ -144,13 +155,23 @@ export default function AccountSettingsScreen({
             icon="mail"
             label={t('settings.account.change_email')}
             sublabel={t('settings.account.change_email_sub')}
-            onPress={() => navigation.navigate('ChangeEmail' as never)}
+            onPress={() =>
+              Alert.alert(
+                t('settings.account.change_email'),
+                t('settings.account.change_email_message')
+              )
+            }
           />
           <SettingsSelectItem
             icon="phone"
             label={t('settings.account.change_phone')}
             sublabel={t('settings.account.change_phone_sub')}
-            onPress={() => navigation.navigate('ChangePhone' as never)}
+            onPress={() =>
+              Alert.alert(
+                t('settings.account.change_phone'),
+                t('settings.account.change_phone_message')
+              )
+            }
           />
           <SettingsSelectItem
             icon="lock"
@@ -188,7 +209,7 @@ export default function AccountSettingsScreen({
                   sublabel={t('settings.account.linked_connected')}
                   isLast={isLast}
                   destructive={false}
-                  onPress={() => handleDisconnect(config.label)}
+                  onPress={() => handleDisconnect(provider)}
                 />
               ) : (
                 <SettingsSelectItem
@@ -198,7 +219,7 @@ export default function AccountSettingsScreen({
                   sublabel={t('settings.account.linked_not_connected')}
                   value={t('settings.account.connect')}
                   isLast={isLast}
-                  onPress={() => {}}
+                  onPress={() => handleConnect(provider)}
                 />
               );
             }
@@ -224,7 +245,9 @@ export default function AccountSettingsScreen({
             sublabel={
               settings?.deletionScheduledAt
                 ? t('settings.account.delete_scheduled', {
-                    date: new Date(settings.deletionScheduledAt).toLocaleDateString(),
+                    date: new Date(
+                      settings.deletionScheduledAt
+                    ).toLocaleDateString(),
                   })
                 : t('settings.account.delete_sub')
             }

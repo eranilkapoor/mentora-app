@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, ScrollView, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -8,13 +8,25 @@ import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
+import {
+  SettingsOption,
+  SettingsOptionSheet,
+} from '@/core/components/settings/SettingsOptionSheet';
 import { showConfirm } from '@/core/utils/confirm';
 import {
   useGetSecuritySettingsQuery,
   useUpdateSecuritySettingsMutation,
 } from '@/store/services/securitySettings.service';
 import Loader from '@/core/components/Loader';
-import { SecuritySettingsScreenProps } from './SecuritySettings.types';
+import {
+  SecuritySettings,
+  SecuritySettingsScreenProps,
+} from './SecuritySettings.types';
+
+const formatValue = <T extends string>(
+  options: SettingsOption<T>[],
+  value?: T
+): string => options.find((option) => option.value === value)?.label ?? '';
 
 export default function SecuritySettingsScreen({
   navigation,
@@ -24,11 +36,34 @@ export default function SecuritySettingsScreen({
 
   const { data, isLoading } = useGetSecuritySettingsQuery();
   const [update] = useUpdateSecuritySettingsMutation();
+  const [twoFactorMethodOpen, setTwoFactorMethodOpen] = useState(false);
 
   const settings = data?.security;
 
+  const twoFactorMethodOptions = useMemo<
+    SettingsOption<SecuritySettings['twoFactorMethod']>[]
+  >(
+    () => [
+      { value: 'none', label: t('settings.options.none') },
+      { value: 'sms', label: t('settings.options.sms') },
+      { value: 'email', label: t('settings.options.email') },
+      {
+        value: 'authenticator',
+        label: t('settings.options.authenticator'),
+      },
+    ],
+    [t]
+  );
+
   const handleToggle = useCallback(
-    (key: string, value: boolean) => {
+    (key: keyof SecuritySettings, value: boolean) => {
+      void update({ [key]: value });
+    },
+    [update]
+  );
+
+  const handleUpdate = useCallback(
+    <K extends keyof SecuritySettings>(key: K, value: SecuritySettings[K]) => {
       void update({ [key]: value });
     },
     [update]
@@ -41,10 +76,33 @@ export default function SecuritySettingsScreen({
       confirmText: t('settings.security.revoke_all_confirm'),
       destructive: true,
       onConfirm: () => {
-        Alert.alert(t('common.success'), t('settings.security.revoke_all_success'));
+        Alert.alert(
+          t('common.success'),
+          t('settings.security.revoke_all_success')
+        );
       },
     });
   }, [t]);
+
+  const handleManageDevices = useCallback(() => {
+    const devices = settings?.loginDevices ?? [];
+    const message =
+      devices.length > 0
+        ? devices
+            .map((device) => {
+              const name =
+                device.deviceName ?? device.platform ?? device.deviceId;
+              const lastActive = device.lastActive
+                ? new Date(device.lastActive).toLocaleString()
+                : t('settings.security.unknown_activity');
+
+              return `${name}${device.isCurrent ? ` (${t('settings.security.current_device')})` : ''}\n${lastActive}`;
+            })
+            .join('\n\n')
+        : t('settings.security.no_devices');
+
+    Alert.alert(t('settings.security.manage_devices'), message);
+  }, [settings?.loginDevices, t]);
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
@@ -78,9 +136,12 @@ export default function SecuritySettingsScreen({
           <SettingsSelectItem
             icon="smartphone"
             label={t('settings.security.two_factor_method')}
-            value={settings?.twoFactorMethod ?? 'none'}
+            value={formatValue(
+              twoFactorMethodOptions,
+              settings?.twoFactorMethod
+            )}
             sublabel={t('settings.security.two_factor_method_sub')}
-            onPress={() => {}}
+            onPress={() => setTwoFactorMethodOpen(true)}
           />
           <SettingsToggleItem
             icon="cpu"
@@ -134,7 +195,7 @@ export default function SecuritySettingsScreen({
             sublabel={t('settings.security.manage_devices_sub', {
               count: settings?.loginDevices?.length ?? 0,
             })}
-            onPress={() => {}}
+            onPress={handleManageDevices}
           />
           <SettingsSelectItem
             icon="log-out"
@@ -148,6 +209,15 @@ export default function SecuritySettingsScreen({
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={twoFactorMethodOpen}
+        title={t('settings.security.two_factor_method')}
+        options={twoFactorMethodOptions}
+        selectedValue={settings?.twoFactorMethod}
+        onSelect={(value) => handleUpdate('twoFactorMethod', value)}
+        onClose={() => setTwoFactorMethodOpen(false)}
+      />
     </SafeAreaView>
   );
 }

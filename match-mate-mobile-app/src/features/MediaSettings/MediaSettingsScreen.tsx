@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -9,11 +9,20 @@ import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import {
+  SettingsOption,
+  SettingsOptionSheet,
+} from '@/core/components/settings/SettingsOptionSheet';
+import {
   useGetMediaSettingsQuery,
   useUpdateMediaSettingsMutation,
 } from '@/store/services/mediaSettings.service';
 import Loader from '@/core/components/Loader';
-import { MediaSettingsScreenProps } from './MediaSettings.types';
+import { MediaSettings, MediaSettingsScreenProps } from './MediaSettings.types';
+
+const formatValue = <T extends string>(
+  options: SettingsOption<T>[],
+  value?: T
+): string => options.find((option) => option.value === value)?.label ?? '';
 
 export default function MediaSettingsScreen({
   navigation,
@@ -23,11 +32,30 @@ export default function MediaSettingsScreen({
 
   const { data, isLoading } = useGetMediaSettingsQuery();
   const [updateMediaSettings] = useUpdateMediaSettingsMutation();
+  const [qualityOpen, setQualityOpen] = useState(false);
 
   const settings = data?.media;
 
+  const qualityOptions = useMemo<
+    SettingsOption<MediaSettings['mediaQuality']>[]
+  >(
+    () => [
+      { value: 'low', label: t('settings.options.low') },
+      { value: 'medium', label: t('settings.options.medium') },
+      { value: 'high', label: t('settings.options.high') },
+    ],
+    [t]
+  );
+
   const handleToggle = useCallback(
-    (key: string, value: boolean) => {
+    (key: keyof MediaSettings, value: boolean) => {
+      void updateMediaSettings({ [key]: value });
+    },
+    [updateMediaSettings]
+  );
+
+  const handleUpdate = useCallback(
+    <K extends keyof MediaSettings>(key: K, value: MediaSettings[K]) => {
       void updateMediaSettings({ [key]: value });
     },
     [updateMediaSettings]
@@ -65,9 +93,9 @@ export default function MediaSettingsScreen({
           <SettingsSelectItem
             icon="sliders"
             label={t('settings.media.media_quality')}
-            value={settings?.mediaQuality ?? 'medium'}
+            value={formatValue(qualityOptions, settings?.mediaQuality)}
             isLast
-            onPress={() => {}}
+            onPress={() => setQualityOpen(true)}
           />
         </SettingsCard>
 
@@ -103,6 +131,15 @@ export default function MediaSettingsScreen({
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={qualityOpen}
+        title={t('settings.media.media_quality')}
+        options={qualityOptions}
+        selectedValue={settings?.mediaQuality}
+        onSelect={(value) => handleUpdate('mediaQuality', value)}
+        onClose={() => setQualityOpen(false)}
+      />
     </SafeAreaView>
   );
 }

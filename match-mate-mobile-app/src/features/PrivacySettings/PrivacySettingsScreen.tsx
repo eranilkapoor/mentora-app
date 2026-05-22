@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -8,12 +8,33 @@ import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import {
+  SettingsOption,
+  SettingsOptionSheet,
+} from '@/core/components/settings/SettingsOptionSheet';
+import {
   useGetPrivacySettingsQuery,
   useUpdatePrivacySettingsMutation,
 } from '@/store/services/privacySettings.service';
 import Loader from '@/core/components/Loader';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
-import { PrivacySettingsScreenProps } from './PrivacySettings.types';
+import {
+  MessagePermission,
+  PrivacySettings,
+  PrivacySettingsScreenProps,
+  ProfileVisibility,
+  VisibilityLevel,
+} from './PrivacySettings.types';
+
+type SelectKey =
+  | 'profileVisibility'
+  | 'showPhotosTo'
+  | 'showLastSeen'
+  | 'allowMessagesFrom';
+
+const formatValue = <T extends string>(
+  options: SettingsOption<T>[],
+  value?: T
+): string => options.find((option) => option.value === value)?.label ?? '';
 
 export default function PrivacySettingsScreen({
   navigation,
@@ -23,15 +44,63 @@ export default function PrivacySettingsScreen({
 
   const { data, isLoading } = useGetPrivacySettingsQuery();
   const [updatePrivacySettings] = useUpdatePrivacySettingsMutation();
+  const [activeSelect, setActiveSelect] = useState<SelectKey | null>(null);
 
   const settings = data?.privacy;
 
+  const profileVisibilityOptions = useMemo<SettingsOption<ProfileVisibility>[]>(
+    () => [
+      { value: 'public', label: t('settings.options.public') },
+      { value: 'private', label: t('settings.options.private') },
+      { value: 'contacts_only', label: t('settings.options.contacts_only') },
+      { value: 'premium_only', label: t('settings.options.premium_only') },
+    ],
+    [t]
+  );
+
+  const visibilityOptions = useMemo<SettingsOption<VisibilityLevel>[]>(
+    () => [
+      { value: 'everyone', label: t('settings.options.everyone') },
+      {
+        value: 'accepted_matches',
+        label: t('settings.options.accepted_matches'),
+      },
+      { value: 'contacts_only', label: t('settings.options.contacts_only') },
+      { value: 'no_one', label: t('settings.options.no_one') },
+    ],
+    [t]
+  );
+
+  const messagePermissionOptions = useMemo<SettingsOption<MessagePermission>[]>(
+    () => [
+      { value: 'all', label: t('settings.options.everyone') },
+      { value: 'matches_only', label: t('settings.options.matches_only') },
+      { value: 'contacts_only', label: t('settings.options.contacts_only') },
+      { value: 'no_one', label: t('settings.options.no_one') },
+    ],
+    [t]
+  );
+
   const handleToggle = useCallback(
-    async (key: string, value: boolean) => {
+    async (key: keyof PrivacySettings, value: boolean) => {
       try {
         await updatePrivacySettings({
           [key]: value,
         }).unwrap();
+      } catch (error) {
+        console.error('Privacy Update Error:', error);
+      }
+    },
+    [updatePrivacySettings]
+  );
+
+  const handleUpdate = useCallback(
+    async <K extends keyof PrivacySettings>(
+      key: K,
+      value: PrivacySettings[K]
+    ) => {
+      try {
+        await updatePrivacySettings({ [key]: value }).unwrap();
       } catch (error) {
         console.error('Privacy Update Error:', error);
       }
@@ -64,8 +133,11 @@ export default function PrivacySettingsScreen({
           <SettingsSelectItem
             icon="globe"
             label={t('settings.privacy.who_can_see')}
-            value={settings.profileVisibility ?? 'everyone'}
-            onPress={() => {}}
+            value={formatValue(
+              profileVisibilityOptions,
+              settings.profileVisibility
+            )}
+            onPress={() => setActiveSelect('profileVisibility')}
           />
           <SettingsToggleItem
             icon="user-x"
@@ -126,8 +198,8 @@ export default function PrivacySettingsScreen({
           <SettingsSelectItem
             icon="image"
             label={t('settings.privacy.show_photos_to')}
-            value={settings.showPhotosTo ?? 'everyone'}
-            onPress={() => {}}
+            value={formatValue(visibilityOptions, settings.showPhotosTo)}
+            onPress={() => setActiveSelect('showPhotosTo')}
           />
           <SettingsToggleItem
             icon="eye-off"
@@ -160,9 +232,9 @@ export default function PrivacySettingsScreen({
           <SettingsSelectItem
             icon="clock"
             label={t('settings.privacy.show_last_seen')}
-            value={settings.showLastSeen ?? 'everyone'}
+            value={formatValue(visibilityOptions, settings.showLastSeen)}
             isLast
-            onPress={() => {}}
+            onPress={() => setActiveSelect('showLastSeen')}
           />
         </SettingsCard>
 
@@ -175,14 +247,50 @@ export default function PrivacySettingsScreen({
           <SettingsSelectItem
             icon="send"
             label={t('settings.privacy.allow_messages_from')}
-            value={settings.allowMessagesFrom ?? 'everyone'}
+            value={formatValue(
+              messagePermissionOptions,
+              settings.allowMessagesFrom
+            )}
             isLast
-            onPress={() => {}}
+            onPress={() => setActiveSelect('allowMessagesFrom')}
           />
         </SettingsCard>
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={activeSelect === 'profileVisibility'}
+        title={t('settings.privacy.who_can_see')}
+        options={profileVisibilityOptions}
+        selectedValue={settings.profileVisibility}
+        onSelect={(value) => void handleUpdate('profileVisibility', value)}
+        onClose={() => setActiveSelect(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeSelect === 'showPhotosTo'}
+        title={t('settings.privacy.show_photos_to')}
+        options={visibilityOptions}
+        selectedValue={settings.showPhotosTo}
+        onSelect={(value) => void handleUpdate('showPhotosTo', value)}
+        onClose={() => setActiveSelect(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeSelect === 'showLastSeen'}
+        title={t('settings.privacy.show_last_seen')}
+        options={visibilityOptions}
+        selectedValue={settings.showLastSeen}
+        onSelect={(value) => void handleUpdate('showLastSeen', value)}
+        onClose={() => setActiveSelect(null)}
+      />
+      <SettingsOptionSheet
+        visible={activeSelect === 'allowMessagesFrom'}
+        title={t('settings.privacy.allow_messages_from')}
+        options={messagePermissionOptions}
+        selectedValue={settings.allowMessagesFrom}
+        onSelect={(value) => void handleUpdate('allowMessagesFrom', value)}
+        onClose={() => setActiveSelect(null)}
+      />
     </SafeAreaView>
   );
 }
