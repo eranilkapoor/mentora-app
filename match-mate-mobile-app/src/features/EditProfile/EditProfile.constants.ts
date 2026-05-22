@@ -1,4 +1,20 @@
-import { Countries, EatingHabits, DrinkingHabits, Genders, ManglikStatuses, MaritalStatuses, SmokingHabits, ProfileFors, Hours, Minutes, Periods, Qualifications, OccupationTypes, Religions, Castes } from '@/core/types';
+import {
+  Countries,
+  EatingHabits,
+  DrinkingHabits,
+  Genders,
+  ManglikStatuses,
+  MaritalStatuses,
+  SmokingHabits,
+  ProfileFors,
+  Hours,
+  Minutes,
+  Periods,
+  Qualifications,
+  OccupationTypes,
+  Religions,
+  Castes,
+} from '@/core/types';
 import { ProfileData, Siblings } from './EditProfile.types';
 
 // ─── Defaults ─────────────────────────────────────────────────────────────────

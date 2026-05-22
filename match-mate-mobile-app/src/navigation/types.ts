@@ -55,6 +55,9 @@ export type SettingsStackParamList = {
   NotificationSettings: undefined;
   HelpSupport: undefined;
   PrivacyPolicy: undefined;
+  AccountSettings: undefined;
+  PrivacySettings: undefined;
+  CommunicationSettings: undefined;
 };
 
 // ─── Bottom Tabs ──────────────────────────────────────────────────────────────

@@ -35,7 +35,7 @@ export class AuthController {
   constructor(
     private readonly authService: AuthService,
     private readonly logger: AppLogger,
-  ) { }
+  ) {}
 
   @Public()
   @Post('register')
@@ -234,25 +234,22 @@ export class AuthController {
   }
 
   private extractRefreshToken(req: AppRequest): string {
-    const tokenFromCookie = req.cookies?.refreshToken as
-      | string
-      | undefined;
+    const tokenFromCookie = req.cookies?.refreshToken as string | undefined;
 
-    const tokenFromBody = (req.body as {
-      refreshToken?: string;
-    })?.refreshToken;
+    const tokenFromBody = (
+      req.body as {
+        refreshToken?: string;
+      }
+    )?.refreshToken;
 
     const tokenFromHeader = req.headers['x-refresh-token'] as
       | string
       | undefined;
 
-    const refreshToken =
-      tokenFromCookie ?? tokenFromBody ?? tokenFromHeader;
+    const refreshToken = tokenFromCookie ?? tokenFromBody ?? tokenFromHeader;
 
     if (!refreshToken) {
-      throw new UnauthorizedException(
-        'Refresh token not found',
-      );
+      throw new UnauthorizedException('Refresh token not found');
     }
 
     return refreshToken;
@@ -267,11 +264,7 @@ export class AuthController {
     try {
       const refreshToken = this.extractRefreshToken(req);
 
-      return await this.authService.refresh(
-        req,
-        res,
-        refreshToken,
-      );
+      return await this.authService.refresh(req, res, refreshToken);
     } catch (error) {
       this.logger.error(
         `Refresh token failed: ${
@@ -284,9 +277,7 @@ export class AuthController {
         throw error;
       }
 
-      throw new UnauthorizedException(
-        'Unable to refresh access token',
-      );
+      throw new UnauthorizedException('Unable to refresh access token');
     }
   }
 
@@ -299,11 +290,7 @@ export class AuthController {
     try {
       const refreshToken = this.extractRefreshToken(req);
 
-      return await this.authService.refresh(
-        req,
-        res,
-        refreshToken,
-      );
+      return await this.authService.refresh(req, res, refreshToken);
     } catch (error) {
       this.logger.error(
         `Mobile refresh token failed: ${
@@ -316,9 +303,7 @@ export class AuthController {
         throw error;
       }
 
-      throw new UnauthorizedException(
-        'Unable to refresh access token',
-      );
+      throw new UnauthorizedException('Unable to refresh access token');
     }
   }
 
@@ -330,7 +315,7 @@ export class AuthController {
   ) {
     try {
       const refreshToken = this.extractRefreshToken(req);
-      
+
       if (refreshToken) {
         await this.authService.logout(req, refreshToken);
       }

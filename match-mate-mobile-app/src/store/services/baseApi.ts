@@ -197,7 +197,15 @@ export const baseApi = createApi({
 
   baseQuery: baseQueryWithAuth,
 
-  tagTypes: ['Preference', 'Profile', 'ProfileMedia', 'Auth'],
+  tagTypes: [
+    'Preference',
+    'Profile',
+    'ProfileMedia',
+    'Auth',
+    'AccountSettings',
+    'PrivacySettings',
+    'CommunicationSettings',
+  ],
 
   endpoints: () => ({}),
 });

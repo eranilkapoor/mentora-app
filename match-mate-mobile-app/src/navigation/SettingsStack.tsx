@@ -14,6 +14,9 @@ import NotificationSettingsScreen from '@/features/NotificationSettings/Notifica
 import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
 import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicy.screen';
 import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
+import AccountSettingsScreen from '@/features/AccountSettings/screens/AccountSettingsScreen';
+import PrivacySettingsScreen from '@/features/PrivacySettings/PrivacySettingsScreen';
+import CommunicationSettingsScreen from '@/features/CommunicationSettings/CommunicationSettingsScreen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -46,6 +49,21 @@ export default function SettingsStack(): React.ReactElement {
         name="NotificationSettings"
         component={NotificationSettingsScreen}
         options={{ title: t('settings.notifications') }}
+      />
+      <Stack.Screen
+        name="AccountSettings"
+        component={AccountSettingsScreen}
+        options={{ title: t('settings.account_settings') }}
+      />
+      <Stack.Screen
+        name="PrivacySettings"
+        component={PrivacySettingsScreen}
+        options={{ title: t('settings.privacy_settings') }}
+      />
+      <Stack.Screen
+        name="CommunicationSettings"
+        component={CommunicationSettingsScreen}
+        options={{ title: t('settings.communication_settings') }}
       />
       <Stack.Screen
         name="HelpSupport"

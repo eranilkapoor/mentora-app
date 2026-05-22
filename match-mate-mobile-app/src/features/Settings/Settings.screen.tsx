@@ -288,6 +288,16 @@ export default function SettingsScreen({
           />
         </Section>
 
+        <Section icon="shield" title="Account Settings">
+          <SettingRow
+            icon="shield"
+            label="Security & Verification"
+            subLabel="2FA, linked accounts and account controls"
+            onPress={() => navigation.navigate('AccountSettings')}
+            isLast
+          />
+        </Section>
+
         {/* Partner Preferences */}
 
         <Section icon="heart" title={t('settings.partner_preferences')}>
@@ -304,24 +314,34 @@ export default function SettingsScreen({
 
         <Section icon="shield" title="Privacy & Safety">
           <SettingRow
-            icon="eye-off"
-            label="Profile Visibility"
-            subLabel="Control who can view you"
-            onPress={() => {}}
-          />
-
-          <SettingRow
-            icon="image"
-            label="Photo Privacy"
-            subLabel="Manage private photos"
-            onPress={() => {}}
+            icon="shield"
+            label="Privacy Settings"
+            subLabel="Manage profile privacy"
+            onPress={() => navigation.navigate('PrivacySettings')}
           />
 
           <SettingRow
             icon="slash"
             label="Blocked Users"
             subLabel="Manage blocked profiles"
-            onPress={() => {}}
+            onPress={() => { }}
+            isLast
+          />
+        </Section>
+
+        <Section
+          icon="message-circle"
+          title="Communication"
+        >
+          <SettingRow
+            icon="message-square"
+            label="Communication Settings"
+            subLabel="Messaging and call controls"
+            onPress={() =>
+              navigation.navigate(
+                'CommunicationSettings'
+              )
+            }
             isLast
           />
         </Section>
@@ -415,7 +435,7 @@ export default function SettingsScreen({
             icon="trash-2"
             label="Delete Account"
             subLabel="Permanently remove account"
-            onPress={() => {}}
+            onPress={() => { }}
             isDanger
             isLast
           />
