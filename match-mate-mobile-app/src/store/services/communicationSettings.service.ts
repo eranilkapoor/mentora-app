@@ -23,8 +23,8 @@ export const communicationSettingsApi = baseApi.injectEndpoints({
       UpdateCommunicationSettingsPayload
     >({
       query: (body) => ({
-        url: '/settings',
-        method: 'PATCH',
+        url: '/settings/communication',
+        method: 'PUT',
         body,
       }),
 

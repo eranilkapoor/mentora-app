@@ -26,7 +26,7 @@ import {
   getFullName,
 } from '../../core/utils/format';
 import Header from '../../core/components/Header';
-import { useGetMyProfileQuery } from '../../store/services/profileApi';
+import { useGetMyProfileQuery } from '../../store/services/profileApi.service';
 import {
   Countries,
   Genders,

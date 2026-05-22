@@ -58,6 +58,11 @@ export type SettingsStackParamList = {
   AccountSettings: undefined;
   PrivacySettings: undefined;
   CommunicationSettings: undefined;
+  AccessibilitySettings: undefined;
+  AiSettings: undefined;
+  MediaSettings: undefined;
+  LocalizationSettings: undefined;
+  SecuritySettings: undefined;
 };
 
 // ─── Bottom Tabs ──────────────────────────────────────────────────────────────

@@ -21,8 +21,8 @@ export const privacySettingsApi = baseApi.injectEndpoints({
       UpdatePrivacySettingsPayload
     >({
       query: (body) => ({
-        url: '/settings',
-        method: 'PATCH',
+        url: '/settings/privacy',
+        method: 'PUT',
         body,
       }),
 

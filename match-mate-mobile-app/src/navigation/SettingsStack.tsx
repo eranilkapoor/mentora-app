@@ -17,6 +17,11 @@ import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
 import AccountSettingsScreen from '@/features/AccountSettings/screens/AccountSettingsScreen';
 import PrivacySettingsScreen from '@/features/PrivacySettings/PrivacySettingsScreen';
 import CommunicationSettingsScreen from '@/features/CommunicationSettings/CommunicationSettingsScreen';
+import SecuritySettingsScreen from '@/features/SecuritySettings/SecuritySettingsScreen';
+import LocalizationSettingsScreen from '@/features/LocalizationSettings/LocalizationSettingsScreen';
+import MediaSettingsScreen from '@/features/MediaSettings/MediaSettingsScreen';
+import AccessibilitySettingsScreen from '@/features/AccessibilitySettings/AccessibilitySettingsScreen';
+import AiSettingsScreen from '@/features/AiSettings/AiSettingsScreen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -28,7 +33,6 @@ export default function SettingsStack(): React.ReactElement {
     <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-      {/* Added EditPreference here */}
       <Stack.Screen name="EditPreference" component={EditPreferenceScreen} />
       <Stack.Screen
         name="ChangePassword"
@@ -64,6 +68,31 @@ export default function SettingsStack(): React.ReactElement {
         name="CommunicationSettings"
         component={CommunicationSettingsScreen}
         options={{ title: t('settings.communication_settings') }}
+      />
+      <Stack.Screen
+        name="AccessibilitySettings"
+        component={AccessibilitySettingsScreen}
+        options={{ title: t('settings.accessibility_settings') }}
+      />
+      <Stack.Screen
+        name="AiSettings"
+        component={AiSettingsScreen}
+        options={{ title: t('settings.ai_settings') }}
+      />
+      <Stack.Screen
+        name="MediaSettings"
+        component={MediaSettingsScreen}
+        options={{ title: t('settings.media_settings') }}
+      />
+      <Stack.Screen
+        name="LocalizationSettings"
+        component={LocalizationSettingsScreen}
+        options={{ title: t('settings.localization_settings') }}
+      />
+      <Stack.Screen
+        name="SecuritySettings"
+        component={SecuritySettingsScreen}
+        options={{ title: t('settings.security_settings') }}
       />
       <Stack.Screen
         name="HelpSupport"

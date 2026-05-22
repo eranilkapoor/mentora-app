@@ -205,6 +205,11 @@ export const baseApi = createApi({
     'AccountSettings',
     'PrivacySettings',
     'CommunicationSettings',
+    'AccessibilitySettings',
+    'AiSettings',
+    'MediaSettings',
+    'LocalizationSettings',
+    'SecuritySettings',
   ],
 
   endpoints: () => ({}),

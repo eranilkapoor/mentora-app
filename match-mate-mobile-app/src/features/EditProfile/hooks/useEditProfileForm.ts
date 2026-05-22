@@ -13,7 +13,7 @@ import {
   useAddProfileMediaImagesMutation,
   useSetPrimaryProfileMediaImageMutation,
   useRemoveProfileMediaImageMutation,
-} from '@/store/services/profileApi';
+} from '@/store/services/profileApi.service';
 import {
   ProfileData,
   PersonalSection,

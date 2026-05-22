@@ -1,41 +1,27 @@
 import React, { useCallback } from 'react';
-
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native';
-
+import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-
-import Feather from 'react-native-vector-icons/Feather';
-
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
-
-import { ToggleRow } from '@/core/components/ToggleRow';
-
-import { useTheme } from '@/core/theme/ThemeProvider';
-
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-
-import { privacySettingsStyles } from './PrivacySettings.styles';
-
-import { PrivacySettingsScreenProps } from './PrivacySettings.types';
-
+import { SettingsCard } from '@/core/components/settings/SettingsCard';
+import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
+import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import {
   useGetPrivacySettingsQuery,
   useUpdatePrivacySettingsMutation,
-} from '../../store/services/privacySettingsApi';
-
-import { PrivacySection } from './components/PrivacySection';
-
-import { PrivacySelectRow } from './components/PrivacySelectRow';
+} from '@/store/services/privacySettings.service';
+import Loader from '@/core/components/Loader';
+import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
+import { PrivacySettingsScreenProps } from './PrivacySettings.types';
 
 export default function PrivacySettingsScreen({
   navigation,
 }: PrivacySettingsScreenProps): React.ReactElement {
-  const styles = useThemedStyles(privacySettingsStyles);
-
-  const { theme } = useTheme();
+  const styles = useThemedStyles(sharedSettingsStyles);
+  const { t } = useTranslation();
 
   const { data, isLoading } = useGetPrivacySettingsQuery();
-
   const [updatePrivacySettings] = useUpdatePrivacySettingsMutation();
 
   const settings = data?.privacy;
@@ -54,18 +40,14 @@ export default function PrivacySettingsScreen({
   );
 
   if (isLoading || !settings) {
-    return (
-      <SafeAreaView style={styles.safe}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-      </SafeAreaView>
-    );
+    return <Loader fullScreen size="large" />;
   }
 
   return (
     <SafeAreaView style={styles.safe}>
       <Header
         showBack
-        title="Privacy Settings"
+        title={t('settings.privacy.title')}
         onBackPress={navigation.goBack}
       />
 
@@ -73,168 +55,131 @@ export default function PrivacySettingsScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* Hero Card */}
-
-        <View style={styles.heroCard}>
-          <View style={styles.heroIconWrapper}>
-            <Feather name="shield" size={24} color={theme.colors.primary} />
-          </View>
-
-          <View style={styles.heroContent}>
-            <Text style={styles.heroTitle}>Privacy & Safety</Text>
-
-            <Text style={styles.heroSubtitle}>
-              Control profile visibility, media access, online presence and
-              messaging permissions.
-            </Text>
-          </View>
-        </View>
-
-        {/* Profile Privacy */}
-
-        <PrivacySection
-          title="Profile Privacy"
-          subtitle="Control your account visibility"
+        {/* Profile Visibility */}
+        <SettingsCard
+          icon="eye"
+          title={t('settings.privacy.profile_visibility')}
+          subtitle={t('settings.privacy.profile_visibility_subtitle')}
         >
-          <ToggleRow
-            label="Incognito Mode"
-            sublabel="Browse profiles privately"
-            value={settings.incognitoMode}
+          <SettingsSelectItem
+            icon="globe"
+            label={t('settings.privacy.who_can_see')}
+            value={settings.profileVisibility ?? 'everyone'}
+            onPress={() => {}}
+          />
+          <SettingsToggleItem
+            icon="user-x"
+            label={t('settings.privacy.incognito')}
+            sublabel={t('settings.privacy.incognito_sub')}
+            value={settings.incognitoMode ?? false}
             onChange={(v) => handleToggle('incognitoMode', v)}
           />
-
-          <View style={styles.rowDivider} />
-
-          <ToggleRow
-            label="Premium Only Visibility"
-            sublabel="Visible only to premium users"
-            value={settings.showOnlyToPremium}
+          <SettingsToggleItem
+            icon="star"
+            label={t('settings.privacy.premium_only')}
+            sublabel={t('settings.privacy.premium_only_sub')}
+            value={settings.showOnlyToPremium ?? false}
+            isLast
             onChange={(v) => handleToggle('showOnlyToPremium', v)}
           />
-        </PrivacySection>
+        </SettingsCard>
 
-        {/* Personal Information */}
-
-        <PrivacySection
-          title="Personal Information"
-          subtitle="Manage visible profile details"
+        {/* Contact Info */}
+        <SettingsCard
+          icon="phone"
+          title={t('settings.privacy.contact_info')}
+          subtitle={t('settings.privacy.contact_info_subtitle')}
         >
-          <ToggleRow
-            label="Show Phone Number"
-            value={settings.showPhone}
+          <SettingsToggleItem
+            icon="phone"
+            label={t('settings.privacy.show_phone')}
+            value={settings.showPhone ?? false}
             onChange={(v) => handleToggle('showPhone', v)}
           />
-
-          <View style={styles.rowDivider} />
-
-          <ToggleRow
-            label="Show Email Address"
-            value={settings.showEmail}
+          <SettingsToggleItem
+            icon="mail"
+            label={t('settings.privacy.show_email')}
+            value={settings.showEmail ?? false}
             onChange={(v) => handleToggle('showEmail', v)}
           />
-
-          <View style={styles.rowDivider} />
-
-          <ToggleRow
-            label="Show Income"
-            value={settings.showIncome}
+          <SettingsToggleItem
+            icon="dollar-sign"
+            label={t('settings.privacy.show_income')}
+            value={settings.showIncome ?? false}
             onChange={(v) => handleToggle('showIncome', v)}
           />
-
-          <View style={styles.rowDivider} />
-
-          <ToggleRow
-            label="Show Exact Age"
-            value={settings.showExactAge}
+          <SettingsToggleItem
+            icon="calendar"
+            label={t('settings.privacy.show_exact_age')}
+            value={settings.showExactAge ?? false}
+            isLast
             onChange={(v) => handleToggle('showExactAge', v)}
           />
-        </PrivacySection>
+        </SettingsCard>
 
         {/* Photos */}
-
-        <PrivacySection
-          title="Photos & Media"
-          subtitle="Manage profile media privacy"
+        <SettingsCard
+          icon="camera"
+          title={t('settings.privacy.photos')}
+          subtitle={t('settings.privacy.photos_subtitle')}
         >
-          <ToggleRow
-            label="Blur Photos For Unmatched"
-            sublabel="Blur images for users who are not matched"
-            value={settings.blurPhotosForUnmatched}
+          <SettingsSelectItem
+            icon="image"
+            label={t('settings.privacy.show_photos_to')}
+            value={settings.showPhotosTo ?? 'everyone'}
+            onPress={() => {}}
+          />
+          <SettingsToggleItem
+            icon="eye-off"
+            label={t('settings.privacy.blur_photos')}
+            sublabel={t('settings.privacy.blur_photos_sub')}
+            value={settings.blurPhotosForUnmatched ?? false}
             onChange={(v) => handleToggle('blurPhotosForUnmatched', v)}
           />
-
-          <View style={styles.rowDivider} />
-
-          <ToggleRow
-            label="Allow Screenshots"
-            sublabel="Allow users to take screenshots"
-            value={settings.allowScreenshots}
+          <SettingsToggleItem
+            icon="scissors"
+            label={t('settings.privacy.allow_screenshots')}
+            value={settings.allowScreenshots ?? false}
+            isLast
             onChange={(v) => handleToggle('allowScreenshots', v)}
           />
-
-          <View style={styles.rowDivider} />
-
-          <PrivacySelectRow
-            label="Who Can View Photos"
-            description="Control photo access"
-            value={settings.showPhotosTo || 'everyone'}
-            onPress={() => {}}
-            isLast
-          />
-        </PrivacySection>
+        </SettingsCard>
 
         {/* Online Presence */}
-
-        <PrivacySection
-          title="Online Presence"
-          subtitle="Manage your activity visibility"
+        <SettingsCard
+          icon="activity"
+          title={t('settings.privacy.online_presence')}
+          subtitle={t('settings.privacy.online_presence_subtitle')}
         >
-          <ToggleRow
-            label="Show Online Status"
-            value={settings.showOnlineStatus}
+          <SettingsToggleItem
+            icon="circle"
+            label={t('settings.privacy.show_online_status')}
+            value={settings.showOnlineStatus ?? false}
             onChange={(v) => handleToggle('showOnlineStatus', v)}
           />
-
-          <View style={styles.rowDivider} />
-
-          <PrivacySelectRow
-            label="Last Seen Visibility"
-            description="Choose who can see your activity"
-            value={settings.showLastSeen || 'everyone'}
-            onPress={() => {}}
+          <SettingsSelectItem
+            icon="clock"
+            label={t('settings.privacy.show_last_seen')}
+            value={settings.showLastSeen ?? 'everyone'}
             isLast
+            onPress={() => {}}
           />
-        </PrivacySection>
+        </SettingsCard>
 
         {/* Messaging */}
-
-        <PrivacySection
-          title="Messaging & Requests"
-          subtitle="Control who can contact you"
+        <SettingsCard
+          icon="message-circle"
+          title={t('settings.privacy.messaging')}
+          subtitle={t('settings.privacy.messaging_subtitle')}
         >
-          <PrivacySelectRow
-            label="Allow Messages From"
-            description="Restrict incoming conversations"
-            value={settings.allowMessagesFrom || 'everyone'}
-            onPress={() => {}}
+          <SettingsSelectItem
+            icon="send"
+            label={t('settings.privacy.allow_messages_from')}
+            value={settings.allowMessagesFrom ?? 'everyone'}
             isLast
-          />
-        </PrivacySection>
-
-        {/* Advanced */}
-
-        <PrivacySection
-          title="Advanced Privacy"
-          subtitle="Additional account privacy settings"
-        >
-          <PrivacySelectRow
-            label="Profile Visibility"
-            description="Choose who can discover your profile"
-            value={settings.profileVisibility || 'everyone'}
             onPress={() => {}}
-            isLast
           />
-        </PrivacySection>
+        </SettingsCard>
 
         <View style={styles.footer} />
       </ScrollView>

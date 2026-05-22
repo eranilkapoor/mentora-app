@@ -27,7 +27,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
     updateTwoFactor: builder.mutation<void, UpdateTwoFactorPayload>({
       query: (body) => ({
         url: '/settings/two-factor',
-        method: 'PATCH',
+        method: 'PUT',
         body,
       }),
 

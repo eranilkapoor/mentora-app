@@ -420,6 +420,61 @@ export default function SettingsScreen({
           />
         </Section>
 
+        {/* Accessibility */}
+
+        <Section icon="accessibility" title="Accessibility">
+          <SettingRow
+            icon="accessibility"
+            label="Accessibility Settings"
+            subLabel="Customize accessibility options"
+            onPress={() => navigation.navigate('AccessibilitySettings')}
+          />
+        </Section>
+
+        {/* AI & Personalization */}
+
+        <Section icon="brain" title="AI & Personalization">
+          <SettingRow
+            icon="brain"
+            label="AI Settings"
+            subLabel="Customize AI-powered features"
+            onPress={() => navigation.navigate('AiSettings')}
+          />
+        </Section>
+
+        {/* Media & Display */}
+
+        <Section icon="image" title="Media & Display">
+          <SettingRow
+            icon="image"
+            label="Media Settings"
+            subLabel="Customize media and display options"
+            onPress={() => navigation.navigate('MediaSettings')}
+          />
+        </Section>
+
+        {/* Localization & Language */}
+
+        <Section icon="globe" title="Localization & Language">
+          <SettingRow
+            icon="globe"
+            label="Localization Settings"
+            subLabel="Customize localization and language options"
+            onPress={() => navigation.navigate('LocalizationSettings')}
+          />
+        </Section>
+
+        {/* Security & Account Controls */}
+
+        <Section icon="lock" title="Security & Account Controls">
+          <SettingRow
+            icon="lock"
+            label="Security Settings"
+            subLabel="Manage your account security"
+            onPress={() => navigation.navigate('SecuritySettings')}
+          />
+        </Section>
+
         {/* Danger Zone */}
 
         <Section icon="alert-triangle" title="Danger Zone">

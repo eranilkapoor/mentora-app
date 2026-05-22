@@ -16,7 +16,7 @@ import {
   MaritalStatuses,
   Qualifications,
 } from '@/core/types';
-import { useOnboardingProfileMutation } from '@/store/services/profileApi';
+import { useOnboardingProfileMutation } from '@/store/services/profileApi.service';
 import { showError } from '@/core/utils/toast';
 
 // ─── Initial state ────────────────────────────────────────────────────────────
