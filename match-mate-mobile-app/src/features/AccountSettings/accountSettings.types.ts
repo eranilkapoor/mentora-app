@@ -1,3 +1,12 @@
+import { SettingsStackParamList } from "@/navigation/types";
+import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+
+export interface AccountSettingsScreenProps {
+  navigation: NativeStackNavigationProp<
+    SettingsStackParamList,
+    'AccountSettings'
+  >;
+}
 export interface LinkedAccount {
   provider: string;
   providerId?: string;
@@ -5,32 +14,18 @@ export interface LinkedAccount {
   connectedAt?: string;
 }
 
-export interface AccountSettingsResponse {
-  userId: string;
-
+export interface AccountSettings {
   emailVerified: boolean;
   phoneVerified: boolean;
-
-  twoFactorEnabled: boolean;
-
   isDeactivated: boolean;
-
   deactivatedAt?: string;
   deactivationReason?: string;
-
   deletionScheduledAt?: string;
-
   linkedAccounts: LinkedAccount[];
-
-  createdAt?: string;
-  updatedAt?: string;
 }
 
-/**
- * Update 2FA
- */
-export interface UpdateTwoFactorPayload {
-  enabled: boolean;
+export interface AccountSettingsResponse {
+  account: AccountSettings;
 }
 
 /**
@@ -46,3 +41,8 @@ export interface DeactivateAccountPayload {
 export interface ConnectProviderPayload {
   provider: string;
 }
+
+/**
+ * Update Account Settings
+ */
+export interface UpdateAccountSettingsPayload extends Partial<AccountSettings> {}

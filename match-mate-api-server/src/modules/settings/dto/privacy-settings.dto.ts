@@ -29,10 +29,6 @@ export class UpdatePrivacySettingsDto {
   @IsOptional()
   @IsIn(['everyone', 'accepted_matches', 'contacts_only', 'no_one'])
   showLastSeen?: VisibilityLevel;
-
-  @IsOptional()
-  @IsIn(['all', 'matches_only', 'contacts_only', 'no_one'])
-  allowMessagesFrom?: string;
 }
 
 export class BlockUserDto {

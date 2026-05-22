@@ -1,194 +1,404 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
+import { View, Text, Switch, ScrollView, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { View, Text, Switch, TouchableOpacity, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Feather from 'react-native-vector-icons/Feather';
+import Header from '@/core/components/Header';
+import Loader from '@/core/components/Loader';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { notificationSettingsStyles } from './NotificationSettings.styles';
-import {
-  NotificationSettingsScreenProps,
-  NotificationState,
-} from './NotificationSettings.types';
-import { NOTIFICATION_GROUPS } from './NotificationSettings.constants';
-import { SectionCard } from './components/SectionCard';
-import Header from '@/core/components/Header';
+import { SettingsCard } from '@/core/components/settings/SettingsCard';
+import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
+import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
+import { ChannelPreferenceRow } from '@/core/components/settings/ChannelPreferenceRow';
 import { showConfirm } from '@/core/utils/confirm';
+import {
+  useGetNotificationSettingsQuery,
+  useUpdateNotificationSettingsMutation,
+  useUpdateNotificationChannelMutation,
+} from '@/store/services/notificationSettings.service';
+import { ChannelPreference, NotificationSettings, NotificationSettingsScreenProps } from './NotificationSettings.types';
+import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const buildInitialState = (): NotificationState => {
-  const state: NotificationState = { masterToggle: true };
-  for (const group of NOTIFICATION_GROUPS) {
-    for (const setting of group.settings) {
-      state[setting.key] = true;
-    }
-  }
-  return state;
-};
+// ─── Per-event notification config ───────────────────────────────────────────
 
-const TOTAL_COUNT = NOTIFICATION_GROUPS.reduce(
-  (acc, g) => acc + g.settings.length,
-  0
-);
+type EventKey = keyof NotificationSettings['preferences'];
 
-// ─── Screen ───────────────────────────────────────────────────────────────────
+interface EventConfig {
+  key: EventKey;
+  label: string;
+  sublabel: string;
+  icon: React.ComponentProps<typeof Feather>['name'];
+}
+
+const NOTIFICATION_EVENTS: EventConfig[] = [
+  {
+    key: 'interestReceived',
+    label: 'settings.notifications.interest_received',
+    sublabel: 'settings.notifications.interest_received_sub',
+    icon: 'heart',
+  },
+  {
+    key: 'interestAccepted',
+    label: 'settings.notifications.interest_accepted',
+    sublabel: 'settings.notifications.interest_accepted_sub',
+    icon: 'check-circle',
+  },
+  {
+    key: 'matchFound',
+    label: 'settings.notifications.match_found',
+    sublabel: 'settings.notifications.match_found_sub',
+    icon: 'star',
+  },
+  {
+    key: 'profileView',
+    label: 'settings.notifications.profile_view',
+    sublabel: 'settings.notifications.profile_view_sub',
+    icon: 'eye',
+  },
+  {
+    key: 'messageReceived',
+    label: 'settings.notifications.message_received',
+    sublabel: 'settings.notifications.message_received_sub',
+    icon: 'message-circle',
+  },
+  {
+    key: 'subscription',
+    label: 'settings.notifications.subscription',
+    sublabel: 'settings.notifications.subscription_sub',
+    icon: 'credit-card',
+  },
+  {
+    key: 'system',
+    label: 'settings.notifications.system',
+    sublabel: 'settings.notifications.system_sub',
+    icon: 'bell',
+  },
+  {
+    key: 'marketing',
+    label: 'settings.notifications.marketing',
+    sublabel: 'settings.notifications.marketing_sub',
+    icon: 'tag',
+  },
+];
 
 export default function NotificationSettingsScreen({
   navigation,
 }: NotificationSettingsScreenProps): React.ReactElement {
-  const styles = useThemedStyles(notificationSettingsStyles);
+  const styles = useThemedStyles(sharedSettingsStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const [settings, setSettings] =
-    useState<NotificationState>(buildInitialState);
+  const { data, isLoading } = useGetNotificationSettingsQuery();
+  const [update] = useUpdateNotificationSettingsMutation();
+  const [updateChannel] = useUpdateNotificationChannelMutation();
 
-  const masterEnabled = settings['masterToggle'] ?? true;
+  const settings = data?.notification as NotificationSettings;
 
-  const enabledCount = Object.entries(settings).filter(
-    ([key, val]) => key !== 'masterToggle' && val
-  ).length;
+  // ─── Global toggle ────────────────────────────────────────────────────────
 
-  // ─── Handlers ─────────────────────────────────────────────────────────────
+  const handleGlobalToggle = useCallback(
+    (key: keyof NotificationSettings, value: boolean) => {
+      void update({ [key]: value });
+    },
+    [update]
+  );
 
-  const handleToggle = useCallback((key: string, value: boolean): void => {
-    setSettings((prev) => ({ ...prev, [key]: value }));
-  }, []);
+  // ─── Per-event per-channel toggle ────────────────────────────────────────
 
-  const handleMasterToggle = useCallback((value: boolean): void => {
-    setSettings((prev) => {
-      const updated: NotificationState = { ...prev, masterToggle: value };
-      if (!value) {
-        for (const group of NOTIFICATION_GROUPS) {
-          for (const setting of group.settings) {
-            updated[setting.key] = false;
-          }
-        }
-      }
-      return updated;
-    });
-  }, []);
+  const handleChannelToggle = useCallback(
+    (
+      event: EventKey,
+      channel: keyof ChannelPreference,
+      value: boolean
+    ) => {
+      void updateChannel({ event, channel, value });
+    },
+    [updateChannel]
+  );
 
-  const handleEnableAll = useCallback((): void => {
-    setSettings(() => buildInitialState());
-  }, []);
+  // ─── Disable all ─────────────────────────────────────────────────────────
 
-  const handleDisableAll = useCallback((): void => {
+  const handleDisableAll = useCallback(() => {
     showConfirm({
-      title: t('settings.notification_settings.disable_all'),
-      message: t('settings.notification_settings.disable_all_confirm'),
-      confirmText: t('settings.notification_settings.disable_all'),
+      title: t('settings.notifications.disable_all_title'),
+      message: t('settings.notifications.disable_all_message'),
+      confirmText: t('settings.notifications.disable_all_confirm'),
       destructive: true,
       onConfirm: () => {
-        setSettings(() => {
-          const updated: NotificationState = { masterToggle: false };
-          for (const group of NOTIFICATION_GROUPS) {
-            for (const setting of group.settings) {
-              updated[setting.key] = false;
-            }
-          }
-          return updated;
+        void update({
+          inAppEnabled: false,
+          pushEnabled: false,
+          emailEnabled: false,
+          smsEnabled: false,
+          marketingEnabled: false,
+          doNotDisturb: true,
         });
       },
     });
-  }, [t]);
+  }, [update, t]);
 
-  // ─── Render ───────────────────────────────────────────────────────────────
+  if (isLoading || !data) {
+    return <Loader fullScreen size="large" />;
+  }
+
+  const globalEnabled = settings?.inAppEnabled || settings?.pushEnabled || settings?.emailEnabled;
 
   return (
     <SafeAreaView style={styles.safe}>
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title={t('settings.notification_settings.title')}
+        title={t('settings.notifications.title')}
       />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Master toggle card ─────────────────────────────────────── */}
-        <View style={styles.masterCard}>
-          <View style={styles.masterLeft}>
-            <View style={styles.masterIconWrapper}>
+        {/* ── Master card ───────────────────────────────────────────── */}
+        <View style={masterStyles.card}>
+          <View style={masterStyles.left}>
+            <View
+              style={[
+                masterStyles.iconWrapper,
+                { backgroundColor: theme.colors.white },
+              ]}
+            >
               <Feather name="bell" size={22} color={theme.colors.primary} />
             </View>
             <View>
-              <Text style={styles.masterLabel}>
-                {t('settings.notification_settings.all_notifications')}
+              <Text
+                style={[
+                  masterStyles.label,
+                  { color: theme.colors.textPrimary },
+                ]}
+              >
+                {t('settings.notifications.all_notifications')}
               </Text>
-              <Text style={styles.masterSubtitle}>
-                {t('settings.notification_settings.enabled_count', {
-                  count: enabledCount,
-                  total: TOTAL_COUNT,
-                })}
+              <Text
+                style={[
+                  masterStyles.sublabel,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
+                {t('settings.notifications.master_sublabel')}
               </Text>
             </View>
           </View>
-
           <Switch
-            value={masterEnabled}
-            onValueChange={handleMasterToggle}
+            value={!settings?.doNotDisturb}
+            onValueChange={(v) => handleGlobalToggle('doNotDisturb', !v)}
             trackColor={{
               false: theme.colors.switchTrackOff,
               true: theme.colors.primary,
             }}
             thumbColor={theme.colors.white}
-            accessibilityLabel={t(
-              'settings.notification_settings.all_notifications'
-            )}
+            accessibilityLabel={t('settings.notifications.all_notifications')}
             accessibilityRole="switch"
-            accessibilityState={{ checked: masterEnabled }}
+            accessibilityState={{ checked: !settings?.doNotDisturb }}
           />
         </View>
 
-        {/* ── Quick actions ──────────────────────────────────────────── */}
-        <View style={styles.quickActions}>
-          <TouchableOpacity
-            style={styles.quickActionBtn}
-            onPress={handleEnableAll}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel={t('settings.notification_settings.enable_all')}
-          >
-            <Feather name="bell" size={14} color={theme.colors.primary} />
-            <Text style={styles.quickActionText}>
-              {t('settings.notification_settings.enable_all')}
-            </Text>
-          </TouchableOpacity>
-
-          <View style={styles.quickActionDivider} />
-
-          <TouchableOpacity
-            style={styles.quickActionBtn}
+        {/* ── Quick actions ─────────────────────────────────────────── */}
+        <View
+          style={[
+            masterStyles.quickActions,
+            { backgroundColor: theme.colors.surface, borderColor: theme.colors.divider },
+          ]}
+        >
+          <SettingsSelectItem
+            icon="bell"
+            label={t('settings.notifications.enable_all')}
+            isLast={false}
+            onPress={() => {
+              void update({
+                inAppEnabled: true,
+                pushEnabled: true,
+                doNotDisturb: false,
+              });
+            }}
+          />
+          <SettingsSelectItem
+            icon="bell-off"
+            label={t('settings.notifications.disable_all')}
+            destructive
+            isLast
             onPress={handleDisableAll}
-            activeOpacity={0.7}
-            accessibilityRole="button"
-            accessibilityLabel={t('settings.notification_settings.disable_all')}
-          >
-            <Feather name="bell-off" size={14} color={theme.colors.danger} />
-            <Text
-              style={[styles.quickActionText, styles.quickActionTextDanger]}
-            >
-              {t('settings.notification_settings.disable_all')}
-            </Text>
-          </TouchableOpacity>
+          />
         </View>
 
-        {/* ── Notification groups ────────────────────────────────────── */}
-        {NOTIFICATION_GROUPS.map((group) => (
-          <SectionCard
-            key={group.title}
-            group={group}
-            settings={settings}
-            onToggle={handleToggle}
-            masterEnabled={masterEnabled}
+        {/* ── Global channel toggles ────────────────────────────────── */}
+        <SettingsCard
+          icon="sliders"
+          title={t('settings.notifications.channels')}
+          subtitle={t('settings.notifications.channels_subtitle')}
+        >
+          <SettingsToggleItem
+            icon="bell"
+            label={t('settings.notifications.in_app')}
+            sublabel={t('settings.notifications.in_app_sub')}
+            value={settings?.inAppEnabled ?? false}
+            onChange={(v) => handleGlobalToggle('inAppEnabled', v)}
           />
-        ))}
+          <SettingsToggleItem
+            icon="smartphone"
+            label={t('settings.notifications.push')}
+            sublabel={t('settings.notifications.push_sub')}
+            value={settings?.pushEnabled ?? false}
+            onChange={(v) => handleGlobalToggle('pushEnabled', v)}
+          />
+          <SettingsToggleItem
+            icon="mail"
+            label={t('settings.notifications.email')}
+            sublabel={t('settings.notifications.email_sub')}
+            value={settings?.emailEnabled ?? false}
+            onChange={(v) => handleGlobalToggle('emailEnabled', v)}
+          />
+          <SettingsToggleItem
+            icon="message-square"
+            label={t('settings.notifications.sms')}
+            sublabel={t('settings.notifications.sms_sub')}
+            value={settings?.smsEnabled ?? false}
+            onChange={(v) => handleGlobalToggle('smsEnabled', v)}
+          />
+          <SettingsToggleItem
+            icon="tag"
+            label={t('settings.notifications.marketing')}
+            sublabel={t('settings.notifications.marketing_global_sub')}
+            value={settings?.marketingEnabled ?? false}
+            isLast
+            onChange={(v) => handleGlobalToggle('marketingEnabled', v)}
+          />
+        </SettingsCard>
+
+        {/* ── Per-event channel preferences ─────────────────────────── */}
+        <SettingsCard
+          icon="settings"
+          title={t('settings.notifications.per_event')}
+          subtitle={t('settings.notifications.per_event_subtitle')}
+        >
+          {NOTIFICATION_EVENTS.map((event, index) => (
+            <ChannelPreferenceRow
+              key={event.key}
+              label={t(event.label)}
+              sublabel={t(event.sublabel)}
+              value={settings?.preferences?.[event.key] as ChannelPreference}
+              globalEnabled={globalEnabled}
+              isLast={index === NOTIFICATION_EVENTS.length - 1}
+              onChange={(channel, value) =>
+                handleChannelToggle(event.key, channel, value)
+              }
+            />
+          ))}
+        </SettingsCard>
+
+        {/* ── Device preferences ────────────────────────────────────── */}
+        <SettingsCard
+          icon="volume-2"
+          title={t('settings.notifications.device')}
+          subtitle={t('settings.notifications.device_subtitle')}
+        >
+          <SettingsToggleItem
+            icon="volume-2"
+            label={t('settings.notifications.sound')}
+            sublabel={t('settings.notifications.sound_sub')}
+            value={settings?.soundEnabled ?? false}
+            onChange={(v) => handleGlobalToggle('soundEnabled', v)}
+          />
+          <SettingsToggleItem
+            icon="zap"
+            label={t('settings.notifications.vibration')}
+            sublabel={t('settings.notifications.vibration_sub')}
+            value={settings?.vibrationEnabled ?? false}
+            isLast
+            onChange={(v) => handleGlobalToggle('vibrationEnabled', v)}
+          />
+        </SettingsCard>
+
+        {/* ── Quiet Hours ───────────────────────────────────────────── */}
+        <SettingsCard
+          icon="moon"
+          title={t('settings.notifications.quiet_hours')}
+          subtitle={t('settings.notifications.quiet_hours_subtitle')}
+        >
+          <SettingsToggleItem
+            icon="moon"
+            label={t('settings.notifications.quiet_hours_enabled')}
+            sublabel={t('settings.notifications.quiet_hours_enabled_sub')}
+            value={settings?.quietHours?.enabled ?? false}
+            onChange={(v) =>
+              void update({
+                quietHours: { ...settings?.quietHours, enabled: v },
+              })
+            }
+          />
+          <SettingsSelectItem
+            icon="sunrise"
+            label={t('settings.notifications.quiet_start')}
+            value={settings?.quietHours?.start}
+            disabled={!settings?.quietHours?.enabled}
+            onPress={() => {}}
+          />
+          <SettingsSelectItem
+            icon="sunset"
+            label={t('settings.notifications.quiet_end')}
+            value={settings?.quietHours?.end}
+            disabled={!settings?.quietHours?.enabled}
+            onPress={() => {}}
+          />
+          <SettingsSelectItem
+            icon="clock"
+            label={t('settings.notifications.timezone')}
+            value={settings?.quietHours?.timezone}
+            disabled={!settings?.quietHours?.enabled}
+            isLast
+            onPress={() => {}}
+          />
+        </SettingsCard>
 
         <View style={styles.footer} />
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+// ─── Local styles (master card only) ─────────────────────────────────────────
+
+const masterStyles = StyleSheet.create({
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 12,
+  },
+  left: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  iconWrapper: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: '700',
+  },
+  sublabel: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  quickActions: {
+    borderRadius: 12,
+    marginBottom: 16,
+    overflow: 'hidden',
+    borderWidth: StyleSheet.hairlineWidth,
+  },
+});

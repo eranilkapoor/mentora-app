@@ -1,11 +1,12 @@
 import { baseApi } from './baseApi';
 
 import {
-  AccountSettingsResponse,
-  UpdateTwoFactorPayload,
+  AccountSettings,
+  UpdateAccountSettingsPayload,
   DeactivateAccountPayload,
   ConnectProviderPayload,
-} from '../../features/AccountSettings/types/accountSettings.types';
+  AccountSettingsResponse,
+} from '../../features/AccountSettings/accountSettings.types';
 
 export const accountSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -22,11 +23,11 @@ export const accountSettingsApi = baseApi.injectEndpoints({
     }),
 
     /**
-     * Enable / Disable 2FA
+     * Update account settings
      */
-    updateTwoFactor: builder.mutation<void, UpdateTwoFactorPayload>({
+    updateAccountSettings: builder.mutation<AccountSettingsResponse, UpdateAccountSettingsPayload>({
       query: (body) => ({
-        url: '/settings/two-factor',
+        url: '/settings',
         method: 'PUT',
         body,
       }),
@@ -82,6 +83,16 @@ export const accountSettingsApi = baseApi.injectEndpoints({
 
       invalidatesTags: ['AccountSettings'],
     }),
+
+    deleteAccountRequest: builder.mutation<void, void>({
+      query: () => ({ url: '/settings/account/delete', method: 'POST' }),
+      invalidatesTags: ['AccountSettings'],
+    }),
+    disconnectLinkedAccount: builder.mutation<void, { provider: string }>({
+      query: (body) => ({ url: '/settings/account/linked/disconnect', method: 'POST', body }),
+      invalidatesTags: ['AccountSettings'],
+    }),
+
   }),
 
   overrideExisting: false,
@@ -89,9 +100,11 @@ export const accountSettingsApi = baseApi.injectEndpoints({
 
 export const {
   useGetAccountSettingsQuery,
-  useUpdateTwoFactorMutation,
+  useUpdateAccountSettingsMutation,
   useDeactivateAccountMutation,
   useScheduleDeletionMutation,
   useConnectProviderMutation,
   useDisconnectProviderMutation,
+  useDeleteAccountRequestMutation,
+  useDisconnectLinkedAccountMutation,
 } = accountSettingsApi;

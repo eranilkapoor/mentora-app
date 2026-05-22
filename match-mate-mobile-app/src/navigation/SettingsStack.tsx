@@ -14,7 +14,7 @@ import NotificationSettingsScreen from '@/features/NotificationSettings/Notifica
 import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
 import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicy.screen';
 import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
-import AccountSettingsScreen from '@/features/AccountSettings/screens/AccountSettingsScreen';
+import AccountSettingsScreen from '@/features/AccountSettings/AccountSettingsScreen';
 import PrivacySettingsScreen from '@/features/PrivacySettings/PrivacySettingsScreen';
 import CommunicationSettingsScreen from '@/features/CommunicationSettings/CommunicationSettingsScreen';
 import SecuritySettingsScreen from '@/features/SecuritySettings/SecuritySettingsScreen';

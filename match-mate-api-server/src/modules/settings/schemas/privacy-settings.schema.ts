@@ -49,17 +49,6 @@ export class PrivacySettings {
     default: 'everyone',
   })
   showLastSeen!: VisibilityLevel;
-
-  // ── Messaging & Interaction ────────────────────────────────────────────────
-  @Prop({
-    type: String,
-    enum: ['all', 'matches_only', 'contacts_only', 'no_one'],
-    default: 'all',
-  })
-  allowMessagesFrom!: string;
-
-  @Prop({ type: [Types.ObjectId], default: [] })
-  blockedUsers!: Types.ObjectId[];
 }
 
 export type PrivacySettingsDocument = PrivacySettings & Document;

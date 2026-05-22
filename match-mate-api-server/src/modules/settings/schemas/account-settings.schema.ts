@@ -17,7 +17,6 @@ export class AccountSettings {
 
   @Prop({ default: false }) emailVerified!: boolean;
   @Prop({ default: false }) phoneVerified!: boolean;
-  @Prop({ default: false }) twoFactorEnabled!: boolean;
   @Prop({ default: false }) isDeactivated!: boolean;
   @Prop() deactivatedAt?: Date;
   @Prop() deactivationReason?: string;

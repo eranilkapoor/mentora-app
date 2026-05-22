@@ -50,7 +50,7 @@ export class SettingsService {
 
   async getBlockedUsers(userId: string) {
     const privacy = await this.repo.getPrivacy(userId);
-    return { blockedUsers: privacy?.blockedUsers ?? [] };
+    return { blockedUsers: privacy ?? [] };
   }
 
   // ─── Notifications ────────────────────────────────────────────────────────

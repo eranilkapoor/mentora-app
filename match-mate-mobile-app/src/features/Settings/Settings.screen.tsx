@@ -271,7 +271,7 @@ export default function SettingsScreen({
 
         {/* Account */}
 
-        <Section icon="user" title={t('settings.account')}>
+        <Section icon="user" title={t('settings.account.title')}>
           <SettingRow
             icon="edit-3"
             label={t('settings.edit_profile')}
@@ -288,11 +288,11 @@ export default function SettingsScreen({
           />
         </Section>
 
-        <Section icon="shield" title="Account Settings">
+        <Section icon="shield" title={t('settings.account_settings')}>
           <SettingRow
             icon="shield"
-            label="Security & Verification"
-            subLabel="2FA, linked accounts and account controls"
+            label={t('settings.security_verification')}
+            subLabel={t('settings.security_verification_sub')}
             onPress={() => navigation.navigate('AccountSettings')}
             isLast
           />
@@ -312,18 +312,18 @@ export default function SettingsScreen({
 
         {/* Privacy */}
 
-        <Section icon="shield" title="Privacy & Safety">
+        <Section icon="shield" title={t('settings.privacy')}>
           <SettingRow
             icon="shield"
-            label="Privacy Settings"
-            subLabel="Manage profile privacy"
+            label={t('settings.privacy_settings')}
+            subLabel={t('settings.privacy_settings_sub')}
             onPress={() => navigation.navigate('PrivacySettings')}
           />
 
           <SettingRow
             icon="slash"
-            label="Blocked Users"
-            subLabel="Manage blocked profiles"
+            label={t('settings.blocked_users')}
+            subLabel={t('settings.blocked_users_sub')}
             onPress={() => { }}
             isLast
           />
@@ -331,12 +331,12 @@ export default function SettingsScreen({
 
         <Section
           icon="message-circle"
-          title="Communication"
+          title={t('settings.communication')}
         >
           <SettingRow
             icon="message-square"
-            label="Communication Settings"
-            subLabel="Messaging and call controls"
+            label={t('settings.communication_settings')}
+            subLabel={t('settings.communication_settings_sub')}
             onPress={() =>
               navigation.navigate(
                 'CommunicationSettings'
@@ -422,74 +422,74 @@ export default function SettingsScreen({
 
         {/* Accessibility */}
 
-        <Section icon="accessibility" title="Accessibility">
+        <Section icon="accessibility" title={t('settings.accessibility')}>
           <SettingRow
             icon="accessibility"
-            label="Accessibility Settings"
-            subLabel="Customize accessibility options"
+            label={t('settings.accessibility_settings')}
+            subLabel={t('settings.accessibility_settings_sub')}
             onPress={() => navigation.navigate('AccessibilitySettings')}
           />
         </Section>
 
         {/* AI & Personalization */}
 
-        <Section icon="brain" title="AI & Personalization">
+        <Section icon="brain" title={t('settings.ai_personalization')}>
           <SettingRow
             icon="brain"
-            label="AI Settings"
-            subLabel="Customize AI-powered features"
+            label={t('settings.ai_settings')}
+            subLabel={t('settings.ai_settings_sub')}
             onPress={() => navigation.navigate('AiSettings')}
           />
         </Section>
 
         {/* Media & Display */}
 
-        <Section icon="image" title="Media & Display">
+        <Section icon="image" title={t('settings.media_display')}>
           <SettingRow
             icon="image"
-            label="Media Settings"
-            subLabel="Customize media and display options"
+            label={t('settings.media_settings')}
+            subLabel={t('settings.media_settings_sub')}
             onPress={() => navigation.navigate('MediaSettings')}
           />
         </Section>
 
         {/* Localization & Language */}
 
-        <Section icon="globe" title="Localization & Language">
+        <Section icon="globe" title={t('settings.localization_language')}>
           <SettingRow
             icon="globe"
-            label="Localization Settings"
-            subLabel="Customize localization and language options"
+            label={t('settings.localization_settings')}
+            subLabel={t('settings.localization_settings_sub')}
             onPress={() => navigation.navigate('LocalizationSettings')}
           />
         </Section>
 
         {/* Security & Account Controls */}
 
-        <Section icon="lock" title="Security & Account Controls">
+        <Section icon="lock" title={t('settings.security.account_controls')}>
           <SettingRow
             icon="lock"
-            label="Security Settings"
-            subLabel="Manage your account security"
+            label={t('settings.security_settings')}
+            subLabel={t('settings.security_settings_sub')}
             onPress={() => navigation.navigate('SecuritySettings')}
           />
         </Section>
 
         {/* Danger Zone */}
 
-        <Section icon="alert-triangle" title="Danger Zone">
+        <Section icon="alert-triangle" title={t('settings.danger_zone')}>
           <SettingRow
             icon="log-out"
-            label={isLoggingOut ? 'Signing Out...' : 'Sign Out'}
-            subLabel="Logout from this device"
+            label={isLoggingOut ? t('settings.signing_out') : t('settings.sign_out')}
+            subLabel={t('settings.sign_out_sub')}
             onPress={handleSignOut}
             isDanger
           />
 
           <SettingRow
             icon="trash-2"
-            label="Delete Account"
-            subLabel="Permanently remove account"
+            label={t('settings.account.delete')}
+            subLabel={t('settings.account.delete_sub')}
             onPress={() => { }}
             isDanger
             isLast
