@@ -71,6 +71,9 @@ async function bootstrap() {
       'X-Client-Version',
       'X-Platform',
       'X-Device-ID',
+      'X-Device-Id',
+      'X-Refresh-Token',
+      'X-API-Key',
     ],
     exposedHeaders: [
       'X-Correlation-ID',

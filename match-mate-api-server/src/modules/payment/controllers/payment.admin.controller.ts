@@ -18,6 +18,8 @@ import { AdminListPaymentsDto } from '../dto/admin-list-payments.dto';
 import { AdminRefundPaymentDto } from '../dto/admin-refund-payment.dto';
 import { PaymentReconciliationDto } from '../dto/payment-reconciliation.dto';
 import { PaymentSettlementReportDto } from '../dto/payment-settlement-report.dto';
+import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @Controller('admin/payments')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -27,34 +29,49 @@ export class PaymentAdminController {
 
   @Permissions(Permission.PAYMENT_VIEW)
   @Get('reports/reconciliation')
-  reconcile(@Query() query: PaymentReconciliationDto) {
-    return this.paymentService.adminReconcilePayments(query);
+  async reconcile(@Query() query: PaymentReconciliationDto) {
+    return successResponse(
+      await this.paymentService.adminReconcilePayments(query),
+      SuccessCode.PAYMENTS_FETCHED,
+    );
   }
 
   @Permissions(Permission.PAYMENT_VIEW)
   @Get('reports/settlement')
-  settlementReport(@Query() query: PaymentSettlementReportDto) {
-    return this.paymentService.adminSettlementReport(query);
+  async settlementReport(@Query() query: PaymentSettlementReportDto) {
+    return successResponse(
+      await this.paymentService.adminSettlementReport(query),
+      SuccessCode.PAYMENTS_FETCHED,
+    );
   }
 
   @Permissions(Permission.PAYMENT_VIEW)
   @Get()
-  listPayments(@Query() query: AdminListPaymentsDto) {
-    return this.paymentService.adminListPayments(query);
+  async listPayments(@Query() query: AdminListPaymentsDto) {
+    return successResponse(
+      await this.paymentService.adminListPayments(query),
+      SuccessCode.PAYMENTS_FETCHED,
+    );
   }
 
   @Permissions(Permission.PAYMENT_VIEW)
   @Get(':orderId')
-  getPayment(@Param('orderId') orderId: string) {
-    return this.paymentService.adminGetPaymentDetail(orderId);
+  async getPayment(@Param('orderId') orderId: string) {
+    return successResponse(
+      await this.paymentService.adminGetPaymentDetail(orderId),
+      SuccessCode.PAYMENT_FETCHED,
+    );
   }
 
   @Permissions(Permission.PAYMENT_REFUND)
   @Post(':orderId/refund')
-  refundPayment(
+  async refundPayment(
     @Param('orderId') orderId: string,
     @Body() dto: AdminRefundPaymentDto,
   ) {
-    return this.paymentService.adminInitiateRefund(orderId, dto);
+    return successResponse(
+      await this.paymentService.adminInitiateRefund(orderId, dto),
+      SuccessCode.PAYMENT_REFUNDED,
+    );
   }
 }

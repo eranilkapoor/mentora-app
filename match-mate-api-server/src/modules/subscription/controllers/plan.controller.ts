@@ -19,6 +19,8 @@ import { PermissionsGuard } from '../../auth/guards/permissions.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Permissions } from 'src/common/decorators/permissions.decorator';
 import { Permission, Role } from 'src/common/enums';
+import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @Controller('admin/plans')
 @UseGuards(JwtAuthGuard)
@@ -29,22 +31,31 @@ export class PlanController {
 
   // GET /admin/plans
   @Get()
-  getPlans() {
-    return this.planService.getPlans();
+  async getPlans() {
+    return successResponse(
+      await this.planService.getPlans(),
+      SuccessCode.PLANS_FETCHED,
+    );
   }
 
   // GET /admin/plans/full/all
   // Fixed: was after :id — NestJS would match 'full' as the planId
   @Get('full/all')
-  getAllPlansWithFeatures() {
-    return this.planService.getAllPlansWithFeatures();
+  async getAllPlansWithFeatures() {
+    return successResponse(
+      await this.planService.getAllPlansWithFeatures(),
+      SuccessCode.PLANS_FETCHED,
+    );
   }
 
   // GET /admin/plans/feature/all
   // Fixed: was after :id — NestJS would match 'feature' as the planId
   @Get('feature/all')
-  getFeatures() {
-    return this.planService.getFeatures();
+  async getFeatures() {
+    return successResponse(
+      await this.planService.getFeatures(),
+      SuccessCode.FEATURES_FETCHED,
+    );
   }
 
   // ─── Plan mutations ────────────────────────────────────────────────────────
@@ -53,16 +64,22 @@ export class PlanController {
   @Roles(Role.ADMIN)
   @Permissions(Permission.PLAN_CREATE)
   @Post()
-  createPlan(@Body() dto: CreatePlanDto) {
-    return this.planService.createPlan(dto);
+  async createPlan(@Body() dto: CreatePlanDto) {
+    return successResponse(
+      await this.planService.createPlan(dto),
+      SuccessCode.PLAN_CREATED,
+    );
   }
 
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles(Role.ADMIN)
   @Permissions(Permission.PLAN_UPDATE)
   @Patch(':id')
-  updatePlan(@Param('id') id: string, @Body() dto: UpdatePlanDto) {
-    return this.planService.updatePlan(id, dto);
+  async updatePlan(@Param('id') id: string, @Body() dto: UpdatePlanDto) {
+    return successResponse(
+      await this.planService.updatePlan(id, dto),
+      SuccessCode.PLAN_UPDATED,
+    );
   }
 
   // ─── Feature mutations ─────────────────────────────────────────────────────
@@ -71,27 +88,36 @@ export class PlanController {
   @Roles(Role.ADMIN)
   @Permissions(Permission.FEATURE_CREATE)
   @Post('feature')
-  createFeature(@Body() dto: CreateFeatureDto) {
-    return this.planService.createFeature(dto);
+  async createFeature(@Body() dto: CreateFeatureDto) {
+    return successResponse(
+      await this.planService.createFeature(dto),
+      SuccessCode.FEATURE_CREATED,
+    );
   }
 
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles(Role.ADMIN)
   @Permissions(Permission.FEATURE_UPDATE)
   @Post('feature/assign')
-  assignFeature(@Body() dto: AssignFeatureDto) {
-    return this.planService.assignFeatureToPlan(dto);
+  async assignFeature(@Body() dto: AssignFeatureDto) {
+    return successResponse(
+      await this.planService.assignFeatureToPlan(dto),
+      SuccessCode.FEATURE_ASSIGNED,
+    );
   }
 
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles(Role.ADMIN)
   @Permissions(Permission.FEATURE_DELETE)
   @Delete(':planId/feature/:featureId')
-  removeFeature(
+  async removeFeature(
     @Param('planId') planId: string,
     @Param('featureId') featureId: string,
   ) {
-    return this.planService.removeFeatureFromPlan(planId, featureId);
+    return successResponse(
+      await this.planService.removeFeatureFromPlan(planId, featureId),
+      SuccessCode.FEATURE_REMOVED,
+    );
   }
 
   // ─── :id param route LAST ──────────────────────────────────────────────────
@@ -99,7 +125,10 @@ export class PlanController {
   // GET /admin/plans/:id
   // Must be last so 'full', 'feature' don't match here
   @Get(':id')
-  getPlan(@Param('id') id: string) {
-    return this.planService.getPlanById(id);
+  async getPlan(@Param('id') id: string) {
+    return successResponse(
+      await this.planService.getPlanById(id),
+      SuccessCode.PLAN_FETCHED,
+    );
   }
 }

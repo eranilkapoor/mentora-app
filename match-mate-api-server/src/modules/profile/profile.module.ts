@@ -37,6 +37,7 @@ import { AuthModule } from '../auth/auth.module';
 import { NotificationModule } from '../notification/notification.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { StorageModule } from '../storage/storage.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { StorageModule } from '../storage/storage.module';
     AnalyticsModule,
     StorageModule,
     AuthModule,
+    SettingsModule,
   ],
   controllers: [ProfileController, MediaController, PreferenceController],
   providers: [

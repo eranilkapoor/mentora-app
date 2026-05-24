@@ -14,14 +14,16 @@
     "athletic": "एथलेटिक",
     "average": "औसत",
     "heavy": "भारी",
+    "chubby": "भरा हुआ",
+    "petite": "छोटा कद",
     "curvy": "कर्वी",
     "fit": "फिट",
-    "muscular": "मांसल"
+    "muscular": "मांसल",
+    "stocky": "मजबूत कद-काठी"
   },
   "complexion": {
     "fair": "गोरा",
     "wheatish": "गेहुँआ",
-    "dusky": "सांवला",
     "dark": "गहरा रंग"
   },
   "family_types": {
@@ -115,7 +117,8 @@
     "buddhist": "बौद्ध",
     "parsi": "पारसी",
     "jewish": "यहूदी",
-    "other": "अन्य"
+    "other": "अन्य",
+    "no_religion": "कोई धर्म नहीं"
   },
   "caste": {
     "general": "सामान्य",
@@ -158,7 +161,8 @@
     "iti": "ITI (औद्योगिक प्रशिक्षण संस्थान)",
     "polytechnic": "पॉलिटेक्निक",
     "skill_certification": "कौशल / व्यावसायिक प्रमाणन",
-    "other": "अन्य"
+    "other": "अन्य",
+    "prefer_not_to_say": "बताना नहीं चाहते"
   },
   "countries": {
     "united_states": "संयुक्त राज्य अमेरिका",

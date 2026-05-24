@@ -16,7 +16,8 @@ import {
   ResetPasswordRequest,
   AuthSessionsResponse,
 } from '../../core/types';
-import { baseApi, getRefreshToken } from './baseApi';
+import { logout as logoutAction } from '../slices/authSlice';
+import { baseApi, clearRefreshToken, getRefreshToken } from './baseApi';
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -92,6 +93,7 @@ export const authApi = baseApi.injectEndpoints({
 
     verifyUser: builder.query<ApiResponse<User>, void>({
       query: () => '/auth/verify-user',
+      providesTags: ['Auth'],
     }),
     logout: builder.mutation<{ success: boolean }, void>({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
@@ -117,6 +119,9 @@ export const authApi = baseApi.injectEndpoints({
             };
           }
 
+          await clearRefreshToken();
+          _api.dispatch(logoutAction());
+
           // Success
           return {
             data: {
@@ -138,6 +143,7 @@ export const authApi = baseApi.injectEndpoints({
         url: '/auth/logout-all',
         method: 'POST',
       }),
+      invalidatesTags: ['Auth'],
     }),
     getSessions: builder.query<ApiResponse<AuthSessionsResponse>, void>({
       query: () => ({

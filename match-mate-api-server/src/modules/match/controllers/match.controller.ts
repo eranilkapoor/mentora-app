@@ -18,6 +18,8 @@ import { RespondInterestDto } from '../dto/respond-interest.dto';
 import { MatchQueryDto, NearbyQueryDto } from '../dto/match-query.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @Controller('match')
 @UseGuards(JwtAuthGuard)
@@ -30,48 +32,63 @@ export class MatchController {
   // ─── Discovery ─────────────────────────────────────────────────────────────
 
   @Get('recommended')
-  getRecommended(
+  async getRecommended(
     @Req() req: AuthenticatedRequest,
     @Query() query: MatchQueryDto,
   ) {
-    return this.discoveryService.getRecommendedMatches(req.user.sub, query);
+    return successResponse(
+      await this.discoveryService.getRecommendedMatches(req.user.sub, query),
+      SuccessCode.MATCHES_FETCHED,
+    );
   }
 
   @Get('new')
-  getNewMatches(
+  async getNewMatches(
     @Req() req: AuthenticatedRequest,
     @Query() query: MatchQueryDto,
   ) {
-    return this.discoveryService.getNewMatches(req.user.sub, query);
+    return successResponse(
+      await this.discoveryService.getNewMatches(req.user.sub, query),
+      SuccessCode.MATCHES_FETCHED,
+    );
   }
 
   @Get('nearby')
-  getNearbyMatches(
+  async getNearbyMatches(
     @Req() req: AuthenticatedRequest,
     @Query() query: NearbyQueryDto,
   ) {
-    return this.discoveryService.getNearbyMatches(req.user.sub, query);
+    return successResponse(
+      await this.discoveryService.getNearbyMatches(req.user.sub, query),
+      SuccessCode.MATCHES_FETCHED,
+    );
   }
 
   // ─── My matches ────────────────────────────────────────────────────────────
 
   @Get('online')
-  getOnlineMatches(
+  async getOnlineMatches(
     @Req() req: AuthenticatedRequest,
     @Query() query: MatchQueryDto,
   ) {
-    return this.discoveryService.getOnlineMatches(req.user.sub, query);
+    return successResponse(
+      await this.discoveryService.getOnlineMatches(req.user.sub, query),
+      SuccessCode.MATCHES_FETCHED,
+    );
   }
 
   @Get('my')
-  getMyMatches(
+  async getMyMatches(
     @Req() req: AuthenticatedRequest,
     @Query() query: MatchQueryDto,
   ) {
-    return this.matchService.getMyMatches(
-      req.user.sub,
-      query.page,
-      query.limit,
+    return successResponse(
+      await this.matchService.getMyMatches(
+        req.user.sub,
+        query.page,
+        query.limit,
+      ),
+      SuccessCode.MATCHES_FETCHED,
     );
   }
 
@@ -79,53 +96,73 @@ export class MatchController {
 
   @Post('interest')
   @HttpCode(HttpStatus.CREATED)
-  sendInterest(@Req() req: AuthenticatedRequest, @Body() dto: SendInterestDto) {
-    return this.matchService.sendInterest(req.user.sub, dto.receiverId);
+  async sendInterest(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: SendInterestDto,
+  ) {
+    return successResponse(
+      await this.matchService.sendInterest(req.user.sub, dto.receiverId),
+      SuccessCode.INTEREST_SENT,
+    );
   }
 
   @Post('interest/respond')
   @HttpCode(HttpStatus.OK)
-  respondToInterest(
+  async respondToInterest(
     @Req() req: AuthenticatedRequest,
     @Body() dto: RespondInterestDto,
   ) {
-    return this.matchService.respondToInterest(
-      req.user.sub,
-      dto.interestId,
-      dto.action,
+    return successResponse(
+      await this.matchService.respondToInterest(
+        req.user.sub,
+        dto.interestId,
+        dto.action,
+      ),
+      dto.action === 'ACCEPT'
+        ? SuccessCode.INTEREST_ACCEPTED
+        : SuccessCode.INTEREST_REJECTED,
     );
   }
 
   @Delete('interest/:interestId')
   @HttpCode(HttpStatus.OK)
-  withdrawInterest(
+  async withdrawInterest(
     @Req() req: AuthenticatedRequest,
     @Param('interestId') interestId: string,
   ) {
-    return this.matchService.withdrawInterest(req.user.sub, interestId);
+    return successResponse(
+      await this.matchService.withdrawInterest(req.user.sub, interestId),
+      SuccessCode.INTEREST_WITHDRAWN,
+    );
   }
 
   @Get('interests/received')
-  getReceivedInterests(
+  async getReceivedInterests(
     @Req() req: AuthenticatedRequest,
     @Query() query: MatchQueryDto,
   ) {
-    return this.matchService.getReceivedInterests(
-      req.user.sub,
-      query.page,
-      query.limit,
+    return successResponse(
+      await this.matchService.getReceivedInterests(
+        req.user.sub,
+        query.page,
+        query.limit,
+      ),
+      SuccessCode.MATCHES_FETCHED,
     );
   }
 
   @Get('interests/sent')
-  getSentInterests(
+  async getSentInterests(
     @Req() req: AuthenticatedRequest,
     @Query() query: MatchQueryDto,
   ) {
-    return this.matchService.getSentInterests(
-      req.user.sub,
-      query.page,
-      query.limit,
+    return successResponse(
+      await this.matchService.getSentInterests(
+        req.user.sub,
+        query.page,
+        query.limit,
+      ),
+      SuccessCode.MATCHES_FETCHED,
     );
   }
 }

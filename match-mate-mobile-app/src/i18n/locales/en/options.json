@@ -25,14 +25,16 @@
     "athletic": "Athletic",
     "average": "Average",
     "heavy": "Heavy",
+    "chubby": "Chubby",
+    "petite": "Petite",
     "curvy": "Curvy",
     "fit": "Fit",
-    "muscular": "Muscular"
+    "muscular": "Muscular",
+    "stocky": "Stocky"
   },
   "complexion": {
     "fair": "Fair",
     "wheatish": "Wheatish",
-    "dusky": "Dusky",
     "dark": "Dark"
   },
   "family_types": {
@@ -126,7 +128,8 @@
     "buddhist": "Buddhist",
     "parsi": "Parsi",
     "jewish": "Jewish",
-    "other": "Other"
+    "other": "Other",
+    "no_religion": "No Religion"
   },
   "caste": {
     "general": "General",
@@ -169,7 +172,8 @@
     "iti": "ITI (Industrial Training Institute)",
     "polytechnic": "Polytechnic",
     "skill_certification": "Skill / Vocational Certification",
-    "other": "Other"
+    "other": "Other",
+    "prefer_not_to_say": "Prefer Not to Say"
   },
   "countries": {
     "united_states": "United States",

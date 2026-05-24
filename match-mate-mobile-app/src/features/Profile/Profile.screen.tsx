@@ -83,6 +83,8 @@ type SchemaProfile = {
       state?: string;
       country?: Country;
     };
+    religion?: string;
+    caste?: string;
     subCast?: string;
     gotra?: string;
     manglikStatus?: ManglikStatus;
@@ -158,14 +160,10 @@ type SchemaProfile = {
   images?: ProfileImage[];
   age?: number;
   height?: number;
-  religion?: string;
-  caste?: string;
-  city?: string;
   location?: {
     type?: 'Point';
     coordinates?: [number, number];
   };
-  gender?: string;
   profileScore?: number;
   profileCompletionPercentage?: number;
   isPremium?: boolean;
@@ -184,6 +182,8 @@ const DEFAULT_PROFILE: SchemaProfile = {
     lastName: '',
     gender: Genders.MALE,
     dateOfBirth: '',
+    religion: Religions.HINDU,
+    caste: '',
     country: Countries.INDIA,
     state: '',
     city: '',
@@ -197,9 +197,6 @@ const DEFAULT_PROFILE: SchemaProfile = {
     languages: [],
     languagesKnown: [],
   },
-  religion: Religions.HINDU,
-  caste: '',
-  gender: Genders.MALE,
   physical: {
     height: '',
     weight: '',
@@ -302,12 +299,17 @@ const getFormattedWeight = (weight: string | number | undefined): string => {
 
 const getProfileHeight = (
   profile: SchemaProfile
-): string | number | undefined =>
-  profile.physical.height ?? profile.physical.height ?? profile.height;
+): string | number | undefined => profile.physical.height;
 
 const getProfileWeight = (
   profile: SchemaProfile
 ): string | number | undefined => profile.physical.weight;
+
+const getProfileReligion = (profile: SchemaProfile): string | undefined =>
+  profile.personal.religion;
+
+const getProfileCaste = (profile: SchemaProfile): string | undefined =>
+  profile.personal.caste;
 
 const getProfileIncome = (
   profile: SchemaProfile
@@ -324,7 +326,7 @@ const getDisplayName = (profile: SchemaProfile): string => {
 
 const getLocation = (profile: SchemaProfile): string =>
   [
-    formatProfileText(profile.city ?? profile.personal.city),
+    formatProfileText(profile.personal.city),
     formatProfileText(profile.personal.state),
     formatProfileText(profile.personal.country),
   ]
@@ -448,12 +450,12 @@ const getPdfRows = (profile: SchemaProfile): Array<[string, string]> => [
       : getFormattedAge(profile.personal.dateOfBirth ?? ''),
   ],
   ['Date of Birth', toDisplayText(profile.personal.dateOfBirth)],
-  ['Gender', formatProfileText(profile.gender ?? profile.personal.gender)],
+  ['Gender', formatProfileText(profile.personal.gender)],
   ['Height', getFormattedHeight(getProfileHeight(profile))],
   ['Location', getLocation(profile)],
   ['Marital Status', formatMaritalStatus(profile.personal.maritalStatus ?? '')],
-  ['Religion', formatProfileText(profile.religion)],
-  ['Caste', formatProfileText(profile.caste)],
+  ['Religion', formatProfileText(getProfileReligion(profile))],
+  ['Caste', formatProfileText(getProfileCaste(profile))],
   ['Mother Tongue', formatProfileText(profile.personal.motherTongue)],
   ['Manglik Status', formatProfileText(profile.personal.manglikStatus)],
   ['Time of Birth', getTimeOfBirth(profile)],
@@ -913,15 +915,11 @@ export default function ProfileScreen({
           />
           <Row
             label="Gender"
-            value={formatProfileText(
-              profileData.gender ?? profileData.personal.gender
-            )}
+            value={formatProfileText(profileData.personal.gender)}
           />
           <Row
             label="City"
-            value={formatProfileText(
-              profileData.city ?? profileData.personal.city
-            )}
+            value={formatProfileText(profileData.personal.city)}
           />
           <Row label="Premium" value={toDisplayText(profileData.isPremium)} />
           <Row
@@ -957,9 +955,12 @@ export default function ProfileScreen({
         <Section title="Religious & Astro" icon="sun">
           <Row
             label="Religion"
-            value={formatProfileText(profileData.religion)}
+            value={formatProfileText(getProfileReligion(profileData))}
           />
-          <Row label="Caste" value={formatProfileText(profileData.caste)} />
+          <Row
+            label="Caste"
+            value={formatProfileText(getProfileCaste(profileData))}
+          />
           <Row
             label="Sub Caste"
             value={formatProfileText(profileData.personal.subCast)}

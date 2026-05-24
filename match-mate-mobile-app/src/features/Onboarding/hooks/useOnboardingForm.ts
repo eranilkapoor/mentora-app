@@ -17,7 +17,12 @@ import {
   Qualifications,
 } from '@/core/types';
 import { useOnboardingProfileMutation } from '@/store/services/profileApi.service';
+import { baseApi } from '@/store/services/baseApi';
 import { showError } from '@/core/utils/toast';
+import {
+  getApiErrorMessage,
+  getApiResponseMessage,
+} from '@/core/utils/apiMessage';
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
@@ -230,18 +235,22 @@ export function useOnboardingForm() {
       if (!response.success) {
         showError({
           title: t('common.error'),
-          message: t('onboarding.errors.submit_failed'),
+          message: getApiResponseMessage(
+            t,
+            response,
+            'onboarding.errors.submit_failed'
+          ),
         });
         return false;
       }
 
-      dispatch(setProfileCompleted(true));
+      dispatch(setProfileCompleted(response.data.isOnboardingCompleted));
+      dispatch(baseApi.util.invalidateTags(['Auth', 'Profile', 'Preference']));
       return true;
     } catch (err: unknown) {
       showError({
         title: t('common.error'),
-        message:
-          err instanceof Error ? err.message : t('common.something_went_wrong'),
+        message: getApiErrorMessage(t, err, 'common.something_went_wrong'),
       });
       return false;
     } finally {

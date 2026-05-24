@@ -22,6 +22,7 @@ import { MarkRoomReadDto } from '../dto/mark-room-read.dto';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { UpdateRoomSettingsDto } from '../dto/update-room-settings.dto';
 import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @Controller('chat')
 @UseGuards(JwtAuthGuard)
@@ -31,7 +32,7 @@ export class ChatController {
   @Public()
   @Get('health')
   health() {
-    return this.service.health();
+    return successResponse(this.service.health(), SuccessCode.SUCCESS);
   }
 
   @Get('conversations')

@@ -16,8 +16,6 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useTranslation } from 'react-i18next';
 
-import * as SecureStore from 'expo-secure-store';
-
 import Constants from 'expo-constants';
 
 import Header from '@/core/components/Header';
@@ -34,6 +32,7 @@ import { logout as logoutAction } from '@/store/slices/authSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 import { useLogoutMutation } from '@/store/services/authApi';
+import { baseApi, clearRefreshToken } from '@/store/services/baseApi';
 import { useGetMyProfileQuery } from '@/store/services/profileApi.service';
 import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
@@ -94,11 +93,9 @@ export default function SettingsScreen({
     } catch (error) {
       console.error('Logout Error:', error);
     } finally {
-      if (Platform.OS !== 'web') {
-        await SecureStore.deleteItemAsync('refreshToken');
-      }
-
+      await clearRefreshToken();
       dispatch(logoutAction());
+      dispatch(baseApi.util.resetApiState());
 
       appNavigation.reset({
         index: 0,

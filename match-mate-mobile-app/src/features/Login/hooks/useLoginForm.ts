@@ -22,6 +22,11 @@ import {
   SocialProvider,
 } from '@/features/Auth/shared/auth.types';
 import { setRefreshToken } from '@/store/services/baseApi';
+import { baseApi } from '@/store/services/baseApi';
+import {
+  getApiErrorMessage,
+  getApiResponseMessage,
+} from '@/core/utils/apiMessage';
 
 export function useLoginForm() {
   const dispatch = useAppDispatch();
@@ -76,6 +81,7 @@ export function useLoginForm() {
       refreshToken?: string;
       user: unknown;
     }) => {
+      dispatch(baseApi.util.resetApiState());
       dispatch(
         setCredentials({
           accessToken: data.accessToken,
@@ -139,7 +145,7 @@ export function useLoginForm() {
       }).unwrap();
 
       if (!response.success) {
-        setErrors({ error: t('auth.errors.invalid_credentials') });
+        setErrors({ error: getApiResponseMessage(t, response) });
         return;
       }
 
@@ -150,10 +156,7 @@ export function useLoginForm() {
       }
     } catch (err) {
       setErrors({
-        error: t('auth.errors.login_failed', {
-          message:
-            err instanceof Error ? err.message : t('auth.errors.unknown'),
-        }),
+        error: getApiErrorMessage(t, err, 'auth.errors.unknown'),
       });
     } finally {
       setLoading(false);
@@ -179,13 +182,15 @@ export function useLoginForm() {
         phone,
       }).unwrap();
       if (!response.success) {
-        setErrors({ error: t('auth.errors.otp_send_failed') });
+        setErrors({ error: getApiResponseMessage(t, response) });
         return;
       }
       setOtpSent(true);
       clearAllErrors();
-    } catch {
-      setErrors({ error: t('auth.errors.otp_send_failed') });
+    } catch (err) {
+      setErrors({
+        error: getApiErrorMessage(t, err, 'auth.errors.otp_send_failed'),
+      });
     } finally {
       setLoading(false);
     }
@@ -210,7 +215,7 @@ export function useLoginForm() {
       }).unwrap();
 
       if (!response.success) {
-        setErrors({ otp: t('auth.errors.otp_invalid') });
+        setErrors({ otp: getApiResponseMessage(t, response) });
         return;
       }
       if (response.data?.accessToken && response.data?.user) {
@@ -218,8 +223,10 @@ export function useLoginForm() {
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
-    } catch {
-      setErrors({ error: t('auth.errors.otp_verify_failed') });
+    } catch (err) {
+      setErrors({
+        error: getApiErrorMessage(t, err, 'auth.errors.otp_verify_failed'),
+      });
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,12 @@
 import { baseApi } from './baseApi';
+import {
+  ApiResponse,
+  Caste,
+  Country,
+  MaritalStatus,
+  Qualification,
+  Religion,
+} from '@/core/types';
 
 export interface MatchImage {
   url: string;
@@ -14,23 +22,21 @@ export interface DiscoveryProfile {
     lastName?: string;
     city?: string;
     state?: string;
-    country?: string;
-    maritalStatus?: string;
+    country?: Country;
+    maritalStatus?: MaritalStatus;
+    religion?: Religion;
+    caste?: Caste;
   };
   physical?: {
     height?: string | number;
   };
   education?: {
-    qualification?: string;
+    qualification?: Qualification;
     occupation?: string;
     jobRole?: string;
   };
   images?: MatchImage[];
   age?: number;
-  height?: string | number;
-  religion?: string;
-  caste?: string;
-  city?: string;
   profileScore?: number;
   matchScore?: number;
   lastActiveAt?: string;
@@ -53,18 +59,19 @@ export interface InterestRecord {
   createdAt?: string;
 }
 
-interface PaginatedResponse<T> {
-  success: boolean;
-  data: T[];
-  meta?: {
-    total: number;
-    page: number;
-    limit: number;
-    totalPages?: number;
-    hasNextPage?: boolean;
-    hasPrevPage?: boolean;
-  };
+export interface PaginationMeta {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages?: number;
+  hasNextPage?: boolean;
+  hasPrevPage?: boolean;
 }
+
+type PaginatedResponse<T> = ApiResponse<T[]> & {
+  data: T[];
+  meta?: PaginationMeta | null;
+};
 
 export type MatchTab = 'recommended' | 'new' | 'online' | 'nearby';
 

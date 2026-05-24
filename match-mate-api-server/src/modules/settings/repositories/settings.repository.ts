@@ -132,6 +132,74 @@ export class SettingsRepository {
     return created.toObject();
   }
 
+  async getOrCreateAllUserSettings(userId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    const filter = { userId: userObjectId };
+    const insert = { userId: userObjectId };
+
+    const [
+      account,
+      privacy,
+      notification,
+      communication,
+      security,
+      localization,
+      accessibility,
+      media,
+      ai,
+    ] = await Promise.all([
+      this.accountModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .lean()
+        .exec(),
+      this.privacyModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .lean()
+        .exec(),
+      this.notificationModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .lean()
+        .exec(),
+      this.communicationModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .lean()
+        .exec(),
+      this.securityModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .select('-appPinHash')
+        .lean()
+        .exec(),
+      this.localizationModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .lean()
+        .exec(),
+      this.accessibilityModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .lean()
+        .exec(),
+      this.mediaModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .lean()
+        .exec(),
+      this.aiModel
+        .findOneAndUpdate(filter, { $setOnInsert: insert }, upsertOptions)
+        .lean()
+        .exec(),
+    ]);
+
+    return {
+      account,
+      privacy,
+      notification,
+      communication,
+      security,
+      localization,
+      accessibility,
+      media,
+      ai,
+    };
+  }
+
   // ─── Getters ────────────────────────────────────────────────────────────────
 
   getAccount(userId: string) {

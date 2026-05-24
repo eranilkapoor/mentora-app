@@ -72,12 +72,14 @@ const mapProfile = (
     userId: profile.userId,
     name: profileName(profile),
     age: profile.age ?? 0,
-    height: String(profile.physical?.height ?? profile.height ?? '-'),
+    height: String(profile.physical?.height ?? '-'),
     location:
-      [profile.city ?? profile.personal?.city, profile.personal?.state]
+      [profile.personal?.city, profile.personal?.state]
         .filter(Boolean)
         .join(', ') || '-',
-    religion: [profile.religion, profile.caste].filter(Boolean).join(' - '),
+    religion: [profile.personal?.religion, profile.personal?.caste]
+      .filter(Boolean)
+      .join(' - '),
     education: profile.education?.qualification ?? '-',
     profession:
       profile.education?.jobRole ?? profile.education?.occupation ?? '-',

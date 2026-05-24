@@ -114,12 +114,13 @@ export class MatchDiscoveryRepository {
     skip: number,
     limit: number,
   ): Promise<DiscoveryResult> {
+    const earthRadiusMeters = 6378137;
+    const radiusInRadians = radiusMeters / earthRadiusMeters;
     const geoFilter: FilterQuery<ProfileDocument> = {
       ...filter,
       location: {
-        $nearSphere: {
-          $geometry: { type: 'Point', coordinates },
-          $maxDistance: radiusMeters,
+        $geoWithin: {
+          $centerSphere: [coordinates, radiusInRadians],
         },
       },
     };
@@ -127,6 +128,7 @@ export class MatchDiscoveryRepository {
     const [profiles, total]: [LeanProfile[], number] = await Promise.all([
       this.profileModel
         .find(geoFilter)
+        .sort({ lastActiveAt: -1, profileScore: -1 })
         .skip(skip)
         .limit(limit)
         .select('-__v')

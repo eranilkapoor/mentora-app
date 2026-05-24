@@ -1,12 +1,15 @@
 import {
   BodyType,
+  Caste,
   ChildPreference,
   Complexion,
+  Country,
   EatingHabit,
   DrinkingHabit,
   ManglikStatus,
   MaritalStatus,
   OccupationType,
+  Qualification,
   Religion,
   ResidencyPreference,
   SmokingHabit,
@@ -24,15 +27,15 @@ export interface PartnerFilters {
   annualIncome?: Range;
   maritalStatus?: MaritalStatus[];
   religion?: Religion[];
-  caste?: string[];
+  caste?: Caste[];
   subCaste?: string[];
   manglikStatus?: ManglikStatus[];
   childPreference: ChildPreference;
   residencyPreference: ResidencyPreference;
-  country?: string[];
+  country?: Country[];
   state?: string[];
   city?: string[];
-  qualification?: string[];
+  qualification?: Qualification[];
   occupationType?: OccupationType[];
   occupation?: string[];
   bodyType?: BodyType[];

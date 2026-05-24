@@ -22,6 +22,11 @@ import {
   SocialProvider,
 } from '@/features/Auth/shared/auth.types';
 import { setRefreshToken } from '@/store/services/baseApi';
+import { baseApi } from '@/store/services/baseApi';
+import {
+  getApiErrorMessage,
+  getApiResponseMessage,
+} from '@/core/utils/apiMessage';
 
 export function useRegisterForm() {
   const dispatch = useAppDispatch();
@@ -76,6 +81,7 @@ export function useRegisterForm() {
       refreshToken?: string;
       user: unknown;
     }) => {
+      dispatch(baseApi.util.resetApiState());
       dispatch(
         setCredentials({
           accessToken: data.accessToken,
@@ -139,7 +145,7 @@ export function useRegisterForm() {
       }).unwrap();
 
       if (!response.success) {
-        setErrors({ email: t('auth.errors.email_already_registered') });
+        setErrors({ email: getApiResponseMessage(t, response) });
         return;
       }
 
@@ -148,9 +154,9 @@ export function useRegisterForm() {
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
-    } catch {
+    } catch (err) {
       setErrors({
-        error: t('auth.errors.register_failed'),
+        error: getApiErrorMessage(t, err, 'auth.errors.register_failed'),
       });
     } finally {
       setLoading(false);
@@ -176,13 +182,15 @@ export function useRegisterForm() {
         phone,
       }).unwrap();
       if (!response.success) {
-        setErrors({ error: t('auth.errors.otp_send_failed') });
+        setErrors({ error: getApiResponseMessage(t, response) });
         return;
       }
       setOtpSent(true);
       clearAllErrors();
-    } catch {
-      setErrors({ error: t('auth.errors.otp_send_failed') });
+    } catch (err) {
+      setErrors({
+        error: getApiErrorMessage(t, err, 'auth.errors.otp_send_failed'),
+      });
     } finally {
       setLoading(false);
     }
@@ -207,7 +215,7 @@ export function useRegisterForm() {
       }).unwrap();
 
       if (!response.success) {
-        setErrors({ otp: t('auth.errors.otp_invalid') });
+        setErrors({ otp: getApiResponseMessage(t, response) });
         return;
       }
       if (response.data?.accessToken && response.data?.user) {
@@ -215,8 +223,10 @@ export function useRegisterForm() {
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
-    } catch {
-      setErrors({ error: t('auth.errors.otp_verify_failed') });
+    } catch (err) {
+      setErrors({
+        error: getApiErrorMessage(t, err, 'auth.errors.otp_verify_failed'),
+      });
     } finally {
       setLoading(false);
     }

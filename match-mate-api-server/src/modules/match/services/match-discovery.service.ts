@@ -30,9 +30,11 @@ export class MatchDiscoveryService {
     const { myProfile, preference, interactedIds, skip, limit } =
       await this.resolveContext(userId, query);
 
-    const oppositeGender = this.getOppositeGender(myProfile.gender as Gender);
+    const oppositeGender = this.getOppositeGender(
+      this.getProfileGender(myProfile),
+    );
 
-    const filter = this.buildPreferenceFilter(
+    const filter = this.buildDiscoveryFilter(
       userId,
       oppositeGender,
       interactedIds,
@@ -66,28 +68,44 @@ export class MatchDiscoveryService {
     const { myProfile, preference, interactedIds, skip, limit } =
       await this.resolveContext(userId, query);
 
-    const oppositeGender = this.getOppositeGender(myProfile.gender as Gender);
+    const oppositeGender = this.getOppositeGender(
+      this.getProfileGender(myProfile),
+    );
 
     const thirtyDaysAgo = new Date();
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
+    const baseFilter = this.buildDiscoveryFilter(
+      userId,
+      oppositeGender,
+      interactedIds,
+      preference,
+      myProfile,
+    );
+
     const filter = {
-      ...this.buildPreferenceFilter(
-        userId,
-        oppositeGender,
-        interactedIds,
-        preference,
-        myProfile,
-      ),
+      ...baseFilter,
       createdAt: { $gte: thirtyDaysAgo },
     };
 
-    const { profiles, total } = await this.discoveryRepo.findProfiles(
+    let { profiles, total } = await this.discoveryRepo.findProfiles(
       filter,
       skip,
       limit,
       { createdAt: -1 },
     );
+
+    if (total === 0) {
+      const fallback = await this.discoveryRepo.findProfiles(
+        baseFilter,
+        skip,
+        limit,
+        { createdAt: -1 },
+      );
+
+      profiles = fallback.profiles;
+      total = fallback.total;
+    }
 
     return this.paginate(profiles, total, skip, limit, query.page ?? 1);
   }
@@ -113,7 +131,9 @@ export class MatchDiscoveryService {
       );
     }
 
-    const oppositeGender = this.getOppositeGender(myProfile.gender as Gender);
+    const oppositeGender = this.getOppositeGender(
+      this.getProfileGender(myProfile),
+    );
     const radiusMeters = (query.radiusKm ?? 100) * 1000;
 
     const baseFilter = this.buildBaseFilter(
@@ -139,11 +159,13 @@ export class MatchDiscoveryService {
     const { myProfile, preference, interactedIds, skip, limit } =
       await this.resolveContext(userId, query);
 
-    const oppositeGender = this.getOppositeGender(myProfile.gender as Gender);
+    const oppositeGender = this.getOppositeGender(
+      this.getProfileGender(myProfile),
+    );
     const onlineSince = new Date(Date.now() - 15 * 60 * 1000);
 
     const filter = {
-      ...this.buildPreferenceFilter(
+      ...this.buildDiscoveryFilter(
         userId,
         oppositeGender,
         interactedIds,
@@ -165,18 +187,28 @@ export class MatchDiscoveryService {
 
   private buildBaseFilter(
     userId: string,
-    oppositeGender: Gender,
+    oppositeGender: Gender | undefined,
     interactedIds: Types.ObjectId[],
   ): FilterQuery<ProfileDocument> {
+    const conditions: FilterQuery<ProfileDocument>[] = [
+      {
+        $or: [{ status: ProfileStatus.ACTIVE }, { status: { $exists: false } }],
+      },
+    ];
+
+    if (oppositeGender) {
+      conditions.push({
+        'personal.gender': oppositeGender,
+      });
+    }
+
     return {
       userId: {
         $ne: new Types.ObjectId(userId),
         $nin: interactedIds,
       },
-      gender: oppositeGender,
-      status: ProfileStatus.ACTIVE,
       deletedAt: { $exists: false },
-      isVerified: true,
+      $and: conditions,
     };
   }
 
@@ -184,7 +216,7 @@ export class MatchDiscoveryService {
 
   private buildPreferenceFilter(
     userId: string,
-    oppositeGender: Gender,
+    oppositeGender: Gender | undefined,
     interactedIds: Types.ObjectId[],
     preference: Record<string, unknown> | null,
     myProfile: Record<string, unknown>,
@@ -215,7 +247,7 @@ export class MatchDiscoveryService {
       | undefined;
 
     if (heightFilter?.min || heightFilter?.max) {
-      filter.height = {
+      filter['physical.height'] = {
         ...(heightFilter.min ? { $gte: heightFilter.min } : {}),
         ...(heightFilter.max ? { $lte: heightFilter.max } : {}),
       };
@@ -224,17 +256,19 @@ export class MatchDiscoveryService {
     // ── Religion ─────────────────────────────────────────────────────────────
 
     const religionFilter = filters?.religion as string[] | undefined;
+    const myPersonal = (myProfile.personal ?? {}) as Record<string, unknown>;
+
     if (religionFilter?.length) {
-      filter.religion = { $in: religionFilter };
-    } else if (myProfile.religion) {
-      filter.religion = myProfile.religion as string;
+      filter['personal.religion'] = { $in: religionFilter };
+    } else if (myPersonal.religion) {
+      filter['personal.religion'] = myPersonal.religion as string;
     }
 
     // ── Caste ────────────────────────────────────────────────────────────────
 
     const casteFilter = filters?.caste as string[] | undefined;
     if (casteFilter?.length) {
-      filter.caste = { $in: casteFilter };
+      filter['personal.caste'] = { $in: casteFilter };
     }
 
     // ── Marital status ───────────────────────────────────────────────────────
@@ -251,7 +285,7 @@ export class MatchDiscoveryService {
     const countryFilter = filters?.country as string[] | undefined;
 
     if (cityFilter?.length) {
-      filter.city = { $in: cityFilter };
+      filter['personal.city'] = { $in: cityFilter };
     } else if (stateFilter?.length) {
       filter['personal.state'] = { $in: stateFilter };
     } else if (countryFilter?.length) {
@@ -300,7 +334,7 @@ export class MatchDiscoveryService {
 
     // ── Strict mode — only verified profiles ──────────────────────────────────
 
-    if (settings?.isStrict) {
+    if (settings?.isStrict || settings?.profileVerificationRequired) {
       filter.isVerified = true;
     }
 
@@ -309,6 +343,36 @@ export class MatchDiscoveryService {
     const minScore = settings?.minimumMatchScore as number | undefined;
     if (minScore) {
       filter.profileScore = { $gte: minScore };
+    }
+
+    return filter;
+  }
+
+  private buildDiscoveryFilter(
+    userId: string,
+    oppositeGender: Gender | undefined,
+    interactedIds: Types.ObjectId[],
+    preference: Record<string, unknown> | null,
+    myProfile: Record<string, unknown>,
+  ): FilterQuery<ProfileDocument> {
+    const settings = preference?.settings as
+      | Record<string, unknown>
+      | undefined;
+
+    if (settings?.isStrict) {
+      return this.buildPreferenceFilter(
+        userId,
+        oppositeGender,
+        interactedIds,
+        preference,
+        myProfile,
+      );
+    }
+
+    const filter = this.buildBaseFilter(userId, oppositeGender, interactedIds);
+
+    if (settings?.profileVerificationRequired) {
+      filter.isVerified = true;
     }
 
     return filter;
@@ -348,7 +412,8 @@ export class MatchDiscoveryService {
     const heightFilter = filters?.height as
       | { min?: number; max?: number }
       | undefined;
-    const profileHeight = profile.height as number | undefined;
+    const physical = profile.physical as Record<string, unknown> | undefined;
+    const profileHeight = physical?.height as number | undefined;
     if (heightFilter && profileHeight) {
       const inRange =
         profileHeight >= (heightFilter.min ?? 0) &&
@@ -360,8 +425,8 @@ export class MatchDiscoveryService {
 
     // Religion match
     const religionFilter = filters?.religion as string[] | undefined;
-    if (religionFilter?.length && profile.religion) {
-      score += religionFilter.includes(profile.religion as string)
+    if (religionFilter?.length && personal?.religion) {
+      score += religionFilter.includes(personal.religion as string)
         ? weights.religion
         : 0;
     } else {
@@ -370,8 +435,8 @@ export class MatchDiscoveryService {
 
     // Caste match
     const casteFilter = filters?.caste as string[] | undefined;
-    if (casteFilter?.length && profile.caste) {
-      score += casteFilter.includes(profile.caste as string)
+    if (casteFilter?.length && personal?.caste) {
+      score += casteFilter.includes(personal.caste as string)
         ? weights.caste
         : 0;
     } else {
@@ -380,8 +445,8 @@ export class MatchDiscoveryService {
 
     // Location match
     const cityFilter = filters?.city as string[] | undefined;
-    if (cityFilter?.length && profile.city) {
-      score += cityFilter.includes(profile.city as string)
+    if (cityFilter?.length && personal?.city) {
+      score += cityFilter.includes(personal.city as string)
         ? weights.location
         : weights.location * 0.5;
     } else {
@@ -446,7 +511,15 @@ export class MatchDiscoveryService {
 
   // ─── Helpers ──────────────────────────────────────────────────────────────
 
-  private getOppositeGender(gender: Gender): Gender {
+  private getProfileGender(
+    profile: Record<string, unknown>,
+  ): Gender | undefined {
+    const personal = profile.personal as Record<string, unknown> | undefined;
+
+    return personal?.gender as Gender | undefined;
+  }
+
+  private getOppositeGender(gender: Gender | undefined): Gender | undefined {
     if (gender === Gender.MALE) return Gender.FEMALE;
     if (gender === Gender.FEMALE) return Gender.MALE;
 

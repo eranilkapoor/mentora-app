@@ -18,9 +18,9 @@ import { setupListeners } from '@reduxjs/toolkit/query/react';
 
 /* ================= Persist Config ================= */
 const persistConfig = {
-  key: 'root',
+  key: 'root-v2',
   storage: AsyncStorage,
-  whitelist: [baseApi.reducerPath], // Only persist these reducers
+  whitelist: [],
 };
 const authPersistConfig = {
   key: 'auth',

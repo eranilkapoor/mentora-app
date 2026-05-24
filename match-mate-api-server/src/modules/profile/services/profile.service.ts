@@ -43,6 +43,7 @@ import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-reques
 import { MediaService } from './media.service';
 import { PreferenceService } from './preference.service';
 import { UpdateProfileLocationDto } from '../dto/location.dto';
+import { SettingsService } from 'src/modules/settings/services/settings.service';
 
 interface RegisterRequestContext {
   platform: ActivityPlatform;
@@ -64,6 +65,7 @@ export class ProfileService {
     private readonly analyticsService: AnalyticsService,
     private readonly mediaService: MediaService,
     private readonly preferenceService: PreferenceService,
+    private readonly settingsService: SettingsService,
   ) {}
 
   // ─── Create ───────────────────────────────────────────────────────────────
@@ -283,11 +285,6 @@ export class ProfileService {
       education: dto.education,
       family: dto.family ?? {},
       age,
-      height: dto.physical.height,
-      religion: dto.personal.religion,
-      caste: dto.personal.caste,
-      city: dto.personal.city,
-      gender: dto.personal.gender,
       profileScore: this.calculateProfileScore(dto),
       profileCompletionPercentage: this.calculateCompletion(dto),
       searchTags: this.buildSearchTags(dto),
@@ -308,14 +305,9 @@ export class ProfileService {
         ...dto.personal,
       };
       normalized.personal = merged;
-      // Update derived root fields
       if (dto.personal.dateOfBirth) {
         normalized.age = this.calculateAge(new Date(dto.personal.dateOfBirth));
       }
-      if (dto.personal.religion) normalized.religion = dto.personal.religion;
-      if (dto.personal.caste) normalized.caste = dto.personal.caste;
-      if (dto.personal.city) normalized.city = dto.personal.city;
-      if (dto.personal.gender) normalized.gender = dto.personal.gender;
     }
 
     if (dto.physical) {
@@ -324,9 +316,6 @@ export class ProfileService {
         ...dto.physical,
       };
       normalized.physical = merged;
-      if (dto.physical.height) {
-        normalized.height = dto.physical.height;
-      }
     }
 
     if (dto.education) {
@@ -668,6 +657,7 @@ export class ProfileService {
           country: dto.preferences?.country,
         },
       });
+      await this.settingsService.getOrCreateAllUserSettings(userId);
 
       user.isOnboardingCompleted = true;
       await user.save();

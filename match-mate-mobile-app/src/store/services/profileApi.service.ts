@@ -24,6 +24,7 @@ export const profileApi = baseApi.injectEndpoints({
         body,
         formData: true,
       }),
+      invalidatesTags: ['Auth', 'Profile', 'ProfileMedia', 'Preference'],
     }),
 
     getMyProfile: builder.query<ApiResponse<ProfileData>, void>({

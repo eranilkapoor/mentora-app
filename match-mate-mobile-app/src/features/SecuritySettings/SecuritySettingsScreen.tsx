@@ -18,7 +18,7 @@ import {
   useUpdateSecuritySettingsMutation,
 } from '@/store/services/securitySettings.service';
 import { useLogoutAllMutation } from '@/store/services/authApi';
-import { clearRefreshToken } from '@/store/services/baseApi';
+import { baseApi, clearRefreshToken } from '@/store/services/baseApi';
 import { useAppDispatch } from '@/store/hooks';
 import { logout as logoutAction } from '@/store/slices/authSlice';
 import Loader from '@/core/components/Loader';
@@ -85,6 +85,7 @@ export default function SecuritySettingsScreen({
         void logoutAll().then(async () => {
           await clearRefreshToken();
           dispatch(logoutAction());
+          dispatch(baseApi.util.resetApiState());
           Alert.alert(
             t('common.success'),
             t('settings.security.revoke_all_success')

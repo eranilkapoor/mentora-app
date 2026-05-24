@@ -113,6 +113,7 @@ async function performLogout(api: Parameters<BaseQueryFn>[1]): Promise<void> {
   await clearRefreshToken();
 
   api.dispatch(logout());
+  api.dispatch(baseApi.util.resetApiState());
 }
 
 /* ──────────────────────────────────────────────

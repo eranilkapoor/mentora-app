@@ -18,6 +18,8 @@ import { ListPaymentsDto } from '../dto/list-payments.dto';
 import { PaymentWebhookDto } from '../dto/payment-webhook.dto';
 import { Public } from 'src/common/decorators/public.decorator';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @Controller('payments')
 @UseGuards(JwtAuthGuard)
@@ -25,42 +27,69 @@ export class PaymentController {
   constructor(private readonly service: PaymentService) {}
 
   @Post('order')
-  createOrder(@Req() req: AuthenticatedRequest, @Body() dto: CreateOrderDto) {
-    return this.service.createOrder(req.user.sub, dto);
+  async createOrder(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: CreateOrderDto,
+  ) {
+    return successResponse(
+      await this.service.createOrder(req.user.sub, dto),
+      SuccessCode.PAYMENT_CREATED,
+    );
   }
 
   @Post('verify')
-  verify(@Req() req: AuthenticatedRequest, @Body() dto: VerifyPaymentDto) {
-    return this.service.verifyPayment(req.user.sub, dto);
+  async verify(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: VerifyPaymentDto,
+  ) {
+    return successResponse(
+      await this.service.verifyPayment(req.user.sub, dto),
+      SuccessCode.PAYMENT_VERIFIED,
+    );
   }
 
   @Post('fail')
-  markFailed(@Req() req: AuthenticatedRequest, @Body() dto: FailPaymentDto) {
-    return this.service.markPaymentFailed(req.user.sub, dto);
+  async markFailed(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: FailPaymentDto,
+  ) {
+    return successResponse(
+      await this.service.markPaymentFailed(req.user.sub, dto),
+      SuccessCode.PAYMENT_FAILED_RECORDED,
+    );
   }
 
   @Public()
   @Post('webhook')
-  webhook(
+  async webhook(
     @Body() dto: PaymentWebhookDto,
     @Headers('x-payment-signature') signature?: string,
   ) {
-    return this.service.processWebhook(dto, signature);
+    return successResponse(
+      await this.service.processWebhook(dto, signature),
+      SuccessCode.PAYMENT_WEBHOOK_PROCESSED,
+    );
   }
 
   @Get('my-payments')
-  getMyPayments(
+  async getMyPayments(
     @Req() req: AuthenticatedRequest,
     @Query() query: ListPaymentsDto,
   ) {
-    return this.service.getUserPayments(req.user.sub, query);
+    return successResponse(
+      await this.service.getUserPayments(req.user.sub, query),
+      SuccessCode.PAYMENTS_FETCHED,
+    );
   }
 
   @Get(':orderId')
-  getPaymentByOrder(
+  async getPaymentByOrder(
     @Req() req: AuthenticatedRequest,
     @Param('orderId') orderId: string,
   ) {
-    return this.service.getUserPaymentDetail(req.user.sub, orderId);
+    return successResponse(
+      await this.service.getUserPaymentDetail(req.user.sub, orderId),
+      SuccessCode.PAYMENT_FETCHED,
+    );
   }
 }

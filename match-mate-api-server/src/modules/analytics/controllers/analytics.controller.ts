@@ -5,6 +5,8 @@ import { AnalyticsQueryDto } from '../dto/analytics-query.dto';
 import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
 import { Roles } from 'src/common/decorators/roles.decorator';
 import { Role } from 'src/common/enums';
+import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @Controller('analytics')
 @UseGuards(RolesGuard)
@@ -13,25 +15,37 @@ export class AnalyticsController {
 
   @Post('track')
   @Roles(Role.ADMIN, Role.MODERATOR)
-  track(@Body() dto: TrackEventDto) {
-    return this.analyticsService.trackEvent(dto);
+  async track(@Body() dto: TrackEventDto) {
+    return successResponse(
+      await this.analyticsService.trackEvent(dto),
+      SuccessCode.ANALYTICS_TRACKED,
+    );
   }
 
   @Get('stats')
   @Roles(Role.ADMIN, Role.MODERATOR)
-  getStats(@Query() query: AnalyticsQueryDto) {
-    return this.analyticsService.getStats(query);
+  async getStats(@Query() query: AnalyticsQueryDto) {
+    return successResponse(
+      await this.analyticsService.getStats(query),
+      SuccessCode.ANALYTICS_FETCHED,
+    );
   }
 
   @Get('overview')
   @Roles(Role.ADMIN, Role.MODERATOR)
-  getOverview(@Query() query: AnalyticsQueryDto) {
-    return this.analyticsService.getOverview(query);
+  async getOverview(@Query() query: AnalyticsQueryDto) {
+    return successResponse(
+      await this.analyticsService.getOverview(query),
+      SuccessCode.ANALYTICS_FETCHED,
+    );
   }
 
   @Get('funnel')
   @Roles(Role.ADMIN, Role.MODERATOR)
-  getFunnel(@Query() query: AnalyticsQueryDto) {
-    return this.analyticsService.getFunnel(query);
+  async getFunnel(@Query() query: AnalyticsQueryDto) {
+    return successResponse(
+      await this.analyticsService.getFunnel(query),
+      SuccessCode.ANALYTICS_FETCHED,
+    );
   }
 }

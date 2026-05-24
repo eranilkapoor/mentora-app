@@ -10,7 +10,7 @@ import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectIte
 import { VerificationStatusRow } from '@/core/components/settings/VerificationStatusRow';
 import { showConfirm } from '@/core/utils/confirm';
 import { useAppDispatch } from '@/store/hooks';
-import { clearRefreshToken } from '@/store/services/baseApi';
+import { baseApi, clearRefreshToken } from '@/store/services/baseApi';
 import { logout as logoutAction } from '@/store/slices/authSlice';
 import {
   useDeactivateAccountMutation,
@@ -46,6 +46,7 @@ export default function AccountSettingsScreen({
         void deactivateAccount({ reason: 'User requested' }).then(async () => {
           await clearRefreshToken();
           dispatch(logoutAction());
+          dispatch(baseApi.util.resetApiState());
           Alert.alert(
             t('common.success'),
             t('settings.account.deactivate_success')
@@ -65,6 +66,7 @@ export default function AccountSettingsScreen({
         void deleteAccountRequest().then(async () => {
           await clearRefreshToken();
           dispatch(logoutAction());
+          dispatch(baseApi.util.resetApiState());
           Alert.alert(
             t('settings.account.delete_scheduled_title'),
             t('settings.account.delete_scheduled_message')

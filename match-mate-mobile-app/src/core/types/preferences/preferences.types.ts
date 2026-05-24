@@ -1,5 +1,11 @@
 import {
+  BodyType,
+  Caste,
+  Complexion,
+  Country,
   MaritalStatus,
+  Qualification,
+  Religion,
   SmokingHabit,
   DrinkingHabit,
   EatingHabit,
@@ -10,16 +16,16 @@ export interface PreferencesData {
   ageRange?: AgeRange;
   heightRange?: HeightRange;
   maritalStatus?: MaritalStatus[];
-  religion?: string[];
-  caste?: string[];
-  country?: string[];
+  religion?: Religion[];
+  caste?: Caste[];
+  country?: Country[];
   state?: string[];
   city?: string[];
-  qualification?: string[];
+  qualification?: Qualification[];
   occupation?: string[];
   annualIncomeRange?: IncomeRange;
-  bodyType?: string[];
-  complexion?: string[];
+  bodyType?: BodyType[];
+  complexion?: Complexion[];
   smoking?: SmokingHabit[];
   drinking?: DrinkingHabit[];
   eating?: EatingHabit[];

@@ -168,6 +168,10 @@ export class SettingsService {
     return this.repo.getOrCreateUserSettings(userId);
   }
 
+  getOrCreateAllUserSettings(userId: string) {
+    return this.repo.getOrCreateAllUserSettings(userId);
+  }
+
   getNotification(userId: string) {
     return this.repo.getNotification(userId);
   }

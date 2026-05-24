@@ -87,14 +87,14 @@ const mapMatch = (
     id: profile.userId,
     name: getName(profile),
     age: profile.age ?? 0,
-    height: String(profile.physical?.height ?? profile.height ?? '-'),
-    religion: profile.religion ?? '-',
-    caste: profile.caste ?? '-',
+    height: String(profile.physical?.height ?? '-'),
+    religion: profile.personal?.religion ?? '-',
+    caste: profile.personal?.caste ?? '-',
     education: profile.education?.qualification ?? '-',
     profession:
       profile.education?.jobRole ?? profile.education?.occupation ?? '-',
     location:
-      [profile.city ?? profile.personal?.city, profile.personal?.state]
+      [profile.personal?.city, profile.personal?.state]
         .filter(Boolean)
         .join(', ') || '-',
     avatarUrl: photo ?? FALLBACK_PHOTO,

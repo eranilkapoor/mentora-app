@@ -89,12 +89,15 @@ export type SiblingType = (typeof SiblingTypes)[keyof typeof SiblingTypes];
 
 export const BodyTypes = {
   SLIM: 'slim',
-  ATHLETIC: 'athletic',
   AVERAGE: 'average',
-  CURVY: 'curvy',
+  ATHLETIC: 'athletic',
   FIT: 'fit',
   HEAVY: 'heavy',
+  CHUBBY: 'chubby',
+  PETITE: 'petite',
+  CURVY: 'curvy',
   MUSCULAR: 'muscular',
+  STOCKY: 'stocky',
 } as const;
 
 export type BodyType = (typeof BodyTypes)[keyof typeof BodyTypes];
@@ -104,7 +107,6 @@ export type BodyType = (typeof BodyTypes)[keyof typeof BodyTypes];
 export const Complexions = {
   FAIR: 'fair',
   WHEATISH: 'wheatish',
-  DUSKY: 'dusky',
   DARK: 'dark',
 } as const;
 
@@ -134,6 +136,7 @@ export const Religions = {
   JEWISH: 'jewish',
   PARSI: 'parsi',
   OTHER: 'other',
+  NO_RELIGION: 'no_religion',
 } as const;
 
 export type Religion = (typeof Religions)[keyof typeof Religions];
@@ -187,6 +190,7 @@ export const Qualifications = {
   POLYTECHNIC: 'polytechnic',
   SKILL_CERTIFICATION: 'skill_certification',
   OTHER: 'other',
+  PREFER_NOT_TO_SAY: 'prefer_not_to_say',
 } as const;
 
 export type Qualification =

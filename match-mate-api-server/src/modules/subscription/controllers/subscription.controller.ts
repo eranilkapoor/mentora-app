@@ -3,6 +3,8 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { PlanService } from '../services/plan.service';
 import { SubscriptionService } from '../services/subscription.service';
+import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @Controller('subscriptions')
 @UseGuards(JwtAuthGuard)
@@ -13,12 +15,18 @@ export class SubscriptionController {
   ) {}
 
   @Get('plans')
-  getPlans() {
-    return this.planService.getActivePlansWithFeatures();
+  async getPlans() {
+    return successResponse(
+      await this.planService.getActivePlansWithFeatures(),
+      SuccessCode.PLANS_FETCHED,
+    );
   }
 
   @Get('current')
-  getCurrentSubscription(@Req() req: AuthenticatedRequest) {
-    return this.subscriptionService.getActiveSubscription(req.user.sub);
+  async getCurrentSubscription(@Req() req: AuthenticatedRequest) {
+    return successResponse(
+      await this.subscriptionService.getActiveSubscription(req.user.sub),
+      SuccessCode.SUBSCRIPTION_ACTIVATED,
+    );
   }
 }

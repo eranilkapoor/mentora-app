@@ -7,6 +7,7 @@ import {
   ProfileFor,
   Qualification,
   Religion,
+  Caste,
   SmokingHabit,
 } from '../common/enums';
 
@@ -29,6 +30,8 @@ export interface PersonalData {
   lastName?: string;
   gender: Gender;
   dateOfBirth: string;
+  religion: Religion;
+  caste?: Caste;
   country?: Country;
   state?: string;
   city?: string;
