@@ -1,4 +1,8 @@
-import { LocalizationSettingsResponse, UpdateLocalizationSettingsPayload } from '@/features/LocalizationSettings/LocalizationSettings.types';
+import {
+  LocalizationSettings,
+  LocalizationSettingsResponse,
+  UpdateLocalizationSettingsPayload,
+} from '@/features/LocalizationSettings/LocalizationSettings.types';
 import { baseApi } from './baseApi';
 
 export const localizationSettingsApi = baseApi.injectEndpoints({
@@ -8,8 +12,11 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
      */
     getLocalizationSettings: builder.query<LocalizationSettingsResponse, void>({
       query: () => ({
-        url: '/settings',
+        url: '/settings/localization',
         method: 'GET',
+      }),
+      transformResponse: (response: LocalizationSettings) => ({
+        localization: response,
       }),
 
       providesTags: ['LocalizationSettings'],
@@ -18,11 +25,14 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
     /**
      * Update Localization Settings
      */
-    updateLocalizationSettings: builder.mutation<LocalizationSettingsResponse, UpdateLocalizationSettingsPayload>({
-      query: (body) => ({ 
-        url: '/settings/localization', 
-        method: 'PUT', 
-        body 
+    updateLocalizationSettings: builder.mutation<
+      LocalizationSettingsResponse,
+      UpdateLocalizationSettingsPayload
+    >({
+      query: (body) => ({
+        url: '/settings/localization',
+        method: 'PUT',
+        body,
       }),
       invalidatesTags: ['LocalizationSettings'],
     }),
@@ -33,5 +43,5 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
 
 export const {
   useGetLocalizationSettingsQuery,
-  useUpdateLocalizationSettingsMutation
+  useUpdateLocalizationSettingsMutation,
 } = localizationSettingsApi;

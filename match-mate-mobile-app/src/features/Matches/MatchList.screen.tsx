@@ -1,31 +1,35 @@
-import React, { useEffect, useState, useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import {
-  View,
-  Text,
+  Alert,
   FlatList,
-  TouchableOpacity,
   Image,
-  TextInput,
+  Platform,
   RefreshControl,
   ScrollView,
-  Platform,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { matchListStyles } from './MatchList.styles';
-import Header from '../../core/components/Header';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import Header from '../../core/components/Header';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { resolveApiUrl } from '@/core/utils/config';
+import { MatchesStackParamList } from '@/navigation/types';
+import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
+import {
+  DiscoveryProfile,
+  MatchTab,
+  useGetDiscoveryProfilesQuery,
+  useGetMyMatchesQuery,
+  useSendInterestMutation,
+} from '@/store/services/matchApi.service';
+import { matchListStyles } from './MatchList.styles';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type MatchesStackParamList = {
-  MatchDetails: { userId: string };
-  ChatDetails: { userId: string; partnerName: string; partnerPhoto: string };
-};
-
-type TabKey = 'recommended' | 'new' | 'online';
+type TabKey = MatchTab;
 
 interface Match {
   id: string;
@@ -38,8 +42,9 @@ interface Match {
   profession: string;
   location: string;
   avatarUrl: string;
-  isOnline?: boolean;
-  isNew?: boolean;
+  isOnline: boolean;
+  isNew: boolean;
+  isMatched: boolean;
 }
 
 interface TabConfig {
@@ -49,73 +54,55 @@ interface TabConfig {
   count: number;
 }
 
-// ─── Mock Data ────────────────────────────────────────────────────────────────
+const FALLBACK_PHOTO =
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600';
 
-const ALL_MATCHES: Match[] = [
-  {
-    id: '1',
-    name: 'Priya Sharma',
-    age: 28,
-    height: '5\'4"',
-    religion: 'Hindu',
-    caste: 'Brahmin',
-    education: 'B.Tech',
-    profession: 'Software Engineer',
-    location: 'Mumbai, India',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/65.jpg',
-    isOnline: true,
-    isNew: true,
-  },
-  {
-    id: '2',
-    name: 'Ananya Reddy',
-    age: 26,
-    height: '5\'5"',
-    religion: 'Hindu',
-    caste: 'Reddy',
-    education: 'MBA',
-    profession: 'Business Analyst',
-    location: 'Hyderabad, India',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/68.jpg',
-    isOnline: false,
-    isNew: true,
-  },
-  {
-    id: '3',
-    name: 'Meera Patel',
-    age: 27,
-    height: '5\'3"',
-    religion: 'Hindu',
-    caste: 'Patel',
-    education: 'B.Sc',
-    profession: 'Teacher',
-    location: 'Ahmedabad, India',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/72.jpg',
-    isOnline: true,
-    isNew: false,
-  },
-  {
-    id: '4',
-    name: 'Kavya Nair',
-    age: 25,
-    height: '5\'2"',
-    religion: 'Hindu',
-    caste: 'Nair',
-    education: 'B.Com',
-    profession: 'CA',
-    location: 'Kochi, Kerala',
-    avatarUrl: 'https://randomuser.me/api/portraits/women/44.jpg',
-    isOnline: true,
-    isNew: false,
-  },
-];
+const isOnline = (lastActiveAt?: string): boolean =>
+  lastActiveAt
+    ? Date.now() - new Date(lastActiveAt).getTime() <= 15 * 60 * 1000
+    : false;
 
-const mockFetchMatches = async (): Promise<Match[]> => {
-  await new Promise<void>((r) => setTimeout(r, 700));
-  return ALL_MATCHES;
+const isNew = (createdAt?: string): boolean =>
+  createdAt
+    ? Date.now() - new Date(createdAt).getTime() <= 30 * 24 * 60 * 60 * 1000
+    : false;
+
+const getName = (profile: DiscoveryProfile): string =>
+  [profile.personal?.firstName, profile.personal?.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .trim() || 'MatchMate Member';
+
+const mapMatch = (
+  profile: DiscoveryProfile,
+  matchedIds: Set<string>
+): Match => {
+  const photo = profile.images
+    ?.filter((image) => image.isActive !== false)
+    .sort((a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary)))
+    .map((image) => resolveApiUrl(image.url))
+    .find((url): url is string => Boolean(url));
+
+  return {
+    id: profile.userId,
+    name: getName(profile),
+    age: profile.age ?? 0,
+    height: String(profile.physical?.height ?? profile.height ?? '-'),
+    religion: profile.religion ?? '-',
+    caste: profile.caste ?? '-',
+    education: profile.education?.qualification ?? '-',
+    profession:
+      profile.education?.jobRole ?? profile.education?.occupation ?? '-',
+    location:
+      [profile.city ?? profile.personal?.city, profile.personal?.state]
+        .filter(Boolean)
+        .join(', ') || '-',
+    avatarUrl: photo ?? FALLBACK_PHOTO,
+    isOnline: isOnline(profile.lastActiveAt),
+    isNew: isNew(profile.createdAt),
+    isMatched: matchedIds.has(profile.userId),
+  };
 };
-
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
 
 function SkeletonCard(): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
@@ -131,16 +118,14 @@ function SkeletonCard(): React.ReactElement {
   );
 }
 
-// ─── Match Card ───────────────────────────────────────────────────────────────
-
 const MatchCard = React.memo(function MatchCard({
   item,
   onViewProfile,
-  onChat,
+  onPrimaryAction,
 }: {
   item: Match;
   onViewProfile: () => void;
-  onChat: () => void;
+  onPrimaryAction: () => void;
 }): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
@@ -156,12 +141,12 @@ const MatchCard = React.memo(function MatchCard({
         <View style={styles.photoScrim} />
 
         <View style={styles.badgeRow}>
-          {item.isNew === true && (
+          {item.isNew && (
             <View style={styles.newBadge}>
               <Text style={styles.newBadgeText}>NEW</Text>
             </View>
           )}
-          {item.isOnline === true && (
+          {item.isOnline && (
             <View style={styles.onlineBadge}>
               <View style={styles.onlineDot} />
               <Text style={styles.onlineBadgeText}>Online</Text>
@@ -171,7 +156,7 @@ const MatchCard = React.memo(function MatchCard({
 
         <View style={styles.nameOverlay}>
           <Text style={styles.nameOverlayText} numberOfLines={1}>
-            {item.name}, {item.age}
+            {item.name}, {item.age || '-'}
           </Text>
           <View style={styles.locationOverlayRow}>
             <Feather name="map-pin" size={12} color="rgba(255,255,255,0.9)" />
@@ -216,16 +201,18 @@ const MatchCard = React.memo(function MatchCard({
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.primaryBtn}
-            onPress={onChat}
+            onPress={onPrimaryAction}
             activeOpacity={0.7}
             accessibilityRole="button"
           >
             <Feather
-              name="message-circle"
+              name={item.isMatched ? 'message-circle' : 'heart'}
               size={14}
               color={theme.colors.white}
             />
-            <Text style={styles.primaryText}>Chat</Text>
+            <Text style={styles.primaryText}>
+              {item.isMatched ? 'Chat' : 'Interest'}
+            </Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -233,91 +220,115 @@ const MatchCard = React.memo(function MatchCard({
   );
 });
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
-
 export default function MatchListScreen({
   navigation,
 }: {
-  navigation: NativeStackNavigationProp<MatchesStackParamList>;
+  navigation: NativeStackNavigationProp<MatchesStackParamList, 'MatchList'>;
 }): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
-  const [matches, setMatches] = useState<Match[]>([]);
   const [query, setQuery] = useState('');
-  const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('recommended');
-
-  const loadMatches = useCallback(async (): Promise<void> => {
-    try {
-      setLoading(true);
-      const data = await mockFetchMatches();
-      setMatches(data);
-    } finally {
-      setLoading(false);
+  const { data, isLoading, isFetching, refetch } = useGetDiscoveryProfilesQuery(
+    {
+      type: activeTab,
+      limit: 30,
+      radiusKm: 100,
     }
-  }, []);
+  );
+  const { data: myMatches, refetch: refetchMyMatches } = useGetMyMatchesQuery();
+  const [sendInterest] = useSendInterestMutation();
+  const [createDirectRoom] = useCreateDirectRoomMutation();
 
-  const onRefresh = useCallback(async (): Promise<void> => {
-    try {
-      setRefreshing(true);
-      const data = await mockFetchMatches();
-      setMatches(data);
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
+  const matchedIds = useMemo(() => {
+    const ids = new Set<string>();
+    myMatches?.data?.forEach((match) => {
+      ids.add(String(match.userId));
+      ids.add(String(match.targetUserId));
+    });
+    return ids;
+  }, [myMatches]);
 
-  useEffect(() => {
-    void loadMatches();
-  }, [loadMatches]);
+  const matches = useMemo(
+    () => (data?.data ?? []).map((profile) => mapMatch(profile, matchedIds)),
+    [data, matchedIds]
+  );
 
-  // Tab filter
-  const tabFiltered = useMemo(() => {
-    switch (activeTab) {
-      case 'new':
-        return matches.filter((m) => m.isNew);
-      case 'online':
-        return matches.filter((m) => m.isOnline);
-      default:
-        return matches;
-    }
-  }, [matches, activeTab]);
-
-  // Search filter
   const filtered = useMemo(() => {
-    if (!query.trim()) return tabFiltered;
+    if (!query.trim()) return matches;
     const q = query.toLowerCase().trim();
-    return tabFiltered.filter(
+    return matches.filter(
       (m) =>
         m.name.toLowerCase().includes(q) ||
         m.location.toLowerCase().includes(q) ||
         m.profession.toLowerCase().includes(q)
     );
-  }, [tabFiltered, query]);
+  }, [matches, query]);
 
-  const TABS: TabConfig[] = useMemo(
+  const tabs: TabConfig[] = useMemo(
     () => [
       {
         key: 'recommended',
         label: 'Recommended',
         icon: 'star',
-        count: matches.length,
+        count: activeTab === 'recommended' ? matches.length : 0,
       },
       {
         key: 'new',
         label: 'New',
         icon: 'zap',
-        count: matches.filter((m) => m.isNew).length,
+        count: activeTab === 'new' ? matches.length : 0,
       },
       {
         key: 'online',
         label: 'Online',
         icon: 'wifi',
-        count: matches.filter((m) => m.isOnline).length,
+        count: activeTab === 'online' ? matches.length : 0,
+      },
+      {
+        key: 'nearby',
+        label: 'Nearby',
+        icon: 'map-pin',
+        count: activeTab === 'nearby' ? matches.length : 0,
       },
     ],
-    [matches]
+    [activeTab, matches.length]
+  );
+
+  const onRefresh = useCallback(async (): Promise<void> => {
+    setRefreshing(true);
+    await Promise.all([refetch(), refetchMyMatches()]);
+    setRefreshing(false);
+  }, [refetch, refetchMyMatches]);
+
+  const handlePrimaryAction = useCallback(
+    async (item: Match): Promise<void> => {
+      if (!item.isMatched) {
+        try {
+          await sendInterest({ receiverId: item.id }).unwrap();
+          Alert.alert('Interest sent', `${item.name} will be notified.`);
+        } catch {
+          Alert.alert('Interest not sent', 'Please try again later.');
+        }
+        return;
+      }
+
+      try {
+        await createDirectRoom({ targetUserId: item.id }).unwrap();
+        navigation.navigate('ChatDetails', {
+          userId: item.id,
+          partnerName: item.name,
+          partnerPhoto: item.avatarUrl,
+        });
+      } catch {
+        Alert.alert(
+          'Chat unavailable',
+          'You can chat after both users have accepted the match.'
+        );
+      }
+    },
+    [createDirectRoom, navigation, sendInterest]
   );
 
   const renderItem = useCallback(
@@ -327,16 +338,12 @@ export default function MatchListScreen({
         onViewProfile={() =>
           navigation.navigate('MatchDetails', { userId: item.id })
         }
-        onChat={() =>
-          navigation.navigate('ChatDetails', {
-            userId: item.id,
-            partnerName: item.name,
-            partnerPhoto: item.avatarUrl,
-          })
-        }
+        onPrimaryAction={() => {
+          void handlePrimaryAction(item);
+        }}
       />
     ),
-    [navigation]
+    [handlePrimaryAction, navigation]
   );
 
   const ListHeader = useCallback(
@@ -345,7 +352,7 @@ export default function MatchListScreen({
         <View style={styles.searchBox}>
           <Feather name="search" size={16} color={theme.colors.textMuted} />
           <TextInput
-            placeholder="Search by name, location, profession…"
+            placeholder="Search by name, location, profession..."
             placeholderTextColor={theme.colors.textMuted}
             style={styles.searchInput}
             value={query}
@@ -362,60 +369,58 @@ export default function MatchListScreen({
         </View>
       </View>
     ),
-    [query, styles]
+    [query, styles, theme.colors.textMuted]
   );
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* ── Shared Header ────────────────────────────────────────── */}
       <Header
         title="Matches"
-        subtitle="People who liked you"
+        subtitle="Recommended, new, online and nearby profiles"
         enableSearch
         searchPlaceholder="Search by name, city..."
         actions={[{ icon: 'filter', onPress: () => {} }]}
       />
 
-      {/* ── Tabs ─────────────────────────────────────────────────── */}
       <View style={styles.tabsWrapper}>
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.tabsScroll}
         >
-          {TABS.map((t) => {
-            const isActive = activeTab === t.key;
+          {tabs.map((tab) => {
+            const selected = activeTab === tab.key;
             return (
               <TouchableOpacity
-                key={t.key}
-                style={[styles.tab, isActive && styles.tabActive]}
-                onPress={() => setActiveTab(t.key)}
+                key={tab.key}
+                style={[styles.tab, selected && styles.tabActive]}
+                onPress={() => setActiveTab(tab.key)}
                 accessibilityRole="tab"
-                accessibilityState={{ selected: isActive }}
+                accessibilityState={{ selected }}
               >
                 <Feather
-                  name={t.icon}
+                  name={tab.icon}
                   size={13}
                   color={
-                    isActive ? theme.colors.white : theme.colors.textSecondary
+                    selected ? theme.colors.white : theme.colors.textSecondary
                   }
                 />
                 <Text
-                  style={[styles.tabText, isActive && styles.tabTextActive]}
+                  style={[styles.tabText, selected && styles.tabTextActive]}
                 >
-                  {t.label}
+                  {tab.label}
                 </Text>
-                {t.count > 0 && (
+                {tab.count > 0 && (
                   <View
-                    style={[styles.tabBadge, isActive && styles.tabBadgeActive]}
+                    style={[styles.tabBadge, selected && styles.tabBadgeActive]}
                   >
                     <Text
                       style={[
                         styles.tabBadgeText,
-                        isActive && styles.tabBadgeTextActive,
+                        selected && styles.tabBadgeTextActive,
                       ]}
                     >
-                      {t.count}
+                      {tab.count}
                     </Text>
                   </View>
                 )}
@@ -425,8 +430,7 @@ export default function MatchListScreen({
         </ScrollView>
       </View>
 
-      {/* ── Content ──────────────────────────────────────────────── */}
-      {loading ? (
+      {isLoading ? (
         <>
           <ListHeader />
           {[1, 2].map((i) => (
@@ -445,25 +449,20 @@ export default function MatchListScreen({
                 <Feather name="search" size={36} color={theme.colors.primary} />
               </View>
               <Text style={styles.emptyTitle}>
-                {query ? 'No results found' : 'No matches yet'}
+                {query ? 'No results found' : 'No profiles yet'}
               </Text>
               <Text style={styles.emptySubtitle}>
                 {query
-                  ? `Try different keywords`
-                  : 'Check back soon for new matches.'}
+                  ? 'Try different keywords.'
+                  : 'Update preferences or check another tab.'}
               </Text>
-              {query.length === 0 && (
-                <TouchableOpacity style={styles.emptyBtn}>
-                  <Text style={styles.emptyBtnText}>Update Preferences</Text>
-                </TouchableOpacity>
-              )}
             </View>
           }
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing}
+              refreshing={refreshing || isFetching}
               onRefresh={onRefresh}
               colors={[theme.colors.primary]}
               tintColor={theme.colors.primary}

@@ -34,10 +34,19 @@ import { logout as logoutAction } from '@/store/slices/authSlice';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
 import { useLogoutMutation } from '@/store/services/authApi';
+import { useGetMyProfileQuery } from '@/store/services/profileApi.service';
 import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
 import { SettingsScreenProps } from './Settings.types';
 import { showConfirm } from '@/core/utils/confirm';
+
+const clampProfileCompletion = (value?: number): number => {
+  if (typeof value !== 'number' || Number.isNaN(value)) {
+    return 0;
+  }
+
+  return Math.min(100, Math.max(0, Math.round(value)));
+};
 
 export default function SettingsScreen({
   navigation,
@@ -53,6 +62,7 @@ export default function SettingsScreen({
   const { t } = useTranslation();
 
   const [logoutMutation, { isLoading: isLoggingOut }] = useLogoutMutation();
+  const { data: profileResponse } = useGetMyProfileQuery();
 
   // ─────────────────────────────────────────────
   // Redux State
@@ -68,7 +78,11 @@ export default function SettingsScreen({
 
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
-  const profileCompletion = 78;
+  const profileCompletion = clampProfileCompletion(
+    profileResponse?.success
+      ? profileResponse.data.profileCompletionPercentage
+      : undefined
+  );
 
   // ─────────────────────────────────────────────
   // Logout

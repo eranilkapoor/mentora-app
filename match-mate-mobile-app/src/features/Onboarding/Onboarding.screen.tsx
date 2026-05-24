@@ -21,11 +21,14 @@ import { BasicStep } from './steps/BasicStep';
 import { PreferencesStep } from './steps/PreferencesStep';
 import { PhotosStep } from './steps/PhotosStep';
 import { useOnboardingForm } from './hooks/useOnboardingForm';
+import { useNavigation } from '@react-navigation/native';
+import { RootNavigationProp } from '@/navigation/types';
 
 export default function OnboardingScreen(): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const styles = useThemedStyles(onboardingStyles);
+  const navigation = useNavigation<RootNavigationProp>();
 
   const [currentStep, setCurrentStep] = useState<OnboardingSteps>('basic');
 
@@ -169,7 +172,14 @@ export default function OnboardingScreen(): React.ReactElement {
               onPress={
                 isLastStep
                   ? () => {
-                      void handleSubmit();
+                      void handleSubmit().then((completed) => {
+                        if (completed) {
+                          navigation.reset({
+                            index: 0,
+                            routes: [{ name: 'App' }],
+                          });
+                        }
+                      });
                     }
                   : handleNext
               }

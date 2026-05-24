@@ -66,6 +66,36 @@ export class PlanService {
       .exec();
   }
 
+  async getActivePlansWithFeatures() {
+    const [plans, allPlanFeatures] = await Promise.all([
+      this.planModel
+        .find({ isActive: true })
+        .sort({ sortOrder: 1 })
+        .lean<LeanPlan[]>()
+        .exec(),
+      this.pfModel.find().populate('featureId').lean().exec(),
+    ]);
+
+    const activePlanIds = new Set(plans.map((plan) => String(plan._id)));
+    const featuresByPlan = new Map<string, unknown[]>();
+
+    for (const pf of allPlanFeatures) {
+      const key = String(pf.planId);
+      if (!activePlanIds.has(key)) {
+        continue;
+      }
+
+      const existing = featuresByPlan.get(key) ?? [];
+      existing.push(pf);
+      featuresByPlan.set(key, existing);
+    }
+
+    return plans.map((plan) => ({
+      ...plan,
+      features: featuresByPlan.get(String(plan._id)) ?? [],
+    }));
+  }
+
   async getPlanById(
     planId: string,
   ): Promise<LeanPlan & { features: unknown[] }> {

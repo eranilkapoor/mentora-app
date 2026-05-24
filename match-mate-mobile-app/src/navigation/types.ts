@@ -19,6 +19,12 @@ export type OnboardingStackParamList = {
 export type HomeStackParamList = {
   HomeScreen: undefined;
   Notifications: undefined;
+  MatchDetails: { userId: string };
+  ChatDetails: {
+    userId: string;
+    partnerName: string;
+    partnerPhoto: string;
+  };
 };
 
 // ─── Matches Stack ────────────────────────────────────────────────────────────
@@ -26,6 +32,11 @@ export type MatchesStackParamList = {
   MatchList: undefined;
   OnlineMatches: undefined;
   MatchDetails: { userId: string };
+  ChatDetails: {
+    userId: string;
+    partnerName: string;
+    partnerPhoto: string;
+  };
 };
 
 // ─── Chats Stack ──────────────────────────────────────────────────────────────

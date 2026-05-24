@@ -192,7 +192,7 @@ export function useOnboardingForm() {
 
   // ─── Submit ──────────────────────────────────────────────────────────────
 
-  const handleSubmit = useCallback(async (): Promise<void> => {
+  const handleSubmit = useCallback(async (): Promise<boolean> => {
     setLoading(true);
     try {
       const formData = new FormData();
@@ -232,16 +232,18 @@ export function useOnboardingForm() {
           title: t('common.error'),
           message: t('onboarding.errors.submit_failed'),
         });
-        return;
+        return false;
       }
 
       dispatch(setProfileCompleted(true));
+      return true;
     } catch (err: unknown) {
       showError({
         title: t('common.error'),
         message:
           err instanceof Error ? err.message : t('common.something_went_wrong'),
       });
+      return false;
     } finally {
       setLoading(false);
     }

@@ -1,4 +1,8 @@
-import { MediaSettingsResponse, UpdateMediaSettingsPayload } from '@/features/MediaSettings/MediaSettings.types';
+import {
+  MediaSettings,
+  MediaSettingsResponse,
+  UpdateMediaSettingsPayload,
+} from '@/features/MediaSettings/MediaSettings.types';
 import { baseApi } from './baseApi';
 
 export const mediaSettingsApi = baseApi.injectEndpoints({
@@ -8,8 +12,11 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
      */
     getMediaSettings: builder.query<MediaSettingsResponse, void>({
       query: () => ({
-        url: '/settings',
+        url: '/settings/media',
         method: 'GET',
+      }),
+      transformResponse: (response: MediaSettings) => ({
+        media: response,
       }),
 
       providesTags: ['MediaSettings'],
@@ -18,11 +25,14 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
     /**
      * Update Media Settings
      */
-    updateMediaSettings: builder.mutation<MediaSettingsResponse, UpdateMediaSettingsPayload>({
-      query: (body) => ({ 
-        url: '/settings/media', 
-        method: 'PUT', 
-        body 
+    updateMediaSettings: builder.mutation<
+      MediaSettingsResponse,
+      UpdateMediaSettingsPayload
+    >({
+      query: (body) => ({
+        url: '/settings/media',
+        method: 'PUT',
+        body,
       }),
       invalidatesTags: ['MediaSettings'],
     }),
@@ -31,7 +41,5 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
   overrideExisting: false,
 });
 
-export const {
-  useGetMediaSettingsQuery,
-  useUpdateMediaSettingsMutation
-} = mediaSettingsApi;
+export const { useGetMediaSettingsQuery, useUpdateMediaSettingsMutation } =
+  mediaSettingsApi;

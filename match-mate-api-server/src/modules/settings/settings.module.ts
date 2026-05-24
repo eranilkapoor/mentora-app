@@ -36,6 +36,11 @@ import {
   MediaSettingsSchema,
 } from './schemas/media-settings.schema';
 import { AiSettings, AiSettingsSchema } from './schemas/ai-settings.schema';
+import { User, UserSchema } from '../auth/schemas/user.schema';
+import {
+  UserSession,
+  UserSessionSchema,
+} from '../auth/schemas/user-session.schema';
 
 @Module({
   imports: [
@@ -49,6 +54,8 @@ import { AiSettings, AiSettingsSchema } from './schemas/ai-settings.schema';
       { name: AccessibilitySettings.name, schema: AccessibilitySettingsSchema },
       { name: MediaSettings.name, schema: MediaSettingsSchema },
       { name: AiSettings.name, schema: AiSettingsSchema },
+      { name: User.name, schema: UserSchema },
+      { name: UserSession.name, schema: UserSessionSchema },
     ]),
   ],
   controllers: [SettingsController],

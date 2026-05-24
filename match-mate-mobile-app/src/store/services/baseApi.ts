@@ -26,7 +26,7 @@ const mutex = new Mutex();
 
 export async function getRefreshToken(): Promise<string | null> {
   if (Platform.OS === 'web') {
-    return null;
+    return globalThis.localStorage?.getItem('refreshToken') ?? null;
   }
 
   return SecureStore.getItemAsync('refreshToken');
@@ -34,6 +34,7 @@ export async function getRefreshToken(): Promise<string | null> {
 
 export async function setRefreshToken(token: string): Promise<void> {
   if (Platform.OS === 'web') {
+    globalThis.localStorage?.setItem('refreshToken', token);
     return;
   }
 
@@ -42,6 +43,7 @@ export async function setRefreshToken(token: string): Promise<void> {
 
 export async function clearRefreshToken(): Promise<void> {
   if (Platform.OS === 'web') {
+    globalThis.localStorage?.removeItem('refreshToken');
     return;
   }
 
@@ -86,8 +88,7 @@ const rawBaseQuery = fetchBaseQuery({
 
 async function performLogout(api: Parameters<BaseQueryFn>[1]): Promise<void> {
   try {
-    const refreshToken =
-      Platform.OS !== 'web' ? await getRefreshToken() : undefined;
+    const refreshToken = await getRefreshToken();
 
     // Call logout API
     await rawBaseQuery(
@@ -95,7 +96,12 @@ async function performLogout(api: Parameters<BaseQueryFn>[1]): Promise<void> {
         url: '/auth/logout',
         method: 'POST',
         credentials: 'include',
-        body: Platform.OS !== 'web' ? { refreshToken } : undefined,
+        headers: refreshToken
+          ? {
+              'X-Refresh-Token': refreshToken,
+            }
+          : undefined,
+        body: refreshToken ? { refreshToken } : undefined,
       },
       api,
       {}
@@ -130,16 +136,19 @@ const baseQueryWithAuth: BaseQueryFn<
       const release = await mutex.acquire();
 
       try {
-        const refreshToken =
-          Platform.OS !== 'web' ? await getRefreshToken() : undefined;
+        const refreshToken = await getRefreshToken();
 
         const refreshResult = await rawBaseQuery(
           {
             url: '/auth/refresh',
             method: 'POST',
             credentials: 'include',
-
-            body: Platform.OS !== 'web' ? { refreshToken } : undefined,
+            headers: refreshToken
+              ? {
+                  'X-Refresh-Token': refreshToken,
+                }
+              : undefined,
+            body: refreshToken ? { refreshToken } : undefined,
           },
           api,
           extraOptions
@@ -157,7 +166,7 @@ const baseQueryWithAuth: BaseQueryFn<
 
           /* Update Refresh Token */
 
-          if (Platform.OS !== 'web' && data.refreshToken) {
+          if (data.refreshToken) {
             await setRefreshToken(data.refreshToken);
           }
 
@@ -209,6 +218,10 @@ export const baseApi = createApi({
     'LocalizationSettings',
     'SecuritySettings',
     'NotificationSettings',
+    'Membership',
+    'Payment',
+    'Match',
+    'Chat',
   ],
 
   endpoints: () => ({}),

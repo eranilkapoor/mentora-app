@@ -11,7 +11,10 @@ export const privacySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getPrivacySettings: builder.query<PrivacySettingsResponse, void>({
       query: () => ({
-        url: '/settings',
+        url: '/settings/privacy',
+      }),
+      transformResponse: (response: PrivacySettings) => ({
+        privacy: response,
       }),
 
       providesTags: ['PrivacySettings'],

@@ -8,7 +8,7 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
      */
     getAccessibilitySettings: builder.query<AccessibilitySettingsResponse, void>({
       query: () => ({
-        url: '/settings',
+        url: '/settings/accessibility',
         method: 'GET',
       }),
 

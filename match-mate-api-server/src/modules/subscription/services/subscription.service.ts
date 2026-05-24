@@ -63,7 +63,7 @@ export class SubscriptionService {
       status: SubscriptionStatus.ACTIVE,
       startDate,
       expiresAt: endDate,
-      planId: subscription._id.toString(),
+      planId: planId,
     });
 
     return { success: true, subscription };

@@ -7,6 +7,8 @@ import {
   Req,
   Res,
   UnauthorizedException,
+  Delete,
+  Param,
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
@@ -321,10 +323,7 @@ export class AuthController {
       }
 
       res.clearCookie('refreshToken', {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
+        ...this.authService.getRefreshCookieOptions(),
       });
 
       return new ApiResponse(
@@ -347,7 +346,9 @@ export class AuthController {
     try {
       await this.authService.logoutAll(req, req.user.sub);
 
-      res.clearCookie('refreshToken');
+      res.clearCookie('refreshToken', {
+        ...this.authService.getRefreshCookieOptions(),
+      });
 
       return new ApiResponse(
         true,
@@ -358,6 +359,47 @@ export class AuthController {
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Logout failed';
 
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
+    }
+  }
+
+  @Get('sessions')
+  async listSessions(@Req() req: AuthenticatedRequest) {
+    try {
+      const data = await this.authService.listSessions(req.user.sub);
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_LOGIN_SUCCESS,
+        'Active sessions fetched successfully',
+        data,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to fetch sessions';
+      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
+    }
+  }
+
+  @Delete('sessions/:sessionId')
+  async logoutSession(
+    @Req() req: AuthenticatedRequest,
+    @Param('sessionId') sessionId: string,
+  ) {
+    try {
+      const data = await this.authService.logoutSession(
+        req,
+        req.user.sub,
+        sessionId,
+      );
+      return new ApiResponse(
+        true,
+        SuccessCode.AUTH_LOGOUT_SUCCESS,
+        'Device signed out successfully',
+        data,
+      );
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : 'Failed to sign out device';
       return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
     }
   }

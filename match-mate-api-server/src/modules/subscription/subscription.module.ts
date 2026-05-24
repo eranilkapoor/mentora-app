@@ -16,6 +16,7 @@ import { FeatureService } from './services/feature.service';
 
 // Controller
 import { PlanController } from './controllers/plan.controller';
+import { SubscriptionController } from './controllers/subscription.controller';
 
 // Guards
 import { FeatureGuard } from './guards/feature.guard';
@@ -46,7 +47,7 @@ import { SubscriptionExpiryTask } from './tasks/subscription-expiry.task';
     FeatureGuard,
     SubscriptionExpiryTask,
   ],
-  controllers: [PlanController],
+  controllers: [PlanController, SubscriptionController],
   exports: [
     SubscriptionService,
     PlanService,

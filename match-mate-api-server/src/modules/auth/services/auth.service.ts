@@ -7,9 +7,15 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Response } from 'express';
+import { CookieOptions, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { PlanTier, Role, Status, SubscriptionStatus } from 'src/common/enums';
+import {
+  BillingCycle,
+  PlanTier,
+  Role,
+  Status,
+  SubscriptionStatus,
+} from 'src/common/enums';
 import { UserRepository } from '../repositories/user.repository';
 import { OtpService } from './otp.service';
 import * as bcrypt from 'bcryptjs';
@@ -50,6 +56,10 @@ import {
 
 interface TokenAttachUser {
   _id: { toString(): string };
+}
+
+interface RefreshTokenPayload {
+  sub: string;
 }
 
 interface RegisterRequestContext {
@@ -98,14 +108,29 @@ export class AuthService {
       this.authTokenService.generateTokens(payload);
 
     const platform = String(req.headers['x-platform'] || 'web');
+    const deviceId = this.getHeaderString(req, 'x-device-id') ?? '';
 
     const cacheKey = `auth:${user._id.toString()}`;
     await this.cache.set(cacheKey, accessToken, 900);
 
-    await this.userSessionModel.create({
+    await this.userSessionModel.updateMany(
+      {
+        userId: user._id,
+        device: deviceId,
+        isActive: true,
+      },
+      {
+        $set: {
+          isActive: false,
+          loggedOutAt: new Date(),
+        },
+      },
+    );
+
+    const session = await this.userSessionModel.create({
       userId: user._id,
       refreshToken,
-      device: this.getHeaderString(req, 'x-device-id') ?? '',
+      device: deviceId,
       ip: req.ip,
       userAgent: this.getHeaderString(req, 'user-agent') ?? '',
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
@@ -114,40 +139,31 @@ export class AuthService {
     // 🌐 WEB → cookie
     if (platform === 'web') {
       res.cookie('refreshToken', refreshToken, {
-        httpOnly: true, // JS cannot read it — security
-        secure: false, // set true in production (HTTPS only)
-        sameSite: 'lax', // 'none' in production with secure: true
-        domain: 'localhost', // must match the browser's origin domain
-        path: '/', // available on all routes
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+        ...this.getRefreshCookieOptions(),
+        maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return { accessToken };
+      return { accessToken, refreshToken, sessionId: session._id.toString() };
     }
 
     // 📱 MOBILE → return both
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, sessionId: session._id.toString() };
   }
 
   async refresh(req: AppRequest, res: Response, oldRefreshToken?: string) {
     try {
-      // ✅ 1. Extract userId from JWT (set by JwtRefreshStrategy or guard)
-      const userId = req.user?.sub;
-
-      if (!userId) {
-        throw new UnauthorizedException('Invalid token payload');
-      }
-
-      if (!Types.ObjectId.isValid(userId)) {
-        throw new UnauthorizedException('Invalid userId');
-      }
-
-      // ✅ 2. Get refresh token (WEB → cookie, MOBILE → param)
       const token =
         oldRefreshToken ?? this.getCookieString(req, 'refreshToken');
 
       if (!token) {
         throw new UnauthorizedException('Refresh token missing');
+      }
+
+      const refreshPayload = this.jwtService.verify<RefreshTokenPayload>(token);
+      const userId = refreshPayload.sub;
+
+      if (!Types.ObjectId.isValid(userId)) {
+        throw new UnauthorizedException('Invalid userId');
       }
 
       // ✅ 3. Validate session
@@ -168,11 +184,13 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
-      const payload = this.authTokenService.generatePayload(user);
+      this.assertUserCanAuthenticate(user);
+
+      const tokenPayload = this.authTokenService.generatePayload(user);
 
       // ✅ 5. Generate new tokens
       const { accessToken, refreshToken } =
-        this.authTokenService.generateTokens(payload);
+        this.authTokenService.generateTokens(tokenPayload);
 
       // 🔥 6. ROTATE refresh token
       session.refreshToken = refreshToken;
@@ -188,22 +206,18 @@ export class AuthService {
       // 🌐 WEB → set cookie
       if (platform === 'web') {
         res.cookie('refreshToken', refreshToken, {
-          httpOnly: true, // JS cannot read it — security
-          secure: false, // set true in production (HTTPS only)
-          sameSite: 'lax', // 'none' in production with secure: true
-          domain: 'localhost', // must match the browser's origin domain
-          path: '/', // available on all routes
-          maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+          ...this.getRefreshCookieOptions(),
+          maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        return { accessToken };
+        return { accessToken, refreshToken, sessionId: session._id.toString() };
       }
 
       // 📱 MOBILE → return both
-      return { accessToken, refreshToken };
+      return { accessToken, refreshToken, sessionId: session._id.toString() };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
-        throw new UnauthorizedException(error);
+        throw error;
       }
       throw new UnauthorizedException('Token refresh failed');
     }
@@ -284,22 +298,35 @@ export class AuthService {
   }
 
   private async createOrUpdateFreeSubscription(userId: string): Promise<void> {
-    const freePlan = await this.planModel
-      .findOne({ tier: PlanTier.FREE, isActive: true })
-      .exec();
-
-    if (!freePlan) {
-      return;
-    }
+    const freePlan = await this.planModel.findOneAndUpdate(
+      { tier: PlanTier.FREE, isActive: true },
+      {
+        $setOnInsert: {
+          name: 'FREE',
+          slug: 'free',
+          tier: PlanTier.FREE,
+          billingCycle: BillingCycle.MONTHLY,
+          price: 0,
+          durationDays: 3650,
+          currency: 'INR',
+          isPopular: false,
+          sortOrder: 0,
+          description: 'Basic free membership with limited matchmaking access.',
+          isActive: true,
+          version: 1,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
 
     const startDate = new Date();
     const endDate = new Date(startDate);
     endDate.setDate(endDate.getDate() + freePlan.durationDays);
 
     await this.subscriptionModel.findOneAndUpdate(
-      { userId: userId },
+      { userId: new Types.ObjectId(userId) },
       {
-        userId: userId,
+        userId: new Types.ObjectId(userId),
         planId: freePlan._id,
         startDate,
         endDate,
@@ -449,6 +476,7 @@ export class AuthService {
     context: RegisterRequestContext,
   ): Promise<void> {
     await this.userRepo.update(userId, {
+      status: Status.ACTIVE,
       lastLoginIp: context.ip,
       lastLoginDevice: context.device,
       lastLoginAt: new Date(),
@@ -751,6 +779,8 @@ export class AuthService {
         throw new UnauthorizedException('Invalid credentials');
       }
 
+      this.assertUserCanAuthenticate(existingUser);
+
       if (
         !existingUser.authAccounts[0].passwordHash ||
         !(await bcrypt.compare(
@@ -787,7 +817,11 @@ export class AuthService {
 
   sendOtp(country_code: string, phone: string) {
     const otp = this.otpService.generate(country_code, phone);
-    return { phone, otp };
+    if (process.env.NODE_ENV !== 'production') {
+      return { phone, otp };
+    }
+
+    return { phone };
   }
 
   async verifyOtp(
@@ -807,6 +841,8 @@ export class AuthService {
       );
 
       if (existingUser) {
+        this.assertUserCanAuthenticate(existingUser);
+
         await this.completeLoginFlow(req, existingUser._id.toString(), {
           provider: AuthProvider.PHONE,
           source: 'login-phone-otp',
@@ -889,6 +925,8 @@ export class AuthService {
       );
 
       if (existingUser) {
+        this.assertUserCanAuthenticate(existingUser);
+
         await this.completeLoginFlow(req, existingUser._id.toString(), {
           provider:
             AuthProvider[
@@ -1227,10 +1265,15 @@ export class AuthService {
         throw new UnauthorizedException('User not found');
       }
 
+      this.assertUserCanAuthenticate(user);
+
       return {
         userId: user._id,
         email: user.email,
         phone: user.phone,
+        status: user.status,
+        isEmailVerified: user.isEmailVerified,
+        isPhoneVerified: user.isPhoneVerified,
         isOnboardingCompleted: user.isOnboardingCompleted,
       };
     } catch (error) {
@@ -1312,6 +1355,109 @@ export class AuthService {
     });
 
     return { success: true };
+  }
+
+  async listSessions(userId: string) {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new UnauthorizedException('Invalid user');
+    }
+
+    const sessions = await this.userSessionModel
+      .find({
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+        expiresAt: { $gt: new Date() },
+      })
+      .sort({ updatedAt: -1 })
+      .lean()
+      .exec();
+
+    return {
+      sessions: sessions.map((session) => {
+        const datedSession = session as typeof session & {
+          createdAt?: Date;
+          updatedAt?: Date;
+        };
+
+        return {
+          sessionId: session._id.toString(),
+          deviceId: session.device,
+          deviceName: session.userAgent,
+          platform: this.inferPlatform(session.userAgent),
+          ipAddress: session.ip,
+          lastActive: datedSession.updatedAt ?? datedSession.createdAt,
+          expiresAt: session.expiresAt,
+        };
+      }),
+    };
+  }
+
+  async logoutSession(
+    req: AppRequest,
+    userId: string,
+    sessionId: string,
+  ): Promise<{ success: true }> {
+    if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(sessionId)) {
+      throw new UnauthorizedException('Invalid session');
+    }
+
+    const session = await this.userSessionModel.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(sessionId),
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+      },
+      {
+        $set: {
+          isActive: false,
+          loggedOutAt: new Date(),
+        },
+      },
+      { new: true },
+    );
+
+    if (!session) {
+      throw new UnauthorizedException('Session not found');
+    }
+
+    await this.completeLogoutFlow(req, userId, {
+      source: 'logout-selected-device',
+      action: ActivityAction.LOGOUT,
+    });
+
+    return { success: true };
+  }
+
+  private assertUserCanAuthenticate(user: { status?: Status }) {
+    if (user.status === Status.BLOCKED || user.status === Status.SUSPENDED) {
+      throw new UnauthorizedException('Account is not allowed to sign in');
+    }
+
+    if (user.status === Status.DELETED) {
+      throw new UnauthorizedException('Account has been deleted');
+    }
+  }
+
+  private inferPlatform(userAgent?: string): string {
+    const value = userAgent?.toLowerCase() ?? '';
+    if (value.includes('android')) return 'android';
+    if (value.includes('iphone') || value.includes('ipad')) return 'ios';
+    if (value.includes('windows')) return 'windows';
+    if (value.includes('mac')) return 'macos';
+    return 'unknown';
+  }
+
+  getRefreshCookieOptions(): CookieOptions {
+    const isProduction = process.env.NODE_ENV === 'production';
+    const domain = process.env.COOKIE_DOMAIN || undefined;
+
+    return {
+      httpOnly: true,
+      secure: isProduction,
+      sameSite: isProduction ? 'none' : 'lax',
+      path: '/',
+      ...(domain ? { domain } : {}),
+    };
   }
 
   private getHeaderString(req: AppRequest, key: string): string | undefined {

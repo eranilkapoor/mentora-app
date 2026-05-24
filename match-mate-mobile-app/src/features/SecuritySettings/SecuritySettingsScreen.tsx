@@ -15,9 +15,12 @@ import {
 import { showConfirm } from '@/core/utils/confirm';
 import {
   useGetSecuritySettingsQuery,
-  useRevokeAllDevicesMutation,
   useUpdateSecuritySettingsMutation,
 } from '@/store/services/securitySettings.service';
+import { useLogoutAllMutation } from '@/store/services/authApi';
+import { clearRefreshToken } from '@/store/services/baseApi';
+import { useAppDispatch } from '@/store/hooks';
+import { logout as logoutAction } from '@/store/slices/authSlice';
 import Loader from '@/core/components/Loader';
 import {
   SecuritySettings,
@@ -34,10 +37,11 @@ export default function SecuritySettingsScreen({
 }: SecuritySettingsScreenProps): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
 
   const { data, isLoading } = useGetSecuritySettingsQuery();
   const [update] = useUpdateSecuritySettingsMutation();
-  const [revokeAllDevices] = useRevokeAllDevicesMutation();
+  const [logoutAll] = useLogoutAllMutation();
   const [twoFactorMethodOpen, setTwoFactorMethodOpen] = useState(false);
 
   const settings = data?.security;
@@ -78,7 +82,9 @@ export default function SecuritySettingsScreen({
       confirmText: t('settings.security.revoke_all_confirm'),
       destructive: true,
       onConfirm: () => {
-        void revokeAllDevices().then(() => {
+        void logoutAll().then(async () => {
+          await clearRefreshToken();
+          dispatch(logoutAction());
           Alert.alert(
             t('common.success'),
             t('settings.security.revoke_all_success')
@@ -86,7 +92,7 @@ export default function SecuritySettingsScreen({
         });
       },
     });
-  }, [revokeAllDevices, t]);
+  }, [dispatch, logoutAll, t]);
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;

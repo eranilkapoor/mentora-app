@@ -1,6 +1,7 @@
 import { baseApi } from './baseApi';
 
 import {
+  AccountSettings,
   AccountSettingsResponse,
   ConnectProviderPayload,
   DeactivateAccountPayload,
@@ -16,8 +17,11 @@ export const accountSettingsApi = baseApi.injectEndpoints({
      */
     getAccountSettings: builder.query<AccountSettingsResponse, void>({
       query: () => ({
-        url: '/settings',
+        url: '/settings/account',
         method: 'GET',
+      }),
+      transformResponse: (response: AccountSettings) => ({
+        account: response,
       }),
 
       providesTags: ['AccountSettings'],
@@ -31,7 +35,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       UpdateAccountSettingsPayload
     >({
       query: (body) => ({
-        url: '/settings',
+        url: '/settings/account',
         method: 'PUT',
         body,
       }),

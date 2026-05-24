@@ -55,6 +55,14 @@ export class MatchController {
 
   // ─── My matches ────────────────────────────────────────────────────────────
 
+  @Get('online')
+  getOnlineMatches(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: MatchQueryDto,
+  ) {
+    return this.discoveryService.getOnlineMatches(req.user.sub, query);
+  }
+
   @Get('my')
   getMyMatches(
     @Req() req: AuthenticatedRequest,

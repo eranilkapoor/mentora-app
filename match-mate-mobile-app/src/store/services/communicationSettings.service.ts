@@ -12,7 +12,10 @@ export const communicationSettingsApi = baseApi.injectEndpoints({
       void
     >({
       query: () => ({
-        url: '/settings',
+        url: '/settings/communication',
+      }),
+      transformResponse: (response: CommunicationSettings) => ({
+        communication: response,
       }),
 
       providesTags: ['CommunicationSettings'],

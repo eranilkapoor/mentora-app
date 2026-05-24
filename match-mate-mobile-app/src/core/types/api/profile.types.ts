@@ -35,4 +35,10 @@ export interface ProfileData {
   family: FamilyData;
   preferences: PreferencesData;
   images: ProfileImage[];
+  profileScore?: number;
+  profileCompletionPercentage?: number;
+  isPremium?: boolean;
+  isVerified?: boolean;
+  status?: string;
+  lastActiveAt?: string | Date;
 }

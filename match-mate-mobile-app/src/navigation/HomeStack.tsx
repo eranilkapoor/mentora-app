@@ -6,6 +6,8 @@ import { getSharedScreenOptions } from './sharedScreenOptions';
 
 import HomeScreen from '@/features/Home/Home.screen';
 import NotificationsScreen from '@/features/Notifications/Notifications.screen';
+import MatchDetailsScreen from '@/features/MatchDetail/MatchDetail.screen';
+import ChatScreen from '@/features/Chats/Chat.screen';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
@@ -16,6 +18,8 @@ export default function HomeStack(): React.ReactElement {
     <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen name="MatchDetails" component={MatchDetailsScreen} />
+      <Stack.Screen name="ChatDetails" component={ChatScreen} />
     </Stack.Navigator>
   );
 }

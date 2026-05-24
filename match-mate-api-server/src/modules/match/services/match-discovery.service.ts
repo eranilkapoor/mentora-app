@@ -135,6 +135,34 @@ export class MatchDiscoveryService {
 
   // ─── Build base filter (gender + exclusions + active status) ─────────────
 
+  async getOnlineMatches(userId: string, query: MatchQueryDto) {
+    const { myProfile, preference, interactedIds, skip, limit } =
+      await this.resolveContext(userId, query);
+
+    const oppositeGender = this.getOppositeGender(myProfile.gender as Gender);
+    const onlineSince = new Date(Date.now() - 15 * 60 * 1000);
+
+    const filter = {
+      ...this.buildPreferenceFilter(
+        userId,
+        oppositeGender,
+        interactedIds,
+        preference,
+        myProfile,
+      ),
+      lastActiveAt: { $gte: onlineSince },
+    };
+
+    const { profiles, total } = await this.discoveryRepo.findProfiles(
+      filter,
+      skip,
+      limit,
+      { lastActiveAt: -1 },
+    );
+
+    return this.paginate(profiles, total, skip, limit, query.page ?? 1);
+  }
+
   private buildBaseFilter(
     userId: string,
     oppositeGender: Gender,

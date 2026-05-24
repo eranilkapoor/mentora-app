@@ -1,4 +1,3 @@
-import { Platform } from 'react-native';
 import {
   LoginRequest,
   RegisterRequest,
@@ -15,6 +14,7 @@ import {
   SocialLoginResponse,
   User,
   ResetPasswordRequest,
+  AuthSessionsResponse,
 } from '../../core/types';
 import { baseApi, getRefreshToken } from './baseApi';
 
@@ -96,19 +96,18 @@ export const authApi = baseApi.injectEndpoints({
     logout: builder.mutation<{ success: boolean }, void>({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
         try {
-          const refreshToken =
-            Platform.OS !== 'web' ? await getRefreshToken() : undefined;
+          const refreshToken = await getRefreshToken();
 
           const result = await baseQuery({
             url: '/auth/logout',
             method: 'POST',
             credentials: 'include',
-            body:
-              Platform.OS !== 'web'
-                ? {
-                    refreshToken,
-                  }
-                : undefined,
+            headers: refreshToken
+              ? {
+                  'X-Refresh-Token': refreshToken,
+                }
+              : undefined,
+            body: refreshToken ? { refreshToken } : undefined,
           });
 
           // API Error
@@ -134,6 +133,26 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
     }),
+    logoutAll: builder.mutation<ApiResponse<null>, void>({
+      query: () => ({
+        url: '/auth/logout-all',
+        method: 'POST',
+      }),
+    }),
+    getSessions: builder.query<ApiResponse<AuthSessionsResponse>, void>({
+      query: () => ({
+        url: '/auth/sessions',
+        method: 'GET',
+      }),
+      providesTags: ['Auth'],
+    }),
+    logoutSession: builder.mutation<ApiResponse<null>, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: `/auth/sessions/${sessionId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Auth'],
+    }),
   }),
 });
 
@@ -148,4 +167,7 @@ export const {
   useChangePasswordMutation,
   useVerifyUserQuery,
   useLogoutMutation,
+  useLogoutAllMutation,
+  useGetSessionsQuery,
+  useLogoutSessionMutation,
 } = authApi;

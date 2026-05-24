@@ -149,7 +149,11 @@ export default function ResetPasswordScreen({
     }
 
     try {
-      const response = await resetPassword({ accessToken, password }).unwrap();
+      const response = await resetPassword({
+        token: accessToken,
+        newPassword: password,
+        confirmPassword,
+      }).unwrap();
       if (response.success) {
         setSuccess(true);
       } else {
@@ -158,7 +162,7 @@ export default function ResetPasswordScreen({
     } catch {
       setErrors({ error: t('auth.errors.network_error') });
     }
-  }, [password, accessToken, resetPassword, validate, t]);
+  }, [password, confirmPassword, accessToken, resetPassword, validate, t]);
 
   // ─── Success State ────────────────────────────────────────────────────────
 

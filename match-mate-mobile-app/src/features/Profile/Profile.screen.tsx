@@ -61,7 +61,7 @@ import { showError } from '@/core/utils/toast';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { resolveApiUrl } from '@/core/utils/config';
 
-const EMPTY_VALUE = '—';
+const EMPTY_VALUE = '-';
 type PdfAction = 'download' | 'share';
 
 type Primitive = string | number | boolean | null | undefined;
@@ -390,7 +390,7 @@ const getSiblingDetails = (profile: SchemaProfile): string[] =>
       formatProfileText(sibling.occupation),
     ]
       .filter((value) => value !== EMPTY_VALUE)
-      .join(' • ')
+      .join(' - ')
   ) ?? [];
 
 const escapeHtml = (value: string): string =>
@@ -675,7 +675,7 @@ export default function ProfileScreen({
           EMPTY_VALUE,
       ]
         .filter((value) => value !== EMPTY_VALUE)
-        .join(' • ') || EMPTY_VALUE,
+        .join(' - ') || EMPTY_VALUE,
     [profileData]
   );
 

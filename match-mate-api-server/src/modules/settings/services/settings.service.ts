@@ -1,5 +1,13 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
+import { Model, Types } from 'mongoose';
+import { Status } from 'src/common/enums';
+import { User, UserDocument } from 'src/modules/auth/schemas/user.schema';
+import {
+  UserSession,
+  UserSessionDocument,
+} from 'src/modules/auth/schemas/user-session.schema';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,
@@ -25,7 +33,13 @@ import {
 
 @Injectable()
 export class SettingsService {
-  constructor(private readonly repo: SettingsRepository) {}
+  constructor(
+    private readonly repo: SettingsRepository,
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
+    @InjectModel(UserSession.name)
+    private readonly userSessionModel: Model<UserSessionDocument>,
+  ) {}
 
   // ─── All settings in one call ─────────────────────────────────────────────
 
@@ -61,7 +75,23 @@ export class SettingsService {
 
   // ─── Account ─────────────────────────────────────────────────────────────
 
-  deactivateAccount(userId: string, dto: DeactivateAccountDto) {
+  getAccount(userId: string) {
+    return this.repo.getAccount(userId);
+  }
+
+  updateAccount(userId: string, dto: Record<string, unknown>) {
+    return this.repo.updateAccount(userId, dto);
+  }
+
+  async deactivateAccount(userId: string, dto: DeactivateAccountDto) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      $set: { status: Status.INACTIVE },
+    });
+    await this.userSessionModel.updateMany(
+      { userId: new Types.ObjectId(userId), isActive: true },
+      { $set: { isActive: false, loggedOutAt: new Date() } },
+    );
+
     return this.repo.updateAccount(userId, {
       isDeactivated: true,
       deactivatedAt: new Date(),
@@ -69,9 +99,17 @@ export class SettingsService {
     });
   }
 
-  scheduleAccountDeletion(userId: string) {
+  async scheduleAccountDeletion(userId: string) {
     const deletionScheduledAt = new Date();
     deletionScheduledAt.setDate(deletionScheduledAt.getDate() + 30);
+
+    await this.userModel.findByIdAndUpdate(userId, {
+      $set: { status: Status.INACTIVE },
+    });
+    await this.userSessionModel.updateMany(
+      { userId: new Types.ObjectId(userId), isActive: true },
+      { $set: { isActive: false, loggedOutAt: new Date() } },
+    );
 
     return this.repo.updateAccount(userId, { deletionScheduledAt });
   }

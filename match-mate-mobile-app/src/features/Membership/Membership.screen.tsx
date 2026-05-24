@@ -1,5 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
+import React, { useEffect, useMemo, useState } from 'react';
+import {
+  ActivityIndicator,
+  Alert,
+  View,
+  Text,
+  TouchableOpacity,
+  ScrollView,
+} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '../../core/components/Header';
@@ -15,6 +22,42 @@ import {
 import { FeatureRow } from './components/FeatureRow';
 import { PlanCard } from './components/PlanCard';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import {
+  MembershipPlan,
+  useCreateMembershipOrderMutation,
+  useGetActiveSubscriptionQuery,
+  useGetMembershipPlansQuery,
+} from '@/store/services/membershipApi.service';
+
+type DisplayPlan = {
+  id?: string;
+  name: string;
+  price: string;
+  durationLabel: string;
+  best?: boolean;
+  source?: MembershipPlan;
+};
+
+const formatPlanName = (name: string): string =>
+  name
+    .split(/[_-]/)
+    .filter(Boolean)
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+    .join(' ');
+
+const formatPlanPrice = (plan: MembershipPlan): string =>
+  new Intl.NumberFormat('en-IN', {
+    style: 'currency',
+    currency: plan.currency || 'INR',
+    maximumFractionDigits: 0,
+  }).format(plan.price);
+
+const getDurationLabel = (durationDays: number): string => {
+  if (durationDays >= 365) return '/ year';
+  if (durationDays >= 90) return '/ 3 months';
+  if (durationDays >= 30) return '/ month';
+  return `/${durationDays} days`;
+};
 
 // ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function MembershipScreen(): React.ReactElement {
@@ -22,8 +65,87 @@ export default function MembershipScreen(): React.ReactElement {
   const { theme } = useTheme();
   const [tab, setTab] = useState<'self' | 'assisted'>('self');
   const [duration, setDuration] = useState<number>(6);
-  const [selectedPlan, setSelectedPlan] = useState<string>('Pro Max');
-  const selectedIndex = PLANS.findIndex((p) => p.name === selectedPlan);
+  const [selectedPlan, setSelectedPlan] = useState<string>('');
+  const { data: backendPlans = [], isFetching: isFetchingPlans } =
+    useGetMembershipPlansQuery();
+  const { data: activeSubscription } = useGetActiveSubscriptionQuery();
+  const [createOrder, { isLoading: isCreatingOrder }] =
+    useCreateMembershipOrderMutation();
+
+  const displayPlans = useMemo<DisplayPlan[]>(() => {
+    const paidPlans = backendPlans
+      .filter((plan) => plan.price > 0)
+      .slice(0, 3)
+      .map((plan) => ({
+        id: plan._id,
+        name: formatPlanName(plan.name),
+        price: formatPlanPrice(plan),
+        durationLabel: getDurationLabel(plan.durationDays),
+        best: Boolean(plan.isPopular),
+        source: plan,
+      }));
+
+    if (paidPlans.length > 0) {
+      return paidPlans;
+    }
+
+    return PLANS.map((plan) => ({
+      name: plan.name,
+      price: plan.price,
+      durationLabel: '/ 3 months',
+      best: plan.best,
+    }));
+  }, [backendPlans]);
+
+  useEffect(() => {
+    if (selectedPlan || displayPlans.length === 0) {
+      return;
+    }
+
+    setSelectedPlan(
+      displayPlans.find((plan) => plan.best)?.name ?? displayPlans[0].name
+    );
+  }, [displayPlans, selectedPlan]);
+
+  const selectedPlanItem =
+    displayPlans.find((plan) => plan.name === selectedPlan) ?? displayPlans[0];
+  const selectedIndex = Math.max(
+    0,
+    displayPlans.findIndex((plan) => plan.name === selectedPlan)
+  );
+  const activePlanName =
+    typeof activeSubscription?.planId === 'object'
+      ? formatPlanName(activeSubscription.planId.name)
+      : undefined;
+
+  const handleCreateOrder = async (): Promise<void> => {
+    if (!selectedPlanItem?.source?._id) {
+      Alert.alert(
+        'Plans unavailable',
+        'Please try again after membership plans finish loading.'
+      );
+      return;
+    }
+
+    try {
+      const order = await createOrder({
+        planId: selectedPlanItem.source._id,
+        currency: selectedPlanItem.source.currency,
+        idempotencyKey: `${selectedPlanItem.source._id}-${Date.now()}`,
+        description: `${selectedPlanItem.name} membership`,
+      }).unwrap();
+
+      Alert.alert(
+        'Payment order created',
+        `Order ${order.orderId} is ready for ${order.currency} ${order.netAmount}.`
+      );
+    } catch {
+      Alert.alert(
+        'Payment failed',
+        'We could not start your payment. Please try again.'
+      );
+    }
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -41,7 +163,9 @@ export default function MembershipScreen(): React.ReactElement {
           </View>
           <Text style={styles.heroTitle}>Find Your Perfect Match</Text>
           <Text style={styles.heroSubtitle}>
-            Unlock premium features and connect with serious profiles faster.
+            {activePlanName
+              ? `Current plan: ${activePlanName}`
+              : 'Unlock premium features and connect with serious profiles faster.'}
           </Text>
           <View style={styles.heroStats}>
             <View style={styles.heroStat}>
@@ -99,7 +223,7 @@ export default function MembershipScreen(): React.ReactElement {
 
             {/* Plan cards */}
             <View style={styles.planRow}>
-              {PLANS.map((plan) => {
+              {displayPlans.map((plan) => {
                 const active = selectedPlan === plan.name;
                 return (
                   <TouchableOpacity
@@ -128,7 +252,9 @@ export default function MembershipScreen(): React.ReactElement {
                     >
                       {plan.price}
                     </Text>
-                    <Text style={styles.planDuration}>/ 3 months</Text>
+                    <Text style={styles.planDuration}>
+                      {plan.durationLabel}
+                    </Text>
                     <View
                       style={[
                         styles.radioOuter,
@@ -148,7 +274,7 @@ export default function MembershipScreen(): React.ReactElement {
               <View style={styles.featureTableHeader}>
                 <Text style={styles.featureHeaderLabel}>Features</Text>
                 <View style={styles.featureValues}>
-                  {PLANS.map((p, i) => (
+                  {displayPlans.map((p, i) => (
                     <Text
                       key={p.name}
                       style={[
@@ -269,13 +395,24 @@ export default function MembershipScreen(): React.ReactElement {
       {tab === 'self' ? (
         <View style={styles.ctaContainer}>
           <View style={styles.ctaInfo}>
-            <Text style={styles.ctaPlan}>{selectedPlan}</Text>
-            <Text style={styles.ctaPrice}>
-              {PLANS.find((p) => p.name === selectedPlan)?.price}
-            </Text>
+            <Text style={styles.ctaPlan}>{selectedPlanItem?.name}</Text>
+            <Text style={styles.ctaPrice}>{selectedPlanItem?.price}</Text>
           </View>
-          <TouchableOpacity style={styles.ctaButton} activeOpacity={0.85}>
-            <Text style={styles.ctaButtonText}>Get {selectedPlan} →</Text>
+          <TouchableOpacity
+            style={styles.ctaButton}
+            activeOpacity={0.85}
+            disabled={isCreatingOrder || isFetchingPlans}
+            onPress={() => {
+              void handleCreateOrder();
+            }}
+          >
+            {isCreatingOrder || isFetchingPlans ? (
+              <ActivityIndicator size="small" color={theme.colors.white} />
+            ) : (
+              <Text style={styles.ctaButtonText}>
+                Get {selectedPlanItem?.name} →
+              </Text>
+            )}
           </TouchableOpacity>
         </View>
       ) : (

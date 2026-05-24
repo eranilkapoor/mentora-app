@@ -1,6 +1,4 @@
 import { useCallback, useState } from 'react';
-import { Platform } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/authSlice';
@@ -23,6 +21,7 @@ import {
   FormErrors,
   SocialProvider,
 } from '@/features/Auth/shared/auth.types';
+import { setRefreshToken } from '@/store/services/baseApi';
 
 export function useLoginForm() {
   const dispatch = useAppDispatch();
@@ -66,11 +65,10 @@ export function useLoginForm() {
 
   // ─── Persist refresh token on mobile ─────────────────────────────────────
 
-  const persistRefreshToken = useCallback(async (token: string) => {
-    if (Platform.OS !== 'web') {
-      await SecureStore.setItemAsync('refreshToken', token);
-    }
-  }, []);
+  const persistRefreshToken = useCallback(
+    async (token: string) => setRefreshToken(token),
+    []
+  );
 
   const applyCredentials = useCallback(
     async (data: {

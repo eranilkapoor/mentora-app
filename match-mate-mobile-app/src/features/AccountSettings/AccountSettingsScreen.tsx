@@ -9,6 +9,9 @@ import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { VerificationStatusRow } from '@/core/components/settings/VerificationStatusRow';
 import { showConfirm } from '@/core/utils/confirm';
+import { useAppDispatch } from '@/store/hooks';
+import { clearRefreshToken } from '@/store/services/baseApi';
+import { logout as logoutAction } from '@/store/slices/authSlice';
 import {
   useDeactivateAccountMutation,
   useDeleteAccountRequestMutation,
@@ -22,6 +25,7 @@ export default function AccountSettingsScreen({
 }: AccountSettingsScreenProps): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
 
   const { data, isLoading } = useGetAccountSettingsQuery();
   const [deactivateAccount] = useDeactivateAccountMutation();
@@ -39,7 +43,9 @@ export default function AccountSettingsScreen({
       confirmText: t('settings.account.deactivate_confirm'),
       destructive: true,
       onConfirm: () => {
-        void deactivateAccount({ reason: 'User requested' }).then(() => {
+        void deactivateAccount({ reason: 'User requested' }).then(async () => {
+          await clearRefreshToken();
+          dispatch(logoutAction());
           Alert.alert(
             t('common.success'),
             t('settings.account.deactivate_success')
@@ -47,7 +53,7 @@ export default function AccountSettingsScreen({
         });
       },
     });
-  }, [deactivateAccount, t]);
+  }, [deactivateAccount, dispatch, t]);
 
   const handleDeleteRequest = useCallback(() => {
     showConfirm({
@@ -56,7 +62,9 @@ export default function AccountSettingsScreen({
       confirmText: t('settings.account.delete_confirm'),
       destructive: true,
       onConfirm: () => {
-        void deleteAccountRequest().then(() => {
+        void deleteAccountRequest().then(async () => {
+          await clearRefreshToken();
+          dispatch(logoutAction());
           Alert.alert(
             t('settings.account.delete_scheduled_title'),
             t('settings.account.delete_scheduled_message')
@@ -64,7 +72,7 @@ export default function AccountSettingsScreen({
         });
       },
     });
-  }, [deleteAccountRequest, t]);
+  }, [deleteAccountRequest, dispatch, t]);
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;

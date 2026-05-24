@@ -8,6 +8,7 @@ export interface LoginRequest {
 export interface LoginResponse {
   accessToken: string;
   refreshToken?: string;
+  sessionId?: string;
   user: User;
 }
 
@@ -19,6 +20,7 @@ export interface RegisterRequest {
 export interface RegisterResponse {
   accessToken: string;
   refreshToken?: string;
+  sessionId?: string;
   user: User;
 }
 
@@ -33,8 +35,9 @@ export interface ChangePasswordRequest {
 }
 
 export interface ResetPasswordRequest {
-  accessToken: string;
-  password: string;
+  token: string;
+  newPassword: string;
+  confirmPassword: string;
 }
 
 export interface SocialLoginRequest {
@@ -46,7 +49,22 @@ export interface SocialLoginRequest {
 export interface SocialLoginResponse {
   accessToken: string;
   refreshToken?: string;
+  sessionId?: string;
   user: User;
+}
+
+export interface AuthSession {
+  sessionId: string;
+  deviceId: string;
+  deviceName?: string;
+  platform?: string;
+  ipAddress?: string;
+  lastActive?: string;
+  expiresAt?: string;
+}
+
+export interface AuthSessionsResponse {
+  sessions: AuthSession[];
 }
 
 export interface OnbardingResponse {

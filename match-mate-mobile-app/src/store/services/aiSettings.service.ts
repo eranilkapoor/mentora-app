@@ -1,4 +1,8 @@
-import { AiSettingsResponse, UpdateAiSettingsPayload } from '@/features/AiSettings/AiSettings.types';
+import {
+  AiSettings,
+  AiSettingsResponse,
+  UpdateAiSettingsPayload,
+} from '@/features/AiSettings/AiSettings.types';
 import { baseApi } from './baseApi';
 
 export const aiSettingsApi = baseApi.injectEndpoints({
@@ -8,8 +12,11 @@ export const aiSettingsApi = baseApi.injectEndpoints({
      */
     getAiSettings: builder.query<AiSettingsResponse, void>({
       query: () => ({
-        url: '/settings',
+        url: '/settings/ai',
         method: 'GET',
+      }),
+      transformResponse: (response: AiSettings) => ({
+        ai: response,
       }),
 
       providesTags: ['AiSettings'],
@@ -18,11 +25,14 @@ export const aiSettingsApi = baseApi.injectEndpoints({
     /**
      * Update Ai Settings
      */
-    updateAiSettings: builder.mutation<AiSettingsResponse, UpdateAiSettingsPayload>({
-      query: (body) => ({ 
-        url: '/settings/ai', 
-        method: 'PUT', 
-        body 
+    updateAiSettings: builder.mutation<
+      AiSettingsResponse,
+      UpdateAiSettingsPayload
+    >({
+      query: (body) => ({
+        url: '/settings/ai',
+        method: 'PUT',
+        body,
       }),
       invalidatesTags: ['AiSettings'],
     }),
@@ -31,7 +41,5 @@ export const aiSettingsApi = baseApi.injectEndpoints({
   overrideExisting: false,
 });
 
-export const {
-  useGetAiSettingsQuery,
-  useUpdateAiSettingsMutation
-} = aiSettingsApi;
+export const { useGetAiSettingsQuery, useUpdateAiSettingsMutation } =
+  aiSettingsApi;

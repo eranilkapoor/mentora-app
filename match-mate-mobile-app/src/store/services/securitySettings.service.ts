@@ -13,8 +13,11 @@ export const securitySettingsApi = baseApi.injectEndpoints({
      */
     getSecuritySettings: builder.query<SecuritySettingsResponse, void>({
       query: () => ({
-        url: '/settings',
+        url: '/settings/security',
         method: 'GET',
+      }),
+      transformResponse: (response: SecuritySettings) => ({
+        security: response,
       }),
 
       providesTags: ['SecuritySettings'],

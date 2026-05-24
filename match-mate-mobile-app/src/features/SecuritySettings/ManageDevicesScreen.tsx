@@ -7,10 +7,11 @@ import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { showConfirm } from '@/core/utils/confirm';
 import { SettingsNavigationProp } from '@/navigation/types';
+import { AuthSession } from '@/core/types';
 import {
-  useGetSecuritySettingsQuery,
-  useRevokeDeviceMutation,
-} from '@/store/services/securitySettings.service';
+  useGetSessionsQuery,
+  useLogoutSessionMutation,
+} from '@/store/services/authApi';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 
@@ -22,8 +23,8 @@ export default function ManageDevicesScreen({
   navigation,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
-  const { data, isLoading } = useGetSecuritySettingsQuery();
-  const [revokeDevice] = useRevokeDeviceMutation();
+  const { data, isLoading } = useGetSessionsQuery();
+  const [logoutSession] = useLogoutSessionMutation();
 
   const handleRevoke = useCallback(
     (deviceId: string, label: string) => {
@@ -33,21 +34,23 @@ export default function ManageDevicesScreen({
         confirmText: 'Sign Out',
         destructive: true,
         onConfirm: () => {
-          void revokeDevice({ deviceId }).catch((error: unknown) => {
-            console.error('Revoke device failed:', error);
-            Alert.alert('Unable to sign out device', 'Please try again.');
-          });
+          void logoutSession({ sessionId: deviceId }).catch(
+            (error: unknown) => {
+              console.error('Revoke device failed:', error);
+              Alert.alert('Unable to sign out device', 'Please try again.');
+            }
+          );
         },
       });
     },
-    [revokeDevice]
+    [logoutSession]
   );
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
   }
 
-  const devices = data.security.loginDevices ?? [];
+  const devices: AuthSession[] = data?.success ? data.data.sessions : [];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -70,24 +73,23 @@ export default function ManageDevicesScreen({
           ) : (
             devices.map((device, index) => {
               const label =
-                device.deviceName ?? device.platform ?? device.deviceId;
+                device.deviceName ?? device.platform ?? device.sessionId;
               const lastActive = device.lastActive
                 ? new Date(device.lastActive).toLocaleString()
                 : 'Last active time unknown';
               const sublabel = `${device.platform ?? 'Unknown platform'}${
                 device.ipAddress ? ` • ${device.ipAddress}` : ''
-              }\n${lastActive}${device.isCurrent ? ' • Current device' : ''}`;
+              }\n${lastActive}`;
 
               return (
                 <SettingsSelectItem
-                  key={device.deviceId}
+                  key={device.sessionId}
                   icon="smartphone"
                   label={label}
                   sublabel={sublabel}
-                  value={device.isCurrent ? 'Current' : 'Sign Out'}
-                  disabled={device.isCurrent}
+                  value="Sign Out"
                   isLast={index === devices.length - 1}
-                  onPress={() => handleRevoke(device.deviceId, label)}
+                  onPress={() => handleRevoke(device.sessionId, label)}
                 />
               );
             })

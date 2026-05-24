@@ -1,6 +1,11 @@
 import { baseApi } from './baseApi';
 
-import { ChannelPreference, NotificationSettings, NotificationSettingsResponse, UpdateNotificationSettingsPayload } from '@/features/NotificationSettings/NotificationSettings.types';
+import {
+  ChannelPreference,
+  NotificationSettings,
+  NotificationSettingsResponse,
+  UpdateNotificationSettingsPayload,
+} from '@/features/NotificationSettings/NotificationSettings.types';
 
 export const notificationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -9,8 +14,11 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
      */
     getNotificationSettings: builder.query<NotificationSettingsResponse, void>({
       query: () => ({
-        url: '/settings',
+        url: '/settings/notifications',
         method: 'GET',
+      }),
+      transformResponse: (response: NotificationSettings) => ({
+        notification: response,
       }),
 
       providesTags: ['NotificationSettings'],
@@ -19,18 +27,25 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
     /**
      * Update Notification Settings
      */
-    updateNotificationSettings: builder.mutation<NotificationSettings, UpdateNotificationSettingsPayload>({
-      query: (body) => ({ 
-        url: '/settings/notifications', 
-        method: 'PUT', 
-        body 
+    updateNotificationSettings: builder.mutation<
+      NotificationSettings,
+      UpdateNotificationSettingsPayload
+    >({
+      query: (body) => ({
+        url: '/settings/notifications',
+        method: 'PUT',
+        body,
       }),
       invalidatesTags: ['NotificationSettings'],
     }),
 
     updateNotificationChannel: builder.mutation<
       NotificationSettings,
-      { event: keyof NotificationSettings['preferences']; channel: keyof ChannelPreference; value: boolean }
+      {
+        event: keyof NotificationSettings['preferences'];
+        channel: keyof ChannelPreference;
+        value: boolean;
+      }
     >({
       query: ({ event, channel, value }) => ({
         url: `/settings/notifications/preferences/${event}/${channel}`,
@@ -47,5 +62,5 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
 export const {
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation,
-  useUpdateNotificationChannelMutation
+  useUpdateNotificationChannelMutation,
 } = notificationSettingsApi;
