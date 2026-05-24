@@ -1,7 +1,8 @@
+import { Image, Text, View } from 'react-native';
+
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { formatTime, Message } from '../Chat.types';
 import { chatStyles } from '../Chat.styles';
-import { View, Image, Text } from 'react-native';
+import { formatTime, Message } from '../Chat.types';
 
 export function MessageBubble({ item }: { item: Message }): React.ReactElement {
   const isMe = item.senderId === 'me';
@@ -27,7 +28,7 @@ export function MessageBubble({ item }: { item: Message }): React.ReactElement {
             {formatTime(item.timestamp)}
           </Text>
           {isMe && (
-            <Text style={styles.readTick}>{item.read ? '✓✓' : '✓'}</Text>
+            <Text style={styles.readTick}>{item.read ? 'Read' : 'Sent'}</Text>
           )}
         </View>
       </View>

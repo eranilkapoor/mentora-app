@@ -1,33 +1,49 @@
-import React, { useState, useCallback, useRef } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import {
+  Alert,
   FlatList,
+  KeyboardAvoidingView,
+  ListRenderItem,
+  Platform,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
-  TextInput,
-  KeyboardAvoidingView,
-  Platform,
-  ListRenderItem,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
-import * as ImagePicker from 'expo-image-picker';
-
-import { EMOJIS } from '../../core/constants';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { useTheme } from '@/core/theme/ThemeProvider';
-import { chatStyles } from './Chat.styles';
-
-import { fetchMessages, formatDateLabel, Message, Props } from './Chat.types';
-
-import { MessageBubble } from './components/MessageBubble';
-import { DateSeparator } from './components/DateSeparator';
 import Header from '@/core/components/Header';
+import { EMOJIS } from '../../core/constants';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useAppSelector } from '@/store/hooks';
+import {
+  ChatMessage,
+  useCreateDirectRoomMutation,
+  useGetMessagesQuery,
+  useSendMessageMutation,
+} from '@/store/services/chatApi.service';
+import { chatStyles } from './Chat.styles';
+import { formatDateLabel, Message, Props } from './Chat.types';
+import { DateSeparator } from './components/DateSeparator';
+import { MessageBubble } from './components/MessageBubble';
 
-// ─────────────────────────────────────────────
-// Screen
-// ─────────────────────────────────────────────
+const mapMessage = (message: ChatMessage): Message => ({
+  id: message.id,
+  senderId: message.senderId,
+  text: message.content,
+  timestamp: message.createdAt
+    ? new Date(message.createdAt).getTime()
+    : Date.now(),
+  type: message.type === 'image' ? 'image' : 'text',
+  read: Boolean(message.readAt),
+});
 
 export default function ChatScreen({
   navigation,
@@ -35,78 +51,109 @@ export default function ChatScreen({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(chatStyles);
   const { theme } = useTheme();
-
-  const { userId, partnerName, partnerPhoto } = route.params ?? {};
-
-  const [messages, setMessages] = useState<Message[]>([]);
+  const currentUserId = useAppSelector((state) => state.auth.user?.userId);
+  const { userId, roomId, partnerName, partnerPhoto } = route.params ?? {};
+  const [activeRoomId, setActiveRoomId] = useState(roomId);
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-
   const inputRef = useRef<TextInput>(null);
   const listRef = useRef<FlatList<Message>>(null);
-
-  // ─── Load messages ─────────────────────────
-  useFocusEffect(
-    useCallback(() => {
-      setMessages(fetchMessages(userId ?? 'partner'));
-    }, [userId])
+  const [createDirectRoom, { isLoading: isCreatingRoom }] =
+    useCreateDirectRoomMutation();
+  const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
+  const { data, isFetching } = useGetMessagesQuery(
+    { roomId: activeRoomId ?? '', limit: 50 },
+    { skip: !activeRoomId }
   );
 
-  // ─── Send message ─────────────────────────
-  const handleSend = useCallback((): void => {
-    if (!inputText.trim()) return;
+  useEffect(() => {
+    if (activeRoomId || !userId) {
+      return;
+    }
 
-    const msg: Message = {
-      id: Date.now().toString(),
-      senderId: 'me',
-      text: inputText.trim(),
-      timestamp: Date.now(),
-      type: 'text',
-      read: false,
+    let isMounted = true;
+
+    const ensureRoom = async () => {
+      try {
+        const response = await createDirectRoom({
+          targetUserId: userId,
+        }).unwrap();
+        if (!response.success) {
+          throw new Error(response.message);
+        }
+
+        const resolvedRoomId =
+          response.data?.roomId ?? response.data?.room?.roomId ?? undefined;
+
+        if (isMounted && resolvedRoomId) {
+          setActiveRoomId(resolvedRoomId);
+        }
+      } catch {
+        Alert.alert(
+          'Chat unavailable',
+          'You can chat after both users have accepted the match.'
+        );
+        navigation.goBack();
+      }
     };
 
-    setMessages((prev) => [msg, ...prev]);
-    setInputText('');
-    setShowEmojiPicker(false);
+    void ensureRoom();
 
-    // ✅ scroll to latest
-    listRef.current?.scrollToOffset({ offset: 0, animated: true });
-  }, [inputText]);
+    return () => {
+      isMounted = false;
+    };
+  }, [activeRoomId, createDirectRoom, navigation, userId]);
 
-  // ─── Pick image ───────────────────────────
-  const handlePickImage = useCallback(async (): Promise<void> => {
-    const result = await ImagePicker.launchImageLibraryAsync({
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.8,
-    });
+  const messages = useMemo(
+    () =>
+      (data?.success ? data.data.items : [])
+        .map(mapMessage)
+        .map((message) => ({
+          ...message,
+          senderId:
+            currentUserId && message.senderId === currentUserId
+              ? 'me'
+              : message.senderId,
+        }))
+        .reverse(),
+    [currentUserId, data]
+  );
 
-    if (!result.canceled && result.assets[0] !== undefined) {
-      const msg: Message = {
-        id: Date.now().toString(),
-        senderId: 'me',
-        imageUrl: result.assets[0].uri,
-        timestamp: Date.now(),
-        type: 'image',
-        read: false,
-      };
+  const handleSend = useCallback(async (): Promise<void> => {
+    const content = inputText.trim();
+    if (!content || !activeRoomId || isSending) return;
 
-      setMessages((prev) => [msg, ...prev]);
+    try {
+      await sendMessage({
+        roomId: activeRoomId,
+        content,
+        clientMessageId: `${Date.now()}`,
+      }).unwrap();
+      setInputText('');
+      setShowEmojiPicker(false);
+      listRef.current?.scrollToOffset({ offset: 0, animated: true });
+    } catch {
+      Alert.alert('Message not sent', 'Please try again.');
     }
+  }, [activeRoomId, inputText, isSending, sendMessage]);
+
+  const handlePickImage = useCallback((): void => {
+    Alert.alert(
+      'Image messages',
+      'Image sending will be available after media upload is connected to chat attachments.'
+    );
   }, []);
 
-  // ─── Emoji ────────────────────────────────
   const appendEmoji = useCallback((emoji: string): void => {
     setInputText((prev) => prev + emoji);
     setShowEmojiPicker(false);
     inputRef.current?.focus();
   }, []);
 
-  // ─── Render message ───────────────────────
   const renderMessage: ListRenderItem<Message> = useCallback(
     ({ item, index }) => (
       <>
         <MessageBubble item={item} />
-
         {index < messages.length - 1 &&
           formatDateLabel(item.timestamp) !==
             formatDateLabel(messages[index + 1]?.timestamp ?? 0) && (
@@ -119,29 +166,16 @@ export default function ChatScreen({
 
   return (
     <SafeAreaView style={styles.container} edges={['top', 'bottom']}>
-      {/* ─── HEADER (NEW) ───────────────────── */}
       <Header
         showBack
         onBackPress={navigation.goBack}
         title={partnerName ?? 'Chat'}
-        subtitle="Online now"
+        subtitle={isCreatingRoom || isFetching ? 'Syncing...' : 'Messages'}
         avatarUri={partnerPhoto ?? 'https://i.pravatar.cc/150?img=12'}
         actions={[
           {
-            icon: 'phone',
-            onPress: () => {},
-            accessibilityLabel: 'Voice call',
-          },
-          {
-            icon: 'video',
-            onPress: () => {},
-            accessibilityLabel: 'Video call',
-          },
-          {
             icon: 'more-vertical',
-            onPress: () => {
-              // TODO: open bottom sheet (profile, block, report)
-            },
+            onPress: () => {},
             accessibilityLabel: 'More options',
           },
         ]}
@@ -151,7 +185,6 @@ export default function ChatScreen({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.flex}
       >
-        {/* ─── Messages ─────────────────────── */}
         <FlatList
           ref={listRef}
           data={messages}
@@ -162,31 +195,31 @@ export default function ChatScreen({
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
           ListFooterComponent={
-            <DateSeparator
-              ts={messages[messages.length - 1]?.timestamp ?? Date.now()}
-            />
+            messages.length > 0 ? (
+              <DateSeparator
+                ts={messages[messages.length - 1]?.timestamp ?? Date.now()}
+              />
+            ) : null
           }
         />
 
-        {/* ─── Emoji Picker ─────────────────── */}
         {showEmojiPicker && (
           <View style={styles.emojiBox}>
-            {EMOJIS.map((e) => (
+            {EMOJIS.map((emoji) => (
               <TouchableOpacity
-                key={e}
-                onPress={() => appendEmoji(e)}
+                key={emoji}
+                onPress={() => appendEmoji(emoji)}
                 style={styles.emojiBtn}
               >
-                <Text style={styles.emoji}>{e}</Text>
+                <Text style={styles.emoji}>{emoji}</Text>
               </TouchableOpacity>
             ))}
           </View>
         )}
 
-        {/* ─── Input Bar ────────────────────── */}
         <View style={styles.inputBar}>
           <TouchableOpacity
-            onPress={() => setShowEmojiPicker((v) => !v)}
+            onPress={() => setShowEmojiPicker((value) => !value)}
             style={styles.iconBtn}
             activeOpacity={0.7}
             accessibilityRole="button"
@@ -202,7 +235,7 @@ export default function ChatScreen({
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => void handlePickImage()}
+            onPress={handlePickImage}
             style={styles.iconBtn}
             activeOpacity={0.7}
             accessibilityRole="button"
@@ -214,7 +247,7 @@ export default function ChatScreen({
           <TextInput
             ref={inputRef}
             style={styles.input}
-            placeholder="Type a message…"
+            placeholder="Type a message..."
             placeholderTextColor={theme.colors.textMuted}
             value={inputText}
             onChangeText={setInputText}
@@ -224,13 +257,15 @@ export default function ChatScreen({
           />
 
           <TouchableOpacity
-            onPress={handleSend}
+            onPress={() => {
+              void handleSend();
+            }}
             style={[
               styles.sendBtn,
               inputText.trim().length > 0 && styles.sendBtnActive,
             ]}
             activeOpacity={0.85}
-            disabled={!inputText.trim()}
+            disabled={!inputText.trim() || !activeRoomId || isSending}
             accessibilityRole="button"
             accessibilityLabel="Send message"
           >
@@ -238,7 +273,7 @@ export default function ChatScreen({
               name="send"
               size={18}
               color={
-                inputText.trim().length > 0
+                inputText.trim().length > 0 && activeRoomId
                   ? theme.colors.white
                   : theme.colors.textMuted
               }

@@ -27,6 +27,7 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
+import { UpdateProfileLocationDto } from 'src/modules/profile/dto/location.dto';
 import { ApiResponse } from 'src/common/dto/api-response.dto';
 import { SuccessCode } from 'src/common/constants';
 
@@ -170,6 +171,24 @@ export class ProfileController {
       true,
       SuccessCode.PROFILE_UPDATED,
       'Profile successfully updated',
+      data,
+    );
+  }
+
+  @Put('location')
+  async updateLocation(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdateProfileLocationDto,
+  ) {
+    const data = await this.profileService.updateLocation(
+      req,
+      req.user.sub,
+      dto,
+    );
+    return new ApiResponse(
+      true,
+      SuccessCode.PROFILE_UPDATED,
+      'Profile location successfully updated',
       data,
     );
   }

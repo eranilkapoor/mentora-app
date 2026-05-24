@@ -104,6 +104,16 @@ export function useEditProfileForm() {
   // ─── Profile completion ──────────────────────────────────────────────────
 
   const profileCompletion = useMemo((): number => {
+    const serverCompletion =
+      data?.success && data.data
+        ? (data.data.summary?.profileCompletionPercentage ??
+          data.data.profileCompletionPercentage)
+        : undefined;
+
+    if (typeof serverCompletion === 'number') {
+      return Math.min(100, Math.max(0, Math.round(serverCompletion)));
+    }
+
     const checks: unknown[] = [
       profile.personal.firstName,
       profile.personal.dateOfBirth,
@@ -121,7 +131,7 @@ export function useEditProfileForm() {
       (v) => v !== '' && v !== null && v !== undefined
     ).length;
     return Math.round((filled / checks.length) * 100);
-  }, [profile, serverImages]);
+  }, [data, profile, serverImages]);
 
   // ─── Section setters ─────────────────────────────────────────────────────
 

@@ -76,6 +76,18 @@ export const profileApi = baseApi.injectEndpoints({
       invalidatesTags: ['Profile'],
     }),
 
+    updateProfileLocation: builder.mutation<
+      ApiResponse<ProfileData>,
+      { latitude: number; longitude: number }
+    >({
+      query: (body) => ({
+        url: '/profile/location',
+        method: 'PUT',
+        body,
+      }),
+      invalidatesTags: ['Profile'],
+    }),
+
     updatePreferences: builder.mutation<
       ApiResponse<ProfileData>,
       PreferencesData
@@ -140,6 +152,7 @@ export const {
   useUpdatePhysicalInfoMutation,
   useUpdateEducationInfoMutation,
   useUpdateFamilyInfoMutation,
+  useUpdateProfileLocationMutation,
   useUpdatePreferencesMutation,
   useGetMyProfileMediaImagesQuery,
   useAddProfileMediaImagesMutation,

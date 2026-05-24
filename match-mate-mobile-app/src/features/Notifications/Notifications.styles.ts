@@ -1,5 +1,6 @@
-import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
+
+import { Theme } from '@/core/theme/types';
 
 export const notificationStyles = (theme: Theme) =>
   StyleSheet.create({
@@ -7,73 +8,30 @@ export const notificationStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
     },
-    container: {
-      flex: 1,
-    },
     scrollContent: {
       paddingHorizontal: 16,
-      paddingTop: 20,
+      paddingTop: 16,
       paddingBottom: 40,
     },
-
-    // ─── Header Card ──────────────────────────────────────────────────────
-    headerCard: {
-      backgroundColor: theme.colors.white,
-      borderRadius: 16,
-      padding: 16,
-      marginBottom: 16,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      elevation: 1,
-    },
-    headerLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
-    headerIconWrapper: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      backgroundColor: theme.colors.primaryLight,
+    loadingWrapper: {
+      flex: 1,
       alignItems: 'center',
       justifyContent: 'center',
+      gap: 12,
+      paddingHorizontal: 24,
     },
-    headerTitle: {
-      fontSize: 17,
-      fontWeight: '700',
-      color: theme.colors.textPrimary,
-    },
-    headerSubtitle: {
-      fontSize: 12,
+    loadingText: {
+      fontSize: 13,
       color: theme.colors.textMuted,
-      marginTop: 2,
     },
-    markAllBtn: {
-      paddingHorizontal: 12,
-      paddingVertical: 6,
-      borderRadius: 20,
-      borderWidth: 1,
-      borderColor: theme.colors.primary,
-    },
-    markAllText: {
-      fontSize: 12,
-      color: theme.colors.primary,
-      fontWeight: '600',
-    },
-
-    // ─── Section Card ─────────────────────────────────────────────────────
     sectionCard: {
-      backgroundColor: theme.colors.white,
-      borderRadius: 16,
-      marginBottom: 16,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 8,
+      marginBottom: 14,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      elevation: 1,
       overflow: 'hidden',
+      ...theme.shadows.sm,
     },
     sectionHeader: {
       flexDirection: 'row',
@@ -97,20 +55,19 @@ export const notificationStyles = (theme: Theme) =>
       fontWeight: '700',
       color: theme.colors.primary,
       textTransform: 'uppercase',
-      letterSpacing: 0.7,
+      letterSpacing: 0,
       flex: 1,
     },
     sectionCount: {
       fontSize: 11,
       fontWeight: '700',
-      color: theme.colors.white,
+      color: theme.colors.textInverse,
       backgroundColor: theme.colors.primary,
       paddingHorizontal: 7,
       paddingVertical: 2,
-      borderRadius: 10,
+      borderRadius: 8,
+      overflow: 'hidden',
     },
-
-    // ─── Notification Item ────────────────────────────────────────────────
     notifItem: {
       flexDirection: 'row',
       alignItems: 'flex-start',
@@ -129,22 +86,26 @@ export const notificationStyles = (theme: Theme) =>
     notifIconWrapper: {
       width: 40,
       height: 40,
-      borderRadius: 20,
+      borderRadius: 8,
       backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
     },
     notifIconWrapperUnread: {
-      backgroundColor: theme.colors.primaryLight,
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
     },
     notifContent: {
       flex: 1,
+      minWidth: 0,
     },
     notifTitleRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: 3,
+      gap: 8,
     },
     notifTitle: {
       fontSize: 14,
@@ -154,11 +115,11 @@ export const notificationStyles = (theme: Theme) =>
     },
     notifTitleUnread: {
       color: theme.colors.primary,
+      fontWeight: '700',
     },
     notifTime: {
       fontSize: 11,
       color: theme.colors.textMuted,
-      marginLeft: 8,
     },
     notifMessage: {
       fontSize: 13,
@@ -172,22 +133,20 @@ export const notificationStyles = (theme: Theme) =>
       backgroundColor: theme.colors.primary,
       marginTop: 4,
     },
-
-    // ─── Empty State ──────────────────────────────────────────────────────
     emptyCard: {
-      backgroundColor: theme.colors.white,
-      borderRadius: 16,
-      padding: 40,
+      backgroundColor: theme.colors.surface,
+      borderRadius: 8,
+      padding: 32,
       alignItems: 'center',
       gap: 12,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      elevation: 1,
+      ...theme.shadows.sm,
     },
     emptyIconWrapper: {
-      width: 72,
-      height: 72,
-      borderRadius: 36,
+      width: 64,
+      height: 64,
+      borderRadius: 8,
       backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
@@ -197,6 +156,7 @@ export const notificationStyles = (theme: Theme) =>
       fontSize: 16,
       fontWeight: '700',
       color: theme.colors.textPrimary,
+      textAlign: 'center',
     },
     emptySubtitle: {
       fontSize: 13,

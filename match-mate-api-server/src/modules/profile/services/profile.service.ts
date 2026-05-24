@@ -42,6 +42,7 @@ import { UserRepository } from 'src/modules/auth/repositories/user.repository';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { MediaService } from './media.service';
 import { PreferenceService } from './preference.service';
+import { UpdateProfileLocationDto } from '../dto/location.dto';
 
 interface RegisterRequestContext {
   platform: ActivityPlatform;
@@ -150,6 +151,25 @@ export class ProfileService {
     );
   }
 
+  async updateLocation(
+    req: AppRequest,
+    userId: string,
+    dto: UpdateProfileLocationDto,
+  ) {
+    return this.applyUpdate(
+      req,
+      userId,
+      {
+        location: {
+          type: 'Point',
+          coordinates: [dto.longitude, dto.latitude],
+        },
+        lastActiveAt: new Date(),
+      },
+      'profile-location-update',
+    );
+  }
+
   // ─── Privacy Settings ─────────────────────────────────────────────────────
 
   async getPrivacySettings(userId: string) {
@@ -219,7 +239,7 @@ export class ProfileService {
   private async applyUpdate(
     req: AppRequest,
     userId: string,
-    dto: UpdateProfileDto,
+    dto: Partial<UpdateProfileDto> & Record<string, unknown>,
     source: string,
   ) {
     try {
@@ -277,7 +297,7 @@ export class ProfileService {
   }
 
   private normalizeUpdate(
-    dto: UpdateProfileDto,
+    dto: Partial<UpdateProfileDto> & Record<string, unknown>,
     existing: Record<string, unknown>,
   ): Record<string, unknown> {
     const normalized: Record<string, unknown> = {};
@@ -323,9 +343,15 @@ export class ProfileService {
       };
     }
 
+    if (dto.location) {
+      normalized.location = dto.location;
+    }
+
     // Recalculate derived fields from the merged state
     const merged = { ...existing, ...normalized };
     normalized.searchTags = this.buildSearchTagsFromMerged(merged);
+    normalized.profileCompletionPercentage =
+      this.calculateCompletionFromMerged(merged);
     normalized.lastActiveAt = new Date();
 
     return normalized;
@@ -405,6 +431,30 @@ export class ProfileService {
       Boolean(dto.personal.aboutMe),
       Boolean(dto.family),
     ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  }
+
+  private calculateCompletionFromMerged(
+    profile: Record<string, unknown>,
+  ): number {
+    const personal = (profile.personal ?? {}) as Record<string, unknown>;
+    const physical = (profile.physical ?? {}) as Record<string, unknown>;
+    const education = (profile.education ?? {}) as Record<string, unknown>;
+
+    const checks = [
+      Boolean(personal.profileFor),
+      Boolean(personal.firstName),
+      Boolean(personal.gender),
+      Boolean(personal.dateOfBirth),
+      Boolean(personal.religion),
+      Boolean(personal.maritalStatus),
+      Boolean(physical.height),
+      Boolean(education.qualification),
+      Boolean(education.occupation),
+      Boolean(personal.aboutMe),
+      Boolean(profile.family),
+    ];
+
     return Math.round((checks.filter(Boolean).length / checks.length) * 100);
   }
 

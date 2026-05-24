@@ -37,6 +37,11 @@ export interface ProfileData {
   images: ProfileImage[];
   profileScore?: number;
   profileCompletionPercentage?: number;
+  summary?: {
+    profileCompletionPercentage?: number;
+    profileScore?: number;
+    hasAboutMe?: boolean;
+  };
   isPremium?: boolean;
   isVerified?: boolean;
   status?: string;

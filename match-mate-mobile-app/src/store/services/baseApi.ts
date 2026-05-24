@@ -222,6 +222,7 @@ export const baseApi = createApi({
     'Payment',
     'Match',
     'Chat',
+    'Notification',
   ],
 
   endpoints: () => ({}),

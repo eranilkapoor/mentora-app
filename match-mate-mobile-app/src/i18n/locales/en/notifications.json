@@ -1,5 +1,6 @@
 {
   "title": "Notifications",
+  "loading": "Loading notifications...",
   "unread_count": "{{count}} unread notification",
   "unread_count_plural": "{{count}} unread notifications",
   "all_caught_up": "All caught up!",

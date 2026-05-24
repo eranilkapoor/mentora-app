@@ -24,6 +24,7 @@ export type HomeStackParamList = {
     userId: string;
     partnerName: string;
     partnerPhoto: string;
+    roomId?: string;
   };
 };
 
@@ -36,6 +37,7 @@ export type MatchesStackParamList = {
     userId: string;
     partnerName: string;
     partnerPhoto: string;
+    roomId?: string;
   };
 };
 
@@ -46,6 +48,7 @@ export type ChatsStackParamList = {
     userId: string;
     partnerName: string;
     partnerPhoto: string;
+    roomId?: string;
   };
 };
 

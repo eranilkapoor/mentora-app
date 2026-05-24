@@ -27,6 +27,15 @@
       "favicon": "./src/assets/favicon.png"
     },
     "extra": {},
-    "plugins": ["expo-localization", "expo-secure-store"]
+    "plugins": [
+      "expo-localization",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow MatchMate to use your location to show nearby matrimonial matches."
+        }
+      ]
+    ]
   }
 }
