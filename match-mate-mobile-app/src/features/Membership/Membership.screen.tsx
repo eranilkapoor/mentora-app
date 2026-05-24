@@ -93,7 +93,7 @@ export default function MembershipScreen(): React.ReactElement {
       name: plan.name,
       price: plan.price,
       durationLabel: '/ 3 months',
-      best: plan.best,
+      best: Boolean(plan.best),
     }));
   }, [backendPlans]);
 
@@ -108,7 +108,9 @@ export default function MembershipScreen(): React.ReactElement {
   }, [displayPlans, selectedPlan]);
 
   const selectedPlanItem =
-    displayPlans.find((plan) => plan.name === selectedPlan) ?? displayPlans[0];
+    displayPlans.find((plan) => plan.name === selectedPlan) ??
+    displayPlans[0] ??
+    null;
   const selectedIndex = Math.max(
     0,
     displayPlans.findIndex((plan) => plan.name === selectedPlan)

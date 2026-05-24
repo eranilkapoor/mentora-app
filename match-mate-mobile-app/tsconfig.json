@@ -1,6 +1,19 @@
 {
   "extends": "expo/tsconfig.base",
   "compilerOptions": {
+    // ─── Module resolution ────────────────────────────────────────────────────
+    "moduleResolution": "bundler",
+    "module": "esnext",
+
+    // ─── Path aliases ─────────────────────────────────────────────────────────
+    // baseUrl removed — deprecated in TS 5.x, removed in TS 7.0
+    // paths values are now relative to this tsconfig file (./src/*)
+    // This is the correct modern approach
+    "paths": {
+      "@/*": ["./src/*"]
+    },
+
+    // ─── Strict type safety ───────────────────────────────────────────────────
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
@@ -8,12 +21,29 @@
     "strictBindCallApply": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
-    "skipLibCheck": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": true,
+
+    // ─── Quality ──────────────────────────────────────────────────────────────
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["src/*"]
-    },
-    "ignoreDeprecations": "5.0"
-  }
+    "skipLibCheck": true,
+
+    // ─── Output ───────────────────────────────────────────────────────────────
+    "noEmit": true,
+    "isolatedModules": true,
+    "allowImportingTsExtensions": true
+  },
+  "include": [
+    "src",
+    "*.ts",
+    "*.tsx"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist",
+    ".expo"
+  ]
 }

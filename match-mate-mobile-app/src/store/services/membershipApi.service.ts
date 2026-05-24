@@ -1,4 +1,5 @@
 import { baseApi } from './baseApi';
+import { ApiResponse } from '@/core/types';
 
 export interface MembershipPlanFeature {
   value?: string | number | boolean;
@@ -51,6 +52,12 @@ export interface PaymentOrder {
   expiresAt: string;
 }
 
+const unwrapApiResponse = <T>(response: ApiResponse<T>, fallback: T): T => {
+  if (response.success) return response.data;
+
+  return fallback;
+};
+
 export const membershipApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMembershipPlans: builder.query<MembershipPlan[], void>({
@@ -58,6 +65,8 @@ export const membershipApi = baseApi.injectEndpoints({
         url: '/subscriptions/plans',
         method: 'GET',
       }),
+      transformResponse: (response: ApiResponse<MembershipPlan[]>) =>
+        unwrapApiResponse(response, []),
       providesTags: ['Membership'],
     }),
 
@@ -66,6 +75,8 @@ export const membershipApi = baseApi.injectEndpoints({
         url: '/subscriptions/current',
         method: 'GET',
       }),
+      transformResponse: (response: ApiResponse<ActiveSubscription | null>) =>
+        unwrapApiResponse(response, null),
       providesTags: ['Membership'],
     }),
 
@@ -78,6 +89,8 @@ export const membershipApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
+      transformResponse: (response: ApiResponse<PaymentOrder>) =>
+        unwrapApiResponse(response, {} as PaymentOrder),
       invalidatesTags: ['Payment'],
     }),
   }),
