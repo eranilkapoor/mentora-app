@@ -59,6 +59,7 @@ import { Row } from './components/Row';
 import { TagList } from './components/TagList';
 import { showError } from '@/core/utils/toast';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { resolveApiUrl } from '@/core/utils/config';
 
 const EMPTY_VALUE = '—';
 type PdfAction = 'download' | 'share';
@@ -227,21 +228,6 @@ const DEFAULT_PROFILE: SchemaProfile = {
   images: [],
 };
 
-const getApiBaseUrl = (): string =>
-  String(process.env.EXPO_PUBLIC_API_BASE_URL ?? '').replace(/\/$/, '');
-
-const resolveImageUrl = (url: string): string | null => {
-  const trimmedUrl = url.trim();
-
-  if (trimmedUrl.length === 0) return null;
-  if (/^(https?:|file:|data:)/i.test(trimmedUrl)) return trimmedUrl;
-
-  const baseUrl = getApiBaseUrl();
-  if (baseUrl.length === 0) return null;
-
-  return `${baseUrl}${trimmedUrl.startsWith('/') ? '' : '/'}${trimmedUrl}`;
-};
-
 const getProfilePhotos = (images?: ProfileImage[]): string[] => {
   const photos =
     images
@@ -249,7 +235,7 @@ const getProfilePhotos = (images?: ProfileImage[]): string[] => {
       .sort(
         (a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary))
       )
-      .map((image) => resolveImageUrl(image.url))
+      .map((image) => resolveApiUrl(image.url))
       .filter((url): url is string => url !== null) ?? [];
 
   return photos.length > 0 ? photos : FALLBACK_PHOTOS;
@@ -261,7 +247,7 @@ const getPrintableProfilePhoto = (
   images
     ?.filter((image) => image.isActive !== false)
     .sort((a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary)))
-    .map((image) => resolveImageUrl(image.url))
+    .map((image) => resolveApiUrl(image.url))
     .find(
       (url): url is string =>
         url !== null && /^(https:|data:)/i.test(url.trim())

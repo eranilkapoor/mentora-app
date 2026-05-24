@@ -1,6 +1,6 @@
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
-import { RouteProp } from '@react-navigation/native';
+import { NavigatorScreenParams, RouteProp } from '@react-navigation/native';
 
 // ─── Auth Stack ───────────────────────────────────────────────────────────────
 export type AuthStackParamList = {
@@ -55,7 +55,12 @@ export type SettingsStackParamList = {
   NotificationSettings: undefined;
   HelpSupport: undefined;
   PrivacyPolicy: undefined;
+  TermsConditions: undefined;
   AccountSettings: undefined;
+  ChangeEmailPhone: { mode: 'email' | 'phone' };
+  LinkedAccounts: undefined;
+  ManageDevices: undefined;
+  BlockedUsers: undefined;
   PrivacySettings: undefined;
   CommunicationSettings: undefined;
   AccessibilitySettings: undefined;
@@ -77,7 +82,7 @@ export type BottomTabParamList = {
 // ─── App Stack ────────────────────────────────────────────────────────────────
 // Settings is a stack navigator reachable from the app level
 export type AppStackParamList = {
-  Tabs: undefined;
+  Tabs: NavigatorScreenParams<BottomTabParamList> | undefined;
   Settings: undefined; // navigates into SettingsStackNavigator
 };
 

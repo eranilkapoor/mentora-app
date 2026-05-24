@@ -50,3 +50,7 @@ export interface PrivacySettingsResponse {
 }
 
 export interface UpdatePrivacySettingsPayload extends Partial<PrivacySettings> {}
+
+export interface BlockedUsersResponse {
+  blockedUsers: string[];
+}

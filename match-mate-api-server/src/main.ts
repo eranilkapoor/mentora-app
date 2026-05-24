@@ -50,11 +50,12 @@ async function bootstrap() {
 
   // CORS (secure)
   const allowedOrigins = configService.get<string[]>('cors.origins') ?? [];
+  const allowAnyOrigin = allowedOrigins.includes('*');
 
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true); // mobile apps / postman
-      if (allowedOrigins.includes(origin)) {
+      if (allowAnyOrigin || allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
         callback(new Error('Not allowed by CORS'));

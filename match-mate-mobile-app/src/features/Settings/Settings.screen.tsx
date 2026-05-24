@@ -137,7 +137,11 @@ export default function SettingsScreen({
             styles.profileBanner,
             pressed && styles.pressed,
           ]}
-          onPress={() => appNavigation.navigate('Tabs')}
+          onPress={() =>
+            appNavigation.navigate('Tabs', {
+              screen: 'Profile',
+            })
+          }
         >
           <View style={styles.profileAvatar}>
             <Feather name="user" size={26} color={theme.colors.primary} />
@@ -229,7 +233,7 @@ export default function SettingsScreen({
             icon="slash"
             label={t('settings.blocked_users')}
             subLabel={t('settings.blocked_users_sub')}
-            onPress={() => navigation.navigate('PrivacySettings')}
+            onPress={() => navigation.navigate('BlockedUsers')}
           />
 
           <SettingRow
@@ -287,6 +291,13 @@ export default function SettingsScreen({
             label={t('settings.privacy_policy')}
             subLabel={t('settings.privacy_sub')}
             onPress={() => navigation.navigate('PrivacyPolicy')}
+          />
+
+          <SettingRow
+            icon="file-text"
+            label={t('settings.terms_conditions')}
+            subLabel={t('settings.terms_sub')}
+            onPress={() => navigation.navigate('TermsConditions')}
             isLast
           />
         </Section>
@@ -301,14 +312,6 @@ export default function SettingsScreen({
             }
             subLabel={t('settings.sign_out_sub')}
             onPress={handleSignOut}
-            isDanger
-          />
-
-          <SettingRow
-            icon="trash-2"
-            label={t('settings.account.delete')}
-            subLabel={t('settings.account.delete_sub')}
-            onPress={() => navigation.navigate('AccountSettings')}
             isDanger
             isLast
           />

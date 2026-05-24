@@ -28,6 +28,12 @@ import { UpdateAccessibilitySettingsDto } from '../dto/accessibility-settings.dt
 import { UpdateMediaSettingsDto } from '../dto/media-settings.dto';
 import { UpdateAiSettingsDto } from '../dto/ai-settings.dto';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import {
+  ConnectLinkedAccountDto,
+  DeactivateAccountDto,
+  RequestEmailChangeDto,
+  RequestPhoneChangeDto,
+} from '../dto/account-settings.dto';
 
 @Controller('settings')
 @UseGuards(JwtAuthGuard)
@@ -71,6 +77,59 @@ export class SettingsController {
   @HttpCode(HttpStatus.OK)
   unblockUser(@Req() req: AuthenticatedRequest, @Body() dto: BlockUserDto) {
     return this.settingsService.unblockUser(req.user.sub, dto);
+  }
+
+  // ─── Account ─────────────────────────────────────────────────────────────
+
+  @Post('account/deactivate')
+  @HttpCode(HttpStatus.OK)
+  deactivateAccount(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: DeactivateAccountDto,
+  ) {
+    return this.settingsService.deactivateAccount(req.user.sub, dto);
+  }
+
+  @Post('account/delete')
+  @HttpCode(HttpStatus.OK)
+  scheduleAccountDeletion(@Req() req: AuthenticatedRequest) {
+    return this.settingsService.scheduleAccountDeletion(req.user.sub);
+  }
+
+  @Post('account/linked/:provider')
+  @HttpCode(HttpStatus.OK)
+  connectLinkedAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param() dto: ConnectLinkedAccountDto,
+  ) {
+    return this.settingsService.connectLinkedAccount(req.user.sub, dto);
+  }
+
+  @Delete('account/linked/:provider')
+  @HttpCode(HttpStatus.OK)
+  disconnectLinkedAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param('provider') provider: string,
+  ) {
+    return this.settingsService.disconnectLinkedAccount(req.user.sub, provider);
+  }
+
+  @Post('account/email')
+  @HttpCode(HttpStatus.ACCEPTED)
+  requestEmailChange(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: RequestEmailChangeDto,
+  ) {
+    return this.settingsService.requestEmailChange(req.user.sub, dto);
+  }
+
+  @Post('account/phone')
+  @HttpCode(HttpStatus.ACCEPTED)
+  requestPhoneChange(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: RequestPhoneChangeDto,
+  ) {
+    return this.settingsService.requestPhoneChange(req.user.sub, dto);
   }
 
   // ─── Notifications ────────────────────────────────────────────────────────

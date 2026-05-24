@@ -49,6 +49,9 @@ export class PrivacySettings {
     default: 'everyone',
   })
   showLastSeen!: VisibilityLevel;
+
+  @Prop({ type: [Types.ObjectId], ref: 'User', default: [] })
+  blockedUsers!: Types.ObjectId[];
 }
 
 export type PrivacySettingsDocument = PrivacySettings & Document;

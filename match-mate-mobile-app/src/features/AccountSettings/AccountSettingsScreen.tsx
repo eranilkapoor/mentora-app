@@ -10,25 +10,12 @@ import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectIte
 import { VerificationStatusRow } from '@/core/components/settings/VerificationStatusRow';
 import { showConfirm } from '@/core/utils/confirm';
 import {
-  useGetAccountSettingsQuery,
-  useConnectProviderMutation,
   useDeactivateAccountMutation,
   useDeleteAccountRequestMutation,
-  useDisconnectLinkedAccountMutation,
+  useGetAccountSettingsQuery,
 } from '@/store/services/accountSettings.service';
 import { AccountSettingsScreenProps } from './accountSettings.types';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
-
-// ─── Provider config ──────────────────────────────────────────────────────────
-
-const PROVIDER_CONFIG: Record<
-  string,
-  { label: string; icon: 'search' | 'smartphone' | 'facebook' }
-> = {
-  google: { label: 'Google', icon: 'search' },
-  apple: { label: 'Apple', icon: 'smartphone' },
-  facebook: { label: 'Facebook', icon: 'facebook' },
-};
 
 export default function AccountSettingsScreen({
   navigation,
@@ -39,12 +26,11 @@ export default function AccountSettingsScreen({
   const { data, isLoading } = useGetAccountSettingsQuery();
   const [deactivateAccount] = useDeactivateAccountMutation();
   const [deleteAccountRequest] = useDeleteAccountRequestMutation();
-  const [connectProvider] = useConnectProviderMutation();
-  const [disconnectLinked] = useDisconnectLinkedAccountMutation();
 
   const settings = data?.account;
-
-  // ─── Deactivate ──────────────────────────────────────────────────────────
+  const linkedCount =
+    settings?.linkedAccounts?.filter((account) => account.connected).length ??
+    0;
 
   const handleDeactivate = useCallback(() => {
     showConfirm({
@@ -63,8 +49,6 @@ export default function AccountSettingsScreen({
     });
   }, [deactivateAccount, t]);
 
-  // ─── Delete ──────────────────────────────────────────────────────────────
-
   const handleDeleteRequest = useCallback(() => {
     showConfirm({
       title: t('settings.account.delete_title'),
@@ -82,32 +66,6 @@ export default function AccountSettingsScreen({
     });
   }, [deleteAccountRequest, t]);
 
-  // ─── Disconnect linked account ────────────────────────────────────────────
-
-  const handleDisconnect = useCallback(
-    (provider: string) => {
-      showConfirm({
-        title: t('settings.account.disconnect_title', { provider }),
-        message: t('settings.account.disconnect_message', { provider }),
-        confirmText: t('settings.account.disconnect_confirm'),
-        destructive: true,
-        onConfirm: () => {
-          void disconnectLinked({ provider });
-        },
-      });
-    },
-    [disconnectLinked, t]
-  );
-
-  const handleConnect = useCallback(
-    (provider: string) => {
-      void connectProvider({ provider }).catch((error: unknown) => {
-        console.error('Connect provider error:', error);
-      });
-    },
-    [connectProvider]
-  );
-
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
   }
@@ -124,7 +82,6 @@ export default function AccountSettingsScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Verification Status ───────────────────────────────────── */}
         <SettingsCard
           icon="check-circle"
           title={t('settings.account.verification')}
@@ -145,7 +102,6 @@ export default function AccountSettingsScreen({
           />
         </SettingsCard>
 
-        {/* ── Login & Security ──────────────────────────────────────── */}
         <SettingsCard
           icon="lock"
           title={t('settings.account.login_security')}
@@ -156,10 +112,7 @@ export default function AccountSettingsScreen({
             label={t('settings.account.change_email')}
             sublabel={t('settings.account.change_email_sub')}
             onPress={() =>
-              Alert.alert(
-                t('settings.account.change_email'),
-                t('settings.account.change_email_message')
-              )
+              navigation.navigate('ChangeEmailPhone', { mode: 'email' })
             }
           />
           <SettingsSelectItem
@@ -167,66 +120,33 @@ export default function AccountSettingsScreen({
             label={t('settings.account.change_phone')}
             sublabel={t('settings.account.change_phone_sub')}
             onPress={() =>
-              Alert.alert(
-                t('settings.account.change_phone'),
-                t('settings.account.change_phone_message')
-              )
+              navigation.navigate('ChangeEmailPhone', { mode: 'phone' })
             }
           />
           <SettingsSelectItem
             icon="lock"
             label={t('settings.account.change_password')}
-            sublabel={
-              settings?.deletionScheduledAt
-                ? t('settings.account.change_password_sub')
-                : undefined
-            }
-            onPress={() => navigation.navigate('ChangePassword' as never)}
+            sublabel={t('settings.change_password_sub')}
+            onPress={() => navigation.navigate('ChangePassword')}
             isLast
           />
         </SettingsCard>
 
-        {/* ── Linked Accounts ───────────────────────────────────────── */}
         <SettingsCard
           icon="link"
           title={t('settings.account.linked_accounts')}
           subtitle={t('settings.account.linked_accounts_subtitle')}
         >
-          {(['google', 'apple', 'facebook'] as const).map(
-            (provider, index, arr) => {
-              const config = PROVIDER_CONFIG[provider];
-              const linked = settings?.linkedAccounts?.find(
-                (a) => a.provider === provider
-              );
-              const isConnected = linked?.connected ?? false;
-              const isLast = index === arr.length - 1;
-
-              return isConnected ? (
-                <SettingsSelectItem
-                  key={provider}
-                  icon={config.icon}
-                  label={config.label}
-                  sublabel={t('settings.account.linked_connected')}
-                  isLast={isLast}
-                  destructive={false}
-                  onPress={() => handleDisconnect(provider)}
-                />
-              ) : (
-                <SettingsSelectItem
-                  key={provider}
-                  icon={config.icon}
-                  label={config.label}
-                  sublabel={t('settings.account.linked_not_connected')}
-                  value={t('settings.account.connect')}
-                  isLast={isLast}
-                  onPress={() => handleConnect(provider)}
-                />
-              );
-            }
-          )}
+          <SettingsSelectItem
+            icon="link"
+            label={t('settings.account.manage_linked_accounts')}
+            sublabel={t('settings.account.manage_linked_accounts_sub')}
+            value={`${linkedCount}/3`}
+            isLast
+            onPress={() => navigation.navigate('LinkedAccounts')}
+          />
         </SettingsCard>
 
-        {/* ── Account Actions ───────────────────────────────────────── */}
         <SettingsCard
           icon="alert-triangle"
           title={t('settings.account.danger_zone')}

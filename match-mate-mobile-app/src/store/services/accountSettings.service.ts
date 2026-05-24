@@ -1,11 +1,12 @@
 import { baseApi } from './baseApi';
 
 import {
-  AccountSettings,
-  UpdateAccountSettingsPayload,
-  DeactivateAccountPayload,
-  ConnectProviderPayload,
   AccountSettingsResponse,
+  ConnectProviderPayload,
+  DeactivateAccountPayload,
+  RequestEmailChangePayload,
+  RequestPhoneChangePayload,
+  UpdateAccountSettingsPayload,
 } from '../../features/AccountSettings/accountSettings.types';
 
 export const accountSettingsApi = baseApi.injectEndpoints({
@@ -25,7 +26,10 @@ export const accountSettingsApi = baseApi.injectEndpoints({
     /**
      * Update account settings
      */
-    updateAccountSettings: builder.mutation<AccountSettingsResponse, UpdateAccountSettingsPayload>({
+    updateAccountSettings: builder.mutation<
+      AccountSettingsResponse,
+      UpdateAccountSettingsPayload
+    >({
       query: (body) => ({
         url: '/settings',
         method: 'PUT',
@@ -40,7 +44,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
      */
     deactivateAccount: builder.mutation<void, DeactivateAccountPayload>({
       query: (body) => ({
-        url: '/settings/deactivate',
+        url: '/settings/account/deactivate',
         method: 'POST',
         body,
       }),
@@ -53,7 +57,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
      */
     scheduleDeletion: builder.mutation<void, void>({
       query: () => ({
-        url: '/settings/schedule-delete',
+        url: '/settings/account/delete',
         method: 'POST',
       }),
 
@@ -65,7 +69,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
      */
     connectProvider: builder.mutation<void, ConnectProviderPayload>({
       query: ({ provider }) => ({
-        url: `/settings/connect/${provider}`,
+        url: `/settings/account/linked/${provider}`,
         method: 'POST',
       }),
 
@@ -77,7 +81,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
      */
     disconnectProvider: builder.mutation<void, ConnectProviderPayload>({
       query: ({ provider }) => ({
-        url: `/settings/connect/${provider}`,
+        url: `/settings/account/linked/${provider}`,
         method: 'DELETE',
       }),
 
@@ -89,10 +93,28 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       invalidatesTags: ['AccountSettings'],
     }),
     disconnectLinkedAccount: builder.mutation<void, { provider: string }>({
-      query: (body) => ({ url: '/settings/account/linked/disconnect', method: 'POST', body }),
+      query: ({ provider }) => ({
+        url: `/settings/account/linked/${provider}`,
+        method: 'DELETE',
+      }),
       invalidatesTags: ['AccountSettings'],
     }),
-
+    requestEmailChange: builder.mutation<void, RequestEmailChangePayload>({
+      query: (body) => ({
+        url: '/settings/account/email',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['AccountSettings'],
+    }),
+    requestPhoneChange: builder.mutation<void, RequestPhoneChangePayload>({
+      query: (body) => ({
+        url: '/settings/account/phone',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['AccountSettings'],
+    }),
   }),
 
   overrideExisting: false,
@@ -107,4 +129,6 @@ export const {
   useDisconnectProviderMutation,
   useDeleteAccountRequestMutation,
   useDisconnectLinkedAccountMutation,
+  useRequestEmailChangeMutation,
+  useRequestPhoneChangeMutation,
 } = accountSettingsApi;

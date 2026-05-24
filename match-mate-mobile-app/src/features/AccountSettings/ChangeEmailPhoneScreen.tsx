@@ -1,0 +1,151 @@
+/* eslint-disable react-native/no-unused-styles */
+import React, { useCallback, useMemo, useState } from 'react';
+import {
+  Alert,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { RouteProp, useRoute } from '@react-navigation/native';
+import Header from '@/core/components/Header';
+import { SettingsCard } from '@/core/components/settings/SettingsCard';
+import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
+import { useTheme } from '@/core/theme/ThemeProvider';
+import { Theme } from '@/core/theme/types';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import {
+  SettingsNavigationProp,
+  SettingsStackParamList,
+} from '@/navigation/types';
+import {
+  useRequestEmailChangeMutation,
+  useRequestPhoneChangeMutation,
+} from '@/store/services/accountSettings.service';
+
+type Props = {
+  navigation: SettingsNavigationProp;
+};
+
+const createStyles = (theme: Theme) =>
+  StyleSheet.create({
+    safe: { flex: 1, backgroundColor: theme.colors.backgroundPage },
+    scrollContent: { padding: 16, paddingBottom: 32 },
+    input: {
+      marginHorizontal: 14,
+      marginTop: 14,
+      marginBottom: 6,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      borderRadius: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 11,
+      color: theme.colors.textPrimary,
+      backgroundColor: theme.colors.surface,
+      fontSize: 15,
+    },
+    helper: {
+      marginHorizontal: 14,
+      marginBottom: 12,
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      lineHeight: 18,
+    },
+    footer: { height: 16 },
+  });
+
+export default function ChangeEmailPhoneScreen({
+  navigation,
+}: Props): React.ReactElement {
+  const route =
+    useRoute<RouteProp<SettingsStackParamList, 'ChangeEmailPhone'>>();
+  const { theme } = useTheme();
+  const styles = useThemedStyles(createStyles);
+  const [value, setValue] = useState('');
+  const [requestEmailChange, { isLoading: isEmailLoading }] =
+    useRequestEmailChangeMutation();
+  const [requestPhoneChange, { isLoading: isPhoneLoading }] =
+    useRequestPhoneChangeMutation();
+
+  const mode = route.params.mode;
+  const isEmail = mode === 'email';
+  const title = isEmail ? 'Change Email' : 'Change Phone';
+  const helper = isEmail
+    ? 'Enter the new email address. We will start verification before it becomes your sign-in email.'
+    : 'Enter the new phone number without country code. We will send OTP verification before updating it.';
+  const placeholder = isEmail ? 'name@example.com' : '9876543210';
+  const isLoading = isEmail ? isEmailLoading : isPhoneLoading;
+
+  const canSubmit = useMemo(() => {
+    const trimmed = value.trim();
+    if (isEmail) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+    return /^\d{6,15}$/.test(trimmed.replace(/\D/g, ''));
+  }, [isEmail, value]);
+
+  const handleSubmit = useCallback(async () => {
+    if (!canSubmit || isLoading) return;
+
+    try {
+      if (isEmail) {
+        await requestEmailChange({ email: value.trim() }).unwrap();
+      } else {
+        await requestPhoneChange({
+          countryCode: '+91',
+          phone: value.replace(/\D/g, ''),
+        }).unwrap();
+      }
+
+      Alert.alert(
+        'Verification started',
+        'Please complete verification to finish this change.'
+      );
+      navigation.goBack();
+    } catch (error) {
+      console.error('Account change request failed:', error);
+      Alert.alert('Unable to start verification', 'Please try again.');
+    }
+  }, [
+    canSubmit,
+    isEmail,
+    isLoading,
+    navigation,
+    requestEmailChange,
+    requestPhoneChange,
+    value,
+  ]);
+
+  return (
+    <SafeAreaView style={styles.safe}>
+      <Header showBack onBackPress={navigation.goBack} title={title} />
+      <ScrollView contentContainerStyle={styles.scrollContent}>
+        <SettingsCard
+          icon={isEmail ? 'mail' : 'phone'}
+          title={title}
+          subtitle="Verification required"
+        >
+          <TextInput
+            value={value}
+            onChangeText={setValue}
+            placeholder={placeholder}
+            placeholderTextColor={theme.colors.textMuted}
+            keyboardType={isEmail ? 'email-address' : 'phone-pad'}
+            autoCapitalize="none"
+            style={styles.input}
+          />
+          <Text style={styles.helper}>{helper}</Text>
+          <SettingsSelectItem
+            icon="send"
+            label={isLoading ? 'Sending...' : 'Send Verification'}
+            sublabel={canSubmit ? undefined : 'Enter a valid value to continue'}
+            disabled={!canSubmit || isLoading}
+            isLast
+            onPress={handleSubmit}
+          />
+        </SettingsCard>
+        <View style={styles.footer} />
+      </ScrollView>
+    </SafeAreaView>
+  );
+}

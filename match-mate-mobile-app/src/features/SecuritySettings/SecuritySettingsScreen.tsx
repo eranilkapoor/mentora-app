@@ -15,6 +15,7 @@ import {
 import { showConfirm } from '@/core/utils/confirm';
 import {
   useGetSecuritySettingsQuery,
+  useRevokeAllDevicesMutation,
   useUpdateSecuritySettingsMutation,
 } from '@/store/services/securitySettings.service';
 import Loader from '@/core/components/Loader';
@@ -36,6 +37,7 @@ export default function SecuritySettingsScreen({
 
   const { data, isLoading } = useGetSecuritySettingsQuery();
   const [update] = useUpdateSecuritySettingsMutation();
+  const [revokeAllDevices] = useRevokeAllDevicesMutation();
   const [twoFactorMethodOpen, setTwoFactorMethodOpen] = useState(false);
 
   const settings = data?.security;
@@ -76,33 +78,15 @@ export default function SecuritySettingsScreen({
       confirmText: t('settings.security.revoke_all_confirm'),
       destructive: true,
       onConfirm: () => {
-        Alert.alert(
-          t('common.success'),
-          t('settings.security.revoke_all_success')
-        );
+        void revokeAllDevices().then(() => {
+          Alert.alert(
+            t('common.success'),
+            t('settings.security.revoke_all_success')
+          );
+        });
       },
     });
-  }, [t]);
-
-  const handleManageDevices = useCallback(() => {
-    const devices = settings?.loginDevices ?? [];
-    const message =
-      devices.length > 0
-        ? devices
-            .map((device) => {
-              const name =
-                device.deviceName ?? device.platform ?? device.deviceId;
-              const lastActive = device.lastActive
-                ? new Date(device.lastActive).toLocaleString()
-                : t('settings.security.unknown_activity');
-
-              return `${name}${device.isCurrent ? ` (${t('settings.security.current_device')})` : ''}\n${lastActive}`;
-            })
-            .join('\n\n')
-        : t('settings.security.no_devices');
-
-    Alert.alert(t('settings.security.manage_devices'), message);
-  }, [settings?.loginDevices, t]);
+  }, [revokeAllDevices, t]);
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
@@ -195,7 +179,7 @@ export default function SecuritySettingsScreen({
             sublabel={t('settings.security.manage_devices_sub', {
               count: settings?.loginDevices?.length ?? 0,
             })}
-            onPress={handleManageDevices}
+            onPress={() => navigation.navigate('ManageDevices')}
           />
           <SettingsSelectItem
             icon="log-out"

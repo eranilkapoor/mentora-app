@@ -46,3 +46,12 @@ export interface ConnectProviderPayload {
  * Update Account Settings
  */
 export interface UpdateAccountSettingsPayload extends Partial<AccountSettings> {}
+
+export interface RequestEmailChangePayload {
+  email: string;
+}
+
+export interface RequestPhoneChangePayload {
+  countryCode: string;
+  phone: string;
+}

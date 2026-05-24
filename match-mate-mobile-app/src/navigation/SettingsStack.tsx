@@ -13,8 +13,13 @@ import ThemeScreen from '@/features/Theme/Theme.screen';
 import NotificationSettingsScreen from '@/features/NotificationSettings/NotificationSettings.screen';
 import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
 import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicy.screen';
+import TermsConditionsScreen from '@/features/TermsConditions/TermsConditions.screen';
 import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
 import AccountSettingsScreen from '@/features/AccountSettings/AccountSettingsScreen';
+import ChangeEmailPhoneScreen from '@/features/AccountSettings/ChangeEmailPhoneScreen';
+import LinkedAccountsScreen from '@/features/AccountSettings/LinkedAccountsScreen';
+import ManageDevicesScreen from '@/features/SecuritySettings/ManageDevicesScreen';
+import BlockedUsersScreen from '@/features/PrivacySettings/BlockedUsersScreen';
 import PrivacySettingsScreen from '@/features/PrivacySettings/PrivacySettingsScreen';
 import CommunicationSettingsScreen from '@/features/CommunicationSettings/CommunicationSettingsScreen';
 import SecuritySettingsScreen from '@/features/SecuritySettings/SecuritySettingsScreen';
@@ -60,6 +65,21 @@ export default function SettingsStack(): React.ReactElement {
         options={{ title: t('settings.account_settings') }}
       />
       <Stack.Screen
+        name="ChangeEmailPhone"
+        component={ChangeEmailPhoneScreen}
+      />
+      <Stack.Screen name="LinkedAccounts" component={LinkedAccountsScreen} />
+      <Stack.Screen
+        name="ManageDevices"
+        component={ManageDevicesScreen}
+        options={{ title: t('settings.security.manage_devices') }}
+      />
+      <Stack.Screen
+        name="BlockedUsers"
+        component={BlockedUsersScreen}
+        options={{ title: t('settings.blocked_users') }}
+      />
+      <Stack.Screen
         name="PrivacySettings"
         component={PrivacySettingsScreen}
         options={{ title: t('settings.privacy_settings') }}
@@ -103,6 +123,11 @@ export default function SettingsStack(): React.ReactElement {
         name="PrivacyPolicy"
         component={PrivacyPolicyScreen}
         options={{ title: t('settings.privacy_policy') }}
+      />
+      <Stack.Screen
+        name="TermsConditions"
+        component={TermsConditionsScreen}
+        options={{ title: t('settings.terms_conditions') }}
       />
     </Stack.Navigator>
   );

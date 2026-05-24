@@ -16,6 +16,12 @@ import { UpdateLocalizationSettingsDto } from '../dto/localization-settings.dto'
 import { UpdateAccessibilitySettingsDto } from '../dto/accessibility-settings.dto';
 import { UpdateMediaSettingsDto } from '../dto/media-settings.dto';
 import { UpdateAiSettingsDto } from '../dto/ai-settings.dto';
+import {
+  ConnectLinkedAccountDto,
+  DeactivateAccountDto,
+  RequestEmailChangeDto,
+  RequestPhoneChangeDto,
+} from '../dto/account-settings.dto';
 
 @Injectable()
 export class SettingsService {
@@ -50,7 +56,72 @@ export class SettingsService {
 
   async getBlockedUsers(userId: string) {
     const privacy = await this.repo.getPrivacy(userId);
-    return { blockedUsers: privacy ?? [] };
+    return { blockedUsers: privacy?.blockedUsers ?? [] };
+  }
+
+  // ─── Account ─────────────────────────────────────────────────────────────
+
+  deactivateAccount(userId: string, dto: DeactivateAccountDto) {
+    return this.repo.updateAccount(userId, {
+      isDeactivated: true,
+      deactivatedAt: new Date(),
+      deactivationReason: dto.reason,
+    });
+  }
+
+  scheduleAccountDeletion(userId: string) {
+    const deletionScheduledAt = new Date();
+    deletionScheduledAt.setDate(deletionScheduledAt.getDate() + 30);
+
+    return this.repo.updateAccount(userId, { deletionScheduledAt });
+  }
+
+  async connectLinkedAccount(userId: string, dto: ConnectLinkedAccountDto) {
+    const account = await this.repo.getAccount(userId);
+    const linkedAccounts = account?.linkedAccounts ?? [];
+    const existingIndex = linkedAccounts.findIndex(
+      (linked) => linked.provider === dto.provider,
+    );
+    const nextLinkedAccount = {
+      provider: dto.provider,
+      providerId: dto.provider,
+      connected: true,
+      connectedAt: new Date(),
+    };
+
+    if (existingIndex >= 0) {
+      linkedAccounts[existingIndex] = {
+        ...linkedAccounts[existingIndex],
+        ...nextLinkedAccount,
+      };
+    } else {
+      linkedAccounts.push(nextLinkedAccount);
+    }
+
+    return this.repo.updateAccount(userId, { linkedAccounts });
+  }
+
+  async disconnectLinkedAccount(userId: string, provider: string) {
+    const account = await this.repo.getAccount(userId);
+    const linkedAccounts = (account?.linkedAccounts ?? []).map((linked) =>
+      linked.provider === provider
+        ? { ...linked, connected: false, connectedAt: undefined }
+        : linked,
+    );
+
+    return this.repo.updateAccount(userId, { linkedAccounts });
+  }
+
+  requestEmailChange(_userId: string, dto: RequestEmailChangeDto) {
+    return { email: dto.email, verificationRequired: true };
+  }
+
+  requestPhoneChange(_userId: string, dto: RequestPhoneChangeDto) {
+    return {
+      countryCode: dto.countryCode,
+      phone: dto.phone,
+      verificationRequired: true,
+    };
   }
 
   // ─── Notifications ────────────────────────────────────────────────────────
