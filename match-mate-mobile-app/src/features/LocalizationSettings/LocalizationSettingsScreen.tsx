@@ -7,6 +7,7 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
+import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
 import {
   SettingsOption,
   SettingsOptionSheet,
@@ -20,13 +21,10 @@ import {
   LocalizationSettings,
   LocalizationSettingsScreenProps,
 } from './LocalizationSettings.types';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { toggleLocationSharing } from '@/store/slices/settingsSlice';
 
-type SelectKey =
-  | 'appLanguage'
-  | 'region'
-  | 'timezone'
-  | 'dateFormat'
-  | 'currency';
+type SelectKey = 'region' | 'timezone' | 'dateFormat' | 'currency';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -38,19 +36,16 @@ export default function LocalizationSettingsScreen({
 }: LocalizationSettingsScreenProps): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const locationSharing = useAppSelector(
+    (state) => state.settings.locationSharing
+  );
+  const currentLanguage = useAppSelector((state) => state.settings.language);
   const { data, isLoading } = useGetLocalizationSettingsQuery();
   const [updateLocalizationSettings] = useUpdateLocalizationSettingsMutation();
   const [activeSelect, setActiveSelect] = useState<SelectKey | null>(null);
 
   const settings = data?.localization;
-
-  const languageOptions = useMemo<SettingsOption<string>[]>(
-    () => [
-      { value: 'en', label: t('language.english') },
-      { value: 'hi', label: t('language.hindi') },
-    ],
-    [t]
-  );
 
   const regionOptions = useMemo<SettingsOption<string>[]>(
     () => [
@@ -106,6 +101,9 @@ export default function LocalizationSettingsScreen({
     return <Loader fullScreen size="large" />;
   }
 
+  const currentLanguageLabel =
+    currentLanguage === 'en' ? t('language.english') : t('language.hindi');
+
   return (
     <SafeAreaView style={styles.safe}>
       <Header
@@ -127,17 +125,9 @@ export default function LocalizationSettingsScreen({
           <SettingsSelectItem
             icon="message-square"
             label={t('settings.localization.app_language')}
-            value={formatValue(languageOptions, settings?.appLanguage)}
-            onPress={() => setActiveSelect('appLanguage')}
-          />
-          <SettingsSelectItem
-            icon="list"
-            label={t('settings.localization.preferred_languages')}
-            value={t('settings.options.selected_count', {
-              count: settings?.preferredLanguages?.length ?? 0,
-            })}
+            value={currentLanguageLabel}
             isLast
-            onPress={() => setActiveSelect('appLanguage')}
+            onPress={() => navigation.navigate('Languages')}
           />
         </SettingsCard>
 
@@ -147,6 +137,13 @@ export default function LocalizationSettingsScreen({
           title={t('settings.localization.region')}
           subtitle={t('settings.localization.region_subtitle')}
         >
+          <SettingsToggleItem
+            icon="map-pin"
+            label={t('settings.share_location')}
+            sublabel={t('settings.share_location_sub')}
+            value={locationSharing}
+            onChange={() => dispatch(toggleLocationSharing())}
+          />
           <SettingsSelectItem
             icon="map"
             label={t('settings.localization.region_label')}
@@ -186,17 +183,6 @@ export default function LocalizationSettingsScreen({
         <View style={styles.footer} />
       </ScrollView>
 
-      <SettingsOptionSheet
-        visible={activeSelect === 'appLanguage'}
-        title={t('settings.localization.app_language')}
-        options={languageOptions}
-        selectedValue={settings.appLanguage}
-        onSelect={(value) => {
-          handleUpdate('appLanguage', value);
-          handleUpdate('preferredLanguages', [value]);
-        }}
-        onClose={() => setActiveSelect(null)}
-      />
       <SettingsOptionSheet
         visible={activeSelect === 'region'}
         title={t('settings.localization.region_label')}

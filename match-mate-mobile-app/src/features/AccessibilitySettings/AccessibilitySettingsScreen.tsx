@@ -22,6 +22,7 @@ import {
   AccessibilitySettings,
   AccessibilitySettingsScreenProps,
 } from './AccessibilitySettings.types';
+import { useAppSelector } from '@/store/hooks';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -33,6 +34,7 @@ export default function AccessibilitySettingsScreen({
 }: AccessibilitySettingsScreenProps): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
+  const themeMode = useAppSelector((state) => state.settings.theme);
 
   const { data, isLoading } = useGetAccessibilitySettingsQuery();
   const [update] = useUpdateAccessibilitySettingsMutation();
@@ -49,6 +51,13 @@ export default function AccessibilitySettingsScreen({
     ],
     [t]
   );
+
+  const themeLabel =
+    themeMode === 'light'
+      ? t('theme.light')
+      : themeMode === 'dark'
+        ? t('theme.dark')
+        : t('theme.system');
 
   const handleToggle = useCallback(
     (key: keyof AccessibilitySettings, value: boolean) => {
@@ -111,6 +120,13 @@ export default function AccessibilitySettingsScreen({
           title={t('settings.accessibility.display')}
           subtitle={t('settings.accessibility.display_subtitle')}
         >
+          <SettingsSelectItem
+            icon="monitor"
+            label={t('settings.theme')}
+            sublabel={t('settings.theme_sub')}
+            value={themeLabel}
+            onPress={() => navigation.navigate('Themes')}
+          />
           <SettingsToggleItem
             icon="sun"
             label={t('settings.accessibility.high_contrast')}

@@ -18,18 +18,13 @@ import {
 import Loader from '@/core/components/Loader';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import {
-  MessagePermission,
   PrivacySettings,
   PrivacySettingsScreenProps,
   ProfileVisibility,
   VisibilityLevel,
 } from './PrivacySettings.types';
 
-type SelectKey =
-  | 'profileVisibility'
-  | 'showPhotosTo'
-  | 'showLastSeen'
-  | 'allowMessagesFrom';
+type SelectKey = 'profileVisibility' | 'showPhotosTo' | 'showLastSeen';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -65,16 +60,6 @@ export default function PrivacySettingsScreen({
         value: 'accepted_matches',
         label: t('settings.options.accepted_matches'),
       },
-      { value: 'contacts_only', label: t('settings.options.contacts_only') },
-      { value: 'no_one', label: t('settings.options.no_one') },
-    ],
-    [t]
-  );
-
-  const messagePermissionOptions = useMemo<SettingsOption<MessagePermission>[]>(
-    () => [
-      { value: 'all', label: t('settings.options.everyone') },
-      { value: 'matches_only', label: t('settings.options.matches_only') },
       { value: 'contacts_only', label: t('settings.options.contacts_only') },
       { value: 'no_one', label: t('settings.options.no_one') },
     ],
@@ -238,24 +223,6 @@ export default function PrivacySettingsScreen({
           />
         </SettingsCard>
 
-        {/* Messaging */}
-        <SettingsCard
-          icon="message-circle"
-          title={t('settings.privacy.messaging')}
-          subtitle={t('settings.privacy.messaging_subtitle')}
-        >
-          <SettingsSelectItem
-            icon="send"
-            label={t('settings.privacy.allow_messages_from')}
-            value={formatValue(
-              messagePermissionOptions,
-              settings.allowMessagesFrom
-            )}
-            isLast
-            onPress={() => setActiveSelect('allowMessagesFrom')}
-          />
-        </SettingsCard>
-
         <View style={styles.footer} />
       </ScrollView>
 
@@ -281,14 +248,6 @@ export default function PrivacySettingsScreen({
         options={visibilityOptions}
         selectedValue={settings.showLastSeen}
         onSelect={(value) => void handleUpdate('showLastSeen', value)}
-        onClose={() => setActiveSelect(null)}
-      />
-      <SettingsOptionSheet
-        visible={activeSelect === 'allowMessagesFrom'}
-        title={t('settings.privacy.allow_messages_from')}
-        options={messagePermissionOptions}
-        selectedValue={settings.allowMessagesFrom}
-        onSelect={(value) => void handleUpdate('allowMessagesFrom', value)}
         onClose={() => setActiveSelect(null)}
       />
     </SafeAreaView>

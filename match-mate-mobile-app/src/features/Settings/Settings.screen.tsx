@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback } from 'react';
 import {
   View,
   Text,
@@ -29,13 +29,6 @@ import { settingsStyles } from './Settings.styles';
 
 import { AppNavigationProp } from '@/navigation/types';
 
-import {
-  toggleLocationSharing,
-  toggleNotifications,
-  toggleSound,
-  toggleVibration,
-} from '@/store/slices/settingsSlice';
-
 import { logout as logoutAction } from '@/store/slices/authSlice';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -43,7 +36,6 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useLogoutMutation } from '@/store/services/authApi';
 import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
-import { SettingToggle } from './components/SettingToggle';
 import { SettingsScreenProps } from './Settings.types';
 import { showConfirm } from '@/core/utils/confirm';
 
@@ -66,18 +58,7 @@ export default function SettingsScreen({
   // Redux State
   // ─────────────────────────────────────────────
 
-  const settings = useAppSelector((s) => s.settings);
-
   const user = useAppSelector((s) => s.auth.user);
-
-  const {
-    theme: themeMode,
-    language,
-    locationSharing,
-    soundEnabled,
-    vibrationEnabled,
-    notificationsEnabled,
-  } = settings;
 
   // ─────────────────────────────────────────────
   // Derived
@@ -88,19 +69,6 @@ export default function SettingsScreen({
   const appVersion = Constants.expoConfig?.version ?? '1.0.0';
 
   const profileCompletion = 78;
-
-  const themeBadge =
-    themeMode === 'light'
-      ? t('theme.light')
-      : themeMode === 'dark'
-        ? t('theme.dark')
-        : t('theme.system');
-
-  const themeIcon =
-    themeMode === 'light' ? 'sun' : themeMode === 'dark' ? 'moon' : 'monitor';
-
-  const langBadge =
-    language === 'en' ? t('language.english') : t('language.hindi');
 
   // ─────────────────────────────────────────────
   // Logout
@@ -147,66 +115,6 @@ export default function SettingsScreen({
       },
     });
   }, [isLoggingOut, performLogout, t]);
-
-  // ─────────────────────────────────────────────
-  // Sections
-  // ─────────────────────────────────────────────
-
-  const appSettings = useMemo(
-    () => [
-      {
-        type: 'row',
-        icon: 'globe',
-        label: t('settings.language'),
-        subLabel: t('settings.language_sub'),
-        badge: langBadge,
-        onPress: () => navigation.navigate('Languages'),
-      },
-      {
-        type: 'row',
-        icon: themeIcon,
-        label: t('settings.theme'),
-        subLabel: t('settings.theme_sub'),
-        badge: themeBadge,
-        onPress: () => navigation.navigate('Themes'),
-      },
-      {
-        type: 'toggle',
-        icon: 'volume-2',
-        label: t('settings.sound'),
-        subLabel: t('settings.sound_sub'),
-        value: soundEnabled,
-        onValueChange: () => dispatch(toggleSound()),
-      },
-      {
-        type: 'toggle',
-        icon: 'smartphone',
-        label: t('settings.vibration'),
-        subLabel: t('settings.vibration_sub'),
-        value: vibrationEnabled,
-        onValueChange: () => dispatch(toggleVibration()),
-      },
-      {
-        type: 'toggle',
-        icon: 'map-pin',
-        label: t('settings.share_location'),
-        subLabel: t('settings.share_location_sub'),
-        value: locationSharing,
-        onValueChange: () => dispatch(toggleLocationSharing()),
-      },
-    ],
-    [
-      dispatch,
-      langBadge,
-      locationSharing,
-      navigation,
-      soundEnabled,
-      t,
-      themeBadge,
-      themeIcon,
-      vibrationEnabled,
-    ]
-  );
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -336,32 +244,6 @@ export default function SettingsScreen({
         {/* App Experience */}
 
         <Section icon="settings" title={t('settings.app_experience')}>
-          {appSettings.map((item) => {
-            if (item.type === 'row') {
-              return (
-                <SettingRow
-                  key={item.label}
-                  icon={item.icon}
-                  label={item.label}
-                  subLabel={item.subLabel}
-                  badge={item.badge}
-                  onPress={item.onPress}
-                />
-              );
-            }
-
-            return (
-              <SettingToggle
-                key={item.label}
-                icon={item.icon}
-                label={item.label}
-                subLabel={item.subLabel}
-                value={item.value}
-                onValueChange={item.onValueChange}
-              />
-            );
-          })}
-
           <SettingRow
             icon="accessibility"
             label={t('settings.accessibility_settings')}
@@ -381,19 +263,10 @@ export default function SettingsScreen({
             onPress={() => navigation.navigate('LocalizationSettings')}
           />
 
-          <SettingToggle
-            icon="bell"
-            label={t('settings.app_notifications')}
-            subLabel={t('settings.notifications_sub')}
-            value={notificationsEnabled}
-            onValueChange={() => dispatch(toggleNotifications())}
-          />
-
           <SettingRow
             icon="bell"
             label={t('settings.notification_settings.title')}
             subLabel={t('settings.notification_settings_sub')}
-            disabled={!notificationsEnabled}
             onPress={() => navigation.navigate('NotificationSettings')}
             isLast
           />
