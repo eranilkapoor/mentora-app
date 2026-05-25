@@ -71,9 +71,7 @@ export function SettingsCard({
         ) : null}
         <View style={styles.headerText}>
           <Text style={styles.title}>{title}</Text>
-          {subtitle ? (
-            <Text style={styles.subtitle}>{subtitle}</Text>
-          ) : null}
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
         </View>
       </View>
       {children}

@@ -278,7 +278,7 @@ export class MatchRepository {
       .lean<LeanInteraction>()
       .exec();
 
-    return doc as LeanInteraction;
+    return doc;
   }
 
   async removeShortlist(

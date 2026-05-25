@@ -38,6 +38,8 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.backgroundLight,
     },
     toggleWrapper: { flex: 1 },
+    toggleContainer: { marginBottom: 0 },
+    toggleRow: { paddingRight: 14 },
   });
 
 export function SettingsToggleItem({
@@ -56,10 +58,7 @@ export function SettingsToggleItem({
     <View style={[styles.row, isLast && styles.rowLast]}>
       {icon ? (
         <View
-          style={[
-            styles.iconWrapper,
-            disabled && styles.iconWrapperDisabled,
-          ]}
+          style={[styles.iconWrapper, disabled && styles.iconWrapperDisabled]}
         >
           <Feather
             name={icon}
@@ -71,14 +70,14 @@ export function SettingsToggleItem({
       <View style={styles.toggleWrapper}>
         <ToggleRow
           label={label}
-          sublabel={sublabel}
+          sublabel={sublabel || ''}
           value={value}
           onChange={onChange}
           disabled={disabled}
           enableRowPress
           size="medium"
-          containerStyle={{ marginBottom: 0 }}
-          rowStyle={{ paddingRight: 14 }}
+          containerStyle={styles.toggleContainer}
+          rowStyle={styles.toggleRow}
         />
       </View>
     </View>

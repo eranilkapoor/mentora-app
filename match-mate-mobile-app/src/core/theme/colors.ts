@@ -46,6 +46,7 @@ export const LIGHTCOLORS: ColorPalette = {
 
   modalOverlay: 'rgba(15,23,42,0.45)',
   overlayDark: 'rgba(0,0,0,0.55)',
+  overlayLight: 'rgba(0,0,0,0.15)',
 
   // ─────────────────────────────────────────────
   // Text

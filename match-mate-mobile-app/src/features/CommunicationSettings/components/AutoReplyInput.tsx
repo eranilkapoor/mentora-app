@@ -1,10 +1,6 @@
 import React from 'react';
 
-import {
-  View,
-  Text,
-  TextInput,
-} from 'react-native';
+import { View, Text, TextInput } from 'react-native';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
 
@@ -22,25 +18,19 @@ export function AutoReplyInput({
   value,
   onChangeText,
 }: Props): React.ReactElement {
-  const styles = useThemedStyles(
-    communicationSettingsStyles
-  );
+  const styles = useThemedStyles(communicationSettingsStyles);
 
   const { theme } = useTheme();
 
   return (
     <View style={styles.inputWrapper}>
-      <Text style={styles.inputLabel}>
-        Auto Reply Message
-      </Text>
+      <Text style={styles.inputLabel}>Auto Reply Message</Text>
 
       <TextInput
         value={value}
         onChangeText={onChangeText}
         placeholder="I'm currently unavailable. Will reply soon."
-        placeholderTextColor={
-          theme.colors.textMuted
-        }
+        placeholderTextColor={theme.colors.textMuted}
         multiline
         numberOfLines={4}
         textAlignVertical="top"

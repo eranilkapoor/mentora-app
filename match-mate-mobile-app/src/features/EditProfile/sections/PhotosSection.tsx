@@ -54,7 +54,7 @@ export function PhotosSection({
         <ActivityIndicator
           size="small"
           color={theme.colors.primary}
-          style={{ marginVertical: 16 }}
+          style={styles.activityIndicator}
         />
       ) : (
         <ScrollView

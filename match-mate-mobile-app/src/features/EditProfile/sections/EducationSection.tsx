@@ -55,13 +55,13 @@ export function EducationSection({
 
       <FormInput
         label={t('edit_profile.fields.field_of_study')}
-        value={education.field}
+        value={education.field ?? ''}
         onChange={(v) => onSet('field', v)}
         placeholder={t('edit_profile.placeholders.field_of_study')}
       />
       <FormInput
         label={t('edit_profile.fields.university')}
-        value={education.university}
+        value={education.university ?? ''}
         onChange={(v) => onSet('university', v)}
         placeholder={t('edit_profile.placeholders.university')}
       />
@@ -69,7 +69,7 @@ export function EducationSection({
       <SingleSelectPill
         label={t('edit_profile.fields.occupation_type')}
         options={OccupationTypeOptions}
-        value={education.occupationType}
+        value={education.occupationType ?? OccupationTypes.PROFESSIONAL}
         onChange={(v) =>
           onSet('occupationType', v as EducationSectionType['occupationType'])
         }
@@ -78,26 +78,27 @@ export function EducationSection({
 
       <FormInput
         label={t('edit_profile.fields.occupation')}
-        value={education.occupation}
+        value={education.occupation ?? ''}
         onChange={(v) => onSet('occupation', v)}
         placeholder={t('edit_profile.placeholders.occupation')}
       />
       <FormInput
         label={t('edit_profile.fields.company_name')}
-        value={education.companyName}
+        value={education.companyName ?? ''}
         onChange={(v) => onSet('companyName', v)}
         placeholder={t('edit_profile.placeholders.company_name')}
       />
       <FormInput
         label={t('edit_profile.fields.job_role')}
-        value={education.jobRole}
+        value={education.jobRole ?? ''}
         onChange={(v) => onSet('jobRole', v)}
         placeholder={t('edit_profile.placeholders.job_role')}
       />
       <FormInput
         label={t('edit_profile.fields.annual_income')}
         value={
-          education.annualIncomeAmount != null
+          education.annualIncomeAmount !== null &&
+          education.annualIncomeAmount !== undefined
             ? String(education.annualIncomeAmount)
             : ''
         }

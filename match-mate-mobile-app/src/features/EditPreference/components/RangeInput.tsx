@@ -147,7 +147,7 @@ function RangeInputComponent({
     if (next !== minText) {
       setMinText(next);
     }
-  }, [value?.min, minLimit]);
+  }, [value?.min, minLimit, minText]);
 
   useEffect(() => {
     const next = String(value?.max ?? maxLimit);
@@ -155,7 +155,7 @@ function RangeInputComponent({
     if (next !== maxText) {
       setMaxText(next);
     }
-  }, [value?.max, maxLimit]);
+  }, [value?.max, maxLimit, maxText]);
 
   const styles = useMemo(
     () =>

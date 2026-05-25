@@ -1,5 +1,5 @@
-import { SettingsStackParamList } from "@/navigation/types";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import { SettingsStackParamList } from '@/navigation/types';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 export interface AccountSettingsScreenProps {
   navigation: NativeStackNavigationProp<

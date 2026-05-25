@@ -115,9 +115,7 @@ export function PhoneForm({
             <ActivityIndicator color={theme.colors.white} />
           ) : (
             <>
-              <Text style={styles.primaryButtonText}>
-                {t('auth.actions.get_otp')}
-              </Text>
+              <Text style={styles.primaryButtonText}>{submitLabel}</Text>
 
               <Feather name="send" size={16} color={theme.colors.white} />
             </>

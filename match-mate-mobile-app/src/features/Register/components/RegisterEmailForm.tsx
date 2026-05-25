@@ -39,7 +39,9 @@ export function RegisterEmailForm({
   onTogglePassword,
   onSubmit,
 }: Props): React.ReactElement {
-  const styles = useThemedStyles(authSharedStyles);
+  const styles = useThemedStyles(authSharedStyles) as ReturnType<
+    typeof authSharedStyles
+  >;
   const { theme } = useTheme();
   const { t } = useTranslation();
 
@@ -50,7 +52,7 @@ export function RegisterEmailForm({
   return (
     <>
       {/* Email */}
-      <Text style={styles.label}>{t('auth.fields.email')}</Text>
+      <Text style={styles.label}>{t('auth.fields.email') as string}</Text>
 
       <View
         style={[
@@ -72,7 +74,7 @@ export function RegisterEmailForm({
 
         <TextInput
           style={styles.input}
-          placeholder={t('auth.placeholders.email')}
+          placeholder={t('auth.placeholders.email') as string}
           placeholderTextColor={theme.colors.textMuted}
           keyboardType="email-address"
           autoCapitalize="none"
@@ -82,7 +84,7 @@ export function RegisterEmailForm({
           editable={!loading}
           textContentType="username"
           returnKeyType="next"
-          accessibilityLabel={t('auth.fields.email')}
+            accessibilityLabel={t('auth.fields.email') as string}
           onFocus={() => setFocusedField('email')}
           onBlur={() => setFocusedField(null)}
         />
@@ -94,7 +96,7 @@ export function RegisterEmailForm({
 
       {/* Password */}
       <Text style={[styles.label, styles.labelSpacing]}>
-        {t('auth.fields.password')}
+        {t('auth.fields.password') as string}
       </Text>
 
       <View
@@ -119,7 +121,7 @@ export function RegisterEmailForm({
           style={styles.input}
           placeholder={t('auth.placeholders.new_password', {
             min: PASSWORD_MIN_LENGTH,
-          })}
+          }) as string}
           placeholderTextColor={theme.colors.textMuted}
           secureTextEntry={!showPassword}
           value={password}
@@ -128,7 +130,7 @@ export function RegisterEmailForm({
           textContentType="newPassword"
           returnKeyType="done"
           onSubmitEditing={onSubmit}
-          accessibilityLabel={t('auth.fields.password')}
+          accessibilityLabel={t('auth.fields.password') as string}
           onFocus={() => setFocusedField('password')}
           onBlur={() => setFocusedField(null)}
         />
@@ -141,8 +143,8 @@ export function RegisterEmailForm({
           accessibilityRole="button"
           accessibilityLabel={
             showPassword
-              ? t('auth.actions.hide_password')
-              : t('auth.actions.show_password')
+              ? (t('auth.actions.hide_password') as string)
+              : (t('auth.actions.show_password') as string)
           }
         >
           <Feather
@@ -168,7 +170,7 @@ export function RegisterEmailForm({
         disabled={loading}
         activeOpacity={0.8}
         accessibilityRole="button"
-        accessibilityLabel={t('auth.actions.create_account')}
+        accessibilityLabel={t('auth.actions.create_account') as string}
         accessibilityState={{ disabled: loading }}
       >
         {loading ? (
@@ -176,7 +178,7 @@ export function RegisterEmailForm({
         ) : (
           <>
             <Text style={styles.primaryButtonText}>
-              {t('auth.actions.create_account')}
+              {t('auth.actions.create_account') as string}
             </Text>
             <Feather name="arrow-right" size={18} color={theme.colors.white} />
           </>

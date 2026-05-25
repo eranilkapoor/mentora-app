@@ -87,9 +87,7 @@ export function VerificationStatusRow({
 
       <View style={styles.textWrapper}>
         <Text style={styles.label}>{label}</Text>
-        {sublabel ? (
-          <Text style={styles.sublabel}>{sublabel}</Text>
-        ) : null}
+        {sublabel ? <Text style={styles.sublabel}>{sublabel}</Text> : null}
       </View>
 
       <View

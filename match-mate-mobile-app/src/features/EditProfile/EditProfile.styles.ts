@@ -81,6 +81,9 @@ export const editProfileStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
       fontWeight: '500',
     },
+    activityIndicator: {
+      marginVertical: 16,
+    },
     photoHint: {
       fontSize: 12,
       color: theme.colors.textMuted,

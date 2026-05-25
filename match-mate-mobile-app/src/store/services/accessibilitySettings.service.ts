@@ -1,4 +1,8 @@
-import { AccessibilitySettings, AccessibilitySettingsResponse, UpdateAccessibilitySettingsPayload } from '@/features/AccessibilitySettings/AccessibilitySettings.types';
+import {
+  AccessibilitySettings,
+  AccessibilitySettingsResponse,
+  UpdateAccessibilitySettingsPayload,
+} from '@/features/AccessibilitySettings/AccessibilitySettings.types';
 import { baseApi } from './baseApi';
 
 export const accessibilitySettingsApi = baseApi.injectEndpoints({
@@ -6,7 +10,10 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
     /**
      * Get Accessibility Settings
      */
-    getAccessibilitySettings: builder.query<AccessibilitySettingsResponse, void>({
+    getAccessibilitySettings: builder.query<
+      AccessibilitySettingsResponse,
+      void
+    >({
       query: () => ({
         url: '/settings/accessibility',
         method: 'GET',
@@ -18,11 +25,14 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
     /**
      * Update Accessibility Settings
      */
-    updateAccessibilitySettings: builder.mutation<AccessibilitySettings, UpdateAccessibilitySettingsPayload>({
-      query: (body) => ({ 
-        url: '/settings/accessibility', 
-        method: 'PUT', 
-        body 
+    updateAccessibilitySettings: builder.mutation<
+      AccessibilitySettings,
+      UpdateAccessibilitySettingsPayload
+    >({
+      query: (body) => ({
+        url: '/settings/accessibility',
+        method: 'PUT',
+        body,
       }),
       invalidatesTags: ['AccessibilitySettings'],
     }),
@@ -33,5 +43,5 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
 
 export const {
   useGetAccessibilitySettingsQuery,
-  useUpdateAccessibilitySettingsMutation
+  useUpdateAccessibilitySettingsMutation,
 } = accessibilitySettingsApi;

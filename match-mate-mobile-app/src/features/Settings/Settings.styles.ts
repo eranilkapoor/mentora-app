@@ -31,7 +31,7 @@ export const settingsStyles = (theme: Theme) =>
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
 
-      shadowColor: '#000',
+      shadowColor: theme.colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 10,
       shadowOffset: {
@@ -109,7 +109,7 @@ export const settingsStyles = (theme: Theme) =>
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
 
-      shadowColor: '#000',
+      shadowColor: theme.colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 10,
       shadowOffset: {
@@ -255,7 +255,7 @@ export const settingsStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
 
-      backgroundColor: 'rgba(0,0,0,0.15)',
+      backgroundColor: theme.colors.overlayLight,
     },
     rowRight: {
       flexDirection: 'row',
@@ -263,7 +263,7 @@ export const settingsStyles = (theme: Theme) =>
     },
 
     dangerRow: {
-      backgroundColor: 'rgba(255,0,0,0.03)',
+      backgroundColor: theme.colors.errorLight,
     },
     rowDisabled: {
       opacity: 0.5,

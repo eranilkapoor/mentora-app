@@ -224,7 +224,7 @@ function NumberStepperComponent({
           color: error ? theme.colors.error : theme.colors.textMuted,
         },
       }),
-    [disabled, bordered, error, size, theme]
+    [disabled, error, size, theme]
   );
 
   const safeValue = Math.min(Math.max(value, min), max);
@@ -277,9 +277,9 @@ function NumberStepperComponent({
             <Text style={[styles.sublabel, sublabelStyle]}>{sublabel}</Text>
           ) : null}
 
-          {(helperText || error) && (
+          {(error ?? helperText) ? (
             <Text style={styles.helperText}>{error ?? helperText}</Text>
-          )}
+          ) : null}
         </View>
 
         <View style={styles.controls}>

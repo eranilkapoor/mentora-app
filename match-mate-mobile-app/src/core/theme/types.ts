@@ -49,6 +49,7 @@ export type ColorPalette = {
   modalOverlay: string;
 
   overlayDark: string;
+  overlayLight: string;
 
   // ─────────────────────────────────────────────
   // Text

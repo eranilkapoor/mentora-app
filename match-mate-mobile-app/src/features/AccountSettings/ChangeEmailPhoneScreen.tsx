@@ -1,4 +1,3 @@
-/* eslint-disable react-native/no-unused-styles */
 import React, { useCallback, useMemo, useState } from 'react';
 import {
   Alert,
@@ -138,7 +137,7 @@ export default function ChangeEmailPhoneScreen({
           <SettingsSelectItem
             icon="send"
             label={isLoading ? 'Sending...' : 'Send Verification'}
-            sublabel={canSubmit ? undefined : 'Enter a valid value to continue'}
+            sublabel={canSubmit ? '' : 'Enter a valid value to continue'}
             disabled={!canSubmit || isLoading}
             isLast
             onPress={handleSubmit}

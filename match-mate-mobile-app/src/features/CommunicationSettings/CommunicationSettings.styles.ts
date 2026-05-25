@@ -2,9 +2,7 @@ import { Theme } from '@/core/theme/types';
 
 import { StyleSheet } from 'react-native';
 
-export const communicationSettingsStyles = (
-  theme: Theme
-) =>
+export const communicationSettingsStyles = (theme: Theme) =>
   StyleSheet.create({
     inputWrapper: {
       padding: 16,
@@ -25,7 +23,6 @@ export const communicationSettingsStyles = (
       padding: 14,
       fontSize: 14,
       color: theme.colors.textPrimary,
-      backgroundColor:
-        theme.colors.inputBackground,
+      backgroundColor: theme.colors.inputBackground,
     },
   });

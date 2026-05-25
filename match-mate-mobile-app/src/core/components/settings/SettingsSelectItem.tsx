@@ -102,14 +102,10 @@ export function SettingsSelectItem({
       ) : null}
 
       <View style={styles.textWrapper}>
-        <Text
-          style={[styles.label, destructive && styles.labelDestructive]}
-        >
+        <Text style={[styles.label, destructive && styles.labelDestructive]}>
           {label}
         </Text>
-        {sublabel ? (
-          <Text style={styles.sublabel}>{sublabel}</Text>
-        ) : null}
+        {sublabel ? <Text style={styles.sublabel}>{sublabel}</Text> : null}
       </View>
 
       <View style={styles.right}>

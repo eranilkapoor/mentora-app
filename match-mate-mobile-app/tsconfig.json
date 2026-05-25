@@ -36,14 +36,6 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true
   },
-  "include": [
-    "src",
-    "*.ts",
-    "*.tsx"
-  ],
-  "exclude": [
-    "node_modules",
-    "dist",
-    ".expo"
-  ]
+  "include": ["src", "*.ts", "*.tsx"],
+  "exclude": ["node_modules", "dist", ".expo"]
 }

@@ -19,7 +19,6 @@ export interface NotificationGroup {
 
 export type NotificationState = Record<string, boolean>;
 
-
 export interface ChannelPreference {
   inApp: boolean;
   push: boolean;
@@ -40,8 +39,8 @@ export interface NotificationPreferences {
 
 export interface QuietHours {
   enabled: boolean;
-  start?: string;   // 'HH:mm'
-  end?: string;     // 'HH:mm'
+  start?: string; // 'HH:mm'
+  end?: string; // 'HH:mm'
   timezone?: string;
 }
 

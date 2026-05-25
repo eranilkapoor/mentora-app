@@ -196,6 +196,11 @@ function DropdownPickerComponent<T extends string = string>({
           alignItems: 'center',
         },
 
+        triggerActions: {
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+
         triggerText: {
           flex: 1,
 
@@ -479,12 +484,7 @@ function DropdownPickerComponent<T extends string = string>({
               </Text>
             </View>
 
-            <View
-              style={{
-                flexDirection: 'row',
-                alignItems: 'center',
-              }}
-            >
+            <View style={styles.triggerActions}>
               {clearable && selectedOption ? (
                 <TouchableOpacity
                   hitSlop={10}

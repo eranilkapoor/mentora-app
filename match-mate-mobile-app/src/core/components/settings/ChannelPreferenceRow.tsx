@@ -85,7 +85,9 @@ export function ChannelPreferenceRow({
           {label}
         </Text>
         {sublabel ? (
-          <Text style={[styles.sublabel, !globalEnabled && styles.disabledText]}>
+          <Text
+            style={[styles.sublabel, !globalEnabled && styles.disabledText]}
+          >
             {sublabel}
           </Text>
         ) : null}

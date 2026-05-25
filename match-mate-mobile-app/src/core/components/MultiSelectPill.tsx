@@ -8,8 +8,6 @@ import {
   ViewStyle,
   StyleProp,
   TextStyle,
-  Platform,
-  GestureResponderEvent,
 } from 'react-native';
 
 import { useTranslation } from 'react-i18next';
@@ -301,25 +299,6 @@ function MultiSelectPillComponent<T extends string = string>({
   const selectedSet = useMemo(() => new Set(value), [value]);
 
   /**
-   * Empty state
-   */
-  if (options.length === 0) {
-    return (
-      <View style={[styles.container, containerStyle]}>
-        {label ? (
-          <Text style={[styles.label, labelStyle]}>
-            {label}
-
-            {required ? <Text style={styles.required}> *</Text> : null}
-          </Text>
-        ) : null}
-
-        <Text style={styles.emptyText}>{emptyText}</Text>
-      </View>
-    );
-  }
-
-  /**
    * Toggle option
    */
   const toggleOption = useCallback(
@@ -369,27 +348,27 @@ function MultiSelectPillComponent<T extends string = string>({
   );
 
   /**
-   * Web keyboard support
+   * Empty state
    */
-  const handleKeyPress = useCallback(
-    (event: GestureResponderEvent, optionValue: T): void => {
-      if (Platform.OS !== 'web') {
-        return;
-      }
+  if (options.length === 0) {
+    return (
+      <View style={[styles.container, containerStyle]}>
+        {label ? (
+          <Text style={[styles.label, labelStyle]}>
+            {label}
 
-      // @ts-ignore
-      const key = event?.nativeEvent?.key;
+            {required ? <Text style={styles.required}> *</Text> : null}
+          </Text>
+        ) : null}
 
-      if (key === 'Enter' || key === ' ') {
-        toggleOption(optionValue);
-      }
-    },
-    [toggleOption]
-  );
+        <Text style={styles.emptyText}>{emptyText}</Text>
+      </View>
+    );
+  }
 
   return (
     <View style={[styles.container, containerStyle]} testID={testID}>
-      {(label || showSelectedCount) && (
+      {(Boolean(label) || showSelectedCount) && (
         <View style={styles.headerRow}>
           {label ? (
             <Text style={[styles.label, labelStyle]}>
@@ -424,7 +403,9 @@ function MultiSelectPillComponent<T extends string = string>({
             !selected && !!maxSelection && value.length >= maxSelection;
 
           const optionDisabled =
-            disabled || option.disabled || selectionLimitReached;
+            disabled === true ||
+            option.disabled === true ||
+            selectionLimitReached;
 
           const displayLabel = i18nPrefix
             ? t(`${i18nPrefix}.${option.value}`)

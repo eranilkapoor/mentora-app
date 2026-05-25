@@ -155,7 +155,7 @@ export function FormInput({
           paddingHorizontal: 14,
           paddingVertical: multiline ? 12 : 0,
 
-          backgroundColor: 'transparent',
+          backgroundColor: theme.colors.transparent,
 
           ...(Platform.OS === 'web'
             ? ({

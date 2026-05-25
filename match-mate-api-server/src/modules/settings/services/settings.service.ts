@@ -51,9 +51,16 @@ export class SettingsService {
 
   async getAllSettings(userId: string) {
     const settings = await this.repo.getAllSettings(userId);
+    const account = await this.repo.getAccount(userId);
+
+    const accountData: Record<string, unknown> =
+      typeof account?.toObject === 'function'
+        ? (account.toObject() as Record<string, unknown>)
+        : ((account as Record<string, unknown> | null) ?? {});
+
     return {
       ...settings,
-      account: await this.getAccount(userId),
+      account: accountData,
     };
   }
 
@@ -102,8 +109,13 @@ export class SettingsService {
     );
     const isProfileVerified = Boolean(verification?.isProfileVerified);
 
+    const accountData: Record<string, unknown> =
+      typeof account?.toObject === 'function'
+        ? (account.toObject() as Record<string, unknown>)
+        : ((account as Record<string, unknown> | null) ?? {});
+
     return {
-      ...(account?.toObject?.() ?? account ?? {}),
+      ...accountData,
       emailVerified: isEmailVerified,
       phoneVerified: isPhoneVerified,
       profileVerified: isProfileVerified,
