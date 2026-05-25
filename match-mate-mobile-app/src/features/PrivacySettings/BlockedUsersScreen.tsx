@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { showConfirm } from '@/core/utils/confirm';
+import { showError, showSuccess } from '@/core/utils/toast';
 import { SettingsNavigationProp } from '@/navigation/types';
 import {
   useGetBlockedUsersQuery,
@@ -33,10 +34,18 @@ export default function BlockedUsersScreen({
           'They may be able to view or contact you depending on your privacy settings.',
         confirmText: 'Unblock',
         onConfirm: () => {
-          void unblockUser({ targetUserId }).catch((error: unknown) => {
-            console.error('Unblock failed:', error);
-            Alert.alert('Unable to unblock', 'Please try again.');
-          });
+          void unblockUser({ targetUserId })
+            .unwrap()
+            .then(() => {
+              showSuccess({ title: 'User unblocked' });
+            })
+            .catch((error: unknown) => {
+              console.error('Unblock failed:', error);
+              showError({
+                title: 'Unable to unblock',
+                message: 'Please try again.',
+              });
+            });
         },
       });
     },

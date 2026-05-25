@@ -1,14 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import {
-  View,
-  Text,
-  ScrollView,
-  Platform,
-  UIManager,
-  LayoutAnimation,
-  Linking,
-} from 'react-native';
+import { Linking, ScrollView, Text, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import {
   SUPPORT_EMAIL,
@@ -18,35 +10,19 @@ import {
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { helpSupportStyles } from './HelpSupport.styles';
 import { ContactItem, HelpSupportScreenProps } from './HelpSupport.types';
-import { FAQ_DATA } from './HelpSupport.constants';
-import { FaqCard } from './components/FaqCard';
 import { ContactRow } from './components/ContactRow';
+import { SettingsCard } from '@/core/components/settings/SettingsCard';
+import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import Header from '@/core/components/Header';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
-// ─── Android LayoutAnimation ──────────────────────────────────────────────────
-if (
-  Platform.OS === 'android' &&
-  UIManager.setLayoutAnimationEnabledExperimental
-) {
-  UIManager.setLayoutAnimationEnabledExperimental(true);
-}
-
-// ─── Main Screen ─────────────────────────────────────────────────────────────
 export default function HelpSupportScreen({
   navigation,
 }: HelpSupportScreenProps): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
-
-  const [expanded, setExpanded] = useState<number | null>(null);
-
-  const toggleFaq = useCallback((index: number): void => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded((prev) => (prev === index ? null : index));
-  }, []);
 
   const openEmail = useCallback(
     () => void Linking.openURL(`mailto:${SUPPORT_EMAIL}`),
@@ -98,18 +74,49 @@ export default function HelpSupportScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        {/* ── Header Card ──────────────────────────────────────────── */}
         <View style={styles.headerCard}>
           <View style={styles.headerIconWrapper}>
             <Feather name="life-buoy" size={22} color={theme.colors.primary} />
           </View>
           <Text style={styles.headerTitle}>Help & Support</Text>
           <Text style={styles.headerSubtitle}>
-            We're here to help! Reach out to us or browse the FAQs below.
+            We're here to help. Contact support, review policies, or find quick
+            answers in our resource center.
           </Text>
         </View>
 
-        {/* ── Contact Card ─────────────────────────────────────────── */}
+        <SettingsCard
+          icon="book-open"
+          title="Resources"
+          subtitle="Support articles, safety guidance, and legal information"
+        >
+          <SettingsSelectItem
+            icon="help-circle"
+            label="FAQs"
+            sublabel="Common questions about profiles, matches, and payments"
+            onPress={() => navigation.navigate('Faqs')}
+          />
+          <SettingsSelectItem
+            icon="shield"
+            label="Community Guidelines"
+            sublabel="Safety, respect, and profile authenticity rules"
+            onPress={() => navigation.navigate('CommunityGuidelines')}
+          />
+          <SettingsSelectItem
+            icon="file-text"
+            label="Terms & Conditions"
+            sublabel="Service terms for using MatchMate"
+            onPress={() => navigation.navigate('TermsConditions')}
+          />
+          <SettingsSelectItem
+            icon="lock"
+            label="Privacy Policy"
+            sublabel="How profile and account data is handled"
+            onPress={() => navigation.navigate('PrivacyPolicy')}
+            isLast
+          />
+        </SettingsCard>
+
         <View style={styles.sectionCard}>
           <View style={styles.sectionHeader}>
             <View style={styles.sectionIconWrapper}>
@@ -120,31 +127,6 @@ export default function HelpSupportScreen({
 
           {CONTACT_ITEMS.map((item) => (
             <ContactRow key={item.value} {...item} />
-          ))}
-        </View>
-
-        {/* ── FAQ Card ─────────────────────────────────────────────── */}
-        <View style={styles.sectionCard}>
-          <View style={styles.sectionHeader}>
-            <View style={styles.sectionIconWrapper}>
-              <Feather
-                name="help-circle"
-                size={13}
-                color={theme.colors.primary}
-              />
-            </View>
-            <Text style={styles.sectionTitle}>Frequently Asked Questions</Text>
-          </View>
-
-          {FAQ_DATA.map((faq, index) => (
-            <FaqCard
-              key={faq.question}
-              faq={faq}
-              index={index}
-              expanded={expanded === index}
-              onToggle={toggleFaq}
-              isLast={index === FAQ_DATA.length - 1}
-            />
           ))}
         </View>
 

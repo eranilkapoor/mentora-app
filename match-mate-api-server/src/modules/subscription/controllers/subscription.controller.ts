@@ -29,4 +29,12 @@ export class SubscriptionController {
       SuccessCode.SUBSCRIPTION_ACTIVATED,
     );
   }
+
+  @Get('billing')
+  async getBillingSummary(@Req() req: AuthenticatedRequest) {
+    return successResponse(
+      await this.subscriptionService.getBillingSummary(req.user.sub),
+      SuccessCode.SUBSCRIPTION_BILLING_FETCHED,
+    );
+  }
 }

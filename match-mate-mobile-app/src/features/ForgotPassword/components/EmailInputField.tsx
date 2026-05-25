@@ -12,8 +12,8 @@ import { forgotPasswordStyles } from '../ForgotPassword.styles';
 
 interface Props {
   value: string;
-  error?: string;
-  loading?: boolean;
+  error?: string | undefined;
+  loading?: boolean | undefined;
   onChange: (value: string) => void;
   onSubmit: () => void;
 }

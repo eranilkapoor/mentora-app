@@ -2,6 +2,7 @@ import {
   Controller,
   Get,
   Put,
+  Patch,
   Post,
   Delete,
   Body,
@@ -16,8 +17,13 @@ import { SettingsService } from '../services/settings.service';
 import {
   UpdatePrivacySettingsDto,
   BlockUserDto,
+  ReportUserDto,
 } from '../dto/privacy-settings.dto';
-import { UpdateNotificationSettingsDto } from '../dto/notification-settings.dto';
+import {
+  NotificationPreferenceParamsDto,
+  UpdateNotificationChannelDto,
+  UpdateNotificationSettingsDto,
+} from '../dto/notification-settings.dto';
 import { UpdateCommunicationSettingsDto } from '../dto/communication-settings.dto';
 import {
   UpdateSecuritySettingsDto,
@@ -100,6 +106,15 @@ export class SettingsController {
     return this.respond(
       this.settingsService.unblockUser(req.user.sub, dto),
       SuccessCode.USER_UNBLOCKED,
+    );
+  }
+
+  @Post('privacy/report')
+  @HttpCode(HttpStatus.OK)
+  reportUser(@Req() req: AuthenticatedRequest, @Body() dto: ReportUserDto) {
+    return this.respond(
+      this.settingsService.reportUser(req.user.sub, dto),
+      SuccessCode.USER_REPORTED,
     );
   }
 
@@ -214,6 +229,18 @@ export class SettingsController {
     );
   }
 
+  @Patch('notifications/preferences/:event/:channel')
+  updateNotificationChannel(
+    @Req() req: AuthenticatedRequest,
+    @Param() params: NotificationPreferenceParamsDto,
+    @Body() dto: UpdateNotificationChannelDto,
+  ) {
+    return this.respond(
+      this.settingsService.updateNotificationChannel(req.user.sub, params, dto),
+      SuccessCode.SETTINGS_UPDATED,
+    );
+  }
+
   // ─── Communication ────────────────────────────────────────────────────────
 
   @Get('communication')
@@ -291,6 +318,26 @@ export class SettingsController {
   revokeAllDevices(@Req() req: AuthenticatedRequest) {
     return this.respond(
       this.settingsService.revokeAllDevices(req.user.sub),
+      SuccessCode.SETTINGS_DEVICE_REVOKED,
+    );
+  }
+
+  @Get('security/login-history')
+  getLoginHistory(@Req() req: AuthenticatedRequest) {
+    return this.respond(
+      this.settingsService.getLoginHistory(req.user.sub),
+      SuccessCode.SETTINGS_LOGIN_HISTORY_FETCHED,
+    );
+  }
+
+  @Delete('security/sessions/:sessionId')
+  @HttpCode(HttpStatus.OK)
+  revokeSession(
+    @Req() req: AuthenticatedRequest,
+    @Param('sessionId') sessionId: string,
+  ) {
+    return this.respond(
+      this.settingsService.revokeSession(req.user.sub, sessionId),
       SuccessCode.SETTINGS_DEVICE_REVOKED,
     );
   }

@@ -30,6 +30,42 @@ export interface ActiveSubscription {
   startDate: string;
   endDate: string;
   status: string;
+  autoRenew?: boolean;
+  cancelledAt?: string;
+  cancelledReason?: string;
+}
+
+export interface BillingPayment {
+  _id: string;
+  orderId: string;
+  planId?: MembershipPlan | string;
+  amount: number;
+  taxAmount: number;
+  discountAmount: number;
+  netAmount: number;
+  currency: string;
+  gateway: string;
+  method?: string;
+  purpose: string;
+  status: string;
+  initiatedAt: string;
+  paidAt?: string;
+  failedAt?: string;
+  failureReason?: string;
+}
+
+export interface BillingSummary {
+  currentPlan: ActiveSubscription | null;
+  subscriptions: ActiveSubscription[];
+  payments: BillingPayment[];
+  billing: {
+    currency: string;
+    totalPaid: number;
+    successfulPayments: number;
+    lastPaymentAt?: string;
+    nextRenewalAt?: string | null;
+    autoRenew: boolean;
+  };
 }
 
 export interface CreatePaymentOrderRequest {
@@ -80,6 +116,26 @@ export const membershipApi = baseApi.injectEndpoints({
       providesTags: ['Membership'],
     }),
 
+    getBillingSummary: builder.query<BillingSummary, void>({
+      query: () => ({
+        url: '/subscriptions/billing',
+        method: 'GET',
+      }),
+      transformResponse: (response: ApiResponse<BillingSummary>) =>
+        unwrapApiResponse(response, {
+          currentPlan: null,
+          subscriptions: [],
+          payments: [],
+          billing: {
+            currency: 'INR',
+            totalPaid: 0,
+            successfulPayments: 0,
+            autoRenew: false,
+          },
+        }),
+      providesTags: ['Membership', 'Payment'],
+    }),
+
     createMembershipOrder: builder.mutation<
       PaymentOrder,
       CreatePaymentOrderRequest
@@ -101,5 +157,6 @@ export const membershipApi = baseApi.injectEndpoints({
 export const {
   useGetMembershipPlansQuery,
   useGetActiveSubscriptionQuery,
+  useGetBillingSummaryQuery,
   useCreateMembershipOrderMutation,
 } = membershipApi;

@@ -1,10 +1,12 @@
 import { baseApi } from './baseApi';
 
 import {
+  LoginHistoryResponse,
   SecuritySettings,
   SecuritySettingsResponse,
   UpdateSecuritySettingsPayload,
 } from '@/features/SecuritySettings/SecuritySettings.types';
+import { ApiResponse } from '@/core/types';
 
 export const securitySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -51,6 +53,22 @@ export const securitySettingsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['SecuritySettings'],
     }),
+    getLoginHistory: builder.query<LoginHistoryResponse, void>({
+      query: () => ({
+        url: '/settings/security/login-history',
+        method: 'GET',
+      }),
+      transformResponse: (response: ApiResponse<LoginHistoryResponse>) =>
+        response.success ? response.data : { sessions: [] },
+      providesTags: ['SecuritySettings'],
+    }),
+    revokeSession: builder.mutation<void, { sessionId: string }>({
+      query: ({ sessionId }) => ({
+        url: `/settings/security/sessions/${sessionId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['SecuritySettings'],
+    }),
   }),
 
   overrideExisting: false,
@@ -61,4 +79,6 @@ export const {
   useUpdateSecuritySettingsMutation,
   useRevokeDeviceMutation,
   useRevokeAllDevicesMutation,
+  useGetLoginHistoryQuery,
+  useRevokeSessionMutation,
 } = securitySettingsApi;

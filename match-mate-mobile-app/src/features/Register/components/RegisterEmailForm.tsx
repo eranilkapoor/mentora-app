@@ -84,7 +84,7 @@ export function RegisterEmailForm({
           editable={!loading}
           textContentType="username"
           returnKeyType="next"
-            accessibilityLabel={t('auth.fields.email') as string}
+          accessibilityLabel={t('auth.fields.email') as string}
           onFocus={() => setFocusedField('email')}
           onBlur={() => setFocusedField(null)}
         />
@@ -119,9 +119,11 @@ export function RegisterEmailForm({
 
         <TextInput
           style={styles.input}
-          placeholder={t('auth.placeholders.new_password', {
-            min: PASSWORD_MIN_LENGTH,
-          }) as string}
+          placeholder={
+            t('auth.placeholders.new_password', {
+              min: PASSWORD_MIN_LENGTH,
+            }) as string
+          }
           placeholderTextColor={theme.colors.textMuted}
           secureTextEntry={!showPassword}
           value={password}

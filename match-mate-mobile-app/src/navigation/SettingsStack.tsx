@@ -12,6 +12,8 @@ import LanguageScreen from '@/features/Language/Language.screen';
 import ThemeScreen from '@/features/Theme/Theme.screen';
 import NotificationSettingsScreen from '@/features/NotificationSettings/NotificationSettings.screen';
 import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
+import FaqsScreen from '@/features/HelpSupport/FaqsScreen';
+import CommunityGuidelinesScreen from '@/features/HelpSupport/CommunityGuidelinesScreen';
 import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicy.screen';
 import TermsConditionsScreen from '@/features/TermsConditions/TermsConditions.screen';
 import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
@@ -19,6 +21,7 @@ import AccountSettingsScreen from '@/features/AccountSettings/AccountSettingsScr
 import ChangeEmailPhoneScreen from '@/features/AccountSettings/ChangeEmailPhoneScreen';
 import LinkedAccountsScreen from '@/features/AccountSettings/LinkedAccountsScreen';
 import ManageDevicesScreen from '@/features/SecuritySettings/ManageDevicesScreen';
+import LoginHistoryScreen from '@/features/SecuritySettings/LoginHistoryScreen';
 import BlockedUsersScreen from '@/features/PrivacySettings/BlockedUsersScreen';
 import PrivacySettingsScreen from '@/features/PrivacySettings/PrivacySettingsScreen';
 import CommunicationSettingsScreen from '@/features/CommunicationSettings/CommunicationSettingsScreen';
@@ -27,6 +30,7 @@ import LocalizationSettingsScreen from '@/features/LocalizationSettings/Localiza
 import MediaSettingsScreen from '@/features/MediaSettings/MediaSettingsScreen';
 import AccessibilitySettingsScreen from '@/features/AccessibilitySettings/AccessibilitySettingsScreen';
 import AiSettingsScreen from '@/features/AiSettings/AiSettingsScreen';
+import SubscriptionBillingScreen from '@/features/SubscriptionBilling/SubscriptionBillingScreen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -75,6 +79,16 @@ export default function SettingsStack(): React.ReactElement {
         options={{ title: t('settings.security.manage_devices') }}
       />
       <Stack.Screen
+        name="LoginHistory"
+        component={LoginHistoryScreen}
+        options={{ title: 'Login History' }}
+      />
+      <Stack.Screen
+        name="SubscriptionBilling"
+        component={SubscriptionBillingScreen}
+        options={{ title: 'Subscription & Billing' }}
+      />
+      <Stack.Screen
         name="BlockedUsers"
         component={BlockedUsersScreen}
         options={{ title: t('settings.blocked_users') }}
@@ -118,6 +132,16 @@ export default function SettingsStack(): React.ReactElement {
         name="HelpSupport"
         component={HelpSupportScreen}
         options={{ title: t('settings.help_and_support') }}
+      />
+      <Stack.Screen
+        name="Faqs"
+        component={FaqsScreen}
+        options={{ title: 'FAQs' }}
+      />
+      <Stack.Screen
+        name="CommunityGuidelines"
+        component={CommunityGuidelinesScreen}
+        options={{ title: 'Community Guidelines' }}
       />
       <Stack.Screen
         name="PrivacyPolicy"

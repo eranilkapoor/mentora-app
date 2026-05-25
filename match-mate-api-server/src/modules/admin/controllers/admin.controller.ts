@@ -57,9 +57,9 @@ export class AdminController {
   @Post('broadcast')
   @Roles(Role.ADMIN)
   @HttpCode(HttpStatus.OK)
-  async broadcast(@Body() dto: BroadcastDto) {
+  broadcast(@Body() dto: BroadcastDto) {
     return successResponse(
-      await this.adminService.broadcast(dto),
+      this.adminService.broadcast(dto),
       SuccessCode.ADMIN_BROADCAST_SENT,
     );
   }

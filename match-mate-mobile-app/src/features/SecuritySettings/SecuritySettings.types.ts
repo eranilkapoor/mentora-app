@@ -31,3 +31,20 @@ export interface SecuritySettingsResponse {
 }
 
 export interface UpdateSecuritySettingsPayload extends Partial<SecuritySettings> {}
+
+export interface LoginHistoryItem {
+  sessionId: string;
+  device?: string;
+  ip?: string;
+  userAgent?: string;
+  isActive: boolean;
+  status: 'active' | 'inactive' | 'expired' | 'signed_out';
+  signedInAt?: string;
+  lastActiveAt?: string;
+  expiresAt?: string;
+  loggedOutAt?: string;
+}
+
+export interface LoginHistoryResponse {
+  sessions: LoginHistoryItem[];
+}

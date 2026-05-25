@@ -16,3 +16,5 @@ export class UserReport {
 
 export type UserReportDocument = UserReport & Document;
 export const UserReportSchema = SchemaFactory.createForClass(UserReport);
+
+UserReportSchema.index({ reportedBy: 1, reportedUserId: 1 }, { unique: true });

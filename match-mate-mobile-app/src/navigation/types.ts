@@ -68,12 +68,16 @@ export type SettingsStackParamList = {
   Themes: undefined;
   NotificationSettings: undefined;
   HelpSupport: undefined;
+  Faqs: undefined;
+  CommunityGuidelines: undefined;
   PrivacyPolicy: undefined;
   TermsConditions: undefined;
   AccountSettings: undefined;
   ChangeEmailPhone: { mode: 'email' | 'phone' };
   LinkedAccounts: undefined;
   ManageDevices: undefined;
+  LoginHistory: undefined;
+  SubscriptionBilling: undefined;
   BlockedUsers: undefined;
   PrivacySettings: undefined;
   CommunicationSettings: undefined;

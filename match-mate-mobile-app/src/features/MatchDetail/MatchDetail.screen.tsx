@@ -1,7 +1,6 @@
 import React, { useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
-  Alert,
   FlatList,
   Image,
   ListRenderItem,
@@ -29,6 +28,12 @@ import {
   useGetMatchProfileQuery,
   useSendInterestMutation,
 } from '@/store/services/matchApi.service';
+import {
+  useBlockUserMutation,
+  useReportUserMutation,
+} from '@/store/services/privacySettings.service';
+import { showConfirm } from '@/core/utils/confirm';
+import { showError, showSuccess } from '@/core/utils/toast';
 import { matchDetailStyles } from './MatchDetail.styles';
 
 type Props = {
@@ -124,6 +129,8 @@ export default function MatchDetailsScreen({
     useSendInterestMutation();
   const [createDirectRoom, { isLoading: isOpeningChat }] =
     useCreateDirectRoomMutation();
+  const [blockUser, { isLoading: isBlocking }] = useBlockUserMutation();
+  const [reportUser, { isLoading: isReporting }] = useReportUserMutation();
 
   const profile = data?.data ?? undefined;
   const name = getName(profile);
@@ -193,18 +200,81 @@ export default function MatchDetailsScreen({
           partnerPhoto: photos[0] ?? FALLBACK_PHOTO,
         });
       } catch {
-        Alert.alert('Chat unavailable', 'Please try again later.');
+        showError({
+          title: 'Chat unavailable',
+          message: 'Please try again later.',
+        });
       }
       return;
     }
 
     try {
       await sendInterest({ receiverId: userId }).unwrap();
-      Alert.alert('Interest sent', `${name} will be notified.`);
+      showSuccess({
+        title: 'Interest sent',
+        message: `${name} will be notified.`,
+      });
       await refetch();
     } catch {
-      Alert.alert('Interest not sent', 'Please try again later.');
+      showError({
+        title: 'Interest not sent',
+        message: 'Please try again later.',
+      });
     }
+  };
+
+  const handleReport = (): void => {
+    showConfirm({
+      title: 'Report profile?',
+      message: `Report ${name} for review?`,
+      confirmText: 'Report',
+      destructive: true,
+      onConfirm: () => {
+        void reportUser({
+          targetUserId: userId,
+          reason: 'Reported from match details',
+        })
+          .unwrap()
+          .then(() => {
+            showSuccess({
+              title: 'Report submitted',
+              message: 'Thank you for helping keep MatchMate safe.',
+            });
+          })
+          .catch(() => {
+            showError({
+              title: 'Unable to report',
+              message: 'Please try again.',
+            });
+          });
+      },
+    });
+  };
+
+  const handleBlock = (): void => {
+    showConfirm({
+      title: 'Block profile?',
+      message: `You will no longer see ${name}.`,
+      confirmText: 'Block',
+      destructive: true,
+      onConfirm: () => {
+        void blockUser({ targetUserId: userId })
+          .unwrap()
+          .then(() => {
+            showSuccess({
+              title: 'Profile blocked',
+              message: `${name} has been blocked.`,
+            });
+            navigation.goBack();
+          })
+          .catch(() => {
+            showError({
+              title: 'Unable to block',
+              message: 'Please try again.',
+            });
+          });
+      },
+    });
   };
 
   if (isLoading) {
@@ -434,6 +504,37 @@ export default function MatchDetailsScreen({
             icon="briefcase"
             isLast
           />
+        </Section>
+
+        <Section title="Safety" icon="shield">
+          <View style={styles.safetyActions}>
+            <TouchableOpacity
+              style={styles.safetyButton}
+              onPress={handleReport}
+              disabled={isReporting}
+              accessibilityRole="button"
+            >
+              <Feather
+                name="flag"
+                size={15}
+                color={theme.colors.textSecondary}
+              />
+              <Text style={styles.safetyButtonText}>Report</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[styles.safetyButton, styles.safetyButtonDanger]}
+              onPress={handleBlock}
+              disabled={isBlocking}
+              accessibilityRole="button"
+            >
+              <Feather name="slash" size={15} color={theme.colors.error} />
+              <Text
+                style={[styles.safetyButtonText, styles.safetyButtonTextDanger]}
+              >
+                Block
+              </Text>
+            </TouchableOpacity>
+          </View>
         </Section>
 
         <View style={styles.footerSpacer} />

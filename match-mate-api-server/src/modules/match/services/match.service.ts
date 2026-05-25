@@ -324,10 +324,11 @@ export class MatchService {
       throw new NotFoundException('Profile not found');
     }
 
-    const blockedUsers = (privacy?.blockedUsers ?? []).map((id) =>
-      id.toString(),
+    const isBlocked = await this.settingsService.isBlockedBetween(
+      viewerId,
+      targetUserId,
     );
-    if (blockedUsers.includes(viewerId)) {
+    if (isBlocked) {
       throw new NotFoundException('Profile not found');
     }
 

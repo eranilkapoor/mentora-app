@@ -41,8 +41,6 @@ export interface PrivacySettings {
   showLastSeen: VisibilityLevel;
 
   allowMessagesFrom: MessagePermission;
-
-  blockedUsers: string[];
 }
 
 export interface PrivacySettingsResponse {

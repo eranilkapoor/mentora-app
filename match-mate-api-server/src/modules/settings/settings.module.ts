@@ -45,6 +45,14 @@ import {
   Verification,
   VerificationSchema,
 } from '../profile/schemas/settings/verification.schema';
+import {
+  UserReport,
+  UserReportSchema,
+} from '../profile/schemas/settings/user-report.schema';
+import {
+  UserBlock,
+  UserBlockSchema,
+} from '../profile/schemas/settings/user-block.schema';
 
 @Module({
   imports: [
@@ -61,6 +69,8 @@ import {
       { name: User.name, schema: UserSchema },
       { name: UserSession.name, schema: UserSessionSchema },
       { name: Verification.name, schema: VerificationSchema },
+      { name: UserReport.name, schema: UserReportSchema },
+      { name: UserBlock.name, schema: UserBlockSchema },
     ]),
   ],
   controllers: [SettingsController],

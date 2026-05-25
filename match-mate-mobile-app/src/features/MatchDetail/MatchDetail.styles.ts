@@ -246,6 +246,36 @@ export const matchDetailStyles = (theme: Theme) =>
       paddingHorizontal: 16,
       paddingVertical: 14,
     },
+    safetyActions: {
+      flexDirection: 'row',
+      gap: 10,
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+    },
+    safetyButton: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      borderRadius: 10,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      backgroundColor: theme.colors.backgroundLight,
+      paddingVertical: 12,
+    },
+    safetyButtonDanger: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorLight,
+    },
+    safetyButtonText: {
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.textSecondary,
+    },
+    safetyButtonTextDanger: {
+      color: theme.colors.error,
+    },
 
     // ─── CTA ──────────────────────────────────────────────────────────────
     cta: {

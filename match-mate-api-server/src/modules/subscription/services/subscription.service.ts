@@ -6,9 +6,11 @@ import {
   SubscriptionDocument,
 } from '../schemas/subscription.schema';
 import { Plan, PlanDocument } from '../schemas/plan.schema';
+import { Payment, PaymentDocument } from '../../payment/schemas/payment.schema';
 import { UserRepository } from '../../auth/repositories/user.repository';
 import { PlanTier } from 'src/common/enums';
 import { SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
+import { PaymentStatus } from '../../payment/enums/payment-status.enum';
 
 @Injectable()
 export class SubscriptionService {
@@ -19,6 +21,9 @@ export class SubscriptionService {
 
     @InjectModel(Plan.name)
     private readonly planModel: Model<PlanDocument>,
+
+    @InjectModel(Payment.name)
+    private readonly paymentModel: Model<PaymentDocument>,
 
     private readonly userRepo: UserRepository,
   ) {}
@@ -79,6 +84,81 @@ export class SubscriptionService {
       .populate('planId')
       .lean()
       .exec();
+  }
+
+  async getBillingSummary(userId: string) {
+    const userObjectId = new Types.ObjectId(userId);
+    const now = new Date();
+
+    const [currentPlan, subscriptions, payments, totals] = await Promise.all([
+      this.getActiveSubscription(userId),
+      this.subModel
+        .find({ userId: userObjectId })
+        .populate('planId')
+        .sort({ startDate: -1, createdAt: -1 })
+        .limit(25)
+        .lean()
+        .exec(),
+      this.paymentModel
+        .find({ userId: userObjectId })
+        .populate('planId')
+        .sort({ createdAt: -1, initiatedAt: -1 })
+        .limit(25)
+        .select('-gatewayPayload')
+        .lean()
+        .exec(),
+      this.paymentModel
+        .aggregate<{
+          _id: string;
+          totalPaid: number;
+          paymentCount: number;
+          lastPaymentAt?: Date;
+        }>([
+          {
+            $match: {
+              userId: userObjectId,
+              status: PaymentStatus.SUCCESS,
+            },
+          },
+          {
+            $group: {
+              _id: '$currency',
+              totalPaid: { $sum: '$netAmount' },
+              paymentCount: { $sum: 1 },
+              lastPaymentAt: { $max: '$paidAt' },
+            },
+          },
+          { $sort: { totalPaid: -1 } },
+        ])
+        .exec(),
+    ]);
+
+    const primaryTotal = totals[0];
+    const currentSubscription = currentPlan as
+      | (Record<string, unknown> & {
+          endDate?: Date | string;
+          autoRenew?: boolean;
+        })
+      | null;
+
+    return {
+      currentPlan,
+      subscriptions,
+      payments,
+      billing: {
+        currency: primaryTotal?._id ?? payments[0]?.currency ?? 'INR',
+        totalPaid: primaryTotal?.totalPaid ?? 0,
+        successfulPayments: primaryTotal?.paymentCount ?? 0,
+        lastPaymentAt: primaryTotal?.lastPaymentAt,
+        nextRenewalAt:
+          currentSubscription?.autoRenew &&
+          currentSubscription?.endDate &&
+          new Date(currentSubscription.endDate) > now
+            ? currentSubscription.endDate
+            : null,
+        autoRenew: Boolean(currentSubscription?.autoRenew),
+      },
+    };
   }
 
   async cancelSubscription(userId: string, reason?: string) {

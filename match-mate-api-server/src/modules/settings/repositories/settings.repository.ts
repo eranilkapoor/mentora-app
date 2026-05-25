@@ -34,6 +34,10 @@ import {
   MediaSettingsDocument,
 } from '../schemas/media-settings.schema';
 import { AiSettings, AiSettingsDocument } from '../schemas/ai-settings.schema';
+import {
+  UserBlock,
+  UserBlockDocument,
+} from 'src/modules/profile/schemas/settings/user-block.schema';
 
 function buildDotNotation(
   obj: Record<string, unknown>,
@@ -96,6 +100,9 @@ export class SettingsRepository {
 
     @InjectModel(AiSettings.name)
     private readonly aiModel: Model<AiSettingsDocument>,
+
+    @InjectModel(UserBlock.name)
+    private readonly userBlockModel: Model<UserBlockDocument>,
   ) {}
 
   async getOrCreateUserSettings(userId: string) {
@@ -356,19 +363,56 @@ export class SettingsRepository {
   // ─── Block / unblock ─────────────────────────────────────────────────────────
 
   blockUser(userId: string, targetUserId: string) {
-    return this.privacyModel.findOneAndUpdate(
-      this.uid(userId),
-      { $addToSet: { blockedUsers: new Types.ObjectId(targetUserId) } },
-      upsertOptions,
+    return this.userBlockModel.findOneAndUpdate(
+      {
+        userId: new Types.ObjectId(userId),
+        blockedUserId: new Types.ObjectId(targetUserId),
+      },
+      {
+        $setOnInsert: {
+          userId: new Types.ObjectId(userId),
+          blockedUserId: new Types.ObjectId(targetUserId),
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
     );
   }
 
   unblockUser(userId: string, targetUserId: string) {
-    return this.privacyModel.findOneAndUpdate(
-      this.uid(userId),
-      { $pull: { blockedUsers: new Types.ObjectId(targetUserId) } },
-      { new: true },
-    );
+    return this.userBlockModel
+      .deleteOne({
+        userId: new Types.ObjectId(userId),
+        blockedUserId: new Types.ObjectId(targetUserId),
+      })
+      .exec();
+  }
+
+  async getBlockedUsers(userId: string) {
+    return this.userBlockModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+  }
+
+  async isBlockedBetween(userId: string, targetUserId: string) {
+    const block = await this.userBlockModel
+      .findOne({
+        $or: [
+          {
+            userId: new Types.ObjectId(userId),
+            blockedUserId: new Types.ObjectId(targetUserId),
+          },
+          {
+            userId: new Types.ObjectId(targetUserId),
+            blockedUserId: new Types.ObjectId(userId),
+          },
+        ],
+      })
+      .lean()
+      .exec();
+
+    return Boolean(block);
   }
 
   // ─── Security: Device management ─────────────────────────────────────────────

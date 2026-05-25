@@ -1,0 +1,28 @@
+{
+  "name": "match-mate-app",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Repository-level tooling for Match Mate API and mobile applications.",
+  "scripts": {
+    "prepare": "husky",
+    "lint": "npm run lint:api && npm run lint:mobile",
+    "lint:api": "npm --prefix match-mate-api-server run lint:check",
+    "lint:mobile": "npm --prefix match-mate-mobile-app run lint",
+    "format:check": "npm run format:check:api && npm run format:check:mobile",
+    "format:check:api": "npm --prefix match-mate-api-server run format:check",
+    "format:check:mobile": "npm --prefix match-mate-mobile-app run format:check",
+    "typecheck:api": "npm --prefix match-mate-api-server run typecheck",
+    "typecheck:mobile": "npm --prefix match-mate-mobile-app run typecheck",
+    "build:api": "npm --prefix match-mate-api-server run build",
+    "test:api": "npm --prefix match-mate-api-server run test -- --runInBand",
+    "verify": "npm run lint && npm run typecheck:api && npm run build:api",
+    "ci": "npm run verify && npm run test:api"
+  },
+  "devDependencies": {
+    "husky": "^9.1.7"
+  },
+  "engines": {
+    "node": ">=20",
+    "npm": ">=10"
+  }
+}

@@ -8,6 +8,7 @@ import {
 import { Plan, PlanSchema } from './schemas/plan.schema';
 import { Feature, FeatureSchema } from './schemas/feature.schema';
 import { PlanFeature, PlanFeatureSchema } from './schemas/plan-feature.schema';
+import { Payment, PaymentSchema } from '../payment/schemas/payment.schema';
 
 // Services
 import { SubscriptionService } from './services/subscription.service';
@@ -35,6 +36,7 @@ import { SubscriptionExpiryTask } from './tasks/subscription-expiry.task';
       { name: Plan.name, schema: PlanSchema },
       { name: Feature.name, schema: FeatureSchema },
       { name: PlanFeature.name, schema: PlanFeatureSchema },
+      { name: Payment.name, schema: PaymentSchema },
     ]),
     AuthModule,
     // 🔥 REQUIRED for usage tracking (redis)

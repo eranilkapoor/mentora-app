@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
@@ -13,6 +13,7 @@ import {
   SettingsOptionSheet,
 } from '@/core/components/settings/SettingsOptionSheet';
 import { showConfirm } from '@/core/utils/confirm';
+import { showSuccess } from '@/core/utils/toast';
 import {
   useGetSecuritySettingsQuery,
   useUpdateSecuritySettingsMutation,
@@ -86,10 +87,10 @@ export default function SecuritySettingsScreen({
           await clearRefreshToken();
           dispatch(logoutAction());
           dispatch(baseApi.util.resetApiState());
-          Alert.alert(
-            t('common.success'),
-            t('settings.security.revoke_all_success')
-          );
+          showSuccess({
+            title: t('common.success'),
+            message: t('settings.security.revoke_all_success'),
+          });
         });
       },
     });
@@ -180,6 +181,12 @@ export default function SecuritySettingsScreen({
           title={t('settings.security.devices')}
           subtitle={t('settings.security.devices_subtitle')}
         >
+          <SettingsSelectItem
+            icon="clock"
+            label="Login History"
+            sublabel="Recent sign-ins, devices, and session status"
+            onPress={() => navigation.navigate('LoginHistory')}
+          />
           <SettingsSelectItem
             icon="list"
             label={t('settings.security.manage_devices')}

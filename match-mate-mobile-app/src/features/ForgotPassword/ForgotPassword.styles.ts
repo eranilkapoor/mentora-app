@@ -1,5 +1,5 @@
 import { Theme } from '@/core/theme/types';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const forgotPasswordStyles = (theme: Theme) =>
   StyleSheet.create({
@@ -81,13 +81,6 @@ export const forgotPasswordStyles = (theme: Theme) =>
       paddingVertical: 13,
       fontSize: 15,
       color: theme.colors.textPrimary,
-      outlineStyle: 'none',
-      ...(Platform.OS === 'web'
-        ? ({
-            outlineWidth: 0,
-            boxShadow: 'none',
-          } as any)
-        : {}),
     },
     inputError: {
       borderColor: theme.colors.error,

@@ -74,9 +74,11 @@ export class AdminService {
     return this.repo.updateUserStatus(dto.userId, update);
   }
 
-  async broadcast(
-    dto: BroadcastDto,
-  ): Promise<{ success: boolean; message: string; target: string }> {
+  broadcast(dto: BroadcastDto): {
+    success: boolean;
+    message: string;
+    target: string;
+  } {
     // This is a hook point — inject NotificationService here when ready
     // For now it validates and returns a structured response
     const targetLabel = dto.target ?? BroadcastTarget.ALL;

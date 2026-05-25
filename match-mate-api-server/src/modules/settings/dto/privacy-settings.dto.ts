@@ -1,4 +1,11 @@
-import { IsBoolean, IsIn, IsMongoId, IsOptional } from 'class-validator';
+import {
+  IsBoolean,
+  IsIn,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  MaxLength,
+} from 'class-validator';
 
 export type VisibilityLevel =
   | 'everyone'
@@ -34,4 +41,11 @@ export class UpdatePrivacySettingsDto {
 export class BlockUserDto {
   @IsMongoId()
   targetUserId!: string;
+}
+
+export class ReportUserDto extends BlockUserDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 }

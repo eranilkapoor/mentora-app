@@ -13,3 +13,5 @@ export class UserBlock {
 
 export type UserBlockDocument = UserBlock & Document;
 export const UserBlockSchema = SchemaFactory.createForClass(UserBlock);
+
+UserBlockSchema.index({ userId: 1, blockedUserId: 1 }, { unique: true });

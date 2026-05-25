@@ -6,7 +6,6 @@ import React, {
   useState,
 } from 'react';
 import {
-  Alert,
   FlatList,
   KeyboardAvoidingView,
   ListRenderItem,
@@ -29,6 +28,12 @@ import {
   useGetMessagesQuery,
   useSendMessageMutation,
 } from '@/store/services/chatApi.service';
+import {
+  useBlockUserMutation,
+  useReportUserMutation,
+} from '@/store/services/privacySettings.service';
+import { showConfirm } from '@/core/utils/confirm';
+import { showError, showInfo, showSuccess } from '@/core/utils/toast';
 import { chatStyles } from './Chat.styles';
 import { formatDateLabel, Message, Props } from './Chat.types';
 import { DateSeparator } from './components/DateSeparator';
@@ -37,7 +42,7 @@ import { MessageBubble } from './components/MessageBubble';
 const mapMessage = (message: ChatMessage): Message => ({
   id: message.id,
   senderId: message.senderId,
-  text: message.content,
+  text: message.content ?? '',
   timestamp: message.createdAt
     ? new Date(message.createdAt).getTime()
     : Date.now(),
@@ -61,6 +66,8 @@ export default function ChatScreen({
   const [createDirectRoom, { isLoading: isCreatingRoom }] =
     useCreateDirectRoomMutation();
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
+  const [blockUser] = useBlockUserMutation();
+  const [reportUser] = useReportUserMutation();
   const { data, isFetching } = useGetMessagesQuery(
     { roomId: activeRoomId ?? '', limit: 50 },
     { skip: !activeRoomId }
@@ -89,10 +96,10 @@ export default function ChatScreen({
           setActiveRoomId(resolvedRoomId);
         }
       } catch {
-        Alert.alert(
-          'Chat unavailable',
-          'You can chat after both users have accepted the match.'
-        );
+        showError({
+          title: 'Chat unavailable',
+          message: 'You can chat after both users have accepted the match.',
+        });
         navigation.goBack();
       }
     };
@@ -133,16 +140,75 @@ export default function ChatScreen({
       setShowEmojiPicker(false);
       listRef.current?.scrollToOffset({ offset: 0, animated: true });
     } catch {
-      Alert.alert('Message not sent', 'Please try again.');
+      showError({ title: 'Message not sent', message: 'Please try again.' });
     }
   }, [activeRoomId, inputText, isSending, sendMessage]);
 
   const handlePickImage = useCallback((): void => {
-    Alert.alert(
-      'Image messages',
-      'Image sending will be available after media upload is connected to chat attachments.'
-    );
+    showInfo({
+      title: 'Image messages',
+      message:
+        'Image sending will be available after media upload is connected to chat attachments.',
+    });
   }, []);
+
+  const handleReportUser = useCallback((): void => {
+    if (!userId) return;
+
+    showConfirm({
+      title: 'Report user?',
+      message: `Report ${partnerName ?? 'this user'}?`,
+      confirmText: 'Report',
+      destructive: true,
+      onConfirm: () => {
+        void reportUser({
+          targetUserId: userId,
+          reason: 'Reported from chat',
+        })
+          .unwrap()
+          .then(() => {
+            showSuccess({
+              title: 'Report submitted',
+              message: 'Our team will review this chat.',
+            });
+          })
+          .catch(() => {
+            showError({
+              title: 'Unable to report',
+              message: 'Please try again.',
+            });
+          });
+      },
+    });
+  }, [partnerName, reportUser, userId]);
+
+  const handleBlockUser = useCallback((): void => {
+    if (!userId) return;
+
+    showConfirm({
+      title: 'Block user?',
+      message: 'You will no longer receive messages from this user.',
+      confirmText: 'Block',
+      destructive: true,
+      onConfirm: () => {
+        void blockUser({ targetUserId: userId })
+          .unwrap()
+          .then(() => {
+            showSuccess({
+              title: 'User blocked',
+              message: 'This user has been blocked.',
+            });
+            navigation.goBack();
+          })
+          .catch(() => {
+            showError({
+              title: 'Unable to block',
+              message: 'Please try again.',
+            });
+          });
+      },
+    });
+  }, [blockUser, navigation, userId]);
 
   const appendEmoji = useCallback((emoji: string): void => {
     setInputText((prev) => prev + emoji);
@@ -174,9 +240,14 @@ export default function ChatScreen({
         avatarUri={partnerPhoto ?? 'https://i.pravatar.cc/150?img=12'}
         actions={[
           {
-            icon: 'more-vertical',
-            onPress: () => {},
-            accessibilityLabel: 'More options',
+            icon: 'flag',
+            onPress: handleReportUser,
+            accessibilityLabel: 'Report user',
+          },
+          {
+            icon: 'slash',
+            onPress: handleBlockUser,
+            accessibilityLabel: 'Block user',
           },
         ]}
       />

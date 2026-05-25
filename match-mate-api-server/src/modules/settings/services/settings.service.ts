@@ -12,12 +12,21 @@ import {
   Verification,
   VerificationDocument,
 } from 'src/modules/profile/schemas/settings/verification.schema';
+import {
+  UserReport,
+  UserReportDocument,
+} from 'src/modules/profile/schemas/settings/user-report.schema';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,
   BlockUserDto,
+  ReportUserDto,
 } from '../dto/privacy-settings.dto';
-import { UpdateNotificationSettingsDto } from '../dto/notification-settings.dto';
+import {
+  NotificationPreferenceParamsDto,
+  UpdateNotificationChannelDto,
+  UpdateNotificationSettingsDto,
+} from '../dto/notification-settings.dto';
 import { UpdateCommunicationSettingsDto } from '../dto/communication-settings.dto';
 import {
   UpdateSecuritySettingsDto,
@@ -45,6 +54,8 @@ export class SettingsService {
     private readonly userSessionModel: Model<UserSessionDocument>,
     @InjectModel(Verification.name)
     private readonly verificationModel: Model<VerificationDocument>,
+    @InjectModel(UserReport.name)
+    private readonly userReportModel: Model<UserReportDocument>,
   ) {}
 
   // ─── All settings in one call ─────────────────────────────────────────────
@@ -81,13 +92,43 @@ export class SettingsService {
     return this.repo.blockUser(userId, dto.targetUserId);
   }
 
+  async reportUser(userId: string, dto: ReportUserDto) {
+    if (userId === dto.targetUserId) {
+      throw new BadRequestException('Cannot report yourself');
+    }
+
+    return this.userReportModel.findOneAndUpdate(
+      {
+        reportedBy: new Types.ObjectId(userId),
+        reportedUserId: new Types.ObjectId(dto.targetUserId),
+      },
+      {
+        $set: {
+          reason: dto.reason ?? 'Reported from app',
+        },
+        $setOnInsert: {
+          reportedBy: new Types.ObjectId(userId),
+          reportedUserId: new Types.ObjectId(dto.targetUserId),
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
   unblockUser(userId: string, dto: BlockUserDto) {
     return this.repo.unblockUser(userId, dto.targetUserId);
   }
 
   async getBlockedUsers(userId: string) {
-    const privacy = await this.repo.getPrivacy(userId);
-    return { blockedUsers: privacy?.blockedUsers ?? [] };
+    const blocks = await this.repo.getBlockedUsers(userId);
+
+    return {
+      blockedUsers: blocks.map((block) => block.blockedUserId.toString()),
+    };
+  }
+
+  isBlockedBetween(userId: string, targetUserId: string) {
+    return this.repo.isBlockedBetween(userId, targetUserId);
   }
 
   // ─── Account ─────────────────────────────────────────────────────────────
@@ -257,6 +298,20 @@ export class SettingsService {
     return this.repo.updateNotification(userId, update as never);
   }
 
+  updateNotificationChannel(
+    userId: string,
+    params: NotificationPreferenceParamsDto,
+    dto: UpdateNotificationChannelDto,
+  ) {
+    return this.repo.updateNotification(userId, {
+      preferences: {
+        [params.event]: {
+          [params.channel]: dto.value,
+        },
+      },
+    } as never);
+  }
+
   // ─── Communication ────────────────────────────────────────────────────────
 
   getCommunication(userId: string) {
@@ -296,8 +351,71 @@ export class SettingsService {
     return this.repo.revokeDevice(userId, dto.deviceId);
   }
 
+  async revokeSession(userId: string, sessionId: string) {
+    if (!Types.ObjectId.isValid(sessionId)) {
+      throw new BadRequestException('Invalid session id');
+    }
+
+    await this.userSessionModel.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(sessionId),
+        userId: new Types.ObjectId(userId),
+      },
+      {
+        $set: {
+          isActive: false,
+          loggedOutAt: new Date(),
+        },
+      },
+    );
+
+    return { sessionId, revoked: true };
+  }
+
   revokeAllDevices(userId: string) {
     return this.repo.revokeAllDevices(userId);
+  }
+
+  async getLoginHistory(userId: string) {
+    const sessions = await this.userSessionModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .sort({ createdAt: -1 })
+      .limit(50)
+      .select('-refreshToken')
+      .lean()
+      .exec();
+
+    return {
+      sessions: sessions.map((session) => {
+        const item = session as typeof session & {
+          _id: Types.ObjectId;
+          createdAt?: Date;
+          updatedAt?: Date;
+        };
+        const isExpired = item.expiresAt
+          ? new Date(item.expiresAt).getTime() <= Date.now()
+          : false;
+
+        return {
+          sessionId: item._id.toString(),
+          device: item.device,
+          ip: item.ip,
+          userAgent: item.userAgent,
+          isActive: Boolean(item.isActive && !isExpired),
+          status: item.loggedOutAt
+            ? 'signed_out'
+            : isExpired
+              ? 'expired'
+              : item.isActive
+                ? 'active'
+                : 'inactive',
+          signedInAt: item.createdAt,
+          lastActiveAt: item.updatedAt,
+          expiresAt: item.expiresAt,
+          loggedOutAt: item.loggedOutAt,
+        };
+      }),
+    };
   }
 
   // ─── Localization ─────────────────────────────────────────────────────────

@@ -1,5 +1,6 @@
 import {
   IsBoolean,
+  IsIn,
   IsOptional,
   IsString,
   Matches,
@@ -12,6 +13,37 @@ export class ChannelPreferenceDto {
   @IsOptional() @IsBoolean() push?: boolean;
   @IsOptional() @IsBoolean() email?: boolean;
   @IsOptional() @IsBoolean() sms?: boolean;
+}
+
+export const NOTIFICATION_EVENT_KEYS = [
+  'interestReceived',
+  'interestAccepted',
+  'profileView',
+  'matchFound',
+  'messageReceived',
+  'subscription',
+  'marketing',
+  'system',
+] as const;
+
+export const NOTIFICATION_CHANNEL_KEYS = [
+  'inApp',
+  'push',
+  'email',
+  'sms',
+] as const;
+
+export class NotificationPreferenceParamsDto {
+  @IsIn(NOTIFICATION_EVENT_KEYS)
+  event!: (typeof NOTIFICATION_EVENT_KEYS)[number];
+
+  @IsIn(NOTIFICATION_CHANNEL_KEYS)
+  channel!: (typeof NOTIFICATION_CHANNEL_KEYS)[number];
+}
+
+export class UpdateNotificationChannelDto {
+  @IsBoolean()
+  value!: boolean;
 }
 
 export class QuietHoursDto {

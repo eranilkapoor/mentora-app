@@ -47,6 +47,25 @@ export const privacySettingsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['PrivacySettings'],
     }),
+    blockUser: builder.mutation<void, { targetUserId: string }>({
+      query: (body) => ({
+        url: '/settings/privacy/block',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['PrivacySettings', 'Match', 'Chat'],
+    }),
+    reportUser: builder.mutation<
+      void,
+      { targetUserId: string; reason?: string }
+    >({
+      query: (body) => ({
+        url: '/settings/privacy/report',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['PrivacySettings'],
+    }),
   }),
 
   overrideExisting: false,
@@ -57,4 +76,6 @@ export const {
   useUpdatePrivacySettingsMutation,
   useGetBlockedUsersQuery,
   useUnblockUserMutation,
+  useBlockUserMutation,
+  useReportUserMutation,
 } = privacySettingsApi;

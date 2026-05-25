@@ -101,11 +101,6 @@ export const authSharedStyles = (theme: Theme) =>
       paddingVertical: 13,
       fontSize: 15,
       color: theme.colors.textPrimary,
-      outlineStyle: 'none',
-      ...(Platform.OS === 'web' && {
-        outlineWidth: 0,
-        boxShadow: 'none',
-      } as any)
     },
     eyeButton: { padding: 6 },
     phoneRow: {

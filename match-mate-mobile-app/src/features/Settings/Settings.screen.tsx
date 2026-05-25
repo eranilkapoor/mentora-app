@@ -218,6 +218,18 @@ export default function SettingsScreen({
           />
         </Section>
 
+        {/* Membership & Billing */}
+
+        <Section icon="credit-card" title="Membership & Billing">
+          <SettingRow
+            icon="credit-card"
+            label="Subscription & Billing"
+            subLabel="Current plan, billing history, and previous plans"
+            onPress={() => navigation.navigate('SubscriptionBilling')}
+            isLast
+          />
+        </Section>
+
         {/* Privacy, Safety & Communication */}
 
         <Section icon="shield" title={t('settings.privacy_safety')}>
@@ -293,22 +305,8 @@ export default function SettingsScreen({
           <SettingRow
             icon="life-buoy"
             label={t('settings.help_and_support')}
-            subLabel={t('settings.help_sub')}
+            subLabel="Support, FAQs, community guidelines, and legal policies"
             onPress={() => navigation.navigate('HelpSupport')}
-          />
-
-          <SettingRow
-            icon="shield"
-            label={t('settings.privacy_policy')}
-            subLabel={t('settings.privacy_sub')}
-            onPress={() => navigation.navigate('PrivacyPolicy')}
-          />
-
-          <SettingRow
-            icon="file-text"
-            label={t('settings.terms_conditions')}
-            subLabel={t('settings.terms_sub')}
-            onPress={() => navigation.navigate('TermsConditions')}
             isLast
           />
         </Section>

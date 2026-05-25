@@ -70,7 +70,7 @@ export function SettingsToggleItem({
       <View style={styles.toggleWrapper}>
         <ToggleRow
           label={label}
-          sublabel={sublabel || ''}
+          sublabel={sublabel ?? ''}
           value={value}
           onChange={onChange}
           disabled={disabled}

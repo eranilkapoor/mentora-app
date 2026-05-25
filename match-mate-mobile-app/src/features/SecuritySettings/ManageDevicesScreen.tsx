@@ -1,11 +1,12 @@
 import React, { useCallback } from 'react';
-import { Alert, ScrollView, View } from 'react-native';
+import { ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { showConfirm } from '@/core/utils/confirm';
+import { showError, showSuccess } from '@/core/utils/toast';
 import { SettingsNavigationProp } from '@/navigation/types';
 import { AuthSession } from '@/core/types';
 import {
@@ -34,12 +35,18 @@ export default function ManageDevicesScreen({
         confirmText: 'Sign Out',
         destructive: true,
         onConfirm: () => {
-          void logoutSession({ sessionId: deviceId }).catch(
-            (error: unknown) => {
+          void logoutSession({ sessionId: deviceId })
+            .unwrap()
+            .then(() => {
+              showSuccess({ title: 'Device signed out' });
+            })
+            .catch((error: unknown) => {
               console.error('Revoke device failed:', error);
-              Alert.alert('Unable to sign out device', 'Please try again.');
-            }
-          );
+              showError({
+                title: 'Unable to sign out device',
+                message: 'Please try again.',
+              });
+            });
         },
       });
     },
