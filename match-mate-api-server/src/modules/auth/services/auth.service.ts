@@ -53,6 +53,10 @@ import {
   AnalyticsEventType,
   AnalyticsPlatform,
 } from '../../analytics/enums/analytics-event.enum';
+import {
+  Verification,
+  VerificationDocument,
+} from '../../profile/schemas/settings/verification.schema';
 
 interface TokenAttachUser {
   _id: { toString(): string };
@@ -85,6 +89,8 @@ export class AuthService {
     private readonly planModel: Model<Plan>,
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLogDocument>,
+    @InjectModel(Verification.name)
+    private readonly verificationModel: Model<VerificationDocument>,
     private readonly notificationService: NotificationService,
     private readonly analyticsService: AnalyticsService,
   ) {}
@@ -276,6 +282,10 @@ export class AuthService {
             : undefined,
         sendOtp: Boolean(dto.country_code && dto.phone),
         context: requestContext,
+      });
+      await this.syncVerificationStatus(user._id.toString(), {
+        isEmailVerified: false,
+        isPhoneVerified: false,
       });
 
       const tokens = await this.attachToken(req, res, user);
@@ -481,6 +491,44 @@ export class AuthService {
       lastLoginDevice: context.device,
       lastLoginAt: new Date(),
     });
+  }
+
+  private async syncVerificationStatus(
+    userId: string,
+    status: {
+      isEmailVerified?: boolean;
+      isPhoneVerified?: boolean;
+      isProfileVerified?: boolean;
+    },
+  ): Promise<void> {
+    const set: Record<string, boolean | Date | undefined> = {};
+
+    if (typeof status.isEmailVerified === 'boolean') {
+      set.isEmailVerified = status.isEmailVerified;
+    }
+
+    if (typeof status.isPhoneVerified === 'boolean') {
+      set.isPhoneVerified = status.isPhoneVerified;
+    }
+
+    if (typeof status.isProfileVerified === 'boolean') {
+      set.isProfileVerified = status.isProfileVerified;
+      set.isVerified = status.isProfileVerified;
+      set.verifiedAt = status.isProfileVerified ? new Date() : undefined;
+    }
+
+    await this.verificationModel
+      .findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        {
+          $set: set,
+          $setOnInsert: {
+            userId: new Types.ObjectId(userId),
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
+      .exec();
   }
 
   private async logLoginActivity(
@@ -842,6 +890,10 @@ export class AuthService {
 
       if (existingUser) {
         this.assertUserCanAuthenticate(existingUser);
+        await this.syncVerificationStatus(existingUser._id.toString(), {
+          isPhoneVerified: true,
+          isEmailVerified: Boolean(existingUser.isEmailVerified),
+        });
 
         await this.completeLoginFlow(req, existingUser._id.toString(), {
           provider: AuthProvider.PHONE,
@@ -896,6 +948,10 @@ export class AuthService {
         phone: { countryCode: country_code, phone },
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
+      });
+      await this.syncVerificationStatus(user._id.toString(), {
+        isEmailVerified: false,
+        isPhoneVerified: true,
       });
 
       const tokens = await this.attachToken(req, res, user);
@@ -985,6 +1041,10 @@ export class AuthService {
         hasEmail: Boolean(dto.email),
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
+      });
+      await this.syncVerificationStatus(user._id.toString(), {
+        isEmailVerified: Boolean(dto.email),
+        isPhoneVerified: false,
       });
 
       const tokens = await this.attachToken(req, res, user);

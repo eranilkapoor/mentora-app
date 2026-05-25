@@ -92,6 +92,26 @@ export const formatCamelCase = (choice: string): string => {
     .join(' ');
 };
 
+export type TranslationFn = (
+  key: string,
+  options: { defaultValue: string }
+) => string;
+
+export const formatEnumLabel = (
+  t: TranslationFn,
+  prefix: string,
+  value: string | number | null | undefined,
+  fallback = '—'
+): string => {
+  if (value === undefined || value === null || String(value).trim() === '') {
+    return fallback;
+  }
+
+  const rawValue = String(value);
+  const defaultValue = formatCamelCase(rawValue);
+  return t(`${prefix}.${rawValue}`, { defaultValue }) || defaultValue;
+};
+
 export const formatWeight = (weight: number | string): string => {
   const weightValue = typeof weight === 'string' ? parseFloat(weight) : weight;
 

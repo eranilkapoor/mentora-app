@@ -92,6 +92,56 @@ export class MatchController {
     );
   }
 
+  @Get('shortlisted')
+  async getShortlistedProfiles(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: MatchQueryDto,
+  ) {
+    return successResponse(
+      await this.matchService.getShortlistedProfiles(
+        req.user.sub,
+        query.page,
+        query.limit,
+      ),
+      SuccessCode.MATCHES_FETCHED,
+    );
+  }
+
+  @Post('shortlist/:userId')
+  @HttpCode(HttpStatus.OK)
+  async shortlistProfile(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ) {
+    return successResponse(
+      await this.matchService.shortlistProfile(req.user.sub, userId),
+      SuccessCode.MATCH_SHORTLISTED,
+    );
+  }
+
+  @Delete('shortlist/:userId')
+  @HttpCode(HttpStatus.OK)
+  async removeShortlistedProfile(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ) {
+    return successResponse(
+      await this.matchService.removeShortlistedProfile(req.user.sub, userId),
+      SuccessCode.MATCH_SHORTLIST_REMOVED,
+    );
+  }
+
+  @Get('profile/:userId')
+  async getMatchProfile(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ) {
+    return successResponse(
+      await this.matchService.getMatchProfile(req.user.sub, userId),
+      SuccessCode.MATCHES_FETCHED,
+    );
+  }
+
   // ─── Interests ─────────────────────────────────────────────────────────────
 
   @Post('interest')

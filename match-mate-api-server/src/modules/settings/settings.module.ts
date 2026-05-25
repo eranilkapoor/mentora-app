@@ -41,6 +41,10 @@ import {
   UserSession,
   UserSessionSchema,
 } from '../auth/schemas/user-session.schema';
+import {
+  Verification,
+  VerificationSchema,
+} from '../profile/schemas/settings/verification.schema';
 
 @Module({
   imports: [
@@ -56,6 +60,7 @@ import {
       { name: AiSettings.name, schema: AiSettingsSchema },
       { name: User.name, schema: UserSchema },
       { name: UserSession.name, schema: UserSessionSchema },
+      { name: Verification.name, schema: VerificationSchema },
     ]),
   ],
   controllers: [SettingsController],

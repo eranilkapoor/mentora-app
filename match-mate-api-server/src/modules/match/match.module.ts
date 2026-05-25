@@ -15,15 +15,26 @@ import {
   Preference,
   PreferenceSchema,
 } from '../profile/schemas/preference/preference.schema';
+import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
+import {
+  Interaction,
+  InteractionSchema,
+} from '../profile/schemas/interaction/interaction.schema';
+import { NotificationModule } from '../notification/notification.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [
+    NotificationModule,
+    SettingsModule,
     MongooseModule.forFeature([
       { name: Match.name, schema: MatchSchema },
       { name: Interest.name, schema: InterestSchema },
       // Read-only access to Profile and Preference for discovery
       { name: Profile.name, schema: ProfileSchema },
       { name: Preference.name, schema: PreferenceSchema },
+      { name: Media.name, schema: MediaSchema },
+      { name: Interaction.name, schema: InteractionSchema },
     ]),
   ],
   controllers: [MatchController],

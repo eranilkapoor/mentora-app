@@ -311,6 +311,9 @@ export const homeStyles = (theme: Theme) =>
       justifyContent: 'center',
       backgroundColor: theme.colors.accentLight,
     },
+    shortlistBtnActive: {
+      backgroundColor: theme.colors.accent,
+    },
 
     // ─── Skeleton ─────────────────────────────────────────────────────────
     skeletonCard: {

@@ -298,4 +298,24 @@ export const matchDetailStyles = (theme: Theme) =>
 
     // ─── Footer spacer ────────────────────────────────────────────────────
     footerSpacer: { height: 110 },
+    emptyContainer: {
+      flex: 1,
+      minHeight: 360,
+      alignItems: 'center',
+      justifyContent: 'center',
+      paddingHorizontal: 24,
+      gap: 12,
+    },
+    emptyTitle: {
+      fontSize: 18,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+      textAlign: 'center',
+    },
+    emptySubtitle: {
+      fontSize: 14,
+      color: theme.colors.textMuted,
+      textAlign: 'center',
+      lineHeight: 20,
+    },
   });

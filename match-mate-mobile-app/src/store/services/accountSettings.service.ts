@@ -1,4 +1,5 @@
 import { baseApi } from './baseApi';
+import { ApiResponse } from '@/core/types';
 
 import {
   AccountSettings,
@@ -20,8 +21,13 @@ export const accountSettingsApi = baseApi.injectEndpoints({
         url: '/settings/account',
         method: 'GET',
       }),
-      transformResponse: (response: AccountSettings) => ({
-        account: response,
+      transformResponse: (
+        response: AccountSettings | ApiResponse<AccountSettings>
+      ) => ({
+        account:
+          response && 'data' in response && response.data
+            ? response.data
+            : (response as AccountSettings),
       }),
 
       providesTags: ['AccountSettings'],

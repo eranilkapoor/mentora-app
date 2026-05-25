@@ -1,31 +1,40 @@
-import React, { useState, useRef } from 'react';
+import React, { useMemo, useRef, useState } from 'react';
 import {
-  View,
-  Text,
-  Image,
-  ScrollView,
+  ActivityIndicator,
+  Alert,
   FlatList,
-  TouchableOpacity,
+  Image,
   ListRenderItem,
-  NativeSyntheticEvent,
   NativeScrollEvent,
+  NativeSyntheticEvent,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { RouteProp } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { matchDetailStyles } from './MatchDetail.styles';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { resolveApiUrl } from '@/core/utils/config';
+import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
+import { MatchesStackParamList } from '@/navigation/types';
+import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
+import {
+  DiscoveryProfile,
+  useGetMatchProfileQuery,
+  useSendInterestMutation,
+} from '@/store/services/matchApi.service';
+import { matchDetailStyles } from './MatchDetail.styles';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
-
-type MatchesStackParamList = {
-  Chats: { userId: string; partnerName: string; partnerPhoto: string };
-  RequestContact: { userId: string };
+type Props = {
+  navigation: NativeStackNavigationProp<MatchesStackParamList, 'MatchDetails'>;
+  route: RouteProp<MatchesStackParamList, 'MatchDetails'>;
 };
-
-type Props = { navigation: NativeStackNavigationProp<MatchesStackParamList> };
 
 interface SectionProps {
   title: string;
@@ -35,27 +44,38 @@ interface SectionProps {
 
 interface RowProps {
   label: string;
-  value: string;
+  value?: string | number | null;
   icon?: string;
   isLast?: boolean;
 }
 
-// ─── Data ─────────────────────────────────────────────────────────────────────
+const FALLBACK_PHOTO =
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600';
+const HIDDEN = 'Visible after match/permission';
+const EMPTY = '-';
 
-const PHOTOS = [
-  'https://randomuser.me/api/portraits/women/65.jpg',
-  'https://randomuser.me/api/portraits/women/66.jpg',
-  'https://randomuser.me/api/portraits/women/67.jpg',
-];
+const compact = (values: Array<string | number | undefined | null>): string =>
+  values.filter(Boolean).join(', ') || EMPTY;
 
-const CHIPS = [
-  { icon: 'sun', label: 'Hindu' },
-  { icon: 'users', label: 'Brahmin' },
-  { icon: 'trending-up', label: '5\'4"' },
-  { icon: 'heart', label: 'Never Married' },
-];
+const getName = (profile?: DiscoveryProfile): string =>
+  [profile?.personal?.firstName, profile?.personal?.lastName]
+    .filter(Boolean)
+    .join(' ')
+    .trim() || 'MatchMate Member';
 
-// ─── Sub-components ───────────────────────────────────────────────────────────
+const getPhotos = (profile?: DiscoveryProfile): string[] => {
+  const photos = profile?.images
+    ?.filter((image) => image.isActive !== false)
+    .sort((a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary)))
+    .map((image) => resolveApiUrl(image.url))
+    .filter((url): url is string => Boolean(url));
+  return photos?.length ? photos : [FALLBACK_PHOTO];
+};
+
+const isOnline = (lastActiveAt?: string): boolean =>
+  lastActiveAt
+    ? Date.now() - new Date(lastActiveAt).getTime() <= 15 * 60 * 1000
+    : false;
 
 function Section({ title, icon, children }: SectionProps): React.ReactElement {
   const styles = useThemedStyles(matchDetailStyles);
@@ -84,20 +104,75 @@ function Row({ label, value, icon, isLast }: RowProps): React.ReactElement {
         )}
         <Text style={styles.label}>{label}</Text>
       </View>
-      <Text style={styles.value}>{value}</Text>
+      <Text style={styles.value}>{value ?? EMPTY}</Text>
     </View>
   );
 }
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
-
 export default function MatchDetailsScreen({
   navigation,
+  route,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(matchDetailStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [activeIndex, setActiveIndex] = useState(0);
   const flatListRef = useRef<FlatList<string>>(null);
+  const { userId } = route.params;
+  const { data, isLoading, refetch } = useGetMatchProfileQuery(userId);
+  const [sendInterest, { isLoading: isSendingInterest }] =
+    useSendInterestMutation();
+  const [createDirectRoom, { isLoading: isOpeningChat }] =
+    useCreateDirectRoomMutation();
+
+  const profile = data?.data ?? undefined;
+  const name = getName(profile);
+  const photos = useMemo(() => getPhotos(profile), [profile]);
+  const canViewDetails = Boolean(profile?.privacy?.canViewPersonalDetails);
+  const isMatched = Boolean(profile?.privacy?.isMatched);
+  const online = isOnline(profile?.lastActiveAt);
+  const location = compact([
+    profile?.personal?.city,
+    profile?.personal?.state,
+    profile?.personal?.country,
+  ]);
+
+  const chips = [
+    {
+      icon: 'sun',
+      label: formatEnumLabel(
+        t,
+        'options.religion',
+        profile?.personal?.religion,
+        HIDDEN
+      ),
+    },
+    {
+      icon: 'users',
+      label: formatEnumLabel(
+        t,
+        'options.caste',
+        profile?.personal?.caste,
+        HIDDEN
+      ),
+    },
+    {
+      icon: 'trending-up',
+      label: profile?.physical?.height
+        ? cmToFeetInches(profile.physical.height) ||
+          String(profile.physical.height)
+        : HIDDEN,
+    },
+    {
+      icon: 'heart',
+      label: formatEnumLabel(
+        t,
+        'options.marital_status',
+        profile?.personal?.maritalStatus,
+        EMPTY
+      ),
+    },
+  ];
 
   const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
     const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
@@ -108,61 +183,106 @@ export default function MatchDetailsScreen({
     <Image source={{ uri: item }} style={styles.photo} resizeMode="cover" />
   );
 
+  const handlePrimaryAction = async (): Promise<void> => {
+    if (isMatched) {
+      try {
+        await createDirectRoom({ targetUserId: userId }).unwrap();
+        navigation.navigate('ChatDetails', {
+          userId,
+          partnerName: name,
+          partnerPhoto: photos[0] ?? FALLBACK_PHOTO,
+        });
+      } catch {
+        Alert.alert('Chat unavailable', 'Please try again later.');
+      }
+      return;
+    }
+
+    try {
+      await sendInterest({ receiverId: userId }).unwrap();
+      Alert.alert('Interest sent', `${name} will be notified.`);
+      await refetch();
+    } catch {
+      Alert.alert('Interest not sent', 'Please try again later.');
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.emptyContainer}>
+          <ActivityIndicator color={theme.colors.primary} />
+          <Text style={styles.emptyTitle}>Loading profile</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.emptyContainer}>
+          <Text style={styles.emptyTitle}>Profile unavailable</Text>
+          <Text style={styles.emptySubtitle}>
+            This profile may be hidden or no longer available.
+          </Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* ── Carousel ─────────────────────────────────────────────── */}
         <View style={styles.carouselWrapper}>
           <FlatList
             ref={flatListRef}
-            data={PHOTOS}
+            data={photos}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
             onMomentumScrollEnd={onScroll}
             renderItem={renderPhoto}
-            keyExtractor={(_, i) => String(i)}
+            keyExtractor={(item, i) => `${item}-${i}`}
           />
 
           <View style={styles.carouselScrim} />
-
-          {/* Counter */}
           <View style={styles.counterPill}>
             <Feather name="image" size={11} color={theme.colors.white} />
             <Text style={styles.counterText}>
-              {activeIndex + 1} / {PHOTOS.length}
+              {activeIndex + 1} / {photos.length}
             </Text>
           </View>
-
-          {/* Dots */}
           <View style={styles.dots}>
-            {PHOTOS.map((_, i) => (
+            {photos.map((_, i) => (
               <View
                 key={i}
                 style={[styles.dot, i === activeIndex && styles.dotActive]}
               />
             ))}
           </View>
-
-          {/* Hero Overlay */}
           <View style={styles.heroOverlay}>
-            <View style={styles.onlinePill}>
-              <View style={styles.onlineDot} />
-              <Text style={styles.onlinePillText}>Online now</Text>
-            </View>
-            <Text style={styles.heroName}>Priya Sharma, 28</Text>
+            {online && (
+              <View style={styles.onlinePill}>
+                <View style={styles.onlineDot} />
+                <Text style={styles.onlinePillText}>Online now</Text>
+              </View>
+            )}
+            <Text style={styles.heroName}>
+              {name}
+              {profile.age ? `, ${profile.age}` : ''}
+            </Text>
             <View style={styles.heroLocationRow}>
               <Feather
                 name="map-pin"
                 size={13}
                 color="rgba(255,255,255,0.85)"
               />
-              <Text style={styles.heroLocation}>Mumbai, India</Text>
+              <Text style={styles.heroLocation}>{location}</Text>
             </View>
           </View>
         </View>
 
-        {/* ── Match Score Bar ───────────────────────────────────────── */}
         <View style={styles.matchScoreBar}>
           <View style={styles.matchScoreLeft}>
             <View style={styles.matchScoreIconWrapper}>
@@ -170,35 +290,28 @@ export default function MatchDetailsScreen({
             </View>
             <View>
               <Text style={styles.matchScoreLabel}>Match Score</Text>
-              <Text style={styles.matchScoreValue}>92%</Text>
+              <Text style={styles.matchScoreValue}>
+                {profile.matchScore ?? profile.profileScore ?? 0}%
+              </Text>
             </View>
           </View>
           <View style={styles.matchScoreDivider} />
           <View style={styles.matchScoreLeft}>
             <View style={styles.matchScoreIconWrapper}>
-              <Feather name="eye" size={18} color={theme.colors.primary} />
+              <Feather name="shield" size={18} color={theme.colors.primary} />
             </View>
             <View>
-              <Text style={styles.matchScoreLabel}>Profile Views</Text>
-              <Text style={styles.matchScoreValue}>48</Text>
-            </View>
-          </View>
-          <View style={styles.matchScoreDivider} />
-          <View style={styles.matchScoreLeft}>
-            <View style={styles.matchScoreIconWrapper}>
-              <Feather name="star" size={18} color={theme.colors.primary} />
-            </View>
-            <View>
-              <Text style={styles.matchScoreLabel}>Shortlists</Text>
-              <Text style={styles.matchScoreValue}>12</Text>
+              <Text style={styles.matchScoreLabel}>Details</Text>
+              <Text style={styles.matchScoreValue}>
+                {canViewDetails ? 'Open' : 'Limited'}
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* ── Chips ────────────────────────────────────────────────── */}
         <View style={styles.chipsRow}>
-          {CHIPS.map((chip) => (
-            <View key={chip.label} style={styles.chip}>
+          {chips.map((chip) => (
+            <View key={`${chip.icon}-${chip.label}`} style={styles.chip}>
               <Feather
                 name={chip.icon}
                 size={12}
@@ -209,43 +322,115 @@ export default function MatchDetailsScreen({
           ))}
         </View>
 
-        {/* ── About ────────────────────────────────────────────────── */}
         <Section title="About Me" icon="user">
           <Text style={styles.aboutText}>
-            Hi! I'm Priya, a software engineer based in Mumbai. I love
-            travelling, reading, and exploring new cuisines. Looking for someone
-            who values family and has a good sense of humour.
+            {profile.personal?.aboutMe ??
+              (canViewDetails ? 'No introduction added yet.' : HIDDEN)}
           </Text>
         </Section>
 
-        {/* ── Basic Details ─────────────────────────────────────────── */}
         <Section title="Basic Details" icon="info">
-          <Row label="Name" value="Priya Sharma" icon="user" />
-          <Row label="Age" value="28 Years" icon="calendar" />
-          <Row label="Height" value="5.4 ft" icon="trending-up" />
-          <Row label="Religion" value="Hindu" icon="sun" />
-          <Row label="Caste" value="Brahmin" icon="users" isLast />
+          <Row label="Name" value={name} icon="user" />
+          <Row
+            label="Age"
+            value={profile.age ? `${profile.age} Years` : HIDDEN}
+            icon="calendar"
+          />
+          <Row
+            label="Height"
+            value={
+              profile.physical?.height
+                ? cmToFeetInches(profile.physical.height) ||
+                  String(profile.physical.height)
+                : HIDDEN
+            }
+            icon="trending-up"
+          />
+          <Row
+            label="Religion"
+            value={formatEnumLabel(
+              t,
+              'options.religion',
+              profile.personal?.religion,
+              HIDDEN
+            )}
+            icon="sun"
+          />
+          <Row
+            label="Caste"
+            value={formatEnumLabel(
+              t,
+              'options.caste',
+              profile.personal?.caste,
+              HIDDEN
+            )}
+            icon="users"
+            isLast
+          />
         </Section>
 
-        {/* ── Education & Career ────────────────────────────────────── */}
         <Section title="Education & Career" icon="book">
-          <Row label="Education" value="B.Tech" icon="book" />
-          <Row label="Profession" value="Software Engineer" icon="briefcase" />
+          <Row
+            label="Education"
+            value={formatEnumLabel(
+              t,
+              'options.qualifications',
+              profile.education?.qualification,
+              HIDDEN
+            )}
+            icon="book"
+          />
+          <Row
+            label="Profession"
+            value={
+              profile.education?.jobRole ??
+              profile.education?.occupation ??
+              HIDDEN
+            }
+            icon="briefcase"
+          />
+          <Row
+            label="Company"
+            value={profile.education?.companyName ?? HIDDEN}
+            icon="briefcase"
+          />
           <Row
             label="Annual Income"
-            value="₹12L – ₹15L"
+            value={
+              profile.privacy?.showIncome &&
+              profile.education?.annualIncomeAmount
+                ? String(profile.education.annualIncomeAmount)
+                : HIDDEN
+            }
             icon="dollar-sign"
             isLast
           />
         </Section>
 
-        {/* ── Family ───────────────────────────────────────────────── */}
         <Section title="Family Background" icon="home">
-          <Row label="Family Type" value="Nuclear" icon="home" />
-          <Row label="Family Status" value="Middle Class" icon="shield" />
+          <Row
+            label="Family Type"
+            value={formatEnumLabel(
+              t,
+              'options.family_types',
+              profile.family?.familyType,
+              HIDDEN
+            )}
+            icon="home"
+          />
+          <Row
+            label="Family Status"
+            value={formatEnumLabel(
+              t,
+              'options.family_status',
+              profile.family?.familyStatus,
+              HIDDEN
+            )}
+            icon="shield"
+          />
           <Row
             label="Father's Occupation"
-            value="Business"
+            value={profile.family?.fatherOccupation ?? HIDDEN}
             icon="briefcase"
             isLast
           />
@@ -254,34 +439,30 @@ export default function MatchDetailsScreen({
         <View style={styles.footerSpacer} />
       </ScrollView>
 
-      {/* ── CTA ──────────────────────────────────────────────────────── */}
       <View style={styles.cta}>
         <TouchableOpacity
           style={styles.ctaOutline}
-          onPress={() =>
-            navigation.navigate('Chats', {
-              userId: '1',
-              partnerName: 'Priya Sharma',
-              partnerPhoto: PHOTOS[0],
-            })
-          }
+          onPress={() => navigation.goBack()}
           accessibilityRole="button"
         >
-          <Feather
-            name="message-circle"
-            size={16}
-            color={theme.colors.primary}
-          />
-          <Text style={styles.ctaOutlineText}>Chat</Text>
+          <Feather name="arrow-left" size={16} color={theme.colors.primary} />
+          <Text style={styles.ctaOutlineText}>Back</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           style={styles.ctaPrimary}
-          onPress={() => navigation.navigate('RequestContact', { userId: '1' })}
+          onPress={() => void handlePrimaryAction()}
+          disabled={isSendingInterest || isOpeningChat}
           accessibilityRole="button"
         >
-          <Feather name="heart" size={16} color={theme.colors.white} />
-          <Text style={styles.ctaPrimaryText}>Send Interest</Text>
+          <Feather
+            name={isMatched ? 'message-circle' : 'heart'}
+            size={16}
+            color={theme.colors.white}
+          />
+          <Text style={styles.ctaPrimaryText}>
+            {isMatched ? 'Chat' : 'Send Interest'}
+          </Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

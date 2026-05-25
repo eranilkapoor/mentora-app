@@ -14,7 +14,9 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useTranslation } from 'react-i18next';
 import Header from '../../core/components/Header';
+import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { resolveApiUrl } from '@/core/utils/config';
@@ -25,11 +27,16 @@ import {
   MatchTab,
   useGetDiscoveryProfilesQuery,
   useGetMyMatchesQuery,
+  useGetReceivedInterestsQuery,
+  useGetShortlistedProfilesQuery,
+  useRemoveShortlistedProfileMutation,
+  useRespondToInterestMutation,
   useSendInterestMutation,
+  useShortlistProfileMutation,
 } from '@/store/services/matchApi.service';
 import { matchListStyles } from './MatchList.styles';
 
-type TabKey = MatchTab;
+type TabKey = MatchTab | 'requests' | 'shortlisted';
 
 interface Match {
   id: string;
@@ -45,6 +52,9 @@ interface Match {
   isOnline: boolean;
   isNew: boolean;
   isMatched: boolean;
+  isShortlisted: boolean;
+  interestId?: string;
+  requestStatus?: string;
 }
 
 interface TabConfig {
@@ -75,7 +85,9 @@ const getName = (profile: DiscoveryProfile): string =>
 
 const mapMatch = (
   profile: DiscoveryProfile,
-  matchedIds: Set<string>
+  matchedIds: Set<string>,
+  shortlistedIds: Set<string>,
+  t: (key: string, options: { defaultValue: string }) => string
 ): Match => {
   const photo = profile.images
     ?.filter((image) => image.isActive !== false)
@@ -87,10 +99,23 @@ const mapMatch = (
     id: profile.userId,
     name: getName(profile),
     age: profile.age ?? 0,
-    height: String(profile.physical?.height ?? '-'),
-    religion: profile.personal?.religion ?? '-',
-    caste: profile.personal?.caste ?? '-',
-    education: profile.education?.qualification ?? '-',
+    height: profile.physical?.height
+      ? cmToFeetInches(profile.physical.height) ||
+        String(profile.physical.height)
+      : '-',
+    religion: formatEnumLabel(
+      t,
+      'options.religion',
+      profile.personal?.religion,
+      '-'
+    ),
+    caste: formatEnumLabel(t, 'options.caste', profile.personal?.caste, '-'),
+    education: formatEnumLabel(
+      t,
+      'options.qualifications',
+      profile.education?.qualification,
+      '-'
+    ),
     profession:
       profile.education?.jobRole ?? profile.education?.occupation ?? '-',
     location:
@@ -101,6 +126,8 @@ const mapMatch = (
     isOnline: isOnline(profile.lastActiveAt),
     isNew: isNew(profile.createdAt),
     isMatched: matchedIds.has(profile.userId),
+    isShortlisted:
+      profile.isShortlisted === true || shortlistedIds.has(profile.userId),
   };
 };
 
@@ -122,10 +149,16 @@ const MatchCard = React.memo(function MatchCard({
   item,
   onViewProfile,
   onPrimaryAction,
+  onShortlist,
+  primaryLabel,
+  primaryIcon,
 }: {
   item: Match;
   onViewProfile: () => void;
   onPrimaryAction: () => void;
+  onShortlist: () => void;
+  primaryLabel?: string;
+  primaryIcon?: string;
 }): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
@@ -206,13 +239,37 @@ const MatchCard = React.memo(function MatchCard({
             accessibilityRole="button"
           >
             <Feather
-              name={item.isMatched ? 'message-circle' : 'heart'}
+              name={
+                primaryIcon ?? (item.isMatched ? 'message-circle' : 'heart')
+              }
               size={14}
               color={theme.colors.white}
             />
             <Text style={styles.primaryText}>
-              {item.isMatched ? 'Chat' : 'Interest'}
+              {primaryLabel ?? (item.isMatched ? 'Chat' : 'Interest')}
             </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.shortlistBtn,
+              item.isShortlisted && styles.shortlistBtnActive,
+            ]}
+            onPress={onShortlist}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+            accessibilityLabel={
+              item.isShortlisted
+                ? `Remove ${item.name} from shortlist`
+                : `Shortlist ${item.name}`
+            }
+          >
+            <Feather
+              name="bookmark"
+              size={16}
+              color={
+                item.isShortlisted ? theme.colors.white : theme.colors.accent
+              }
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -227,18 +284,41 @@ export default function MatchListScreen({
 }): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [query, setQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('recommended');
   const { data, isLoading, isFetching, refetch } = useGetDiscoveryProfilesQuery(
     {
-      type: activeTab,
+      type:
+        activeTab === 'requests' || activeTab === 'shortlisted'
+          ? 'recommended'
+          : activeTab,
       limit: 30,
       radiusKm: 100,
-    }
+    },
+    { skip: activeTab === 'requests' || activeTab === 'shortlisted' }
   );
   const { data: myMatches, refetch: refetchMyMatches } = useGetMyMatchesQuery();
+  const {
+    data: shortlistedProfiles,
+    isLoading: isLoadingShortlisted,
+    isFetching: isFetchingShortlisted,
+    refetch: refetchShortlisted,
+  } = useGetShortlistedProfilesQuery({ limit: 100 });
+  const {
+    data: receivedInterests,
+    isLoading: isLoadingRequests,
+    isFetching: isFetchingRequests,
+    refetch: refetchReceivedInterests,
+  } = useGetReceivedInterestsQuery(
+    { limit: 30 },
+    { skip: activeTab !== 'requests' }
+  );
   const [sendInterest] = useSendInterestMutation();
+  const [shortlistProfile] = useShortlistProfileMutation();
+  const [removeShortlistedProfile] = useRemoveShortlistedProfileMutation();
+  const [respondToInterest] = useRespondToInterestMutation();
   const [createDirectRoom] = useCreateDirectRoomMutation();
 
   const matchedIds = useMemo(() => {
@@ -250,21 +330,65 @@ export default function MatchListScreen({
     return ids;
   }, [myMatches]);
 
-  const matches = useMemo(
-    () => (data?.data ?? []).map((profile) => mapMatch(profile, matchedIds)),
-    [data, matchedIds]
+  const shortlistedIds = useMemo(
+    () =>
+      new Set(
+        (shortlistedProfiles?.data ?? []).map((profile) => profile.userId)
+      ),
+    [shortlistedProfiles]
   );
 
+  const matches = useMemo(
+    () =>
+      (data?.data ?? []).map((profile) =>
+        mapMatch(profile, matchedIds, shortlistedIds, t)
+      ),
+    [data, matchedIds, shortlistedIds, t]
+  );
+
+  const shortlistedMatches = useMemo(
+    () =>
+      (shortlistedProfiles?.data ?? []).map((profile) =>
+        mapMatch(profile, matchedIds, shortlistedIds, t)
+      ),
+    [matchedIds, shortlistedIds, shortlistedProfiles, t]
+  );
+
+  const requestMatches = useMemo(
+    () =>
+      (receivedInterests?.data ?? [])
+        .filter((interest) => interest.status === 'PENDING' && interest.profile)
+        .map((interest) => ({
+          ...mapMatch(
+            interest.profile as DiscoveryProfile,
+            matchedIds,
+            shortlistedIds,
+            t
+          ),
+          id: String(interest.senderId),
+          interestId: interest._id,
+          requestStatus: interest.status,
+        })),
+    [matchedIds, receivedInterests, shortlistedIds, t]
+  );
+
+  const visibleMatches =
+    activeTab === 'requests'
+      ? requestMatches
+      : activeTab === 'shortlisted'
+        ? shortlistedMatches
+        : matches;
+
   const filtered = useMemo(() => {
-    if (!query.trim()) return matches;
+    if (!query.trim()) return visibleMatches;
     const q = query.toLowerCase().trim();
-    return matches.filter(
+    return visibleMatches.filter(
       (m) =>
         m.name.toLowerCase().includes(q) ||
         m.location.toLowerCase().includes(q) ||
         m.profession.toLowerCase().includes(q)
     );
-  }, [matches, query]);
+  }, [query, visibleMatches]);
 
   const tabs: TabConfig[] = useMemo(
     () => [
@@ -292,18 +416,61 @@ export default function MatchListScreen({
         icon: 'map-pin',
         count: activeTab === 'nearby' ? matches.length : 0,
       },
+      {
+        key: 'shortlisted',
+        label: 'Shortlisted',
+        icon: 'bookmark',
+        count: shortlistedMatches.length,
+      },
+      {
+        key: 'requests',
+        label: 'Requests',
+        icon: 'inbox',
+        count: requestMatches.length,
+      },
     ],
-    [activeTab, matches.length]
+    [
+      activeTab,
+      matches.length,
+      requestMatches.length,
+      shortlistedMatches.length,
+    ]
   );
 
   const onRefresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
-    await Promise.all([refetch(), refetchMyMatches()]);
+    await Promise.all([
+      activeTab === 'requests' ? refetchReceivedInterests() : refetch(),
+      refetchShortlisted(),
+      refetchMyMatches(),
+    ]);
     setRefreshing(false);
-  }, [refetch, refetchMyMatches]);
+  }, [
+    activeTab,
+    refetch,
+    refetchMyMatches,
+    refetchReceivedInterests,
+    refetchShortlisted,
+  ]);
 
   const handlePrimaryAction = useCallback(
     async (item: Match): Promise<void> => {
+      if (item.interestId) {
+        try {
+          await respondToInterest({
+            interestId: item.interestId,
+            action: 'ACCEPT',
+          }).unwrap();
+          Alert.alert(
+            'Interest accepted',
+            `You can now chat with ${item.name}.`
+          );
+        } catch {
+          Alert.alert('Request not updated', 'Please try again later.');
+        }
+        return;
+      }
+
       if (!item.isMatched) {
         try {
           await sendInterest({ receiverId: item.id }).unwrap();
@@ -328,7 +495,23 @@ export default function MatchListScreen({
         );
       }
     },
-    [createDirectRoom, navigation, sendInterest]
+    [createDirectRoom, navigation, respondToInterest, sendInterest]
+  );
+
+  const handleShortlist = useCallback(
+    async (item: Match): Promise<void> => {
+      try {
+        if (item.isShortlisted) {
+          await removeShortlistedProfile({ userId: item.id }).unwrap();
+          return;
+        }
+
+        await shortlistProfile({ userId: item.id }).unwrap();
+      } catch {
+        Alert.alert('Shortlist not updated', 'Please try again later.');
+      }
+    },
+    [removeShortlistedProfile, shortlistProfile]
   );
 
   const renderItem = useCallback(
@@ -341,9 +524,22 @@ export default function MatchListScreen({
         onPrimaryAction={() => {
           void handlePrimaryAction(item);
         }}
+        onShortlist={() => {
+          void handleShortlist(item);
+        }}
+        primaryLabel={
+          item.interestId ? 'Accept' : item.isMatched ? 'Chat' : 'Interest'
+        }
+        primaryIcon={
+          item.interestId
+            ? 'check'
+            : item.isMatched
+              ? 'message-circle'
+              : 'heart'
+        }
       />
     ),
-    [handlePrimaryAction, navigation]
+    [handlePrimaryAction, handleShortlist, navigation]
   );
 
   const ListHeader = useCallback(
@@ -430,7 +626,13 @@ export default function MatchListScreen({
         </ScrollView>
       </View>
 
-      {isLoading ? (
+      {(
+        activeTab === 'requests'
+          ? isLoadingRequests
+          : activeTab === 'shortlisted'
+            ? isLoadingShortlisted
+            : isLoading
+      ) ? (
         <>
           <ListHeader />
           {[1, 2].map((i) => (
@@ -462,7 +664,14 @@ export default function MatchListScreen({
           showsVerticalScrollIndicator={false}
           refreshControl={
             <RefreshControl
-              refreshing={refreshing || isFetching}
+              refreshing={
+                refreshing ||
+                (activeTab === 'requests'
+                  ? isFetchingRequests
+                  : activeTab === 'shortlisted'
+                    ? isFetchingShortlisted
+                    : isFetching)
+              }
               onRefresh={onRefresh}
               colors={[theme.colors.primary]}
               tintColor={theme.colors.primary}

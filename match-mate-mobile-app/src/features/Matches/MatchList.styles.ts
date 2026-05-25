@@ -240,6 +240,18 @@ export const matchListStyles = (theme: Theme) =>
       elevation: 3,
     },
     primaryText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
+    shortlistBtn: {
+      width: 44,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: theme.colors.accent,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.accentLight,
+    },
+    shortlistBtnActive: {
+      backgroundColor: theme.colors.accent,
+    },
 
     // ─── Skeleton ─────────────────────────────────────────────────────────
     skeletonCard: {

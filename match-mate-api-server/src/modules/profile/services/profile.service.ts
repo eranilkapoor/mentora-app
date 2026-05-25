@@ -4,7 +4,7 @@ import {
   Inject,
   UnauthorizedException,
 } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { ProfileRepository } from '../repositories/profile.repository';
 import {
   CreateProfileDto,
@@ -44,6 +44,10 @@ import { MediaService } from './media.service';
 import { PreferenceService } from './preference.service';
 import { UpdateProfileLocationDto } from '../dto/location.dto';
 import { SettingsService } from 'src/modules/settings/services/settings.service';
+import {
+  Verification,
+  VerificationDocument,
+} from '../schemas/settings/verification.schema';
 
 interface RegisterRequestContext {
   platform: ActivityPlatform;
@@ -61,6 +65,8 @@ export class ProfileService {
     private readonly activityLogModel: Model<ActivityLogDocument>,
     @InjectModel(PrivacySetting.name)
     private readonly privacySettingModel: Model<PrivacySettingDocument>,
+    @InjectModel(Verification.name)
+    private readonly verificationModel: Model<VerificationDocument>,
     private readonly notificationService: NotificationService,
     private readonly analyticsService: AnalyticsService,
     private readonly mediaService: MediaService,
@@ -99,7 +105,10 @@ export class ProfileService {
       const profile = await this.profileRepo.findByUserId(userId);
       if (!profile) throw new BadRequestException('Profile not found');
 
-      const enriched = this.enrichProfile(profile as Record<string, unknown>);
+      const enriched = await this.withVerificationStatus(
+        userId,
+        this.enrichProfile(profile as Record<string, unknown>),
+      );
       await this.cache.set(cacheKey, enriched, 300);
 
       return enriched;
@@ -250,14 +259,19 @@ export class ProfileService {
 
       const normalized = this.normalizeUpdate(
         dto,
-        existing as Record<string, unknown>,
+        existing as unknown as Record<string, unknown>,
       );
       const result = await this.profileRepo.update(userId, normalized);
       await this.cache.del(`profile:${userId}`);
 
-      const enriched = this.enrichProfile(
-        (result as unknown as Record<string, unknown>) ??
-          (existing as Record<string, unknown>),
+      const enriched = await this.withVerificationStatus(
+        userId,
+        this.enrichProfile(
+          ((result?.toObject?.() ?? result) as unknown as Record<
+            string,
+            unknown
+          >) ?? (existing as unknown as Record<string, unknown>),
+        ),
       );
 
       void this.logActivity(req, userId, source, normalized);
@@ -376,6 +390,54 @@ export class ProfileService {
           completed: Boolean(education.qualification && education.occupation),
         },
         family: { completed: Boolean(profile.family) },
+      },
+    };
+  }
+
+  private async withVerificationStatus(
+    userId: string,
+    profile: Record<string, unknown>,
+  ) {
+    const user = await this.userRepo.findById(userId);
+    const verification = await this.verificationModel
+      .findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        {
+          $setOnInsert: {
+            userId: new Types.ObjectId(userId),
+            isEmailVerified: Boolean(user?.isEmailVerified),
+            isPhoneVerified: Boolean(user?.isPhoneVerified),
+            isProfileVerified: Boolean(profile.isVerified),
+            isVerified: Boolean(profile.isVerified),
+            verifiedAt: profile.isVerified ? new Date() : undefined,
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
+      .lean()
+      .exec();
+
+    const isProfileVerified = Boolean(
+      verification?.isProfileVerified ?? profile.isVerified,
+    );
+
+    if (Boolean(profile.isVerified) !== isProfileVerified) {
+      await this.profileRepo.update(userId, { isVerified: isProfileVerified });
+    }
+
+    return {
+      ...profile,
+      isVerified: isProfileVerified,
+      verification: {
+        isVerified: isProfileVerified,
+        isProfileVerified,
+        isEmailVerified: Boolean(
+          verification?.isEmailVerified ?? user?.isEmailVerified,
+        ),
+        isPhoneVerified: Boolean(
+          verification?.isPhoneVerified ?? user?.isPhoneVerified,
+        ),
+        verifiedAt: verification?.verifiedAt,
       },
     };
   }

@@ -23,6 +23,10 @@ import {
 } from '../profile/schemas/settings/activity-logs.schema';
 import { NotificationModule } from '../notification/notification.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
+import {
+  Verification,
+  VerificationSchema,
+} from '../profile/schemas/settings/verification.schema';
 
 @Module({
   imports: [
@@ -34,6 +38,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: Plan.name, schema: PlanSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
+      { name: Verification.name, schema: VerificationSchema },
     ]),
 
     PassportModule.register({ defaultStrategy: 'jwt' }),

@@ -222,6 +222,7 @@ export const baseApi = createApi({
     'Membership',
     'Payment',
     'Match',
+    'Shortlist',
     'Chat',
     'Notification',
   ],

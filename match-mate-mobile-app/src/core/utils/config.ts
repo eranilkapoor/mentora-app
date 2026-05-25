@@ -50,7 +50,7 @@ const getExpoHostUri = (): string | undefined => {
 
 const getHostFromUri = (uri: string): string | undefined => {
   const withoutProtocol = uri.replace(/^[a-z]+:\/\//i, '');
-  const hostWithPort = withoutProtocol.split('/')[0];
+  const hostWithPort = withoutProtocol.split('/')[0] ?? '';
   const host = hostWithPort.split(':')[0]?.trim();
 
   if (!host) return undefined;
@@ -132,6 +132,10 @@ export const resolveApiUrl = (url: string): string | null => {
     } catch {
       return trimmedUrl;
     }
+  }
+
+  if (/^\/?(uploads|public|static)\//i.test(trimmedUrl)) {
+    return `${getApiOrigin()}${trimmedUrl.startsWith('/') ? '' : '/'}${trimmedUrl}`;
   }
 
   return `${getApiBaseUrl()}${trimmedUrl.startsWith('/') ? '' : '/'}${trimmedUrl}`;

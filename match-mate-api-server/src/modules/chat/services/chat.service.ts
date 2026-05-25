@@ -78,8 +78,6 @@ type MessageLike = {
 };
 
 type UserLike = {
-  isEmailVerified?: boolean;
-  isPhoneVerified?: boolean;
   membership?: {
     tier?: string;
   };
@@ -832,9 +830,7 @@ export class ChatService {
         ? profile.personal.country
         : undefined;
 
-    const isVerified = Boolean(
-      profile?.isVerified || user?.isEmailVerified || user?.isPhoneVerified,
-    );
+    const isVerified = Boolean(profile?.isVerified);
 
     const isPremium = Boolean(
       profile?.isPremium ||

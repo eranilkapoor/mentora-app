@@ -61,6 +61,8 @@ export const profileStyles = (theme: Theme) =>
       fontSize: 22,
       fontWeight: '700',
       color: theme.colors.textPrimary,
+      flex: 1,
+      paddingRight: 12,
     },
     verifiedBadge: {
       flexDirection: 'row',
@@ -71,6 +73,40 @@ export const profileStyles = (theme: Theme) =>
       fontSize: 12,
       color: theme.colors.primary,
       fontWeight: '600',
+    },
+    verificationRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+      marginTop: 2,
+      marginBottom: 10,
+    },
+    verificationBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
+      borderRadius: 16,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderWidth: StyleSheet.hairlineWidth,
+    },
+    verificationBadgeVerified: {
+      backgroundColor: theme.colors.successLight,
+      borderColor: theme.colors.success,
+    },
+    verificationBadgeUnverified: {
+      backgroundColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primaryBorder,
+    },
+    verificationBadgeText: {
+      fontSize: 11,
+      fontWeight: '700',
+    },
+    verificationBadgeTextVerified: {
+      color: theme.colors.success,
+    },
+    verificationBadgeTextUnverified: {
+      color: theme.colors.primary,
     },
     subText: {
       color: theme.colors.textMuted,
@@ -186,10 +222,15 @@ export const profileStyles = (theme: Theme) =>
       gap: 8,
     },
     tag: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 5,
       backgroundColor: theme.colors.primaryLight,
       paddingHorizontal: 12,
-      paddingVertical: 5,
-      borderRadius: 20,
+      paddingVertical: 7,
+      borderRadius: 18,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
     },
     tagText: {
       fontSize: 13,
@@ -200,6 +241,48 @@ export const profileStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
       fontSize: 14,
       paddingVertical: 4,
+    },
+    siblingList: {
+      gap: 10,
+      paddingBottom: 4,
+    },
+    siblingItem: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      paddingVertical: 10,
+      paddingHorizontal: 10,
+      borderRadius: 10,
+      backgroundColor: theme.colors.backgroundLight,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    siblingIndex: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+    },
+    siblingIndexText: {
+      color: theme.colors.white,
+      fontSize: 12,
+      fontWeight: '800',
+    },
+    siblingContent: {
+      flex: 1,
+      gap: 2,
+    },
+    siblingTitle: {
+      color: theme.colors.textPrimary,
+      fontSize: 14,
+      fontWeight: '700',
+    },
+    siblingMeta: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
     },
     errorTitle: {
       fontSize: 18,

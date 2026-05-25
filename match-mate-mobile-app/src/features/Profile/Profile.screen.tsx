@@ -17,14 +17,14 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   annualIncomeFormat,
   cmToFeetInches,
+  formatEnumLabel,
   formatAboutMe,
   formatCamelCase,
-  formatLifestyleChoice,
-  formatMaritalStatus,
   formatWeight,
   getAgeFromDOB,
   getFullName,
 } from '../../core/utils/format';
+import { useTranslation } from 'react-i18next';
 import Header from '../../core/components/Header';
 import { useGetMyProfileQuery } from '../../store/services/profileApi.service';
 import {
@@ -62,9 +62,18 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { resolveApiUrl } from '@/core/utils/config';
 
 const EMPTY_VALUE = '-';
+const PROFILE_FALLBACK_PHOTO =
+  FALLBACK_PHOTOS[0] ??
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600';
 type PdfAction = 'download' | 'share';
 
 type Primitive = string | number | boolean | null | undefined;
+
+type SiblingDisplayItem = {
+  type: string;
+  maritalStatus: string;
+  occupation: string;
+};
 
 type SchemaProfile = {
   userId?: string;
@@ -168,6 +177,13 @@ type SchemaProfile = {
   profileCompletionPercentage?: number;
   isPremium?: boolean;
   isVerified?: boolean;
+  verification?: {
+    isVerified?: boolean;
+    isProfileVerified?: boolean;
+    isEmailVerified?: boolean;
+    isPhoneVerified?: boolean;
+    verifiedAt?: string | Date;
+  };
   status?: string;
   lastActiveAt?: string | Date;
   createdBy?: string;
@@ -249,6 +265,98 @@ const getPrintableProfilePhoto = (
       (url): url is string =>
         url !== null && /^(https:|data:)/i.test(url.trim())
     );
+
+function ProfilePhoto({
+  uri,
+  index,
+}: {
+  uri: string;
+  index: number;
+}): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+  const [hasError, setHasError] = useState(false);
+  const sourceUri = hasError ? PROFILE_FALLBACK_PHOTO : uri;
+
+  return (
+    <Image
+      source={{ uri: sourceUri }}
+      style={styles.photo}
+      resizeMode="cover"
+      accessibilityLabel={`Profile photo ${index + 1}`}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
+function VerificationBadge({
+  label,
+  verified,
+}: {
+  label: string;
+  verified: boolean;
+}): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+  const { theme } = useTheme();
+
+  return (
+    <View
+      style={[
+        styles.verificationBadge,
+        verified
+          ? styles.verificationBadgeVerified
+          : styles.verificationBadgeUnverified,
+      ]}
+    >
+      <Feather
+        name={verified ? 'check-circle' : 'alert-circle'}
+        size={13}
+        color={verified ? theme.colors.success : theme.colors.primary}
+      />
+      <Text
+        style={[
+          styles.verificationBadgeText,
+          verified
+            ? styles.verificationBadgeTextVerified
+            : styles.verificationBadgeTextUnverified,
+        ]}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
+
+function SiblingList({
+  items,
+}: {
+  items: SiblingDisplayItem[];
+}): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+
+  if (items.length === 0) {
+    return <Text style={styles.tagEmptyText}>{EMPTY_VALUE}</Text>;
+  }
+
+  return (
+    <View style={styles.siblingList}>
+      {items.map((item, index) => (
+        <View key={`${item.type}-${index}`} style={styles.siblingItem}>
+          <View style={styles.siblingIndex}>
+            <Text style={styles.siblingIndexText}>{index + 1}</Text>
+          </View>
+          <View style={styles.siblingContent}>
+            <Text style={styles.siblingTitle}>{item.type}</Text>
+            <Text style={styles.siblingMeta}>
+              {[item.maritalStatus, item.occupation]
+                .filter((value) => value !== EMPTY_VALUE)
+                .join(' - ') || EMPTY_VALUE}
+            </Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
 
 const getFormattedAge = (dateOfBirth: string): string => {
   if (!dateOfBirth) return EMPTY_VALUE;
@@ -384,16 +492,12 @@ const getSiblingCounts = (profile: SchemaProfile): string => {
   return parts.join(', ');
 };
 
-const getSiblingDetails = (profile: SchemaProfile): string[] =>
-  profile.family?.siblings?.details?.map((sibling) =>
-    [
-      formatProfileText(sibling.type),
-      sibling.married ? 'Married' : 'Unmarried',
-      formatProfileText(sibling.occupation),
-    ]
-      .filter((value) => value !== EMPTY_VALUE)
-      .join(' - ')
-  ) ?? [];
+const getSiblingDetails = (profile: SchemaProfile): SiblingDisplayItem[] =>
+  profile.family?.siblings?.details?.map((sibling) => ({
+    type: formatProfileText(sibling.type),
+    maritalStatus: sibling.married ? 'Married' : 'Unmarried',
+    occupation: formatProfileText(sibling.occupation),
+  })) ?? [];
 
 const escapeHtml = (value: string): string =>
   value
@@ -440,9 +544,15 @@ const copyPdfToDocumentDirectory = async (
   return destinationUri;
 };
 
-const getPdfRows = (profile: SchemaProfile): Array<[string, string]> => [
+const getPdfRows = (
+  profile: SchemaProfile,
+  t: (key: string, options: { defaultValue: string }) => string
+): Array<[string, string]> => [
   ['Name', getDisplayName(profile)],
-  ['Profile For', formatProfileText(profile.profileFor)],
+  [
+    'Profile For',
+    formatEnumLabel(t, 'options.profile_for', profile.profileFor, EMPTY_VALUE),
+  ],
   [
     'Age',
     toDisplayText(profile.age) !== EMPTY_VALUE
@@ -450,39 +560,152 @@ const getPdfRows = (profile: SchemaProfile): Array<[string, string]> => [
       : getFormattedAge(profile.personal.dateOfBirth ?? ''),
   ],
   ['Date of Birth', toDisplayText(profile.personal.dateOfBirth)],
-  ['Gender', formatProfileText(profile.personal.gender)],
+  [
+    'Gender',
+    formatEnumLabel(t, 'options.gender', profile.personal.gender, EMPTY_VALUE),
+  ],
   ['Height', getFormattedHeight(getProfileHeight(profile))],
   ['Location', getLocation(profile)],
-  ['Marital Status', formatMaritalStatus(profile.personal.maritalStatus ?? '')],
-  ['Religion', formatProfileText(getProfileReligion(profile))],
-  ['Caste', formatProfileText(getProfileCaste(profile))],
+  [
+    'Marital Status',
+    formatEnumLabel(
+      t,
+      'options.marital_status',
+      profile.personal.maritalStatus,
+      EMPTY_VALUE
+    ),
+  ],
+  [
+    'Religion',
+    formatEnumLabel(
+      t,
+      'options.religion',
+      getProfileReligion(profile),
+      EMPTY_VALUE
+    ),
+  ],
+  [
+    'Caste',
+    formatEnumLabel(t, 'options.caste', getProfileCaste(profile), EMPTY_VALUE),
+  ],
   ['Mother Tongue', formatProfileText(profile.personal.motherTongue)],
-  ['Manglik Status', formatProfileText(profile.personal.manglikStatus)],
+  [
+    'Manglik Status',
+    formatEnumLabel(
+      t,
+      'options.manglik_status',
+      profile.personal.manglikStatus,
+      EMPTY_VALUE
+    ),
+  ],
   ['Time of Birth', getTimeOfBirth(profile)],
   ['Place of Birth', getPlaceOfBirth(profile)],
-  ['Education', formatProfileText(profile.education.qualification)],
+  [
+    'Education',
+    formatEnumLabel(
+      t,
+      'options.qualifications',
+      profile.education.qualification,
+      EMPTY_VALUE
+    ),
+  ],
   ['Field of Study', formatProfileText(profile.education.field)],
   ['College', formatProfileText(profile.education.university)],
-  ['Occupation Type', formatProfileText(profile.education.occupationType)],
+  [
+    'Occupation Type',
+    formatEnumLabel(
+      t,
+      'options.occupation_types',
+      profile.education.occupationType,
+      EMPTY_VALUE
+    ),
+  ],
   ['Profession', formatProfileText(profile.education.occupation)],
   ['Company', formatProfileText(profile.education.companyName)],
   ['Job Role', formatProfileText(profile.education.jobRole)],
   ['Annual Income', annualIncomeFormat(getProfileIncome(profile) ?? '')],
   ['Weight', getFormattedWeight(getProfileWeight(profile))],
-  ['Blood Group', toDisplayText(profile.physical.bloodGroup)],
-  ['Body Type', formatProfileText(profile.physical.bodyType)],
-  ['Complexion', formatProfileText(profile.physical.complexion)],
+  [
+    'Blood Group',
+    formatEnumLabel(
+      t,
+      'options.blood_groups',
+      profile.physical.bloodGroup,
+      EMPTY_VALUE
+    ),
+  ],
+  [
+    'Body Type',
+    formatEnumLabel(
+      t,
+      'options.body_types',
+      profile.physical.bodyType,
+      EMPTY_VALUE
+    ),
+  ],
+  [
+    'Complexion',
+    formatEnumLabel(
+      t,
+      'options.complexion',
+      profile.physical.complexion,
+      EMPTY_VALUE
+    ),
+  ],
   ['Disability', toDisplayText(profile.physical.disabilityStatus)],
-  ['Smoking', formatLifestyleChoice(profile.personal.smoking ?? '')],
-  ['Drinking', formatLifestyleChoice(profile.personal.drinking ?? '')],
-  ['Eating', formatLifestyleChoice(profile.personal.eating ?? '')],
+  [
+    'Smoking',
+    formatEnumLabel(
+      t,
+      'options.smoking',
+      profile.personal.smoking,
+      EMPTY_VALUE
+    ),
+  ],
+  [
+    'Drinking',
+    formatEnumLabel(
+      t,
+      'options.drinking',
+      profile.personal.drinking,
+      EMPTY_VALUE
+    ),
+  ],
+  [
+    'Eating',
+    formatEnumLabel(t, 'options.eating', profile.personal.eating, EMPTY_VALUE),
+  ],
   ['Father', formatProfileText(profile.family?.fatherName)],
   ['Mother', formatProfileText(profile.family?.motherName)],
   ['Father Occupation', formatProfileText(profile.family?.fatherOccupation)],
   ['Mother Occupation', formatProfileText(profile.family?.motherOccupation)],
-  ['Family Type', formatProfileText(profile.family?.familyType)],
-  ['Family Status', formatProfileText(profile.family?.familyStatus)],
-  ['Family Values', formatProfileText(profile.family?.familyValues)],
+  [
+    'Family Type',
+    formatEnumLabel(
+      t,
+      'options.family_types',
+      profile.family?.familyType,
+      EMPTY_VALUE
+    ),
+  ],
+  [
+    'Family Status',
+    formatEnumLabel(
+      t,
+      'options.family_status',
+      profile.family?.familyStatus,
+      EMPTY_VALUE
+    ),
+  ],
+  [
+    'Family Values',
+    formatEnumLabel(
+      t,
+      'options.family_values',
+      profile.family?.familyValues,
+      EMPTY_VALUE
+    ),
+  ],
   ['Siblings', getSiblingCounts(profile)],
   ['Hobbies', formatList(profile.personal.hobbies)],
   [
@@ -494,9 +717,10 @@ const getPdfRows = (profile: SchemaProfile): Array<[string, string]> => [
 const createProfilePdfHtml = (
   profile: SchemaProfile,
   photoUrl: string | undefined,
-  profileSummary: string
+  profileSummary: string,
+  t: (key: string, options: { defaultValue: string }) => string
 ): string => {
-  const rows = getPdfRows(profile)
+  const rows = getPdfRows(profile, t)
     .map(
       ([label, value]) => `
         <tr>
@@ -629,6 +853,7 @@ export default function ProfileScreen({
 }: ProfileScreenProps): React.ReactElement {
   const styles = useThemedStyles(profileStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [pdfAction, setPdfAction] = useState<PdfAction | null>(null);
   const { data, isLoading, isFetching, isError, refetch } =
@@ -638,6 +863,11 @@ export default function ProfileScreen({
     () =>
       data?.success ? (data.data as unknown as SchemaProfile) : DEFAULT_PROFILE,
     [data]
+  );
+  const profileVerified = Boolean(
+    profileData.verification?.isProfileVerified ??
+    profileData.verification?.isVerified ??
+    profileData.isVerified
   );
 
   const hobbies = useMemo(
@@ -673,17 +903,32 @@ export default function ProfileScreen({
       [
         getFormattedAge(profileData.personal.dateOfBirth ?? ''),
         getFormattedHeight(getProfileHeight(profileData)),
-        formatMaritalStatus(profileData.personal.maritalStatus ?? '') ||
-          EMPTY_VALUE,
+        formatEnumLabel(
+          t,
+          'options.marital_status',
+          profileData.personal.maritalStatus,
+          EMPTY_VALUE
+        ),
       ]
         .filter((value) => value !== EMPTY_VALUE)
         .join(' - ') || EMPTY_VALUE,
-    [profileData]
+    [profileData, t]
   );
 
   const fetchProfile = useCallback((): void => {
     void refetch();
   }, [refetch]);
+
+  const enumLabel = useCallback(
+    (prefix: string, value: Primitive): string =>
+      formatEnumLabel(
+        t,
+        prefix,
+        value as string | number | null | undefined,
+        EMPTY_VALUE
+      ),
+    [t]
+  );
 
   const handleProfilePdf = useCallback(
     async (action: PdfAction): Promise<void> => {
@@ -698,7 +943,8 @@ export default function ProfileScreen({
           const html = createProfilePdfHtml(
             profileData,
             photoUrl,
-            profileSummary
+            profileSummary,
+            t
           );
           const { uri } = await Print.printToFileAsync({
             html,
@@ -748,19 +994,12 @@ export default function ProfileScreen({
         setPdfAction(null);
       }
     },
-    [pdfAction, printablePhoto, profileData, profileSummary]
+    [pdfAction, printablePhoto, profileData, profileSummary, t]
   );
 
   const renderPhoto: ListRenderItem<string> = useCallback(
-    ({ item, index }) => (
-      <Image
-        source={{ uri: item }}
-        style={styles.photo}
-        resizeMode="cover"
-        accessibilityLabel={`Profile photo ${index + 1}`}
-      />
-    ),
-    [styles]
+    ({ item, index }) => <ProfilePhoto uri={item} index={index} />,
+    []
   );
 
   // ─── Error state ─────────────────────────────────────────────────────────
@@ -863,16 +1102,10 @@ export default function ProfileScreen({
         <View style={styles.nameCard}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{getDisplayName(profileData)}</Text>
-            <View style={styles.verifiedBadge}>
-              <Feather
-                name="check-circle"
-                size={14}
-                color={theme.colors.primary}
-              />
-              <Text style={styles.verifiedText}>
-                {profileData.isVerified ? 'Verified' : 'Unverified'}
-              </Text>
-            </View>
+            <VerificationBadge
+              label={profileVerified ? 'Verified' : 'Unverified'}
+              verified={profileVerified}
+            />
           </View>
           <Text style={styles.subText}>{profileSummary}</Text>
           <View style={styles.locationRow}>
@@ -911,11 +1144,11 @@ export default function ProfileScreen({
         <Section title="Profile Overview" icon="award">
           <Row
             label="Profile For"
-            value={formatProfileText(profileData.profileFor)}
+            value={enumLabel('options.profile_for', profileData.profileFor)}
           />
           <Row
             label="Gender"
-            value={formatProfileText(profileData.personal.gender)}
+            value={enumLabel('options.gender', profileData.personal.gender)}
           />
           <Row
             label="City"
@@ -937,8 +1170,9 @@ export default function ProfileScreen({
           <Row label="Place of Birth" value={getPlaceOfBirth(profileData)} />
           <Row
             label="Marital Status"
-            value={formatMaritalStatus(
-              profileData.personal.maritalStatus ?? ''
+            value={enumLabel(
+              'options.marital_status',
+              profileData.personal.maritalStatus
             )}
           />
           <Row label="Children" value={getChildrenSummary(profileData)} />
@@ -955,11 +1189,14 @@ export default function ProfileScreen({
         <Section title="Religious & Astro" icon="sun">
           <Row
             label="Religion"
-            value={formatProfileText(getProfileReligion(profileData))}
+            value={enumLabel(
+              'options.religion',
+              getProfileReligion(profileData)
+            )}
           />
           <Row
             label="Caste"
-            value={formatProfileText(getProfileCaste(profileData))}
+            value={enumLabel('options.caste', getProfileCaste(profileData))}
           />
           <Row
             label="Sub Caste"
@@ -975,7 +1212,10 @@ export default function ProfileScreen({
           />
           <Row
             label="Manglik Status"
-            value={formatProfileText(profileData.personal.manglikStatus)}
+            value={enumLabel(
+              'options.manglik_status',
+              profileData.personal.manglikStatus
+            )}
           />
           <Row
             label="Rashi"
@@ -995,7 +1235,10 @@ export default function ProfileScreen({
         <Section title="Education & Career" icon="book">
           <Row
             label="Education"
-            value={formatProfileText(profileData.education.qualification)}
+            value={enumLabel(
+              'options.qualifications',
+              profileData.education.qualification
+            )}
           />
           <Row
             label="Field"
@@ -1007,7 +1250,10 @@ export default function ProfileScreen({
           />
           <Row
             label="Occupation Type"
-            value={formatProfileText(profileData.education.occupationType)}
+            value={enumLabel(
+              'options.occupation_types',
+              profileData.education.occupationType
+            )}
           />
           <Row
             label="Profession"
@@ -1039,15 +1285,24 @@ export default function ProfileScreen({
           />
           <Row
             label="Blood Group"
-            value={toDisplayText(profileData.physical.bloodGroup)}
+            value={enumLabel(
+              'options.blood_groups',
+              profileData.physical.bloodGroup
+            )}
           />
           <Row
             label="Body Type"
-            value={formatProfileText(profileData.physical.bodyType)}
+            value={enumLabel(
+              'options.body_types',
+              profileData.physical.bodyType
+            )}
           />
           <Row
             label="Complexion"
-            value={formatProfileText(profileData.physical.complexion)}
+            value={enumLabel(
+              'options.complexion',
+              profileData.physical.complexion
+            )}
           />
           <Row
             label="Disability"
@@ -1063,15 +1318,15 @@ export default function ProfileScreen({
         <Section title="Lifestyle" icon="coffee">
           <Row
             label="Smoking"
-            value={formatLifestyleChoice(profileData.personal.smoking ?? '')}
+            value={enumLabel('options.smoking', profileData.personal.smoking)}
           />
           <Row
             label="Drinking"
-            value={formatLifestyleChoice(profileData.personal.drinking ?? '')}
+            value={enumLabel('options.drinking', profileData.personal.drinking)}
           />
           <Row
             label="Eating"
-            value={formatLifestyleChoice(profileData.personal.eating ?? '')}
+            value={enumLabel('options.eating', profileData.personal.eating)}
           />
         </Section>
 
@@ -1095,15 +1350,24 @@ export default function ProfileScreen({
           />
           <Row
             label="Family Type"
-            value={formatProfileText(profileData.family?.familyType)}
+            value={enumLabel(
+              'options.family_types',
+              profileData.family?.familyType
+            )}
           />
           <Row
             label="Family Status"
-            value={formatProfileText(profileData.family?.familyStatus)}
+            value={enumLabel(
+              'options.family_status',
+              profileData.family?.familyStatus
+            )}
           />
           <Row
             label="Family Values"
-            value={formatProfileText(profileData.family?.familyValues)}
+            value={enumLabel(
+              'options.family_values',
+              profileData.family?.familyValues
+            )}
           />
           <Row label="Siblings" value={getSiblingCounts(profileData)} />
           <Row
@@ -1113,7 +1377,7 @@ export default function ProfileScreen({
           {siblingDetails.length > 0 && (
             <View style={styles.tagSection}>
               <Text style={styles.tagSectionLabel}>Sibling Details</Text>
-              <TagList items={siblingDetails} />
+              <SiblingList items={siblingDetails} />
             </View>
           )}
         </Section>
@@ -1126,7 +1390,10 @@ export default function ProfileScreen({
               <TagList items={hobbies} />
             </View>
           )}
-          <Row label="Languages Known" value={languagesKnown} />
+          <View style={styles.tagSection}>
+            <Text style={styles.tagSectionLabel}>Languages Known</Text>
+            <TagList items={languagesKnown} />
+          </View>
         </Section>
         <View style={styles.footer} />
       </ScrollView>

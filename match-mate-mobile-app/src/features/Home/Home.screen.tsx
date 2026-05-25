@@ -18,6 +18,7 @@ import { MatchProfile } from '../../core/types';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { resolveApiUrl } from '@/core/utils/config';
+import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
 import { HomeStackParamList } from '@/navigation/types';
 import { homeStyles } from './Home.styles';
 import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
@@ -25,11 +26,15 @@ import {
   DiscoveryProfile,
   useGetDiscoveryProfilesQuery,
   useGetMyMatchesQuery,
+  useGetShortlistedProfilesQuery,
+  useRemoveShortlistedProfileMutation,
   useSendInterestMutation,
+  useShortlistProfileMutation,
 } from '@/store/services/matchApi.service';
 
 type HomeMatchProfile = MatchProfile & {
   isMatched: boolean;
+  isShortlisted: boolean;
 };
 
 interface HomeScreenProps {
@@ -57,7 +62,9 @@ const profileName = (profile: DiscoveryProfile): string =>
 
 const mapProfile = (
   profile: DiscoveryProfile,
-  matchedIds: Set<string>
+  matchedIds: Set<string>,
+  shortlistedIds: Set<string>,
+  t: (key: string, options: { defaultValue: string }) => string
 ): HomeMatchProfile => {
   const photos =
     profile.images
@@ -72,21 +79,34 @@ const mapProfile = (
     userId: profile.userId,
     name: profileName(profile),
     age: profile.age ?? 0,
-    height: String(profile.physical?.height ?? '-'),
+    height: profile.physical?.height
+      ? cmToFeetInches(profile.physical.height) ||
+        String(profile.physical.height)
+      : '-',
     location:
       [profile.personal?.city, profile.personal?.state]
         .filter(Boolean)
         .join(', ') || '-',
-    religion: [profile.personal?.religion, profile.personal?.caste]
-      .filter(Boolean)
+    religion: [
+      formatEnumLabel(t, 'options.religion', profile.personal?.religion, '-'),
+      formatEnumLabel(t, 'options.caste', profile.personal?.caste, '-'),
+    ]
+      .filter((value) => value !== '-')
       .join(' - '),
-    education: profile.education?.qualification ?? '-',
+    education: formatEnumLabel(
+      t,
+      'options.qualifications',
+      profile.education?.qualification,
+      '-'
+    ),
     profession:
       profile.education?.jobRole ?? profile.education?.occupation ?? '-',
     isOnline: isRecentlyActive(profile.lastActiveAt),
     isNew: isNewProfile(profile.createdAt),
     photos: photos.length > 0 ? photos : [FALLBACK_PHOTO],
     isMatched: matchedIds.has(profile.userId),
+    isShortlisted:
+      profile.isShortlisted === true || shortlistedIds.has(profile.userId),
   };
 };
 
@@ -98,17 +118,21 @@ function PhotoCarousel({
   name: string;
 }): React.ReactElement {
   const styles = useThemedStyles(homeStyles);
+  const [failedPhotos, setFailedPhotos] = useState<Record<string, true>>({});
 
   const renderPhoto: ListRenderItem<string> = useCallback(
     ({ item }) => (
       <Image
-        source={{ uri: item }}
+        source={{ uri: failedPhotos[item] ? FALLBACK_PHOTO : item }}
         style={styles.photo}
         resizeMode="cover"
         accessibilityLabel={`Photo of ${name}`}
+        onError={() =>
+          setFailedPhotos((current) => ({ ...current, [item]: true }))
+        }
       />
     ),
-    [name, styles]
+    [failedPhotos, name, styles]
   );
 
   return (
@@ -235,12 +259,25 @@ function ProfileCard({
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={styles.shortlistBtn}
+            style={[
+              styles.shortlistBtn,
+              item.isShortlisted && styles.shortlistBtnActive,
+            ]}
             onPress={onShortlist}
             accessibilityRole="button"
-            accessibilityLabel={`Shortlist ${item.name}`}
+            accessibilityLabel={
+              item.isShortlisted
+                ? `Remove ${item.name} from shortlist`
+                : `Shortlist ${item.name}`
+            }
           >
-            <Feather name="bookmark" size={18} color={theme.colors.accent} />
+            <Feather
+              name="bookmark"
+              size={18}
+              color={
+                item.isShortlisted ? theme.colors.white : theme.colors.accent
+              }
+            />
           </TouchableOpacity>
         </View>
       </View>
@@ -260,7 +297,11 @@ export default function HomeScreen({
     limit: 10,
   });
   const { data: myMatches, refetch: refetchMatches } = useGetMyMatchesQuery();
+  const { data: shortlisted, refetch: refetchShortlisted } =
+    useGetShortlistedProfilesQuery({ limit: 100 });
   const [sendInterest] = useSendInterestMutation();
+  const [shortlistProfile] = useShortlistProfileMutation();
+  const [removeShortlistedProfile] = useRemoveShortlistedProfileMutation();
   const [createDirectRoom] = useCreateDirectRoomMutation();
 
   const matchedIds = useMemo(() => {
@@ -272,16 +313,24 @@ export default function HomeScreen({
     return ids;
   }, [myMatches]);
 
+  const shortlistedIds = useMemo(
+    () => new Set((shortlisted?.data ?? []).map((profile) => profile.userId)),
+    [shortlisted]
+  );
+
   const profiles = useMemo(
-    () => (data?.data ?? []).map((profile) => mapProfile(profile, matchedIds)),
-    [data, matchedIds]
+    () =>
+      (data?.data ?? []).map((profile) =>
+        mapProfile(profile, matchedIds, shortlistedIds, t)
+      ),
+    [data, matchedIds, shortlistedIds, t]
   );
 
   const onRefresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
-    await Promise.all([refetch(), refetchMatches()]);
+    await Promise.all([refetch(), refetchMatches(), refetchShortlisted()]);
     setRefreshing(false);
-  }, [refetch, refetchMatches]);
+  }, [refetch, refetchMatches, refetchShortlisted]);
 
   const handlePrimaryAction = useCallback(
     async (item: HomeMatchProfile): Promise<void> => {
@@ -300,7 +349,7 @@ export default function HomeScreen({
         navigation.navigate('ChatDetails', {
           userId: item.userId,
           partnerName: item.name,
-          partnerPhoto: item.photos[0],
+          partnerPhoto: item.photos[0] ?? FALLBACK_PHOTO,
         });
       } catch {
         Alert.alert(
@@ -310,6 +359,22 @@ export default function HomeScreen({
       }
     },
     [createDirectRoom, navigation, sendInterest]
+  );
+
+  const handleShortlist = useCallback(
+    async (item: HomeMatchProfile): Promise<void> => {
+      try {
+        if (item.isShortlisted) {
+          await removeShortlistedProfile({ userId: item.userId }).unwrap();
+          return;
+        }
+
+        await shortlistProfile({ userId: item.userId }).unwrap();
+      } catch {
+        Alert.alert('Shortlist not updated', 'Please try again later.');
+      }
+    },
+    [removeShortlistedProfile, shortlistProfile]
   );
 
   const renderProfile: ListRenderItem<HomeMatchProfile> = useCallback(
@@ -322,10 +387,12 @@ export default function HomeScreen({
         onView={() =>
           navigation.navigate('MatchDetails', { userId: item.userId })
         }
-        onShortlist={() => console.warn(`Shortlisted: ${item.name}`)}
+        onShortlist={() => {
+          void handleShortlist(item);
+        }}
       />
     ),
-    [handlePrimaryAction, navigation]
+    [handlePrimaryAction, handleShortlist, navigation]
   );
 
   const ListHeader = useCallback(

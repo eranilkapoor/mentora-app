@@ -8,6 +8,10 @@ import {
   UserSession,
   UserSessionDocument,
 } from 'src/modules/auth/schemas/user-session.schema';
+import {
+  Verification,
+  VerificationDocument,
+} from 'src/modules/profile/schemas/settings/verification.schema';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,
@@ -39,12 +43,18 @@ export class SettingsService {
     private readonly userModel: Model<UserDocument>,
     @InjectModel(UserSession.name)
     private readonly userSessionModel: Model<UserSessionDocument>,
+    @InjectModel(Verification.name)
+    private readonly verificationModel: Model<VerificationDocument>,
   ) {}
 
   // ─── All settings in one call ─────────────────────────────────────────────
 
-  getAllSettings(userId: string) {
-    return this.repo.getAllSettings(userId);
+  async getAllSettings(userId: string) {
+    const settings = await this.repo.getAllSettings(userId);
+    return {
+      ...settings,
+      account: await this.getAccount(userId),
+    };
   }
 
   // ─── Privacy ──────────────────────────────────────────────────────────────
@@ -75,8 +85,36 @@ export class SettingsService {
 
   // ─── Account ─────────────────────────────────────────────────────────────
 
-  getAccount(userId: string) {
-    return this.repo.getAccount(userId);
+  async getAccount(userId: string) {
+    const [account, user] = await Promise.all([
+      this.repo.getAccount(userId),
+      this.userModel.findById(userId).lean().exec(),
+    ]);
+    const verification = await this.getOrCreateVerification(userId, {
+      isEmailVerified: Boolean(user?.isEmailVerified),
+      isPhoneVerified: Boolean(user?.isPhoneVerified),
+    });
+    const isEmailVerified = Boolean(
+      verification?.isEmailVerified ?? user?.isEmailVerified,
+    );
+    const isPhoneVerified = Boolean(
+      verification?.isPhoneVerified ?? user?.isPhoneVerified,
+    );
+    const isProfileVerified = Boolean(verification?.isProfileVerified);
+
+    return {
+      ...(account?.toObject?.() ?? account ?? {}),
+      emailVerified: isEmailVerified,
+      phoneVerified: isPhoneVerified,
+      profileVerified: isProfileVerified,
+      verification: {
+        isVerified: isProfileVerified,
+        isProfileVerified,
+        isEmailVerified,
+        isPhoneVerified,
+        verifiedAt: verification?.verifiedAt,
+      },
+    };
   }
 
   updateAccount(userId: string, dto: Record<string, unknown>) {
@@ -288,5 +326,30 @@ export class SettingsService {
 
   updateAi(userId: string, dto: UpdateAiSettingsDto) {
     return this.repo.updateAi(userId, dto);
+  }
+
+  private getOrCreateVerification(
+    userId: string,
+    defaults: {
+      isEmailVerified: boolean;
+      isPhoneVerified: boolean;
+    },
+  ) {
+    return this.verificationModel
+      .findOneAndUpdate(
+        { userId: new Types.ObjectId(userId) },
+        {
+          $setOnInsert: {
+            userId: new Types.ObjectId(userId),
+            isEmailVerified: defaults.isEmailVerified,
+            isPhoneVerified: defaults.isPhoneVerified,
+            isProfileVerified: false,
+            isVerified: false,
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
+      .lean()
+      .exec();
   }
 }
