@@ -2,6 +2,9 @@ import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
+import * as bcrypt from 'bcryptjs';
+import * as fs from 'fs';
+import * as path from 'path';
 
 import { AppLogger } from 'src/common/logger/logger.service';
 
@@ -13,11 +16,87 @@ import { Role, RoleDocument } from 'src/modules/admin/schemas/role.schema';
 import {
   Permission as AppPermission,
   Role as AppRole,
-  BillingCycle,
-  FeatureCategory,
+  BloodGroup,
+  BodyType,
+  ChildPreference,
+  Country,
+  Drinking,
+  Eating,
+  FamilyStatus,
+  FamilyType,
+  FamilyValue,
   FeatureKey,
+  Gender,
+  ManglikStatus,
+  MaritalStatus,
+  MediaType,
+  MimeType,
+  OccupationType,
   PlanTier,
+  ProfileFor,
+  ProfileStatus,
+  Religion,
+  SiblingType,
+  Smoking,
+  Status,
+  SubscriptionStatus,
+  ResidencyPreference,
 } from 'src/common/enums';
+import { AuthProvider } from 'src/modules/auth/enums/auth-provider.enum';
+import { User, UserDocument } from 'src/modules/auth/schemas/user.schema';
+import {
+  Profile,
+  ProfileDocument,
+} from 'src/modules/profile/schemas/profile/profile.schema';
+import {
+  Preference,
+  PreferenceDocument,
+} from 'src/modules/profile/schemas/preference/preference.schema';
+import {
+  Media,
+  MediaDocument,
+  MediaStatus,
+} from 'src/modules/profile/schemas/media/media.schema';
+import {
+  AccountSettings,
+  AccountSettingsDocument,
+} from 'src/modules/settings/schemas/account-settings.schema';
+import {
+  PrivacySettings,
+  PrivacySettingsDocument,
+} from 'src/modules/settings/schemas/privacy-settings.schema';
+import {
+  NotificationSettings,
+  NotificationSettingsDocument,
+} from 'src/modules/settings/schemas/notification-settings.schema';
+import {
+  CommunicationSettings,
+  CommunicationSettingsDocument,
+} from 'src/modules/settings/schemas/communication-settings.schema';
+import {
+  SecuritySettings,
+  SecuritySettingsDocument,
+} from 'src/modules/settings/schemas/security-settings.schema';
+import {
+  LocalizationSettings,
+  LocalizationSettingsDocument,
+} from 'src/modules/settings/schemas/localization-settings.schema';
+import {
+  AccessibilitySettings,
+  AccessibilitySettingsDocument,
+} from 'src/modules/settings/schemas/accessibility-settings.schema';
+import {
+  MediaSettings,
+  MediaSettingsDocument,
+} from 'src/modules/settings/schemas/media-settings.schema';
+import {
+  AiSettings,
+  AiSettingsDocument,
+} from 'src/modules/settings/schemas/ai-settings.schema';
+import {
+  Verification,
+  VerificationDocument,
+} from 'src/modules/profile/schemas/settings/verification.schema';
 import {
   Plan,
   PlanDocument,
@@ -34,6 +113,12 @@ import {
   NotificationTemplates,
   NotificationTemplatesDocument,
 } from 'src/modules/notification/schemas/notification-templates.schema';
+import {
+  FEATURE_SEEDS,
+  INDIAN_DUMMY_PROFILE_SEED_DATA,
+  NOTIFICATION_TEMPLATE_SEEDS,
+  PLAN_SEEDS,
+} from '../data';
 
 @Injectable()
 export class MasterSeederService implements OnApplicationBootstrap {
@@ -58,6 +143,48 @@ export class MasterSeederService implements OnApplicationBootstrap {
 
     @InjectModel(NotificationTemplates.name)
     private readonly notificationTemplateModel: Model<NotificationTemplatesDocument>,
+
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
+
+    @InjectModel(Profile.name)
+    private readonly profileModel: Model<ProfileDocument>,
+
+    @InjectModel(Preference.name)
+    private readonly preferenceModel: Model<PreferenceDocument>,
+
+    @InjectModel(Media.name)
+    private readonly mediaModel: Model<MediaDocument>,
+
+    @InjectModel(AccountSettings.name)
+    private readonly accountSettingsModel: Model<AccountSettingsDocument>,
+
+    @InjectModel(PrivacySettings.name)
+    private readonly privacySettingsModel: Model<PrivacySettingsDocument>,
+
+    @InjectModel(NotificationSettings.name)
+    private readonly notificationSettingsModel: Model<NotificationSettingsDocument>,
+
+    @InjectModel(CommunicationSettings.name)
+    private readonly communicationSettingsModel: Model<CommunicationSettingsDocument>,
+
+    @InjectModel(SecuritySettings.name)
+    private readonly securitySettingsModel: Model<SecuritySettingsDocument>,
+
+    @InjectModel(LocalizationSettings.name)
+    private readonly localizationSettingsModel: Model<LocalizationSettingsDocument>,
+
+    @InjectModel(AccessibilitySettings.name)
+    private readonly accessibilitySettingsModel: Model<AccessibilitySettingsDocument>,
+
+    @InjectModel(MediaSettings.name)
+    private readonly mediaSettingsModel: Model<MediaSettingsDocument>,
+
+    @InjectModel(AiSettings.name)
+    private readonly aiSettingsModel: Model<AiSettingsDocument>,
+
+    @InjectModel(Verification.name)
+    private readonly verificationModel: Model<VerificationDocument>,
   ) {}
 
   async onApplicationBootstrap() {
@@ -85,8 +212,513 @@ export class MasterSeederService implements OnApplicationBootstrap {
     await this.seedPlans();
     await this.seedPlanFeatures();
     await this.seedDefaultTemplates();
+    await this.seedIndianDummyProfiles();
 
     this.logger.log('✅ Master seeder completed');
+  }
+
+  // =========================================================
+  // INDIAN DUMMY PROFILES
+  // =========================================================
+
+  private async seedIndianDummyProfiles() {
+    const profiles = this.buildIndianDummyProfiles();
+    const passwordHash = await bcrypt.hash('Test@125#', 10);
+    const now = new Date();
+    const imageUrls = await this.ensureDummyProfileImages();
+
+    const existingPhoneOwners = await this.userModel
+      .find({
+        'phone.phone': { $in: profiles.map((profile) => profile.phone) },
+      })
+      .select('email phone.phone')
+      .lean();
+
+    const phoneOwnerByNumber = new Map(
+      existingPhoneOwners.map((user) => [user.phone?.phone, user.email]),
+    );
+
+    await this.userModel.bulkWrite(
+      profiles.map((profile) => {
+        const phoneOwner = phoneOwnerByNumber.get(profile.phone);
+        const canUsePhone = !phoneOwner || phoneOwner === profile.email;
+
+        return {
+          updateOne: {
+            filter: { email: profile.email },
+            update: {
+              $set: {
+                email: profile.email,
+                ...(canUsePhone
+                  ? { phone: { countryCode: '91', phone: profile.phone } }
+                  : {}),
+                status: Status.ACTIVE,
+                isEmailVerified: true,
+                isPhoneVerified: canUsePhone,
+                isOnboardingCompleted: true,
+                roles: [AppRole.USER],
+                permissions: [],
+                authAccounts: [
+                  {
+                    provider: AuthProvider.EMAIL,
+                    providerId: profile.email,
+                    passwordHash,
+                    isVerified: true,
+                    isPrimary: true,
+                    lastUsedAt: now,
+                  },
+                ],
+                lastLoginAt: now,
+                updatedAt: now,
+              },
+              $setOnInsert: {
+                membership: {
+                  tier: PlanTier.FREE,
+                  status: SubscriptionStatus.ACTIVE,
+                  startDate: now,
+                  autoRenew: false,
+                },
+                createdAt: now,
+              },
+            },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false },
+    );
+
+    const users = await this.userModel
+      .find({ email: { $in: profiles.map((profile) => profile.email) } })
+      .select('_id email')
+      .lean();
+    const userByEmail = new Map(users.map((user) => [user.email, user._id]));
+
+    const profileWrites = [];
+    const preferenceWrites = [];
+    const mediaWrites = [];
+    const accountSettingsWrites = [];
+    const privacySettingsWrites = [];
+    const notificationSettingsWrites = [];
+    const communicationSettingsWrites = [];
+    const securitySettingsWrites = [];
+    const localizationSettingsWrites = [];
+    const accessibilitySettingsWrites = [];
+    const mediaSettingsWrites = [];
+    const aiSettingsWrites = [];
+    const verificationWrites = [];
+
+    for (const profile of profiles) {
+      const userId = userByEmail.get(profile.email);
+      if (!userId) continue;
+
+      const isFemale = profile.gender === Gender.FEMALE;
+      const imageFilename = isFemale
+        ? 'seed-profile-female.png'
+        : 'seed-profile-male.png';
+      const imageUrl = isFemale ? imageUrls.female : imageUrls.male;
+      const phoneOwner = phoneOwnerByNumber.get(profile.phone);
+      const canUsePhone = !phoneOwner || phoneOwner === profile.email;
+
+      profileWrites.push({
+        updateOne: {
+          filter: { userId },
+          update: {
+            $set: {
+              userId,
+              profileFor: ProfileFor.SELF,
+              personal: profile.personal,
+              physical: profile.physical,
+              education: profile.education,
+              family: profile.family,
+              age: profile.age,
+              location: profile.location,
+              profileScore: 82 + (profile.index % 16),
+              profileCompletionPercentage: 82 + (profile.index % 16),
+              searchTags: profile.searchTags,
+              aiTags: profile.aiTags,
+              isPremium: profile.index % 10 === 0,
+              isVerified: profile.index % 3 === 0,
+              status: ProfileStatus.ACTIVE,
+              lastActiveAt: new Date(now.getTime() - profile.index * 3600000),
+              updatedBy: userId,
+              updatedAt: now,
+            },
+            $setOnInsert: { createdBy: userId, createdAt: now },
+          },
+          upsert: true,
+        },
+      });
+
+      preferenceWrites.push({
+        updateOne: {
+          filter: { userId },
+          update: {
+            $set: {
+              userId,
+              filters: profile.preferenceFilters,
+              settings: {
+                isStrict: false,
+                allowPartialMatches: true,
+                horoscopeRequired: false,
+                profileVerificationRequired: false,
+                minimumMatchScore: 45,
+              },
+              weights: {
+                age: 10,
+                height: 10,
+                religion: 15,
+                caste: 5,
+                location: 10,
+                education: 10,
+                occupation: 10,
+                lifestyle: 10,
+                horoscope: 5,
+              },
+              aboutPartner:
+                'Looking for a kind, family-oriented Hindu partner with shared values.',
+              schemaVersion: 1,
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          upsert: true,
+        },
+      });
+
+      mediaWrites.push({
+        updateOne: {
+          filter: { userId, type: MediaType.IMAGE, filename: imageFilename },
+          update: {
+            $set: {
+              userId,
+              type: MediaType.IMAGE,
+              filename: imageFilename,
+              url: imageUrl,
+              thumbnailUrl: imageUrl,
+              mimeType: MimeType.IMAGE_PNG,
+              size: 112,
+              isPrimary: true,
+              status: MediaStatus.ACTIVE,
+              isActive: true,
+              uploadedAt: now,
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          upsert: true,
+        },
+      });
+
+      accountSettingsWrites.push(
+        this.buildSettingsUpsert(userId, {
+          emailVerified: true,
+          phoneVerified: canUsePhone,
+        }),
+      );
+      privacySettingsWrites.push(this.buildSettingsUpsert(userId));
+      notificationSettingsWrites.push(this.buildSettingsUpsert(userId));
+      communicationSettingsWrites.push(this.buildSettingsUpsert(userId));
+      securitySettingsWrites.push(
+        this.buildSettingsUpsert(userId, {
+          lastPasswordChangedAt: now,
+          lastLoginAt: now,
+          lastLoginIp: '127.0.0.1',
+        }),
+      );
+      localizationSettingsWrites.push(this.buildSettingsUpsert(userId));
+      accessibilitySettingsWrites.push(this.buildSettingsUpsert(userId));
+      mediaSettingsWrites.push(this.buildSettingsUpsert(userId));
+      aiSettingsWrites.push(this.buildSettingsUpsert(userId));
+      verificationWrites.push(
+        this.buildSettingsUpsert(userId, {
+          isVerified: profile.index % 3 === 0,
+          isPhoneVerified: canUsePhone,
+          isEmailVerified: true,
+          isProfileVerified: profile.index % 3 === 0,
+          ...(profile.index % 3 === 0 ? { verifiedAt: now } : {}),
+        }),
+      );
+    }
+
+    await Promise.all([
+      this.profileModel.bulkWrite(profileWrites, { ordered: false }),
+      this.preferenceModel.bulkWrite(preferenceWrites, { ordered: false }),
+      this.mediaModel.bulkWrite(mediaWrites, { ordered: false }),
+      this.accountSettingsModel.bulkWrite(accountSettingsWrites, {
+        ordered: false,
+      }),
+      this.privacySettingsModel.bulkWrite(privacySettingsWrites, {
+        ordered: false,
+      }),
+      this.notificationSettingsModel.bulkWrite(notificationSettingsWrites, {
+        ordered: false,
+      }),
+      this.communicationSettingsModel.bulkWrite(communicationSettingsWrites, {
+        ordered: false,
+      }),
+      this.securitySettingsModel.bulkWrite(securitySettingsWrites, {
+        ordered: false,
+      }),
+      this.localizationSettingsModel.bulkWrite(localizationSettingsWrites, {
+        ordered: false,
+      }),
+      this.accessibilitySettingsModel.bulkWrite(accessibilitySettingsWrites, {
+        ordered: false,
+      }),
+      this.mediaSettingsModel.bulkWrite(mediaSettingsWrites, {
+        ordered: false,
+      }),
+      this.aiSettingsModel.bulkWrite(aiSettingsWrites, { ordered: false }),
+      this.verificationModel.bulkWrite(verificationWrites, { ordered: false }),
+    ]);
+
+    this.logger.log('✅ Indian dummy profiles seeded successfully', {
+      female: 50,
+      male: 50,
+      total: profiles.length,
+      password: 'Test@125#',
+    });
+  }
+
+  private buildIndianDummyProfiles() {
+    const {
+      castes,
+      cities,
+      complexions,
+      femaleNames,
+      maleNames,
+      occupations,
+      qualifications,
+      seeds,
+    } = INDIAN_DUMMY_PROFILE_SEED_DATA;
+
+    return seeds.map(({ gender, index }) => {
+      const localIndex = index % 50;
+      const names = gender === Gender.FEMALE ? femaleNames : maleNames;
+      const [firstName, baseLastName] = names[localIndex % names.length];
+      const lastName = `${baseLastName}${Math.floor(localIndex / 10) || ''}`;
+      const [city, state, coordinates] = cities[index % cities.length];
+      const caste = castes[index % castes.length];
+      const age = 18 + (index % 23);
+      const birthYear = new Date().getFullYear() - age;
+      const [occupation, occupationType] =
+        occupations[index % occupations.length];
+      const qualification = qualifications[index % qualifications.length];
+      const email = `${firstName}.${lastName}@yopmail.com`.toLowerCase();
+      const phone = String(9876543210 + index);
+      const height =
+        gender === Gender.FEMALE ? 152 + (index % 20) : 165 + (index % 20);
+
+      return {
+        index,
+        email,
+        phone,
+        gender,
+        age,
+        location: {
+          type: 'Point' as const,
+          coordinates: [coordinates[0], coordinates[1]] as [number, number],
+        },
+        personal: {
+          firstName,
+          lastName,
+          gender,
+          dateOfBirth: `${birthYear}-${String((index % 12) + 1).padStart(
+            2,
+            '0',
+          )}-${String((index % 27) + 1).padStart(2, '0')}`,
+          religion: Religion.HINDU,
+          caste,
+          manglikStatus:
+            index % 7 === 0 ? ManglikStatus.MANGLIK : ManglikStatus.NON_MANGLIK,
+          country: Country.INDIA,
+          state,
+          city,
+          citizenship: 'Indian',
+          willingToRelocate: index % 4 === 0,
+          motherTongue: ['Hindi', 'Marathi', 'Gujarati', 'Punjabi'][index % 4],
+          maritalStatus: MaritalStatus.NEVER_MARRIED,
+          hasChildren: false,
+          smoking: Smoking.NON_SMOKER,
+          drinking: index % 5 === 0 ? Drinking.SOCIALLY : Drinking.NON_DRINKER,
+          eating: index % 3 === 0 ? Eating.NON_VEGETARIAN : Eating.VEGETARIAN,
+          hobbies: ['Travel', 'Music', 'Reading', 'Cooking'].slice(
+            0,
+            2 + (index % 3),
+          ),
+          languages: ['Hindi', 'English'],
+          aboutMe: `${firstName} is a family-oriented, career-focused Hindu profile from ${city}.`,
+        },
+        physical: {
+          height,
+          weight:
+            gender === Gender.FEMALE ? 48 + (index % 18) : 62 + (index % 22),
+          bloodGroup:
+            Object.values(BloodGroup)[index % Object.values(BloodGroup).length],
+          bodyType:
+            gender === Gender.FEMALE
+              ? [
+                  BodyType.SLIM,
+                  BodyType.AVERAGE,
+                  BodyType.FIT,
+                  BodyType.PETITE,
+                ][index % 4]
+              : [
+                  BodyType.AVERAGE,
+                  BodyType.ATHLETIC,
+                  BodyType.FIT,
+                  BodyType.MUSCULAR,
+                ][index % 4],
+          complexion: complexions[index % complexions.length],
+          disabilityStatus: false,
+        },
+        education: {
+          qualification,
+          field: ['Engineering', 'Commerce', 'Management', 'Science'][
+            index % 4
+          ],
+          university: [
+            'Delhi University',
+            'Mumbai University',
+            'Pune University',
+            'Rajasthan University',
+          ][index % 4],
+          occupationType,
+          occupation,
+          companyName: [
+            'TCS',
+            'Infosys',
+            'HDFC Bank',
+            'Apollo',
+            'Family Business',
+          ][index % 5],
+          jobRole: occupation,
+          annualIncomeAmount: 500000 + (index % 12) * 150000,
+        },
+        family: {
+          fatherName: `Mr. ${baseLastName}`,
+          motherName: `Mrs. ${baseLastName}`,
+          fatherOccupation: [
+            'Business',
+            'Government Service',
+            'Retired',
+            'Teacher',
+          ][index % 4],
+          motherOccupation: ['Homemaker', 'Teacher', 'Business', 'Retired'][
+            index % 4
+          ],
+          familyType: index % 2 === 0 ? FamilyType.NUCLEAR : FamilyType.JOINT,
+          familyStatus: [
+            FamilyStatus.MIDDLE_CLASS,
+            FamilyStatus.UPPER_MIDDLE_CLASS,
+            FamilyStatus.RICH,
+          ][index % 3],
+          familyValues: [
+            FamilyValue.TRADITIONAL,
+            FamilyValue.MODERATE,
+            FamilyValue.LIBERAL,
+          ][index % 3],
+          siblings: {
+            brothersCount: index % 3,
+            sistersCount: (index + 1) % 3,
+            marriedBrothersCount: index % 2,
+            marriedSistersCount: (index + 1) % 2,
+            details: [
+              {
+                type: SiblingType.BROTHER,
+                married: index % 2 === 0,
+                occupation: 'Engineer',
+              },
+            ],
+          },
+        },
+        preferenceFilters: {
+          age: {
+            min: gender === Gender.FEMALE ? 24 : 20,
+            max: gender === Gender.FEMALE ? 40 : 36,
+          },
+          height: {
+            min: gender === Gender.FEMALE ? 165 : 150,
+            max: gender === Gender.FEMALE ? 190 : 175,
+          },
+          annualIncome: { min: 300000, max: 5000000 },
+          maritalStatus: [MaritalStatus.NEVER_MARRIED],
+          religion: [Religion.HINDU],
+          caste: [...castes],
+          childPreference: ChildPreference.DOES_NOT_MATTER,
+          residencyPreference: ResidencyPreference.DOES_NOT_MATTER,
+          country: [Country.INDIA],
+          state: [state],
+          city: [city],
+          qualification: [...qualifications],
+          occupationType: Object.values(OccupationType),
+          bodyType: Object.values(BodyType),
+          complexion: [...complexions],
+          smoking: [Smoking.NON_SMOKER],
+          drinking: [Drinking.NON_DRINKER, Drinking.SOCIALLY],
+          eating: [Eating.VEGETARIAN, Eating.NON_VEGETARIAN],
+          languages: ['Hindi', 'English'],
+        },
+        searchTags: [
+          gender,
+          Religion.HINDU,
+          caste,
+          city,
+          state,
+          qualification,
+          occupation,
+        ],
+        aiTags: ['seeded', 'indian', 'hindu', caste],
+      };
+    });
+  }
+
+  private buildSettingsUpsert(userId: Types.ObjectId, data = {}) {
+    const now = new Date();
+
+    return {
+      updateOne: {
+        filter: { userId },
+        update: {
+          $set: {
+            userId,
+            ...data,
+            updatedAt: now,
+          },
+          $setOnInsert: { createdAt: now },
+        },
+        upsert: true,
+      },
+    };
+  }
+
+  private async ensureDummyProfileImages() {
+    const uploadDir = path.join(process.cwd(), 'uploads', 'profiles', 'images');
+    await fs.promises.mkdir(uploadDir, { recursive: true });
+
+    const pngBase64 =
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
+    const files = ['seed-profile-female.png', 'seed-profile-male.png'];
+
+    await Promise.all(
+      files.map(async (filename) => {
+        const filePath = path.join(uploadDir, filename);
+        if (!fs.existsSync(filePath)) {
+          await fs.promises.writeFile(
+            filePath,
+            Buffer.from(pngBase64, 'base64'),
+          );
+        }
+      }),
+    );
+
+    const baseUrl = this.configService.get<string>('api.baseUrl') ?? '';
+
+    return {
+      female: `${baseUrl}/uploads/profiles/images/seed-profile-female.png`,
+      male: `${baseUrl}/uploads/profiles/images/seed-profile-male.png`,
+    };
   }
 
   // =========================================================
@@ -207,1954 +839,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
   // =========================================================
 
   private async seedFeatures() {
-    const features: Feature[] = [
-      // ==========================================
-      // 🔐 AUTH & ACCOUNT
-      // ==========================================
-      {
-        key: FeatureKey.EMAIL_REGISTRATION,
-        name: 'Email Registration',
-        category: FeatureCategory.AUTH,
-        description: 'Allow users to register using email',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PHONE_REGISTRATION,
-        name: 'Phone Registration',
-        category: FeatureCategory.AUTH,
-        description: 'Allow users to register using phone number',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SOCIAL_LOGIN_GOOGLE,
-        name: 'Google Login',
-        category: FeatureCategory.AUTH,
-        description: 'Login with Google account',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SOCIAL_LOGIN_APPLE,
-        name: 'Apple Login',
-        category: FeatureCategory.AUTH,
-        description: 'Login with Apple account',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SOCIAL_LOGIN_FACEBOOK,
-        name: 'Facebook Login',
-        category: FeatureCategory.AUTH,
-        description: 'Login with Facebook account',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.EMAIL_VERIFICATION,
-        name: 'Email Verification',
-        category: FeatureCategory.AUTH,
-        description: 'Verify email address using OTP or link',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PHONE_VERIFICATION,
-        name: 'Phone Verification',
-        category: FeatureCategory.AUTH,
-        description: 'Verify mobile number using OTP',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.OTP_LOGIN,
-        name: 'OTP Login',
-        category: FeatureCategory.AUTH,
-        description: 'Allow login using OTP',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.TWO_FACTOR_AUTH,
-        name: 'Two Factor Auth',
-        category: FeatureCategory.AUTH,
-        description: 'Additional security layer for login',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.DEVICE_MANAGEMENT,
-        name: 'Device Management',
-        category: FeatureCategory.AUTH,
-        description: 'Manage logged in devices',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.MULTI_DEVICE_LOGIN,
-        name: 'Multi Device Login',
-        category: FeatureCategory.AUTH,
-        description: 'Login from multiple devices',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SESSION_HISTORY,
-        name: 'Session History',
-        category: FeatureCategory.AUTH,
-        description: 'View login session history',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 👤 PROFILE
-      // ==========================================
-      {
-        key: FeatureKey.CREATE_PROFILE,
-        name: 'Create Profile',
-        category: FeatureCategory.PROFILE,
-        description: 'Allow users to create profile',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.EDIT_PROFILE,
-        name: 'Edit Profile',
-        category: FeatureCategory.PROFILE,
-        description: 'Allow users to edit profile',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.DELETE_PROFILE,
-        name: 'Delete Profile',
-        category: FeatureCategory.PROFILE,
-        description: 'Allow users to delete profile',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.ADVANCED_PROFILE_COMPLETION,
-        name: 'Advanced Profile Completion',
-        category: FeatureCategory.PROFILE,
-        description: 'Advanced profile completion features',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PROFILE_COMPLETION_SCORE,
-        name: 'Profile Completion Score',
-        category: FeatureCategory.PROFILE,
-        description: 'Profile completion percentage score',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.MULTIPLE_PROFILE_PHOTOS,
-        name: 'Multiple Profile Photos',
-        category: FeatureCategory.PROFILE,
-        description: 'Upload multiple profile images',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 10,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.VIDEO_PROFILE,
-        name: 'Video Profile',
-        category: FeatureCategory.PROFILE,
-        description: 'Upload profile introduction video',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.AUDIO_INTRO,
-        name: 'Audio Introduction',
-        category: FeatureCategory.PROFILE,
-        description: 'Upload audio introduction',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PROFILE_BOOST,
-        name: 'Profile Boost',
-        category: FeatureCategory.PROFILE,
-        description: 'Boost profile visibility',
-        type: 'quota',
-        defaultValue: false,
-        metadata: {
-          limit: 5,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PROFILE_HIGHLIGHT,
-        name: 'Profile Highlight',
-        category: FeatureCategory.PROFILE,
-        description: 'Highlight profile in search results',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.FEATURED_PROFILE,
-        name: 'Featured Profile',
-        category: FeatureCategory.PROFILE,
-        description: 'Feature profile on home page',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.HIDE_PROFILE_PHOTO,
-        name: 'Hide Profile Photo',
-        category: FeatureCategory.PROFILE,
-        description: 'Option to hide profile photo from public',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PRIVATE_PHOTOS,
-        name: 'Private Photos',
-        category: FeatureCategory.PROFILE,
-        description: 'Keep some photos private and share with matches',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PRIVATE_ALBUM,
-        name: 'Private Album',
-        category: FeatureCategory.PROFILE,
-        description: 'Create private photo albums for matches',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.HIDE_LAST_SEEN,
-        name: 'Hide Last Seen',
-        category: FeatureCategory.PROFILE,
-        description: 'Option to hide last seen status',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.HIDE_ONLINE_STATUS,
-        name: 'Hide Online Status',
-        category: FeatureCategory.PROFILE,
-        description: 'Option to hide online status',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.INCOGNITO_MODE,
-        name: 'Incognito Mode',
-        category: FeatureCategory.PROFILE,
-        description: 'Browse profiles without being seen',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PROFILE_VERIFICATION,
-        name: 'Profile Verification',
-        category: FeatureCategory.PROFILE,
-        description: 'Verify profile identity',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.ID_VERIFICATION,
-        name: 'ID Verification',
-        category: FeatureCategory.PROFILE,
-        description: 'Verify identity using official ID',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.VERIFIED_BADGE,
-        name: 'Verified Badge',
-        category: FeatureCategory.PROFILE,
-        description: 'Show verified badge on profile',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.HOROSCOPE_UPLOAD,
-        name: 'Horoscope Upload',
-        category: FeatureCategory.PROFILE,
-        description: 'Upload horoscope details for matchmaking',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.ASTROLOGY_REPORT,
-        name: 'Astrology Report',
-        category: FeatureCategory.PROFILE,
-        description: 'Generate astrology report based on profile details',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // ❤️ ENGAGEMENT
-      // ==========================================
-      {
-        key: FeatureKey.DAILY_LIKES,
-        name: 'Daily Likes',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Number of likes per day',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 25,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.DAILY_SUPER_LIKES,
-        name: 'Daily Super Likes',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Number of super likes per day',
-        type: 'limit',
-        defaultValue: false,
-        metadata: {
-          limit: 5,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.UNLIMITED_LIKES,
-        name: 'Unlimited Likes',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Unlimited profile likes',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.UNLIMITED_SUPER_LIKES,
-        name: 'Unlimited Super Likes',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Unlimited super likes',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SEND_INTEREST,
-        name: 'Send Interest',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Send matrimonial interest requests',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.VIEW_INTERESTS,
-        name: 'View Interests',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'View received interest requests',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.ACCEPT_INTEREST,
-        name: 'Accept Interests',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Accept received interest requests',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.REJECT_INTEREST,
-        name: 'Reject Interests',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Reject received interest requests',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SUPER_LIKE,
-        name: 'Super Like',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Send super like to profiles',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PRIORITY_INTEREST,
-        name: 'Priority Interest',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Show interest requests at top of recipient inbox',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SHORTLIST_PROFILES,
-        name: 'Shortlist Profiles',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Shortlist profiles for quick access',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 50,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.FAVORITE_PROFILES,
-        name: 'Favorite Profiles',
-        category: FeatureCategory.ENGAGEMENT,
-        description: 'Add profiles to favorites',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 100,
-        },
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 💬 CHAT & COMMUNICATION
-      // ==========================================
-      {
-        key: FeatureKey.CHAT_ACCESS,
-        name: 'Chat Access',
-        category: FeatureCategory.CHAT,
-        description: 'Enable messaging/chat feature',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.UNLIMITED_CHAT,
-        name: 'Unlimited Chat',
-        category: FeatureCategory.CHAT,
-        description: 'Unlimited messages',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.CHAT_WITH_MATCHES_ONLY,
-        name: 'Chat With Matches Only',
-        category: FeatureCategory.CHAT,
-        description: 'Allow chatting only with matched profiles',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.VOICE_CALL,
-        name: 'Voice Call',
-        category: FeatureCategory.CHAT,
-        description: 'Voice calling feature',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.VIDEO_CALL,
-        name: 'Video Call',
-        category: FeatureCategory.CHAT,
-        description: 'Video calling feature',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.READ_RECEIPTS,
-        name: 'Read Receipts',
-        category: FeatureCategory.CHAT,
-        description: 'See message read status',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🔍 SEARCH & DISCOVERY
-      // ==========================================
-      {
-        key: FeatureKey.BASIC_SEARCH,
-        name: 'Basic Search',
-        category: FeatureCategory.SEARCH,
-        description: 'Basic profile search',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.ADVANCED_SEARCH,
-        name: 'Advanced Search',
-        category: FeatureCategory.SEARCH,
-        description: 'Advanced profile search',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.ADVANCED_FILTERS,
-        name: 'Advanced Filters',
-        category: FeatureCategory.SEARCH,
-        description: 'Advanced matchmaking filters',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.UNLIMITED_SEARCH,
-        name: 'Unlimited Search',
-        category: FeatureCategory.SEARCH,
-        description: 'Unlimited searches',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.WHO_VIEWED_ME,
-        name: 'Who Viewed Me',
-        category: FeatureCategory.SEARCH,
-        description: 'View profile visitors',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🧠 MATCHMAKING & AI
-      // ==========================================
-      {
-        key: FeatureKey.SMART_MATCHES,
-        name: 'Smart Matches',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'AI-based smart recommendations',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.COMPATIBILITY_SCORE,
-        name: 'Compatibility Score',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Compatibility percentage score',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.AI_RECOMMENDATIONS,
-        name: 'AI Recommendations',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'AI generated profile recommendations',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🕉️ MATRIMONY SPECIFIC
-      // ==========================================
-      {
-        key: FeatureKey.KUNDLI_MATCHING,
-        name: 'Kundli Matching',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Astrology based kundli matching',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.RELIGION_PREFERENCES,
-        name: 'Religion Preferences',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Filter matches by religion',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.CASTE_PREFERENCES,
-        name: 'Caste Preferences',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Filter matches by caste',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 👨‍👩‍👧 FAMILY FEATURES
-      // ==========================================
-      {
-        key: FeatureKey.FAMILY_MANAGED_PROFILE,
-        name: 'Family Managed Profile',
-        category: FeatureCategory.FAMILY,
-        description: 'Parents or family can manage account',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.GUARDIAN_ACCESS,
-        name: 'Guardian Access',
-        category: FeatureCategory.FAMILY,
-        description: 'Provide guardian access',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🔔 NOTIFICATIONS
-      // ==========================================
-      {
-        key: FeatureKey.PUSH_NOTIFICATIONS,
-        name: 'Push Notifications',
-        category: FeatureCategory.NOTIFICATIONS,
-        description: 'Mobile push notifications',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.EMAIL_NOTIFICATIONS,
-        name: 'Email Notifications',
-        category: FeatureCategory.NOTIFICATIONS,
-        description: 'Email notifications',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // ⭐ PREMIUM EXPERIENCE
-      // ==========================================
-      {
-        key: FeatureKey.AD_FREE_EXPERIENCE,
-        name: 'Ad Free Experience',
-        category: FeatureCategory.PREMIUM,
-        description: 'Remove ads from app',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PRIORITY_SUPPORT,
-        name: 'Priority Support',
-        category: FeatureCategory.PREMIUM,
-        description: 'Premium customer support',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.VIP_BADGE,
-        name: 'VIP Badge',
-        category: FeatureCategory.PREMIUM,
-        description: 'VIP profile badge',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🚀 BOOST / MONETIZATION
-      // ==========================================
-      {
-        key: FeatureKey.DAILY_BOOSTS,
-        name: 'Daily Boosts',
-        category: FeatureCategory.BOOST,
-        description: 'Daily profile boosts',
-        type: 'limit',
-        defaultValue: false,
-        metadata: {
-          limit: 1,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.WEEKLY_BOOSTS,
-        name: 'Weekly Boosts',
-        category: FeatureCategory.BOOST,
-        description: 'Weekly profile boosts',
-        type: 'limit',
-        defaultValue: false,
-        metadata: {
-          limit: 5,
-        },
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 💳 PAYMENTS & SUBSCRIPTIONS
-      // ==========================================
-      {
-        key: FeatureKey.MONTHLY_SUBSCRIPTION,
-        name: 'Monthly Subscription',
-        category: FeatureCategory.PAYMENTS,
-        description: 'Monthly premium plan',
-        type: 'duration',
-        defaultValue: false,
-        metadata: {
-          limit: 30,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.YEARLY_SUBSCRIPTION,
-        name: 'Yearly Subscription',
-        category: FeatureCategory.PAYMENTS,
-        description: 'Yearly premium plan',
-        type: 'duration',
-        defaultValue: false,
-        metadata: {
-          limit: 365,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.WALLET_SYSTEM,
-        name: 'Wallet System',
-        category: FeatureCategory.PAYMENTS,
-        description: 'In-app wallet support',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🛡️ SAFETY & TRUST
-      // ==========================================
-      {
-        key: FeatureKey.REPORT_USER,
-        name: 'Report User',
-        category: FeatureCategory.SAFETY,
-        description: 'Report abusive profiles',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.BLOCK_USERS,
-        name: 'Block Users',
-        category: FeatureCategory.SAFETY,
-        description: 'Block unwanted users',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.FRAUD_DETECTION,
-        name: 'Fraud Detection',
-        category: FeatureCategory.SAFETY,
-        description: 'Detect fake/scam accounts',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 📈 LIMIT BASED FEATURES
-      // ==========================================
-      {
-        key: FeatureKey.MESSAGE_LIMIT,
-        name: 'Message Limit',
-        category: FeatureCategory.LIMITS,
-        description: 'Maximum messages allowed',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 50,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SHORTLIST_LIMIT,
-        name: 'Shortlist Limit',
-        category: FeatureCategory.LIMITS,
-        description: 'Maximum shortlisted profiles',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 100,
-        },
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🎮 GAMIFICATION
-      // ==========================================
-      {
-        key: FeatureKey.DAILY_LOGIN_REWARDS,
-        name: 'Daily Login Rewards',
-        category: FeatureCategory.GAMIFICATION,
-        description: 'Reward users for daily login',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.STREAK_REWARDS,
-        name: 'Streak Rewards',
-        category: FeatureCategory.GAMIFICATION,
-        description: 'Rewards for login streaks',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🧾 SUPPORT
-      // ==========================================
-      {
-        key: FeatureKey.CUSTOMER_SUPPORT_CHAT,
-        name: 'Customer Support Chat',
-        category: FeatureCategory.SUPPORT,
-        description: 'Live support chat',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SUPPORT_TICKETS,
-        name: 'Support Tickets',
-        category: FeatureCategory.SUPPORT,
-        description: 'Raise support tickets',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.UPLOAD_PHOTOS,
-        name: 'Upload Photos',
-        category: FeatureCategory.MEDIA,
-        description: 'Allow users to upload profile photos',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 5,
-        },
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.VIEW_PROFILE_PHOTOS,
-        name: 'View Profile Photos',
-        category: FeatureCategory.MEDIA,
-        description: 'Allow users to view profile photos',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.BASIC_FILTERS,
-        name: 'Basic Filters',
-        category: FeatureCategory.SEARCH,
-        description: 'Enable basic search and matchmaking filters',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.MATCH_LIMIT,
-        name: 'Match Limit',
-        category: FeatureCategory.LIMITS,
-        description: 'Maximum number of matches allowed',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 20,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.DAILY_PROFILE_VIEWS,
-        name: 'Daily Profile Views',
-        category: FeatureCategory.SEARCH,
-        description: 'Maximum number of profile views allowed per day',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 25,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.UPLOAD_VIDEOS,
-        name: 'Upload Videos',
-        category: FeatureCategory.MEDIA,
-        description: 'Allow users to upload videos',
-        type: 'limit',
-        defaultValue: false,
-        metadata: {
-          limit: 5,
-        },
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.VIEW_CONTACT,
-        name: 'View Contact',
-        category: FeatureCategory.CONTACT_ACCESS,
-        description: 'Allow users to view contact details',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.VIEW_PHONE_NUMBER,
-        name: 'View Phone Number',
-        category: FeatureCategory.CONTACT_ACCESS,
-        description: 'Allow users to view phone numbers',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.VIEW_EMAIL_ADDRESS,
-        name: 'View Email Address',
-        category: FeatureCategory.CONTACT_ACCESS,
-        description: 'Allow users to view email addresses',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.TYPING_INDICATOR,
-        name: 'Typing Indicator',
-        category: FeatureCategory.CHAT,
-        description: 'Show typing status in chat',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.SEND_IMAGES_IN_CHAT,
-        name: 'Send Images In Chat',
-        category: FeatureCategory.CHAT,
-        description: 'Allow users to send images in chat',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.SEND_VOICE_NOTES,
-        name: 'Send Voice Notes',
-        category: FeatureCategory.CHAT,
-        description: 'Allow users to send voice notes',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.VIEW_PRIVATE_PHOTOS,
-        name: 'View Private Photos',
-        category: FeatureCategory.MEDIA,
-        description: 'Allow users to view private photos',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.UNLIMITED_PROFILE_VIEWS,
-        name: 'Unlimited Profile Views',
-        category: FeatureCategory.SEARCH,
-        description: 'Allow unlimited profile views',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.PROFILE_ANALYTICS,
-        name: 'Profile Analytics',
-        category: FeatureCategory.SEARCH,
-        description: 'View profile analytics and statistics',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.TOP_IN_SEARCH,
-        name: 'Top In Search',
-        category: FeatureCategory.SEARCH,
-        description: 'Show profile at top in search results',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.SHOW_ON_HOME,
-        name: 'Show On Home',
-        category: FeatureCategory.SEARCH,
-        description: 'Show profile on home recommendations',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.MANGLIK_MATCHING,
-        name: 'Manglik Matching',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Enable manglik compatibility matching',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.FAMILY_DETAILS,
-        name: 'Family Details',
-        category: FeatureCategory.FAMILY,
-        description: 'Allow users to add family details',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.CHAT_WITHOUT_MATCH,
-        name: 'Chat Without Match',
-        category: FeatureCategory.CHAT,
-        description: 'Allow chatting without matching first',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.PRIORITY_CHAT,
-        name: 'Priority Chat',
-        category: FeatureCategory.CHAT,
-        description: 'Prioritize chats in inbox',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.MESSAGE_TRANSLATION,
-        name: 'Message Translation',
-        category: FeatureCategory.CHAT,
-        description: 'Translate chat messages automatically',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.SEND_VIDEOS_IN_CHAT,
-        name: 'Send Videos In Chat',
-        category: FeatureCategory.CHAT,
-        description: 'Allow users to send videos in chat',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.DIRECT_CONTACT_ACCESS,
-        name: 'Direct Contact Access',
-        category: FeatureCategory.CONTACT_ACCESS,
-        description: 'Allow direct access to contact information',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.REQUEST_PRIVATE_VIDEOS,
-        name: 'Request Private Videos',
-        category: FeatureCategory.MEDIA,
-        description: 'Allow requesting access to private videos',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.AI_PHOTO_VERIFICATION,
-        name: 'AI Photo Verification',
-        category: FeatureCategory.MEDIA,
-        description: 'AI based profile photo verification',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.BLURRED_PHOTO_MODE,
-        name: 'Blurred Photo Mode',
-        category: FeatureCategory.MEDIA,
-        description: 'Blur photos until access is granted',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.GLOBAL_SEARCH,
-        name: 'Global Search',
-        category: FeatureCategory.SEARCH,
-        description: 'Search profiles globally',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.INTERNATIONAL_MATCHES,
-        name: 'International Matches',
-        category: FeatureCategory.SEARCH,
-        description: 'Find international profile matches',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.NRI_MATCHING,
-        name: 'NRI Matching',
-        category: FeatureCategory.SEARCH,
-        description: 'Enable NRI matchmaking',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.SAVED_SEARCHES,
-        name: 'Saved Searches',
-        category: FeatureCategory.SEARCH,
-        description: 'Save search filters and preferences',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 20,
-        },
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.RECENT_SEARCHES,
-        name: 'Recent Searches',
-        category: FeatureCategory.SEARCH,
-        description: 'View recent search history',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.FEATURED_IN_SEARCH,
-        name: 'Featured In Search',
-        category: FeatureCategory.SEARCH,
-        description: 'Feature profile in search results',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.PRIORITY_SEARCH_RANKING,
-        name: 'Priority Search Ranking',
-        category: FeatureCategory.SEARCH,
-        description: 'Higher ranking in search results',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.ADVANCED_MATCHING,
-        name: 'Advanced Matching',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Advanced AI matchmaking engine',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.AI_PROFILE_SUMMARY,
-        name: 'AI Profile Summary',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Generate AI based profile summaries',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.AI_PHOTO_SELECTION,
-        name: 'AI Photo Selection',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'AI suggests best profile photos',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.AI_COMPATIBILITY_ANALYSIS,
-        name: 'AI Compatibility Analysis',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'AI based compatibility analysis',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.AI_CONVERSATION_STARTER,
-        name: 'AI Conversation Starter',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'AI generated conversation suggestions',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.AI_INTEREST_PREDICTION,
-        name: 'AI Interest Prediction',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Predict user interests using AI',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.AI_FAKE_PROFILE_DETECTION,
-        name: 'AI Fake Profile Detection',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Detect fake profiles using AI',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.PERSONALITY_MATCHING,
-        name: 'Personality Matching',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Match users based on personality',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.INTEREST_MATCHING,
-        name: 'Interest Matching',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Match users based on interests',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.LOCATION_MATCHING,
-        name: 'Location Matching',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Match users based on location',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.STRICT_PREFERENCES,
-        name: 'Strict Preferences',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'Apply strict matchmaking preferences',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.SMART_PREFERENCES,
-        name: 'Smart Preferences',
-        category: FeatureCategory.MATCHMAKING,
-        description: 'AI optimized matchmaking preferences',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.SUBCASTE_PREFERENCES,
-        name: 'Subcaste Preferences',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Filter matches by subcaste',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.COMMUNITY_BASED_MATCHING,
-        name: 'Community Based Matching',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Find matches within community',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.MARRIAGE_TIMELINE_PREFERENCE,
-        name: 'Marriage Timeline Preference',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Set preferred marriage timeline',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.CHILDREN_PREFERENCE,
-        name: 'Children Preference',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Set children related preferences',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.EATING_PREFERENCES,
-        name: 'Eating Preferences',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Filter matches by eating preferences',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      {
-        key: FeatureKey.LIFESTYLE_PREFERENCES,
-        name: 'Lifestyle Preferences',
-        category: FeatureCategory.MATRIMONY,
-        description: 'Filter matches by lifestyle preferences',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      // ==========================================
-      // 👨‍👩‍👧 FAMILY FEATURES
-      // ==========================================
-
-      {
-        key: FeatureKey.PARENT_LOGIN,
-        name: 'Parent Login',
-        category: FeatureCategory.FAMILY,
-        description: 'Allow parents to login and manage profile',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.FAMILY_PREFERENCES,
-        name: 'Family Preferences',
-        category: FeatureCategory.FAMILY,
-        description: 'Set family based partner preferences',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 📊 ANALYTICS
-      // ==========================================
-
-      {
-        key: FeatureKey.INTEREST_ANALYTICS,
-        name: 'Interest Analytics',
-        category: FeatureCategory.ANALYTICS,
-        description: 'Track sent and received interest analytics',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.CHAT_ANALYTICS,
-        name: 'Chat Analytics',
-        category: FeatureCategory.ANALYTICS,
-        description: 'Analyze chat engagement and activity',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.ENGAGEMENT_SCORE,
-        name: 'Engagement Score',
-        category: FeatureCategory.ANALYTICS,
-        description: 'User engagement scoring system',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.MATCH_SUCCESS_RATE,
-        name: 'Match Success Rate',
-        category: FeatureCategory.ANALYTICS,
-        description: 'Track successful matchmaking rate',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.WEEKLY_REPORTS,
-        name: 'Weekly Reports',
-        category: FeatureCategory.ANALYTICS,
-        description: 'Receive weekly analytics reports',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🔔 NOTIFICATIONS
-      // ==========================================
-
-      {
-        key: FeatureKey.SMS_NOTIFICATIONS,
-        name: 'SMS Notifications',
-        category: FeatureCategory.NOTIFICATIONS,
-        description: 'Receive SMS notifications',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.INSTANT_MATCH_ALERTS,
-        name: 'Instant Match Alerts',
-        category: FeatureCategory.NOTIFICATIONS,
-        description: 'Get instant alerts for new matches',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.DAILY_MATCH_DIGEST,
-        name: 'Daily Match Digest',
-        category: FeatureCategory.NOTIFICATIONS,
-        description: 'Receive daily match summary notifications',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🌍 LOCATION FEATURES
-      // ==========================================
-
-      {
-        key: FeatureKey.LOCATION_BASED_MATCHING,
-        name: 'Location Based Matching',
-        category: FeatureCategory.LOCATION,
-        description: 'Match profiles based on location',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.NEARBY_PROFILES,
-        name: 'Nearby Profiles',
-        category: FeatureCategory.LOCATION,
-        description: 'Discover nearby profiles',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.TRAVEL_MODE,
-        name: 'Travel Mode',
-        category: FeatureCategory.LOCATION,
-        description: 'Enable matching while travelling',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // ⭐ PREMIUM EXPERIENCE
-      // ==========================================
-
-      {
-        key: FeatureKey.PREMIUM_BADGE,
-        name: 'Premium Badge',
-        category: FeatureCategory.PREMIUM,
-        description: 'Display premium badge on profile',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.RELATIONSHIP_MANAGER,
-        name: 'Relationship Manager',
-        category: FeatureCategory.PREMIUM,
-        description: 'Access dedicated relationship manager',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.DEDICATED_RELATIONSHIP_MANAGER,
-        name: 'Dedicated Relationship Manager',
-        category: FeatureCategory.PREMIUM,
-        description: 'Personal relationship manager support',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.CONCIERGE_MATCHMAKING,
-        name: 'Concierge Matchmaking',
-        category: FeatureCategory.PREMIUM,
-        description: 'Premium concierge matchmaking service',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PERSONAL_MATCHMAKER,
-        name: 'Personal Matchmaker',
-        category: FeatureCategory.PREMIUM,
-        description: 'Assign personal matchmaker',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🚀 BOOST / MONETIZATION
-      // ==========================================
-
-      {
-        key: FeatureKey.MONTHLY_BOOSTS,
-        name: 'Monthly Boosts',
-        category: FeatureCategory.BOOST,
-        description: 'Monthly profile boosts',
-        type: 'limit',
-        defaultValue: false,
-        metadata: {
-          limit: 30,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.UNLIMITED_BOOSTS,
-        name: 'Unlimited Boosts',
-        category: FeatureCategory.BOOST,
-        description: 'Unlimited profile boosts',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SPOTLIGHT_PROFILE,
-        name: 'Spotlight Profile',
-        category: FeatureCategory.BOOST,
-        description: 'Feature profile in spotlight section',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 💳 PAYMENTS & SUBSCRIPTIONS
-      // ==========================================
-
-      {
-        key: FeatureKey.PROMO_CODES,
-        name: 'Promo Codes',
-        category: FeatureCategory.PAYMENTS,
-        description: 'Apply promotional discount codes',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.REFERRAL_REWARDS,
-        name: 'Referral Rewards',
-        category: FeatureCategory.PAYMENTS,
-        description: 'Earn rewards through referrals',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.REFERRAL_BONUS,
-        name: 'Referral Bonus',
-        category: FeatureCategory.PAYMENTS,
-        description: 'Receive bonus on successful referrals',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.EARN_CREDITS,
-        name: 'Earn Credits',
-        category: FeatureCategory.PAYMENTS,
-        description: 'Earn credits through engagement',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🛡️ SAFETY & TRUST
-      // ==========================================
-
-      {
-        key: FeatureKey.SAFE_MODE,
-        name: 'Safe Mode',
-        category: FeatureCategory.SAFETY,
-        description: 'Enhanced safety and privacy mode',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SPAM_DETECTION,
-        name: 'Spam Detection',
-        category: FeatureCategory.SAFETY,
-        description: 'Detect spam and suspicious activity',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.MANUAL_PROFILE_REVIEW,
-        name: 'Manual Profile Review',
-        category: FeatureCategory.SAFETY,
-        description: 'Profiles reviewed manually by moderators',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 📈 LIMIT BASED FEATURES
-      // ==========================================
-
-      {
-        key: FeatureKey.CONTACT_VIEW_LIMIT,
-        name: 'Contact View Limit',
-        category: FeatureCategory.LIMITS,
-        description: 'Maximum contact views allowed',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 25,
-        },
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.SWIPE_LIMIT,
-        name: 'Swipe Limit',
-        category: FeatureCategory.LIMITS,
-        description: 'Maximum swipes allowed per day',
-        type: 'limit',
-        defaultValue: true,
-        metadata: {
-          limit: 50,
-        },
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🎮 ENGAGEMENT & GAMIFICATION
-      // ==========================================
-
-      {
-        key: FeatureKey.UNLIMITED_SWIPES,
-        name: 'Unlimited Swipes',
-        category: FeatureCategory.GAMIFICATION,
-        description: 'Unlimited profile swipes',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.MATCH_QUIZ,
-        name: 'Match Quiz',
-        category: FeatureCategory.GAMIFICATION,
-        description: 'Interactive matchmaking quizzes',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.COMPATIBILITY_GAMES,
-        name: 'Compatibility Games',
-        category: FeatureCategory.GAMIFICATION,
-        description: 'Play games to check compatibility',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🧾 SUPPORT & MISC
-      // ==========================================
-
-      {
-        key: FeatureKey.ACCOUNT_EXPORT,
-        name: 'Account Export',
-        category: FeatureCategory.SUPPORT,
-        description: 'Export account related data',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.DATA_EXPORT,
-        name: 'Data Export',
-        category: FeatureCategory.SUPPORT,
-        description: 'Download personal data export',
-        type: 'boolean',
-        defaultValue: false,
-        isActive: true,
-        version: 1,
-      },
-      {
-        key: FeatureKey.PRIVACY_CONTROLS,
-        name: 'Privacy Controls',
-        category: FeatureCategory.SUPPORT,
-        description: 'Advanced privacy management controls',
-        type: 'boolean',
-        defaultValue: true,
-        isActive: true,
-        version: 1,
-      },
-    ];
+    const features = FEATURE_SEEDS;
 
     const result = await this.featureModel.bulkWrite(
       features.map((feature) => ({
@@ -2196,139 +881,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
   // =========================================================
 
   private async seedPlans() {
-    const plans: Plan[] = [
-      // ==========================================
-      // 🆓 FREE PLAN
-      // ==========================================
-      {
-        name: 'FREE',
-        slug: 'free',
-        tier: PlanTier.FREE,
-        billingCycle: BillingCycle.MONTHLY,
-        price: 0,
-        durationDays: 3650,
-        currency: 'INR',
-        isPopular: false,
-        sortOrder: 1,
-        description: 'Basic free membership with limited matchmaking access.',
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🥇 GOLD MONTHLY
-      // ==========================================
-      {
-        name: 'GOLD_MONTHLY',
-        slug: 'gold-monthly',
-        tier: PlanTier.GOLD,
-        billingCycle: BillingCycle.MONTHLY,
-        price: 999,
-        durationDays: 30,
-        currency: 'INR',
-        isPopular: true,
-        sortOrder: 2,
-        description:
-          'Gold monthly subscription with unlimited likes, chat, and advanced filters.',
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🥇 GOLD QUARTERLY
-      // ==========================================
-      {
-        name: 'GOLD_QUARTERLY',
-        slug: 'gold-quarterly',
-        tier: PlanTier.GOLD,
-        billingCycle: BillingCycle.QUARTERLY,
-        price: 2499,
-        durationDays: 90,
-        currency: 'INR',
-        isPopular: false,
-        sortOrder: 3,
-        description:
-          'Gold quarterly subscription with premium matchmaking benefits.',
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 🥇 GOLD YEARLY
-      // ==========================================
-      {
-        name: 'GOLD_YEARLY',
-        slug: 'gold-yearly',
-        tier: PlanTier.GOLD,
-        billingCycle: BillingCycle.YEARLY,
-        price: 7999,
-        durationDays: 365,
-        currency: 'INR',
-        isPopular: false,
-        sortOrder: 4,
-        description:
-          'Gold yearly subscription with maximum savings and premium access.',
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 💎 PLATINUM MONTHLY
-      // ==========================================
-      {
-        name: 'PLATINUM_MONTHLY',
-        slug: 'platinum-monthly',
-        tier: PlanTier.PLATINUM,
-        billingCycle: BillingCycle.MONTHLY,
-        price: 2499,
-        durationDays: 30,
-        currency: 'INR',
-        isPopular: false,
-        sortOrder: 5,
-        description:
-          'Platinum monthly subscription with AI matchmaking and priority ranking.',
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 💎 PLATINUM QUARTERLY
-      // ==========================================
-      {
-        name: 'PLATINUM_QUARTERLY',
-        slug: 'platinum-quarterly',
-        tier: PlanTier.PLATINUM,
-        billingCycle: BillingCycle.QUARTERLY,
-        price: 6499,
-        durationDays: 90,
-        currency: 'INR',
-        isPopular: true,
-        sortOrder: 6,
-        description:
-          'Platinum quarterly plan with concierge matchmaking and premium visibility.',
-        isActive: true,
-        version: 1,
-      },
-
-      // ==========================================
-      // 💎 PLATINUM YEARLY
-      // ==========================================
-      {
-        name: 'PLATINUM_YEARLY',
-        slug: 'platinum-yearly',
-        tier: PlanTier.PLATINUM,
-        billingCycle: BillingCycle.YEARLY,
-        price: 19999,
-        durationDays: 365,
-        currency: 'INR',
-        isPopular: false,
-        sortOrder: 7,
-        description:
-          'Ultimate yearly platinum experience with all premium features unlocked.',
-        isActive: true,
-        version: 1,
-      },
-    ];
+    const plans = PLAN_SEEDS;
 
     const result = await this.planModel.bulkWrite(
       plans.map((plan) => ({
@@ -2709,710 +1262,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
   // =========================================================
 
   private async seedDefaultTemplates() {
-    const defaults: Partial<NotificationTemplates>[] = [
-      {
-        key: 'INTEREST_RECEIVED',
-        eventKey: 'interest.received',
-        locale: 'en',
-        name: 'Interest Received',
-        category: 'interest_received',
-        priority: 'normal',
-        title: 'New interest from {{name}}',
-        message: '{{name}} has sent you an interest.',
-        pushTitle: 'You received a new interest',
-        pushBody: '{{name}} sent you an interest.',
-        emailSubject: 'You got a new interest on MatchMate',
-        emailBody:
-          'Hi {{userName}}, you received a new interest from {{name}}.',
-        smsBody: 'New interest from {{name}} on MatchMate.',
-        variables: ['name', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 5,
-          maxPerDay: 20,
-        },
-        deepLink: 'matchmate://interests/received',
-        tags: ['engagement', 'interest'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'INTEREST_ACCEPTED',
-        eventKey: 'interest.accepted',
-        locale: 'en',
-        name: 'Interest Accepted',
-        category: 'interest_accepted',
-        priority: 'high',
-        title: '{{name}} accepted your interest',
-        message: 'Great news! {{name}} accepted your interest.',
-        pushTitle: 'Interest accepted',
-        pushBody: '{{name}} accepted your interest.',
-        emailSubject: 'Your interest was accepted',
-        emailBody:
-          'Hi {{userName}}, {{name}} accepted your interest. Start chatting now.',
-        smsBody: '{{name}} accepted your interest on MatchMate.',
-        variables: ['name', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 5,
-          maxPerDay: 20,
-        },
-        deepLink: 'matchmate://interests/sent',
-        tags: ['engagement', 'interest'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'INTEREST_REMINDER',
-        eventKey: 'interest.reminder',
-        locale: 'en',
-        name: 'Interest Response Reminder',
-        category: 'interest_received',
-        priority: 'normal',
-        title: 'You have pending interests',
-        message:
-          'You have {{pendingCount}} pending interests waiting for response.',
-        pushTitle: 'Pending interests',
-        pushBody: '{{pendingCount}} interests are waiting for your response.',
-        emailSubject: 'Respond to your pending interests',
-        emailBody:
-          'Hi {{userName}}, you have {{pendingCount}} pending interests.',
-        smsBody: 'You have {{pendingCount}} pending interests on MatchMate.',
-        variables: ['pendingCount', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 5,
-          maxPerDay: 20,
-        },
-        deepLink: 'matchmate://interests/pending',
-        tags: ['engagement', 'interest'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'MATCH_FOUND',
-        eventKey: 'match.found',
-        locale: 'en',
-        name: 'Match Found',
-        category: 'match_found',
-        priority: 'high',
-        title: "It's a match with {{name}}",
-        message: 'You and {{name}} are now matched. Start a conversation now.',
-        pushTitle: "It's a match",
-        pushBody: 'You matched with {{name}}.',
-        emailSubject: 'You have a new match',
-        emailBody: 'You matched with {{name}}. Open MatchMate to connect.',
-        smsBody: 'You matched with {{name}} on MatchMate.',
-        variables: ['name'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 5,
-          maxPerDay: 20,
-        },
-        deepLink: 'matchmate://matches',
-        tags: ['engagement', 'match'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'MATCH_REMINDER',
-        eventKey: 'match.reminder',
-        locale: 'en',
-        name: 'Match Follow-up Reminder',
-        category: 'match_found',
-        priority: 'normal',
-        title: 'Reconnect with {{name}}',
-        message: '{{name}} is waiting to hear from you. Send a message now.',
-        pushTitle: 'Your match is waiting',
-        pushBody: 'Send a message to {{name}}.',
-        emailSubject: 'Reconnect with your match',
-        emailBody:
-          'Hi {{userName}}, your match {{name}} is waiting for your reply.',
-        smsBody: '{{name}} is waiting for your message on MatchMate.',
-        variables: ['name', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 5,
-          maxPerDay: 20,
-        },
-        deepLink: 'matchmate://matches',
-        tags: ['engagement', 'match'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'NEW_MATCHES_DIGEST',
-        eventKey: 'new.matches.digest',
-        locale: 'en',
-        name: 'New Matches Digest',
-        category: 'match_found',
-        priority: 'normal',
-        title: 'You have {{matchCount}} new compatible matches',
-        message:
-          'Your profile matched with {{matchCount}} new people this week.',
-        pushTitle: 'New matches for you',
-        pushBody: '{{matchCount}} new compatible matches found.',
-        emailSubject: 'Your weekly match digest',
-        emailBody:
-          'Hi {{userName}}, you have {{matchCount}} new compatible matches.',
-        smsBody: '{{matchCount}} new matches are waiting on MatchMate.',
-        variables: ['matchCount', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 5,
-          maxPerDay: 1,
-        },
-        deepLink: 'matchmate://matches',
-        tags: ['engagement', 'match', 'digest'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'MESSAGE_RECEIVED',
-        eventKey: 'message.received',
-        locale: 'en',
-        name: 'Message Received',
-        category: 'message_received',
-        priority: 'normal',
-        title: 'New message from {{name}}',
-        message: '{{name}}: {{messagePreview}}',
-        pushTitle: 'New message',
-        pushBody: '{{name}} sent you a message.',
-        emailSubject: 'You received a new message',
-        emailBody: 'You have a new message from {{name}}.',
-        smsBody: 'New message from {{name}} on MatchMate.',
-        variables: ['name', 'messagePreview'],
-        channels: { inApp: true, push: true, email: false, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://messages',
-        tags: ['engagement', 'message'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'UNREAD_MESSAGES_REMINDER',
-        eventKey: 'unread.messages.reminder',
-        locale: 'en',
-        name: 'Unread Messages Reminder',
-        category: 'message_received',
-        priority: 'normal',
-        title: 'You have {{unreadCount}} unread messages',
-        message: 'Open MatchMate to respond to your pending conversations.',
-        pushTitle: 'Unread messages waiting',
-        pushBody: '{{unreadCount}} unread messages are waiting for you.',
-        emailSubject: 'You have unread messages',
-        emailBody: 'Hi {{userName}}, you have {{unreadCount}} unread messages.',
-        smsBody: 'You have unread messages on MatchMate.',
-        variables: ['unreadCount', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 5,
-          maxPerDay: 1,
-        },
-        deepLink: 'matchmate://messages',
-        tags: ['engagement', 'message'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'CHAT_INACTIVE_REMINDER',
-        eventKey: 'chat.inactive.reminder',
-        locale: 'en',
-        name: 'Inactive Chat Reminder',
-        category: 'message_received',
-        priority: 'low',
-        title: 'Your conversation with {{name}} is quiet',
-        message:
-          'Break the ice again and continue your conversation with {{name}}.',
-        pushTitle: 'Continue your chat',
-        pushBody: 'Say hello to {{name}}.',
-        emailSubject: 'Continue your conversation',
-        emailBody: 'Hi {{userName}}, continue your conversation with {{name}}.',
-        smsBody: 'Continue your chat with {{name}} on MatchMate.',
-        variables: ['name', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 60 * 24, // 24 hours
-          maxPerDay: 1,
-        },
-        deepLink: 'matchmate://messages',
-        tags: ['engagement', 'message', 'reminder'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'PROFILE_VIEW_MILESTONE',
-        eventKey: 'profile.view.milestone',
-        locale: 'en',
-        name: 'Profile View Milestone',
-        category: 'profile_view',
-        priority: 'normal',
-        title: 'Your profile got {{viewCount}} views',
-        message:
-          'Your profile is trending. Update details to improve responses.',
-        pushTitle: 'Profile activity is up',
-        pushBody: 'Your profile reached {{viewCount}} views.',
-        emailSubject: 'Your profile is getting attention',
-        emailBody: 'Hi {{userName}}, your profile crossed {{viewCount}} views.',
-        variables: ['viewCount', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://messages',
-        tags: ['engagement', 'profile'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'PROFILE_COMPLETION_REMINDER',
-        eventKey: 'profile.completion.reminder',
-        locale: 'en',
-        name: 'Profile Completion Reminder',
-        category: 'system',
-        priority: 'normal',
-        title: 'Complete your profile to get better matches',
-        message:
-          'Your profile is {{completionPercent}}% complete. Add details to improve match quality.',
-        pushTitle: 'Complete your profile',
-        pushBody: 'Profile is {{completionPercent}}% complete.',
-        emailSubject: 'Complete your MatchMate profile',
-        emailBody:
-          'Hi {{userName}}, complete your profile to improve visibility and matches.',
-        smsBody: 'Complete your MatchMate profile for better matches.',
-        variables: ['completionPercent', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 60 * 24, // 24 hours
-          maxPerDay: 1,
-        },
-        deepLink: 'matchmate://profile/edit',
-        tags: ['engagement', 'profile', 'reminder'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'ID_VERIFICATION_APPROVED',
-        eventKey: 'id.verification.approved',
-        locale: 'en',
-        name: 'ID Verification Approved',
-        category: 'system',
-        priority: 'high',
-        title: 'Your profile verification is approved',
-        message:
-          'Your identity verification is complete. Your trust badge is now visible.',
-        pushTitle: 'Verification approved',
-        pushBody: 'Your verified badge is now active.',
-        emailSubject: 'Verification approved on MatchMate',
-        emailBody:
-          'Hi {{userName}}, your profile verification has been approved.',
-        smsBody: 'Your MatchMate profile verification is approved.',
-        variables: ['userName'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://profile/verify',
-        tags: ['verification', 'system'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'ID_VERIFICATION_REJECTED',
-        eventKey: 'id.verification.rejected',
-        locale: 'en',
-        name: 'ID Verification Rejected',
-        category: 'system',
-        priority: 'high',
-        title: 'Verification needs attention',
-        message: 'Verification was not approved. Reason: {{reason}}',
-        pushTitle: 'Verification action required',
-        pushBody: 'Please re-submit your documents.',
-        emailSubject: 'Action needed: verification failed',
-        emailBody:
-          'Hi {{userName}}, verification was not approved. Reason: {{reason}}.',
-        smsBody:
-          'Verification failed on MatchMate. Please re-submit documents.',
-        variables: ['userName', 'reason'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://profile/verify',
-        tags: ['verification', 'system'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'PHOTO_APPROVED',
-        eventKey: 'photo.approved',
-        locale: 'en',
-        name: 'Photo Approved',
-        category: 'system',
-        priority: 'normal',
-        title: 'Your photo was approved',
-        message: 'Your profile photo is now visible to potential matches.',
-        pushTitle: 'Photo approved',
-        pushBody: 'Your profile photo is now live.',
-        emailSubject: 'Profile photo approved',
-        emailBody: 'Hi {{userName}}, your new profile photo has been approved.',
-        smsBody: 'Your MatchMate profile photo was approved.',
-        variables: ['userName'],
-        channels: { inApp: true, push: true, email: false, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://profile/edit',
-        tags: ['engagement', 'profile', 'reminder'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'PHOTO_REJECTED',
-        eventKey: 'photo.rejected',
-        locale: 'en',
-        name: 'Photo Rejected',
-        category: 'system',
-        priority: 'normal',
-        title: 'Photo could not be approved',
-        message: 'Please upload another photo that meets profile guidelines.',
-        pushTitle: 'Photo upload required',
-        pushBody: 'Please upload a new profile photo.',
-        emailSubject: 'Photo update needed',
-        emailBody:
-          'Hi {{userName}}, your uploaded photo could not be approved.',
-        smsBody: 'Your MatchMate photo was rejected. Upload a new one.',
-        variables: ['userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://profile/edit',
-        tags: ['engagement', 'profile', 'reminder'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'SUBSCRIPTION_RENEWAL',
-        eventKey: 'subscription.renewal',
-        locale: 'en',
-        name: 'Subscription Renewal',
-        category: 'subscription',
-        priority: 'high',
-        title: 'Your {{planName}} plan renews soon',
-        message: 'Your {{planName}} plan renews on {{renewalDate}}.',
-        pushTitle: 'Plan renewal reminder',
-        pushBody: '{{planName}} renews on {{renewalDate}}.',
-        emailSubject: 'Subscription renewal reminder',
-        emailBody: 'Your {{planName}} plan renews on {{renewalDate}}.',
-        smsBody: '{{planName}} plan renews on {{renewalDate}}.',
-        variables: ['planName', 'renewalDate'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://subscription',
-        tags: ['subscription'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'SUBSCRIPTION_EXPIRED',
-        eventKey: 'subscription.expired',
-        locale: 'en',
-        name: 'Subscription Expired',
-        category: 'subscription',
-        priority: 'high',
-        title: 'Your {{planName}} plan has expired',
-        message: 'Renew your plan to keep premium features active.',
-        pushTitle: 'Subscription expired',
-        pushBody: 'Renew your {{planName}} plan now.',
-        emailSubject: 'Your subscription has expired',
-        emailBody:
-          'Hi {{userName}}, your {{planName}} subscription has expired.',
-        smsBody: 'Your {{planName}} subscription expired. Renew on MatchMate.',
-        variables: ['planName', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://subscription',
-        tags: ['subscription'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'PAYMENT_SUCCESS',
-        eventKey: 'payment.success',
-        locale: 'en',
-        name: 'Payment Successful',
-        category: 'subscription',
-        priority: 'normal',
-        title: 'Payment successful for {{planName}}',
-        message:
-          'Your payment of {{amount}} was successful. Transaction: {{transactionId}}.',
-        pushTitle: 'Payment successful',
-        pushBody: '{{amount}} payment received for {{planName}}.',
-        emailSubject: 'Payment receipt - MatchMate',
-        emailBody:
-          'Hi {{userName}}, payment {{transactionId}} for {{planName}} was successful.',
-        smsBody:
-          'Payment successful: {{amount}} for {{planName}} on MatchMate.',
-        variables: ['planName', 'amount', 'transactionId', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://subscription',
-        tags: ['subscription', 'payment'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'PAYMENT_FAILED',
-        eventKey: 'payment.failed',
-        locale: 'en',
-        name: 'Payment Failed',
-        category: 'subscription',
-        priority: 'high',
-        title: 'Payment failed for {{planName}}',
-        message:
-          'We could not process your payment. Please retry to continue premium benefits.',
-        pushTitle: 'Payment failed',
-        pushBody: 'Please retry your payment for {{planName}}.',
-        emailSubject: 'Payment failed - action needed',
-        emailBody:
-          'Hi {{userName}}, payment for {{planName}} failed. Please retry.',
-        smsBody: 'Payment failed for {{planName}} on MatchMate. Retry now.',
-        variables: ['planName', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://subscription',
-        tags: ['subscription', 'payment'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'PROMO_OFFER',
-        eventKey: 'promo.offer',
-        locale: 'en',
-        name: 'Promotional Offer',
-        category: 'system',
-        priority: 'low',
-        title: '{{discount}}% off on {{planName}}',
-        message: 'Limited period offer valid until {{validTill}}. Upgrade now.',
-        pushTitle: 'Special offer for you',
-        pushBody: '{{discount}}% off expires on {{validTill}}.',
-        emailSubject: 'Exclusive MatchMate offer inside',
-        emailBody:
-          'Hi {{userName}}, enjoy {{discount}}% off on {{planName}} till {{validTill}}.',
-        smsBody:
-          '{{discount}}% off on {{planName}} till {{validTill}}. MatchMate.',
-        variables: ['discount', 'planName', 'validTill', 'userName'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://subscription',
-        tags: ['system', 'promotion'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'PASSWORD_CHANGED',
-        eventKey: 'password.changed',
-        locale: 'en',
-        name: 'Password Changed',
-        category: 'system',
-        priority: 'critical',
-        title: 'Your password was changed',
-        message: 'If this was not you, secure your account immediately.',
-        pushTitle: 'Security alert',
-        pushBody: 'Your account password was changed.',
-        emailSubject: 'Security alert: password changed',
-        emailBody:
-          'Hi {{userName}}, your password was changed on {{changedAt}}.',
-        smsBody: 'Security alert: your MatchMate password was changed.',
-        variables: ['userName', 'changedAt'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://profile/security',
-        tags: ['security', 'system'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'NEW_DEVICE_LOGIN',
-        eventKey: 'new.device.login',
-        locale: 'en',
-        name: 'New Device Login',
-        category: 'system',
-        priority: 'critical',
-        title: 'New login detected',
-        message: 'New login from {{device}} at {{location}} on {{loginTime}}.',
-        pushTitle: 'New device login',
-        pushBody: 'Login detected from {{device}}.',
-        emailSubject: 'New login detected on your account',
-        emailBody:
-          'Hi {{userName}}, we noticed a login from {{device}} in {{location}}.',
-        smsBody: 'New login detected on MatchMate from {{device}}.',
-        variables: ['userName', 'device', 'location', 'loginTime'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://profile/security',
-        tags: ['security', 'system'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'ACCOUNT_BLOCKED',
-        eventKey: 'account.blocked',
-        locale: 'en',
-        name: 'Account Blocked',
-        category: 'system',
-        priority: 'critical',
-        title: 'Your account is temporarily restricted',
-        message: 'Your account has been restricted. Reason: {{reason}}.',
-        pushTitle: 'Account restricted',
-        pushBody: 'Open app for details on account status.',
-        emailSubject: 'Account restriction notice',
-        emailBody:
-          'Hi {{userName}}, your account is restricted. Reason: {{reason}}.',
-        smsBody:
-          'Your MatchMate account is restricted. Check email for details.',
-        variables: ['userName', 'reason'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://profile/security',
-        tags: ['security', 'system'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'SAFETY_ALERT',
-        eventKey: 'safety.alert',
-        locale: 'en',
-        name: 'Safety Alert',
-        category: 'system',
-        priority: 'critical',
-        title: 'Important safety alert',
-        message: '{{alertMessage}}',
-        pushTitle: 'Safety alert',
-        pushBody: '{{alertMessage}}',
-        emailSubject: 'Important safety notice from MatchMate',
-        emailBody: 'Hi {{userName}}, {{alertMessage}}',
-        smsBody: '{{alertMessage}}',
-        variables: ['userName', 'alertMessage'],
-        channels: { inApp: true, push: true, email: true, sms: true },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://safety',
-        tags: ['safety', 'system'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-      {
-        key: 'SYSTEM_ANNOUNCEMENT',
-        eventKey: 'system.announcement',
-        locale: 'en',
-        name: 'System Announcement',
-        category: 'system',
-        priority: 'normal',
-        title: '{{title}}',
-        message: '{{message}}',
-        pushTitle: '{{title}}',
-        pushBody: '{{message}}',
-        emailSubject: '{{title}}',
-        emailBody: '{{message}}',
-        smsBody: '{{message}}',
-        variables: ['title', 'message'],
-        channels: { inApp: true, push: true, email: true, sms: false },
-        deliveryRules: {
-          cooldownMinutes: 1,
-          maxPerDay: 100,
-        },
-        deepLink: 'matchmate://system/announcement',
-        tags: ['system'],
-        mandatory: false,
-        status: 'active',
-        isActive: true,
-        createdBy: 'system',
-      },
-    ];
+    const defaults = NOTIFICATION_TEMPLATE_SEEDS;
 
     // =====================================================
     // VALIDATE TEMPLATES

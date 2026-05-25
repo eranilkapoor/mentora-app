@@ -17,6 +17,56 @@ import {
   NotificationTemplates,
   NotificationTemplatesSchema,
 } from 'src/modules/notification/schemas/notification-templates.schema';
+import { User, UserSchema } from '../auth/schemas/user.schema';
+import {
+  Profile,
+  ProfileSchema,
+} from '../profile/schemas/profile/profile.schema';
+import {
+  Preference,
+  PreferenceSchema,
+} from '../profile/schemas/preference/preference.schema';
+import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
+import {
+  AccountSettings,
+  AccountSettingsSchema,
+} from '../settings/schemas/account-settings.schema';
+import {
+  PrivacySettings,
+  PrivacySettingsSchema,
+} from '../settings/schemas/privacy-settings.schema';
+import {
+  NotificationSettings,
+  NotificationSettingsSchema,
+} from '../settings/schemas/notification-settings.schema';
+import {
+  CommunicationSettings,
+  CommunicationSettingsSchema,
+} from '../settings/schemas/communication-settings.schema';
+import {
+  SecuritySettings,
+  SecuritySettingsSchema,
+} from '../settings/schemas/security-settings.schema';
+import {
+  LocalizationSettings,
+  LocalizationSettingsSchema,
+} from '../settings/schemas/localization-settings.schema';
+import {
+  AccessibilitySettings,
+  AccessibilitySettingsSchema,
+} from '../settings/schemas/accessibility-settings.schema';
+import {
+  MediaSettings,
+  MediaSettingsSchema,
+} from '../settings/schemas/media-settings.schema';
+import {
+  AiSettings,
+  AiSettingsSchema,
+} from '../settings/schemas/ai-settings.schema';
+import {
+  Verification,
+  VerificationSchema,
+} from '../profile/schemas/settings/verification.schema';
 
 @Module({
   imports: [
@@ -49,6 +99,20 @@ import {
         name: NotificationTemplates.name,
         schema: NotificationTemplatesSchema,
       },
+      { name: User.name, schema: UserSchema },
+      { name: Profile.name, schema: ProfileSchema },
+      { name: Preference.name, schema: PreferenceSchema },
+      { name: Media.name, schema: MediaSchema },
+      { name: AccountSettings.name, schema: AccountSettingsSchema },
+      { name: PrivacySettings.name, schema: PrivacySettingsSchema },
+      { name: NotificationSettings.name, schema: NotificationSettingsSchema },
+      { name: CommunicationSettings.name, schema: CommunicationSettingsSchema },
+      { name: SecuritySettings.name, schema: SecuritySettingsSchema },
+      { name: LocalizationSettings.name, schema: LocalizationSettingsSchema },
+      { name: AccessibilitySettings.name, schema: AccessibilitySettingsSchema },
+      { name: MediaSettings.name, schema: MediaSettingsSchema },
+      { name: AiSettings.name, schema: AiSettingsSchema },
+      { name: Verification.name, schema: VerificationSchema },
     ]),
   ],
 
