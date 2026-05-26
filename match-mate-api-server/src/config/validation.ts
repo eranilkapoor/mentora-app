@@ -266,8 +266,6 @@ export const envValidationSchema = Joi.object({
 
   MONGO_RETRY_DELAY: Joi.number().integer().min(0).max(60000).default(5000),
 
-  RUN_SEEDER: Joi.boolean().default(false),
-
   SEEDER_CONFIRM: optionalString,
 
   CACHE_DRIVER: Joi.string().trim().valid('redis', 'local').default('local'),
