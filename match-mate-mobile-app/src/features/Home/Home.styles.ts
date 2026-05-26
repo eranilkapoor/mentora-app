@@ -183,7 +183,6 @@ export const homeStyles = (theme: Theme) =>
       alignItems: 'center',
       gap: 5,
     },
-    // Fixed: `accentLight` → white with opacity — safe on all themes
     heroLocation: {
       fontSize: 13,
       color: theme.colors.overlayLight,
