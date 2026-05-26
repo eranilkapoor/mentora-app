@@ -1,7 +1,18 @@
 {
   "gender": {
-    "male": "पुरुष",
-    "female": "महिला"
+    "male": "Male",
+    "female": "Female"
+  },
+  "profile_for": {
+    "self": "स्वयं",
+    "son": "बेटा",
+    "daughter": "बेटी",
+    "brother": "भाई",
+    "sister": "बहन",
+    "friend": "मित्र",
+    "relative": "रिश्तेदार",
+    "client": "क्लाइंट",
+    "other": "अन्य"
   },
   "marital_status": {
     "never_married": "कभी विवाह नहीं हुआ",
@@ -80,7 +91,8 @@
     "upper_class": "उच्च वर्ग",
     "upper_middle_class": "उच्च मध्यम वर्ग",
     "middle_class": "मध्यम वर्ग",
-    "lower_middle_class": "निम्न मध्यम वर्ग"
+    "lower_middle_class": "निम्न मध्यम वर्ग",
+    "rich": "धनी"
   },
   "family_values": {
     "traditional": "पारंपरिक",
@@ -88,8 +100,8 @@
     "moderate": "मध्यम",
     "progressive": "उन्नतिशील",
     "liberal": "उदार",
-    "religious": "धार्मिक",
     "secular": "सेक्यूलर",
+    "religious": "धार्मिक",
     "spiritual": "आध्यात्मिक",
     "mixed": "मिश्रित मूल्यों"
   },
@@ -243,16 +255,5 @@
     "O-": "ओ नेगेटिव",
     "AB+": "एबी पॉजिटिव",
     "AB-": "एबी नेगेटिव"
-  },
-  "profile_for": {
-    "self": "स्वयं",
-    "son": "बेटा",
-    "daughter": "बेटी",
-    "brother": "भाई",
-    "sister": "बहन",
-    "friend": "मित्र",
-    "relative": "रिश्तेदार",
-    "client": "क्लाइंट",
-    "other": "अन्य"
   }
 }

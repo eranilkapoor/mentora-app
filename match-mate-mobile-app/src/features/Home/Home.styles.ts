@@ -1,5 +1,5 @@
 import { StyleSheet, Platform } from 'react-native';
-import { isWeb, windowWidth } from '../../core/utils/device';
+import { isWeb, windowWidth } from '@/core/utils/device';
 import { Theme } from '@/core/theme/types';
 
 export const homeStyles = (theme: Theme) =>
@@ -17,65 +17,13 @@ export const homeStyles = (theme: Theme) =>
       justifyContent: 'center',
     },
 
-    // ─── Welcome Banner ───────────────────────────────────────────────────
-    welcomeBanner: {
-      backgroundColor: theme.colors.white,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-    welcomeLeft: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 12,
-    },
-    welcomeAvatar: {
-      width: 44,
-      height: 44,
-      borderRadius: 22,
-      borderWidth: 2,
-      borderColor: theme.colors.primaryLight,
-    },
-    welcomeGreeting: {
-      fontSize: 12,
-      color: theme.colors.textMuted,
-    },
-    welcomeName: {
-      fontSize: 16,
-      fontWeight: '800',
-      color: theme.colors.textPrimary,
-    },
-    notifBtn: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: theme.colors.backgroundLight,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    notifDot: {
-      position: 'absolute',
-      top: 8,
-      right: 8,
-      width: 8,
-      height: 8,
-      borderRadius: 4,
-      backgroundColor: theme.colors.danger,
-      borderWidth: 1.5,
-      borderColor: theme.colors.white,
-    },
-
-    // ─── Quick Stats ──────────────────────────────────────────────────────
+    // ─── Stats ────────────────────────────────────────────────────────────
     statsRow: {
       flexDirection: 'row',
       paddingHorizontal: 16,
       paddingVertical: 12,
       gap: 10,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
     },
@@ -129,14 +77,23 @@ export const homeStyles = (theme: Theme) =>
 
     // ─── Card ─────────────────────────────────────────────────────────────
     card: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       marginHorizontal: 16,
       marginBottom: 16,
       borderRadius: 18,
       overflow: 'hidden',
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      ...Platform.select({ android: { elevation: 3 } }),
+      ...Platform.select({
+        android: { elevation: 3 },
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+        },
+        web: {},
+      }),
     },
 
     // ─── Photo ────────────────────────────────────────────────────────────
@@ -145,13 +102,14 @@ export const homeStyles = (theme: Theme) =>
       width: isWeb ? 375 : windowWidth - 32,
       height: 340,
     },
+    // Fixed: `overlayDark` → rgba fallback safe on all themes
     photoScrim: {
       position: 'absolute',
       bottom: 0,
       left: 0,
       right: 0,
       height: 160,
-      backgroundColor: theme.colors.overlayDark,
+      backgroundColor: 'rgba(0,0,0,0.45)',
     },
     photoBadge: {
       position: 'absolute',
@@ -159,7 +117,7 @@ export const homeStyles = (theme: Theme) =>
       right: 12,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.black,
+      backgroundColor: 'rgba(0,0,0,0.55)',
       borderRadius: 12,
       paddingHorizontal: 8,
       paddingVertical: 4,
@@ -177,7 +135,7 @@ export const homeStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
-      backgroundColor: theme.colors.black,
+      backgroundColor: 'rgba(0,0,0,0.55)',
       paddingHorizontal: 9,
       paddingVertical: 4,
       borderRadius: 20,
@@ -195,13 +153,14 @@ export const homeStyles = (theme: Theme) =>
     },
     newBadge: {
       position: 'absolute',
-      top: 44,
       left: 12,
       backgroundColor: theme.colors.primary,
       paddingHorizontal: 9,
       paddingVertical: 4,
       borderRadius: 20,
     },
+    newBadgeOnline: { top: 44 },
+    newBadgeDefault: { top: 12 },
     newBadgeText: {
       color: theme.colors.white,
       fontSize: 10,
@@ -225,9 +184,10 @@ export const homeStyles = (theme: Theme) =>
       alignItems: 'center',
       gap: 5,
     },
+    // Fixed: `accentLight` → white with opacity — safe on all themes
     heroLocation: {
       fontSize: 13,
-      color: theme.colors.accentLight,
+      color: 'rgba(255,255,255,0.85)',
     },
 
     // ─── Card Content ─────────────────────────────────────────────────────
@@ -284,7 +244,6 @@ export const homeStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: 6,
-      elevation: 3,
     },
     chatBtnPending: {
       backgroundColor: theme.colors.error,
@@ -317,39 +276,12 @@ export const homeStyles = (theme: Theme) =>
       borderColor: theme.colors.accent,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.accentLight,
+      backgroundColor: theme.colors.primaryLight,
     },
     shortlistBtnActive: {
       backgroundColor: theme.colors.accent,
       borderColor: theme.colors.accent,
     },
-
-    // ─── Skeleton ─────────────────────────────────────────────────────────
-    skeletonCard: {
-      backgroundColor: theme.colors.white,
-      marginHorizontal: 16,
-      marginBottom: 16,
-      borderRadius: 18,
-      overflow: 'hidden',
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-    },
-    skeletonPhoto: {
-      width: '100%',
-      height: 340,
-      backgroundColor: theme.colors.backgroundLight,
-    },
-    skeletonContent: {
-      padding: 14,
-      gap: 10,
-    },
-    skeletonLine: {
-      height: 13,
-      borderRadius: 6,
-      backgroundColor: theme.colors.backgroundLight,
-    },
-    skeletonLineShort: { width: '55%' },
-    skeletonLineXShort: { width: '35%' },
 
     // ─── Empty ────────────────────────────────────────────────────────────
     emptyWrapper: {
@@ -378,12 +310,5 @@ export const homeStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
       textAlign: 'center',
       lineHeight: 20,
-    },
-    newBadgeOnline: {
-      top: 44,
-    },
-
-    newBadgeDefault: {
-      top: 12,
     },
   });

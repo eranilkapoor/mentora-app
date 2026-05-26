@@ -13,6 +13,7 @@ import {
 } from '../EditProfile.types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
+import { INITIAL_SIBLINGS } from '../EditProfile.constants';
 
 interface Props {
   family: FamilySectionType;
@@ -54,14 +55,14 @@ export function FamilySection({
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.father_name')}
-            value={family.fatherName}
+            value={family.fatherName ?? ''}
             onChange={(v) => onSet('fatherName', v)}
           />
         </View>
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.mother_name')}
-            value={family.motherName}
+            value={family.motherName ?? ''}
             onChange={(v) => onSet('motherName', v)}
           />
         </View>
@@ -71,14 +72,14 @@ export function FamilySection({
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.father_occupation')}
-            value={family.fatherOccupation}
+            value={family.fatherOccupation ?? ''}
             onChange={(v) => onSet('fatherOccupation', v)}
           />
         </View>
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.mother_occupation')}
-            value={family.motherOccupation}
+            value={family.motherOccupation ?? ''}
             onChange={(v) => onSet('motherOccupation', v)}
           />
         </View>
@@ -87,7 +88,7 @@ export function FamilySection({
       <SingleSelectPill
         label={t('edit_profile.fields.family_type')}
         options={FamilyTypeOptions}
-        value={family.familyType}
+        value={family.familyType ?? ''}
         onChange={(v) =>
           onSet('familyType', v as FamilySectionType['familyType'])
         }
@@ -96,7 +97,7 @@ export function FamilySection({
       <SingleSelectPill
         label={t('edit_profile.fields.family_status')}
         options={FamilyStatusOptions}
-        value={family.familyStatus}
+        value={family.familyStatus ?? FamilyStatuses.MIDDLE_CLASS}
         onChange={(v) =>
           onSet('familyStatus', v as FamilySectionType['familyStatus'])
         }
@@ -105,7 +106,7 @@ export function FamilySection({
       <SingleSelectPill
         label={t('edit_profile.fields.family_values')}
         options={FamilyValueOptions}
-        value={family.familyValues}
+        value={family.familyValues ?? FamilyValues.MODERATE}
         onChange={(v) =>
           onSet('familyValues', v as FamilySectionType['familyValues'])
         }
@@ -113,7 +114,7 @@ export function FamilySection({
       />
 
       <SiblingsEditor
-        value={family.siblings}
+        value={family.siblings ?? INITIAL_SIBLINGS}
         onChange={(v) => onSet('siblings', v)}
       />
     </SectionCard>
