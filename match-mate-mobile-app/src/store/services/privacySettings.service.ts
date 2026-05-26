@@ -1,4 +1,5 @@
 import { baseApi } from '@/store/services/baseApi';
+import { ApiResponse } from '@/core/types';
 
 import {
   PrivacySettings,
@@ -37,6 +38,12 @@ export const privacySettingsApi = baseApi.injectEndpoints({
         url: '/settings/privacy/blocked',
         method: 'GET',
       }),
+      transformResponse: (
+        response: BlockedUsersResponse | ApiResponse<BlockedUsersResponse>
+      ) =>
+        response && 'data' in response && response.data
+          ? response.data
+          : (response as BlockedUsersResponse),
       providesTags: ['PrivacySettings'],
     }),
     unblockUser: builder.mutation<void, { targetUserId: string }>({

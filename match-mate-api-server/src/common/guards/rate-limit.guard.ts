@@ -50,7 +50,6 @@ interface RateLimitEntry {
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
-  //private readonly logger = new Logger(RateLimitGuard.name);
   private locks = new Map<string, Promise<void>>();
 
   constructor(

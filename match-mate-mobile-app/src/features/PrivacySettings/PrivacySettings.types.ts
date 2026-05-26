@@ -50,5 +50,15 @@ export interface PrivacySettingsResponse {
 export interface UpdatePrivacySettingsPayload extends Partial<PrivacySettings> {}
 
 export interface BlockedUsersResponse {
-  blockedUsers: string[];
+  blockedUsers: BlockedUserSummary[];
+}
+
+export interface BlockedUserSummary {
+  userId: string;
+  name: string;
+  age?: number;
+  location?: string;
+  avatarUrl?: string;
+  isVerified?: boolean;
+  blockedAt?: string;
 }

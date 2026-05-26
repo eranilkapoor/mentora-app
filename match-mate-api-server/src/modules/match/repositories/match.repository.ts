@@ -1,6 +1,7 @@
-import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FlattenMaps, Model, Types } from 'mongoose';
+import { AppLogger } from 'src/common/logger/logger.service';
 import {
   Interest,
   InterestDocument,
@@ -55,8 +56,6 @@ type LeanInteraction = FlattenMaps<Interaction> & {
 
 @Injectable()
 export class MatchRepository implements OnModuleInit {
-  private readonly logger = new Logger(MatchRepository.name);
-
   constructor(
     @InjectModel(Interest.name)
     private readonly interestModel: Model<InterestDocument>,
@@ -72,6 +71,8 @@ export class MatchRepository implements OnModuleInit {
 
     @InjectModel(Interaction.name)
     private readonly interactionModel: Model<InteractionDocument>,
+
+    private readonly logger: AppLogger,
   ) {}
 
   async onModuleInit(): Promise<void> {

@@ -16,6 +16,16 @@ import {
   UserReport,
   UserReportDocument,
 } from 'src/modules/profile/schemas/settings/user-report.schema';
+import {
+  Profile,
+  ProfileDocument,
+} from 'src/modules/profile/schemas/profile/profile.schema';
+import {
+  Media,
+  MediaDocument,
+  MediaStatus,
+} from 'src/modules/profile/schemas/media/media.schema';
+import { MediaType } from 'src/common/enums';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,
@@ -56,6 +66,10 @@ export class SettingsService {
     private readonly verificationModel: Model<VerificationDocument>,
     @InjectModel(UserReport.name)
     private readonly userReportModel: Model<UserReportDocument>,
+    @InjectModel(Profile.name)
+    private readonly profileModel: Model<ProfileDocument>,
+    @InjectModel(Media.name)
+    private readonly mediaModel: Model<MediaDocument>,
   ) {}
 
   // ─── All settings in one call ─────────────────────────────────────────────
@@ -121,9 +135,97 @@ export class SettingsService {
 
   async getBlockedUsers(userId: string) {
     const blocks = await this.repo.getBlockedUsers(userId);
+    const blockedUserIds = blocks.map((block) =>
+      block.blockedUserId.toString(),
+    );
+
+    if (blockedUserIds.length === 0) {
+      return { blockedUsers: [] };
+    }
+
+    const [profiles, media] = await Promise.all([
+      this.profileModel
+        .find({
+          userId: { $in: blockedUserIds.map((id) => new Types.ObjectId(id)) },
+        })
+        .select('userId personal age isVerified')
+        .lean<
+          Array<{
+            userId: Types.ObjectId;
+            personal?: {
+              firstName?: string;
+              lastName?: string;
+              city?: string;
+              state?: string;
+            };
+            age?: number;
+            isVerified?: boolean;
+          }>
+        >()
+        .exec(),
+      this.mediaModel
+        .find({
+          userId: { $in: blockedUserIds.map((id) => new Types.ObjectId(id)) },
+          type: MediaType.IMAGE,
+          status: MediaStatus.ACTIVE,
+          isActive: true,
+        })
+        .sort({ isPrimary: -1, uploadedAt: -1, createdAt: -1 })
+        .select('userId url thumbnailUrl isPrimary')
+        .lean<
+          Array<{
+            userId: Types.ObjectId;
+            url?: string;
+            thumbnailUrl?: string;
+            isPrimary?: boolean;
+          }>
+        >()
+        .exec(),
+    ]);
+
+    const profileByUserId = new Map(
+      profiles.map((profile) => [profile.userId.toString(), profile]),
+    );
+    const mediaByUserId = new Map<string, (typeof media)[number]>();
+    media.forEach((item) => {
+      const key = item.userId.toString();
+      if (!mediaByUserId.has(key)) {
+        mediaByUserId.set(key, item);
+      }
+    });
 
     return {
-      blockedUsers: blocks.map((block) => block.blockedUserId.toString()),
+      blockedUsers: blocks.map((block) => {
+        const blockWithTimestamp = block as typeof block & {
+          createdAt?: Date;
+        };
+        const blockedUserId = block.blockedUserId.toString();
+        const profile = profileByUserId.get(blockedUserId);
+        const photo = mediaByUserId.get(blockedUserId);
+        const name =
+          [profile?.personal?.firstName, profile?.personal?.lastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim() || 'MatchMate Member';
+        const location =
+          [profile?.personal?.city, profile?.personal?.state]
+            .filter(Boolean)
+            .join(', ') || undefined;
+
+        return {
+          userId: blockedUserId,
+          name,
+          ...(profile?.age ? { age: profile.age } : {}),
+          ...(location ? { location } : {}),
+          ...(photo?.thumbnailUrl || photo?.url
+            ? { avatarUrl: photo.thumbnailUrl ?? photo.url }
+            : {}),
+          isVerified: profile?.isVerified === true,
+          ...(blockWithTimestamp.createdAt instanceof Date
+            ? { blockedAt: blockWithTimestamp.createdAt.toISOString() }
+            : {}),
+        };
+      }),
     };
   }
 
@@ -279,6 +381,7 @@ export class SettingsService {
       profileView,
       matchFound,
       messageReceived,
+      subscription,
       marketing,
       system,
       quietHours,
@@ -295,6 +398,7 @@ export class SettingsService {
     if (matchFound) update['preferences.matchFound'] = matchFound;
     if (messageReceived)
       update['preferences.messageReceived'] = messageReceived;
+    if (subscription) update['preferences.subscription'] = subscription;
     if (marketing) update['preferences.marketing'] = marketing;
     if (system) update['preferences.system'] = system;
     if (quietHours) update['quietHours'] = quietHours;
@@ -308,11 +412,7 @@ export class SettingsService {
     dto: UpdateNotificationChannelDto,
   ) {
     return this.repo.updateNotification(userId, {
-      preferences: {
-        [params.event]: {
-          [params.channel]: dto.value,
-        },
-      },
+      [`preferences.${params.event}.${params.channel}`]: dto.value,
     } as never);
   }
 

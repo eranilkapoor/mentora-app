@@ -1,4 +1,5 @@
 import { baseApi } from './baseApi';
+import { ApiResponse } from '@/core/types';
 
 import {
   ChannelPreference,
@@ -17,8 +18,13 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
         url: '/settings/notifications',
         method: 'GET',
       }),
-      transformResponse: (response: NotificationSettings) => ({
-        notification: response,
+      transformResponse: (
+        response: NotificationSettings | ApiResponse<NotificationSettings>
+      ) => ({
+        notification:
+          response && 'data' in response && response.data
+            ? response.data
+            : (response as NotificationSettings),
       }),
 
       providesTags: ['NotificationSettings'],
@@ -36,6 +42,12 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
+      transformResponse: (
+        response: NotificationSettings | ApiResponse<NotificationSettings>
+      ) =>
+        response && 'data' in response && response.data
+          ? response.data
+          : (response as NotificationSettings),
       invalidatesTags: ['NotificationSettings'],
     }),
 
@@ -52,6 +64,12 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
         method: 'PATCH',
         body: { value },
       }),
+      transformResponse: (
+        response: NotificationSettings | ApiResponse<NotificationSettings>
+      ) =>
+        response && 'data' in response && response.data
+          ? response.data
+          : (response as NotificationSettings),
       invalidatesTags: ['NotificationSettings'],
     }),
   }),

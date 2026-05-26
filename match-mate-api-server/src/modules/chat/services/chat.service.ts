@@ -3,10 +3,10 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
-  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
+import { AppLogger } from 'src/common/logger/logger.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { ChatPresenceService } from './chat-presence.service';
 import { ChatRealtimeService } from './chat-realtime.service';
@@ -104,13 +104,12 @@ type ProfileLike = {
 
 @Injectable()
 export class ChatService {
-  private readonly logger = new Logger(ChatService.name);
-
   constructor(
     private readonly repo: ChatRepository,
     private readonly presence: ChatPresenceService,
     private readonly realtime: ChatRealtimeService,
     private readonly notificationService: NotificationService,
+    private readonly logger: AppLogger,
   ) {}
 
   health() {

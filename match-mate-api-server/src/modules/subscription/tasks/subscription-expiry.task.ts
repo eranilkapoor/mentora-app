@@ -1,12 +1,14 @@
-import { Injectable, Logger } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
+import { AppLogger } from 'src/common/logger/logger.service';
 import { SubscriptionService } from '../services/subscription.service';
 
 @Injectable()
 export class SubscriptionExpiryTask {
-  private readonly logger = new Logger(SubscriptionExpiryTask.name);
-
-  constructor(private readonly subscriptionService: SubscriptionService) {}
+  constructor(
+    private readonly subscriptionService: SubscriptionService,
+    private readonly logger: AppLogger,
+  ) {}
 
   // Runs at midnight every day
   @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
@@ -18,7 +20,11 @@ export class SubscriptionExpiryTask {
         `Subscription expiry task complete. Expired: ${result.expiredCount}`,
       );
     } catch (err) {
-      this.logger.error('Subscription expiry task failed', err);
+      this.logger.error(
+        'Subscription expiry task failed',
+        err instanceof Error ? err.stack : undefined,
+        { error: err instanceof Error ? err.message : String(err) },
+      );
     }
   }
 }

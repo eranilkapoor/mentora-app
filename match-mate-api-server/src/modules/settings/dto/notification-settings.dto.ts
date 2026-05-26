@@ -91,6 +91,11 @@ export class UpdateNotificationSettingsDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => ChannelPreferenceDto)
+  subscription?: ChannelPreferenceDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => ChannelPreferenceDto)
   marketing?: ChannelPreferenceDto;
 
   @IsOptional()

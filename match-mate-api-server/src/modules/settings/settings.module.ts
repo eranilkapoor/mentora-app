@@ -53,6 +53,11 @@ import {
   UserBlock,
   UserBlockSchema,
 } from '../profile/schemas/settings/user-block.schema';
+import {
+  Profile,
+  ProfileSchema,
+} from '../profile/schemas/profile/profile.schema';
+import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
 
 @Module({
   imports: [
@@ -71,6 +76,8 @@ import {
       { name: Verification.name, schema: VerificationSchema },
       { name: UserReport.name, schema: UserReportSchema },
       { name: UserBlock.name, schema: UserBlockSchema },
+      { name: Profile.name, schema: ProfileSchema },
+      { name: Media.name, schema: MediaSchema },
     ]),
   ],
   controllers: [SettingsController],
