@@ -28,7 +28,7 @@ import { successResponse } from 'src/common/utils/response.util';
 export class RbacController {
   constructor(private readonly rbacService: RbacService) {}
 
-  // ─── Permissions ──────────────────────────────────────────────────────────
+  //  Permissions
 
   @Post('permissions')
   @Permissions(Permission.ADMIN_MANAGE)
@@ -68,7 +68,7 @@ export class RbacController {
     );
   }
 
-  // ─── Roles ────────────────────────────────────────────────────────────────
+  //  Roles
 
   @Post('roles')
   @Permissions(Permission.ADMIN_MANAGE)
@@ -117,7 +117,7 @@ export class RbacController {
     );
   }
 
-  // ─── User Roles ───────────────────────────────────────────────────────────
+  //  User Roles
 
   @Get('users/:userId/roles')
   @Permissions(Permission.ADMIN_MANAGE)

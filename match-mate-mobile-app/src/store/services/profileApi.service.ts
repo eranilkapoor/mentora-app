@@ -19,7 +19,7 @@ export const profileApi = baseApi.injectEndpoints({
       FormData
     >({
       query: (body) => ({
-        url: '/profile/onboarding',
+        url: '/profiles/onboarding',
         method: 'POST',
         body,
         formData: true,
@@ -28,7 +28,7 @@ export const profileApi = baseApi.injectEndpoints({
     }),
 
     getMyProfile: builder.query<ApiResponse<ProfileData>, void>({
-      query: () => '/profile/me',
+      query: () => '/profiles/me',
       providesTags: ['Profile'],
     }),
 
@@ -37,7 +37,7 @@ export const profileApi = baseApi.injectEndpoints({
       PersonalData
     >({
       query: (body) => ({
-        url: '/profile/personal',
+        url: '/profiles/personal',
         method: 'PUT',
         body,
       }),
@@ -49,7 +49,7 @@ export const profileApi = baseApi.injectEndpoints({
       PhysicalData
     >({
       query: (body) => ({
-        url: '/profile/physical',
+        url: '/profiles/physical',
         method: 'PUT',
         body,
       }),
@@ -61,7 +61,7 @@ export const profileApi = baseApi.injectEndpoints({
       EducationData
     >({
       query: (body) => ({
-        url: '/profile/education',
+        url: '/profiles/education',
         method: 'PUT',
         body,
       }),
@@ -70,7 +70,7 @@ export const profileApi = baseApi.injectEndpoints({
 
     updateFamilyInfo: builder.mutation<ApiResponse<ProfileData>, FamilyData>({
       query: (body) => ({
-        url: '/profile/family',
+        url: '/profiles/family',
         method: 'PUT',
         body,
       }),
@@ -82,7 +82,7 @@ export const profileApi = baseApi.injectEndpoints({
       { latitude: number; longitude: number }
     >({
       query: (body) => ({
-        url: '/profile/location',
+        url: '/profiles/location',
         method: 'PUT',
         body,
       }),
@@ -94,7 +94,7 @@ export const profileApi = baseApi.injectEndpoints({
       PreferencesData
     >({
       query: (body) => ({
-        url: '/profile/preferences',
+        url: '/profiles/preferences',
         method: 'PUT',
         body,
       }),
@@ -102,7 +102,7 @@ export const profileApi = baseApi.injectEndpoints({
     }),
 
     getMyProfileMediaImages: builder.query<ApiResponse<ProfileImage[]>, void>({
-      query: () => '/profile/media/images',
+      query: () => '/profiles/media/images',
       providesTags: ['ProfileMedia'],
     }),
 
@@ -111,7 +111,7 @@ export const profileApi = baseApi.injectEndpoints({
       FormData
     >({
       query: (body) => ({
-        url: '/profile/media/images',
+        url: '/profiles/media/images',
         method: 'POST',
         body,
         formData: true,
@@ -124,7 +124,7 @@ export const profileApi = baseApi.injectEndpoints({
       { mediaId: string }
     >({
       query: ({ mediaId }) => ({
-        url: `/profile/media/images/${mediaId}/primary`,
+        url: `/profiles/media/images/${mediaId}/primary`,
         method: 'PATCH',
       }),
       invalidatesTags: ['ProfileMedia'],
@@ -135,7 +135,7 @@ export const profileApi = baseApi.injectEndpoints({
       { mediaId: string }
     >({
       query: ({ mediaId }) => ({
-        url: `/profile/media/images/${mediaId}`,
+        url: `/profiles/media/images/${mediaId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['ProfileMedia', 'Profile'],

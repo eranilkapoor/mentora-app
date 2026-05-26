@@ -24,7 +24,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
     // Cleanup expired keys every 60 seconds
     this.cleanupTimer = setInterval(() => this.cleanup(), 60_000);
 
-    this.logger.log('✅ Local file cache initialized');
+    this.logger.log(' Local file cache initialized');
   }
 
   onModuleDestroy() {
@@ -62,7 +62,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
   }
 
   delByPattern(pattern: string): Promise<void> {
-    // Convert glob pattern to regex: 'user:*' → /^user:.*/
+    // Convert glob pattern to regex: 'user:*'  /^user:.*/
     const regex = new RegExp(
       '^' + pattern.replace(/\*/g, '.*').replace(/\?/g, '.') + '$',
     );
@@ -107,7 +107,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
     }
   }
 
-  // ─── Disk Persistence ─────────────────────────────────────────────────────
+  //  Disk Persistence
   private saveToDisk(): void {
     try {
       const dir = path.dirname(this.persistPath);
@@ -125,7 +125,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
 
       fs.writeFileSync(this.persistPath, JSON.stringify(data), 'utf8');
     } catch (err) {
-      this.logger.warn('⚠️ Failed to persist cache to disk:', err);
+      this.logger.warn(' Failed to persist cache to disk:', err);
     }
   }
 
@@ -143,9 +143,9 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
         }
       }
 
-      this.logger.log(`📂 Loaded ${this.store.size} entries from disk cache`);
+      this.logger.log(` Loaded ${this.store.size} entries from disk cache`);
     } catch {
-      this.logger.warn('⚠️ Could not load cache from disk, starting fresh');
+      this.logger.warn(' Could not load cache from disk, starting fresh');
     }
   }
 
@@ -161,7 +161,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
     }
 
     if (cleaned > 0) {
-      this.logger.debug(`🧹 Cleaned ${cleaned} expired cache entries`);
+      this.logger.debug(` Cleaned ${cleaned} expired cache entries`);
       this.saveToDisk();
     }
   }

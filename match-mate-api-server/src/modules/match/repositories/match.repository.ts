@@ -24,7 +24,7 @@ import {
 } from 'src/modules/profile/schemas/interaction/interaction.schema';
 import { InteractionType } from 'src/modules/profile/enums/interaction-type.enum';
 
-// ─── Explicit lean types ──────────────────────────────────────────────────────
+//  Explicit lean types
 
 type LeanInterest = FlattenMaps<Interest> & {
   _id: Types.ObjectId;

@@ -32,13 +32,13 @@ import { SettingsModule } from './modules/settings/settings.module';
     // ==========================================
     ConfigModule.forRoot({
       isGlobal: true,
-      // 🔥 KEY PART
+      //  KEY PART
       envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
       load: configArray,
       validationSchema: envValidationSchema,
     }),
     // ==========================================
-    // ✅ THROTTLER (GLOBAL BASE RATE LIMIT)
+    //  THROTTLER (GLOBAL BASE RATE LIMIT)
     // ==========================================
     ThrottlerModule.forRoot({
       throttlers: [
@@ -70,21 +70,21 @@ import { SettingsModule } from './modules/settings/settings.module';
   controllers: [AppController],
   providers: [
     // ==========================================
-    // ✅ ORDER MATTERS (TOP → BOTTOM)
+    //  ORDER MATTERS (TOP  BOTTOM)
     // ==========================================
 
-    // 1️⃣ Throttler (first line of defense - IP based)
+    // 1 Throttler (first line of defense - IP based)
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
     },
 
-    // 2️⃣ JWT Auth (auth check)
+    // 2 JWT Auth (auth check)
     {
       provide: APP_GUARD,
       useClass: JwtAuthGuard,
     },
-    // 3️⃣ Custom Rate Limit (business logic - user based)
+    // 3 Custom Rate Limit (business logic - user based)
     {
       provide: APP_GUARD,
       useClass: RateLimitGuard,

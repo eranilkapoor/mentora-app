@@ -38,7 +38,7 @@ interface SocketAuth {
 }
 
 @WebSocketGateway({
-  namespace: '/chat',
+  namespace: '/chats',
   cors: { origin: '*' },
 })
 @UsePipes(
@@ -231,11 +231,11 @@ export class ChatGateway
   }
 
   private extractToken(client: Socket): string | undefined {
-    // ✅ Auth object
+    //  Auth object
     const authToken = this.getAuthToken(client);
     if (authToken) return authToken;
 
-    // ✅ Authorization header
+    //  Authorization header
     const authorizationHeader = client.handshake.headers.authorization;
     if (
       typeof authorizationHeader === 'string' &&
@@ -244,7 +244,7 @@ export class ChatGateway
       return authorizationHeader.slice(7);
     }
 
-    // ✅ Query param
+    //  Query param
     const query = client.handshake.query as Record<string, unknown>;
     const queryToken = query?.token;
 

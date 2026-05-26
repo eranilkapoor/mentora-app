@@ -19,16 +19,15 @@ import {
   PrivacySettingSchema,
 } from '../profile/schemas/settings/privacy-setting.schema';
 import { Match, MatchSchema } from '../match/schemas/match.schema';
-import {
-  UserBlock,
-  UserBlockSchema,
-} from '../profile/schemas/settings/user-block.schema';
+import { SafetyModule } from '../safety/safety.module';
 import { ChatPresenceService } from './services/chat-presence.service';
+import { ChatAccessService } from './services/chat-access.service';
 
 @Module({
   imports: [
     AuthModule,
     NotificationModule,
+    SafetyModule,
     MongooseModule.forFeature([
       { name: ChatMessage.name, schema: ChatMessageSchema },
       { name: ChatRoom.name, schema: ChatRoomSchema },
@@ -36,7 +35,6 @@ import { ChatPresenceService } from './services/chat-presence.service';
       { name: Profile.name, schema: ProfileSchema },
       { name: PrivacySetting.name, schema: PrivacySettingSchema },
       { name: Match.name, schema: MatchSchema },
-      { name: UserBlock.name, schema: UserBlockSchema },
     ]),
   ],
   providers: [
@@ -45,6 +43,7 @@ import { ChatPresenceService } from './services/chat-presence.service';
     ChatService,
     ChatRepository,
     ChatPresenceService,
+    ChatAccessService,
   ],
   controllers: [ChatController],
   exports: [ChatService, ChatPresenceService, ChatRealtimeService],

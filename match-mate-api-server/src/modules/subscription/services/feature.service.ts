@@ -15,15 +15,15 @@ import { FeatureKey } from 'src/common/enums';
 import { FeatureContext } from '../interfaces/feature-context.interface';
 import { PlanService } from './plan.service';
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+//  Types
 
 type LeanPlanFeature = FlattenMaps<PlanFeature> & {
   _id: Types.ObjectId;
   featureId: { key: FeatureKey };
 };
 
-const PLAN_FEATURES_CACHE_TTL = 300; // 5 minutes — plan features rarely change
-const USAGE_CACHE_TTL = 86_400; // 24 hours — daily limit window
+const PLAN_FEATURES_CACHE_TTL = 300; // 5 minutes  plan features rarely change
+const USAGE_CACHE_TTL = 86_400; // 24 hours  daily limit window
 
 @Injectable()
 export class FeatureService {
@@ -40,7 +40,7 @@ export class FeatureService {
     private readonly planService: PlanService,
   ) {}
 
-  // ─── Feature gate ───────────────────────────────────────────────────────────
+  //  Feature gate
 
   async checkAccess(featureKey: FeatureKey, context: FeatureContext) {
     const { userId } = context;
@@ -74,7 +74,7 @@ export class FeatureService {
     return { allowed: true };
   }
 
-  // ─── Usage tracking (Redis) ─────────────────────────────────────────────────
+  //  Usage tracking (Redis)
 
   async checkUsageLimit(
     userId: string,
@@ -104,7 +104,7 @@ export class FeatureService {
     return Math.max(0, limit - (current ?? 0));
   }
 
-  // ─── Feature map for a user ─────────────────────────────────────────────────
+  //  Feature map for a user
 
   async getFeaturesForUser(userId: string): Promise<Record<string, unknown>> {
     const subscription = await this.subModel
@@ -113,7 +113,7 @@ export class FeatureService {
       .exec();
 
     if (!subscription) {
-      return {}; // Free tier — no features
+      return {}; // Free tier  no features
     }
 
     const features = await this.getCachedPlanFeatures(
@@ -131,7 +131,7 @@ export class FeatureService {
     return Boolean(features[key]);
   }
 
-  // ─── Cached plan features ───────────────────────────────────────────────────
+  //  Cached plan features
 
   private async getCachedPlanFeatures(
     planId: string,

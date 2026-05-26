@@ -3,6 +3,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MatchController } from './controllers/match.controller';
 import { MatchService } from './services/match.service';
 import { MatchDiscoveryService } from './services/match-discovery.service';
+import { MatchNotificationService } from './services/match-notification.service';
 import { MatchRepository } from './repositories/match.repository';
 import { MatchDiscoveryRepository } from './repositories/match-discovery.repository';
 import { Match, MatchSchema } from './schemas/match.schema';
@@ -41,6 +42,7 @@ import { SettingsModule } from '../settings/settings.module';
   providers: [
     MatchService,
     MatchDiscoveryService,
+    MatchNotificationService,
     MatchRepository,
     MatchDiscoveryRepository,
   ],

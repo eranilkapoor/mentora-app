@@ -13,7 +13,7 @@ import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 
-// ─── Lean return types ────────────────────────────────────────────────────────
+//  Lean return types
 // .lean() strips Mongoose Document methods and returns plain objects.
 // Using FlattenMaps<T> is the correct type for lean results.
 
@@ -37,7 +37,7 @@ export class RbacService {
     private readonly userModel: Model<UserDocument>,
   ) {}
 
-  // ─── Permissions ──────────────────────────────────────────────────────────
+  //  Permissions
 
   async createPermission(dto: CreatePermissionDto): Promise<LeanPermission> {
     const existing = await this.permissionModel
@@ -88,7 +88,7 @@ export class RbacService {
     return { deleted: true };
   }
 
-  // ─── Roles ────────────────────────────────────────────────────────────────
+  //  Roles
 
   async createRole(dto: CreateRoleDto): Promise<LeanRolePopulated> {
     const existing = await this.roleModel
@@ -202,7 +202,7 @@ export class RbacService {
     return { deleted: true };
   }
 
-  // ─── User Roles ───────────────────────────────────────────────────────────
+  //  User Roles
 
   async assignRoles(userId: string, roleIds: string[]) {
     const user = await this.userModel.findById(userId).lean().exec();
@@ -277,7 +277,7 @@ export class RbacService {
       .exec();
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
+  //  Helpers
 
   private async validatePermissionIds(ids: string[]): Promise<void> {
     const found = await this.permissionModel

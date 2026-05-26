@@ -11,7 +11,7 @@ import {
 export const preferenceApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getMyPreference: builder.query<ApiResponse<PreferenceData>, void>({
-      query: () => '/preference/me',
+      query: () => '/preferences/me',
       providesTags: ['Preference'],
     }),
 
@@ -20,7 +20,7 @@ export const preferenceApi = baseApi.injectEndpoints({
       PartnerFiltersData
     >({
       query: (body) => ({
-        url: '/preference/filters',
+        url: '/preferences/filters',
         method: 'PUT',
         body,
       }),
@@ -32,7 +32,7 @@ export const preferenceApi = baseApi.injectEndpoints({
       MatchSettingsData
     >({
       query: (body) => ({
-        url: '/preference/settings',
+        url: '/preferences/settings',
         method: 'PUT',
         body,
       }),
@@ -44,7 +44,7 @@ export const preferenceApi = baseApi.injectEndpoints({
       MatchWeightsData
     >({
       query: (body) => ({
-        url: '/preference/weights',
+        url: '/preferences/weights',
         method: 'PUT',
         body,
       }),
@@ -56,7 +56,7 @@ export const preferenceApi = baseApi.injectEndpoints({
       AboutPartnerData
     >({
       query: (body) => ({
-        url: '/preference/about',
+        url: '/preferences/about',
         method: 'PUT',
         body,
       }),

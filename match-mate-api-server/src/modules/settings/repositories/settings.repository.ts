@@ -37,7 +37,7 @@ import { AiSettings, AiSettingsDocument } from '../schemas/ai-settings.schema';
 import {
   UserBlock,
   UserBlockDocument,
-} from 'src/modules/profile/schemas/settings/user-block.schema';
+} from 'src/modules/safety/schemas/user-block.schema';
 
 function buildDotNotation(
   obj: Record<string, unknown>,
@@ -207,7 +207,7 @@ export class SettingsRepository {
     };
   }
 
-  // ─── Getters ────────────────────────────────────────────────────────────────
+  //  Getters
 
   getAccount(userId: string) {
     return this.accountModel
@@ -273,7 +273,7 @@ export class SettingsRepository {
       .exec();
   }
 
-  // ─── Updaters ────────────────────────────────────────────────────────────────
+  //  Updaters
 
   private uid(userId: string) {
     return { userId: new Types.ObjectId(userId) };
@@ -360,7 +360,7 @@ export class SettingsRepository {
     );
   }
 
-  // ─── Block / unblock ─────────────────────────────────────────────────────────
+  //  Block / unblock
 
   blockUser(userId: string, targetUserId: string) {
     return this.userBlockModel.findOneAndUpdate(
@@ -436,7 +436,7 @@ export class SettingsRepository {
     return Boolean(block);
   }
 
-  // ─── Security: Device management ─────────────────────────────────────────────
+  //  Security: Device management
 
   revokeDevice(userId: string, deviceId: string) {
     return this.securityModel.findOneAndUpdate(
@@ -454,7 +454,7 @@ export class SettingsRepository {
     );
   }
 
-  // ─── Get all settings in one call ────────────────────────────────────────────
+  //  Get all settings in one call
 
   async getAllSettings(userId: string) {
     const [

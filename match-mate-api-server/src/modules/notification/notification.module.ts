@@ -6,12 +6,12 @@ import {
   NotificationSchema,
 } from './schemas/notification.schema';
 import {
-  NotificationTemplates,
-  NotificationTemplatesSchema,
+  NotificationTemplate,
+  NotificationTemplateSchema,
 } from './schemas/notification-templates.schema';
 import {
-  NotificationLogs,
-  NotificationLogsSchema,
+  NotificationLog,
+  NotificationLogSchema,
 } from './schemas/notification-logs.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import { NotificationService } from './services/notification.service';
@@ -31,10 +31,10 @@ import { SettingsModule } from '../settings/settings.module';
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
       {
-        name: NotificationTemplates.name,
-        schema: NotificationTemplatesSchema,
+        name: NotificationTemplate.name,
+        schema: NotificationTemplateSchema,
       },
-      { name: NotificationLogs.name, schema: NotificationLogsSchema },
+      { name: NotificationLog.name, schema: NotificationLogSchema },
       { name: User.name, schema: UserSchema },
     ]),
   ],

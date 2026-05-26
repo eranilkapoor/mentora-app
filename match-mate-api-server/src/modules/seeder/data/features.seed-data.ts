@@ -3,7 +3,7 @@ import { Feature } from 'src/modules/subscription/schemas/feature.schema';
 
 export const FEATURE_SEEDS: Feature[] = [
   // ==========================================
-  // 🔐 AUTH & ACCOUNT
+  //  AUTH & ACCOUNT
   // ==========================================
   {
     key: FeatureKey.EMAIL_REGISTRATION,
@@ -127,7 +127,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 👤 PROFILE
+  //  PROFILE
   // ==========================================
   {
     key: FeatureKey.CREATE_PROFILE,
@@ -357,7 +357,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // ❤️ ENGAGEMENT
+  //  ENGAGEMENT
   // ==========================================
   {
     key: FeatureKey.DAILY_LIKES,
@@ -493,7 +493,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 💬 CHAT & COMMUNICATION
+  //  CHAT & COMMUNICATION
   // ==========================================
   {
     key: FeatureKey.CHAT_ACCESS,
@@ -557,7 +557,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🔍 SEARCH & DISCOVERY
+  //  SEARCH & DISCOVERY
   // ==========================================
   {
     key: FeatureKey.BASIC_SEARCH,
@@ -611,7 +611,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🧠 MATCHMAKING & AI
+  //  MATCHMAKING & AI
   // ==========================================
   {
     key: FeatureKey.SMART_MATCHES,
@@ -645,7 +645,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🕉️ MATRIMONY SPECIFIC
+  //  MATRIMONY SPECIFIC
   // ==========================================
   {
     key: FeatureKey.KUNDLI_MATCHING,
@@ -679,7 +679,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 👨‍👩‍👧 FAMILY FEATURES
+  //  FAMILY FEATURES
   // ==========================================
   {
     key: FeatureKey.FAMILY_MANAGED_PROFILE,
@@ -703,7 +703,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🔔 NOTIFICATIONS
+  //  NOTIFICATIONS
   // ==========================================
   {
     key: FeatureKey.PUSH_NOTIFICATIONS,
@@ -727,7 +727,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // ⭐ PREMIUM EXPERIENCE
+  //  PREMIUM EXPERIENCE
   // ==========================================
   {
     key: FeatureKey.AD_FREE_EXPERIENCE,
@@ -761,7 +761,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🚀 BOOST / MONETIZATION
+  //  BOOST / MONETIZATION
   // ==========================================
   {
     key: FeatureKey.DAILY_BOOSTS,
@@ -791,7 +791,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 💳 PAYMENTS & SUBSCRIPTIONS
+  //  PAYMENTS & SUBSCRIPTIONS
   // ==========================================
   {
     key: FeatureKey.MONTHLY_SUBSCRIPTION,
@@ -831,7 +831,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🛡️ SAFETY & TRUST
+  //  SAFETY & TRUST
   // ==========================================
   {
     key: FeatureKey.REPORT_USER,
@@ -865,7 +865,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 📈 LIMIT BASED FEATURES
+  //  LIMIT BASED FEATURES
   // ==========================================
   {
     key: FeatureKey.MESSAGE_LIMIT,
@@ -895,7 +895,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🎮 GAMIFICATION
+  //  GAMIFICATION
   // ==========================================
   {
     key: FeatureKey.DAILY_LOGIN_REWARDS,
@@ -919,7 +919,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🧾 SUPPORT
+  //  SUPPORT
   // ==========================================
   {
     key: FeatureKey.CUSTOMER_SUPPORT_CHAT,
@@ -1526,7 +1526,7 @@ export const FEATURE_SEEDS: Feature[] = [
     version: 1,
   },
   // ==========================================
-  // 👨‍👩‍👧 FAMILY FEATURES
+  //  FAMILY FEATURES
   // ==========================================
 
   {
@@ -1551,7 +1551,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 📊 ANALYTICS
+  //  ANALYTICS
   // ==========================================
 
   {
@@ -1606,7 +1606,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🔔 NOTIFICATIONS
+  //  NOTIFICATIONS
   // ==========================================
 
   {
@@ -1641,7 +1641,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🌍 LOCATION FEATURES
+  //  LOCATION FEATURES
   // ==========================================
 
   {
@@ -1676,7 +1676,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // ⭐ PREMIUM EXPERIENCE
+  //  PREMIUM EXPERIENCE
   // ==========================================
 
   {
@@ -1731,7 +1731,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🚀 BOOST / MONETIZATION
+  //  BOOST / MONETIZATION
   // ==========================================
 
   {
@@ -1769,7 +1769,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 💳 PAYMENTS & SUBSCRIPTIONS
+  //  PAYMENTS & SUBSCRIPTIONS
   // ==========================================
 
   {
@@ -1814,7 +1814,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🛡️ SAFETY & TRUST
+  //  SAFETY & TRUST
   // ==========================================
 
   {
@@ -1849,7 +1849,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 📈 LIMIT BASED FEATURES
+  //  LIMIT BASED FEATURES
   // ==========================================
 
   {
@@ -1880,7 +1880,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🎮 ENGAGEMENT & GAMIFICATION
+  //  ENGAGEMENT & GAMIFICATION
   // ==========================================
 
   {
@@ -1915,7 +1915,7 @@ export const FEATURE_SEEDS: Feature[] = [
   },
 
   // ==========================================
-  // 🧾 SUPPORT & MISC
+  //  SUPPORT & MISC
   // ==========================================
 
   {

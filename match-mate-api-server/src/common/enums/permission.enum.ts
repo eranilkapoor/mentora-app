@@ -1,14 +1,14 @@
 // Format for the permissions : <resource>:<action>
 export enum Permission {
   // =========================
-  // 🔐 ADMIN / SYSTEM
+  //  ADMIN / SYSTEM
   // =========================
   ADMIN_MANAGE = 'admin:manage',
   SYSTEM_CONFIG = 'system:config',
   DASHBOARD_VIEW = 'dashboard:view',
 
   // =========================
-  // 👤 USER MANAGEMENT
+  //  USER MANAGEMENT
   // =========================
   USER_VIEW = 'user:view',
   USER_CREATE = 'user:create',
@@ -19,7 +19,7 @@ export enum Permission {
   USER_IMPERSONATE = 'user:impersonate',
 
   // =========================
-  // 🧾 PROFILE MANAGEMENT
+  //  PROFILE MANAGEMENT
   // =========================
   PROFILE_VIEW = 'profile:view',
   PROFILE_UPDATE = 'profile:update',
@@ -28,7 +28,7 @@ export enum Permission {
   PROFILE_REJECT = 'profile:reject',
 
   // =========================
-  // 📸 MEDIA (IMAGES/VIDEOS)
+  //  MEDIA (IMAGES/VIDEOS)
   // =========================
   MEDIA_VIEW = 'media:view',
   MEDIA_DELETE = 'media:delete',
@@ -36,7 +36,7 @@ export enum Permission {
   MEDIA_REJECT = 'media:reject',
 
   // =========================
-  // 💬 CHAT / COMMUNICATION
+  //  CHAT / COMMUNICATION
   // =========================
   CHAT_VIEW = 'chat:view',
   CHAT_DELETE = 'chat:delete',
@@ -44,7 +44,7 @@ export enum Permission {
   CHAT_MODERATE = 'chat:moderate',
 
   // =========================
-  // ❤️ INTERACTIONS
+  //  INTERACTIONS
   // =========================
   INTEREST_VIEW = 'interest:view',
   INTEREST_MANAGE = 'interest:manage',
@@ -56,7 +56,7 @@ export enum Permission {
   SHORTLIST_DELETE = 'shortlist:delete',
 
   // =========================
-  // 🚨 REPORT / MODERATION
+  //  REPORT / MODERATION
   // =========================
   REPORT_VIEW = 'report:view',
   REPORT_RESOLVE = 'report:resolve',
@@ -66,7 +66,7 @@ export enum Permission {
   BLOCK_MANAGE = 'block:manage',
 
   // =========================
-  // 💰 SUBSCRIPTION / PLANS
+  //  SUBSCRIPTION / PLANS
   // =========================
   PLAN_CREATE = 'plan:create',
   PLAN_UPDATE = 'plan:update',
@@ -84,24 +84,24 @@ export enum Permission {
   PAYMENT_REFUND = 'payment:refund',
 
   // =========================
-  // 📊 ANALYTICS
+  //  ANALYTICS
   // =========================
   ANALYTICS_VIEW = 'analytics:view',
 
   // =========================
-  // 📢 NOTIFICATIONS
+  //  NOTIFICATIONS
   // =========================
   NOTIFICATION_SEND = 'notification:send',
   NOTIFICATION_MANAGE = 'notification:manage',
 
   // =========================
-  // 🎯 REFERRAL / REWARDS
+  //  REFERRAL / REWARDS
   // =========================
   REFERRAL_VIEW = 'referral:view',
   REFERRAL_MANAGE = 'referral:manage',
 
   // =========================
-  // 📝 ACTIVITY LOGS
+  //  ACTIVITY LOGS
   // =========================
   ACTIVITY_VIEW = 'activity:view',
 }

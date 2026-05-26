@@ -1,16 +1,17 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  ForbiddenException,
-  Inject,
-} from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { MediaRepository } from '../repositories/media.repository';
 import { StorageService } from '../../storage/services/storage.service';
 import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
 import { MediaType } from 'src/common/enums';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwBadRequest,
+  throwForbidden,
+  throwNotFound,
+} from 'src/common/exceptions/throw-app-exception';
+import { AppException } from 'src/common/exceptions/app.exception';
 
 const MAX_IMAGES = 10;
 const MAX_VIDEOS = 3;
@@ -25,7 +26,7 @@ export class MediaService {
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
   ) {}
 
-  // ─── Images ────────────────────────────────────────────────────────────────
+  //  Images
 
   async addImages(
     _req: AppRequest,
@@ -40,9 +41,10 @@ export class MediaService {
       );
 
       if (currentCount + files.length > MAX_IMAGES) {
-        throw new BadRequestException(
-          `Cannot exceed ${MAX_IMAGES} profile images. You currently have ${currentCount}.`,
-        );
+        throwBadRequest(ErrorCode.PROFILE_IMAGE_LIMIT_EXCEEDED, {
+          limit: MAX_IMAGES,
+          currentCount,
+        });
       }
 
       const uploaded = await this.storageService.uploadFiles(
@@ -66,10 +68,8 @@ export class MediaService {
 
       return result;
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to upload images',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.FILE_UPLOAD_FAILED);
     }
   }
 
@@ -77,9 +77,8 @@ export class MediaService {
     try {
       return await this.mediaRepo.findAllByUser(userId, MediaType.IMAGE);
     } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to retrieve images',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.PROFILE_IMAGE_NOT_FOUND);
     }
   }
 
@@ -94,14 +93,8 @@ export class MediaService {
       await this.invalidateCache(userId);
       return result;
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof ForbiddenException
-      )
-        throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to set primary image',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.PROFILE_IMAGE_NOT_FOUND);
     }
   }
 
@@ -136,18 +129,14 @@ export class MediaService {
 
       return { success: true };
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof ForbiddenException
-      )
-        throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to remove image',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.FILE_UPLOAD_FAILED, {
+        reason: 'failed_to_remove_image',
+      });
     }
   }
 
-  // ─── Videos ────────────────────────────────────────────────────────────────
+  //  Videos
 
   async addVideos(
     _req: AppRequest,
@@ -161,9 +150,10 @@ export class MediaService {
       );
 
       if (currentCount + files.length > MAX_VIDEOS) {
-        throw new BadRequestException(
-          `Cannot exceed ${MAX_VIDEOS} profile videos. You currently have ${currentCount}.`,
-        );
+        throwBadRequest(ErrorCode.FILE_TOO_LARGE, {
+          limit: MAX_VIDEOS,
+          currentCount,
+        });
       }
 
       const uploaded = await this.storageService.uploadFiles(
@@ -189,10 +179,8 @@ export class MediaService {
 
       return result;
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to upload videos',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.FILE_UPLOAD_FAILED);
     }
   }
 
@@ -200,9 +188,8 @@ export class MediaService {
     try {
       return await this.mediaRepo.findAllByUser(userId, MediaType.VIDEO);
     } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to retrieve videos',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.FILE_NOT_FOUND);
     }
   }
 
@@ -218,14 +205,10 @@ export class MediaService {
 
       return result;
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof ForbiddenException
-      )
-        throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to set primary video',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.FILE_NOT_FOUND, {
+        reason: 'failed_to_set_primary_video',
+      });
     }
   }
 
@@ -245,28 +228,29 @@ export class MediaService {
 
       return { success: true };
     } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof ForbiddenException
-      )
-        throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to remove video',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.FILE_UPLOAD_FAILED, {
+        reason: 'failed_to_remove_video',
+      });
     }
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
+  //  Helpers
 
-  private async assertOwnership(userId: string, mediaId: string) {
+  private async assertOwnership(
+    userId: string,
+    mediaId: string,
+  ): Promise<NonNullable<Awaited<ReturnType<MediaRepository['findById']>>>> {
     const media = await this.mediaRepo.findById(mediaId);
 
     if (!media) {
-      throw new NotFoundException('Media not found');
+      return throwNotFound(ErrorCode.FILE_NOT_FOUND);
     }
 
     if (String(media.userId) !== userId) {
-      throw new ForbiddenException('You do not own this media');
+      return throwForbidden(ErrorCode.ACCESS_DENIED, {
+        reason: 'media_not_owned',
+      });
     }
 
     return media;

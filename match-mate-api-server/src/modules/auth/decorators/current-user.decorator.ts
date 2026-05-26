@@ -1,10 +1,8 @@
-import {
-  createParamDecorator,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { createParamDecorator, ExecutionContext } from '@nestjs/common';
 import { AppRequest } from '../../../common/interfaces/app-request.interface';
 import { JwtUser } from '../interfaces/jwt-user.interface';
+import { ErrorCode } from 'src/common/constants';
+import { throwUnauthorized } from 'src/common/exceptions/throw-app-exception';
 
 export const CurrentUser = createParamDecorator(
   <K extends keyof JwtUser>(
@@ -15,13 +13,14 @@ export const CurrentUser = createParamDecorator(
     const user = request.user as JwtUser;
 
     if (!user) {
-      throw new UnauthorizedException('User not found in request');
+      return throwUnauthorized(ErrorCode.AUTH_USER_NOT_FOUND);
     }
 
     if (data && !(data in user)) {
-      throw new UnauthorizedException(
-        `Property ${String(data)} not found in user`,
-      );
+      return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED, {
+        reason: 'requested_user_property_not_found',
+        property: String(data),
+      });
     }
 
     return data ? user[data] : user;

@@ -1,0 +1,27 @@
+import { IsNotEmpty, Length, Matches } from 'class-validator';
+
+export class PhoneSendOtpDto {
+  @IsNotEmpty()
+  country_code!: string;
+
+  @IsNotEmpty()
+  @Matches(/^[0-9]{8,15}$/, {
+    message: 'Invalid phone number',
+  })
+  phone!: string;
+}
+
+export class PhoneVerifyDto {
+  @IsNotEmpty()
+  country_code!: string;
+
+  @IsNotEmpty()
+  @Matches(/^[0-9]{8,15}$/, {
+    message: 'Invalid phone number',
+  })
+  phone!: string;
+
+  @IsNotEmpty()
+  @Length(6)
+  otp!: string;
+}

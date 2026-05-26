@@ -21,7 +21,7 @@ import {
 } from '../schemas/interest.schema';
 import { Match, MatchDocument } from '../schemas/match.schema';
 
-// ─── Explicit lean types ──────────────────────────────────────────────────────
+//  Explicit lean types
 
 export type LeanProfile = FlattenMaps<Profile> & {
   _id: Types.ObjectId;

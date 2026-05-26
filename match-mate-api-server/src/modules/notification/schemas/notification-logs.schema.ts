@@ -7,7 +7,7 @@ import {
 } from '../notification.constants';
 
 @Schema({ collection: COLLECTIONS.NOTIFICATION_LOG, timestamps: true })
-export class NotificationLogs {
+export class NotificationLog {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   notificationId!: Types.ObjectId;
 
@@ -58,8 +58,8 @@ export class NotificationLogs {
   responsePayload?: Record<string, unknown>;
 }
 
-export type NotificationLogsDocument = NotificationLogs & Document;
-export const NotificationLogsSchema =
-  SchemaFactory.createForClass(NotificationLogs);
+export type NotificationLogDocument = NotificationLog & Document;
+export const NotificationLogSchema =
+  SchemaFactory.createForClass(NotificationLog);
 
-NotificationLogsSchema.index({ notificationId: 1, channel: 1, createdAt: -1 });
+NotificationLogSchema.index({ notificationId: 1, channel: 1, createdAt: -1 });

@@ -39,7 +39,7 @@ import { SubscriptionExpiryTask } from './tasks/subscription-expiry.task';
       { name: Payment.name, schema: PaymentSchema },
     ]),
     AuthModule,
-    // 🔥 REQUIRED for usage tracking (redis)
+    //  REQUIRED for usage tracking (redis)
     CacheModule,
   ],
   providers: [
@@ -54,7 +54,7 @@ import { SubscriptionExpiryTask } from './tasks/subscription-expiry.task';
     SubscriptionService,
     PlanService,
     FeatureService,
-    FeatureGuard, // 🔥 IMPORTANT (used globally)
+    FeatureGuard, //  IMPORTANT (used globally)
   ],
 })
 export class SubscriptionModule {}

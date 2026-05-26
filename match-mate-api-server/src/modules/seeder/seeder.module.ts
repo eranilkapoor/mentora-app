@@ -14,8 +14,8 @@ import {
   PlanFeatureSchema,
 } from '../subscription/schemas/plan-feature.schema';
 import {
-  NotificationTemplates,
-  NotificationTemplatesSchema,
+  NotificationTemplate,
+  NotificationTemplateSchema,
 } from 'src/modules/notification/schemas/notification-templates.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
@@ -63,13 +63,11 @@ import {
   AiSettings,
   AiSettingsSchema,
 } from '../settings/schemas/ai-settings.schema';
-import {
-  Verification,
-  VerificationSchema,
-} from '../profile/schemas/settings/verification.schema';
+import { SafetyModule } from '../safety/safety.module';
 
 @Module({
   imports: [
+    SafetyModule,
     MongooseModule.forFeature([
       {
         name: Permission.name,
@@ -96,8 +94,8 @@ import {
         schema: PlanFeatureSchema,
       },
       {
-        name: NotificationTemplates.name,
-        schema: NotificationTemplatesSchema,
+        name: NotificationTemplate.name,
+        schema: NotificationTemplateSchema,
       },
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
@@ -112,7 +110,6 @@ import {
       { name: AccessibilitySettings.name, schema: AccessibilitySettingsSchema },
       { name: MediaSettings.name, schema: MediaSettingsSchema },
       { name: AiSettings.name, schema: AiSettingsSchema },
-      { name: Verification.name, schema: VerificationSchema },
     ]),
   ],
 

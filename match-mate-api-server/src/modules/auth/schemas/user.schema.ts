@@ -64,7 +64,7 @@ export class User {
   @Prop({ default: false })
   isOnboardingCompleted!: boolean;
 
-  // 🔐 RBAC
+  //  RBAC
   @Prop({ type: [String], default: [Role.USER] })
   roles!: Role[];
 
@@ -110,11 +110,11 @@ export class User {
     planId?: string;
   };
 
-  // 🔑 Auth
+  //  Auth
   @Prop({ type: [AuthAccount], default: [] })
   authAccounts!: AuthAccount[];
 
-  // 🔒 Security
+  //  Security
   @Prop({ default: 0 })
   failedLoginAttempts!: number;
 

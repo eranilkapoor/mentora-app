@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from './controllers/auth.controller';
 import { AuthService } from './services/auth.service';
+import { AuthPasswordService } from './services/auth-password.service';
 import { UserRepository } from './repositories/user.repository';
 import { OtpService } from './services/otp.service';
 import { User, UserSchema } from './schemas/user.schema';
@@ -23,10 +24,7 @@ import {
 } from '../profile/schemas/settings/activity-logs.schema';
 import { NotificationModule } from '../notification/notification.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
-import {
-  Verification,
-  VerificationSchema,
-} from '../profile/schemas/settings/verification.schema';
+import { SafetyModule } from '../safety/safety.module';
 
 @Module({
   imports: [
@@ -38,7 +36,6 @@ import {
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: Plan.name, schema: PlanSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
-      { name: Verification.name, schema: VerificationSchema },
     ]),
 
     PassportModule.register({ defaultStrategy: 'jwt' }),
@@ -61,11 +58,13 @@ import {
     }),
     NotificationModule,
     AnalyticsModule,
+    SafetyModule,
   ],
   controllers: [AuthController],
   providers: [
     JwtStrategy,
     AuthService,
+    AuthPasswordService,
     UserRepository,
     OtpService,
     AuthTokenService,

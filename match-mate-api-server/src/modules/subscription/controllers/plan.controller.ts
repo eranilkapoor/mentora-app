@@ -27,7 +27,7 @@ import { successResponse } from 'src/common/utils/response.util';
 export class PlanController {
   constructor(private readonly planService: PlanService) {}
 
-  // ─── Static routes MUST come before :id param routes ───────────────────────
+  //  Static routes MUST come before :id param routes
 
   // GET /admin/plans
   @Get()
@@ -39,7 +39,7 @@ export class PlanController {
   }
 
   // GET /admin/plans/full/all
-  // Fixed: was after :id — NestJS would match 'full' as the planId
+  // Fixed: was after :id  NestJS would match 'full' as the planId
   @Get('full/all')
   async getAllPlansWithFeatures() {
     return successResponse(
@@ -49,7 +49,7 @@ export class PlanController {
   }
 
   // GET /admin/plans/feature/all
-  // Fixed: was after :id — NestJS would match 'feature' as the planId
+  // Fixed: was after :id  NestJS would match 'feature' as the planId
   @Get('feature/all')
   async getFeatures() {
     return successResponse(
@@ -58,7 +58,7 @@ export class PlanController {
     );
   }
 
-  // ─── Plan mutations ────────────────────────────────────────────────────────
+  //  Plan mutations
 
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles(Role.ADMIN)
@@ -82,7 +82,7 @@ export class PlanController {
     );
   }
 
-  // ─── Feature mutations ─────────────────────────────────────────────────────
+  //  Feature mutations
 
   @UseGuards(RolesGuard, PermissionsGuard)
   @Roles(Role.ADMIN)
@@ -120,7 +120,7 @@ export class PlanController {
     );
   }
 
-  // ─── :id param route LAST ──────────────────────────────────────────────────
+  //  :id param route LAST
 
   // GET /admin/plans/:id
   // Must be last so 'full', 'feature' don't match here

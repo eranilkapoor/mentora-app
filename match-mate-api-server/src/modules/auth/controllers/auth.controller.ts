@@ -6,12 +6,10 @@ import {
   Get,
   Req,
   Res,
-  UnauthorizedException,
   Delete,
   Param,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { ApiResponse } from 'src/common/dto/api-response.dto';
 import {
   RegisterDto,
   LoginDto,
@@ -30,6 +28,9 @@ import { AppRequest } from 'src/common/interfaces/app-request.interface';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { ErrorCode, SuccessCode } from 'src/common/constants';
 import { AppLogger } from 'src/common/logger/logger.service';
+import { successResponse } from 'src/common/utils/response.util';
+import { AppException } from 'src/common/exceptions/app.exception';
+import { throwUnauthorized } from 'src/common/exceptions/throw-app-exception';
 
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
@@ -46,19 +47,12 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Body() dto: RegisterDto,
   ) {
-    try {
-      const data = await this.authService.register(req, res, dto);
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_REGISTERED,
-        'User registered successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Registration failed';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.register(req, res, dto);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_REGISTERED,
+      'User registered successfully',
+    );
   }
 
   @Public()
@@ -69,41 +63,23 @@ export class AuthController {
     @Body() dto: LoginDto,
   ) {
     req.res = res;
-    try {
-      const data = await this.authService.login(req, res, dto);
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_LOGIN_SUCCESS,
-        'Login successful',
-        data,
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Login failed';
-      return new ApiResponse(
-        false,
-        ErrorCode.AUTH_INVALID_CREDENTIALS,
-        message,
-        null,
-      );
-    }
+    const data = await this.authService.login(req, res, dto);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      'Login successful',
+    );
   }
 
   @Public()
   @Post('send-otp')
   sendOtp(@Body() dto: PhoneSendOtpDto) {
-    try {
-      const data = this.authService.sendOtp(dto.country_code, dto.phone);
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_OTP_SENT,
-        'OTP sent successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to send OTP';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = this.authService.sendOtp(dto.country_code, dto.phone);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_OTP_SENT,
+      'OTP sent successfully',
+    );
   }
 
   @Public()
@@ -113,25 +89,18 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Body() dto: PhoneVerifyDto,
   ) {
-    try {
-      const data = await this.authService.verifyOtp(
-        req,
-        res,
-        dto.country_code,
-        dto.phone,
-        dto.otp,
-      );
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_OTP_VERIFIED,
-        'OTP verified successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'OTP verification failed';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.verifyOtp(
+      req,
+      res,
+      dto.country_code,
+      dto.phone,
+      dto.otp,
+    );
+    return successResponse(
+      data,
+      SuccessCode.AUTH_OTP_VERIFIED,
+      'OTP verified successfully',
+    );
   }
 
   @Public()
@@ -141,57 +110,34 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response,
     @Body() dto: SocialLoginDto,
   ) {
-    try {
-      const data = await this.authService.socialLogin(req, res, dto);
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_LOGIN_SUCCESS,
-        'Social login successful',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Social login failed';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.socialLogin(req, res, dto);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      'Social login successful',
+    );
   }
 
   @Public()
   @Post('forgot-password')
   async forgotPassword(@Req() req: AppRequest, @Body() dto: ForgotPasswordDto) {
-    try {
-      const data = await this.authService.forgotPassword(req, dto.email);
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_PASSWORD_RESET_SENT,
-        'Password reset link sent to email',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error
-          ? error.message
-          : 'Failed to process password reset';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.forgotPassword(req, dto.email);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_PASSWORD_RESET_SENT,
+      'Password reset link sent to email',
+    );
   }
 
   @Public()
   @Post('reset-password')
   async resetPassword(@Req() req: AppRequest, @Body() dto: ResetPasswordDto) {
-    try {
-      const data = await this.authService.resetPassword(req, dto);
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_PASSWORD_RESET_SUCCESS,
-        'Password has been reset successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Password reset failed';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.resetPassword(req, dto);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_PASSWORD_RESET_SUCCESS,
+      'Password has been reset successfully',
+    );
   }
 
   @Post('change-password')
@@ -199,40 +145,22 @@ export class AuthController {
     @Req() req: AuthenticatedRequest,
     @Body() dto: ChangePasswordDto,
   ) {
-    try {
-      const data = await this.authService.changePassword(
-        req,
-        req.user.sub,
-        dto,
-      );
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_PASSWORD_CHANGED,
-        'Password changed successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to change password';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.changePassword(req, req.user.sub, dto);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_PASSWORD_CHANGED,
+      'Password changed successfully',
+    );
   }
 
   @Get('verify-user')
   async verifyUser(@CurrentUser('sub') userId: string) {
-    try {
-      const data = await this.authService.verifyUser(userId);
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_EMAIL_VERIFIED,
-        'User verified successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to verify user';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.verifyUser(userId);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_EMAIL_VERIFIED,
+      'User verified successfully',
+    );
   }
 
   private extractRefreshToken(req: AppRequest): string {
@@ -251,7 +179,7 @@ export class AuthController {
     const refreshToken = tokenFromCookie ?? tokenFromBody ?? tokenFromHeader;
 
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token not found');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
     }
 
     return refreshToken;
@@ -275,11 +203,11 @@ export class AuthController {
         error instanceof Error ? error.stack : undefined,
       );
 
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof AppException) {
         throw error;
       }
 
-      throw new UnauthorizedException('Unable to refresh access token');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
     }
   }
 
@@ -301,11 +229,11 @@ export class AuthController {
         error instanceof Error ? error.stack : undefined,
       );
 
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof AppException) {
         throw error;
       }
 
-      throw new UnauthorizedException('Unable to refresh access token');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
     }
   }
 
@@ -326,15 +254,25 @@ export class AuthController {
         ...this.authService.getRefreshCookieOptions(),
       });
 
-      return new ApiResponse(
-        true,
+      return successResponse(
+        null,
         SuccessCode.AUTH_LOGOUT_SUCCESS,
         'Logged out successfully',
-        null,
       );
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Logout failed';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
+      if (error instanceof AppException) {
+        res.clearCookie('refreshToken', {
+          ...this.authService.getRefreshCookieOptions(),
+        });
+
+        return successResponse(
+          null,
+          SuccessCode.AUTH_LOGOUT_SUCCESS,
+          'Logged out successfully',
+        );
+      }
+
+      throw error;
     }
   }
 
@@ -343,41 +281,27 @@ export class AuthController {
     @Req() req: AuthenticatedRequest,
     @Res({ passthrough: true }) res: Response,
   ) {
-    try {
-      await this.authService.logoutAll(req, req.user.sub);
+    await this.authService.logoutAll(req, req.user.sub);
 
-      res.clearCookie('refreshToken', {
-        ...this.authService.getRefreshCookieOptions(),
-      });
+    res.clearCookie('refreshToken', {
+      ...this.authService.getRefreshCookieOptions(),
+    });
 
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_LOGOUT_SUCCESS,
-        'Logged out from all devices successfully',
-        null,
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Logout failed';
-
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    return successResponse(
+      null,
+      SuccessCode.AUTH_LOGOUT_SUCCESS,
+      'Logged out from all devices successfully',
+    );
   }
 
   @Get('sessions')
   async listSessions(@Req() req: AuthenticatedRequest) {
-    try {
-      const data = await this.authService.listSessions(req.user.sub);
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_LOGIN_SUCCESS,
-        'Active sessions fetched successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to fetch sessions';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.listSessions(req.user.sub);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      'Active sessions fetched successfully',
+    );
   }
 
   @Delete('sessions/:sessionId')
@@ -385,22 +309,15 @@ export class AuthController {
     @Req() req: AuthenticatedRequest,
     @Param('sessionId') sessionId: string,
   ) {
-    try {
-      const data = await this.authService.logoutSession(
-        req,
-        req.user.sub,
-        sessionId,
-      );
-      return new ApiResponse(
-        true,
-        SuccessCode.AUTH_LOGOUT_SUCCESS,
-        'Device signed out successfully',
-        data,
-      );
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : 'Failed to sign out device';
-      return new ApiResponse(false, ErrorCode.INTERNAL_ERROR, message, null);
-    }
+    const data = await this.authService.logoutSession(
+      req,
+      req.user.sub,
+      sessionId,
+    );
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGOUT_SUCCESS,
+      'Device signed out successfully',
+    );
   }
 }

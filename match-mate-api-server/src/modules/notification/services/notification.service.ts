@@ -1,8 +1,4 @@
-import {
-  BadRequestException,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { NotificationRepository } from '../repositories/notification.repository';
 import { CreateNotificationDto } from '../dto/create-notification.dto';
@@ -33,6 +29,11 @@ import {
 } from './notification-queue.service';
 import { SettingsService } from 'src/modules/settings/services/settings.service';
 import { NotificationPreferencesType } from 'src/modules/settings/schemas/notification-settings.schema';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwBadRequest,
+  throwNotFound,
+} from 'src/common/exceptions/throw-app-exception';
 
 interface DeliveryDecision {
   inApp: boolean;
@@ -78,14 +79,16 @@ export class NotificationService {
     }
 
     if (!dto.category) {
-      throw new BadRequestException(
-        'category is required for custom notifications',
-      );
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'notification_category_required',
+      });
     }
 
     const user = await this.notificationRepo.findUserById(dto.userId);
     if (!user) {
-      throw new NotFoundException('Notification user not found');
+      return throwNotFound(ErrorCode.USER_NOT_FOUND, {
+        reason: 'notification_user_not_found',
+      });
     }
 
     const settings = await this.settingsService.getOrCreateUserSettings(
@@ -181,7 +184,9 @@ export class NotificationService {
     const job = await this.queueService.getDeadLetter(jobId);
 
     if (!job) {
-      throw new NotFoundException('Dead-letter notification job not found');
+      return throwNotFound(ErrorCode.NOTIFICATION_NOT_FOUND, {
+        reason: 'dead_letter_job_not_found',
+      });
     }
 
     return job;
@@ -192,7 +197,9 @@ export class NotificationService {
     const replay = await this.queueService.replayDeadLetter(jobId, adminUserId);
 
     if (!replay) {
-      throw new NotFoundException('Dead-letter notification job not found');
+      return throwNotFound(ErrorCode.NOTIFICATION_NOT_FOUND, {
+        reason: 'dead_letter_job_not_found',
+      });
     }
 
     return replay;
@@ -246,13 +253,15 @@ export class NotificationService {
     ]);
 
     if (!template || !template.isActive) {
-      throw new NotFoundException(
-        'Notification template not found or inactive',
-      );
+      return throwNotFound(ErrorCode.NOTIFICATION_NOT_FOUND, {
+        reason: 'notification_template_not_found_or_inactive',
+      });
     }
 
     if (!user) {
-      throw new NotFoundException('Notification user not found');
+      return throwNotFound(ErrorCode.USER_NOT_FOUND, {
+        reason: 'notification_user_not_found',
+      });
     }
 
     const settings = await this.settingsService.getOrCreateUserSettings(
@@ -352,9 +361,9 @@ export class NotificationService {
 
   private ensureQueueEnabledForAdmin() {
     if (!this.queueService.isEnabled()) {
-      throw new BadRequestException(
-        'Notification queue is disabled; DLQ operations are unavailable',
-      );
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'notification_queue_disabled',
+      });
     }
   }
 

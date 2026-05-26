@@ -1,6 +1,1 @@
-import { IsString } from 'class-validator';
-
-export class SubscriptionDto {
-  @IsString()
-  planId!: string;
-}
+export { PurchaseSubscriptionDto as SubscriptionDto } from './purchase-subscription.dto';

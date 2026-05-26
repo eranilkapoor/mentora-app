@@ -25,9 +25,9 @@ export type NotificationStatus = 'draft' | 'active' | 'archived';
   collection: COLLECTIONS.NOTIFICATION_TEMPLATE,
   timestamps: true,
 })
-export class NotificationTemplates {
+export class NotificationTemplate {
   // =========================================================
-  // 🔑 UNIQUE IDENTIFIERS
+  //  UNIQUE IDENTIFIERS
   // =========================================================
 
   @Prop({
@@ -48,7 +48,7 @@ export class NotificationTemplates {
   // interest.received
 
   // =========================================================
-  // 🌍 LOCALIZATION
+  //  LOCALIZATION
   // =========================================================
 
   @Prop({
@@ -60,7 +60,7 @@ export class NotificationTemplates {
   locale!: string;
 
   // =========================================================
-  // 📝 BASIC DETAILS
+  //  BASIC DETAILS
   // =========================================================
 
   @Prop({
@@ -86,7 +86,7 @@ export class NotificationTemplates {
   priority!: (typeof NOTIFICATION_PRIORITIES)[number];
 
   // =========================================================
-  // 📩 CONTENT
+  //  CONTENT
   // =========================================================
 
   @Prop({
@@ -117,7 +117,7 @@ export class NotificationTemplates {
   smsBody?: string;
 
   // =========================================================
-  // 🧠 TEMPLATE VARIABLES
+  //  TEMPLATE VARIABLES
   // =========================================================
 
   @Prop({
@@ -127,7 +127,7 @@ export class NotificationTemplates {
   variables!: string[];
 
   // =========================================================
-  // 📡 CHANNELS
+  //  CHANNELS
   // =========================================================
 
   @Prop({
@@ -155,7 +155,7 @@ export class NotificationTemplates {
   channels!: NotificationChannelConfig;
 
   // =========================================================
-  // 🚚 DELIVERY RULES
+  //  DELIVERY RULES
   // =========================================================
 
   @Prop({
@@ -170,7 +170,7 @@ export class NotificationTemplates {
   deliveryRules?: NotificationDeliveryRules;
 
   // =========================================================
-  // 📲 MOBILE SUPPORT
+  //  MOBILE SUPPORT
   // =========================================================
 
   @Prop()
@@ -180,7 +180,7 @@ export class NotificationTemplates {
   imageUrl?: string;
 
   // =========================================================
-  // 🏷️ TAGS
+  //  TAGS
   // =========================================================
 
   @Prop({
@@ -191,7 +191,7 @@ export class NotificationTemplates {
   tags!: string[];
 
   // =========================================================
-  // 🔐 SYSTEM CONTROL
+  //  SYSTEM CONTROL
   // =========================================================
 
   @Prop({
@@ -215,7 +215,7 @@ export class NotificationTemplates {
   isActive!: boolean;
 
   // =========================================================
-  // 👨‍💻 AUDIT
+  //  AUDIT
   // =========================================================
 
   @Prop({
@@ -229,17 +229,16 @@ export class NotificationTemplates {
   version!: number;
 }
 
-export type NotificationTemplatesDocument = NotificationTemplates & Document;
+export type NotificationTemplateDocument = NotificationTemplate & Document;
 
-export const NotificationTemplatesSchema = SchemaFactory.createForClass(
-  NotificationTemplates,
-);
+export const NotificationTemplateSchema =
+  SchemaFactory.createForClass(NotificationTemplate);
 
 // =========================================================
 // INDEXES
 // =========================================================
 
-NotificationTemplatesSchema.index(
+NotificationTemplateSchema.index(
   {
     key: 1,
     locale: 1,
@@ -249,17 +248,17 @@ NotificationTemplatesSchema.index(
   },
 );
 
-NotificationTemplatesSchema.index({
+NotificationTemplateSchema.index({
   category: 1,
   priority: 1,
 });
 
-NotificationTemplatesSchema.index({
+NotificationTemplateSchema.index({
   eventKey: 1,
   locale: 1,
 });
 
-NotificationTemplatesSchema.index({
+NotificationTemplateSchema.index({
   status: 1,
   isActive: 1,
 });

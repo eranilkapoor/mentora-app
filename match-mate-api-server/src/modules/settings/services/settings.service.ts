@@ -11,11 +11,11 @@ import {
 import {
   Verification,
   VerificationDocument,
-} from 'src/modules/profile/schemas/settings/verification.schema';
+} from 'src/modules/safety/schemas/verification.schema';
 import {
   UserReport,
   UserReportDocument,
-} from 'src/modules/profile/schemas/settings/user-report.schema';
+} from 'src/modules/safety/schemas/user-report.schema';
 import {
   Profile,
   ProfileDocument,
@@ -72,7 +72,7 @@ export class SettingsService {
     private readonly mediaModel: Model<MediaDocument>,
   ) {}
 
-  // ─── All settings in one call ─────────────────────────────────────────────
+  //  All settings in one call
 
   async getAllSettings(userId: string) {
     const settings = await this.repo.getAllSettings(userId);
@@ -89,7 +89,7 @@ export class SettingsService {
     };
   }
 
-  // ─── Privacy ──────────────────────────────────────────────────────────────
+  //  Privacy
 
   getPrivacy(userId: string) {
     return this.repo.getPrivacy(userId);
@@ -237,7 +237,7 @@ export class SettingsService {
     return this.repo.isBlockedBetween(userId, targetUserId);
   }
 
-  // ─── Account ─────────────────────────────────────────────────────────────
+  //  Account
 
   async getAccount(userId: string) {
     const [account, user] = await Promise.all([
@@ -359,7 +359,7 @@ export class SettingsService {
     };
   }
 
-  // ─── Notifications ────────────────────────────────────────────────────────
+  //  Notifications
 
   getOrCreateUserSettings(userId: string) {
     return this.repo.getOrCreateUserSettings(userId);
@@ -416,7 +416,7 @@ export class SettingsService {
     } as never);
   }
 
-  // ─── Communication ────────────────────────────────────────────────────────
+  //  Communication
 
   getCommunication(userId: string) {
     return this.repo.getCommunication(userId);
@@ -426,7 +426,7 @@ export class SettingsService {
     return this.repo.updateCommunication(userId, dto);
   }
 
-  // ─── Security ─────────────────────────────────────────────────────────────
+  //  Security
 
   getSecurity(userId: string) {
     return this.repo.getSecurity(userId);
@@ -522,7 +522,7 @@ export class SettingsService {
     };
   }
 
-  // ─── Localization ─────────────────────────────────────────────────────────
+  //  Localization
 
   getLocalization(userId: string) {
     return this.repo.getLocalization(userId);
@@ -532,7 +532,7 @@ export class SettingsService {
     return this.repo.updateLocalization(userId, dto);
   }
 
-  // ─── Accessibility ────────────────────────────────────────────────────────
+  //  Accessibility
 
   getAccessibility(userId: string) {
     return this.repo.getAccessibility(userId);
@@ -542,7 +542,7 @@ export class SettingsService {
     return this.repo.updateAccessibility(userId, dto);
   }
 
-  // ─── Media ────────────────────────────────────────────────────────────────
+  //  Media
 
   getMedia(userId: string) {
     return this.repo.getMedia(userId);
@@ -552,7 +552,7 @@ export class SettingsService {
     return this.repo.updateMedia(userId, dto);
   }
 
-  // ─── AI ───────────────────────────────────────────────────────────────────
+  //  AI
 
   getAi(userId: string) {
     return this.repo.getAi(userId);

@@ -168,7 +168,7 @@ async function bootstrap() {
   }
 
   // ==========================================
-  // STATIC FILES (⚠️ consider S3 in future)
+  // STATIC FILES ( consider S3 in future)
   // ==========================================
   app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
     prefix: '/uploads',
@@ -198,15 +198,15 @@ async function bootstrap() {
   await app.listen(port, '0.0.0.0');
 
   logger.log(
-    `🚀 Server running on: http://localhost:${port}/${apiPrefix}/${apiVersion}`,
+    ` Server running on: http://localhost:${port}/${apiPrefix}/${apiVersion}`,
   );
 
   if (env !== 'production') {
-    logger.log(`📚 Swagger Docs: http://localhost:${port}/api/docs`);
+    logger.log(` Swagger Docs: http://localhost:${port}/api/docs`);
   }
 }
 
 bootstrap().catch((err) => {
-  console.error('❌ Application failed to start', err);
+  process.stderr.write(`Application failed to start: ${String(err)}\n`);
   process.exit(1);
 });

@@ -19,11 +19,11 @@ import {
 } from '../dto/preference.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
-import { ApiResponse } from 'src/common/dto/api-response.dto';
 import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @UseGuards(JwtAuthGuard)
-@Controller('preference')
+@Controller('preferences')
 export class PreferenceController {
   constructor(private readonly preferenceService: PreferenceService) {}
 
@@ -37,22 +37,20 @@ export class PreferenceController {
       req.user.sub,
       dto,
     );
-    return new ApiResponse(
-      true,
-      SuccessCode.PREFERENCES_FETCHED,
-      'Preferences successfully updated',
+    return successResponse(
       data,
+      SuccessCode.PREFERENCES_UPDATED,
+      'Preferences successfully updated',
     );
   }
 
   @Get('me')
   async getMyPreference(@Req() req: AuthenticatedRequest) {
     const data = await this.preferenceService.getMyPreference(req.user.sub);
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PREFERENCES_FETCHED,
       'Preferences successfully fetched',
-      data,
     );
   }
 
@@ -62,11 +60,10 @@ export class PreferenceController {
     @Body() dto: PartnerFiltersDto,
   ) {
     const data = await this.preferenceService.updateFilters(req.user.sub, dto);
-    return new ApiResponse(
-      true,
-      SuccessCode.PREFERENCES_FETCHED,
-      'Preferences successfully updated',
+    return successResponse(
       data,
+      SuccessCode.PREFERENCES_UPDATED,
+      'Preferences successfully updated',
     );
   }
 
@@ -76,11 +73,10 @@ export class PreferenceController {
     @Body() dto: MatchSettingsDto,
   ) {
     const data = await this.preferenceService.updateSettings(req.user.sub, dto);
-    return new ApiResponse(
-      true,
-      SuccessCode.PREFERENCES_FETCHED,
-      'Preferences successfully updated',
+    return successResponse(
       data,
+      SuccessCode.PREFERENCES_UPDATED,
+      'Preferences successfully updated',
     );
   }
 
@@ -90,11 +86,10 @@ export class PreferenceController {
     @Body() dto: MatchWeightsDto,
   ) {
     const data = await this.preferenceService.updateWeights(req.user.sub, dto);
-    return new ApiResponse(
-      true,
-      SuccessCode.PREFERENCES_FETCHED,
-      'Preferences successfully updated',
+    return successResponse(
       data,
+      SuccessCode.PREFERENCES_UPDATED,
+      'Preferences successfully updated',
     );
   }
 
@@ -107,11 +102,10 @@ export class PreferenceController {
       req.user.sub,
       dto.aboutPartner,
     );
-    return new ApiResponse(
-      true,
-      SuccessCode.PREFERENCES_FETCHED,
-      'Preferences successfully updated',
+    return successResponse(
       data,
+      SuccessCode.PREFERENCES_UPDATED,
+      'Preferences successfully updated',
     );
   }
 }

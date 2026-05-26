@@ -1,35 +1,35 @@
 export enum InteractionType {
-  // 👀 DISCOVERY
+  //  DISCOVERY
   VIEW = 'view',
   PROFILE_VIEW = 'profile_view',
 
-  // ❤️ MATCHING SIGNALS
+  //  MATCHING SIGNALS
   LIKE = 'like',
   PASS = 'pass',
   SUPER_LIKE = 'super_like',
 
-  // 💌 INTENT (optional if using Interest system)
+  //  INTENT (optional if using Interest system)
   SEND_INTEREST = 'send_interest',
   WITHDRAW_INTEREST = 'withdraw_interest',
 
-  // ⭐ ENGAGEMENT
+  //  ENGAGEMENT
   SHORTLIST = 'shortlist',
   REMOVE_SHORTLIST = 'remove_shortlist',
 
-  // 💬 COMMUNICATION SIGNALS
+  //  COMMUNICATION SIGNALS
   CHAT_INITIATED = 'chat_initiated',
   MESSAGE_SENT = 'message_sent',
 
-  // 🚀 PREMIUM ACTIONS
+  //  PREMIUM ACTIONS
   PROFILE_BOOST = 'profile_boost',
   CONTACT_VIEW = 'contact_view',
 
-  // 🚨 SAFETY
+  //  SAFETY
   BLOCK = 'block',
   UNBLOCK = 'unblock',
   REPORT = 'report',
 
-  // ❌ NEGATIVE SIGNALS (VERY IMPORTANT FOR ML)
+  //  NEGATIVE SIGNALS (VERY IMPORTANT FOR ML)
   SKIP = 'skip', // softer pass
   HIDE = 'hide',
 }

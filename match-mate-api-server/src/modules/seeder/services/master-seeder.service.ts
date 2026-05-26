@@ -1,7 +1,6 @@
-import { Injectable, OnApplicationBootstrap } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
 
 import { AppLogger } from 'src/common/logger/logger.service';
@@ -94,7 +93,7 @@ import {
 import {
   Verification,
   VerificationDocument,
-} from 'src/modules/profile/schemas/settings/verification.schema';
+} from 'src/modules/safety/schemas/verification.schema';
 import {
   Plan,
   PlanDocument,
@@ -108,8 +107,8 @@ import {
   PlanFeatureDocument,
 } from 'src/modules/subscription/schemas/plan-feature.schema';
 import {
-  NotificationTemplates,
-  NotificationTemplatesDocument,
+  NotificationTemplate,
+  NotificationTemplateDocument,
 } from 'src/modules/notification/schemas/notification-templates.schema';
 import {
   FEATURE_SEEDS,
@@ -119,9 +118,8 @@ import {
 } from '../data';
 
 @Injectable()
-export class MasterSeederService implements OnApplicationBootstrap {
+export class MasterSeederService {
   constructor(
-    private readonly configService: ConfigService,
     private readonly logger: AppLogger,
 
     @InjectModel(Permission.name)
@@ -139,8 +137,8 @@ export class MasterSeederService implements OnApplicationBootstrap {
     @InjectModel(PlanFeature.name)
     private readonly planFeatureModel: Model<PlanFeatureDocument>,
 
-    @InjectModel(NotificationTemplates.name)
-    private readonly notificationTemplateModel: Model<NotificationTemplatesDocument>,
+    @InjectModel(NotificationTemplate.name)
+    private readonly notificationTemplateModel: Model<NotificationTemplateDocument>,
 
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
@@ -185,24 +183,11 @@ export class MasterSeederService implements OnApplicationBootstrap {
     private readonly verificationModel: Model<VerificationDocument>,
   ) {}
 
-  async onApplicationBootstrap() {
-    const shouldSeed = this.configService.get<boolean>('runSeeder');
-
-    if (!shouldSeed) {
-      this.logger.log('Skipping data seeding');
-
-      return;
-    }
-
-    await this.run();
-  }
-
-  // =========================================================
   // MASTER RUNNER
   // =========================================================
 
   async run() {
-    this.logger.log('🚀 Starting master seeder');
+    this.logger.log('Starting master seeder');
 
     await this.seedPermissions();
     await this.seedRoles();
@@ -212,7 +197,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
     await this.seedDefaultTemplates();
     await this.seedIndianDummyProfiles();
 
-    this.logger.log('✅ Master seeder completed');
+    this.logger.log('Master seeder completed');
   }
 
   // =========================================================
@@ -469,7 +454,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
       this.verificationModel.bulkWrite(verificationWrites, { ordered: false }),
     ]);
 
-    this.logger.log('✅ Indian dummy profiles seeded successfully', {
+    this.logger.log(' Indian dummy profiles seeded successfully', {
       female: profiles.filter((profile) => profile.gender === Gender.FEMALE)
         .length,
       male: profiles.filter((profile) => profile.gender === Gender.MALE).length,
@@ -731,7 +716,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
       },
     );
 
-    this.logger.log(`✅ Permissions seeded successfully`, {
+    this.logger.log(` Permissions seeded successfully`, {
       matched: result.matchedCount,
       modified: result.modifiedCount,
       upserted: result.upsertedCount,
@@ -802,7 +787,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
       },
     );
 
-    this.logger.log(`✅ Roles seeded successfully`, {
+    this.logger.log(` Roles seeded successfully`, {
       matched: result.matchedCount,
       modified: result.modifiedCount,
       upserted: result.upsertedCount,
@@ -844,7 +829,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
       },
     );
 
-    this.logger.log(`✅ Features seeded successfully`, {
+    this.logger.log(` Features seeded successfully`, {
       matched: result.matchedCount,
       modified: result.modifiedCount,
       upserted: result.upsertedCount,
@@ -886,7 +871,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
       },
     );
 
-    this.logger.log(`✅ Plans seeded successfully`, {
+    this.logger.log(` Plans seeded successfully`, {
       matched: result.matchedCount,
       modified: result.modifiedCount,
       upserted: result.upsertedCount,
@@ -1225,7 +1210,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
       ordered: false,
     });
 
-    this.logger.log(`✅ Plan features mappings seeded successfully`, {
+    this.logger.log(` Plan features mappings seeded successfully`, {
       matched: result.matchedCount,
       modified: result.modifiedCount,
       upserted: result.upsertedCount,
@@ -1288,7 +1273,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
       ordered: false,
     });
 
-    this.logger.log(`✅ Notification templates seeded successfully`, {
+    this.logger.log(` Notification templates seeded successfully`, {
       matched: result.matchedCount,
       modified: result.modifiedCount,
       upserted: result.upsertedCount,
@@ -1309,7 +1294,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
   }
 
   private validateTemplateVariables(
-    template: Partial<NotificationTemplates>,
+    template: Partial<NotificationTemplate>,
   ): void {
     const contents = [
       template.title,

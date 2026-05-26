@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  Inject,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { ProfileRepository } from '../repositories/profile.repository';
 import {
@@ -18,6 +13,7 @@ import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface
 import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
 import { NotificationService } from '../../notification/services/notification.service';
 import { AnalyticsService } from '../../analytics/services/analytics.service';
+import { AppLogger } from 'src/common/logger/logger.service';
 import {
   AnalyticsEventType,
   AnalyticsPlatform,
@@ -47,7 +43,14 @@ import { SettingsService } from 'src/modules/settings/services/settings.service'
 import {
   Verification,
   VerificationDocument,
-} from '../schemas/settings/verification.schema';
+} from '../../safety/schemas/verification.schema';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwBadRequest,
+  throwNotFound,
+  throwUnauthorized,
+} from 'src/common/exceptions/throw-app-exception';
+import { AppException } from 'src/common/exceptions/app.exception';
 
 interface RegisterRequestContext {
   platform: ActivityPlatform;
@@ -77,14 +80,17 @@ export class ProfileService {
     private readonly mediaService: MediaService,
     private readonly preferenceService: PreferenceService,
     private readonly settingsService: SettingsService,
+    private readonly logger: AppLogger,
   ) {}
 
-  // ─── Create ───────────────────────────────────────────────────────────────
+  //  Create
 
   async createProfile(userId: string, dto: CreateProfileDto) {
     try {
       if (await this.profileRepo.exists(userId)) {
-        throw new BadRequestException('Profile already exists');
+        return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+          reason: 'profile_already_exists',
+        });
       }
 
       const payload = this.buildCreatePayload(dto);
@@ -92,14 +98,14 @@ export class ProfileService {
 
       return profile;
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to create profile',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_create_profile',
+      });
     }
   }
 
-  // ─── Read ─────────────────────────────────────────────────────────────────
+  //  Read
 
   async getMyProfile(userId: string) {
     try {
@@ -108,7 +114,7 @@ export class ProfileService {
       if (cached) return cached;
 
       const profile = await this.profileRepo.findByUserId(userId);
-      if (!profile) throw new BadRequestException('Profile not found');
+      if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
       const enriched = await this.withVerificationStatus(
         userId,
@@ -118,14 +124,14 @@ export class ProfileService {
 
       return enriched;
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to retrieve profile',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_retrieve_profile',
+      });
     }
   }
 
-  // ─── Section updates ──────────────────────────────────────────────────────
+  //  Section updates
 
   async updatePersonalInfo(req: AppRequest, userId: string, dto: PersonalDto) {
     return this.applyUpdate(
@@ -190,7 +196,7 @@ export class ProfileService {
     );
   }
 
-  // ─── Privacy Settings ─────────────────────────────────────────────────────
+  //  Privacy Settings
 
   async getPrivacySettings(userId: string) {
     try {
@@ -213,11 +219,10 @@ export class ProfileService {
       });
       return created.toObject();
     } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to retrieve privacy settings',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_retrieve_privacy_settings',
+      });
     }
   }
 
@@ -240,15 +245,14 @@ export class ProfileService {
       await this.cache.del(`profile:${userId}`);
       return updated;
     } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to update privacy settings',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_update_privacy_settings',
+      });
     }
   }
 
-  // ─── Private helpers ──────────────────────────────────────────────────────
+  //  Private helpers
 
   private async applyUpdate(
     req: AppRequest,
@@ -259,7 +263,7 @@ export class ProfileService {
   ) {
     try {
       const existing = await this.profileRepo.findByUserId(userId);
-      if (!existing) throw new BadRequestException('Profile not found');
+      if (!existing) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
       const normalized = this.normalizeUpdate(
         dto,
@@ -299,12 +303,11 @@ export class ProfileService {
 
       return enriched;
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : `Failed to update profile (${source})`,
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_update_profile',
+        source,
+      });
     }
   }
 
@@ -768,7 +771,7 @@ export class ProfileService {
     try {
       const user = await this.userRepo.findById(userId);
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        return throwUnauthorized(ErrorCode.AUTH_USER_NOT_FOUND);
       }
 
       const primaryIndex =
@@ -905,11 +908,16 @@ export class ProfileService {
         isOnboardingCompleted: user.isOnboardingCompleted,
       };
     } catch (error) {
-      console.error('Error in onboardingProfile:', error);
-      if (error instanceof UnauthorizedException) {
+      this.logger.error(
+        'Profile onboarding failed',
+        error instanceof Error ? error.stack : undefined,
+      );
+      if (error instanceof AppException) {
         throw error;
       }
-      throw new UnauthorizedException('Profile onboarding failed');
+      return throwUnauthorized(ErrorCode.INVALID_REQUEST, {
+        reason: 'profile_onboarding_failed',
+      });
     }
   }
 

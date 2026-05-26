@@ -19,7 +19,7 @@ export class PermissionsGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    // ✅ No Permissions required
+    //  No Permissions required
     if (!requiredPermissions || requiredPermissions.length === 0) {
       return true;
     }
@@ -27,7 +27,7 @@ export class PermissionsGuard implements CanActivate {
     const request = context.switchToHttp().getRequest<RequestWithUser>();
     const userPermissions = request.user?.permissions || [];
 
-    // 🚀 O(1) lookup using Set
+    //  O(1) lookup using Set
     const permissionSet = new Set(userPermissions);
 
     return requiredPermissions.every((perm) => permissionSet.has(perm));

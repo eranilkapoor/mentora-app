@@ -9,8 +9,8 @@ export interface ICacheService {
   expire(key: string, ttlSeconds: number): Promise<void>;
 }
 
-// ✅ Use a string token instead of interface as type reference
+//  Use a string token instead of interface as type reference
 export const CACHE_SERVICE = 'CACHE_SERVICE';
 
-// ✅ Export a type alias for use in type positions only
+//  Export a type alias for use in type positions only
 export type CacheService = ICacheService;

@@ -131,10 +131,10 @@ export interface DiscoveryProfileQuery {
 }
 
 const discoveryPath: Record<MatchTab, string> = {
-  recommended: '/match/recommended',
-  new: '/match/new',
-  online: '/match/online',
-  nearby: '/match/nearby',
+  recommended: '/matches/recommended',
+  new: '/matches/new',
+  online: '/matches/online',
+  nearby: '/matches/nearby',
 };
 
 const matchListTags = [
@@ -179,7 +179,7 @@ export const matchApi = baseApi.injectEndpoints({
       { page?: number; limit?: number } | void
     >({
       query: (params) => ({
-        url: '/match/my',
+        url: '/matches/my',
         method: 'GET',
         params: {
           page: params?.page ?? 1,
@@ -194,7 +194,7 @@ export const matchApi = baseApi.injectEndpoints({
       { page?: number; limit?: number } | void
     >({
       query: (params) => ({
-        url: '/match/shortlisted',
+        url: '/matches/shortlisted',
         method: 'GET',
         params: {
           page: params?.page ?? 1,
@@ -206,7 +206,7 @@ export const matchApi = baseApi.injectEndpoints({
 
     getMatchProfile: builder.query<ApiResponse<DiscoveryProfile>, string>({
       query: (userId) => ({
-        url: `/match/profile/${userId}`,
+        url: `/matches/profile/${userId}`,
         method: 'GET',
       }),
       providesTags: (_result, _error, userId) => [
@@ -219,7 +219,7 @@ export const matchApi = baseApi.injectEndpoints({
       { page?: number; limit?: number } | void
     >({
       query: (params) => ({
-        url: '/match/interests/received',
+        url: '/matches/interests/received',
         method: 'GET',
         params: {
           page: params?.page ?? 1,
@@ -234,7 +234,7 @@ export const matchApi = baseApi.injectEndpoints({
       { page?: number; limit?: number } | void
     >({
       query: (params) => ({
-        url: '/match/interests/sent',
+        url: '/matches/interests/sent',
         method: 'GET',
         params: {
           page: params?.page ?? 1,
@@ -246,7 +246,7 @@ export const matchApi = baseApi.injectEndpoints({
 
     sendInterest: builder.mutation<unknown, { receiverId: string }>({
       query: (body) => ({
-        url: '/match/interest',
+        url: '/matches/interest',
         method: 'POST',
         body,
       }),
@@ -255,7 +255,7 @@ export const matchApi = baseApi.injectEndpoints({
 
     shortlistProfile: builder.mutation<unknown, { userId: string }>({
       query: ({ userId }) => ({
-        url: `/match/shortlist/${userId}`,
+        url: `/matches/shortlist/${userId}`,
         method: 'POST',
       }),
       invalidatesTags: ['Shortlist'],
@@ -263,7 +263,7 @@ export const matchApi = baseApi.injectEndpoints({
 
     removeShortlistedProfile: builder.mutation<unknown, { userId: string }>({
       query: ({ userId }) => ({
-        url: `/match/shortlist/${userId}`,
+        url: `/matches/shortlist/${userId}`,
         method: 'DELETE',
       }),
       invalidatesTags: ['Shortlist'],
@@ -274,7 +274,7 @@ export const matchApi = baseApi.injectEndpoints({
       { interestId: string; action: 'ACCEPT' | 'REJECT' }
     >({
       query: (body) => ({
-        url: '/match/interest/respond',
+        url: '/matches/interest/respond',
         method: 'POST',
         body,
       }),
@@ -283,7 +283,7 @@ export const matchApi = baseApi.injectEndpoints({
 
     withdrawInterest: builder.mutation<unknown, { interestId: string }>({
       query: ({ interestId }) => ({
-        url: `/match/interest/${interestId}`,
+        url: `/matches/interest/${interestId}`,
         method: 'DELETE',
       }),
       invalidatesTags: [{ type: 'Match', id: 'INTERESTS' }],

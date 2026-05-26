@@ -41,18 +41,7 @@ import {
   UserSession,
   UserSessionSchema,
 } from '../auth/schemas/user-session.schema';
-import {
-  Verification,
-  VerificationSchema,
-} from '../profile/schemas/settings/verification.schema';
-import {
-  UserReport,
-  UserReportSchema,
-} from '../profile/schemas/settings/user-report.schema';
-import {
-  UserBlock,
-  UserBlockSchema,
-} from '../profile/schemas/settings/user-block.schema';
+import { SafetyModule } from '../safety/safety.module';
 import {
   Profile,
   ProfileSchema,
@@ -61,6 +50,7 @@ import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
 
 @Module({
   imports: [
+    SafetyModule,
     MongooseModule.forFeature([
       { name: AccountSettings.name, schema: AccountSettingsSchema },
       { name: PrivacySettings.name, schema: PrivacySettingsSchema },
@@ -73,9 +63,6 @@ import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
       { name: AiSettings.name, schema: AiSettingsSchema },
       { name: User.name, schema: UserSchema },
       { name: UserSession.name, schema: UserSessionSchema },
-      { name: Verification.name, schema: VerificationSchema },
-      { name: UserReport.name, schema: UserReportSchema },
-      { name: UserBlock.name, schema: UserBlockSchema },
       { name: Profile.name, schema: ProfileSchema },
       { name: Media.name, schema: MediaSchema },
     ]),

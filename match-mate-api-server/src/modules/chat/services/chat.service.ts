@@ -1,15 +1,10 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Injectable,
-  InternalServerErrorException,
-  NotFoundException,
-} from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { AppLogger } from 'src/common/logger/logger.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { ChatPresenceService } from './chat-presence.service';
 import { ChatRealtimeService } from './chat-realtime.service';
+import { ChatAccessService } from './chat-access.service';
 import { ChatRepository } from '../repositories/chat.repository';
 import { CreateDirectRoomDto } from '../dto/create-direct-room.dto';
 import { ListChatContactsDto } from '../dto/list-chat-contacts.dto';
@@ -25,6 +20,11 @@ import {
   ChatRoomType,
 } from '../enums/chat.enums';
 import { ChatRoomDocument } from '../schemas/chat-room.schema';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwAppException,
+  throwBadRequest,
+} from 'src/common/exceptions/throw-app-exception';
 
 interface UserSummary {
   userId: string;
@@ -108,6 +108,7 @@ export class ChatService {
     private readonly repo: ChatRepository,
     private readonly presence: ChatPresenceService,
     private readonly realtime: ChatRealtimeService,
+    private readonly access: ChatAccessService,
     private readonly notificationService: NotificationService,
     private readonly logger: AppLogger,
   ) {}
@@ -124,15 +125,17 @@ export class ChatService {
     userId: string,
     dto: CreateDirectRoomDto,
   ): Promise<unknown> {
-    this.ensureValidObjectId(userId, 'Invalid user id');
-    this.ensureValidObjectId(dto.targetUserId, 'Invalid target user id');
+    this.access.ensureValidObjectId(userId, 'invalid_user_id');
+    this.access.ensureValidObjectId(dto.targetUserId, 'invalid_target_user_id');
 
     if (userId === dto.targetUserId) {
-      throw new BadRequestException('Cannot create chat with yourself');
+      throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'cannot_create_chat_with_self',
+      });
     }
 
-    await this.ensureUsersExist([userId, dto.targetUserId]);
-    await this.ensureMessagingAllowed(userId, dto.targetUserId);
+    await this.access.ensureUsersExist([userId, dto.targetUserId]);
+    await this.access.ensureMessagingAllowed(userId, dto.targetUserId);
 
     let room = await this.repo.findDirectRoomByUsers(userId, dto.targetUserId);
 
@@ -143,8 +146,12 @@ export class ChatService {
       );
 
       if (!match) {
-        throw new ForbiddenException(
-          'Only matched users can start a direct conversation',
+        return throwAppException(
+          ErrorCode.CHAT_ACCESS_DENIED,
+          HttpStatus.FORBIDDEN,
+          {
+            reason: 'direct_chat_requires_match',
+          },
         );
       }
 
@@ -155,9 +162,15 @@ export class ChatService {
       });
     }
 
-    // ✅ Ensure room exists (type narrowing for TS)
+    //  Ensure room exists (type narrowing for TS)
     if (!room || !room.id) {
-      throw new InternalServerErrorException('Failed to create or fetch room');
+      return throwAppException(
+        ErrorCode.INTERNAL_ERROR,
+        HttpStatus.INTERNAL_SERVER_ERROR,
+        {
+          reason: 'failed_to_create_or_fetch_room',
+        },
+      );
     }
 
     const initialMessage =
@@ -367,7 +380,7 @@ export class ChatService {
   }
 
   async getConversationDetail(userId: string, roomId: string) {
-    const room = await this.getAuthorizedRoom(userId, roomId);
+    const room = await this.access.getAuthorizedRoom(userId, roomId);
     const otherUserId = this.getOtherParticipantId(room.participants, userId);
     const unreadRows = await this.repo.countUnreadByRoomIds(userId, [roomId]);
     const [users, profiles] = await Promise.all([
@@ -385,7 +398,7 @@ export class ChatService {
   }
 
   async getMessages(userId: string, roomId: string, query: ListMessagesDto) {
-    await this.getAuthorizedRoom(userId, roomId);
+    await this.access.getAuthorizedRoom(userId, roomId);
 
     const limit = query.limit ?? 30;
     const rows = await this.repo.listMessages(
@@ -416,14 +429,14 @@ export class ChatService {
   }
 
   async sendMessage(userId: string, dto: SendMessageDto) {
-    const room = await this.getAuthorizedRoom(userId, dto.roomId);
+    const room = await this.access.getAuthorizedRoom(userId, dto.roomId);
     const receiverId = this.getOtherParticipantId(room.participants, userId);
 
-    await this.ensureMessagingAllowed(userId, receiverId);
+    await this.access.ensureMessagingAllowed(userId, receiverId);
 
     const content = dto.content.trim();
     if (!content) {
-      throw new BadRequestException('Message content cannot be empty');
+      throwBadRequest(ErrorCode.CHAT_MESSAGE_EMPTY);
     }
 
     const message = await this.repo.createMessage({
@@ -496,12 +509,14 @@ export class ChatService {
   }
 
   async markRoomRead(userId: string, roomId: string, dto: MarkRoomReadDto) {
-    const room = await this.getAuthorizedRoom(userId, roomId);
+    const room = await this.access.getAuthorizedRoom(userId, roomId);
 
     if (dto.upToMessageId) {
       const anchorMessage = await this.repo.findMessageById(dto.upToMessageId);
       if (!anchorMessage || String(anchorMessage.roomId) !== roomId) {
-        throw new BadRequestException('Invalid read cursor');
+        throwBadRequest(ErrorCode.INVALID_ID, {
+          reason: 'invalid_read_cursor',
+        });
       }
     }
 
@@ -540,7 +555,7 @@ export class ChatService {
     roomId: string,
     dto: UpdateRoomSettingsDto,
   ) {
-    const room = await this.getAuthorizedRoom(userId, roomId);
+    const room = await this.access.getAuthorizedRoom(userId, roomId);
     const state = this.getParticipantState(room, userId);
 
     if (typeof dto.archived === 'boolean') {
@@ -594,65 +609,6 @@ export class ChatService {
     }
   }
 
-  private async getAuthorizedRoom(userId: string, roomId: string) {
-    this.ensureValidObjectId(roomId, 'Invalid room id');
-    const room = await this.repo.findRoomById(roomId);
-
-    if (!room) {
-      throw new NotFoundException('Chat room not found');
-    }
-
-    const participantIds = room.participants.map((participantId) =>
-      String(participantId),
-    );
-    if (!participantIds.includes(userId)) {
-      throw new ForbiddenException(
-        'You are not allowed to access this chat room',
-      );
-    }
-
-    return room;
-  }
-
-  private async ensureUsersExist(userIds: string[]) {
-    const users = await this.repo.findUsersByIds(userIds);
-    if (users.length !== userIds.length) {
-      throw new NotFoundException('One or more chat users were not found');
-    }
-  }
-
-  private async ensureMessagingAllowed(userId: string, targetUserId: string) {
-    const blockedRelation = await this.repo.findBlockedRelation(
-      userId,
-      targetUserId,
-    );
-    if (blockedRelation) {
-      throw new ForbiddenException(
-        'Messaging is not allowed between these users',
-      );
-    }
-
-    const privacyRows = await this.repo.findPrivacySettingsByUserIds([
-      targetUserId,
-    ]);
-    const targetPrivacy = privacyRows[0];
-    const rule = targetPrivacy?.allowMessagesFrom ?? 'all';
-    if (rule === 'all') {
-      return;
-    }
-
-    const [match, room] = await Promise.all([
-      this.repo.findActiveMatchBetween(userId, targetUserId),
-      this.repo.findDirectRoomByUsers(userId, targetUserId),
-    ]);
-
-    if (!match && !room) {
-      throw new ForbiddenException(
-        'Recipient privacy settings do not allow this chat',
-      );
-    }
-  }
-
   private shouldIncludeRoom(
     room: {
       participantStates?: Array<{
@@ -690,7 +646,9 @@ export class ChatService {
     );
 
     if (!state) {
-      throw new BadRequestException('Invalid chat room state');
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'invalid_chat_room_state',
+      });
     }
 
     return state;
@@ -774,7 +732,9 @@ export class ChatService {
       return (value as { toString: () => string }).toString();
     }
 
-    throw new BadRequestException('Invalid value for string conversion');
+    return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+      reason: 'invalid_value_for_string_conversion',
+    });
   }
 
   private mapMessage(message: MessageLike): {
@@ -878,22 +838,18 @@ export class ChatService {
   private getOtherParticipantId(
     participantIds: Array<Types.ObjectId | string>,
     currentUserId: string,
-  ) {
+  ): string {
     const otherUserId = participantIds
       .map((participantId) => String(participantId))
       .find((participantId) => participantId !== currentUserId);
 
     if (!otherUserId) {
-      throw new BadRequestException('Invalid chat room participants');
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'invalid_chat_room_participants',
+      });
     }
 
     return otherUserId;
-  }
-
-  private ensureValidObjectId(value: string, message: string) {
-    if (!Types.ObjectId.isValid(value)) {
-      throw new BadRequestException(message);
-    }
   }
 
   private buildPreview(content: string) {
@@ -904,7 +860,7 @@ export class ChatService {
     return content.length > 80 ? `${content.slice(0, 77)}...` : content;
   }
 
-  private toObjectId(value: unknown) {
+  private toObjectId(value: unknown): Types.ObjectId {
     if (value instanceof Types.ObjectId) {
       return value;
     }
@@ -913,6 +869,6 @@ export class ChatService {
       return new Types.ObjectId(value);
     }
 
-    throw new BadRequestException('Invalid object id');
+    return throwBadRequest(ErrorCode.INVALID_ID);
   }
 }

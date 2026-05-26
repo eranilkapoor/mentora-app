@@ -12,6 +12,7 @@ export class AppException extends HttpException {
       {
         success: false,
         code,
+        message: code,
         data: data || null,
         errors: errors || null,
         meta: meta || null,

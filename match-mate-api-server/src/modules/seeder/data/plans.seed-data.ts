@@ -3,7 +3,7 @@ import { Plan } from 'src/modules/subscription/schemas/plan.schema';
 
 export const PLAN_SEEDS: Plan[] = [
   // ==========================================
-  // 🆓 FREE PLAN
+  //  FREE PLAN
   // ==========================================
   {
     name: 'FREE',
@@ -21,7 +21,7 @@ export const PLAN_SEEDS: Plan[] = [
   },
 
   // ==========================================
-  // 🥇 GOLD MONTHLY
+  //  GOLD MONTHLY
   // ==========================================
   {
     name: 'GOLD_MONTHLY',
@@ -40,7 +40,7 @@ export const PLAN_SEEDS: Plan[] = [
   },
 
   // ==========================================
-  // 🥇 GOLD QUARTERLY
+  //  GOLD QUARTERLY
   // ==========================================
   {
     name: 'GOLD_QUARTERLY',
@@ -59,7 +59,7 @@ export const PLAN_SEEDS: Plan[] = [
   },
 
   // ==========================================
-  // 🥇 GOLD YEARLY
+  //  GOLD YEARLY
   // ==========================================
   {
     name: 'GOLD_YEARLY',
@@ -78,7 +78,7 @@ export const PLAN_SEEDS: Plan[] = [
   },
 
   // ==========================================
-  // 💎 PLATINUM MONTHLY
+  //  PLATINUM MONTHLY
   // ==========================================
   {
     name: 'PLATINUM_MONTHLY',
@@ -97,7 +97,7 @@ export const PLAN_SEEDS: Plan[] = [
   },
 
   // ==========================================
-  // 💎 PLATINUM QUARTERLY
+  //  PLATINUM QUARTERLY
   // ==========================================
   {
     name: 'PLATINUM_QUARTERLY',
@@ -116,7 +116,7 @@ export const PLAN_SEEDS: Plan[] = [
   },
 
   // ==========================================
-  // 💎 PLATINUM YEARLY
+  //  PLATINUM YEARLY
   // ==========================================
   {
     name: 'PLATINUM_YEARLY',

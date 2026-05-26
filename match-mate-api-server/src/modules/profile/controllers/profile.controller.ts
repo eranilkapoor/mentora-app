@@ -28,11 +28,11 @@ import { memoryStorage } from 'multer';
 import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
 import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
 import { UpdateProfileLocationDto } from 'src/modules/profile/dto/location.dto';
-import { ApiResponse } from 'src/common/dto/api-response.dto';
 import { SuccessCode } from 'src/common/constants';
+import { successResponse } from 'src/common/utils/response.util';
 
 @UseGuards(JwtAuthGuard)
-@Controller('profile')
+@Controller('profiles')
 export class ProfileController {
   constructor(private readonly profileService: ProfileService) {}
 
@@ -72,11 +72,10 @@ export class ProfileController {
       dto,
       safeImages,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_CREATED,
       'Onboarding profile saved successfully',
-      data,
     );
   }
 
@@ -87,22 +86,20 @@ export class ProfileController {
     @Body() dto: CreateProfileDto,
   ) {
     const data = await this.profileService.createProfile(req.user.sub, dto);
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_CREATED,
       'Onboarding profile saved successfully',
-      data,
     );
   }
 
   @Get('me')
   async getMyProfile(@Req() req: AuthenticatedRequest) {
     const data = await this.profileService.getMyProfile(req.user.sub);
-    return new ApiResponse(
-      true,
-      SuccessCode.PROFILE_FETCHED,
-      'Profile data successfully feathed',
+    return successResponse(
       data,
+      SuccessCode.PROFILE_FETCHED,
+      'Profile data successfully fetched',
     );
   }
 
@@ -116,11 +113,10 @@ export class ProfileController {
       req.user.sub,
       dto,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_UPDATED,
       'Profile successfully updated',
-      data,
     );
   }
 
@@ -134,11 +130,10 @@ export class ProfileController {
       req.user.sub,
       dto,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_UPDATED,
       'Profile successfully updated',
-      data,
     );
   }
 
@@ -152,11 +147,10 @@ export class ProfileController {
       req.user.sub,
       dto,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_UPDATED,
       'Profile successfully updated',
-      data,
     );
   }
 
@@ -167,11 +161,10 @@ export class ProfileController {
       req.user.sub,
       dto,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_UPDATED,
       'Profile successfully updated',
-      data,
     );
   }
 
@@ -185,22 +178,20 @@ export class ProfileController {
       req.user.sub,
       dto,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_UPDATED,
       'Profile location successfully updated',
-      data,
     );
   }
 
   @Get('privacy')
   async getPrivacy(@Req() req: AuthenticatedRequest) {
     const data = await this.profileService.getPrivacySettings(req.user.sub);
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_PRIVACY_SETTINGS_FETCHED,
       'Profile privacy successfully fetched',
-      data,
     );
   }
 
@@ -214,11 +205,10 @@ export class ProfileController {
       req.user.sub,
       dto,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.PROFILE_PRIVACY_SETTINGS_UPDATED,
       'Profile privacy successfully updated',
-      data,
     );
   }
 }

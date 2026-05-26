@@ -9,29 +9,29 @@ export const MongoModule = MongooseModule.forRootAsync({
   useFactory: (configService: ConfigService, logger: AppLogger) => {
     const driver = configService.getOrThrow<string>('mongo.driver');
 
-    // ─── Local mode — skip MongoDB connection entirely ─────────────────────
+    //  Local mode  skip MongoDB connection entirely
     if (driver === 'local') {
-      logger.log('⚠️  DB_DRIVER=local — skipping MongoDB connection');
+      logger.log('  DB_DRIVER=local  skipping MongoDB connection');
       return {
         uri: 'mongodb://localhost:27017/local_dummy',
         retryAttempts: 0, // don't retry
         retryDelay: 0,
         connectionFactory: (connection: Connection) => {
-          // Close immediately — we don't need it in local mode
+          // Close immediately  we don't need it in local mode
           void connection.close();
           return connection;
         },
       };
     }
 
-    // ─── Mongo mode ────────────────────────────────────────────────────────
+    //  Mongo mode
     const uri = configService.getOrThrow<string>('mongo.uri');
 
     if (!uri) {
       throw new Error('MONGO_URI is required when DB_DRIVER=mongo');
     }
 
-    logger.log('✅ MongoDB connecting...');
+    logger.log(' MongoDB connecting...');
 
     return {
       uri,

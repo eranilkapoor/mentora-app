@@ -2,7 +2,7 @@
 
 This folder contains sample notification templates for common matrimonial app events.
 
-The sample records match the `NotificationTemplates` schema fields and can be used as reference data for API payloads or database seeding scripts.
+The sample records match the `NotificationTemplate` schema fields and can be used as reference data for API payloads or database seeding scripts.
 
 ## Files
 

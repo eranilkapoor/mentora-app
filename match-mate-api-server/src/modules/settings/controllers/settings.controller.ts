@@ -52,7 +52,7 @@ export class SettingsController {
     return successResponse(await Promise.resolve(result), code);
   }
 
-  // ─── All settings ─────────────────────────────────────────────────────────
+  //  All settings
 
   @Get()
   getAllSettings(@Req() req: AuthenticatedRequest) {
@@ -62,7 +62,7 @@ export class SettingsController {
     );
   }
 
-  // ─── Privacy ──────────────────────────────────────────────────────────────
+  //  Privacy
 
   @Get('privacy')
   getPrivacy(@Req() req: AuthenticatedRequest) {
@@ -118,7 +118,7 @@ export class SettingsController {
     );
   }
 
-  // ─── Account ─────────────────────────────────────────────────────────────
+  //  Account
 
   @Get('account')
   getAccount(@Req() req: AuthenticatedRequest) {
@@ -208,7 +208,7 @@ export class SettingsController {
     );
   }
 
-  // ─── Notifications ────────────────────────────────────────────────────────
+  //  Notifications
 
   @Get('notifications')
   getNotification(@Req() req: AuthenticatedRequest) {
@@ -241,7 +241,7 @@ export class SettingsController {
     );
   }
 
-  // ─── Communication ────────────────────────────────────────────────────────
+  //  Communication
 
   @Get('communication')
   getCommunication(@Req() req: AuthenticatedRequest) {
@@ -262,7 +262,7 @@ export class SettingsController {
     );
   }
 
-  // ─── Security ─────────────────────────────────────────────────────────────
+  //  Security
 
   @Get('security')
   getSecurity(@Req() req: AuthenticatedRequest) {
@@ -342,7 +342,7 @@ export class SettingsController {
     );
   }
 
-  // ─── Localization ─────────────────────────────────────────────────────────
+  //  Localization
 
   @Get('localization')
   getLocalization(@Req() req: AuthenticatedRequest) {
@@ -363,7 +363,7 @@ export class SettingsController {
     );
   }
 
-  // ─── Accessibility ────────────────────────────────────────────────────────
+  //  Accessibility
 
   @Get('accessibility')
   getAccessibility(@Req() req: AuthenticatedRequest) {
@@ -384,7 +384,7 @@ export class SettingsController {
     );
   }
 
-  // ─── Media ────────────────────────────────────────────────────────────────
+  //  Media
 
   @Get('media')
   getMedia(@Req() req: AuthenticatedRequest) {
@@ -405,7 +405,7 @@ export class SettingsController {
     );
   }
 
-  // ─── AI ───────────────────────────────────────────────────────────────────
+  //  AI
 
   @Get('ai')
   getAi(@Req() req: AuthenticatedRequest) {

@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { FilterQuery } from 'mongoose';
 import { ProfileDocument } from 'src/modules/profile/schemas/profile/profile.schema';
@@ -9,8 +9,10 @@ import {
 } from '../repositories/match-discovery.repository';
 import { MatchQueryDto, NearbyQueryDto } from '../dto/match-query.dto';
 import { SettingsService } from 'src/modules/settings/services/settings.service';
+import { ErrorCode } from 'src/common/constants';
+import { throwBadRequest } from 'src/common/exceptions/throw-app-exception';
 
-// ─── Scoring weights default (overridden by user preference weights) ──────────
+//  Scoring weights default (overridden by user preference weights)
 
 const DEFAULT_WEIGHTS = {
   age: 10,
@@ -31,7 +33,7 @@ export class MatchDiscoveryService {
     private readonly settingsService: SettingsService,
   ) {}
 
-  // ─── Recommended matches ───────────────────────────────────────────────────
+  //  Recommended matches
 
   async getRecommendedMatches(userId: string, query: MatchQueryDto) {
     const { myProfile, preference, interactedIds, skip, limit } =
@@ -70,7 +72,7 @@ export class MatchDiscoveryService {
     return this.paginate(scored, total, skip, limit, query.page ?? 1);
   }
 
-  // ─── New matches — profiles created in last 30 days ───────────────────────
+  //  New matches  profiles created in last 30 days
 
   async getNewMatches(userId: string, query: MatchQueryDto) {
     const { myProfile, preference, interactedIds, skip, limit } =
@@ -126,7 +128,7 @@ export class MatchDiscoveryService {
     );
   }
 
-  // ─── Nearby matches — geo-based ───────────────────────────────────────────
+  //  Nearby matches  geo-based
 
   async getNearbyMatches(userId: string, query: NearbyQueryDto) {
     const {
@@ -142,9 +144,9 @@ export class MatchDiscoveryService {
       | undefined;
 
     if (!location?.coordinates?.length) {
-      throw new BadRequestException(
-        'Your profile does not have location data. Please update your location.',
-      );
+      return throwBadRequest(ErrorCode.PROFILE_NOT_FOUND, {
+        reason: 'profile_location_required',
+      });
     }
 
     const oppositeGender = this.getOppositeGender(
@@ -176,7 +178,7 @@ export class MatchDiscoveryService {
     );
   }
 
-  // ─── Build base filter (gender + exclusions + active status) ─────────────
+  //  Build base filter (gender + exclusions + active status)
 
   async getOnlineMatches(userId: string, query: MatchQueryDto) {
     const { myProfile, preference, interactedIds, skip, limit } =
@@ -242,7 +244,7 @@ export class MatchDiscoveryService {
     };
   }
 
-  // ─── Build full preference-based filter ───────────────────────────────────
+  //  Build full preference-based filter
 
   private buildPreferenceFilter(
     userId: string,
@@ -257,7 +259,7 @@ export class MatchDiscoveryService {
       | Record<string, unknown>
       | undefined;
 
-    // ── Age range ────────────────────────────────────────────────────────────
+    //  Age range
 
     const ageFilter = filters?.age as
       | { min?: number; max?: number }
@@ -270,7 +272,7 @@ export class MatchDiscoveryService {
       $lte: ageFilter?.max ?? myAge + 5,
     };
 
-    // ── Height range (cm) ────────────────────────────────────────────────────
+    //  Height range (cm)
 
     const heightFilter = filters?.height as
       | { min?: number; max?: number }
@@ -283,7 +285,7 @@ export class MatchDiscoveryService {
       };
     }
 
-    // ── Religion ─────────────────────────────────────────────────────────────
+    //  Religion
 
     const religionFilter = filters?.religion as string[] | undefined;
     const myPersonal = (myProfile.personal ?? {}) as Record<string, unknown>;
@@ -294,21 +296,21 @@ export class MatchDiscoveryService {
       filter['personal.religion'] = myPersonal.religion as string;
     }
 
-    // ── Caste ────────────────────────────────────────────────────────────────
+    //  Caste
 
     const casteFilter = filters?.caste as string[] | undefined;
     if (casteFilter?.length) {
       filter['personal.caste'] = { $in: casteFilter };
     }
 
-    // ── Marital status ───────────────────────────────────────────────────────
+    //  Marital status
 
     const maritalFilter = filters?.maritalStatus as string[] | undefined;
     if (maritalFilter?.length) {
       filter['personal.maritalStatus'] = { $in: maritalFilter };
     }
 
-    // ── Location ─────────────────────────────────────────────────────────────
+    //  Location
 
     const cityFilter = filters?.city as string[] | undefined;
     const stateFilter = filters?.state as string[] | undefined;
@@ -322,14 +324,14 @@ export class MatchDiscoveryService {
       filter['personal.country'] = { $in: countryFilter };
     }
 
-    // ── Education / qualification ─────────────────────────────────────────────
+    //  Education / qualification
 
     const qualFilter = filters?.qualification as string[] | undefined;
     if (qualFilter?.length) {
       filter['education.qualification'] = { $in: qualFilter };
     }
 
-    // ── Occupation type ───────────────────────────────────────────────────────
+    //  Occupation type
 
     const occupationTypeFilter = filters?.occupationType as
       | string[]
@@ -338,14 +340,14 @@ export class MatchDiscoveryService {
       filter['education.occupationType'] = { $in: occupationTypeFilter };
     }
 
-    // ── Body type ─────────────────────────────────────────────────────────────
+    //  Body type
 
     const bodyTypeFilter = filters?.bodyType as string[] | undefined;
     if (bodyTypeFilter?.length) {
       filter['physical.bodyType'] = { $in: bodyTypeFilter };
     }
 
-    // ── Lifestyle filters ─────────────────────────────────────────────────────
+    //  Lifestyle filters
 
     const smokingFilter = filters?.smoking as string[] | undefined;
     if (smokingFilter?.length) {
@@ -362,13 +364,13 @@ export class MatchDiscoveryService {
       filter['personal.eating'] = { $in: eatingFilter };
     }
 
-    // ── Strict mode — only verified profiles ──────────────────────────────────
+    //  Strict mode  only verified profiles
 
     if (settings?.isStrict || settings?.profileVerificationRequired) {
       filter.isVerified = true;
     }
 
-    // ── Minimum match score ───────────────────────────────────────────────────
+    //  Minimum match score
 
     const minScore = settings?.minimumMatchScore as number | undefined;
     if (minScore) {
@@ -408,7 +410,7 @@ export class MatchDiscoveryService {
     return filter;
   }
 
-  // ─── Score a profile against user preferences ─────────────────────────────
+  //  Score a profile against user preferences
 
   private calculateMatchScore(
     profile: Record<string, unknown>,
@@ -535,13 +537,13 @@ export class MatchDiscoveryService {
         ? (lifestyleScore / lifestyleChecks) * weights.lifestyle
         : weights.lifestyle * 0.5;
 
-    // Horoscope — manglik match bonus
+    // Horoscope  manglik match bonus
     score += weights.horoscope * 0.5; // Neutral until kundli matching added
 
     return Math.round(Math.min(score, 100));
   }
 
-  // ─── Helpers ──────────────────────────────────────────────────────────────
+  //  Helpers
 
   private getProfileGender(
     profile: Record<string, unknown>,
@@ -568,9 +570,9 @@ export class MatchDiscoveryService {
       ]);
 
     if (!myProfile) {
-      throw new BadRequestException(
-        'Your profile is not complete. Please complete onboarding first.',
-      );
+      return throwBadRequest(ErrorCode.PROFILE_NOT_FOUND, {
+        reason: 'profile_required_for_discovery',
+      });
     }
 
     const page = query.page ?? 1;

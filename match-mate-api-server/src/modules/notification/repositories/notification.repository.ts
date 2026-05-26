@@ -6,12 +6,12 @@ import {
   NotificationDocument,
 } from '../schemas/notification.schema';
 import {
-  NotificationTemplates,
-  NotificationTemplatesDocument,
+  NotificationTemplate,
+  NotificationTemplateDocument,
 } from '../schemas/notification-templates.schema';
 import {
-  NotificationLogs,
-  NotificationLogsDocument,
+  NotificationLog,
+  NotificationLogDocument,
 } from '../schemas/notification-logs.schema';
 import { User, UserDocument } from '../../auth/schemas/user.schema';
 import {
@@ -25,11 +25,11 @@ export class NotificationRepository {
     @InjectModel(Notification.name)
     private readonly model: Model<NotificationDocument>,
 
-    @InjectModel(NotificationTemplates.name)
-    private readonly templateModel: Model<NotificationTemplatesDocument>,
+    @InjectModel(NotificationTemplate.name)
+    private readonly templateModel: Model<NotificationTemplateDocument>,
 
-    @InjectModel(NotificationLogs.name)
-    private readonly logModel: Model<NotificationLogsDocument>,
+    @InjectModel(NotificationLog.name)
+    private readonly logModel: Model<NotificationLogDocument>,
 
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
@@ -156,7 +156,7 @@ export class NotificationRepository {
     return this.templateModel.find(filter).sort({ key: 1 }).lean();
   }
 
-  upsertTemplate(key: string, data: Partial<NotificationTemplates>) {
+  upsertTemplate(key: string, data: Partial<NotificationTemplate>) {
     const { ...dataWithoutKey } = data;
 
     return this.templateModel.findOneAndUpdate(
@@ -175,13 +175,13 @@ export class NotificationRepository {
     );
   }
 
-  createDeliveryLog(data: Partial<NotificationLogs>) {
+  createDeliveryLog(data: Partial<NotificationLog>) {
     return this.logModel.create(data);
   }
 
   updateDeliveryLog(
     logId: string,
-    patch: Partial<NotificationLogs> & { status: DeliveryLogStatus },
+    patch: Partial<NotificationLog> & { status: DeliveryLogStatus },
   ) {
     return this.logModel.findByIdAndUpdate(
       logId,

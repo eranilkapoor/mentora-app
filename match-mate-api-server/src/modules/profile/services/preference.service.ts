@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  ConflictException,
-  Inject,
-} from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { PreferenceRepository } from '../repositories/preference.repository';
 import {
   PartnerFiltersDto,
@@ -18,6 +13,12 @@ import {
   PartnerFilters,
   Preference,
 } from '../schemas/preference/preference.schema';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwBadRequest,
+  throwConflict,
+} from 'src/common/exceptions/throw-app-exception';
+import { AppException } from 'src/common/exceptions/app.exception';
 
 const WEIGHTS_TOTAL = 100;
 @Injectable()
@@ -27,15 +28,15 @@ export class PreferenceService {
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
   ) {}
 
-  // ─── Create ───────────────────────────────────────────────────────────────
+  //  Create
 
   async createPreference(userId: string, dto?: UpdatePreferenceDto) {
     try {
       const existing = await this.preferenceRepo.findByUserId(userId);
       if (existing) {
-        throw new ConflictException(
-          'Preferences already exist for this user. Use the update endpoints to modify them.',
-        );
+        return throwConflict(ErrorCode.INVALID_REQUEST, {
+          reason: 'preferences_already_exist',
+        });
       }
 
       const mergedFilters: PartnerFilters = {
@@ -66,9 +67,11 @@ export class PreferenceService {
           0,
         );
         if (total !== WEIGHTS_TOTAL) {
-          throw new BadRequestException(
-            `Match weights must total exactly ${WEIGHTS_TOTAL}. Received: ${total}.`,
-          );
+          return throwBadRequest(ErrorCode.PREFERENCES_INVALID_RANGE, {
+            reason: 'invalid_weights_total',
+            expected: WEIGHTS_TOTAL,
+            received: total,
+          });
         }
       }
 
@@ -91,19 +94,14 @@ export class PreferenceService {
 
       return result;
     } catch (error) {
-      if (
-        error instanceof ConflictException ||
-        error instanceof BadRequestException
-      ) {
-        throw error;
-      }
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to create preferences',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_create_preferences',
+      });
     }
   }
 
-  // ─── Read ─────────────────────────────────────────────────────────────────
+  //  Read
 
   async getMyPreference(userId: string) {
     try {
@@ -111,7 +109,7 @@ export class PreferenceService {
       const cached = await this.cache.get<unknown>(cacheKey);
       if (cached) return cached;
 
-      // Return defaults inline if not yet created — consistent with DEFAULT_* above
+      // Return defaults inline if not yet created  consistent with DEFAULT_* above
       const preference = (await this.preferenceRepo.findByUserId(userId)) ?? {
         filters: {
           childPreference: ChildPreference.DOES_NOT_MATTER,
@@ -141,15 +139,14 @@ export class PreferenceService {
       await this.cache.set(cacheKey, preference, 300);
       return preference;
     } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to retrieve preferences',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_retrieve_preferences',
+      });
     }
   }
 
-  // ─── Filters ──────────────────────────────────────────────────────────────
+  //  Filters
 
   async updateFilters(userId: string, dto: PartnerFiltersDto) {
     try {
@@ -157,13 +154,14 @@ export class PreferenceService {
       await this.invalidateCache(userId);
       return result;
     } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to update filters',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_update_preference_filters',
+      });
     }
   }
 
-  // ─── Settings ─────────────────────────────────────────────────────────────
+  //  Settings
 
   async updateSettings(userId: string, dto: MatchSettingsDto) {
     try {
@@ -171,13 +169,14 @@ export class PreferenceService {
       await this.invalidateCache(userId);
       return result;
     } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to update settings',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_update_preference_settings',
+      });
     }
   }
 
-  // ─── Weights ──────────────────────────────────────────────────────────────
+  //  Weights
 
   async updateWeights(userId: string, dto: MatchWeightsDto) {
     try {
@@ -187,23 +186,25 @@ export class PreferenceService {
       );
 
       if (total !== WEIGHTS_TOTAL) {
-        throw new BadRequestException(
-          `Match weights must total exactly ${WEIGHTS_TOTAL}. Received: ${total}.`,
-        );
+        return throwBadRequest(ErrorCode.PREFERENCES_INVALID_RANGE, {
+          reason: 'invalid_weights_total',
+          expected: WEIGHTS_TOTAL,
+          received: total,
+        });
       }
 
       const result = await this.preferenceRepo.updateWeights(userId, dto);
       await this.invalidateCache(userId);
       return result;
     } catch (error) {
-      if (error instanceof BadRequestException) throw error;
-      throw new BadRequestException(
-        error instanceof Error ? error.message : 'Failed to update weights',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_update_preference_weights',
+      });
     }
   }
 
-  // ─── About Partner ────────────────────────────────────────────────────────
+  //  About Partner
 
   async updateAboutPartner(userId: string, aboutPartner: string) {
     try {
@@ -214,15 +215,14 @@ export class PreferenceService {
       await this.invalidateCache(userId);
       return result;
     } catch (error) {
-      throw new BadRequestException(
-        error instanceof Error
-          ? error.message
-          : 'Failed to update about partner',
-      );
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_update_about_partner',
+      });
     }
   }
 
-  // ─── Private ──────────────────────────────────────────────────────────────
+  //  Private
 
   private async invalidateCache(userId: string): Promise<void> {
     await this.cache.del(`preference:${userId}`);

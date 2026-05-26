@@ -13,7 +13,7 @@ export class PrivacySettings {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
-  // ── Profile visibility ─────────────────────────────────────────────────────
+  //  Profile visibility
   @Prop({
     type: String,
     enum: ['public', 'private', 'contacts_only', 'premium_only'],
@@ -24,13 +24,13 @@ export class PrivacySettings {
   @Prop({ default: false }) incognitoMode!: boolean;
   @Prop({ default: false }) showOnlyToPremium!: boolean;
 
-  // ── Contact & Personal info ────────────────────────────────────────────────
+  //  Contact & Personal info
   @Prop({ default: false }) showPhone!: boolean;
   @Prop({ default: false }) showEmail!: boolean;
   @Prop({ default: false }) showIncome!: boolean;
   @Prop({ default: false }) showExactAge!: boolean;
 
-  // ── Media ──────────────────────────────────────────────────────────────────
+  //  Media
   @Prop({
     type: String,
     enum: ['everyone', 'accepted_matches', 'contacts_only', 'no_one'],
@@ -41,7 +41,7 @@ export class PrivacySettings {
   @Prop({ default: false }) blurPhotosForUnmatched!: boolean;
   @Prop({ default: true }) allowScreenshots!: boolean;
 
-  // ── Online presence ────────────────────────────────────────────────────────
+  //  Online presence
   @Prop({ default: true }) showOnlineStatus!: boolean;
   @Prop({
     type: String,

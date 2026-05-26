@@ -41,13 +41,13 @@ export class StorageService {
           ),
         },
       });
-      this.logger.log('✅ Storage driver: S3');
+      this.logger.log(' Storage driver: S3');
     } else {
-      this.logger.log('✅ Storage driver: Local');
+      this.logger.log(' Storage driver: Local');
     }
   }
 
-  // ─── Upload Single File ───────────────────────────────────────────────────
+  //  Upload Single File
   async uploadFile(
     file: Express.Multer.File,
     folder = 'profiles',
@@ -62,7 +62,7 @@ export class StorageService {
     return this.uploadToLocal(file, filename, folder);
   }
 
-  // ─── Upload Multiple Files ────────────────────────────────────────────────
+  //  Upload Multiple Files
   async uploadFiles(
     files: Express.Multer.File[],
     folder = 'profiles',
@@ -71,7 +71,7 @@ export class StorageService {
     return Promise.all(files.map((file) => this.uploadFile(file, folder)));
   }
 
-  // ─── Delete File ──────────────────────────────────────────────────────────
+  //  Delete File
   async deleteFile(filename: string, folder = 'profiles'): Promise<void> {
     if (this.isS3) {
       await this.deleteFromS3(filename, folder);
@@ -80,7 +80,7 @@ export class StorageService {
     }
   }
 
-  // ─── Get Public URL from filename ─────────────────────────────────────────
+  //  Get Public URL from filename
   getUrl(filename: string, folder = 'profiles'): string {
     if (this.isS3) {
       return `${this.s3BaseUrl}/${folder}/${filename}`;
@@ -88,7 +88,7 @@ export class StorageService {
     return `${this.publicBaseUrl}/uploads/${folder}/${filename}`;
   }
 
-  // ─── S3 Internals ─────────────────────────────────────────────────────────
+  //  S3 Internals
   private async uploadToS3(
     file: Express.Multer.File,
     filename: string,
@@ -111,7 +111,7 @@ export class StorageService {
     await upload.done();
 
     const url = `${this.s3BaseUrl}/${key}`;
-    this.logger.log(`📦 Uploaded to S3: ${url}`);
+    this.logger.log(` Uploaded to S3: ${url}`);
 
     return { filename, url };
   }
@@ -126,10 +126,10 @@ export class StorageService {
       }),
     );
 
-    this.logger.log(`🗑 Deleted from S3: ${folder}/${filename}`);
+    this.logger.log(` Deleted from S3: ${folder}/${filename}`);
   }
 
-  // ─── Local Internals ──────────────────────────────────────────────────────
+  //  Local Internals
   private async uploadToLocal(
     file: Express.Multer.File,
     filename: string,
@@ -145,7 +145,7 @@ export class StorageService {
     await fs.promises.writeFile(filePath, file.buffer);
 
     const url = `${this.publicBaseUrl}/uploads/${folder}/${filename}`;
-    this.logger.log(`💾 Saved locally: ${filePath}`);
+    this.logger.log(` Saved locally: ${filePath}`);
 
     return { filename, url };
   }
@@ -158,7 +158,7 @@ export class StorageService {
 
     if (fs.existsSync(filePath)) {
       await fs.promises.unlink(filePath);
-      this.logger.log(`🗑 Deleted local file: ${filePath}`);
+      this.logger.log(` Deleted local file: ${filePath}`);
     }
   }
 }

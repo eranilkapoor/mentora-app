@@ -1,8 +1,8 @@
 {
   "name": "match-mate-api-server",
-  "version": "0.0.1",
-  "description": "",
-  "author": "",
+  "version": "1.0.0",
+  "description": "NestJS API server for MatchMate matrimonial, discovery, chat, settings, notification, and subscription workflows.",
+  "author": "MatchMate",
   "private": true,
   "license": "UNLICENSED",
   "scripts": {
@@ -23,6 +23,7 @@
     "smoke:dev": "cross-env SMOKE_BASE_URL=http://localhost:3000 node ./scripts/smoke-api.mjs",
     "smoke:staging": "cross-env SMOKE_BASE_URL=http://localhost:6000 node ./scripts/smoke-api.mjs",
     "smoke:prod": "cross-env SMOKE_BASE_URL=http://localhost:9000 node ./scripts/smoke-api.mjs",
+    "seed": "ts-node -r tsconfig-paths/register src/modules/seeder/seeder.runner.ts",
     "test": "jest",
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",

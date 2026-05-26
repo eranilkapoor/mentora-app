@@ -170,6 +170,30 @@ function validateNotificationProviders(
   return env;
 }
 
+function validateProductionProviders(
+  env: Record<string, unknown>,
+  helpers: Joi.CustomHelpers,
+) {
+  if (env.NODE_ENV !== 'production') {
+    return env;
+  }
+
+  if (!env.PAYMENT_SIGNATURE_SECRET || !env.PAYMENT_WEBHOOK_SECRET) {
+    return helpers.error('any.custom', {
+      customMessage:
+        'PAYMENT_SIGNATURE_SECRET and PAYMENT_WEBHOOK_SECRET are required in production',
+    });
+  }
+
+  if (!env.APP_WEB_URL && !env.FRONTEND_URL) {
+    return helpers.error('any.custom', {
+      customMessage: 'APP_WEB_URL or FRONTEND_URL is required in production',
+    });
+  }
+
+  return env;
+}
+
 export const envValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'staging', 'production')
@@ -206,6 +230,30 @@ export const envValidationSchema = Joi.object({
       .default('http://localhost:3000'),
   }),
 
+  APP_WEB_URL: optionalUri,
+
+  FRONTEND_URL: optionalUri,
+
+  COOKIE_DOMAIN: optionalString,
+
+  GOOGLE_CLIENT_ID: optionalString,
+
+  GOOGLE_CLIENT_SECRET: optionalString,
+
+  GOOGLE_CALLBACK_URL: optionalString.default('/api/v1/auth/google/callback'),
+
+  FACEBOOK_CLIENT_ID: optionalString,
+
+  FACEBOOK_CLIENT_SECRET: optionalString,
+
+  APPLE_CLIENT_ID: optionalString,
+
+  APPLE_TEAM_ID: optionalString,
+
+  APPLE_KEY_ID: optionalString,
+
+  APPLE_PRIVATE_KEY: optionalString,
+
   DB_DRIVER: Joi.string().trim().valid('mongo', 'local').required(),
 
   MONGO_URI: Joi.when('DB_DRIVER', {
@@ -219,6 +267,8 @@ export const envValidationSchema = Joi.object({
   MONGO_RETRY_DELAY: Joi.number().integer().min(0).max(60000).default(5000),
 
   RUN_SEEDER: Joi.boolean().default(false),
+
+  SEEDER_CONFIRM: optionalString,
 
   CACHE_DRIVER: Joi.string().trim().valid('redis', 'local').default('local'),
 
@@ -361,6 +411,7 @@ export const envValidationSchema = Joi.object({
   NOTIFICATION_PUSH_FCM_PRIVATE_KEY: optionalString,
 })
   .custom(validateNotificationProviders)
+  .custom(validateProductionProviders)
   .prefs({ abortEarly: false, convert: true })
   .messages({
     'any.custom': '{{#customMessage}}',

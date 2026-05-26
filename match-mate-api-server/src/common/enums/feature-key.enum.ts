@@ -1,6 +1,6 @@
 export enum FeatureKey {
   // ==========================================
-  // 🔐 AUTH & ACCOUNT
+  //  AUTH & ACCOUNT
   // ==========================================
   EMAIL_REGISTRATION = 'email_registration',
   PHONE_REGISTRATION = 'phone_registration',
@@ -18,7 +18,7 @@ export enum FeatureKey {
   SESSION_HISTORY = 'session_history',
 
   // ==========================================
-  // 👤 PROFILE
+  //  PROFILE
   // ==========================================
   CREATE_PROFILE = 'create_profile',
   EDIT_PROFILE = 'edit_profile',
@@ -52,7 +52,7 @@ export enum FeatureKey {
   ASTROLOGY_REPORT = 'astrology_report',
 
   // ==========================================
-  // ❤️ ENGAGEMENT
+  //  ENGAGEMENT
   // ==========================================
   DAILY_LIKES = 'daily_likes',
   DAILY_SUPER_LIKES = 'daily_super_likes',
@@ -73,7 +73,7 @@ export enum FeatureKey {
   FAVORITE_PROFILES = 'favorite_profiles',
 
   // ==========================================
-  // 💬 CHAT & COMMUNICATION
+  //  CHAT & COMMUNICATION
   // ==========================================
   CHAT_ACCESS = 'chat_access',
   UNLIMITED_CHAT = 'unlimited_chat',
@@ -95,7 +95,7 @@ export enum FeatureKey {
   VIDEO_CALL = 'video_call',
 
   // ==========================================
-  // 📞 CONTACT ACCESS
+  //  CONTACT ACCESS
   // ==========================================
   VIEW_CONTACT = 'view_contact',
   REQUEST_CONTACT = 'request_contact',
@@ -105,7 +105,7 @@ export enum FeatureKey {
   VIEW_EMAIL_ADDRESS = 'view_email_address',
 
   // ==========================================
-  // 🖼️ MEDIA
+  //  MEDIA
   // ==========================================
   UPLOAD_PHOTOS = 'upload_photos',
   UPLOAD_VIDEOS = 'upload_videos',
@@ -124,7 +124,7 @@ export enum FeatureKey {
   BLURRED_PHOTO_MODE = 'blurred_photo_mode',
 
   // ==========================================
-  // 🔍 SEARCH & DISCOVERY
+  //  SEARCH & DISCOVERY
   // ==========================================
   BASIC_SEARCH = 'basic_search',
   ADVANCED_SEARCH = 'advanced_search',
@@ -163,7 +163,7 @@ export enum FeatureKey {
   FEATURED_IN_SEARCH = 'featured_in_search',
 
   // ==========================================
-  // 🧠 MATCHMAKING & AI
+  //  MATCHMAKING & AI
   // ==========================================
   BASIC_MATCHING = 'basic_matching',
   ADVANCED_MATCHING = 'advanced_matching',
@@ -189,7 +189,7 @@ export enum FeatureKey {
   SMART_PREFERENCES = 'smart_preferences',
 
   // ==========================================
-  // 🕉️ MATRIMONY SPECIFIC
+  //  MATRIMONY SPECIFIC
   // ==========================================
   RELIGION_PREFERENCES = 'religion_preferences',
   CASTE_PREFERENCES = 'caste_preferences',
@@ -206,7 +206,7 @@ export enum FeatureKey {
   LIFESTYLE_PREFERENCES = 'lifestyle_preferences',
 
   // ==========================================
-  // 👨‍👩‍👧 FAMILY FEATURES
+  //  FAMILY FEATURES
   // ==========================================
   FAMILY_MANAGED_PROFILE = 'family_managed_profile',
   FAMILY_CONTACT_VISIBILITY = 'family_contact_visibility',
@@ -218,7 +218,7 @@ export enum FeatureKey {
   FAMILY_PREFERENCES = 'family_preferences',
 
   // ==========================================
-  // 📊 ANALYTICS
+  //  ANALYTICS
   // ==========================================
   INTEREST_ANALYTICS = 'interest_analytics',
   CHAT_ANALYTICS = 'chat_analytics',
@@ -230,7 +230,7 @@ export enum FeatureKey {
   WEEKLY_REPORTS = 'weekly_reports',
 
   // ==========================================
-  // 🔔 NOTIFICATIONS
+  //  NOTIFICATIONS
   // ==========================================
   PUSH_NOTIFICATIONS = 'push_notifications',
   EMAIL_NOTIFICATIONS = 'email_notifications',
@@ -242,7 +242,7 @@ export enum FeatureKey {
   MARKETING_NOTIFICATIONS = 'marketing_notifications',
 
   // ==========================================
-  // 🌍 LOCATION FEATURES
+  //  LOCATION FEATURES
   // ==========================================
   LOCATION_BASED_MATCHING = 'location_based_matching',
   NEARBY_PROFILES = 'nearby_profiles',
@@ -250,7 +250,7 @@ export enum FeatureKey {
   TRAVEL_MODE = 'travel_mode',
 
   // ==========================================
-  // ⭐ PREMIUM EXPERIENCE
+  //  PREMIUM EXPERIENCE
   // ==========================================
   AD_FREE_EXPERIENCE = 'ad_free_experience',
   PRIORITY_SUPPORT = 'priority_support',
@@ -265,7 +265,7 @@ export enum FeatureKey {
   PERSONAL_MATCHMAKER = 'personal_matchmaker',
 
   // ==========================================
-  // 🚀 BOOST / MONETIZATION
+  //  BOOST / MONETIZATION
   // ==========================================
   DAILY_BOOSTS = 'daily_boosts',
   WEEKLY_BOOSTS = 'weekly_boosts',
@@ -276,7 +276,7 @@ export enum FeatureKey {
   SPOTLIGHT_PROFILE = 'spotlight_profile',
 
   // ==========================================
-  // 💳 PAYMENTS & SUBSCRIPTIONS
+  //  PAYMENTS & SUBSCRIPTIONS
   // ==========================================
   MONTHLY_SUBSCRIPTION = 'monthly_subscription',
   QUARTERLY_SUBSCRIPTION = 'quarterly_subscription',
@@ -296,7 +296,7 @@ export enum FeatureKey {
   GRACE_PERIOD = 'grace_period',
 
   // ==========================================
-  // 🛡️ SAFETY & TRUST
+  //  SAFETY & TRUST
   // ==========================================
   REPORT_USER = 'report_user',
   BLOCK_USERS = 'block_users',
@@ -310,7 +310,7 @@ export enum FeatureKey {
   MANUAL_PROFILE_REVIEW = 'manual_profile_review',
 
   // ==========================================
-  // 📈 LIMIT BASED FEATURES
+  //  LIMIT BASED FEATURES
   // ==========================================
   SHORTLIST_LIMIT = 'shortlist_limit',
   CONTACT_VIEW_LIMIT = 'contact_view_limit',
@@ -320,7 +320,7 @@ export enum FeatureKey {
   SWIPE_LIMIT = 'swipe_limit',
 
   // ==========================================
-  // 🎮 ENGAGEMENT & GAMIFICATION
+  //  ENGAGEMENT & GAMIFICATION
   // ==========================================
   DAILY_SWIPES = 'daily_swipes',
   UNLIMITED_SWIPES = 'unlimited_swipes',
@@ -332,7 +332,7 @@ export enum FeatureKey {
   COMPATIBILITY_GAMES = 'compatibility_games',
 
   // ==========================================
-  // 🧾 SUPPORT & MISC
+  //  SUPPORT & MISC
   // ==========================================
   CUSTOMER_SUPPORT_CHAT = 'customer_support_chat',
   SUPPORT_TICKETS = 'support_tickets',
@@ -348,7 +348,7 @@ export enum FeatureKey {
 }
 
 // ==========================================
-// 🧾 FEATURE CATEGORIES (for analytics, grouping, etc.)
+//  FEATURE CATEGORIES (for analytics, grouping, etc.)
 // ==========================================
 
 export enum FeatureCategory {

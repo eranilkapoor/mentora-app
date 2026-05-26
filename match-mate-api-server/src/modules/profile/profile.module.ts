@@ -31,10 +31,7 @@ import {
   PrivacySetting,
   PrivacySettingSchema,
 } from './schemas/settings/privacy-setting.schema';
-import {
-  Verification,
-  VerificationSchema,
-} from './schemas/settings/verification.schema';
+import { SafetyModule } from '../safety/safety.module';
 
 // External modules
 import { AuthModule } from '../auth/auth.module';
@@ -51,13 +48,13 @@ import { SettingsModule } from '../settings/settings.module';
       { name: Preference.name, schema: PreferenceSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
       { name: PrivacySetting.name, schema: PrivacySettingSchema },
-      { name: Verification.name, schema: VerificationSchema },
     ]),
     NotificationModule,
     AnalyticsModule,
     StorageModule,
     AuthModule,
     SettingsModule,
+    SafetyModule,
   ],
   controllers: [ProfileController, MediaController, PreferenceController],
   providers: [

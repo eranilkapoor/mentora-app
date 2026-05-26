@@ -70,7 +70,7 @@ export const chatApi = baseApi.injectEndpoints({
       { search?: string } | void
     >({
       query: (params) => ({
-        url: '/chat/conversations',
+        url: '/chats/conversations',
         method: 'GET',
         params: params ?? undefined,
       }),
@@ -82,7 +82,7 @@ export const chatApi = baseApi.injectEndpoints({
       { targetUserId: string; initialMessage?: string }
     >({
       query: (body) => ({
-        url: '/chat/rooms/direct',
+        url: '/chats/rooms/direct',
         method: 'POST',
         body,
       }),
@@ -94,7 +94,7 @@ export const chatApi = baseApi.injectEndpoints({
       { roomId: string; limit?: number; beforeMessageId?: string }
     >({
       query: ({ roomId, limit = 30, beforeMessageId }) => ({
-        url: `/chat/rooms/${roomId}/messages`,
+        url: `/chats/rooms/${roomId}/messages`,
         method: 'GET',
         params: {
           limit,
@@ -109,7 +109,7 @@ export const chatApi = baseApi.injectEndpoints({
       { roomId: string; content: string; clientMessageId?: string }
     >({
       query: ({ roomId, ...body }) => ({
-        url: `/chat/rooms/${roomId}/messages`,
+        url: `/chats/rooms/${roomId}/messages`,
         method: 'POST',
         body,
       }),

@@ -17,7 +17,7 @@ import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
 import { SKIP_RATE_LIMIT_KEY } from '../decorators/skip-rate-limit.decorator';
 import { AppLogger } from '../logger/logger.service';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+//  Types
 
 interface AuthenticatedUser {
   sub?: string;
@@ -46,7 +46,7 @@ interface RateLimitEntry {
   expiresAt: number; // unix ms
 }
 
-// ─── Guard ────────────────────────────────────────────────────────────────────
+//  Guard
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
@@ -102,7 +102,7 @@ export class RateLimitGuard implements CanActivate {
         throw new HttpException('Too many requests. Try later.', 429);
       }
 
-      // ─── Get or init entry ──────────────────────────────────────────────────
+      //  Get or init entry
       let entry = await this.cache.get<RateLimitEntry>(key);
 
       let isNew = false;
@@ -120,7 +120,7 @@ export class RateLimitGuard implements CanActivate {
         Math.ceil((entry.expiresAt - now) / 1000),
       );
 
-      // ─── Set response headers ───────────────────────────────────────────────
+      //  Set response headers
       response.setHeader('X-RateLimit-Limit', limit);
       response.setHeader(
         'X-RateLimit-Remaining',
@@ -135,12 +135,12 @@ export class RateLimitGuard implements CanActivate {
         await this.cache.set(`blocked:${identifier}`, true, 3600);
       }
 
-      // ─── Check limit ────────────────────────────────────────────────────────
+      //  Check limit
       if (entry.count >= limit) {
         response.setHeader('Retry-After', remainingTtlSeconds);
 
         this.logger.warn(
-          `Rate limit exceeded — identifier: ${identifier}, key: ${key}, count: ${entry.count}/${limit}`,
+          `Rate limit exceeded  identifier: ${identifier}, key: ${key}, count: ${entry.count}/${limit}`,
         );
 
         const errorResponse: RateLimitErrorResponse = {
@@ -153,13 +153,13 @@ export class RateLimitGuard implements CanActivate {
         throw new HttpException(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
       }
 
-      // ─── Increment ───────────────────────────────────────
+      //  Increment
       const updatedEntry: RateLimitEntry = {
         count: entry.count + 1,
         expiresAt: entry.expiresAt,
       };
 
-      // ─── Save ──────────────────────────────
+      //  Save
       const safeTtl = remainingTtlSeconds > 0 ? remainingTtlSeconds : ttl;
       if (isNew) {
         await this.cache.set<RateLimitEntry>(key, updatedEntry, ttl);
@@ -173,7 +173,7 @@ export class RateLimitGuard implements CanActivate {
     return true;
   }
 
-  // ─── Helpers ───────────────────────────────────────────────────────────────
+  //  Helpers
 
   private async acquireLock(key: string) {
     while (this.locks.get(key)) {

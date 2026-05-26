@@ -1,12 +1,14 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { Strategy, VerifyCallback, Profile } from 'passport-google-oauth20';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
-  constructor() {
-    const clientID = process.env.GOOGLE_CLIENT_ID;
-    const clientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  constructor(configService: ConfigService) {
+    const clientID = configService.get<string>('oauth.google.clientId');
+    const clientSecret = configService.get<string>('oauth.google.clientSecret');
+    const callbackURL = configService.get<string>('oauth.google.callbackUrl');
 
     if (!clientID || !clientSecret) {
       throw new Error('Google OAuth env variables missing');
@@ -15,7 +17,7 @@ export class GoogleStrategy extends PassportStrategy(Strategy, 'google') {
     super({
       clientID,
       clientSecret,
-      callbackURL: '/auth/google/callback',
+      callbackURL,
       scope: ['email', 'profile'],
       passReqToCallback: false,
     });

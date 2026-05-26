@@ -21,7 +21,7 @@ import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-reques
 import { SuccessCode } from 'src/common/constants';
 import { successResponse } from 'src/common/utils/response.util';
 
-@Controller('match')
+@Controller('matches')
 @UseGuards(JwtAuthGuard)
 export class MatchController {
   constructor(
@@ -29,7 +29,7 @@ export class MatchController {
     private readonly discoveryService: MatchDiscoveryService,
   ) {}
 
-  // ─── Discovery ─────────────────────────────────────────────────────────────
+  //  Discovery
 
   @Get('recommended')
   async getRecommended(
@@ -64,7 +64,7 @@ export class MatchController {
     );
   }
 
-  // ─── My matches ────────────────────────────────────────────────────────────
+  //  My matches
 
   @Get('online')
   async getOnlineMatches(
@@ -142,7 +142,7 @@ export class MatchController {
     );
   }
 
-  // ─── Interests ─────────────────────────────────────────────────────────────
+  //  Interests
 
   @Post('interest')
   @HttpCode(HttpStatus.CREATED)

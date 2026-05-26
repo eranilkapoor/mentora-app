@@ -1,10 +1,5 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Inject,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CookieOptions, Response } from 'express';
@@ -56,7 +51,14 @@ import {
 import {
   Verification,
   VerificationDocument,
-} from '../../profile/schemas/settings/verification.schema';
+} from '../../safety/schemas/verification.schema';
+import { AuthPasswordService } from './auth-password.service';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwConflict,
+  throwUnauthorized,
+} from 'src/common/exceptions/throw-app-exception';
+import { AppException } from 'src/common/exceptions/app.exception';
 
 interface TokenAttachUser {
   _id: { toString(): string };
@@ -93,6 +95,8 @@ export class AuthService {
     private readonly verificationModel: Model<VerificationDocument>,
     private readonly notificationService: NotificationService,
     private readonly analyticsService: AnalyticsService,
+    private readonly authPasswordService: AuthPasswordService,
+    private readonly configService: ConfigService,
   ) {}
 
   private async attachToken(
@@ -105,7 +109,7 @@ export class AuthService {
     );
 
     if (!populatedUser) {
-      throw new UnauthorizedException('User not found');
+      return throwUnauthorized(ErrorCode.AUTH_USER_NOT_FOUND);
     }
 
     const payload = this.authTokenService.generatePayload(populatedUser);
@@ -142,7 +146,7 @@ export class AuthService {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    // 🌐 WEB → cookie
+    //  WEB  cookie
     if (platform === 'web') {
       res.cookie('refreshToken', refreshToken, {
         ...this.getRefreshCookieOptions(),
@@ -152,7 +156,7 @@ export class AuthService {
       return { accessToken, refreshToken, sessionId: session._id.toString() };
     }
 
-    // 📱 MOBILE → return both
+    //  MOBILE  return both
     return { accessToken, refreshToken, sessionId: session._id.toString() };
   }
 
@@ -162,17 +166,19 @@ export class AuthService {
         oldRefreshToken ?? this.getCookieString(req, 'refreshToken');
 
       if (!token) {
-        throw new UnauthorizedException('Refresh token missing');
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
       }
 
       const refreshPayload = this.jwtService.verify<RefreshTokenPayload>(token);
       const userId = refreshPayload.sub;
 
       if (!Types.ObjectId.isValid(userId)) {
-        throw new UnauthorizedException('Invalid userId');
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN, {
+          reason: 'invalid_refresh_user_id',
+        });
       }
 
-      // ✅ 3. Validate session
+      //  3. Validate session
       const session = await this.userSessionModel.findOne({
         userId: new Types.ObjectId(userId),
         refreshToken: token,
@@ -180,25 +186,25 @@ export class AuthService {
       });
 
       if (!session) {
-        throw new UnauthorizedException('Invalid refresh token');
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
       }
 
-      // ✅ 4. Rebuild payload (RBAC fresh)
+      //  4. Rebuild payload (RBAC fresh)
       const user = await this.userRepo.findByIdWithRoles(userId);
 
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        return throwUnauthorized(ErrorCode.AUTH_USER_NOT_FOUND);
       }
 
       this.assertUserCanAuthenticate(user);
 
       const tokenPayload = this.authTokenService.generatePayload(user);
 
-      // ✅ 5. Generate new tokens
+      //  5. Generate new tokens
       const { accessToken, refreshToken } =
         this.authTokenService.generateTokens(tokenPayload);
 
-      // 🔥 6. ROTATE refresh token
+      //  6. ROTATE refresh token
       session.refreshToken = refreshToken;
       await session.save();
 
@@ -209,7 +215,7 @@ export class AuthService {
 
       const platform = String(req.headers['x-platform'] || 'web');
 
-      // 🌐 WEB → set cookie
+      //  WEB  set cookie
       if (platform === 'web') {
         res.cookie('refreshToken', refreshToken, {
           ...this.getRefreshCookieOptions(),
@@ -219,13 +225,13 @@ export class AuthService {
         return { accessToken, refreshToken, sessionId: session._id.toString() };
       }
 
-      // 📱 MOBILE → return both
+      //  MOBILE  return both
       return { accessToken, refreshToken, sessionId: session._id.toString() };
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof AppException) {
         throw error;
       }
-      throw new UnauthorizedException('Token refresh failed');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
     }
   }
 
@@ -240,7 +246,7 @@ export class AuthService {
       );
 
       if (existingUser) {
-        throw new ConflictException('Email already registered');
+        return throwConflict(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS);
       }
 
       const passwordHash = await bcrypt.hash(dto.password, 10);
@@ -300,10 +306,12 @@ export class AuthService {
         ...tokens,
       };
     } catch (error) {
-      if (error instanceof ConflictException) {
-        throw new ConflictException(error);
+      if (error instanceof AppException) {
+        throw error;
       }
-      throw new UnauthorizedException('Registration failed');
+      return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED, {
+        reason: 'registration_failed',
+      });
     }
   }
 
@@ -824,7 +832,7 @@ export class AuthService {
       );
 
       if (!existingUser) {
-        throw new UnauthorizedException('Invalid credentials');
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_CREDENTIALS);
       }
 
       this.assertUserCanAuthenticate(existingUser);
@@ -836,7 +844,7 @@ export class AuthService {
           existingUser.authAccounts[0].passwordHash,
         ))
       ) {
-        throw new UnauthorizedException('Invalid credentials');
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_CREDENTIALS);
       }
 
       await this.completeLoginFlow(req, existingUser._id.toString(), {
@@ -856,16 +864,18 @@ export class AuthService {
         ...tokens,
       };
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof AppException) {
         throw error;
       }
-      throw new UnauthorizedException('Login failed');
+      return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED, {
+        reason: 'login_failed',
+      });
     }
   }
 
   sendOtp(country_code: string, phone: string) {
     const otp = this.otpService.generate(country_code, phone);
-    if (process.env.NODE_ENV !== 'production') {
+    if (this.configService.get<string>('env') !== 'production') {
       return { phone, otp };
     }
 
@@ -881,7 +891,7 @@ export class AuthService {
   ) {
     try {
       const isValid = this.otpService.verify(country_code, phone, otp);
-      if (!isValid) throw new UnauthorizedException('Invalid OTP');
+      if (!isValid) return throwUnauthorized(ErrorCode.AUTH_INVALID_OTP);
 
       const existingUser = await this.userRepo.findByProvider(
         AuthProvider.PHONE,
@@ -966,10 +976,12 @@ export class AuthService {
         ...tokens,
       };
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof AppException) {
         throw error;
       }
-      throw new UnauthorizedException('OTP verification failed');
+      return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED, {
+        reason: 'otp_verification_failed',
+      });
     }
   }
 
@@ -1059,166 +1071,21 @@ export class AuthService {
         ...tokens,
       };
     } catch (error) {
-      if (error instanceof ConflictException) {
+      if (error instanceof AppException) {
         throw error;
       }
-      throw new UnauthorizedException('Social login failed');
+      return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED, {
+        reason: 'social_login_failed',
+      });
     }
   }
 
   async forgotPassword(req: AppRequest, email: string) {
-    try {
-      const normalizedEmail = email.toLowerCase();
-
-      const user = await this.userRepo.findByProvider(
-        AuthProvider.EMAIL,
-        normalizedEmail,
-      );
-
-      const emailAccount = this.findEmailAuthAccount(user);
-
-      if (!user || !emailAccount?.passwordHash) {
-        throw new UnauthorizedException(
-          'Password reset is available only for email registered users',
-        );
-      }
-
-      const resetToken = this.jwtService.sign(
-        { userId: user._id, type: 'password-reset' },
-        { expiresIn: '15m' },
-      );
-
-      const resetLink = this.buildResetPasswordLink(resetToken);
-
-      await this.notificationService.notify({
-        userId: String(user._id),
-        title: 'Reset your password',
-        message: `Use this secure link to reset your password: ${resetLink}`,
-        type: 'system',
-        category: 'system',
-        channels: ['email'],
-        metadata: {
-          source: 'forgot-password',
-          resetLink,
-        },
-      });
-
-      await this.activityLogModel.create({
-        userId: user._id,
-        category: ActivityCategory.AUTH,
-        action: ActivityAction.PASSWORD_RESET_REQUEST,
-        ip: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
-        device: this.getHeaderString(req, 'x-device-id'),
-        userAgent: this.getHeaderString(req, 'user-agent'),
-        requestId: req.requestId,
-        correlationId: req.correlationId,
-        platform: this.getRegisterRequestContext(req).platform,
-        metadata: {
-          source: 'forgot-password',
-        },
-      });
-
-      // TODO return only true or false link is sending only for testing purpose
-      return { resetLink };
-    } catch (error) {
-      if (error instanceof UnauthorizedException) {
-        throw error;
-      }
-      throw new UnauthorizedException(
-        'Failed to process password reset request',
-      );
-    }
+    return this.authPasswordService.forgotPassword(req, email);
   }
 
   async resetPassword(req: AppRequest, dto: ResetPasswordDto) {
-    try {
-      if (dto.newPassword !== dto.confirmPassword) {
-        throw new BadRequestException(
-          'New password and confirm password do not match',
-        );
-      }
-
-      // ✅ Strongly type JWT payload
-      type ResetTokenPayload = {
-        userId: string;
-        type: 'password-reset';
-      };
-
-      const payload = this.jwtService.verify<ResetTokenPayload>(dto.token);
-
-      if (!payload?.userId || payload.type !== 'password-reset') {
-        throw new UnauthorizedException(
-          'Invalid or expired password reset token',
-        );
-      }
-
-      const user = await this.userRepo.findById(payload.userId);
-
-      if (!user) {
-        throw new UnauthorizedException('User not found');
-      }
-
-      const emailAccount = this.findEmailAuthAccount(user);
-
-      if (!emailAccount?.passwordHash) {
-        throw new UnauthorizedException(
-          'Password reset is available only for email registered users',
-        );
-      }
-
-      // ✅ Hash password safely
-      emailAccount.passwordHash = await bcrypt.hash(dto.newPassword, 10);
-      user.lastPasswordChangedAt = new Date();
-
-      await user.save();
-
-      // ✅ Logout all sessions
-      await this.userSessionModel.updateMany(
-        { userId: user._id },
-        { isActive: false },
-      );
-
-      // ✅ Notify user
-      await this.notificationService.notify({
-        userId: String(user._id),
-        title: 'Password changed successfully',
-        message:
-          'Your password has been reset successfully. If this was not you, contact support immediately.',
-        type: 'system',
-        category: 'system',
-        channels: ['in_app', 'email'],
-        metadata: {
-          source: 'reset-password',
-        },
-      });
-
-      // ✅ Activity log
-      await this.activityLogModel.create({
-        userId: user._id,
-        category: ActivityCategory.AUTH,
-        action: ActivityAction.PASSWORD_RESET_SUCCESS,
-        ip: req.ip ?? this.getHeaderString(req, 'x-forwarded-for'),
-        device: this.getHeaderString(req, 'x-device-id'),
-        userAgent: this.getHeaderString(req, 'user-agent'),
-        requestId: req.requestId,
-        correlationId: req.correlationId,
-        platform: this.getRegisterRequestContext(req)?.platform,
-        metadata: {
-          source: 'reset-password',
-        },
-      });
-
-      return { message: 'Password has been reset successfully' };
-    } catch (error: unknown) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof UnauthorizedException
-      ) {
-        throw error;
-      }
-
-      throw new UnauthorizedException('Failed to reset password');
-    }
+    return this.authPasswordService.resetPassword(req, dto);
   }
 
   async changePassword(
@@ -1226,103 +1093,14 @@ export class AuthService {
     userId: string,
     dto: ChangePasswordDto,
   ) {
-    try {
-      if (dto.newPassword !== dto.confirmPassword) {
-        throw new BadRequestException(
-          'New password and confirm password do not match',
-        );
-      }
-
-      const user = await this.userRepo.findById(userId);
-      const emailAccount = this.findEmailAuthAccount(user);
-
-      if (!user || !emailAccount?.passwordHash) {
-        throw new UnauthorizedException(
-          'Password change is available only for email registered users',
-        );
-      }
-
-      const isOldPasswordValid = await bcrypt.compare(
-        dto.oldPassword,
-        emailAccount.passwordHash,
-      );
-
-      if (!isOldPasswordValid) {
-        throw new UnauthorizedException('Old password is incorrect');
-      }
-
-      emailAccount.passwordHash = await bcrypt.hash(dto.newPassword, 10);
-      user.lastPasswordChangedAt = new Date();
-      await user.save();
-
-      await this.notificationService.notify({
-        userId: String(user._id),
-        title: 'Password changed successfully',
-        message: 'Your account password was changed successfully.',
-        type: 'system',
-        category: 'system',
-        channels: ['in_app', 'email'],
-        metadata: {
-          source: 'change-password',
-        },
-      });
-
-      await this.activityLogModel.create({
-        userId: user._id,
-        category: ActivityCategory.AUTH,
-        action: ActivityAction.CHANGE_PASSWORD,
-        ip: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
-        device: this.getHeaderString(req, 'x-device-id'),
-        userAgent: this.getHeaderString(req, 'user-agent'),
-        requestId: req.requestId,
-        correlationId: req.correlationId,
-        platform: this.getRegisterRequestContext(req).platform,
-        metadata: {
-          source: 'change-password',
-        },
-      });
-
-      return { message: 'Password changed successfully' };
-    } catch (error) {
-      if (
-        error instanceof BadRequestException ||
-        error instanceof UnauthorizedException
-      ) {
-        throw error;
-      }
-      throw new UnauthorizedException('Failed to change password');
-    }
-  }
-
-  private findEmailAuthAccount(
-    user: unknown,
-  ): { provider: AuthProvider; passwordHash?: string } | undefined {
-    const userObject = user as {
-      authAccounts?: Array<{ provider?: AuthProvider; passwordHash?: string }>;
-    };
-
-    if (!userObject?.authAccounts || !Array.isArray(userObject.authAccounts)) {
-      return undefined;
-    }
-
-    return userObject.authAccounts.find(
-      (account) => account.provider === AuthProvider.EMAIL,
-    ) as { provider: AuthProvider; passwordHash?: string } | undefined;
-  }
-
-  private buildResetPasswordLink(token: string): string {
-    const baseUrl =
-      process.env.APP_WEB_URL ||
-      process.env.FRONTEND_URL ||
-      'http://localhost:3000';
-    return `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
+    return this.authPasswordService.changePassword(req, userId, dto);
   }
 
   async verifyUser(userId: string) {
     try {
       const user = await this.userRepo.findById(userId);
       if (!user) {
-        throw new UnauthorizedException('User not found');
+        return throwUnauthorized(ErrorCode.AUTH_USER_NOT_FOUND);
       }
 
       this.assertUserCanAuthenticate(user);
@@ -1337,10 +1115,12 @@ export class AuthService {
         isOnboardingCompleted: user.isOnboardingCompleted,
       };
     } catch (error) {
-      if (error instanceof UnauthorizedException) {
+      if (error instanceof AppException) {
         throw error;
       }
-      throw new UnauthorizedException('User verification failed');
+      return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED, {
+        reason: 'user_verification_failed',
+      });
     }
   }
 
@@ -1349,7 +1129,7 @@ export class AuthService {
     refreshToken: string,
   ): Promise<{ success: true }> {
     if (!refreshToken) {
-      throw new UnauthorizedException('Refresh token missing');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
     }
 
     const session = await this.userSessionModel.findOne({
@@ -1358,15 +1138,15 @@ export class AuthService {
     });
 
     if (!session) {
-      throw new UnauthorizedException(
-        'Session not found or already logged out',
-      );
+      return throwUnauthorized(ErrorCode.AUTH_SESSION_EXPIRED);
     }
 
     const userId = session.userId?.toString();
 
     if (!userId || !Types.ObjectId.isValid(userId)) {
-      throw new UnauthorizedException('Invalid user');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN, {
+        reason: 'invalid_session_user',
+      });
     }
 
     await this.userSessionModel.updateOne(
@@ -1393,7 +1173,9 @@ export class AuthService {
 
   async logoutAll(req: AppRequest, userId: string) {
     if (!Types.ObjectId.isValid(userId)) {
-      throw new UnauthorizedException('Invalid user');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN, {
+        reason: 'invalid_logout_all_user',
+      });
     }
 
     await this.userSessionModel.updateMany(
@@ -1419,7 +1201,9 @@ export class AuthService {
 
   async listSessions(userId: string) {
     if (!Types.ObjectId.isValid(userId)) {
-      throw new UnauthorizedException('Invalid user');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN, {
+        reason: 'invalid_session_user',
+      });
     }
 
     const sessions = await this.userSessionModel
@@ -1458,7 +1242,9 @@ export class AuthService {
     sessionId: string,
   ): Promise<{ success: true }> {
     if (!Types.ObjectId.isValid(userId) || !Types.ObjectId.isValid(sessionId)) {
-      throw new UnauthorizedException('Invalid session');
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN, {
+        reason: 'invalid_session_id',
+      });
     }
 
     const session = await this.userSessionModel.findOneAndUpdate(
@@ -1477,7 +1263,7 @@ export class AuthService {
     );
 
     if (!session) {
-      throw new UnauthorizedException('Session not found');
+      return throwUnauthorized(ErrorCode.AUTH_SESSION_EXPIRED);
     }
 
     await this.completeLogoutFlow(req, userId, {
@@ -1490,11 +1276,11 @@ export class AuthService {
 
   private assertUserCanAuthenticate(user: { status?: Status }) {
     if (user.status === Status.BLOCKED || user.status === Status.SUSPENDED) {
-      throw new UnauthorizedException('Account is not allowed to sign in');
+      return throwUnauthorized(ErrorCode.AUTH_ACCOUNT_BLOCKED);
     }
 
     if (user.status === Status.DELETED) {
-      throw new UnauthorizedException('Account has been deleted');
+      return throwUnauthorized(ErrorCode.AUTH_ACCOUNT_DELETED);
     }
   }
 
@@ -1508,8 +1294,9 @@ export class AuthService {
   }
 
   getRefreshCookieOptions(): CookieOptions {
-    const isProduction = process.env.NODE_ENV === 'production';
-    const domain = process.env.COOKIE_DOMAIN || undefined;
+    const isProduction = this.configService.get<string>('env') === 'production';
+    const domain =
+      this.configService.get<string>('app.cookieDomain') || undefined;
 
     return {
       httpOnly: true,

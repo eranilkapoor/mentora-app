@@ -16,7 +16,7 @@ export const winstonConfig = {
   format: winston.format.combine(
     winston.format.timestamp(),
     winston.format.errors({ stack: true }),
-    winston.format.json(), // 🔥 structured logs
+    winston.format.json(), //  structured logs
   ),
 
   transports: [
@@ -29,7 +29,7 @@ export const winstonConfig = {
           ),
     }),
 
-    // 🔥 File logging (production)
+    //  File logging (production)
     ...(isProd
       ? [
           new winston.transports.File({

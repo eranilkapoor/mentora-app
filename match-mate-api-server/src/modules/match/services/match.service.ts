@@ -1,29 +1,23 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { LeanProfile, MatchRepository } from '../repositories/match.repository';
+import { MatchRepository } from '../repositories/match.repository';
 import { InterestStatus } from '../schemas/interest.schema';
-import { NotificationService } from 'src/modules/notification/services/notification.service';
 import { SettingsService } from 'src/modules/settings/services/settings.service';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwBadRequest,
+  throwForbidden,
+  throwNotFound,
+} from 'src/common/exceptions/throw-app-exception';
+import { MatchNotificationService } from './match-notification.service';
 
 @Injectable()
 export class MatchService {
   constructor(
     private readonly repo: MatchRepository,
-    private readonly notificationService: NotificationService,
     private readonly settingsService: SettingsService,
+    private readonly matchNotificationService: MatchNotificationService,
   ) {}
-
-  private getDisplayName(profile?: LeanProfile | null): string {
-    const name = [profile?.personal?.firstName, profile?.personal?.lastName]
-      .filter(Boolean)
-      .join(' ')
-      .trim();
-    return name || 'A MatchMate member';
-  }
 
   private toObjectIdString(value: Types.ObjectId | string): string {
     return value instanceof Types.ObjectId ? value.toString() : String(value);
@@ -112,43 +106,21 @@ export class MatchService {
 
   async sendInterest(senderId: string, receiverId: string) {
     if (senderId === receiverId) {
-      throw new BadRequestException('Cannot send interest to yourself');
+      throwBadRequest(ErrorCode.INTEREST_CANNOT_SEND_SELF);
     }
 
     // Prevent duplicate
     const existing = await this.repo.getExistingInterest(senderId, receiverId);
     if (existing) {
-      throw new BadRequestException('Interest already sent to this profile');
+      throwBadRequest(ErrorCode.INTEREST_ALREADY_SENT);
     }
 
     const interest = await this.repo.sendInterest(senderId, receiverId);
-    const [senderProfile, senderMedia] = await Promise.all([
-      this.repo.getProfileByUserId(senderId),
-      this.repo.getActiveMediaByUserId(senderId),
-    ]);
-    const senderName = this.getDisplayName(senderProfile);
-
-    await this.notificationService.notify({
-      userId: receiverId,
-      title: 'New interest received',
-      message: `${senderName} sent you an interest request.`,
-      type: 'match',
-      category: 'interest_received',
-      actorId: senderId,
-      actorName: senderName,
-      actorImage: senderMedia[0]?.url,
-      referenceId: interest._id.toString(),
-      priority: 'high',
-      channels: ['in_app', 'push', 'email'],
-      action: {
-        screen: 'Matches',
-        params: { tab: 'requests', interestId: interest._id.toString() },
-      },
-      metadata: {
-        interestId: interest._id.toString(),
-        senderId,
-      },
-    });
+    await this.matchNotificationService.notifyInterestSent(
+      senderId,
+      receiverId,
+      interest._id.toString(),
+    );
 
     return interest;
   }
@@ -160,14 +132,16 @@ export class MatchService {
   ) {
     const interest = await this.repo.getInterestById(interestId);
 
-    if (!interest) throw new NotFoundException('Interest not found');
+    if (!interest) return throwNotFound(ErrorCode.INTEREST_NOT_FOUND);
 
     if (interest.receiverId.toString() !== userId) {
-      throw new BadRequestException('Unauthorized action');
+      throwForbidden(ErrorCode.ACCESS_DENIED);
     }
 
     if (interest.status !== InterestStatus.PENDING) {
-      throw new BadRequestException(`Interest is already ${interest.status}`);
+      throwBadRequest(ErrorCode.INTEREST_ALREADY_RESPONDED, {
+        status: interest.status,
+      });
     }
 
     const status =
@@ -183,67 +157,12 @@ export class MatchService {
           )
         : null;
 
-    const [senderProfile, senderMedia, receiverProfile, receiverMedia] =
-      await Promise.all([
-        this.repo.getProfileByUserId(interest.senderId.toString()),
-        this.repo.getActiveMediaByUserId(interest.senderId.toString()),
-        this.repo.getProfileByUserId(userId),
-        this.repo.getActiveMediaByUserId(userId),
-      ]);
-
-    const senderName = this.getDisplayName(senderProfile);
-    const receiverName = this.getDisplayName(receiverProfile);
-
-    if (status === InterestStatus.ACCEPTED) {
-      await this.notificationService.notify({
-        userId,
-        title: "It's a match",
-        message: `You and ${senderName} can now start chatting.`,
-        type: 'match',
-        category: 'match_found',
-        actorId: interest.senderId.toString(),
-        actorName: senderName,
-        actorImage: senderMedia[0]?.url,
-        referenceId: match?._id.toString(),
-        priority: 'high',
-        channels: ['in_app', 'push'],
-        action: {
-          screen: 'MatchDetails',
-          params: { userId: interest.senderId.toString() },
-        },
-        metadata: {
-          interestId,
-          matchId: match?._id.toString(),
-          status,
-        },
-      });
-    }
-
-    await this.notificationService.notify({
-      userId: interest.senderId.toString(),
-      title:
-        status === InterestStatus.ACCEPTED
-          ? 'Interest accepted'
-          : 'Interest updated',
-      message:
-        status === InterestStatus.ACCEPTED
-          ? `${receiverName} accepted your interest. You can start chatting now.`
-          : `${receiverName} responded to your interest.`,
-      type: status === InterestStatus.ACCEPTED ? 'success' : 'info',
-      category:
-        status === InterestStatus.ACCEPTED ? 'interest_accepted' : 'system',
-      actorId: userId,
-      actorName: receiverName,
-      actorImage: receiverMedia[0]?.url,
-      referenceId: interestId,
-      priority: status === InterestStatus.ACCEPTED ? 'high' : 'normal',
-      channels: ['in_app', 'push'],
-      action: {
-        screen: 'MatchDetails',
-        params: { userId },
-      },
-      metadata: { interestId, matchId: match?._id.toString(), status },
-    });
+    await this.matchNotificationService.notifyInterestResponded(
+      userId,
+      interest,
+      status,
+      match?._id.toString(),
+    );
 
     return { success: true, data: updated };
   }
@@ -295,13 +214,13 @@ export class MatchService {
 
   async shortlistProfile(userId: string, targetUserId: string) {
     if (userId === targetUserId) {
-      throw new BadRequestException('Cannot shortlist your own profile');
+      throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'cannot_shortlist_self',
+      });
     }
 
     const profile = await this.repo.getProfileByUserId(targetUserId);
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
-    }
+    if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
     const interaction = await this.repo.addShortlist(userId, targetUserId);
     return {
@@ -316,7 +235,9 @@ export class MatchService {
 
   async removeShortlistedProfile(userId: string, targetUserId: string) {
     if (userId === targetUserId) {
-      throw new BadRequestException('Cannot remove your own profile');
+      throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'cannot_remove_self_shortlist',
+      });
     }
 
     await this.repo.removeShortlist(userId, targetUserId);
@@ -367,12 +288,14 @@ export class MatchService {
 
   async withdrawInterest(senderId: string, interestId: string) {
     const interest = await this.repo.getInterestById(interestId);
-    if (!interest) throw new NotFoundException('Interest not found');
+    if (!interest) return throwNotFound(ErrorCode.INTEREST_NOT_FOUND);
     if (interest.senderId.toString() !== senderId) {
-      throw new BadRequestException('Unauthorized');
+      throwForbidden(ErrorCode.ACCESS_DENIED);
     }
     if (interest.status !== InterestStatus.PENDING) {
-      throw new BadRequestException('Only pending interests can be withdrawn');
+      throwBadRequest(ErrorCode.INTEREST_ALREADY_RESPONDED, {
+        status: interest.status,
+      });
     }
     return this.repo.deleteInterest(interestId);
   }
@@ -405,17 +328,13 @@ export class MatchService {
         this.repo.getExistingInterest(targetUserId, viewerId),
       ]);
 
-    if (!profile) {
-      throw new NotFoundException('Profile not found');
-    }
+    if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
     const isBlocked = await this.settingsService.isBlockedBetween(
       viewerId,
       targetUserId,
     );
-    if (isBlocked) {
-      throw new NotFoundException('Profile not found');
-    }
+    if (isBlocked) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
     const isMatched = Boolean(match);
     const canViewPersonalDetails = this.canViewVisibility(

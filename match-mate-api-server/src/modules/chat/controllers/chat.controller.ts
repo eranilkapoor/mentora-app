@@ -24,7 +24,7 @@ import { UpdateRoomSettingsDto } from '../dto/update-room-settings.dto';
 import { SuccessCode } from 'src/common/constants';
 import { successResponse } from 'src/common/utils/response.util';
 
-@Controller('chat')
+@Controller('chats')
 @UseGuards(JwtAuthGuard)
 export class ChatController {
   constructor(private readonly service: ChatService) {}
@@ -44,11 +44,10 @@ export class ChatController {
       req.user?.sub ?? '',
       query,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.CHAT_FETCHED,
       'Conversations fetched successfully',
-      data,
     );
   }
 
@@ -58,11 +57,10 @@ export class ChatController {
     @Query() query: ListChatContactsDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.getContacts(req.user?.sub ?? '', query);
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.CHAT_FETCHED,
       'Contacts fetched successfully',
-      data,
     );
   }
 
@@ -75,12 +73,7 @@ export class ChatController {
       req.user?.sub ?? '',
       dto,
     );
-    return new ApiResponse(
-      true,
-      SuccessCode.CHAT_FETCHED,
-      'Direct room ready',
-      data,
-    );
+    return successResponse(data, SuccessCode.CHAT_CREATED, 'Direct room ready');
   }
 
   @Get('rooms/:roomId')
@@ -92,11 +85,10 @@ export class ChatController {
       req.user?.sub ?? '',
       roomId,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.CHAT_FETCHED,
       'Conversation fetched successfully',
-      data,
     );
   }
 
@@ -111,11 +103,10 @@ export class ChatController {
       roomId,
       query,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.CHAT_FETCHED,
       'Messages fetched successfully',
-      data,
     );
   }
 
@@ -129,11 +120,10 @@ export class ChatController {
       ...dto,
       roomId,
     } satisfies SendMessageDto);
-    return new ApiResponse(
-      true,
-      SuccessCode.CHAT_FETCHED,
-      'Message sent successfully',
+    return successResponse(
       data,
+      SuccessCode.CHAT_MESSAGE_SENT,
+      'Message sent successfully',
     );
   }
 
@@ -148,11 +138,10 @@ export class ChatController {
       roomId,
       dto,
     );
-    return new ApiResponse(
-      true,
-      SuccessCode.CHAT_FETCHED,
-      'Room marked as read',
+    return successResponse(
       data,
+      SuccessCode.CHAT_MESSAGE_READ,
+      'Room marked as read',
     );
   }
 
@@ -167,11 +156,10 @@ export class ChatController {
       roomId,
       dto,
     );
-    return new ApiResponse(
-      true,
+    return successResponse(
+      data,
       SuccessCode.CHAT_FETCHED,
       'Room settings updated',
-      data,
     );
   }
 }

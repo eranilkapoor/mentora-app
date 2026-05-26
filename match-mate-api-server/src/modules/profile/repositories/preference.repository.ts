@@ -38,7 +38,7 @@ export class PreferenceRepository {
   }
 
   async updateFilters(userId: string, filters: Partial<PartnerFiltersDto>) {
-    // Merge at field level — don't overwrite the entire filters object
+    // Merge at field level  don't overwrite the entire filters object
     const updateObj: Record<string, unknown> = {};
     for (const [key, value] of Object.entries(filters)) {
       if (value !== undefined) {

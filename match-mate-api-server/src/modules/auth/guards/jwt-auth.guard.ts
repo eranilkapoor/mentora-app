@@ -1,12 +1,10 @@
-import {
-  Injectable,
-  ExecutionContext,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from 'src/common/decorators/public.decorator';
 import { AppLogger } from 'src/common/logger/logger.service';
+import { ErrorCode } from 'src/common/constants';
+import { throwUnauthorized } from 'src/common/exceptions/throw-app-exception';
 
 interface JwtErrorInfo {
   name?: string;
@@ -41,12 +39,14 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     info: JwtErrorInfo,
   ): TUser {
     if (info?.name === 'TokenExpiredError') {
-      throw new UnauthorizedException('Token expired');
+      return throwUnauthorized(ErrorCode.AUTH_TOKEN_EXPIRED);
     }
 
     if (err || !user) {
       this.logger.error('Auth Error:', err?.stack);
-      throw new UnauthorizedException(info?.message || 'Unauthorized access');
+      return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED, {
+        reason: info?.message ?? 'unauthorized_access',
+      });
     }
 
     return user;

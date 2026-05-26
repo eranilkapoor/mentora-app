@@ -2,9 +2,9 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants/collections';
 
-// ─────────────────────────────────────────────────────────────
+//
 // TYPES
-// ─────────────────────────────────────────────────────────────
+//
 
 export type ChannelPreferenceType = {
   inApp: boolean;
@@ -31,9 +31,9 @@ export type QuietHoursType = {
   timezone: string;
 };
 
-// ─────────────────────────────────────────────────────────────
+//
 // SCHEMAS
-// ─────────────────────────────────────────────────────────────
+//
 
 @Schema({ _id: false })
 class ChannelPreference {

@@ -8,7 +8,7 @@ import {
 
 export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
   femaleNames: [
-    // ── Block 1 (1–50) ────────────────────────────────────────────────────────
+    //  Block 1 (150)
     ['Aarohi', 'Sharma'],
     ['Ananya', 'Verma'],
     ['Diya', 'Singh'],
@@ -60,7 +60,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Kavita', 'Bose'],
     ['Khyati', 'Pillai'],
 
-    // ── Block 2 (51–100) ──────────────────────────────────────────────────────
+    //  Block 2 (51100)
     ['Kiara', 'Sharma'],
     ['Komal', 'Verma'],
     ['Kriti', 'Singh'],
@@ -112,7 +112,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Roshni', 'Bose'],
     ['Ruhi', 'Pillai'],
 
-    // ── Block 3 (101–150) ─────────────────────────────────────────────────────
+    //  Block 3 (101150)
     ['Rupali', 'Sharma'],
     ['Rutuja', 'Verma'],
     ['Saanvi', 'Singh'],
@@ -164,7 +164,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Adhira', 'Bose'],
     ['Advika', 'Pillai'],
 
-    // ── Block 4 (151–200) ─────────────────────────────────────────────────────
+    //  Block 4 (151200)
     ['Ahana', 'Sharma'],
     ['Aishani', 'Verma'],
     ['Akanksha', 'Singh'],
@@ -216,7 +216,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Malvika', 'Bose'],
     ['Mamta', 'Pillai'],
 
-    // ── Block 5 (201–250) ─────────────────────────────────────────────────────
+    //  Block 5 (201250)
     ['Mayuri', 'Sharma'],
     ['Minakshi', 'Verma'],
     ['Minal', 'Singh'],
@@ -270,7 +270,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
   ] as [string, string][],
 
   maleNames: [
-    // ── Block 1 (1–50) ────────────────────────────────────────────────────────
+    //  Block 1 (150)
     ['Aarav', 'Sharma'],
     ['Arjun', 'Verma'],
     ['Dev', 'Singh'],
@@ -322,7 +322,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Bhavin', 'Bose'],
     ['Bhavya', 'Pillai'],
 
-    // ── Block 2 (51–100) ──────────────────────────────────────────────────────
+    //  Block 2 (51100)
     ['Chirag', 'Sharma'],
     ['Chetan', 'Verma'],
     ['Darshan', 'Singh'],
@@ -374,7 +374,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Mitesh', 'Bose'],
     ['Mukesh', 'Pillai'],
 
-    // ── Block 3 (101–150) ─────────────────────────────────────────────────────
+    //  Block 3 (101150)
     ['Naresh', 'Sharma'],
     ['Naveen', 'Verma'],
     ['Neel', 'Singh'],
@@ -426,7 +426,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Sourabh', 'Bose'],
     ['Sudhir', 'Pillai'],
 
-    // ── Block 4 (151–200) ─────────────────────────────────────────────────────
+    //  Block 4 (151200)
     ['Suhas', 'Sharma'],
     ['Suraj', 'Verma'],
     ['Suresh', 'Singh'],
@@ -478,7 +478,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Anav', 'Bose'],
     ['Anchit', 'Pillai'],
 
-    // ── Block 5 (201–250) ─────────────────────────────────────────────────────
+    //  Block 5 (201250)
     ['Anshuman', 'Sharma'],
     ['Antriksh', 'Verma'],
     ['Anubhav', 'Singh'],

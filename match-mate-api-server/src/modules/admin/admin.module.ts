@@ -20,7 +20,7 @@ import { User, UserSchema } from 'src/modules/auth/schemas/user.schema';
 @Module({
   imports: [
     MongooseModule.forFeature([
-      // User registered once — shared by both AdminService and RbacService
+      // User registered once  shared by both AdminService and RbacService
       { name: User.name, schema: UserSchema },
       { name: Permission.name, schema: PermissionSchema },
       { name: Role.name, schema: RoleSchema },
