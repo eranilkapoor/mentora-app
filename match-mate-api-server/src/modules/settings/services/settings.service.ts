@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
 import { Model, Types } from 'mongoose';
@@ -53,6 +53,8 @@ import {
   RequestEmailChangeDto,
   RequestPhoneChangeDto,
 } from '../dto/account-settings.dto';
+import { ErrorCode } from 'src/common/constants';
+import { throwBadRequest } from 'src/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class SettingsService {
@@ -101,14 +103,18 @@ export class SettingsService {
 
   async blockUser(userId: string, dto: BlockUserDto) {
     if (userId === dto.targetUserId) {
-      throw new BadRequestException('Cannot block yourself');
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'cannot_block_self',
+      });
     }
     return this.repo.blockUser(userId, dto.targetUserId);
   }
 
   async reportUser(userId: string, dto: ReportUserDto) {
     if (userId === dto.targetUserId) {
-      throw new BadRequestException('Cannot report yourself');
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'cannot_report_self',
+      });
     }
 
     return this.userReportModel.findOneAndUpdate(
@@ -457,7 +463,9 @@ export class SettingsService {
 
   async revokeSession(userId: string, sessionId: string) {
     if (!Types.ObjectId.isValid(sessionId)) {
-      throw new BadRequestException('Invalid session id');
+      return throwBadRequest(ErrorCode.INVALID_ID, {
+        reason: 'invalid_session_id',
+      });
     }
 
     await this.userSessionModel.findOneAndUpdate(

@@ -1,14 +1,11 @@
-import {
-  Injectable,
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { FEATURE_KEY } from '../decorators/feature.decorator';
 import { FeatureKey } from 'src/common/enums';
 import { FeatureService } from '../services/feature.service';
+import { ErrorCode } from 'src/common/constants';
+import { throwForbidden } from 'src/common/exceptions/throw-app-exception';
 
 interface RequestWithUser {
   ip: string;
@@ -39,7 +36,7 @@ export class FeatureGuard implements CanActivate {
     const user = request.user;
 
     if (!user?.sub) {
-      throw new ForbiddenException('Unauthorized');
+      return throwForbidden(ErrorCode.AUTH_FORBIDDEN);
     }
 
     const contextData = {

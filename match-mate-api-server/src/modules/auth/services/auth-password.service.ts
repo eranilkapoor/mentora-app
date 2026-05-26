@@ -80,12 +80,12 @@ export class AuthPasswordService {
         { userId: user._id, type: 'password-reset' },
         { expiresIn: '15m' },
       );
-      const resetLink = this.buildResetPasswordLink(resetToken);
+      const resetUrl = this.buildResetPasswordLink(resetToken);
 
       await this.notificationService.notify({
         userId: String(user._id),
         title: 'Reset your password',
-        message: `Use this secure link to reset your password: ${resetLink}`,
+        message: `Use this secure link to reset your password: ${resetUrl}`,
         type: 'system',
         category: 'system',
         channels: ['email'],

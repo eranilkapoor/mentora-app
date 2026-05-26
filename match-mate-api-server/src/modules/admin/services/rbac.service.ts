@@ -1,9 +1,4 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FlattenMaps } from 'mongoose';
 import { Permission, PermissionDocument } from '../schemas/permission.schema';
@@ -12,6 +7,12 @@ import { User, UserDocument } from 'src/modules/auth/schemas/user.schema';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwBadRequest,
+  throwConflict,
+  throwNotFound,
+} from 'src/common/exceptions/throw-app-exception';
 
 //  Lean return types
 // .lean() strips Mongoose Document methods and returns plain objects.
@@ -44,7 +45,10 @@ export class RbacService {
       .findOne({ name: dto.name })
       .lean();
     if (existing) {
-      throw new ConflictException(`Permission "${dto.name}" already exists`);
+      return throwConflict(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'permission_already_exists',
+        permission: dto.name,
+      });
     }
     const created = await this.permissionModel.create(dto);
     return created.toObject() as LeanPermission;
@@ -64,7 +68,10 @@ export class RbacService {
       .findById(id)
       .lean<LeanPermission>()
       .exec();
-    if (!permission) throw new NotFoundException('Permission not found');
+    if (!permission)
+      return throwNotFound(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'permission_not_found',
+      });
     return permission;
   }
 
@@ -75,16 +82,20 @@ export class RbacService {
       .exec();
 
     if (roleUsing) {
-      throw new BadRequestException(
-        `Permission is assigned to role "${String(roleUsing.name)}" and cannot be deleted`,
-      );
+      return throwBadRequest(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'permission_assigned_to_role',
+        role: String(roleUsing.name),
+      });
     }
 
     const result = await this.permissionModel
       .findByIdAndDelete(id)
       .lean()
       .exec();
-    if (!result) throw new NotFoundException('Permission not found');
+    if (!result)
+      return throwNotFound(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'permission_not_found',
+      });
     return { deleted: true };
   }
 
@@ -96,7 +107,10 @@ export class RbacService {
       .lean()
       .exec();
     if (existing) {
-      throw new ConflictException(`Role "${dto.name}" already exists`);
+      return throwConflict(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'role_already_exists',
+        role: dto.name,
+      });
     }
 
     if (dto.permissions?.length) {
@@ -134,13 +148,19 @@ export class RbacService {
       .lean<LeanRolePopulated>()
       .exec();
 
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role)
+      return throwNotFound(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'role_not_found',
+      });
     return role;
   }
 
   async updateRole(id: string, dto: UpdateRoleDto): Promise<LeanRolePopulated> {
     const role = await this.roleModel.findById(id).lean().exec();
-    if (!role) throw new NotFoundException('Role not found');
+    if (!role)
+      return throwNotFound(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'role_not_found',
+      });
 
     if (dto.name && dto.name !== role.name) {
       const nameConflict = await this.roleModel
@@ -148,7 +168,10 @@ export class RbacService {
         .lean()
         .exec();
       if (nameConflict) {
-        throw new ConflictException(`Role "${dto.name}" already exists`);
+        return throwConflict(ErrorCode.ADMIN_OPERATION_FAILED, {
+          reason: 'role_already_exists',
+          role: dto.name,
+        });
       }
     }
 
@@ -192,13 +215,16 @@ export class RbacService {
       .exec();
 
     if (userWithRole) {
-      throw new BadRequestException(
-        'Role is assigned to one or more users and cannot be deleted. Unassign it first.',
-      );
+      return throwBadRequest(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'role_assigned_to_users',
+      });
     }
 
     const result = await this.roleModel.findByIdAndDelete(id).lean().exec();
-    if (!result) throw new NotFoundException('Role not found');
+    if (!result)
+      return throwNotFound(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'role_not_found',
+      });
     return { deleted: true };
   }
 
@@ -206,7 +232,7 @@ export class RbacService {
 
   async assignRoles(userId: string, roleIds: string[]) {
     const user = await this.userModel.findById(userId).lean().exec();
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
 
     const roles = await this.roleModel
       .find({ _id: { $in: roleIds }, isActive: true })
@@ -215,9 +241,9 @@ export class RbacService {
       .exec();
 
     if (roles.length !== roleIds.length) {
-      throw new BadRequestException(
-        'One or more role IDs are invalid or inactive',
-      );
+      return throwBadRequest(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'invalid_or_inactive_role_ids',
+      });
     }
 
     // Flatten and deduplicate permission names
@@ -258,13 +284,13 @@ export class RbacService {
       .lean()
       .exec();
 
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
     return user;
   }
 
   async revokeRoles(userId: string) {
     const user = await this.userModel.findById(userId).lean().exec();
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
 
     return this.userModel
       .findByIdAndUpdate(
@@ -287,9 +313,9 @@ export class RbacService {
       .exec();
 
     if (found.length !== ids.length) {
-      throw new BadRequestException(
-        'One or more permission IDs are invalid or inactive',
-      );
+      return throwBadRequest(ErrorCode.ADMIN_OPERATION_FAILED, {
+        reason: 'invalid_or_inactive_permission_ids',
+      });
     }
   }
 }

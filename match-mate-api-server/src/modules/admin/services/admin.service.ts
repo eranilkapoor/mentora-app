@@ -1,14 +1,15 @@
-import {
-  Injectable,
-  BadRequestException,
-  NotFoundException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { AdminRepository } from '../repositories/admin.repository';
 import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
 import { BroadcastDto, BroadcastTarget } from '../dto/broadcast.dto';
 import { AdminQueryDto } from '../dto/admin-query.dto';
 import { FilterQuery } from 'mongoose';
 import { UserDocument } from 'src/modules/auth/schemas/user.schema';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwBadRequest,
+  throwNotFound,
+} from 'src/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class AdminService {
@@ -53,19 +54,19 @@ export class AdminService {
 
   async getUserById(userId: string) {
     const user = await this.repo.findUserById(userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
     return user;
   }
 
   async updateUserStatus(dto: UpdateUserStatusDto) {
     if (dto.isBlocked === undefined && dto.isVerified === undefined) {
-      throw new BadRequestException(
-        'At least one of isBlocked or isVerified must be provided',
-      );
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'admin_user_status_update_empty',
+      });
     }
 
     const user = await this.repo.findUserById(dto.userId);
-    if (!user) throw new NotFoundException('User not found');
+    if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
 
     const update: { isBlocked?: boolean; isVerified?: boolean } = {};
     if (dto.isBlocked !== undefined) update.isBlocked = dto.isBlocked;
@@ -84,8 +85,8 @@ export class AdminService {
     const targetLabel = dto.target ?? BroadcastTarget.ALL;
     const channels = dto.channels ?? ['in_app'];
 
-    // TODO: inject and call NotificationService.broadcastToAll(dto)
-    // await this.notificationService.broadcast({ ...dto, channels });
+    // Broadcast delivery can be wired to NotificationService when campaign
+    // orchestration is enabled for admin operations.
 
     return {
       success: true,

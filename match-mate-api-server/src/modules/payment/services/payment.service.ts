@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  ConflictException,
-  Injectable,
-  UnauthorizedException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
 import { createHmac, randomUUID } from 'crypto';
@@ -23,6 +18,13 @@ import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
 import { Plan } from '../../subscription/schemas/plan.schema';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwBadRequest,
+  throwConflict,
+  throwNotFound,
+  throwUnauthorized,
+} from 'src/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class PaymentService {
@@ -40,7 +42,9 @@ export class PaymentService {
     const plan = await this.planModel.findById(dto.planId).lean().exec();
 
     if (!plan || !plan.isActive) {
-      throw new BadRequestException('Invalid or inactive plan');
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'invalid_or_inactive_plan',
+      });
     }
 
     if (dto.idempotencyKey) {
@@ -113,7 +117,9 @@ export class PaymentService {
     );
 
     if (!payment) {
-      throw new BadRequestException('Invalid order');
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND, {
+        reason: 'invalid_order',
+      });
     }
 
     if (payment.status === PaymentStatus.SUCCESS) {
@@ -124,7 +130,9 @@ export class PaymentService {
       payment.status === PaymentStatus.REFUNDED ||
       payment.status === PaymentStatus.CANCELLED
     ) {
-      throw new ConflictException('Payment is not verifiable in current state');
+      return throwConflict(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'payment_not_verifiable_in_current_state',
+      });
     }
 
     const signatureVerified = this.verifySignature({
@@ -134,7 +142,9 @@ export class PaymentService {
     });
 
     if (!signatureVerified) {
-      throw new UnauthorizedException('Invalid payment signature');
+      return throwUnauthorized(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'invalid_payment_signature',
+      });
     }
 
     const updated = await this.paymentRepo.markSuccess({
@@ -147,7 +157,9 @@ export class PaymentService {
     });
 
     if (!updated) {
-      throw new BadRequestException('Unable to update payment status');
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'unable_to_update_payment_status',
+      });
     }
 
     await this.activateSubscriptionIfRequired(
@@ -167,11 +179,15 @@ export class PaymentService {
     );
 
     if (!payment) {
-      throw new BadRequestException('Invalid order');
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND, {
+        reason: 'invalid_order',
+      });
     }
 
     if (payment.status === PaymentStatus.SUCCESS) {
-      throw new ConflictException('Successful payment cannot be marked failed');
+      return throwConflict(ErrorCode.PAYMENT_ALREADY_VERIFIED, {
+        reason: 'successful_payment_cannot_be_marked_failed',
+      });
     }
 
     const updated = await this.paymentRepo.markFailed({
@@ -182,7 +198,9 @@ export class PaymentService {
     });
 
     if (!updated) {
-      throw new BadRequestException('Unable to update payment status');
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'unable_to_update_payment_status',
+      });
     }
 
     return updated;
@@ -192,11 +210,15 @@ export class PaymentService {
     const payment = await this.paymentRepo.findByOrderId(dto.orderId);
 
     if (!payment) {
-      throw new BadRequestException('Order not found');
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND, {
+        reason: 'order_not_found',
+      });
     }
 
     if (!this.verifyWebhookSignature(dto, signature)) {
-      throw new UnauthorizedException('Invalid webhook signature');
+      return throwUnauthorized(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'invalid_webhook_signature',
+      });
     }
 
     if (dto.status === PaymentStatus.SUCCESS) {
@@ -210,7 +232,9 @@ export class PaymentService {
       });
 
       if (!updated) {
-        throw new BadRequestException('Unable to process success webhook');
+        return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+          reason: 'unable_to_process_success_webhook',
+        });
       }
 
       await this.activateSubscriptionIfRequired(
@@ -228,7 +252,9 @@ export class PaymentService {
       );
 
       if (!updated) {
-        throw new BadRequestException('Unable to process refund webhook');
+        return throwBadRequest(ErrorCode.PAYMENT_REFUND_FAILED, {
+          reason: 'unable_to_process_refund_webhook',
+        });
       }
 
       return { processed: true, status: updated.status };
@@ -242,7 +268,9 @@ export class PaymentService {
     });
 
     if (!updated) {
-      throw new BadRequestException('Unable to process failure webhook');
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'unable_to_process_failure_webhook',
+      });
     }
 
     return { processed: true, status: updated.status };
@@ -270,7 +298,7 @@ export class PaymentService {
     );
 
     if (!payment) {
-      throw new BadRequestException('Payment not found');
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND);
     }
 
     return payment;
@@ -295,7 +323,7 @@ export class PaymentService {
     const payment = await this.paymentRepo.findPaymentByOrderId(orderId);
 
     if (!payment) {
-      throw new BadRequestException('Payment not found');
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND);
     }
 
     return payment;
@@ -305,17 +333,21 @@ export class PaymentService {
     const payment = await this.paymentRepo.findByOrderId(orderId);
 
     if (!payment) {
-      throw new BadRequestException('Payment not found');
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND);
     }
 
     if (payment.status !== PaymentStatus.SUCCESS) {
-      throw new ConflictException('Only successful payments can be refunded');
+      return throwConflict(ErrorCode.PAYMENT_REFUND_FAILED, {
+        reason: 'only_successful_payments_can_be_refunded',
+      });
     }
 
     const refundAmount = dto.amount ?? payment.netAmount;
 
     if (refundAmount <= 0 || refundAmount > payment.netAmount) {
-      throw new BadRequestException('Invalid refund amount');
+      return throwBadRequest(ErrorCode.PAYMENT_REFUND_FAILED, {
+        reason: 'invalid_refund_amount',
+      });
     }
 
     const refundPayload = {
@@ -330,7 +362,9 @@ export class PaymentService {
     const updated = await this.paymentRepo.markRefunded(orderId, refundPayload);
 
     if (!updated) {
-      throw new BadRequestException('Unable to initiate refund');
+      return throwBadRequest(ErrorCode.PAYMENT_REFUND_FAILED, {
+        reason: 'unable_to_initiate_refund',
+      });
     }
 
     return {
@@ -440,7 +474,7 @@ export class PaymentService {
 
   private ensureUserId(userId: string) {
     if (!userId) {
-      throw new UnauthorizedException('Unauthorized');
+      return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED);
     }
   }
 

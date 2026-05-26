@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  ConflictException,
-} from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FlattenMaps, Model, Types } from 'mongoose';
 
@@ -17,6 +13,11 @@ import { CreatePlanDto } from '../dto/create-plan.dto';
 import { UpdatePlanDto } from '../dto/update-plan.dto';
 import { CreateFeatureDto } from '../dto/create-feature.dto';
 import { AssignFeatureDto } from '../dto/assign-feature.dto';
+import { ErrorCode } from 'src/common/constants';
+import {
+  throwConflict,
+  throwNotFound,
+} from 'src/common/exceptions/throw-app-exception';
 
 type LeanPlan = FlattenMaps<Plan> & { _id: Types.ObjectId };
 type LeanFeature = FlattenMaps<Feature> & { _id: Types.ObjectId };
@@ -40,7 +41,10 @@ export class PlanService {
       .findOne({ name: dto.name })
       .lean()
       .exec();
-    if (exists) throw new ConflictException('Plan already exists');
+    if (exists)
+      return throwConflict(ErrorCode.SUBSCRIPTION_ALREADY_ACTIVE, {
+        reason: 'plan_already_exists',
+      });
     const plan = await this.planModel.create(dto);
     return plan.toObject() as LeanPlan;
   }
@@ -54,7 +58,10 @@ export class PlanService {
       )
       .lean<LeanPlan>()
       .exec();
-    if (!plan) throw new NotFoundException('Plan not found');
+    if (!plan)
+      return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'plan_not_found',
+      });
     return plan;
   }
 
@@ -100,7 +107,10 @@ export class PlanService {
     planId: string,
   ): Promise<LeanPlan & { features: unknown[] }> {
     const plan = await this.planModel.findById(planId).lean<LeanPlan>().exec();
-    if (!plan) throw new NotFoundException('Plan not found');
+    if (!plan)
+      return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'plan_not_found',
+      });
     const features = await this.getPlanFeatures(planId);
     return { ...plan, features };
   }
@@ -114,7 +124,10 @@ export class PlanService {
       .findOne({ key: dto.key })
       .lean()
       .exec();
-    if (exists) throw new ConflictException('Feature already exists');
+    if (exists)
+      return throwConflict(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
+        reason: 'feature_already_exists',
+      });
     const feature = await this.featureModel.create(dto);
     return feature.toObject() as LeanFeature;
   }

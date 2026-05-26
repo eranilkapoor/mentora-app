@@ -1,10 +1,8 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-} from '@nestjs/common';
+import { CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { MEMBERSHIP_KEY } from '../decorators/membership.decorator';
+import { ErrorCode } from '../constants';
+import { throwForbidden } from '../exceptions/throw-app-exception';
 
 interface MembershipRequest {
   user?: {
@@ -29,11 +27,14 @@ export class MembershipGuard implements CanActivate {
     const user = req.user;
 
     if (!user?.membership) {
-      throw new ForbiddenException('No membership');
+      return throwForbidden(ErrorCode.SUBSCRIPTION_REQUIRED);
     }
 
     if (user.membership?.tier !== requiredTier) {
-      throw new ForbiddenException('Upgrade required');
+      return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
+        reason: 'upgrade_required',
+        requiredTier,
+      });
     }
 
     return true;

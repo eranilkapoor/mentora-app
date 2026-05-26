@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
@@ -11,6 +11,8 @@ import { UserRepository } from '../../auth/repositories/user.repository';
 import { PlanTier } from 'src/common/enums';
 import { SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
 import { PaymentStatus } from '../../payment/enums/payment-status.enum';
+import { ErrorCode } from 'src/common/constants';
+import { throwNotFound } from 'src/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class SubscriptionService {
@@ -32,7 +34,9 @@ export class SubscriptionService {
     const plan = await this.planModel.findById(planId).lean().exec();
 
     if (!plan || !plan.isActive) {
-      throw new NotFoundException('Plan not found or inactive');
+      return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'plan_not_found_or_inactive',
+      });
     }
 
     // Expire any existing active subscription for this user
@@ -167,7 +171,7 @@ export class SubscriptionService {
       status: SubscriptionStatus.ACTIVE,
     });
 
-    if (!sub) throw new NotFoundException('No active subscription found');
+    if (!sub) return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND);
 
     sub.status = SubscriptionStatus.CANCELLED;
     sub.cancelledAt = new Date();

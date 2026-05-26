@@ -1,4 +1,4 @@
-import { Injectable, ForbiddenException, Inject } from '@nestjs/common';
+import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FlattenMaps, Model, Types } from 'mongoose';
 import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
@@ -14,6 +14,8 @@ import {
 import { FeatureKey } from 'src/common/enums';
 import { FeatureContext } from '../interfaces/feature-context.interface';
 import { PlanService } from './plan.service';
+import { ErrorCode } from 'src/common/constants';
+import { throwForbidden } from 'src/common/exceptions/throw-app-exception';
 
 //  Types
 
@@ -51,7 +53,7 @@ export class FeatureService {
       .exec();
 
     if (!subscription) {
-      throw new ForbiddenException('No active subscription');
+      return throwForbidden(ErrorCode.SUBSCRIPTION_REQUIRED);
     }
 
     const planFeatures = await this.getCachedPlanFeatures(
@@ -61,9 +63,9 @@ export class FeatureService {
     const feature = planFeatures.find((pf) => pf.featureId.key === featureKey);
 
     if (!feature) {
-      throw new ForbiddenException(
-        'This feature is not available on your current plan. Please upgrade.',
-      );
+      return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
+        reason: 'feature_not_available_on_current_plan',
+      });
     }
 
     // -1 means unlimited
@@ -85,9 +87,10 @@ export class FeatureService {
     const current = await this.cache.get<number>(key);
 
     if (current !== null && current !== undefined && current >= limit) {
-      throw new ForbiddenException(
-        `Daily limit of ${limit} reached for this feature. Resets at midnight.`,
-      );
+      return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
+        reason: 'daily_feature_limit_reached',
+        limit,
+      });
     }
 
     await this.cache.incr(key);
