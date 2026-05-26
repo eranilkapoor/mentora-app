@@ -126,8 +126,8 @@ export default function BlockedUsersScreen({
 
   const renderBlockedUser = useCallback(
     (user: BlockedUserSummary, index: number) => {
-      const resolvedAvatar = user.avatarUrl ? 
-        resolveApiUrl(user.avatarUrl) 
+      const resolvedAvatar = user.avatarUrl
+        ? resolveApiUrl(user.avatarUrl)
         : null;
       const avatarUrl = resolvedAvatar ?? FALLBACK_AVATAR;
       const meta = [user.age ? `${user.age} yrs` : undefined, user.location]
