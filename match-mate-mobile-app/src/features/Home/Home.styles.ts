@@ -102,14 +102,13 @@ export const homeStyles = (theme: Theme) =>
       width: isWeb ? 375 : windowWidth - 32,
       height: 340,
     },
-    // Fixed: `overlayDark` → rgba fallback safe on all themes
     photoScrim: {
       position: 'absolute',
       bottom: 0,
       left: 0,
       right: 0,
       height: 160,
-      backgroundColor: 'rgba(0,0,0,0.45)',
+      backgroundColor: theme.colors.overlayDark,
     },
     photoBadge: {
       position: 'absolute',
@@ -117,7 +116,7 @@ export const homeStyles = (theme: Theme) =>
       right: 12,
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: 'rgba(0,0,0,0.55)',
+      backgroundColor: theme.colors.overlayLight,
       borderRadius: 12,
       paddingHorizontal: 8,
       paddingVertical: 4,
@@ -135,7 +134,7 @@ export const homeStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 5,
-      backgroundColor: 'rgba(0,0,0,0.55)',
+      backgroundColor: theme.colors.overlayLight,
       paddingHorizontal: 9,
       paddingVertical: 4,
       borderRadius: 20,
@@ -187,7 +186,7 @@ export const homeStyles = (theme: Theme) =>
     // Fixed: `accentLight` → white with opacity — safe on all themes
     heroLocation: {
       fontSize: 13,
-      color: 'rgba(255,255,255,0.85)',
+      color: theme.colors.overlayLight,
     },
 
     // ─── Card Content ─────────────────────────────────────────────────────
