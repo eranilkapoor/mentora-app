@@ -2512,7 +2512,6 @@ match-mate-api-server/
       match.dto.ts
       profile.dto.ts
       user.dto.ts
-    app.controller.spec.ts
     app.controller.ts
     app.module.ts
     app.service.ts
