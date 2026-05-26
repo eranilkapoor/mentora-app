@@ -45,7 +45,12 @@ export const privacySettingsApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['PrivacySettings'],
+      invalidatesTags: [
+        'PrivacySettings',
+        { type: 'Match', id: 'DISCOVERY' },
+        { type: 'Match', id: 'MY' },
+        { type: 'Match', id: 'INTERESTS' },
+      ],
     }),
     blockUser: builder.mutation<void, { targetUserId: string }>({
       query: (body) => ({
@@ -53,7 +58,14 @@ export const privacySettingsApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['PrivacySettings', 'Match', 'Chat'],
+      invalidatesTags: [
+        'PrivacySettings',
+        'Chat',
+        'Shortlist',
+        { type: 'Match', id: 'DISCOVERY' },
+        { type: 'Match', id: 'MY' },
+        { type: 'Match', id: 'INTERESTS' },
+      ],
     }),
     reportUser: builder.mutation<
       void,

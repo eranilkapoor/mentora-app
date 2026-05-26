@@ -395,6 +395,27 @@ export class SettingsRepository {
       .exec();
   }
 
+  async getBlockedRelationUserIds(userId: string): Promise<string[]> {
+    const uid = new Types.ObjectId(userId);
+    const blocks = await this.userBlockModel
+      .find({
+        $or: [{ userId: uid }, { blockedUserId: uid }],
+      })
+      .select('userId blockedUserId')
+      .lean<Array<{ userId: Types.ObjectId; blockedUserId: Types.ObjectId }>>()
+      .exec();
+
+    return [
+      ...new Set(
+        blocks.map((block) =>
+          block.userId.equals(uid)
+            ? block.blockedUserId.toString()
+            : block.userId.toString(),
+        ),
+      ),
+    ];
+  }
+
   async isBlockedBetween(userId: string, targetUserId: string) {
     const block = await this.userBlockModel
       .findOne({

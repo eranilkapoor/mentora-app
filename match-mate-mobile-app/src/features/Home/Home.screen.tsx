@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -26,15 +27,19 @@ import {
   DiscoveryProfile,
   useGetDiscoveryProfilesQuery,
   useGetMyMatchesQuery,
+  useGetSentInterestsQuery,
   useGetShortlistedProfilesQuery,
   useRemoveShortlistedProfileMutation,
   useSendInterestMutation,
   useShortlistProfileMutation,
+  useWithdrawInterestMutation,
 } from '@/store/services/matchApi.service';
 
 type HomeMatchProfile = MatchProfile & {
   isMatched: boolean;
   isShortlisted: boolean;
+  isInterestPending: boolean;
+  interestId?: string;
 };
 
 interface HomeScreenProps {
@@ -43,6 +48,7 @@ interface HomeScreenProps {
 
 const FALLBACK_PHOTO =
   'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600';
+const FEED_PAGE_SIZE = 10;
 
 const isRecentlyActive = (lastActiveAt?: string): boolean =>
   lastActiveAt
@@ -64,8 +70,10 @@ const mapProfile = (
   profile: DiscoveryProfile,
   matchedIds: Set<string>,
   shortlistedIds: Set<string>,
+  pendingInterestByUserId: Map<string, string>,
   t: (key: string, options: { defaultValue: string }) => string
 ): HomeMatchProfile => {
+  const pendingInterestId = pendingInterestByUserId.get(profile.userId);
   const photos =
     profile.images
       ?.filter((image) => image.isActive !== false)
@@ -104,9 +112,14 @@ const mapProfile = (
     isOnline: isRecentlyActive(profile.lastActiveAt),
     isNew: isNewProfile(profile.createdAt),
     photos: photos.length > 0 ? photos : [FALLBACK_PHOTO],
-    isMatched: matchedIds.has(profile.userId),
+    isMatched:
+      profile.relationship?.isMatched === true ||
+      profile.privacy?.isMatched === true ||
+      matchedIds.has(profile.userId),
     isShortlisted:
       profile.isShortlisted === true || shortlistedIds.has(profile.userId),
+    isInterestPending: pendingInterestByUserId.has(profile.userId),
+    ...(pendingInterestId ? { interestId: pendingInterestId } : {}),
   };
 };
 
@@ -160,6 +173,16 @@ function ProfileCard({
 }): React.ReactElement {
   const styles = useThemedStyles(homeStyles);
   const { theme } = useTheme();
+  const primaryIcon = item.isMatched
+    ? 'message-circle'
+    : item.isInterestPending
+      ? 'x-circle'
+      : 'heart';
+  const primaryLabel = item.isMatched
+    ? 'Chat'
+    : item.isInterestPending
+      ? 'Withdraw'
+      : 'Interest';
 
   return (
     <View style={styles.card}>
@@ -229,26 +252,6 @@ function ProfileCard({
 
         <View style={styles.actions}>
           <TouchableOpacity
-            style={styles.chatBtn}
-            onPress={onPrimaryAction}
-            accessibilityRole="button"
-            accessibilityLabel={
-              item.isMatched
-                ? `Chat with ${item.name}`
-                : `Send interest to ${item.name}`
-            }
-          >
-            <Feather
-              name={item.isMatched ? 'message-circle' : 'heart'}
-              size={16}
-              color={theme.colors.white}
-            />
-            <Text style={styles.chatText}>
-              {item.isMatched ? 'Chat' : 'Interest'}
-            </Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity
             style={styles.viewBtn}
             onPress={onView}
             accessibilityRole="button"
@@ -256,6 +259,25 @@ function ProfileCard({
           >
             <Feather name="user" size={16} color={theme.colors.primary} />
             <Text style={styles.viewText}>Profile</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[
+              styles.chatBtn,
+              item.isInterestPending && styles.chatBtnPending,
+            ]}
+            onPress={onPrimaryAction}
+            accessibilityRole="button"
+            accessibilityLabel={
+              item.isMatched
+                ? `Chat with ${item.name}`
+                : item.isInterestPending
+                  ? `Withdraw interest from ${item.name}`
+                  : `Send interest to ${item.name}`
+            }
+          >
+            <Feather name={primaryIcon} size={16} color={theme.colors.white} />
+            <Text style={styles.chatText}>{primaryLabel}</Text>
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -291,18 +313,52 @@ export default function HomeScreen({
   const styles = useThemedStyles(homeStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const [query, setQuery] = useState('');
+  const [page, setPage] = useState(1);
+  const [feedProfiles, setFeedProfiles] = useState<DiscoveryProfile[]>([]);
   const [refreshing, setRefreshing] = useState(false);
-  const { data, refetch, isFetching } = useGetDiscoveryProfilesQuery({
-    type: 'recommended',
-    limit: 10,
-  });
+  const discoveryQuery = useMemo(
+    () => ({
+      type: 'recommended' as const,
+      page,
+      limit: FEED_PAGE_SIZE,
+      ...(query.trim() ? { search: query.trim() } : {}),
+    }),
+    [page, query]
+  );
+  const { data, refetch, isFetching } =
+    useGetDiscoveryProfilesQuery(discoveryQuery);
   const { data: myMatches, refetch: refetchMatches } = useGetMyMatchesQuery();
+  const { data: sentInterests, refetch: refetchSentInterests } =
+    useGetSentInterestsQuery({ limit: 100 });
   const { data: shortlisted, refetch: refetchShortlisted } =
     useGetShortlistedProfilesQuery({ limit: 100 });
   const [sendInterest] = useSendInterestMutation();
+  const [withdrawInterest] = useWithdrawInterestMutation();
   const [shortlistProfile] = useShortlistProfileMutation();
   const [removeShortlistedProfile] = useRemoveShortlistedProfileMutation();
   const [createDirectRoom] = useCreateDirectRoomMutation();
+
+  useEffect(() => {
+    setPage(1);
+    setFeedProfiles([]);
+  }, [query]);
+
+  useEffect(() => {
+    if (!data?.data) return;
+
+    setFeedProfiles((current) => {
+      if (page === 1) {
+        return data.data;
+      }
+
+      const byUserId = new Map(
+        current.map((profile) => [profile.userId, profile])
+      );
+      data.data.forEach((profile) => byUserId.set(profile.userId, profile));
+      return [...byUserId.values()];
+    });
+  }, [data, page]);
 
   const matchedIds = useMemo(() => {
     const ids = new Set<string>();
@@ -318,23 +374,70 @@ export default function HomeScreen({
     [shortlisted]
   );
 
+  const pendingInterestByUserId = useMemo(() => {
+    const pending = new Map<string, string>();
+    sentInterests?.data?.forEach((interest) => {
+      if (interest.status === 'pending') {
+        pending.set(String(interest.receiverId), interest._id);
+      }
+    });
+    return pending;
+  }, [sentInterests]);
+
   const profiles = useMemo(
     () =>
-      (data?.data ?? []).map((profile) =>
-        mapProfile(profile, matchedIds, shortlistedIds, t)
+      feedProfiles.map((profile) =>
+        mapProfile(
+          profile,
+          matchedIds,
+          shortlistedIds,
+          pendingInterestByUserId,
+          t
+        )
       ),
-    [data, matchedIds, shortlistedIds, t]
+    [feedProfiles, matchedIds, pendingInterestByUserId, shortlistedIds, t]
   );
 
   const onRefresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
-    await Promise.all([refetch(), refetchMatches(), refetchShortlisted()]);
+    setPage(1);
+    if (page === 1) {
+      await Promise.all([
+        refetch(),
+        refetchMatches(),
+        refetchShortlisted(),
+        refetchSentInterests(),
+      ]);
+    } else {
+      await Promise.all([
+        refetchMatches(),
+        refetchShortlisted(),
+        refetchSentInterests(),
+      ]);
+    }
     setRefreshing(false);
-  }, [refetch, refetchMatches, refetchShortlisted]);
+  }, [page, refetch, refetchMatches, refetchSentInterests, refetchShortlisted]);
+
+  const loadMore = useCallback(() => {
+    if (isFetching || !data?.meta?.hasNextPage) {
+      return;
+    }
+
+    setPage((current) => current + 1);
+  }, [data?.meta?.hasNextPage, isFetching]);
 
   const handlePrimaryAction = useCallback(
     async (item: HomeMatchProfile): Promise<void> => {
       if (!item.isMatched) {
+        if (item.isInterestPending && item.interestId) {
+          try {
+            await withdrawInterest({ interestId: item.interestId }).unwrap();
+          } catch {
+            Alert.alert('Interest not withdrawn', 'Please try again later.');
+          }
+          return;
+        }
+
         try {
           await sendInterest({ receiverId: item.userId }).unwrap();
           Alert.alert('Interest sent', `${item.name} will be notified.`);
@@ -358,7 +461,7 @@ export default function HomeScreen({
         );
       }
     },
-    [createDirectRoom, navigation, sendInterest]
+    [createDirectRoom, navigation, sendInterest, withdrawInterest]
   );
 
   const handleShortlist = useCallback(
@@ -459,6 +562,7 @@ export default function HomeScreen({
         subtitle={t('home.subtitle')}
         enableSearch
         searchPlaceholder={t('home.search_placeholder')}
+        onSearchChange={setQuery}
         actions={[
           {
             icon: 'bell',
@@ -479,6 +583,15 @@ export default function HomeScreen({
         showsVerticalScrollIndicator={false}
         renderItem={renderProfile}
         ListHeaderComponent={ListHeader}
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.35}
+        ListFooterComponent={
+          isFetching && page > 1 ? (
+            <View style={styles.listFooter}>
+              <ActivityIndicator color={theme.colors.primary} />
+            </View>
+          ) : null
+        }
         refreshControl={
           <RefreshControl
             refreshing={refreshing || isFetching}

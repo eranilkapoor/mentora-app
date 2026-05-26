@@ -9,7 +9,16 @@ import {
   Preference,
   PreferenceDocument,
 } from 'src/modules/profile/schemas/preference/preference.schema';
-import { Interest, InterestDocument } from '../schemas/interest.schema';
+import {
+  Media,
+  MediaDocument,
+  MediaStatus,
+} from 'src/modules/profile/schemas/media/media.schema';
+import {
+  Interest,
+  InterestDocument,
+  InterestStatus,
+} from '../schemas/interest.schema';
 import { Match, MatchDocument } from '../schemas/match.schema';
 
 // ─── Explicit lean types ──────────────────────────────────────────────────────
@@ -20,6 +29,11 @@ export type LeanProfile = FlattenMaps<Profile> & {
 };
 
 export type LeanPreference = FlattenMaps<Preference> & {
+  _id: Types.ObjectId;
+  userId: Types.ObjectId;
+};
+
+export type LeanMedia = FlattenMaps<Media> & {
   _id: Types.ObjectId;
   userId: Types.ObjectId;
 };
@@ -37,6 +51,9 @@ export class MatchDiscoveryRepository {
 
     @InjectModel(Preference.name)
     private readonly preferenceModel: Model<PreferenceDocument>,
+
+    @InjectModel(Media.name)
+    private readonly mediaModel: Model<MediaDocument>,
 
     @InjectModel(Interest.name)
     private readonly interestModel: Model<InterestDocument>,
@@ -69,7 +86,10 @@ export class MatchDiscoveryRepository {
 
     const [sent, received] = await Promise.all([
       this.interestModel
-        .find({ senderId: uid })
+        .find({
+          senderId: uid,
+          status: { $ne: InterestStatus.PENDING },
+        })
         .select('receiverId')
         .lean<{ receiverId: Types.ObjectId }[]>()
         .exec(),
@@ -138,5 +158,26 @@ export class MatchDiscoveryRepository {
     ]);
 
     return { profiles, total };
+  }
+
+  async getActiveMediaByUserIds(userIds: string[]): Promise<LeanMedia[]> {
+    const objectIds = userIds
+      .filter((id) => Types.ObjectId.isValid(id))
+      .map((id) => new Types.ObjectId(id));
+
+    if (objectIds.length === 0) {
+      return [];
+    }
+
+    return this.mediaModel
+      .find({
+        userId: { $in: objectIds },
+        status: MediaStatus.ACTIVE,
+        isActive: true,
+      })
+      .sort({ isPrimary: -1, uploadedAt: -1, createdAt: -1 })
+      .select('-__v')
+      .lean<LeanMedia[]>()
+      .exec();
   }
 }

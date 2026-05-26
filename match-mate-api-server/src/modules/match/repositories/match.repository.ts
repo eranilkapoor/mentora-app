@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FlattenMaps, Model, Types } from 'mongoose';
 import {
@@ -54,7 +54,9 @@ type LeanInteraction = FlattenMaps<Interaction> & {
 };
 
 @Injectable()
-export class MatchRepository {
+export class MatchRepository implements OnModuleInit {
+  private readonly logger = new Logger(MatchRepository.name);
+
   constructor(
     @InjectModel(Interest.name)
     private readonly interestModel: Model<InterestDocument>,
@@ -71,6 +73,10 @@ export class MatchRepository {
     @InjectModel(Interaction.name)
     private readonly interactionModel: Model<InteractionDocument>,
   ) {}
+
+  async onModuleInit(): Promise<void> {
+    await this.dropLegacyUsersIndex();
+  }
 
   async sendInterest(
     senderId: string,
@@ -116,6 +122,19 @@ export class MatchRepository {
   }
 
   async createMatch(user1: string, user2: string): Promise<LeanMatch> {
+    try {
+      return await this.upsertMatch(user1, user2);
+    } catch (error) {
+      if (this.isLegacyUsersIndexDuplicate(error)) {
+        await this.dropLegacyUsersIndex();
+        return this.upsertMatch(user1, user2);
+      }
+
+      throw error;
+    }
+  }
+
+  private async upsertMatch(user1: string, user2: string): Promise<LeanMatch> {
     const [leftUserId, rightUserId] = [user1, user2].sort();
     const doc = await this.matchModel.findOneAndUpdate(
       {
@@ -131,14 +150,57 @@ export class MatchRepository {
     return doc.toObject() as LeanMatch;
   }
 
+  private isLegacyUsersIndexDuplicate(error: unknown): boolean {
+    return (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      (error as { code?: number }).code === 11000 &&
+      String((error as { message?: string }).message ?? '').includes('users_1')
+    );
+  }
+
+  private async dropLegacyUsersIndex(): Promise<void> {
+    try {
+      const indexes = await this.matchModel.collection.indexes();
+      const legacyUsersIndex = indexes.find(
+        (index) => index.name === 'users_1',
+      );
+
+      if (!legacyUsersIndex) {
+        return;
+      }
+
+      await this.matchModel.collection.dropIndex('users_1');
+      this.logger.warn(
+        'Dropped legacy matches.users index. Match uniqueness is now handled by userId + targetUserId.',
+      );
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (message.includes('index not found')) {
+        return;
+      }
+
+      this.logger.warn(`Unable to drop legacy matches.users index: ${message}`);
+    }
+  }
+
   async getMatchesForUser(
     userId: string,
     skip = 0,
     limit = 20,
+    excludedUserIds: string[] = [],
   ): Promise<LeanMatch[]> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
     return this.matchModel
       .find({
         isActive: true,
+        ...(excludedObjectIds.length
+          ? {
+              userId: { $nin: excludedObjectIds },
+              targetUserId: { $nin: excludedObjectIds },
+            }
+          : {}),
         $or: [
           { userId: new Types.ObjectId(userId) },
           { targetUserId: new Types.ObjectId(userId) },
@@ -152,8 +214,22 @@ export class MatchRepository {
   }
 
   async countMatchesForUser(userId: string): Promise<number> {
+    return this.countMatchesForUserExcluding(userId);
+  }
+
+  async countMatchesForUserExcluding(
+    userId: string,
+    excludedUserIds: string[] = [],
+  ): Promise<number> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
     return this.matchModel.countDocuments({
       isActive: true,
+      ...(excludedObjectIds.length
+        ? {
+            userId: { $nin: excludedObjectIds },
+            targetUserId: { $nin: excludedObjectIds },
+          }
+        : {}),
       $or: [
         { userId: new Types.ObjectId(userId) },
         { targetUserId: new Types.ObjectId(userId) },
@@ -165,9 +241,16 @@ export class MatchRepository {
     userId: string,
     skip = 0,
     limit = 20,
+    excludedUserIds: string[] = [],
   ): Promise<LeanInterest[]> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
     return this.interestModel
-      .find({ receiverId: new Types.ObjectId(userId) })
+      .find({
+        receiverId: new Types.ObjectId(userId),
+        ...(excludedObjectIds.length
+          ? { senderId: { $nin: excludedObjectIds } }
+          : {}),
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -175,9 +258,16 @@ export class MatchRepository {
       .exec();
   }
 
-  async countReceivedInterests(userId: string): Promise<number> {
+  async countReceivedInterests(
+    userId: string,
+    excludedUserIds: string[] = [],
+  ): Promise<number> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
     return this.interestModel.countDocuments({
       receiverId: new Types.ObjectId(userId),
+      ...(excludedObjectIds.length
+        ? { senderId: { $nin: excludedObjectIds } }
+        : {}),
     });
   }
 
@@ -185,9 +275,16 @@ export class MatchRepository {
     userId: string,
     skip = 0,
     limit = 20,
+    excludedUserIds: string[] = [],
   ): Promise<LeanInterest[]> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
     return this.interestModel
-      .find({ senderId: new Types.ObjectId(userId) })
+      .find({
+        senderId: new Types.ObjectId(userId),
+        ...(excludedObjectIds.length
+          ? { receiverId: { $nin: excludedObjectIds } }
+          : {}),
+      })
       .sort({ createdAt: -1 })
       .skip(skip)
       .limit(limit)
@@ -195,9 +292,16 @@ export class MatchRepository {
       .exec();
   }
 
-  async countSentInterests(userId: string): Promise<number> {
+  async countSentInterests(
+    userId: string,
+    excludedUserIds: string[] = [],
+  ): Promise<number> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
     return this.interestModel.countDocuments({
       senderId: new Types.ObjectId(userId),
+      ...(excludedObjectIds.length
+        ? { receiverId: { $nin: excludedObjectIds } }
+        : {}),
     });
   }
 
@@ -310,11 +414,18 @@ export class MatchRepository {
     return rows.map((row) => row.toUserId.toString());
   }
 
-  async countShortlisted(userId: string): Promise<number> {
+  async countShortlisted(
+    userId: string,
+    excludedUserIds: string[] = [],
+  ): Promise<number> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
     return this.interactionModel.countDocuments({
       fromUserId: new Types.ObjectId(userId),
       type: InteractionType.SHORTLIST,
       status: InteractionStatus.ACCEPTED,
+      ...(excludedObjectIds.length
+        ? { toUserId: { $nin: excludedObjectIds } }
+        : {}),
     });
   }
 
@@ -322,12 +433,17 @@ export class MatchRepository {
     userId: string,
     skip = 0,
     limit = 20,
+    excludedUserIds: string[] = [],
   ): Promise<LeanProfile[]> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
     const rows = await this.interactionModel
       .find({
         fromUserId: new Types.ObjectId(userId),
         type: InteractionType.SHORTLIST,
         status: InteractionStatus.ACCEPTED,
+        ...(excludedObjectIds.length
+          ? { toUserId: { $nin: excludedObjectIds } }
+          : {}),
       })
       .select('toUserId')
       .sort({ updatedAt: -1, createdAt: -1 })
@@ -345,5 +461,11 @@ export class MatchRepository {
     return ids
       .map((id) => profileMap.get(id))
       .filter((profile): profile is LeanProfile => Boolean(profile));
+  }
+
+  private toObjectIds(userIds: string[]): Types.ObjectId[] {
+    return [...new Set(userIds.filter((id) => Types.ObjectId.isValid(id)))].map(
+      (id) => new Types.ObjectId(id),
+    );
   }
 }

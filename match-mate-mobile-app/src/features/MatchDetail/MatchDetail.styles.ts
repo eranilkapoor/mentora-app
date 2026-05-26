@@ -320,6 +320,10 @@ export const matchDetailStyles = (theme: Theme) =>
       paddingVertical: 13,
       elevation: 4,
     },
+    ctaPrimaryDisabled: {
+      backgroundColor: theme.colors.textMuted,
+      elevation: 0,
+    },
     ctaPrimaryText: {
       color: theme.colors.white,
       fontWeight: '800',

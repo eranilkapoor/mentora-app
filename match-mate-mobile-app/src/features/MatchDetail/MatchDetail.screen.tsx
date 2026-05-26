@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -27,6 +27,7 @@ import {
   DiscoveryProfile,
   useGetMatchProfileQuery,
   useSendInterestMutation,
+  useWithdrawInterestMutation,
 } from '@/store/services/matchApi.service';
 import {
   useBlockUserMutation,
@@ -127,6 +128,8 @@ export default function MatchDetailsScreen({
   const { data, isLoading, refetch } = useGetMatchProfileQuery(userId);
   const [sendInterest, { isLoading: isSendingInterest }] =
     useSendInterestMutation();
+  const [withdrawInterest, { isLoading: isWithdrawingInterest }] =
+    useWithdrawInterestMutation();
   const [createDirectRoom, { isLoading: isOpeningChat }] =
     useCreateDirectRoomMutation();
   const [blockUser, { isLoading: isBlocking }] = useBlockUserMutation();
@@ -137,6 +140,15 @@ export default function MatchDetailsScreen({
   const photos = useMemo(() => getPhotos(profile), [profile]);
   const canViewDetails = Boolean(profile?.privacy?.canViewPersonalDetails);
   const isMatched = Boolean(profile?.privacy?.isMatched);
+  const [optimisticPendingInterest, setOptimisticPendingInterest] =
+    useState(false);
+  const pendingSentInterest =
+    optimisticPendingInterest ||
+    (profile?.relationship?.interestDirection === 'sent' &&
+      profile.relationship.interestStatus === 'pending');
+  const pendingReceivedInterest =
+    profile?.relationship?.interestDirection === 'received' &&
+    profile.relationship.interestStatus === 'pending';
   const online = isOnline(profile?.lastActiveAt);
   const location = compact([
     profile?.personal?.city,
@@ -190,6 +202,10 @@ export default function MatchDetailsScreen({
     <Image source={{ uri: item }} style={styles.photo} resizeMode="cover" />
   );
 
+  useEffect(() => {
+    setOptimisticPendingInterest(false);
+  }, [userId]);
+
   const handlePrimaryAction = async (): Promise<void> => {
     if (isMatched) {
       try {
@@ -210,6 +226,7 @@ export default function MatchDetailsScreen({
 
     try {
       await sendInterest({ receiverId: userId }).unwrap();
+      setOptimisticPendingInterest(true);
       showSuccess({
         title: 'Interest sent',
         message: `${name} will be notified.`,
@@ -222,6 +239,62 @@ export default function MatchDetailsScreen({
       });
     }
   };
+
+  const handleWithdrawInterest = async (): Promise<void> => {
+    const interestId = profile?.relationship?.interestId;
+    if (!interestId) return;
+
+    try {
+      await withdrawInterest({ interestId }).unwrap();
+      setOptimisticPendingInterest(false);
+      showSuccess({
+        title: 'Interest withdrawn',
+        message: 'Your interest request has been withdrawn.',
+      });
+      await refetch();
+    } catch {
+      showError({
+        title: 'Unable to withdraw',
+        message: 'Please try again later.',
+      });
+    }
+  };
+
+  const primaryAction = (() => {
+    if (isMatched) {
+      return {
+        icon: 'message-circle',
+        label: 'Chat',
+        disabled: isOpeningChat,
+        onPress: handlePrimaryAction,
+      };
+    }
+
+    if (pendingSentInterest) {
+      return {
+        icon: 'x-circle',
+        label: 'Withdraw Interest',
+        disabled: isWithdrawingInterest || !profile?.relationship?.interestId,
+        onPress: handleWithdrawInterest,
+      };
+    }
+
+    if (pendingReceivedInterest) {
+      return {
+        icon: 'inbox',
+        label: 'Interest Received',
+        disabled: true,
+        onPress: handlePrimaryAction,
+      };
+    }
+
+    return {
+      icon: 'heart',
+      label: 'Send Interest',
+      disabled: isSendingInterest,
+      onPress: handlePrimaryAction,
+    };
+  })();
 
   const handleReport = (): void => {
     showConfirm({
@@ -551,19 +624,20 @@ export default function MatchDetailsScreen({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={styles.ctaPrimary}
-          onPress={() => void handlePrimaryAction()}
-          disabled={isSendingInterest || isOpeningChat}
+          style={[
+            styles.ctaPrimary,
+            primaryAction.disabled && styles.ctaPrimaryDisabled,
+          ]}
+          onPress={() => void primaryAction.onPress()}
+          disabled={primaryAction.disabled}
           accessibilityRole="button"
         >
           <Feather
-            name={isMatched ? 'message-circle' : 'heart'}
+            name={primaryAction.icon}
             size={16}
             color={theme.colors.white}
           />
-          <Text style={styles.ctaPrimaryText}>
-            {isMatched ? 'Chat' : 'Send Interest'}
-          </Text>
+          <Text style={styles.ctaPrimaryText}>{primaryAction.label}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

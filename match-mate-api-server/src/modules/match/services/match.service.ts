@@ -67,6 +67,49 @@ export class MatchService {
     });
   }
 
+  private async withMatchProfiles(
+    matches: Awaited<ReturnType<MatchRepository['getMatchesForUser']>>,
+    viewerId: string,
+  ) {
+    const targetUserIds = matches.map((match) => {
+      const leftUserId = match.userId.toString();
+      const rightUserId = match.targetUserId.toString();
+      return leftUserId === viewerId ? rightUserId : leftUserId;
+    });
+
+    const [profiles, media] = await Promise.all([
+      this.repo.getProfilesByUserIds(targetUserIds),
+      this.repo.getActiveMediaByUserIds(targetUserIds),
+    ]);
+
+    const profileByUser = new Map(
+      profiles.map((profile) => [profile.userId.toString(), profile]),
+    );
+    const mediaByUser = new Map<string, unknown[]>();
+    media.forEach((item) => {
+      const userId = item.userId.toString();
+      mediaByUser.set(userId, [...(mediaByUser.get(userId) ?? []), item]);
+    });
+
+    return matches.map((match) => {
+      const leftUserId = match.userId.toString();
+      const rightUserId = match.targetUserId.toString();
+      const matchedUserId = leftUserId === viewerId ? rightUserId : leftUserId;
+      const profile = profileByUser.get(matchedUserId);
+
+      return {
+        ...match,
+        matchedUserId,
+        profile: profile
+          ? {
+              ...profile,
+              images: mediaByUser.get(matchedUserId) ?? [],
+            }
+          : undefined,
+      };
+    });
+  }
+
   async sendInterest(senderId: string, receiverId: string) {
     if (senderId === receiverId) {
       throw new BadRequestException('Cannot send interest to yourself');
@@ -132,18 +175,49 @@ export class MatchService {
 
     const updated = await this.repo.updateInterestStatus(interestId, status);
 
-    if (status === InterestStatus.ACCEPTED) {
-      await this.repo.createMatch(
-        interest.senderId.toString(),
-        interest.receiverId.toString(),
-      );
-    }
+    const match =
+      status === InterestStatus.ACCEPTED
+        ? await this.repo.createMatch(
+            interest.senderId.toString(),
+            interest.receiverId.toString(),
+          )
+        : null;
 
-    const [receiverProfile, receiverMedia] = await Promise.all([
-      this.repo.getProfileByUserId(userId),
-      this.repo.getActiveMediaByUserId(userId),
-    ]);
+    const [senderProfile, senderMedia, receiverProfile, receiverMedia] =
+      await Promise.all([
+        this.repo.getProfileByUserId(interest.senderId.toString()),
+        this.repo.getActiveMediaByUserId(interest.senderId.toString()),
+        this.repo.getProfileByUserId(userId),
+        this.repo.getActiveMediaByUserId(userId),
+      ]);
+
+    const senderName = this.getDisplayName(senderProfile);
     const receiverName = this.getDisplayName(receiverProfile);
+
+    if (status === InterestStatus.ACCEPTED) {
+      await this.notificationService.notify({
+        userId,
+        title: "It's a match",
+        message: `You and ${senderName} can now start chatting.`,
+        type: 'match',
+        category: 'match_found',
+        actorId: interest.senderId.toString(),
+        actorName: senderName,
+        actorImage: senderMedia[0]?.url,
+        referenceId: match?._id.toString(),
+        priority: 'high',
+        channels: ['in_app', 'push'],
+        action: {
+          screen: 'MatchDetails',
+          params: { userId: interest.senderId.toString() },
+        },
+        metadata: {
+          interestId,
+          matchId: match?._id.toString(),
+          status,
+        },
+      });
+    }
 
     await this.notificationService.notify({
       userId: interest.senderId.toString(),
@@ -168,7 +242,7 @@ export class MatchService {
         screen: 'MatchDetails',
         params: { userId },
       },
-      metadata: { interestId, status },
+      metadata: { interestId, matchId: match?._id.toString(), status },
     });
 
     return { success: true, data: updated };
@@ -176,22 +250,26 @@ export class MatchService {
 
   async getMyMatches(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
+    const excludedUserIds =
+      await this.settingsService.getBlockedRelationUserIds(userId);
     const [matches, total] = await Promise.all([
-      this.repo.getMatchesForUser(userId, skip, limit),
-      this.repo.countMatchesForUser(userId),
+      this.repo.getMatchesForUser(userId, skip, limit, excludedUserIds),
+      this.repo.countMatchesForUserExcluding(userId, excludedUserIds),
     ]);
     return {
       success: true,
-      data: matches,
+      data: await this.withMatchProfiles(matches, userId),
       meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
     };
   }
 
   async getReceivedInterests(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
+    const excludedUserIds =
+      await this.settingsService.getBlockedRelationUserIds(userId);
     const [interests, total] = await Promise.all([
-      this.repo.getReceivedInterests(userId, skip, limit),
-      this.repo.countReceivedInterests(userId),
+      this.repo.getReceivedInterests(userId, skip, limit, excludedUserIds),
+      this.repo.countReceivedInterests(userId, excludedUserIds),
     ]);
     return {
       success: true,
@@ -202,9 +280,11 @@ export class MatchService {
 
   async getSentInterests(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
+    const excludedUserIds =
+      await this.settingsService.getBlockedRelationUserIds(userId);
     const [interests, total] = await Promise.all([
-      this.repo.getSentInterests(userId, skip, limit),
-      this.repo.countSentInterests(userId),
+      this.repo.getSentInterests(userId, skip, limit, excludedUserIds),
+      this.repo.countSentInterests(userId, excludedUserIds),
     ]);
     return {
       success: true,
@@ -251,9 +331,11 @@ export class MatchService {
 
   async getShortlistedProfiles(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
+    const excludedUserIds =
+      await this.settingsService.getBlockedRelationUserIds(userId);
     const [profiles, total, shortlistedIds] = await Promise.all([
-      this.repo.getShortlistedProfiles(userId, skip, limit),
-      this.repo.countShortlisted(userId),
+      this.repo.getShortlistedProfiles(userId, skip, limit, excludedUserIds),
+      this.repo.countShortlisted(userId, excludedUserIds),
       this.repo.getShortlistedUserIds(userId),
     ]);
     const media = await this.repo.getActiveMediaByUserIds(
@@ -313,12 +395,15 @@ export class MatchService {
       return this.repo.getProfileByUserId(targetUserId);
     }
 
-    const [profile, privacy, match, media] = await Promise.all([
-      this.repo.getProfileByUserId(targetUserId),
-      this.settingsService.getPrivacy(targetUserId),
-      this.repo.getMatchBetweenUsers(viewerId, targetUserId),
-      this.repo.getActiveMediaByUserId(targetUserId),
-    ]);
+    const [profile, privacy, match, media, sentInterest, receivedInterest] =
+      await Promise.all([
+        this.repo.getProfileByUserId(targetUserId),
+        this.settingsService.getPrivacy(targetUserId),
+        this.repo.getMatchBetweenUsers(viewerId, targetUserId),
+        this.repo.getActiveMediaByUserId(targetUserId),
+        this.repo.getExistingInterest(viewerId, targetUserId),
+        this.repo.getExistingInterest(targetUserId, viewerId),
+      ]);
 
     if (!profile) {
       throw new NotFoundException('Profile not found');
@@ -382,6 +467,17 @@ export class MatchService {
         showPhone: Boolean(privacy?.showPhone && isMatched),
         showEmail: Boolean(privacy?.showEmail && isMatched),
         showIncome: Boolean(privacy?.showIncome && canViewPersonalDetails),
+      },
+      relationship: {
+        isMatched,
+        interestId:
+          sentInterest?._id.toString() ?? receivedInterest?._id.toString(),
+        interestStatus: sentInterest?.status ?? receivedInterest?.status,
+        interestDirection: sentInterest
+          ? 'sent'
+          : receivedInterest
+            ? 'received'
+            : undefined,
       },
     };
   }

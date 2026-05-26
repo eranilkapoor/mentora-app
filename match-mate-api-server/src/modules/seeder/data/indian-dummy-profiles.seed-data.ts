@@ -559,7 +559,7 @@ export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
     ['Thiruvananthapuram', 'Kerala', [76.9366, 8.5241]],
   ] as [string, string, [number, number]][],
 
-  castes: [Caste.GENERAL, Caste.OBC, Caste.SC, Caste.ST],
+  castes: [Caste.GENERAL, Caste.OBC, Caste.SC],
 
   complexions: [Complexion.FAIR, Complexion.WHEATISH, Complexion.DARK],
 

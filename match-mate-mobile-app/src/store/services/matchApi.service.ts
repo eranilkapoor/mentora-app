@@ -4,6 +4,7 @@ import {
   Caste,
   Country,
   MaritalStatus,
+  OccupationType,
   Qualification,
   Religion,
 } from '@/core/types';
@@ -67,21 +68,29 @@ export interface DiscoveryProfile {
     showEmail?: boolean;
     showIncome?: boolean;
   };
+  relationship?: {
+    isMatched?: boolean;
+    interestId?: string;
+    interestStatus?: 'pending' | 'accepted' | 'rejected';
+    interestDirection?: 'sent' | 'received';
+  };
 }
 
 export interface MatchRecord {
   _id: string;
   userId: string;
   targetUserId: string;
+  matchedUserId?: string;
   matchedOn?: string;
   isActive?: boolean;
+  profile?: DiscoveryProfile;
 }
 
 export interface InterestRecord {
   _id: string;
   senderId: string;
   receiverId: string;
-  status: 'PENDING' | 'ACCEPTED' | 'REJECTED';
+  status: 'pending' | 'accepted' | 'rejected';
   createdAt?: string;
   profile?: DiscoveryProfile;
 }
@@ -102,6 +111,25 @@ type PaginatedResponse<T> = ApiResponse<T[]> & {
 
 export type MatchTab = 'recommended' | 'new' | 'online' | 'nearby';
 
+export interface DiscoveryProfileQuery {
+  type: MatchTab;
+  page?: number;
+  limit?: number;
+  radiusKm?: number;
+  search?: string;
+  minAge?: number;
+  maxAge?: number;
+  minHeight?: number;
+  maxHeight?: number;
+  city?: string;
+  state?: string;
+  religion?: Religion;
+  caste?: Caste;
+  qualification?: Qualification;
+  occupationType?: OccupationType;
+  verifiedOnly?: boolean;
+}
+
 const discoveryPath: Record<MatchTab, string> = {
   recommended: '/match/recommended',
   new: '/match/new',
@@ -109,30 +137,56 @@ const discoveryPath: Record<MatchTab, string> = {
   nearby: '/match/nearby',
 };
 
+const matchListTags = [
+  { type: 'Match' as const, id: 'DISCOVERY' },
+  { type: 'Match' as const, id: 'MY' },
+  { type: 'Match' as const, id: 'INTERESTS' },
+];
+
 export const matchApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getDiscoveryProfiles: builder.query<
       PaginatedResponse<DiscoveryProfile>,
-      { type: MatchTab; page?: number; limit?: number; radiusKm?: number }
+      DiscoveryProfileQuery
     >({
-      query: ({ type, page = 1, limit = 20, radiusKm }) => ({
-        url: discoveryPath[type],
-        method: 'GET',
-        params: {
+      query: ({ type, page = 1, limit = 20, radiusKm, ...filters }) => {
+        const params = Object.entries({
           page,
           limit,
           ...(type === 'nearby' && radiusKm ? { radiusKm } : {}),
-        },
-      }),
-      providesTags: ['Match'],
+          ...filters,
+        }).reduce<Record<string, string | number | boolean>>(
+          (acc, [key, value]) => {
+            if (value !== undefined && value !== null && value !== '') {
+              acc[key] = value;
+            }
+            return acc;
+          },
+          {}
+        );
+
+        return {
+          url: discoveryPath[type],
+          method: 'GET',
+          params,
+        };
+      },
+      providesTags: [{ type: 'Match', id: 'DISCOVERY' }],
     }),
 
-    getMyMatches: builder.query<PaginatedResponse<MatchRecord>, void>({
-      query: () => ({
+    getMyMatches: builder.query<
+      PaginatedResponse<MatchRecord>,
+      { page?: number; limit?: number } | void
+    >({
+      query: (params) => ({
         url: '/match/my',
         method: 'GET',
+        params: {
+          page: params?.page ?? 1,
+          limit: params?.limit ?? 10,
+        },
       }),
-      providesTags: ['Match'],
+      providesTags: [{ type: 'Match', id: 'MY' }],
     }),
 
     getShortlistedProfiles: builder.query<
@@ -147,7 +201,7 @@ export const matchApi = baseApi.injectEndpoints({
           limit: params?.limit ?? 30,
         },
       }),
-      providesTags: ['Shortlist', 'Match'],
+      providesTags: ['Shortlist'],
     }),
 
     getMatchProfile: builder.query<ApiResponse<DiscoveryProfile>, string>({
@@ -172,7 +226,7 @@ export const matchApi = baseApi.injectEndpoints({
           limit: params?.limit ?? 20,
         },
       }),
-      providesTags: ['Match'],
+      providesTags: [{ type: 'Match', id: 'INTERESTS' }],
     }),
 
     getSentInterests: builder.query<
@@ -187,7 +241,7 @@ export const matchApi = baseApi.injectEndpoints({
           limit: params?.limit ?? 20,
         },
       }),
-      providesTags: ['Match'],
+      providesTags: [{ type: 'Match', id: 'INTERESTS' }],
     }),
 
     sendInterest: builder.mutation<unknown, { receiverId: string }>({
@@ -196,7 +250,7 @@ export const matchApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Match'],
+      invalidatesTags: matchListTags,
     }),
 
     shortlistProfile: builder.mutation<unknown, { userId: string }>({
@@ -224,7 +278,7 @@ export const matchApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['Match'],
+      invalidatesTags: matchListTags,
     }),
 
     withdrawInterest: builder.mutation<unknown, { interestId: string }>({
@@ -232,7 +286,7 @@ export const matchApi = baseApi.injectEndpoints({
         url: `/match/interest/${interestId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Match'],
+      invalidatesTags: [{ type: 'Match', id: 'INTERESTS' }],
     }),
   }),
 

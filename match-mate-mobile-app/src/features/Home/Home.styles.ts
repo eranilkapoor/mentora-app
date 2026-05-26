@@ -11,6 +11,11 @@ export const homeStyles = (theme: Theme) =>
     listContent: {
       paddingBottom: 32,
     },
+    listFooter: {
+      paddingVertical: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
     // ─── Welcome Banner ───────────────────────────────────────────────────
     welcomeBanner: {
@@ -271,7 +276,7 @@ export const homeStyles = (theme: Theme) =>
       gap: 10,
     },
     chatBtn: {
-      flex: 2,
+      flex: 1,
       flexDirection: 'row',
       backgroundColor: theme.colors.primary,
       paddingVertical: 12,
@@ -281,13 +286,16 @@ export const homeStyles = (theme: Theme) =>
       gap: 6,
       elevation: 3,
     },
+    chatBtnPending: {
+      backgroundColor: theme.colors.error,
+    },
     chatText: {
       color: theme.colors.white,
       fontWeight: '700',
       fontSize: 14,
     },
     viewBtn: {
-      flex: 2,
+      flex: 1,
       flexDirection: 'row',
       borderWidth: 1.5,
       borderColor: theme.colors.primary,
@@ -303,7 +311,7 @@ export const homeStyles = (theme: Theme) =>
       fontSize: 14,
     },
     shortlistBtn: {
-      width: 46,
+      width: 44,
       borderRadius: 12,
       borderWidth: 1.5,
       borderColor: theme.colors.accent,
@@ -313,6 +321,7 @@ export const homeStyles = (theme: Theme) =>
     },
     shortlistBtnActive: {
       backgroundColor: theme.colors.accent,
+      borderColor: theme.colors.accent,
     },
 
     // ─── Skeleton ─────────────────────────────────────────────────────────

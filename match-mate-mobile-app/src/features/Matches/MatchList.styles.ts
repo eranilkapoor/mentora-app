@@ -69,12 +69,21 @@ export const matchListStyles = (theme: Theme) =>
     // ─── Search ───────────────────────────────────────────────────────────
     searchWrapper: {
       paddingHorizontal: 16,
-      paddingVertical: 10,
+      paddingTop: 12,
+      paddingBottom: 14,
       backgroundColor: theme.colors.white,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
+      marginBottom: 12,
+    },
+    searchHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      marginBottom: 10,
     },
     searchBox: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: 12,
@@ -85,6 +94,38 @@ export const matchListStyles = (theme: Theme) =>
       borderColor: theme.colors.divider,
       height: 42,
     },
+    filterToggle: {
+      width: 42,
+      height: 42,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: theme.colors.primary,
+      backgroundColor: theme.colors.white,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    filterToggleActive: {
+      backgroundColor: theme.colors.primary,
+    },
+    filterCountBadge: {
+      position: 'absolute',
+      top: -6,
+      right: -6,
+      minWidth: 18,
+      height: 18,
+      borderRadius: 9,
+      paddingHorizontal: 4,
+      backgroundColor: theme.colors.error,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: theme.colors.white,
+    },
+    filterCountText: {
+      color: theme.colors.white,
+      fontSize: 10,
+      fontWeight: '800',
+    },
     searchInput: {
       flex: 1,
       fontSize: 14,
@@ -92,6 +133,105 @@ export const matchListStyles = (theme: Theme) =>
     },
 
     // ─── Results Bar ──────────────────────────────────────────────────────
+    resultsBarCompact: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: 8,
+    },
+    clearFiltersText: {
+      color: theme.colors.primary,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    filterPanel: {
+      gap: 14,
+      padding: 14,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.white,
+    },
+    filterPanelHeader: {
+      gap: 3,
+    },
+    filterPanelTitle: {
+      color: theme.colors.textPrimary,
+      fontSize: 14,
+      fontWeight: '800',
+    },
+    filterPanelSubtitle: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+    },
+    filterSection: {
+      gap: 8,
+    },
+    filterInputBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      height: 46,
+      paddingHorizontal: 12,
+      gap: 8,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.white,
+    },
+    filterLabel: {
+      color: theme.colors.textPrimary,
+      fontSize: 13,
+      fontWeight: '700',
+    },
+    filterChipRow: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 8,
+    },
+    filterChip: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.white,
+    },
+    filterChipActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    filterChipText: {
+      color: theme.colors.textSecondary,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    filterChipTextActive: {
+      color: theme.colors.white,
+    },
+    verifiedToggle: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      alignSelf: 'flex-start',
+      gap: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 9,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.white,
+    },
+    verifiedToggleActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    verifiedToggleText: {
+      color: theme.colors.textSecondary,
+      fontSize: 12,
+      fontWeight: '700',
+    },
+    verifiedToggleTextActive: {
+      color: theme.colors.white,
+    },
     resultsBar: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -239,6 +379,12 @@ export const matchListStyles = (theme: Theme) =>
       paddingVertical: 12,
       elevation: 3,
     },
+    primaryBtnPending: {
+      backgroundColor: theme.colors.error,
+    },
+    primaryBtnSuccess: {
+      backgroundColor: theme.colors.success,
+    },
     primaryText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
     shortlistBtn: {
       width: 44,
@@ -251,6 +397,7 @@ export const matchListStyles = (theme: Theme) =>
     },
     shortlistBtnActive: {
       backgroundColor: theme.colors.accent,
+      borderColor: theme.colors.accent,
     },
 
     // ─── Skeleton ─────────────────────────────────────────────────────────
@@ -276,6 +423,11 @@ export const matchListStyles = (theme: Theme) =>
     },
     skeletonLineShort: { width: '55%' },
     skeletonLineXShort: { width: '35%' },
+    listFooter: {
+      paddingVertical: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
     // ─── Empty ────────────────────────────────────────────────────────────
     emptyContainer: {

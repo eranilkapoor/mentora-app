@@ -55,6 +55,11 @@ interface RegisterRequestContext {
   device?: string;
 }
 
+interface ApplyUpdateOptions {
+  notifyUser?: boolean;
+  trackProfileUpdatedAnalytics?: boolean;
+}
+
 @Injectable()
 export class ProfileService {
   constructor(
@@ -178,6 +183,10 @@ export class ProfileService {
         lastActiveAt: new Date(),
       },
       'profile-location-update',
+      {
+        notifyUser: false,
+        trackProfileUpdatedAnalytics: false,
+      },
     );
   }
 
@@ -229,12 +238,6 @@ export class ProfileService {
         },
       );
       await this.cache.del(`profile:${userId}`);
-      void this.fireAnalytics(
-        req,
-        userId,
-        'profile-privacy-update',
-        dto as Record<string, unknown>,
-      );
       return updated;
     } catch (error) {
       throw new BadRequestException(
@@ -252,6 +255,7 @@ export class ProfileService {
     userId: string,
     dto: Partial<UpdateProfileDto> & Record<string, unknown>,
     source: string,
+    options: ApplyUpdateOptions = {},
   ) {
     try {
       const existing = await this.profileRepo.findByUserId(userId);
@@ -261,6 +265,18 @@ export class ProfileService {
         dto,
         existing as unknown as Record<string, unknown>,
       );
+      const changedFields = this.getChangedProfileFields(
+        existing as unknown as Record<string, unknown>,
+        normalized,
+      );
+
+      if (changedFields.length === 0) {
+        return this.withVerificationStatus(
+          userId,
+          this.enrichProfile(existing as unknown as Record<string, unknown>),
+        );
+      }
+
       const result = await this.profileRepo.update(userId, normalized);
       await this.cache.del(`profile:${userId}`);
 
@@ -274,8 +290,12 @@ export class ProfileService {
         ),
       );
 
-      void this.logActivity(req, userId, source, normalized);
-      void this.fireAnalytics(req, userId, source, normalized);
+      void this.logActivity(req, userId, source, normalized, changedFields);
+      void this.fireAnalytics(req, userId, source, changedFields, {
+        notifyUser: options.notifyUser ?? true,
+        trackProfileUpdatedAnalytics:
+          options.trackProfileUpdatedAnalytics ?? true,
+      });
 
       return enriched;
     } catch (error) {
@@ -569,6 +589,7 @@ export class ProfileService {
     userId: string,
     source: string,
     patch: Record<string, unknown>,
+    changedFields = Object.keys(patch),
   ) {
     await this.activityLogModel.create({
       userId,
@@ -582,7 +603,7 @@ export class ProfileService {
       platform: this.toActivityPlatform(
         this.getHeader(req, 'x-platform') ?? 'web',
       ),
-      metadata: { source, changedFields: Object.keys(patch) },
+      metadata: { source, changedFields },
     });
   }
 
@@ -590,29 +611,101 @@ export class ProfileService {
     req: AppRequest,
     userId: string,
     source: string,
-    patch: Record<string, unknown>,
+    changedFields: string[],
+    options: Required<ApplyUpdateOptions> = {
+      notifyUser: true,
+      trackProfileUpdatedAnalytics: true,
+    },
   ): void {
-    void Promise.allSettled([
-      this.notificationService.notify({
-        userId,
-        title: 'Profile updated',
-        message: 'Your profile details were updated successfully.',
-        type: 'system',
-        category: 'system',
-        channels: ['in_app', 'push'],
-        metadata: { source, changedFields: Object.keys(patch) },
-      }),
-      this.analyticsService.trackEvent({
-        userId,
-        eventType: AnalyticsEventType.PROFILE_UPDATED,
-        ipAddress: req.ip ?? this.getHeader(req, 'x-forwarded-for'),
-        userAgent: this.getHeader(req, 'user-agent'),
-        platform: this.toAnalyticsPlatform(
-          this.getHeader(req, 'x-platform') ?? 'web',
-        ),
-        metadata: { source, changedFields: Object.keys(patch) },
-      }),
-    ]);
+    const tasks: Array<Promise<unknown>> = [];
+
+    if (options.notifyUser) {
+      tasks.push(
+        this.notificationService.notify({
+          userId,
+          title: 'Profile updated',
+          message: 'Your profile details were updated successfully.',
+          type: 'system',
+          category: 'system',
+          channels: ['in_app', 'push'],
+          metadata: { source, changedFields },
+        }),
+      );
+    }
+
+    if (options.trackProfileUpdatedAnalytics) {
+      tasks.push(
+        this.analyticsService.trackEvent({
+          userId,
+          eventType: AnalyticsEventType.PROFILE_UPDATED,
+          ipAddress: req.ip ?? this.getHeader(req, 'x-forwarded-for'),
+          userAgent: this.getHeader(req, 'user-agent'),
+          platform: this.toAnalyticsPlatform(
+            this.getHeader(req, 'x-platform') ?? 'web',
+          ),
+          metadata: { source, changedFields },
+        }),
+      );
+    }
+
+    void Promise.allSettled(tasks);
+  }
+
+  private getChangedProfileFields(
+    existing: Record<string, unknown>,
+    normalized: Record<string, unknown>,
+  ): string[] {
+    return Object.keys(normalized).filter((field) => {
+      if (this.isDerivedProfileField(field)) {
+        return false;
+      }
+
+      return !this.areProfileValuesEqual(existing[field], normalized[field]);
+    });
+  }
+
+  private isDerivedProfileField(field: string): boolean {
+    return [
+      'lastActiveAt',
+      'profileCompletionPercentage',
+      'profileScore',
+      'searchTags',
+    ].includes(field);
+  }
+
+  private areProfileValuesEqual(left: unknown, right: unknown): boolean {
+    return this.stableProfileValue(left) === this.stableProfileValue(right);
+  }
+
+  private stableProfileValue(value: unknown): string {
+    return JSON.stringify(this.normalizeProfileValue(value));
+  }
+
+  private normalizeProfileValue(value: unknown): unknown {
+    if (value instanceof Date) {
+      return value.toISOString();
+    }
+
+    if (value instanceof Types.ObjectId) {
+      return value.toString();
+    }
+
+    if (Array.isArray(value)) {
+      return value.map((item) => this.normalizeProfileValue(item));
+    }
+
+    if (value && typeof value === 'object') {
+      return Object.keys(value as Record<string, unknown>)
+        .sort()
+        .reduce<Record<string, unknown>>((acc, key) => {
+          acc[key] = this.normalizeProfileValue(
+            (value as Record<string, unknown>)[key],
+          );
+          return acc;
+        }, {});
+    }
+
+    return value;
   }
 
   private getHeader(req: AppRequest, key: string): string | undefined {

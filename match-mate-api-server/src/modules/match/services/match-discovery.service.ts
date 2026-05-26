@@ -3,8 +3,12 @@ import { Types } from 'mongoose';
 import { FilterQuery } from 'mongoose';
 import { ProfileDocument } from 'src/modules/profile/schemas/profile/profile.schema';
 import { ProfileStatus, Gender } from 'src/common/enums';
-import { MatchDiscoveryRepository } from '../repositories/match-discovery.repository';
+import {
+  LeanProfile,
+  MatchDiscoveryRepository,
+} from '../repositories/match-discovery.repository';
 import { MatchQueryDto, NearbyQueryDto } from '../dto/match-query.dto';
+import { SettingsService } from 'src/modules/settings/services/settings.service';
 
 // ─── Scoring weights default (overridden by user preference weights) ──────────
 
@@ -22,7 +26,10 @@ const DEFAULT_WEIGHTS = {
 
 @Injectable()
 export class MatchDiscoveryService {
-  constructor(private readonly discoveryRepo: MatchDiscoveryRepository) {}
+  constructor(
+    private readonly discoveryRepo: MatchDiscoveryRepository,
+    private readonly settingsService: SettingsService,
+  ) {}
 
   // ─── Recommended matches ───────────────────────────────────────────────────
 
@@ -41,6 +48,7 @@ export class MatchDiscoveryService {
       preference,
       myProfile,
     );
+    this.applyQueryFilters(filter, query);
 
     const { profiles, total } = await this.discoveryRepo.findProfiles(
       filter,
@@ -52,7 +60,7 @@ export class MatchDiscoveryService {
     const weights =
       (preference?.weights as Record<string, number>) ?? DEFAULT_WEIGHTS;
 
-    const scored = profiles
+    const scored = (await this.withImages(profiles))
       .map((p) => ({
         ...p,
         matchScore: this.calculateMatchScore(p, preference, weights),
@@ -87,6 +95,7 @@ export class MatchDiscoveryService {
       ...baseFilter,
       createdAt: { $gte: thirtyDaysAgo },
     };
+    this.applyQueryFilters(filter, query);
 
     let { profiles, total } = await this.discoveryRepo.findProfiles(
       filter,
@@ -96,6 +105,7 @@ export class MatchDiscoveryService {
     );
 
     if (total === 0) {
+      this.applyQueryFilters(baseFilter, query);
       const fallback = await this.discoveryRepo.findProfiles(
         baseFilter,
         skip,
@@ -107,7 +117,13 @@ export class MatchDiscoveryService {
       total = fallback.total;
     }
 
-    return this.paginate(profiles, total, skip, limit, query.page ?? 1);
+    return this.paginate(
+      await this.withImages(profiles),
+      total,
+      skip,
+      limit,
+      query.page ?? 1,
+    );
   }
 
   // ─── Nearby matches — geo-based ───────────────────────────────────────────
@@ -141,6 +157,7 @@ export class MatchDiscoveryService {
       oppositeGender,
       interactedIds,
     );
+    this.applyQueryFilters(baseFilter, query);
 
     const { profiles, total } = await this.discoveryRepo.findNearbyProfiles(
       baseFilter,
@@ -150,7 +167,13 @@ export class MatchDiscoveryService {
       limit,
     );
 
-    return this.paginate(profiles, total, skip, limit, query.page ?? 1);
+    return this.paginate(
+      await this.withImages(profiles),
+      total,
+      skip,
+      limit,
+      query.page ?? 1,
+    );
   }
 
   // ─── Build base filter (gender + exclusions + active status) ─────────────
@@ -174,6 +197,7 @@ export class MatchDiscoveryService {
       ),
       lastActiveAt: { $gte: onlineSince },
     };
+    this.applyQueryFilters(filter, query);
 
     const { profiles, total } = await this.discoveryRepo.findProfiles(
       filter,
@@ -182,7 +206,13 @@ export class MatchDiscoveryService {
       { lastActiveAt: -1 },
     );
 
-    return this.paginate(profiles, total, skip, limit, query.page ?? 1);
+    return this.paginate(
+      await this.withImages(profiles),
+      total,
+      skip,
+      limit,
+      query.page ?? 1,
+    );
   }
 
   private buildBaseFilter(
@@ -327,9 +357,9 @@ export class MatchDiscoveryService {
       filter['personal.drinking'] = { $in: drinkingFilter };
     }
 
-    const dietFilter = filters?.diet as string[] | undefined;
-    if (dietFilter?.length) {
-      filter['personal.diet'] = { $in: dietFilter };
+    const eatingFilter = filters?.eating as string[] | undefined;
+    if (eatingFilter?.length) {
+      filter['personal.eating'] = { $in: eatingFilter };
     }
 
     // ── Strict mode — only verified profiles ──────────────────────────────────
@@ -476,7 +506,7 @@ export class MatchDiscoveryService {
     // Lifestyle match
     const smokingFilter = filters?.smoking as string[] | undefined;
     const drinkingFilter = filters?.drinking as string[] | undefined;
-    const dietFilter = filters?.diet as string[] | undefined;
+    const eatingFilter = filters?.eating as string[] | undefined;
 
     let lifestyleScore = 0;
     let lifestyleChecks = 0;
@@ -493,8 +523,10 @@ export class MatchDiscoveryService {
         : 0;
       lifestyleChecks++;
     }
-    if (dietFilter?.length && personal?.diet) {
-      lifestyleScore += dietFilter.includes(personal.diet as string) ? 1 : 0;
+    if (eatingFilter?.length && personal?.eating) {
+      lifestyleScore += eatingFilter.includes(personal.eating as string)
+        ? 1
+        : 0;
       lifestyleChecks++;
     }
 
@@ -527,11 +559,13 @@ export class MatchDiscoveryService {
   }
 
   private async resolveContext(userId: string, query: MatchQueryDto) {
-    const [myProfile, preference, interactedIds] = await Promise.all([
-      this.discoveryRepo.getProfile(userId),
-      this.discoveryRepo.getPreference(userId),
-      this.discoveryRepo.getInteractedUserIds(userId),
-    ]);
+    const [myProfile, preference, interactedIds, blockedUserIds] =
+      await Promise.all([
+        this.discoveryRepo.getProfile(userId),
+        this.discoveryRepo.getPreference(userId),
+        this.discoveryRepo.getInteractedUserIds(userId),
+        this.settingsService.getBlockedRelationUserIds(userId),
+      ]);
 
     if (!myProfile) {
       throw new BadRequestException(
@@ -546,11 +580,119 @@ export class MatchDiscoveryService {
     return {
       myProfile: myProfile as unknown as Record<string, unknown>,
       preference: preference as unknown as Record<string, unknown> | null,
-      interactedIds,
+      interactedIds: this.uniqueObjectIds([
+        ...interactedIds,
+        ...blockedUserIds.map((id) => new Types.ObjectId(id)),
+      ]),
       page,
       limit,
       skip,
     };
+  }
+
+  private uniqueObjectIds(ids: Types.ObjectId[]): Types.ObjectId[] {
+    return [...new Map(ids.map((id) => [id.toString(), id])).values()];
+  }
+
+  private applyQueryFilters(
+    filter: FilterQuery<ProfileDocument>,
+    query: MatchQueryDto,
+  ): void {
+    const andConditions = filter.$and ?? [];
+
+    const search = query.search?.trim();
+    if (search) {
+      const regex = new RegExp(this.escapeRegex(search), 'i');
+      andConditions.push({
+        $or: [
+          { 'personal.firstName': regex },
+          { 'personal.lastName': regex },
+          { 'personal.city': regex },
+          { 'personal.state': regex },
+          { 'education.occupation': regex },
+          { 'education.jobRole': regex },
+          { 'education.companyName': regex },
+        ],
+      });
+    }
+
+    if (query.minAge || query.maxAge) {
+      filter.age = {
+        ...((filter.age as Record<string, number>) ?? {}),
+        ...(query.minAge ? { $gte: query.minAge } : {}),
+        ...(query.maxAge ? { $lte: query.maxAge } : {}),
+      };
+    }
+
+    if (query.minHeight || query.maxHeight) {
+      filter['physical.height'] = {
+        ...((filter['physical.height'] as Record<string, number>) ?? {}),
+        ...(query.minHeight ? { $gte: query.minHeight } : {}),
+        ...(query.maxHeight ? { $lte: query.maxHeight } : {}),
+      };
+    }
+
+    if (query.city?.trim()) {
+      filter['personal.city'] = new RegExp(
+        this.escapeRegex(query.city.trim()),
+        'i',
+      );
+    }
+
+    if (query.state?.trim()) {
+      filter['personal.state'] = new RegExp(
+        this.escapeRegex(query.state.trim()),
+        'i',
+      );
+    }
+
+    if (query.religion) {
+      filter['personal.religion'] = query.religion;
+    }
+
+    if (query.caste) {
+      filter['personal.caste'] = query.caste;
+    }
+
+    if (query.qualification) {
+      filter['education.qualification'] = query.qualification;
+    }
+
+    if (query.occupationType) {
+      filter['education.occupationType'] = query.occupationType;
+    }
+
+    if (query.verifiedOnly) {
+      filter.isVerified = true;
+    }
+
+    if (andConditions.length > 0) {
+      filter.$and = andConditions;
+    }
+  }
+
+  private async withImages<T extends LeanProfile>(
+    profiles: T[],
+  ): Promise<(T & { images: unknown[] })[]> {
+    const userIds = profiles.map((profile) => String(profile.userId));
+    const media = await this.discoveryRepo.getActiveMediaByUserIds(userIds);
+    const mediaByUserId = new Map<string, unknown[]>();
+
+    media.forEach((item) => {
+      const userId = String(item.userId);
+      const current = mediaByUserId.get(userId) ?? [];
+      current.push(item);
+      mediaByUserId.set(userId, current);
+    });
+
+    return profiles.map((profile) => ({
+      ...profile,
+      images: mediaByUserId.get(String(profile.userId)) ?? [],
+    }));
+  }
+
+  private escapeRegex(value: string): string {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   private paginate<T>(

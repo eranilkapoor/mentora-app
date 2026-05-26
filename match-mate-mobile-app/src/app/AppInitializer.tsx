@@ -6,20 +6,58 @@ import { setUser } from '@/store/slices/authSlice';
 import { useVerifyUserQuery } from '@/store/services/authApi';
 import { useUpdateProfileLocationMutation } from '@/store/services/profileApi.service';
 import Loader from '@/core/components/Loader';
+import { getDeviceId } from '@/core/utils/device';
+import { Storage } from '@/core/utils/storage';
 import i18n from '@/i18n';
 
 interface Props {
   children: React.ReactNode;
 }
 
+interface LocationSyncSnapshot {
+  latitude: number;
+  longitude: number;
+  deviceId: string;
+  syncedAt: number;
+}
+
+const LOCATION_SYNC_TTL_MS = 24 * 60 * 60 * 1000;
+const LOCATION_SYNC_DISTANCE_METERS = 2000;
+
+const getLocationSyncKey = (userId: string): string =>
+  `profile-location-sync:${userId}`;
+
+const toRadians = (value: number): number => (value * Math.PI) / 180;
+
+const distanceInMeters = (
+  from: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number }
+): number => {
+  const earthRadiusMeters = 6371000;
+  const dLat = toRadians(to.latitude - from.latitude);
+  const dLon = toRadians(to.longitude - from.longitude);
+  const fromLat = toRadians(from.latitude);
+  const toLat = toRadians(to.latitude);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(fromLat) *
+      Math.cos(toLat) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
+
 export default function AppInitializer({ children }: Props) {
   const dispatch = useAppDispatch();
   const accessToken = useAppSelector((s) => s.auth.accessToken);
+  const userId = useAppSelector((s) => s.auth.user?.userId);
   const lang = useAppSelector((s) => s.settings.language);
 
   const [langReady, setLangReady] = useState(false);
   const isFirstLoad = useRef(true);
-  const locationSyncedForToken = useRef<string | null>(null);
+  const locationSyncInFlight = useRef(false);
   const [updateProfileLocation] = useUpdateProfileLocationMutation();
 
   const { data, isLoading } = useVerifyUserQuery(undefined, {
@@ -64,16 +102,33 @@ export default function AppInitializer({ children }: Props) {
   }, [data, dispatch]);
 
   useEffect(() => {
-    if (!accessToken || locationSyncedForToken.current === accessToken) {
+    if (!accessToken || !userId || locationSyncInFlight.current) {
       return;
     }
 
     let isCancelled = false;
-    locationSyncedForToken.current = accessToken;
+    locationSyncInFlight.current = true;
 
     const syncLocation = async () => {
       try {
-        const permission = await Location.requestForegroundPermissionsAsync();
+        const deviceId = await getDeviceId();
+        const storageKey = getLocationSyncKey(userId);
+        const cached = await Storage.getItem<LocationSyncSnapshot>(storageKey);
+
+        const now = Date.now();
+        const sameDevice = cached?.deviceId === deviceId;
+        const isFresh =
+          cached !== null && now - cached.syncedAt < LOCATION_SYNC_TTL_MS;
+
+        if (sameDevice && isFresh) {
+          return;
+        }
+
+        let permission = await Location.getForegroundPermissionsAsync();
+        if (permission.status === Location.PermissionStatus.UNDETERMINED) {
+          permission = await Location.requestForegroundPermissionsAsync();
+        }
+
         if (permission.status !== Location.PermissionStatus.GRANTED) {
           return;
         }
@@ -86,14 +141,47 @@ export default function AppInitializer({ children }: Props) {
           return;
         }
 
-        await updateProfileLocation({
+        const nextLocation = {
           latitude: location.coords.latitude,
           longitude: location.coords.longitude,
+        };
+
+        const movedEnough =
+          !cached ||
+          !sameDevice ||
+          distanceInMeters(
+            {
+              latitude: cached.latitude,
+              longitude: cached.longitude,
+            },
+            nextLocation
+          ) >= LOCATION_SYNC_DISTANCE_METERS;
+
+        if (!movedEnough) {
+          await Storage.setItem<LocationSyncSnapshot>(storageKey, {
+            ...nextLocation,
+            deviceId,
+            syncedAt: now,
+          });
+          return;
+        }
+
+        await updateProfileLocation({
+          latitude: nextLocation.latitude,
+          longitude: nextLocation.longitude,
         }).unwrap();
+
+        await Storage.setItem<LocationSyncSnapshot>(storageKey, {
+          ...nextLocation,
+          deviceId,
+          syncedAt: now,
+        });
       } catch (error) {
         if (__DEV__) {
           console.warn('[AppInitializer] location sync failed:', error);
         }
+      } finally {
+        locationSyncInFlight.current = false;
       }
     };
 
@@ -101,8 +189,9 @@ export default function AppInitializer({ children }: Props) {
 
     return () => {
       isCancelled = true;
+      locationSyncInFlight.current = false;
     };
-  }, [accessToken, updateProfileLocation]);
+  }, [accessToken, updateProfileLocation, userId]);
 
   if (!langReady || (accessToken && isLoading)) {
     return <Loader fullScreen size="large" loadingText="App initializing..." />;

@@ -19,7 +19,7 @@ import { ListChatContactsDto } from '../dto/list-chat-contacts.dto';
 import { ListConversationsDto } from '../dto/list-conversations.dto';
 import { ListMessagesDto } from '../dto/list-messages.dto';
 import { MarkRoomReadDto } from '../dto/mark-room-read.dto';
-import { SendMessageDto } from '../dto/send-message.dto';
+import { SendMessageBodyDto, SendMessageDto } from '../dto/send-message.dto';
 import { UpdateRoomSettingsDto } from '../dto/update-room-settings.dto';
 import { SuccessCode } from 'src/common/constants';
 import { successResponse } from 'src/common/utils/response.util';
@@ -123,12 +123,12 @@ export class ChatController {
   async sendMessage(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,
-    @Body() dto: SendMessageDto,
+    @Body() dto: SendMessageBodyDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.sendMessage(req.user?.sub ?? '', {
       ...dto,
       roomId,
-    });
+    } satisfies SendMessageDto);
     return new ApiResponse(
       true,
       SuccessCode.CHAT_FETCHED,

@@ -3,8 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcryptjs';
-import * as fs from 'fs';
-import * as path from 'path';
 
 import { AppLogger } from 'src/common/logger/logger.service';
 
@@ -225,7 +223,6 @@ export class MasterSeederService implements OnApplicationBootstrap {
     const profiles = this.buildIndianDummyProfiles();
     const passwordHash = await bcrypt.hash('Test@125#', 10);
     const now = new Date();
-    const imageUrls = await this.ensureDummyProfileImages();
 
     const existingPhoneOwners = await this.userModel
       .find({
@@ -312,11 +309,11 @@ export class MasterSeederService implements OnApplicationBootstrap {
       const userId = userByEmail.get(profile.email);
       if (!userId) continue;
 
-      const isFemale = profile.gender === Gender.FEMALE;
-      const imageFilename = isFemale
-        ? 'seed-profile-female.png'
-        : 'seed-profile-male.png';
-      const imageUrl = isFemale ? imageUrls.female : imageUrls.male;
+      const imageFilename = `seed-profile-${profile.gender}-${profile.index}.jpg`;
+      const imageUrl = this.getSeedProfileImageUrl(
+        profile.gender,
+        profile.index,
+      );
       const phoneOwner = phoneOwnerByNumber.get(profile.phone);
       const canUsePhone = !phoneOwner || phoneOwner === profile.email;
 
@@ -396,8 +393,7 @@ export class MasterSeederService implements OnApplicationBootstrap {
               filename: imageFilename,
               url: imageUrl,
               thumbnailUrl: imageUrl,
-              mimeType: MimeType.IMAGE_PNG,
-              size: 112,
+              mimeType: MimeType.IMAGE_JPEG,
               isPrimary: true,
               status: MediaStatus.ACTIVE,
               isActive: true,
@@ -474,8 +470,9 @@ export class MasterSeederService implements OnApplicationBootstrap {
     ]);
 
     this.logger.log('✅ Indian dummy profiles seeded successfully', {
-      female: 50,
-      male: 50,
+      female: profiles.filter((profile) => profile.gender === Gender.FEMALE)
+        .length,
+      male: profiles.filter((profile) => profile.gender === Gender.MALE).length,
       total: profiles.length,
       password: 'Test@125#',
     });
@@ -494,10 +491,10 @@ export class MasterSeederService implements OnApplicationBootstrap {
     } = INDIAN_DUMMY_PROFILE_SEED_DATA;
 
     return seeds.map(({ gender, index }) => {
-      const localIndex = index % 50;
       const names = gender === Gender.FEMALE ? femaleNames : maleNames;
+      const localIndex = index % names.length;
       const [firstName, baseLastName] = names[localIndex % names.length];
-      const lastName = `${baseLastName}${Math.floor(localIndex / 10) || ''}`;
+      const lastName = baseLastName;
       const [city, state, coordinates] = cities[index % cities.length];
       const caste = castes[index % castes.length];
       const age = 18 + (index % 23);
@@ -693,32 +690,11 @@ export class MasterSeederService implements OnApplicationBootstrap {
     };
   }
 
-  private async ensureDummyProfileImages() {
-    const uploadDir = path.join(process.cwd(), 'uploads', 'profiles', 'images');
-    await fs.promises.mkdir(uploadDir, { recursive: true });
+  private getSeedProfileImageUrl(gender: Gender, index: number) {
+    const folder = gender === Gender.FEMALE ? 'women' : 'men';
+    const portraitId = index % 100;
 
-    const pngBase64 =
-      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/p9sAAAAASUVORK5CYII=';
-    const files = ['seed-profile-female.png', 'seed-profile-male.png'];
-
-    await Promise.all(
-      files.map(async (filename) => {
-        const filePath = path.join(uploadDir, filename);
-        if (!fs.existsSync(filePath)) {
-          await fs.promises.writeFile(
-            filePath,
-            Buffer.from(pngBase64, 'base64'),
-          );
-        }
-      }),
-    );
-
-    const baseUrl = this.configService.get<string>('api.baseUrl') ?? '';
-
-    return {
-      female: `${baseUrl}/uploads/profiles/images/seed-profile-female.png`,
-      male: `${baseUrl}/uploads/profiles/images/seed-profile-male.png`,
-    };
+    return `https://randomuser.me/api/portraits/${folder}/${portraitId}.jpg`;
   }
 
   // =========================================================

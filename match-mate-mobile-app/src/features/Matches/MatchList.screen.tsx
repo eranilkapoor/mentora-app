@@ -1,5 +1,6 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   Image,
@@ -20,23 +21,28 @@ import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { resolveApiUrl } from '@/core/utils/config';
+import { Caste } from '@/core/types';
 import { MatchesStackParamList } from '@/navigation/types';
 import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
 import {
   DiscoveryProfile,
+  InterestRecord,
+  MatchRecord,
   MatchTab,
   useGetDiscoveryProfilesQuery,
   useGetMyMatchesQuery,
   useGetReceivedInterestsQuery,
+  useGetSentInterestsQuery,
   useGetShortlistedProfilesQuery,
   useRemoveShortlistedProfileMutation,
   useRespondToInterestMutation,
   useSendInterestMutation,
   useShortlistProfileMutation,
+  useWithdrawInterestMutation,
 } from '@/store/services/matchApi.service';
 import { matchListStyles } from './MatchList.styles';
 
-type TabKey = MatchTab | 'requests' | 'shortlisted';
+type TabKey = MatchTab | 'matched' | 'requests' | 'shortlisted';
 
 interface Match {
   id: string;
@@ -53,6 +59,7 @@ interface Match {
   isNew: boolean;
   isMatched: boolean;
   isShortlisted: boolean;
+  isInterestPending: boolean;
   interestId?: string;
   requestStatus?: string;
 }
@@ -66,6 +73,39 @@ interface TabConfig {
 
 const FALLBACK_PHOTO =
   'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600';
+const FEED_PAGE_SIZE = 10;
+
+type AgeRangeKey = 'any' | '18-25' | '26-32' | '33-40';
+type CasteFilterKey = 'any' | Caste;
+
+const AGE_FILTERS: Array<{
+  key: AgeRangeKey;
+  label: string;
+  minAge?: number;
+  maxAge?: number;
+}> = [
+  { key: 'any', label: 'Any age' },
+  { key: '18-25', label: '18-25', minAge: 18, maxAge: 25 },
+  { key: '26-32', label: '26-32', minAge: 26, maxAge: 32 },
+  { key: '33-40', label: '33-40', minAge: 33, maxAge: 40 },
+];
+
+const CASTE_FILTERS: Array<{ key: CasteFilterKey; label: string }> = [
+  { key: 'any', label: 'Any caste' },
+  { key: 'general' as Caste, label: 'General' },
+  { key: 'obc' as Caste, label: 'OBC' },
+  { key: 'sc' as Caste, label: 'SC' },
+];
+
+const mergeByKey = <T,>(
+  current: T[],
+  next: T[],
+  getKey: (item: T) => string
+): T[] => {
+  const byKey = new Map(current.map((item) => [getKey(item), item]));
+  next.forEach((item) => byKey.set(getKey(item), item));
+  return [...byKey.values()];
+};
 
 const isOnline = (lastActiveAt?: string): boolean =>
   lastActiveAt
@@ -87,8 +127,10 @@ const mapMatch = (
   profile: DiscoveryProfile,
   matchedIds: Set<string>,
   shortlistedIds: Set<string>,
+  pendingInterestByUserId: Map<string, string>,
   t: (key: string, options: { defaultValue: string }) => string
 ): Match => {
+  const pendingInterestId = pendingInterestByUserId.get(profile.userId);
   const photo = profile.images
     ?.filter((image) => image.isActive !== false)
     .sort((a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary)))
@@ -125,9 +167,14 @@ const mapMatch = (
     avatarUrl: photo ?? FALLBACK_PHOTO,
     isOnline: isOnline(profile.lastActiveAt),
     isNew: isNew(profile.createdAt),
-    isMatched: matchedIds.has(profile.userId),
+    isMatched:
+      profile.relationship?.isMatched === true ||
+      profile.privacy?.isMatched === true ||
+      matchedIds.has(profile.userId),
     isShortlisted:
       profile.isShortlisted === true || shortlistedIds.has(profile.userId),
+    isInterestPending: pendingInterestByUserId.has(profile.userId),
+    ...(pendingInterestId ? { interestId: pendingInterestId } : {}),
   };
 };
 
@@ -152,6 +199,7 @@ const MatchCard = React.memo(function MatchCard({
   onShortlist,
   primaryLabel,
   primaryIcon,
+  primaryState,
 }: {
   item: Match;
   onViewProfile: () => void;
@@ -159,6 +207,7 @@ const MatchCard = React.memo(function MatchCard({
   onShortlist: () => void;
   primaryLabel?: string;
   primaryIcon?: string;
+  primaryState?: 'default' | 'pending' | 'success';
 }): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
@@ -233,7 +282,11 @@ const MatchCard = React.memo(function MatchCard({
             <Text style={styles.outlineText}>Profile</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={styles.primaryBtn}
+            style={[
+              styles.primaryBtn,
+              primaryState === 'pending' && styles.primaryBtnPending,
+              primaryState === 'success' && styles.primaryBtnSuccess,
+            ]}
             onPress={onPrimaryAction}
             activeOpacity={0.7}
             accessibilityRole="button"
@@ -286,40 +339,178 @@ export default function MatchListScreen({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [query, setQuery] = useState('');
+  const [showFilters, setShowFilters] = useState(false);
+  const [cityFilter, setCityFilter] = useState('');
+  const [ageFilter, setAgeFilter] = useState<AgeRangeKey>('any');
+  const [casteFilter, setCasteFilter] = useState<CasteFilterKey>('any');
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [page, setPage] = useState(1);
+  const [discoveryProfiles, setDiscoveryProfiles] = useState<
+    DiscoveryProfile[]
+  >([]);
+  const [acceptedMatchRecords, setAcceptedMatchRecords] = useState<
+    MatchRecord[]
+  >([]);
+  const [shortlistedProfileRecords, setShortlistedProfileRecords] = useState<
+    DiscoveryProfile[]
+  >([]);
+  const [receivedInterestRecords, setReceivedInterestRecords] = useState<
+    InterestRecord[]
+  >([]);
   const [refreshing, setRefreshing] = useState(false);
   const [activeTab, setActiveTab] = useState<TabKey>('recommended');
+  const selectedAgeFilter = useMemo(
+    () => AGE_FILTERS.find((item) => item.key === ageFilter),
+    [ageFilter]
+  );
+  const discoveryFilters = useMemo(
+    () => ({
+      ...(query.trim() ? { search: query.trim() } : {}),
+      ...(cityFilter.trim() ? { city: cityFilter.trim() } : {}),
+      ...(casteFilter === 'any' ? {} : { caste: casteFilter }),
+      ...(selectedAgeFilter?.minAge
+        ? { minAge: selectedAgeFilter.minAge }
+        : {}),
+      ...(selectedAgeFilter?.maxAge
+        ? { maxAge: selectedAgeFilter.maxAge }
+        : {}),
+      ...(verifiedOnly ? { verifiedOnly } : {}),
+    }),
+    [casteFilter, cityFilter, query, selectedAgeFilter, verifiedOnly]
+  );
+  const activeFilterCount = useMemo(
+    () =>
+      [
+        cityFilter.trim(),
+        ageFilter !== 'any',
+        casteFilter !== 'any',
+        verifiedOnly,
+      ].filter(Boolean).length,
+    [ageFilter, casteFilter, cityFilter, verifiedOnly]
+  );
   const { data, isLoading, isFetching, refetch } = useGetDiscoveryProfilesQuery(
     {
       type:
-        activeTab === 'requests' || activeTab === 'shortlisted'
+        activeTab === 'requests' ||
+        activeTab === 'shortlisted' ||
+        activeTab === 'matched'
           ? 'recommended'
           : activeTab,
-      limit: 30,
+      page,
+      limit: FEED_PAGE_SIZE,
       radiusKm: 100,
+      ...discoveryFilters,
     },
-    { skip: activeTab === 'requests' || activeTab === 'shortlisted' }
+    {
+      skip:
+        activeTab === 'requests' ||
+        activeTab === 'shortlisted' ||
+        activeTab === 'matched',
+    }
   );
-  const { data: myMatches, refetch: refetchMyMatches } = useGetMyMatchesQuery();
+  const {
+    data: myMatches,
+    isFetching: isFetchingMyMatches,
+    isLoading: isLoadingMyMatches,
+    refetch: refetchMyMatches,
+  } = useGetMyMatchesQuery(
+    { page, limit: FEED_PAGE_SIZE },
+    { skip: activeTab !== 'matched' }
+  );
   const {
     data: shortlistedProfiles,
     isLoading: isLoadingShortlisted,
     isFetching: isFetchingShortlisted,
     refetch: refetchShortlisted,
-  } = useGetShortlistedProfilesQuery({ limit: 100 });
+  } = useGetShortlistedProfilesQuery(
+    { page, limit: FEED_PAGE_SIZE },
+    { skip: activeTab !== 'shortlisted' }
+  );
+  const { data: shortlistedStatus, refetch: refetchShortlistedStatus } =
+    useGetShortlistedProfilesQuery(
+      { limit: 100 },
+      { skip: activeTab === 'shortlisted' }
+    );
+  const { data: sentInterests, refetch: refetchSentInterests } =
+    useGetSentInterestsQuery({ limit: 100 });
   const {
     data: receivedInterests,
     isLoading: isLoadingRequests,
     isFetching: isFetchingRequests,
     refetch: refetchReceivedInterests,
   } = useGetReceivedInterestsQuery(
-    { limit: 30 },
+    { page, limit: FEED_PAGE_SIZE },
     { skip: activeTab !== 'requests' }
   );
   const [sendInterest] = useSendInterestMutation();
   const [shortlistProfile] = useShortlistProfileMutation();
   const [removeShortlistedProfile] = useRemoveShortlistedProfileMutation();
   const [respondToInterest] = useRespondToInterestMutation();
+  const [withdrawInterest] = useWithdrawInterestMutation();
   const [createDirectRoom] = useCreateDirectRoomMutation();
+
+  useEffect(() => {
+    setPage(1);
+    setDiscoveryProfiles([]);
+    setAcceptedMatchRecords([]);
+    setShortlistedProfileRecords([]);
+    setReceivedInterestRecords([]);
+  }, [activeTab, ageFilter, casteFilter, cityFilter, query, verifiedOnly]);
+
+  useEffect(() => {
+    if (
+      !data?.data ||
+      activeTab === 'matched' ||
+      activeTab === 'shortlisted' ||
+      activeTab === 'requests'
+    ) {
+      return;
+    }
+
+    setDiscoveryProfiles((current) =>
+      page === 1
+        ? data.data
+        : mergeByKey(current, data.data, (profile) => profile.userId)
+    );
+  }, [activeTab, data, page]);
+
+  useEffect(() => {
+    if (!myMatches?.data || activeTab !== 'matched') return;
+
+    setAcceptedMatchRecords((current) =>
+      page === 1
+        ? myMatches.data
+        : mergeByKey(current, myMatches.data, (match) => match._id)
+    );
+  }, [activeTab, myMatches, page]);
+
+  useEffect(() => {
+    if (!shortlistedProfiles?.data || activeTab !== 'shortlisted') return;
+
+    setShortlistedProfileRecords((current) =>
+      page === 1
+        ? shortlistedProfiles.data
+        : mergeByKey(
+            current,
+            shortlistedProfiles.data,
+            (profile) => profile.userId
+          )
+    );
+  }, [activeTab, page, shortlistedProfiles]);
+
+  useEffect(() => {
+    if (!receivedInterests?.data || activeTab !== 'requests') return;
+
+    setReceivedInterestRecords((current) =>
+      page === 1
+        ? receivedInterests.data
+        : mergeByKey(
+            current,
+            receivedInterests.data,
+            (interest) => interest._id
+          )
+    );
+  }, [activeTab, page, receivedInterests]);
 
   const matchedIds = useMemo(() => {
     const ids = new Set<string>();
@@ -333,43 +524,103 @@ export default function MatchListScreen({
   const shortlistedIds = useMemo(
     () =>
       new Set(
-        (shortlistedProfiles?.data ?? []).map((profile) => profile.userId)
+        (activeTab === 'shortlisted'
+          ? shortlistedProfileRecords
+          : (shortlistedStatus?.data ?? [])
+        ).map((profile) => profile.userId)
       ),
-    [shortlistedProfiles]
+    [activeTab, shortlistedProfileRecords, shortlistedStatus]
   );
+
+  const pendingInterestByUserId = useMemo(() => {
+    const pending = new Map<string, string>();
+    sentInterests?.data?.forEach((interest) => {
+      if (interest.status === 'pending') {
+        pending.set(String(interest.receiverId), interest._id);
+      }
+    });
+    return pending;
+  }, [sentInterests]);
 
   const matches = useMemo(
     () =>
-      (data?.data ?? []).map((profile) =>
-        mapMatch(profile, matchedIds, shortlistedIds, t)
+      discoveryProfiles.map((profile) =>
+        mapMatch(
+          profile,
+          matchedIds,
+          shortlistedIds,
+          pendingInterestByUserId,
+          t
+        )
       ),
-    [data, matchedIds, shortlistedIds, t]
+    [discoveryProfiles, matchedIds, pendingInterestByUserId, shortlistedIds, t]
   );
 
   const shortlistedMatches = useMemo(
     () =>
-      (shortlistedProfiles?.data ?? []).map((profile) =>
-        mapMatch(profile, matchedIds, shortlistedIds, t)
+      shortlistedProfileRecords.map((profile) =>
+        mapMatch(
+          profile,
+          matchedIds,
+          shortlistedIds,
+          pendingInterestByUserId,
+          t
+        )
       ),
-    [matchedIds, shortlistedIds, shortlistedProfiles, t]
+    [
+      matchedIds,
+      pendingInterestByUserId,
+      shortlistedIds,
+      shortlistedProfileRecords,
+      t,
+    ]
+  );
+
+  const acceptedMatches = useMemo(
+    () =>
+      acceptedMatchRecords
+        .filter((match) => match.profile)
+        .map((match) =>
+          mapMatch(
+            match.profile as DiscoveryProfile,
+            matchedIds,
+            shortlistedIds,
+            pendingInterestByUserId,
+            t
+          )
+        ),
+    [
+      acceptedMatchRecords,
+      matchedIds,
+      pendingInterestByUserId,
+      shortlistedIds,
+      t,
+    ]
   );
 
   const requestMatches = useMemo(
     () =>
-      (receivedInterests?.data ?? [])
-        .filter((interest) => interest.status === 'PENDING' && interest.profile)
+      receivedInterestRecords
+        .filter((interest) => interest.status === 'pending' && interest.profile)
         .map((interest) => ({
           ...mapMatch(
             interest.profile as DiscoveryProfile,
             matchedIds,
             shortlistedIds,
+            pendingInterestByUserId,
             t
           ),
           id: String(interest.senderId),
           interestId: interest._id,
           requestStatus: interest.status,
         })),
-    [matchedIds, receivedInterests, shortlistedIds, t]
+    [
+      matchedIds,
+      pendingInterestByUserId,
+      receivedInterestRecords,
+      shortlistedIds,
+      t,
+    ]
   );
 
   const visibleMatches =
@@ -377,7 +628,36 @@ export default function MatchListScreen({
       ? requestMatches
       : activeTab === 'shortlisted'
         ? shortlistedMatches
-        : matches;
+        : activeTab === 'matched'
+          ? acceptedMatches
+          : matches;
+
+  const activeMeta =
+    activeTab === 'requests'
+      ? receivedInterests?.meta
+      : activeTab === 'shortlisted'
+        ? shortlistedProfiles?.meta
+        : activeTab === 'matched'
+          ? myMatches?.meta
+          : data?.meta;
+
+  const activeLoading =
+    activeTab === 'requests'
+      ? isLoadingRequests
+      : activeTab === 'shortlisted'
+        ? isLoadingShortlisted
+        : activeTab === 'matched'
+          ? isLoadingMyMatches
+          : isLoading;
+
+  const activeFetching =
+    activeTab === 'requests'
+      ? isFetchingRequests
+      : activeTab === 'shortlisted'
+        ? isFetchingShortlisted
+        : activeTab === 'matched'
+          ? isFetchingMyMatches
+          : isFetching;
 
   const filtered = useMemo(() => {
     if (!query.trim()) return visibleMatches;
@@ -417,6 +697,12 @@ export default function MatchListScreen({
         count: activeTab === 'nearby' ? matches.length : 0,
       },
       {
+        key: 'matched',
+        label: 'Matched',
+        icon: 'heart',
+        count: acceptedMatches.length,
+      },
+      {
         key: 'shortlisted',
         label: 'Shortlisted',
         icon: 'bookmark',
@@ -431,6 +717,7 @@ export default function MatchListScreen({
     ],
     [
       activeTab,
+      acceptedMatches.length,
       matches.length,
       requestMatches.length,
       shortlistedMatches.length,
@@ -439,19 +726,44 @@ export default function MatchListScreen({
 
   const onRefresh = useCallback(async (): Promise<void> => {
     setRefreshing(true);
-    await Promise.all([
-      activeTab === 'requests' ? refetchReceivedInterests() : refetch(),
-      refetchShortlisted(),
-      refetchMyMatches(),
-    ]);
-    setRefreshing(false);
+    setPage(1);
+
+    const activeRefetch =
+      activeTab === 'requests'
+        ? refetchReceivedInterests
+        : activeTab === 'shortlisted'
+          ? refetchShortlisted
+          : activeTab === 'matched'
+            ? refetchMyMatches
+            : refetch;
+
+    try {
+      await Promise.all([
+        ...(page === 1 ? [activeRefetch()] : []),
+        ...(activeTab === 'shortlisted' ? [] : [refetchShortlistedStatus()]),
+        refetchSentInterests(),
+      ]);
+    } finally {
+      setRefreshing(false);
+    }
   }, [
     activeTab,
+    page,
     refetch,
     refetchMyMatches,
     refetchReceivedInterests,
+    refetchSentInterests,
     refetchShortlisted,
+    refetchShortlistedStatus,
   ]);
+
+  const loadMore = useCallback(() => {
+    if (activeFetching || !activeMeta?.hasNextPage) {
+      return;
+    }
+
+    setPage((current) => current + 1);
+  }, [activeFetching, activeMeta?.hasNextPage]);
 
   const handlePrimaryAction = useCallback(
     async (item: Match): Promise<void> => {
@@ -472,6 +784,15 @@ export default function MatchListScreen({
       }
 
       if (!item.isMatched) {
+        if (item.isInterestPending && item.interestId) {
+          try {
+            await withdrawInterest({ interestId: item.interestId }).unwrap();
+          } catch {
+            Alert.alert('Interest not withdrawn', 'Please try again later.');
+          }
+          return;
+        }
+
         try {
           await sendInterest({ receiverId: item.id }).unwrap();
           Alert.alert('Interest sent', `${item.name} will be notified.`);
@@ -495,7 +816,13 @@ export default function MatchListScreen({
         );
       }
     },
-    [createDirectRoom, navigation, respondToInterest, sendInterest]
+    [
+      createDirectRoom,
+      navigation,
+      respondToInterest,
+      sendInterest,
+      withdrawInterest,
+    ]
   );
 
   const handleShortlist = useCallback(
@@ -528,44 +855,243 @@ export default function MatchListScreen({
           void handleShortlist(item);
         }}
         primaryLabel={
-          item.interestId ? 'Accept' : item.isMatched ? 'Chat' : 'Interest'
+          item.requestStatus
+            ? 'Accept'
+            : item.isMatched
+              ? 'Chat'
+              : item.isInterestPending
+                ? 'Withdraw'
+                : 'Interest'
         }
         primaryIcon={
-          item.interestId
+          item.requestStatus
             ? 'check'
             : item.isMatched
               ? 'message-circle'
-              : 'heart'
+              : item.isInterestPending
+                ? 'x-circle'
+                : 'heart'
+        }
+        primaryState={
+          item.isMatched
+            ? 'success'
+            : item.isInterestPending
+              ? 'pending'
+              : 'default'
         }
       />
     ),
     [handlePrimaryAction, handleShortlist, navigation]
   );
 
+  const clearFilters = useCallback(() => {
+    setCityFilter('');
+    setAgeFilter('any');
+    setCasteFilter('any');
+    setVerifiedOnly(false);
+  }, []);
+
   const ListHeader = useCallback(
     () => (
       <View style={styles.searchWrapper}>
-        <View style={styles.searchBox}>
-          <Feather name="search" size={16} color={theme.colors.textMuted} />
-          <TextInput
-            placeholder="Search by name, location, profession..."
-            placeholderTextColor={theme.colors.textMuted}
-            style={styles.searchInput}
-            value={query}
-            onChangeText={setQuery}
-            autoCapitalize="none"
-            autoCorrect={false}
-            returnKeyType="search"
-          />
-          {query.length > 0 && (
-            <TouchableOpacity onPress={() => setQuery('')}>
-              <Feather name="x" size={16} color={theme.colors.textMuted} />
+        <View style={styles.searchHeaderRow}>
+          <View style={styles.searchBox}>
+            <Feather name="search" size={16} color={theme.colors.textMuted} />
+            <TextInput
+              placeholder="Search name, city, profession"
+              placeholderTextColor={theme.colors.textMuted}
+              style={styles.searchInput}
+              value={query}
+              onChangeText={setQuery}
+              autoCapitalize="none"
+              autoCorrect={false}
+              returnKeyType="search"
+            />
+            {query.length > 0 && (
+              <TouchableOpacity
+                onPress={() => setQuery('')}
+                accessibilityRole="button"
+              >
+                <Feather name="x" size={16} color={theme.colors.textMuted} />
+              </TouchableOpacity>
+            )}
+          </View>
+
+          <TouchableOpacity
+            style={[
+              styles.filterToggle,
+              showFilters && styles.filterToggleActive,
+            ]}
+            onPress={() => setShowFilters((current) => !current)}
+            accessibilityRole="button"
+          >
+            <Feather
+              name="sliders"
+              size={16}
+              color={showFilters ? theme.colors.white : theme.colors.primary}
+            />
+            {activeFilterCount > 0 && (
+              <View style={styles.filterCountBadge}>
+                <Text style={styles.filterCountText}>{activeFilterCount}</Text>
+              </View>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.resultsBarCompact}>
+          <Text style={styles.resultsText}>
+            <Text style={styles.resultsHighlight}>{filtered.length}</Text>{' '}
+            profiles found
+          </Text>
+          {activeFilterCount > 0 && (
+            <TouchableOpacity onPress={clearFilters} accessibilityRole="button">
+              <Text style={styles.clearFiltersText}>Clear filters</Text>
             </TouchableOpacity>
           )}
         </View>
+
+        {showFilters && (
+          <View style={styles.filterPanel}>
+            <View style={styles.filterPanelHeader}>
+              <Text style={styles.filterPanelTitle}>Discovery filters</Text>
+              <Text style={styles.filterPanelSubtitle}>
+                Refine profiles without changing your saved preferences.
+              </Text>
+            </View>
+
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>City</Text>
+              <View style={styles.filterInputBox}>
+                <Feather
+                  name="map-pin"
+                  size={16}
+                  color={theme.colors.textMuted}
+                />
+                <TextInput
+                  placeholder="Search city"
+                  placeholderTextColor={theme.colors.textMuted}
+                  style={styles.searchInput}
+                  value={cityFilter}
+                  onChangeText={setCityFilter}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                  returnKeyType="search"
+                />
+                {cityFilter.length > 0 && (
+                  <TouchableOpacity onPress={() => setCityFilter('')}>
+                    <Feather
+                      name="x"
+                      size={16}
+                      color={theme.colors.textMuted}
+                    />
+                  </TouchableOpacity>
+                )}
+              </View>
+            </View>
+
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>Age range</Text>
+              <View style={styles.filterChipRow}>
+                {AGE_FILTERS.map((item) => {
+                  const selected = ageFilter === item.key;
+                  return (
+                    <TouchableOpacity
+                      key={item.key}
+                      style={[
+                        styles.filterChip,
+                        selected && styles.filterChipActive,
+                      ]}
+                      onPress={() => setAgeFilter(item.key)}
+                      accessibilityRole="button"
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          selected && styles.filterChipTextActive,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            <View style={styles.filterSection}>
+              <Text style={styles.filterLabel}>Caste</Text>
+              <View style={styles.filterChipRow}>
+                {CASTE_FILTERS.map((item) => {
+                  const selected = casteFilter === item.key;
+                  return (
+                    <TouchableOpacity
+                      key={item.key}
+                      style={[
+                        styles.filterChip,
+                        selected && styles.filterChipActive,
+                      ]}
+                      onPress={() => setCasteFilter(item.key)}
+                      accessibilityRole="button"
+                    >
+                      <Text
+                        style={[
+                          styles.filterChipText,
+                          selected && styles.filterChipTextActive,
+                        ]}
+                      >
+                        {item.label}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </View>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.verifiedToggle,
+                verifiedOnly && styles.verifiedToggleActive,
+              ]}
+              onPress={() => setVerifiedOnly((current) => !current)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: verifiedOnly }}
+            >
+              <Feather
+                name={verifiedOnly ? 'check-circle' : 'circle'}
+                size={16}
+                color={
+                  verifiedOnly ? theme.colors.white : theme.colors.textSecondary
+                }
+              />
+              <Text
+                style={[
+                  styles.verifiedToggleText,
+                  verifiedOnly && styles.verifiedToggleTextActive,
+                ]}
+              >
+                Verified profiles only
+              </Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     ),
-    [query, styles, theme.colors.textMuted]
+    [
+      activeFilterCount,
+      ageFilter,
+      casteFilter,
+      cityFilter,
+      clearFilters,
+      filtered.length,
+      query,
+      showFilters,
+      styles,
+      theme.colors.primary,
+      theme.colors.textMuted,
+      theme.colors.textSecondary,
+      theme.colors.white,
+      verifiedOnly,
+    ]
   );
 
   return (
@@ -573,9 +1099,13 @@ export default function MatchListScreen({
       <Header
         title="Matches"
         subtitle="Recommended, new, online and nearby profiles"
-        enableSearch
-        searchPlaceholder="Search by name, city..."
-        actions={[{ icon: 'filter', onPress: () => {} }]}
+        actions={[
+          {
+            icon: 'filter',
+            badge: activeFilterCount > 0,
+            onPress: () => setShowFilters((current) => !current),
+          },
+        ]}
       />
 
       <View style={styles.tabsWrapper}>
@@ -626,13 +1156,7 @@ export default function MatchListScreen({
         </ScrollView>
       </View>
 
-      {(
-        activeTab === 'requests'
-          ? isLoadingRequests
-          : activeTab === 'shortlisted'
-            ? isLoadingShortlisted
-            : isLoading
-      ) ? (
+      {activeLoading ? (
         <>
           <ListHeader />
           {[1, 2].map((i) => (
@@ -660,18 +1184,20 @@ export default function MatchListScreen({
               </Text>
             </View>
           }
+          ListFooterComponent={
+            activeFetching && page > 1 ? (
+              <View style={styles.listFooter}>
+                <ActivityIndicator size="small" color={theme.colors.primary} />
+              </View>
+            ) : null
+          }
           contentContainerStyle={styles.listContent}
           showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.35}
           refreshControl={
             <RefreshControl
-              refreshing={
-                refreshing ||
-                (activeTab === 'requests'
-                  ? isFetchingRequests
-                  : activeTab === 'shortlisted'
-                    ? isFetchingShortlisted
-                    : isFetching)
-              }
+              refreshing={refreshing || activeFetching}
               onRefresh={onRefresh}
               colors={[theme.colors.primary]}
               tintColor={theme.colors.primary}

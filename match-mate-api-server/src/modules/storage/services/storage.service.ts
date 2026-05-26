@@ -14,6 +14,7 @@ export class StorageService {
   private readonly bucket: string;
   private readonly s3BaseUrl: string;
   private readonly apiBaseUrl: string;
+  private readonly publicBaseUrl: string;
 
   constructor(
     private readonly configService: ConfigService,
@@ -26,6 +27,7 @@ export class StorageService {
       'storage.awsS3BaseUrl',
     );
     this.apiBaseUrl = this.configService.getOrThrow<string>('api.baseUrl');
+    this.publicBaseUrl = this.apiBaseUrl.replace(/\/api(?:\/v\d+)?\/?$/i, '');
 
     if (this.isS3) {
       this.s3Client = new S3Client({
@@ -83,7 +85,7 @@ export class StorageService {
     if (this.isS3) {
       return `${this.s3BaseUrl}/${folder}/${filename}`;
     }
-    return `${this.apiBaseUrl}/uploads/${folder}/${filename}`;
+    return `${this.publicBaseUrl}/uploads/${folder}/${filename}`;
   }
 
   // ─── S3 Internals ─────────────────────────────────────────────────────────
@@ -142,7 +144,7 @@ export class StorageService {
     const filePath = path.join(uploadDir, filename);
     await fs.promises.writeFile(filePath, file.buffer);
 
-    const url = `${this.apiBaseUrl}/uploads/${folder}/${filename}`;
+    const url = `${this.publicBaseUrl}/uploads/${folder}/${filename}`;
     this.logger.log(`💾 Saved locally: ${filePath}`);
 
     return { filename, url };

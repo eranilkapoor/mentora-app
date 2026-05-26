@@ -1,5 +1,19 @@
-import { IsInt, IsOptional, Max, Min } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
+import {
+  IsBoolean,
+  IsEnum,
+  IsInt,
+  IsOptional,
+  IsString,
+  Max,
+  Min,
+} from 'class-validator';
+import {
+  Caste,
+  OccupationType,
+  Qualification,
+  Religion,
+} from 'src/common/enums';
 
 export enum MatchFeedType {
   RECOMMENDED = 'recommended',
@@ -20,6 +34,67 @@ export class MatchQueryDto {
   @Min(1)
   @Max(100)
   limit?: number = 20;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(18)
+  @Max(100)
+  minAge?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(18)
+  @Max(100)
+  maxAge?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(120)
+  @Max(230)
+  minHeight?: number;
+
+  @IsOptional()
+  @Type(() => Number)
+  @IsInt()
+  @Min(120)
+  @Max(230)
+  maxHeight?: number;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsEnum(Religion)
+  religion?: Religion;
+
+  @IsOptional()
+  @IsEnum(Caste)
+  caste?: Caste;
+
+  @IsOptional()
+  @IsEnum(Qualification)
+  qualification?: Qualification;
+
+  @IsOptional()
+  @IsEnum(OccupationType)
+  occupationType?: OccupationType;
+
+  @IsOptional()
+  @Transform(({ value }) => value === true || value === 'true')
+  @IsBoolean()
+  verifiedOnly?: boolean;
 }
 
 export class NearbyQueryDto extends MatchQueryDto {

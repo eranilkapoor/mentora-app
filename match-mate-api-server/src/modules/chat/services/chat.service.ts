@@ -3,6 +3,7 @@ import {
   ForbiddenException,
   Injectable,
   InternalServerErrorException,
+  Logger,
   NotFoundException,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
@@ -103,6 +104,8 @@ type ProfileLike = {
 
 @Injectable()
 export class ChatService {
+  private readonly logger = new Logger(ChatService.name);
+
   constructor(
     private readonly repo: ChatRepository,
     private readonly presence: ChatPresenceService,
@@ -460,16 +463,35 @@ export class ChatService {
     );
     await this.emitConversationUpdates(room);
 
-    await this.notificationService.notify({
-      userId: receiverId,
-      title: 'New message',
-      message: this.buildNotificationPreview(content),
-      type: 'chat',
-      metadata: {
-        roomId: room.id,
-        senderId: userId,
-      },
-    });
+    void this.notificationService
+      .notify({
+        userId: receiverId,
+        title: 'New message',
+        message: this.buildNotificationPreview(content),
+        category: 'message_received',
+        type: 'chat',
+        actorId: userId,
+        referenceId: String(message._id),
+        action: {
+          screen: 'ChatDetails',
+          params: {
+            roomId: String(room._id),
+            userId,
+          },
+        },
+        metadata: {
+          roomId: String(room._id),
+          messageId: String(message._id),
+          senderId: userId,
+        },
+      })
+      .catch((error: unknown) => {
+        this.logger.warn(
+          `Failed to create chat notification for room ${String(room._id)}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      });
 
     return messagePayload;
   }

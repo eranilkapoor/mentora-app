@@ -119,6 +119,10 @@ export const resolveApiUrl = (url: string): string | null => {
   if (/^https?:\/\//i.test(trimmedUrl)) {
     try {
       const parsedUrl = new URL(trimmedUrl);
+      const uploadPath = parsedUrl.pathname.replace(
+        /^\/api(?:\/v\d+)?\/uploads\//i,
+        '/uploads/'
+      );
       const isLocalDevUrl =
         parsedUrl.hostname === 'localhost' ||
         parsedUrl.hostname === '127.0.0.1' ||
@@ -127,11 +131,19 @@ export const resolveApiUrl = (url: string): string | null => {
         /^192\.168\./.test(parsedUrl.hostname);
 
       return isLocalDevUrl
-        ? `${getApiOrigin()}${parsedUrl.pathname}${parsedUrl.search}${parsedUrl.hash}`
+        ? `${getApiOrigin()}${uploadPath}${parsedUrl.search}${parsedUrl.hash}`
         : trimmedUrl;
     } catch {
       return trimmedUrl;
     }
+  }
+
+  if (/^\/?api\/v\d+\/uploads\//i.test(trimmedUrl)) {
+    const uploadPath = trimmedUrl.replace(
+      /^\/?api\/v\d+\/uploads\//i,
+      'uploads/'
+    );
+    return `${getApiOrigin()}/${uploadPath}`;
   }
 
   if (/^\/?(uploads|public|static)\//i.test(trimmedUrl)) {

@@ -29,10 +29,7 @@ export class MessageAttachmentDto {
   size?: number;
 }
 
-export class SendMessageDto {
-  @IsMongoId()
-  roomId!: string;
-
+export class SendMessageBodyDto {
   @IsString()
   @MaxLength(5000)
   content!: string;
@@ -55,4 +52,9 @@ export class SendMessageDto {
   @ValidateNested({ each: true })
   @Type(() => MessageAttachmentDto)
   attachments?: MessageAttachmentDto[];
+}
+
+export class SendMessageDto extends SendMessageBodyDto {
+  @IsMongoId()
+  roomId!: string;
 }

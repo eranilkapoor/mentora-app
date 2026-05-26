@@ -127,6 +127,10 @@ export class SettingsService {
     };
   }
 
+  getBlockedRelationUserIds(userId: string) {
+    return this.repo.getBlockedRelationUserIds(userId);
+  }
+
   isBlockedBetween(userId: string, targetUserId: string) {
     return this.repo.isBlockedBetween(userId, targetUserId);
   }
