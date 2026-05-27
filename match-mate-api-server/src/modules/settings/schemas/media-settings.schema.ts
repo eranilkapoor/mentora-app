@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants';
 
 @Schema({ collection: COLLECTIONS.MEDIA_SETTING, timestamps: true })
-export class MediaSettings {
+export class MediaSetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
@@ -19,5 +19,5 @@ export class MediaSettings {
   @Prop({ default: true }) showMediaInGallery!: boolean;
 }
 
-export type MediaSettingsDocument = MediaSettings & Document;
-export const MediaSettingsSchema = SchemaFactory.createForClass(MediaSettings);
+export type MediaSettingDocument = MediaSetting & Document;
+export const MediaSettingSchema = SchemaFactory.createForClass(MediaSetting);

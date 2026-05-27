@@ -28,40 +28,40 @@ import {
 } from '../profile/schemas/preference/preference.schema';
 import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
 import {
-  AccountSettings,
-  AccountSettingsSchema,
+  AccountSetting,
+  AccountSettingSchema,
 } from '../settings/schemas/account-settings.schema';
 import {
-  PrivacySettings,
-  PrivacySettingsSchema,
+  PrivacySetting,
+  PrivacySettingSchema,
 } from '../settings/schemas/privacy-settings.schema';
 import {
-  NotificationSettings,
-  NotificationSettingsSchema,
+  NotificationSetting,
+  NotificationSettingSchema,
 } from '../settings/schemas/notification-settings.schema';
 import {
-  CommunicationSettings,
-  CommunicationSettingsSchema,
+  CommunicationSetting,
+  CommunicationSettingSchema,
 } from '../settings/schemas/communication-settings.schema';
 import {
-  SecuritySettings,
-  SecuritySettingsSchema,
+  SecuritySetting,
+  SecuritySettingSchema,
 } from '../settings/schemas/security-settings.schema';
 import {
-  LocalizationSettings,
-  LocalizationSettingsSchema,
+  LocalizationSetting,
+  LocalizationSettingSchema,
 } from '../settings/schemas/localization-settings.schema';
 import {
-  AccessibilitySettings,
-  AccessibilitySettingsSchema,
+  AccessibilitySetting,
+  AccessibilitySettingSchema,
 } from '../settings/schemas/accessibility-settings.schema';
 import {
-  MediaSettings,
-  MediaSettingsSchema,
+  MediaSetting,
+  MediaSettingSchema,
 } from '../settings/schemas/media-settings.schema';
 import {
-  AiSettings,
-  AiSettingsSchema,
+  AiSetting,
+  AiSettingSchema,
 } from '../settings/schemas/ai-settings.schema';
 import { SafetyModule } from '../safety/safety.module';
 
@@ -101,15 +101,15 @@ import { SafetyModule } from '../safety/safety.module';
       { name: Profile.name, schema: ProfileSchema },
       { name: Preference.name, schema: PreferenceSchema },
       { name: Media.name, schema: MediaSchema },
-      { name: AccountSettings.name, schema: AccountSettingsSchema },
-      { name: PrivacySettings.name, schema: PrivacySettingsSchema },
-      { name: NotificationSettings.name, schema: NotificationSettingsSchema },
-      { name: CommunicationSettings.name, schema: CommunicationSettingsSchema },
-      { name: SecuritySettings.name, schema: SecuritySettingsSchema },
-      { name: LocalizationSettings.name, schema: LocalizationSettingsSchema },
-      { name: AccessibilitySettings.name, schema: AccessibilitySettingsSchema },
-      { name: MediaSettings.name, schema: MediaSettingsSchema },
-      { name: AiSettings.name, schema: AiSettingsSchema },
+      { name: AccountSetting.name, schema: AccountSettingSchema },
+      { name: PrivacySetting.name, schema: PrivacySettingSchema },
+      { name: NotificationSetting.name, schema: NotificationSettingSchema },
+      { name: CommunicationSetting.name, schema: CommunicationSettingSchema },
+      { name: SecuritySetting.name, schema: SecuritySettingSchema },
+      { name: LocalizationSetting.name, schema: LocalizationSettingSchema },
+      { name: AccessibilitySetting.name, schema: AccessibilitySettingSchema },
+      { name: MediaSetting.name, schema: MediaSettingSchema },
+      { name: AiSetting.name, schema: AiSettingSchema },
     ]),
   ],
 

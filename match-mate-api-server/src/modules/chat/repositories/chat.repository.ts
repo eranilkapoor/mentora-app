@@ -18,8 +18,8 @@ import {
 } from '../../safety/schemas/user-block.schema';
 import { ChatMessageStatus, ChatRoomType } from '../enums/chat.enums';
 import {
-  CommunicationSettings,
-  CommunicationSettingsDocument,
+  CommunicationSetting,
+  CommunicationSettingDocument,
 } from '../../settings/schemas/communication-settings.schema';
 @Injectable()
 export class ChatRepository {
@@ -36,8 +36,8 @@ export class ChatRepository {
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
 
-    @InjectModel(CommunicationSettings.name)
-    private readonly communicationModel: Model<CommunicationSettingsDocument>,
+    @InjectModel(CommunicationSetting.name)
+    private readonly communicationModel: Model<CommunicationSettingDocument>,
 
     @InjectModel(Match.name)
     private readonly matchModel: Model<MatchDocument>,

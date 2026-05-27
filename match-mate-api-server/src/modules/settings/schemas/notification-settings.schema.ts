@@ -88,7 +88,7 @@ class NotificationPreferences {
   collection: COLLECTIONS.NOTIFICATION_SETTING,
   timestamps: true,
 })
-export class NotificationSettings {
+export class NotificationSetting {
   @Prop({
     type: Types.ObjectId,
     required: true,
@@ -142,7 +142,7 @@ export class NotificationSettings {
   vibrationEnabled!: boolean;
 }
 
-export type NotificationSettingsDocument = NotificationSettings & Document;
+export type NotificationSettingDocument = NotificationSetting & Document;
 
-export const NotificationSettingsSchema =
-  SchemaFactory.createForClass(NotificationSettings);
+export const NotificationSettingSchema =
+  SchemaFactory.createForClass(NotificationSetting);

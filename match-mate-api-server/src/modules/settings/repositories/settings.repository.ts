@@ -2,38 +2,38 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
-  AccountSettings,
-  AccountSettingsDocument,
+  AccountSetting,
+  AccountSettingDocument,
 } from '../schemas/account-settings.schema';
 import {
-  PrivacySettings,
-  PrivacySettingsDocument,
+  PrivacySetting,
+  PrivacySettingDocument,
 } from '../schemas/privacy-settings.schema';
 import {
-  NotificationSettings,
-  NotificationSettingsDocument,
+  NotificationSetting,
+  NotificationSettingDocument,
 } from '../schemas/notification-settings.schema';
 import {
-  CommunicationSettings,
-  CommunicationSettingsDocument,
+  CommunicationSetting,
+  CommunicationSettingDocument,
 } from '../schemas/communication-settings.schema';
 import {
-  SecuritySettings,
-  SecuritySettingsDocument,
+  SecuritySetting,
+  SecuritySettingDocument,
 } from '../schemas/security-settings.schema';
 import {
-  LocalizationSettings,
-  LocalizationSettingsDocument,
+  LocalizationSetting,
+  LocalizationSettingDocument,
 } from '../schemas/localization-settings.schema';
 import {
-  AccessibilitySettings,
-  AccessibilitySettingsDocument,
+  AccessibilitySetting,
+  AccessibilitySettingDocument,
 } from '../schemas/accessibility-settings.schema';
 import {
-  MediaSettings,
-  MediaSettingsDocument,
+  MediaSetting,
+  MediaSettingDocument,
 } from '../schemas/media-settings.schema';
-import { AiSettings, AiSettingsDocument } from '../schemas/ai-settings.schema';
+import { AiSetting, AiSettingDocument } from '../schemas/ai-settings.schema';
 import {
   UserBlock,
   UserBlockDocument,
@@ -74,32 +74,32 @@ const upsertOptions = {
 @Injectable()
 export class SettingsRepository {
   constructor(
-    @InjectModel(AccountSettings.name)
-    private readonly accountModel: Model<AccountSettingsDocument>,
+    @InjectModel(AccountSetting.name)
+    private readonly accountModel: Model<AccountSettingDocument>,
 
-    @InjectModel(PrivacySettings.name)
-    private readonly privacyModel: Model<PrivacySettingsDocument>,
+    @InjectModel(PrivacySetting.name)
+    private readonly privacyModel: Model<PrivacySettingDocument>,
 
-    @InjectModel(NotificationSettings.name)
-    private readonly notificationModel: Model<NotificationSettingsDocument>,
+    @InjectModel(NotificationSetting.name)
+    private readonly notificationModel: Model<NotificationSettingDocument>,
 
-    @InjectModel(CommunicationSettings.name)
-    private readonly communicationModel: Model<CommunicationSettingsDocument>,
+    @InjectModel(CommunicationSetting.name)
+    private readonly communicationModel: Model<CommunicationSettingDocument>,
 
-    @InjectModel(SecuritySettings.name)
-    private readonly securityModel: Model<SecuritySettingsDocument>,
+    @InjectModel(SecuritySetting.name)
+    private readonly securityModel: Model<SecuritySettingDocument>,
 
-    @InjectModel(LocalizationSettings.name)
-    private readonly localizationModel: Model<LocalizationSettingsDocument>,
+    @InjectModel(LocalizationSetting.name)
+    private readonly localizationModel: Model<LocalizationSettingDocument>,
 
-    @InjectModel(AccessibilitySettings.name)
-    private readonly accessibilityModel: Model<AccessibilitySettingsDocument>,
+    @InjectModel(AccessibilitySetting.name)
+    private readonly accessibilityModel: Model<AccessibilitySettingDocument>,
 
-    @InjectModel(MediaSettings.name)
-    private readonly mediaModel: Model<MediaSettingsDocument>,
+    @InjectModel(MediaSetting.name)
+    private readonly mediaModel: Model<MediaSettingDocument>,
 
-    @InjectModel(AiSettings.name)
-    private readonly aiModel: Model<AiSettingsDocument>,
+    @InjectModel(AiSetting.name)
+    private readonly aiModel: Model<AiSettingDocument>,
 
     @InjectModel(UserBlock.name)
     private readonly userBlockModel: Model<UserBlockDocument>,
@@ -279,7 +279,7 @@ export class SettingsRepository {
     return { userId: new Types.ObjectId(userId) };
   }
 
-  updateAccount(userId: string, data: Partial<AccountSettings>) {
+  updateAccount(userId: string, data: Partial<AccountSetting>) {
     return this.accountModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },
@@ -287,7 +287,7 @@ export class SettingsRepository {
     );
   }
 
-  updatePrivacy(userId: string, data: Partial<PrivacySettings>) {
+  updatePrivacy(userId: string, data: Partial<PrivacySetting>) {
     return this.privacyModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },
@@ -295,10 +295,7 @@ export class SettingsRepository {
     );
   }
 
-  async updateNotification(
-    userId: string,
-    data: Partial<NotificationSettings>,
-  ) {
+  async updateNotification(userId: string, data: Partial<NotificationSetting>) {
     const updated = await this.notificationModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },
@@ -312,7 +309,7 @@ export class SettingsRepository {
     return updated;
   }
 
-  updateCommunication(userId: string, data: Partial<CommunicationSettings>) {
+  updateCommunication(userId: string, data: Partial<CommunicationSetting>) {
     return this.communicationModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },
@@ -320,7 +317,7 @@ export class SettingsRepository {
     );
   }
 
-  updateSecurity(userId: string, data: Partial<SecuritySettings>) {
+  updateSecurity(userId: string, data: Partial<SecuritySetting>) {
     return this.securityModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },
@@ -328,7 +325,7 @@ export class SettingsRepository {
     );
   }
 
-  updateLocalization(userId: string, data: Partial<LocalizationSettings>) {
+  updateLocalization(userId: string, data: Partial<LocalizationSetting>) {
     return this.localizationModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },
@@ -336,7 +333,7 @@ export class SettingsRepository {
     );
   }
 
-  updateAccessibility(userId: string, data: Partial<AccessibilitySettings>) {
+  updateAccessibility(userId: string, data: Partial<AccessibilitySetting>) {
     return this.accessibilityModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },
@@ -344,7 +341,7 @@ export class SettingsRepository {
     );
   }
 
-  updateMedia(userId: string, data: Partial<MediaSettings>) {
+  updateMedia(userId: string, data: Partial<MediaSetting>) {
     return this.mediaModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },
@@ -352,7 +349,7 @@ export class SettingsRepository {
     );
   }
 
-  updateAi(userId: string, data: Partial<AiSettings>) {
+  updateAi(userId: string, data: Partial<AiSetting>) {
     return this.aiModel.findOneAndUpdate(
       this.uid(userId),
       { $set: buildDotNotation(data as Record<string, unknown>) },

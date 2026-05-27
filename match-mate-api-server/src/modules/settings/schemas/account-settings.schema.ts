@@ -11,7 +11,7 @@ class LinkedAccount {
 }
 
 @Schema({ collection: COLLECTIONS.ACCOUNT_SETTING, timestamps: true })
-export class AccountSettings {
+export class AccountSetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
@@ -26,6 +26,6 @@ export class AccountSettings {
   linkedAccounts!: LinkedAccount[];
 }
 
-export type AccountSettingsDocument = AccountSettings & Document;
-export const AccountSettingsSchema =
-  SchemaFactory.createForClass(AccountSettings);
+export type AccountSettingDocument = AccountSetting & Document;
+export const AccountSettingSchema =
+  SchemaFactory.createForClass(AccountSetting);

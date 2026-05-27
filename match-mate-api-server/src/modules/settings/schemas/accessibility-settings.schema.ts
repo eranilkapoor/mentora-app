@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants';
 
 @Schema({ collection: COLLECTIONS.ACCESSIBILITY_SETTING, timestamps: true })
-export class AccessibilitySettings {
+export class AccessibilitySetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
@@ -20,7 +20,6 @@ export class AccessibilitySettings {
   @Prop({ default: false }) boldText!: boolean;
 }
 
-export type AccessibilitySettingsDocument = AccessibilitySettings & Document;
-export const AccessibilitySettingsSchema = SchemaFactory.createForClass(
-  AccessibilitySettings,
-);
+export type AccessibilitySettingDocument = AccessibilitySetting & Document;
+export const AccessibilitySettingSchema =
+  SchemaFactory.createForClass(AccessibilitySetting);

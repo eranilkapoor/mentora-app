@@ -9,7 +9,7 @@ export type VisibilityLevel =
   | 'no_one';
 
 @Schema({ collection: COLLECTIONS.PRIVACY_SETTING, timestamps: true })
-export class PrivacySettings {
+export class PrivacySetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
@@ -51,8 +51,8 @@ export class PrivacySettings {
   showLastSeen!: VisibilityLevel;
 }
 
-export type PrivacySettingsDocument = PrivacySettings & Document;
-export const PrivacySettingsSchema =
-  SchemaFactory.createForClass(PrivacySettings);
+export type PrivacySettingDocument = PrivacySetting & Document;
+export const PrivacySettingSchema =
+  SchemaFactory.createForClass(PrivacySetting);
 
-PrivacySettingsSchema.index({ profileVisibility: 1 });
+PrivacySettingSchema.index({ profileVisibility: 1 });

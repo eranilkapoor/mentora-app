@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants';
 
-@Schema({ collection: COLLECTIONS.ROLES, timestamps: true })
+@Schema({ collection: COLLECTIONS.ROLE, timestamps: true })
 export class Role {
   @Prop({ required: true, unique: true, trim: true })
   name!: string; // user, admin, etc

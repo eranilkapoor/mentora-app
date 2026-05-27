@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants';
 
 @Schema({ collection: COLLECTIONS.LOCALIZATION_SETTING, timestamps: true })
-export class LocalizationSettings {
+export class LocalizationSetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
@@ -20,6 +20,6 @@ export class LocalizationSettings {
   @Prop({ default: 'INR' }) currency!: string;
 }
 
-export type LocalizationSettingsDocument = LocalizationSettings & Document;
-export const LocalizationSettingsSchema =
-  SchemaFactory.createForClass(LocalizationSettings);
+export type LocalizationSettingDocument = LocalizationSetting & Document;
+export const LocalizationSettingSchema =
+  SchemaFactory.createForClass(LocalizationSetting);

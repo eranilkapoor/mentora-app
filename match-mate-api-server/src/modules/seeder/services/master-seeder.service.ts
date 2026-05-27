@@ -55,40 +55,40 @@ import {
   MediaStatus,
 } from 'src/modules/profile/schemas/media/media.schema';
 import {
-  AccountSettings,
-  AccountSettingsDocument,
+  AccountSetting,
+  AccountSettingDocument,
 } from 'src/modules/settings/schemas/account-settings.schema';
 import {
-  PrivacySettings,
-  PrivacySettingsDocument,
+  PrivacySetting,
+  PrivacySettingDocument,
 } from 'src/modules/settings/schemas/privacy-settings.schema';
 import {
-  NotificationSettings,
-  NotificationSettingsDocument,
+  NotificationSetting,
+  NotificationSettingDocument,
 } from 'src/modules/settings/schemas/notification-settings.schema';
 import {
-  CommunicationSettings,
-  CommunicationSettingsDocument,
+  CommunicationSetting,
+  CommunicationSettingDocument,
 } from 'src/modules/settings/schemas/communication-settings.schema';
 import {
-  SecuritySettings,
-  SecuritySettingsDocument,
+  SecuritySetting,
+  SecuritySettingDocument,
 } from 'src/modules/settings/schemas/security-settings.schema';
 import {
-  LocalizationSettings,
-  LocalizationSettingsDocument,
+  LocalizationSetting,
+  LocalizationSettingDocument,
 } from 'src/modules/settings/schemas/localization-settings.schema';
 import {
-  AccessibilitySettings,
-  AccessibilitySettingsDocument,
+  AccessibilitySetting,
+  AccessibilitySettingDocument,
 } from 'src/modules/settings/schemas/accessibility-settings.schema';
 import {
-  MediaSettings,
-  MediaSettingsDocument,
+  MediaSetting,
+  MediaSettingDocument,
 } from 'src/modules/settings/schemas/media-settings.schema';
 import {
-  AiSettings,
-  AiSettingsDocument,
+  AiSetting,
+  AiSettingDocument,
 } from 'src/modules/settings/schemas/ai-settings.schema';
 import {
   Verification,
@@ -152,32 +152,32 @@ export class MasterSeederService {
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
 
-    @InjectModel(AccountSettings.name)
-    private readonly accountSettingsModel: Model<AccountSettingsDocument>,
+    @InjectModel(AccountSetting.name)
+    private readonly accountSettingsModel: Model<AccountSettingDocument>,
 
-    @InjectModel(PrivacySettings.name)
-    private readonly privacySettingsModel: Model<PrivacySettingsDocument>,
+    @InjectModel(PrivacySetting.name)
+    private readonly privacySettingsModel: Model<PrivacySettingDocument>,
 
-    @InjectModel(NotificationSettings.name)
-    private readonly notificationSettingsModel: Model<NotificationSettingsDocument>,
+    @InjectModel(NotificationSetting.name)
+    private readonly notificationSettingsModel: Model<NotificationSettingDocument>,
 
-    @InjectModel(CommunicationSettings.name)
-    private readonly communicationSettingsModel: Model<CommunicationSettingsDocument>,
+    @InjectModel(CommunicationSetting.name)
+    private readonly communicationSettingsModel: Model<CommunicationSettingDocument>,
 
-    @InjectModel(SecuritySettings.name)
-    private readonly securitySettingsModel: Model<SecuritySettingsDocument>,
+    @InjectModel(SecuritySetting.name)
+    private readonly securitySettingsModel: Model<SecuritySettingDocument>,
 
-    @InjectModel(LocalizationSettings.name)
-    private readonly localizationSettingsModel: Model<LocalizationSettingsDocument>,
+    @InjectModel(LocalizationSetting.name)
+    private readonly localizationSettingsModel: Model<LocalizationSettingDocument>,
 
-    @InjectModel(AccessibilitySettings.name)
-    private readonly accessibilitySettingsModel: Model<AccessibilitySettingsDocument>,
+    @InjectModel(AccessibilitySetting.name)
+    private readonly accessibilitySettingsModel: Model<AccessibilitySettingDocument>,
 
-    @InjectModel(MediaSettings.name)
-    private readonly mediaSettingsModel: Model<MediaSettingsDocument>,
+    @InjectModel(MediaSetting.name)
+    private readonly mediaSettingsModel: Model<MediaSettingDocument>,
 
-    @InjectModel(AiSettings.name)
-    private readonly aiSettingsModel: Model<AiSettingsDocument>,
+    @InjectModel(AiSetting.name)
+    private readonly aiSettingsModel: Model<AiSettingDocument>,
 
     @InjectModel(Verification.name)
     private readonly verificationModel: Model<VerificationDocument>,

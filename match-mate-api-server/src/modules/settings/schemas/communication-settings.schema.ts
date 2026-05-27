@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants';
 
 @Schema({ collection: COLLECTIONS.COMMUNICATION_SETTING, timestamps: true })
-export class CommunicationSettings {
+export class CommunicationSetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
@@ -29,7 +29,6 @@ export class CommunicationSettings {
   @Prop({ default: false }) allowVideoCalls!: boolean;
 }
 
-export type CommunicationSettingsDocument = CommunicationSettings & Document;
-export const CommunicationSettingsSchema = SchemaFactory.createForClass(
-  CommunicationSettings,
-);
+export type CommunicationSettingDocument = CommunicationSetting & Document;
+export const CommunicationSettingSchema =
+  SchemaFactory.createForClass(CommunicationSetting);

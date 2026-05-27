@@ -19,8 +19,8 @@ import { SafetyModule } from '../safety/safety.module';
 import { ChatPresenceService } from './services/chat-presence.service';
 import { ChatAccessService } from './services/chat-access.service';
 import {
-  CommunicationSettings,
-  CommunicationSettingsSchema,
+  CommunicationSetting,
+  CommunicationSettingSchema,
 } from '../settings/schemas/communication-settings.schema';
 
 @Module({
@@ -33,7 +33,7 @@ import {
       { name: ChatRoom.name, schema: ChatRoomSchema },
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
-      { name: CommunicationSettings.name, schema: CommunicationSettingsSchema },
+      { name: CommunicationSetting.name, schema: CommunicationSettingSchema },
       { name: Match.name, schema: MatchSchema },
     ]),
   ],

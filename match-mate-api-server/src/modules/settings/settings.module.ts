@@ -4,38 +4,38 @@ import { SettingsController } from './controllers/settings.controller';
 import { SettingsService } from './services/settings.service';
 import { SettingsRepository } from './repositories/settings.repository';
 import {
-  AccountSettings,
-  AccountSettingsSchema,
+  AccountSetting,
+  AccountSettingSchema,
 } from './schemas/account-settings.schema';
 import {
-  PrivacySettings,
-  PrivacySettingsSchema,
+  PrivacySetting,
+  PrivacySettingSchema,
 } from './schemas/privacy-settings.schema';
 import {
-  NotificationSettings,
-  NotificationSettingsSchema,
+  NotificationSetting,
+  NotificationSettingSchema,
 } from './schemas/notification-settings.schema';
 import {
-  CommunicationSettings,
-  CommunicationSettingsSchema,
+  CommunicationSetting,
+  CommunicationSettingSchema,
 } from './schemas/communication-settings.schema';
 import {
-  SecuritySettings,
-  SecuritySettingsSchema,
+  SecuritySetting,
+  SecuritySettingSchema,
 } from './schemas/security-settings.schema';
 import {
-  LocalizationSettings,
-  LocalizationSettingsSchema,
+  LocalizationSetting,
+  LocalizationSettingSchema,
 } from './schemas/localization-settings.schema';
 import {
-  AccessibilitySettings,
-  AccessibilitySettingsSchema,
+  AccessibilitySetting,
+  AccessibilitySettingSchema,
 } from './schemas/accessibility-settings.schema';
 import {
-  MediaSettings,
-  MediaSettingsSchema,
+  MediaSetting,
+  MediaSettingSchema,
 } from './schemas/media-settings.schema';
-import { AiSettings, AiSettingsSchema } from './schemas/ai-settings.schema';
+import { AiSetting, AiSettingSchema } from './schemas/ai-settings.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
   UserSession,
@@ -52,15 +52,15 @@ import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
   imports: [
     SafetyModule,
     MongooseModule.forFeature([
-      { name: AccountSettings.name, schema: AccountSettingsSchema },
-      { name: PrivacySettings.name, schema: PrivacySettingsSchema },
-      { name: NotificationSettings.name, schema: NotificationSettingsSchema },
-      { name: CommunicationSettings.name, schema: CommunicationSettingsSchema },
-      { name: SecuritySettings.name, schema: SecuritySettingsSchema },
-      { name: LocalizationSettings.name, schema: LocalizationSettingsSchema },
-      { name: AccessibilitySettings.name, schema: AccessibilitySettingsSchema },
-      { name: MediaSettings.name, schema: MediaSettingsSchema },
-      { name: AiSettings.name, schema: AiSettingsSchema },
+      { name: AccountSetting.name, schema: AccountSettingSchema },
+      { name: PrivacySetting.name, schema: PrivacySettingSchema },
+      { name: NotificationSetting.name, schema: NotificationSettingSchema },
+      { name: CommunicationSetting.name, schema: CommunicationSettingSchema },
+      { name: SecuritySetting.name, schema: SecuritySettingSchema },
+      { name: LocalizationSetting.name, schema: LocalizationSettingSchema },
+      { name: AccessibilitySetting.name, schema: AccessibilitySettingSchema },
+      { name: MediaSetting.name, schema: MediaSettingSchema },
+      { name: AiSetting.name, schema: AiSettingSchema },
       { name: User.name, schema: UserSchema },
       { name: UserSession.name, schema: UserSessionSchema },
       { name: Profile.name, schema: ProfileSchema },

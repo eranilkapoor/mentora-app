@@ -13,7 +13,7 @@ class LoginDevice {
 }
 
 @Schema({ collection: COLLECTIONS.SECURITY_SETTING, timestamps: true })
-export class SecuritySettings {
+export class SecuritySetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
@@ -40,6 +40,6 @@ export class SecuritySettings {
   @Prop() lastLoginIp?: string;
 }
 
-export type SecuritySettingsDocument = SecuritySettings & Document;
-export const SecuritySettingsSchema =
-  SchemaFactory.createForClass(SecuritySettings);
+export type SecuritySettingDocument = SecuritySetting & Document;
+export const SecuritySettingSchema =
+  SchemaFactory.createForClass(SecuritySetting);

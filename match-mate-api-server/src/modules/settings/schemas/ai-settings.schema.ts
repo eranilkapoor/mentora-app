@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 import { COLLECTIONS } from 'src/common/constants';
 
 @Schema({ collection: COLLECTIONS.AI_SETTING, timestamps: true })
-export class AiSettings {
+export class AiSetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
@@ -15,5 +15,5 @@ export class AiSettings {
   @Prop({ default: true }) useProfileDataForRanking!: boolean;
 }
 
-export type AiSettingsDocument = AiSettings & Document;
-export const AiSettingsSchema = SchemaFactory.createForClass(AiSettings);
+export type AiSettingDocument = AiSetting & Document;
+export const AiSettingSchema = SchemaFactory.createForClass(AiSetting);
