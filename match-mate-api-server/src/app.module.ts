@@ -70,7 +70,7 @@ import { SettingsModule } from './modules/settings/settings.module';
   controllers: [AppController],
   providers: [
     // ==========================================
-    //  ORDER MATTERS (TOP  BOTTOM)
+    //  ORDER MATTERS (TOP - BOTTOM)
     // ==========================================
 
     // 1 Throttler (first line of defense - IP based)

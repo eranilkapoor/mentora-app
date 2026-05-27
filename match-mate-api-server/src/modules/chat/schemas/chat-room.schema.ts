@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants/collections';
+import { COLLECTIONS } from 'src/common/constants';
 import { ChatRoomStatus, ChatRoomType } from '../enums/chat.enums';
 
 @Schema({ _id: false })

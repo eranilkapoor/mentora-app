@@ -11,17 +11,16 @@ import {
   Profile,
   ProfileDocument,
 } from '../../profile/schemas/profile/profile.schema';
-import {
-  PrivacySetting,
-  PrivacySettingDocument,
-} from '../../profile/schemas/settings/privacy-setting.schema';
 import { Match, MatchDocument } from '../../match/schemas/match.schema';
 import {
   UserBlock,
   UserBlockDocument,
 } from '../../safety/schemas/user-block.schema';
 import { ChatMessageStatus, ChatRoomType } from '../enums/chat.enums';
-
+import {
+  CommunicationSettings,
+  CommunicationSettingsDocument,
+} from '../../settings/schemas/communication-settings.schema';
 @Injectable()
 export class ChatRepository {
   constructor(
@@ -37,8 +36,8 @@ export class ChatRepository {
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
 
-    @InjectModel(PrivacySetting.name)
-    private readonly privacyModel: Model<PrivacySettingDocument>,
+    @InjectModel(CommunicationSettings.name)
+    private readonly communicationModel: Model<CommunicationSettingsDocument>,
 
     @InjectModel(Match.name)
     private readonly matchModel: Model<MatchDocument>,
@@ -63,8 +62,8 @@ export class ChatRepository {
       .lean();
   }
 
-  async findPrivacySettingsByUserIds(userIds: string[]) {
-    return this.privacyModel
+  async findCommunicationSettingsByUserIds(userIds: string[]) {
+    return this.communicationModel
       .find({ userId: { $in: this.toObjectIds(userIds) } })
       .lean();
   }

@@ -14,14 +14,14 @@ import {
   Profile,
   ProfileSchema,
 } from '../profile/schemas/profile/profile.schema';
-import {
-  PrivacySetting,
-  PrivacySettingSchema,
-} from '../profile/schemas/settings/privacy-setting.schema';
 import { Match, MatchSchema } from '../match/schemas/match.schema';
 import { SafetyModule } from '../safety/safety.module';
 import { ChatPresenceService } from './services/chat-presence.service';
 import { ChatAccessService } from './services/chat-access.service';
+import {
+  CommunicationSettings,
+  CommunicationSettingsSchema,
+} from '../settings/schemas/communication-settings.schema';
 
 @Module({
   imports: [
@@ -33,7 +33,7 @@ import { ChatAccessService } from './services/chat-access.service';
       { name: ChatRoom.name, schema: ChatRoomSchema },
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
-      { name: PrivacySetting.name, schema: PrivacySettingSchema },
+      { name: CommunicationSettings.name, schema: CommunicationSettingsSchema },
       { name: Match.name, schema: MatchSchema },
     ]),
   ],

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants/collections';
+import { COLLECTIONS } from 'src/common/constants';
 
 @Schema({ collection: COLLECTIONS.USER_SESSION, timestamps: true })
 export class UserSession {

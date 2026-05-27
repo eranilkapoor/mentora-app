@@ -62,11 +62,10 @@ export class ChatAccessService {
       });
     }
 
-    const privacyRows = await this.repo.findPrivacySettingsByUserIds([
-      targetUserId,
-    ]);
-    const targetPrivacy = privacyRows[0];
-    const rule = targetPrivacy?.allowMessagesFrom ?? 'all';
+    const communicationSettingsRows =
+      await this.repo.findCommunicationSettingsByUserIds([targetUserId]);
+    const targetCommunicationSettings = communicationSettingsRows[0];
+    const rule = targetCommunicationSettings?.whoCanMessage ?? 'all';
     if (rule === 'all') {
       return;
     }
@@ -78,7 +77,7 @@ export class ChatAccessService {
 
     if (!match && !room) {
       throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
-        reason: 'recipient_privacy_restricted',
+        reason: 'recipient_communication_restricted',
       });
     }
   }

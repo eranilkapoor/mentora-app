@@ -25,11 +25,6 @@ import {
   ActivityLogDocument,
   ActivityPlatform,
 } from '../schemas/settings/activity-logs.schema';
-import {
-  PrivacySetting,
-  PrivacySettingDocument,
-} from '../schemas/settings/privacy-setting.schema';
-import { UpdatePrivacySettingsDto } from '../dto/privacy-media.dto';
 import { AppRequest } from 'src/common/interfaces/app-request.interface';
 import { ProfileStatus, Qualification } from 'src/common/enums';
 import { InjectModel } from '@nestjs/mongoose';
@@ -71,8 +66,6 @@ export class ProfileService {
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLogDocument>,
-    @InjectModel(PrivacySetting.name)
-    private readonly privacySettingModel: Model<PrivacySettingDocument>,
     @InjectModel(Verification.name)
     private readonly verificationModel: Model<VerificationDocument>,
     private readonly notificationService: NotificationService,
@@ -194,62 +187,6 @@ export class ProfileService {
         trackProfileUpdatedAnalytics: false,
       },
     );
-  }
-
-  //  Privacy Settings
-
-  async getPrivacySettings(userId: string) {
-    try {
-      const existing = await this.privacySettingModel
-        .findOne({ userId })
-        .lean();
-      if (existing) return existing;
-
-      const created = await this.privacySettingModel.create({
-        userId,
-        profileVisibility: 'public',
-        hideContactDetails: false,
-        hidePhotos: false,
-        showOnlyToPremium: false,
-        allowMessagesFrom: 'all',
-        showOnlineStatus: true,
-        lastSeenVisibility: 'all',
-        incognitoMode: false,
-        dailyInterestLimitUsed: 0,
-      });
-      return created.toObject();
-    } catch (error) {
-      if (error instanceof AppException) throw error;
-      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
-        reason: 'failed_to_retrieve_privacy_settings',
-      });
-    }
-  }
-
-  async updatePrivacySettings(
-    req: AppRequest,
-    userId: string,
-    dto: UpdatePrivacySettingsDto,
-  ) {
-    try {
-      const updated = await this.privacySettingModel.findOneAndUpdate(
-        { userId },
-        { $set: dto },
-        {
-          upsert: true,
-          new: true,
-          runValidators: true,
-          setDefaultsOnInsert: true,
-        },
-      );
-      await this.cache.del(`profile:${userId}`);
-      return updated;
-    } catch (error) {
-      if (error instanceof AppException) throw error;
-      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
-        reason: 'failed_to_update_privacy_settings',
-      });
-    }
   }
 
   //  Private helpers

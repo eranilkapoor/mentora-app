@@ -27,10 +27,6 @@ import {
   ActivityLog,
   ActivityLogSchema,
 } from './schemas/settings/activity-logs.schema';
-import {
-  PrivacySetting,
-  PrivacySettingSchema,
-} from './schemas/settings/privacy-setting.schema';
 import { SafetyModule } from '../safety/safety.module';
 
 // External modules
@@ -47,7 +43,6 @@ import { SettingsModule } from '../settings/settings.module';
       { name: Media.name, schema: MediaSchema },
       { name: Preference.name, schema: PreferenceSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
-      { name: PrivacySetting.name, schema: PrivacySettingSchema },
     ]),
     NotificationModule,
     AnalyticsModule,

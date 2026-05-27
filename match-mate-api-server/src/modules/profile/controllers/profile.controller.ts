@@ -20,7 +20,6 @@ import {
   EducationDto,
   FamilyDto,
 } from '../dto/create-profile.dto';
-import { UpdatePrivacySettingsDto } from '../dto/privacy-media.dto';
 import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -182,33 +181,6 @@ export class ProfileController {
       data,
       SuccessCode.PROFILE_UPDATED,
       'Profile location successfully updated',
-    );
-  }
-
-  @Get('privacy')
-  async getPrivacy(@Req() req: AuthenticatedRequest) {
-    const data = await this.profileService.getPrivacySettings(req.user.sub);
-    return successResponse(
-      data,
-      SuccessCode.PROFILE_PRIVACY_SETTINGS_FETCHED,
-      'Profile privacy successfully fetched',
-    );
-  }
-
-  @Put('privacy')
-  async updatePrivacy(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: UpdatePrivacySettingsDto,
-  ) {
-    const data = await this.profileService.updatePrivacySettings(
-      req,
-      req.user.sub,
-      dto,
-    );
-    return successResponse(
-      data,
-      SuccessCode.PROFILE_PRIVACY_SETTINGS_UPDATED,
-      'Profile privacy successfully updated',
     );
   }
 }

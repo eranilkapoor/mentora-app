@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants/collections';
+import { COLLECTIONS } from 'src/common/constants';
 import { MediaType, MimeType } from 'src/common/enums';
 
 export enum MediaStatus {
