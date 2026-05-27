@@ -1,5 +1,5 @@
 import { FeatureCategory, FeatureKey } from '@/common/enums';
-import { Feature } from '@/modules/subscription/schemas/feature.schema';
+import { Feature } from '@/modules/subscriptions/schemas/feature.schema';
 
 export const FEATURE_SEEDS: Feature[] = [
   // ==========================================

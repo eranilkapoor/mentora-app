@@ -19,12 +19,12 @@ import {
 import {
   Profile,
   ProfileDocument,
-} from '@/modules/profile/schemas/profile/profile.schema';
+} from '@/modules/profiles/schemas/profile/profile.schema';
 import {
   Media,
   MediaDocument,
   MediaStatus,
-} from '@/modules/profile/schemas/media/media.schema';
+} from '@/modules/profiles/schemas/media/media.schema';
 import { MediaType } from '@/common/enums';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {

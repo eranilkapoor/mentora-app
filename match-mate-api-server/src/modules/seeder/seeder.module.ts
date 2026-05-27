@@ -7,26 +7,29 @@ import {
 } from '@/modules/admin/schemas/permission.schema';
 import { Role, RoleSchema } from '@/modules/admin/schemas/role.schema';
 import { MasterSeederService } from './services/master-seeder.service';
-import { Plan, PlanSchema } from '../subscription/schemas/plan.schema';
-import { Feature, FeatureSchema } from '../subscription/schemas/feature.schema';
+import { Plan, PlanSchema } from '../subscriptions/schemas/plan.schema';
+import {
+  Feature,
+  FeatureSchema,
+} from '../subscriptions/schemas/feature.schema';
 import {
   PlanFeature,
   PlanFeatureSchema,
-} from '../subscription/schemas/plan-feature.schema';
+} from '../subscriptions/schemas/plan-feature.schema';
 import {
   NotificationTemplate,
   NotificationTemplateSchema,
-} from '@/modules/notification/schemas/notification-templates.schema';
+} from '@/modules/notifications/schemas/notification-templates.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
   Profile,
   ProfileSchema,
-} from '../profile/schemas/profile/profile.schema';
+} from '../profiles/schemas/profile/profile.schema';
 import {
   Preference,
   PreferenceSchema,
-} from '../profile/schemas/preference/preference.schema';
-import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
+} from '../profiles/schemas/preference/preference.schema';
+import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
 import {
   AccountSetting,
   AccountSettingSchema,

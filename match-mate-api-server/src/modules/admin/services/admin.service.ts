@@ -80,12 +80,12 @@ export class AdminService {
     message: string;
     target: string;
   } {
-    // This is a hook point  inject NotificationService here when ready
+    // This is a hook point  inject NotificationsService here when ready
     // For now it validates and returns a structured response
     const targetLabel = dto.target ?? BroadcastTarget.ALL;
     const channels = dto.channels ?? ['in_app'];
 
-    // Broadcast delivery can be wired to NotificationService when campaign
+    // Broadcast delivery can be wired to NotificationsService when campaign
     // orchestration is enabled for admin operations.
 
     return {

@@ -8,13 +8,13 @@ import { ChatController } from './controllers/chat.controller';
 import { ChatMessage, ChatMessageSchema } from './schemas/chat-message.schema';
 import { ChatRoom, ChatRoomSchema } from './schemas/chat-room.schema';
 import { AuthModule } from '../auth/auth.module';
-import { NotificationModule } from '../notification/notification.module';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
   Profile,
   ProfileSchema,
-} from '../profile/schemas/profile/profile.schema';
-import { Match, MatchSchema } from '../match/schemas/match.schema';
+} from '../profiles/schemas/profile/profile.schema';
+import { Match, MatchSchema } from '../matches/schemas/match.schema';
 import { SafetyModule } from '../safety/safety.module';
 import { ChatPresenceService } from './services/chat-presence.service';
 import { ChatAccessService } from './services/chat-access.service';
@@ -26,7 +26,7 @@ import {
 @Module({
   imports: [
     AuthModule,
-    NotificationModule,
+    NotificationsModule,
     SafetyModule,
     MongooseModule.forFeature([
       { name: ChatMessage.name, schema: ChatMessageSchema },

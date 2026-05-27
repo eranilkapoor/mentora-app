@@ -16,13 +16,13 @@ import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
 import {
   Subscription,
   SubscriptionSchema,
-} from '../subscription/schemas/subscription.schema';
-import { Plan, PlanSchema } from '../subscription/schemas/plan.schema';
+} from '../subscriptions/schemas/subscription.schema';
+import { Plan, PlanSchema } from '../subscriptions/schemas/plan.schema';
 import {
   ActivityLog,
   ActivityLogSchema,
-} from '../profile/schemas/settings/activity-logs.schema';
-import { NotificationModule } from '../notification/notification.module';
+} from '../profiles/schemas/settings/activity-logs.schema';
+import { NotificationsModule } from '../notifications/notifications.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { SafetyModule } from '../safety/safety.module';
 
@@ -56,7 +56,7 @@ import { SafetyModule } from '../safety/safety.module';
         };
       },
     }),
-    NotificationModule,
+    NotificationsModule,
     AnalyticsModule,
     SafetyModule,
   ],

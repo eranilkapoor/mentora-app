@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 
-import { AppModule } from '@/modules/app/app.module';
+import { AppModule } from '@/app.module';
 import { AppLogger } from '@/common/logger/logger.service';
 import { MasterSeederService } from './services/master-seeder.service';
 

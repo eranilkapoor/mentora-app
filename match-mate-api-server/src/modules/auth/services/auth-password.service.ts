@@ -19,8 +19,8 @@ import {
   ActivityLog,
   ActivityLogDocument,
   ActivityPlatform,
-} from '@/modules/profile/schemas/settings/activity-logs.schema';
-import { NotificationService } from '@/modules/notification/services/notification.service';
+} from '@/modules/profiles/schemas/settings/activity-logs.schema';
+import { NotificationsService } from '@/modules/notifications/services/notifications.service';
 import { UserRepository } from '../repositories/user.repository';
 import { UserDocument } from '../schemas/user.schema';
 import {
@@ -55,7 +55,7 @@ export class AuthPasswordService {
     private readonly userSessionModel: Model<UserSessionDocument>,
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLogDocument>,
-    private readonly notificationService: NotificationService,
+    private readonly notificationsService: NotificationsService,
   ) {}
 
   async forgotPassword(req: AppRequest, email: string) {
@@ -82,7 +82,7 @@ export class AuthPasswordService {
       );
       const resetUrl = this.buildResetPasswordLink(resetToken);
 
-      await this.notificationService.notify({
+      await this.notificationsService.notify({
         userId: String(user._id),
         title: 'Reset your password',
         message: `Use this secure link to reset your password: ${resetUrl}`,
@@ -151,7 +151,7 @@ export class AuthPasswordService {
       await user.save();
       await this.revokeUserSessions(user);
 
-      await this.notificationService.notify({
+      await this.notificationsService.notify({
         userId: String(user._id),
         title: 'Password changed successfully',
         message:
@@ -230,7 +230,7 @@ export class AuthPasswordService {
       user.lastPasswordChangedAt = new Date();
       await user.save();
 
-      await this.notificationService.notify({
+      await this.notificationsService.notify({
         userId: String(user._id),
         title: 'Password changed',
         message:

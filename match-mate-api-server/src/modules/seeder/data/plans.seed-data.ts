@@ -1,5 +1,5 @@
 import { BillingCycle, PlanTier } from '@/common/enums';
-import { Plan } from '@/modules/subscription/schemas/plan.schema';
+import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
 
 export const PLAN_SEEDS: Plan[] = [
   // ==========================================

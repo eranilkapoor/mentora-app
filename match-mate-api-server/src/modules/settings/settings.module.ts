@@ -45,8 +45,8 @@ import { SafetyModule } from '../safety/safety.module';
 import {
   Profile,
   ProfileSchema,
-} from '../profile/schemas/profile/profile.schema';
-import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
+} from '../profiles/schemas/profile/profile.schema';
+import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
 
 @Module({
   imports: [

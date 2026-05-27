@@ -1,7 +1,7 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { AppLogger } from '@/common/logger/logger.service';
-import { NotificationService } from '../../notification/services/notification.service';
+import { NotificationsService } from '../../notifications/services/notifications.service';
 import { ChatPresenceService } from './chat-presence.service';
 import { ChatRealtimeService } from './chat-realtime.service';
 import { ChatAccessService } from './chat-access.service';
@@ -109,7 +109,7 @@ export class ChatService {
     private readonly presence: ChatPresenceService,
     private readonly realtime: ChatRealtimeService,
     private readonly access: ChatAccessService,
-    private readonly notificationService: NotificationService,
+    private readonly notificationsService: NotificationsService,
     private readonly logger: AppLogger,
   ) {}
 
@@ -475,7 +475,7 @@ export class ChatService {
     );
     await this.emitConversationUpdates(room);
 
-    void this.notificationService
+    void this.notificationsService
       .notify({
         userId: receiverId,
         title: 'New message',

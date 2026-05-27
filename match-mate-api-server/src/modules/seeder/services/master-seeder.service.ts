@@ -44,16 +44,16 @@ import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import {
   Profile,
   ProfileDocument,
-} from '@/modules/profile/schemas/profile/profile.schema';
+} from '@/modules/profiles/schemas/profile/profile.schema';
 import {
   Preference,
   PreferenceDocument,
-} from '@/modules/profile/schemas/preference/preference.schema';
+} from '@/modules/profiles/schemas/preference/preference.schema';
 import {
   Media,
   MediaDocument,
   MediaStatus,
-} from '@/modules/profile/schemas/media/media.schema';
+} from '@/modules/profiles/schemas/media/media.schema';
 import {
   AccountSetting,
   AccountSettingDocument,
@@ -94,19 +94,22 @@ import {
   Verification,
   VerificationDocument,
 } from '@/modules/safety/schemas/verification.schema';
-import { Plan, PlanDocument } from '@/modules/subscription/schemas/plan.schema';
+import {
+  Plan,
+  PlanDocument,
+} from '@/modules/subscriptions/schemas/plan.schema';
 import {
   Feature,
   FeatureDocument,
-} from '@/modules/subscription/schemas/feature.schema';
+} from '@/modules/subscriptions/schemas/feature.schema';
 import {
   PlanFeature,
   PlanFeatureDocument,
-} from '@/modules/subscription/schemas/plan-feature.schema';
+} from '@/modules/subscriptions/schemas/plan-feature.schema';
 import {
   NotificationTemplate,
   NotificationTemplateDocument,
-} from '@/modules/notification/schemas/notification-templates.schema';
+} from '@/modules/notifications/schemas/notification-templates.schema';
 import {
   FEATURE_SEEDS,
   INDIAN_DUMMY_PROFILE_SEED_DATA,

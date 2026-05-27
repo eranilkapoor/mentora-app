@@ -29,11 +29,11 @@ import {
   UserSession,
   UserSessionDocument,
 } from '../schemas/user-session.schema';
-import { Plan } from '../../subscription/schemas/plan.schema';
+import { Plan } from '../../subscriptions/schemas/plan.schema';
 import {
   Subscription,
   SubscriptionDocument,
-} from '../../subscription/schemas/subscription.schema';
+} from '../../subscriptions/schemas/subscription.schema';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
 import {
   ActivityAction,
@@ -41,8 +41,8 @@ import {
   ActivityLog,
   ActivityLogDocument,
   ActivityPlatform,
-} from '../../profile/schemas/settings/activity-logs.schema';
-import { NotificationService } from '../../notification/services/notification.service';
+} from '../../profiles/schemas/settings/activity-logs.schema';
+import { NotificationsService } from '../../notifications/services/notifications.service';
 import { AnalyticsService } from '../../analytics/services/analytics.service';
 import {
   AnalyticsEventType,
@@ -93,7 +93,7 @@ export class AuthService {
     private readonly activityLogModel: Model<ActivityLogDocument>,
     @InjectModel(Verification.name)
     private readonly verificationModel: Model<VerificationDocument>,
-    private readonly notificationService: NotificationService,
+    private readonly notificationsService: NotificationsService,
     private readonly analyticsService: AnalyticsService,
     private readonly authPasswordService: AuthPasswordService,
     private readonly configService: ConfigService,
@@ -743,7 +743,7 @@ export class AuthService {
       : ['in_app'];
 
     jobs.push(
-      this.notificationService.notify({
+      this.notificationsService.notify({
         userId,
         title: 'Welcome to MatchMate',
         message:

@@ -10,8 +10,8 @@ import { User, UserDocument } from '../../auth/schemas/user.schema';
 import {
   Profile,
   ProfileDocument,
-} from '../../profile/schemas/profile/profile.schema';
-import { Match, MatchDocument } from '../../match/schemas/match.schema';
+} from '../../profiles/schemas/profile/profile.schema';
+import { Match, MatchDocument } from '../../matches/schemas/match.schema';
 import {
   UserBlock,
   UserBlockDocument,
