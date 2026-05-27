@@ -6,36 +6,36 @@ import { SettingsRepository } from './repositories/settings.repository';
 import {
   AccountSetting,
   AccountSettingSchema,
-} from './schemas/account-settings.schema';
+} from './schemas/account-setting.schema';
 import {
   PrivacySetting,
   PrivacySettingSchema,
-} from './schemas/privacy-settings.schema';
+} from './schemas/privacy-setting.schema';
 import {
   NotificationSetting,
   NotificationSettingSchema,
-} from './schemas/notification-settings.schema';
+} from './schemas/notification-setting.schema';
 import {
   CommunicationSetting,
   CommunicationSettingSchema,
-} from './schemas/communication-settings.schema';
+} from './schemas/communication-setting.schema';
 import {
   SecuritySetting,
   SecuritySettingSchema,
-} from './schemas/security-settings.schema';
+} from './schemas/security-setting.schema';
 import {
   LocalizationSetting,
   LocalizationSettingSchema,
-} from './schemas/localization-settings.schema';
+} from './schemas/localization-setting.schema';
 import {
   AccessibilitySetting,
   AccessibilitySettingSchema,
-} from './schemas/accessibility-settings.schema';
+} from './schemas/accessibility-setting.schema';
 import {
   MediaSetting,
   MediaSettingSchema,
-} from './schemas/media-settings.schema';
-import { AiSetting, AiSettingSchema } from './schemas/ai-settings.schema';
+} from './schemas/media-setting.schema';
+import { AiSetting, AiSettingSchema } from './schemas/ai-setting.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
   UserSession,

@@ -57,39 +57,39 @@ import {
 import {
   AccountSetting,
   AccountSettingDocument,
-} from 'src/modules/settings/schemas/account-settings.schema';
+} from 'src/modules/settings/schemas/account-setting.schema';
 import {
   PrivacySetting,
   PrivacySettingDocument,
-} from 'src/modules/settings/schemas/privacy-settings.schema';
+} from 'src/modules/settings/schemas/privacy-setting.schema';
 import {
   NotificationSetting,
   NotificationSettingDocument,
-} from 'src/modules/settings/schemas/notification-settings.schema';
+} from 'src/modules/settings/schemas/notification-setting.schema';
 import {
   CommunicationSetting,
   CommunicationSettingDocument,
-} from 'src/modules/settings/schemas/communication-settings.schema';
+} from 'src/modules/settings/schemas/communication-setting.schema';
 import {
   SecuritySetting,
   SecuritySettingDocument,
-} from 'src/modules/settings/schemas/security-settings.schema';
+} from 'src/modules/settings/schemas/security-setting.schema';
 import {
   LocalizationSetting,
   LocalizationSettingDocument,
-} from 'src/modules/settings/schemas/localization-settings.schema';
+} from 'src/modules/settings/schemas/localization-setting.schema';
 import {
   AccessibilitySetting,
   AccessibilitySettingDocument,
-} from 'src/modules/settings/schemas/accessibility-settings.schema';
+} from 'src/modules/settings/schemas/accessibility-setting.schema';
 import {
   MediaSetting,
   MediaSettingDocument,
-} from 'src/modules/settings/schemas/media-settings.schema';
+} from 'src/modules/settings/schemas/media-setting.schema';
 import {
   AiSetting,
   AiSettingDocument,
-} from 'src/modules/settings/schemas/ai-settings.schema';
+} from 'src/modules/settings/schemas/ai-setting.schema';
 import {
   Verification,
   VerificationDocument,

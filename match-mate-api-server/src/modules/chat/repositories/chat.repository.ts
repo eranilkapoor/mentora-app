@@ -20,7 +20,7 @@ import { ChatMessageStatus, ChatRoomType } from '../enums/chat.enums';
 import {
   CommunicationSetting,
   CommunicationSettingDocument,
-} from '../../settings/schemas/communication-settings.schema';
+} from '../../settings/schemas/communication-setting.schema';
 @Injectable()
 export class ChatRepository {
   constructor(

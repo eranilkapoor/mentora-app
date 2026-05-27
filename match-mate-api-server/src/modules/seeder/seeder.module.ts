@@ -30,39 +30,39 @@ import { Media, MediaSchema } from '../profile/schemas/media/media.schema';
 import {
   AccountSetting,
   AccountSettingSchema,
-} from '../settings/schemas/account-settings.schema';
+} from '../settings/schemas/account-setting.schema';
 import {
   PrivacySetting,
   PrivacySettingSchema,
-} from '../settings/schemas/privacy-settings.schema';
+} from '../settings/schemas/privacy-setting.schema';
 import {
   NotificationSetting,
   NotificationSettingSchema,
-} from '../settings/schemas/notification-settings.schema';
+} from '../settings/schemas/notification-setting.schema';
 import {
   CommunicationSetting,
   CommunicationSettingSchema,
-} from '../settings/schemas/communication-settings.schema';
+} from '../settings/schemas/communication-setting.schema';
 import {
   SecuritySetting,
   SecuritySettingSchema,
-} from '../settings/schemas/security-settings.schema';
+} from '../settings/schemas/security-setting.schema';
 import {
   LocalizationSetting,
   LocalizationSettingSchema,
-} from '../settings/schemas/localization-settings.schema';
+} from '../settings/schemas/localization-setting.schema';
 import {
   AccessibilitySetting,
   AccessibilitySettingSchema,
-} from '../settings/schemas/accessibility-settings.schema';
+} from '../settings/schemas/accessibility-setting.schema';
 import {
   MediaSetting,
   MediaSettingSchema,
-} from '../settings/schemas/media-settings.schema';
+} from '../settings/schemas/media-setting.schema';
 import {
   AiSetting,
   AiSettingSchema,
-} from '../settings/schemas/ai-settings.schema';
+} from '../settings/schemas/ai-setting.schema';
 import { SafetyModule } from '../safety/safety.module';
 
 @Module({

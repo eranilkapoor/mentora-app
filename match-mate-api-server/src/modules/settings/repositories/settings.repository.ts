@@ -4,36 +4,36 @@ import { Model, Types } from 'mongoose';
 import {
   AccountSetting,
   AccountSettingDocument,
-} from '../schemas/account-settings.schema';
+} from '../schemas/account-setting.schema';
 import {
   PrivacySetting,
   PrivacySettingDocument,
-} from '../schemas/privacy-settings.schema';
+} from '../schemas/privacy-setting.schema';
 import {
   NotificationSetting,
   NotificationSettingDocument,
-} from '../schemas/notification-settings.schema';
+} from '../schemas/notification-setting.schema';
 import {
   CommunicationSetting,
   CommunicationSettingDocument,
-} from '../schemas/communication-settings.schema';
+} from '../schemas/communication-setting.schema';
 import {
   SecuritySetting,
   SecuritySettingDocument,
-} from '../schemas/security-settings.schema';
+} from '../schemas/security-setting.schema';
 import {
   LocalizationSetting,
   LocalizationSettingDocument,
-} from '../schemas/localization-settings.schema';
+} from '../schemas/localization-setting.schema';
 import {
   AccessibilitySetting,
   AccessibilitySettingDocument,
-} from '../schemas/accessibility-settings.schema';
+} from '../schemas/accessibility-setting.schema';
 import {
   MediaSetting,
   MediaSettingDocument,
-} from '../schemas/media-settings.schema';
-import { AiSetting, AiSettingDocument } from '../schemas/ai-settings.schema';
+} from '../schemas/media-setting.schema';
+import { AiSetting, AiSettingDocument } from '../schemas/ai-setting.schema';
 import {
   UserBlock,
   UserBlockDocument,

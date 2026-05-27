@@ -28,7 +28,7 @@ import {
   NotificationQueueService,
 } from './notification-queue.service';
 import { SettingsService } from 'src/modules/settings/services/settings.service';
-import { NotificationPreferencesType } from 'src/modules/settings/schemas/notification-settings.schema';
+import { NotificationPreferencesType } from 'src/modules/settings/schemas/notification-setting.schema';
 import { ErrorCode } from 'src/common/constants';
 import {
   throwBadRequest,

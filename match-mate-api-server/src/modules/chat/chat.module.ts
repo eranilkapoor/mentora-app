@@ -21,7 +21,7 @@ import { ChatAccessService } from './services/chat-access.service';
 import {
   CommunicationSetting,
   CommunicationSettingSchema,
-} from '../settings/schemas/communication-settings.schema';
+} from '../settings/schemas/communication-setting.schema';
 
 @Module({
   imports: [
