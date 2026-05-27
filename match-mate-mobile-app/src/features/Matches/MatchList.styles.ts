@@ -10,10 +10,15 @@ export const matchListStyles = (theme: Theme) =>
     listContent: {
       paddingBottom: 32,
     },
+    listFooter: {
+      paddingVertical: 18,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
 
     // ─── Tabs ─────────────────────────────────────────────────────────────
     tabsWrapper: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
     },
@@ -42,9 +47,7 @@ export const matchListStyles = (theme: Theme) =>
       fontWeight: '600',
       color: theme.colors.textSecondary,
     },
-    tabTextActive: {
-      color: theme.colors.white,
-    },
+    tabTextActive: { color: theme.colors.white },
     tabBadge: {
       minWidth: 18,
       height: 18,
@@ -54,24 +57,20 @@ export const matchListStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    tabBadgeActive: {
-      backgroundColor: theme.colors.accentLight,
-    },
+    tabBadgeActive: { backgroundColor: theme.colors.overlayDark },
     tabBadgeText: {
       fontSize: 10,
       fontWeight: '800',
       color: theme.colors.primary,
     },
-    tabBadgeTextActive: {
-      color: theme.colors.white,
-    },
+    tabBadgeTextActive: { color: theme.colors.white },
 
     // ─── Search ───────────────────────────────────────────────────────────
     searchWrapper: {
       paddingHorizontal: 16,
       paddingTop: 12,
       paddingBottom: 14,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       marginBottom: 12,
@@ -92,21 +91,19 @@ export const matchListStyles = (theme: Theme) =>
       borderRadius: 12,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      height: 42,
+      height: 44,
     },
     filterToggle: {
-      width: 42,
-      height: 42,
+      width: 44,
+      height: 44,
       borderRadius: 12,
       borderWidth: 1.5,
       borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
     },
-    filterToggleActive: {
-      backgroundColor: theme.colors.primary,
-    },
+    filterToggleActive: { backgroundColor: theme.colors.primary },
     filterCountBadge: {
       position: 'absolute',
       top: -6,
@@ -119,7 +116,7 @@ export const matchListStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
       borderWidth: 1.5,
-      borderColor: theme.colors.white,
+      borderColor: theme.colors.surface,
     },
     filterCountText: {
       color: theme.colors.white,
@@ -130,31 +127,39 @@ export const matchListStyles = (theme: Theme) =>
       flex: 1,
       fontSize: 14,
       color: theme.colors.textPrimary,
+      paddingVertical: 0,
     },
-
-    // ─── Results Bar ──────────────────────────────────────────────────────
     resultsBarCompact: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: 8,
     },
+    resultsText: {
+      fontSize: 13,
+      color: theme.colors.textMuted,
+      fontWeight: '500',
+    },
+    resultsHighlight: {
+      color: theme.colors.primary,
+      fontWeight: '700',
+    },
     clearFiltersText: {
       color: theme.colors.primary,
       fontSize: 13,
       fontWeight: '700',
     },
+
+    // ─── Filter panel ─────────────────────────────────────────────────────
     filterPanel: {
       gap: 14,
       padding: 14,
       borderRadius: 12,
       borderWidth: 1,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
     },
-    filterPanelHeader: {
-      gap: 3,
-    },
+    filterPanelHeader: { gap: 3 },
     filterPanelTitle: {
       color: theme.colors.textPrimary,
       fontSize: 14,
@@ -164,9 +169,7 @@ export const matchListStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
       fontSize: 12,
     },
-    filterSection: {
-      gap: 8,
-    },
+    filterSection: { gap: 8 },
     filterInputBox: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -176,7 +179,7 @@ export const matchListStyles = (theme: Theme) =>
       borderRadius: 12,
       borderWidth: 1.5,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.inputBackground,
     },
     filterLabel: {
       color: theme.colors.textPrimary,
@@ -189,12 +192,12 @@ export const matchListStyles = (theme: Theme) =>
       gap: 8,
     },
     filterChip: {
-      paddingHorizontal: 12,
+      paddingHorizontal: 14,
       paddingVertical: 8,
-      borderRadius: 12,
-      borderWidth: 1,
+      borderRadius: 20,
+      borderWidth: 1.5,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
     },
     filterChipActive: {
       backgroundColor: theme.colors.primary,
@@ -202,23 +205,21 @@ export const matchListStyles = (theme: Theme) =>
     },
     filterChipText: {
       color: theme.colors.textSecondary,
-      fontSize: 12,
-      fontWeight: '700',
+      fontSize: 13,
+      fontWeight: '600',
     },
-    filterChipTextActive: {
-      color: theme.colors.white,
-    },
+    filterChipTextActive: { color: theme.colors.white },
     verifiedToggle: {
       flexDirection: 'row',
       alignItems: 'center',
       alignSelf: 'flex-start',
       gap: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 9,
-      borderRadius: 12,
-      borderWidth: 1,
+      paddingHorizontal: 14,
+      paddingVertical: 10,
+      borderRadius: 20,
+      borderWidth: 1.5,
       borderColor: theme.colors.border,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
     },
     verifiedToggleActive: {
       backgroundColor: theme.colors.primary,
@@ -226,42 +227,34 @@ export const matchListStyles = (theme: Theme) =>
     },
     verifiedToggleText: {
       color: theme.colors.textSecondary,
-      fontSize: 12,
-      fontWeight: '700',
-    },
-    verifiedToggleTextActive: {
-      color: theme.colors.white,
-    },
-    resultsBar: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 16,
-      paddingVertical: 10,
-    },
-    resultsText: {
       fontSize: 13,
-      color: theme.colors.textMuted,
-      fontWeight: '500',
+      fontWeight: '600',
     },
-    resultsHighlight: {
-      color: theme.colors.primary,
-      fontWeight: '700',
-    },
+    verifiedToggleTextActive: { color: theme.colors.white },
 
     // ─── Card ─────────────────────────────────────────────────────────────
     card: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       marginHorizontal: 16,
       marginBottom: 16,
       borderRadius: 18,
       overflow: 'hidden',
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      ...Platform.select({ android: { elevation: 3 } }),
+      ...Platform.select({
+        android: { elevation: 3 },
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.07,
+          shadowRadius: 8,
+        },
+        web: {},
+      }),
     },
     photo: { width: '100%', height: 300 },
     photoWrapper: { position: 'relative' },
+    // Fixed: overlayDark → rgba constant safe on all themes
     photoScrim: {
       position: 'absolute',
       bottom: 0,
@@ -292,7 +285,7 @@ export const matchListStyles = (theme: Theme) =>
     onlineBadge: {
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.black,
+      backgroundColor: theme.colors.overlayDark,
       borderRadius: 20,
       paddingHorizontal: 10,
       paddingVertical: 4,
@@ -327,12 +320,10 @@ export const matchListStyles = (theme: Theme) =>
       gap: 5,
     },
     locationOverlayText: {
-      color: theme.colors.accentLight,
+      color: theme.colors.overlayLight,
       fontSize: 13,
     },
-    info: {
-      padding: 14,
-    },
+    info: { padding: 14 },
     tagsRow: {
       flexDirection: 'row',
       gap: 7,
@@ -347,10 +338,14 @@ export const matchListStyles = (theme: Theme) =>
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.primaryBorder,
     },
-    tagText: { color: theme.colors.primary, fontSize: 12, fontWeight: '600' },
+    tagText: {
+      color: theme.colors.primary,
+      fontSize: 12,
+      fontWeight: '600',
+    },
     metaRow: { gap: 5, marginBottom: 14 },
     metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-    metaText: { color: theme.colors.textSecondary, fontSize: 13 },
+    metaText: { color: theme.colors.textSecondary, fontSize: 13, flex: 1 },
     actions: { flexDirection: 'row', gap: 10 },
     outlineBtn: {
       flex: 1,
@@ -377,14 +372,10 @@ export const matchListStyles = (theme: Theme) =>
       backgroundColor: theme.colors.primary,
       borderRadius: 12,
       paddingVertical: 12,
-      elevation: 3,
     },
-    primaryBtnPending: {
-      backgroundColor: theme.colors.error,
-    },
-    primaryBtnSuccess: {
-      backgroundColor: theme.colors.success,
-    },
+    primaryBtnPending: { backgroundColor: theme.colors.error },
+    primaryBtnSuccess: { backgroundColor: theme.colors.success },
+    primaryBtnAccept: { backgroundColor: theme.colors.success }, // added
     primaryText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
     shortlistBtn: {
       width: 44,
@@ -393,7 +384,7 @@ export const matchListStyles = (theme: Theme) =>
       borderColor: theme.colors.accent,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: theme.colors.accentLight,
+      backgroundColor: theme.colors.primaryLight,
     },
     shortlistBtnActive: {
       backgroundColor: theme.colors.accent,
@@ -402,7 +393,7 @@ export const matchListStyles = (theme: Theme) =>
 
     // ─── Skeleton ─────────────────────────────────────────────────────────
     skeletonCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       marginHorizontal: 16,
       marginBottom: 16,
       borderRadius: 18,
@@ -423,11 +414,6 @@ export const matchListStyles = (theme: Theme) =>
     },
     skeletonLineShort: { width: '55%' },
     skeletonLineXShort: { width: '35%' },
-    listFooter: {
-      paddingVertical: 18,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
 
     // ─── Empty ────────────────────────────────────────────────────────────
     emptyContainer: {
@@ -456,17 +442,5 @@ export const matchListStyles = (theme: Theme) =>
       color: theme.colors.textMuted,
       textAlign: 'center',
       lineHeight: 20,
-    },
-    emptyBtn: {
-      marginTop: 8,
-      paddingHorizontal: 24,
-      paddingVertical: 11,
-      borderRadius: 24,
-      backgroundColor: theme.colors.primary,
-    },
-    emptyBtnText: {
-      color: theme.colors.white,
-      fontWeight: '700',
-      fontSize: 14,
     },
   });
