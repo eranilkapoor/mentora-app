@@ -113,10 +113,6 @@ export default function HomeScreen({
             badge: true,
             onPress: () => navigation.navigate('Notifications'),
           },
-          {
-            icon: 'sliders',
-            onPress: () => navigation.getParent()?.navigate('Matches'),
-          },
         ]}
       />
 

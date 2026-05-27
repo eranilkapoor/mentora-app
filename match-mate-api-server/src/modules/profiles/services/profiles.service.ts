@@ -9,15 +9,15 @@ import {
   FamilyDto,
 } from '../dto/create-profile.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
-import type { ICacheService } from '@/modules/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from '@/modules/cache/interfaces/cache.interface';
-import { NotificationsService } from '../../notifications/services/notifications.service';
-import { AnalyticsService } from '../../analytics/services/analytics.service';
+import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/common/cache/interfaces/cache.interface';
+import { NotificationsService } from '@/modules/notifications/services/notifications.service';
+import { AnalyticsService } from '@/modules/analytics/services/analytics.service';
 import { AppLogger } from '@/common/logger/logger.service';
 import {
   AnalyticsEventType,
   AnalyticsPlatform,
-} from '../../analytics/enums/analytics-event.enum';
+} from '@/modules/analytics/enums/analytics-event.enum';
 import {
   ActivityAction,
   ActivityCategory,
@@ -38,7 +38,7 @@ import { SettingsService } from '@/modules/settings/services/settings.service';
 import {
   Verification,
   VerificationDocument,
-} from '../../safety/schemas/verification.schema';
+} from '@/modules/safety/schemas/verification.schema';
 import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,

@@ -16,7 +16,7 @@ import * as path from 'path';
 import * as express from 'express';
 import cookieParser from 'cookie-parser';
 import { AppLogger } from './common/logger/logger.service';
-import { LoggingInterceptor } from './common/logger/logger.interceptor';
+import { LoggingInterceptor } from './common/logger/logging.interceptor';
 import { HybridSocketIoAdapter } from './common/adapters/hybrid-socket-io.adapter';
 
 async function bootstrap() {

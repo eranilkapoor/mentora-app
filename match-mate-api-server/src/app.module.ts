@@ -10,7 +10,7 @@ import { envValidationSchema } from '@/config/validation';
 import { MongoModule } from '@/infrastructure/databases/mongo/mongo.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
-import { CacheModule } from './modules/cache/cache.module';
+import { CacheModule } from './common/cache/cache.module';
 import { ProfilesModule } from './modules/profiles/profiles.module';
 import { CorrelationIdMiddleware } from '@/common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';

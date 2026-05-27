@@ -16,8 +16,8 @@ import { PaymentReconciliationDto } from '../dto/payment-reconciliation.dto';
 import { PaymentSettlementReportDto } from '../dto/payment-settlement-report.dto';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
-import { Plan } from '../../subscriptions/schemas/plan.schema';
-import { SubscriptionsService } from '../../subscriptions/services/subscriptions.service';
+import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
+import { SubscriptionsService } from '@/modules/subscriptions/services/subscriptions.service';
 import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,

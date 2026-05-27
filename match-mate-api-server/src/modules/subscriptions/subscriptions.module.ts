@@ -23,7 +23,7 @@ import { SubscriptionsController } from './controllers/subscriptions.controller'
 import { FeatureGuard } from './guards/feature.guard';
 
 // External modules
-import { CacheModule } from '../cache/cache.module';
+import { CacheModule } from '../../common/cache/cache.module';
 import { AuthModule } from '../auth/auth.module';
 
 // Tasks

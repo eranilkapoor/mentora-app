@@ -22,18 +22,18 @@ import {
   ChangePasswordDto,
 } from '../dto/auth.dto';
 import { AuthProvider } from '../enums/auth-provider.enum';
-import type { ICacheService } from '@/modules/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from '@/modules/cache/interfaces/cache.interface';
+import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/common/cache/interfaces/cache.interface';
 import { AuthTokenService } from './auth-token.service';
 import {
   UserSession,
   UserSessionDocument,
 } from '../schemas/user-session.schema';
-import { Plan } from '../../subscriptions/schemas/plan.schema';
+import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
 import {
   Subscription,
   SubscriptionDocument,
-} from '../../subscriptions/schemas/subscription.schema';
+} from '@/modules/subscriptions/schemas/subscription.schema';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
 import {
   ActivityAction,
@@ -41,17 +41,17 @@ import {
   ActivityLog,
   ActivityLogDocument,
   ActivityPlatform,
-} from '../../profiles/schemas/settings/activity-logs.schema';
+} from '@/modules/profiles/schemas/settings/activity-logs.schema';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { AnalyticsService } from '../../analytics/services/analytics.service';
 import {
   AnalyticsEventType,
   AnalyticsPlatform,
-} from '../../analytics/enums/analytics-event.enum';
+} from '@/modules/analytics/enums/analytics-event.enum';
 import {
   Verification,
   VerificationDocument,
-} from '../../safety/schemas/verification.schema';
+} from '@/modules/safety/schemas/verification.schema';
 import { AuthPasswordService } from './auth-password.service';
 import { ErrorCode } from '@/common/constants';
 import {

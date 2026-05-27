@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { MediaRepository } from '../repositories/media.repository';
 import { StorageService } from '../../storage/services/storage.service';
-import type { ICacheService } from '@/modules/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from '@/modules/cache/interfaces/cache.interface';
+import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/common/cache/interfaces/cache.interface';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
 import { MediaType } from '@/common/enums';
 import { ErrorCode } from '@/common/constants';

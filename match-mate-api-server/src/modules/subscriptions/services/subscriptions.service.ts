@@ -9,10 +9,10 @@ import { Plan, PlanDocument } from '../schemas/plan.schema';
 import {
   Payment,
   PaymentDocument,
-} from '../../payments/schemas/payment.schema';
-import { UserRepository } from '../../auth/repositories/user.repository';
+} from '@/modules/payments/schemas/payment.schema';
+import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { PlanTier, SubscriptionStatus } from '@/common/enums';
-import { PaymentStatus } from '../../payments/enums/payment-status.enum';
+import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
 import { ErrorCode } from '@/common/constants';
 import { throwNotFound } from '@/common/exceptions/throw-app-exception';
 

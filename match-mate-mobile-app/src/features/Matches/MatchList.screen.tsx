@@ -2,6 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
+  Keyboard,
   ListRenderItem,
   Platform,
   RefreshControl,
@@ -24,8 +25,9 @@ import { useMatchListData } from './hooks/useMatchListData';
 import { useMatchListActions } from './hooks/useMatchListActions';
 import { MatchCard } from './components/MatchCard';
 import { MatchTabs } from './components/MatchTabs';
-import { MatchListHeader } from './components/MatchListHeader';
 import { MatchEmpty } from './components/MatchEmpty';
+import { MatchFilterModal } from './components/MatchFilterModal';
+import { MatchListToolbar } from './components/MatchListToolbar';
 
 function SkeletonCard(): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
@@ -56,6 +58,13 @@ export default function MatchListScreen({
     ageFilter: 'any',
     casteFilter: 'any',
     verifiedOnly: false,
+
+    heightFilter: 'any',
+    maritalStatusFilter: 'any',
+    educationFilter: 'any',
+    activityFilter: 'any',
+    premiumOnly: false,
+    withPhotoOnly: false,
   });
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,10 +94,15 @@ export default function MatchListScreen({
   const activeFilterCount = useMemo(
     () =>
       [
-        filters.cityFilter.trim(),
         filters.ageFilter !== 'any',
         filters.casteFilter !== 'any',
         filters.verifiedOnly,
+        filters.heightFilter !== 'any',
+        filters.maritalStatusFilter !== 'any',
+        filters.educationFilter !== 'any',
+        filters.activityFilter !== 'any',
+        filters.premiumOnly,
+        filters.withPhotoOnly,
       ].filter(Boolean).length,
     [filters]
   );
@@ -140,11 +154,22 @@ export default function MatchListScreen({
   }, []);
 
   const handleClearFilters = useCallback(() => {
+    Keyboard.dismiss();
+
+    setQuery('');
+
     setFilters({
       cityFilter: '',
       ageFilter: 'any',
       casteFilter: 'any',
       verifiedOnly: false,
+
+      heightFilter: 'any',
+      maritalStatusFilter: 'any',
+      educationFilter: 'any',
+      activityFilter: 'any',
+      premiumOnly: false,
+      withPhotoOnly: false,
     });
   }, []);
 
@@ -205,17 +230,23 @@ export default function MatchListScreen({
 
   const ListHeader = useCallback(
     () => (
-      <MatchListHeader
-        query={query}
-        onQueryChange={setQuery}
-        filters={filters}
-        onFiltersChange={handleFiltersChange}
-        showFilters={showFilters}
-        onToggleFilters={() => setShowFilters((v) => !v)}
-        onClearFilters={handleClearFilters}
-        activeFilterCount={activeFilterCount}
-        resultCount={filtered.length}
-      />
+      <>
+        <MatchListToolbar
+          resultCount={filtered.length}
+          activeFilterCount={activeFilterCount}
+          onClearFilters={handleClearFilters}
+        />
+        <MatchFilterModal
+          visible={showFilters}
+          onClose={() => setShowFilters(false)}
+          query={query}
+          onQueryChange={setQuery}
+          filters={filters}
+          onFiltersChange={handleFiltersChange}
+          onApply={() => setShowFilters(false)}
+          onClear={handleClearFilters}
+        />
+      </>
     ),
     [
       activeFilterCount,
@@ -235,9 +266,9 @@ export default function MatchListScreen({
         subtitle={t('matches.subtitle')}
         actions={[
           {
-            icon: 'filter',
+            icon: 'sliders',
             badge: activeFilterCount > 0,
-            onPress: () => setShowFilters((v) => !v),
+            onPress: () => setShowFilters(true),
           },
         ]}
       />
