@@ -1,17 +1,17 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { MediaRepository } from '../repositories/media.repository';
 import { StorageService } from '../../storage/services/storage.service';
-import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
-import { AppRequest } from 'src/common/interfaces/app-request.interface';
-import { MediaType } from 'src/common/enums';
-import { ErrorCode } from 'src/common/constants';
+import type { ICacheService } from '@/modules/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/modules/cache/interfaces/cache.interface';
+import { AppRequest } from '@/common/interfaces/app-request.interface';
+import { MediaType } from '@/common/enums';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwForbidden,
   throwNotFound,
-} from 'src/common/exceptions/throw-app-exception';
-import { AppException } from 'src/common/exceptions/app.exception';
+} from '@/common/exceptions/throw-app-exception';
+import { AppException } from '@/common/exceptions/app.exception';
 
 const MAX_IMAGES = 10;
 const MAX_VIDEOS = 3;

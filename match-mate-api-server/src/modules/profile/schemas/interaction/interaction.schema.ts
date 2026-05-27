@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 import { InteractionType } from '../../enums/interaction-type.enum';
 
 export enum InteractionStatus {
@@ -9,7 +9,7 @@ export enum InteractionStatus {
   REJECTED = 'rejected',
 }
 
-@Schema({ collection: COLLECTIONS.INTERACTION, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.INTERACTION, timestamps: true })
 export class Interaction {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   fromUserId!: Types.ObjectId;

@@ -1,5 +1,5 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator';
-import { FeatureKey } from 'src/common/enums';
+import { FeatureKey } from '@/common/enums';
 
 export class CreateFeatureDto {
   @IsEnum(FeatureKey)

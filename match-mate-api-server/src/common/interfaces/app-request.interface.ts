@@ -1,5 +1,5 @@
 import { Request } from 'express';
-import { JwtUser } from '../../modules/auth/interfaces/jwt-user.interface';
+import { JwtUser } from '@/modules/auth/interfaces/jwt-user.interface';
 
 export interface AppRequest extends Request {
   /**

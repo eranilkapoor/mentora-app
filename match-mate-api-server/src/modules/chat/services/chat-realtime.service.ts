@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { Server } from 'socket.io';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from '@/common/logger/logger.service';
 
 @Injectable()
 export class ChatRealtimeService {

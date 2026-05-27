@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
 export type VisibilityLevel =
   | 'everyone'
@@ -8,7 +8,7 @@ export type VisibilityLevel =
   | 'contacts_only'
   | 'no_one';
 
-@Schema({ collection: COLLECTIONS.PRIVACY_SETTING, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.PRIVACY_SETTING, timestamps: true })
 export class PrivacySetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;

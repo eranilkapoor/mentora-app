@@ -18,13 +18,13 @@ import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
 import { Plan } from '../../subscription/schemas/plan.schema';
 import { SubscriptionService } from '../../subscription/services/subscription.service';
-import { ErrorCode } from 'src/common/constants';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwConflict,
   throwNotFound,
   throwUnauthorized,
-} from 'src/common/exceptions/throw-app-exception';
+} from '@/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class PaymentService {

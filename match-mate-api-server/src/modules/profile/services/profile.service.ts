@@ -9,11 +9,11 @@ import {
   FamilyDto,
 } from '../dto/create-profile.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
-import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
+import type { ICacheService } from '@/modules/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/modules/cache/interfaces/cache.interface';
 import { NotificationService } from '../../notification/services/notification.service';
 import { AnalyticsService } from '../../analytics/services/analytics.service';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from '@/common/logger/logger.service';
 import {
   AnalyticsEventType,
   AnalyticsPlatform,
@@ -25,27 +25,27 @@ import {
   ActivityLogDocument,
   ActivityPlatform,
 } from '../schemas/settings/activity-logs.schema';
-import { AppRequest } from 'src/common/interfaces/app-request.interface';
-import { ProfileStatus, Qualification } from 'src/common/enums';
+import { AppRequest } from '@/common/interfaces/app-request.interface';
+import { ProfileStatus, Qualification } from '@/common/enums';
 import { InjectModel } from '@nestjs/mongoose';
-import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
-import { UserRepository } from 'src/modules/auth/repositories/user.repository';
-import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { OnboardingProfileDto } from '@/modules/profile/dto/onboarding-profile.dto';
+import { UserRepository } from '@/modules/auth/repositories/user.repository';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { MediaService } from './media.service';
 import { PreferenceService } from './preference.service';
 import { UpdateProfileLocationDto } from '../dto/location.dto';
-import { SettingsService } from 'src/modules/settings/services/settings.service';
+import { SettingsService } from '@/modules/settings/services/settings.service';
 import {
   Verification,
   VerificationDocument,
 } from '../../safety/schemas/verification.schema';
-import { ErrorCode } from 'src/common/constants';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwNotFound,
   throwUnauthorized,
-} from 'src/common/exceptions/throw-app-exception';
-import { AppException } from 'src/common/exceptions/app.exception';
+} from '@/common/exceptions/throw-app-exception';
+import { AppException } from '@/common/exceptions/app.exception';
 
 interface RegisterRequestContext {
   platform: ActivityPlatform;

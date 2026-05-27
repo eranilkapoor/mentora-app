@@ -10,7 +10,7 @@ import {
   Role,
   Status,
   SubscriptionStatus,
-} from 'src/common/enums';
+} from '@/common/enums';
 import { UserRepository } from '../repositories/user.repository';
 import { OtpService } from './otp.service';
 import * as bcrypt from 'bcryptjs';
@@ -22,8 +22,8 @@ import {
   ChangePasswordDto,
 } from '../dto/auth.dto';
 import { AuthProvider } from '../enums/auth-provider.enum';
-import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
+import type { ICacheService } from '@/modules/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/modules/cache/interfaces/cache.interface';
 import { AuthTokenService } from './auth-token.service';
 import {
   UserSession,
@@ -34,7 +34,7 @@ import {
   Subscription,
   SubscriptionDocument,
 } from '../../subscription/schemas/subscription.schema';
-import { AppRequest } from 'src/common/interfaces/app-request.interface';
+import { AppRequest } from '@/common/interfaces/app-request.interface';
 import {
   ActivityAction,
   ActivityCategory,
@@ -53,12 +53,12 @@ import {
   VerificationDocument,
 } from '../../safety/schemas/verification.schema';
 import { AuthPasswordService } from './auth-password.service';
-import { ErrorCode } from 'src/common/constants';
+import { ErrorCode } from '@/common/constants';
 import {
   throwConflict,
   throwUnauthorized,
-} from 'src/common/exceptions/throw-app-exception';
-import { AppException } from 'src/common/exceptions/app.exception';
+} from '@/common/exceptions/throw-app-exception';
+import { AppException } from '@/common/exceptions/app.exception';
 
 interface TokenAttachUser {
   _id: { toString(): string };

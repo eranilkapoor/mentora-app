@@ -1,10 +1,10 @@
 import { Controller, Get, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { PlanService } from '../services/plan.service';
 import { SubscriptionService } from '../services/subscription.service';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('subscriptions')
 @UseGuards(JwtAuthGuard)

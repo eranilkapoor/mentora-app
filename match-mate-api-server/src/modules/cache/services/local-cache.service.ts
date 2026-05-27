@@ -2,7 +2,7 @@ import { Injectable, OnModuleDestroy } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
 import { ICacheService } from '../interfaces/cache.interface';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from '@/common/logger/logger.service';
 
 interface CacheEntry<T> {
   value: T;

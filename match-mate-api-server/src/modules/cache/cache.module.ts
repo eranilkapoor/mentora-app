@@ -3,7 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { CACHE_SERVICE } from './interfaces/cache.interface';
 import { RedisCacheService } from './services/redis-cache.service';
 import { LocalCacheService } from './services/local-cache.service';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from '@/common/logger/logger.service';
 
 @Global()
 @Module({

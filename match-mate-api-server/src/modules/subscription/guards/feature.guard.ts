@@ -2,10 +2,10 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { FEATURE_KEY } from '../decorators/feature.decorator';
-import { FeatureKey } from 'src/common/enums';
+import { FeatureKey } from '@/common/enums';
 import { FeatureService } from '../services/feature.service';
-import { ErrorCode } from 'src/common/constants';
-import { throwForbidden } from 'src/common/exceptions/throw-app-exception';
+import { ErrorCode } from '@/common/constants';
+import { throwForbidden } from '@/common/exceptions/throw-app-exception';
 
 interface RequestWithUser {
   ip: string;

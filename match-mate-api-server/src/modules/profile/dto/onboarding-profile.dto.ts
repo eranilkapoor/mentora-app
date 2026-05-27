@@ -12,10 +12,7 @@ import {
   Min,
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
-import { Gender } from 'src/common/enums/gender.enum';
-import { Eating } from 'src/common/enums/eating.enum';
-import { Drinking } from 'src/common/enums/drinking.enum';
-import { Smoking } from 'src/common/enums/smoking.enum';
+import { Gender, Eating, Drinking, Smoking } from '@/common/enums';
 import {
   BodyType,
   Caste,
@@ -29,7 +26,7 @@ import {
   Qualification,
   Religion,
   SiblingType,
-} from 'src/common/enums';
+} from '@/common/enums';
 
 function isValidDateString(date: string): boolean {
   const [year, month, day] = date.split('-').map(Number);

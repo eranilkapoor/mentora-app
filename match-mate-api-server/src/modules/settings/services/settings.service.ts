@@ -2,30 +2,30 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
 import { Model, Types } from 'mongoose';
-import { Status } from 'src/common/enums';
-import { User, UserDocument } from 'src/modules/auth/schemas/user.schema';
+import { Status } from '@/common/enums';
+import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import {
   UserSession,
   UserSessionDocument,
-} from 'src/modules/auth/schemas/user-session.schema';
+} from '@/modules/auth/schemas/user-session.schema';
 import {
   Verification,
   VerificationDocument,
-} from 'src/modules/safety/schemas/verification.schema';
+} from '@/modules/safety/schemas/verification.schema';
 import {
   UserReport,
   UserReportDocument,
-} from 'src/modules/safety/schemas/user-report.schema';
+} from '@/modules/safety/schemas/user-report.schema';
 import {
   Profile,
   ProfileDocument,
-} from 'src/modules/profile/schemas/profile/profile.schema';
+} from '@/modules/profile/schemas/profile/profile.schema';
 import {
   Media,
   MediaDocument,
   MediaStatus,
-} from 'src/modules/profile/schemas/media/media.schema';
-import { MediaType } from 'src/common/enums';
+} from '@/modules/profile/schemas/media/media.schema';
+import { MediaType } from '@/common/enums';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,
@@ -53,8 +53,8 @@ import {
   RequestEmailChangeDto,
   RequestPhoneChangeDto,
 } from '../dto/account-settings.dto';
-import { ErrorCode } from 'src/common/constants';
-import { throwBadRequest } from 'src/common/exceptions/throw-app-exception';
+import { ErrorCode } from '@/common/constants';
+import { throwBadRequest } from '@/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class SettingsService {

@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
-@Schema({ collection: COLLECTIONS.PLAN_FEATURE, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.PLAN_FEATURE, timestamps: true })
 export class PlanFeature {
   @Prop({ type: Types.ObjectId, ref: 'Plan', required: true })
   planId!: Types.ObjectId;

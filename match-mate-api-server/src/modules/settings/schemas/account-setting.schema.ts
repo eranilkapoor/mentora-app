@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
 @Schema({ _id: false })
 class LinkedAccount {
@@ -10,7 +10,7 @@ class LinkedAccount {
   @Prop() connectedAt?: Date;
 }
 
-@Schema({ collection: COLLECTIONS.ACCOUNT_SETTING, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.ACCOUNT_SETTING, timestamps: true })
 export class AccountSetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;

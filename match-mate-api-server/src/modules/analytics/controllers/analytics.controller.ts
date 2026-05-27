@@ -2,11 +2,11 @@ import { Controller, Post, Body, Get, Query, UseGuards } from '@nestjs/common';
 import { AnalyticsService } from '../services/analytics.service';
 import { TrackEventDto } from '../dto/track-event.dto';
 import { AnalyticsQueryDto } from '../dto/analytics-query.dto';
-import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { Role } from 'src/common/enums';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { RolesGuard } from '@/modules/auth/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { Role } from '@/common/enums';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('analytics')
 @UseGuards(RolesGuard)

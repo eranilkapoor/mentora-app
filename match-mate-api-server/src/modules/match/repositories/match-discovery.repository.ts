@@ -4,16 +4,16 @@ import { FilterQuery, Model, Types, FlattenMaps } from 'mongoose';
 import {
   Profile,
   ProfileDocument,
-} from 'src/modules/profile/schemas/profile/profile.schema';
+} from '@/modules/profile/schemas/profile/profile.schema';
 import {
   Preference,
   PreferenceDocument,
-} from 'src/modules/profile/schemas/preference/preference.schema';
+} from '@/modules/profile/schemas/preference/preference.schema';
 import {
   Media,
   MediaDocument,
   MediaStatus,
-} from 'src/modules/profile/schemas/media/media.schema';
+} from '@/modules/profile/schemas/media/media.schema';
 import {
   Interest,
   InterestDocument,

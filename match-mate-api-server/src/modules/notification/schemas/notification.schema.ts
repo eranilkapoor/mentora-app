@@ -1,13 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 import {
   NOTIFICATION_CATEGORIES,
   NOTIFICATION_PRIORITIES,
   NOTIFICATION_TYPES,
 } from '../notification.constants';
 
-@Schema({ collection: COLLECTIONS.NOTIFICATION, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.NOTIFICATION, timestamps: true })
 export class Notification {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;

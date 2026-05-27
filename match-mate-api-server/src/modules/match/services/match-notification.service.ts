@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 
-import { NotificationService } from 'src/modules/notification/services/notification.service';
+import { NotificationService } from '@/modules/notification/services/notification.service';
 import { LeanProfile, MatchRepository } from '../repositories/match.repository';
 import { InterestStatus } from '../schemas/interest.schema';
 

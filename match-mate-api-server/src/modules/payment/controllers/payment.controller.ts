@@ -16,10 +16,10 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { FailPaymentDto } from '../dto/fail-payment.dto';
 import { ListPaymentsDto } from '../dto/list-payments.dto';
 import { PaymentWebhookDto } from '../dto/payment-webhook.dto';
-import { Public } from 'src/common/decorators/public.decorator';
-import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { Public } from '@/common/decorators/public.decorator';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('payments')
 @UseGuards(JwtAuthGuard)

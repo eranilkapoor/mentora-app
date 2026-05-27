@@ -1,7 +1,7 @@
 import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import { PERMISSIONS_KEY } from 'src/common/decorators/permissions.decorator';
-import { Permission } from 'src/common/enums';
+import { PERMISSIONS_KEY } from '@/common/decorators/permissions.decorator';
+import { Permission } from '@/common/enums';
 
 interface RequestWithUser {
   user?: {

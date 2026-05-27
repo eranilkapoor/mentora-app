@@ -10,17 +10,17 @@ import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 
-import { ErrorCode } from 'src/common/constants';
-import { AppException } from 'src/common/exceptions/app.exception';
-import { AppRequest } from 'src/common/interfaces/app-request.interface';
+import { ErrorCode } from '@/common/constants';
+import { AppException } from '@/common/exceptions/app.exception';
+import { AppRequest } from '@/common/interfaces/app-request.interface';
 import {
   ActivityAction,
   ActivityCategory,
   ActivityLog,
   ActivityLogDocument,
   ActivityPlatform,
-} from 'src/modules/profile/schemas/settings/activity-logs.schema';
-import { NotificationService } from 'src/modules/notification/services/notification.service';
+} from '@/modules/profile/schemas/settings/activity-logs.schema';
+import { NotificationService } from '@/modules/notification/services/notification.service';
 import { UserRepository } from '../repositories/user.repository';
 import { UserDocument } from '../schemas/user.schema';
 import {

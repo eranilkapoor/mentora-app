@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 import { ChatRoomStatus, ChatRoomType } from '../enums/chat.enums';
 
 @Schema({ _id: false })
@@ -27,7 +27,7 @@ export class ChatParticipantState {
   mutedUntil?: Date;
 }
 
-@Schema({ collection: COLLECTIONS.CHAT_ROOM, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.CHAT_ROOM, timestamps: true })
 export class ChatRoom extends Document {
   @Prop({ required: true, unique: true, index: true })
   participantHash!: string;

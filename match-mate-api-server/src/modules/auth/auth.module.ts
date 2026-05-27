@@ -10,7 +10,7 @@ import { AuthPasswordService } from './services/auth-password.service';
 import { UserRepository } from './repositories/user.repository';
 import { OtpService } from './services/otp.service';
 import { User, UserSchema } from './schemas/user.schema';
-import { getJwtConfig } from 'src/config/jwt.config';
+import { getJwtConfig } from '@/config/jwt.config';
 import { AuthTokenService } from './services/auth-token.service';
 import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
 import {

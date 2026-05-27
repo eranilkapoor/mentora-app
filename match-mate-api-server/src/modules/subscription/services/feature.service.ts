@@ -1,8 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FlattenMaps, Model, Types } from 'mongoose';
-import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
+import type { ICacheService } from '@/modules/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/modules/cache/interfaces/cache.interface';
 import {
   PlanFeature,
   PlanFeatureDocument,
@@ -11,11 +11,11 @@ import {
   Subscription,
   SubscriptionDocument,
 } from '../schemas/subscription.schema';
-import { FeatureKey } from 'src/common/enums';
+import { FeatureKey } from '@/common/enums';
 import { FeatureContext } from '../interfaces/feature-context.interface';
 import { PlanService } from './plan.service';
-import { ErrorCode } from 'src/common/constants';
-import { throwForbidden } from 'src/common/exceptions/throw-app-exception';
+import { ErrorCode } from '@/common/constants';
+import { throwForbidden } from '@/common/exceptions/throw-app-exception';
 
 //  Types
 

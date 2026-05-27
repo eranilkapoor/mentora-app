@@ -20,8 +20,8 @@ import { MarkRoomReadDto } from '../dto/mark-room-read.dto';
 import { SendMessageDto } from '../dto/send-message.dto';
 import { TypingEventDto } from '../dto/typing-event.dto';
 import { ChatPresenceService } from '../services/chat-presence.service';
-import { getJwtConfig } from 'src/config/jwt.config';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { getJwtConfig } from '@/config/jwt.config';
+import { AppLogger } from '@/common/logger/logger.service';
 
 interface SocketJwtPayload {
   sub: string;

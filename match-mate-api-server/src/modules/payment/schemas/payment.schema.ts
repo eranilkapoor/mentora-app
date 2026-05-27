@@ -1,13 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { PaymentStatus } from '../enums/payment-status.enum';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentMethod } from '../enums/payment-method.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
 
 @Schema({
-  collection: COLLECTIONS.PAYMENT,
+  collection: COLLECTION_NAMES.PAYMENT,
   timestamps: true,
   versionKey: false,
 })

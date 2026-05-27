@@ -16,10 +16,10 @@ import { MatchDiscoveryService } from '../services/match-discovery.service';
 import { SendInterestDto } from '../dto/send-interest.dto';
 import { RespondInterestDto } from '../dto/respond-interest.dto';
 import { MatchQueryDto, NearbyQueryDto } from '../dto/match-query.dto';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('matches')
 @UseGuards(JwtAuthGuard)

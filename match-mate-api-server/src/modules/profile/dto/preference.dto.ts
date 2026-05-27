@@ -23,8 +23,9 @@ import {
   Smoking,
   Qualification,
   Country,
-} from 'src/common/enums';
-import { ChildPreference, ResidencyPreference } from 'src/common/enums';
+  ChildPreference,
+  ResidencyPreference,
+} from '@/common/enums';
 
 export class RangeDto {
   @Type(() => Number)

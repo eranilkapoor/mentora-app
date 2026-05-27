@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types, Document } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
-@Schema({ collection: COLLECTIONS.USER_SESSION, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.USER_SESSION, timestamps: true })
 export class UserSession {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;

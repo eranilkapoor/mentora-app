@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
 export enum ActivityAction {
   //  AUTH & SECURITY
@@ -73,7 +73,7 @@ export enum ActivityPlatform {
   ANDROID = 'android',
 }
 
-@Schema({ collection: COLLECTIONS.ACTIVITY_LOG, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.ACTIVITY_LOG, timestamps: true })
 export class ActivityLog {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;

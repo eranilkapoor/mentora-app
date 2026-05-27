@@ -1,9 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
-import { FeatureKey } from 'src/common/enums';
+import { COLLECTION_NAMES } from '@/common/constants';
+import { FeatureKey } from '@/common/enums';
 
-@Schema({ collection: COLLECTIONS.FEATURE, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.FEATURE, timestamps: true })
 export class Feature {
   @Prop({ enum: FeatureKey, required: true, unique: true, trim: true })
   key!: FeatureKey;

@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 import { ChatMessageStatus, ChatMessageType } from '../enums/chat.enums';
 
 @Schema({ _id: false })
@@ -18,7 +18,7 @@ export class MessageAttachment {
   size?: number;
 }
 
-@Schema({ collection: COLLECTIONS.CHAT_MESSAGE, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.CHAT_MESSAGE, timestamps: true })
 export class ChatMessage extends Document {
   @Prop({ type: Types.ObjectId, ref: 'ChatRoom', required: true, index: true })
   roomId!: Types.ObjectId;

@@ -13,11 +13,11 @@ import { CreatePlanDto } from '../dto/create-plan.dto';
 import { UpdatePlanDto } from '../dto/update-plan.dto';
 import { CreateFeatureDto } from '../dto/create-feature.dto';
 import { AssignFeatureDto } from '../dto/assign-feature.dto';
-import { ErrorCode } from 'src/common/constants';
+import { ErrorCode } from '@/common/constants';
 import {
   throwConflict,
   throwNotFound,
-} from 'src/common/exceptions/throw-app-exception';
+} from '@/common/exceptions/throw-app-exception';
 
 type LeanPlan = FlattenMaps<Plan> & { _id: Types.ObjectId };
 type LeanFeature = FlattenMaps<Feature> & { _id: Types.ObjectId };

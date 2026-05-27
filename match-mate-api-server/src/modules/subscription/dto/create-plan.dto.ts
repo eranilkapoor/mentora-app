@@ -1,5 +1,5 @@
 import { IsString, IsNumber, IsEnum } from 'class-validator';
-import { PlanTier } from 'src/common/enums';
+import { PlanTier } from '@/common/enums';
 
 export class CreatePlanDto {
   @IsString()

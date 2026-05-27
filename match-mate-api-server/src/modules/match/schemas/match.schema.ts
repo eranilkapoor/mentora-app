@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
-@Schema({ collection: COLLECTIONS.MATCH, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.MATCH, timestamps: true })
 export class Match {
   @Prop({ type: Types.ObjectId, required: true })
   userId!: Types.ObjectId;

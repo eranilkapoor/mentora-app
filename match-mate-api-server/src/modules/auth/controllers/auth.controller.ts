@@ -21,16 +21,16 @@ import {
   ChangePasswordDto,
 } from '../dto/auth.dto';
 import { AuthService } from '../services/auth.service';
-import { Public } from 'src/common/decorators/public.decorator';
+import { Public } from '@/common/decorators/public.decorator';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { CurrentUser } from '../decorators/current-user.decorator';
-import { AppRequest } from 'src/common/interfaces/app-request.interface';
-import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
-import { ErrorCode, SuccessCode } from 'src/common/constants';
-import { AppLogger } from 'src/common/logger/logger.service';
-import { successResponse } from 'src/common/utils/response.util';
-import { AppException } from 'src/common/exceptions/app.exception';
-import { throwUnauthorized } from 'src/common/exceptions/throw-app-exception';
+import { AppRequest } from '@/common/interfaces/app-request.interface';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
+import { ErrorCode, SuccessCode } from '@/common/constants';
+import { AppLogger } from '@/common/logger/logger.service';
+import { successResponse } from '@/common/utils/response.util';
+import { AppException } from '@/common/exceptions/app.exception';
+import { throwUnauthorized } from '@/common/exceptions/throw-app-exception';
 
 @Controller('auth')
 @UseGuards(JwtAuthGuard)

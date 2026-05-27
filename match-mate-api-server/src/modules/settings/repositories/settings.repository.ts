@@ -37,7 +37,7 @@ import { AiSetting, AiSettingDocument } from '../schemas/ai-setting.schema';
 import {
   UserBlock,
   UserBlockDocument,
-} from 'src/modules/safety/schemas/user-block.schema';
+} from '@/modules/safety/schemas/user-block.schema';
 
 function buildDotNotation(
   obj: Record<string, unknown>,

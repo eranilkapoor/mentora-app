@@ -12,7 +12,7 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { SettingsService } from '../services/settings.service';
 import {
   UpdatePrivacySettingsDto,
@@ -33,15 +33,15 @@ import { UpdateLocalizationSettingsDto } from '../dto/localization-settings.dto'
 import { UpdateAccessibilitySettingsDto } from '../dto/accessibility-settings.dto';
 import { UpdateMediaSettingsDto } from '../dto/media-settings.dto';
 import { UpdateAiSettingsDto } from '../dto/ai-settings.dto';
-import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import {
   ConnectLinkedAccountDto,
   DeactivateAccountDto,
   RequestEmailChangeDto,
   RequestPhoneChangeDto,
 } from '../dto/account-settings.dto';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('settings')
 @UseGuards(JwtAuthGuard)

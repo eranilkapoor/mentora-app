@@ -27,13 +27,13 @@ import {
   NotificationDispatchJobData,
   NotificationQueueService,
 } from './notification-queue.service';
-import { SettingsService } from 'src/modules/settings/services/settings.service';
-import { NotificationPreferencesType } from 'src/modules/settings/schemas/notification-setting.schema';
-import { ErrorCode } from 'src/common/constants';
+import { SettingsService } from '@/modules/settings/services/settings.service';
+import { NotificationPreferencesType } from '@/modules/settings/schemas/notification-setting.schema';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwNotFound,
-} from 'src/common/exceptions/throw-app-exception';
+} from '@/common/exceptions/throw-app-exception';
 
 interface DeliveryDecision {
   inApp: boolean;

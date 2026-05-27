@@ -1,4 +1,4 @@
-import { PlanTier } from 'src/common/enums';
+import { PlanTier } from '@/common/enums';
 
 export const MembershipFeatures = {
   [PlanTier.FREE]: {

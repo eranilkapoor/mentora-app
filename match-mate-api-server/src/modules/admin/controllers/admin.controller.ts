@@ -14,12 +14,12 @@ import { AdminService } from '../services/admin.service';
 import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
 import { AdminQueryDto } from '../dto/admin-query.dto';
 import { BroadcastDto } from '../dto/broadcast.dto';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { RolesGuard } from 'src/modules/auth/guards/roles.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { Role } from 'src/common/enums';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '@/modules/auth/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { Role } from '@/common/enums';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('admin')
 @UseGuards(JwtAuthGuard, RolesGuard)

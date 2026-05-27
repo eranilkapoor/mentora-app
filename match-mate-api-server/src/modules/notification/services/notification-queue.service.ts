@@ -2,7 +2,7 @@ import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Job, JobsOptions, Queue } from 'bullmq';
 import { RedisOptions } from 'ioredis';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from '@/common/logger/logger.service';
 
 export interface NotificationDispatchJobData {
   notificationId: string;

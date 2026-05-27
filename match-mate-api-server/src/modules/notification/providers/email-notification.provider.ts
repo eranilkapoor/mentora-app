@@ -5,7 +5,7 @@ import {
   SendEmailCommand,
   type SendEmailCommandInput,
 } from '@aws-sdk/client-sesv2';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from '@/common/logger/logger.service';
 import {
   NotificationChannelPayload,
   NotificationChannelProvider,

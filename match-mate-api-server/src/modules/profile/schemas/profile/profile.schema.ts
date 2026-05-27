@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
-import { ProfileFor, ProfileStatus } from 'src/common/enums';
+import { COLLECTION_NAMES } from '@/common/constants';
+import { ProfileFor, ProfileStatus } from '@/common/enums';
 import { Education } from './education.schema';
 import { Physical } from './physical.schema';
 import { Personal } from './personal.schema';
@@ -20,7 +20,7 @@ class GeoLocation {
   coordinates!: [number, number]; // [longitude, latitude]
 }
 
-@Schema({ collection: COLLECTIONS.PROFILE, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.PROFILE, timestamps: true })
 export class Profile {
   @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;

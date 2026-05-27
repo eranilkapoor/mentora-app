@@ -1,13 +1,13 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 import {
   SubscriptionStatus,
   PlanTier,
   Permission,
   Status,
   Role,
-} from 'src/common/enums';
+} from '@/common/enums';
 import { AuthProvider } from '../enums/auth-provider.enum';
 
 @Schema({ _id: false })
@@ -40,7 +40,7 @@ export class AuthAccount {
   lastUsedAt?: Date;
 }
 
-@Schema({ collection: COLLECTIONS.USER, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.USER, timestamps: true })
 export class User {
   @Prop({
     type: String,

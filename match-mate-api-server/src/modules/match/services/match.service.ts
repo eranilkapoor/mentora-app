@@ -2,13 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { MatchRepository } from '../repositories/match.repository';
 import { InterestStatus } from '../schemas/interest.schema';
-import { SettingsService } from 'src/modules/settings/services/settings.service';
-import { ErrorCode } from 'src/common/constants';
+import { SettingsService } from '@/modules/settings/services/settings.service';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwForbidden,
   throwNotFound,
-} from 'src/common/exceptions/throw-app-exception';
+} from '@/common/exceptions/throw-app-exception';
 import { MatchNotificationService } from './match-notification.service';
 
 @Injectable()

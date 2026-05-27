@@ -1,5 +1,5 @@
 import { SetMetadata } from '@nestjs/common';
-import { FeatureKey } from 'src/common/enums';
+import { FeatureKey } from '@/common/enums';
 
 export const FEATURE_KEY = 'feature_key';
 

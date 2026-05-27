@@ -1,5 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { BloodGroup, BodyType, Complexion } from 'src/common/enums';
+import { BloodGroup, BodyType, Complexion } from '@/common/enums';
 
 @Schema({ _id: false })
 export class Physical {

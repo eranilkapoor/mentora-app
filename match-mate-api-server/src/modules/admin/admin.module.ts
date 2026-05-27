@@ -15,7 +15,7 @@ import { AdminRepository } from './repositories/admin.repository';
 // Schemas
 import { Permission, PermissionSchema } from './schemas/permission.schema';
 import { Role, RoleSchema } from './schemas/role.schema';
-import { User, UserSchema } from 'src/modules/auth/schemas/user.schema';
+import { User, UserSchema } from '@/modules/auth/schemas/user.schema';
 
 @Module({
   imports: [

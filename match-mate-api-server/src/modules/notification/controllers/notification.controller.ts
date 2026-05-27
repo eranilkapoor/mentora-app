@@ -19,11 +19,11 @@ import { NotificationAnalyticsQueryDto } from '../dto/notification-analytics-que
 import { NotificationDlqQueryDto } from '../dto/notification-dlq-query.dto';
 import { NotificationDlqReplayAllDto } from '../dto/notification-dlq-replay-all.dto';
 import { NotificationDlqPurgeDto } from '../dto/notification-dlq-purge.dto';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
-import { Permission } from 'src/common/enums';
+import { Permissions } from '@/common/decorators/permissions.decorator';
+import { Permission } from '@/common/enums';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('notifications')
 @UseGuards(JwtAuthGuard)

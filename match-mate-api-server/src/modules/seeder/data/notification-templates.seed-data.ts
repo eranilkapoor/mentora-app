@@ -1,4 +1,4 @@
-import { NotificationTemplate } from 'src/modules/notification/schemas/notification-templates.schema';
+import { NotificationTemplate } from '@/modules/notification/schemas/notification-templates.schema';
 
 export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
   {

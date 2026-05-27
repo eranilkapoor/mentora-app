@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 
-import { AppModule } from 'src/app.module';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppModule } from '@/modules/app/app.module';
+import { AppLogger } from '@/common/logger/logger.service';
 import { MasterSeederService } from './services/master-seeder.service';
 
 async function runSeeder(): Promise<void> {

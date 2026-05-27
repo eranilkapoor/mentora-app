@@ -6,19 +6,19 @@ import {
   MatchWeightsDto,
   UpdatePreferenceDto,
 } from '../dto/preference.dto';
-import type { ICacheService } from 'src/modules/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from 'src/modules/cache/interfaces/cache.interface';
-import { ChildPreference, ResidencyPreference } from 'src/common/enums';
+import type { ICacheService } from '@/modules/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/modules/cache/interfaces/cache.interface';
+import { ChildPreference, ResidencyPreference } from '@/common/enums';
 import {
   PartnerFilters,
   Preference,
 } from '../schemas/preference/preference.schema';
-import { ErrorCode } from 'src/common/constants';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwConflict,
-} from 'src/common/exceptions/throw-app-exception';
-import { AppException } from 'src/common/exceptions/app.exception';
+} from '@/common/exceptions/throw-app-exception';
+import { AppException } from '@/common/exceptions/app.exception';
 
 const WEIGHTS_TOTAL = 100;
 @Injectable()

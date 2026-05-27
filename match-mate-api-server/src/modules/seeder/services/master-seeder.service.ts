@@ -3,13 +3,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
 
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from '@/common/logger/logger.service';
 
 import {
   Permission,
   PermissionDocument,
-} from 'src/modules/admin/schemas/permission.schema';
-import { Role, RoleDocument } from 'src/modules/admin/schemas/role.schema';
+} from '@/modules/admin/schemas/permission.schema';
+import { Role, RoleDocument } from '@/modules/admin/schemas/role.schema';
 import {
   Permission as AppPermission,
   Role as AppRole,
@@ -38,78 +38,75 @@ import {
   Status,
   SubscriptionStatus,
   ResidencyPreference,
-} from 'src/common/enums';
-import { AuthProvider } from 'src/modules/auth/enums/auth-provider.enum';
-import { User, UserDocument } from 'src/modules/auth/schemas/user.schema';
+} from '@/common/enums';
+import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
+import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import {
   Profile,
   ProfileDocument,
-} from 'src/modules/profile/schemas/profile/profile.schema';
+} from '@/modules/profile/schemas/profile/profile.schema';
 import {
   Preference,
   PreferenceDocument,
-} from 'src/modules/profile/schemas/preference/preference.schema';
+} from '@/modules/profile/schemas/preference/preference.schema';
 import {
   Media,
   MediaDocument,
   MediaStatus,
-} from 'src/modules/profile/schemas/media/media.schema';
+} from '@/modules/profile/schemas/media/media.schema';
 import {
   AccountSetting,
   AccountSettingDocument,
-} from 'src/modules/settings/schemas/account-setting.schema';
+} from '@/modules/settings/schemas/account-setting.schema';
 import {
   PrivacySetting,
   PrivacySettingDocument,
-} from 'src/modules/settings/schemas/privacy-setting.schema';
+} from '@/modules/settings/schemas/privacy-setting.schema';
 import {
   NotificationSetting,
   NotificationSettingDocument,
-} from 'src/modules/settings/schemas/notification-setting.schema';
+} from '@/modules/settings/schemas/notification-setting.schema';
 import {
   CommunicationSetting,
   CommunicationSettingDocument,
-} from 'src/modules/settings/schemas/communication-setting.schema';
+} from '@/modules/settings/schemas/communication-setting.schema';
 import {
   SecuritySetting,
   SecuritySettingDocument,
-} from 'src/modules/settings/schemas/security-setting.schema';
+} from '@/modules/settings/schemas/security-setting.schema';
 import {
   LocalizationSetting,
   LocalizationSettingDocument,
-} from 'src/modules/settings/schemas/localization-setting.schema';
+} from '@/modules/settings/schemas/localization-setting.schema';
 import {
   AccessibilitySetting,
   AccessibilitySettingDocument,
-} from 'src/modules/settings/schemas/accessibility-setting.schema';
+} from '@/modules/settings/schemas/accessibility-setting.schema';
 import {
   MediaSetting,
   MediaSettingDocument,
-} from 'src/modules/settings/schemas/media-setting.schema';
+} from '@/modules/settings/schemas/media-setting.schema';
 import {
   AiSetting,
   AiSettingDocument,
-} from 'src/modules/settings/schemas/ai-setting.schema';
+} from '@/modules/settings/schemas/ai-setting.schema';
 import {
   Verification,
   VerificationDocument,
-} from 'src/modules/safety/schemas/verification.schema';
-import {
-  Plan,
-  PlanDocument,
-} from 'src/modules/subscription/schemas/plan.schema';
+} from '@/modules/safety/schemas/verification.schema';
+import { Plan, PlanDocument } from '@/modules/subscription/schemas/plan.schema';
 import {
   Feature,
   FeatureDocument,
-} from 'src/modules/subscription/schemas/feature.schema';
+} from '@/modules/subscription/schemas/feature.schema';
 import {
   PlanFeature,
   PlanFeatureDocument,
-} from 'src/modules/subscription/schemas/plan-feature.schema';
+} from '@/modules/subscription/schemas/plan-feature.schema';
 import {
   NotificationTemplate,
   NotificationTemplateDocument,
-} from 'src/modules/notification/schemas/notification-templates.schema';
+} from '@/modules/notification/schemas/notification-templates.schema';
 import {
   FEATURE_SEEDS,
   INDIAN_DUMMY_PROFILE_SEED_DATA,

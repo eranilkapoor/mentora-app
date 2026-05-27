@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
 //
 // TYPES
@@ -85,7 +85,7 @@ class NotificationPreferences {
 }
 
 @Schema({
-  collection: COLLECTIONS.NOTIFICATION_SETTING,
+  collection: COLLECTION_NAMES.NOTIFICATION_SETTING,
   timestamps: true,
 })
 export class NotificationSetting {

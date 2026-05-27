@@ -2,8 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { ConfigService } from '@nestjs/config';
-import { Permission } from 'src/common/enums/permission.enum';
-import { getJwtConfig } from 'src/config/jwt.config';
+import { Permission } from '@/common/enums/permission.enum';
+import { getJwtConfig } from '@/config/jwt.config';
 
 interface JwtPayload {
   sub: string;

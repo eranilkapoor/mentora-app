@@ -4,7 +4,7 @@ import {
   FamilyType,
   FamilyValue,
   SiblingType,
-} from 'src/common/enums';
+} from '@/common/enums';
 
 @Schema({ _id: false })
 class SiblingDetail {

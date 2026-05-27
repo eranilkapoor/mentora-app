@@ -11,9 +11,9 @@ import {
 } from '@nestjs/common';
 import { ChatService } from '../services/chat.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { Public } from 'src/common/decorators/public.decorator';
-import { AppRequest } from 'src/common/interfaces/app-request.interface';
-import { ApiResponse } from 'src/common/dto/api-response.dto';
+import { Public } from '@/common/decorators/public.decorator';
+import { AppRequest } from '@/common/interfaces/app-request.interface';
+import { ApiResponse } from '@/common/dto/api-response.dto';
 import { CreateDirectRoomDto } from '../dto/create-direct-room.dto';
 import { ListChatContactsDto } from '../dto/list-chat-contacts.dto';
 import { ListConversationsDto } from '../dto/list-conversations.dto';
@@ -21,8 +21,8 @@ import { ListMessagesDto } from '../dto/list-messages.dto';
 import { MarkRoomReadDto } from '../dto/mark-room-read.dto';
 import { SendMessageBodyDto, SendMessageDto } from '../dto/send-message.dto';
 import { UpdateRoomSettingsDto } from '../dto/update-room-settings.dto';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('chats')
 @UseGuards(JwtAuthGuard)

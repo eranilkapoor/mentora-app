@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
-import { getJwtConfig } from 'src/config/jwt.config';
-import { PlanTier } from 'src/common/enums';
+import { getJwtConfig } from '@/config/jwt.config';
+import { PlanTier } from '@/common/enums';
 
 interface TokenPermission {
   name: string;

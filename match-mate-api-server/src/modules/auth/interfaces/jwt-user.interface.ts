@@ -1,4 +1,4 @@
-import { Permission, PlanTier, Role } from 'src/common/enums';
+import { Permission, PlanTier, Role } from '@/common/enums';
 
 export interface JwtUser {
   sub: string;

@@ -1,6 +1,6 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
-import { AppLogger } from 'src/common/logger/logger.service';
+import { AppLogger } from '@/common/logger/logger.service';
 import { NotificationService } from '../../notification/services/notification.service';
 import { ChatPresenceService } from './chat-presence.service';
 import { ChatRealtimeService } from './chat-realtime.service';
@@ -20,11 +20,11 @@ import {
   ChatRoomType,
 } from '../enums/chat.enums';
 import { ChatRoomDocument } from '../schemas/chat-room.schema';
-import { ErrorCode } from 'src/common/constants';
+import { ErrorCode } from '@/common/constants';
 import {
   throwAppException,
   throwBadRequest,
-} from 'src/common/exceptions/throw-app-exception';
+} from '@/common/exceptions/throw-app-exception';
 
 interface UserSummary {
   userId: string;

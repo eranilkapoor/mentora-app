@@ -5,9 +5,9 @@ import {
   AnalyticsFunnelStage,
   AnalyticsPlatform,
 } from '../enums/analytics-event.enum';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
-@Schema({ collection: COLLECTIONS.ANALYTICS_EVENT, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.ANALYTICS_EVENT, timestamps: true })
 export class AnalyticsEvent extends Document {
   @Prop()
   userId?: string;

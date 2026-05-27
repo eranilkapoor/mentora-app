@@ -1,12 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
-import {
-  PaymentProvider,
-  SubscriptionStatus,
-} from 'src/common/enums/subscription-status.enum';
+import { COLLECTION_NAMES } from '@/common/constants';
+import { PaymentProvider, SubscriptionStatus } from '@/common/enums';
 
-@Schema({ collection: COLLECTIONS.SUBSCRIPTION, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.SUBSCRIPTION, timestamps: true })
 export class Subscription {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;

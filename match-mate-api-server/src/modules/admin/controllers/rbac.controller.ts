@@ -12,16 +12,16 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { RbacService } from '../services/rbac.service';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
-import { PermissionsGuard } from 'src/modules/auth/guards/permissions.guard';
-import { Permission } from 'src/common/enums';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { Permissions } from '@/common/decorators/permissions.decorator';
+import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
+import { Permission } from '@/common/enums';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
 import { AssignRolesDto } from '../dto/assign-roles.dto';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('admin/rbac')
 @UseGuards(JwtAuthGuard, PermissionsGuard)

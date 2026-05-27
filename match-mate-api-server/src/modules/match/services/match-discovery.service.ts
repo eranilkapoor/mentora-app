@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { FilterQuery } from 'mongoose';
-import { ProfileDocument } from 'src/modules/profile/schemas/profile/profile.schema';
-import { ProfileStatus, Gender } from 'src/common/enums';
+import { ProfileDocument } from '@/modules/profile/schemas/profile/profile.schema';
+import { ProfileStatus, Gender } from '@/common/enums';
 import {
   LeanProfile,
   MatchDiscoveryRepository,
 } from '../repositories/match-discovery.repository';
 import { MatchQueryDto, NearbyQueryDto } from '../dto/match-query.dto';
-import { SettingsService } from 'src/modules/settings/services/settings.service';
-import { ErrorCode } from 'src/common/constants';
-import { throwBadRequest } from 'src/common/exceptions/throw-app-exception';
+import { SettingsService } from '@/modules/settings/services/settings.service';
+import { ErrorCode } from '@/common/constants';
+import { throwBadRequest } from '@/common/exceptions/throw-app-exception';
 
 //  Scoring weights default (overridden by user preference weights)
 

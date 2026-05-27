@@ -3,16 +3,16 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types, FlattenMaps } from 'mongoose';
 import { Permission, PermissionDocument } from '../schemas/permission.schema';
 import { Role, RoleDocument } from '../schemas/role.schema';
-import { User, UserDocument } from 'src/modules/auth/schemas/user.schema';
+import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import { CreatePermissionDto } from '../dto/create-permission.dto';
 import { CreateRoleDto } from '../dto/create-role.dto';
 import { UpdateRoleDto } from '../dto/update-role.dto';
-import { ErrorCode } from 'src/common/constants';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwConflict,
   throwNotFound,
-} from 'src/common/exceptions/throw-app-exception';
+} from '@/common/exceptions/throw-app-exception';
 
 //  Lean return types
 // .lean() strips Mongoose Document methods and returns plain objects.

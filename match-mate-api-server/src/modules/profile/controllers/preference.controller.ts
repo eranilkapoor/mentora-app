@@ -17,10 +17,10 @@ import {
   UpdateAboutPartnerDto,
   UpdatePreferenceDto,
 } from '../dto/preference.dto';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @UseGuards(JwtAuthGuard)
 @Controller('preferences')

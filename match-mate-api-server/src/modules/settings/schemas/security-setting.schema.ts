@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
 @Schema({ _id: false })
 class LoginDevice {
@@ -12,7 +12,7 @@ class LoginDevice {
   @Prop({ default: false }) isCurrent!: boolean;
 }
 
-@Schema({ collection: COLLECTIONS.SECURITY_SETTING, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.SECURITY_SETTING, timestamps: true })
 export class SecuritySetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;

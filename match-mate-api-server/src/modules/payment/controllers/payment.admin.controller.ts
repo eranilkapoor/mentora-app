@@ -11,15 +11,15 @@ import { PaymentService } from '../services/payment.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../../auth/guards/roles.guard';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
-import { Roles } from 'src/common/decorators/roles.decorator';
-import { Permissions } from 'src/common/decorators/permissions.decorator';
-import { Permission, Role } from 'src/common/enums';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { Permissions } from '@/common/decorators/permissions.decorator';
+import { Permission, Role } from '@/common/enums';
 import { AdminListPaymentsDto } from '../dto/admin-list-payments.dto';
 import { AdminRefundPaymentDto } from '../dto/admin-refund-payment.dto';
 import { PaymentReconciliationDto } from '../dto/payment-reconciliation.dto';
 import { PaymentSettlementReportDto } from '../dto/payment-settlement-report.dto';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @Controller('admin/payments')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)

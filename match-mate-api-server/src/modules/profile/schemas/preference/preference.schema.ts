@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 import {
   BodyType,
   Caste,
@@ -16,7 +16,7 @@ import {
   Smoking,
   Qualification,
   Country,
-} from 'src/common/enums';
+} from '@/common/enums';
 
 @Schema({ _id: false })
 class Range<T = number> {
@@ -130,7 +130,7 @@ class MatchWeights {
   @Prop({ type: Number, default: 15 }) horoscope!: number;
 }
 
-@Schema({ collection: COLLECTIONS.PREFERENCE, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.PREFERENCE, timestamps: true })
 export class Preference {
   @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;

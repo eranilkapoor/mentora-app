@@ -1,5 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { OccupationType, Qualification } from 'src/common/enums';
+import { OccupationType, Qualification } from '@/common/enums';
 
 @Schema({ _id: false })
 export class Education {

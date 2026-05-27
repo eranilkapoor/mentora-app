@@ -4,8 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   Permission,
   PermissionSchema,
-} from 'src/modules/admin/schemas/permission.schema';
-import { Role, RoleSchema } from 'src/modules/admin/schemas/role.schema';
+} from '@/modules/admin/schemas/permission.schema';
+import { Role, RoleSchema } from '@/modules/admin/schemas/role.schema';
 import { MasterSeederService } from './services/master-seeder.service';
 import { Plan, PlanSchema } from '../subscription/schemas/plan.schema';
 import { Feature, FeatureSchema } from '../subscription/schemas/feature.schema';
@@ -16,7 +16,7 @@ import {
 import {
   NotificationTemplate,
   NotificationTemplateSchema,
-} from 'src/modules/notification/schemas/notification-templates.schema';
+} from '@/modules/notification/schemas/notification-templates.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
   Profile,

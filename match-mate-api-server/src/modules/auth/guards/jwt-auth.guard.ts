@@ -1,10 +1,10 @@
 import { Injectable, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
-import { IS_PUBLIC_KEY } from 'src/common/decorators/public.decorator';
-import { AppLogger } from 'src/common/logger/logger.service';
-import { ErrorCode } from 'src/common/constants';
-import { throwUnauthorized } from 'src/common/exceptions/throw-app-exception';
+import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
+import { AppLogger } from '@/common/logger/logger.service';
+import { ErrorCode } from '@/common/constants';
+import { throwUnauthorized } from '@/common/exceptions/throw-app-exception';
 
 interface JwtErrorInfo {
   name?: string;

@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 
-import { ErrorCode } from 'src/common/constants';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwForbidden,
   throwNotFound,
-} from 'src/common/exceptions/throw-app-exception';
+} from '@/common/exceptions/throw-app-exception';
 import { ChatRepository } from '../repositories/chat.repository';
 import { ChatRoomDocument } from '../schemas/chat-room.schema';
 

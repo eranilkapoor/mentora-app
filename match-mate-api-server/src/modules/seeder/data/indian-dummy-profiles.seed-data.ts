@@ -4,7 +4,7 @@ import {
   Gender,
   OccupationType,
   Qualification,
-} from 'src/common/enums';
+} from '@/common/enums';
 
 export const INDIAN_DUMMY_PROFILE_SEED_DATA = {
   femaleNames: [

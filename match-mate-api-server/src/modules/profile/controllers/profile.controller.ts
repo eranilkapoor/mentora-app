@@ -20,15 +20,15 @@ import {
   EducationDto,
   FamilyDto,
 } from '../dto/create-profile.dto';
-import { JwtAuthGuard } from 'src/modules/auth/guards/jwt-auth.guard';
-import { AuthenticatedRequest } from 'src/common/interfaces/authenticated-request.interface';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { memoryStorage } from 'multer';
-import { CurrentUser } from 'src/modules/auth/decorators/current-user.decorator';
-import { OnboardingProfileDto } from 'src/modules/profile/dto/onboarding-profile.dto';
-import { UpdateProfileLocationDto } from 'src/modules/profile/dto/location.dto';
-import { SuccessCode } from 'src/common/constants';
-import { successResponse } from 'src/common/utils/response.util';
+import { CurrentUser } from '@/modules/auth/decorators/current-user.decorator';
+import { OnboardingProfileDto } from '@/modules/profile/dto/onboarding-profile.dto';
+import { UpdateProfileLocationDto } from '@/modules/profile/dto/location.dto';
+import { SuccessCode } from '@/common/constants';
+import { successResponse } from '@/common/utils/response.util';
 
 @UseGuards(JwtAuthGuard)
 @Controller('profiles')

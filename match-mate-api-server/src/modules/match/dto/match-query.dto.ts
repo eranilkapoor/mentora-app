@@ -8,12 +8,7 @@ import {
   Max,
   Min,
 } from 'class-validator';
-import {
-  Caste,
-  OccupationType,
-  Qualification,
-  Religion,
-} from 'src/common/enums';
+import { Caste, OccupationType, Qualification, Religion } from '@/common/enums';
 
 export enum MatchFeedType {
   RECOMMENDED = 'recommended',

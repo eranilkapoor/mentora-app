@@ -8,11 +8,10 @@ import {
 import { Plan, PlanDocument } from '../schemas/plan.schema';
 import { Payment, PaymentDocument } from '../../payment/schemas/payment.schema';
 import { UserRepository } from '../../auth/repositories/user.repository';
-import { PlanTier } from 'src/common/enums';
-import { SubscriptionStatus } from 'src/common/enums/subscription-status.enum';
+import { PlanTier, SubscriptionStatus } from '@/common/enums';
 import { PaymentStatus } from '../../payment/enums/payment-status.enum';
-import { ErrorCode } from 'src/common/constants';
-import { throwNotFound } from 'src/common/exceptions/throw-app-exception';
+import { ErrorCode } from '@/common/constants';
+import { throwNotFound } from '@/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class SubscriptionService {

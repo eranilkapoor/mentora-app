@@ -6,7 +6,7 @@ import {
   MediaDocument,
   MediaStatus,
 } from '../schemas/media/media.schema';
-import { MediaType } from 'src/common/enums';
+import { MediaType } from '@/common/enums';
 
 export interface CreateMediaInput {
   url: string;

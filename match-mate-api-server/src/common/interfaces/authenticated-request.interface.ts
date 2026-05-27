@@ -1,5 +1,5 @@
 import { AppRequest } from './app-request.interface';
-import { JwtUser } from 'src/modules/auth/interfaces/jwt-user.interface';
+import { JwtUser } from '@/modules/auth/interfaces/jwt-user.interface';
 
 export interface AuthenticatedRequest extends AppRequest {
   /**

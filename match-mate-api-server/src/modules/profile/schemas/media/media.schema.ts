@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
-import { MediaType, MimeType } from 'src/common/enums';
+import { COLLECTION_NAMES } from '@/common/constants';
+import { MediaType, MimeType } from '@/common/enums';
 
 export enum MediaStatus {
   ACTIVE = 'active',
@@ -9,7 +9,7 @@ export enum MediaStatus {
   PROCESSING = 'processing',
 }
 
-@Schema({ collection: COLLECTIONS.MEDIA, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.MEDIA, timestamps: true })
 export class Media {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;

@@ -1,8 +1,8 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 
-@Schema({ collection: COLLECTIONS.PERMISSION, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.PERMISSION, timestamps: true })
 export class Permission {
   @Prop({ required: true, unique: true, trim: true })
   name!: string; // e.g. "profile:view"

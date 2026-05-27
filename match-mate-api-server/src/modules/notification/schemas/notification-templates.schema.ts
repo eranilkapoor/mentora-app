@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
-import { COLLECTIONS } from 'src/common/constants';
+import { COLLECTION_NAMES } from '@/common/constants';
 import {
   NOTIFICATION_CATEGORIES,
   NOTIFICATION_PRIORITIES,
@@ -22,7 +22,7 @@ export type NotificationDeliveryRules = {
 export type NotificationStatus = 'draft' | 'active' | 'archived';
 
 @Schema({
-  collection: COLLECTIONS.NOTIFICATION_TEMPLATE,
+  collection: COLLECTION_NAMES.NOTIFICATION_TEMPLATE,
   timestamps: true,
 })
 export class NotificationTemplate {

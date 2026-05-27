@@ -1,8 +1,8 @@
 import { createParamDecorator, ExecutionContext } from '@nestjs/common';
-import { AppRequest } from '../../../common/interfaces/app-request.interface';
+import { AppRequest } from '@/common/interfaces/app-request.interface';
 import { JwtUser } from '../interfaces/jwt-user.interface';
-import { ErrorCode } from 'src/common/constants';
-import { throwUnauthorized } from 'src/common/exceptions/throw-app-exception';
+import { ErrorCode } from '@/common/constants';
+import { throwUnauthorized } from '@/common/exceptions/throw-app-exception';
 
 export const CurrentUser = createParamDecorator(
   <K extends keyof JwtUser>(

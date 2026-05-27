@@ -4,12 +4,12 @@ import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
 import { BroadcastDto, BroadcastTarget } from '../dto/broadcast.dto';
 import { AdminQueryDto } from '../dto/admin-query.dto';
 import { FilterQuery } from 'mongoose';
-import { UserDocument } from 'src/modules/auth/schemas/user.schema';
-import { ErrorCode } from 'src/common/constants';
+import { UserDocument } from '@/modules/auth/schemas/user.schema';
+import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
   throwNotFound,
-} from 'src/common/exceptions/throw-app-exception';
+} from '@/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class AdminService {
