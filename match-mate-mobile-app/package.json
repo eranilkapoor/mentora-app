@@ -8,6 +8,8 @@
     "android": "node scripts/start-expo.js --android",
     "ios": "node scripts/start-expo.js --ios",
     "web": "node scripts/start-expo.js --web",
+    "build:android:preview": "eas build --platform android --profile preview",
+    "build:android:production": "eas build --platform android --profile production",
     "lint": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "typecheck": "tsc --noEmit",

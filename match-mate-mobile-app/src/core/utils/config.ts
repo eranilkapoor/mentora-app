@@ -26,17 +26,21 @@ const normalizeUrl = (url: string): string => url.replace(/\/+$/, '');
 
 const getEnvValue = (value: string | undefined): string | undefined => {
   const trimmedValue = value?.trim();
+
   if (!trimmedValue) return undefined;
+
   return trimmedValue;
 };
 
 const getPublicEnv = (key: string): string | undefined => {
-  const publicEnv = process.env as Record<string, string | undefined>;
-  return getEnvValue(publicEnv[key]);
+  return getEnvValue((process.env as Record<string, string | undefined>)[key]);
 };
 
 const getExpoConstants = (): ExpoConstantsWithHosts =>
   Constants as unknown as ExpoConstantsWithHosts;
+
+const isProduction = (): boolean =>
+  getPublicEnv('EXPO_PUBLIC_ENV') === 'production' || !__DEV__;
 
 const getExpoHostUri = (): string | undefined => {
   const expoConstants = getExpoConstants();
@@ -51,47 +55,40 @@ const getExpoHostUri = (): string | undefined => {
 const getHostFromUri = (uri: string): string | undefined => {
   const withoutProtocol = uri.replace(/^[a-z]+:\/\//i, '');
   const hostWithPort = withoutProtocol.split('/')[0] ?? '';
-  const host = hostWithPort.split(':')[0]?.trim();
-
-  if (!host) return undefined;
-  return host;
+  return getEnvValue(hostWithPort.split(':')[0]);
 };
 
 const getWebHostname = (): string | undefined => {
   if (Platform.OS !== 'web') return undefined;
-
-  const location = (
-    globalThis as typeof globalThis & {
-      location?: {
-        hostname?: string;
-      };
-    }
-  ).location;
-
-  return getEnvValue(location?.hostname);
+  return getEnvValue(globalThis.location?.hostname);
 };
 
-const getConfiguredApiBaseUrl = (): string | undefined => {
-  const envUrl = getPublicEnv('EXPO_PUBLIC_API_BASE_URL');
-  if (envUrl) return normalizeUrl(envUrl);
+const joinApiUrl = (baseUrl: string, path: string): string => {
+  const normalizedBaseUrl = normalizeUrl(baseUrl);
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
 
-  const extraUrl = getExpoConstants().expoConfig?.extra?.apiUrl;
-  if (typeof extraUrl === 'string') {
-    const configuredExtraUrl = getEnvValue(extraUrl);
-    if (configuredExtraUrl) return normalizeUrl(configuredExtraUrl);
+  if (normalizedBaseUrl.endsWith(normalizedPath)) {
+    return normalizedBaseUrl;
   }
 
-  return undefined;
+  return `${normalizedBaseUrl}${normalizedPath}`;
 };
 
 export const getApiBaseUrl = (): string => {
-  const configuredUrl = getConfiguredApiBaseUrl();
-  if (configuredUrl) return configuredUrl;
+  const apiBaseUrl = getPublicEnv('EXPO_PUBLIC_API_BASE_URL');
+  const apiPath = getPublicEnv('EXPO_PUBLIC_API_PATH') ?? DEFAULT_API_PATH;
+
+  if (apiBaseUrl) {
+    return joinApiUrl(apiBaseUrl, apiPath);
+  }
+
+  if (isProduction()) {
+    throw new Error('Missing EXPO_PUBLIC_API_BASE_URL for production build.');
+  }
 
   const apiPort = getPublicEnv('EXPO_PUBLIC_API_PORT') ?? DEFAULT_API_PORT;
-  const apiPath = getPublicEnv('EXPO_PUBLIC_API_PATH') ?? DEFAULT_API_PATH;
-  const webHostname = getWebHostname();
 
+  const webHostname = getWebHostname();
   if (webHostname) {
     return normalizeUrl(`http://${webHostname}:${apiPort}${apiPath}`);
   }
@@ -113,16 +110,18 @@ export const getApiOrigin = (): string => {
 export const resolveApiUrl = (url: string): string | null => {
   const trimmedUrl = url.trim();
 
-  if (trimmedUrl.length === 0) return null;
+  if (!trimmedUrl) return null;
   if (/^(file:|data:)/i.test(trimmedUrl)) return trimmedUrl;
 
   if (/^https?:\/\//i.test(trimmedUrl)) {
     try {
       const parsedUrl = new URL(trimmedUrl);
+
       const uploadPath = parsedUrl.pathname.replace(
         /^\/api(?:\/v\d+)?\/uploads\//i,
         '/uploads/'
       );
+
       const isLocalDevUrl =
         parsedUrl.hostname === 'localhost' ||
         parsedUrl.hostname === '127.0.0.1' ||
@@ -143,6 +142,7 @@ export const resolveApiUrl = (url: string): string | null => {
       /^\/?api\/v\d+\/uploads\//i,
       'uploads/'
     );
+
     return `${getApiOrigin()}/${uploadPath}`;
   }
 
@@ -154,14 +154,14 @@ export const resolveApiUrl = (url: string): string | null => {
 };
 
 export const getClientVersion = (): string =>
-  getPublicEnv('EXPO_PUBLIC_CLIENT_VERSION') ??
-  getPublicEnv('EXPO_PUBLIC_REACT_APP_CLIENT_VERSION') ??
-  '1.0.0';
+  getPublicEnv('EXPO_PUBLIC_CLIENT_VERSION') ?? '1.0.0';
 
 const extraEnv = getExpoConstants().expoConfig?.extra?.env;
 
 const config = {
-  env: (typeof extraEnv === 'string' ? extraEnv : undefined) as Env,
+  env: (typeof extraEnv === 'string'
+    ? extraEnv
+    : getPublicEnv('EXPO_PUBLIC_ENV')) as Env,
   apiUrl: getApiBaseUrl(),
 } as const satisfies {
   env: Env;
