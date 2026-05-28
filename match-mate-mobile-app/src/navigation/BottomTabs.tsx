@@ -65,7 +65,6 @@ export default function BottomTabs(): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  // Read unread count from Redux — replace with your actual selector
   const unreadCount = useAppSelector((s) => s.chats.unreadCount ?? 0);
 
   const screenOptions = useMemo(
@@ -102,6 +101,7 @@ export default function BottomTabs(): React.ReactElement {
         name="Home"
         component={HomeStack}
         options={{
+          popToTopOnBlur: true,
           tabBarLabel: t('tabs.home'),
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
@@ -118,6 +118,7 @@ export default function BottomTabs(): React.ReactElement {
         name="Matches"
         component={MatchesStack}
         options={{
+          popToTopOnBlur: true,
           tabBarLabel: t('tabs.matches'),
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
@@ -134,6 +135,7 @@ export default function BottomTabs(): React.ReactElement {
         name="Chats"
         component={ChatsStack}
         options={{
+          popToTopOnBlur: true,
           tabBarLabel: t('tabs.chats'),
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
@@ -151,6 +153,7 @@ export default function BottomTabs(): React.ReactElement {
         name="Membership"
         component={MembershipScreen}
         options={{
+          popToTopOnBlur: true,
           tabBarLabel: t('tabs.premium'),
           tabBarIcon: ({ focused, color }) => (
             <TabIcon
@@ -167,6 +170,7 @@ export default function BottomTabs(): React.ReactElement {
         name="Profile"
         component={ProfileStack}
         options={{
+          popToTopOnBlur: true,
           tabBarLabel: t('tabs.profile'),
           tabBarIcon: ({ focused, color }) => (
             <TabIcon

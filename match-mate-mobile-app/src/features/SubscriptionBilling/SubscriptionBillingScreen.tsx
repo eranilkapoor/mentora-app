@@ -211,7 +211,7 @@ export default function SubscriptionBillingScreen({
     [data?.currentPlan?.planId]
   );
   const currentPlanFeatures = useMemo(
-    () => getPlanFeatures(data?.currentPlan?.planId),
+    () => getPlanFeatures(data?.currentPlan?.planId) ?? [],
     [data?.currentPlan?.planId]
   );
   const currentStatus = data?.currentPlan?.status ?? 'free';

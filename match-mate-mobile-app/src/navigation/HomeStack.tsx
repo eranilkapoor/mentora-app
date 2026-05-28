@@ -15,7 +15,10 @@ export default function HomeStack(): React.ReactElement {
   const { theme } = useTheme();
 
   return (
-    <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
+    <Stack.Navigator
+      initialRouteName="HomeScreen"
+      screenOptions={getSharedScreenOptions(theme)}
+    >
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
       <Stack.Screen name="MatchDetails" component={MatchDetailsScreen} />
