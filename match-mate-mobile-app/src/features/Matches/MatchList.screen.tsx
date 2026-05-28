@@ -20,7 +20,7 @@ import {
   MatchListScreenProps,
   TabKey,
 } from './MatchList.types';
-import { TAB_CONFIG } from './MatchList.constants';
+import { DEFAULT_FILTERS, TAB_CONFIG } from './MatchList.constants';
 import { useMatchListData } from './hooks/useMatchListData';
 import { useMatchListActions } from './hooks/useMatchListActions';
 import { MatchCard } from './components/MatchCard';
@@ -53,19 +53,7 @@ export default function MatchListScreen({
   const [activeTab, setActiveTab] = useState<TabKey>('recommended');
   const [query, setQuery] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<FilterState>({
-    cityFilter: '',
-    ageFilter: 'any',
-    casteFilter: 'any',
-    verifiedOnly: false,
-
-    heightFilter: 'any',
-    maritalStatusFilter: 'any',
-    educationFilter: 'any',
-    activityFilter: 'any',
-    premiumOnly: false,
-    withPhotoOnly: false,
-  });
+  const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
 
@@ -158,19 +146,7 @@ export default function MatchListScreen({
 
     setQuery('');
 
-    setFilters({
-      cityFilter: '',
-      ageFilter: 'any',
-      casteFilter: 'any',
-      verifiedOnly: false,
-
-      heightFilter: 'any',
-      maritalStatusFilter: 'any',
-      educationFilter: 'any',
-      activityFilter: 'any',
-      premiumOnly: false,
-      withPhotoOnly: false,
-    });
+    setFilters(DEFAULT_FILTERS);
   }, []);
 
   const onRefresh = useCallback(async (): Promise<void> => {
@@ -236,7 +212,7 @@ export default function MatchListScreen({
           activeFilterCount={activeFilterCount}
           onClearFilters={handleClearFilters}
         />
-        <MatchFilterModal
+        {/* <MatchFilterModal
           visible={showFilters}
           onClose={() => setShowFilters(false)}
           query={query}
@@ -245,18 +221,10 @@ export default function MatchListScreen({
           onFiltersChange={handleFiltersChange}
           onApply={() => setShowFilters(false)}
           onClear={handleClearFilters}
-        />
+        /> */}
       </>
     ),
-    [
-      activeFilterCount,
-      filtered.length,
-      filters,
-      handleClearFilters,
-      handleFiltersChange,
-      query,
-      showFilters,
-    ]
+    [activeFilterCount, filtered.length, handleClearFilters]
   );
 
   return (
@@ -320,6 +288,20 @@ export default function MatchListScreen({
           removeClippedSubviews={Platform.OS === 'android'}
         />
       )}
+
+      <MatchFilterModal
+        visible={showFilters}
+        onClose={() => setShowFilters(false)}
+        query={query}
+        onQueryChange={setQuery}
+        filters={filters}
+        onFiltersChange={handleFiltersChange}
+        onApply={() => setShowFilters(false)}
+        onClear={() => {
+          handleClearFilters();
+          setShowFilters(false);
+        }}
+      />
     </SafeAreaView>
   );
 }

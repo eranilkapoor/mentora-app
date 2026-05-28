@@ -1,6 +1,7 @@
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import React from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { TouchableOpacity, View, Text } from 'react-native';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchListStyles } from '../MatchList.styles';
 
 interface FilterItem {
@@ -9,14 +10,14 @@ interface FilterItem {
 }
 
 interface FilterSectionProps {
-  title: string;
+  titleKey: string;
   items: readonly FilterItem[];
   value?: string;
   onChange: (value: string) => void;
 }
 
 export function FilterSection({
-  title,
+  titleKey,
   items,
   value,
   onChange,
@@ -26,17 +27,17 @@ export function FilterSection({
 
   return (
     <View style={styles.filterSectionContainer}>
-      <Text style={styles.filterSectionTitle}>{t(title)}</Text>
-
+      <Text style={styles.filterSectionTitle}>{t(titleKey)}</Text>
       <View style={styles.filterOptionsContainer}>
         {items.map((item) => {
           const selected = value === item.key;
-
           return (
             <TouchableOpacity
               key={item.key}
               activeOpacity={0.8}
               onPress={() => onChange(item.key)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected }}
               style={[
                 styles.filterOptionButton,
                 selected && styles.filterOptionButtonSelected,

@@ -1,19 +1,19 @@
 import React from 'react';
-
 import {
+  KeyboardAvoidingView,
   Modal,
-  View,
+  Platform,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  ScrollView,
-  KeyboardAvoidingView,
-  Platform,
+  View,
 } from 'react-native';
-
 import Feather from 'react-native-vector-icons/Feather';
-
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { matchListStyles } from '../MatchList.styles';
 import {
   ActivityFilterKey,
   AgeRangeKey,
@@ -23,52 +23,24 @@ import {
   HeightFilterKey,
   MaritalStatusFilterKey,
 } from '../MatchList.types';
-
-import { AGE_FILTERS, CASTE_FILTERS } from '../MatchList.constants';
-
+import {
+  ACTIVITY_FILTERS,
+  AGE_FILTERS,
+  CASTE_FILTERS,
+  EDUCATION_FILTERS,
+  HEIGHT_FILTERS,
+  MARITAL_STATUS_FILTERS,
+  QUICK_TOGGLES,
+} from '../MatchList.constants';
 import { FilterSection } from './FilterSection';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { matchListStyles } from '../MatchList.styles';
-
-const HEIGHT_FILTERS = [
-  { key: 'any', labelKey: 'Any' },
-  { key: 'short', labelKey: 'Below 5ft 4in' },
-  { key: 'medium', labelKey: '5ft 4in - 5ft 10in' },
-  { key: 'tall', labelKey: 'Above 5ft 10in' },
-];
-
-const MARITAL_STATUS_FILTERS = [
-  { key: 'any', labelKey: 'Any' },
-  { key: 'never_married', labelKey: 'Never Married' },
-  { key: 'divorced', labelKey: 'Divorced' },
-  { key: 'widowed', labelKey: 'Widowed' },
-];
-
-const EDUCATION_FILTERS = [
-  { key: 'any', labelKey: 'Any' },
-  { key: 'graduate', labelKey: 'Graduate' },
-  { key: 'post_graduate', labelKey: 'Post Graduate' },
-  { key: 'doctorate', labelKey: 'Doctorate' },
-];
-
-const ACTIVITY_FILTERS = [
-  { key: 'any', labelKey: 'Any' },
-  { key: 'online', labelKey: 'Online Now' },
-  { key: 'recently_active', labelKey: 'Recently Active' },
-  { key: 'new_profiles', labelKey: 'New Profiles' },
-];
 
 interface Props {
   visible: boolean;
   onClose: () => void;
-
   query: string;
   onQueryChange: (v: string) => void;
-
   filters: FilterState;
-
   onFiltersChange: (patch: Partial<FilterState>) => void;
-
   onApply: () => void;
   onClear: () => void;
 }
@@ -85,14 +57,13 @@ export function MatchFilterModal({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   const updateFilter = <K extends keyof FilterState>(
     key: K,
     value: FilterState[K]
   ): void => {
-    onFiltersChange({
-      [key]: value,
-    } as Partial<FilterState>);
+    onFiltersChange({ [key]: value } as Partial<FilterState>);
   };
 
   return (
@@ -102,20 +73,24 @@ export function MatchFilterModal({
       transparent
       statusBarTranslucent
       hardwareAccelerated
+      onRequestClose={onClose}
     >
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.filterModalOverlay}
       >
         <View style={styles.filterModalSheet}>
+          {/* Handle */}
           <View style={styles.filterModalHandle} />
 
+          {/* Header */}
           <View style={styles.filterModalHeader}>
-            <View>
-              <Text style={styles.filterModalTitle}>Search & Filters</Text>
-
+            <View style={styles.matchToolbarLeft}>
+              <Text style={styles.filterModalTitle}>
+                {t('matches.filter_modal_title')}
+              </Text>
               <Text style={styles.filterModalSubtitle}>
-                Refine matches by profile, activity and preferences
+                {t('matches.filter_modal_subtitle')}
               </Text>
             </View>
 
@@ -123,17 +98,22 @@ export function MatchFilterModal({
               onPress={onClose}
               activeOpacity={0.8}
               style={styles.filterCloseBtn}
+              accessibilityRole="button"
+              accessibilityLabel={t('common.close')}
             >
               <Feather name="x" size={20} color={theme.colors.textPrimary} />
             </TouchableOpacity>
           </View>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          <ScrollView
+            showsVerticalScrollIndicator={false}
+            keyboardShouldPersistTaps="handled"
+          >
+            {/* Search */}
             <View style={styles.filterSearchBox}>
               <Feather name="search" size={18} color={theme.colors.textMuted} />
-
               <TextInput
-                placeholder="Search by name, city or profession"
+                placeholder={t('matches.filter_search_placeholder')}
                 placeholderTextColor={theme.colors.textMuted}
                 value={query}
                 onChangeText={onQueryChange}
@@ -141,10 +121,15 @@ export function MatchFilterModal({
                 autoCorrect={false}
                 returnKeyType="search"
                 style={styles.filterSearchInput}
+                accessibilityLabel={t('matches.filter_search_placeholder')}
               />
-
               {query.length > 0 ? (
-                <TouchableOpacity onPress={() => onQueryChange('')}>
+                <TouchableOpacity
+                  onPress={() => onQueryChange('')}
+                  hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+                  accessibilityRole="button"
+                  accessibilityLabel={t('common.clear')}
+                >
                   <Feather
                     name="x-circle"
                     size={18}
@@ -155,107 +140,86 @@ export function MatchFilterModal({
             </View>
 
             <FilterSection
-              title="Age"
+              titleKey="matches.filter_section_age"
               items={AGE_FILTERS}
               value={filters.ageFilter}
-              onChange={(value) =>
-                updateFilter('ageFilter', value as AgeRangeKey)
-              }
+              onChange={(v) => updateFilter('ageFilter', v as AgeRangeKey)}
             />
-
             <FilterSection
-              title="Height"
+              titleKey="matches.filter_section_height"
               items={HEIGHT_FILTERS}
-              value={filters.heightFilter ?? 'any'}
-              onChange={(value) =>
-                updateFilter('heightFilter', value as HeightFilterKey)
+              value={filters.heightFilter}
+              onChange={(v) =>
+                updateFilter('heightFilter', v as HeightFilterKey)
               }
             />
-
             <FilterSection
-              title="Marital Status"
+              titleKey="matches.filter_section_marital"
               items={MARITAL_STATUS_FILTERS}
-              value={filters.maritalStatusFilter ?? 'any'}
-              onChange={(value) =>
-                updateFilter(
-                  'maritalStatusFilter',
-                  value as MaritalStatusFilterKey
-                )
+              value={filters.maritalStatusFilter}
+              onChange={(v) =>
+                updateFilter('maritalStatusFilter', v as MaritalStatusFilterKey)
               }
             />
-
             <FilterSection
-              title="Caste"
+              titleKey="matches.filter_section_caste"
               items={CASTE_FILTERS}
               value={filters.casteFilter}
-              onChange={(value) =>
-                updateFilter('casteFilter', value as CasteFilterKey)
-              }
+              onChange={(v) => updateFilter('casteFilter', v as CasteFilterKey)}
             />
-
             <FilterSection
-              title="Education"
+              titleKey="matches.filter_section_education"
               items={EDUCATION_FILTERS}
-              value={filters.educationFilter ?? 'any'}
-              onChange={(value) =>
-                updateFilter('educationFilter', value as EducationFilterKey)
+              value={filters.educationFilter}
+              onChange={(v) =>
+                updateFilter('educationFilter', v as EducationFilterKey)
               }
             />
-
             <FilterSection
-              title="Activity"
+              titleKey="matches.filter_section_activity"
               items={ACTIVITY_FILTERS}
-              value={filters.activityFilter ?? 'any'}
-              onChange={(value) =>
-                updateFilter('activityFilter', value as ActivityFilterKey)
+              value={filters.activityFilter}
+              onChange={(v) =>
+                updateFilter('activityFilter', v as ActivityFilterKey)
               }
             />
 
+            {/* Quick toggles */}
             <View style={styles.filterQuickToggleGroup}>
-              <QuickToggle
-                label="Verified profiles only"
-                icon="check-circle"
-                value={filters.verifiedOnly}
-                onPress={() =>
-                  updateFilter('verifiedOnly', !filters.verifiedOnly)
-                }
-              />
-
-              <QuickToggle
-                label="Profiles with photo"
-                icon="image"
-                value={Boolean(filters.withPhotoOnly)}
-                onPress={() =>
-                  updateFilter('withPhotoOnly', !filters.withPhotoOnly)
-                }
-              />
-
-              <QuickToggle
-                label="Premium members"
-                icon="award"
-                value={Boolean(filters.premiumOnly)}
-                onPress={() =>
-                  updateFilter('premiumOnly', !filters.premiumOnly)
-                }
-              />
+              {QUICK_TOGGLES.map((toggle) => (
+                <QuickToggle
+                  key={toggle.key}
+                  labelKey={toggle.labelKey}
+                  icon={toggle.icon}
+                  value={Boolean(filters[toggle.key])}
+                  onPress={() => updateFilter(toggle.key, !filters[toggle.key])}
+                />
+              ))}
             </View>
           </ScrollView>
 
+          {/* Footer */}
           <View style={styles.filterModalFooter}>
             <TouchableOpacity
               onPress={onClear}
               activeOpacity={0.85}
               style={styles.filterClearButton}
+              accessibilityRole="button"
             >
-              <Text style={styles.filterClearButtonText}>Clear</Text>
+              <Text style={styles.filterClearButtonText}>
+                {t('matches.filter_clear')}
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               onPress={onApply}
               activeOpacity={0.85}
               style={styles.filterApplyButton}
+              accessibilityRole="button"
             >
-              <Text style={styles.filterApplyButtonText}>Apply Filters</Text>
+              <Text style={styles.filterApplyButtonText}>
+                {t('matches.filter_apply')}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -264,19 +228,24 @@ export function MatchFilterModal({
   );
 }
 
-function QuickToggle({
-  label,
-  icon,
-  value,
-  onPress,
-}: {
-  label: string;
+// ─── QuickToggle — local to this file ────────────────────────────────────────
+
+interface QuickToggleProps {
+  labelKey: string;
   icon: string;
   value: boolean;
   onPress: () => void;
-}): React.ReactElement {
+}
+
+function QuickToggle({
+  labelKey,
+  icon,
+  value,
+  onPress,
+}: QuickToggleProps): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <TouchableOpacity
@@ -290,18 +259,17 @@ function QuickToggle({
       ]}
     >
       <Feather
-        name={value ? 'check-circle' : icon}
+        name={(value ? 'check-circle' : icon) as never}
         size={18}
         color={value ? theme.colors.primary : theme.colors.textMuted}
       />
-
       <Text
         style={[
           styles.filterQuickToggleText,
           value && styles.filterQuickToggleTextActive,
         ]}
       >
-        {label}
+        {t(labelKey)}
       </Text>
     </TouchableOpacity>
   );

@@ -65,172 +65,64 @@ export const matchListStyles = (theme: Theme) =>
     },
     tabBadgeTextActive: { color: theme.colors.white },
 
-    // ─── Search ───────────────────────────────────────────────────────────
-    searchWrapper: {
+    // ─── Toolbar ──────────────────────────────────────────────────────────
+    matchToolbar: {
       paddingHorizontal: 16,
-      paddingTop: 12,
-      paddingBottom: 14,
+      paddingVertical: 12,
       backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
+      borderBottomColor: theme.colors.divider,
       marginBottom: 12,
     },
-    searchHeaderRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      marginBottom: 10,
-    },
-    searchBox: {
-      flex: 1,
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 12,
-      gap: 8,
-      backgroundColor: theme.colors.backgroundLight,
-      borderRadius: 12,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      height: 44,
-    },
-    filterToggle: {
-      width: 44,
-      height: 44,
-      borderRadius: 12,
-      borderWidth: 1.5,
-      borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.surface,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    filterToggleActive: { backgroundColor: theme.colors.primary },
-    filterCountBadge: {
-      position: 'absolute',
-      top: -6,
-      right: -6,
-      minWidth: 18,
-      height: 18,
-      borderRadius: 9,
-      paddingHorizontal: 4,
-      backgroundColor: theme.colors.error,
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderWidth: 1.5,
-      borderColor: theme.colors.surface,
-    },
-    filterCountText: {
-      color: theme.colors.white,
-      fontSize: 10,
-      fontWeight: '800',
-    },
-    searchInput: {
-      flex: 1,
-      fontSize: 14,
-      color: theme.colors.textPrimary,
-      paddingVertical: 0,
-    },
-    resultsBarCompact: {
+    matchToolbarRow: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      marginBottom: 8,
     },
-    resultsText: {
-      fontSize: 13,
-      color: theme.colors.textMuted,
-      fontWeight: '500',
+    // Fixed: replaces incorrect styles.safe usage in MatchListToolbar
+    matchToolbarLeft: {
+      flex: 1,
     },
-    resultsHighlight: {
-      color: theme.colors.primary,
+    matchToolbarTitle: {
+      fontSize: 15,
       fontWeight: '700',
-    },
-    clearFiltersText: {
-      color: theme.colors.primary,
-      fontSize: 13,
-      fontWeight: '700',
-    },
-
-    // ─── Filter panel ─────────────────────────────────────────────────────
-    filterPanel: {
-      gap: 14,
-      padding: 14,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surface,
-    },
-    filterPanelHeader: { gap: 3 },
-    filterPanelTitle: {
       color: theme.colors.textPrimary,
-      fontSize: 14,
-      fontWeight: '800',
     },
-    filterPanelSubtitle: {
-      color: theme.colors.textMuted,
+    matchToolbarSubtitle: {
+      marginTop: 4,
       fontSize: 12,
+      color: theme.colors.textMuted,
     },
-    filterSection: { gap: 8 },
-    filterInputBox: {
+    hasFilterContainer: {
+      marginTop: 6,
       flexDirection: 'row',
       alignItems: 'center',
-      height: 46,
-      paddingHorizontal: 12,
-      gap: 8,
-      borderRadius: 12,
-      borderWidth: 1.5,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.inputBackground,
     },
-    filterLabel: {
-      color: theme.colors.textPrimary,
+    hasFilterContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.primaryLight,
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 999,
+      gap: 6,
+    },
+    hasFilterText: {
+      fontSize: 12,
+      fontWeight: '600',
+      color: theme.colors.primary,
+    },
+    clearFilterBtn: {
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      borderRadius: 10,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    clearFilterBtnText: {
       fontSize: 13,
       fontWeight: '700',
-    },
-    filterChipRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
-    },
-    filterChip: {
-      paddingHorizontal: 14,
-      paddingVertical: 8,
-      borderRadius: 20,
-      borderWidth: 1.5,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surface,
-    },
-    filterChipActive: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
-    },
-    filterChipText: {
       color: theme.colors.textSecondary,
-      fontSize: 13,
-      fontWeight: '600',
     },
-    filterChipTextActive: { color: theme.colors.white },
-    verifiedToggle: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      alignSelf: 'flex-start',
-      gap: 8,
-      paddingHorizontal: 14,
-      paddingVertical: 10,
-      borderRadius: 20,
-      borderWidth: 1.5,
-      borderColor: theme.colors.border,
-      backgroundColor: theme.colors.surface,
-    },
-    verifiedToggleActive: {
-      backgroundColor: theme.colors.primary,
-      borderColor: theme.colors.primary,
-    },
-    verifiedToggleText: {
-      color: theme.colors.textSecondary,
-      fontSize: 13,
-      fontWeight: '600',
-    },
-    verifiedToggleTextActive: { color: theme.colors.white },
 
     // ─── Card ─────────────────────────────────────────────────────────────
     card: {
@@ -254,7 +146,6 @@ export const matchListStyles = (theme: Theme) =>
     },
     photo: { width: '100%', height: 300 },
     photoWrapper: { position: 'relative' },
-    // Fixed: overlayDark → rgba constant safe on all themes
     photoScrim: {
       position: 'absolute',
       bottom: 0,
@@ -320,7 +211,7 @@ export const matchListStyles = (theme: Theme) =>
       gap: 5,
     },
     locationOverlayText: {
-      color: theme.colors.overlayLight,
+      color: theme.colors.white,
       fontSize: 13,
     },
     info: { padding: 14 },
@@ -338,11 +229,7 @@ export const matchListStyles = (theme: Theme) =>
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.primaryBorder,
     },
-    tagText: {
-      color: theme.colors.primary,
-      fontSize: 12,
-      fontWeight: '600',
-    },
+    tagText: { color: theme.colors.primary, fontSize: 12, fontWeight: '600' },
     metaRow: { gap: 5, marginBottom: 14 },
     metaItem: { flexDirection: 'row', alignItems: 'center', gap: 6 },
     metaText: { color: theme.colors.textSecondary, fontSize: 13, flex: 1 },
@@ -375,7 +262,7 @@ export const matchListStyles = (theme: Theme) =>
     },
     primaryBtnPending: { backgroundColor: theme.colors.error },
     primaryBtnSuccess: { backgroundColor: theme.colors.success },
-    primaryBtnAccept: { backgroundColor: theme.colors.success }, // added
+    primaryBtnAccept: { backgroundColor: theme.colors.success },
     primaryText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
     shortlistBtn: {
       width: 44,
@@ -443,73 +330,13 @@ export const matchListStyles = (theme: Theme) =>
       textAlign: 'center',
       lineHeight: 20,
     },
-    // ─── Match Toolbar ─────────────────────────────────────────────
-    matchToolbar: {
-      paddingHorizontal: 16,
-      paddingTop: 12,
-      paddingBottom: 12,
-      backgroundColor: theme.colors.surface,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
-      marginBottom: 12,
-    },
 
-    matchToolbarRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-    },
-
-    matchToolbarTitle: {
-      fontSize: 15,
-      fontWeight: '700',
-      color: theme.colors.textPrimary,
-    },
-
-    matchToolbarSubtitle: {
-      marginTop: 4,
-      fontSize: 12,
-      color: theme.colors.textMuted,
-    },
-
-    appliedFilterPill: {
-      marginTop: 6,
-      alignSelf: 'flex-start',
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: 999,
-      backgroundColor: theme.colors.primaryLight,
-      gap: 6,
-    },
-
-    appliedFilterText: {
-      fontSize: 12,
-      fontWeight: '600',
-      color: theme.colors.primary,
-    },
-
-    clearFilterBtn: {
-      paddingHorizontal: 12,
-      paddingVertical: 8,
-      borderRadius: 10,
-      backgroundColor: theme.colors.backgroundLight,
-    },
-
-    clearFilterBtnText: {
-      fontSize: 13,
-      fontWeight: '700',
-      color: theme.colors.textSecondary,
-    },
-
-    // ─── Filter Modal ─────────────────────────────────────────────
+    // ─── Filter Modal ─────────────────────────────────────────────────────
     filterModalOverlay: {
       flex: 1,
-      backgroundColor: theme.colors.modalOverlay,
+      backgroundColor: theme.colors.overlayDark,
       justifyContent: 'flex-end',
     },
-
     filterModalSheet: {
       maxHeight: '90%',
       backgroundColor: theme.colors.surface,
@@ -519,35 +346,31 @@ export const matchListStyles = (theme: Theme) =>
       paddingHorizontal: 16,
       paddingBottom: 22,
     },
-
+    // Fixed: borderStrong → border
     filterModalHandle: {
       width: 46,
       height: 5,
       borderRadius: 99,
-      backgroundColor: theme.colors.borderStrong,
+      backgroundColor: theme.colors.border,
       alignSelf: 'center',
       marginBottom: 16,
     },
-
     filterModalHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: 18,
     },
-
     filterModalTitle: {
       fontSize: 22,
       fontWeight: '800',
       color: theme.colors.textPrimary,
     },
-
     filterModalSubtitle: {
       marginTop: 3,
       fontSize: 13,
       color: theme.colors.textMuted,
     },
-
     filterCloseBtn: {
       width: 38,
       height: 38,
@@ -556,7 +379,6 @@ export const matchListStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-
     filterSearchBox: {
       height: 50,
       borderRadius: 16,
@@ -569,19 +391,16 @@ export const matchListStyles = (theme: Theme) =>
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
     },
-
     filterSearchInput: {
       flex: 1,
       fontSize: 15,
       color: theme.colors.textPrimary,
       paddingVertical: 0,
     },
-
     filterQuickToggleGroup: {
       gap: 10,
       marginBottom: 10,
     },
-
     filterQuickToggle: {
       minHeight: 46,
       borderRadius: 16,
@@ -593,23 +412,17 @@ export const matchListStyles = (theme: Theme) =>
       borderColor: theme.colors.border,
       backgroundColor: theme.colors.surface,
     },
-
     filterQuickToggleActive: {
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.primaryLight,
     },
-
     filterQuickToggleText: {
       flex: 1,
       fontSize: 14,
       fontWeight: '700',
       color: theme.colors.textSecondary,
     },
-
-    filterQuickToggleTextActive: {
-      color: theme.colors.primary,
-    },
-
+    filterQuickToggleTextActive: { color: theme.colors.primary },
     filterModalFooter: {
       flexDirection: 'row',
       gap: 12,
@@ -617,27 +430,20 @@ export const matchListStyles = (theme: Theme) =>
       borderTopWidth: StyleSheet.hairlineWidth,
       borderTopColor: theme.colors.divider,
     },
-
     filterClearButton: {
       flex: 1,
       height: 52,
       borderRadius: 16,
       borderWidth: 1.5,
-      borderColor: theme.colors.borderStrong,
+      borderColor: theme.colors.border,
       alignItems: 'center',
       justifyContent: 'center',
     },
-
-    filterClearButtonPressed: {
-      opacity: 0.8,
-    },
-
     filterClearButtonText: {
       color: theme.colors.textPrimary,
       fontWeight: '800',
       fontSize: 14,
     },
-
     filterApplyButton: {
       flex: 1.35,
       height: 52,
@@ -646,44 +452,17 @@ export const matchListStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-
-    filterApplyButtonPressed: {
-      opacity: 0.85,
-    },
-
     filterApplyButtonText: {
       color: theme.colors.white,
       fontWeight: '800',
       fontSize: 14,
     },
-
-    hasFilterContainer: {
-      marginTop: 6,
-      flexDirection: 'row',
-      alignItems: 'center',
-    },
-    hasFilterContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: theme.colors.primaryLight,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: 999,
-    },
-    hasFilterText: {
-      marginLeft: 6,
-      fontSize: 12,
-      fontWeight: '600',
-      color: theme.colors.primary,
-    },
+    filterSectionContainer: { marginBottom: 22 },
     filterSectionTitle: {
       marginBottom: 10,
       fontSize: 15,
       fontWeight: '700',
       color: theme.colors.textPrimary,
-    },
-    filterSectionContainer: {
-      marginBottom: 22,
     },
     filterOptionsContainer: {
       flexDirection: 'row',
@@ -707,7 +486,5 @@ export const matchListStyles = (theme: Theme) =>
       fontWeight: '600',
       color: theme.colors.textSecondary,
     },
-    filterOptionButtonTextSelected: {
-      color: theme.colors.white,
-    },
+    filterOptionButtonTextSelected: { color: theme.colors.white },
   });

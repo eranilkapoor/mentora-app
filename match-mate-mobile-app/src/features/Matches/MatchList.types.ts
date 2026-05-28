@@ -58,13 +58,12 @@ export interface FilterState {
   ageFilter: AgeRangeKey;
   casteFilter: CasteFilterKey;
   verifiedOnly: boolean;
-
-  heightFilter?: HeightFilterKey;
-  maritalStatusFilter?: MaritalStatusFilterKey;
-  educationFilter?: EducationFilterKey;
-  activityFilter?: ActivityFilterKey;
-  premiumOnly?: boolean;
-  withPhotoOnly?: boolean;
+  heightFilter: HeightFilterKey;
+  maritalStatusFilter: MaritalStatusFilterKey;
+  educationFilter: EducationFilterKey;
+  activityFilter: ActivityFilterKey;
+  premiumOnly: boolean;
+  withPhotoOnly: boolean;
 }
 
 export interface MatchListScreenProps {

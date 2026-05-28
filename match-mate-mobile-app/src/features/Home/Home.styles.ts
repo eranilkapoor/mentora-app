@@ -185,7 +185,7 @@ export const homeStyles = (theme: Theme) =>
     },
     heroLocation: {
       fontSize: 13,
-      color: theme.colors.overlayLight,
+      color: theme.colors.white,
     },
 
     // ─── Card Content ─────────────────────────────────────────────────────
