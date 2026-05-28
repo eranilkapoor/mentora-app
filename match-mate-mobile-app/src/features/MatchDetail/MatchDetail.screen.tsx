@@ -1,414 +1,197 @@
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  Image,
-  ListRenderItem,
-  NativeScrollEvent,
-  NativeSyntheticEvent,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, { useEffect, useMemo } from 'react';
+import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { RouteProp } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
-import { windowWidth } from '../../core/utils/device';
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
-import { resolveApiUrl } from '@/core/utils/config';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
-import { MatchesStackParamList } from '@/navigation/types';
-import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
-import {
-  DiscoveryProfile,
-  useGetMatchProfileQuery,
-  useSendInterestMutation,
-  useWithdrawInterestMutation,
-} from '@/store/services/matchApi.service';
-import {
-  useBlockUserMutation,
-  useReportUserMutation,
-} from '@/store/services/privacySettings.service';
-import { showConfirm } from '@/core/utils/confirm';
-import { showError, showSuccess } from '@/core/utils/toast';
+import { useGetMatchProfileQuery } from '@/store/services/matchApi.service';
 import { matchDetailStyles } from './MatchDetail.styles';
+import { MatchDetailScreenProps, PrimaryAction } from './MatchDetail.types';
+import { EMPTY, HIDDEN_KEY } from './MatchDetail.constants';
+import {
+  compact,
+  getPhotos,
+  getProfileName,
+  isRecentlyActive,
+} from './MatchDetail.utils';
+import { useMatchDetailActions } from './hooks/useMatchDetailActions';
+import { DetailSection } from './components/DetailSection';
+import { DetailRow } from './components/DetailRow';
+import { DetailPhotoCarousel } from './components/DetailPhotoCarousel';
+import { MatchScoreBar } from './components/MatchScoreBar';
+import { MatchDetailCta } from './components/MatchDetailCta';
+import { MatchDetailEmpty } from './components/MatchDetailEmpty';
 
-type Props = {
-  navigation: NativeStackNavigationProp<MatchesStackParamList, 'MatchDetails'>;
-  route: RouteProp<MatchesStackParamList, 'MatchDetails'>;
-};
-
-interface SectionProps {
-  title: string;
-  icon: string;
-  children: React.ReactNode;
-}
-
-interface RowProps {
-  label: string;
-  value?: string | number | null;
-  icon?: string;
-  isLast?: boolean;
-}
-
-const FALLBACK_PHOTO =
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600';
-const HIDDEN = 'Visible after match/permission';
-const EMPTY = '-';
-
-const compact = (values: Array<string | number | undefined | null>): string =>
-  values.filter(Boolean).join(', ') || EMPTY;
-
-const getName = (profile?: DiscoveryProfile): string =>
-  [profile?.personal?.firstName, profile?.personal?.lastName]
-    .filter(Boolean)
-    .join(' ')
-    .trim() || 'MatchMate Member';
-
-const getPhotos = (profile?: DiscoveryProfile): string[] => {
-  const photos = profile?.images
-    ?.filter((image) => image.isActive !== false)
-    .sort((a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary)))
-    .map((image) => resolveApiUrl(image.url))
-    .filter((url): url is string => Boolean(url));
-  return photos?.length ? photos : [FALLBACK_PHOTO];
-};
-
-const isOnline = (lastActiveAt?: string): boolean =>
-  lastActiveAt
-    ? Date.now() - new Date(lastActiveAt).getTime() <= 15 * 60 * 1000
-    : false;
-
-function Section({ title, icon, children }: SectionProps): React.ReactElement {
-  const styles = useThemedStyles(matchDetailStyles);
-  const { theme } = useTheme();
-  return (
-    <View style={styles.section}>
-      <View style={styles.sectionHeader}>
-        <View style={styles.sectionIconWrapper}>
-          <Feather name={icon} size={14} color={theme.colors.primary} />
-        </View>
-        <Text style={styles.sectionTitle}>{title}</Text>
-      </View>
-      <View style={styles.sectionBody}>{children}</View>
-    </View>
-  );
-}
-
-function Row({ label, value, icon, isLast }: RowProps): React.ReactElement {
-  const styles = useThemedStyles(matchDetailStyles);
-  const { theme } = useTheme();
-  return (
-    <View style={[styles.row, isLast && styles.rowLast]}>
-      <View style={styles.rowLeft}>
-        {icon !== undefined && (
-          <Feather name={icon} size={13} color={theme.colors.textMuted} />
-        )}
-        <Text style={styles.label}>{label}</Text>
-      </View>
-      <Text style={styles.value}>{value ?? EMPTY}</Text>
-    </View>
-  );
-}
-
-export default function MatchDetailsScreen({
+export default function MatchDetailScreen({
   navigation,
   route,
-}: Props): React.ReactElement {
+}: MatchDetailScreenProps): React.ReactElement {
   const styles = useThemedStyles(matchDetailStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
-  const [activeIndex, setActiveIndex] = useState(0);
-  const flatListRef = useRef<FlatList<string>>(null);
   const { userId } = route.params;
-  const { data, isLoading, refetch } = useGetMatchProfileQuery(userId);
-  const [sendInterest, { isLoading: isSendingInterest }] =
-    useSendInterestMutation();
-  const [withdrawInterest, { isLoading: isWithdrawingInterest }] =
-    useWithdrawInterestMutation();
-  const [createDirectRoom, { isLoading: isOpeningChat }] =
-    useCreateDirectRoomMutation();
-  const [blockUser, { isLoading: isBlocking }] = useBlockUserMutation();
-  const [reportUser, { isLoading: isReporting }] = useReportUserMutation();
 
+  const { data, isLoading } = useGetMatchProfileQuery(userId);
   const profile = data?.data ?? undefined;
-  const name = getName(profile);
+  const name = getProfileName(profile);
   const photos = useMemo(() => getPhotos(profile), [profile]);
+
+  const {
+    optimisticPendingInterest,
+    resetOptimistic,
+    handleSendInterest,
+    handleWithdrawInterest,
+    handleOpenChat,
+    handleReport,
+    handleBlock,
+    isSendingInterest,
+    isWithdrawingInterest,
+    isOpeningChat,
+    isBlocking,
+    isReporting,
+  } = useMatchDetailActions(userId, name, photos, navigation);
+
+  useEffect(() => {
+    resetOptimistic();
+  }, [userId, resetOptimistic]);
+
+  // ─── Derived state ────────────────────────────────────────────────────
+
   const canViewDetails = Boolean(profile?.privacy?.canViewPersonalDetails);
   const isMatched = Boolean(profile?.privacy?.isMatched);
-  const [optimisticPendingInterest, setOptimisticPendingInterest] =
-    useState(false);
-  const pendingSentInterest =
-    optimisticPendingInterest ||
-    (profile?.relationship?.interestDirection === 'sent' &&
-      profile.relationship.interestStatus === 'pending');
-  const pendingReceivedInterest =
-    profile?.relationship?.interestDirection === 'received' &&
-    profile.relationship.interestStatus === 'pending';
-  const online = isOnline(profile?.lastActiveAt);
+  const online = isRecentlyActive(profile?.lastActiveAt);
   const location = compact([
     profile?.personal?.city,
     profile?.personal?.state,
     profile?.personal?.country,
   ]);
 
-  const chips = [
-    {
-      icon: 'sun',
-      label: formatEnumLabel(
-        t,
-        'options.religion',
-        profile?.personal?.religion,
-        HIDDEN
-      ),
-    },
-    {
-      icon: 'users',
-      label: formatEnumLabel(
-        t,
-        'options.caste',
-        profile?.personal?.caste,
-        HIDDEN
-      ),
-    },
-    {
-      icon: 'trending-up',
-      label: profile?.physical?.height
-        ? cmToFeetInches(profile.physical.height) ||
-          String(profile.physical.height)
-        : HIDDEN,
-    },
-    {
-      icon: 'heart',
-      label: formatEnumLabel(
-        t,
-        'options.marital_status',
-        profile?.personal?.maritalStatus,
-        EMPTY
-      ),
-    },
-  ];
+  const pendingSentInterest =
+    optimisticPendingInterest ||
+    (profile?.relationship?.interestDirection === 'sent' &&
+      profile.relationship.interestStatus === 'pending');
 
-  const onScroll = (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
-    const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
-    setActiveIndex(index);
-  };
+  const pendingReceivedInterest =
+    profile?.relationship?.interestDirection === 'received' &&
+    profile.relationship.interestStatus === 'pending';
 
-  const renderPhoto: ListRenderItem<string> = ({ item }) => (
-    <Image source={{ uri: item }} style={styles.photo} resizeMode="cover" />
+  // ─── Chips ────────────────────────────────────────────────────────────
+
+  const hidden = t(HIDDEN_KEY);
+
+  const chips = useMemo(
+    () => [
+      {
+        icon: 'sun',
+        label: formatEnumLabel(
+          t,
+          'options.religion',
+          profile?.personal?.religion,
+          hidden
+        ),
+      },
+      {
+        icon: 'users',
+        label: formatEnumLabel(
+          t,
+          'options.caste',
+          profile?.personal?.caste,
+          hidden
+        ),
+      },
+      {
+        icon: 'trending-up',
+        label: profile?.physical?.height
+          ? cmToFeetInches(profile.physical.height) ||
+            String(profile.physical.height)
+          : hidden,
+      },
+      {
+        icon: 'heart',
+        label: formatEnumLabel(
+          t,
+          'options.marital_status',
+          profile?.personal?.maritalStatus,
+          EMPTY
+        ),
+      },
+    ],
+    [profile, t, hidden]
   );
 
-  useEffect(() => {
-    setOptimisticPendingInterest(false);
-  }, [userId]);
+  // ─── Primary action ───────────────────────────────────────────────────
 
-  const handlePrimaryAction = async (): Promise<void> => {
-    if (isMatched) {
-      try {
-        await createDirectRoom({ targetUserId: userId }).unwrap();
-        navigation.navigate('ChatDetails', {
-          userId,
-          partnerName: name,
-          partnerPhoto: photos[0] ?? FALLBACK_PHOTO,
-        });
-      } catch {
-        showError({
-          title: 'Chat unavailable',
-          message: 'Please try again later.',
-        });
-      }
-      return;
-    }
-
-    try {
-      await sendInterest({ receiverId: userId }).unwrap();
-      setOptimisticPendingInterest(true);
-      showSuccess({
-        title: 'Interest sent',
-        message: `${name} will be notified.`,
-      });
-      await refetch();
-    } catch {
-      showError({
-        title: 'Interest not sent',
-        message: 'Please try again later.',
-      });
-    }
-  };
-
-  const handleWithdrawInterest = async (): Promise<void> => {
-    const interestId = profile?.relationship?.interestId;
-    if (!interestId) return;
-
-    try {
-      await withdrawInterest({ interestId }).unwrap();
-      setOptimisticPendingInterest(false);
-      showSuccess({
-        title: 'Interest withdrawn',
-        message: 'Your interest request has been withdrawn.',
-      });
-      await refetch();
-    } catch {
-      showError({
-        title: 'Unable to withdraw',
-        message: 'Please try again later.',
-      });
-    }
-  };
-
-  const primaryAction = (() => {
+  const primaryAction = useMemo<PrimaryAction>(() => {
     if (isMatched) {
       return {
         icon: 'message-circle',
-        label: 'Chat',
+        labelKey: 'match_detail.action_chat',
         disabled: isOpeningChat,
-        onPress: handlePrimaryAction,
+        onPress: handleOpenChat,
       };
     }
-
     if (pendingSentInterest) {
       return {
         icon: 'x-circle',
-        label: 'Withdraw Interest',
+        labelKey: 'match_detail.action_withdraw',
         disabled: isWithdrawingInterest || !profile?.relationship?.interestId,
-        onPress: handleWithdrawInterest,
+        onPress: () =>
+          handleWithdrawInterest(profile?.relationship?.interestId),
       };
     }
-
     if (pendingReceivedInterest) {
       return {
         icon: 'inbox',
-        label: 'Interest Received',
+        labelKey: 'match_detail.action_interest_received',
         disabled: true,
-        onPress: handlePrimaryAction,
+        onPress: () => undefined,
       };
     }
-
     return {
       icon: 'heart',
-      label: 'Send Interest',
+      labelKey: 'match_detail.action_send_interest',
       disabled: isSendingInterest,
-      onPress: handlePrimaryAction,
+      onPress: handleSendInterest,
     };
-  })();
+  }, [
+    isMatched,
+    isOpeningChat,
+    handleOpenChat,
+    pendingSentInterest,
+    isWithdrawingInterest,
+    profile?.relationship?.interestId,
+    handleWithdrawInterest,
+    pendingReceivedInterest,
+    isSendingInterest,
+    handleSendInterest,
+  ]);
 
-  const handleReport = (): void => {
-    showConfirm({
-      title: 'Report profile?',
-      message: `Report ${name} for review?`,
-      confirmText: 'Report',
-      destructive: true,
-      onConfirm: () => {
-        void reportUser({
-          targetUserId: userId,
-          reason: 'Reported from match details',
-        })
-          .unwrap()
-          .then(() => {
-            showSuccess({
-              title: 'Report submitted',
-              message: 'Thank you for helping keep MatchMate safe.',
-            });
-          })
-          .catch(() => {
-            showError({
-              title: 'Unable to report',
-              message: 'Please try again.',
-            });
-          });
-      },
-    });
-  };
+  // ─── Loading / empty ──────────────────────────────────────────────────
 
-  const handleBlock = (): void => {
-    showConfirm({
-      title: 'Block profile?',
-      message: `You will no longer see ${name}.`,
-      confirmText: 'Block',
-      destructive: true,
-      onConfirm: () => {
-        void blockUser({ targetUserId: userId })
-          .unwrap()
-          .then(() => {
-            showSuccess({
-              title: 'Profile blocked',
-              message: `${name} has been blocked.`,
-            });
-            navigation.goBack();
-          })
-          .catch(() => {
-            showError({
-              title: 'Unable to block',
-              message: 'Please try again.',
-            });
-          });
-      },
-    });
-  };
-
-  if (isLoading) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.emptyContainer}>
-          <ActivityIndicator color={theme.colors.primary} />
-          <Text style={styles.emptyTitle}>Loading profile</Text>
-        </View>
-      </SafeAreaView>
-    );
+  if (isLoading || !profile) {
+    return <MatchDetailEmpty isLoading={isLoading} />;
   }
 
-  if (!profile) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.emptyContainer}>
-          <Text style={styles.emptyTitle}>Profile unavailable</Text>
-          <Text style={styles.emptySubtitle}>
-            This profile may be hidden or no longer available.
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
-  }
+  // ─── Render ───────────────────────────────────────────────────────────
 
   return (
     <SafeAreaView style={styles.container} edges={['bottom']}>
       <ScrollView showsVerticalScrollIndicator={false}>
+        {/* ── Photo carousel ───────────────────────────────────── */}
         <View style={styles.carouselWrapper}>
-          <FlatList
-            ref={flatListRef}
-            data={photos}
-            horizontal
-            pagingEnabled
-            showsHorizontalScrollIndicator={false}
-            onMomentumScrollEnd={onScroll}
-            renderItem={renderPhoto}
-            keyExtractor={(item, i) => `${item}-${i}`}
-          />
-
+          <DetailPhotoCarousel photos={photos} name={name} />
           <View style={styles.carouselScrim} />
-          <View style={styles.counterPill}>
-            <Feather name="image" size={11} color={theme.colors.white} />
-            <Text style={styles.counterText}>
-              {activeIndex + 1} / {photos.length}
-            </Text>
-          </View>
-          <View style={styles.dots}>
-            {photos.map((_, i) => (
-              <View
-                key={i}
-                style={[styles.dot, i === activeIndex && styles.dotActive]}
-              />
-            ))}
-          </View>
+
+          {/* Hero overlay */}
           <View style={styles.heroOverlay}>
             {online && (
               <View style={styles.onlinePill}>
                 <View style={styles.onlineDot} />
-                <Text style={styles.onlinePillText}>Online now</Text>
+                <Text style={styles.onlinePillText}>
+                  {t('match_detail.online_now')}
+                </Text>
               </View>
             )}
             <Text style={styles.heroName}>
@@ -426,37 +209,18 @@ export default function MatchDetailsScreen({
           </View>
         </View>
 
-        <View style={styles.matchScoreBar}>
-          <View style={styles.matchScoreLeft}>
-            <View style={styles.matchScoreIconWrapper}>
-              <Feather name="heart" size={18} color={theme.colors.primary} />
-            </View>
-            <View>
-              <Text style={styles.matchScoreLabel}>Match Score</Text>
-              <Text style={styles.matchScoreValue}>
-                {profile.matchScore ?? profile.profileScore ?? 0}%
-              </Text>
-            </View>
-          </View>
-          <View style={styles.matchScoreDivider} />
-          <View style={styles.matchScoreLeft}>
-            <View style={styles.matchScoreIconWrapper}>
-              <Feather name="shield" size={18} color={theme.colors.primary} />
-            </View>
-            <View>
-              <Text style={styles.matchScoreLabel}>Details</Text>
-              <Text style={styles.matchScoreValue}>
-                {canViewDetails ? 'Open' : 'Limited'}
-              </Text>
-            </View>
-          </View>
-        </View>
+        {/* ── Match score ──────────────────────────────────────── */}
+        <MatchScoreBar
+          matchScore={profile.matchScore ?? profile.profileScore ?? 0}
+          canViewDetails={canViewDetails}
+        />
 
+        {/* ── Chips row ────────────────────────────────────────── */}
         <View style={styles.chipsRow}>
           {chips.map((chip) => (
             <View key={`${chip.icon}-${chip.label}`} style={styles.chip}>
               <Feather
-                name={chip.icon}
+                name={chip.icon as never}
                 size={12}
                 color={theme.colors.primary}
               />
@@ -465,181 +229,179 @@ export default function MatchDetailsScreen({
           ))}
         </View>
 
-        <Section title="About Me" icon="user">
+        {/* ── About ────────────────────────────────────────────── */}
+        <DetailSection title={t('match_detail.section_about')} icon="user">
           <Text style={styles.aboutText}>
             {profile.personal?.aboutMe ??
-              (canViewDetails ? 'No introduction added yet.' : HIDDEN)}
+              (canViewDetails ? t('match_detail.no_introduction') : hidden)}
           </Text>
-        </Section>
+        </DetailSection>
 
-        <Section title="Basic Details" icon="info">
-          <Row label="Name" value={name} icon="user" />
-          <Row
-            label="Age"
-            value={profile.age ? `${profile.age} Years` : HIDDEN}
+        {/* ── Basic Details ─────────────────────────────────────── */}
+        <DetailSection title={t('match_detail.section_basic')} icon="info">
+          <DetailRow
+            label={t('match_detail.field_name')}
+            value={name}
+            icon="user"
+          />
+          <DetailRow
+            label={t('match_detail.field_age')}
+            value={
+              profile.age
+                ? t('match_detail.years', { count: profile.age })
+                : hidden
+            }
             icon="calendar"
           />
-          <Row
-            label="Height"
+          <DetailRow
+            label={t('match_detail.field_height')}
             value={
               profile.physical?.height
                 ? cmToFeetInches(profile.physical.height) ||
                   String(profile.physical.height)
-                : HIDDEN
+                : hidden
             }
             icon="trending-up"
           />
-          <Row
-            label="Religion"
+          <DetailRow
+            label={t('match_detail.field_religion')}
             value={formatEnumLabel(
               t,
               'options.religion',
               profile.personal?.religion,
-              HIDDEN
+              hidden
             )}
             icon="sun"
           />
-          <Row
-            label="Caste"
+          <DetailRow
+            label={t('match_detail.field_caste')}
             value={formatEnumLabel(
               t,
               'options.caste',
               profile.personal?.caste,
-              HIDDEN
+              hidden
             )}
             icon="users"
             isLast
           />
-        </Section>
+        </DetailSection>
 
-        <Section title="Education & Career" icon="book">
-          <Row
-            label="Education"
+        {/* ── Education & Career ───────────────────────────────── */}
+        <DetailSection title={t('match_detail.section_education')} icon="book">
+          <DetailRow
+            label={t('match_detail.field_education')}
             value={formatEnumLabel(
               t,
               'options.qualifications',
               profile.education?.qualification,
-              HIDDEN
+              hidden
             )}
             icon="book"
           />
-          <Row
-            label="Profession"
+          <DetailRow
+            label={t('match_detail.field_profession')}
             value={
               profile.education?.jobRole ??
               profile.education?.occupation ??
-              HIDDEN
+              hidden
             }
             icon="briefcase"
           />
-          <Row
-            label="Company"
-            value={profile.education?.companyName ?? HIDDEN}
+          <DetailRow
+            label={t('match_detail.field_company')}
+            value={profile.education?.companyName ?? hidden}
             icon="briefcase"
           />
-          <Row
-            label="Annual Income"
+          <DetailRow
+            label={t('match_detail.field_income')}
             value={
               profile.privacy?.showIncome &&
               profile.education?.annualIncomeAmount
                 ? String(profile.education.annualIncomeAmount)
-                : HIDDEN
+                : hidden
             }
             icon="dollar-sign"
             isLast
           />
-        </Section>
+        </DetailSection>
 
-        <Section title="Family Background" icon="home">
-          <Row
-            label="Family Type"
+        {/* ── Family ───────────────────────────────────────────── */}
+        <DetailSection title={t('match_detail.section_family')} icon="home">
+          <DetailRow
+            label={t('match_detail.field_family_type')}
             value={formatEnumLabel(
               t,
               'options.family_types',
               profile.family?.familyType,
-              HIDDEN
+              hidden
             )}
             icon="home"
           />
-          <Row
-            label="Family Status"
+          <DetailRow
+            label={t('match_detail.field_family_status')}
             value={formatEnumLabel(
               t,
               'options.family_status',
               profile.family?.familyStatus,
-              HIDDEN
+              hidden
             )}
             icon="shield"
           />
-          <Row
-            label="Father's Occupation"
-            value={profile.family?.fatherOccupation ?? HIDDEN}
+          <DetailRow
+            label={t('match_detail.field_father_occupation')}
+            value={profile.family?.fatherOccupation ?? hidden}
             icon="briefcase"
             isLast
           />
-        </Section>
+        </DetailSection>
 
-        <Section title="Safety" icon="shield">
+        {/* ── Safety ───────────────────────────────────────────── */}
+        <DetailSection title={t('match_detail.section_safety')} icon="shield">
           <View style={styles.safetyActions}>
             <TouchableOpacity
               style={styles.safetyButton}
               onPress={handleReport}
               disabled={isReporting}
+              activeOpacity={0.8}
               accessibilityRole="button"
+              accessibilityLabel={t('match_detail.report_confirm')}
             >
               <Feather
                 name="flag"
                 size={15}
                 color={theme.colors.textSecondary}
               />
-              <Text style={styles.safetyButtonText}>Report</Text>
+              <Text style={styles.safetyButtonText}>
+                {t('match_detail.action_report')}
+              </Text>
             </TouchableOpacity>
+
             <TouchableOpacity
               style={[styles.safetyButton, styles.safetyButtonDanger]}
               onPress={handleBlock}
               disabled={isBlocking}
+              activeOpacity={0.8}
               accessibilityRole="button"
+              accessibilityLabel={t('match_detail.block_confirm')}
             >
               <Feather name="slash" size={15} color={theme.colors.error} />
               <Text
                 style={[styles.safetyButtonText, styles.safetyButtonTextDanger]}
               >
-                Block
+                {t('match_detail.action_block')}
               </Text>
             </TouchableOpacity>
           </View>
-        </Section>
+        </DetailSection>
 
         <View style={styles.footerSpacer} />
       </ScrollView>
 
-      <View style={styles.cta}>
-        <TouchableOpacity
-          style={styles.ctaOutline}
-          onPress={() => navigation.goBack()}
-          accessibilityRole="button"
-        >
-          <Feather name="arrow-left" size={16} color={theme.colors.primary} />
-          <Text style={styles.ctaOutlineText}>Back</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[
-            styles.ctaPrimary,
-            primaryAction.disabled && styles.ctaPrimaryDisabled,
-          ]}
-          onPress={() => void primaryAction.onPress()}
-          disabled={primaryAction.disabled}
-          accessibilityRole="button"
-        >
-          <Feather
-            name={primaryAction.icon}
-            size={16}
-            color={theme.colors.white}
-          />
-          <Text style={styles.ctaPrimaryText}>{primaryAction.label}</Text>
-        </TouchableOpacity>
-      </View>
+      {/* ── Sticky CTA ───────────────────────────────────────────── */}
+      <MatchDetailCta
+        primaryAction={primaryAction}
+        onBack={navigation.goBack}
+      />
     </SafeAreaView>
   );
 }

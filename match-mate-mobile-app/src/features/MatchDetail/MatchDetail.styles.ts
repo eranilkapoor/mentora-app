@@ -1,6 +1,6 @@
 import { Theme } from '@/core/theme/types';
 import { isWeb, windowWidth } from '@/core/utils/device';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const matchDetailStyles = (theme: Theme) =>
   StyleSheet.create({
@@ -15,6 +15,7 @@ export const matchDetailStyles = (theme: Theme) =>
       width: isWeb ? 400 : windowWidth,
       height: 420,
     },
+    // Fixed: overlayDark → rgba constant
     carouselScrim: {
       position: 'absolute',
       bottom: 0,
@@ -29,7 +30,7 @@ export const matchDetailStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       gap: 4,
-      backgroundColor: theme.colors.black,
+      backgroundColor: theme.colors.overlayDark,
       paddingHorizontal: 10,
       paddingVertical: 5,
       borderRadius: 20,
@@ -51,7 +52,7 @@ export const matchDetailStyles = (theme: Theme) =>
       width: 6,
       height: 6,
       borderRadius: 3,
-      backgroundColor: theme.colors.secondary,
+      backgroundColor: theme.colors.overlayDark,
     },
     dotActive: {
       backgroundColor: theme.colors.white,
@@ -69,7 +70,7 @@ export const matchDetailStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       alignSelf: 'flex-start',
-      backgroundColor: theme.colors.black,
+      backgroundColor: theme.colors.success,
       paddingHorizontal: 10,
       paddingVertical: 4,
       borderRadius: 20,
@@ -100,7 +101,7 @@ export const matchDetailStyles = (theme: Theme) =>
     },
     heroLocation: {
       fontSize: 13,
-      color: theme.colors.accentLight,
+      color: theme.colors.white,
     },
 
     // ─── Match Score ──────────────────────────────────────────────────────
@@ -108,7 +109,7 @@ export const matchDetailStyles = (theme: Theme) =>
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       paddingHorizontal: 16,
       paddingVertical: 14,
       borderBottomWidth: StyleSheet.hairlineWidth,
@@ -116,6 +117,7 @@ export const matchDetailStyles = (theme: Theme) =>
       gap: 12,
     },
     matchScoreLeft: {
+      flex: 1,
       flexDirection: 'row',
       alignItems: 'center',
       gap: 10,
@@ -150,7 +152,7 @@ export const matchDetailStyles = (theme: Theme) =>
       gap: 8,
       paddingHorizontal: 16,
       paddingVertical: 14,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
     },
@@ -173,7 +175,7 @@ export const matchDetailStyles = (theme: Theme) =>
 
     // ─── Section ──────────────────────────────────────────────────────────
     section: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       marginTop: 10,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderBottomWidth: StyleSheet.hairlineWidth,
@@ -198,11 +200,11 @@ export const matchDetailStyles = (theme: Theme) =>
       justifyContent: 'center',
     },
     sectionTitle: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: '700',
-      color: theme.colors.textPrimary,
+      color: theme.colors.textSecondary,
       textTransform: 'uppercase',
-      letterSpacing: 0.5,
+      letterSpacing: 0.6,
     },
     sectionBody: {
       paddingHorizontal: 16,
@@ -217,13 +219,12 @@ export const matchDetailStyles = (theme: Theme) =>
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
     },
-    rowLast: {
-      borderBottomWidth: 0,
-    },
+    rowLast: { borderBottomWidth: 0 },
     rowLeft: {
       flexDirection: 'row',
       alignItems: 'center',
       gap: 8,
+      flex: 1,
     },
     label: {
       fontSize: 13,
@@ -243,13 +244,13 @@ export const matchDetailStyles = (theme: Theme) =>
       fontSize: 14,
       color: theme.colors.textBody,
       lineHeight: 22,
-      paddingHorizontal: 16,
       paddingVertical: 14,
     },
+
+    // ─── Safety ───────────────────────────────────────────────────────────
     safetyActions: {
       flexDirection: 'row',
       gap: 10,
-      paddingHorizontal: 16,
       paddingVertical: 14,
     },
     safetyButton: {
@@ -258,7 +259,7 @@ export const matchDetailStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: 6,
-      borderRadius: 10,
+      borderRadius: 12,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       backgroundColor: theme.colors.backgroundLight,
@@ -273,25 +274,28 @@ export const matchDetailStyles = (theme: Theme) =>
       fontWeight: '700',
       color: theme.colors.textSecondary,
     },
-    safetyButtonTextDanger: {
-      color: theme.colors.error,
-    },
+    safetyButtonTextDanger: { color: theme.colors.error },
 
     // ─── CTA ──────────────────────────────────────────────────────────────
     cta: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
       flexDirection: 'row',
       paddingHorizontal: 16,
       paddingVertical: 12,
       paddingBottom: 28,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       gap: 10,
-      elevation: 12,
+      ...Platform.select({
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
+        },
+        android: { elevation: 12 },
+        web: {},
+      }),
     },
     ctaOutline: {
       flex: 1,
@@ -318,11 +322,21 @@ export const matchDetailStyles = (theme: Theme) =>
       backgroundColor: theme.colors.primary,
       borderRadius: 30,
       paddingVertical: 13,
-      elevation: 4,
+      ...Platform.select({
+        android: { elevation: 4 },
+        ios: {
+          shadowColor: theme.colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.3,
+          shadowRadius: 8,
+        },
+        web: {},
+      }),
     },
     ctaPrimaryDisabled: {
       backgroundColor: theme.colors.textMuted,
       elevation: 0,
+      shadowOpacity: 0,
     },
     ctaPrimaryText: {
       color: theme.colors.white,
@@ -330,7 +344,7 @@ export const matchDetailStyles = (theme: Theme) =>
       fontSize: 14,
     },
 
-    // ─── Footer spacer ────────────────────────────────────────────────────
+    // ─── Empty ────────────────────────────────────────────────────────────
     footerSpacer: { height: 110 },
     emptyContainer: {
       flex: 1,
@@ -338,7 +352,7 @@ export const matchDetailStyles = (theme: Theme) =>
       alignItems: 'center',
       justifyContent: 'center',
       paddingHorizontal: 24,
-      gap: 12,
+      gap: 16,
     },
     emptyTitle: {
       fontSize: 18,

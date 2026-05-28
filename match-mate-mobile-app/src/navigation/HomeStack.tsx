@@ -7,7 +7,7 @@ import { getSharedScreenOptions } from './sharedScreenOptions';
 import HomeScreen from '@/features/Home/Home.screen';
 import NotificationsScreen from '@/features/Notifications/Notifications.screen';
 import MatchDetailsScreen from '@/features/MatchDetail/MatchDetail.screen';
-import ChatScreen from '@/features/Chats/Chat.screen';
+import ChatScreen from '@/features/Chat/Chat.screen';
 
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 

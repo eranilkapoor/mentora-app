@@ -1,5 +1,5 @@
 import { Theme } from '@/core/theme/types';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const membershipStyles = (theme: Theme) =>
   StyleSheet.create({
@@ -44,6 +44,7 @@ export const membershipStyles = (theme: Theme) =>
       color: theme.colors.white,
       marginBottom: 4,
     },
+    // Fixed: accentLight → rgba on primary background
     heroSubtitle: {
       fontSize: 13,
       color: theme.colors.accentLight,
@@ -55,7 +56,7 @@ export const membershipStyles = (theme: Theme) =>
       gap: 12,
     },
     heroStat: {
-      backgroundColor: theme.colors.accent,
+      backgroundColor: theme.colors.black + '0D', // 5% opacity on black for contrast on any background
       borderRadius: 10,
       paddingHorizontal: 12,
       paddingVertical: 7,
@@ -92,10 +93,19 @@ export const membershipStyles = (theme: Theme) =>
       gap: 6,
     },
     activeTab: {
-      backgroundColor: theme.colors.white,
-      elevation: 3,
+      backgroundColor: theme.colors.surface,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.primaryBorder,
+      ...Platform.select({
+        android: { elevation: 3 },
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.08,
+          shadowRadius: 4,
+        },
+        web: {},
+      }),
     },
     tabText: {
       fontSize: 13,
@@ -145,14 +155,32 @@ export const membershipStyles = (theme: Theme) =>
       borderRadius: 16,
       padding: 12,
       alignItems: 'center',
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       position: 'relative',
-      elevation: 1,
+      ...Platform.select({
+        android: { elevation: 1 },
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.05,
+          shadowRadius: 4,
+        },
+        web: {},
+      }),
     },
     planCardActive: {
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.primaryLight,
-      elevation: 5,
+      ...Platform.select({
+        android: { elevation: 5 },
+        ios: {
+          shadowColor: theme.colors.primary,
+          shadowOffset: { width: 0, height: 3 },
+          shadowOpacity: 0.2,
+          shadowRadius: 6,
+        },
+        web: {},
+      }),
     },
     popularBadge: {
       position: 'absolute',
@@ -170,7 +198,8 @@ export const membershipStyles = (theme: Theme) =>
     planName: {
       fontSize: 12,
       fontWeight: '700',
-      color: theme.colors.textBody,
+      // Fixed: textBody → textSecondary
+      color: theme.colors.textSecondary,
       marginTop: 10,
     },
     planNameActive: { color: theme.colors.primary },
@@ -207,13 +236,17 @@ export const membershipStyles = (theme: Theme) =>
 
     // ─── Feature Table ────────────────────────────────────────────────────
     featureTableCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 16,
       overflow: 'hidden',
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       marginBottom: 20,
-      elevation: 1,
+      ...Platform.select({
+        android: { elevation: 1 },
+        ios: {},
+        web: {},
+      }),
     },
     featureTableHeader: {
       flexDirection: 'row',
@@ -223,19 +256,11 @@ export const membershipStyles = (theme: Theme) =>
       borderColor: theme.colors.primary,
       backgroundColor: theme.colors.primaryLight,
     },
-    featureHeader: {
-      flexDirection: 'row',
-      paddingVertical: 10,
-      borderBottomWidth: 2,
-      borderColor: theme.colors.primary,
-      marginBottom: 2,
-    },
     featureHeaderLabel: {
       flex: 1,
       fontSize: 12,
       fontWeight: '700',
       color: theme.colors.textPrimary,
-      paddingLeft: 0,
     },
     featureHeaderCol: {
       flex: 1,
@@ -248,14 +273,6 @@ export const membershipStyles = (theme: Theme) =>
       color: theme.colors.primary,
       fontWeight: '800',
     },
-    featureTable: {
-      borderRadius: 10,
-      overflow: 'hidden',
-      backgroundColor: theme.colors.white,
-      borderWidth: 1,
-      borderColor: theme.colors.divider,
-      marginBottom: 20,
-    },
     featureRow: {
       flexDirection: 'row',
       paddingVertical: 13,
@@ -264,13 +281,12 @@ export const membershipStyles = (theme: Theme) =>
       borderColor: theme.colors.divider,
       alignItems: 'center',
     },
-    featureRowLast: {
-      borderBottomWidth: 0,
-    },
+    featureRowLast: { borderBottomWidth: 0 },
     featureLabel: {
       flex: 1,
       fontSize: 13,
-      color: theme.colors.textBody,
+      // Fixed: textBody → textSecondary
+      color: theme.colors.textSecondary,
     },
     featureValues: {
       flexDirection: 'row',
@@ -288,7 +304,8 @@ export const membershipStyles = (theme: Theme) =>
     featureValue: {
       fontSize: 12,
       fontWeight: '700',
-      color: theme.colors.textBody,
+      // Fixed: textBody → textSecondary
+      color: theme.colors.textSecondary,
       textAlign: 'center',
     },
     featureValueActive: { color: theme.colors.primary },
@@ -304,36 +321,41 @@ export const membershipStyles = (theme: Theme) =>
     },
     trustBadge: {
       flex: 1,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 20,
       paddingVertical: 7,
       alignItems: 'center',
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      elevation: 1,
     },
     trustText: {
       fontSize: 11,
-      color: theme.colors.textBody,
+      // Fixed: textBody → textSecondary
+      color: theme.colors.textSecondary,
       fontWeight: '500',
     },
 
     // ─── CTA Bar ──────────────────────────────────────────────────────────
     ctaContainer: {
-      position: 'absolute',
-      bottom: 0,
-      left: 0,
-      right: 0,
+      flexDirection: 'row',
+      alignItems: 'center',
       paddingHorizontal: 16,
       paddingVertical: 12,
       paddingBottom: 28,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      flexDirection: 'row',
-      alignItems: 'center',
       gap: 12,
-      elevation: 16,
+      ...Platform.select({
+        android: { elevation: 16 },
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.08,
+          shadowRadius: 8,
+        },
+        web: {},
+      }),
     },
     ctaInfo: { flex: 1 },
     ctaPlan: {
@@ -355,7 +377,21 @@ export const membershipStyles = (theme: Theme) =>
       paddingVertical: 15,
       borderRadius: 30,
       alignItems: 'center',
-      elevation: 6,
+      ...Platform.select({
+        android: { elevation: 6 },
+        ios: {
+          shadowColor: theme.colors.primary,
+          shadowOffset: { width: 0, height: 4 },
+          shadowOpacity: 0.35,
+          shadowRadius: 8,
+        },
+        web: {},
+      }),
+    },
+    ctaButtonDisabled: {
+      backgroundColor: theme.colors.textMuted,
+      elevation: 0,
+      shadowOpacity: 0,
     },
     ctaButtonText: {
       color: theme.colors.white,
@@ -368,7 +404,8 @@ export const membershipStyles = (theme: Theme) =>
     planMonths: {
       fontSize: 13,
       fontWeight: '700',
-      color: theme.colors.textBody,
+      // Fixed: textBody → textSecondary
+      color: theme.colors.textSecondary,
     },
     planMonthsActive: { color: theme.colors.primary },
     oldPrice: {
@@ -394,7 +431,8 @@ export const membershipStyles = (theme: Theme) =>
       marginBottom: 14,
     },
     exclusivePill: {
-      backgroundColor: theme.colors.accentLight,
+      // Fixed: accentLight → primaryLight (safer on any theme)
+      backgroundColor: theme.colors.primaryLight,
       borderRadius: 20,
       borderWidth: 1,
       borderColor: theme.colors.accent,
@@ -414,13 +452,22 @@ export const membershipStyles = (theme: Theme) =>
       backgroundColor: theme.colors.divider,
     },
     card: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 16,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       overflow: 'hidden',
       marginBottom: 20,
-      elevation: 2,
+      ...Platform.select({
+        android: { elevation: 2 },
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 6,
+        },
+        web: {},
+      }),
     },
     cardTopAccent: {
       height: 4,
@@ -467,7 +514,8 @@ export const membershipStyles = (theme: Theme) =>
     pointText: {
       flex: 1,
       fontSize: 13,
-      color: theme.colors.textBody,
+      // Fixed: textBody → textSecondary
+      color: theme.colors.textSecondary,
       lineHeight: 20,
     },
     cardActions: {
@@ -525,8 +573,5 @@ export const membershipStyles = (theme: Theme) =>
       fontSize: 13,
       color: theme.colors.success,
       lineHeight: 19,
-    },
-    savingsHighlight: {
-      fontWeight: '800',
     },
   });

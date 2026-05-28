@@ -7,7 +7,7 @@ import { getSharedScreenOptions } from './sharedScreenOptions';
 import MatchListScreen from '@/features/Matches/MatchList.screen';
 import OnlineMatchesScreen from '@/features/OnlineMatches/OnlineMatches.screen';
 import MatchDetailsScreen from '@/features/MatchDetail/MatchDetail.screen';
-import ChatScreen from '@/features/Chats/Chat.screen';
+import ChatScreen from '@/features/Chat/Chat.screen';
 
 const Stack = createNativeStackNavigator<MatchesStackParamList>();
 

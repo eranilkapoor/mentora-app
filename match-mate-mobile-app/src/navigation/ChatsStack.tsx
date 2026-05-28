@@ -5,7 +5,7 @@ import { ChatsStackParamList } from './types';
 import { getSharedScreenOptions } from './sharedScreenOptions';
 
 import ChatListScreen from '@/features/ChatList/ChatList.screen';
-import ChatScreen from '@/features/Chats/Chat.screen';
+import ChatScreen from '@/features/Chat/Chat.screen';
 
 const Stack = createNativeStackNavigator<ChatsStackParamList>();
 
