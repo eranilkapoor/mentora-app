@@ -10,7 +10,7 @@ import {
 } from '../dto/create-profile.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from '@/common/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/common/cache/cache.constants';
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
 import { AnalyticsService } from '@/modules/analytics/services/analytics.service';
 import { AppLogger } from '@/common/logger/logger.service';

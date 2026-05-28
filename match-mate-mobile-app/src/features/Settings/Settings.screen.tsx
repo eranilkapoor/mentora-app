@@ -210,7 +210,7 @@ export default function SettingsScreen({
           />
 
           <SettingRow
-            icon="brain"
+            icon="cpu"
             label={t('settings.ai_settings')}
             subLabel={t('settings.ai_settings_sub')}
             onPress={() => navigation.navigate('AiSettings')}
@@ -272,7 +272,7 @@ export default function SettingsScreen({
 
         <Section icon="settings" title={t('settings.app_experience')}>
           <SettingRow
-            icon="accessibility"
+            icon="shield"
             label={t('settings.accessibility_settings')}
             subLabel={t('settings.accessibility_settings_sub')}
             onPress={() => navigation.navigate('AccessibilitySettings')}

@@ -2,7 +2,7 @@ import { Injectable, Inject } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FlattenMaps, Model, Types } from 'mongoose';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from '@/common/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/common/cache/cache.constants';
 import {
   PlanFeature,
   PlanFeatureDocument,

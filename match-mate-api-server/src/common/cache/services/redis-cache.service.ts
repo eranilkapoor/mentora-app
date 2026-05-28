@@ -1,5 +1,4 @@
-import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
+import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
 import Redis from 'ioredis';
 import { ICacheService } from '../interfaces/cache.interface';
 import { AppLogger } from '@/common/logger/logger.service';
@@ -8,32 +7,19 @@ import { AppLogger } from '@/common/logger/logger.service';
 export class RedisCacheService
   implements ICacheService, OnModuleInit, OnModuleDestroy
 {
-  private readonly client: Redis;
-
   constructor(
-    private readonly configService: ConfigService,
+    // Injected directly — not via @Inject token
+    // because CacheModule.useFactory passes the instance explicitly
+    private readonly client: Redis,
     private readonly logger: AppLogger,
-  ) {
-    this.client = new Redis({
-      host: this.configService.get<string>('redis.host', 'localhost'),
-      port: this.configService.get<number>('redis.port', 6379),
-      password: this.configService.get<string>('redis.password') || undefined,
-      db: this.configService.get<number>('redis.db', 0),
-      retryStrategy: (times) => Math.min(times * 50, 2000),
-      maxRetriesPerRequest: null,
-      enableReadyCheck: false,
-    });
+  ) {}
+
+  onModuleInit(): void {
+    this.logger.log('RedisCacheService initialised');
   }
 
-  onModuleInit() {
-    this.client.on('connect', () => this.logger.log(' Redis connected'));
-    this.client.on('error', (err) =>
-      this.logger.error(' Redis error:', err.stack),
-    );
-  }
-
-  onModuleDestroy() {
-    return this.client.quit();
+  async onModuleDestroy(): Promise<void> {
+    await this.client.quit();
   }
 
   async set<T>(key: string, value: T, ttlSeconds?: number): Promise<void> {
@@ -55,15 +41,15 @@ export class RedisCacheService
   }
 
   async delByPattern(pattern: string): Promise<void> {
-    const keys = await this.client.keys(pattern);
+    // SCAN instead of KEYS — non-blocking in production
+    const keys = await this.scanKeys(pattern);
     if (keys.length > 0) {
       await this.client.del(...keys);
     }
   }
 
   async has(key: string): Promise<boolean> {
-    const exists = await this.client.exists(key);
-    return exists === 1;
+    return (await this.client.exists(key)) === 1;
   }
 
   async flush(): Promise<void> {
@@ -76,5 +62,22 @@ export class RedisCacheService
 
   async expire(key: string, ttlSeconds: number): Promise<void> {
     await this.client.expire(key, ttlSeconds);
+  }
+
+  private async scanKeys(pattern: string): Promise<string[]> {
+    const keys: string[] = [];
+    let cursor = '0';
+    do {
+      const [next, batch] = await this.client.scan(
+        cursor,
+        'MATCH',
+        pattern,
+        'COUNT',
+        100,
+      );
+      cursor = next;
+      keys.push(...batch);
+    } while (cursor !== '0');
+    return keys;
   }
 }

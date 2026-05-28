@@ -23,7 +23,7 @@ import {
 } from '../dto/auth.dto';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from '@/common/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/common/cache/cache.constants';
 import { AuthTokenService } from './auth-token.service';
 import {
   UserSession,

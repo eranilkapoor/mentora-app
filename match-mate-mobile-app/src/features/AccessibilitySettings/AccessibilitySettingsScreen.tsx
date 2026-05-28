@@ -101,7 +101,7 @@ export default function AccessibilitySettingsScreen({
           <SettingsSelectItem
             icon="type"
             label={t('settings.accessibility.font_size')}
-            value={formatValue(fontSizeOptions, settings?.fontSize)}
+            value={formatValue(fontSizeOptions, settings?.fontSize ?? 'medium')}
             onPress={() => setFontSizeOpen(true)}
           />
           <SettingsToggleItem
@@ -167,8 +167,10 @@ export default function AccessibilitySettingsScreen({
         visible={fontSizeOpen}
         title={t('settings.accessibility.font_size')}
         options={fontSizeOptions}
-        selectedValue={settings?.fontSize}
-        onSelect={(value) => handleUpdate('fontSize', value)}
+        selectedValue={settings?.fontSize ?? 'medium'}
+        onSelect={(value) =>
+          handleUpdate('fontSize', value as AccessibilityFontSize)
+        }
         onClose={() => setFontSizeOpen(false)}
       />
     </SafeAreaView>

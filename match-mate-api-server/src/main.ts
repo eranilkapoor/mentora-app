@@ -1,5 +1,4 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './app.module';
 import {
   BadRequestException,
   ValidationPipe,
@@ -7,59 +6,112 @@ import {
 } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
-import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import compression from 'compression';
-import { NestExpressApplication } from '@nestjs/platform-express';
-import 'dotenv/config';
-import * as path from 'path';
-import * as express from 'express';
 import cookieParser from 'cookie-parser';
+import * as express from 'express';
+import * as path from 'path';
+import 'dotenv/config';
+import Redis from 'ioredis';
+
+import { AppModule } from './app.module';
+import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppLogger } from './common/logger/logger.service';
 import { LoggingInterceptor } from './common/logger/logging.interceptor';
 import { HybridSocketIoAdapter } from './common/adapters/hybrid-socket-io.adapter';
+import {
+  REDIS_PUB_CLIENT,
+  REDIS_SUB_CLIENT,
+} from '@/common/cache/cache.constants';
 
-async function bootstrap() {
+/**
+ * Graceful shutdown timeout (ms).
+ * If shutdown exceeds this duration, force-exit to avoid hanging.
+ */
+const SHUTDOWN_TIMEOUT_MS = 10_000;
+
+/**
+ * Handles graceful shutdown for SIGINT / SIGTERM.
+ * Runs exactly once to avoid double-close races on Redis.
+ */
+async function shutdown(
+  signal: string,
+  app: NestExpressApplication,
+  wsAdapter: HybridSocketIoAdapter,
+  logger: AppLogger,
+): Promise<void> {
+  logger.log(`Received ${signal} — starting graceful shutdown`);
+
+  // Force-exit if shutdown hangs
+  const forceExit = setTimeout(() => {
+    logger.error('Graceful shutdown timed out — forcing exit');
+    process.exit(1);
+  }, SHUTDOWN_TIMEOUT_MS);
+
+  forceExit.unref(); // Prevent timer from keeping process alive
+
+  try {
+    // 1. Stop accepting new HTTP / WS connections
+    await app.close();
+
+    // 2. Close Socket.IO Redis pub/sub clients AFTER NestJS DI teardown
+    await wsAdapter.close();
+
+    logger.log('Graceful shutdown complete');
+    clearTimeout(forceExit);
+    process.exit(0);
+  } catch (err: unknown) {
+    logger.error(
+      'Error during shutdown',
+      err instanceof Error ? err.stack : String(err),
+    );
+    process.exit(1);
+  }
+}
+
+/**
+ * Application bootstrap function.
+ * Configures middleware, global filters, adapters, versioning, Swagger, static assets, and shutdown hooks.
+ */
+async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    bufferLogs: true,
+    bufferLogs: true, // Allow logger propagation before app is ready
+    abortOnError: false,
   });
 
   const configService = app.get(ConfigService);
+  const logger = app.get(AppLogger);
 
-  // ==========================================
-  // BASIC HARDENING
-  // ==========================================
+  app.useLogger(logger);
+
+  // ── Security Hardening ───────────────────────────────────────────────
   app.disable('x-powered-by');
-  app.enableShutdownHooks();
 
-  // ==========================================
-  // SECURITY MIDDLEWARE
-  // ==========================================
-  // Helmet
+  // ── Middleware (order matters) ───────────────────────────────────────
+  // compress → secure headers → body parsers → cookies → CORS
+  app.use(compression({ level: 6 }));
   app.use(
     helmet({
-      contentSecurityPolicy: false, // Swagger compatibility
-      crossOriginResourcePolicy: false, // IMPORTANT
+      contentSecurityPolicy: false, // Swagger UI requires inline scripts
+      crossOriginResourcePolicy: false, // Needed for /uploads served cross-origin
     }),
   );
-
-  // Body Size Limit
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
-  app.use(cookieParser()); // MUST be before any routes
+  app.use(cookieParser());
 
-  // CORS (secure)
+  // ── CORS Configuration ──────────────────────────────────────────────
   const allowedOrigins = configService.get<string[]>('cors.origins') ?? [];
   const allowAnyOrigin = allowedOrigins.includes('*');
 
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // mobile apps / postman
+      if (!origin) return callback(null, true); // Allow mobile apps, Postman, server-to-server
       if (allowAnyOrigin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'));
+        return callback(null, true);
       }
+      return callback(new Error(`Origin ${origin} not allowed by CORS`));
     },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
@@ -71,7 +123,6 @@ async function bootstrap() {
       'X-Client-Version',
       'X-Platform',
       'X-Device-ID',
-      'X-Device-Id',
       'X-Refresh-Token',
       'X-API-Key',
     ],
@@ -84,129 +135,107 @@ async function bootstrap() {
     ],
   });
 
-  // Compression
-  app.use(compression({ level: 6 }));
-
-  // ==========================================
-  // GLOBAL PIPES
-  // ==========================================
+  // ── Validation ──────────────────────────────────────────────────────
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // Strip properties not in DTO
-      forbidNonWhitelisted: true, // Throw error for extra properties
-      transform: true, // Auto-transform payloads to DTO instances
-      transformOptions: {
-        enableImplicitConversion: false, //safer
-      },
-      exceptionFactory: (errors) => {
-        return new BadRequestException({
-          message: 'Validation failed',
-          errors,
-        });
-      },
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      transformOptions: { enableImplicitConversion: false },
+      exceptionFactory: (errors) =>
+        new BadRequestException({ message: 'Validation failed', errors }),
     }),
   );
 
-  const logger = app.get(AppLogger);
-
-  app.useLogger(logger);
-
-  // ==========================================
-  // GLOBAL FILTERS
-  // ==========================================
+  // ── Global Filters & Interceptors ───────────────────────────────────
   app.useGlobalFilters(new AllExceptionsFilter(logger));
-
-  // ==========================================
-  // GLOBAL INTERCEPTORS
-  // ==========================================
   app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
-  const wsAdapter = new HybridSocketIoAdapter(app, configService, logger);
-  await wsAdapter.connectToRedis();
+  // ── WebSocket Adapter ───────────────────────────────────────────────
+  const pubClient = app.get<Redis | null>(REDIS_PUB_CLIENT, { strict: false });
+  const subClient = app.get<Redis | null>(REDIS_SUB_CLIENT, { strict: false });
+
+  const wsAdapter = new HybridSocketIoAdapter(
+    app,
+    pubClient,
+    subClient,
+    configService,
+    logger,
+  );
+
+  await wsAdapter.connect();
   app.useWebSocketAdapter(wsAdapter);
 
-  const shutdownSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
-  for (const signal of shutdownSignals) {
-    process.once(signal, () => {
-      void wsAdapter.close();
-    });
-  }
-
-  // ==========================================
-  // VERSIONING + PREFIX
-  // ==========================================
+  // ── API Versioning & Prefix ─────────────────────────────────────────
   const apiPrefix = configService.getOrThrow<string>('api.prefix');
   const apiVersion = configService.getOrThrow<string>('api.version');
-  const env = configService.get<string>('env');
+  const env = configService.get<string>('env', 'development');
 
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: apiVersion,
     prefix: false,
   });
-
   app.setGlobalPrefix(apiPrefix);
 
-  // ==========================================
-  // SWAGGER (ONLY NON-PROD)
-  // ==========================================
+  // ── Swagger (non-production only) ───────────────────────────────────
   if (env !== 'production') {
-    const config = new DocumentBuilder()
+    const swaggerConfig = new DocumentBuilder()
       .setTitle('Matrimony API')
       .setDescription('API documentation for Matrimonial App')
       .setVersion('1.0')
-      .addBearerAuth()
-      .addApiKey({
-        type: 'apiKey',
-        name: 'X-API-Key',
-        in: 'header',
-      })
+      .addBearerAuth(
+        { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' },
+        'access-token',
+      )
+      .addApiKey({ type: 'apiKey', name: 'X-API-Key', in: 'header' }, 'api-key')
       .build();
 
-    const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document);
+    const document = SwaggerModule.createDocument(app, swaggerConfig);
+    SwaggerModule.setup(`${apiPrefix}/docs`, app, document, {
+      swaggerOptions: { persistAuthorization: true },
+    });
   }
 
-  // ==========================================
-  // STATIC FILES ( consider S3 in future)
-  // ==========================================
-  app.useStaticAssets(path.join(process.cwd(), 'uploads'), {
+  // ── Static Files ────────────────────────────────────────────────────
+  const uploadsPath = path.join(process.cwd(), 'uploads');
+  app.useStaticAssets(uploadsPath, {
     prefix: '/uploads',
+    maxAge: '7d',
+    etag: true,
+    lastModified: true,
+    setHeaders: (res: express.Response): void => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
   });
 
-  const uploadsPath = path.join(process.cwd(), 'uploads');
+  // ── Graceful Shutdown Hooks ─────────────────────────────────────────
+  const shutdownSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
+  for (const signal of shutdownSignals) {
+    process.once(signal, () => {
+      void shutdown(signal, app, wsAdapter, logger);
+    });
+  }
 
-  app.use(
-    '/uploads',
-    express.static(uploadsPath, {
-      maxAge: '7d',
-      etag: true,
-      lastModified: true,
-
-      setHeaders: (res) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-      },
-    }),
-  );
-
-  // ==========================================
-  // START SERVER
-  // ==========================================
+  // ── Start Server ───────────────────────────────────────────────────
   const port = configService.getOrThrow<number>('PORT');
-
   await app.listen(port, '0.0.0.0');
 
   logger.log(
-    ` Server running on: http://localhost:${port}/${apiPrefix}/${apiVersion}`,
+    `Server running → http://localhost:${port}/${apiPrefix}/v${apiVersion}`,
   );
-
   if (env !== 'production') {
-    logger.log(` Swagger Docs: http://localhost:${port}/api/docs`);
+    logger.log(`Swagger docs → http://localhost:${port}/${apiPrefix}/docs`);
   }
 }
 
-bootstrap().catch((err) => {
-  process.stderr.write(`Application failed to start: ${String(err)}\n`);
+// ── Bootstrap Entry Point ─────────────────────────────────────────────
+bootstrap().catch((err: unknown) => {
+  process.stderr.write(
+    `Application failed to start: ${
+      err instanceof Error ? (err.stack ?? err.message) : String(err)
+    }\n`,
+  );
   process.exit(1);
 });

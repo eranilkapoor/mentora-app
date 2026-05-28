@@ -7,7 +7,7 @@ import {
   UpdatePreferenceDto,
 } from '../dto/preference.dto';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
-import { CACHE_SERVICE } from '@/common/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/common/cache/cache.constants';
 import { ChildPreference, ResidencyPreference } from '@/common/enums';
 import {
   PartnerFilters,
