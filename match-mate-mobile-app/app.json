@@ -7,7 +7,7 @@
     "orientation": "portrait",
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
-    "newArchEnabled": false,
+    "newArchEnabled": true,
     "splash": {
       "image": "./src/assets/splash-icon.png",
       "resizeMode": "contain",
@@ -48,6 +48,14 @@
         }
       ],
       "expo-font"
-    ]
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3378719c-798c-4ae3-ae74-18602b1267eb",
+      "enabled": true,
+      "checkAutomatically": "ON_ERROR_RECOVERY"
+    }
   }
 }

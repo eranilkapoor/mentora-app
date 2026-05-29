@@ -76,7 +76,12 @@ export default function AppInitializer({ children }: Props) {
       }
 
       try {
-        await i18n.changeLanguage(lang);
+        await Promise.race([
+          i18n.changeLanguage(lang),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error('i18n timeout')), 3000)
+          ),
+        ]);
       } catch (err) {
         console.error('[AppInitializer] i18n error:', err);
       } finally {

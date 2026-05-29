@@ -2,7 +2,7 @@ import { LinkingOptions } from '@react-navigation/native';
 import { RootStackParamList } from './types';
 
 export const linkingConfig: LinkingOptions<RootStackParamList> = {
-  prefixes: ['myapp://', 'https://myapp.com'],
+  prefixes: ['matchmate://', 'https://myapp.com'],
   config: {
     initialRouteName: 'Auth',
     screens: {
