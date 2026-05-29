@@ -68,18 +68,18 @@ linear-gradient(135deg, #FF5C8A 0%, #C89B3C 100%)
 
 ### Primary Button
 
-* Background: `#E94E77`
-* Text: `#FFFFFF`
+- Background: `#E94E77`
+- Text: `#FFFFFF`
 
 ### Secondary Button
 
-* Background: `#FFF1F3`
-* Text: `#E94E77`
+- Background: `#FFF1F3`
+- Text: `#E94E77`
 
 ### Dark Theme Primary Button
 
-* Background: `#FF5C8A`
-* Text: `#FFFFFF`
+- Background: `#FF5C8A`
+- Text: `#FFFFFF`
 
 ---
 
@@ -108,19 +108,19 @@ linear-gradient(135deg, #FF5C8A 0%, #C89B3C 100%)
 
 Your app should feel:
 
-* Trustworthy
-* Premium
-* Family-friendly
-* Modern
-* Emotional but elegant
-* Marriage-oriented (not dating-app casual)
+- Trustworthy
+- Premium
+- Family-friendly
+- Modern
+- Emotional but elegant
+- Marriage-oriented (not dating-app casual)
 
 Avoid:
 
-* Neon colors
-* Very dark reds
-* Overly playful gradients
-* Tinder-style aggressive UI
+- Neon colors
+- Very dark reds
+- Overly playful gradients
+- Tinder-style aggressive UI
 
 ---
 
@@ -128,18 +128,18 @@ Avoid:
 
 ### Best Match Mate Style
 
-* Soft gradients
-* Rounded cards (`20px`)
-* Floating shadows
-* Minimal icons
-* Large profile photos
-* Warm emotional UI
+- Soft gradients
+- Rounded cards (`20px`)
+- Floating shadows
+- Minimal icons
+- Large profile photos
+- Warm emotional UI
 
 This palette will work extremely well for:
 
-* Android
-* iOS
-* Flutter
-* React Native
-* Jetpack Compose
-* Figma Design System
+- Android
+- iOS
+- Flutter
+- React Native
+- Jetpack Compose
+- Figma Design System
