@@ -4,15 +4,15 @@ export const LIGHTCOLORS: ColorPalette = {
   // ─────────────────────────────────────────────
   // Brand
   // ─────────────────────────────────────────────
-  primary: '#5B4CF0',
-  primaryLight: '#EEF2FF',
-  primaryBorder: '#C7D2FE',
+  primary: '#E94E77',
+  primaryLight: '#FFF1F3',
+  primaryBorder: '#F8B4C4',
 
-  secondary: '#64748B',
-  secondaryLight: '#F1F5F9',
+  secondary: '#8B5E6C',
+  secondaryLight: '#FFF5F7',
 
-  accent: '#F59E0B',
-  accentLight: '#FEF3C7',
+  accent: '#D9A441',
+  accentLight: '#FFF4DA',
 
   whatsapp: '#25D366',
 
@@ -26,13 +26,12 @@ export const LIGHTCOLORS: ColorPalette = {
   /**
    * Main app page background
    */
-  backgroundPage: '#F8FAFC',
+  backgroundPage: '#FFF9F7',
 
   /**
    * Secondary backgrounds
-   * Used for chips / inputs / icon wrappers
    */
-  backgroundLight: '#F1F5F9',
+  backgroundLight: '#FFF1F3',
 
   /**
    * Cards / modals / sections
@@ -44,89 +43,80 @@ export const LIGHTCOLORS: ColorPalette = {
    */
   surfaceElevated: '#FFFFFF',
 
-  modalOverlay: 'rgba(15,23,42,0.45)',
+  modalOverlay: 'rgba(43,43,43,0.45)',
   overlayDark: 'rgba(0,0,0,0.55)',
-  overlayLight: 'rgba(0,0,0,0.15)',
+  overlayLight: 'rgba(0,0,0,0.12)',
 
   // ─────────────────────────────────────────────
   // Text
   // ─────────────────────────────────────────────
-  textPrimary: '#0F172A',
+  textPrimary: '#2B2B2B',
 
-  /**
-   * Titles / subtitles
-   */
-  textSecondary: '#475569',
+  textSecondary: '#6F6F6F',
 
-  /**
-   * Muted labels / placeholders
-   */
-  textMuted: '#94A3B8',
+  textMuted: '#9CA3AF',
 
-  textBody: '#334155',
+  textBody: '#4B5563',
 
   textInverse: '#FFFFFF',
 
   // ─────────────────────────────────────────────
   // Borders
   // ─────────────────────────────────────────────
-  border: '#E2E8F0',
+  border: '#F1D5DC',
 
-  divider: '#EDF2F7',
+  divider: '#F8E7EB',
 
-  /**
-   * Input borders
-   */
-  borderStrong: '#CBD5E1',
+  borderStrong: '#E5B7C2',
 
   // ─────────────────────────────────────────────
   // Inputs
   // ─────────────────────────────────────────────
   inputBackground: '#FFFFFF',
 
-  inputBorder: '#CBD5E1',
+  inputBorder: '#E5B7C2',
 
-  inputPlaceholder: '#94A3B8',
+  inputPlaceholder: '#B0A4AA',
 
-  switchTrackOff: '#CBD5E1',
+  switchTrackOff: '#E5B7C2',
 
   // ─────────────────────────────────────────────
   // States
   // ─────────────────────────────────────────────
-  success: '#16A34A',
+  success: '#34A853',
   successLight: '#DCFCE7',
 
-  warning: '#F59E0B',
+  warning: '#E6A23C',
   warningLight: '#FEF3C7',
 
-  error: '#DC2626',
+  error: '#D64545',
   errorLight: '#FEE2E2',
 
-  danger: '#DC2626',
+  danger: '#D64545',
 
-  info: '#2563EB',
-  infoLight: '#DBEAFE',
+  info: '#E94E77',
+  infoLight: '#FDE7EC',
 
   // ─────────────────────────────────────────────
   // Links / CTA
   // ─────────────────────────────────────────────
-  link: '#2563EB',
+  link: '#E94E77',
 
-  chatBtn: '#FF6B6B',
+  chatBtn: '#FF5C8A',
 
-  shortlistBg: '#FFF7ED',
+  shortlistBg: '#FFF4F6',
 
   // ─────────────────────────────────────────────
   // Status
   // ─────────────────────────────────────────────
   online: '#22C55E',
-  offline: '#94A3B8',
-  verified: '#3B82F6',
+  offline: '#A1A1AA',
+  verified: '#E94E77',
 
   // ─────────────────────────────────────────────
   // Membership
   // ─────────────────────────────────────────────
-  gold: '#FFD700',
+  gold: '#D9A441',
   platinum: '#E5E7EB',
 
   // ─────────────────────────────────────────────
@@ -139,7 +129,9 @@ export const LIGHTCOLORS: ColorPalette = {
   // Gradients
   // ─────────────────────────────────────────────
   gradients: {
-    primary: ['#5B4CF0', '#7C3AED'],
+    primary: ['#E94E77', '#D9A441'],
+    romantic: ['#F7C6B6', '#E94E77'],
+    soft: ['#FFF1F3', '#FFE4EA'],
   },
 };
 
@@ -147,36 +139,38 @@ export const DARKCOLORS: Partial<ColorPalette> = {
   // ─────────────────────────────────────────────
   // Brand
   // ─────────────────────────────────────────────
-  primary: '#7C6CFF',
+  primary: '#FF5C8A',
 
-  primaryLight: 'rgba(124,108,255,0.14)',
+  primaryLight: 'rgba(255,92,138,0.14)',
 
-  primaryBorder: 'rgba(124,108,255,0.35)',
+  primaryBorder: 'rgba(255,92,138,0.35)',
 
-  secondary: '#A1A1AA',
+  secondary: '#D1A8B5',
 
-  secondaryLight: '#27272A',
+  secondaryLight: '#2A1F24',
 
-  accentLight: 'rgba(245,158,11,0.12)',
+  accent: '#C89B3C',
+
+  accentLight: 'rgba(200,155,60,0.12)',
 
   // ─────────────────────────────────────────────
   // Backgrounds
   // ─────────────────────────────────────────────
-  background: '#0F172A',
+  background: '#121212',
 
-  backgroundPage: '#020617',
+  backgroundPage: '#0D0D0D',
 
-  backgroundLight: '#1E293B',
+  backgroundLight: '#1F1A1D',
 
   /**
    * Cards
    */
-  surface: '#111827',
+  surface: '#1A1A1A',
 
   /**
    * Elevated cards/modals
    */
-  surfaceElevated: '#1E293B',
+  surfaceElevated: '#242424',
 
   modalOverlay: 'rgba(0,0,0,0.7)',
 
@@ -185,53 +179,68 @@ export const DARKCOLORS: Partial<ColorPalette> = {
   // ─────────────────────────────────────────────
   // Text
   // ─────────────────────────────────────────────
-  textPrimary: '#F8FAFC',
+  textPrimary: '#F8F8F8',
 
-  textSecondary: '#CBD5E1',
+  textSecondary: '#D1D5DB',
 
-  textMuted: '#94A3B8',
+  textMuted: '#9CA3AF',
 
-  textBody: '#E2E8F0',
+  textBody: '#E5E7EB',
 
   textInverse: '#000000',
 
   // ─────────────────────────────────────────────
   // Borders
   // ─────────────────────────────────────────────
-  border: '#1E293B',
+  border: '#2D2D2D',
 
-  divider: '#273449',
+  divider: '#3A3A3A',
 
-  borderStrong: '#334155',
+  borderStrong: '#4B4B4B',
 
   // ─────────────────────────────────────────────
   // Inputs
   // ─────────────────────────────────────────────
-  inputBackground: '#0F172A',
+  inputBackground: '#1A1A1A',
 
-  inputBorder: '#334155',
+  inputBorder: '#3A3A3A',
 
-  inputPlaceholder: '#64748B',
+  inputPlaceholder: '#6B7280',
 
-  switchTrackOff: '#475569',
+  switchTrackOff: '#52525B',
 
   // ─────────────────────────────────────────────
   // States
   // ─────────────────────────────────────────────
-  successLight: 'rgba(34,197,94,0.15)',
+  success: '#42C777',
+  successLight: 'rgba(66,199,119,0.15)',
 
-  warningLight: 'rgba(245,158,11,0.15)',
+  warning: '#F5B041',
+  warningLight: 'rgba(245,176,65,0.15)',
 
-  errorLight: 'rgba(239,68,68,0.15)',
+  error: '#FF6B6B',
+  errorLight: 'rgba(255,107,107,0.15)',
 
-  infoLight: 'rgba(37,99,235,0.15)',
+  info: '#FF5C8A',
+  infoLight: 'rgba(255,92,138,0.15)',
 
   // ─────────────────────────────────────────────
   // Status
   // ─────────────────────────────────────────────
   online: '#4ADE80',
 
-  offline: '#64748B',
+  offline: '#6B7280',
+
+  verified: '#FF5C8A',
 
   platinum: '#D4D4D8',
+
+  // ─────────────────────────────────────────────
+  // Gradients
+  // ─────────────────────────────────────────────
+  gradients: {
+    primary: ['#FF5C8A', '#C89B3C'],
+    romantic: ['#FF8FAB', '#FF5C8A'],
+    soft: ['#2A1F24', '#1A1A1A'],
+  },
 };

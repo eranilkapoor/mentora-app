@@ -145,6 +145,8 @@ export type ColorPalette = {
   // ─────────────────────────────────────────────
   gradients: {
     primary: string[];
+    romantic: string[];
+    soft: string[];
   };
 };
 
