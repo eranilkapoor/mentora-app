@@ -5,6 +5,8 @@ import {
   Text,
   ScrollView,
   Image,
+  NativeScrollEvent,
+  NativeSyntheticEvent,
   TouchableOpacity,
   FlatList,
   ListRenderItem,
@@ -14,6 +16,7 @@ import * as Sharing from 'expo-sharing';
 import * as FileSystem from 'expo-file-system/legacy';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import {
   annualIncomeFormat,
   cmToFeetInches,
@@ -24,7 +27,6 @@ import {
   getAgeFromDOB,
   getFullName,
 } from '../../core/utils/format';
-import { useTranslation } from 'react-i18next';
 import Header from '../../core/components/Header';
 import { useGetMyProfileQuery } from '../../store/services/profileApi.service';
 import {
@@ -34,25 +36,19 @@ import {
   Religions,
   SmokingHabits,
   DrinkingHabits,
-  ProfileImage,
-  Hour,
-  Minute,
-  Period,
-  Country,
-  ProfileFor,
-  ManglikStatus,
-  SmokingHabit,
-  DrinkingHabit,
-  EatingHabit,
-  Gender,
   EatingHabits,
-  MaritalStatus,
 } from '../../core/types';
 import { windowWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { profileStyles } from './Profile.styles';
-import { ProfileScreenProps } from './Profile.types';
-import { FALLBACK_PHOTOS } from './Profile.constants';
+import {
+  PdfAction,
+  Primitive,
+  ProfileScreenProps,
+  SchemaProfile,
+  SiblingDisplayItem,
+} from './Profile.types';
+import { FALLBACK_PHOTO, FALLBACK_PHOTOS } from './Profile.constants';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
 import { Section } from './components/Section';
 import { Row } from './components/Row';
@@ -61,135 +57,11 @@ import { showError } from '@/core/utils/toast';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { resolveApiUrl } from '@/core/utils/config';
 
-const EMPTY_VALUE = '-';
-const PROFILE_FALLBACK_PHOTO =
-  FALLBACK_PHOTOS[0] ??
-  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=600';
-type PdfAction = 'download' | 'share';
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-type Primitive = string | number | boolean | null | undefined;
+const EMPTY_VALUE = '—';
 
-type SiblingDisplayItem = {
-  type: string;
-  maritalStatus: string;
-  occupation: string;
-};
-
-type SchemaProfile = {
-  userId?: string;
-  profileFor?: ProfileFor;
-  personal: {
-    firstName?: string;
-    lastName?: string;
-    dateOfBirth?: string;
-    timeOfBirth?: {
-      hour?: Hour;
-      minute?: Minute;
-      period?: Period;
-    };
-    placeOfBirth?: {
-      city?: string;
-      state?: string;
-      country?: Country;
-    };
-    religion?: string;
-    caste?: string;
-    subCast?: string;
-    gotra?: string;
-    manglikStatus?: ManglikStatus;
-    rashi?: string;
-    nakshatra?: string;
-    kundliFileUrl?: string;
-    country?: Country;
-    state?: string;
-    city?: string;
-    citizenship?: string;
-    willingToRelocate?: boolean;
-    motherTongue?: string;
-    maritalStatus?: MaritalStatus;
-    hasChildren?: boolean;
-    sonsCount?: number;
-    daughtersCount?: number;
-    smoking?: SmokingHabit;
-    drinking?: DrinkingHabit;
-    eating?: EatingHabit;
-    hobbies?: string[];
-    languages?: string[];
-    languagesKnown?: string[];
-    aboutMe?: string;
-    gender?: Gender;
-  };
-  physical: {
-    height?: string | number;
-    weight?: string | number;
-    bloodGroup?: string;
-    bodyType?: string;
-    complexion?: string;
-    disabilityStatus?: boolean;
-    disabilityNote?: string;
-  };
-  education: {
-    qualification?: string;
-    field?: string;
-    university?: string;
-    occupationType?: string;
-    occupation?: string;
-    companyName?: string;
-    jobRole?: string;
-    annualIncomeAmount?: number;
-  };
-  family?: {
-    fatherName?: string;
-    motherName?: string;
-    fatherOccupation?: string;
-    motherOccupation?: string;
-    familyType?: string;
-    familyStatus?: string;
-    familyValues?: string;
-    siblings?: {
-      brothersCount?: number;
-      sistersCount?: number;
-      marriedBrothersCount?: number;
-      marriedSistersCount?: number;
-      brothers?: number;
-      sisters?: number;
-      marriedBrothers?: number;
-      marriedSisters?: number;
-      details?: Array<{
-        type?: string;
-        married?: boolean;
-        occupation?: string;
-      }>;
-      note?: string;
-    };
-  };
-  preferences?: {
-    languagesKnown?: string[];
-  };
-  images?: ProfileImage[];
-  age?: number;
-  height?: number;
-  location?: {
-    type?: 'Point';
-    coordinates?: [number, number];
-  };
-  profileScore?: number;
-  profileCompletionPercentage?: number;
-  isPremium?: boolean;
-  isVerified?: boolean;
-  verification?: {
-    isVerified?: boolean;
-    isProfileVerified?: boolean;
-    isEmailVerified?: boolean;
-    isPhoneVerified?: boolean;
-    verifiedAt?: string | Date;
-  };
-  status?: string;
-  lastActiveAt?: string | Date;
-  createdBy?: string;
-  updatedBy?: string;
-  deletedAt?: string | Date;
-};
+// ─── Default profile ──────────────────────────────────────────────────────────
 
 const DEFAULT_PROFILE: SchemaProfile = {
   profileFor: 'self',
@@ -213,12 +85,7 @@ const DEFAULT_PROFILE: SchemaProfile = {
     languages: [],
     languagesKnown: [],
   },
-  physical: {
-    height: '',
-    weight: '',
-    bodyType: '',
-    complexion: '',
-  },
+  physical: { height: '', weight: '', bodyType: '', complexion: '' },
   education: {
     qualification: '',
     field: '',
@@ -235,142 +102,43 @@ const DEFAULT_PROFILE: SchemaProfile = {
     familyStatus: '',
     familyValues: '',
   },
-  preferences: {
-    languagesKnown: [],
-  },
+  preferences: { languagesKnown: [] },
   images: [],
 };
 
-const getProfilePhotos = (images?: ProfileImage[]): string[] => {
-  const photos =
+// ─── Pure helpers ─────────────────────────────────────────────────────────────
+
+const getProfilePhotos = (images?: SchemaProfile['images']): string[] => {
+  const resolved =
     images
-      ?.filter((image) => image.isActive !== false)
+      ?.filter((img) => img.isActive !== false)
       .sort(
         (a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary))
       )
-      .map((image) => resolveApiUrl(image.url))
-      .filter((url): url is string => url !== null) ?? [];
+      .map((img) => resolveApiUrl(img.url))
+      .filter(
+        (url): url is string => typeof url === 'string' && url.length > 0
+      ) ?? [];
 
-  return photos.length > 0 ? photos : FALLBACK_PHOTOS;
+  return resolved.length > 0 ? resolved : FALLBACK_PHOTOS;
 };
 
+// Only URLs we can embed in PDF (absolute https or base64 data URIs)
 const getPrintableProfilePhoto = (
-  images?: ProfileImage[]
+  images?: SchemaProfile['images']
 ): string | undefined =>
   images
-    ?.filter((image) => image.isActive !== false)
+    ?.filter((img) => img.isActive !== false)
     .sort((a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary)))
-    .map((image) => resolveApiUrl(image.url))
+    .map((img) => resolveApiUrl(img.url))
     .find(
       (url): url is string =>
-        url !== null && /^(https:|data:)/i.test(url.trim())
+        typeof url === 'string' && /^(https:|http:|data:)/i.test(url.trim())
     );
-
-function ProfilePhoto({
-  uri,
-  index,
-}: {
-  uri: string;
-  index: number;
-}): React.ReactElement {
-  const styles = useThemedStyles(profileStyles);
-  const [hasError, setHasError] = useState(false);
-  const sourceUri = hasError ? PROFILE_FALLBACK_PHOTO : uri;
-
-  return (
-    <Image
-      source={{ uri: sourceUri }}
-      style={styles.photo}
-      resizeMode="cover"
-      accessibilityLabel={`Profile photo ${index + 1}`}
-      onError={() => setHasError(true)}
-    />
-  );
-}
-
-function VerificationBadge({
-  label,
-  verified,
-}: {
-  label: string;
-  verified: boolean;
-}): React.ReactElement {
-  const styles = useThemedStyles(profileStyles);
-  const { theme } = useTheme();
-
-  return (
-    <View
-      style={[
-        styles.verificationBadge,
-        verified
-          ? styles.verificationBadgeVerified
-          : styles.verificationBadgeUnverified,
-      ]}
-    >
-      <Feather
-        name={verified ? 'check-circle' : 'alert-circle'}
-        size={13}
-        color={verified ? theme.colors.success : theme.colors.primary}
-      />
-      <Text
-        style={[
-          styles.verificationBadgeText,
-          verified
-            ? styles.verificationBadgeTextVerified
-            : styles.verificationBadgeTextUnverified,
-        ]}
-      >
-        {label}
-      </Text>
-    </View>
-  );
-}
-
-function SiblingList({
-  items,
-}: {
-  items: SiblingDisplayItem[];
-}): React.ReactElement {
-  const styles = useThemedStyles(profileStyles);
-
-  if (items.length === 0) {
-    return <Text style={styles.tagEmptyText}>{EMPTY_VALUE}</Text>;
-  }
-
-  return (
-    <View style={styles.siblingList}>
-      {items.map((item, index) => (
-        <View key={`${item.type}-${index}`} style={styles.siblingItem}>
-          <View style={styles.siblingIndex}>
-            <Text style={styles.siblingIndexText}>{index + 1}</Text>
-          </View>
-          <View style={styles.siblingContent}>
-            <Text style={styles.siblingTitle}>{item.type}</Text>
-            <Text style={styles.siblingMeta}>
-              {[item.maritalStatus, item.occupation]
-                .filter((value) => value !== EMPTY_VALUE)
-                .join(' - ') || EMPTY_VALUE}
-            </Text>
-          </View>
-        </View>
-      ))}
-    </View>
-  );
-}
-
-const getFormattedAge = (dateOfBirth: string): string => {
-  if (!dateOfBirth) return EMPTY_VALUE;
-
-  const date = new Date(dateOfBirth);
-  if (Number.isNaN(date.getTime())) return EMPTY_VALUE;
-
-  return getAgeFromDOB(dateOfBirth);
-};
 
 const toDisplayText = (value: Primitive): string => {
   if (value === undefined || value === null) return EMPTY_VALUE;
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-
   const text = String(value).trim();
   return text.length > 0 ? text : EMPTY_VALUE;
 };
@@ -382,10 +150,8 @@ const formatProfileText = (value: Primitive): string => {
 
 const formatDateTime = (value: string | Date | undefined): string => {
   if (!value) return EMPTY_VALUE;
-
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return EMPTY_VALUE;
-
   return date.toLocaleString('en-IN', {
     day: '2-digit',
     month: 'short',
@@ -395,40 +161,24 @@ const formatDateTime = (value: string | Date | undefined): string => {
   });
 };
 
-const getFormattedHeight = (height: string | number | undefined): string => {
-  const formatted = cmToFeetInches(height ?? '');
-  return formatted || EMPTY_VALUE;
+const getFormattedAge = (dateOfBirth: string): string => {
+  if (!dateOfBirth) return EMPTY_VALUE;
+  const date = new Date(dateOfBirth);
+  if (Number.isNaN(date.getTime())) return EMPTY_VALUE;
+  return getAgeFromDOB(dateOfBirth);
 };
 
-const getFormattedWeight = (weight: string | number | undefined): string => {
-  const formatted = formatWeight(weight ?? '');
-  return formatted || EMPTY_VALUE;
-};
+const getFormattedHeight = (height: string | number | undefined): string =>
+  cmToFeetInches(height ?? '') || EMPTY_VALUE;
 
-const getProfileHeight = (
-  profile: SchemaProfile
-): string | number | undefined => profile.physical.height;
-
-const getProfileWeight = (
-  profile: SchemaProfile
-): string | number | undefined => profile.physical.weight;
-
-const getProfileReligion = (profile: SchemaProfile): string | undefined =>
-  profile.personal.religion;
-
-const getProfileCaste = (profile: SchemaProfile): string | undefined =>
-  profile.personal.caste;
-
-const getProfileIncome = (
-  profile: SchemaProfile
-): string | number | undefined => profile.education.annualIncomeAmount;
+const getFormattedWeight = (weight: string | number | undefined): string =>
+  formatWeight(weight ?? '') || EMPTY_VALUE;
 
 const getDisplayName = (profile: SchemaProfile): string => {
   const name = getFullName(
     profile.personal.firstName ?? '',
     profile.personal.lastName ?? ''
   ).trim();
-
   return name || EMPTY_VALUE;
 };
 
@@ -438,14 +188,13 @@ const getLocation = (profile: SchemaProfile): string =>
     formatProfileText(profile.personal.state),
     formatProfileText(profile.personal.country),
   ]
-    .filter((value) => value !== EMPTY_VALUE)
+    .filter((v) => v !== EMPTY_VALUE)
     .join(', ') || EMPTY_VALUE;
 
 const getTimeOfBirth = (profile: SchemaProfile): string => {
   const { hour, minute, period } = profile.personal.timeOfBirth ?? {};
   const time = [hour, minute].filter(Boolean).join(':');
   if (!time && !period) return EMPTY_VALUE;
-
   return `${time}${period ? ` ${period}` : ''}`.trim();
 };
 
@@ -455,49 +204,49 @@ const getPlaceOfBirth = (profile: SchemaProfile): string =>
     formatProfileText(profile.personal.placeOfBirth?.state),
     formatProfileText(profile.personal.placeOfBirth?.country),
   ]
-    .filter((value) => value !== EMPTY_VALUE)
+    .filter((v) => v !== EMPTY_VALUE)
     .join(', ') || EMPTY_VALUE;
 
 const getChildrenSummary = (profile: SchemaProfile): string => {
   if (!profile.personal.hasChildren) return 'No';
-
   const sons = profile.personal.sonsCount ?? 0;
   const daughters = profile.personal.daughtersCount ?? 0;
-  const childParts = [
+  const parts = [
     sons > 0 ? `${sons} son${sons === 1 ? '' : 's'}` : '',
     daughters > 0 ? `${daughters} daughter${daughters === 1 ? '' : 's'}` : '',
   ].filter(Boolean);
-
-  return childParts.length > 0 ? childParts.join(', ') : 'Yes';
+  return parts.length > 0 ? parts.join(', ') : 'Yes';
 };
 
 const getSiblingCounts = (profile: SchemaProfile): string => {
-  const siblings = profile.family?.siblings;
-  if (!siblings) return EMPTY_VALUE;
-
-  const brothers = siblings.brothersCount ?? siblings.brothers ?? 0;
-  const sisters = siblings.sistersCount ?? siblings.sisters ?? 0;
-  const marriedBrothers =
-    siblings.marriedBrothersCount ?? siblings.marriedBrothers ?? 0;
-  const marriedSisters =
-    siblings.marriedSistersCount ?? siblings.marriedSisters ?? 0;
-
-  const parts = [
+  const s = profile.family?.siblings;
+  if (!s) return EMPTY_VALUE;
+  const brothers = s.brothersCount ?? s.brothers ?? 0;
+  const sisters = s.sistersCount ?? s.sisters ?? 0;
+  const mb = s.marriedBrothersCount ?? s.marriedBrothers ?? 0;
+  const ms = s.marriedSistersCount ?? s.marriedSisters ?? 0;
+  return [
     `${brothers} brother${brothers === 1 ? '' : 's'}`,
     `${sisters} sister${sisters === 1 ? '' : 's'}`,
-    `${marriedBrothers} married brother${marriedBrothers === 1 ? '' : 's'}`,
-    `${marriedSisters} married sister${marriedSisters === 1 ? '' : 's'}`,
-  ];
-
-  return parts.join(', ');
+    `${mb} married brother${mb === 1 ? '' : 's'}`,
+    `${ms} married sister${ms === 1 ? '' : 's'}`,
+  ].join(', ');
 };
 
 const getSiblingDetails = (profile: SchemaProfile): SiblingDisplayItem[] =>
-  profile.family?.siblings?.details?.map((sibling) => ({
-    type: formatProfileText(sibling.type),
-    maritalStatus: sibling.married ? 'Married' : 'Unmarried',
-    occupation: formatProfileText(sibling.occupation),
+  profile.family?.siblings?.details?.map((s) => ({
+    type: formatProfileText(s.type),
+    maritalStatus: s.married ? 'Married' : 'Unmarried',
+    occupation: formatProfileText(s.occupation),
   })) ?? [];
+
+const toStringList = (items: unknown): string[] =>
+  Array.isArray(items)
+    ? items.filter((i): i is string => typeof i === 'string')
+    : [];
+
+const formatList = (items: unknown): string =>
+  toStringList(items).filter(Boolean).join(', ') || EMPTY_VALUE;
 
 const escapeHtml = (value: string): string =>
   value
@@ -507,21 +256,12 @@ const escapeHtml = (value: string): string =>
     .replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
 
-const toStringList = (items: unknown): string[] =>
-  Array.isArray(items)
-    ? items.filter((item): item is string => typeof item === 'string')
-    : [];
-
-const formatList = (items: unknown): string =>
-  toStringList(items).filter(Boolean).join(', ') || EMPTY_VALUE;
-
 const getPdfFileName = (profile: SchemaProfile): string => {
   const name = getDisplayName(profile)
     .replace(/[^\w\s-]/g, '')
     .trim()
     .replace(/\s+/g, '-')
     .toLowerCase();
-
   return `${name || 'profile'}-profile.pdf`;
 };
 
@@ -530,18 +270,10 @@ const copyPdfToDocumentDirectory = async (
   profile: SchemaProfile
 ): Promise<string> => {
   if (!FileSystem.documentDirectory) return sourceUri;
-
-  const destinationUri = `${FileSystem.documentDirectory}${getPdfFileName(
-    profile
-  )}`;
-
-  await FileSystem.deleteAsync(destinationUri, { idempotent: true });
-  await FileSystem.copyAsync({
-    from: sourceUri,
-    to: destinationUri,
-  });
-
-  return destinationUri;
+  const dest = `${FileSystem.documentDirectory}${getPdfFileName(profile)}`;
+  await FileSystem.deleteAsync(dest, { idempotent: true });
+  await FileSystem.copyAsync({ from: sourceUri, to: dest });
+  return dest;
 };
 
 const getPdfRows = (
@@ -564,7 +296,7 @@ const getPdfRows = (
     'Gender',
     formatEnumLabel(t, 'options.gender', profile.personal.gender, EMPTY_VALUE),
   ],
-  ['Height', getFormattedHeight(getProfileHeight(profile))],
+  ['Height', getFormattedHeight(profile.physical.height)],
   ['Location', getLocation(profile)],
   [
     'Marital Status',
@@ -580,13 +312,13 @@ const getPdfRows = (
     formatEnumLabel(
       t,
       'options.religion',
-      getProfileReligion(profile),
+      profile.personal.religion,
       EMPTY_VALUE
     ),
   ],
   [
     'Caste',
-    formatEnumLabel(t, 'options.caste', getProfileCaste(profile), EMPTY_VALUE),
+    formatEnumLabel(t, 'options.caste', profile.personal.caste, EMPTY_VALUE),
   ],
   ['Mother Tongue', formatProfileText(profile.personal.motherTongue)],
   [
@@ -623,8 +355,11 @@ const getPdfRows = (
   ['Profession', formatProfileText(profile.education.occupation)],
   ['Company', formatProfileText(profile.education.companyName)],
   ['Job Role', formatProfileText(profile.education.jobRole)],
-  ['Annual Income', annualIncomeFormat(getProfileIncome(profile) ?? '')],
-  ['Weight', getFormattedWeight(getProfileWeight(profile))],
+  [
+    'Annual Income',
+    annualIncomeFormat(profile.education.annualIncomeAmount ?? ''),
+  ],
+  ['Weight', getFormattedWeight(profile.physical.weight)],
   [
     'Blood Group',
     formatEnumLabel(
@@ -737,97 +472,26 @@ const createProfilePdfHtml = (
         <meta charset="utf-8" />
         <style>
           * { box-sizing: border-box; }
-          body {
-            margin: 0;
-            padding: 32px;
-            color: #1f2933;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #f6f8fb;
-          }
-          .page {
-            background: #ffffff;
-            border: 1px solid #e5e9f0;
-            border-radius: 18px;
-            overflow: hidden;
-          }
-          .hero {
-            display: flex;
-            gap: 24px;
-            padding: 28px;
-            background: #fff7f1;
-            border-bottom: 1px solid #efe3d7;
-          }
-          .photo {
-            width: 150px;
-            height: 188px;
-            border-radius: 14px;
-            object-fit: cover;
-            background: #e5e7eb;
-          }
-          h1 {
-            margin: 0 0 8px;
-            font-size: 30px;
-            line-height: 1.2;
-          }
-          .summary, .location {
-            margin: 0 0 8px;
-            color: #667085;
-            font-size: 14px;
-          }
-          .section {
-            padding: 24px 28px;
-          }
-          h2 {
-            margin: 0 0 12px;
-            color: #344054;
-            font-size: 15px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-          }
-          .about {
-            margin: 0 0 20px;
-            color: #344054;
-            font-size: 14px;
-            line-height: 1.65;
-          }
-          table {
-            width: 100%;
-            border-collapse: collapse;
-          }
-          th, td {
-            padding: 10px 0;
-            border-bottom: 1px solid #edf1f5;
-            vertical-align: top;
-            font-size: 13px;
-          }
-          th {
-            width: 34%;
-            color: #667085;
-            font-weight: 600;
-            text-align: left;
-          }
-          td {
-            color: #111827;
-            text-align: right;
-            font-weight: 500;
-          }
-          .footer {
-            padding: 16px 28px;
-            color: #98a2b3;
-            font-size: 11px;
-            text-align: center;
-            background: #fbfcfd;
-          }
+          body { margin:0; padding:32px; color:#1f2933; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f6f8fb; }
+          .page { background:#fff; border:1px solid #e5e9f0; border-radius:18px; overflow:hidden; }
+          .hero { display:flex; gap:24px; padding:28px; background:#fff7f1; border-bottom:1px solid #efe3d7; }
+          .photo { width:150px; height:188px; border-radius:14px; object-fit:cover; background:#e5e7eb; }
+          h1 { margin:0 0 8px; font-size:30px; line-height:1.2; }
+          .summary,.location { margin:0 0 8px; color:#667085; font-size:14px; }
+          .section { padding:24px 28px; }
+          h2 { margin:0 0 12px; color:#344054; font-size:15px; text-transform:uppercase; letter-spacing:.5px; }
+          .about { margin:0 0 20px; color:#344054; font-size:14px; line-height:1.65; }
+          table { width:100%; border-collapse:collapse; }
+          th,td { padding:10px 0; border-bottom:1px solid #edf1f5; vertical-align:top; font-size:13px; }
+          th { width:34%; color:#667085; font-weight:600; text-align:left; }
+          td { color:#111827; text-align:right; font-weight:500; }
+          .footer { padding:16px 28px; color:#98a2b3; font-size:11px; text-align:center; background:#fbfcfd; }
         </style>
       </head>
       <body>
         <main class="page">
           <section class="hero">
-            ${
-              photoUrl
-                ? `<img class="photo" src="${escapeHtml(photoUrl)}" />`
-                : '<div class="photo"></div>'
-            }
+            ${photoUrl ? `<img class="photo" src="${escapeHtml(photoUrl)}" />` : '<div class="photo"></div>'}
             <div>
               <h1>${escapeHtml(getDisplayName(profile))}</h1>
               <p class="summary">${escapeHtml(profileSummary)}</p>
@@ -843,19 +507,120 @@ const createProfilePdfHtml = (
           <div class="footer">Generated from Match Mate</div>
         </main>
       </body>
-    </html>
-  `;
+    </html>`;
 };
 
-// ─── Main Screen ─────────────────────────────────────────────────────────────
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function ProfilePhoto({
+  uri,
+  index,
+}: {
+  uri: string;
+  index: number;
+}): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+  const { t } = useTranslation();
+  const [hasError, setHasError] = useState(false);
+
+  // resolveApiUrl returns absolute URLs from the media API.
+  // On error we fall back to the local placeholder asset.
+  const source = hasError ? FALLBACK_PHOTO : uri;
+
+  return (
+    <Image
+      source={typeof source === 'string' ? { uri: source } : source}
+      style={styles.photo}
+      resizeMode="cover"
+      accessibilityLabel={t('profile.photo_label', { number: index + 1 })}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
+function VerificationBadge({
+  labelKey,
+  verified,
+}: {
+  labelKey: string;
+  verified: boolean;
+}): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+
+  return (
+    <View
+      style={[
+        styles.verificationBadge,
+        verified
+          ? styles.verificationBadgeVerified
+          : styles.verificationBadgeUnverified,
+      ]}
+    >
+      <Feather
+        name={verified ? 'check-circle' : 'alert-circle'}
+        size={13}
+        color={verified ? theme.colors.success : theme.colors.primary}
+      />
+      <Text
+        style={[
+          styles.verificationBadgeText,
+          verified
+            ? styles.verificationBadgeTextVerified
+            : styles.verificationBadgeTextUnverified,
+        ]}
+      >
+        {t(labelKey)}
+      </Text>
+    </View>
+  );
+}
+
+function SiblingList({
+  items,
+}: {
+  items: SiblingDisplayItem[];
+}): React.ReactElement {
+  const styles = useThemedStyles(profileStyles);
+
+  if (items.length === 0) {
+    return <Text style={styles.tagEmptyText}>{EMPTY_VALUE}</Text>;
+  }
+
+  return (
+    <View style={styles.siblingList}>
+      {items.map((item, index) => (
+        <View key={`${item.type}-${index}`} style={styles.siblingItem}>
+          <View style={styles.siblingIndex}>
+            <Text style={styles.siblingIndexText}>{index + 1}</Text>
+          </View>
+          <View style={styles.siblingContent}>
+            <Text style={styles.siblingTitle}>{item.type}</Text>
+            <Text style={styles.siblingMeta}>
+              {[item.maritalStatus, item.occupation]
+                .filter((v) => v !== EMPTY_VALUE)
+                .join(' · ') || EMPTY_VALUE}
+            </Text>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+// ─── Main Screen ──────────────────────────────────────────────────────────────
+
 export default function ProfileScreen({
   navigation,
 }: ProfileScreenProps): React.ReactElement {
   const styles = useThemedStyles(profileStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [pdfAction, setPdfAction] = useState<PdfAction | null>(null);
+
   const { data, isLoading, isFetching, isError, refetch } =
     useGetMyProfileQuery();
 
@@ -864,6 +629,7 @@ export default function ProfileScreen({
       data?.success ? (data.data as unknown as SchemaProfile) : DEFAULT_PROFILE,
     [data]
   );
+
   const profileVerified = Boolean(
     profileData.verification?.isProfileVerified ??
     profileData.verification?.isVerified ??
@@ -902,7 +668,7 @@ export default function ProfileScreen({
     () =>
       [
         getFormattedAge(profileData.personal.dateOfBirth ?? ''),
-        getFormattedHeight(getProfileHeight(profileData)),
+        getFormattedHeight(profileData.physical.height),
         formatEnumLabel(
           t,
           'options.marital_status',
@@ -910,14 +676,10 @@ export default function ProfileScreen({
           EMPTY_VALUE
         ),
       ]
-        .filter((value) => value !== EMPTY_VALUE)
-        .join(' - ') || EMPTY_VALUE,
+        .filter((v) => v !== EMPTY_VALUE)
+        .join(' · ') || EMPTY_VALUE,
     [profileData, t]
   );
-
-  const fetchProfile = useCallback((): void => {
-    void refetch();
-  }, [refetch]);
 
   const enumLabel = useCallback(
     (prefix: string, value: Primitive): string =>
@@ -930,14 +692,29 @@ export default function ProfileScreen({
     [t]
   );
 
+  const fetchProfile = useCallback((): void => {
+    void refetch();
+  }, [refetch]);
+
+  // ─── Scroll handler ───────────────────────────────────────────────────────
+
+  const handleScroll = useCallback(
+    (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
+      const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
+      setActivePhotoIndex(Math.min(index, photos.length - 1));
+    },
+    [photos.length]
+  );
+
+  // ─── PDF ─────────────────────────────────────────────────────────────────
+
   const handleProfilePdf = useCallback(
     async (action: PdfAction): Promise<void> => {
       if (pdfAction !== null) return;
-
       setPdfAction(action);
 
       try {
-        const printPdf = async (
+        const buildPdf = async (
           photoUrl: string | undefined
         ): Promise<string> => {
           const html = createProfilePdfHtml(
@@ -946,23 +723,21 @@ export default function ProfileScreen({
             profileSummary,
             t
           );
-          const { uri } = await Print.printToFileAsync({
-            html,
-            base64: false,
-          });
-
+          const { uri } = await Print.printToFileAsync({ html, base64: false });
           return uri;
         };
 
         let uri: string;
-
         try {
-          uri = await printPdf(printablePhoto);
-        } catch (error) {
+          uri = await buildPdf(printablePhoto);
+        } catch {
+          // Photo embed failed — retry without image
           if (__DEV__) {
-            console.warn('Profile PDF failed with photo, retrying', error);
+            console.warn(
+              '[ProfileScreen] PDF with photo failed, retrying without'
+            );
           }
-          uri = await printPdf(undefined);
+          uri = await buildPdf(undefined);
         }
 
         const pdfUri = await copyPdfToDocumentDirectory(uri, profileData);
@@ -970,25 +745,25 @@ export default function ProfileScreen({
         const isAvailable = await Sharing.isAvailableAsync();
         if (!isAvailable) {
           showError({
-            title: 'Sharing is unavailable',
-            message: `Your profile PDF was created at ${pdfUri}`,
+            title: t('profile.sharing_unavailable_title'),
+            message: t('profile.sharing_unavailable_message', { uri: pdfUri }),
           });
           return;
         }
 
         await Sharing.shareAsync(pdfUri, {
-          dialogTitle:
-            action === 'download' ? 'Save profile PDF' : 'Share profile PDF',
+          dialogTitle: t(
+            action === 'download'
+              ? 'profile.pdf_save_dialog'
+              : 'profile.pdf_share_dialog'
+          ),
           mimeType: 'application/pdf',
           UTI: 'com.adobe.pdf',
         });
-      } catch (error) {
-        if (__DEV__) {
-          console.warn('Profile PDF generation failed', error);
-        }
+      } catch {
         showError({
-          title: 'PDF failed',
-          message: 'We could not create your profile PDF. Please try again.',
+          title: t('profile.pdf_failed_title'),
+          message: t('profile.pdf_failed_message'),
         });
       } finally {
         setPdfAction(null);
@@ -1002,25 +777,26 @@ export default function ProfileScreen({
     []
   );
 
-  // ─── Error state ─────────────────────────────────────────────────────────
+  // ─── Error state ──────────────────────────────────────────────────────────
 
   if (!isLoading && (isError || data?.success === false)) {
     return (
       <SafeAreaView style={styles.centerContainer}>
         <Feather name="alert-circle" size={48} color={theme.colors.danger} />
-        <Text style={styles.errorTitle}>Something went wrong</Text>
+        <Text style={styles.errorTitle}>{t('common.error_title')}</Text>
         <Text style={styles.errorSubtitle}>
           {data?.success === false
             ? data.message
-            : 'Failed to load profile. Please try again.'}
+            : t('profile.load_error_message')}
         </Text>
         <TouchableOpacity
           style={styles.retryButton}
           onPress={fetchProfile}
+          activeOpacity={0.85}
           accessibilityRole="button"
         >
           <Text style={styles.retryButtonText}>
-            {isFetching ? 'Trying...' : 'Try Again'}
+            {isFetching ? t('common.retrying') : t('common.try_again')}
           </Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -1033,7 +809,7 @@ export default function ProfileScreen({
     return (
       <SafeAreaView style={styles.safe}>
         <Header
-          title="My Profile"
+          title={t('profile.title')}
           actions={[
             {
               icon: 'settings',
@@ -1050,44 +826,37 @@ export default function ProfileScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Header */}
       <Header
-        title="My Profile"
+        title={t('profile.title')}
         actions={[
-          {
-            icon: 'settings',
-            onPress: () => navigation.navigate('Settings'),
-          },
+          { icon: 'settings', onPress: () => navigation.navigate('Settings') },
         ]}
       />
+
       <ScrollView
         style={styles.container}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {/* Photo Carousel */}
+        {/* Photo carousel */}
         <View>
           <FlatList
             data={photos}
             horizontal
             pagingEnabled
             showsHorizontalScrollIndicator={false}
-            keyExtractor={(_, i) => i.toString()}
+            keyExtractor={(_, i) => String(i)}
             renderItem={renderPhoto}
-            onScroll={(e) => {
-              const index = Math.round(
-                e.nativeEvent.contentOffset.x / windowWidth
-              );
-              setActivePhotoIndex(Math.min(index, photos.length - 1));
-            }}
+            onScroll={handleScroll}
             scrollEventThrottle={16}
+            initialNumToRender={1}
+            maxToRenderPerBatch={2}
           />
-          {/* Dot Indicators */}
           {photos.length > 1 && (
             <View style={styles.dotRow}>
               {photos.map((_, i) => (
                 <View
-                  key={i.toString()}
+                  key={i}
                   style={[
                     styles.dot,
                     i === activePhotoIndex && styles.dotActive,
@@ -1098,12 +867,16 @@ export default function ProfileScreen({
           )}
         </View>
 
-        {/* Name & Basic */}
+        {/* Name & basic */}
         <View style={styles.nameCard}>
           <View style={styles.nameRow}>
             <Text style={styles.name}>{getDisplayName(profileData)}</Text>
             <VerificationBadge
-              label={profileVerified ? 'Verified' : 'Unverified'}
+              labelKey={
+                profileVerified
+                  ? 'profile.badge_verified'
+                  : 'profile.badge_unverified'
+              }
               verified={profileVerified}
             />
           </View>
@@ -1117,292 +890,314 @@ export default function ProfileScreen({
               <Text style={styles.profileMetaValue}>
                 {toDisplayText(profileData.profileCompletionPercentage)}%
               </Text>
-              <Text style={styles.profileMetaLabel}>Complete</Text>
+              <Text style={styles.profileMetaLabel}>
+                {t('profile.meta_complete')}
+              </Text>
             </View>
             <View style={styles.profileMetaItem}>
               <Text style={styles.profileMetaValue}>
                 {toDisplayText(profileData.profileScore)}
               </Text>
-              <Text style={styles.profileMetaLabel}>Score</Text>
+              <Text style={styles.profileMetaLabel}>
+                {t('profile.meta_score')}
+              </Text>
             </View>
             <View style={styles.profileMetaItem}>
               <Text style={styles.profileMetaValue}>
                 {formatProfileText(profileData.status)}
               </Text>
-              <Text style={styles.profileMetaLabel}>Status</Text>
+              <Text style={styles.profileMetaLabel}>
+                {t('profile.meta_status')}
+              </Text>
             </View>
           </View>
         </View>
 
-        {/* About */}
-        <Section title="About Me" icon="user">
+        <Section titleKey="profile.section_about" icon="user">
           <Text style={styles.aboutText}>
             {formatAboutMe(profileData.personal.aboutMe)}
           </Text>
         </Section>
 
-        <Section title="Profile Overview" icon="award">
+        <Section titleKey="profile.section_overview" icon="award">
           <Row
-            label="Profile For"
+            labelKey="profile.row_profile_for"
             value={enumLabel('options.profile_for', profileData.profileFor)}
           />
           <Row
-            label="Gender"
+            labelKey="profile.row_gender"
             value={enumLabel('options.gender', profileData.personal.gender)}
           />
           <Row
-            label="City"
+            labelKey="profile.row_city"
             value={formatProfileText(profileData.personal.city)}
           />
-          <Row label="Premium" value={toDisplayText(profileData.isPremium)} />
           <Row
-            label="Last Active"
+            labelKey="profile.row_premium"
+            value={toDisplayText(profileData.isPremium)}
+          />
+          <Row
+            labelKey="profile.row_last_active"
             value={formatDateTime(profileData.lastActiveAt)}
           />
         </Section>
 
-        <Section title="Personal Details" icon="user-check">
+        <Section titleKey="profile.section_personal" icon="user-check">
           <Row
-            label="Date of Birth"
+            labelKey="profile.row_dob"
             value={toDisplayText(profileData.personal.dateOfBirth)}
           />
-          <Row label="Time of Birth" value={getTimeOfBirth(profileData)} />
-          <Row label="Place of Birth" value={getPlaceOfBirth(profileData)} />
           <Row
-            label="Marital Status"
+            labelKey="profile.row_time_of_birth"
+            value={getTimeOfBirth(profileData)}
+          />
+          <Row
+            labelKey="profile.row_place_of_birth"
+            value={getPlaceOfBirth(profileData)}
+          />
+          <Row
+            labelKey="profile.row_marital_status"
             value={enumLabel(
               'options.marital_status',
               profileData.personal.maritalStatus
             )}
           />
-          <Row label="Children" value={getChildrenSummary(profileData)} />
           <Row
-            label="Willing to Relocate"
+            labelKey="profile.row_children"
+            value={getChildrenSummary(profileData)}
+          />
+          <Row
+            labelKey="profile.row_relocate"
             value={toDisplayText(profileData.personal.willingToRelocate)}
           />
           <Row
-            label="Citizenship"
+            labelKey="profile.row_citizenship"
             value={formatProfileText(profileData.personal.citizenship)}
           />
         </Section>
 
-        <Section title="Religious & Astro" icon="sun">
+        <Section titleKey="profile.section_astro" icon="sun">
           <Row
-            label="Religion"
-            value={enumLabel(
-              'options.religion',
-              getProfileReligion(profileData)
-            )}
+            labelKey="profile.row_religion"
+            value={enumLabel('options.religion', profileData.personal.religion)}
           />
           <Row
-            label="Caste"
-            value={enumLabel('options.caste', getProfileCaste(profileData))}
+            labelKey="profile.row_caste"
+            value={enumLabel('options.caste', profileData.personal.caste)}
           />
           <Row
-            label="Sub Caste"
+            labelKey="profile.row_sub_caste"
             value={formatProfileText(profileData.personal.subCast)}
           />
           <Row
-            label="Gotra"
+            labelKey="profile.row_gotra"
             value={formatProfileText(profileData.personal.gotra)}
           />
           <Row
-            label="Mother Tongue"
+            labelKey="profile.row_mother_tongue"
             value={formatProfileText(profileData.personal.motherTongue)}
           />
           <Row
-            label="Manglik Status"
+            labelKey="profile.row_manglik"
             value={enumLabel(
               'options.manglik_status',
               profileData.personal.manglikStatus
             )}
           />
           <Row
-            label="Rashi"
+            labelKey="profile.row_rashi"
             value={formatProfileText(profileData.personal.rashi)}
           />
           <Row
-            label="Nakshatra"
+            labelKey="profile.row_nakshatra"
             value={formatProfileText(profileData.personal.nakshatra)}
           />
           <Row
-            label="Kundli"
+            labelKey="profile.row_kundli"
             value={toDisplayText(profileData.personal.kundliFileUrl)}
           />
         </Section>
 
-        {/* Education & Career */}
-        <Section title="Education & Career" icon="book">
+        <Section titleKey="profile.section_education" icon="book">
           <Row
-            label="Education"
+            labelKey="profile.row_education"
             value={enumLabel(
               'options.qualifications',
               profileData.education.qualification
             )}
           />
           <Row
-            label="Field"
+            labelKey="profile.row_field"
             value={formatProfileText(profileData.education.field)}
           />
           <Row
-            label="College"
+            labelKey="profile.row_college"
             value={formatProfileText(profileData.education.university)}
           />
           <Row
-            label="Occupation Type"
+            labelKey="profile.row_occupation_type"
             value={enumLabel(
               'options.occupation_types',
               profileData.education.occupationType
             )}
           />
           <Row
-            label="Profession"
+            labelKey="profile.row_profession"
             value={formatProfileText(profileData.education.occupation)}
           />
           <Row
-            label="Company"
+            labelKey="profile.row_company"
             value={formatProfileText(profileData.education.companyName)}
           />
           <Row
-            label="Job Role"
+            labelKey="profile.row_job_role"
             value={formatProfileText(profileData.education.jobRole)}
           />
           <Row
-            label="Annual Income"
-            value={annualIncomeFormat(getProfileIncome(profileData) ?? '')}
+            labelKey="profile.row_income"
+            value={annualIncomeFormat(
+              profileData.education.annualIncomeAmount ?? ''
+            )}
           />
         </Section>
 
-        {/* Physical Attributes */}
-        <Section title="Physical Attributes" icon="activity">
+        <Section titleKey="profile.section_physical" icon="activity">
           <Row
-            label="Height"
-            value={getFormattedHeight(getProfileHeight(profileData))}
+            labelKey="profile.row_height"
+            value={getFormattedHeight(profileData.physical.height)}
           />
           <Row
-            label="Weight"
-            value={getFormattedWeight(getProfileWeight(profileData))}
+            labelKey="profile.row_weight"
+            value={getFormattedWeight(profileData.physical.weight)}
           />
           <Row
-            label="Blood Group"
+            labelKey="profile.row_blood_group"
             value={enumLabel(
               'options.blood_groups',
               profileData.physical.bloodGroup
             )}
           />
           <Row
-            label="Body Type"
+            labelKey="profile.row_body_type"
             value={enumLabel(
               'options.body_types',
               profileData.physical.bodyType
             )}
           />
           <Row
-            label="Complexion"
+            labelKey="profile.row_complexion"
             value={enumLabel(
               'options.complexion',
               profileData.physical.complexion
             )}
           />
           <Row
-            label="Disability"
+            labelKey="profile.row_disability"
             value={toDisplayText(profileData.physical.disabilityStatus)}
           />
           <Row
-            label="Disability Note"
+            labelKey="profile.row_disability_note"
             value={toDisplayText(profileData.physical.disabilityNote)}
           />
         </Section>
 
-        {/* Lifestyle */}
-        <Section title="Lifestyle" icon="coffee">
+        <Section titleKey="profile.section_lifestyle" icon="coffee">
           <Row
-            label="Smoking"
+            labelKey="profile.row_smoking"
             value={enumLabel('options.smoking', profileData.personal.smoking)}
           />
           <Row
-            label="Drinking"
+            labelKey="profile.row_drinking"
             value={enumLabel('options.drinking', profileData.personal.drinking)}
           />
           <Row
-            label="Eating"
+            labelKey="profile.row_eating"
             value={enumLabel('options.eating', profileData.personal.eating)}
           />
         </Section>
 
-        {/* Family Background */}
-        <Section title="Family Background" icon="home">
+        <Section titleKey="profile.section_family" icon="home">
           <Row
-            label="Father's Name"
+            labelKey="profile.row_father"
             value={formatProfileText(profileData.family?.fatherName)}
           />
           <Row
-            label="Mother's Name"
+            labelKey="profile.row_mother"
             value={formatProfileText(profileData.family?.motherName)}
           />
           <Row
-            label="Father's Occupation"
+            labelKey="profile.row_father_occupation"
             value={formatProfileText(profileData.family?.fatherOccupation)}
           />
           <Row
-            label="Mother's Occupation"
+            labelKey="profile.row_mother_occupation"
             value={formatProfileText(profileData.family?.motherOccupation)}
           />
           <Row
-            label="Family Type"
+            labelKey="profile.row_family_type"
             value={enumLabel(
               'options.family_types',
               profileData.family?.familyType
             )}
           />
           <Row
-            label="Family Status"
+            labelKey="profile.row_family_status"
             value={enumLabel(
               'options.family_status',
               profileData.family?.familyStatus
             )}
           />
           <Row
-            label="Family Values"
+            labelKey="profile.row_family_values"
             value={enumLabel(
               'options.family_values',
               profileData.family?.familyValues
             )}
           />
-          <Row label="Siblings" value={getSiblingCounts(profileData)} />
           <Row
-            label="Sibling Note"
+            labelKey="profile.row_siblings"
+            value={getSiblingCounts(profileData)}
+          />
+          <Row
+            labelKey="profile.row_sibling_note"
             value={toDisplayText(profileData.family?.siblings?.note)}
           />
           {siblingDetails.length > 0 && (
             <View style={styles.tagSection}>
-              <Text style={styles.tagSectionLabel}>Sibling Details</Text>
+              <Text style={styles.tagSectionLabel}>
+                {t('profile.sibling_details_label')}
+              </Text>
               <SiblingList items={siblingDetails} />
             </View>
           )}
         </Section>
 
-        {/* Interests & Hobbies */}
-        <Section title="Interests & Hobbies" icon="music">
+        <Section titleKey="profile.section_interests" icon="music">
           {hobbies.length > 0 && (
             <View style={styles.tagSection}>
-              <Text style={styles.tagSectionLabel}>Hobbies</Text>
+              <Text style={styles.tagSectionLabel}>
+                {t('profile.hobbies_label')}
+              </Text>
               <TagList items={hobbies} />
             </View>
           )}
           <View style={styles.tagSection}>
-            <Text style={styles.tagSectionLabel}>Languages Known</Text>
+            <Text style={styles.tagSectionLabel}>
+              {t('profile.languages_label')}
+            </Text>
             <TagList items={languagesKnown} />
           </View>
         </Section>
+
         <View style={styles.footer} />
       </ScrollView>
 
+      {/* PDF action bar */}
       <View style={styles.pdfActionBar}>
         <TouchableOpacity
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel="Download profile as PDF"
+          accessibilityLabel={t('profile.download_pdf_label')}
           disabled={pdfAction !== null}
           onPress={() => {
             void handleProfilePdf('download');
@@ -1419,14 +1214,16 @@ export default function ProfileScreen({
             <Feather name="download" size={18} color={theme.colors.white} />
           )}
           <Text style={styles.pdfActionButtonText}>
-            {pdfAction === 'download' ? 'Preparing...' : 'Download PDF'}
+            {pdfAction === 'download'
+              ? t('profile.pdf_preparing')
+              : t('profile.download_pdf')}
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity
           activeOpacity={0.85}
           accessibilityRole="button"
-          accessibilityLabel="Share profile PDF"
+          accessibilityLabel={t('profile.share_pdf_label')}
           disabled={pdfAction !== null}
           onPress={() => {
             void handleProfilePdf('share');
@@ -1443,7 +1240,9 @@ export default function ProfileScreen({
             <Feather name="share-2" size={18} color={theme.colors.white} />
           )}
           <Text style={styles.pdfActionButtonText}>
-            {pdfAction === 'share' ? 'Preparing...' : 'Share PDF'}
+            {pdfAction === 'share'
+              ? t('profile.pdf_preparing')
+              : t('profile.share_pdf')}
           </Text>
         </TouchableOpacity>
       </View>

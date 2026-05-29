@@ -39,5 +39,8 @@
   "success": "Success",
   "saved": "Saved",
   "saving": "Saving...",
-  "try_again": "Please try again later."
+  "try_again": "Please try again later.",
+  "empty_value": "—",
+  "error_title": "Something went wrong",
+  "retrying": "Trying..."
 }

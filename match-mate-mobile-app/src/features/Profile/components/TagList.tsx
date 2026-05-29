@@ -1,15 +1,22 @@
-import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { profileStyles } from '../Profile.styles';
+import React from 'react';
 import { View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { profileStyles } from '../Profile.styles';
 
-export function TagList({ items }: { items: string[] }): React.ReactElement {
+interface Props {
+  items: string[];
+}
+
+export function TagList({ items }: Props): React.ReactElement {
   const styles = useThemedStyles(profileStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   if (items.length === 0) {
-    return <Text style={styles.tagEmptyText}>—</Text>;
+    return <Text style={styles.tagEmptyText}>{t('common.empty_value')}</Text>;
   }
 
   return (

@@ -1,16 +1,142 @@
 import { AppNavigationProp } from '@/navigation/types';
+import {
+  Country,
+  DrinkingHabit,
+  EatingHabit,
+  Gender,
+  Hour,
+  MaritalStatus,
+  ManglikStatus,
+  Minute,
+  Period,
+  ProfileFor,
+  ProfileImage,
+  SmokingHabit,
+} from '@/core/types';
 
 export interface ProfileScreenProps {
   navigation: AppNavigationProp;
 }
 
 export interface SectionProps {
-  title: string;
+  titleKey: string;
   icon: string;
   children: React.ReactNode;
 }
 
 export interface RowProps {
-  label: string;
+  labelKey: string;
   value?: string | string[] | null;
+}
+
+export interface SiblingDisplayItem {
+  type: string;
+  maritalStatus: string;
+  occupation: string;
+}
+
+export type PdfAction = 'download' | 'share';
+
+export type Primitive = string | number | boolean | null | undefined;
+
+// ─── Schema type lives here — not inline in the screen ───────────────────────
+
+export interface SchemaProfile {
+  userId?: string;
+  profileFor?: ProfileFor;
+  personal: {
+    firstName?: string;
+    lastName?: string;
+    dateOfBirth?: string;
+    timeOfBirth?: { hour?: Hour; minute?: Minute; period?: Period };
+    placeOfBirth?: { city?: string; state?: string; country?: Country };
+    religion?: string;
+    caste?: string;
+    subCast?: string;
+    gotra?: string;
+    manglikStatus?: ManglikStatus;
+    rashi?: string;
+    nakshatra?: string;
+    kundliFileUrl?: string;
+    country?: Country;
+    state?: string;
+    city?: string;
+    citizenship?: string;
+    willingToRelocate?: boolean;
+    motherTongue?: string;
+    maritalStatus?: MaritalStatus;
+    hasChildren?: boolean;
+    sonsCount?: number;
+    daughtersCount?: number;
+    smoking?: SmokingHabit;
+    drinking?: DrinkingHabit;
+    eating?: EatingHabit;
+    hobbies?: string[];
+    languages?: string[];
+    languagesKnown?: string[];
+    aboutMe?: string;
+    gender?: Gender;
+  };
+  physical: {
+    height?: string | number;
+    weight?: string | number;
+    bloodGroup?: string;
+    bodyType?: string;
+    complexion?: string;
+    disabilityStatus?: boolean;
+    disabilityNote?: string;
+  };
+  education: {
+    qualification?: string;
+    field?: string;
+    university?: string;
+    occupationType?: string;
+    occupation?: string;
+    companyName?: string;
+    jobRole?: string;
+    annualIncomeAmount?: number;
+  };
+  family?: {
+    fatherName?: string;
+    motherName?: string;
+    fatherOccupation?: string;
+    motherOccupation?: string;
+    familyType?: string;
+    familyStatus?: string;
+    familyValues?: string;
+    siblings?: {
+      brothersCount?: number;
+      sistersCount?: number;
+      marriedBrothersCount?: number;
+      marriedSistersCount?: number;
+      brothers?: number;
+      sisters?: number;
+      marriedBrothers?: number;
+      marriedSisters?: number;
+      details?: Array<{
+        type?: string;
+        married?: boolean;
+        occupation?: string;
+      }>;
+      note?: string;
+    };
+  };
+  preferences?: { languagesKnown?: string[] };
+  images?: ProfileImage[];
+  age?: number;
+  height?: number;
+  location?: { type?: 'Point'; coordinates?: [number, number] };
+  profileScore?: number;
+  profileCompletionPercentage?: number;
+  isPremium?: boolean;
+  isVerified?: boolean;
+  verification?: {
+    isVerified?: boolean;
+    isProfileVerified?: boolean;
+    isEmailVerified?: boolean;
+    isPhoneVerified?: boolean;
+    verifiedAt?: string | Date;
+  };
+  status?: string;
+  lastActiveAt?: string | Date;
 }

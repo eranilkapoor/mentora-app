@@ -1,6 +1,6 @@
 import { Theme } from '@/core/theme/types';
 import { isWeb, windowWidth } from '@/core/utils/device';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const profileStyles = (theme: Theme) =>
   StyleSheet.create({
@@ -8,12 +8,8 @@ export const profileStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
     },
-    container: {
-      flex: 1,
-    },
-    scrollContent: {
-      paddingBottom: 112,
-    },
+    container: { flex: 1 },
+    scrollContent: { paddingBottom: 112 },
     centerContainer: {
       flex: 1,
       alignItems: 'center',
@@ -46,7 +42,7 @@ export const profileStyles = (theme: Theme) =>
       width: 18,
     },
     nameCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       padding: 16,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderBottomColor: theme.colors.divider,
@@ -63,23 +59,6 @@ export const profileStyles = (theme: Theme) =>
       color: theme.colors.textPrimary,
       flex: 1,
       paddingRight: 12,
-    },
-    verifiedBadge: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 4,
-    },
-    verifiedText: {
-      fontSize: 12,
-      color: theme.colors.primary,
-      fontWeight: '600',
-    },
-    verificationRow: {
-      flexDirection: 'row',
-      flexWrap: 'wrap',
-      gap: 8,
-      marginTop: 2,
-      marginBottom: 10,
     },
     verificationBadge: {
       flexDirection: 'row',
@@ -102,12 +81,8 @@ export const profileStyles = (theme: Theme) =>
       fontSize: 11,
       fontWeight: '700',
     },
-    verificationBadgeTextVerified: {
-      color: theme.colors.success,
-    },
-    verificationBadgeTextUnverified: {
-      color: theme.colors.primary,
-    },
+    verificationBadgeTextVerified: { color: theme.colors.success },
+    verificationBadgeTextUnverified: { color: theme.colors.primary },
     subText: {
       color: theme.colors.textMuted,
       fontSize: 14,
@@ -150,9 +125,7 @@ export const profileStyles = (theme: Theme) =>
       marginTop: 2,
       textAlign: 'center',
     },
-    section: {
-      marginTop: 12,
-    },
+    section: { marginTop: 12 },
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -169,16 +142,26 @@ export const profileStyles = (theme: Theme) =>
       justifyContent: 'center',
     },
     sectionTitle: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: '700',
       color: theme.colors.textSecondary,
       textTransform: 'uppercase',
-      letterSpacing: 0.5,
+      letterSpacing: 0.6,
     },
     card: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       paddingHorizontal: 16,
       paddingVertical: 4,
+      ...Platform.select({
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 1 },
+          shadowOpacity: 0.04,
+          shadowRadius: 4,
+        },
+        android: { elevation: 1 },
+        web: {},
+      }),
     },
     row: {
       flexDirection: 'row',
@@ -201,7 +184,7 @@ export const profileStyles = (theme: Theme) =>
       textAlign: 'right',
     },
     aboutText: {
-      color: theme.colors.textBody,
+      color: theme.colors.textSecondary,
       fontSize: 14,
       lineHeight: 22,
       paddingVertical: 10,
@@ -242,10 +225,7 @@ export const profileStyles = (theme: Theme) =>
       fontSize: 14,
       paddingVertical: 4,
     },
-    siblingList: {
-      gap: 10,
-      paddingBottom: 4,
-    },
+    siblingList: { gap: 10, paddingBottom: 4 },
     siblingItem: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -270,10 +250,7 @@ export const profileStyles = (theme: Theme) =>
       fontSize: 12,
       fontWeight: '800',
     },
-    siblingContent: {
-      flex: 1,
-      gap: 2,
-    },
+    siblingContent: { flex: 1, gap: 2 },
     siblingTitle: {
       color: theme.colors.textPrimary,
       fontSize: 14,
@@ -307,21 +284,19 @@ export const profileStyles = (theme: Theme) =>
       fontWeight: '700',
       fontSize: 15,
     },
-    skeletonContainer: {
-      flex: 1,
-    },
+    skeletonContainer: { flex: 1 },
     skeletonPhoto: {
       width: windowWidth,
-      height: 400,
+      height: 320,
       backgroundColor: theme.colors.backgroundLight,
     },
     skeletonHeader: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       padding: 16,
       gap: 8,
     },
     skeletonCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       padding: 16,
       marginTop: 12,
       gap: 8,
@@ -332,17 +307,9 @@ export const profileStyles = (theme: Theme) =>
       backgroundColor: theme.colors.backgroundLight,
       width: '80%',
     },
-    skeletonLineShort: {
-      width: '50%',
-    },
-    footer: {
-      height: 24,
-    },
+    skeletonLineShort: { width: '50%' },
+    footer: { height: 24 },
     pdfActionBar: {
-      position: 'absolute',
-      left: 0,
-      right: 0,
-      bottom: 0,
       flexDirection: 'row',
       gap: 12,
       paddingHorizontal: 16,
@@ -351,6 +318,16 @@ export const profileStyles = (theme: Theme) =>
       backgroundColor: theme.colors.surface,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderTopColor: theme.colors.divider,
+      ...Platform.select({
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.06,
+          shadowRadius: 8,
+        },
+        android: { elevation: 12 },
+        web: {},
+      }),
     },
     pdfActionButton: {
       flex: 1,
@@ -362,15 +339,9 @@ export const profileStyles = (theme: Theme) =>
       gap: 8,
       paddingHorizontal: 12,
     },
-    pdfDownloadButton: {
-      backgroundColor: theme.colors.primary,
-    },
-    pdfShareButton: {
-      backgroundColor: theme.colors.accent,
-    },
-    pdfActionButtonDisabled: {
-      opacity: 0.65,
-    },
+    pdfDownloadButton: { backgroundColor: theme.colors.primary },
+    pdfShareButton: { backgroundColor: theme.colors.accent },
+    pdfActionButtonDisabled: { opacity: 0.65 },
     pdfActionButtonText: {
       color: theme.colors.white,
       fontSize: 14,

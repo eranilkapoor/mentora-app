@@ -1,4 +1,6 @@
-export const FALLBACK_PHOTOS = [
-  'https://ix-marketing.imgix.net/focalpoint.png?auto=format,compress&w=800',
-  'https://ix-marketing.imgix.net/case-study_2.png?auto=format,compress&w=800',
+export const FALLBACK_PHOTOS: string[] = [
+  require('@/assets/images/avatar-placeholder.png') as string,
 ];
+
+export const FALLBACK_PHOTO =
+  require('@/assets/images/avatar-placeholder.png') as string;
