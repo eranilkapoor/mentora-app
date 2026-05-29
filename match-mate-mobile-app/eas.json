@@ -4,8 +4,25 @@
     "appVersionSource": "remote"
   },
   "build": {
+    "development": {
+      "distribution": "internal",
+      "channel": "development",
+      "env": {
+        "EXPO_PUBLIC_ENV": "development",
+        "EXPO_PUBLIC_API_BASE_URL": "https://matchmate.webnza.com",
+        "EXPO_PUBLIC_API_PATH": "/api/v1",
+        "EXPO_PUBLIC_CLIENT_VERSION": "1.0.0"
+      },
+      "android": {
+        "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
+      }
+    },
     "preview": {
       "distribution": "internal",
+      "channel": "preview",
       "env": {
         "EXPO_PUBLIC_ENV": "production",
         "EXPO_PUBLIC_API_BASE_URL": "https://matchmate.webnza.com",
@@ -14,9 +31,14 @@
       },
       "android": {
         "buildType": "apk"
+      },
+      "ios": {
+        "simulator": false
       }
     },
     "production": {
+      "distribution": "store",
+      "channel": "production",
       "env": {
         "EXPO_PUBLIC_ENV": "production",
         "EXPO_PUBLIC_API_BASE_URL": "https://matchmate.webnza.com",
@@ -25,6 +47,9 @@
       },
       "android": {
         "buildType": "app-bundle"
+      },
+      "ios": {
+        "simulator": false
       }
     }
   }
