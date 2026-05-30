@@ -41,9 +41,9 @@ export class StorageService {
           ),
         },
       });
-      this.logger.log(' Storage driver: S3');
+      this.logger.log('Storage driver: S3');
     } else {
-      this.logger.log(' Storage driver: Local');
+      this.logger.log('Storage driver: Local');
     }
   }
 

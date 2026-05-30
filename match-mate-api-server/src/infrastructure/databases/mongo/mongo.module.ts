@@ -11,7 +11,7 @@ export const MongoModule = MongooseModule.forRootAsync({
 
     //  Local mode  skip MongoDB connection entirely
     if (driver === 'local') {
-      logger.log('  DB_DRIVER=local  skipping MongoDB connection');
+      logger.log('DB_DRIVER=local  skipping MongoDB connection');
       return {
         uri: 'mongodb://localhost:27017/local_dummy',
         retryAttempts: 0, // don't retry
@@ -31,7 +31,7 @@ export const MongoModule = MongooseModule.forRootAsync({
       throw new Error('MONGO_URI is required when DB_DRIVER=mongo');
     }
 
-    logger.log(' MongoDB connecting...');
+    logger.log('MongoDB connecting...');
 
     return {
       uri,
