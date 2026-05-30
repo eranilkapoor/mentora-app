@@ -136,7 +136,7 @@ export default function MediaSettingsScreen({
         visible={qualityOpen}
         title={t('settings.media.media_quality')}
         options={qualityOptions}
-        selectedValue={settings?.mediaQuality}
+        selectedValue={settings?.mediaQuality ?? 'medium'}
         onSelect={(value) => handleUpdate('mediaQuality', value)}
         onClose={() => setQualityOpen(false)}
       />

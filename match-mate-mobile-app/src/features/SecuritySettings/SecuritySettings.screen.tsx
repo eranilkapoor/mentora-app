@@ -212,8 +212,13 @@ export default function SecuritySettingsScreen({
         visible={twoFactorMethodOpen}
         title={t('settings.security.two_factor_method')}
         options={twoFactorMethodOptions}
-        selectedValue={settings?.twoFactorMethod}
-        onSelect={(value) => handleUpdate('twoFactorMethod', value)}
+        selectedValue={settings?.twoFactorMethod ?? 'none'}
+        onSelect={(value) =>
+          handleUpdate(
+            'twoFactorMethod',
+            value as SecuritySettings['twoFactorMethod']
+          )
+        }
         onClose={() => setTwoFactorMethodOpen(false)}
       />
     </SafeAreaView>
