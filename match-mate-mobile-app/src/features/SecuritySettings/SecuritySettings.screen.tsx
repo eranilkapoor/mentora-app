@@ -17,11 +17,11 @@ import { showSuccess } from '@/core/utils/toast';
 import {
   useGetSecuritySettingsQuery,
   useUpdateSecuritySettingsMutation,
-} from '@/store/services/securitySettings.service';
-import { useLogoutAllMutation } from '@/store/services/authApi';
-import { baseApi, clearRefreshToken } from '@/store/services/baseApi';
+} from '@/store/services/securitySettingsApi.service';
+import { useLogoutAllMutation } from '@/store/services/authApi.service';
+import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
 import { useAppDispatch } from '@/store/hooks';
-import { logout as logoutAction } from '@/store/slices/authSlice';
+import { logout as logoutAction } from '@/store/slices/auth.slice';
 import Loader from '@/core/components/Loader';
 import {
   SecuritySettings,

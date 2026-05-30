@@ -14,7 +14,7 @@ import {
 import {
   useGetPrivacySettingsQuery,
   useUpdatePrivacySettingsMutation,
-} from '@/store/services/privacySettings.service';
+} from '@/store/services/privacySettingsApi.service';
 import Loader from '@/core/components/Loader';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import {

@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi } from './baseApi.service';
 import { PreferenceData } from '@/features/EditPreference/EditPreference.types';
 import { ApiResponse } from '@/core/types/api/api.types';
 import {

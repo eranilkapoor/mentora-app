@@ -11,7 +11,7 @@ import { SettingsNavigationProp } from '@/navigation/types';
 import {
   useGetLoginHistoryQuery,
   useRevokeSessionMutation,
-} from '@/store/services/securitySettings.service';
+} from '@/store/services/securitySettingsApi.service';
 import { LoginHistoryItem } from './SecuritySettings.types';
 import { loginHistoryStyles } from './LoginHistory.styles';
 import { useTheme } from '@/core/theme/ThemeProvider';

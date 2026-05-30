@@ -3,7 +3,7 @@ import {
   LocalizationSettingsResponse,
   UpdateLocalizationSettingsPayload,
 } from '@/features/LocalizationSettings/LocalizationSettings.types';
-import { baseApi } from './baseApi';
+import { baseApi } from './baseApi.service';
 
 export const localizationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useChangePasswordMutation } from '@/store/services/authApi';
+import { useChangePasswordMutation } from '@/store/services/authApi.service';
 import {
   FormValues,
   FormErrors,

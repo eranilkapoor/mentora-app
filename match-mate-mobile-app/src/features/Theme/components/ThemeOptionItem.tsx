@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { ThemeOption } from '../Theme.types';
-import { ThemeMode } from '@/store/slices/settingsSlice';
+import { ThemeMode } from '@/store/slices/settings.slice';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
 interface Styles {

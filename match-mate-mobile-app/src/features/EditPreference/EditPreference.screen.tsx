@@ -22,7 +22,7 @@ import {
   useUpdatePreferenceSettingsMutation,
   useUpdatePreferenceWeightsMutation,
   useUpdateAboutPartnerMutation,
-} from '@/store/services/preferenceApi';
+} from '@/store/services/preferenceApi.service';
 import { editPreferenceStyles } from './EditPreference.styles';
 import {
   MatchSettings,
@@ -41,7 +41,7 @@ import {
   ABOUT_PARTNER_MAX,
 } from '@/core/constants';
 import { PreferenceSectionCard } from './components/PreferenceSectionCard';
-import { RangeInput } from './components/RangeInput';
+import { RangeInput, RangeValue } from './components/RangeInput';
 import { WeightSlider } from './components/WeightSlider';
 import {
   EatingHabits,
@@ -60,6 +60,13 @@ import {
   Countries,
   ChildPreference,
   ResidencyPreference,
+  ManglikStatus,
+  BodyType,
+  Complexion,
+  SmokingHabit,
+  DrinkingHabit,
+  EatingHabit,
+  OccupationType,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { showError, showSuccess } from '@/core/utils/toast';
@@ -209,7 +216,7 @@ export default function EditPreferenceScreen({
           ...prev.weights,
           ...(incoming.weights ?? {}),
         },
-        aboutPartner: incoming.aboutPartner ?? prev.aboutPartner,
+        aboutPartner: incoming.aboutPartner ?? prev.aboutPartner ?? '',
       }));
     }
 
@@ -403,7 +410,7 @@ export default function EditPreferenceScreen({
           >
             <RangeInput
               label={t('preference.fields.age')}
-              value={preference.filters.age}
+              value={preference.filters.age as RangeValue}
               onChange={(v) => setFilters('age', v)}
               minLimit={AGE_RANGE.min}
               maxLimit={AGE_RANGE.max}
@@ -412,7 +419,7 @@ export default function EditPreferenceScreen({
 
             <RangeInput
               label={t('preference.fields.height')}
-              value={preference.filters.height}
+              value={preference.filters.height as RangeValue}
               onChange={(v) => setFilters('height', v)}
               minLimit={HEIGHT_RANGE.min}
               maxLimit={HEIGHT_RANGE.max}
@@ -421,7 +428,7 @@ export default function EditPreferenceScreen({
 
             <RangeInput
               label={t('preference.fields.annual_income')}
-              value={preference.filters.annualIncome}
+              value={preference.filters.annualIncome as RangeValue}
               onChange={(v) => setFilters('annualIncome', v)}
               minLimit={INCOME_RANGE.min}
               maxLimit={INCOME_RANGE.max}
@@ -483,7 +490,7 @@ export default function EditPreferenceScreen({
 
             <TagInput
               label={t('preference.fields.sub_caste')}
-              value={preference.filters.subCaste}
+              value={preference.filters.subCaste as string[]}
               onChange={(v) => setFilters('subCaste', v)}
               placeholder={t('preference.placeholders.sub_caste')}
             />
@@ -491,7 +498,7 @@ export default function EditPreferenceScreen({
             <MultiSelectPill
               label={t('preference.fields.manglik_status')}
               options={ManglikStatusOptions}
-              value={preference.filters.manglikStatus}
+              value={preference.filters.manglikStatus as ManglikStatus[]}
               onChange={(v) => setFilters('manglikStatus', v)}
               i18nPrefix="options.manglik_status"
             />
@@ -517,14 +524,14 @@ export default function EditPreferenceScreen({
 
             <TagInput
               label={t('preference.fields.state')}
-              value={preference.filters.state}
+              value={preference.filters.state as string[]}
               onChange={(v) => setFilters('state', v)}
               placeholder={t('preference.placeholders.state')}
             />
 
             <TagInput
               label={t('preference.fields.city')}
-              value={preference.filters.city}
+              value={preference.filters.city as string[]}
               onChange={(v) => setFilters('city', v)}
               placeholder={t('preference.placeholders.city')}
             />
@@ -551,14 +558,14 @@ export default function EditPreferenceScreen({
             <MultiSelectPill
               label={t('preference.fields.occupation_type')}
               options={OccupationTypeOptions}
-              value={preference.filters.occupationType}
+              value={preference.filters.occupationType as OccupationType[]}
               onChange={(v) => setFilters('occupationType', v)}
               i18nPrefix="options.occupation_types"
             />
 
             <TagInput
               label={t('preference.fields.occupation')}
-              value={preference.filters.occupation}
+              value={preference.filters.occupation as string[]}
               onChange={(v) => setFilters('occupation', v)}
               placeholder={t('preference.placeholders.occupation')}
             />
@@ -574,7 +581,7 @@ export default function EditPreferenceScreen({
             <MultiSelectPill
               label={t('preference.fields.body_type')}
               options={BodyTypeOptions}
-              value={preference.filters.bodyType}
+              value={preference.filters.bodyType as BodyType[]}
               onChange={(v) => setFilters('bodyType', v)}
               i18nPrefix="options.body_types"
             />
@@ -582,7 +589,7 @@ export default function EditPreferenceScreen({
             <MultiSelectPill
               label={t('preference.fields.complexion')}
               options={ComplexionOptions}
-              value={preference.filters.complexion}
+              value={preference.filters.complexion as Complexion[]}
               onChange={(v) => setFilters('complexion', v)}
               i18nPrefix="options.complexion"
             />
@@ -598,7 +605,7 @@ export default function EditPreferenceScreen({
             <MultiSelectPill
               label={t('preference.fields.smoking')}
               options={SmokingHabitsOptions}
-              value={preference.filters.smoking}
+              value={preference.filters.smoking as SmokingHabit[]}
               onChange={(v) => setFilters('smoking', v)}
               i18nPrefix="options.smoking"
             />
@@ -606,7 +613,7 @@ export default function EditPreferenceScreen({
             <MultiSelectPill
               label={t('preference.fields.drinking')}
               options={DrinkingHabitsOptions}
-              value={preference.filters.drinking}
+              value={preference.filters.drinking as DrinkingHabit[]}
               onChange={(v) => setFilters('drinking', v)}
               i18nPrefix="options.drinking"
             />
@@ -614,14 +621,14 @@ export default function EditPreferenceScreen({
             <MultiSelectPill
               label={t('preference.fields.eating')}
               options={EatingHabitsOptions}
-              value={preference.filters.eating}
+              value={preference.filters.eating as EatingHabit[]}
               onChange={(v) => setFilters('eating', v)}
               i18nPrefix="options.eating"
             />
 
             <TagInput
               label={t('preference.fields.languages')}
-              value={preference.filters.languages}
+              value={preference.filters.languages as string[]}
               onChange={(v) => setFilters('languages', v)}
               placeholder={t('preference.placeholders.languages')}
             />

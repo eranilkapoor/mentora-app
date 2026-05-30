@@ -20,7 +20,7 @@ import {
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation,
   useUpdateNotificationChannelMutation,
-} from '@/store/services/notificationSettings.service';
+} from '@/store/services/notificationSettingsApi.service';
 import {
   ChannelPreference,
   NotificationSettings,
@@ -382,21 +382,21 @@ export default function NotificationSettingsScreen({
           <SettingsSelectItem
             icon="sunrise"
             label={t('settings.notifications.quiet_start')}
-            value={settings?.quietHours?.start}
+            value={settings?.quietHours?.start as string}
             disabled={!settings?.quietHours?.enabled}
             onPress={() => setActiveQuietField('start')}
           />
           <SettingsSelectItem
             icon="sunset"
             label={t('settings.notifications.quiet_end')}
-            value={settings?.quietHours?.end}
+            value={settings?.quietHours?.end as string}
             disabled={!settings?.quietHours?.enabled}
             onPress={() => setActiveQuietField('end')}
           />
           <SettingsSelectItem
             icon="clock"
             label={t('settings.notifications.timezone')}
-            value={settings?.quietHours?.timezone}
+            value={settings?.quietHours?.timezone as string}
             disabled={!settings?.quietHours?.enabled}
             isLast
             onPress={() => setActiveQuietField('timezone')}
@@ -410,7 +410,7 @@ export default function NotificationSettingsScreen({
         visible={activeQuietField === 'start'}
         title={t('settings.notifications.quiet_start')}
         options={timeOptions}
-        selectedValue={settings?.quietHours?.start}
+        selectedValue={settings?.quietHours?.start as string}
         onSelect={(value) => handleQuietHoursChange('start', value)}
         onClose={() => setActiveQuietField(null)}
       />
@@ -418,7 +418,7 @@ export default function NotificationSettingsScreen({
         visible={activeQuietField === 'end'}
         title={t('settings.notifications.quiet_end')}
         options={timeOptions}
-        selectedValue={settings?.quietHours?.end}
+        selectedValue={settings?.quietHours?.end as string}
         onSelect={(value) => handleQuietHoursChange('end', value)}
         onClose={() => setActiveQuietField(null)}
       />
@@ -426,7 +426,7 @@ export default function NotificationSettingsScreen({
         visible={activeQuietField === 'timezone'}
         title={t('settings.notifications.timezone')}
         options={timezoneOptions}
-        selectedValue={settings?.quietHours?.timezone}
+        selectedValue={settings?.quietHours?.timezone as string}
         onSelect={(value) => handleQuietHoursChange('timezone', value)}
         onClose={() => setActiveQuietField(null)}
       />

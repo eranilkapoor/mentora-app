@@ -14,7 +14,7 @@ const DEFAULT_DURATION = 3000;
 
 export const showSuccess = ({
   title,
-  message,
+  message = '',
   position = DEFAULT_POSITION,
   visibilityTime = DEFAULT_DURATION,
 }: ToastOptions): void => {
@@ -29,7 +29,7 @@ export const showSuccess = ({
 
 export const showError = ({
   title,
-  message,
+  message = '',
   position = DEFAULT_POSITION,
   visibilityTime = 4000,
 }: ToastOptions): void => {
@@ -44,7 +44,7 @@ export const showError = ({
 
 export const showInfo = ({
   title,
-  message,
+  message = '',
   position = DEFAULT_POSITION,
   visibilityTime = DEFAULT_DURATION,
 }: ToastOptions): void => {
@@ -59,7 +59,7 @@ export const showInfo = ({
 
 export const showWarning = ({
   title,
-  message,
+  message = '',
   position = DEFAULT_POSITION,
   visibilityTime = DEFAULT_DURATION,
 }: ToastOptions): void => {

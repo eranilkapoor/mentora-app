@@ -3,7 +3,7 @@ import {
   AiSettingsResponse,
   UpdateAiSettingsPayload,
 } from '@/features/AiSettings/AiSettings.types';
-import { baseApi } from './baseApi';
+import { baseApi } from './baseApi.service';
 
 export const aiSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

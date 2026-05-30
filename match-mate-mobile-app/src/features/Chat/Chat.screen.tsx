@@ -31,7 +31,7 @@ import {
 import {
   useBlockUserMutation,
   useReportUserMutation,
-} from '@/store/services/privacySettings.service';
+} from '@/store/services/privacySettingsApi.service';
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showInfo, showSuccess } from '@/core/utils/toast';
 import { chatStyles } from './Chat.styles';

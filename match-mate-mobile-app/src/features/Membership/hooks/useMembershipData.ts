@@ -19,12 +19,16 @@ export function useMembershipData() {
   );
 
   useEffect(() => {
-    if (selectedPlan || displayPlans.length === 0) return;
-    setSelectedPlan(
-      displayPlans.find((p) => p.best)?.name ??
-        displayPlans[0]?.name ??
-        'Gold Monthly'
-    );
+    if (selectedPlan || !displayPlans.length) {
+      return;
+    }
+
+    const defaultPlan =
+      displayPlans.find((plan) => plan.best)?.name ?? displayPlans[0]?.name;
+
+    if (defaultPlan) {
+      setSelectedPlan(defaultPlan);
+    }
   }, [displayPlans, selectedPlan]);
 
   const selectedPlanItem =

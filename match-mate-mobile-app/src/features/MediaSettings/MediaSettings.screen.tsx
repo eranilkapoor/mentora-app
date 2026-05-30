@@ -15,7 +15,7 @@ import {
 import {
   useGetMediaSettingsQuery,
   useUpdateMediaSettingsMutation,
-} from '@/store/services/mediaSettings.service';
+} from '@/store/services/mediaSettingsApi.service';
 import Loader from '@/core/components/Loader';
 import { MediaSettings, MediaSettingsScreenProps } from './MediaSettings.types';
 

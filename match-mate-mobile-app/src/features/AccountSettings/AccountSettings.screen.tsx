@@ -10,13 +10,13 @@ import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectIte
 import { VerificationStatusRow } from '@/core/components/settings/VerificationStatusRow';
 import { showConfirm } from '@/core/utils/confirm';
 import { useAppDispatch } from '@/store/hooks';
-import { baseApi, clearRefreshToken } from '@/store/services/baseApi';
-import { logout as logoutAction } from '@/store/slices/authSlice';
+import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
+import { logout as logoutAction } from '@/store/slices/auth.slice';
 import {
   useDeactivateAccountMutation,
   useDeleteAccountRequestMutation,
   useGetAccountSettingsQuery,
-} from '@/store/services/accountSettings.service';
+} from '@/store/services/accountSettingsApi.service';
 import { AccountSettingsScreenProps } from './accountSettings.types';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 

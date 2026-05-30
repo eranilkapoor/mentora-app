@@ -3,7 +3,7 @@ import {
   MediaSettingsResponse,
   UpdateMediaSettingsPayload,
 } from '@/features/MediaSettings/MediaSettings.types';
-import { baseApi } from './baseApi';
+import { baseApi } from './baseApi.service';
 
 export const mediaSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

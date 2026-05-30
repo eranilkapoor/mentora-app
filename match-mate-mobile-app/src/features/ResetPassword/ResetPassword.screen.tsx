@@ -14,7 +14,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { useResetPasswordMutation } from '@/store/services/authApi';
+import { useResetPasswordMutation } from '@/store/services/authApi.service';
 import { resetPasswordStyles } from './ResetPassword.styles';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 import { FormErrors, ResetPasswordScreenProps } from './ResetPassword.types';

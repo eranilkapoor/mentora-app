@@ -1,4 +1,4 @@
-import { baseApi } from './baseApi';
+import { baseApi } from './baseApi.service';
 import { ApiResponse } from '@/core/types';
 
 import {

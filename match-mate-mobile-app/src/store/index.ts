@@ -1,7 +1,7 @@
 import { configureStore, combineReducers } from '@reduxjs/toolkit';
-import authReducer from './slices/authSlice';
-import settingsReducer from './slices/settingsSlice';
-import chatsReducer from './slices/chatsSlice';
+import authReducer from './slices/auth.slice';
+import settingsReducer from './slices/settings.slice';
+import chatsReducer from './slices/chats.slice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {
   persistStore,
@@ -13,7 +13,7 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-import { baseApi } from './services/baseApi';
+import { baseApi } from './services/baseApi.service';
 import { setupListeners } from '@reduxjs/toolkit/query/react';
 
 /* ================= Persist Config ================= */
@@ -25,7 +25,7 @@ const persistConfig = {
 const authPersistConfig = {
   key: 'auth',
   storage: AsyncStorage,
-  whitelist: ['accessToken', 'user'], // ✅ don't persist isHydrated
+  whitelist: ['accessToken', 'user'],
 };
 
 const settingsPersistConfig = {
@@ -46,13 +46,13 @@ const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 /* ================= Store ================= */
 export const store = configureStore({
-  reducer: persistedReducer, // ✅ wrapped reducer
+  reducer: persistedReducer,
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: {
         ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
       },
-    }).concat(baseApi.middleware), // ✅ add RTK Query middleware
+    }).concat(baseApi.middleware),
 });
 
 setupListeners(store.dispatch);

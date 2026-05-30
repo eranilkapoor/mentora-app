@@ -2,8 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setUser } from '@/store/slices/authSlice';
-import { useVerifyUserQuery } from '@/store/services/authApi';
+import { setUser } from '@/store/slices/auth.slice';
+import { useVerifyUserQuery } from '@/store/services/authApi.service';
 import { useUpdateProfileLocationMutation } from '@/store/services/profileApi.service';
 import Loader from '@/core/components/Loader';
 import { getDeviceId } from '@/core/utils/device';

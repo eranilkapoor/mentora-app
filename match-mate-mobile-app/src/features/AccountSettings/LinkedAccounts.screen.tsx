@@ -11,7 +11,7 @@ import {
   useConnectProviderMutation,
   useDisconnectLinkedAccountMutation,
   useGetAccountSettingsQuery,
-} from '@/store/services/accountSettings.service';
+} from '@/store/services/accountSettingsApi.service';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 

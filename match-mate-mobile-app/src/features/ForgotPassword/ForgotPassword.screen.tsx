@@ -21,7 +21,7 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 
 import { EMAIL_REGEX } from '@/core/constants';
 
-import { useForgotPasswordMutation } from '@/store/services/authApi';
+import { useForgotPasswordMutation } from '@/store/services/authApi.service';
 
 import { ForgotPasswordScreenProps, FormErrors } from './ForgotPassword.types';
 

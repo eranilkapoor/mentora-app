@@ -15,7 +15,7 @@ import {
 import {
   useGetAccessibilitySettingsQuery,
   useUpdateAccessibilitySettingsMutation,
-} from '@/store/services/accessibilitySettings.service';
+} from '@/store/services/accessibilitySettingsApi.service';
 import Loader from '@/core/components/Loader';
 import {
   AccessibilityFontSize,

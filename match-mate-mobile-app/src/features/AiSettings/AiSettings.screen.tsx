@@ -10,7 +10,7 @@ import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleIte
 import {
   useGetAiSettingsQuery,
   useUpdateAiSettingsMutation,
-} from '@/store/services/aiSettings.service';
+} from '@/store/services/aiSettingsApi.service';
 import Loader from '@/core/components/Loader';
 import { AiSettingsScreenProps } from './AiSettings.types';
 

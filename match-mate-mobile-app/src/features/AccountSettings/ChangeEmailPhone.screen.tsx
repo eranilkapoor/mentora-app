@@ -22,7 +22,7 @@ import {
 import {
   useRequestEmailChangeMutation,
   useRequestPhoneChangeMutation,
-} from '@/store/services/accountSettings.service';
+} from '@/store/services/accountSettingsApi.service';
 
 type Props = {
   navigation: SettingsNavigationProp;

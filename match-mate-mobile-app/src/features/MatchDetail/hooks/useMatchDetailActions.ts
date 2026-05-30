@@ -11,7 +11,7 @@ import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
 import {
   useBlockUserMutation,
   useReportUserMutation,
-} from '@/store/services/privacySettings.service';
+} from '@/store/services/privacySettingsApi.service';
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showSuccess } from '@/core/utils/toast';
 import { FALLBACK_PHOTO } from '../MatchDetail.constants';

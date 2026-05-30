@@ -15,14 +15,14 @@ import {
 import {
   useGetLocalizationSettingsQuery,
   useUpdateLocalizationSettingsMutation,
-} from '@/store/services/localizationSettings.service';
+} from '@/store/services/localizationSettingsApi.service';
 import Loader from '@/core/components/Loader';
 import {
   LocalizationSettings,
   LocalizationSettingsScreenProps,
 } from './LocalizationSettings.types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { toggleLocationSharing } from '@/store/slices/settingsSlice';
+import { toggleLocationSharing } from '@/store/slices/settings.slice';
 
 type SelectKey = 'region' | 'timezone' | 'dateFormat' | 'currency';
 

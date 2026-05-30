@@ -16,8 +16,8 @@ import {
   ResetPasswordRequest,
   AuthSessionsResponse,
 } from '../../core/types';
-import { logout as logoutAction } from '../slices/authSlice';
-import { baseApi, clearRefreshToken, getRefreshToken } from './baseApi';
+import { logout as logoutAction } from '../slices/auth.slice';
+import { baseApi, clearRefreshToken, getRefreshToken } from './baseApi.service';
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

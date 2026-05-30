@@ -1,8 +1,8 @@
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch, useAppSelector } from '../../store/hooks';
-import { setLanguage, Language } from '../../store/slices/settingsSlice';
+import { setLanguage, Language } from '../../store/slices/settings.slice';
 import { getLanguageOptions } from './Language.constants';
-import { useUpdateLocalizationSettingsMutation } from '@/store/services/localizationSettings.service';
+import { useUpdateLocalizationSettingsMutation } from '@/store/services/localizationSettingsApi.service';
 
 export const useLanguageScreen = () => {
   const dispatch = useAppDispatch();

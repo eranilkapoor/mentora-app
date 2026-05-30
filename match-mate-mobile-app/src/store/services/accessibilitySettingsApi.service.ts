@@ -3,7 +3,7 @@ import {
   AccessibilitySettingsResponse,
   UpdateAccessibilitySettingsPayload,
 } from '@/features/AccessibilitySettings/AccessibilitySettings.types';
-import { baseApi } from './baseApi';
+import { baseApi } from './baseApi.service';
 
 export const accessibilitySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

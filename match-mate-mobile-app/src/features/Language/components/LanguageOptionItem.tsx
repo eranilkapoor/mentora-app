@@ -11,7 +11,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { LanguageOption } from '../Language.types';
-import { Language } from '../../../store/slices/settingsSlice';
+import { Language } from '../../../store/slices/settings.slice';
 
 type Styles = {
   optionRow: StyleProp<ViewStyle>;

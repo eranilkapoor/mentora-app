@@ -1,4 +1,4 @@
-import { Language } from '../../store/slices/settingsSlice';
+import { Language } from '../../store/slices/settings.slice';
 import { SettingsNavigationProp } from '../../navigation/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────

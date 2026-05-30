@@ -14,7 +14,7 @@ import {
 import {
   useGetCommunicationSettingsQuery,
   useUpdateCommunicationSettingsMutation,
-} from '@/store/services/communicationSettings.service';
+} from '@/store/services/communicationSettingsApi.service';
 import Loader from '@/core/components/Loader';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import {

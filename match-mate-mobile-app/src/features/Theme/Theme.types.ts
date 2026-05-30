@@ -1,4 +1,4 @@
-import { ThemeMode } from '@/store/slices/settingsSlice';
+import { ThemeMode } from '@/store/slices/settings.slice';
 import { SettingsNavigationProp } from '../../navigation/types';
 
 // ─── Types ────────────────────────────────────────────────────────────────────

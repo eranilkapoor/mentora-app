@@ -22,7 +22,7 @@ import { SettingsNavigationProp } from '@/navigation/types';
 import {
   useGetBlockedUsersQuery,
   useUnblockUserMutation,
-} from '@/store/services/privacySettings.service';
+} from '@/store/services/privacySettingsApi.service';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { BlockedUserSummary } from './PrivacySettings.types';

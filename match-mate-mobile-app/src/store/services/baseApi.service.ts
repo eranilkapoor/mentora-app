@@ -13,7 +13,7 @@ import { Mutex } from 'async-mutex';
 
 import { RootState } from '../index';
 
-import { logout, setAccessToken } from '../slices/authSlice';
+import { logout, setAccessToken } from '../slices/auth.slice';
 
 import { generateUUID, getDeviceId } from '../../core/utils/device';
 import { getApiBaseUrl, getClientVersion } from '../../core/utils/config';

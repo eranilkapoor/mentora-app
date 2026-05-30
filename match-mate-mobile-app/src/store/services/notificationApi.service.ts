@@ -1,5 +1,5 @@
 import { ApiResponse } from '@/core/types';
-import { baseApi } from './baseApi';
+import { baseApi } from './baseApi.service';
 
 export type NotificationType =
   | 'info'

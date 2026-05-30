@@ -1,12 +1,12 @@
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '@/store/hooks';
-import { setCredentials } from '@/store/slices/authSlice';
+import { setCredentials } from '@/store/slices/auth.slice';
 import {
   useRegisterMutation,
   useSendOtpMutation,
   useVerifyOtpMutation,
-} from '@/store/services/authApi';
+} from '@/store/services/authApi.service';
 import {
   DEFAULT_COUNTRY_CODE,
   EMAIL_REGEX,
@@ -21,8 +21,8 @@ import {
   FormErrors,
   SocialProvider,
 } from '@/features/Auth/shared/auth.types';
-import { setRefreshToken } from '@/store/services/baseApi';
-import { baseApi } from '@/store/services/baseApi';
+import { setRefreshToken } from '@/store/services/baseApi.service';
+import { baseApi } from '@/store/services/baseApi.service';
 import {
   getApiErrorMessage,
   getApiResponseMessage,

@@ -27,12 +27,12 @@ import { settingsStyles } from './Settings.styles';
 
 import { AppNavigationProp } from '@/navigation/types';
 
-import { logout as logoutAction } from '@/store/slices/authSlice';
+import { logout as logoutAction } from '@/store/slices/auth.slice';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 
-import { useLogoutMutation } from '@/store/services/authApi';
-import { baseApi, clearRefreshToken } from '@/store/services/baseApi';
+import { useLogoutMutation } from '@/store/services/authApi.service';
+import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
 import { useGetMyProfileQuery } from '@/store/services/profileApi.service';
 import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';

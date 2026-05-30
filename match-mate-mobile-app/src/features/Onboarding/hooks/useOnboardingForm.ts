@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '@/store/hooks';
-import { setProfileCompleted } from '@/store/slices/authSlice';
+import { setProfileCompleted } from '@/store/slices/auth.slice';
 import { MAX_PHOTOS } from '@/core/constants';
 import * as ImagePicker from 'expo-image-picker';
 import {
@@ -17,7 +17,7 @@ import {
   Qualifications,
 } from '@/core/types';
 import { useOnboardingProfileMutation } from '@/store/services/profileApi.service';
-import { baseApi } from '@/store/services/baseApi';
+import { baseApi } from '@/store/services/baseApi.service';
 import { showError } from '@/core/utils/toast';
 import {
   getApiErrorMessage,

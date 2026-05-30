@@ -3,7 +3,7 @@ import {
   CommunicationSettingsResponse,
   UpdateCommunicationSettingsPayload,
 } from '@/features/CommunicationSettings/CommunicationSettings.types';
-import { baseApi } from '@/store/services/baseApi';
+import { baseApi } from '@/store/services/baseApi.service';
 
 export const communicationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({

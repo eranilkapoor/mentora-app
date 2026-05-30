@@ -9,7 +9,7 @@ import {
   OnbardingResponse,
   ProfileImage,
 } from '../../core/types';
-import { baseApi } from './baseApi';
+import { baseApi } from './baseApi.service';
 
 // 🔹 Base API (you can also move this to baseApi.ts)
 export const profileApi = baseApi.injectEndpoints({

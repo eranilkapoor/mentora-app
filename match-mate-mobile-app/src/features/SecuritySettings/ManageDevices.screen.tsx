@@ -12,7 +12,7 @@ import { AuthSession } from '@/core/types';
 import {
   useGetSessionsQuery,
   useLogoutSessionMutation,
-} from '@/store/services/authApi';
+} from '@/store/services/authApi.service';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 
