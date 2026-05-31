@@ -7,6 +7,7 @@ import {
   UpdateSecuritySettingsPayload,
 } from '@/features/SecuritySettings/SecuritySettings.types';
 import { ApiResponse } from '@/core/types';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const securitySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,9 +19,8 @@ export const securitySettingsApi = baseApi.injectEndpoints({
         url: '/settings/security',
         method: 'GET',
       }),
-      transformResponse: (response: SecuritySettings) => ({
-        security: response,
-      }),
+      transformResponse: (response: SecuritySettings) =>
+        wrapSettingsResponse('security', response),
 
       providesTags: ['SecuritySettings'],
     }),
@@ -37,7 +37,34 @@ export const securitySettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['SecuritySettings'],
+      transformResponse: (response: SecuritySettings) =>
+        unwrapApiResponse(response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          securitySettingsApi.util.updateQueryData(
+            'getSecuritySettings',
+            undefined,
+            (draft) => {
+              draft.security = { ...draft.security, ...patch };
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            securitySettingsApi.util.updateQueryData(
+              'getSecuritySettings',
+              undefined,
+              (draft) => {
+                draft.security = data;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
     revokeDevice: builder.mutation<SecuritySettings, { deviceId: string }>({
       query: ({ deviceId }) => ({

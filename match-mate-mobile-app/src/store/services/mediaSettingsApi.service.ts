@@ -4,6 +4,7 @@ import {
   UpdateMediaSettingsPayload,
 } from '@/features/MediaSettings/MediaSettings.types';
 import { baseApi } from './baseApi.service';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const mediaSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -15,9 +16,8 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
         url: '/settings/media',
         method: 'GET',
       }),
-      transformResponse: (response: MediaSettings) => ({
-        media: response,
-      }),
+      transformResponse: (response: MediaSettings) =>
+        wrapSettingsResponse('media', response),
 
       providesTags: ['MediaSettings'],
     }),
@@ -34,7 +34,34 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['MediaSettings'],
+      transformResponse: (response: MediaSettings) =>
+        wrapSettingsResponse('media', response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          mediaSettingsApi.util.updateQueryData(
+            'getMediaSettings',
+            undefined,
+            (draft) => {
+              draft.media = { ...draft.media, ...patch };
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            mediaSettingsApi.util.updateQueryData(
+              'getMediaSettings',
+              undefined,
+              (draft) => {
+                draft.media = unwrapApiResponse(data).media;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
   }),
 

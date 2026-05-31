@@ -136,7 +136,7 @@ export class SettingsRepository {
       },
     });
 
-    return created.toObject();
+    return created;
   }
 
   async getOrCreateAllUserSettings(userId: string) {
@@ -211,35 +211,55 @@ export class SettingsRepository {
 
   getAccount(userId: string) {
     return this.accountModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .lean()
       .exec();
   }
 
   getPrivacy(userId: string) {
     return this.privacyModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .lean()
       .exec();
   }
 
   getNotification(userId: string) {
     return this.notificationModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .lean()
       .exec();
   }
 
   getCommunication(userId: string) {
     return this.communicationModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .lean()
       .exec();
   }
 
   getSecurity(userId: string) {
     return this.securityModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .select('-appPinHash') // never expose pin hash
       .lean()
       .exec();
@@ -247,28 +267,44 @@ export class SettingsRepository {
 
   getLocalization(userId: string) {
     return this.localizationModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .lean()
       .exec();
   }
 
   getAccessibility(userId: string) {
     return this.accessibilityModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .lean()
       .exec();
   }
 
   getMedia(userId: string) {
     return this.mediaModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .lean()
       .exec();
   }
 
   getAi(userId: string) {
     return this.aiModel
-      .findOne({ userId: new Types.ObjectId(userId) })
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $setOnInsert: this.uid(userId) },
+        upsertOptions,
+      )
       .lean()
       .exec();
   }
@@ -280,27 +316,36 @@ export class SettingsRepository {
   }
 
   updateAccount(userId: string, data: Partial<AccountSetting>) {
-    return this.accountModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    return this.accountModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .lean()
+      .exec();
   }
 
   updatePrivacy(userId: string, data: Partial<PrivacySetting>) {
-    return this.privacyModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    return this.privacyModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .lean()
+      .exec();
   }
 
   async updateNotification(userId: string, data: Partial<NotificationSetting>) {
-    const updated = await this.notificationModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    const updated = await this.notificationModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .lean()
+      .exec();
 
     if (!updated) {
       throw new Error('Failed to update notification settings');
@@ -310,51 +355,70 @@ export class SettingsRepository {
   }
 
   updateCommunication(userId: string, data: Partial<CommunicationSetting>) {
-    return this.communicationModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    return this.communicationModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .lean()
+      .exec();
   }
 
   updateSecurity(userId: string, data: Partial<SecuritySetting>) {
-    return this.securityModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    return this.securityModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .select('-appPinHash')
+      .lean()
+      .exec();
   }
 
   updateLocalization(userId: string, data: Partial<LocalizationSetting>) {
-    return this.localizationModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    return this.localizationModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .lean()
+      .exec();
   }
 
   updateAccessibility(userId: string, data: Partial<AccessibilitySetting>) {
-    return this.accessibilityModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    return this.accessibilityModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .lean()
+      .exec();
   }
 
   updateMedia(userId: string, data: Partial<MediaSetting>) {
-    return this.mediaModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    return this.mediaModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .lean()
+      .exec();
   }
 
   updateAi(userId: string, data: Partial<AiSetting>) {
-    return this.aiModel.findOneAndUpdate(
-      this.uid(userId),
-      { $set: buildDotNotation(data as Record<string, unknown>) },
-      upsertOptions,
-    );
+    return this.aiModel
+      .findOneAndUpdate(
+        this.uid(userId),
+        { $set: buildDotNotation(data as Record<string, unknown>) },
+        upsertOptions,
+      )
+      .lean()
+      .exec();
   }
 
   //  Block / unblock

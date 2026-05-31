@@ -21,7 +21,7 @@ export interface ToggleRowProps {
   /**
    * Toggle value
    */
-  value?: boolean;
+  value?: boolean | undefined;
 
   /**
    * Change handler
@@ -31,28 +31,28 @@ export interface ToggleRowProps {
   /**
    * Secondary label
    */
-  sublabel?: string;
+  sublabel?: string | undefined;
 
   /**
    * Helper text below row
    */
-  helperText?: string;
+  helperText?: string | undefined;
 
   /**
    * Error text
    */
-  error?: string;
+  error?: string | undefined;
 
   /**
    * State
    */
-  disabled?: boolean;
-  required?: boolean;
+  disabled?: boolean | undefined;
+  required?: boolean | undefined;
 
   /**
    * Tap anywhere on row to toggle
    */
-  enableRowPress?: boolean;
+  enableRowPress?: boolean | undefined;
 
   /**
    * UI size
@@ -62,19 +62,19 @@ export interface ToggleRowProps {
   /**
    * Optional custom switch colors
    */
-  activeTrackColor?: string;
-  inactiveTrackColor?: string;
-  thumbColor?: string;
+  activeTrackColor?: string | undefined;
+  inactiveTrackColor?: string | undefined;
+  thumbColor?: string | undefined;
 
   /**
    * Accessibility
    */
-  accessibilityLabel?: string;
+  accessibilityLabel?: string | undefined;
 
   /**
    * Testing
    */
-  testID?: string;
+  testID?: string | undefined;
 
   /**
    * Style overrides
@@ -148,6 +148,12 @@ function ToggleRowComponent({
         paddingRight: 14,
       },
 
+      contentPressable: {
+        flex: 1,
+        alignSelf: 'stretch',
+        justifyContent: 'center',
+      },
+
       label: {
         fontSize: isSmall ? 13 : isLarge ? 16 : 14,
         lineHeight: isSmall ? 18 : isLarge ? 22 : 20,
@@ -190,7 +196,7 @@ function ToggleRowComponent({
     });
   }, [disabled, error, size, theme]);
 
-  const handleToggle = useCallback((): void => {
+  const handleRowPress = useCallback((): void => {
     if (disabled) {
       return;
     }
@@ -198,45 +204,56 @@ function ToggleRowComponent({
     onChange(!value);
   }, [disabled, onChange, value]);
 
+  const handleSwitchChange = useCallback(
+    (nextValue: boolean): void => {
+      if (disabled) {
+        return;
+      }
+
+      onChange(nextValue);
+    },
+    [disabled, onChange]
+  );
+
   return (
     <View style={[styles.container, containerStyle]}>
-      <Pressable
-        testID={testID}
-        disabled={disabled || !enableRowPress}
-        onPress={handleToggle}
-        accessibilityRole="switch"
-        accessibilityLabel={accessibilityLabel ?? label}
-        accessibilityState={{
-          checked: value,
-          disabled,
-        }}
-        style={({ pressed }) => [
-          styles.row,
-          rowStyle,
+      <View style={[styles.row, rowStyle]}>
+        <Pressable
+          testID={testID}
+          disabled={disabled || !enableRowPress}
+          onPress={handleRowPress}
+          accessibilityRole="switch"
+          accessibilityLabel={accessibilityLabel ?? label}
+          accessibilityState={{
+            checked: value,
+            disabled,
+          }}
+          style={({ pressed }) => [
+            styles.contentPressable,
+            pressed && enableRowPress && !disabled
+              ? {
+                  opacity: 0.85,
+                }
+              : null,
+          ]}
+        >
+          <View style={styles.content}>
+            <Text style={[styles.label, labelStyle]}>
+              {label}
 
-          pressed && enableRowPress && !disabled
-            ? {
-                opacity: 0.85,
-              }
-            : null,
-        ]}
-      >
-        <View style={styles.content}>
-          <Text style={[styles.label, labelStyle]}>
-            {label}
+              {required ? <Text style={styles.required}> *</Text> : null}
+            </Text>
 
-            {required ? <Text style={styles.required}> *</Text> : null}
-          </Text>
-
-          {sublabel ? (
-            <Text style={[styles.sublabel, sublabelStyle]}>{sublabel}</Text>
-          ) : null}
-        </View>
+            {sublabel ? (
+              <Text style={[styles.sublabel, sublabelStyle]}>{sublabel}</Text>
+            ) : null}
+          </View>
+        </Pressable>
 
         <Switch
           value={value}
           disabled={disabled}
-          onValueChange={onChange}
+          onValueChange={handleSwitchChange}
           thumbColor={thumbColor ?? theme.colors.white}
           trackColor={{
             false: inactiveTrackColor ?? theme.colors.switchTrackOff,
@@ -250,7 +267,7 @@ function ToggleRowComponent({
             disabled,
           }}
         />
-      </Pressable>
+      </View>
 
       {error ? (
         <Text

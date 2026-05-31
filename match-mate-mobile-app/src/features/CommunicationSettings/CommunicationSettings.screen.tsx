@@ -90,6 +90,12 @@ export default function CommunicationSettingsScreen({
     [updateSettings]
   );
 
+  const saveAutoReplyMessage = useCallback(() => {
+    if (autoReplyMessage !== (settings?.autoReplyMessage ?? '')) {
+      void handleUpdate('autoReplyMessage', autoReplyMessage);
+    }
+  }, [autoReplyMessage, handleUpdate, settings?.autoReplyMessage]);
+
   if (isLoading || !settings) {
     return <Loader fullScreen size="large" />;
   }
@@ -154,11 +160,8 @@ export default function CommunicationSettingsScreen({
             <>
               <AutoReplyInput
                 value={autoReplyMessage}
-                onChangeText={(text) => {
-                  setAutoReplyMessage(text);
-
-                  void handleUpdate('autoReplyMessage', text);
-                }}
+                onChangeText={setAutoReplyMessage}
+                onSubmitEditing={saveAutoReplyMessage}
               />
             </>
           ) : null}

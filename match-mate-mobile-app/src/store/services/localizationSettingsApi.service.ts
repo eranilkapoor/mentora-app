@@ -4,6 +4,7 @@ import {
   UpdateLocalizationSettingsPayload,
 } from '@/features/LocalizationSettings/LocalizationSettings.types';
 import { baseApi } from './baseApi.service';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const localizationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -15,9 +16,8 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
         url: '/settings/localization',
         method: 'GET',
       }),
-      transformResponse: (response: LocalizationSettings) => ({
-        localization: response,
-      }),
+      transformResponse: (response: LocalizationSettings) =>
+        wrapSettingsResponse('localization', response),
 
       providesTags: ['LocalizationSettings'],
     }),
@@ -34,7 +34,34 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['LocalizationSettings'],
+      transformResponse: (response: LocalizationSettings) =>
+        wrapSettingsResponse('localization', response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          localizationSettingsApi.util.updateQueryData(
+            'getLocalizationSettings',
+            undefined,
+            (draft) => {
+              draft.localization = { ...draft.localization, ...patch };
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            localizationSettingsApi.util.updateQueryData(
+              'getLocalizationSettings',
+              undefined,
+              (draft) => {
+                draft.localization = unwrapApiResponse(data).localization;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
   }),
 

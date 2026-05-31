@@ -4,6 +4,7 @@ import {
   UpdateCommunicationSettingsPayload,
 } from '@/features/CommunicationSettings/CommunicationSettings.types';
 import { baseApi } from '@/store/services/baseApi.service';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const communicationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -14,9 +15,8 @@ export const communicationSettingsApi = baseApi.injectEndpoints({
       query: () => ({
         url: '/settings/communication',
       }),
-      transformResponse: (response: CommunicationSettings) => ({
-        communication: response,
-      }),
+      transformResponse: (response: CommunicationSettings) =>
+        wrapSettingsResponse('communication', response),
 
       providesTags: ['CommunicationSettings'],
     }),
@@ -30,8 +30,34 @@ export const communicationSettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
+      transformResponse: (response: CommunicationSettings) =>
+        unwrapApiResponse(response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          communicationSettingsApi.util.updateQueryData(
+            'getCommunicationSettings',
+            undefined,
+            (draft) => {
+              draft.communication = { ...draft.communication, ...patch };
+            }
+          )
+        );
 
-      invalidatesTags: ['CommunicationSettings'],
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            communicationSettingsApi.util.updateQueryData(
+              'getCommunicationSettings',
+              undefined,
+              (draft) => {
+                draft.communication = data;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
   }),
 

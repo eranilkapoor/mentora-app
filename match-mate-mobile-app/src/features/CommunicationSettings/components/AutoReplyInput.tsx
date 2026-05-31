@@ -12,11 +12,14 @@ interface Props {
   value: string;
 
   onChangeText: (value: string) => void;
+
+  onSubmitEditing?: () => void;
 }
 
 export function AutoReplyInput({
   value,
   onChangeText,
+  onSubmitEditing,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(communicationSettingsStyles);
 
@@ -35,6 +38,7 @@ export function AutoReplyInput({
         numberOfLines={4}
         textAlignVertical="top"
         style={styles.input}
+        onBlur={onSubmitEditing}
       />
     </View>
   );

@@ -10,6 +10,7 @@ import {
   RequestPhoneChangePayload,
   UpdateAccountSettingsPayload,
 } from '../../features/AccountSettings/accountSettings.types';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const accountSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -23,12 +24,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (
         response: AccountSettings | ApiResponse<AccountSettings>
-      ) => ({
-        account:
-          response && 'data' in response && response.data
-            ? response.data
-            : (response as AccountSettings),
-      }),
+      ) => wrapSettingsResponse('account', response),
 
       providesTags: ['AccountSettings'],
     }),
@@ -45,8 +41,35 @@ export const accountSettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
+      transformResponse: (
+        response: AccountSettings | ApiResponse<AccountSettings>
+      ) => wrapSettingsResponse('account', response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          accountSettingsApi.util.updateQueryData(
+            'getAccountSettings',
+            undefined,
+            (draft) => {
+              draft.account = { ...draft.account, ...patch };
+            }
+          )
+        );
 
-      invalidatesTags: ['AccountSettings'],
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            accountSettingsApi.util.updateQueryData(
+              'getAccountSettings',
+              undefined,
+              (draft) => {
+                draft.account = unwrapApiResponse(data).account;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
 
     /**

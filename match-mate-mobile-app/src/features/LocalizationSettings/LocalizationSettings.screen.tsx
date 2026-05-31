@@ -23,7 +23,7 @@ import {
   SelectKey,
 } from './LocalizationSettings.types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { toggleLocationSharing } from '@/store/slices/settings.slice';
+import { setLocationSharing } from '@/store/slices/settings.slice';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -141,7 +141,7 @@ export default function LocalizationSettingsScreen({
             label={t('settings.share_location')}
             sublabel={t('settings.share_location_sub')}
             value={locationSharing}
-            onChange={() => dispatch(toggleLocationSharing())}
+            onChange={(value) => dispatch(setLocationSharing(value))}
           />
           <SettingsSelectItem
             icon="map"

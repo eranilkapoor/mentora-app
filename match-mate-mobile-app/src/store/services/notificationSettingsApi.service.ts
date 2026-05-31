@@ -7,6 +7,7 @@ import {
   NotificationSettingsResponse,
   UpdateNotificationSettingsPayload,
 } from '@/features/NotificationSettings/NotificationSettings.types';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const notificationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -20,12 +21,7 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (
         response: NotificationSettings | ApiResponse<NotificationSettings>
-      ) => ({
-        notification:
-          response && 'data' in response && response.data
-            ? response.data
-            : (response as NotificationSettings),
-      }),
+      ) => wrapSettingsResponse('notification', response),
 
       providesTags: ['NotificationSettings'],
     }),
@@ -44,11 +40,33 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (
         response: NotificationSettings | ApiResponse<NotificationSettings>
-      ) =>
-        response && 'data' in response && response.data
-          ? response.data
-          : (response as NotificationSettings),
-      invalidatesTags: ['NotificationSettings'],
+      ) => unwrapApiResponse(response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          notificationSettingsApi.util.updateQueryData(
+            'getNotificationSettings',
+            undefined,
+            (draft) => {
+              draft.notification = { ...draft.notification, ...patch };
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            notificationSettingsApi.util.updateQueryData(
+              'getNotificationSettings',
+              undefined,
+              (draft) => {
+                draft.notification = data;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
 
     updateNotificationChannel: builder.mutation<
@@ -66,11 +84,39 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (
         response: NotificationSettings | ApiResponse<NotificationSettings>
-      ) =>
-        response && 'data' in response && response.data
-          ? response.data
-          : (response as NotificationSettings),
-      invalidatesTags: ['NotificationSettings'],
+      ) => unwrapApiResponse(response),
+      async onQueryStarted(
+        { event, channel, value },
+        { dispatch, queryFulfilled }
+      ) {
+        const optimistic = dispatch(
+          notificationSettingsApi.util.updateQueryData(
+            'getNotificationSettings',
+            undefined,
+            (draft) => {
+              draft.notification.preferences[event] = {
+                ...draft.notification.preferences[event],
+                [channel]: value,
+              };
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            notificationSettingsApi.util.updateQueryData(
+              'getNotificationSettings',
+              undefined,
+              (draft) => {
+                draft.notification = data;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
   }),
 

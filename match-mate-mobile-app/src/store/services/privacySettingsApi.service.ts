@@ -7,6 +7,7 @@ import {
   PrivacySettingsResponse,
   UpdatePrivacySettingsPayload,
 } from '../../features/PrivacySettings/PrivacySettings.types';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const privacySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -14,9 +15,8 @@ export const privacySettingsApi = baseApi.injectEndpoints({
       query: () => ({
         url: '/settings/privacy',
       }),
-      transformResponse: (response: PrivacySettings) => ({
-        privacy: response,
-      }),
+      transformResponse: (response: PrivacySettings) =>
+        wrapSettingsResponse('privacy', response),
 
       providesTags: ['PrivacySettings'],
     }),
@@ -30,8 +30,34 @@ export const privacySettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
+      transformResponse: (response: PrivacySettings) =>
+        unwrapApiResponse(response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          privacySettingsApi.util.updateQueryData(
+            'getPrivacySettings',
+            undefined,
+            (draft) => {
+              draft.privacy = { ...draft.privacy, ...patch };
+            }
+          )
+        );
 
-      invalidatesTags: ['PrivacySettings'],
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            privacySettingsApi.util.updateQueryData(
+              'getPrivacySettings',
+              undefined,
+              (draft) => {
+                draft.privacy = data;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
     getBlockedUsers: builder.query<BlockedUsersResponse, void>({
       query: () => ({

@@ -4,6 +4,7 @@ import {
   UpdateAccessibilitySettingsPayload,
 } from '@/features/AccessibilitySettings/AccessibilitySettings.types';
 import { baseApi } from './baseApi.service';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const accessibilitySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,6 +19,8 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
         url: '/settings/accessibility',
         method: 'GET',
       }),
+      transformResponse: (response: AccessibilitySettings) =>
+        wrapSettingsResponse('accessibility', response),
 
       providesTags: ['AccessibilitySettings'],
     }),
@@ -34,7 +37,34 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['AccessibilitySettings'],
+      transformResponse: (response: AccessibilitySettings) =>
+        unwrapApiResponse(response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          accessibilitySettingsApi.util.updateQueryData(
+            'getAccessibilitySettings',
+            undefined,
+            (draft) => {
+              draft.accessibility = { ...draft.accessibility, ...patch };
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            accessibilitySettingsApi.util.updateQueryData(
+              'getAccessibilitySettings',
+              undefined,
+              (draft) => {
+                draft.accessibility = data;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
   }),
 

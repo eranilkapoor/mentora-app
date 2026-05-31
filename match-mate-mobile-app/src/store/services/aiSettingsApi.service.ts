@@ -4,6 +4,7 @@ import {
   UpdateAiSettingsPayload,
 } from '@/features/AiSettings/AiSettings.types';
 import { baseApi } from './baseApi.service';
+import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
 export const aiSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -15,9 +16,8 @@ export const aiSettingsApi = baseApi.injectEndpoints({
         url: '/settings/ai',
         method: 'GET',
       }),
-      transformResponse: (response: AiSettings) => ({
-        ai: response,
-      }),
+      transformResponse: (response: AiSettings) =>
+        wrapSettingsResponse('ai', response),
 
       providesTags: ['AiSettings'],
     }),
@@ -34,7 +34,34 @@ export const aiSettingsApi = baseApi.injectEndpoints({
         method: 'PUT',
         body,
       }),
-      invalidatesTags: ['AiSettings'],
+      transformResponse: (response: AiSettings) =>
+        wrapSettingsResponse('ai', response),
+      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        const optimistic = dispatch(
+          aiSettingsApi.util.updateQueryData(
+            'getAiSettings',
+            undefined,
+            (draft) => {
+              draft.ai = { ...draft.ai, ...patch };
+            }
+          )
+        );
+
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            aiSettingsApi.util.updateQueryData(
+              'getAiSettings',
+              undefined,
+              (draft) => {
+                draft.ai = unwrapApiResponse(data).ai;
+              }
+            )
+          );
+        } catch {
+          optimistic.undo();
+        }
+      },
     }),
   }),
 

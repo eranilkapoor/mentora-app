@@ -37,6 +37,10 @@ const settingsSlice = createSlice({
       state.theme = action.payload;
     },
 
+    setLocationSharing: (state, action: PayloadAction<boolean>) => {
+      state.locationSharing = action.payload;
+    },
+
     // 📍 Location Sharing
     toggleLocationSharing: (state) => {
       state.locationSharing = !state.locationSharing;
@@ -68,6 +72,7 @@ export const {
   toggleSound,
   toggleVibration,
   toggleNotifications,
+  setLocationSharing,
   toggleLocationSharing,
   resetSettings,
 } = settingsSlice.actions;
