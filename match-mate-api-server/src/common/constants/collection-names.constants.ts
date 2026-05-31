@@ -19,6 +19,7 @@ export const COLLECTION_NAMES = {
   PLAN_FEATURE: 'plan_features',
   SUBSCRIPTION: 'subscriptions',
   PAYMENT: 'payments',
+  REFERRAL_REWARD: 'referral_rewards',
 
   ANALYTICS_EVENT: 'analytics_events',
 

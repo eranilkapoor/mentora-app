@@ -31,6 +31,7 @@ import MediaSettingsScreen from '@/features/MediaSettings/MediaSettings.screen';
 import AccessibilitySettingsScreen from '@/features/AccessibilitySettings/AccessibilitySettings.screen';
 import AiSettingsScreen from '@/features/AiSettings/AiSettings.screen';
 import SubscriptionBillingScreen from '@/features/SubscriptionBilling/SubscriptionBilling.screen';
+import ReferRewardsScreen from '@/features/ReferRewards/ReferRewards.screen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -87,6 +88,11 @@ export default function SettingsStack(): React.ReactElement {
         name="SubscriptionBilling"
         component={SubscriptionBillingScreen}
         options={{ title: 'Subscription & Billing' }}
+      />
+      <Stack.Screen
+        name="ReferRewards"
+        component={ReferRewardsScreen}
+        options={{ title: 'Refer & Rewards' }}
       />
       <Stack.Screen
         name="BlockedUsers"

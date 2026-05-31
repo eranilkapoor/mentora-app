@@ -37,6 +37,10 @@ export function PhoneForm({
   onToggleDropdown,
   onCloseDropdown,
   onSelectCountryCode,
+  referralCode,
+  showReferralCode,
+  onReferralCodeChange,
+  onToggleReferralCode,
 }: PhoneFormProps): React.ReactElement {
   const styles = useThemedStyles(authSharedStyles);
   const { theme } = useTheme();
@@ -44,6 +48,7 @@ export function PhoneForm({
 
   const [phoneFocused, setPhoneFocused] = useState(false);
   const [otpFocused, setOtpFocused] = useState(false);
+  const [referralFocused, setReferralFocused] = useState(false);
 
   return (
     <>
@@ -99,6 +104,67 @@ export function PhoneForm({
 
       {errors.phone ? (
         <Text style={styles.errorText}>{errors.phone}</Text>
+      ) : null}
+
+      {!otpSent && onToggleReferralCode && onReferralCodeChange ? (
+        <>
+          <TouchableOpacity
+            style={styles.inlineLinkRow}
+            onPress={onToggleReferralCode}
+            disabled={loading}
+            activeOpacity={0.7}
+            accessibilityRole="button"
+          >
+            <Feather name="gift" size={14} color={theme.colors.link} />
+            <Text style={styles.linkText}>
+              {showReferralCode
+                ? 'Hide referral code'
+                : 'Have a referral code?'}
+            </Text>
+          </TouchableOpacity>
+
+          {showReferralCode ? (
+            <>
+              <Text style={[styles.label, styles.labelSpacing]}>
+                Referral code
+              </Text>
+              <View
+                style={[
+                  styles.inputWrapper,
+                  referralFocused && styles.inputFocused,
+                  errors.referralCode && styles.inputError,
+                ]}
+              >
+                <Feather
+                  name="gift"
+                  size={16}
+                  color={
+                    referralFocused
+                      ? theme.colors.primary
+                      : theme.colors.textMuted
+                  }
+                  style={styles.inputIcon}
+                />
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter referral code"
+                  placeholderTextColor={theme.colors.textMuted}
+                  autoCapitalize="characters"
+                  value={referralCode ?? ''}
+                  onChangeText={onReferralCodeChange}
+                  editable={!loading}
+                  maxLength={10}
+                  returnKeyType="done"
+                  onFocus={() => setReferralFocused(true)}
+                  onBlur={() => setReferralFocused(false)}
+                />
+              </View>
+              {errors.referralCode ? (
+                <Text style={styles.errorText}>{errors.referralCode}</Text>
+              ) : null}
+            </>
+          ) : null}
+        </>
       ) : null}
 
       {!otpSent ? (

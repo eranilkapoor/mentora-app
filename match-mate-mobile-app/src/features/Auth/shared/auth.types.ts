@@ -10,6 +10,7 @@ export interface FormErrors {
   password?: string;
   phone?: string;
   otp?: string;
+  referralCode?: string;
   error?: string;
 }
 
@@ -59,6 +60,10 @@ export interface PhoneFormProps {
   onToggleDropdown: () => void;
   onCloseDropdown: () => void;
   onSelectCountryCode: (code: string) => void;
+  referralCode?: string;
+  showReferralCode?: boolean;
+  onReferralCodeChange?: (v: string) => void;
+  onToggleReferralCode?: () => void;
 }
 
 export const TAB_LABEL_KEYS: Record<ActiveTab, string> = {

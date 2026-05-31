@@ -121,6 +121,12 @@ export enum SuccessCode {
   PAYMENT_WEBHOOK_PROCESSED = 'PAYMENT.WEBHOOK_PROCESSED',
 
   // =========================
+  // REFERRALS
+  // =========================
+  REFERRALS_FETCHED = 'REFERRALS.FETCHED',
+  REFERRAL_REWARD_EARNED = 'REFERRAL.REWARD_EARNED',
+
+  // =========================
   // NOTIFICATION
   // =========================
   NOTIFICATION_FETCHED = 'NOTIFICATION.FETCHED',

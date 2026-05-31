@@ -278,6 +278,14 @@ export const authSharedStyles = (theme: Theme) =>
       color: theme.colors.link,
       fontWeight: '700',
     },
+    inlineLinkRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      alignSelf: 'flex-start',
+      marginTop: 12,
+      marginBottom: 2,
+    },
     modalOverlay: {
       flex: 1,
       backgroundColor: theme.colors.modalOverlay,

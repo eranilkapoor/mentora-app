@@ -723,7 +723,12 @@ export class ProfilesService {
         primaryIndex,
       );
 
-      await this.createProfile(userId, {
+      const profilePayload = {
+        referralCode: user.referralCode,
+        referredBy: user.referredBy
+          ? new Types.ObjectId(user.referredBy)
+          : undefined,
+        referredByCode: user.referredByCode,
         personal: {
           profileFor: dto.basic.profileFor,
           firstName: dto.basic.firstName,
@@ -741,7 +746,9 @@ export class ProfilesService {
           qualification: dto.basic.qualification as Qualification,
           occupation: dto.basic.occupation,
         },
-      });
+      } as CreateProfileDto & Record<string, unknown>;
+
+      await this.createProfile(userId, profilePayload);
 
       await this.preferenceService.createPreference(userId, {
         filters: {

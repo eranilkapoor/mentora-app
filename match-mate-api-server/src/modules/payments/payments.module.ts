@@ -7,6 +7,7 @@ import { PaymentsController } from './controllers/payments.controller';
 import { PaymentAdminController } from './controllers/payment.admin.controller';
 import { Plan, PlanSchema } from '../subscriptions/schemas/plan.schema';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
+import { ReferralsModule } from '../referrals/referrals.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
       { name: Plan.name, schema: PlanSchema },
     ]),
     SubscriptionsModule,
+    ReferralsModule,
   ],
   providers: [PaymentsService, PaymentRepository],
   controllers: [PaymentsController, PaymentAdminController],

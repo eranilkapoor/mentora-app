@@ -64,6 +64,18 @@ export class User {
   @Prop({ default: false })
   isOnboardingCompleted!: boolean;
 
+  @Prop({ uppercase: true, trim: true })
+  referralCode?: string;
+
+  @Prop({ type: String, uppercase: true, trim: true })
+  referredByCode?: string;
+
+  @Prop()
+  referredBy?: string;
+
+  @Prop({ default: 0, min: 0 })
+  referralPoints!: number;
+
   //  RBAC
   @Prop({ type: [String], default: [Role.USER] })
   roles!: Role[];
@@ -152,3 +164,4 @@ UserSchema.index(
   { 'authAccounts.provider': 1, 'authAccounts.providerId': 1 },
   { unique: true },
 );
+UserSchema.index({ referralCode: 1 }, { unique: true, sparse: true });

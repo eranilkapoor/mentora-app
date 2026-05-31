@@ -78,6 +78,7 @@ export type SettingsStackParamList = {
   ManageDevices: undefined;
   LoginHistory: undefined;
   SubscriptionBilling: undefined;
+  ReferRewards: undefined;
   BlockedUsers: undefined;
   PrivacySettings: undefined;
   CommunicationSettings: undefined;

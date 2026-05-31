@@ -59,6 +59,7 @@ import {
   throwUnauthorized,
 } from '@/common/exceptions/throw-app-exception';
 import { AppException } from '@/common/exceptions/app.exception';
+import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 
 interface TokenAttachUser {
   _id: { toString(): string };
@@ -97,6 +98,7 @@ export class AuthService {
     private readonly analyticsService: AnalyticsService,
     private readonly authPasswordService: AuthPasswordService,
     private readonly configService: ConfigService,
+    private readonly referralsService: ReferralsService,
   ) {}
 
   private async attachToken(
@@ -239,6 +241,9 @@ export class AuthService {
     try {
       const email = dto.email.toLowerCase();
       const requestContext = this.getRegisterRequestContext(req);
+      await this.referralsService.validateReferralCodeForRegistration(
+        dto.referralCode,
+      );
 
       const existingUser = await this.userRepo.findByProvider(
         AuthProvider.EMAIL,
@@ -289,6 +294,10 @@ export class AuthService {
         sendOtp: Boolean(dto.country_code && dto.phone),
         context: requestContext,
       });
+      await this.referralsService.applyRegistrationReferral(
+        user._id.toString(),
+        dto.referralCode,
+      );
       await this.syncVerificationStatus(user._id.toString(), {
         isEmailVerified: false,
         isPhoneVerified: false,
@@ -888,6 +897,7 @@ export class AuthService {
     country_code: string,
     phone: string,
     otp: string,
+    referralCode?: string,
   ) {
     try {
       const isValid = this.otpService.verify(country_code, phone, otp);
@@ -922,6 +932,10 @@ export class AuthService {
           ...tokens,
         };
       }
+
+      await this.referralsService.validateReferralCodeForRegistration(
+        referralCode,
+      );
 
       const user = await this.userRepo.create({
         status: Status.ACTIVE,
@@ -959,6 +973,10 @@ export class AuthService {
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
       });
+      await this.referralsService.applyRegistrationReferral(
+        user._id.toString(),
+        referralCode,
+      );
       await this.syncVerificationStatus(user._id.toString(), {
         isEmailVerified: false,
         isPhoneVerified: true,
@@ -1054,6 +1072,10 @@ export class AuthService {
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
       });
+      await this.referralsService.applyRegistrationReferral(
+        user._id.toString(),
+        undefined,
+      );
       await this.syncVerificationStatus(user._id.toString(), {
         isEmailVerified: Boolean(dto.email),
         isPhoneVerified: false,

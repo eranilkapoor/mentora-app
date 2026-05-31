@@ -226,6 +226,12 @@ export default function SettingsScreen({
             label="Subscription & Billing"
             subLabel="Current plan, billing history, and previous plans"
             onPress={() => navigation.navigate('SubscriptionBilling')}
+          />
+          <SettingRow
+            icon="gift"
+            label="Refer & Rewards"
+            subLabel="Share your code, track referrals, and redeem points"
+            onPress={() => navigation.navigate('ReferRewards')}
             isLast
           />
         </Section>

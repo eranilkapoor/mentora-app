@@ -1,4 +1,4 @@
-import { IsNotEmpty, Length, Matches } from 'class-validator';
+import { IsNotEmpty, IsOptional, Length, Matches } from 'class-validator';
 
 export class PhoneSendOtpDto {
   @IsNotEmpty()
@@ -24,4 +24,10 @@ export class PhoneVerifyDto {
   @IsNotEmpty()
   @Length(6)
   otp!: string;
+
+  @IsOptional()
+  @Matches(/^[a-zA-Z0-9]{6,10}$/, {
+    message: 'Invalid referral code',
+  })
+  referralCode?: string;
 }

@@ -31,4 +31,10 @@ export class RegisterDto {
     message: 'Invalid phone number',
   })
   phone?: string;
+
+  @IsOptional()
+  @Matches(/^[a-zA-Z0-9]{6,10}$/, {
+    message: 'Invalid referral code',
+  })
+  referralCode?: string;
 }

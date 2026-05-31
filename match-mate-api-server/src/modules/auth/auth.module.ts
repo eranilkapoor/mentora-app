@@ -25,6 +25,7 @@ import {
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { SafetyModule } from '../safety/safety.module';
+import { ReferralsModule } from '../referrals/referrals.module';
 
 @Module({
   imports: [
@@ -59,6 +60,7 @@ import { SafetyModule } from '../safety/safety.module';
     NotificationsModule,
     AnalyticsModule,
     SafetyModule,
+    ReferralsModule,
   ],
   controllers: [AuthController],
   providers: [

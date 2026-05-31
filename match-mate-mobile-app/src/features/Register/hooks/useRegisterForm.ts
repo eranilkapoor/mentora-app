@@ -47,6 +47,8 @@ export function useRegisterForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
+  const [referralCode, setReferralCode] = useState('');
+  const [showReferralCode, setShowReferralCode] = useState(false);
 
   // ─── Phone form state ─────────────────────────────────────────────────────
 
@@ -132,6 +134,14 @@ export function useRegisterForm() {
       });
     }
 
+    if (
+      showReferralCode &&
+      referralCode.trim() &&
+      !/^[a-zA-Z0-9]{6,10}$/.test(referralCode.trim())
+    ) {
+      newErrors.referralCode = 'Enter a valid 6-10 character referral code';
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -139,9 +149,11 @@ export function useRegisterForm() {
 
     setLoading(true);
     try {
+      const trimmedReferralCode = referralCode.trim();
       const response = await register({
         email: email.trim(),
         password,
+        ...(trimmedReferralCode ? { referralCode: trimmedReferralCode } : {}),
       }).unwrap();
 
       if (!response.success) {
@@ -161,7 +173,15 @@ export function useRegisterForm() {
     } finally {
       setLoading(false);
     }
-  }, [email, password, register, applyCredentials, t]);
+  }, [
+    email,
+    password,
+    referralCode,
+    showReferralCode,
+    register,
+    applyCredentials,
+    t,
+  ]);
 
   // ─── Phone / OTP ──────────────────────────────────────────────────────────
 
@@ -208,10 +228,12 @@ export function useRegisterForm() {
 
     setLoading(true);
     try {
+      const trimmedReferralCode = referralCode.trim();
       const response = await verifyOtp({
         country_code: countryCode,
         phone,
         otp,
+        ...(trimmedReferralCode ? { referralCode: trimmedReferralCode } : {}),
       }).unwrap();
 
       if (!response.success) {
@@ -230,7 +252,7 @@ export function useRegisterForm() {
     } finally {
       setLoading(false);
     }
-  }, [otp, countryCode, phone, verifyOtp, applyCredentials, t]);
+  }, [otp, countryCode, phone, referralCode, verifyOtp, applyCredentials, t]);
 
   // ─── Social ───────────────────────────────────────────────────────────────
 
@@ -284,6 +306,24 @@ export function useRegisterForm() {
     [clearError]
   );
 
+  const handleReferralCodeChange = useCallback(
+    (text: string) => {
+      setReferralCode(
+        text
+          .replace(/[^a-zA-Z0-9]/g, '')
+          .toUpperCase()
+          .slice(0, 10)
+      );
+      clearError('referralCode');
+    },
+    [clearError]
+  );
+
+  const toggleReferralCode = useCallback(
+    () => setShowReferralCode((value) => !value),
+    []
+  );
+
   const togglePasswordVisibility = useCallback(
     () => setShowPassword((p) => !p),
     []
@@ -309,6 +349,8 @@ export function useRegisterForm() {
     otpSent,
     countryCode,
     showCountryCodeDropdown,
+    referralCode,
+    showReferralCode,
     handleTabSwitch,
     handleResendOtp,
     handleEmailRegister,
@@ -319,7 +361,9 @@ export function useRegisterForm() {
     handlePasswordChange,
     handlePhoneChange,
     handleOtpChange,
+    handleReferralCodeChange,
     togglePasswordVisibility,
+    toggleReferralCode,
     toggleCountryCodeDropdown,
     closeCountryCodeDropdown,
     setCountryCode,

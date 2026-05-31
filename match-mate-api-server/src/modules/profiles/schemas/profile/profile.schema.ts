@@ -46,6 +46,15 @@ export class Profile {
   @Prop({ type: GeoLocation })
   location?: GeoLocation;
 
+  @Prop({ uppercase: true, trim: true, index: true })
+  referralCode?: string;
+
+  @Prop()
+  referredBy?: Types.ObjectId;
+
+  @Prop({ type: String, uppercase: true, trim: true })
+  referredByCode?: string;
+
   @Prop({ default: 0 })
   profileScore!: number;
 

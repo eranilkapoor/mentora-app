@@ -18,6 +18,7 @@ import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
 import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
 import { SubscriptionsService } from '@/modules/subscriptions/services/subscriptions.service';
+import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
@@ -32,6 +33,7 @@ export class PaymentsService {
     private readonly paymentRepo: PaymentRepository,
     private readonly configService: ConfigService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly referralsService: ReferralsService,
     @InjectModel(Plan.name)
     private readonly planModel: Model<Plan>,
   ) {}
@@ -523,8 +525,10 @@ export class PaymentsService {
   private async activateSubscriptionIfRequired(
     userId: string,
     payment: {
+      _id?: { toString(): string };
       purpose?: PaymentPurpose;
       planId?: { toString(): string };
+      netAmount?: number;
     },
   ) {
     if (payment.purpose !== PaymentPurpose.SUBSCRIPTION || !payment.planId) {
@@ -535,5 +539,9 @@ export class PaymentsService {
       userId,
       payment.planId.toString(),
     );
+    await this.referralsService.awardSubscriptionReward(userId, {
+      paymentId: payment._id?.toString(),
+      netAmount: payment.netAmount,
+    });
   }
 }

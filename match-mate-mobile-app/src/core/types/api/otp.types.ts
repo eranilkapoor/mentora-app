@@ -12,6 +12,7 @@ export interface VerifyOtpRequest {
   country_code: string;
   phone: string;
   otp: string;
+  referralCode?: string;
 }
 
 export interface VerifyOtpResponse {

@@ -21,9 +21,13 @@ interface Props {
   loading: boolean;
   email: string;
   password: string;
+  referralCode: string;
+  showReferralCode: boolean;
   showPassword: boolean;
   onEmailChange: (v: string) => void;
   onPasswordChange: (v: string) => void;
+  onReferralCodeChange: (v: string) => void;
+  onToggleReferralCode: () => void;
   onTogglePassword: () => void;
   onSubmit: () => void;
 }
@@ -33,9 +37,13 @@ export function RegisterEmailForm({
   loading,
   email,
   password,
+  referralCode,
+  showReferralCode,
   showPassword,
   onEmailChange,
   onPasswordChange,
+  onReferralCodeChange,
+  onToggleReferralCode,
   onTogglePassword,
   onSubmit,
 }: Props): React.ReactElement {
@@ -45,9 +53,9 @@ export function RegisterEmailForm({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const [focusedField, setFocusedField] = useState<'email' | 'password' | null>(
-    null
-  );
+  const [focusedField, setFocusedField] = useState<
+    'email' | 'password' | 'referral' | null
+  >(null);
 
   return (
     <>
@@ -163,6 +171,59 @@ export function RegisterEmailForm({
 
       {errors.password ? (
         <Text style={styles.errorText}>{errors.password}</Text>
+      ) : null}
+
+      <TouchableOpacity
+        style={styles.inlineLinkRow}
+        onPress={onToggleReferralCode}
+        disabled={loading}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+      >
+        <Feather name="gift" size={14} color={theme.colors.link} />
+        <Text style={styles.linkText}>
+          {showReferralCode ? 'Hide referral code' : 'Have a referral code?'}
+        </Text>
+      </TouchableOpacity>
+
+      {showReferralCode ? (
+        <>
+          <Text style={[styles.label, styles.labelSpacing]}>Referral code</Text>
+          <View
+            style={[
+              styles.inputWrapper,
+              focusedField === 'referral' && styles.inputFocused,
+              errors.referralCode && styles.inputError,
+            ]}
+          >
+            <Feather
+              name="gift"
+              size={16}
+              color={
+                focusedField === 'referral'
+                  ? theme.colors.primary
+                  : theme.colors.textMuted
+              }
+              style={styles.inputIcon}
+            />
+            <TextInput
+              style={styles.input}
+              placeholder="Enter referral code"
+              placeholderTextColor={theme.colors.textMuted}
+              autoCapitalize="characters"
+              value={referralCode}
+              onChangeText={onReferralCodeChange}
+              editable={!loading}
+              maxLength={10}
+              returnKeyType="done"
+              onFocus={() => setFocusedField('referral')}
+              onBlur={() => setFocusedField(null)}
+            />
+          </View>
+          {errors.referralCode ? (
+            <Text style={styles.errorText}>{errors.referralCode}</Text>
+          ) : null}
+        </>
       ) : null}
 
       {/* Create account button */}

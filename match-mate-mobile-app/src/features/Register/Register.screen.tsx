@@ -41,6 +41,8 @@ export default function RegisterScreen({
     otpSent,
     countryCode,
     showCountryCodeDropdown,
+    referralCode,
+    showReferralCode,
     handleTabSwitch,
     handleEmailRegister,
     handleGetOtp,
@@ -51,7 +53,9 @@ export default function RegisterScreen({
     handlePasswordChange,
     handlePhoneChange,
     handleOtpChange,
+    handleReferralCodeChange,
     togglePasswordVisibility,
+    toggleReferralCode,
     toggleCountryCodeDropdown,
     closeCountryCodeDropdown,
     setCountryCode,
@@ -130,9 +134,13 @@ export default function RegisterScreen({
                 loading={loading}
                 email={email}
                 password={password}
+                referralCode={referralCode}
+                showReferralCode={showReferralCode}
                 showPassword={showPassword}
                 onEmailChange={handleEmailChange}
                 onPasswordChange={handlePasswordChange}
+                onReferralCodeChange={handleReferralCodeChange}
+                onToggleReferralCode={toggleReferralCode}
                 onTogglePassword={togglePasswordVisibility}
                 onSubmit={() => {
                   void handleEmailRegister();
@@ -161,6 +169,10 @@ export default function RegisterScreen({
                 onToggleDropdown={toggleCountryCodeDropdown}
                 onCloseDropdown={closeCountryCodeDropdown}
                 onSelectCountryCode={setCountryCode}
+                referralCode={referralCode}
+                showReferralCode={showReferralCode}
+                onReferralCodeChange={handleReferralCodeChange}
+                onToggleReferralCode={toggleReferralCode}
               />
             )}
           </View>
