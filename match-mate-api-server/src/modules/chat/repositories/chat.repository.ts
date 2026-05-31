@@ -160,6 +160,16 @@ export class ChatRepository {
     return this.messageModel.findById(messageId).lean();
   }
 
+  async findMessagesByIds(messageIds: string[]) {
+    if (messageIds.length === 0) {
+      return [];
+    }
+
+    return this.messageModel
+      .find({ _id: { $in: this.toObjectIds(messageIds) } })
+      .lean();
+  }
+
   async countUnreadByRoomIds(userId: string, roomIds: string[]) {
     if (roomIds.length === 0) {
       return [] as Array<{ _id: Types.ObjectId; count: number }>;
@@ -228,6 +238,27 @@ export class ChatRepository {
         },
       ],
     });
+  }
+
+  async getBlockedRelationUserIds(userId: string): Promise<string[]> {
+    const currentUserId = new Types.ObjectId(userId);
+    const rows = await this.userBlockModel
+      .find({
+        $or: [{ userId: currentUserId }, { blockedUserId: currentUserId }],
+      })
+      .select('userId blockedUserId')
+      .lean<Array<{ userId: Types.ObjectId; blockedUserId: Types.ObjectId }>>()
+      .exec();
+
+    return [
+      ...new Set(
+        rows.map((row) =>
+          row.userId.equals(currentUserId)
+            ? row.blockedUserId.toString()
+            : row.userId.toString(),
+        ),
+      ),
+    ];
   }
 
   async findActiveMatchBetween(userId: string, targetUserId: string) {

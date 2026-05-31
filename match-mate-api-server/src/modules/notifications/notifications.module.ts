@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
+import { JwtModule } from '@nestjs/jwt';
 import {
   Notification,
   NotificationSchema,
@@ -23,11 +24,14 @@ import { PushNotificationProvider } from './providers/push-notification.provider
 import { NotificationQueueService } from './services/notification-queue.service';
 import { NotificationDispatchWorker } from './notification-dispatch.worker';
 import { SettingsModule } from '../settings/settings.module';
+import { NotificationRealtimeService } from './services/notification-realtime.service';
+import { NotificationsGateway } from './controllers/notifications.gateway';
 
 @Module({
   imports: [
     ConfigModule,
-    SettingsModule,
+    JwtModule,
+    forwardRef(() => SettingsModule),
     MongooseModule.forFeature([
       { name: Notification.name, schema: NotificationSchema },
       {
@@ -40,14 +44,16 @@ import { SettingsModule } from '../settings/settings.module';
   ],
   controllers: [NotificationsController],
   providers: [
+    NotificationsGateway,
     NotificationsService,
     NotificationRepository,
+    NotificationRealtimeService,
     EmailNotificationProvider,
     SmsNotificationProvider,
     PushNotificationProvider,
     NotificationQueueService,
     NotificationDispatchWorker,
   ],
-  exports: [NotificationsService],
+  exports: [NotificationsService, NotificationRealtimeService],
 })
 export class NotificationsModule {}

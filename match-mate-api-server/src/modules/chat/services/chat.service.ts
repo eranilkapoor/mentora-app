@@ -46,9 +46,13 @@ interface ConversationResponse {
   status: ChatRoomStatus;
   participant: UserSummary;
   lastMessage?: {
+    id?: string;
     text?: string;
     senderId?: string;
     sentAt?: Date;
+    status?: ChatMessageStatus;
+    deliveredAt?: Date | null;
+    readAt?: Date | null;
   };
   unreadCount: number;
   messageCount: number;
@@ -192,11 +196,21 @@ export class ChatService {
   async getConversations(userId: string, query: ListConversationsDto) {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
-    const candidateLimit = query.search
-      ? Math.max(limit * 5, 100)
+    const hasInMemoryFilter = Boolean(
+      query.search ||
+      query.onlyArchived ||
+      query.onlyPinned ||
+      query.onlyMuted ||
+      query.onlyOnline,
+    );
+    const candidateLimit = hasInMemoryFilter
+      ? Math.max(limit * 10, 200)
       : page * limit;
 
     const rooms = await this.repo.listRoomsForUser(userId, candidateLimit);
+    const blockedUserIds = new Set(
+      await this.repo.getBlockedRelationUserIds(userId),
+    );
     const unreadRows = await this.repo.countUnreadByRoomIds(
       userId,
       rooms.map((room) => String(room._id)),
@@ -223,11 +237,19 @@ export class ChatService {
     const profileMap = new Map(
       profiles.map((profile) => [String(profile.userId), profile]),
     );
+    const lastMessageMap = await this.buildLastMessageMap(rooms);
 
     let items = rooms
       .filter((room) =>
         this.shouldIncludeRoom(room, userId, query.includeArchived ?? false),
       )
+      .filter((room) => {
+        const otherUserId = this.getOtherParticipantId(
+          room.participants,
+          userId,
+        );
+        return !blockedUserIds.has(otherUserId);
+      })
       .map((room) =>
         this.mapConversation(
           room,
@@ -235,11 +257,28 @@ export class ChatService {
           userMap,
           profileMap,
           unreadMap.get(String(room._id)) ?? 0,
+          lastMessageMap,
         ),
       );
 
     if (query.onlyUnread) {
       items = items.filter((item) => item.unreadCount > 0);
+    }
+
+    if (query.onlyArchived) {
+      items = items.filter((item) => item.settings.archived);
+    }
+
+    if (query.onlyPinned) {
+      items = items.filter((item) => item.settings.pinned);
+    }
+
+    if (query.onlyMuted) {
+      items = items.filter((item) => Boolean(item.settings.mutedUntil));
+    }
+
+    if (query.onlyOnline) {
+      items = items.filter((item) => item.participant.isOnline);
     }
 
     if (query.search) {
@@ -318,9 +357,12 @@ export class ChatService {
         .filter((participantId) => participantId !== userId),
     );
 
+    const blockedUserIds = new Set(
+      await this.repo.getBlockedRelationUserIds(userId),
+    );
     const contactUserIds = Array.from(
       new Set([...matchedUserIds, ...roomPartnerIds]),
-    );
+    ).filter((contactUserId) => !blockedUserIds.has(contactUserId));
     const [users, profiles] = await Promise.all([
       this.repo.findUsersByIds(contactUserIds),
       this.repo.findProfilesByUserIds(contactUserIds),
@@ -387,6 +429,7 @@ export class ChatService {
       this.repo.findUsersByIds([otherUserId]),
       this.repo.findProfilesByUserIds([otherUserId]),
     ]);
+    const lastMessageMap = await this.buildLastMessageMap([room]);
 
     return this.mapConversation(
       room,
@@ -394,6 +437,7 @@ export class ChatService {
       new Map(users.map((user) => [String(user._id), user])),
       new Map(profiles.map((profile) => [String(profile.userId), profile])),
       unreadRows[0]?.count ?? 0,
+      lastMessageMap,
     );
   }
 
@@ -588,6 +632,7 @@ export class ChatService {
     const profileMap = new Map(
       profiles.map((profile) => [String(profile.userId), profile]),
     );
+    const lastMessageMap = await this.buildLastMessageMap([room]);
 
     for (const participantId of participantIds) {
       const unreadRows = await this.repo.countUnreadByRoomIds(participantId, [
@@ -599,6 +644,7 @@ export class ChatService {
         userMap,
         profileMap,
         unreadRows[0]?.count ?? 0,
+        lastMessageMap,
       );
 
       this.realtime.emitToUser(
@@ -611,6 +657,7 @@ export class ChatService {
 
   private shouldIncludeRoom(
     room: {
+      status?: ChatRoomStatus;
       participantStates?: Array<{
         userId: Types.ObjectId | string;
         archivedAt?: Date;
@@ -619,6 +666,10 @@ export class ChatService {
     currentUserId: string,
     includeArchived: boolean,
   ) {
+    if (room.status !== ChatRoomStatus.ACTIVE) {
+      return false;
+    }
+
     if (includeArchived) {
       return true;
     }
@@ -668,6 +719,7 @@ export class ChatService {
         lastReadAt?: Date;
       }>;
       lastMessageText?: string;
+      lastMessageId?: Types.ObjectId | string;
       lastMessageSenderId?: Types.ObjectId | string;
       lastMessageAt?: Date;
       messageCount?: number;
@@ -678,12 +730,16 @@ export class ChatService {
     userMap: Map<string, UserLike>,
     profileMap: Map<string, ProfileLike>,
     unreadCount: number,
+    lastMessageMap: Map<string, MessageLike> = new Map(),
   ): ConversationResponse {
     const otherUserId = this.getOtherParticipantId(
       room.participants,
       currentUserId,
     );
     const state = this.getParticipantState(room, currentUserId);
+    const lastMessage = room.lastMessageId
+      ? lastMessageMap.get(String(room.lastMessageId))
+      : undefined;
 
     return {
       roomId: String(room._id),
@@ -692,11 +748,15 @@ export class ChatService {
       participant: this.buildUserSummary(otherUserId, userMap, profileMap),
       lastMessage: room.lastMessageText
         ? {
+            id: room.lastMessageId ? String(room.lastMessageId) : undefined,
             text: room.lastMessageText,
             senderId: room.lastMessageSenderId
               ? String(room.lastMessageSenderId)
               : undefined,
             sentAt: room.lastMessageAt,
+            status: lastMessage?.status,
+            deliveredAt: lastMessage?.deliveredAt ?? null,
+            readAt: lastMessage?.readAt ?? null,
           }
         : undefined,
       unreadCount,
@@ -709,6 +769,21 @@ export class ChatService {
         lastReadAt: state.lastReadAt ?? null,
       },
     };
+  }
+
+  private async buildLastMessageMap(
+    rooms: Array<{ lastMessageId?: Types.ObjectId | string }>,
+  ): Promise<Map<string, MessageLike>> {
+    const messageIds = [
+      ...new Set(
+        rooms
+          .map((room) => room.lastMessageId?.toString())
+          .filter((messageId): messageId is string => Boolean(messageId)),
+      ),
+    ];
+    const messages = await this.repo.findMessagesByIds(messageIds);
+
+    return new Map(messages.map((message) => [String(message._id), message]));
   }
 
   private toSafeString(value: unknown): string {

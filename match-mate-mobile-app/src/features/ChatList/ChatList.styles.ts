@@ -59,6 +59,60 @@ export const chatListStyles = (theme: Theme) =>
       color: theme.colors.textSecondary,
       fontWeight: '600',
     },
+    filterRail: {
+      backgroundColor: theme.colors.white,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    filterContent: {
+      gap: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    filterChip: {
+      minHeight: 34,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      paddingHorizontal: 11,
+      borderRadius: 17,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    filterChipActive: {
+      backgroundColor: theme.colors.primary,
+      borderColor: theme.colors.primary,
+    },
+    filterChipText: {
+      fontSize: 12,
+      fontWeight: '700',
+      color: theme.colors.textSecondary,
+    },
+    filterChipTextActive: {
+      color: theme.colors.white,
+    },
+    filterCount: {
+      minWidth: 18,
+      height: 18,
+      borderRadius: 9,
+      paddingHorizontal: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+    },
+    filterCountActive: {
+      backgroundColor: theme.colors.white,
+    },
+    filterCountText: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: theme.colors.primary,
+    },
+    filterCountTextActive: {
+      color: theme.colors.primary,
+    },
 
     // ─── Search ───────────────────────────────────────────────────────────
     searchWrapper: {
@@ -185,6 +239,46 @@ export const chatListStyles = (theme: Theme) =>
     },
     lastMessageUnread: {
       color: theme.colors.textPrimary,
+      fontWeight: '600',
+    },
+    typingText: {
+      color: theme.colors.success,
+      fontWeight: '700',
+    },
+    lastStatusWrap: {
+      width: 19,
+      height: 14,
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginRight: 4,
+    },
+    lastStatusSecondTick: {
+      marginLeft: -8,
+    },
+    quickActions: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      marginTop: 8,
+    },
+    quickActionBtn: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.backgroundLight,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    quickActionBtnActive: {
+      backgroundColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primaryBorder,
+    },
+    loadingMoreText: {
+      paddingVertical: 16,
+      textAlign: 'center',
+      color: theme.colors.textMuted,
       fontWeight: '600',
     },
 

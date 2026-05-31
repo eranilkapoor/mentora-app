@@ -1,5 +1,5 @@
 import { Theme } from '@/core/theme/types';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const chatStyles = (theme: Theme) =>
   StyleSheet.create({
@@ -7,7 +7,18 @@ export const chatStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
     },
-    flex: { flex: 1 },
+    flex: {
+      flex: 1,
+      alignItems: 'center',
+      backgroundColor: theme.colors.backgroundPage,
+    },
+    chatSurface: {
+      flex: 1,
+      width: '100%',
+      maxWidth: Platform.OS === 'web' ? 860 : undefined,
+      backgroundColor: theme.colors.backgroundPage,
+      alignSelf: 'center',
+    },
 
     // ─── Header ───────────────────────────────────────────────────────────
     header: {
@@ -122,8 +133,10 @@ export const chatStyles = (theme: Theme) =>
 
     // ─── Messages ─────────────────────────────────────────────────────────
     messagesList: {
-      paddingHorizontal: 12,
-      paddingVertical: 14,
+      flexGrow: 1,
+      paddingHorizontal: Platform.OS === 'web' ? 18 : 12,
+      paddingTop: 14,
+      paddingBottom: 18,
     },
     messageRow: {
       marginVertical: 3,
@@ -132,11 +145,15 @@ export const chatStyles = (theme: Theme) =>
     rightAlign: { alignItems: 'flex-end' },
 
     bubble: {
-      maxWidth: '78%',
-      borderRadius: 18,
+      maxWidth: Platform.OS === 'web' ? '68%' : '82%',
+      borderRadius: 16,
       paddingHorizontal: 13,
       paddingVertical: 9,
       elevation: 1,
+      shadowColor: theme.colors.black,
+      shadowOpacity: 0.05,
+      shadowRadius: 6,
+      shadowOffset: { width: 0, height: 2 },
     },
     myBubble: {
       backgroundColor: theme.colors.primary,
@@ -175,10 +192,16 @@ export const chatStyles = (theme: Theme) =>
     timeMe: {
       color: theme.colors.accentLight,
     },
-    readTick: {
-      fontSize: 11,
-      color: theme.colors.accentLight,
-      fontWeight: '700',
+    tickWrap: {
+      width: 21,
+      height: 14,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'flex-start',
+      marginLeft: 1,
+    },
+    secondTick: {
+      marginLeft: -8,
     },
 
     // ─── Emoji Picker ─────────────────────────────────────────────────────
@@ -201,45 +224,46 @@ export const chatStyles = (theme: Theme) =>
     // ─── Input Bar ────────────────────────────────────────────────────────
     inputBar: {
       flexDirection: 'row',
-      alignItems: 'flex-end',
-      paddingHorizontal: 10,
-      paddingVertical: 8,
-      paddingBottom: 12,
+      alignItems: 'center',
+      paddingHorizontal: Platform.OS === 'web' ? 16 : 10,
+      paddingTop: 8,
+      paddingBottom: 8,
       backgroundColor: theme.colors.white,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       gap: 8,
     },
     iconBtn: {
-      width: 36,
-      height: 36,
-      borderRadius: 18,
+      width: 40,
+      height: 40,
+      borderRadius: 20,
       backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 2,
     },
     input: {
       flex: 1,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.border,
-      borderRadius: 22,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
+      borderRadius: 20,
+      paddingHorizontal: 12,
+      paddingTop: 0,
+      paddingBottom: 0,
       backgroundColor: theme.colors.backgroundLight,
       fontSize: 14,
       color: theme.colors.textPrimary,
-      height: 36,
+      height: 40,
+      maxHeight: 112,
       lineHeight: 20,
+      textAlignVertical: 'center',
     },
     sendBtn: {
-      width: 36,
-      height: 36,
+      width: 40,
+      height: 40,
       borderRadius: 20,
       backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
-      marginBottom: 1,
     },
     sendBtnActive: {
       backgroundColor: theme.colors.primary,

@@ -20,6 +20,13 @@ export const headerStyles = (theme: Theme) =>
       gap: 10,
       flex: 1,
     },
+    identity: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+      flex: 1,
+      minWidth: 0,
+    },
     title: {
       fontSize: 16,
       fontWeight: '700',

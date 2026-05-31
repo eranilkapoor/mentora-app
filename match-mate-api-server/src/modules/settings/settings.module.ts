@@ -47,10 +47,12 @@ import {
   ProfileSchema,
 } from '../profiles/schemas/profile/profile.schema';
 import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
+import { ChatRealtimeModule } from '../chat/chat-realtime.module';
 
 @Module({
   imports: [
     SafetyModule,
+    ChatRealtimeModule,
     MongooseModule.forFeature([
       { name: AccountSetting.name, schema: AccountSettingSchema },
       { name: PrivacySetting.name, schema: PrivacySettingSchema },

@@ -107,7 +107,7 @@ export default function NotificationsScreen({
         iconColor: notificationColorByType(theme, item.type),
         type: item.type,
         category: item.category,
-        action: item.action,
+        ...(item.action ? { action: item.action } : {}),
       })),
     [data, theme]
   );

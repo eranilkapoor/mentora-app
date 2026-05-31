@@ -24,7 +24,6 @@ export interface OnboardingProfileRequest {
   family: FamilyData;
   preferences: PreferencesData;
   images: ProfileImage[];
-  videos?: ProfileImage[];
   videoIntro?: ProfileImage | null;
 }
 
@@ -35,6 +34,7 @@ export interface ProfileData {
   family: FamilyData;
   preferences: PreferencesData;
   images: ProfileImage[];
+  videoIntro?: ProfileImage | null;
   profileScore?: number;
   profileCompletionPercentage?: number;
   summary?: {

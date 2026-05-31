@@ -50,6 +50,7 @@ export type ChatsStackParamList = {
     partnerPhoto: string;
     roomId?: string;
   };
+  MatchDetails: { userId: string };
 };
 
 // ─── Profile Stack ────────────────────────────────────────────────────────────

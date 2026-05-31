@@ -132,7 +132,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/profiles/media/images/${mediaId}/primary`,
         method: 'PATCH',
       }),
-      invalidatesTags: ['ProfileMedia'],
+      invalidatesTags: ['ProfileMedia', 'Profile'],
     }),
 
     removeProfileMediaImage: builder.mutation<

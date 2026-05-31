@@ -106,7 +106,6 @@ const DEFAULT_PROFILE: SchemaProfile = {
   },
   preferences: { languagesKnown: [] },
   images: [],
-  videos: [],
   videoIntro: null,
 };
 
@@ -674,13 +673,13 @@ export default function ProfileScreen({
   );
 
   const videoIntro = useMemo(() => {
-    const video = profileData.videoIntro ?? profileData.videos?.[0];
+    const video = profileData.videoIntro;
     if (!video?.url) return null;
     return {
       ...video,
       url: resolveApiUrl(video.url) ?? video.url,
     };
-  }, [profileData.videoIntro, profileData.videos]);
+  }, [profileData.videoIntro]);
 
   const profileSummary = useMemo(
     () =>

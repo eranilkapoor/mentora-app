@@ -9,6 +9,10 @@ import Loader from '@/core/components/Loader';
 import { getDeviceId } from '@/core/utils/device';
 import { Storage } from '@/core/utils/storage';
 import i18n from '@/i18n';
+import {
+  connectRealtime,
+  disconnectRealtime,
+} from '@/core/realtime/realtime.service';
 
 interface Props {
   children: React.ReactNode;
@@ -105,6 +109,19 @@ export default function AppInitializer({ children }: Props) {
       dispatch(setUser(data.data));
     }
   }, [data, dispatch]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      disconnectRealtime();
+      return;
+    }
+
+    connectRealtime(accessToken, dispatch);
+
+    return () => {
+      disconnectRealtime();
+    };
+  }, [accessToken, dispatch]);
 
   useEffect(() => {
     if (!accessToken || !userId || locationSyncInFlight.current) {

@@ -119,7 +119,6 @@ export class ProfilesService {
         this.enrichProfile({
           ...(profile as Record<string, unknown>),
           images,
-          videos,
           videoIntro:
             videos.find((video) => video.isPrimary) ?? videos[0] ?? null,
         }),

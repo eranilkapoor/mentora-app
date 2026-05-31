@@ -148,7 +148,6 @@ export class MediaService {
         userId,
         MediaType.VIDEO,
       );
-
       if (currentCount + files.length > MAX_VIDEOS) {
         throwBadRequest(ErrorCode.FILE_TOO_LARGE, {
           limit: MAX_VIDEOS,

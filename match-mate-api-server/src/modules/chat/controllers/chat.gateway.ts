@@ -128,6 +128,22 @@ export class ChatGateway
     };
   }
 
+  @SubscribeMessage('room:leave')
+  async handleLeaveRoom(
+    @ConnectedSocket() client: Socket,
+    @MessageBody() payload: JoinRoomDto,
+  ): Promise<{ event: string; data: { roomId: string } }> {
+    const socket = client as AuthenticatedSocket;
+    this.getClientUserId(socket);
+
+    await socket.leave(this.realtime.getConversationRoom(payload.roomId));
+
+    return {
+      event: 'room:left',
+      data: { roomId: payload.roomId },
+    };
+  }
+
   @SubscribeMessage('message:send')
   async handleMessage(
     @ConnectedSocket() client: Socket,

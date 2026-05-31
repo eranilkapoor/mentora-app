@@ -109,7 +109,14 @@ export const privacySettingsApi = baseApi.injectEndpoints({
         method: 'POST',
         body,
       }),
-      invalidatesTags: ['PrivacySettings'],
+      invalidatesTags: [
+        'PrivacySettings',
+        'Chat',
+        'Shortlist',
+        { type: 'Match', id: 'DISCOVERY' },
+        { type: 'Match', id: 'MY' },
+        { type: 'Match', id: 'INTERESTS' },
+      ],
     }),
   }),
 

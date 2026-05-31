@@ -28,12 +28,22 @@ export interface ChatConversation {
   roomId: string;
   participant: ChatParticipant;
   lastMessage?: {
+    id?: string;
     text?: string;
     senderId?: string;
     sentAt?: string;
+    status?: string;
+    deliveredAt?: string | null;
+    readAt?: string | null;
   };
   unreadCount: number;
   updatedAt?: string;
+  settings?: {
+    archived?: boolean;
+    pinned?: boolean;
+    mutedUntil?: string | null;
+    lastReadAt?: string | null;
+  };
 }
 
 export interface ChatConversationsResponse {
@@ -42,6 +52,7 @@ export interface ChatConversationsResponse {
   total: number;
   page: number;
   limit: number;
+  hasMore?: boolean;
 }
 
 export interface ChatMessage {
@@ -53,6 +64,7 @@ export interface ChatMessage {
   content?: string;
   attachments: unknown[];
   status?: string;
+  deliveredAt?: string | null;
   readAt?: string | null;
   createdAt?: string;
 }
@@ -67,12 +79,22 @@ export const chatApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getConversations: builder.query<
       ApiResponse<ChatConversationsResponse>,
-      { search?: string } | void
+      {
+        search?: string;
+        onlyUnread?: boolean;
+        includeArchived?: boolean;
+        onlyArchived?: boolean;
+        onlyPinned?: boolean;
+        onlyMuted?: boolean;
+        onlyOnline?: boolean;
+        limit?: number;
+        page?: number;
+      } | void
     >({
       query: (params) => ({
         url: '/chats/conversations',
         method: 'GET',
-        params: params ?? undefined,
+        ...(params ? { params } : {}),
       }),
       providesTags: ['Chat'],
     }),
@@ -115,6 +137,35 @@ export const chatApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Chat'],
     }),
+
+    updateRoomSettings: builder.mutation<
+      ApiResponse<ChatConversation>,
+      {
+        roomId: string;
+        archived?: boolean;
+        pinned?: boolean;
+        mutedUntil?: string | null;
+      }
+    >({
+      query: ({ roomId, ...body }) => ({
+        url: `/chats/rooms/${roomId}/settings`,
+        method: 'PATCH',
+        body,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
+
+    markRoomRead: builder.mutation<
+      ApiResponse<{ roomId: string; updatedCount: number; readAt: string }>,
+      { roomId: string; upToMessageId?: string }
+    >({
+      query: ({ roomId, ...body }) => ({
+        url: `/chats/rooms/${roomId}/read`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
   }),
 
   overrideExisting: false,
@@ -124,5 +175,7 @@ export const {
   useGetConversationsQuery,
   useCreateDirectRoomMutation,
   useGetMessagesQuery,
+  useMarkRoomReadMutation,
   useSendMessageMutation,
+  useUpdateRoomSettingsMutation,
 } = chatApi;

@@ -7,13 +7,27 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 
 export function ChatRow({
   item,
+  isTyping,
+  isOwnLastMessage,
+  onTogglePin,
+  onToggleMute,
+  onToggleArchive,
   onPress,
 }: {
   item: ChatMatch;
+  isTyping?: boolean;
+  isOwnLastMessage?: boolean;
+  onTogglePin?: () => void;
+  onToggleMute?: () => void;
+  onToggleArchive?: () => void;
   onPress: () => void;
 }): React.ReactElement {
   const styles = useThemedStyles(chatListStyles);
   const { theme } = useTheme();
+  const statusColor =
+    item.lastMessageStatus === 'read'
+      ? theme.colors.success
+      : theme.colors.textMuted;
 
   return (
     <TouchableOpacity
@@ -39,8 +53,15 @@ export function ChatRow({
             style={[styles.name, item.unreadCount > 0 && styles.nameUnread]}
             numberOfLines={1}
           >
-            {item.name}, {item.age}
+            {item.name}
+            {item.age > 0 ? `, ${item.age}` : ''}
           </Text>
+          {item.isPinned ? (
+            <Feather name="star" size={12} color={theme.colors.primary} />
+          ) : null}
+          {item.isMuted ? (
+            <Feather name="bell-off" size={12} color={theme.colors.textMuted} />
+          ) : null}
           <Text
             style={[styles.time, item.unreadCount > 0 && styles.timeUnread]}
           >
@@ -54,20 +75,91 @@ export function ChatRow({
         </View>
 
         <View style={styles.bottomRow}>
+          {isOwnLastMessage && item.lastMessageStatus ? (
+            <View style={styles.lastStatusWrap}>
+              <Feather name="check" size={12} color={statusColor} />
+              {item.lastMessageStatus !== 'sent' ? (
+                <Feather
+                  name="check"
+                  size={12}
+                  color={statusColor}
+                  style={styles.lastStatusSecondTick}
+                />
+              ) : null}
+            </View>
+          ) : null}
           <Text
             style={[
               styles.lastMessage,
               item.unreadCount > 0 && styles.lastMessageUnread,
+              isTyping && styles.typingText,
             ]}
             numberOfLines={1}
           >
-            {item.lastMessage || 'Start a conversation…'}
+            {isTyping
+              ? 'Typing...'
+              : item.lastMessage || 'Start a conversation...'}
           </Text>
           {item.unreadCount > 0 && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{item.unreadCount}</Text>
             </View>
           )}
+        </View>
+        <View style={styles.quickActions}>
+          <TouchableOpacity
+            style={[
+              styles.quickActionBtn,
+              item.isPinned && styles.quickActionBtnActive,
+            ]}
+            onPress={onTogglePin}
+            accessibilityRole="button"
+            accessibilityLabel={item.isPinned ? 'Unpin chat' : 'Pin chat'}
+          >
+            <Feather
+              name="star"
+              size={13}
+              color={
+                item.isPinned ? theme.colors.primary : theme.colors.textMuted
+              }
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.quickActionBtn,
+              item.isMuted && styles.quickActionBtnActive,
+            ]}
+            onPress={onToggleMute}
+            accessibilityRole="button"
+            accessibilityLabel={item.isMuted ? 'Unmute chat' : 'Mute chat'}
+          >
+            <Feather
+              name={item.isMuted ? 'bell-off' : 'bell'}
+              size={13}
+              color={
+                item.isMuted ? theme.colors.primary : theme.colors.textMuted
+              }
+            />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[
+              styles.quickActionBtn,
+              item.isArchived && styles.quickActionBtnActive,
+            ]}
+            onPress={onToggleArchive}
+            accessibilityRole="button"
+            accessibilityLabel={
+              item.isArchived ? 'Unarchive chat' : 'Archive chat'
+            }
+          >
+            <Feather
+              name={item.isArchived ? 'inbox' : 'archive'}
+              size={13}
+              color={
+                item.isArchived ? theme.colors.primary : theme.colors.textMuted
+              }
+            />
+          </TouchableOpacity>
         </View>
       </View>
     </TouchableOpacity>

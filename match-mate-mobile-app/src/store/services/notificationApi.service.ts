@@ -71,7 +71,7 @@ export const notificationApi = baseApi.injectEndpoints({
       query: (params) => ({
         url: '/notifications',
         method: 'GET',
-        params: params ?? undefined,
+        ...(params ? { params } : {}),
       }),
       providesTags: ['Notification'],
     }),

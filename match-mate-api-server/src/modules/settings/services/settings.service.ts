@@ -26,6 +26,7 @@ import {
   MediaStatus,
 } from '@/modules/profiles/schemas/media/media.schema';
 import { MediaType } from '@/common/enums';
+import { ChatRealtimeService } from '@/modules/chat/services/chat-realtime.service';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,
@@ -72,6 +73,7 @@ export class SettingsService {
     private readonly profileModel: Model<ProfileDocument>,
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
+    private readonly chatRealtimeService: ChatRealtimeService,
   ) {}
 
   //  All settings in one call
@@ -107,7 +109,9 @@ export class SettingsService {
         reason: 'cannot_block_self',
       });
     }
-    return this.repo.blockUser(userId, dto.targetUserId);
+    const block = await this.repo.blockUser(userId, dto.targetUserId);
+    this.emitUserBlocked(userId, dto.targetUserId);
+    return block;
   }
 
   async reportUser(userId: string, dto: ReportUserDto) {
@@ -117,7 +121,7 @@ export class SettingsService {
       });
     }
 
-    return this.userReportModel.findOneAndUpdate(
+    const report = await this.userReportModel.findOneAndUpdate(
       {
         reportedBy: new Types.ObjectId(userId),
         reportedUserId: new Types.ObjectId(dto.targetUserId),
@@ -133,6 +137,11 @@ export class SettingsService {
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
+
+    await this.repo.blockUser(userId, dto.targetUserId);
+    this.emitUserBlocked(userId, dto.targetUserId);
+
+    return report;
   }
 
   unblockUser(userId: string, dto: BlockUserDto) {
@@ -241,6 +250,17 @@ export class SettingsService {
 
   isBlockedBetween(userId: string, targetUserId: string) {
     return this.repo.isBlockedBetween(userId, targetUserId);
+  }
+
+  private emitUserBlocked(blockerId: string, blockedUserId: string) {
+    const payload = {
+      blockerId,
+      blockedUserId,
+      blockedAt: new Date().toISOString(),
+    };
+
+    this.chatRealtimeService.emitToUser(blockerId, 'user:blocked', payload);
+    this.chatRealtimeService.emitToUser(blockedUserId, 'user:blocked', payload);
   }
 
   //  Account

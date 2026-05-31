@@ -34,6 +34,7 @@ import {
   throwBadRequest,
   throwNotFound,
 } from '@/common/exceptions/throw-app-exception';
+import { NotificationRealtimeService } from './notification-realtime.service';
 
 interface DeliveryDecision {
   inApp: boolean;
@@ -58,6 +59,7 @@ export class NotificationsService {
     private readonly pushProvider: PushNotificationProvider,
     private readonly queueService: NotificationQueueService,
     private readonly settingsService: SettingsService,
+    private readonly realtime: NotificationRealtimeService,
   ) {
     this.channelProviders = [
       this.pushProvider,
@@ -133,6 +135,11 @@ export class NotificationsService {
       decision,
     });
 
+    this.realtime.emitToUser(dto.userId, 'notification:new', notification);
+    this.realtime.emitToUser(dto.userId, 'notification:unread-count', {
+      unreadCount: await this.notificationRepo.countUnread(dto.userId),
+    });
+
     return notification;
   }
 
@@ -150,12 +157,25 @@ export class NotificationsService {
     return this.notificationRepo.countUnread(userId);
   }
 
-  markRead(userId: string, notificationId: string) {
-    return this.notificationRepo.markAsRead(notificationId, userId);
+  async markRead(userId: string, notificationId: string) {
+    const notification = await this.notificationRepo.markAsRead(
+      notificationId,
+      userId,
+    );
+    this.realtime.emitToUser(userId, 'notification:read', notification);
+    this.realtime.emitToUser(userId, 'notification:unread-count', {
+      unreadCount: await this.notificationRepo.countUnread(userId),
+    });
+    return notification;
   }
 
-  markAllRead(userId: string) {
-    return this.notificationRepo.markAllAsRead(userId);
+  async markAllRead(userId: string) {
+    const result = await this.notificationRepo.markAllAsRead(userId);
+    this.realtime.emitToUser(userId, 'notification:all-read', result);
+    this.realtime.emitToUser(userId, 'notification:unread-count', {
+      unreadCount: await this.notificationRepo.countUnread(userId),
+    });
+    return result;
   }
 
   listTemplates(includeInactive = false) {
@@ -333,6 +353,11 @@ export class NotificationsService {
         variables,
       },
       decision,
+    });
+
+    this.realtime.emitToUser(dto.userId, 'notification:new', notification);
+    this.realtime.emitToUser(dto.userId, 'notification:unread-count', {
+      unreadCount: await this.notificationRepo.countUnread(dto.userId),
     });
 
     return notification;

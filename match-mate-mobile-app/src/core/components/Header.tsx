@@ -30,6 +30,8 @@ interface HeaderProps {
   onBackPress?: () => void;
   leftComponent?: React.ReactNode;
   avatarUri?: string;
+  onIdentityPress?: () => void;
+  identityAccessibilityLabel?: string;
   actions?: HeaderAction[];
   enableSearch?: boolean;
   searchPlaceholder?: string;
@@ -41,9 +43,9 @@ interface HeaderProps {
 
 interface ActionButtonProps {
   icon: React.ComponentProps<typeof Feather>['name'];
-  onPress?: () => void;
-  badge?: boolean;
-  label?: string;
+  onPress: (() => void) | undefined;
+  badge: boolean | undefined;
+  label: string | undefined;
   color: string;
   styles: ReturnType<typeof headerStyles>;
 }
@@ -75,6 +77,8 @@ export default function Header({
   onBackPress,
   leftComponent,
   avatarUri,
+  onIdentityPress,
+  identityAccessibilityLabel,
   actions = [],
   enableSearch = false,
   searchPlaceholder,
@@ -150,6 +154,22 @@ export default function Header({
 
     if (leftComponent) return leftComponent;
 
+    const identityContent = (
+      <>
+        {avatarUri ? (
+          <Image
+            source={{ uri: avatarUri }}
+            style={styles.avatar}
+            accessibilityLabel={t('common.avatar')}
+          />
+        ) : null}
+        <View>
+          {title ? <Text style={styles.title}>{title}</Text> : null}
+          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
+        </View>
+      </>
+    );
+
     return (
       <View style={styles.left}>
         {showBack && (
@@ -166,17 +186,21 @@ export default function Header({
             />
           </TouchableOpacity>
         )}
-        {avatarUri ? (
-          <Image
-            source={{ uri: avatarUri }}
-            style={styles.avatar}
-            accessibilityLabel={t('common.avatar')}
-          />
-        ) : null}
-        <View>
-          {title ? <Text style={styles.title}>{title}</Text> : null}
-          {subtitle ? <Text style={styles.subtitle}>{subtitle}</Text> : null}
-        </View>
+        {onIdentityPress ? (
+          <TouchableOpacity
+            style={styles.identity}
+            onPress={onIdentityPress}
+            accessibilityRole="button"
+            accessibilityLabel={
+              identityAccessibilityLabel ?? t('common.view_profile')
+            }
+            activeOpacity={0.75}
+          >
+            {identityContent}
+          </TouchableOpacity>
+        ) : (
+          <View style={styles.identity}>{identityContent}</View>
+        )}
       </View>
     );
   }, [
@@ -184,6 +208,8 @@ export default function Header({
     leftComponent,
     showBack,
     avatarUri,
+    onIdentityPress,
+    identityAccessibilityLabel,
     title,
     subtitle,
     searchText,

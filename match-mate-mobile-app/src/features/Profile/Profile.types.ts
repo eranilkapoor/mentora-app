@@ -124,7 +124,6 @@ export interface SchemaProfile {
   };
   preferences?: { languagesKnown?: string[] };
   images?: ProfileImage[];
-  videos?: ProfileImage[];
   videoIntro?: ProfileImage | null;
   age?: number;
   height?: number;

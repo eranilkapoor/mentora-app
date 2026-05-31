@@ -37,21 +37,25 @@ export class MediaRepository {
   }
 
   async findAllByUser(userId: string, type: MediaType) {
+    const userIds = Types.ObjectId.isValid(userId)
+      ? [new Types.ObjectId(userId), userId]
+      : [userId];
+
     return this.mediaModel
       .find(
         {
-          userId: new Types.ObjectId(userId),
+          userId: { $in: userIds },
           type,
           status: MediaStatus.ACTIVE,
+          $or: [{ isActive: true }, { isActive: { $exists: false } }],
         },
         {
           __v: 0,
-          uploadedAt: 0,
           createdAt: 0,
           updatedAt: 0,
         },
       )
-      .sort({ isPrimary: -1, uploadedAt: -1 })
+      .sort({ isPrimary: -1, uploadedAt: -1, createdAt: -1 })
       .lean();
   }
 

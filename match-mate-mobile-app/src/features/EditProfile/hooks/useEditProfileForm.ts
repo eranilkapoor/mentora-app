@@ -358,9 +358,7 @@ export function useEditProfileForm() {
       const handleDelete = async (): Promise<void> => {
         try {
           await removeMediaImage({ mediaId }).unwrap();
-        } catch (error) {
-          console.error(error);
-
+        } catch {
           if (Platform.OS === 'web') {
             window.alert(t('edit_profile.photos.remove_failed'));
           } else {

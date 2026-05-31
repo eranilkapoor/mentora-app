@@ -52,11 +52,15 @@ export class MediaController {
   }
 
   @Patch('images/:mediaId/primary')
-  setPrimaryImage(
+  async setPrimaryImage(
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
   ) {
-    const data = this.mediaService.setPrimaryImage(req, req.user.sub, mediaId);
+    const data = await this.mediaService.setPrimaryImage(
+      req,
+      req.user.sub,
+      mediaId,
+    );
     return successResponse(
       data,
       SuccessCode.PROFILE_IMAGE_REORDERED,
@@ -66,11 +70,15 @@ export class MediaController {
 
   @Delete('images/:mediaId')
   @HttpCode(HttpStatus.OK)
-  removeImage(
+  async removeImage(
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
   ) {
-    const data = this.mediaService.removeImage(req, req.user.sub, mediaId);
+    const data = await this.mediaService.removeImage(
+      req,
+      req.user.sub,
+      mediaId,
+    );
     return successResponse(
       data,
       SuccessCode.PROFILE_IMAGE_DELETED,
@@ -81,8 +89,8 @@ export class MediaController {
   // Videos
 
   @Get('videos')
-  getVideos(@Req() req: AuthenticatedRequest) {
-    const data = this.mediaService.getVideos(req.user.sub);
+  async getVideos(@Req() req: AuthenticatedRequest) {
+    const data = await this.mediaService.getVideos(req.user.sub);
     return successResponse(
       data,
       SuccessCode.PROFILE_VIDEO_FETCHED,
@@ -93,11 +101,11 @@ export class MediaController {
   @Post('videos')
   @UseInterceptors(FilesInterceptor('videos', 1))
   @HttpCode(HttpStatus.CREATED)
-  uploadVideos(
+  async uploadVideos(
     @Req() req: AuthenticatedRequest,
     @UploadedFiles() files: Express.Multer.File[],
   ) {
-    const data = this.mediaService.addVideos(req, req.user.sub, files);
+    const data = await this.mediaService.addVideos(req, req.user.sub, files);
     return successResponse(
       data,
       SuccessCode.PROFILE_VIDEO_UPLOADED,
@@ -106,11 +114,15 @@ export class MediaController {
   }
 
   @Patch('videos/:mediaId/primary')
-  setPrimaryVideo(
+  async setPrimaryVideo(
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
   ) {
-    const data = this.mediaService.setPrimaryVideo(req, req.user.sub, mediaId);
+    const data = await this.mediaService.setPrimaryVideo(
+      req,
+      req.user.sub,
+      mediaId,
+    );
     return successResponse(
       data,
       SuccessCode.PROFILE_VIDEO_REORDERED,
@@ -120,11 +132,15 @@ export class MediaController {
 
   @Delete('videos/:mediaId')
   @HttpCode(HttpStatus.OK)
-  removeVideo(
+  async removeVideo(
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
   ) {
-    const data = this.mediaService.removeVideo(req, req.user.sub, mediaId);
+    const data = await this.mediaService.removeVideo(
+      req,
+      req.user.sub,
+      mediaId,
+    );
     return successResponse(
       data,
       SuccessCode.PROFILE_VIDEO_DELETED,

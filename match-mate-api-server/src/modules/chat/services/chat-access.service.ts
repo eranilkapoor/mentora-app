@@ -9,6 +9,7 @@ import {
 } from '@/common/exceptions/throw-app-exception';
 import { ChatRepository } from '../repositories/chat.repository';
 import { ChatRoomDocument } from '../schemas/chat-room.schema';
+import { ChatRoomStatus } from '../enums/chat.enums';
 
 @Injectable()
 export class ChatAccessService {
@@ -36,6 +37,24 @@ export class ChatAccessService {
       throwForbidden(ErrorCode.CHAT_ACCESS_DENIED);
     }
 
+    if (room.status !== ChatRoomStatus.ACTIVE) {
+      throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
+        reason: 'chat_room_not_active',
+      });
+    }
+
+    const otherParticipantId = participantIds.find(
+      (participantId) => participantId !== userId,
+    );
+    if (!otherParticipantId) {
+      throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
+        reason: 'invalid_chat_room_participants',
+      });
+      return room;
+    }
+
+    await this.ensureNotBlocked(userId, otherParticipantId);
+
     return room;
   }
 
@@ -56,11 +75,7 @@ export class ChatAccessService {
       userId,
       targetUserId,
     );
-    if (blockedRelation) {
-      throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
-        reason: 'blocked_relation',
-      });
-    }
+    if (blockedRelation) this.throwBlockedRelation();
 
     const communicationSettingsRows =
       await this.repo.findCommunicationSettingsByUserIds([targetUserId]);
@@ -80,5 +95,22 @@ export class ChatAccessService {
         reason: 'recipient_communication_restricted',
       });
     }
+  }
+
+  private async ensureNotBlocked(
+    userId: string,
+    targetUserId: string,
+  ): Promise<void> {
+    const blockedRelation = await this.repo.findBlockedRelation(
+      userId,
+      targetUserId,
+    );
+    if (blockedRelation) this.throwBlockedRelation();
+  }
+
+  private throwBlockedRelation(): never {
+    return throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
+      reason: 'blocked_relation',
+    });
   }
 }

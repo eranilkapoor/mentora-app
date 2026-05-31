@@ -7,7 +7,7 @@ export type ChatsStackParamList = {
     partnerName?: string;
     partnerPhoto?: string;
   };
-  ProfileDetails: { userId: string };
+  MatchDetails: { userId: string };
 };
 
 export type Props = {
@@ -22,7 +22,7 @@ export type Message = {
   imageUrl?: string;
   timestamp: number;
   type: 'text' | 'image';
-  read?: boolean;
+  status: 'sent' | 'delivered' | 'read';
 };
 
 export const formatTime = (ts: number): string =>

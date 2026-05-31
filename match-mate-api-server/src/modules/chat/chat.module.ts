@@ -1,7 +1,6 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ChatGateway } from './controllers/chat.gateway';
-import { ChatRealtimeService } from './services/chat-realtime.service';
 import { ChatService } from './services/chat.service';
 import { ChatRepository } from './repositories/chat.repository';
 import { ChatController } from './controllers/chat.controller';
@@ -22,12 +21,14 @@ import {
   CommunicationSetting,
   CommunicationSettingSchema,
 } from '../settings/schemas/communication-setting.schema';
+import { ChatRealtimeModule } from './chat-realtime.module';
 
 @Module({
   imports: [
     AuthModule,
-    NotificationsModule,
+    forwardRef(() => NotificationsModule),
     SafetyModule,
+    ChatRealtimeModule,
     MongooseModule.forFeature([
       { name: ChatMessage.name, schema: ChatMessageSchema },
       { name: ChatRoom.name, schema: ChatRoomSchema },
@@ -39,13 +40,12 @@ import {
   ],
   providers: [
     ChatGateway,
-    ChatRealtimeService,
     ChatService,
     ChatRepository,
     ChatPresenceService,
     ChatAccessService,
   ],
   controllers: [ChatController],
-  exports: [ChatService, ChatPresenceService, ChatRealtimeService],
+  exports: [ChatService, ChatPresenceService, ChatRealtimeModule],
 })
 export class ChatModule {}

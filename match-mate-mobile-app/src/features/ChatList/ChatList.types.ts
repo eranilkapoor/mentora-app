@@ -21,11 +21,24 @@ export type ChatMatch = {
   age: number;
   city: string;
   lastMessage: string;
+  lastMessageSenderId?: string;
+  lastMessageStatus: 'sent' | 'delivered' | 'read' | null;
   avatarUrl: string;
   matchedAt: string;
   isOnline: boolean;
   unreadCount: number;
+  isArchived: boolean;
+  isPinned: boolean;
+  isMuted: boolean;
 };
+
+export type ChatFilter =
+  | 'all'
+  | 'unread'
+  | 'online'
+  | 'pinned'
+  | 'muted'
+  | 'archived';
 
 export const formatTime = (iso: string): string => {
   const diff = Date.now() - new Date(iso).getTime();

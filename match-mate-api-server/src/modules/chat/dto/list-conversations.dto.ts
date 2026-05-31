@@ -50,4 +50,24 @@ export class ListConversationsDto {
   @Transform(({ value }) => toBoolean(value))
   @IsBoolean()
   includeArchived?: boolean = false;
+
+  @IsOptional()
+  @Transform(({ value }) => toBoolean(value))
+  @IsBoolean()
+  onlyArchived?: boolean = false;
+
+  @IsOptional()
+  @Transform(({ value }) => toBoolean(value))
+  @IsBoolean()
+  onlyPinned?: boolean = false;
+
+  @IsOptional()
+  @Transform(({ value }) => toBoolean(value))
+  @IsBoolean()
+  onlyMuted?: boolean = false;
+
+  @IsOptional()
+  @Transform(({ value }) => toBoolean(value))
+  @IsBoolean()
+  onlyOnline?: boolean = false;
 }
