@@ -6413,10 +6413,6 @@ You should organize your app into major domains/modules.
 
 # C. MATCHMAKING ENGINE
 
-This becomes your core business engine.
-
-## Traditional Matching
-
 ✅ Age
 ✅ Height
 ✅ Religion
@@ -6474,17 +6470,6 @@ Example:
 * Recently joined
 * Recently verified
 
----
-
-# E. COMMUNICATION MODULE
-
-This is where Tinder dominates.
-
-## Must Have
-
-✅ Chat
-✅ Interests
-✅ Accept/reject
 
 ## Enterprise Features
 
@@ -6503,34 +6488,11 @@ This is where Tinder dominates.
 * Audio call
 * Video call
 
-### Safety
-
-* Screenshot detection
-* Spam detection
-* Abuse detection
-* Block/report
-* AI moderation
-
 ### Engagement
 
 * Ice breaker prompts
 * Suggested openers
 * AI conversation starters
-
----
-
-# F. NOTIFICATIONS MODULE
-
-You already started this correctly.
-
-## Enterprise Structure
-
-### Global Settings
-
-* Push
-* Email
-* SMS
-* In-app
 
 ### Per-category Preferences
 
@@ -6542,19 +6504,9 @@ You already started this correctly.
 * Subscription
 * Promotions
 
-### Smart Features
-
-* Quiet hours
-* Notification digest
-* AI priority notifications
-
 ---
 
 # G. SAFETY & TRUST MODULE
-
-This is CRITICAL now.
-
-## Enterprise-Level Features
 
 ### User Safety
 
@@ -6571,14 +6523,6 @@ This is CRITICAL now.
 * Aadhaar/ID verified
 * Selfie verified
 * LinkedIn verified
-
-### Privacy Controls
-
-* Hide online status
-* Hide photos
-* Private mode
-* Invisible browsing
-* Screenshot prevention
 
 ---
 
@@ -6621,23 +6565,6 @@ This is CRITICAL now.
 * Personal relationship coach
 
 ---
-
-# I. FAMILY & COMMUNITY MODULE
-
-This is where matrimony apps differ from dating apps.
-
-## Important Features
-
-### Family Accounts
-
-* Parent-managed profile
-* Sibling-managed profile
-
-### Family Interaction
-
-* Share profile with family
-* Family approval system
-* Family chat
 
 ### Biodata
 
@@ -6711,12 +6638,6 @@ This is now expected by Gen Z users.
 
 * Best photo selection
 
----
-
-# L. GAMIFICATION & ENGAGEMENT
-
-Tinder is strong here.
-
 ## Enterprise Engagement
 
 * Daily recommendations
@@ -6725,77 +6646,3 @@ Tinder is strong here.
 * Activity badges
 * Profile strength
 * Rewards
-
----
-
-# M. SETTINGS ARCHITECTURE (IMPORTANT)
-
-Your current structure is good but should evolve.
-
----
-
-# Recommended Settings Structure
-
-## 1. Account
-
-* Edit Profile
-* Change Password
-* Manage Sessions
-* Delete Account
-
----
-
-## 2. Match Preferences
-
-* Partner Preferences
-* Discovery Preferences
-* Distance Preferences
-
----
-
-## 3. Privacy & Safety
-
-* Profile visibility
-* Online status
-* Read receipts
-* Blocked users
-* Screenshot privacy
-
----
-
-## 4. Notifications
-
-* Global toggle
-* Notification settings
-* Quiet hours
-
----
-
-## 5. App Preferences
-
-* Language
-* Theme
-* Sound
-* Vibration
-* Auto-play videos
-
----
-
-## 6. Subscription
-
-* Membership
-* Billing
-* Purchase history
-
----
-
-## 7. Support & Legal
-
-* Help center
-* FAQs
-* Privacy policy
-* Terms
-* Contact support
-
-
-

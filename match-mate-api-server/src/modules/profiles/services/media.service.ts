@@ -14,7 +14,7 @@ import {
 import { AppException } from '@/common/exceptions/app.exception';
 
 const MAX_IMAGES = 10;
-const MAX_VIDEOS = 3;
+const MAX_VIDEOS = 1;
 const IMAGE_STORAGE_FOLDER = 'profiles/images';
 const VIDEO_STORAGE_FOLDER = 'profiles/videos';
 

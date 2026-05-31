@@ -9,6 +9,7 @@ import {
   Religion,
   Caste,
   SmokingHabit,
+  PersonalityBadge,
 } from '../common/enums';
 
 export interface BasicData {
@@ -41,6 +42,7 @@ export interface PersonalData {
   drinking: DrinkingHabit;
   eating: EatingHabit;
   hobbies?: string[];
+  personalityBadges?: PersonalityBadge[];
   languages?: string[];
   aboutMe?: string;
 }

@@ -12,6 +12,7 @@ import {
   Religion,
   Caste,
   Country,
+  PersonalityBadge,
 } from '@/common/enums';
 
 @Schema({ _id: false })
@@ -127,6 +128,9 @@ export class Personal {
 
   @Prop({ type: [String], default: [] })
   hobbies?: string[];
+
+  @Prop({ type: [String], enum: PersonalityBadge, default: [] })
+  personalityBadges?: PersonalityBadge[];
 
   @Prop({ type: [String], default: [] })
   languages?: string[];

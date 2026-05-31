@@ -72,6 +72,7 @@ export interface SchemaProfile {
     drinking?: DrinkingHabit;
     eating?: EatingHabit;
     hobbies?: string[];
+    personalityBadges?: string[];
     languages?: string[];
     languagesKnown?: string[];
     aboutMe?: string;
@@ -123,6 +124,8 @@ export interface SchemaProfile {
   };
   preferences?: { languagesKnown?: string[] };
   images?: ProfileImage[];
+  videos?: ProfileImage[];
+  videoIntro?: ProfileImage | null;
   age?: number;
   height?: number;
   location?: { type?: 'Point'; coordinates?: [number, number] };

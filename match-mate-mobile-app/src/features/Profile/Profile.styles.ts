@@ -9,7 +9,7 @@ export const profileStyles = (theme: Theme) =>
       backgroundColor: theme.colors.backgroundPage,
     },
     container: { flex: 1 },
-    scrollContent: { paddingBottom: 112 },
+    scrollContent: { paddingBottom: 10 },
     centerContainer: {
       flex: 1,
       alignItems: 'center',

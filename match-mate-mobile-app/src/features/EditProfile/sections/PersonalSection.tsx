@@ -2,7 +2,13 @@ import React from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { Countries, Country, Genders, MaritalStatuses } from '@/core/types';
+import {
+  Countries,
+  Country,
+  Genders,
+  MaritalStatuses,
+  PersonalityBadges,
+} from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
 import { NumberStepper } from '../../../core/components/NumberStepper';
@@ -11,12 +17,24 @@ import { editProfileStyles } from '../EditProfile.styles';
 import {
   PersonalSection as PersonalSectionType,
   SectionKey,
+  TimeOfBirth,
 } from '../EditProfile.types';
 import { ToggleRow } from '@/core/components/ToggleRow';
 import { DatePicker } from '../components/DateOfBirthPicker';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
+import { MultiSelectPill } from '@/core/components/MultiSelectPill';
+
+const PERSONALITY_BADGE_OPTIONS = Object.values(PersonalityBadges).map(
+  (value) => ({
+    value,
+    label: value
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' '),
+  })
+);
 
 interface Props {
   personal: PersonalSectionType;
@@ -63,7 +81,7 @@ export function PersonalSection({
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.last_name')}
-            value={personal.lastName}
+            value={personal.lastName ?? ''}
             onChange={(v) => onSet('lastName', v)}
             placeholder={t('edit_profile.placeholders.last_name')}
           />
@@ -85,7 +103,7 @@ export function PersonalSection({
       />
 
       <TimeOfBirthPicker
-        value={personal.timeOfBirth}
+        value={personal.timeOfBirth as TimeOfBirth}
         onChange={(val) => onSet('timeOfBirth', val)}
       />
 
@@ -134,7 +152,7 @@ export function PersonalSection({
 
       <FormInput
         label={t('edit_profile.fields.mother_tongue')}
-        value={personal.motherTongue}
+        value={personal.motherTongue ?? ''}
         onChange={(v) => onSet('motherTongue', v)}
         placeholder={t('edit_profile.placeholders.mother_tongue')}
       />
@@ -150,7 +168,7 @@ export function PersonalSection({
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.state')}
-            value={personal.state}
+            value={personal.state ?? ''}
             onChange={(v) => onSet('state', v)}
             placeholder={t('edit_profile.placeholders.state')}
           />
@@ -158,7 +176,7 @@ export function PersonalSection({
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.city')}
-            value={personal.city}
+            value={personal.city ?? ''}
             onChange={(v) => onSet('city', v)}
             placeholder={t('edit_profile.placeholders.city')}
           />
@@ -167,7 +185,7 @@ export function PersonalSection({
 
       <FormInput
         label={t('edit_profile.fields.citizenship')}
-        value={personal.citizenship}
+        value={personal.citizenship ?? ''}
         onChange={(v) => onSet('citizenship', v)}
         placeholder={t('edit_profile.placeholders.citizenship')}
       />
@@ -180,10 +198,26 @@ export function PersonalSection({
 
       <FormInput
         label={t('edit_profile.fields.about_me')}
-        value={personal.aboutMe}
+        value={personal.aboutMe ?? ''}
         onChange={(v) => onSet('aboutMe', v)}
         multiline
         placeholder={t('edit_profile.placeholders.about_me')}
+      />
+
+      <MultiSelectPill
+        label="Personality badges"
+        options={PERSONALITY_BADGE_OPTIONS}
+        value={personal.personalityBadges ?? []}
+        onChange={(v) =>
+          onSet(
+            'personalityBadges',
+            v as PersonalSectionType['personalityBadges']
+          )
+        }
+        minSelection={3}
+        maxSelection={10}
+        showSelectedCount
+        helperText="Select 3 to 10 badges that describe you."
       />
     </SectionCard>
   );

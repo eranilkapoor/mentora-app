@@ -14,6 +14,7 @@ import {
   OccupationTypes,
   Religions,
   Castes,
+  PersonalityBadges,
 } from '@/core/types';
 import { ProfileData, Siblings } from './EditProfile.types';
 
@@ -44,6 +45,11 @@ export const INITIAL_PROFILE: ProfileData = {
     drinking: DrinkingHabits.NON_DRINKER,
     eating: EatingHabits.VEGETARIAN,
     hobbies: [],
+    personalityBadges: [
+      PersonalityBadges.FAMILY_ORIENTED,
+      PersonalityBadges.MARRIAGE_FOCUSED,
+      PersonalityBadges.SUPPORTIVE,
+    ],
     languages: [],
     aboutMe: '',
     placeOfBirth: {

@@ -10,6 +10,8 @@ import {
   Matches,
   ValidateBy,
   Min,
+  ArrayMaxSize,
+  ArrayMinSize,
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
 import { Gender, Eating, Drinking, Smoking } from '@/common/enums';
@@ -27,6 +29,7 @@ import {
   MaritalStatus,
   Minute,
   OccupationType,
+  PersonalityBadge,
   ProfileFor,
   Qualification,
   Religion,
@@ -197,6 +200,13 @@ export class PersonalDto {
   @IsArray()
   @IsString({ each: true })
   hobbies?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @ArrayMinSize(3)
+  @ArrayMaxSize(10)
+  @IsEnum(PersonalityBadge, { each: true })
+  personalityBadges?: PersonalityBadge[];
 
   @IsOptional()
   @IsArray()

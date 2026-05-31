@@ -10,6 +10,7 @@
   },
   "sections": {
     "photos": "Profile Photos",
+    "video_intro": "Video Intro",
     "personal": "Personal Info",
     "physical": "Physical Details",
     "education": "Education & Career",

@@ -13,6 +13,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { ProfileImage } from '@/core/types';
 import { MAX_PHOTOS } from '@/core/constants';
+import { resolveApiUrl } from '@/core/utils/config';
 import { SectionCard } from '../components/SectionCard';
 import { editProfileStyles } from '../EditProfile.styles';
 import { SectionKey } from '../EditProfile.types';
@@ -67,7 +68,10 @@ export function PhotosSection({
 
             return (
               <View key={mediaId ?? img.url} style={styles.photoWrapper}>
-                <Image source={{ uri: img.url }} style={styles.photo} />
+                <Image
+                  source={{ uri: resolveApiUrl(img.url) ?? img.url }}
+                  style={styles.photo}
+                />
 
                 {img.isPrimary && (
                   <View style={styles.primaryBadge}>

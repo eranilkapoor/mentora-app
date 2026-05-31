@@ -91,7 +91,7 @@ export class MediaController {
   }
 
   @Post('videos')
-  @UseInterceptors(FilesInterceptor('videos', 3))
+  @UseInterceptors(FilesInterceptor('videos', 1))
   @HttpCode(HttpStatus.CREATED)
   uploadVideos(
     @Req() req: AuthenticatedRequest,

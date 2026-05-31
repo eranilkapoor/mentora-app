@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   FlatList,
   ListRenderItem,
+  Linking,
 } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -82,6 +83,7 @@ const DEFAULT_PROFILE: SchemaProfile = {
     drinking: DrinkingHabits.NON_DRINKER,
     eating: EatingHabits.EGGETARIAN,
     hobbies: [],
+    personalityBadges: [],
     languages: [],
     languagesKnown: [],
   },
@@ -104,6 +106,8 @@ const DEFAULT_PROFILE: SchemaProfile = {
   },
   preferences: { languagesKnown: [] },
   images: [],
+  videos: [],
+  videoIntro: null,
 };
 
 // ─── Pure helpers ─────────────────────────────────────────────────────────────
@@ -641,6 +645,11 @@ export default function ProfileScreen({
     [profileData.personal.hobbies]
   );
 
+  const personalityBadges = useMemo(
+    () => toStringList(profileData.personal.personalityBadges),
+    [profileData.personal.personalityBadges]
+  );
+
   const languagesKnown = useMemo(
     () =>
       toStringList(
@@ -663,6 +672,15 @@ export default function ProfileScreen({
     () => getPrintableProfilePhoto(profileData.images),
     [profileData.images]
   );
+
+  const videoIntro = useMemo(() => {
+    const video = profileData.videoIntro ?? profileData.videos?.[0];
+    if (!video?.url) return null;
+    return {
+      ...video,
+      url: resolveApiUrl(video.url) ?? video.url,
+    };
+  }, [profileData.videoIntro, profileData.videos]);
 
   const profileSummary = useMemo(
     () =>
@@ -1172,7 +1190,34 @@ export default function ProfileScreen({
           )}
         </Section>
 
+        {videoIntro && (
+          <Section titleKey="profile.section_video_intro" icon="video">
+            <TouchableOpacity
+              style={styles.tagSection}
+              activeOpacity={0.85}
+              accessibilityRole="button"
+              accessibilityLabel="Open video intro"
+              onPress={() => {
+                void Linking.openURL(videoIntro.url);
+              }}
+            >
+              <Text style={styles.tagSectionLabel}>
+                {t('profile.video_intro_available')}
+              </Text>
+              <TagList items={[t('profile.video_intro_watch')]} />
+            </TouchableOpacity>
+          </Section>
+        )}
+
         <Section titleKey="profile.section_interests" icon="music">
+          {personalityBadges.length > 0 && (
+            <View style={styles.tagSection}>
+              <Text style={styles.tagSectionLabel}>
+                {t('profile.personality_label')}
+              </Text>
+              <TagList items={personalityBadges.map(formatCamelCase)} />
+            </View>
+          )}
           {hobbies.length > 0 && (
             <View style={styles.tagSection}>
               <Text style={styles.tagSectionLabel}>

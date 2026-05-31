@@ -109,9 +109,20 @@ export class ProfilesService {
       const profile = await this.profileRepo.findByUserId(userId);
       if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
+      const [images, videos] = await Promise.all([
+        this.mediaService.getImages(userId),
+        this.mediaService.getVideos(userId),
+      ]);
+
       const enriched = await this.withVerificationStatus(
         userId,
-        this.enrichProfile(profile as Record<string, unknown>),
+        this.enrichProfile({
+          ...(profile as Record<string, unknown>),
+          images,
+          videos,
+          videoIntro:
+            videos.find((video) => video.isPrimary) ?? videos[0] ?? null,
+        }),
       );
       await this.cache.set(cacheKey, enriched, 300);
 
@@ -423,6 +434,7 @@ export class ProfilesService {
   private calculateProfileScore(dto: CreateProfileDto): number {
     let score = 60;
     if (dto.personal.aboutMe) score += 10;
+    if ((dto.personal.personalityBadges?.length ?? 0) >= 3) score += 5;
     if (dto.education.annualIncomeAmount) score += 10;
     if (dto.family) score += 10;
     return Math.min(score, 100);
@@ -440,6 +452,7 @@ export class ProfilesService {
       Boolean(dto.education.qualification),
       Boolean(dto.education.occupation),
       Boolean(dto.personal.aboutMe),
+      (dto.personal.personalityBadges?.length ?? 0) >= 3,
       Boolean(dto.family),
     ];
     return Math.round((checks.filter(Boolean).length / checks.length) * 100);
@@ -463,6 +476,8 @@ export class ProfilesService {
       Boolean(education.qualification),
       Boolean(education.occupation),
       Boolean(personal.aboutMe),
+      Array.isArray(personal.personalityBadges) &&
+        personal.personalityBadges.length >= 3,
       Boolean(profile.family),
     ];
 
@@ -482,6 +497,7 @@ export class ProfilesService {
       dto.education.occupation,
       ...(dto.personal.languages ?? []),
       ...(dto.personal.hobbies ?? []),
+      ...(dto.personal.personalityBadges ?? []),
     ];
     return this.deduplicateTags(raw);
   }
@@ -506,6 +522,9 @@ export class ProfilesService {
         : []),
       ...(Array.isArray(personal.hobbies)
         ? (personal.hobbies as string[])
+        : []),
+      ...(Array.isArray(personal.personalityBadges)
+        ? (personal.personalityBadges as string[])
         : []),
     ];
 
@@ -724,11 +743,6 @@ export class ProfilesService {
       );
 
       const profilePayload = {
-        referralCode: user.referralCode,
-        referredBy: user.referredBy
-          ? new Types.ObjectId(user.referredBy)
-          : undefined,
-        referredByCode: user.referredByCode,
         personal: {
           profileFor: dto.basic.profileFor,
           firstName: dto.basic.firstName,

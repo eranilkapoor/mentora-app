@@ -76,6 +76,32 @@ export const EatingHabits = {
 
 export type EatingHabit = (typeof EatingHabits)[keyof typeof EatingHabits];
 
+export const PersonalityBadges = {
+  FAMILY_ORIENTED: 'family_oriented',
+  MARRIAGE_FOCUSED: 'marriage_focused',
+  TRADITIONAL_VALUES: 'traditional_values',
+  MODERN_THINKER: 'modern_thinker',
+  CAREER_FOCUSED: 'career_focused',
+  ENTREPRENEUR: 'entrepreneur',
+  SPIRITUAL: 'spiritual',
+  RELIGIOUS: 'religious',
+  TRAVELER: 'traveler',
+  FOODIE: 'foodie',
+  BOOK_LOVER: 'book_lover',
+  MUSIC_LOVER: 'music_lover',
+  FITNESS_ENTHUSIAST: 'fitness_enthusiast',
+  PET_LOVER: 'pet_lover',
+  NATURE_LOVER: 'nature_lover',
+  AMBITIOUS: 'ambitious',
+  CALM_NATURE: 'calm_nature',
+  FRIENDLY: 'friendly',
+  HUMOROUS: 'humorous',
+  SUPPORTIVE: 'supportive',
+} as const;
+
+export type PersonalityBadge =
+  (typeof PersonalityBadges)[keyof typeof PersonalityBadges];
+
 // ─── Sibling Type ─────────────────────────────────────────────────────────────
 
 export const SiblingTypes = {

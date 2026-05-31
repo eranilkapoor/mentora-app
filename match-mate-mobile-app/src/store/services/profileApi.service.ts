@@ -106,6 +106,11 @@ export const profileApi = baseApi.injectEndpoints({
       providesTags: ['ProfileMedia'],
     }),
 
+    getMyProfileMediaVideos: builder.query<ApiResponse<ProfileImage[]>, void>({
+      query: () => '/profiles/media/videos',
+      providesTags: ['ProfileMedia'],
+    }),
+
     addProfileMediaImages: builder.mutation<
       ApiResponse<ProfileImage[]>,
       FormData
@@ -140,6 +145,41 @@ export const profileApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['ProfileMedia', 'Profile'],
     }),
+
+    addProfileMediaVideos: builder.mutation<
+      ApiResponse<ProfileImage[]>,
+      FormData
+    >({
+      query: (body) => ({
+        url: '/profiles/media/videos',
+        method: 'POST',
+        body,
+        formData: true,
+      }),
+      invalidatesTags: ['ProfileMedia', 'Profile'],
+    }),
+
+    setPrimaryProfileMediaVideo: builder.mutation<
+      ApiResponse<void>,
+      { mediaId: string }
+    >({
+      query: ({ mediaId }) => ({
+        url: `/profiles/media/videos/${mediaId}/primary`,
+        method: 'PATCH',
+      }),
+      invalidatesTags: ['ProfileMedia', 'Profile'],
+    }),
+
+    removeProfileMediaVideo: builder.mutation<
+      ApiResponse<void>,
+      { mediaId: string }
+    >({
+      query: ({ mediaId }) => ({
+        url: `/profiles/media/videos/${mediaId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['ProfileMedia', 'Profile'],
+    }),
   }),
 
   overrideExisting: false,
@@ -156,7 +196,11 @@ export const {
   useUpdateProfileLocationMutation,
   useUpdatePreferencesMutation,
   useGetMyProfileMediaImagesQuery,
+  useGetMyProfileMediaVideosQuery,
   useAddProfileMediaImagesMutation,
+  useAddProfileMediaVideosMutation,
   useSetPrimaryProfileMediaImageMutation,
+  useSetPrimaryProfileMediaVideoMutation,
   useRemoveProfileMediaImageMutation,
+  useRemoveProfileMediaVideoMutation,
 } = profileApi;

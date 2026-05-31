@@ -120,7 +120,6 @@ export class ReferralsService {
 
     user.referralCode = await this.generateUniqueReferralCode(user);
     await user.save();
-    await this.syncProfileReferralFields(user);
 
     return user;
   }
@@ -133,7 +132,6 @@ export class ReferralsService {
     const referredUser = await this.ensureReferralCode(referredUserId);
 
     if (!normalizedCode) {
-      await this.syncProfileReferralFields(referredUser);
       return;
     }
 
@@ -153,8 +151,7 @@ export class ReferralsService {
       return throwBadRequest(ErrorCode.REFERRAL_SELF_NOT_ALLOWED);
     }
 
-    referredUser.referredBy = String(referrer._id);
-    referredUser.referredByCode = normalizedCode;
+    referredUser.referredBy = referrer._id;
     await referredUser.save();
 
     const reward = await this.rewardModel.findOneAndUpdate(
@@ -176,7 +173,6 @@ export class ReferralsService {
     );
 
     await this.recalculateUserReferralPoints(String(referrer._id));
-    await this.syncProfileReferralFields(referredUser);
 
     if (reward.referrerId.toString() !== referrer._id.toString()) {
       return throwConflict(ErrorCode.REFERRAL_ALREADY_APPLIED);
@@ -267,21 +263,5 @@ export class ReferralsService {
     await this.userModel.findByIdAndUpdate(userId, {
       $set: { referralPoints: result[0]?.totalPoints ?? 0 },
     });
-  }
-
-  private async syncProfileReferralFields(user: UserDocument): Promise<void> {
-    await this.profileModel.findOneAndUpdate(
-      { userId: user._id },
-      {
-        $set: {
-          referralCode: user.referralCode,
-          referredBy: user.referredBy
-            ? new Types.ObjectId(user.referredBy)
-            : undefined,
-          referredByCode: user.referredByCode,
-        },
-      },
-      { new: true },
-    );
   }
 }

@@ -10,9 +10,13 @@ import {
   useUpdateEducationInfoMutation,
   useUpdateFamilyInfoMutation,
   useGetMyProfileMediaImagesQuery,
+  useGetMyProfileMediaVideosQuery,
   useAddProfileMediaImagesMutation,
+  useAddProfileMediaVideosMutation,
   useSetPrimaryProfileMediaImageMutation,
+  useSetPrimaryProfileMediaVideoMutation,
   useRemoveProfileMediaImageMutation,
+  useRemoveProfileMediaVideoMutation,
 } from '@/store/services/profileApi.service';
 import {
   ProfileData,
@@ -45,6 +49,12 @@ export function useEditProfileForm() {
     isFetching: imagesFetching,
   } = useGetMyProfileMediaImagesQuery();
 
+  const {
+    data: videosData,
+    isLoading: videosLoading,
+    isFetching: videosFetching,
+  } = useGetMyProfileMediaVideosQuery();
+
   // ─── Mutations ────────────────────────────────────────────────────────────
 
   const [updatePersonalInfo] = useUpdatePersonalInfoMutation();
@@ -52,14 +62,22 @@ export function useEditProfileForm() {
   const [updateEducationInfo] = useUpdateEducationInfoMutation();
   const [updateFamilyInfo] = useUpdateFamilyInfoMutation();
   const [addMediaImages] = useAddProfileMediaImagesMutation();
+  const [addMediaVideos] = useAddProfileMediaVideosMutation();
   const [setPrimaryImage] = useSetPrimaryProfileMediaImageMutation();
+  const [setPrimaryVideo] = useSetPrimaryProfileMediaVideoMutation();
   const [removeMediaImage] = useRemoveProfileMediaImageMutation();
+  const [removeMediaVideo] = useRemoveProfileMediaVideoMutation();
 
   // ─── Server images (source of truth) ─────────────────────────────────────
 
   const serverImages = useMemo(
     () => (imagesData?.success ? (imagesData.data ?? []) : []),
     [imagesData]
+  );
+
+  const serverVideos = useMemo(
+    () => (videosData?.success ? (videosData.data ?? []) : []),
+    [videosData]
   );
 
   // ─── Load profile from API ─────────────────────────────────────────────────
@@ -238,6 +256,67 @@ export function useEditProfileForm() {
     }
   }, [serverImages.length, addMediaImages, t]);
 
+  const pickVideoIntro = useCallback(async (): Promise<void> => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (status !== 'granted') {
+      showError({
+        title: t('edit_profile.photos.permission_title'),
+        message: t('edit_profile.photos.permission_message'),
+      });
+      return;
+    }
+
+    if (serverVideos.length >= 1) {
+      showError({
+        title: t('common.error'),
+        message:
+          'Only one video intro is allowed. Remove the existing video first.',
+      });
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Videos,
+      quality: 0.8,
+      allowsEditing: true,
+    });
+
+    if (result.canceled || !result.assets[0]) return;
+
+    const asset = result.assets[0];
+
+    setImageUploading(true);
+    try {
+      const formData = new FormData();
+
+      if (Platform.OS === 'web') {
+        const res = await fetch(asset.uri);
+        const blob = await res.blob();
+        formData.append(
+          'videos',
+          new File([blob], asset.fileName ?? `intro-${Date.now()}.mp4`, {
+            type: asset.mimeType ?? 'video/mp4',
+          })
+        );
+      } else {
+        formData.append('videos', {
+          uri: asset.uri,
+          type: asset.mimeType ?? 'video/mp4',
+          name: asset.fileName ?? `intro-${Date.now()}.mp4`,
+        } as unknown as Blob);
+      }
+
+      await addMediaVideos(formData).unwrap();
+    } catch {
+      showError({
+        title: t('common.error'),
+        message: 'Unable to upload video intro.',
+      });
+    } finally {
+      setImageUploading(false);
+    }
+  }, [serverVideos.length, addMediaVideos, t]);
+
   // ─── Image: Set Primary ───────────────────────────────────────────────────
 
   const handleSetPrimary = useCallback(
@@ -253,6 +332,21 @@ export function useEditProfileForm() {
       }
     },
     [setPrimaryImage, t]
+  );
+
+  const handleSetPrimaryVideo = useCallback(
+    async (mediaId: string): Promise<void> => {
+      if (!mediaId) return;
+      try {
+        await setPrimaryVideo({ mediaId }).unwrap();
+      } catch {
+        showError({
+          title: t('common.error'),
+          message: 'Unable to set primary video intro.',
+        });
+      }
+    },
+    [setPrimaryVideo, t]
   );
 
   // ─── Image: Remove ────────────────────────────────────────────────────────
@@ -303,10 +397,38 @@ export function useEditProfileForm() {
     [removeMediaImage, t]
   );
 
+  const handleRemoveVideoIntro = useCallback(
+    async (mediaId: string): Promise<void> => {
+      if (!mediaId) return;
+      try {
+        await removeMediaVideo({ mediaId }).unwrap();
+      } catch {
+        showError({
+          title: t('common.error'),
+          message: 'Unable to remove video intro.',
+        });
+      }
+    },
+    [removeMediaVideo, t]
+  );
+
   // ─── Save section ─────────────────────────────────────────────────────────
 
   const updateSection = useCallback(
     async (section: SectionKey): Promise<void> => {
+      if (
+        section === 'personal' &&
+        profile.personal.personalityBadges &&
+        (profile.personal.personalityBadges.length < 3 ||
+          profile.personal.personalityBadges.length > 10)
+      ) {
+        showError({
+          title: t('common.error'),
+          message: 'Please select 3 to 10 personality badges.',
+        });
+        return;
+      }
+
       setSectionLoading(section);
       try {
         switch (section) {
@@ -364,6 +486,8 @@ export function useEditProfileForm() {
     // Images (server-driven)
     images: serverImages,
     imagesLoading: imagesLoading || imagesFetching,
+    videos: serverVideos,
+    videosLoading: videosLoading || videosFetching,
     imageUploading,
     // Section setters
     setPersonal,
@@ -372,8 +496,11 @@ export function useEditProfileForm() {
     setFamily,
     // Image handlers
     pickImage,
+    pickVideoIntro,
     handleSetPrimary,
+    handleSetPrimaryVideo,
     handleRemoveImage,
+    handleRemoveVideoIntro,
     // Save
     handleSave,
   };

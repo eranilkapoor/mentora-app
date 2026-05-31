@@ -22,6 +22,7 @@ import {
   Qualification,
   Religion,
   Caste,
+  PersonalityBadge,
 } from '@/core/types';
 
 export interface TimeOfBirth {
@@ -81,6 +82,7 @@ export interface PersonalSection {
   drinking: DrinkingHabit;
   eating: EatingHabit;
   hobbies?: string[];
+  personalityBadges?: PersonalityBadge[];
   languages?: string[];
   aboutMe?: string;
 }

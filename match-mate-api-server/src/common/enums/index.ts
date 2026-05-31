@@ -19,6 +19,7 @@ export * from './media-type.enum';
 export * from './mime-type.enum';
 export * from './occupation-type.enum';
 export * from './permission.enum';
+export * from './personality-badge.enum';
 export * from './plan-tier.enum';
 export * from './profile-for.enum';
 export * from './profile-status.enum';

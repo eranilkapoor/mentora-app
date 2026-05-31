@@ -11,6 +11,7 @@ import { editProfileStyles } from './EditProfile.styles';
 import { useEditProfileForm } from './hooks/useEditProfileForm';
 import { CompletionBar } from './components/CompletionBar';
 import { PhotosSection } from './sections/PhotosSection';
+import { VideoIntroSection } from './sections/VideoIntroSection';
 import { PersonalSection } from './sections/PersonalSection';
 import { AstroSection } from './sections/AstroSection';
 import { PhysicalSection } from './sections/PhysicalSection';
@@ -39,11 +40,16 @@ export default function EditProfileScreen({
     setFamily,
     images,
     imagesLoading,
+    videos,
+    videosLoading,
     imageUploading,
     pickImage,
+    pickVideoIntro,
     handleSave,
     handleSetPrimary,
+    handleSetPrimaryVideo,
     handleRemoveImage,
+    handleRemoveVideoIntro,
   } = useEditProfileForm();
 
   if (pageLoading) {
@@ -86,6 +92,22 @@ export default function EditProfileScreen({
             }}
             onRemove={(mediaId) => {
               void handleRemoveImage(mediaId);
+            }}
+            {...sectionProps}
+          />
+
+          <VideoIntroSection
+            videos={videos}
+            videosLoading={videosLoading}
+            videoUploading={imageUploading}
+            onPickVideo={() => {
+              void pickVideoIntro();
+            }}
+            onSetPrimary={(mediaId) => {
+              void handleSetPrimaryVideo(mediaId);
+            }}
+            onRemove={(mediaId) => {
+              void handleRemoveVideoIntro(mediaId);
             }}
             {...sectionProps}
           />

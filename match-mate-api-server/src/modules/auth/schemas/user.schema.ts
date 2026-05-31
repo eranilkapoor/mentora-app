@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document } from 'mongoose';
+import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
 import {
   SubscriptionStatus,
@@ -67,11 +67,8 @@ export class User {
   @Prop({ uppercase: true, trim: true })
   referralCode?: string;
 
-  @Prop({ type: String, uppercase: true, trim: true })
-  referredByCode?: string;
-
-  @Prop()
-  referredBy?: string;
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  referredBy?: Types.ObjectId;
 
   @Prop({ default: 0, min: 0 })
   referralPoints!: number;
