@@ -20,11 +20,10 @@ import Loader from '@/core/components/Loader';
 import {
   LocalizationSettings,
   LocalizationSettingsScreenProps,
+  SelectKey,
 } from './LocalizationSettings.types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { toggleLocationSharing } from '@/store/slices/settings.slice';
-
-type SelectKey = 'region' | 'timezone' | 'dateFormat' | 'currency';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -147,13 +146,13 @@ export default function LocalizationSettingsScreen({
           <SettingsSelectItem
             icon="map"
             label={t('settings.localization.region_label')}
-            value={formatValue(regionOptions, settings?.region)}
+            value={formatValue(regionOptions, settings.region)}
             onPress={() => setActiveSelect('region')}
           />
           <SettingsSelectItem
             icon="clock"
             label={t('settings.localization.timezone')}
-            value={settings?.timezone ?? 'UTC'}
+            value={settings?.timezone}
             isLast
             onPress={() => setActiveSelect('timezone')}
           />
@@ -187,7 +186,7 @@ export default function LocalizationSettingsScreen({
         visible={activeSelect === 'region'}
         title={t('settings.localization.region_label')}
         options={regionOptions}
-        selectedValue={settings.region}
+        selectedValue={settings.region ?? 'GLOBAL'}
         onSelect={(value) => handleUpdate('region', value)}
         onClose={() => setActiveSelect(null)}
       />
@@ -195,7 +194,7 @@ export default function LocalizationSettingsScreen({
         visible={activeSelect === 'timezone'}
         title={t('settings.localization.timezone')}
         options={timezoneOptions}
-        selectedValue={settings.timezone}
+        selectedValue={settings.timezone ?? 'UTC'}
         onSelect={(value) => handleUpdate('timezone', value)}
         onClose={() => setActiveSelect(null)}
       />
@@ -203,7 +202,7 @@ export default function LocalizationSettingsScreen({
         visible={activeSelect === 'dateFormat'}
         title={t('settings.localization.date_format')}
         options={dateFormatOptions}
-        selectedValue={settings.dateFormat}
+        selectedValue={settings.dateFormat ?? 'YYYY-MM-DD'}
         onSelect={(value) => handleUpdate('dateFormat', value)}
         onClose={() => setActiveSelect(null)}
       />
@@ -211,7 +210,7 @@ export default function LocalizationSettingsScreen({
         visible={activeSelect === 'currency'}
         title={t('settings.localization.currency')}
         options={currencyOptions}
-        selectedValue={settings.currency}
+        selectedValue={settings.currency ?? 'INR'}
         onSelect={(value) => handleUpdate('currency', value)}
         onClose={() => setActiveSelect(null)}
       />

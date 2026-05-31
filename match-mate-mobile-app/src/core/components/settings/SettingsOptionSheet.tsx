@@ -41,6 +41,7 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.surface,
       paddingTop: 12,
       paddingBottom: 20,
+      zIndex: 1,
     },
     handle: {
       alignSelf: 'center',
@@ -115,16 +116,20 @@ export function SettingsOptionSheet<T extends string>({
       animationType="slide"
       onRequestClose={onClose}
     >
-      <Pressable
-        style={styles.backdrop}
-        accessibilityRole="button"
-        accessibilityLabel={t('common.close')}
-        onPress={onClose}
-      >
-        <Pressable style={styles.sheet}>
+      <View style={styles.backdrop}>
+        <Pressable
+          style={StyleSheet.absoluteFill}
+          accessibilityRole="button"
+          accessibilityLabel={t('common.close')}
+          onPress={onClose}
+        />
+
+        <View style={styles.sheet}>
           <View style={styles.handle} />
+
           <View style={styles.header}>
             <Text style={styles.title}>{title}</Text>
+
             <Pressable
               style={styles.closeButton}
               accessibilityRole="button"
@@ -152,12 +157,14 @@ export function SettingsOptionSheet<T extends string>({
                 >
                   <View style={styles.optionText}>
                     <Text style={styles.optionLabel}>{option.label}</Text>
+
                     {option.description ? (
                       <Text style={styles.optionDescription}>
                         {option.description}
                       </Text>
                     ) : null}
                   </View>
+
                   {selected ? (
                     <Feather
                       name="check"
@@ -169,8 +176,8 @@ export function SettingsOptionSheet<T extends string>({
               );
             })}
           </ScrollView>
-        </Pressable>
-      </Pressable>
+        </View>
+      </View>
     </Modal>
   );
 }

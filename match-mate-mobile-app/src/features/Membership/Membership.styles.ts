@@ -9,7 +9,7 @@ export const membershipStyles = (theme: Theme) =>
     },
     scroll: {
       paddingHorizontal: 16,
-      paddingBottom: 120,
+      paddingBottom: 10,
     },
 
     // ─── Hero ─────────────────────────────────────────────────────────────

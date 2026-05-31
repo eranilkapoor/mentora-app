@@ -4,6 +4,8 @@ export interface LocalizationSettingsScreenProps {
   navigation: SettingsNavigationProp;
 }
 
+export type SelectKey = 'region' | 'timezone' | 'dateFormat' | 'currency';
+
 export interface LocalizationSettings {
   appLanguage: string;
   preferredLanguages: string[];

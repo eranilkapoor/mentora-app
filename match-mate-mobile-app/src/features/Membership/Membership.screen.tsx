@@ -14,16 +14,7 @@ import { MembershipHeroCard } from './components/MembershipHeroCard';
 import { SelfServiceTab } from './components/SelfServiceTab';
 import { AssistedTab } from './components/AssistedTab';
 import { MembershipCta } from './components/MembershipCta';
-
-// Tab options are stable — defined outside component
-const MEMBERSHIP_TABS: Array<{
-  key: MembershipTab;
-  labelKey: string;
-  icon: string;
-}> = [
-  { key: 'self', labelKey: 'membership.tab_self', icon: 'user' },
-  { key: 'assisted', labelKey: 'membership.tab_assisted', icon: 'users' },
-];
+import { MEMBERSHIP_TABS } from './Membership.constants';
 
 export default function MembershipScreen(): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
@@ -31,7 +22,7 @@ export default function MembershipScreen(): React.ReactElement {
   const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<MembershipTab>('self');
-  const [duration, setDuration] = useState(6);
+  const [duration, setDuration] = useState(1);
 
   const {
     displayPlans,
@@ -39,7 +30,7 @@ export default function MembershipScreen(): React.ReactElement {
     setSelectedPlan,
     selectedPlanItem,
     selectedIndex,
-    activePlanName = '',
+    activePlanName = 'Free',
     isFetchingPlans,
   } = useMembershipData();
 
@@ -82,7 +73,7 @@ export default function MembershipScreen(): React.ReactElement {
                 accessibilityLabel={t(tabItem.labelKey)}
               >
                 <Feather
-                  name={tabItem.icon as never}
+                  name={tabItem.icon}
                   size={14}
                   color={
                     isActive ? theme.colors.primary : theme.colors.textMuted

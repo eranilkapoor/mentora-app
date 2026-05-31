@@ -32,11 +32,18 @@ const createStyles = (theme: Theme) =>
     header: {
       paddingHorizontal: 14,
       paddingVertical: 12,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
-      backgroundColor: theme.colors.backgroundPage,
+
       flexDirection: 'row',
       alignItems: 'center',
+
+      backgroundColor: theme.colors.backgroundPage,
+
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+
+      borderTopLeftRadius: 12,
+      borderTopRightRadius: 12,
+
       gap: 8,
     },
     headerText: { flex: 1 },

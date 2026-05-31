@@ -5,7 +5,17 @@ import {
   BenefitItem,
   StatItem,
   TrustBadge,
+  MembershipTab,
 } from './Membership.types';
+
+export const MEMBERSHIP_TABS: Array<{
+  key: MembershipTab;
+  labelKey: string;
+  icon: string;
+}> = [
+  { key: 'self', labelKey: 'membership.tab_self', icon: 'user' },
+  { key: 'assisted', labelKey: 'membership.tab_assisted', icon: 'users' },
+];
 
 export const PLANS: Plan[] = [
   { name: 'Pro Lite', price: '₹1,999', contacts: 0, superInterest: 0 },
@@ -19,7 +29,6 @@ export const PLANS: Plan[] = [
   },
 ];
 
-// Feature label keys are i18n — values are data (checkmarks / counts)
 export const FEATURES: FeatureItem[] = [
   { labelKey: 'membership.feature_calls_chat', values: ['✓', '✓', '✓'] },
   { labelKey: 'membership.feature_engage_plus', values: ['✓', '✓', '✓'] },
