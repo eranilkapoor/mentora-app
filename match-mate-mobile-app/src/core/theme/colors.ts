@@ -153,6 +153,8 @@ export const DARKCOLORS: Partial<ColorPalette> = {
 
   accentLight: 'rgba(200,155,60,0.12)',
 
+  whatsapp: '#2EE07C',
+
   // ─────────────────────────────────────────────
   // Backgrounds
   // ─────────────────────────────────────────────
@@ -175,6 +177,8 @@ export const DARKCOLORS: Partial<ColorPalette> = {
   modalOverlay: 'rgba(0,0,0,0.7)',
 
   overlayDark: 'rgba(0,0,0,0.75)',
+
+  overlayLight: 'rgba(255,255,255,0.10)',
 
   // ─────────────────────────────────────────────
   // Text
@@ -221,8 +225,16 @@ export const DARKCOLORS: Partial<ColorPalette> = {
   error: '#FF6B6B',
   errorLight: 'rgba(255,107,107,0.15)',
 
+  danger: '#FF6B6B',
+
   info: '#FF5C8A',
   infoLight: 'rgba(255,92,138,0.15)',
+
+  link: '#FF7EA3',
+
+  chatBtn: '#FF5C8A',
+
+  shortlistBg: 'rgba(200,155,60,0.14)',
 
   // ─────────────────────────────────────────────
   // Status
@@ -232,6 +244,8 @@ export const DARKCOLORS: Partial<ColorPalette> = {
   offline: '#6B7280',
 
   verified: '#FF5C8A',
+
+  gold: '#E7B64C',
 
   platinum: '#D4D4D8',
 

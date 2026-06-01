@@ -55,7 +55,7 @@ export const matchDetailStyles = (theme: Theme) =>
       backgroundColor: theme.colors.overlayDark,
     },
     dotActive: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       width: 20,
     },
 

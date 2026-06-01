@@ -19,6 +19,8 @@ export const editPreferenceStyles = (theme: Theme) =>
     sectionCard: {
       backgroundColor: theme.colors.surface,
       borderRadius: 12,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
       marginBottom: 16,
       overflow: 'hidden',
       ...(Platform.OS === 'ios' || Platform.OS === 'android'

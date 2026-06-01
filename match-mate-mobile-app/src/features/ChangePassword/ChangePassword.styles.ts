@@ -28,7 +28,7 @@ export const changePasswordStyles = (theme: Theme) =>
       lineHeight: 18,
     },
     card: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 12,
       padding: 16,
       marginBottom: 20,

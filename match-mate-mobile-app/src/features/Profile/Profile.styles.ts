@@ -38,7 +38,7 @@ export const profileStyles = (theme: Theme) =>
       backgroundColor: theme.colors.overlayDark,
     },
     dotActive: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       width: 18,
     },
     nameCard: {

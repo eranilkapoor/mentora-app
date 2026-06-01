@@ -52,6 +52,8 @@ const createStyles = (theme: Theme) =>
       height: 46,
       borderRadius: 23,
       backgroundColor: theme.colors.backgroundLight,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
     },
     userInfo: {
       flex: 1,
@@ -82,6 +84,7 @@ const createStyles = (theme: Theme) =>
       borderWidth: 1,
       borderColor: theme.colors.error,
       backgroundColor: theme.colors.errorLight,
+      minHeight: 36,
     },
     unblockText: {
       color: theme.colors.error,

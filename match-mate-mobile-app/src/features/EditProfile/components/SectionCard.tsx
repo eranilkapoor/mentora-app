@@ -74,6 +74,8 @@ function SectionCardComponent({
         card: {
           backgroundColor: theme.colors.surface,
           borderRadius: 16,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: theme.colors.divider,
           marginBottom: 16,
           overflow: 'visible',
           zIndex: 1,
@@ -81,7 +83,7 @@ function SectionCardComponent({
 
           ...Platform.select({
             ios: {
-              shadowColor: '#000',
+              shadowColor: theme.colors.black,
               shadowOffset: {
                 width: 0,
                 height: 2,

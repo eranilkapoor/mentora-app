@@ -19,7 +19,7 @@ export const settingsStyles = (theme: Theme) =>
     },
 
     profileBanner: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 20,
       padding: 16,
       marginBottom: 20,
@@ -98,7 +98,7 @@ export const settingsStyles = (theme: Theme) =>
     },
 
     section: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
 
       borderRadius: 18,
 

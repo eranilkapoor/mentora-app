@@ -9,7 +9,7 @@ export const headerStyles = (theme: Theme) =>
       justifyContent: 'space-between',
       paddingHorizontal: 16,
       paddingVertical: 10,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       elevation: 2,
@@ -58,7 +58,7 @@ export const headerStyles = (theme: Theme) =>
       borderRadius: 4,
       backgroundColor: theme.colors.danger,
       borderWidth: 1.5,
-      borderColor: theme.colors.white,
+      borderColor: theme.colors.surface,
     },
     avatar: {
       width: 38,

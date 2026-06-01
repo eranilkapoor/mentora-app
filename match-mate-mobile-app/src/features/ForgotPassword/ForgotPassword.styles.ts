@@ -5,7 +5,7 @@ export const forgotPasswordStyles = (theme: Theme) =>
   StyleSheet.create({
     safe: {
       flex: 1,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.backgroundPage,
     },
     container: { flex: 1 },
     scrollContent: {
@@ -146,7 +146,7 @@ export const forgotPasswordStyles = (theme: Theme) =>
       width: 28,
       height: 28,
       borderRadius: 8,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
     },

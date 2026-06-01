@@ -345,7 +345,7 @@ export const onboardingStyles = (theme: Theme) =>
       width: 26,
       height: 26,
       borderRadius: 13,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       alignItems: 'center',
       justifyContent: 'center',
       elevation: 2,

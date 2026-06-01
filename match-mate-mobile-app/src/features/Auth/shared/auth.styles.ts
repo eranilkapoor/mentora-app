@@ -60,7 +60,7 @@ export const authSharedStyles = (theme: Theme) =>
       gap: 6,
     },
     tabActive: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderWidth: 1,
       borderColor: theme.colors.primary,
       elevation: 2,
@@ -256,7 +256,7 @@ export const authSharedStyles = (theme: Theme) =>
       paddingVertical: 13,
       paddingHorizontal: 16,
       borderRadius: 10,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
     },
     socialIcon: { marginRight: 12 },
     socialLabel: {

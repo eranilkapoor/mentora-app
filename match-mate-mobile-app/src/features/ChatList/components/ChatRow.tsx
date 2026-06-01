@@ -1,7 +1,15 @@
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { ChatMatch, formatTime } from '../ChatList.types';
 import { chatListStyles } from '../ChatList.styles';
-import { Image, TouchableOpacity, View, Text } from 'react-native';
+import {
+  GestureResponderEvent,
+  Image,
+  Platform,
+  Pressable,
+  TouchableOpacity,
+  View,
+  Text,
+} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 
@@ -28,13 +36,23 @@ export function ChatRow({
     item.lastMessageStatus === 'read'
       ? theme.colors.success
       : theme.colors.textMuted;
+  const stopRowPress = (
+    event: GestureResponderEvent,
+    action?: () => void
+  ): void => {
+    event.stopPropagation();
+    action?.();
+  };
 
   return (
-    <TouchableOpacity
-      style={[styles.card, item.unreadCount > 0 && styles.cardUnread]}
+    <Pressable
+      style={({ pressed }) => [
+        styles.card,
+        item.unreadCount > 0 && styles.cardUnread,
+        pressed && styles.cardPressed,
+      ]}
       onPress={onPress}
-      activeOpacity={0.75}
-      accessibilityRole="button"
+      accessibilityRole={Platform.OS === 'web' ? undefined : 'button'}
       accessibilityLabel={`Chat with ${item.name}`}
     >
       {/* Avatar */}
@@ -112,7 +130,7 @@ export function ChatRow({
               styles.quickActionBtn,
               item.isPinned && styles.quickActionBtnActive,
             ]}
-            onPress={onTogglePin}
+            onPress={(event) => stopRowPress(event, onTogglePin)}
             accessibilityRole="button"
             accessibilityLabel={item.isPinned ? 'Unpin chat' : 'Pin chat'}
           >
@@ -129,7 +147,7 @@ export function ChatRow({
               styles.quickActionBtn,
               item.isMuted && styles.quickActionBtnActive,
             ]}
-            onPress={onToggleMute}
+            onPress={(event) => stopRowPress(event, onToggleMute)}
             accessibilityRole="button"
             accessibilityLabel={item.isMuted ? 'Unmute chat' : 'Mute chat'}
           >
@@ -146,7 +164,7 @@ export function ChatRow({
               styles.quickActionBtn,
               item.isArchived && styles.quickActionBtnActive,
             ]}
-            onPress={onToggleArchive}
+            onPress={(event) => stopRowPress(event, onToggleArchive)}
             accessibilityRole="button"
             accessibilityLabel={
               item.isArchived ? 'Unarchive chat' : 'Archive chat'
@@ -162,6 +180,6 @@ export function ChatRow({
           </TouchableOpacity>
         </View>
       </View>
-    </TouchableOpacity>
+    </Pressable>
   );
 }

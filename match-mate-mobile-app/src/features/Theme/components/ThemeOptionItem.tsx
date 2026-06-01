@@ -84,7 +84,7 @@ const ThemeOptionItemComponent = ({
 
       {isActive ? (
         <View style={styles.checkBadge}>
-          <Feather name="check" size={13} color="#fff" />
+          <Feather name="check" size={13} color={theme.colors.white} />
         </View>
       ) : (
         <View style={styles.checkBadgeEmpty} />

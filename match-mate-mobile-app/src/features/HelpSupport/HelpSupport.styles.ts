@@ -15,7 +15,7 @@ export const helpSupportStyles = (theme: Theme) =>
 
     // ─── Header Card ──────────────────────────────────────────────────────
     headerCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 16,
       padding: 20,
       marginBottom: 16,
@@ -46,7 +46,7 @@ export const helpSupportStyles = (theme: Theme) =>
 
     // ─── Section Card ─────────────────────────────────────────────────────
     sectionCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 16,
       marginBottom: 16,
       borderWidth: StyleSheet.hairlineWidth,

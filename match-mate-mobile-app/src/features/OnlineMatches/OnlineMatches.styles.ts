@@ -15,7 +15,7 @@ export const onlineMatchesStyles = (theme: Theme) =>
       alignItems: 'center',
       paddingHorizontal: 16,
       paddingVertical: 14,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       elevation: 2,
@@ -82,7 +82,7 @@ export const onlineMatchesStyles = (theme: Theme) =>
     card: {
       marginBottom: 16,
       borderRadius: 18,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       overflow: 'hidden',
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
@@ -227,7 +227,7 @@ export const onlineMatchesStyles = (theme: Theme) =>
     skeletonCard: {
       marginBottom: 16,
       borderRadius: 18,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       overflow: 'hidden',
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,

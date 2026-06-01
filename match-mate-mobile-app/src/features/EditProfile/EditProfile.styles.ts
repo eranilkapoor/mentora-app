@@ -243,6 +243,7 @@ export const editProfileStyles = (theme: Theme) =>
       fontSize: 13,
       fontWeight: '600',
       flex: 1,
+      color: theme.colors.textSecondary,
     },
     controls: {
       flexDirection: 'row',
@@ -254,6 +255,8 @@ export const editProfileStyles = (theme: Theme) =>
       height: 32,
       borderRadius: 8,
       borderWidth: 1,
+      borderColor: theme.colors.border,
+      backgroundColor: theme.colors.inputBackground,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -262,6 +265,7 @@ export const editProfileStyles = (theme: Theme) =>
       fontWeight: '700',
       minWidth: 24,
       textAlign: 'center',
+      color: theme.colors.textPrimary,
     },
     disabled: {
       opacity: 0.4,
@@ -273,9 +277,11 @@ export const editProfileStyles = (theme: Theme) =>
       letterSpacing: 0.5,
       marginBottom: 12,
       marginTop: 4,
+      color: theme.colors.textMuted,
     },
     sublabel: {
       fontSize: 12,
       marginTop: 2,
+      color: theme.colors.textMuted,
     },
   });

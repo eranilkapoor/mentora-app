@@ -15,7 +15,7 @@ export const chatListStyles = (theme: Theme) =>
       alignItems: 'center',
       paddingHorizontal: 16,
       paddingVertical: 14,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       elevation: 2,
@@ -60,7 +60,7 @@ export const chatListStyles = (theme: Theme) =>
       fontWeight: '600',
     },
     filterRail: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
     },
@@ -103,7 +103,7 @@ export const chatListStyles = (theme: Theme) =>
       backgroundColor: theme.colors.primaryLight,
     },
     filterCountActive: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
     },
     filterCountText: {
       fontSize: 10,
@@ -118,7 +118,7 @@ export const chatListStyles = (theme: Theme) =>
     searchWrapper: {
       paddingHorizontal: 16,
       paddingVertical: 10,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
     },
@@ -150,13 +150,16 @@ export const chatListStyles = (theme: Theme) =>
       flexDirection: 'row',
       paddingHorizontal: 16,
       paddingVertical: 13,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       alignItems: 'center',
     },
     cardUnread: {
       backgroundColor: theme.colors.primaryLight,
+    },
+    cardPressed: {
+      opacity: 0.75,
     },
 
     // ─── Avatar ───────────────────────────────────────────────────────────
@@ -183,7 +186,7 @@ export const chatListStyles = (theme: Theme) =>
       borderRadius: 7,
       backgroundColor: theme.colors.success,
       borderWidth: 2,
-      borderColor: theme.colors.white,
+      borderColor: theme.colors.surface,
     },
 
     // ─── Info ─────────────────────────────────────────────────────────────
@@ -318,7 +321,7 @@ export const chatListStyles = (theme: Theme) =>
       alignItems: 'center',
       borderBottomWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       gap: 12,
     },
     skeletonAvatar: {

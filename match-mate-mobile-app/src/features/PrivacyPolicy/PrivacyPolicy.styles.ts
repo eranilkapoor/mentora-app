@@ -12,7 +12,7 @@ export const privacyPolicyStyles = (theme: Theme) =>
       paddingBottom: 40,
     },
     card: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 8,
       padding: 16,
       overflow: 'hidden',

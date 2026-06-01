@@ -15,7 +15,7 @@ export const languageStyles = (theme: Theme) =>
 
     // ─── Header Card ──────────────────────────────────────────────────────
     headerCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 16,
       padding: 20,
       marginBottom: 20,
@@ -46,7 +46,7 @@ export const languageStyles = (theme: Theme) =>
 
     // ─── Section Card ─────────────────────────────────────────────────────
     sectionCard: {
-      backgroundColor: theme.colors.white,
+      backgroundColor: theme.colors.surface,
       borderRadius: 16,
       marginBottom: 16,
       borderWidth: StyleSheet.hairlineWidth,
@@ -110,7 +110,9 @@ export const languageStyles = (theme: Theme) =>
       justifyContent: 'center',
     },
     optionIconWrapperActive: {
-      backgroundColor: theme.colors.primaryLight,
+      backgroundColor: theme.colors.surfaceElevated,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
     },
     optionLabel: {
       fontSize: 15,

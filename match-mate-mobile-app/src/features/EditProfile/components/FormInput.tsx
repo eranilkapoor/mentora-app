@@ -111,7 +111,7 @@ export function FormInput({
           borderColor: error
             ? theme.colors.error
             : focused
-              ? theme.colors.black
+              ? theme.colors.primary
               : theme.colors.border,
 
           backgroundColor: editable

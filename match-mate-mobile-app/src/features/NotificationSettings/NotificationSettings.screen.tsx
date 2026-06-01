@@ -205,7 +205,7 @@ export default function NotificationSettingsScreen({
             <View
               style={[
                 masterStyles.iconWrapper,
-                { backgroundColor: theme.colors.white },
+                { backgroundColor: theme.colors.surface },
               ]}
             >
               <Feather name="bell" size={22} color={theme.colors.primary} />
