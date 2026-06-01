@@ -9,6 +9,7 @@ import {
 export interface ProfileImage {
   _id?: string;
   url: string;
+  thumbnailUrl?: string | null;
   isPrimary?: boolean;
   isActive?: boolean;
   filename?: string;

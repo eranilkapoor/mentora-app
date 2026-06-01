@@ -10,7 +10,6 @@ import {
   TouchableOpacity,
   FlatList,
   ListRenderItem,
-  Linking,
 } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -57,6 +56,7 @@ import { TagList } from './components/TagList';
 import { showError } from '@/core/utils/toast';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { resolveApiUrl } from '@/core/utils/config';
+import { InlineVideoPlayer } from '@/core/components/media/InlineVideoPlayer';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -678,6 +678,9 @@ export default function ProfileScreen({
     return {
       ...video,
       url: resolveApiUrl(video.url) ?? video.url,
+      thumbnailUrl: video.thumbnailUrl
+        ? (resolveApiUrl(video.thumbnailUrl) ?? video.thumbnailUrl)
+        : undefined,
     };
   }, [profileData.videoIntro]);
 
@@ -1191,20 +1194,35 @@ export default function ProfileScreen({
 
         {videoIntro && (
           <Section titleKey="profile.section_video_intro" icon="video">
-            <TouchableOpacity
-              style={styles.tagSection}
-              activeOpacity={0.85}
-              accessibilityRole="button"
-              accessibilityLabel="Open video intro"
-              onPress={() => {
-                void Linking.openURL(videoIntro.url);
-              }}
-            >
-              <Text style={styles.tagSectionLabel}>
-                {t('profile.video_intro_available')}
-              </Text>
-              <TagList items={[t('profile.video_intro_watch')]} />
-            </TouchableOpacity>
+            <View style={styles.videoIntroCard}>
+              <InlineVideoPlayer
+                videoUrl={videoIntro.url}
+                thumbnailUrl={videoIntro.thumbnailUrl}
+                placeholderText={t('profile.video_intro_available')}
+                previewStyle={styles.videoIntroPreview}
+                thumbnailStyle={styles.videoIntroThumbnail}
+                thumbnailImageStyle={styles.videoIntroThumbnailImage}
+                overlayStyle={styles.videoIntroOverlay}
+                placeholderStyle={styles.videoIntroPlaceholder}
+                playButtonStyle={styles.videoIntroPlayButton}
+                placeholderTextStyle={styles.videoIntroPlaceholderText}
+              />
+              <View style={styles.videoIntroContent}>
+                <View style={styles.videoIntroTitleRow}>
+                  <Feather
+                    name="video"
+                    size={15}
+                    color={theme.colors.primary}
+                  />
+                  <Text style={styles.videoIntroTitle}>
+                    {t('profile.video_intro_available')}
+                  </Text>
+                </View>
+                <Text style={styles.videoIntroSubtitle}>
+                  {t('profile.video_intro_watch')}
+                </Text>
+              </View>
+            </View>
           </Section>
         )}
 

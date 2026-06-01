@@ -47,7 +47,8 @@
           "locationWhenInUsePermission": "Allow MatchMate to use your location to show nearby matrimonial matches."
         }
       ],
-      "expo-font"
+      "expo-font",
+      "expo-video"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

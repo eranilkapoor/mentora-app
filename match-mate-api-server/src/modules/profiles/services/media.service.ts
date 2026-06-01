@@ -17,6 +17,7 @@ const MAX_IMAGES = 10;
 const MAX_VIDEOS = 1;
 const IMAGE_STORAGE_FOLDER = 'profiles/images';
 const VIDEO_STORAGE_FOLDER = 'profiles/videos';
+const VIDEO_THUMBNAIL_STORAGE_FOLDER = 'profiles/video-thumbnails';
 
 @Injectable()
 export class MediaService {
@@ -142,6 +143,7 @@ export class MediaService {
     _req: AppRequest,
     userId: string,
     files: Express.Multer.File[],
+    thumbnails: Express.Multer.File[] = [],
   ) {
     try {
       const currentCount = await this.mediaRepo.countByUser(
@@ -159,6 +161,10 @@ export class MediaService {
         files,
         VIDEO_STORAGE_FOLDER,
       );
+      const uploadedThumbnails = await this.storageService.uploadFiles(
+        thumbnails.slice(0, files.length),
+        VIDEO_THUMBNAIL_STORAGE_FOLDER,
+      );
 
       const hasPrimary = await this.mediaRepo.hasPrimary(
         userId,
@@ -168,6 +174,7 @@ export class MediaService {
       const inputs = uploaded.map((vid, index) => ({
         ...vid,
         type: MediaType.VIDEO,
+        thumbnailUrl: uploadedThumbnails[index]?.url,
         mimeType: files[index]?.mimetype,
         size: files[index]?.size,
         isPrimary: !hasPrimary && index === 0,
@@ -221,6 +228,16 @@ export class MediaService {
           media.filename,
           VIDEO_STORAGE_FOLDER,
         );
+      }
+
+      if (media.thumbnailUrl) {
+        const thumbnailFilename = media.thumbnailUrl.split('/').pop();
+        if (thumbnailFilename) {
+          await this.storageService.deleteFile(
+            thumbnailFilename,
+            VIDEO_THUMBNAIL_STORAGE_FOLDER,
+          );
+        }
       }
 
       await this.invalidateCache(userId);

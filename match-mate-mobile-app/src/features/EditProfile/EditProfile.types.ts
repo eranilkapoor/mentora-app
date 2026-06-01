@@ -125,6 +125,7 @@ export interface ProfileData {
   education: EducationSection;
   family: FamilySection;
   images?: ProfileImage[];
+  videos?: ProfileImage[];
 }
 
 export type SectionKey = keyof ProfileData;

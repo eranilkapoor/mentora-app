@@ -225,6 +225,72 @@ export const profileStyles = (theme: Theme) =>
       fontSize: 14,
       paddingVertical: 4,
     },
+    videoIntroCard: {
+      marginVertical: 10,
+      borderRadius: 8,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    videoIntroPreview: {
+      width: '100%',
+      aspectRatio: 16 / 9,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    videoIntroThumbnail: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    videoIntroThumbnailImage: {
+      resizeMode: 'cover',
+    },
+    videoIntroOverlay: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.overlayLight,
+    },
+    videoIntroPlaceholder: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 10,
+      backgroundColor: theme.colors.primaryLight,
+    },
+    videoIntroPlayButton: {
+      width: 54,
+      height: 54,
+      borderRadius: 27,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+    },
+    videoIntroPlaceholderText: {
+      color: theme.colors.primary,
+      fontSize: 13,
+      fontWeight: '800',
+    },
+    videoIntroContent: {
+      paddingHorizontal: 12,
+      paddingVertical: 12,
+      gap: 5,
+    },
+    videoIntroTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    videoIntroTitle: {
+      color: theme.colors.textPrimary,
+      fontSize: 14,
+      fontWeight: '800',
+    },
+    videoIntroSubtitle: {
+      color: theme.colors.textMuted,
+      fontSize: 12,
+      lineHeight: 17,
+    },
     siblingList: { gap: 10, paddingBottom: 4 },
     siblingItem: {
       flexDirection: 'row',

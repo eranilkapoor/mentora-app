@@ -119,7 +119,9 @@ export const resolveApiUrl = (url: string): string | null => {
   const trimmedUrl = url.trim();
 
   if (!trimmedUrl) return null;
-  if (/^(file:|data:)/i.test(trimmedUrl)) return trimmedUrl;
+  if (/^(file:|data:|blob:|content:|ph:|assets-library:)/i.test(trimmedUrl)) {
+    return trimmedUrl;
+  }
 
   if (/^https?:\/\//i.test(trimmedUrl)) {
     try {

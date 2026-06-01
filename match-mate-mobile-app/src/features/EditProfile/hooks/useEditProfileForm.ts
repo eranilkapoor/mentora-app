@@ -3,6 +3,7 @@ import { Platform } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useTranslation } from 'react-i18next';
 import { MAX_PHOTOS } from '@/core/constants';
+import { ProfileImage } from '@/core/types';
 import {
   useGetMyProfileQuery,
   useUpdatePersonalInfoMutation,
@@ -29,6 +30,68 @@ import {
 import { INITIAL_PROFILE } from '../EditProfile.constants';
 import { showError, showSuccess } from '@/core/utils/toast';
 import { showConfirm } from '@/core/utils/confirm';
+import { generateVideoThumbnail } from '@/core/utils/videoThumbnail';
+
+interface PendingMediaAsset {
+  tempId: string;
+  asset: ImagePicker.ImagePickerAsset;
+  thumbnailUri?: string;
+}
+
+const isPendingMediaId = (mediaId: string): boolean =>
+  mediaId.startsWith('pending-');
+
+const appendAssetToFormData = async (
+  formData: FormData,
+  fieldName: 'images' | 'videos',
+  asset: ImagePicker.ImagePickerAsset,
+  fallbackName: string,
+  fallbackType: string
+): Promise<void> => {
+  if (Platform.OS === 'web') {
+    const res = await fetch(asset.uri);
+    const blob = await res.blob();
+    formData.append(
+      fieldName,
+      new File([blob], asset.fileName ?? fallbackName, {
+        type: asset.mimeType ?? fallbackType,
+      })
+    );
+    return;
+  }
+
+  formData.append(fieldName, {
+    uri: asset.uri,
+    type: asset.mimeType ?? fallbackType,
+    name: asset.fileName ?? fallbackName,
+  } as unknown as Blob);
+};
+
+const appendUriToFormData = async (
+  formData: FormData,
+  fieldName: 'thumbnails',
+  uri: string,
+  fallbackName: string,
+  fallbackType: string
+): Promise<void> => {
+  if (Platform.OS === 'web') {
+    const res = await fetch(uri);
+    const blob = await res.blob();
+    formData.append(
+      fieldName,
+      new File([blob], fallbackName, {
+        type: blob.type || fallbackType,
+      })
+    );
+    return;
+  }
+
+  formData.append(fieldName, {
+    uri,
+    type: fallbackType,
+    name: fallbackName,
+  } as unknown as Blob);
+};
 
 export function useEditProfileForm() {
   const { t } = useTranslation();
@@ -36,13 +99,23 @@ export function useEditProfileForm() {
   const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
   const [sectionLoading, setSectionLoading] = useState<SectionKey | null>(null);
   const [pageLoading, setPageLoading] = useState(true);
-  const [imageUploading, setImageUploading] = useState(false);
-
-  // ─── Queries ──────────────────────────────────────────────────────────────
+  const [imageUploading] = useState(false);
+  const [pendingImageAssets, setPendingImageAssets] = useState<
+    PendingMediaAsset[]
+  >([]);
+  const [pendingVideoAsset, setPendingVideoAsset] =
+    useState<PendingMediaAsset | null>(null);
+  const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
+  const [removedVideoIds, setRemovedVideoIds] = useState<string[]>([]);
+  const [pendingPrimaryImageId, setPendingPrimaryImageId] = useState<
+    string | null
+  >(null);
+  const [pendingPrimaryVideoId, setPendingPrimaryVideoId] = useState<
+    string | null
+  >(null);
 
   const { data, error, isLoading } = useGetMyProfileQuery();
 
-  // Images are driven entirely by the server — no local image state
   const {
     data: imagesData,
     isLoading: imagesLoading,
@@ -55,8 +128,6 @@ export function useEditProfileForm() {
     isFetching: videosFetching,
   } = useGetMyProfileMediaVideosQuery();
 
-  // ─── Mutations ────────────────────────────────────────────────────────────
-
   const [updatePersonalInfo] = useUpdatePersonalInfoMutation();
   const [updatePhysicalInfo] = useUpdatePhysicalInfoMutation();
   const [updateEducationInfo] = useUpdateEducationInfoMutation();
@@ -68,8 +139,6 @@ export function useEditProfileForm() {
   const [removeMediaImage] = useRemoveProfileMediaImageMutation();
   const [removeMediaVideo] = useRemoveProfileMediaVideoMutation();
 
-  // ─── Server images (source of truth) ─────────────────────────────────────
-
   const serverImages = useMemo(
     () => (imagesData?.success ? (imagesData.data ?? []) : []),
     [imagesData]
@@ -80,7 +149,71 @@ export function useEditProfileForm() {
     [videosData]
   );
 
-  // ─── Load profile from API ─────────────────────────────────────────────────
+  const images = useMemo<ProfileImage[]>(() => {
+    const activeServerImages = serverImages
+      .filter((image) => !image._id || !removedImageIds.includes(image._id))
+      .map((image) => ({
+        ...image,
+        isPrimary: pendingPrimaryImageId
+          ? image._id === pendingPrimaryImageId
+          : (image.isPrimary ?? false),
+      }));
+
+    const stagedImages = pendingImageAssets.map(({ tempId, asset }, index) => {
+      const shouldBePrimary =
+        activeServerImages.length === 0 &&
+        !pendingPrimaryImageId &&
+        index === 0;
+
+      return {
+        _id: tempId,
+        url: asset.uri,
+        filename: asset.fileName ?? 'New profile photo',
+        ...(asset.mimeType ? { mimeType: asset.mimeType } : {}),
+        isActive: true,
+        isPrimary: shouldBePrimary,
+      };
+    });
+
+    return [...activeServerImages, ...stagedImages];
+  }, [
+    pendingImageAssets,
+    pendingPrimaryImageId,
+    removedImageIds,
+    serverImages,
+  ]);
+
+  const videos = useMemo<ProfileImage[]>(() => {
+    const activeServerVideos = serverVideos
+      .filter((video) => !video._id || !removedVideoIds.includes(video._id))
+      .map((video) => ({
+        ...video,
+        isPrimary: pendingPrimaryVideoId
+          ? video._id === pendingPrimaryVideoId
+          : (video.isPrimary ?? false),
+      }));
+
+    if (!pendingVideoAsset) {
+      return activeServerVideos;
+    }
+
+    return [
+      ...activeServerVideos,
+      {
+        _id: pendingVideoAsset.tempId,
+        url: pendingVideoAsset.asset.uri,
+        filename: pendingVideoAsset.asset.fileName ?? 'New video intro',
+        ...(pendingVideoAsset.thumbnailUri
+          ? { thumbnailUrl: pendingVideoAsset.thumbnailUri }
+          : {}),
+        ...(pendingVideoAsset.asset.mimeType
+          ? { mimeType: pendingVideoAsset.asset.mimeType }
+          : {}),
+        isActive: true,
+        isPrimary: activeServerVideos.length === 0 && !pendingPrimaryVideoId,
+      },
+    ];
+  }, [pendingPrimaryVideoId, pendingVideoAsset, removedVideoIds, serverVideos]);
 
   useEffect(() => {
     if (isLoading) return;
@@ -119,8 +252,6 @@ export function useEditProfileForm() {
     setPageLoading(false);
   }, [data, error, isLoading, t]);
 
-  // ─── Profile completion ──────────────────────────────────────────────────
-
   const profileCompletion = useMemo((): number => {
     const serverCompletion =
       data?.success && data.data
@@ -143,15 +274,13 @@ export function useEditProfileForm() {
       profile.education.qualification,
       profile.education.occupation,
       profile.family.familyType,
-      serverImages.length > 0 ? 'yes' : '',
+      images.length > 0 ? 'yes' : '',
     ];
     const filled = checks.filter(
       (v) => v !== '' && v !== null && v !== undefined
     ).length;
     return Math.round((filled / checks.length) * 100);
-  }, [data, profile, serverImages]);
-
-  // ─── Section setters ─────────────────────────────────────────────────────
+  }, [data, images.length, profile]);
 
   const setPersonal = useCallback(
     <K extends keyof PersonalSection>(key: K, value: PersonalSection[K]) => {
@@ -184,8 +313,6 @@ export function useEditProfileForm() {
     []
   );
 
-  // ─── Image: Upload ────────────────────────────────────────────────────────
-
   const pickImage = useCallback(async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== 'granted') {
@@ -196,7 +323,7 @@ export function useEditProfileForm() {
       return;
     }
 
-    if (serverImages.length >= MAX_PHOTOS) {
+    if (images.length >= MAX_PHOTOS) {
       showError({
         title: t('edit_profile.photos.limit_title'),
         message: t('edit_profile.photos.limit_message', { max: MAX_PHOTOS }),
@@ -211,50 +338,17 @@ export function useEditProfileForm() {
       aspect: [4, 5] as [number, number],
     });
 
-    if (result.canceled || !result.assets[0]) return;
-
+    if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
 
-    setImageUploading(true);
-    try {
-      const formData = new FormData();
-
-      if (Platform.OS === 'web') {
-        // Web: fetch blob from URI and append as File
-        const res = await fetch(asset.uri);
-        const blob = await res.blob();
-        formData.append(
-          'images',
-          new File([blob], asset.fileName ?? `photo-${Date.now()}.jpg`, {
-            type: asset.mimeType ?? 'image/jpeg',
-          })
-        );
-      } else {
-        // Native: append the file object directly
-        formData.append('images', {
-          uri: asset.uri,
-          type: asset.mimeType ?? 'image/jpeg',
-          name: asset.fileName ?? `photo-${Date.now()}.jpg`,
-        } as unknown as Blob);
-      }
-
-      const response = await addMediaImages(formData).unwrap();
-
-      if (!response.success) {
-        throw new Error(t('edit_profile.photos.upload_failed'));
-      }
-
-      // RTK invalidates 'ProfileMedia' → useGetMyProfileMediaImagesQuery
-      // refetches automatically — no local state update needed
-    } catch {
-      showError({
-        title: t('common.error'),
-        message: t('edit_profile.photos.upload_failed'),
-      });
-    } finally {
-      setImageUploading(false);
-    }
-  }, [serverImages.length, addMediaImages, t]);
+    setPendingImageAssets((current) => [
+      ...current,
+      {
+        tempId: `pending-image-${Date.now()}`,
+        asset,
+      },
+    ]);
+  }, [images.length, t]);
 
   const pickVideoIntro = useCallback(async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -266,7 +360,7 @@ export function useEditProfileForm() {
       return;
     }
 
-    if (serverVideos.length >= 1) {
+    if (videos.length >= 1) {
       showError({
         title: t('common.error'),
         message:
@@ -281,136 +375,194 @@ export function useEditProfileForm() {
       allowsEditing: true,
     });
 
-    if (result.canceled || !result.assets[0]) return;
-
+    if (result.canceled || !result.assets?.[0]) return;
     const asset = result.assets[0];
 
-    setImageUploading(true);
-    try {
-      const formData = new FormData();
+    const thumbnailUri = await generateVideoThumbnail(asset.uri);
 
-      if (Platform.OS === 'web') {
-        const res = await fetch(asset.uri);
-        const blob = await res.blob();
-        formData.append(
-          'videos',
-          new File([blob], asset.fileName ?? `intro-${Date.now()}.mp4`, {
-            type: asset.mimeType ?? 'video/mp4',
-          })
-        );
-      } else {
-        formData.append('videos', {
-          uri: asset.uri,
-          type: asset.mimeType ?? 'video/mp4',
-          name: asset.fileName ?? `intro-${Date.now()}.mp4`,
-        } as unknown as Blob);
-      }
+    setPendingVideoAsset({
+      tempId: `pending-video-${Date.now()}`,
+      asset,
+      ...(thumbnailUri ? { thumbnailUri } : {}),
+    });
+  }, [t, videos.length]);
 
-      await addMediaVideos(formData).unwrap();
-    } catch {
-      showError({
-        title: t('common.error'),
-        message: 'Unable to upload video intro.',
-      });
-    } finally {
-      setImageUploading(false);
-    }
-  }, [serverVideos.length, addMediaVideos, t]);
+  const handleSetPrimary = useCallback((mediaId: string): void => {
+    if (!mediaId || isPendingMediaId(mediaId)) return;
+    setPendingPrimaryImageId(mediaId);
+  }, []);
 
-  // ─── Image: Set Primary ───────────────────────────────────────────────────
-
-  const handleSetPrimary = useCallback(
-    async (mediaId: string): Promise<void> => {
-      if (!mediaId) return;
-      try {
-        await setPrimaryImage({ mediaId }).unwrap();
-      } catch {
-        showError({
-          title: t('common.error'),
-          message: t('edit_profile.photos.set_primary_failed'),
-        });
-      }
-    },
-    [setPrimaryImage, t]
-  );
-
-  const handleSetPrimaryVideo = useCallback(
-    async (mediaId: string): Promise<void> => {
-      if (!mediaId) return;
-      try {
-        await setPrimaryVideo({ mediaId }).unwrap();
-      } catch {
-        showError({
-          title: t('common.error'),
-          message: 'Unable to set primary video intro.',
-        });
-      }
-    },
-    [setPrimaryVideo, t]
-  );
-
-  // ─── Image: Remove ────────────────────────────────────────────────────────
+  const handleSetPrimaryVideo = useCallback((mediaId: string): void => {
+    if (!mediaId || isPendingMediaId(mediaId)) return;
+    setPendingPrimaryVideoId(mediaId);
+  }, []);
 
   const handleRemoveImage = useCallback(
     async (mediaId: string): Promise<void> => {
       if (!mediaId) return;
 
-      const handleDelete = async (): Promise<void> => {
-        try {
-          await removeMediaImage({ mediaId }).unwrap();
-        } catch {
-          if (Platform.OS === 'web') {
-            window.alert(t('edit_profile.photos.remove_failed'));
-          } else {
-            showError({
-              title: t('common.error'),
-              message: t('edit_profile.photos.remove_failed'),
-            });
-          }
+      const markForRemoval = (): void => {
+        if (isPendingMediaId(mediaId)) {
+          setPendingImageAssets((current) =>
+            current.filter((item) => item.tempId !== mediaId)
+          );
+          return;
         }
-      };
 
-      if (Platform.OS === 'web') {
-        const confirmed = window.confirm(
-          t('edit_profile.photos.remove_confirm_message')
+        setRemovedImageIds((current) =>
+          current.includes(mediaId) ? current : [...current, mediaId]
         );
-
-        if (confirmed) {
-          await handleDelete();
-        }
-
-        return;
-      }
+        setPendingPrimaryImageId((current) =>
+          current === mediaId ? null : current
+        );
+      };
 
       showConfirm({
         title: t('edit_profile.photos.remove_confirm_title'),
         message: t('edit_profile.photos.remove_confirm_message'),
         confirmText: t('common.delete'),
         destructive: true,
-        onConfirm: () => {
-          void handleDelete();
-        },
+        onConfirm: markForRemoval,
       });
     },
-    [removeMediaImage, t]
+    [t]
   );
 
   const handleRemoveVideoIntro = useCallback(
     async (mediaId: string): Promise<void> => {
       if (!mediaId) return;
-      try {
-        await removeMediaVideo({ mediaId }).unwrap();
-      } catch {
-        showError({
-          title: t('common.error'),
-          message: 'Unable to remove video intro.',
-        });
-      }
+
+      const markForRemoval = (): void => {
+        if (isPendingMediaId(mediaId)) {
+          setPendingVideoAsset(null);
+          return;
+        }
+
+        setRemovedVideoIds((current) =>
+          current.includes(mediaId) ? current : [...current, mediaId]
+        );
+        setPendingPrimaryVideoId((current) =>
+          current === mediaId ? null : current
+        );
+      };
+
+      showConfirm({
+        title: 'Remove video intro?',
+        message:
+          'This will remove your current profile introduction video after you save this section.',
+        confirmText: t('common.delete'),
+        destructive: true,
+        onConfirm: markForRemoval,
+      });
     },
-    [removeMediaVideo, t]
+    [t]
   );
 
-  // ─── Save section ─────────────────────────────────────────────────────────
+  const saveImageChanges = useCallback(async (): Promise<void> => {
+    const hadExistingVisibleImage = serverImages.some(
+      (image) => image._id && !removedImageIds.includes(image._id)
+    );
+
+    for (const mediaId of removedImageIds) {
+      await removeMediaImage({ mediaId }).unwrap();
+    }
+
+    let firstUploadedImageId: string | undefined;
+    if (pendingImageAssets.length > 0) {
+      const formData = new FormData();
+      for (const { asset } of pendingImageAssets) {
+        await appendAssetToFormData(
+          formData,
+          'images',
+          asset,
+          `photo-${Date.now()}.jpg`,
+          'image/jpeg'
+        );
+      }
+
+      const response = await addMediaImages(formData).unwrap();
+      if (!response.success) {
+        throw new Error(t('edit_profile.photos.upload_failed'));
+      }
+
+      firstUploadedImageId = response.data?.find((image) => image._id)?._id;
+    }
+
+    if (pendingPrimaryImageId) {
+      await setPrimaryImage({ mediaId: pendingPrimaryImageId }).unwrap();
+    } else if (!hadExistingVisibleImage && firstUploadedImageId) {
+      await setPrimaryImage({ mediaId: firstUploadedImageId }).unwrap();
+    }
+
+    setPendingImageAssets([]);
+    setRemovedImageIds([]);
+    setPendingPrimaryImageId(null);
+  }, [
+    addMediaImages,
+    pendingImageAssets,
+    pendingPrimaryImageId,
+    removeMediaImage,
+    removedImageIds,
+    serverImages,
+    setPrimaryImage,
+    t,
+  ]);
+
+  const saveVideoChanges = useCallback(async (): Promise<void> => {
+    const hadExistingVisibleVideo = serverVideos.some(
+      (video) => video._id && !removedVideoIds.includes(video._id)
+    );
+
+    for (const mediaId of removedVideoIds) {
+      await removeMediaVideo({ mediaId }).unwrap();
+    }
+
+    let firstUploadedVideoId: string | undefined;
+    if (pendingVideoAsset) {
+      const formData = new FormData();
+      await appendAssetToFormData(
+        formData,
+        'videos',
+        pendingVideoAsset.asset,
+        `intro-${Date.now()}.mp4`,
+        'video/mp4'
+      );
+      if (pendingVideoAsset.thumbnailUri) {
+        await appendUriToFormData(
+          formData,
+          'thumbnails',
+          pendingVideoAsset.thumbnailUri,
+          `intro-thumbnail-${Date.now()}.jpg`,
+          'image/jpeg'
+        );
+      }
+
+      const response = await addMediaVideos(formData).unwrap();
+      if (!response.success) {
+        throw new Error('Unable to upload video intro.');
+      }
+
+      firstUploadedVideoId = response.data?.find((video) => video._id)?._id;
+    }
+
+    if (pendingPrimaryVideoId) {
+      await setPrimaryVideo({ mediaId: pendingPrimaryVideoId }).unwrap();
+    } else if (!hadExistingVisibleVideo && firstUploadedVideoId) {
+      await setPrimaryVideo({ mediaId: firstUploadedVideoId }).unwrap();
+    }
+
+    setPendingVideoAsset(null);
+    setRemovedVideoIds([]);
+    setPendingPrimaryVideoId(null);
+  }, [
+    addMediaVideos,
+    pendingPrimaryVideoId,
+    pendingVideoAsset,
+    removeMediaVideo,
+    removedVideoIds,
+    serverVideos,
+    setPrimaryVideo,
+  ]);
 
   const updateSection = useCallback(
     async (section: SectionKey): Promise<void> => {
@@ -443,9 +595,13 @@ export function useEditProfileForm() {
             await updateFamilyInfo(profile.family).unwrap();
             break;
           case 'images':
-            // Images are managed via their own handlers — no-op here
+            await saveImageChanges();
+            break;
+          case 'videos':
+            await saveVideoChanges();
             break;
         }
+
         showSuccess({
           title: t('common.saved'),
           message: t('edit_profile.success.section_saved'),
@@ -461,6 +617,8 @@ export function useEditProfileForm() {
     },
     [
       profile,
+      saveImageChanges,
+      saveVideoChanges,
       updatePersonalInfo,
       updatePhysicalInfo,
       updateEducationInfo,
@@ -481,25 +639,21 @@ export function useEditProfileForm() {
     sectionLoading,
     pageLoading,
     profileCompletion,
-    // Images (server-driven)
-    images: serverImages,
+    images,
     imagesLoading: imagesLoading || imagesFetching,
-    videos: serverVideos,
+    videos,
     videosLoading: videosLoading || videosFetching,
     imageUploading,
-    // Section setters
     setPersonal,
     setPhysical,
     setEducation,
     setFamily,
-    // Image handlers
     pickImage,
     pickVideoIntro,
     handleSetPrimary,
     handleSetPrimaryVideo,
     handleRemoveImage,
     handleRemoveVideoIntro,
-    // Save
     handleSave,
   };
 }

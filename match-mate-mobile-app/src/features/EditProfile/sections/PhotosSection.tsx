@@ -65,6 +65,8 @@ export function PhotosSection({
         >
           {images.map((img) => {
             const mediaId = img._id;
+            const isPending = mediaId?.startsWith('pending-') ?? false;
+            const isPrimary = img.isPrimary ?? false;
 
             return (
               <View key={mediaId ?? img.url} style={styles.photoWrapper}>
@@ -73,10 +75,18 @@ export function PhotosSection({
                   style={styles.photo}
                 />
 
-                {img.isPrimary && (
+                {isPrimary && (
                   <View style={styles.primaryBadge}>
                     <Text style={styles.primaryBadgeText}>
                       {t('edit_profile.photos.primary')}
+                    </Text>
+                  </View>
+                )}
+
+                {isPending && (
+                  <View style={styles.primaryBadge}>
+                    <Text style={styles.primaryBadgeText}>
+                      {t('common.new', { defaultValue: 'New' })}
                     </Text>
                   </View>
                 )}
@@ -85,26 +95,26 @@ export function PhotosSection({
                   <TouchableOpacity
                     style={[
                       styles.photoActionBtn,
-                      img.isPrimary && styles.photoActionBtnDisabled,
+                      (isPrimary || isPending) && styles.photoActionBtnDisabled,
                     ]}
                     onPress={() => {
-                      if (mediaId) {
+                      if (mediaId && !isPending) {
                         onSetPrimary(mediaId);
                       }
                     }}
-                    disabled={img.isPrimary}
+                    disabled={isPrimary || isPending}
                     activeOpacity={0.7}
                     accessibilityRole="button"
                     accessibilityLabel={t('edit_profile.photos.set_primary')}
-                    accessibilityState={{ disabled: img.isPrimary }}
+                    accessibilityState={{
+                      disabled: isPrimary || isPending,
+                    }}
                   >
                     <Feather
                       name="star"
                       size={12}
                       color={
-                        img.isPrimary
-                          ? theme.colors.accent
-                          : theme.colors.textMuted
+                        isPrimary ? theme.colors.accent : theme.colors.textMuted
                       }
                     />
                   </TouchableOpacity>

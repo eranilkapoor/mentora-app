@@ -12,7 +12,10 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FilesInterceptor,
+} from '@nestjs/platform-express';
 import { MediaService } from '../services/media.service';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
@@ -99,13 +102,27 @@ export class MediaController {
   }
 
   @Post('videos')
-  @UseInterceptors(FilesInterceptor('videos', 1))
+  @UseInterceptors(
+    FileFieldsInterceptor([
+      { name: 'videos', maxCount: 1 },
+      { name: 'thumbnails', maxCount: 1 },
+    ]),
+  )
   @HttpCode(HttpStatus.CREATED)
   async uploadVideos(
     @Req() req: AuthenticatedRequest,
-    @UploadedFiles() files: Express.Multer.File[],
+    @UploadedFiles()
+    files: {
+      videos?: Express.Multer.File[];
+      thumbnails?: Express.Multer.File[];
+    },
   ) {
-    const data = await this.mediaService.addVideos(req, req.user.sub, files);
+    const data = await this.mediaService.addVideos(
+      req,
+      req.user.sub,
+      files.videos ?? [],
+      files.thumbnails ?? [],
+    );
     return successResponse(
       data,
       SuccessCode.PROFILE_VIDEO_UPLOADED,

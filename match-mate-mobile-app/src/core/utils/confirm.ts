@@ -1,6 +1,6 @@
 import { Alert, Platform } from 'react-native';
 
-interface ConfirmOptions {
+export interface ConfirmOptions {
   title: string;
   message?: string;
 
@@ -13,6 +13,16 @@ interface ConfirmOptions {
   onCancel?: () => void;
 }
 
+type ConfirmPresenter = (options: ConfirmOptions) => void;
+
+let confirmPresenter: ConfirmPresenter | null = null;
+
+export const registerConfirmPresenter = (
+  presenter: ConfirmPresenter | null
+): void => {
+  confirmPresenter = presenter;
+};
+
 export const showConfirm = ({
   title,
   message,
@@ -22,6 +32,19 @@ export const showConfirm = ({
   onConfirm,
   onCancel,
 }: ConfirmOptions): void => {
+  if (confirmPresenter) {
+    confirmPresenter({
+      title,
+      ...(message ? { message } : {}),
+      confirmText,
+      cancelText,
+      destructive,
+      ...(onConfirm ? { onConfirm } : {}),
+      ...(onCancel ? { onCancel } : {}),
+    });
+    return;
+  }
+
   // Web
   if (Platform.OS === 'web') {
     const confirmed = window.confirm(
