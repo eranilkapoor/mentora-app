@@ -73,8 +73,8 @@ export class AuthController {
 
   @Public()
   @Post('send-otp')
-  sendOtp(@Body() dto: PhoneSendOtpDto) {
-    const data = this.authService.sendOtp(dto.country_code, dto.phone);
+  async sendOtp(@Body() dto: PhoneSendOtpDto) {
+    const data = await this.authService.sendOtp(dto.country_code, dto.phone);
     return successResponse(
       data,
       SuccessCode.AUTH_OTP_SENT,

@@ -12,6 +12,7 @@ import { OtpService } from './services/otp.service';
 import { User, UserSchema } from './schemas/user.schema';
 import { getJwtConfig } from '@/config/jwt.config';
 import { AuthTokenService } from './services/auth-token.service';
+import { SocialAuthVerifierService } from './services/social-auth-verifier.service';
 import { UserSession, UserSessionSchema } from './schemas/user-session.schema';
 import {
   Subscription,
@@ -70,6 +71,7 @@ import { ReferralsModule } from '../referrals/referrals.module';
     UserRepository,
     OtpService,
     AuthTokenService,
+    SocialAuthVerifierService,
   ],
   exports: [AuthService, UserRepository, JwtModule, PassportModule],
 })

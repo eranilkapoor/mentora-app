@@ -6646,3 +6646,577 @@ This is now expected by Gen Z users.
 * Activity badges
 * Profile strength
 * Rewards
+
+
+
+<div align="center">
+
+# 💍 Enterprise Matrimonial App
+
+### A production-grade, full-stack matrimonial platform built for scale
+
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=for-the-badge&logo=nestjs&logoColor=white)](https://nestjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)](https://redis.io/)
+[![Socket.io](https://img.shields.io/badge/Socket.io-010101?style=for-the-badge&logo=socketdotio&logoColor=white)](https://socket.io/)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)](https://www.docker.com/)
+
+[![Build Status](https://img.shields.io/github/actions/workflow/status/YOUR_ORG/YOUR_REPO/ci.yml?branch=main&style=flat-square)](https://github.com/YOUR_ORG/YOUR_REPO/actions)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](LICENSE)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](CONTRIBUTING.md)
+[![API Docs](https://img.shields.io/badge/API-Swagger-85EA2D?style=flat-square&logo=swagger)](http://localhost:3000/api/docs)
+
+</div>
+
+---
+
+## 📋 Table of Contents
+
+- [Overview](#-overview)
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Architecture](#-architecture)
+- [Project Structure](#-project-structure)
+- [Getting Started](#-getting-started)
+  - [Prerequisites](#prerequisites)
+  - [Installation](#installation)
+  - [Environment Variables](#environment-variables)
+  - [Running the App](#running-the-app)
+- [API Documentation](#-api-documentation)
+- [Task Roadmap & Status](#-task-roadmap--status)
+- [Phase Build Order](#-phase-build-order)
+- [Testing](#-testing)
+- [Deployment](#-deployment)
+- [Contributing](#-contributing)
+- [License](#-license)
+
+---
+
+## 🌟 Overview
+
+A scalable, enterprise-grade matrimonial platform designed for the Indian market — supporting millions of users with real-time chat, AI-powered match recommendations, KYC verification, and a robust subscription/monetization system.
+
+> **India-first** — Built with OTP login, Aadhaar eKYC, UPI payments, WhatsApp notifications, regional language support, and caste/community-based matching out of the box.
+
+---
+
+## ✨ Features
+
+| Category | Highlights |
+|---|---|
+| 🔐 **Auth** | Email, Phone OTP, Google/Facebook/Apple OAuth, JWT + Refresh Tokens, Device Tracking |
+| 👤 **Profiles** | Multi-step onboarding, KYC verification, Kundli/horoscope, photo/video upload |
+| ❤️ **Matching** | ML-based recommendations, compatibility score, filters, interest/accept flow |
+| 💬 **Chat** | Real-time Socket.io messaging, read receipts, typing indicators, media sharing |
+| 🔔 **Notifications** | FCM push, WhatsApp (WABA), SMS, in-app alerts, drip campaigns |
+| 💰 **Monetization** | Tiered plans (Free/Premium/Gold), Razorpay/UPI, referral system, coin wallet |
+| 🛡️ **Security** | Rate limiting, brute force protection, PII encryption, GDPR/PDPB compliance |
+| 📊 **Analytics** | Funnel tracking, cohort analysis, A/B testing, match success metrics |
+| ⚙️ **Admin** | Role-based admin panel, KYC approval queue, content moderation, dashboards |
+
+---
+
+## 🛠 Tech Stack
+
+### Backend
+| Layer | Technology |
+|---|---|
+| Framework | [NestJS](https://nestjs.com/) (Node.js + TypeScript) |
+| Database | [MongoDB](https://www.mongodb.com/) + Mongoose |
+| Cache | [Redis](https://redis.io/) (sessions, feeds, rate limits) |
+| Real-time | [Socket.io](https://socket.io/) |
+| Queue | [BullMQ](https://bullmq.io/) + Redis |
+| Auth | JWT (access + refresh), Passport.js, OAuth 2.0 |
+| Storage | AWS S3 + CloudFront CDN |
+| Email | Nodemailer / SendGrid |
+| SMS / OTP | Twilio / MSG91 |
+| Payments | Razorpay (UPI, cards, net banking) |
+| Logging | Winston + ELK Stack |
+| Monitoring | Sentry + Datadog |
+| Validation | class-validator + Joi |
+
+### Frontend
+| Layer | Technology |
+|---|---|
+| Framework | React Native (mobile) / Next.js (web) |
+| State | Redux Toolkit / Zustand |
+| API Client | Axios + React Query |
+| Real-time | Socket.io Client |
+| UI Library | Custom Design System + Tailwind CSS |
+| Auth Storage | Secure Storage (mobile) / HttpOnly Cookie (web) |
+
+### Infrastructure
+| Layer | Technology |
+|---|---|
+| Containers | Docker + Kubernetes (EKS) |
+| CI/CD | GitHub Actions |
+| IaC | Terraform |
+| Cloud | AWS (Mumbai region primary) |
+| CDN | CloudFront / Cloudflare |
+
+---
+
+## 🏗 Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      CLIENT LAYER                           │
+│          React Native App  ←→  Next.js Web App             │
+└──────────────────────────┬──────────────────────────────────┘
+                           │ HTTPS / WSS
+┌──────────────────────────▼──────────────────────────────────┐
+│                     API GATEWAY / NGINX                     │
+│            Rate Limiting · SSL Termination · CORS           │
+└──────────────────────────┬──────────────────────────────────┘
+                           │
+┌──────────────────────────▼──────────────────────────────────┐
+│                    NESTJS APPLICATION                        │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐  │
+│  │   Auth   │ │ Profile  │ │ Matching │ │     Chat     │  │
+│  │  Module  │ │  Module  │ │  Module  │ │    Module    │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────┘  │
+│  ┌──────────┐ ┌──────────┐ ┌──────────┐ ┌──────────────┐  │
+│  │  Subs.   │ │  Notif.  │ │  Admin   │ │  Analytics   │  │
+│  │  Module  │ │  Module  │ │  Module  │ │    Module    │  │
+│  └──────────┘ └──────────┘ └──────────┘ └──────────────┘  │
+└──────┬────────────┬──────────────┬────────────┬────────────┘
+       │            │              │            │
+┌──────▼───┐  ┌─────▼────┐  ┌─────▼────┐  ┌───▼──────────┐
+│ MongoDB  │  │  Redis   │  │  AWS S3  │  │  BullMQ      │
+│ (Primary │  │ (Cache + │  │  (Media  │  │  (Job Queue) │
+│ + Replica│  │ Sessions)│  │   CDN)   │  │              │
+└──────────┘  └──────────┘  └──────────┘  └──────────────┘
+```
+
+---
+
+## 📁 Project Structure
+
+```
+matrimonial-app/
+├── apps/
+│   ├── api/                        # NestJS Backend
+│   │   ├── src/
+│   │   │   ├── modules/
+│   │   │   │   ├── auth/           # JWT, OAuth, OTP, sessions
+│   │   │   │   ├── users/          # Profile, media, preferences
+│   │   │   │   ├── matching/       # Discovery, filters, interactions
+│   │   │   │   ├── chat/           # Messages, Socket.io, receipts
+│   │   │   │   ├── notifications/  # Push, email, SMS, WhatsApp
+│   │   │   │   ├── subscriptions/  # Plans, payments, wallet
+│   │   │   │   ├── admin/          # Admin panel APIs
+│   │   │   │   └── analytics/      # Events, funnels, metrics
+│   │   │   ├── common/
+│   │   │   │   ├── decorators/
+│   │   │   │   ├── filters/        # Global exception filters
+│   │   │   │   ├── guards/         # Auth, RBAC, subscription guards
+│   │   │   │   ├── interceptors/   # Logging, transform, correlation-id
+│   │   │   │   ├── pipes/          # Validation pipes
+│   │   │   │   └── middleware/     # Rate limit, helmet, sanitization
+│   │   │   ├── config/             # @nestjs/config + Joi schema
+│   │   │   ├── database/           # MongoDB connection, migrations
+│   │   │   ├── queue/              # BullMQ workers & processors
+│   │   │   └── main.ts
+│   │   ├── test/
+│   │   └── Dockerfile
+│   │
+│   ├── mobile/                     # React Native App
+│   │   ├── src/
+│   │   │   ├── screens/
+│   │   │   ├── components/
+│   │   │   ├── navigation/
+│   │   │   ├── store/
+│   │   │   ├── hooks/
+│   │   │   └── services/           # API clients, socket, storage
+│   │   └── package.json
+│   │
+│   └── web/                        # Next.js Web App
+│       ├── src/
+│       │   ├── app/                # App router pages
+│       │   ├── components/
+│       │   └── lib/
+│       └── package.json
+│
+├── packages/
+│   ├── shared-types/               # Shared TypeScript interfaces
+│   ├── ui-kit/                     # Shared component library
+│   └── config/                     # Shared ESLint/TS config
+│
+├── infrastructure/
+│   ├── terraform/                  # IaC for AWS
+│   ├── k8s/                        # Kubernetes manifests
+│   └── docker-compose.yml          # Local dev stack
+│
+├── docs/
+│   ├── api/                        # OpenAPI specs
+│   ├── architecture/               # Diagrams
+│   └── ROADMAP.md                  # Full task roadmap
+│
+├── .github/
+│   ├── workflows/
+│   │   ├── ci.yml                  # Test + lint on PR
+│   │   ├── cd-staging.yml          # Deploy to staging on merge
+│   │   └── cd-prod.yml             # Deploy to prod on release tag
+│   └── PULL_REQUEST_TEMPLATE.md
+│
+├── .env.example
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js `>= 20.x`
+- npm `>= 10.x` or pnpm `>= 9.x`
+- MongoDB `>= 7.x` (or Atlas connection string)
+- Redis `>= 7.x`
+- Docker + Docker Compose (for local infra)
+
+### Installation
+
+```bash
+# Clone the repository
+git clone https://github.com/YOUR_ORG/YOUR_REPO.git
+cd matrimonial-app
+
+# Install dependencies (monorepo)
+pnpm install
+
+# Start local infrastructure (MongoDB + Redis)
+docker-compose up -d mongo redis
+```
+
+### Environment Variables
+
+Copy the example env file and fill in your values:
+
+```bash
+cp .env.example .env
+```
+
+<details>
+<summary>📄 Full .env.example reference</summary>
+
+```env
+# ── App ──────────────────────────────────────────────
+NODE_ENV=development
+PORT=3000
+APP_URL=http://localhost:3000
+FRONTEND_URL=http://localhost:3001
+CORS_ORIGINS=http://localhost:3001,http://localhost:3002
+
+# ── MongoDB ──────────────────────────────────────────
+MONGODB_URI=mongodb://localhost:27017/matrimonial_dev
+
+# ── Redis ────────────────────────────────────────────
+REDIS_HOST=localhost
+REDIS_PORT=6379
+REDIS_PASSWORD=
+
+# ── JWT ──────────────────────────────────────────────
+JWT_ACCESS_SECRET=your_access_secret_here
+JWT_ACCESS_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=your_refresh_secret_here
+JWT_REFRESH_EXPIRES_IN=30d
+
+# ── OAuth ────────────────────────────────────────────
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+FACEBOOK_APP_ID=
+FACEBOOK_APP_SECRET=
+APPLE_CLIENT_ID=
+APPLE_TEAM_ID=
+APPLE_KEY_ID=
+APPLE_PRIVATE_KEY=
+
+# ── OTP / SMS ────────────────────────────────────────
+MSG91_AUTH_KEY=
+MSG91_TEMPLATE_ID=
+TWILIO_ACCOUNT_SID=
+TWILIO_AUTH_TOKEN=
+TWILIO_PHONE_NUMBER=
+
+# ── Email ────────────────────────────────────────────
+SMTP_HOST=smtp.sendgrid.net
+SMTP_PORT=587
+SMTP_USER=apikey
+SMTP_PASS=your_sendgrid_api_key
+EMAIL_FROM=no-reply@yourapp.com
+
+# ── AWS S3 ───────────────────────────────────────────
+AWS_REGION=ap-south-1
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_S3_BUCKET=matrimonial-media
+AWS_CLOUDFRONT_DOMAIN=
+
+# ── Payments (Razorpay) ──────────────────────────────
+RAZORPAY_KEY_ID=
+RAZORPAY_KEY_SECRET=
+RAZORPAY_WEBHOOK_SECRET=
+
+# ── WhatsApp (Meta WABA) ─────────────────────────────
+META_WABA_TOKEN=
+META_WABA_PHONE_ID=
+
+# ── Firebase (Push Notifications) ───────────────────
+FIREBASE_PROJECT_ID=
+FIREBASE_PRIVATE_KEY=
+FIREBASE_CLIENT_EMAIL=
+
+# ── Monitoring ───────────────────────────────────────
+SENTRY_DSN=
+DATADOG_API_KEY=
+
+# ── KYC ──────────────────────────────────────────────
+DIGILOCKER_CLIENT_ID=
+DIGILOCKER_CLIENT_SECRET=
+```
+
+</details>
+
+### Running the App
+
+```bash
+# Development (with hot reload)
+pnpm run dev:api
+
+# Run all apps in parallel (API + web)
+pnpm run dev
+
+# Build for production
+pnpm run build
+
+# Start production server
+pnpm run start:prod
+```
+
+**Or with Docker Compose (full stack):**
+
+```bash
+docker-compose up --build
+```
+
+| Service | URL |
+|---|---|
+| API | http://localhost:3000 |
+| Swagger Docs | http://localhost:3000/api/docs |
+| Web App | http://localhost:3001 |
+| MongoDB Express | http://localhost:8081 |
+| Bull Dashboard | http://localhost:3000/queues |
+
+---
+
+## 📖 API Documentation
+
+API is documented with **Swagger / OpenAPI 3.0**.
+
+- **Local:** http://localhost:3000/api/docs
+- **Staging:** https://api-staging.yourapp.com/api/docs
+
+### Response Envelope
+
+All API responses follow a standard envelope:
+
+```json
+{
+  "success": true,
+  "data": { },
+  "meta": {
+    "page": 1,
+    "limit": 20,
+    "total": 450,
+    "correlationId": "uuid-v4"
+  },
+  "error": null
+}
+```
+
+### Error Format
+
+```json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "AUTH_001",
+    "message": "Invalid OTP. Please try again.",
+    "statusCode": 400
+  }
+}
+```
+
+### Key Endpoints
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `POST` | `/api/v1/auth/register/email` | Email registration |
+| `POST` | `/api/v1/auth/register/phone` | Phone + OTP registration |
+| `POST` | `/api/v1/auth/login` | Login (email / phone) |
+| `POST` | `/api/v1/auth/refresh` | Refresh access token |
+| `POST` | `/api/v1/auth/logout` | Logout (current device) |
+| `GET` | `/api/v1/users/me` | Get own profile |
+| `PUT` | `/api/v1/users/me` | Update profile |
+| `GET` | `/api/v1/matches` | Get recommended matches |
+| `POST` | `/api/v1/interactions/interest` | Send interest |
+| `GET` | `/api/v1/chat` | Chat list |
+| `GET` | `/api/v1/subscriptions/plans` | Available plans |
+
+---
+
+## 📊 Task Roadmap & Status
+
+> Full detailed roadmap: [`docs/ROADMAP.md`](docs/ROADMAP.md)
+
+### Status Legend
+
+| Icon | Meaning |
+|---|---|
+| ✅ | Done / Completed |
+| ⏳ | In Progress |
+| 📂 | Not Started |
+| ⚠️ | Blocked / Issue |
+| 🚫 | Not Assigned |
+| 🔥 | High Priority |
+| 💤 | On Hold |
+
+### High-Level Phase Status
+
+| Phase | Area | Status | Progress |
+|---|---|---|---|
+| Phase 1 | Core Auth & Sessions | ✅ Complete | ![100%](https://progress-bar.xyz/100) |
+| Phase 2 | User & Profile System | ✅ Complete | ![100%](https://progress-bar.xyz/100) |
+| Phase 3 | Discovery & Interactions | ✅ Complete | ![90%](https://progress-bar.xyz/90) |
+| Phase 4 | Chat System | ⚠️ In Progress | ![75%](https://progress-bar.xyz/75) |
+| Phase 5 | Subscription & Payments | ⏳ In Progress | ![60%](https://progress-bar.xyz/60) |
+| Phase 6 | Analytics & Tracking | ⏳ In Progress | ![40%](https://progress-bar.xyz/40) |
+| Phase 7 | Security & Compliance | ✅ Mostly Done | ![85%](https://progress-bar.xyz/85) |
+| Phase 8 | Performance & Scale | ⏳ In Progress | ![50%](https://progress-bar.xyz/50) |
+| Phase 9 | Notifications System | 📂 Not Started | ![0%](https://progress-bar.xyz/0) |
+| Phase 10 | Admin Panel | 📂 Not Started | ![0%](https://progress-bar.xyz/0) |
+
+---
+
+## 🗺 Phase Build Order
+
+```
+Phase 1  →  Auth + Session
+Phase 2  →  Profile + Media
+Phase 3  →  Discovery + Interaction
+Phase 4  →  Match Logic
+Phase 5  →  Chat System
+Phase 6  →  Notifications
+Phase 7  →  Subscription & Payments
+Phase 8  →  Security & Compliance
+Phase 9  →  Logging & Monitoring
+Phase 10 →  Scale + Analytics + Admin Panel
+```
+
+---
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+pnpm run test
+
+# Integration tests
+pnpm run test:e2e
+
+# Test coverage report
+pnpm run test:cov
+
+# Watch mode (during development)
+pnpm run test:watch
+```
+
+### Coverage Targets
+
+| Layer | Target |
+|---|---|
+| Services (unit) | ≥ 80% |
+| Controllers (integration) | ≥ 70% |
+| E2E critical flows | Auth, Match, Chat, Payment |
+
+---
+
+## 🚢 Deployment
+
+### Staging
+
+Triggered automatically on merge to `main`:
+
+```bash
+# Manual trigger (if needed)
+pnpm run deploy:staging
+```
+
+### Production
+
+Triggered on Git release tag `v*.*.*`:
+
+```bash
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+### Docker
+
+```bash
+# Build image
+docker build -t matrimonial-api ./apps/api
+
+# Run container
+docker run -p 3000:3000 --env-file .env matrimonial-api
+```
+
+### Kubernetes
+
+```bash
+# Apply manifests
+kubectl apply -f infrastructure/k8s/
+
+# Check rollout
+kubectl rollout status deployment/matrimonial-api
+```
+
+---
+
+## 🤝 Contributing
+
+1. Fork the repo
+2. Create a feature branch: `git checkout -b feat/your-feature-name`
+3. Follow the [Conventional Commits](https://www.conventionalcommits.org/) spec
+4. Write tests for new functionality
+5. Submit a Pull Request against `develop`
+
+> See [`CONTRIBUTING.md`](CONTRIBUTING.md) for full guidelines.
+
+### Commit Convention
+
+```
+feat(auth): add Apple Sign-In support
+fix(chat): resolve message delivery race condition
+docs(api): update swagger annotations for match endpoints
+chore(deps): upgrade NestJS to v11
+```
+
+---
+
+## 📄 License
+
+This project is licensed under the [MIT License](LICENSE).
+
+---
+
+<div align="center">
+
+Built with ❤️ for the Indian matrimony market
+
+[Report Bug](https://github.com/YOUR_ORG/YOUR_REPO/issues) · [Request Feature](https://github.com/YOUR_ORG/YOUR_REPO/issues) · [View Roadmap](docs/ROADMAP.md)
+
+</div>

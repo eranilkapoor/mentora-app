@@ -7,7 +7,7 @@ export type AuthStackParamList = {
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
-  ResetPassword: { accessToken: string };
+  ResetPassword: { accessToken?: string; token?: string };
 };
 
 // ─── Onboarding Stack ─────────────────────────────────────────────────────────
@@ -108,7 +108,7 @@ export type AppStackParamList = {
 
 // ─── Root Stack ───────────────────────────────────────────────────────────────
 export type RootStackParamList = {
-  Auth: undefined;
+  Auth: NavigatorScreenParams<AuthStackParamList> | undefined;
   Onboarding: undefined;
   App: undefined;
 };

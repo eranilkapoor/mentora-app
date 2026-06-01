@@ -32,6 +32,15 @@ export default () => ({
       privateKey: process.env.APPLE_PRIVATE_KEY || '',
     },
   },
+  authMethods: {
+    emailPasswordEnabled: process.env.AUTH_EMAIL_PASSWORD_ENABLED !== 'false',
+    phoneOtpEnabled: process.env.AUTH_PHONE_OTP_ENABLED === 'true',
+    social: {
+      google: process.env.AUTH_SOCIAL_GOOGLE_ENABLED === 'true',
+      facebook: process.env.AUTH_SOCIAL_FACEBOOK_ENABLED === 'true',
+      apple: process.env.AUTH_SOCIAL_APPLE_ENABLED === 'true',
+    },
+  },
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],
   },

@@ -21,6 +21,10 @@ import {
 import { SocialButton } from '../Auth/shared/components/SocialButton';
 import { PhoneForm } from '../Auth/shared/components/PhoneForm';
 import { authSharedStyles } from '../Auth/shared/auth.styles';
+import {
+  authMethodConfig,
+  hasAnySocialProviderEnabled,
+} from '../Auth/shared/authMethodConfig';
 
 export default function RegisterScreen({
   navigation,
@@ -28,6 +32,10 @@ export default function RegisterScreen({
   const styles = useThemedStyles(authSharedStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const visibleTabs: Array<'email' | 'phone'> = authMethodConfig.phoneOtp
+    ? ['email', 'phone']
+    : ['email'];
+  const hasSocialMethods = hasAnySocialProviderEnabled();
 
   const {
     activeTab,
@@ -90,7 +98,7 @@ export default function RegisterScreen({
 
           {/* Tabs */}
           <View style={styles.tabRow}>
-            {(['email', 'phone'] as const).map((tab) => (
+            {visibleTabs.map((tab) => (
               <TouchableOpacity
                 key={tab}
                 style={[
@@ -128,25 +136,7 @@ export default function RegisterScreen({
 
           {/* Active form */}
           <View style={styles.form}>
-            {activeTab === 'email' ? (
-              <RegisterEmailForm
-                errors={errors}
-                loading={loading}
-                email={email}
-                password={password}
-                referralCode={referralCode}
-                showReferralCode={showReferralCode}
-                showPassword={showPassword}
-                onEmailChange={handleEmailChange}
-                onPasswordChange={handlePasswordChange}
-                onReferralCodeChange={handleReferralCodeChange}
-                onToggleReferralCode={toggleReferralCode}
-                onTogglePassword={togglePasswordVisibility}
-                onSubmit={() => {
-                  void handleEmailRegister();
-                }}
-              />
-            ) : (
+            {activeTab === 'phone' && authMethodConfig.phoneOtp ? (
               <PhoneForm
                 errors={errors}
                 loading={loading}
@@ -174,49 +164,73 @@ export default function RegisterScreen({
                 onReferralCodeChange={handleReferralCodeChange}
                 onToggleReferralCode={toggleReferralCode}
               />
+            ) : (
+              <RegisterEmailForm
+                errors={errors}
+                loading={loading}
+                email={email}
+                password={password}
+                referralCode={referralCode}
+                showReferralCode={showReferralCode}
+                showPassword={showPassword}
+                onEmailChange={handleEmailChange}
+                onPasswordChange={handlePasswordChange}
+                onReferralCodeChange={handleReferralCodeChange}
+                onToggleReferralCode={toggleReferralCode}
+                onTogglePassword={togglePasswordVisibility}
+                onSubmit={() => {
+                  void handleEmailRegister();
+                }}
+              />
             )}
           </View>
 
           {/* Divider */}
-          <View style={styles.dividerRow}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>{t('common.or')}</Text>
-            <View style={styles.divider} />
-          </View>
+          {hasSocialMethods ? (
+            <View style={styles.dividerRow}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>{t('common.or')}</Text>
+              <View style={styles.divider} />
+            </View>
+          ) : null}
 
           {/* Social buttons */}
-          <View style={styles.socialContainer}>
-            {Platform.OS !== 'ios' && (
-              <SocialButton
-                label={t('auth.social.google')}
-                onPress={() => {
-                  void handleSocialRegister('google');
-                }}
-                disabled={loading}
-                icon="search"
-                iconColor="#EA4335"
-              />
-            )}
-            {Platform.OS === 'ios' && (
-              <SocialButton
-                label={t('auth.social.apple')}
-                onPress={() => {
-                  void handleSocialRegister('apple');
-                }}
-                disabled={loading}
-                icon="smartphone"
-              />
-            )}
-            <SocialButton
-              label={t('auth.social.facebook')}
-              onPress={() => {
-                void handleSocialRegister('facebook');
-              }}
-              disabled={loading}
-              icon="facebook"
-              iconColor="#1877F2"
-            />
-          </View>
+          {hasSocialMethods ? (
+            <View style={styles.socialContainer}>
+              {authMethodConfig.social.google ? (
+                <SocialButton
+                  label={t('auth.social.google')}
+                  onPress={() => {
+                    void handleSocialRegister('google');
+                  }}
+                  disabled={loading}
+                  icon="search"
+                  iconColor="#EA4335"
+                />
+              ) : null}
+              {authMethodConfig.social.apple ? (
+                <SocialButton
+                  label={t('auth.social.apple')}
+                  onPress={() => {
+                    void handleSocialRegister('apple');
+                  }}
+                  disabled={loading}
+                  icon="smartphone"
+                />
+              ) : null}
+              {authMethodConfig.social.facebook ? (
+                <SocialButton
+                  label={t('auth.social.facebook')}
+                  onPress={() => {
+                    void handleSocialRegister('facebook');
+                  }}
+                  disabled={loading}
+                  icon="facebook"
+                  iconColor="#1877F2"
+                />
+              ) : null}
+            </View>
+          ) : null}
 
           {/* Footer */}
           <View style={styles.footer}>
@@ -224,7 +238,14 @@ export default function RegisterScreen({
               {t('auth.register.have_account')}
             </Text>
             <TouchableOpacity
-              onPress={() => navigation.goBack()}
+              onPress={() => {
+                if (navigation.canGoBack()) {
+                  navigation.goBack();
+                  return;
+                }
+
+                navigation.navigate('Login');
+              }}
               disabled={loading}
               activeOpacity={0.7}
               accessibilityRole="button"

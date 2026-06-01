@@ -4,6 +4,7 @@ import {
   IsNotEmpty,
   IsOptional,
   IsString,
+  Matches,
 } from 'class-validator';
 import { AuthProvider } from '../enums/auth-provider.enum';
 
@@ -30,4 +31,10 @@ export class SocialLoginDto {
 
   @IsOptional()
   profile_photo?: string;
+
+  @IsOptional()
+  @Matches(/^[a-zA-Z0-9]{6,10}$/, {
+    message: 'Invalid referral code',
+  })
+  referralCode?: string;
 }

@@ -254,6 +254,31 @@ export const envValidationSchema = Joi.object({
 
   APPLE_PRIVATE_KEY: optionalString,
 
+  AUTH_EMAIL_PASSWORD_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(true),
+
+  AUTH_PHONE_OTP_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  AUTH_SOCIAL_GOOGLE_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  AUTH_SOCIAL_FACEBOOK_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  AUTH_SOCIAL_APPLE_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
   DB_DRIVER: Joi.string().trim().valid('mongo', 'local').required(),
 
   MONGO_URI: Joi.when('DB_DRIVER', {

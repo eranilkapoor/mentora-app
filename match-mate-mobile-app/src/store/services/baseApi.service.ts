@@ -116,6 +116,19 @@ async function performLogout(api: Parameters<BaseQueryFn>[1]): Promise<void> {
   api.dispatch(baseApi.util.resetApiState());
 }
 
+const getRequestUrl = (args: string | FetchArgs): string =>
+  typeof args === 'string' ? args : args.url;
+
+const PUBLIC_AUTH_ENDPOINTS = new Set([
+  '/auth/login',
+  '/auth/register',
+  '/auth/send-otp',
+  '/auth/verify-otp',
+  '/auth/social-login',
+  '/auth/forgot-password',
+  '/auth/reset-password',
+]);
+
 /* ──────────────────────────────────────────────
  * Base Query With Refresh Logic
  * ────────────────────────────────────────────── */
@@ -129,10 +142,15 @@ const baseQueryWithAuth: BaseQueryFn<
 
   let result = await rawBaseQuery(args, api, extraOptions);
 
-  const isRefreshRequest =
-    typeof args !== 'string' && args.url === '/auth/refresh';
+  const requestUrl = getRequestUrl(args);
+  const isRefreshRequest = requestUrl === '/auth/refresh';
+  const isPublicAuthRequest = PUBLIC_AUTH_ENDPOINTS.has(requestUrl);
 
-  if (result.error?.status === 401 && !isRefreshRequest) {
+  if (
+    result.error?.status === 401 &&
+    !isRefreshRequest &&
+    !isPublicAuthRequest
+  ) {
     if (!mutex.isLocked()) {
       const release = await mutex.acquire();
 

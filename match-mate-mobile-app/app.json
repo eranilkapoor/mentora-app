@@ -15,7 +15,11 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anilkapoor.matchmatemobileapp"
+      "bundleIdentifier": "com.anilkapoor.matchmatemobileapp",
+      "associatedDomains": [
+        "applinks:matchmate.webnza.com",
+        "applinks:www.matchmate.webnza.com"
+      ]
     },
     "android": {
       "adaptiveIcon": {
@@ -27,6 +31,34 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "matchmate.webnza.com",
+              "pathPrefix": "/reset-password"
+            },
+            {
+              "scheme": "https",
+              "host": "www.matchmate.webnza.com",
+              "pathPrefix": "/reset-password"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "matchmate"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
       ],
       "package": "com.anilkapoor.matchmatemobileapp"
     },
@@ -48,7 +80,9 @@
         }
       ],
       "expo-font",
-      "expo-video"
+      "expo-video",
+      "expo-apple-authentication",
+      "expo-web-browser"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

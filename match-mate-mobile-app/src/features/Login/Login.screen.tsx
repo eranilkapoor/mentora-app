@@ -21,6 +21,10 @@ import {
 import { SocialButton } from '../Auth/shared/components/SocialButton';
 import { PhoneForm } from '../Auth/shared/components/PhoneForm';
 import { authSharedStyles } from '../Auth/shared/auth.styles';
+import {
+  authMethodConfig,
+  hasAnySocialProviderEnabled,
+} from '../Auth/shared/authMethodConfig';
 
 export default function LoginScreen({
   navigation,
@@ -28,6 +32,10 @@ export default function LoginScreen({
   const styles = useThemedStyles(authSharedStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const visibleTabs: Array<'email' | 'phone'> = authMethodConfig.phoneOtp
+    ? ['email', 'phone']
+    : ['email'];
+  const hasSocialMethods = hasAnySocialProviderEnabled();
 
   const {
     activeTab,
@@ -86,7 +94,7 @@ export default function LoginScreen({
 
           {/* Tabs */}
           <View style={styles.tabRow}>
-            {(['email', 'phone'] as const).map((tab) => (
+            {visibleTabs.map((tab) => (
               <TouchableOpacity
                 key={tab}
                 style={[
@@ -124,22 +132,7 @@ export default function LoginScreen({
 
           {/* Active form */}
           <View style={styles.form}>
-            {activeTab === 'email' ? (
-              <LoginEmailForm
-                errors={errors}
-                loading={loading}
-                email={email}
-                password={password}
-                showPassword={showPassword}
-                onEmailChange={handleEmailChange}
-                onPasswordChange={handlePasswordChange}
-                onTogglePassword={togglePasswordVisibility}
-                onSubmit={() => {
-                  void handleEmailLogin();
-                }}
-                onNavigateForgot={() => navigation.navigate('ForgotPassword')}
-              />
-            ) : (
+            {activeTab === 'phone' && authMethodConfig.phoneOtp ? (
               <PhoneForm
                 errors={errors}
                 loading={loading}
@@ -163,49 +156,69 @@ export default function LoginScreen({
                 onCloseDropdown={closeCountryCodeDropdown}
                 onSelectCountryCode={setCountryCode}
               />
+            ) : (
+              <LoginEmailForm
+                errors={errors}
+                loading={loading}
+                email={email}
+                password={password}
+                showPassword={showPassword}
+                onEmailChange={handleEmailChange}
+                onPasswordChange={handlePasswordChange}
+                onTogglePassword={togglePasswordVisibility}
+                onSubmit={() => {
+                  void handleEmailLogin();
+                }}
+                onNavigateForgot={() => navigation.navigate('ForgotPassword')}
+              />
             )}
           </View>
 
-          {/* Divider */}
-          <View style={styles.dividerRow}>
-            <View style={styles.divider} />
-            <Text style={styles.dividerText}>{t('common.or')}</Text>
-            <View style={styles.divider} />
-          </View>
+          {hasSocialMethods ? (
+            <View style={styles.dividerRow}>
+              <View style={styles.divider} />
+              <Text style={styles.dividerText}>{t('common.or')}</Text>
+              <View style={styles.divider} />
+            </View>
+          ) : null}
 
           {/* Social buttons */}
-          <View style={styles.socialContainer}>
-            {Platform.OS !== 'ios' && (
-              <SocialButton
-                label={t('auth.social.google')}
-                onPress={() => {
-                  void handleSocialLogin('google');
-                }}
-                disabled={loading}
-                icon="search"
-                iconColor="#EA4335"
-              />
-            )}
-            {Platform.OS === 'ios' && (
-              <SocialButton
-                label={t('auth.social.apple')}
-                onPress={() => {
-                  void handleSocialLogin('apple');
-                }}
-                disabled={loading}
-                icon="smartphone"
-              />
-            )}
-            <SocialButton
-              label={t('auth.social.facebook')}
-              onPress={() => {
-                void handleSocialLogin('facebook');
-              }}
-              disabled={loading}
-              icon="facebook"
-              iconColor="#1877F2"
-            />
-          </View>
+          {hasSocialMethods ? (
+            <View style={styles.socialContainer}>
+              {authMethodConfig.social.google ? (
+                <SocialButton
+                  label={t('auth.social.google')}
+                  onPress={() => {
+                    void handleSocialLogin('google');
+                  }}
+                  disabled={loading}
+                  icon="search"
+                  iconColor="#EA4335"
+                />
+              ) : null}
+              {authMethodConfig.social.apple ? (
+                <SocialButton
+                  label={t('auth.social.apple')}
+                  onPress={() => {
+                    void handleSocialLogin('apple');
+                  }}
+                  disabled={loading}
+                  icon="smartphone"
+                />
+              ) : null}
+              {authMethodConfig.social.facebook ? (
+                <SocialButton
+                  label={t('auth.social.facebook')}
+                  onPress={() => {
+                    void handleSocialLogin('facebook');
+                  }}
+                  disabled={loading}
+                  icon="facebook"
+                  iconColor="#1877F2"
+                />
+              ) : null}
+            </View>
+          ) : null}
 
           {/* Footer */}
           <View style={styles.footer}>

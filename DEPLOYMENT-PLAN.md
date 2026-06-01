@@ -1243,3 +1243,285 @@ Public S3 bucket
 ✅ /health endpoint working
 ✅ Mobile app API URL updated to https://matchmate.webnza.com
 ```
+
+That is completely fine for an initial launch.
+For your setup, the simplest and cheapest deployment flow is:
+
+```txt
+Local Machine
+   ↓
+Build dist/
+   ↓
+Upload dist + package.json + ecosystem.config.js
+   ↓
+EC2 Server
+   ↓
+PM2 restart
+```
+
+No GitHub Actions, no FTP server required.
+
+You can use:
+
+* SCP (recommended)
+* WinSCP (Windows GUI)
+* FileZilla SFTP
+* VSCode Remote SSH
+
+The best approach for you right now is:
+
+# Recommended Simple Deployment Flow
+
+```txt
+1. Build project locally
+2. Upload dist folder to EC2
+3. Upload package.json
+4. Run npm install on server
+5. Restart PM2
+```
+
+---
+
+# STEP 1 — Build project locally
+
+On your local machine:
+
+```bash
+npm run build
+```
+
+This creates:
+
+```txt
+dist/
+```
+
+---
+
+# STEP 2 — Create production folder on EC2
+
+SSH into server:
+
+```bash
+ssh -i your-key.pem ubuntu@YOUR_ELASTIC_IP
+```
+
+Create app folder:
+
+```bash
+sudo mkdir -p /var/www/matchmate-api
+sudo chown -R ubuntu:ubuntu /var/www/matchmate-api
+```
+
+---
+
+# STEP 3 — Upload files using SCP
+
+From your local machine:
+
+## Upload dist
+
+```bash
+scp -i your-key.pem -r dist ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+```
+
+## Upload package.json
+
+```bash
+scp -i your-key.pem package.json ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+```
+
+## Upload package-lock.json
+
+```bash
+scp -i your-key.pem package-lock.json ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+```
+
+## Upload ecosystem.config.js (optional)
+
+```bash
+scp -i your-key.pem ecosystem.config.js ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+```
+
+---
+
+# STEP 4 — Install production dependencies
+
+SSH into server:
+
+```bash
+cd /var/www/matchmate-api
+npm install --production
+```
+
+For NestJS production:
+
+```bash
+npm install --omit=dev
+```
+
+---
+
+# STEP 5 — Create .env on server
+
+```bash
+nano .env
+```
+
+Example:
+
+```env
+NODE_ENV=production
+PORT=3000
+
+MONGO_URI=your_mongodb_uri
+
+AWS_REGION=ap-south-1
+AWS_S3_BUCKET=your_bucket_name
+
+JWT_SECRET=your_secret
+```
+
+---
+
+# STEP 6 — Start with PM2
+
+## First time
+
+```bash
+pm2 start dist/main.js --name matchmate-api
+```
+
+## Save PM2 process
+
+```bash
+pm2 save
+pm2 startup
+```
+
+Run command PM2 gives.
+
+---
+
+# STEP 7 — Future deployments
+
+Whenever you update API:
+
+## Local machine
+
+```bash
+npm run build
+```
+
+## Upload only updated dist
+
+```bash
+scp -i your-key.pem -r dist ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+```
+
+## Restart PM2
+
+```bash
+ssh -i your-key.pem ubuntu@YOUR_ELASTIC_IP
+```
+
+Then:
+
+```bash
+cd /var/www/matchmate-api
+pm2 restart matchmate-api
+```
+
+Done.
+
+---
+
+# Better Folder Structure
+
+On EC2:
+
+```txt
+/var/www/matchmate-api
+├── dist
+├── node_modules
+├── package.json
+├── package-lock.json
+├── ecosystem.config.js
+└── .env
+```
+
+---
+
+# Best Windows Option (Very Easy)
+
+If you use Windows:
+
+Use WinSCP
+
+Website:
+
+[WinSCP Official Website](https://winscp.net/eng/index.php?utm_source=chatgpt.com)
+
+You can:
+
+* Drag/drop dist folder
+* Connect using `.pem`
+* Upload visually like FTP
+* Uses secure SFTP over SSH
+
+---
+
+# Best VSCode Option
+
+Use:
+
+Visual Studio Code + Remote SSH extension
+
+You can directly edit files on EC2.
+
+Official extension:
+
+[VSCode Remote SSH Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-ssh&utm_source=chatgpt.com)
+
+---
+
+# Important Production Notes
+
+## Do NOT upload node_modules
+
+Always install on server:
+
+```bash
+npm install --omit=dev
+```
+
+Because native binaries differ between Windows/Mac/Linux.
+
+---
+
+## Keep app on localhost only
+
+NestJS:
+
+```ts
+await app.listen(3000, '127.0.0.1');
+```
+
+Nginx exposes public traffic.
+
+---
+
+## Use PM2 logs
+
+```bash
+pm2 logs matchmate-api
+```
+
+---
+
+## Auto restart after reboot
+
+```bash
+pm2 startup
+pm2 save
+```

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -60,6 +60,7 @@ import {
 } from '@/common/exceptions/throw-app-exception';
 import { AppException } from '@/common/exceptions/app.exception';
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
+import { SocialAuthVerifierService } from './social-auth-verifier.service';
 
 interface TokenAttachUser {
   _id: { toString(): string };
@@ -97,6 +98,7 @@ export class AuthService {
     private readonly notificationsService: NotificationsService,
     private readonly analyticsService: AnalyticsService,
     private readonly authPasswordService: AuthPasswordService,
+    private readonly socialAuthVerifierService: SocialAuthVerifierService,
     private readonly configService: ConfigService,
     private readonly referralsService: ReferralsService,
   ) {}
@@ -239,6 +241,8 @@ export class AuthService {
 
   async register(req: AppRequest, res: Response, dto: RegisterDto) {
     try {
+      this.assertAuthMethodEnabled('authMethods.emailPasswordEnabled', 'email');
+
       const email = dto.email.toLowerCase();
       const requestContext = this.getRegisterRequestContext(req);
       await this.referralsService.validateReferralCodeForRegistration(
@@ -833,6 +837,8 @@ export class AuthService {
 
   async login(req: AppRequest, res: Response, dto: LoginDto) {
     try {
+      this.assertAuthMethodEnabled('authMethods.emailPasswordEnabled', 'email');
+
       const email = dto.email.toLowerCase();
 
       const existingUser = await this.userRepo.findByProvider(
@@ -882,9 +888,11 @@ export class AuthService {
     }
   }
 
-  sendOtp(country_code: string, phone: string) {
-    const otp = this.otpService.generate(country_code, phone);
-    if (this.configService.get<string>('env') !== 'production') {
+  async sendOtp(country_code: string, phone: string) {
+    this.assertAuthMethodEnabled('authMethods.phoneOtpEnabled', 'phone_otp');
+
+    const otp = await this.otpService.generate(country_code, phone);
+    if (this.otpService.shouldExposeOtpForEnvironment()) {
       return { phone, otp };
     }
 
@@ -900,6 +908,8 @@ export class AuthService {
     referralCode?: string,
   ) {
     try {
+      this.assertAuthMethodEnabled('authMethods.phoneOtpEnabled', 'phone_otp');
+
       const isValid = this.otpService.verify(country_code, phone, otp);
       if (!isValid) return throwUnauthorized(ErrorCode.AUTH_INVALID_OTP);
 
@@ -1005,19 +1015,21 @@ export class AuthService {
 
   async socialLogin(req: AppRequest, res: Response, dto: SocialLoginDto) {
     try {
+      this.assertSocialProviderEnabled(dto.provider);
+
+      const verifiedProfile = await this.socialAuthVerifierService.verify(dto);
+      const provider = verifiedProfile.provider;
+
       const existingUser = await this.userRepo.findByProvider(
-        AuthProvider[dto.provider.toUpperCase() as keyof typeof AuthProvider],
-        dto.provider_id,
+        provider,
+        verifiedProfile.providerId,
       );
 
       if (existingUser) {
         this.assertUserCanAuthenticate(existingUser);
 
         await this.completeLoginFlow(req, existingUser._id.toString(), {
-          provider:
-            AuthProvider[
-              dto.provider.toUpperCase() as keyof typeof AuthProvider
-            ],
+          provider,
           source: `login-social-${dto.provider}`,
         });
 
@@ -1033,11 +1045,51 @@ export class AuthService {
         };
       }
 
+      const verifiedEmail = (verifiedProfile.email ?? dto.email)?.toLowerCase();
+      const existingEmailUser = verifiedEmail
+        ? await this.userRepo.findByEmail(verifiedEmail)
+        : null;
+
+      if (existingEmailUser) {
+        this.assertUserCanAuthenticate(existingEmailUser);
+
+        existingEmailUser.authAccounts.push({
+          provider,
+          providerId: verifiedProfile.providerId,
+          isVerified: true,
+          isPrimary: false,
+          lastUsedAt: new Date(),
+        });
+        existingEmailUser.isEmailVerified = true;
+        await existingEmailUser.save();
+
+        await this.completeLoginFlow(req, existingEmailUser._id.toString(), {
+          provider,
+          source: `link-login-social-${dto.provider}`,
+        });
+
+        const tokens = await this.attachToken(req, res, existingEmailUser);
+
+        return {
+          user: {
+            userId: existingEmailUser._id,
+            provider: dto.provider,
+            email: existingEmailUser.email,
+            isOnboardingCompleted: existingEmailUser.isOnboardingCompleted,
+          },
+          ...tokens,
+        };
+      }
+
+      await this.referralsService.validateReferralCodeForRegistration(
+        dto.referralCode,
+      );
+
       const user = await this.userRepo.create({
-        email: dto.email?.toLowerCase(),
+        email: verifiedEmail,
         status: Status.ACTIVE,
         roles: [Role.USER],
-        isEmailVerified: Boolean(dto.email),
+        isEmailVerified: Boolean(verifiedProfile.email ?? dto.email),
         isPhoneVerified: false,
         isOnboardingCompleted: false,
         membership: {
@@ -1053,11 +1105,8 @@ export class AuthService {
         lastLoginAt: new Date(),
         authAccounts: [
           {
-            provider:
-              AuthProvider[
-                dto.provider.toUpperCase() as keyof typeof AuthProvider
-              ],
-            providerId: dto.provider_id,
+            provider,
+            providerId: verifiedProfile.providerId,
             isVerified: true,
             isPrimary: true,
           },
@@ -1065,19 +1114,18 @@ export class AuthService {
       });
 
       await this.completeRegisterFlow(req, user._id.toString(), {
-        provider:
-          AuthProvider[dto.provider.toUpperCase() as keyof typeof AuthProvider],
+        provider,
         source: `register-social-${dto.provider}`,
-        hasEmail: Boolean(dto.email),
+        hasEmail: Boolean(verifiedProfile.email ?? dto.email),
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
       });
       await this.referralsService.applyRegistrationReferral(
         user._id.toString(),
-        undefined,
+        dto.referralCode,
       );
       await this.syncVerificationStatus(user._id.toString(), {
-        isEmailVerified: Boolean(dto.email),
+        isEmailVerified: Boolean(verifiedProfile.email ?? dto.email),
         isPhoneVerified: false,
       });
 
@@ -1304,6 +1352,42 @@ export class AuthService {
     if (user.status === Status.DELETED) {
       return throwUnauthorized(ErrorCode.AUTH_ACCOUNT_DELETED);
     }
+  }
+
+  private assertAuthMethodEnabled(configKey: string, method: string): void {
+    if (this.configService.get<boolean>(configKey, false)) {
+      return;
+    }
+
+    throw new AppException(
+      ErrorCode.AUTH_FORBIDDEN,
+      HttpStatus.FORBIDDEN,
+      null,
+      undefined,
+      { reason: 'auth_method_disabled', method },
+    );
+  }
+
+  private assertSocialProviderEnabled(provider: AuthProvider): void {
+    const providerFlagMap: Partial<Record<AuthProvider, string>> = {
+      [AuthProvider.GOOGLE]: 'authMethods.social.google',
+      [AuthProvider.FACEBOOK]: 'authMethods.social.facebook',
+      [AuthProvider.APPLE]: 'authMethods.social.apple',
+    };
+
+    const configKey = providerFlagMap[provider];
+
+    if (configKey && this.configService.get<boolean>(configKey, false)) {
+      return;
+    }
+
+    throw new AppException(
+      ErrorCode.AUTH_FORBIDDEN,
+      HttpStatus.FORBIDDEN,
+      null,
+      undefined,
+      { reason: 'social_provider_disabled', provider },
+    );
   }
 
   private inferPlatform(userAgent?: string): string {

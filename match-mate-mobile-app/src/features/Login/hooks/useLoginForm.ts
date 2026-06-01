@@ -5,6 +5,7 @@ import { setCredentials } from '@/store/slices/auth.slice';
 import {
   useLoginMutation,
   useSendOtpMutation,
+  useSocialLoginMutation,
   useVerifyOtpMutation,
 } from '@/store/services/authApi.service';
 import {
@@ -27,6 +28,11 @@ import {
   getApiErrorMessage,
   getApiResponseMessage,
 } from '@/core/utils/apiMessage';
+import { useSocialAuth } from '@/features/Auth/shared/useSocialAuth';
+import {
+  authMethodConfig,
+  isSocialProviderEnabled,
+} from '@/features/Auth/shared/authMethodConfig';
 
 export function useLoginForm() {
   const dispatch = useAppDispatch();
@@ -35,6 +41,8 @@ export function useLoginForm() {
   const [login] = useLoginMutation();
   const [sendOtp] = useSendOtpMutation();
   const [verifyOtp] = useVerifyOtpMutation();
+  const [socialLogin] = useSocialLoginMutation();
+  const { signInWithProvider } = useSocialAuth();
 
   // ─── UI state ─────────────────────────────────────────────────────────────
 
@@ -166,6 +174,11 @@ export function useLoginForm() {
   // ─── Phone / OTP ──────────────────────────────────────────────────────────
 
   const handleGetOtp = useCallback(async () => {
+    if (!authMethodConfig.phoneOtp) {
+      setErrors({ error: t('auth.errors.auth_method_disabled') });
+      return;
+    }
+
     if (!phone) {
       setErrors({ phone: t('auth.errors.phone_required') });
       return;
@@ -197,6 +210,11 @@ export function useLoginForm() {
   }, [phone, countryCode, sendOtp, clearAllErrors, t]);
 
   const handleVerifyOtp = useCallback(async () => {
+    if (!authMethodConfig.phoneOtp) {
+      setErrors({ error: t('auth.errors.auth_method_disabled') });
+      return;
+    }
+
     if (!otp) {
       setErrors({ otp: t('auth.errors.otp_required') });
       return;
@@ -239,15 +257,36 @@ export function useLoginForm() {
       setLoading(true);
       clearAllErrors();
       try {
-        // TODO: integrate real social SDK
-        setErrors({ error: t('auth.errors.social_failed', { provider }) });
-      } catch {
-        setErrors({ error: t('auth.errors.social_failed', { provider }) });
+        if (!isSocialProviderEnabled(provider)) {
+          setErrors({ error: t('auth.errors.auth_method_disabled') });
+          return;
+        }
+
+        const socialProfile = await signInWithProvider(provider);
+        const response = await socialLogin(socialProfile).unwrap();
+
+        if (!response.success) {
+          setErrors({ error: getApiResponseMessage(t, response) });
+          return;
+        }
+
+        if (response.data?.accessToken && response.data?.user) {
+          await applyCredentials(response.data);
+        } else {
+          setErrors({ error: t('auth.errors.server_error') });
+        }
+      } catch (error) {
+        setErrors({
+          error:
+            error instanceof Error && error.message
+              ? error.message
+              : t('auth.errors.social_failed', { provider }),
+        });
       } finally {
         setLoading(false);
       }
     },
-    [clearAllErrors, t]
+    [applyCredentials, clearAllErrors, signInWithProvider, socialLogin, t]
   );
 
   // ─── Input handlers ───────────────────────────────────────────────────────

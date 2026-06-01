@@ -54,6 +54,10 @@ import { NotificationsGateway } from './controllers/notifications.gateway';
     NotificationQueueService,
     NotificationDispatchWorker,
   ],
-  exports: [NotificationsService, NotificationRealtimeService],
+  exports: [
+    NotificationsService,
+    NotificationRealtimeService,
+    SmsNotificationProvider,
+  ],
 })
 export class NotificationsModule {}

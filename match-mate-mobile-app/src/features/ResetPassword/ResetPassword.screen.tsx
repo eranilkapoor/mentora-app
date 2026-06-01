@@ -96,7 +96,7 @@ export default function ResetPasswordScreen({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const { accessToken } = route.params;
+  const accessToken = route.params?.accessToken ?? route.params?.token ?? '';
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
