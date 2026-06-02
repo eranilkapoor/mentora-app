@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
-import { BillingCycle, PlanTier } from '@/common/enums';
+import { BillingCycle, PlanTier, PlanType } from '@/common/enums';
 
 @Schema({ collection: COLLECTION_NAMES.PLAN, timestamps: true })
 export class Plan {
@@ -13,6 +13,9 @@ export class Plan {
 
   @Prop({ enum: PlanTier, required: true })
   tier!: PlanTier;
+
+  @Prop({ type: String, enum: PlanType, default: PlanType.SELF_SERVICE })
+  planType!: PlanType;
 
   @Prop({ type: String, enum: BillingCycle, required: true })
   billingCycle!: BillingCycle;
@@ -46,6 +49,7 @@ export type PlanDocument = Plan & Document;
 export const PlanSchema = SchemaFactory.createForClass(Plan);
 
 PlanSchema.index({ tier: 1 });
+PlanSchema.index({ planType: 1, sortOrder: 1 });
 PlanSchema.index({ price: 1 });
 PlanSchema.index({ isActive: 1 });
 PlanSchema.index({ sortOrder: 1 });

@@ -1,6 +1,9 @@
 import { MembershipPlan } from '@/store/services/membershipApi.service';
-import { DisplayPlan } from './Membership.types';
-import { PLANS } from './Membership.constants';
+import {
+  DisplayFeatureRow,
+  DisplayPlan,
+  MembershipTab,
+} from './Membership.types';
 
 export const formatPlanName = (name: string): string =>
   name
@@ -18,32 +21,76 @@ export const formatPlanPrice = (plan: MembershipPlan): string =>
 
 export const getDurationLabel = (durationDays: number): string => {
   if (durationDays >= 365) return '/ year';
+  if (durationDays >= 180) return '/ 6 months';
   if (durationDays >= 90) return '/ 3 months';
   if (durationDays >= 30) return '/ month';
   return `/${durationDays} days`;
 };
 
+export const getPlanTypeForTab = (
+  tab: MembershipTab
+): MembershipPlan['planType'] =>
+  tab === 'assisted' ? 'assisted' : 'self_service';
+
+const formatFeatureValue = (value: unknown): string => {
+  if (value === true || value === 1) return '✓';
+  if (value === false || value === 0 || value === null || value === undefined) {
+    return '0';
+  }
+  if (value === -1) return 'Unlimited';
+  return String(value);
+};
+
+const getFeatureLabel = (key: string, name?: string): string =>
+  name?.trim() ?? formatPlanName(key);
+
 export const buildDisplayPlans = (
-  backendPlans: MembershipPlan[]
+  backendPlans: MembershipPlan[],
+  tab: MembershipTab
 ): DisplayPlan[] => {
-  const paidPlans = backendPlans
-    .filter((plan) => plan.price > 0)
-    .slice(0, 3)
+  const planType = getPlanTypeForTab(tab);
+
+  return backendPlans
+    .filter(
+      (plan) => plan.price > 0 && (plan.planType ?? 'self_service') === planType
+    )
     .map((plan) => ({
       id: plan._id,
       name: formatPlanName(plan.name),
       price: formatPlanPrice(plan),
       durationLabel: getDurationLabel(plan.durationDays),
       best: Boolean(plan.isPopular),
+      ...(plan.description ? { description: plan.description } : {}),
+      featureValues:
+        plan.features?.reduce<Record<string, string>>((acc, item) => {
+          const key = item.featureId?.key;
+          if (!key) return acc;
+          acc[key] = formatFeatureValue(item.value);
+          return acc;
+        }, {}) ?? {},
       source: plan,
     }));
+};
 
-  if (paidPlans.length > 0) return paidPlans;
+export const buildFeatureRows = (
+  plans: DisplayPlan[],
+  maxRows = 8
+): DisplayFeatureRow[] => {
+  const features = new Map<string, string>();
 
-  return PLANS.map((plan) => ({
-    name: plan.name,
-    price: plan.price,
-    durationLabel: '/ 3 months',
-    best: Boolean(plan.best),
-  }));
+  plans.forEach((plan) => {
+    plan.source?.features?.forEach((item) => {
+      const key = item.featureId?.key;
+      if (!key) return;
+      features.set(key, getFeatureLabel(key, item.featureId?.name));
+    });
+  });
+
+  return Array.from(features.entries())
+    .slice(0, maxRows)
+    .map(([key, label]) => ({
+      key,
+      label,
+      values: plans.map((plan) => plan.featureValues[key] ?? '0'),
+    }));
 };

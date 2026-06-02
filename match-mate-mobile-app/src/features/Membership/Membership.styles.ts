@@ -144,12 +144,13 @@ export const membershipStyles = (theme: Theme) =>
     // ─── Plan Cards ───────────────────────────────────────────────────────
     planRow: {
       flexDirection: 'row',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
       marginBottom: 20,
       gap: 8,
     },
     planCard: {
-      flex: 1,
+      width: 132,
+      minHeight: 150,
       borderWidth: 1.5,
       borderColor: theme.colors.border,
       borderRadius: 16,
@@ -321,6 +322,9 @@ export const membershipStyles = (theme: Theme) =>
     },
     trustBadge: {
       flex: 1,
+      flexDirection: 'row',
+      justifyContent: 'center',
+      gap: 5,
       backgroundColor: theme.colors.surface,
       borderRadius: 20,
       paddingVertical: 7,

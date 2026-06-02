@@ -22,27 +22,23 @@ export default function MembershipScreen(): React.ReactElement {
   const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<MembershipTab>('self');
-  const [duration, setDuration] = useState(1);
 
   const {
     displayPlans,
+    featureRows,
     selectedPlan,
     setSelectedPlan,
     selectedPlanItem,
     selectedIndex,
     activePlanName = 'Free',
     isFetchingPlans,
-  } = useMembershipData();
+  } = useMembershipData(activeTab);
 
   const { handleCreateOrder, isCreatingOrder } = useMembershipActions();
 
   const onCreateOrder = useCallback(() => {
     void handleCreateOrder(selectedPlanItem);
   }, [handleCreateOrder, selectedPlanItem]);
-
-  const onGetExclusive = useCallback(() => {
-    // TODO: wire up assisted plan purchase
-  }, []);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -93,12 +89,19 @@ export default function MembershipScreen(): React.ReactElement {
         {activeTab === 'self' ? (
           <SelfServiceTab
             displayPlans={displayPlans}
+            featureRows={featureRows}
             selectedPlan={selectedPlan}
             selectedIndex={selectedIndex}
             onSelectPlan={setSelectedPlan}
           />
         ) : (
-          <AssistedTab duration={duration} onDurationChange={setDuration} />
+          <AssistedTab
+            displayPlans={displayPlans}
+            featureRows={featureRows}
+            selectedPlan={selectedPlan}
+            selectedIndex={selectedIndex}
+            onSelectPlan={setSelectedPlan}
+          />
         )}
       </ScrollView>
 
@@ -106,11 +109,9 @@ export default function MembershipScreen(): React.ReactElement {
       <MembershipCta
         tab={activeTab}
         selectedPlanItem={selectedPlanItem}
-        duration={duration}
         isCreatingOrder={isCreatingOrder}
         isFetchingPlans={isFetchingPlans}
         onCreateOrder={onCreateOrder}
-        onGetExclusive={onGetExclusive}
       />
     </SafeAreaView>
   );

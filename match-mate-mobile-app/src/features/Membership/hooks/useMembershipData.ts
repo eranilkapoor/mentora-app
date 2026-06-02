@@ -3,42 +3,81 @@ import {
   useGetActiveSubscriptionQuery,
   useGetMembershipPlansQuery,
 } from '@/store/services/membershipApi.service';
-import { buildDisplayPlans, formatPlanName } from '../Membership.utils';
-import { DisplayPlan } from '../Membership.types';
+import {
+  buildDisplayPlans,
+  buildFeatureRows,
+  formatPlanName,
+} from '../Membership.utils';
+import {
+  DisplayFeatureRow,
+  DisplayPlan,
+  MembershipTab,
+} from '../Membership.types';
 
-export function useMembershipData() {
+export function useMembershipData(activeTab: MembershipTab) {
   const { data: backendPlans = [], isFetching: isFetchingPlans } =
     useGetMembershipPlansQuery();
   const { data: activeSubscription } = useGetActiveSubscriptionQuery();
 
-  const [selectedPlan, setSelectedPlan] = useState('');
+  const [selectedPlans, setSelectedPlans] = useState<
+    Record<MembershipTab, string>
+  >({
+    self: '',
+    assisted: '',
+  });
 
-  const displayPlans = useMemo<DisplayPlan[]>(
-    () => buildDisplayPlans(backendPlans),
+  const selfPlans = useMemo<DisplayPlan[]>(
+    () => buildDisplayPlans(backendPlans, 'self'),
+    [backendPlans]
+  );
+  const assistedPlans = useMemo<DisplayPlan[]>(
+    () => buildDisplayPlans(backendPlans, 'assisted'),
     [backendPlans]
   );
 
+  const displayPlans = activeTab === 'assisted' ? assistedPlans : selfPlans;
+  const selectedPlan = selectedPlans[activeTab];
+
   useEffect(() => {
-    if (selectedPlan || !displayPlans.length) {
+    if (selectedPlans.self || !selfPlans.length) {
       return;
     }
 
     const defaultPlan =
-      displayPlans.find((plan) => plan.best)?.name ?? displayPlans[0]?.name;
+      selfPlans.find((plan) => plan.best)?.id ?? selfPlans[0]?.id;
 
     if (defaultPlan) {
-      setSelectedPlan(defaultPlan);
+      setSelectedPlans((prev) => ({ ...prev, self: defaultPlan }));
     }
-  }, [displayPlans, selectedPlan]);
+  }, [selfPlans, selectedPlans.self]);
+
+  useEffect(() => {
+    if (selectedPlans.assisted || !assistedPlans.length) {
+      return;
+    }
+
+    const defaultPlan =
+      assistedPlans.find((plan) => plan.best)?.id ?? assistedPlans[0]?.id;
+
+    if (defaultPlan) {
+      setSelectedPlans((prev) => ({ ...prev, assisted: defaultPlan }));
+    }
+  }, [assistedPlans, selectedPlans.assisted]);
+
+  const setSelectedPlan = (planId: string) => {
+    setSelectedPlans((prev) => ({ ...prev, [activeTab]: planId }));
+  };
 
   const selectedPlanItem =
-    displayPlans.find((p) => p.name === selectedPlan) ??
-    displayPlans[0] ??
-    null;
+    displayPlans.find((p) => p.id === selectedPlan) ?? displayPlans[0] ?? null;
 
   const selectedIndex = Math.max(
     0,
-    displayPlans.findIndex((p) => p.name === selectedPlan)
+    displayPlans.findIndex((p) => p.id === selectedPlan)
+  );
+  const featureRows = useMemo<DisplayFeatureRow[]>(
+    () => buildFeatureRows(displayPlans),
+    [displayPlans]
   );
 
   const activePlanName =
@@ -48,6 +87,9 @@ export function useMembershipData() {
 
   return {
     displayPlans,
+    selfPlans,
+    assistedPlans,
+    featureRows,
     selectedPlan,
     setSelectedPlan,
     selectedPlanItem,

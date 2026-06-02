@@ -40,6 +40,21 @@ export class AuthTwoFactorService {
 
   async getStatus(userId: string) {
     const settings = await this.getOrCreateSecurity(userId);
+    const user = await this.userModel.findById(userId).lean().exec();
+    const invalidSms =
+      settings.twoFactorEnabled &&
+      settings.twoFactorMethod === 'sms' &&
+      (!user || !this.hasVerifiedPhone(user));
+    const invalidMethod =
+      settings.twoFactorEnabled &&
+      settings.twoFactorMethod !== 'sms' &&
+      settings.twoFactorMethod !== 'authenticator';
+
+    if (invalidSms || invalidMethod) {
+      await this.disableInvalidTwoFactor(userId);
+      settings.twoFactorEnabled = false;
+      settings.twoFactorMethod = 'none';
+    }
 
     return {
       enabled: Boolean(settings.twoFactorEnabled),
@@ -58,6 +73,7 @@ export class AuthTwoFactorService {
         HttpStatus.NOT_FOUND,
       );
     }
+    this.assertHasVerifiedIdentity(user);
 
     const secret = this.generateBase32Secret();
     const label = encodeURIComponent(user.email ?? String(user._id));
@@ -77,6 +93,9 @@ export class AuthTwoFactorService {
   }
 
   async enableTotp(userId: string, code: string) {
+    const user = await this.getUserOrThrow(userId);
+    this.assertHasVerifiedIdentity(user);
+
     const settings = await this.getOrCreateSecurity(userId);
     if (!settings.totpSecret || !this.verifyTotp(settings.totpSecret, code)) {
       throw new AppException(
@@ -111,32 +130,18 @@ export class AuthTwoFactorService {
   }
 
   async requestSmsEnable(userId: string) {
-    const user = await this.userModel.findById(userId).lean().exec();
-    if (!user?.phone?.countryCode || !user.phone.phone) {
-      throw new AppException(
-        ErrorCode.AUTH_PHONE_NOT_VERIFIED,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const user = await this.getUserOrThrow(userId);
+    const phone = this.getVerifiedPhoneOrThrow(user);
 
-    await this.otpService.generate(user.phone.countryCode, user.phone.phone);
+    await this.otpService.generate(phone.countryCode, phone.phone);
     return { sent: true };
   }
 
   async enableSms(userId: string, code: string) {
-    const user = await this.userModel.findById(userId).lean().exec();
-    if (!user?.phone?.countryCode || !user.phone.phone) {
-      throw new AppException(
-        ErrorCode.AUTH_PHONE_NOT_VERIFIED,
-        HttpStatus.BAD_REQUEST,
-      );
-    }
+    const user = await this.getUserOrThrow(userId);
+    const phone = this.getVerifiedPhoneOrThrow(user);
 
-    const valid = this.otpService.verify(
-      user.phone.countryCode,
-      user.phone.phone,
-      code,
-    );
+    const valid = this.otpService.verify(phone.countryCode, phone.phone, code);
     if (!valid) {
       throw new AppException(
         ErrorCode.AUTH_INVALID_OTP,
@@ -240,11 +245,9 @@ export class AuthTwoFactorService {
 
     if (method === 'sms') {
       const user = await this.userModel.findById(userId).lean().exec();
-      if (!user?.phone?.countryCode || !user.phone.phone) {
-        throw new AppException(
-          ErrorCode.AUTH_PHONE_NOT_VERIFIED,
-          HttpStatus.BAD_REQUEST,
-        );
+      if (!user || !this.hasVerifiedPhone(user)) {
+        await this.disableInvalidTwoFactor(userId);
+        return null;
       }
       await this.otpService.generate(user.phone.countryCode, user.phone.phone);
     }
@@ -365,6 +368,74 @@ export class AuthTwoFactorService {
       { userId: new Types.ObjectId(userId) },
       { $setOnInsert: { userId: new Types.ObjectId(userId) } },
       { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  private async getUserOrThrow(userId: string) {
+    const user = await this.userModel.findById(userId).lean().exec();
+    if (!user) {
+      throw new AppException(
+        ErrorCode.AUTH_USER_NOT_FOUND,
+        HttpStatus.NOT_FOUND,
+      );
+    }
+
+    return user;
+  }
+
+  private assertHasVerifiedIdentity(user: {
+    isEmailVerified?: boolean;
+    isPhoneVerified?: boolean;
+    phone?: { countryCode?: string; phone?: string };
+  }) {
+    if (user.isEmailVerified || this.hasVerifiedPhone(user)) {
+      return;
+    }
+
+    throw new AppException(
+      ErrorCode.AUTH_EMAIL_NOT_VERIFIED,
+      HttpStatus.BAD_REQUEST,
+      null,
+      undefined,
+      { reason: 'verified_email_or_phone_required_for_2fa' },
+    );
+  }
+
+  private getVerifiedPhoneOrThrow(user: {
+    isPhoneVerified?: boolean;
+    phone?: { countryCode?: string; phone?: string };
+  }): { countryCode: string; phone: string } {
+    if (this.hasVerifiedPhone(user)) {
+      return user.phone;
+    }
+
+    throw new AppException(
+      ErrorCode.AUTH_PHONE_NOT_VERIFIED,
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+
+  private hasVerifiedPhone(user: {
+    isPhoneVerified?: boolean;
+    phone?: { countryCode?: string; phone?: string };
+  }): user is {
+    isPhoneVerified?: boolean;
+    phone: { countryCode: string; phone: string };
+  } {
+    return Boolean(
+      user.isPhoneVerified && user.phone?.countryCode && user.phone.phone,
+    );
+  }
+
+  private async disableInvalidTwoFactor(userId: string) {
+    await this.securitySettingModel.updateOne(
+      { userId: new Types.ObjectId(userId) },
+      {
+        $set: {
+          twoFactorEnabled: false,
+          twoFactorMethod: 'none',
+        },
+      },
     );
   }
 

@@ -1,11 +1,15 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
+import {
+  SettingsOption,
+  SettingsOptionSheet,
+} from '@/core/components/settings/SettingsOptionSheet';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -23,6 +27,40 @@ type Props = {
 };
 
 type UploadFile = { uri: string; name: string; type: string };
+type KycDocumentType =
+  | 'aadhaar'
+  | 'pan'
+  | 'passport'
+  | 'driving_licence'
+  | 'voter_id';
+
+const DOCUMENT_TYPE_OPTIONS: SettingsOption<KycDocumentType>[] = [
+  {
+    value: 'aadhaar',
+    label: 'Aadhaar Card',
+    description: 'Preferred identity proof for Indian profiles',
+  },
+  {
+    value: 'pan',
+    label: 'PAN Card',
+    description: 'Government-issued photo identity proof',
+  },
+  {
+    value: 'passport',
+    label: 'Passport',
+    description: 'Valid passport identity page',
+  },
+  {
+    value: 'driving_licence',
+    label: 'Driving Licence',
+    description: 'Valid driving licence with photo',
+  },
+  {
+    value: 'voter_id',
+    label: 'Voter ID',
+    description: 'Election photo identity card',
+  },
+];
 
 export default function KycVerificationScreen({
   navigation,
@@ -33,9 +71,13 @@ export default function KycVerificationScreen({
   const { data, isLoading, refetch } = useGetKycStatusQuery();
   const [submitKyc, { isLoading: isSubmitting }] = useSubmitKycMutation();
   const [initiateEkyc] = useInitiateEkycMutation();
-  const [documentType, setDocumentType] = useState('aadhaar');
+  const [documentType, setDocumentType] = useState<KycDocumentType>('aadhaar');
+  const [documentTypeOpen, setDocumentTypeOpen] = useState(false);
   const [idProof, setIdProof] = useState<UploadFile | null>(null);
   const [selfie, setSelfie] = useState<UploadFile | null>(null);
+  const documentTypeLabel =
+    DOCUMENT_TYPE_OPTIONS.find((option) => option.value === documentType)
+      ?.label ?? 'Select document';
 
   const pickImage = useCallback(async (kind: 'id' | 'selfie') => {
     const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -143,14 +185,13 @@ export default function KycVerificationScreen({
           title="Manual document review"
           subtitle="Upload ID proof and a clear selfie for review"
         >
-          <View style={local.formBox}>
-            <TextInput
-              value={documentType}
-              onChangeText={setDocumentType}
-              placeholder="Document type"
-              style={local.input}
-            />
-          </View>
+          <SettingsSelectItem
+            icon="credit-card"
+            label="Document type"
+            value={documentTypeLabel}
+            sublabel="Choose the ID document you are uploading"
+            onPress={() => setDocumentTypeOpen(true)}
+          />
           <SettingsSelectItem
             icon="file"
             label="Upload ID proof"
@@ -191,6 +232,15 @@ export default function KycVerificationScreen({
           />
         </SettingsCard>
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={documentTypeOpen}
+        title="Document type"
+        options={DOCUMENT_TYPE_OPTIONS}
+        selectedValue={documentType}
+        onSelect={setDocumentType}
+        onClose={() => setDocumentTypeOpen(false)}
+      />
     </SafeAreaView>
   );
 }
@@ -209,17 +259,5 @@ const createStyles = (theme: Theme) =>
       fontSize: 13,
       lineHeight: 19,
       marginTop: 6,
-    },
-    formBox: {
-      padding: 14,
-    },
-    input: {
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 11,
-      color: theme.colors.textPrimary,
-      backgroundColor: theme.colors.inputBackground,
     },
   });

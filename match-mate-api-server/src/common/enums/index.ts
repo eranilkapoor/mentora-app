@@ -21,6 +21,7 @@ export * from './occupation-type.enum';
 export * from './permission.enum';
 export * from './personality-badge.enum';
 export * from './plan-tier.enum';
+export * from './plan-type.enum';
 export * from './profile-for.enum';
 export * from './profile-status.enum';
 export * from './qualification.enum';

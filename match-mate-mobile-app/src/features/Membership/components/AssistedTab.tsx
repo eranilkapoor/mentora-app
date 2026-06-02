@@ -1,31 +1,36 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { membershipStyles } from '../Membership.styles';
-import { PlanCard } from './PlanCard';
-import {
-  ASSISTED_TRUST_BADGES,
-  BENEFITS,
-  DURATION_PLANS,
-  POINTS_KEYS,
-} from '../Membership.constants';
+import { FeatureRow } from './FeatureRow';
+import { DisplayFeatureRow, DisplayPlan } from '../Membership.types';
+import { ASSISTED_TRUST_BADGES } from '../Membership.constants';
 
 interface Props {
-  duration: number;
-  onDurationChange: (months: number) => void;
+  displayPlans: DisplayPlan[];
+  featureRows: DisplayFeatureRow[];
+  selectedPlan: string;
+  selectedIndex: number;
+  onSelectPlan: (planId: string) => void;
 }
 
 export function AssistedTab({
-  duration,
-  onDurationChange,
+  displayPlans,
+  featureRows,
+  selectedPlan,
+  selectedIndex,
+  onSelectPlan,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
+  const { theme } = useTheme();
   const { t } = useTranslation();
+  const selected = displayPlans[selectedIndex] ?? displayPlans[0];
 
   return (
     <>
-      {/* Exclusive label */}
       <View style={styles.sectionLabelRow}>
         <View style={styles.exclusivePill}>
           <Text style={styles.exclusivePillText}>
@@ -35,78 +40,93 @@ export function AssistedTab({
         <View style={styles.dividerLine} />
       </View>
 
-      {/* Benefits card */}
       <View style={styles.card}>
         <View style={styles.cardTopAccent} />
+        <Text style={styles.benefitText}>
+          {selected?.description ?? t('membership.screen_subtitle')}
+        </Text>
+      </View>
 
-        {BENEFITS.map((b) => (
-          <View key={b.textKey} style={styles.benefitRow}>
-            <Text style={styles.benefitIcon}>{b.icon}</Text>
-            <Text style={styles.benefitText}>{t(b.textKey)}</Text>
-          </View>
-        ))}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.planRow}
+      >
+        {displayPlans.map((plan) => {
+          const active = selectedPlan === plan.id;
 
-        <View style={styles.divider} />
+          return (
+            <TouchableOpacity
+              key={plan.id}
+              style={[styles.planCard, active && styles.planCardActive]}
+              onPress={() => {
+                if (plan.id) onSelectPlan(plan.id);
+              }}
+              activeOpacity={0.85}
+              accessibilityRole="radio"
+              accessibilityState={{ checked: active }}
+              accessibilityLabel={t('membership.select_plan_label', {
+                name: plan.name,
+                price: plan.price,
+              })}
+            >
+              {plan.best ? (
+                <View style={styles.popularBadge}>
+                  <Text style={styles.popularBadgeText}>
+                    {t('membership.top_badge')}
+                  </Text>
+                </View>
+              ) : null}
+              <Text style={[styles.planName, active && styles.planNameActive]}>
+                {plan.name}
+              </Text>
+              <Text
+                style={[styles.planPrice, active && styles.planPriceActive]}
+              >
+                {plan.price}
+              </Text>
+              <Text style={styles.planDuration}>{plan.durationLabel}</Text>
+              <View
+                style={[styles.radioOuter, active && styles.radioOuterActive]}
+              >
+                {active ? <View style={styles.radioInner} /> : null}
+              </View>
+            </TouchableOpacity>
+          );
+        })}
+      </ScrollView>
 
-        <View style={styles.pointsContainer}>
-          {POINTS_KEYS.map((key) => (
-            <View key={key} style={styles.pointRow}>
-              <View style={styles.pointDot} />
-              <Text style={styles.pointText}>{t(key)}</Text>
-            </View>
-          ))}
-        </View>
-
-        <View style={styles.cardActions}>
-          <TouchableOpacity style={styles.callbackBtn} activeOpacity={0.85}>
-            <Text style={styles.callbackText}>
-              📞 {t('membership.request_callback')}
+      <View style={styles.featureTableCard}>
+        <View style={styles.featureTableHeader}>
+          <Text style={styles.featureHeaderLabel}>
+            {t('membership.features_header')}
+          </Text>
+          <View style={styles.featureValues}>
+            <Text
+              style={[styles.featureHeaderCol, styles.featureHeaderColActive]}
+              numberOfLines={1}
+            >
+              {selected?.name ?? ''}
             </Text>
-          </TouchableOpacity>
-          <TouchableOpacity activeOpacity={0.7}>
-            <Text style={styles.knowMoreText}>{t('membership.know_more')}</Text>
-          </TouchableOpacity>
+          </View>
         </View>
-      </View>
 
-      {/* Offer banner */}
-      <View style={styles.offerBanner}>
-        <Text style={styles.offerEmoji}>🎉</Text>
-        <Text style={styles.offerText}>{t('membership.offer_text')}</Text>
-        <Text style={styles.offerEmoji}>🎉</Text>
-      </View>
-
-      {/* Duration plan cards */}
-      <View style={styles.planRow}>
-        {DURATION_PLANS.map((plan) => (
-          <PlanCard
-            key={plan.months}
-            plan={plan}
-            active={duration === plan.months}
-            onPress={() => onDurationChange(plan.months)}
+        {featureRows.map((feature, index) => (
+          <FeatureRow
+            key={feature.key}
+            label={feature.label}
+            values={[feature.values[selectedIndex] ?? '0']}
+            selectedIndex={0}
+            isLast={index === featureRows.length - 1}
           />
         ))}
       </View>
 
-      {/* Savings callout */}
-      <View style={styles.savingsRow}>
-        <Text style={styles.savingsText}>
-          💡{' '}
-          <Text>
-            {t('membership.savings_text', {
-              amount: '₹42,372',
-            })}
-          </Text>
-        </Text>
-      </View>
-
-      {/* Trust badges */}
       <View style={styles.trustRow}>
         {ASSISTED_TRUST_BADGES.map((badge) => (
           <View key={badge.labelKey} style={styles.trustBadge}>
-            <Text style={styles.trustText}>
-              {badge.icon} {t(badge.labelKey)}
-            </Text>
+            <Feather name={badge.icon} size={13} color={theme.colors.primary} />
+            <Text style={styles.trustText}>{t(badge.labelKey)}</Text>
           </View>
         ))}
       </View>

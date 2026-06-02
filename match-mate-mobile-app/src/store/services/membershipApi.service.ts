@@ -15,6 +15,7 @@ export interface MembershipPlan {
   name: string;
   slug: string;
   tier: string;
+  planType?: 'self_service' | 'assisted';
   billingCycle: string;
   price: number;
   durationDays: number;

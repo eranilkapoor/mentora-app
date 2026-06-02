@@ -906,7 +906,10 @@ export class MasterSeederService {
       | 'GOLD_YEARLY'
       | 'PLATINUM_MONTHLY'
       | 'PLATINUM_QUARTERLY'
-      | 'PLATINUM_YEARLY';
+      | 'PLATINUM_YEARLY'
+      | 'ASSISTED_QUARTERLY'
+      | 'ASSISTED_HALF_YEARLY'
+      | 'ASSISTED_YEARLY';
 
     type FeatureValue = number | boolean | string;
 
@@ -1148,6 +1151,9 @@ export class MasterSeederService {
         'PLATINUM_MONTHLY',
         'PLATINUM_QUARTERLY',
         'PLATINUM_YEARLY',
+        'ASSISTED_QUARTERLY',
+        'ASSISTED_HALF_YEARLY',
+        'ASSISTED_YEARLY',
       ] as PlanSlug[]
     ).forEach((planSlug) => {
       platinumFeatures.forEach(([feature, value]) =>

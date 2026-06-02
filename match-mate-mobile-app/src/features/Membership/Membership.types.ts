@@ -1,5 +1,7 @@
 import { BottomNavigationProp } from '@/navigation/types';
 import { MembershipPlan } from '@/store/services/membershipApi.service';
+import { ComponentProps } from 'react';
+import Feather from 'react-native-vector-icons/Feather';
 
 export interface MembershipScreenProps {
   navigation: BottomNavigationProp;
@@ -7,21 +9,8 @@ export interface MembershipScreenProps {
 
 export type MembershipTab = 'self' | 'assisted';
 
-export interface Plan {
-  name: string;
-  price: string;
-  contacts: number;
-  superInterest: number;
-  best?: boolean;
-}
-
-export interface FeatureItem {
-  labelKey: string;
-  values: string[];
-}
-
 export interface FeatureRowProps {
-  labelKey: string;
+  label: string;
   values: string[];
   selectedIndex: number;
   isLast?: boolean;
@@ -47,7 +36,15 @@ export interface DisplayPlan {
   price: string;
   durationLabel: string;
   best?: boolean;
+  description?: string;
+  featureValues: Record<string, string>;
   source?: MembershipPlan;
+}
+
+export interface DisplayFeatureRow {
+  key: string;
+  label: string;
+  values: string[];
 }
 
 export interface StatItem {
@@ -61,6 +58,6 @@ export interface BenefitItem {
 }
 
 export interface TrustBadge {
-  icon: string;
+  icon: ComponentProps<typeof Feather>['name'];
   labelKey: string;
 }

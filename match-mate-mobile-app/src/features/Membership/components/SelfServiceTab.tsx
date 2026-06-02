@@ -1,27 +1,33 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
+import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { membershipStyles } from '../Membership.styles';
 import { FeatureRow } from './FeatureRow';
-import { DisplayPlan } from '../Membership.types';
-import { FEATURES, SELF_TRUST_BADGES } from '../Membership.constants';
+import { DisplayFeatureRow, DisplayPlan } from '../Membership.types';
+import { SELF_TRUST_BADGES } from '../Membership.constants';
 
 interface Props {
   displayPlans: DisplayPlan[];
+  featureRows: DisplayFeatureRow[];
   selectedPlan: string;
   selectedIndex: number;
-  onSelectPlan: (name: string) => void;
+  onSelectPlan: (planId: string) => void;
 }
 
 export function SelfServiceTab({
   displayPlans,
+  featureRows,
   selectedPlan,
   selectedIndex,
   onSelectPlan,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
+  const { theme } = useTheme();
   const { t } = useTranslation();
+  const selected = displayPlans[selectedIndex] ?? displayPlans[0];
 
   return (
     <>
@@ -37,14 +43,20 @@ export function SelfServiceTab({
       </View>
 
       {/* Plan selector cards */}
-      <View style={styles.planRow}>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.planRow}
+      >
         {displayPlans.map((plan) => {
-          const active = selectedPlan === plan.name;
+          const active = selectedPlan === plan.id;
           return (
             <TouchableOpacity
-              key={plan.name}
+              key={plan.id}
               style={[styles.planCard, active && styles.planCardActive]}
-              onPress={() => onSelectPlan(plan.name)}
+              onPress={() => {
+                if (plan.id) onSelectPlan(plan.id);
+              }}
               activeOpacity={0.85}
               accessibilityRole="radio"
               accessibilityState={{ checked: active }}
@@ -77,7 +89,7 @@ export function SelfServiceTab({
             </TouchableOpacity>
           );
         })}
-      </View>
+      </ScrollView>
 
       {/* Feature comparison table */}
       <View style={styles.featureTableCard}>
@@ -86,28 +98,22 @@ export function SelfServiceTab({
             {t('membership.features_header')}
           </Text>
           <View style={styles.featureValues}>
-            {displayPlans.map((p, i) => (
-              <Text
-                key={p.name}
-                style={[
-                  styles.featureHeaderCol,
-                  i === selectedIndex && styles.featureHeaderColActive,
-                ]}
-                numberOfLines={1}
-              >
-                {p.name.replace('Pro ', '')}
-              </Text>
-            ))}
+            <Text
+              style={[styles.featureHeaderCol, styles.featureHeaderColActive]}
+              numberOfLines={1}
+            >
+              {selected?.name ?? ''}
+            </Text>
           </View>
         </View>
 
-        {FEATURES.map((f, index) => (
+        {featureRows.map((f, index) => (
           <FeatureRow
-            key={f.labelKey}
-            labelKey={f.labelKey}
-            values={f.values}
-            selectedIndex={selectedIndex}
-            isLast={index === FEATURES.length - 1}
+            key={f.key}
+            label={f.label}
+            values={[f.values[selectedIndex] ?? '0']}
+            selectedIndex={0}
+            isLast={index === featureRows.length - 1}
           />
         ))}
       </View>
@@ -116,9 +122,8 @@ export function SelfServiceTab({
       <View style={styles.trustRow}>
         {SELF_TRUST_BADGES.map((badge) => (
           <View key={badge.labelKey} style={styles.trustBadge}>
-            <Text style={styles.trustText}>
-              {badge.icon} {t(badge.labelKey)}
-            </Text>
+            <Feather name={badge.icon} size={13} color={theme.colors.primary} />
+            <Text style={styles.trustText}>{t(badge.labelKey)}</Text>
           </View>
         ))}
       </View>
