@@ -2,8 +2,11 @@ import { baseApi } from './baseApi.service';
 
 import {
   LoginHistoryResponse,
+  EnableTwoFactorResponse,
   SecuritySettings,
   SecuritySettingsResponse,
+  TotpSetupResponse,
+  TwoFactorStatus,
   UpdateSecuritySettingsPayload,
 } from '@/features/SecuritySettings/SecuritySettings.types';
 import { ApiResponse } from '@/core/types';
@@ -101,6 +104,60 @@ export const securitySettingsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['SecuritySettings'],
     }),
+    getTwoFactorStatus: builder.query<TwoFactorStatus, void>({
+      query: () => '/auth/2fa/status',
+      transformResponse: (response: ApiResponse<TwoFactorStatus>) =>
+        response.success
+          ? response.data
+          : {
+              enabled: false,
+              method: 'none',
+              authenticatorConfigured: false,
+              recoveryCodesRemaining: 0,
+            },
+      providesTags: ['SecuritySettings'],
+    }),
+    setupTotp: builder.mutation<ApiResponse<TotpSetupResponse>, void>({
+      query: () => ({ url: '/auth/2fa/totp/setup', method: 'POST' }),
+      invalidatesTags: ['SecuritySettings'],
+    }),
+    enableTotp: builder.mutation<
+      ApiResponse<EnableTwoFactorResponse>,
+      { code: string }
+    >({
+      query: (body) => ({ url: '/auth/2fa/totp/enable', method: 'POST', body }),
+      invalidatesTags: ['SecuritySettings'],
+    }),
+    requestSmsTwoFactor: builder.mutation<ApiResponse<{ sent: boolean }>, void>(
+      {
+        query: () => ({ url: '/auth/2fa/sms/request', method: 'POST' }),
+      }
+    ),
+    enableSmsTwoFactor: builder.mutation<
+      ApiResponse<EnableTwoFactorResponse>,
+      { code: string }
+    >({
+      query: (body) => ({ url: '/auth/2fa/sms/enable', method: 'POST', body }),
+      invalidatesTags: ['SecuritySettings'],
+    }),
+    disableTwoFactor: builder.mutation<
+      ApiResponse<EnableTwoFactorResponse>,
+      { code?: string }
+    >({
+      query: (body) => ({ url: '/auth/2fa/disable', method: 'POST', body }),
+      invalidatesTags: ['SecuritySettings'],
+    }),
+    regenerateRecoveryCodes: builder.mutation<
+      ApiResponse<{ recoveryCodes: string[] }>,
+      { code: string }
+    >({
+      query: (body) => ({
+        url: '/auth/2fa/recovery-codes/regenerate',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['SecuritySettings'],
+    }),
   }),
 
   overrideExisting: false,
@@ -113,4 +170,11 @@ export const {
   useRevokeAllDevicesMutation,
   useGetLoginHistoryQuery,
   useRevokeSessionMutation,
+  useGetTwoFactorStatusQuery,
+  useSetupTotpMutation,
+  useEnableTotpMutation,
+  useRequestSmsTwoFactorMutation,
+  useEnableSmsTwoFactorMutation,
+  useDisableTwoFactorMutation,
+  useRegenerateRecoveryCodesMutation,
 } = securitySettingsApi;

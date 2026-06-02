@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback } from 'react';
 import { Platform, View, ScrollView } from 'react-native';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -9,10 +9,6 @@ import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsToggleItem } from '@/core/components/settings/SettingsToggleItem';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
-import {
-  SettingsOption,
-  SettingsOptionSheet,
-} from '@/core/components/settings/SettingsOptionSheet';
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showSuccess } from '@/core/utils/toast';
 import {
@@ -30,11 +26,6 @@ import {
 } from './SecuritySettings.types';
 import { authMethodConfig } from '@/features/Auth/shared/authMethodConfig';
 
-const formatValue = <T extends string>(
-  options: SettingsOption<T>[],
-  value?: T
-): string => options.find((option) => option.value === value)?.label ?? '';
-
 export default function SecuritySettingsScreen({
   navigation,
 }: SecuritySettingsScreenProps): React.ReactElement {
@@ -45,24 +36,8 @@ export default function SecuritySettingsScreen({
   const { data, isLoading } = useGetSecuritySettingsQuery();
   const [update] = useUpdateSecuritySettingsMutation();
   const [logoutAll] = useLogoutAllMutation();
-  const [twoFactorMethodOpen, setTwoFactorMethodOpen] = useState(false);
 
   const settings = data?.security;
-
-  const twoFactorMethodOptions = useMemo<
-    SettingsOption<SecuritySettings['twoFactorMethod']>[]
-  >(
-    () => [
-      { value: 'none', label: t('settings.options.none') },
-      { value: 'sms', label: t('settings.options.sms') },
-      { value: 'email', label: t('settings.options.email') },
-      {
-        value: 'authenticator',
-        label: t('settings.options.authenticator'),
-      },
-    ],
-    [t]
-  );
 
   const handleToggle = useCallback(
     async (key: keyof SecuritySettings, value: boolean) => {
@@ -104,13 +79,6 @@ export default function SecuritySettingsScreen({
       void update({ [key]: value });
     },
     [t, update]
-  );
-
-  const handleUpdate = useCallback(
-    <K extends keyof SecuritySettings>(key: K, value: SecuritySettings[K]) => {
-      void update({ [key]: value });
-    },
-    [update]
   );
 
   const handleRevokeAllDevices = useCallback(() => {
@@ -155,24 +123,23 @@ export default function SecuritySettingsScreen({
           title={t('settings.security.authentication')}
           subtitle={t('settings.security.authentication_subtitle')}
         >
-          <SettingsToggleItem
+          <SettingsSelectItem
             icon="lock"
             label={t('settings.security.two_factor')}
             sublabel={t('settings.security.two_factor_sub')}
-            value={settings?.twoFactorEnabled ?? false}
-            onChange={(v) => {
-              void handleToggle('twoFactorEnabled', v);
-            }}
+            value={settings?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+            onPress={() => navigation.navigate('TwoFactorSetup')}
           />
           <SettingsSelectItem
             icon="smartphone"
             label={t('settings.security.two_factor_method')}
-            value={formatValue(
-              twoFactorMethodOptions,
+            value={
               settings?.twoFactorMethod
-            )}
+                ? t(`settings.options.${settings.twoFactorMethod}`)
+                : t('settings.options.none')
+            }
             sublabel={t('settings.security.two_factor_method_sub')}
-            onPress={() => setTwoFactorMethodOpen(true)}
+            onPress={() => navigation.navigate('TwoFactorSetup')}
           />
           <SettingsToggleItem
             icon="cpu"
@@ -254,20 +221,6 @@ export default function SecuritySettingsScreen({
 
         <View style={styles.footer} />
       </ScrollView>
-
-      <SettingsOptionSheet
-        visible={twoFactorMethodOpen}
-        title={t('settings.security.two_factor_method')}
-        options={twoFactorMethodOptions}
-        selectedValue={settings?.twoFactorMethod ?? 'none'}
-        onSelect={(value) =>
-          handleUpdate(
-            'twoFactorMethod',
-            value as SecuritySettings['twoFactorMethod']
-          )
-        }
-        onClose={() => setTwoFactorMethodOpen(false)}
-      />
     </SafeAreaView>
   );
 }

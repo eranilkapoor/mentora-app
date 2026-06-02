@@ -19,6 +19,7 @@ import {
   User,
   ResetPasswordRequest,
   AuthSessionsResponse,
+  TwoFactorVerifyRequest,
 } from '../../core/types';
 import { logout as logoutAction } from '../slices/auth.slice';
 import { baseApi, clearRefreshToken, getRefreshToken } from './baseApi.service';
@@ -164,6 +165,17 @@ export const authApi = baseApi.injectEndpoints({
         }
       },
     }),
+
+    verifyTwoFactor: builder.mutation<
+      ApiResponse<LoginResponse>,
+      TwoFactorVerifyRequest
+    >({
+      query: (body) => ({
+        url: '/auth/2fa/verify',
+        method: 'POST',
+        body,
+      }),
+    }),
     logoutAll: builder.mutation<ApiResponse<null>, void>({
       query: () => ({
         url: '/auth/logout-all',
@@ -197,6 +209,7 @@ export const {
   useForgotPasswordMutation,
   useRequestMagicLinkMutation,
   useVerifyMagicLinkMutation,
+  useVerifyTwoFactorMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,
   useVerifyUserQuery,

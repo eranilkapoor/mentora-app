@@ -466,7 +466,10 @@ export class SettingsService {
   }
 
   updateSecurity(userId: string, dto: UpdateSecuritySettingsDto) {
-    return this.repo.updateSecurity(userId, dto);
+    const { twoFactorEnabled, twoFactorMethod, ...safeDto } = dto;
+    void twoFactorEnabled;
+    void twoFactorMethod;
+    return this.repo.updateSecurity(userId, safeDto);
   }
 
   async setAppPin(userId: string, dto: SetAppPinDto) {

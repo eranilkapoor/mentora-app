@@ -16,7 +16,7 @@ export interface VerifyOtpRequest {
 }
 
 export interface VerifyOtpResponse {
-  user: {
+  user?: {
     userId: string;
     firstName?: string;
     email?: string;
@@ -29,6 +29,10 @@ export interface VerifyOtpResponse {
     isPhoneVerified: boolean;
     isOnboardingCompleted: boolean;
   };
-  accessToken: string;
+  accessToken?: string;
   refreshToken?: string;
+  requiresTwoFactor?: boolean;
+  challengeId?: string;
+  method?: 'sms' | 'email' | 'authenticator';
+  expiresInSeconds?: number;
 }

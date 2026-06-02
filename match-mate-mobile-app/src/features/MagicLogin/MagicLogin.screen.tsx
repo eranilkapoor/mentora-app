@@ -42,6 +42,14 @@ export default function MagicLoginScreen({
       try {
         const response = await verifyMagicLink({ token }).unwrap();
 
+        if (response.data?.requiresTwoFactor && response.data.challengeId) {
+          navigation.navigate('TwoFactorChallenge', {
+            challengeId: response.data.challengeId,
+            ...(response.data.method ? { method: response.data.method } : {}),
+          });
+          return;
+        }
+
         if (
           !response.success ||
           !response.data?.accessToken ||
@@ -78,7 +86,7 @@ export default function MagicLoginScreen({
     return () => {
       isMounted = false;
     };
-  }, [dispatch, t, token, verifyMagicLink]);
+  }, [dispatch, navigation, t, token, verifyMagicLink]);
 
   return (
     <SafeAreaView style={styles.safe}>

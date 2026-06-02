@@ -25,6 +25,18 @@ export class SecuritySetting {
   })
   twoFactorMethod!: string;
 
+  @Prop()
+  totpSecret?: string;
+
+  @Prop()
+  totpEnabledAt?: Date;
+
+  @Prop({ type: [String], default: [] })
+  recoveryCodeHashes!: string[];
+
+  @Prop()
+  recoveryCodesGeneratedAt?: Date;
+
   @Prop({ default: false }) biometricEnabled!: boolean;
   @Prop({ default: false }) appPinEnabled!: boolean;
   @Prop() appPinHash?: string;

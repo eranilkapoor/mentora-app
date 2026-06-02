@@ -20,8 +20,10 @@ import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
 import AccountSettingsScreen from '@/features/AccountSettings/AccountSettings.screen';
 import ChangeEmailPhoneScreen from '@/features/AccountSettings/ChangeEmailPhone.screen';
 import LinkedAccountsScreen from '@/features/AccountSettings/LinkedAccounts.screen';
+import KycVerificationScreen from '@/features/AccountSettings/KycVerification.screen';
 import ManageDevicesScreen from '@/features/SecuritySettings/ManageDevices.screen';
 import LoginHistoryScreen from '@/features/SecuritySettings/LoginHistory.screen';
+import TwoFactorSetupScreen from '@/features/SecuritySettings/TwoFactorSetup.screen';
 import BlockedUsersScreen from '@/features/PrivacySettings/BlockedUsers.screen';
 import PrivacySettingsScreen from '@/features/PrivacySettings/PrivacySettings.screen';
 import CommunicationSettingsScreen from '@/features/CommunicationSettings/CommunicationSettings.screen';
@@ -75,6 +77,11 @@ export default function SettingsStack(): React.ReactElement {
       />
       <Stack.Screen name="LinkedAccounts" component={LinkedAccountsScreen} />
       <Stack.Screen
+        name="ProfileVerification"
+        component={KycVerificationScreen}
+        options={{ title: 'Profile verification' }}
+      />
+      <Stack.Screen
         name="ManageDevices"
         component={ManageDevicesScreen}
         options={{ title: t('settings.security.manage_devices') }}
@@ -83,6 +90,11 @@ export default function SettingsStack(): React.ReactElement {
         name="LoginHistory"
         component={LoginHistoryScreen}
         options={{ title: 'Login History' }}
+      />
+      <Stack.Screen
+        name="TwoFactorSetup"
+        component={TwoFactorSetupScreen}
+        options={{ title: 'Two-factor authentication' }}
       />
       <Stack.Screen
         name="SubscriptionBilling"

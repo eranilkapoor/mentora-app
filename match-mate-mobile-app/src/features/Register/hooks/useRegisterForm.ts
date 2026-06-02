@@ -170,7 +170,13 @@ export function useRegisterForm() {
       }
 
       if (response.data?.accessToken && response.data?.user) {
-        await applyCredentials(response.data);
+        await applyCredentials({
+          accessToken: response.data.accessToken,
+          ...(response.data.refreshToken
+            ? { refreshToken: response.data.refreshToken }
+            : {}),
+          user: response.data.user,
+        });
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
@@ -259,7 +265,13 @@ export function useRegisterForm() {
         return;
       }
       if (response.data?.accessToken && response.data?.user) {
-        await applyCredentials(response.data);
+        await applyCredentials({
+          accessToken: response.data.accessToken,
+          ...(response.data.refreshToken
+            ? { refreshToken: response.data.refreshToken }
+            : {}),
+          user: response.data.user,
+        });
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
@@ -308,7 +320,13 @@ export function useRegisterForm() {
         }
 
         if (response.data?.accessToken && response.data?.user) {
-          await applyCredentials(response.data);
+          await applyCredentials({
+            accessToken: response.data.accessToken,
+            ...(response.data.refreshToken
+              ? { refreshToken: response.data.refreshToken }
+              : {}),
+            user: response.data.user,
+          });
         } else {
           setErrors({ error: t('auth.errors.server_error') });
         }

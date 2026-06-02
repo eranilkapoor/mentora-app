@@ -6,10 +6,14 @@ export interface LoginRequest {
 }
 
 export interface LoginResponse {
-  accessToken: string;
+  accessToken?: string;
   refreshToken?: string;
   sessionId?: string;
-  user: User;
+  user?: User;
+  requiresTwoFactor?: boolean;
+  challengeId?: string;
+  method?: 'sms' | 'email' | 'authenticator';
+  expiresInSeconds?: number;
 }
 
 export interface RegisterRequest {
@@ -65,17 +69,31 @@ export interface SocialLoginRequest {
 }
 
 export interface SocialLoginResponse {
-  accessToken: string;
+  accessToken?: string;
   refreshToken?: string;
   sessionId?: string;
-  user: User;
+  user?: User;
+  requiresTwoFactor?: boolean;
+  challengeId?: string;
+  method?: 'sms' | 'email' | 'authenticator';
+  expiresInSeconds?: number;
 }
 
 export interface MagicLinkVerifyResponse {
-  accessToken: string;
+  accessToken?: string;
   refreshToken?: string;
   sessionId?: string;
-  user: User;
+  user?: User;
+  requiresTwoFactor?: boolean;
+  challengeId?: string;
+  method?: 'sms' | 'email' | 'authenticator';
+  expiresInSeconds?: number;
+}
+
+export interface TwoFactorVerifyRequest {
+  challengeId: string;
+  code?: string;
+  recoveryCode?: string;
 }
 
 export interface AuthSession {

@@ -21,6 +21,7 @@ import {
   SocialLoginDto,
   ResetPasswordDto,
   ChangePasswordDto,
+  TwoFactorVerifyDto,
 } from '../dto/auth.dto';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
@@ -62,6 +63,7 @@ import {
 import { AppException } from '@/common/exceptions/app.exception';
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 import { SocialAuthVerifierService } from './social-auth-verifier.service';
+import { AuthTwoFactorService } from './auth-two-factor.service';
 import {
   SecuritySetting,
   SecuritySettingDocument,
@@ -112,6 +114,7 @@ export class AuthService {
     private readonly analyticsService: AnalyticsService,
     private readonly authPasswordService: AuthPasswordService,
     private readonly socialAuthVerifierService: SocialAuthVerifierService,
+    private readonly authTwoFactorService: AuthTwoFactorService,
     private readonly configService: ConfigService,
     private readonly referralsService: ReferralsService,
   ) {}
@@ -258,6 +261,109 @@ export class AuthService {
         },
       })),
     );
+  }
+
+  private async issueTokensOrChallenge(
+    req: AppRequest,
+    res: Response,
+    user: TokenAttachUser,
+    options: {
+      provider: AuthProvider;
+      source: string;
+      userPayload: Record<string, unknown>;
+    },
+  ) {
+    const userId = user._id.toString();
+    const challenge = await this.authTwoFactorService.beginChallenge(
+      userId,
+      options.provider,
+      options.source,
+    );
+
+    if (challenge) {
+      return {
+        ...options.userPayload,
+        ...challenge,
+      };
+    }
+
+    await this.completeLoginFlow(req, userId, {
+      provider: options.provider,
+      source: options.source,
+    });
+
+    const tokens = await this.attachToken(req, res, user);
+
+    return {
+      ...options.userPayload,
+      ...tokens,
+    };
+  }
+
+  async getTwoFactorStatus(userId: string) {
+    return this.authTwoFactorService.getStatus(userId);
+  }
+
+  async setupTotp(userId: string) {
+    return this.authTwoFactorService.setupTotp(userId);
+  }
+
+  async enableTotp(userId: string, code: string) {
+    return this.authTwoFactorService.enableTotp(userId, code);
+  }
+
+  async requestSmsTwoFactor(userId: string) {
+    return this.authTwoFactorService.requestSmsEnable(userId);
+  }
+
+  async enableSmsTwoFactor(userId: string, code: string) {
+    return this.authTwoFactorService.enableSms(userId, code);
+  }
+
+  async disableTwoFactor(userId: string, code?: string) {
+    return this.authTwoFactorService.disable(userId, code);
+  }
+
+  async regenerateRecoveryCodes(userId: string, code: string) {
+    return this.authTwoFactorService.regenerateRecoveryCodes(userId, code);
+  }
+
+  async verifyTwoFactorChallenge(
+    req: AppRequest,
+    res: Response,
+    dto: TwoFactorVerifyDto,
+  ) {
+    const challenge = await this.authTwoFactorService.consumeChallenge(
+      dto.challengeId,
+      dto.code,
+      dto.recoveryCode,
+    );
+
+    const user = await this.userRepo.findById(challenge.userId);
+    if (!user) {
+      return throwUnauthorized(ErrorCode.AUTH_USER_NOT_FOUND);
+    }
+
+    this.assertUserCanAuthenticate(user);
+
+    await this.completeLoginFlow(req, user._id.toString(), {
+      provider: challenge.provider,
+      source: `${challenge.source}-2fa`,
+    });
+
+    const tokens = await this.attachToken(req, res, user);
+
+    return {
+      user: {
+        userId: user._id,
+        email: user.email,
+        phone: user.phone,
+        isEmailVerified: user.isEmailVerified,
+        isPhoneVerified: user.isPhoneVerified,
+        isOnboardingCompleted: user.isOnboardingCompleted,
+      },
+      ...tokens,
+    };
   }
 
   private async detectSuspiciousLogin(
@@ -602,15 +708,8 @@ export class AuthService {
 
       this.assertUserCanAuthenticate(user);
       await this.cache.del(cacheKey);
-
-      await this.completeLoginFlow(req, user._id.toString(), {
-        provider: this.resolveProvider(user),
-        source: 'magic-link-login',
-      });
-
-      const tokens = await this.attachToken(req, res, user);
-
-      return {
+      const provider = this.resolveProvider(user);
+      const userPayload = {
         user: {
           userId: user._id,
           email: user.email,
@@ -618,8 +717,13 @@ export class AuthService {
           isPhoneVerified: user.isPhoneVerified,
           isOnboardingCompleted: user.isOnboardingCompleted,
         },
-        ...tokens,
       };
+
+      return this.issueTokensOrChallenge(req, res, user, {
+        provider,
+        source: 'magic-link-login',
+        userPayload,
+      });
     } catch (error) {
       if (error instanceof AppException) {
         throw error;
@@ -1189,22 +1293,20 @@ export class AuthService {
         return throwUnauthorized(ErrorCode.AUTH_INVALID_CREDENTIALS);
       }
 
-      await this.completeLoginFlow(req, existingUser._id.toString(), {
-        provider: AuthProvider.EMAIL,
-        source: 'login-email-password',
-      });
-
-      const tokens = await this.attachToken(req, res, existingUser);
-
-      return {
+      const userPayload = {
         user: {
           userId: existingUser._id,
           email: existingUser.email,
           isEmailVerified: existingUser.isEmailVerified,
           isOnboardingCompleted: existingUser.isOnboardingCompleted,
         },
-        ...tokens,
       };
+
+      return this.issueTokensOrChallenge(req, res, existingUser, {
+        provider: AuthProvider.EMAIL,
+        source: 'login-email-password',
+        userPayload,
+      });
     } catch (error) {
       if (error instanceof AppException) {
         throw error;
@@ -1252,22 +1354,18 @@ export class AuthService {
           isEmailVerified: Boolean(existingUser.isEmailVerified),
         });
 
-        await this.completeLoginFlow(req, existingUser._id.toString(), {
+        return this.issueTokensOrChallenge(req, res, existingUser, {
           provider: AuthProvider.PHONE,
           source: 'login-phone-otp',
-        });
-
-        const tokens = await this.attachToken(req, res, existingUser);
-
-        return {
-          user: {
-            userId: existingUser._id,
-            phone: existingUser.phone,
-            isPhoneVerified: existingUser.isPhoneVerified,
-            isOnboardingCompleted: existingUser.isOnboardingCompleted,
+          userPayload: {
+            user: {
+              userId: existingUser._id,
+              phone: existingUser.phone,
+              isPhoneVerified: existingUser.isPhoneVerified,
+              isOnboardingCompleted: existingUser.isOnboardingCompleted,
+            },
           },
-          ...tokens,
-        };
+        });
       }
 
       await this.referralsService.validateReferralCodeForRegistration(
@@ -1355,21 +1453,17 @@ export class AuthService {
       if (existingUser) {
         this.assertUserCanAuthenticate(existingUser);
 
-        await this.completeLoginFlow(req, existingUser._id.toString(), {
+        return this.issueTokensOrChallenge(req, res, existingUser, {
           provider,
           source: `login-social-${dto.provider}`,
-        });
-
-        const tokens = await this.attachToken(req, res, existingUser);
-
-        return {
-          user: {
-            userId: existingUser._id,
-            provider: dto.provider,
-            isOnboardingCompleted: existingUser.isOnboardingCompleted,
+          userPayload: {
+            user: {
+              userId: existingUser._id,
+              provider: dto.provider,
+              isOnboardingCompleted: existingUser.isOnboardingCompleted,
+            },
           },
-          ...tokens,
-        };
+        });
       }
 
       const verifiedEmail = (verifiedProfile.email ?? dto.email)?.toLowerCase();
@@ -1390,22 +1484,18 @@ export class AuthService {
         existingEmailUser.isEmailVerified = true;
         await existingEmailUser.save();
 
-        await this.completeLoginFlow(req, existingEmailUser._id.toString(), {
+        return this.issueTokensOrChallenge(req, res, existingEmailUser, {
           provider,
           source: `link-login-social-${dto.provider}`,
-        });
-
-        const tokens = await this.attachToken(req, res, existingEmailUser);
-
-        return {
-          user: {
-            userId: existingEmailUser._id,
-            provider: dto.provider,
-            email: existingEmailUser.email,
-            isOnboardingCompleted: existingEmailUser.isOnboardingCompleted,
+          userPayload: {
+            user: {
+              userId: existingEmailUser._id,
+              provider: dto.provider,
+              email: existingEmailUser.email,
+              isOnboardingCompleted: existingEmailUser.isOnboardingCompleted,
+            },
           },
-          ...tokens,
-        };
+        });
       }
 
       await this.referralsService.validateReferralCodeForRegistration(

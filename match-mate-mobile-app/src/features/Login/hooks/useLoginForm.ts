@@ -35,7 +35,12 @@ import {
   isSocialProviderEnabled,
 } from '@/features/Auth/shared/authMethodConfig';
 
-export function useLoginForm() {
+export function useLoginForm(
+  onTwoFactorRequired?: (challenge: {
+    challengeId: string;
+    method?: 'sms' | 'email' | 'authenticator';
+  }) => void
+) {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -159,8 +164,19 @@ export function useLoginForm() {
         return;
       }
 
-      if (response.data?.accessToken && response.data?.user) {
-        await applyCredentials(response.data);
+      if (response.data?.requiresTwoFactor && response.data.challengeId) {
+        onTwoFactorRequired?.({
+          challengeId: response.data.challengeId,
+          ...(response.data.method ? { method: response.data.method } : {}),
+        });
+      } else if (response.data?.accessToken && response.data?.user) {
+        await applyCredentials({
+          accessToken: response.data.accessToken,
+          ...(response.data.refreshToken
+            ? { refreshToken: response.data.refreshToken }
+            : {}),
+          user: response.data.user,
+        });
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
@@ -171,7 +187,7 @@ export function useLoginForm() {
     } finally {
       setLoading(false);
     }
-  }, [email, password, login, applyCredentials, t]);
+  }, [email, password, login, applyCredentials, onTwoFactorRequired, t]);
 
   const handleMagicLinkRequest = useCallback(async () => {
     if (!authMethodConfig.magicLink) {
@@ -273,8 +289,20 @@ export function useLoginForm() {
         setErrors({ otp: getApiResponseMessage(t, response) });
         return;
       }
-      if (response.data?.accessToken && response.data?.user) {
-        await applyCredentials(response.data);
+
+      if (response.data?.requiresTwoFactor && response.data.challengeId) {
+        onTwoFactorRequired?.({
+          challengeId: response.data.challengeId,
+          ...(response.data.method ? { method: response.data.method } : {}),
+        });
+      } else if (response.data?.accessToken && response.data?.user) {
+        await applyCredentials({
+          accessToken: response.data.accessToken,
+          ...(response.data.refreshToken
+            ? { refreshToken: response.data.refreshToken }
+            : {}),
+          user: response.data.user,
+        });
       } else {
         setErrors({ error: t('auth.errors.server_error') });
       }
@@ -285,7 +313,15 @@ export function useLoginForm() {
     } finally {
       setLoading(false);
     }
-  }, [otp, countryCode, phone, verifyOtp, applyCredentials, t]);
+  }, [
+    otp,
+    countryCode,
+    phone,
+    verifyOtp,
+    applyCredentials,
+    onTwoFactorRequired,
+    t,
+  ]);
 
   // ─── Social ───────────────────────────────────────────────────────────────
 
@@ -307,8 +343,19 @@ export function useLoginForm() {
           return;
         }
 
-        if (response.data?.accessToken && response.data?.user) {
-          await applyCredentials(response.data);
+        if (response.data?.requiresTwoFactor && response.data.challengeId) {
+          onTwoFactorRequired?.({
+            challengeId: response.data.challengeId,
+            ...(response.data.method ? { method: response.data.method } : {}),
+          });
+        } else if (response.data?.accessToken && response.data?.user) {
+          await applyCredentials({
+            accessToken: response.data.accessToken,
+            ...(response.data.refreshToken
+              ? { refreshToken: response.data.refreshToken }
+              : {}),
+            user: response.data.user,
+          });
         } else {
           setErrors({ error: t('auth.errors.server_error') });
         }
@@ -323,7 +370,14 @@ export function useLoginForm() {
         setLoading(false);
       }
     },
-    [applyCredentials, clearAllErrors, signInWithProvider, socialLogin, t]
+    [
+      applyCredentials,
+      clearAllErrors,
+      onTwoFactorRequired,
+      signInWithProvider,
+      socialLogin,
+      t,
+    ]
   );
 
   // ─── Input handlers ───────────────────────────────────────────────────────

@@ -21,6 +21,8 @@ import {
   ChangePasswordDto,
   MagicLinkRequestDto,
   MagicLinkVerifyDto,
+  TwoFactorCodeDto,
+  TwoFactorVerifyDto,
 } from '../dto/auth.dto';
 import { AuthService } from '../services/auth.service';
 import { Public } from '@/common/decorators/public.decorator';
@@ -169,6 +171,108 @@ export class AuthController {
       data,
       SuccessCode.AUTH_MAGIC_LINK_VERIFIED,
       'Magic sign-in link verified successfully',
+    );
+  }
+
+  @Get('2fa/status')
+  async getTwoFactorStatus(@Req() req: AuthenticatedRequest) {
+    const data = await this.authService.getTwoFactorStatus(req.user.sub);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      '2FA status fetched',
+    );
+  }
+
+  @Post('2fa/totp/setup')
+  async setupTotp(@Req() req: AuthenticatedRequest) {
+    const data = await this.authService.setupTotp(req.user.sub);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      'Authenticator setup started',
+    );
+  }
+
+  @Post('2fa/totp/enable')
+  async enableTotp(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: TwoFactorCodeDto,
+  ) {
+    const data = await this.authService.enableTotp(req.user.sub, dto.code);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      'Authenticator enabled',
+    );
+  }
+
+  @Post('2fa/sms/request')
+  async requestSmsTwoFactor(@Req() req: AuthenticatedRequest) {
+    const data = await this.authService.requestSmsTwoFactor(req.user.sub);
+    return successResponse(data, SuccessCode.AUTH_OTP_SENT, '2FA OTP sent');
+  }
+
+  @Post('2fa/sms/enable')
+  async enableSmsTwoFactor(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: TwoFactorCodeDto,
+  ) {
+    const data = await this.authService.enableSmsTwoFactor(
+      req.user.sub,
+      dto.code,
+    );
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      'SMS 2FA enabled',
+    );
+  }
+
+  @Post('2fa/disable')
+  async disableTwoFactor(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: Partial<TwoFactorCodeDto>,
+  ) {
+    const data = await this.authService.disableTwoFactor(
+      req.user.sub,
+      dto.code,
+    );
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      '2FA disabled',
+    );
+  }
+
+  @Post('2fa/recovery-codes/regenerate')
+  async regenerateRecoveryCodes(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: TwoFactorCodeDto,
+  ) {
+    const data = await this.authService.regenerateRecoveryCodes(
+      req.user.sub,
+      dto.code,
+    );
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      'Recovery codes regenerated',
+    );
+  }
+
+  @Public()
+  @Post('2fa/verify')
+  async verifyTwoFactor(
+    @Req() req: AppRequest,
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: TwoFactorVerifyDto,
+  ) {
+    const data = await this.authService.verifyTwoFactorChallenge(req, res, dto);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      '2FA verified',
     );
   }
 

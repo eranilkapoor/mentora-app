@@ -108,7 +108,14 @@ export default function AccountSettingsScreen({
             label={t('settings.account.phone_verified')}
             sublabel={t('settings.account.phone_verified_sub')}
             verified={settings?.phoneVerified ?? false}
+          />
+          <SettingsSelectItem
+            icon="shield"
+            label="Profile KYC verification"
+            sublabel="Submit documents and selfie for profile verification"
+            value={settings?.profileVerified ? 'Approved' : 'Manage'}
             isLast
+            onPress={() => navigation.navigate('ProfileVerification')}
           />
         </SettingsCard>
 

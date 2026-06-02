@@ -17,6 +17,14 @@ export interface LinkedAccount {
 export interface AccountSettings {
   emailVerified: boolean;
   phoneVerified: boolean;
+  profileVerified?: boolean;
+  verification?: {
+    isVerified?: boolean;
+    isProfileVerified?: boolean;
+    isEmailVerified?: boolean;
+    isPhoneVerified?: boolean;
+    verifiedAt?: string;
+  };
   isDeactivated: boolean;
   deactivatedAt?: string;
   deactivationReason?: string;

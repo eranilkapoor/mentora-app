@@ -61,3 +61,22 @@ export interface LoginHistoryResponse {
   sessions: LoginHistoryItem[];
   timeline: LoginActivityItem[];
 }
+
+export interface TwoFactorStatus {
+  enabled: boolean;
+  method: 'none' | 'sms' | 'email' | 'authenticator';
+  authenticatorConfigured: boolean;
+  recoveryCodesRemaining: number;
+  recoveryCodesGeneratedAt?: string;
+}
+
+export interface TotpSetupResponse {
+  secret: string;
+  otpauthUrl: string;
+}
+
+export interface EnableTwoFactorResponse {
+  enabled: boolean;
+  method: 'sms' | 'authenticator' | 'none';
+  recoveryCodes?: string[];
+}

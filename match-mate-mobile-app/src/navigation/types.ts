@@ -9,6 +9,10 @@ export type AuthStackParamList = {
   ForgotPassword: undefined;
   ResetPassword: { accessToken?: string; token?: string };
   MagicLogin: { token?: string };
+  TwoFactorChallenge: {
+    challengeId: string;
+    method?: 'sms' | 'email' | 'authenticator';
+  };
 };
 
 // ─── Onboarding Stack ─────────────────────────────────────────────────────────
@@ -77,8 +81,10 @@ export type SettingsStackParamList = {
   AccountSettings: undefined;
   ChangeEmailPhone: { mode: 'email' | 'phone' };
   LinkedAccounts: undefined;
+  ProfileVerification: undefined;
   ManageDevices: undefined;
   LoginHistory: undefined;
+  TwoFactorSetup: undefined;
   SubscriptionBilling: undefined;
   ReferRewards: undefined;
   BlockedUsers: undefined;

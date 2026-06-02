@@ -64,7 +64,9 @@ export default function LoginScreen({
     toggleCountryCodeDropdown,
     closeCountryCodeDropdown,
     setCountryCode,
-  } = useLoginForm();
+  } = useLoginForm((challenge) => {
+    navigation.navigate('TwoFactorChallenge', challenge);
+  });
 
   return (
     <SafeAreaView style={styles.safe}>

@@ -71,19 +71,19 @@
 |--------|------|------------|-----|
 | ✅ | Email Verification | Email Service | Trust |
 | ✅ | Phone Verification (OTP) | SMS / OTP | Mandatory in India |
-| 📂 | Profile KYC Verification | Storage + Admin | Prevent fake users |
-| 🆕 | Aadhaar / DigiLocker eKYC | Govt API | Legal & high-trust verification |
-| 🆕 | Selfie-to-Photo Liveness Check | AI / Vision API | Ensure user is real person |
-| 🆕 | Document Upload + Manual Review Queue | Storage + Admin | KYC workflow |
-| 🆕 | Verification Badge System | Profile | Show verified checkmarks on profile |
+| ✅ | Profile KYC Verification | Storage + Admin | Prevent fake users |
+| ✅ | Aadhaar / DigiLocker eKYC | Govt API | Legal & high-trust verification |
+| ✅ | Selfie-to-Photo Liveness Check | AI / Vision API | Ensure user is real person |
+| ✅ | Document Upload + Manual Review Queue | Storage + Admin | KYC workflow |
+| ✅ | Verification Badge System | Profile | Show verified checkmarks on profile |
 
 ### 2.4 Two-Factor Authentication (2FA)
 
 | Status | Task | Dependency | Why |
 |--------|------|------------|-----|
-| 🆕 | TOTP 2FA (Google Authenticator) | Auth | Enterprise security add-on |
-| 🆕 | SMS 2FA Toggle | OTP | User-configurable |
-| 🆕 | Recovery Codes Generation | Auth | 2FA backup |
+| ✅ | TOTP 2FA (Google Authenticator) | Auth | Enterprise security add-on |
+| ✅ | SMS 2FA Toggle | OTP | User-configurable |
+| ✅ | Recovery Codes Generation | Auth | 2FA backup |
 
 ---
 

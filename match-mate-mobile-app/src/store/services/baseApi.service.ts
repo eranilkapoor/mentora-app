@@ -129,6 +129,7 @@ const PUBLIC_AUTH_ENDPOINTS = new Set([
   '/auth/reset-password',
   '/auth/magic-link/request',
   '/auth/magic-link/verify',
+  '/auth/2fa/verify',
 ]);
 
 /* ──────────────────────────────────────────────
