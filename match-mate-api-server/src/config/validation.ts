@@ -203,6 +203,8 @@ export const envValidationSchema = Joi.object({
 
   PORT: Joi.number().integer().min(1).max(65535).default(3000),
 
+  SHUTDOWN_DRAIN_MS: Joi.number().integer().min(0).max(30000).default(5000),
+
   ALLOWED_ORIGINS: Joi.string()
     .trim()
     .default('*')

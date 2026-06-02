@@ -24,12 +24,16 @@ import {
   REDIS_PUB_CLIENT,
   REDIS_SUB_CLIENT,
 } from '@/common/cache/cache.constants';
+import { AppService } from './app.service';
 
 /**
  * Graceful shutdown timeout (ms).
  * If shutdown exceeds this duration, force-exit to avoid hanging.
  */
 const SHUTDOWN_TIMEOUT_MS = 10_000;
+
+const sleep = (ms: number): Promise<void> =>
+  new Promise((resolve) => setTimeout(resolve, ms));
 
 /**
  * Handles graceful shutdown for SIGINT / SIGTERM.
@@ -41,7 +45,17 @@ async function shutdown(
   wsAdapter: HybridSocketIoAdapter,
   logger: AppLogger,
 ): Promise<void> {
+  const appService = app.get(AppService, { strict: false });
+  const configService = app.get(ConfigService);
+  const drainMs = configService.get<number>('app.shutdownDrainMs', 5000);
+
   logger.log(`Received ${signal} — starting graceful shutdown`);
+  appService.markShuttingDown();
+  logger.log(`Readiness disabled; draining traffic for ${drainMs}ms`);
+
+  if (drainMs > 0) {
+    await sleep(drainMs);
+  }
 
   // Force-exit if shutdown hangs
   const forceExit = setTimeout(() => {

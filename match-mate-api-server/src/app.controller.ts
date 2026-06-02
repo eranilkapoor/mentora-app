@@ -1,6 +1,9 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Res } from '@nestjs/common';
+import { SkipThrottle } from '@nestjs/throttler';
+import { Response } from 'express';
 import { AppService } from './app.service';
 import { Public } from '@/common/decorators/public.decorator';
+import { SkipRateLimit } from '@/common/decorators/skip-rate-limit.decorator';
 
 @Controller()
 export class AppController {
@@ -15,12 +18,25 @@ export class AppController {
     return this.appService.getRoot();
   }
 
-  // ==========================================
-  // HEALTH CHECK (important for prod)
-  // ==========================================
   @Public()
-  @Get('health')
-  check() {
-    return this.appService.healthCheck();
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('live')
+  live() {
+    return this.appService.livenessCheck();
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('ready')
+  ready(@Res({ passthrough: true }) response: Response) {
+    const readiness = this.appService.readinessCheck();
+
+    if (readiness.status !== 'ok') {
+      response.status(503);
+    }
+
+    return readiness;
   }
 }
