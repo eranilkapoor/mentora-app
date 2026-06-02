@@ -46,6 +46,16 @@
               "scheme": "https",
               "host": "www.matchmate.webnza.com",
               "pathPrefix": "/reset-password"
+            },
+            {
+              "scheme": "https",
+              "host": "matchmate.webnza.com",
+              "pathPrefix": "/magic-login"
+            },
+            {
+              "scheme": "https",
+              "host": "www.matchmate.webnza.com",
+              "pathPrefix": "/magic-login"
             }
           ],
           "category": ["BROWSABLE", "DEFAULT"]
@@ -82,6 +92,12 @@
       "expo-font",
       "expo-video",
       "expo-apple-authentication",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow MatchMate to use Face ID to unlock your account quickly."
+        }
+      ],
       "expo-web-browser"
     ],
     "runtimeVersion": {

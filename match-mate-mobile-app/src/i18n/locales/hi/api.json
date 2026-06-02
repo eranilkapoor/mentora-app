@@ -35,6 +35,8 @@
     "auth_password_changed": "पासवर्ड सफलतापूर्वक बदला गया।",
     "auth_email_verified": "ईमेल सफलतापूर्वक वेरिफाई हुआ।",
     "auth_phone_verified": "फोन नंबर सफलतापूर्वक वेरिफाई हुआ।",
+    "auth_magic_link_sent": "मैजिक साइन-इन लिंक सफलतापूर्वक भेजा गया।",
+    "auth_magic_link_verified": "सफलतापूर्वक साइन इन हुआ।",
 
     "user_not_found": "यूज़र नहीं मिला।",
     "user_already_blocked": "यह यूज़र पहले से ब्लॉक है।",

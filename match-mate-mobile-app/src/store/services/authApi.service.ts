@@ -6,6 +6,10 @@ import {
   ForgotPasswordRequest,
   ChangePasswordRequest,
   SocialLoginRequest,
+  MagicLinkRequest,
+  MagicLinkResponse,
+  MagicLinkVerifyRequest,
+  MagicLinkVerifyResponse,
   ApiResponse,
   LoginResponse,
   RegisterResponse,
@@ -70,6 +74,28 @@ export const authApi = baseApi.injectEndpoints({
     forgotPassword: builder.mutation<ApiResponse<User>, ForgotPasswordRequest>({
       query: (body) => ({
         url: '/auth/forgot-password',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    requestMagicLink: builder.mutation<
+      ApiResponse<MagicLinkResponse>,
+      MagicLinkRequest
+    >({
+      query: (body) => ({
+        url: '/auth/magic-link/request',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    verifyMagicLink: builder.mutation<
+      ApiResponse<MagicLinkVerifyResponse>,
+      MagicLinkVerifyRequest
+    >({
+      query: (body) => ({
+        url: '/auth/magic-link/verify',
         method: 'POST',
         body,
       }),
@@ -169,6 +195,8 @@ export const {
   useVerifyOtpMutation,
   useSocialLoginMutation,
   useForgotPasswordMutation,
+  useRequestMagicLinkMutation,
+  useVerifyMagicLinkMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,
   useVerifyUserQuery,

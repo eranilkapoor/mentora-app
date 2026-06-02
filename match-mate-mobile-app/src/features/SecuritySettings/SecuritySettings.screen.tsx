@@ -1,5 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, ScrollView } from 'react-native';
+import { Platform, View, ScrollView } from 'react-native';
+import * as LocalAuthentication from 'expo-local-authentication';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
@@ -13,7 +14,7 @@ import {
   SettingsOptionSheet,
 } from '@/core/components/settings/SettingsOptionSheet';
 import { showConfirm } from '@/core/utils/confirm';
-import { showSuccess } from '@/core/utils/toast';
+import { showError, showSuccess } from '@/core/utils/toast';
 import {
   useGetSecuritySettingsQuery,
   useUpdateSecuritySettingsMutation,
@@ -27,6 +28,7 @@ import {
   SecuritySettings,
   SecuritySettingsScreenProps,
 } from './SecuritySettings.types';
+import { authMethodConfig } from '@/features/Auth/shared/authMethodConfig';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -63,10 +65,45 @@ export default function SecuritySettingsScreen({
   );
 
   const handleToggle = useCallback(
-    (key: keyof SecuritySettings, value: boolean) => {
+    async (key: keyof SecuritySettings, value: boolean) => {
+      if (key === 'biometricEnabled' && value) {
+        if (!authMethodConfig.biometric || Platform.OS === 'web') {
+          showError({
+            title: t('common.error'),
+            message: t('settings.security.biometric_unavailable'),
+          });
+          return;
+        }
+
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
+
+        if (!hasHardware || !enrolled) {
+          showError({
+            title: t('common.error'),
+            message: t('settings.security.biometric_not_enrolled'),
+          });
+          return;
+        }
+
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: t('settings.security.biometric_prompt'),
+          cancelLabel: t('common.cancel'),
+          disableDeviceFallback: false,
+        });
+
+        if (!result.success) {
+          showError({
+            title: t('common.error'),
+            message: t('settings.security.biometric_failed'),
+          });
+          return;
+        }
+      }
+
       void update({ [key]: value });
     },
-    [update]
+    [t, update]
   );
 
   const handleUpdate = useCallback(
@@ -123,7 +160,9 @@ export default function SecuritySettingsScreen({
             label={t('settings.security.two_factor')}
             sublabel={t('settings.security.two_factor_sub')}
             value={settings?.twoFactorEnabled ?? false}
-            onChange={(v) => handleToggle('twoFactorEnabled', v)}
+            onChange={(v) => {
+              void handleToggle('twoFactorEnabled', v);
+            }}
           />
           <SettingsSelectItem
             icon="smartphone"
@@ -140,7 +179,9 @@ export default function SecuritySettingsScreen({
             label={t('settings.security.biometric')}
             sublabel={t('settings.security.biometric_sub')}
             value={settings?.biometricEnabled ?? false}
-            onChange={(v) => handleToggle('biometricEnabled', v)}
+            onChange={(v) => {
+              void handleToggle('biometricEnabled', v);
+            }}
           />
           <SettingsToggleItem
             icon="hash"
@@ -148,7 +189,9 @@ export default function SecuritySettingsScreen({
             sublabel={t('settings.security.app_pin_sub')}
             value={settings?.appPinEnabled ?? false}
             isLast
-            onChange={(v) => handleToggle('appPinEnabled', v)}
+            onChange={(v) => {
+              void handleToggle('appPinEnabled', v);
+            }}
           />
         </SettingsCard>
 
@@ -163,7 +206,9 @@ export default function SecuritySettingsScreen({
             label={t('settings.security.suspicious_alerts')}
             sublabel={t('settings.security.suspicious_alerts_sub')}
             value={settings?.suspiciousLoginAlerts ?? true}
-            onChange={(v) => handleToggle('suspiciousLoginAlerts', v)}
+            onChange={(v) => {
+              void handleToggle('suspiciousLoginAlerts', v);
+            }}
           />
           <SettingsToggleItem
             icon="log-in"
@@ -171,7 +216,9 @@ export default function SecuritySettingsScreen({
             sublabel={t('settings.security.login_notifications_sub')}
             value={settings?.loginNotifications ?? true}
             isLast
-            onChange={(v) => handleToggle('loginNotifications', v)}
+            onChange={(v) => {
+              void handleToggle('loginNotifications', v);
+            }}
           />
         </SettingsCard>
 

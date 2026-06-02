@@ -29,6 +29,18 @@ export interface ForgotPasswordRequest {
   email: string;
 }
 
+export interface MagicLinkRequest {
+  email: string;
+}
+
+export interface MagicLinkVerifyRequest {
+  token: string;
+}
+
+export interface MagicLinkResponse {
+  sent: boolean;
+}
+
 export interface ChangePasswordRequest {
   oldPassword: string;
   newPassword: string;
@@ -53,6 +65,13 @@ export interface SocialLoginRequest {
 }
 
 export interface SocialLoginResponse {
+  accessToken: string;
+  refreshToken?: string;
+  sessionId?: string;
+  user: User;
+}
+
+export interface MagicLinkVerifyResponse {
   accessToken: string;
   refreshToken?: string;
   sessionId?: string;

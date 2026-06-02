@@ -7,6 +7,7 @@ import LoginScreen from '@/features/Login/Login.screen';
 import RegisterScreen from '@/features/Register/Register.screen';
 import ForgotPasswordScreen from '@/features/ForgotPassword/ForgotPassword.screen';
 import ResetPasswordScreen from '@/features/ResetPassword/ResetPassword.screen';
+import MagicLoginScreen from '@/features/MagicLogin/MagicLogin.screen';
 import { AuthStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -20,6 +21,7 @@ export default function AuthStack(): React.ReactElement {
       <Stack.Screen name="Register" component={RegisterScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+      <Stack.Screen name="MagicLogin" component={MagicLoginScreen} />
     </Stack.Navigator>
   );
 }

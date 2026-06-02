@@ -4,6 +4,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CookieOptions, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
+import { randomUUID } from 'crypto';
 import {
   BillingCycle,
   PlanTier,
@@ -68,6 +69,12 @@ interface TokenAttachUser {
 
 interface RefreshTokenPayload {
   sub: string;
+}
+
+interface MagicLinkTokenPayload {
+  userId: string;
+  type: 'magic-login';
+  jti: string;
 }
 
 interface RegisterRequestContext {
@@ -328,6 +335,110 @@ export class AuthService {
     }
   }
 
+  async requestMagicLink(req: AppRequest, email: string) {
+    this.assertAuthMethodEnabled('authMethods.magicLinkEnabled', 'magic_link');
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const user = await this.userRepo.findByProvider(
+      AuthProvider.EMAIL,
+      normalizedEmail,
+    );
+
+    if (user) {
+      const jti = randomUUID();
+      const token = this.jwtService.sign(
+        { userId: user._id.toString(), type: 'magic-login', jti },
+        { expiresIn: '10m' },
+      );
+      const link = this.buildMagicLoginLink(token);
+      await this.cache.set(this.getMagicLinkCacheKey(jti), true, 600);
+
+      await this.notificationsService.notify({
+        userId: String(user._id),
+        title: 'Sign in to MatchMate',
+        message: `Use this secure link to sign in: ${link}`,
+        type: 'system',
+        category: 'system',
+        channels: ['email'],
+        metadata: {
+          source: 'magic-link-login',
+        },
+      });
+
+      await this.activityLogModel.create({
+        userId: user._id,
+        category: ActivityCategory.AUTH,
+        action: ActivityAction.LOGIN,
+        ip: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
+        device: this.getHeaderString(req, 'x-device-id'),
+        userAgent: this.getHeaderString(req, 'user-agent'),
+        requestId: req.requestId,
+        correlationId: req.correlationId,
+        platform: this.getRegisterRequestContext(req).platform,
+        metadata: {
+          source: 'magic-link-request',
+        },
+      });
+    }
+
+    return { sent: true };
+  }
+
+  async verifyMagicLink(req: AppRequest, res: Response, token: string) {
+    try {
+      this.assertAuthMethodEnabled(
+        'authMethods.magicLinkEnabled',
+        'magic_link',
+      );
+
+      const payload = this.jwtService.verify<MagicLinkTokenPayload>(token);
+
+      if (!payload?.userId || payload.type !== 'magic-login' || !payload.jti) {
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN);
+      }
+
+      const cacheKey = this.getMagicLinkCacheKey(payload.jti);
+      const isUnused = await this.cache.has(cacheKey);
+
+      if (!isUnused) {
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN);
+      }
+
+      const user = await this.userRepo.findById(payload.userId);
+
+      if (!user) {
+        return throwUnauthorized(ErrorCode.AUTH_USER_NOT_FOUND);
+      }
+
+      this.assertUserCanAuthenticate(user);
+      await this.cache.del(cacheKey);
+
+      await this.completeLoginFlow(req, user._id.toString(), {
+        provider: this.resolveProvider(user),
+        source: 'magic-link-login',
+      });
+
+      const tokens = await this.attachToken(req, res, user);
+
+      return {
+        user: {
+          userId: user._id,
+          email: user.email,
+          isEmailVerified: user.isEmailVerified,
+          isPhoneVerified: user.isPhoneVerified,
+          isOnboardingCompleted: user.isOnboardingCompleted,
+        },
+        ...tokens,
+      };
+    } catch (error) {
+      if (error instanceof AppException) {
+        throw error;
+      }
+
+      return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN);
+    }
+  }
+
   private async createOrUpdateFreeSubscription(userId: string): Promise<void> {
     const freePlan = await this.planModel.findOneAndUpdate(
       { tier: PlanTier.FREE, isActive: true },
@@ -375,6 +486,15 @@ export class AuthService {
       autoRenew: true,
       planId: String(freePlan._id),
     });
+  }
+
+  private buildMagicLoginLink(token: string): string {
+    const baseUrl = this.configService.getOrThrow<string>('app.webUrl');
+    return `${baseUrl}/magic-login?token=${encodeURIComponent(token)}`;
+  }
+
+  private getMagicLinkCacheKey(jti: string): string {
+    return `auth:magic-link:${jti}`;
   }
 
   private async logRegisterActivity(

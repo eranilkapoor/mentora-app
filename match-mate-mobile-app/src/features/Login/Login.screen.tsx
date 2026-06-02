@@ -51,6 +51,7 @@ export default function LoginScreen({
     showCountryCodeDropdown,
     handleTabSwitch,
     handleEmailLogin,
+    handleMagicLinkRequest,
     handleGetOtp,
     handleVerifyOtp,
     handleResendOtp,
@@ -169,6 +170,10 @@ export default function LoginScreen({
                 onSubmit={() => {
                   void handleEmailLogin();
                 }}
+                onRequestMagicLink={() => {
+                  void handleMagicLinkRequest();
+                }}
+                magicLinkEnabled={authMethodConfig.magicLink}
                 onNavigateForgot={() => navigation.navigate('ForgotPassword')}
               />
             )}

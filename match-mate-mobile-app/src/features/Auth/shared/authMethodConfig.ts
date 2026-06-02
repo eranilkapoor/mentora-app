@@ -29,6 +29,8 @@ const getGoogleClientIdForCurrentPlatform = (): string | undefined => {
 export const authMethodConfig = {
   emailPassword: true,
   phoneOtp: isEnabled('EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED'),
+  magicLink: isEnabled('EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED'),
+  biometric: isEnabled('EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED'),
   social: {
     google:
       isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED') &&

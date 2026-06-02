@@ -23,8 +23,8 @@
 |--------|------|------------|-----|
 | ✅ | Root URL Check (`/`) | None | Quick sanity check for uptime |
 | ✅ | Health Check (`/health`) | None | Required for load balancers, Kubernetes |
-| 🆕 | Readiness Probe (`/ready`) | DB, Redis | Separate liveness vs readiness for K8s |
-| 🆕 | Graceful Shutdown Handler | Server | Zero-downtime deploys |
+| ✅ | Readiness Probe (`/ready`) | DB, Redis | Separate liveness vs readiness for K8s |
+| ✅ | Graceful Shutdown Handler | Server | Zero-downtime deploys |
 
 ### 1.2 Config, Environment & Feature System
 
@@ -47,11 +47,11 @@
 | ✅ | Email Registration | None | Primary onboarding |
 | ✅ | Phone + OTP Registration | OTP Service | India-first users |
 | ✅ | Social Login (Google / Facebook) | OAuth 2.0 | Reduce friction |
-| 🆕 | Apple Sign-In | OAuth | iOS App Store requirement |
+| ✅ | Apple Sign-In | OAuth | iOS App Store requirement |
 | ✅ | Login (Email / Phone / Social) | Auth | Core access |
 | ✅ | Forgot Password | Email Service | Account recovery |
-| 🆕 | Magic Link Login | Email | Passwordless UX option |
-| 🆕 | Biometric Auth (Face ID / Fingerprint) | Mobile SDK | Fast re-auth on mobile |
+| ✅ | Magic Link Login | Email | Passwordless UX option |
+| ✅ | Biometric Auth (Face ID / Fingerprint) | Mobile SDK | Fast re-auth on mobile |
 
 ### 2.2 Token & Session Management
 

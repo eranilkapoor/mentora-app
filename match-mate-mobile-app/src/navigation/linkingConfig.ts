@@ -22,6 +22,12 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
               accessToken: (token: string) => decodeURIComponent(token),
             },
           },
+          MagicLogin: {
+            path: 'magic-login',
+            parse: {
+              token: (token: string) => decodeURIComponent(token),
+            },
+          },
         },
       },
     },

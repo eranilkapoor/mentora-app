@@ -41,6 +41,7 @@ export default () => ({
       facebook: process.env.AUTH_SOCIAL_FACEBOOK_ENABLED === 'true',
       apple: process.env.AUTH_SOCIAL_APPLE_ENABLED === 'true',
     },
+    magicLinkEnabled: process.env.AUTH_MAGIC_LINK_ENABLED === 'true',
   },
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],

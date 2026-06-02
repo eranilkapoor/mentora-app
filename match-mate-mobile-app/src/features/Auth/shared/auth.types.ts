@@ -40,6 +40,8 @@ export interface EmailFormProps {
   onEmailChange: (v: string) => void;
   onPasswordChange: (v: string) => void;
   onTogglePassword: () => void;
+  onRequestMagicLink?: () => void;
+  magicLinkEnabled?: boolean;
 }
 
 export interface PhoneFormProps {

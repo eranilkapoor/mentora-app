@@ -26,6 +26,8 @@ export function LoginEmailForm({
   onTogglePassword,
   onSubmit,
   onNavigateForgot,
+  onRequestMagicLink,
+  magicLinkEnabled,
 }: EmailFormProps): React.ReactElement {
   const styles = useThemedStyles(authSharedStyles) as ReturnType<
     typeof authSharedStyles
@@ -162,6 +164,21 @@ export function LoginEmailForm({
           {t('auth.actions.forgot_password') as string}
         </Text>
       </TouchableOpacity>
+
+      {magicLinkEnabled && onRequestMagicLink ? (
+        <TouchableOpacity
+          onPress={onRequestMagicLink}
+          disabled={loading}
+          style={styles.forgotRow}
+          activeOpacity={0.7}
+          accessibilityRole="button"
+          accessibilityLabel={t('auth.actions.magic_link') as string}
+        >
+          <Text style={styles.forgotText}>
+            {t('auth.actions.magic_link') as string}
+          </Text>
+        </TouchableOpacity>
+      ) : null}
 
       {/* Sign in button */}
       <TouchableOpacity

@@ -35,6 +35,8 @@
     "auth_password_changed": "Password changed successfully.",
     "auth_email_verified": "Email verified successfully.",
     "auth_phone_verified": "Phone number verified successfully.",
+    "auth_magic_link_sent": "Magic sign-in link sent successfully.",
+    "auth_magic_link_verified": "Signed in successfully.",
 
     "user_not_found": "User not found.",
     "user_already_blocked": "This user is already blocked.",

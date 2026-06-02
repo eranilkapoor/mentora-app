@@ -281,6 +281,11 @@ export const envValidationSchema = Joi.object({
     .falsy('false')
     .default(false),
 
+  AUTH_MAGIC_LINK_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
   DB_DRIVER: Joi.string().trim().valid('mongo', 'local').required(),
 
   MONGO_URI: Joi.when('DB_DRIVER', {

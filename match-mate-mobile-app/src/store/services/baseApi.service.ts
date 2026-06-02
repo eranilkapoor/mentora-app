@@ -127,6 +127,8 @@ const PUBLIC_AUTH_ENDPOINTS = new Set([
   '/auth/social-login',
   '/auth/forgot-password',
   '/auth/reset-password',
+  '/auth/magic-link/request',
+  '/auth/magic-link/verify',
 ]);
 
 /* ──────────────────────────────────────────────

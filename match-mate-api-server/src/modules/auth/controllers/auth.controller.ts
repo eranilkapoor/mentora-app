@@ -19,6 +19,8 @@ import {
   ForgotPasswordDto,
   ResetPasswordDto,
   ChangePasswordDto,
+  MagicLinkRequestDto,
+  MagicLinkVerifyDto,
 } from '../dto/auth.dto';
 import { AuthService } from '../services/auth.service';
 import { Public } from '@/common/decorators/public.decorator';
@@ -138,6 +140,35 @@ export class AuthController {
       data,
       SuccessCode.AUTH_PASSWORD_RESET_SUCCESS,
       'Password has been reset successfully',
+    );
+  }
+
+  @Public()
+  @Post('magic-link/request')
+  async requestMagicLink(
+    @Req() req: AppRequest,
+    @Body() dto: MagicLinkRequestDto,
+  ) {
+    const data = await this.authService.requestMagicLink(req, dto.email);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_MAGIC_LINK_SENT,
+      'Magic sign-in link sent successfully',
+    );
+  }
+
+  @Public()
+  @Post('magic-link/verify')
+  async verifyMagicLink(
+    @Req() req: AppRequest,
+    @Res({ passthrough: true }) res: Response,
+    @Body() dto: MagicLinkVerifyDto,
+  ) {
+    const data = await this.authService.verifyMagicLink(req, res, dto.token);
+    return successResponse(
+      data,
+      SuccessCode.AUTH_MAGIC_LINK_VERIFIED,
+      'Magic sign-in link verified successfully',
     );
   }
 

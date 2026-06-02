@@ -4,6 +4,7 @@ import { useAppDispatch } from '@/store/hooks';
 import { setCredentials } from '@/store/slices/auth.slice';
 import {
   useLoginMutation,
+  useRequestMagicLinkMutation,
   useSendOtpMutation,
   useSocialLoginMutation,
   useVerifyOtpMutation,
@@ -39,6 +40,7 @@ export function useLoginForm() {
   const { t } = useTranslation();
 
   const [login] = useLoginMutation();
+  const [requestMagicLink] = useRequestMagicLinkMutation();
   const [sendOtp] = useSendOtpMutation();
   const [verifyOtp] = useVerifyOtpMutation();
   const [socialLogin] = useSocialLoginMutation();
@@ -170,6 +172,41 @@ export function useLoginForm() {
       setLoading(false);
     }
   }, [email, password, login, applyCredentials, t]);
+
+  const handleMagicLinkRequest = useCallback(async () => {
+    if (!authMethodConfig.magicLink) {
+      setErrors({ error: t('auth.errors.auth_method_disabled') });
+      return;
+    }
+
+    if (!email.trim()) {
+      setErrors({ email: t('auth.errors.email_required') });
+      return;
+    }
+
+    if (!EMAIL_REGEX.test(email.trim())) {
+      setErrors({ email: t('auth.errors.email_invalid') });
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await requestMagicLink({ email: email.trim() }).unwrap();
+
+      if (!response.success) {
+        setErrors({ error: getApiResponseMessage(t, response) });
+        return;
+      }
+
+      setErrors({ error: t('auth.magic_link.sent') });
+    } catch (err) {
+      setErrors({
+        error: getApiErrorMessage(t, err, 'auth.errors.unknown'),
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [email, requestMagicLink, t]);
 
   // ─── Phone / OTP ──────────────────────────────────────────────────────────
 
@@ -351,6 +388,7 @@ export function useLoginForm() {
     handleTabSwitch,
     handleResendOtp,
     handleEmailLogin,
+    handleMagicLinkRequest,
     handleGetOtp,
     handleVerifyOtp,
     handleSocialLogin,

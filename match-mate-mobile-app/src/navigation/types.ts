@@ -8,6 +8,7 @@ export type AuthStackParamList = {
   Register: undefined;
   ForgotPassword: undefined;
   ResetPassword: { accessToken?: string; token?: string };
+  MagicLogin: { token?: string };
 };
 
 // ─── Onboarding Stack ─────────────────────────────────────────────────────────

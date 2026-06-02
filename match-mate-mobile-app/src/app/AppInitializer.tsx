@@ -1,10 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
+import * as LocalAuthentication from 'expo-local-authentication';
+import { Platform } from 'react-native';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setUser } from '@/store/slices/auth.slice';
+import { logout as logoutAction, setUser } from '@/store/slices/auth.slice';
 import { useVerifyUserQuery } from '@/store/services/authApi.service';
 import { useUpdateProfileLocationMutation } from '@/store/services/profileApi.service';
+import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
 import Loader from '@/core/components/Loader';
 import { getDeviceId } from '@/core/utils/device';
 import { Storage } from '@/core/utils/storage';
@@ -13,6 +16,8 @@ import {
   connectRealtime,
   disconnectRealtime,
 } from '@/core/realtime/realtime.service';
+import { authMethodConfig } from '@/features/Auth/shared/authMethodConfig';
+import { useGetSecuritySettingsQuery } from '@/store/services/securitySettingsApi.service';
 
 interface Props {
   children: React.ReactNode;
@@ -60,9 +65,18 @@ export default function AppInitializer({ children }: Props) {
   const lang = useAppSelector((s) => s.settings.language);
 
   const [langReady, setLangReady] = useState(false);
+  const [biometricUnlocked, setBiometricUnlocked] = useState(
+    !authMethodConfig.biometric || Platform.OS === 'web'
+  );
   const isFirstLoad = useRef(true);
   const locationSyncInFlight = useRef(false);
+  const biometricPromptInFlight = useRef(false);
   const [updateProfileLocation] = useUpdateProfileLocationMutation();
+  const { data: securityData, isLoading: securityLoading } =
+    useGetSecuritySettingsQuery(undefined, {
+      skip:
+        !accessToken || !authMethodConfig.biometric || Platform.OS === 'web',
+    });
 
   const { data, isLoading } = useVerifyUserQuery(undefined, {
     // Only call the endpoint when a token exists
@@ -113,6 +127,9 @@ export default function AppInitializer({ children }: Props) {
   useEffect(() => {
     if (!accessToken) {
       disconnectRealtime();
+      setBiometricUnlocked(
+        !authMethodConfig.biometric || Platform.OS === 'web'
+      );
       return;
     }
 
@@ -122,6 +139,66 @@ export default function AppInitializer({ children }: Props) {
       disconnectRealtime();
     };
   }, [accessToken, dispatch]);
+
+  useEffect(() => {
+    if (!authMethodConfig.biometric || Platform.OS === 'web') {
+      setBiometricUnlocked(true);
+      return;
+    }
+
+    if (!accessToken) {
+      setBiometricUnlocked(false);
+      return;
+    }
+
+    if (securityLoading || biometricPromptInFlight.current) {
+      return;
+    }
+
+    const biometricEnabled = Boolean(securityData?.security?.biometricEnabled);
+
+    if (!biometricEnabled) {
+      setBiometricUnlocked(true);
+      return;
+    }
+
+    biometricPromptInFlight.current = true;
+
+    const authenticate = async () => {
+      try {
+        const hasHardware = await LocalAuthentication.hasHardwareAsync();
+        const enrolled = await LocalAuthentication.isEnrolledAsync();
+
+        if (!hasHardware || !enrolled) {
+          await clearRefreshToken();
+          dispatch(logoutAction());
+          dispatch(baseApi.util.resetApiState());
+          setBiometricUnlocked(false);
+          return;
+        }
+
+        const result = await LocalAuthentication.authenticateAsync({
+          promptMessage: 'Unlock MatchMate',
+          cancelLabel: 'Sign out',
+          disableDeviceFallback: false,
+        });
+
+        if (result.success) {
+          setBiometricUnlocked(true);
+          return;
+        }
+
+        await clearRefreshToken();
+        dispatch(logoutAction());
+        dispatch(baseApi.util.resetApiState());
+        setBiometricUnlocked(false);
+      } finally {
+        biometricPromptInFlight.current = false;
+      }
+    };
+
+    void authenticate();
+  }, [accessToken, dispatch, securityData, securityLoading]);
 
   useEffect(() => {
     if (!accessToken || !userId || locationSyncInFlight.current) {
@@ -215,7 +292,11 @@ export default function AppInitializer({ children }: Props) {
     };
   }, [accessToken, updateProfileLocation, userId]);
 
-  if (!langReady || (accessToken && isLoading)) {
+  if (
+    !langReady ||
+    (accessToken && isLoading) ||
+    (accessToken && !biometricUnlocked)
+  ) {
     return <Loader fullScreen size="large" loadingText="App initializing..." />;
   }
 
