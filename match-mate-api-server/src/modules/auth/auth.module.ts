@@ -23,6 +23,10 @@ import {
   ActivityLog,
   ActivityLogSchema,
 } from '../profiles/schemas/settings/activity-logs.schema';
+import {
+  SecuritySetting,
+  SecuritySettingSchema,
+} from '../settings/schemas/security-setting.schema';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { SafetyModule } from '../safety/safety.module';
@@ -38,6 +42,7 @@ import { ReferralsModule } from '../referrals/referrals.module';
       { name: Subscription.name, schema: SubscriptionSchema },
       { name: Plan.name, schema: PlanSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
+      { name: SecuritySetting.name, schema: SecuritySettingSchema },
     ]),
 
     PassportModule.register({ defaultStrategy: 'jwt' }),

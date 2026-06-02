@@ -20,9 +20,6 @@ export interface CompletionBarProps {
   height?: number;
   showPercentage?: boolean;
 
-  lowThreshold?: number;
-  mediumThreshold?: number;
-
   style?: StyleProp<ViewStyle>;
   testID?: string;
 }
@@ -33,8 +30,6 @@ export const CompletionBar = memo(function CompletionBar({
   subtitle,
   height = 8,
   showPercentage = true,
-  lowThreshold = 40,
-  mediumThreshold = 75,
   style,
   testID,
 }: CompletionBarProps): React.ReactElement {
@@ -52,27 +47,9 @@ export const CompletionBar = memo(function CompletionBar({
     return Math.min(100, Math.max(0, percent));
   }, [percent]);
 
-  /**
-   * Dynamic color based on progress
-   */
   const progressColor = useMemo<string>(() => {
-    if (safePercent < lowThreshold) {
-      return theme.colors.danger;
-    }
-
-    if (safePercent < mediumThreshold) {
-      return theme.colors.accent;
-    }
-
-    return theme.colors.success;
-  }, [
-    lowThreshold,
-    mediumThreshold,
-    safePercent,
-    theme.colors.accent,
-    theme.colors.danger,
-    theme.colors.success,
-  ]);
+    return safePercent >= 100 ? theme.colors.success : theme.colors.primary;
+  }, [safePercent, theme.colors.primary, theme.colors.success]);
 
   /**
    * Auto subtitle

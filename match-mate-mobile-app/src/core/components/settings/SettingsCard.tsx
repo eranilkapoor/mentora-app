@@ -17,6 +17,8 @@ const createStyles = (theme: Theme) =>
       backgroundColor: theme.colors.surface,
       borderRadius: 12,
       marginBottom: 16,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
       overflow: 'hidden',
       ...Platform.select({
         web: {},
@@ -38,11 +40,8 @@ const createStyles = (theme: Theme) =>
 
       backgroundColor: theme.colors.backgroundPage,
 
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-
-      borderTopLeftRadius: 12,
-      borderTopRightRadius: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
 
       gap: 8,
     },

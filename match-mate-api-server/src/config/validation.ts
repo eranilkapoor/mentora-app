@@ -286,6 +286,17 @@ export const envValidationSchema = Joi.object({
     .falsy('false')
     .default(false),
 
+  AUTH_MAX_CONCURRENT_SESSIONS: Joi.number()
+    .integer()
+    .min(1)
+    .max(25)
+    .default(5),
+
+  AUTH_SUSPICIOUS_LOGIN_DETECTION_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(true),
+
   DB_DRIVER: Joi.string().trim().valid('mongo', 'local').required(),
 
   MONGO_URI: Joi.when('DB_DRIVER', {

@@ -244,32 +244,6 @@ export class AuthController {
   }
 
   @Public()
-  @Post('refresh/mobile')
-  async refreshMobile(
-    @Req() req: AppRequest,
-    @Res({ passthrough: true }) res: Response,
-  ) {
-    try {
-      const refreshToken = this.extractRefreshToken(req);
-
-      return await this.authService.refresh(req, res, refreshToken);
-    } catch (error) {
-      this.logger.error(
-        `Mobile refresh token failed: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-        error instanceof Error ? error.stack : undefined,
-      );
-
-      if (error instanceof AppException) {
-        throw error;
-      }
-
-      return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
-    }
-  }
-
-  @Public()
   @Post('logout')
   async logout(
     @Req() req: AppRequest,

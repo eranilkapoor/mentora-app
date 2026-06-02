@@ -86,7 +86,12 @@ export const securitySettingsApi = baseApi.injectEndpoints({
         method: 'GET',
       }),
       transformResponse: (response: ApiResponse<LoginHistoryResponse>) =>
-        response.success ? response.data : { sessions: [] },
+        response.success
+          ? {
+              sessions: response.data?.sessions ?? [],
+              timeline: response.data?.timeline ?? [],
+            }
+          : { sessions: [], timeline: [] },
       providesTags: ['SecuritySettings'],
     }),
     revokeSession: builder.mutation<void, { sessionId: string }>({

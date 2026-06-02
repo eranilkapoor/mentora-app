@@ -82,6 +82,8 @@ export default function SettingsScreen({
       ? profileResponse.data.profileCompletionPercentage
       : undefined
   );
+  const completionColor =
+    profileCompletion >= 100 ? theme.colors.success : theme.colors.primary;
 
   // ─────────────────────────────────────────────
   // Logout
@@ -174,12 +176,13 @@ export default function SettingsScreen({
                     styles.progressFill,
                     {
                       width: `${profileCompletion}%`,
+                      backgroundColor: completionColor,
                     },
                   ]}
                 />
               </View>
 
-              <Text style={styles.progressText}>
+              <Text style={[styles.progressText, { color: completionColor }]}>
                 {profileCompletion}% Complete
               </Text>
             </View>

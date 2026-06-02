@@ -45,6 +45,19 @@ export interface LoginHistoryItem {
   loggedOutAt?: string;
 }
 
+export interface LoginActivityItem {
+  id: string;
+  category?: string;
+  action?: string;
+  ip?: string;
+  device?: string;
+  userAgent?: string;
+  platform?: string;
+  metadata?: Record<string, unknown>;
+  createdAt?: string;
+}
+
 export interface LoginHistoryResponse {
   sessions: LoginHistoryItem[];
+  timeline: LoginActivityItem[];
 }

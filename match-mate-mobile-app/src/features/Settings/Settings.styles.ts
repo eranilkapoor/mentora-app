@@ -20,7 +20,7 @@ export const settingsStyles = (theme: Theme) =>
 
     profileBanner: {
       backgroundColor: theme.colors.surface,
-      borderRadius: 20,
+      borderRadius: 12,
       padding: 16,
       marginBottom: 20,
 
@@ -100,7 +100,7 @@ export const settingsStyles = (theme: Theme) =>
     section: {
       backgroundColor: theme.colors.surface,
 
-      borderRadius: 18,
+      borderRadius: 12,
 
       overflow: 'hidden',
 

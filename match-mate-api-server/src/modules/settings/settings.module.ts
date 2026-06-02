@@ -48,6 +48,10 @@ import {
 } from '../profiles/schemas/profile/profile.schema';
 import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
 import { ChatRealtimeModule } from '../chat/chat-realtime.module';
+import {
+  ActivityLog,
+  ActivityLogSchema,
+} from '../profiles/schemas/settings/activity-logs.schema';
 
 @Module({
   imports: [
@@ -67,6 +71,7 @@ import { ChatRealtimeModule } from '../chat/chat-realtime.module';
       { name: UserSession.name, schema: UserSessionSchema },
       { name: Profile.name, schema: ProfileSchema },
       { name: Media.name, schema: MediaSchema },
+      { name: ActivityLog.name, schema: ActivityLogSchema },
     ]),
   ],
   controllers: [SettingsController],

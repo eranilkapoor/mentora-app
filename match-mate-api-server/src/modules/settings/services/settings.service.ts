@@ -27,6 +27,11 @@ import {
 } from '@/modules/profiles/schemas/media/media.schema';
 import { MediaType } from '@/common/enums';
 import { ChatRealtimeService } from '@/modules/chat/services/chat-realtime.service';
+import {
+  ActivityCategory,
+  ActivityLog,
+  ActivityLogDocument,
+} from '@/modules/profiles/schemas/settings/activity-logs.schema';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,
@@ -73,6 +78,8 @@ export class SettingsService {
     private readonly profileModel: Model<ProfileDocument>,
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
+    @InjectModel(ActivityLog.name)
+    private readonly activityLogModel: Model<ActivityLogDocument>,
     private readonly chatRealtimeService: ChatRealtimeService,
   ) {}
 
@@ -509,13 +516,25 @@ export class SettingsService {
   }
 
   async getLoginHistory(userId: string) {
-    const sessions = await this.userSessionModel
-      .find({ userId: new Types.ObjectId(userId) })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .select('-refreshToken')
-      .lean()
-      .exec();
+    const objectUserId = new Types.ObjectId(userId);
+    const [sessions, activities] = await Promise.all([
+      this.userSessionModel
+        .find({ userId: objectUserId })
+        .sort({ createdAt: -1 })
+        .limit(50)
+        .select('-refreshToken')
+        .lean()
+        .exec(),
+      this.activityLogModel
+        .find({
+          userId: objectUserId,
+          category: ActivityCategory.AUTH,
+        })
+        .sort({ createdAt: -1 })
+        .limit(75)
+        .lean()
+        .exec(),
+    ]);
 
     return {
       sessions: sessions.map((session) => {
@@ -545,6 +564,24 @@ export class SettingsService {
           lastActiveAt: item.updatedAt,
           expiresAt: item.expiresAt,
           loggedOutAt: item.loggedOutAt,
+        };
+      }),
+      timeline: activities.map((activity) => {
+        const item = activity as typeof activity & {
+          _id: Types.ObjectId;
+          createdAt?: Date;
+        };
+
+        return {
+          id: item._id.toString(),
+          category: item.category,
+          action: item.action,
+          ip: item.ip,
+          device: item.device,
+          userAgent: item.userAgent,
+          platform: item.platform,
+          metadata: item.metadata ?? {},
+          createdAt: item.createdAt,
         };
       }),
     };

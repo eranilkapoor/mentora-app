@@ -16,7 +16,7 @@ export const languageStyles = (theme: Theme) =>
     // ─── Header Card ──────────────────────────────────────────────────────
     headerCard: {
       backgroundColor: theme.colors.surface,
-      borderRadius: 16,
+      borderRadius: 12,
       padding: 20,
       marginBottom: 20,
       borderWidth: StyleSheet.hairlineWidth,
@@ -47,7 +47,7 @@ export const languageStyles = (theme: Theme) =>
     // ─── Section Card ─────────────────────────────────────────────────────
     sectionCard: {
       backgroundColor: theme.colors.surface,
-      borderRadius: 16,
+      borderRadius: 12,
       marginBottom: 16,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,

@@ -77,6 +77,31 @@ export const loginHistoryStyles = (theme: Theme) =>
     rowContent: {
       flex: 1,
     },
+    activityRow: {
+      flexDirection: 'row',
+      gap: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 14,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+    },
+    activityIcon: {
+      width: 34,
+      height: 34,
+      borderRadius: 10,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+    },
+    activityIconWarning: {
+      backgroundColor: theme.colors.warningLight,
+    },
+    activityMeta: {
+      marginTop: 6,
+      fontSize: 12,
+      color: theme.colors.textSecondary,
+      lineHeight: 18,
+    },
     header: {
       flexDirection: 'row',
       justifyContent: 'space-between',

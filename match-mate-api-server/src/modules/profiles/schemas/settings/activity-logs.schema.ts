@@ -8,6 +8,7 @@ export enum ActivityAction {
   LOGIN = 'login',
   LOGOUT = 'logout',
   LOGIN_FAILED = 'login_failed',
+  SUSPICIOUS_LOGIN = 'suspicious_login',
   REFRESH_TOKEN = 'refresh_token',
   PASSWORD_RESET_REQUEST = 'password_reset_request',
   PASSWORD_RESET_SUCCESS = 'password_reset_success',
@@ -50,6 +51,7 @@ export enum ActivityAction {
   DEVICE_REGISTERED = 'device_registered',
   DEVICE_REMOVED = 'device_removed',
   SESSION_REVOKED = 'session_revoked',
+  CONCURRENT_SESSION_REVOKED = 'concurrent_session_revoked',
   LOGOUT_ALL_DEVICES = 'logout_all_devices',
 
   //  SYSTEM / ADMIN (VERY IMPORTANT)

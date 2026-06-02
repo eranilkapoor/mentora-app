@@ -200,7 +200,15 @@ export default function NotificationSettingsScreen({
         showsVerticalScrollIndicator={false}
       >
         {/* ── Master card ───────────────────────────────────────────── */}
-        <View style={masterStyles.card}>
+        <View
+          style={[
+            masterStyles.card,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.divider,
+            },
+          ]}
+        >
           <View style={masterStyles.left}>
             <View
               style={[
@@ -442,6 +450,7 @@ const masterStyles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'space-between',
     borderRadius: 12,
+    borderWidth: StyleSheet.hairlineWidth,
     padding: 16,
     marginBottom: 12,
   },

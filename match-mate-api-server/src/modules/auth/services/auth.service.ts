@@ -62,6 +62,10 @@ import {
 import { AppException } from '@/common/exceptions/app.exception';
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 import { SocialAuthVerifierService } from './social-auth-verifier.service';
+import {
+  SecuritySetting,
+  SecuritySettingDocument,
+} from '@/modules/settings/schemas/security-setting.schema';
 
 interface TokenAttachUser {
   _id: { toString(): string };
@@ -100,6 +104,8 @@ export class AuthService {
     private readonly planModel: Model<Plan>,
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLogDocument>,
+    @InjectModel(SecuritySetting.name)
+    private readonly securitySettingModel: Model<SecuritySettingDocument>,
     @InjectModel(Verification.name)
     private readonly verificationModel: Model<VerificationDocument>,
     private readonly notificationsService: NotificationsService,
@@ -130,8 +136,19 @@ export class AuthService {
 
     const platform = String(req.headers['x-platform'] || 'web');
     const deviceId = this.getHeaderString(req, 'x-device-id') ?? '';
+    const userId = user._id.toString();
+    const ipAddress = req.ip || this.getHeaderString(req, 'x-forwarded-for');
+    const userAgent = this.getHeaderString(req, 'user-agent') ?? '';
 
-    const cacheKey = `auth:${user._id.toString()}`;
+    const previousSessions = await this.userSessionModel
+      .find({ userId: user._id })
+      .sort({ updatedAt: -1 })
+      .limit(20)
+      .select('-refreshToken')
+      .lean()
+      .exec();
+
+    const cacheKey = `auth:${userId}`;
     await this.cache.set(cacheKey, accessToken, 900);
 
     await this.userSessionModel.updateMany(
@@ -152,9 +169,18 @@ export class AuthService {
       userId: user._id,
       refreshToken,
       device: deviceId,
-      ip: req.ip,
-      userAgent: this.getHeaderString(req, 'user-agent') ?? '',
+      ip: ipAddress,
+      userAgent,
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    });
+
+    await this.enforceConcurrentSessionLimit(userId, session._id.toString());
+    await this.detectSuspiciousLogin(userId, req, {
+      deviceId,
+      ipAddress,
+      userAgent,
+      platform,
+      previousSessions,
     });
 
     //  WEB  cookie
@@ -169,6 +195,170 @@ export class AuthService {
 
     //  MOBILE  return both
     return { accessToken, refreshToken, sessionId: session._id.toString() };
+  }
+
+  private async enforceConcurrentSessionLimit(
+    userId: string,
+    currentSessionId: string,
+  ): Promise<void> {
+    const maxSessions = this.configService.get<number>(
+      'authSecurity.maxConcurrentSessions',
+      5,
+    );
+
+    if (!Number.isFinite(maxSessions) || maxSessions < 1) {
+      return;
+    }
+
+    const activeSessions = await this.userSessionModel
+      .find({
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+        expiresAt: { $gt: new Date() },
+      })
+      .sort({ updatedAt: -1 })
+      .select('_id device ip userAgent')
+      .lean()
+      .exec();
+
+    const overflowSessions = activeSessions
+      .filter((session) => session._id.toString() !== currentSessionId)
+      .slice(Math.max(maxSessions - 1, 0));
+
+    if (!overflowSessions.length) {
+      return;
+    }
+
+    const revokedAt = new Date();
+    const revokedSessionIds = overflowSessions.map((session) => session._id);
+
+    await this.userSessionModel.updateMany(
+      { _id: { $in: revokedSessionIds } },
+      {
+        $set: {
+          isActive: false,
+          loggedOutAt: revokedAt,
+        },
+      },
+    );
+
+    await this.activityLogModel.create(
+      overflowSessions.map((session) => ({
+        userId: new Types.ObjectId(userId),
+        category: ActivityCategory.AUTH,
+        action: ActivityAction.CONCURRENT_SESSION_REVOKED,
+        ip: session.ip,
+        device: session.device,
+        userAgent: session.userAgent,
+        metadata: {
+          sessionId: session._id.toString(),
+          currentSessionId,
+          maxConcurrentSessions: maxSessions,
+          reason: 'session_limit_exceeded',
+        },
+      })),
+    );
+  }
+
+  private async detectSuspiciousLogin(
+    userId: string,
+    req: AppRequest,
+    context: {
+      deviceId: string;
+      ipAddress?: string;
+      userAgent: string;
+      platform: string;
+      previousSessions: Array<{
+        device?: string;
+        ip?: string;
+        userAgent?: string;
+        createdAt?: Date;
+        updatedAt?: Date;
+      }>;
+    },
+  ): Promise<void> {
+    const enabled = this.configService.get<boolean>(
+      'authSecurity.suspiciousLoginDetectionEnabled',
+      true,
+    );
+
+    if (!enabled || !context.previousSessions.length) {
+      return;
+    }
+
+    const userWantsAlerts = await this.securitySettingModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .select('suspiciousLoginAlerts loginNotifications')
+      .lean()
+      .exec();
+
+    if (userWantsAlerts?.suspiciousLoginAlerts === false) {
+      return;
+    }
+
+    const sameDeviceSeen = Boolean(
+      context.deviceId &&
+      context.previousSessions.some(
+        (session) => session.device === context.deviceId,
+      ),
+    );
+    const latestSession = context.previousSessions[0];
+    const currentIpNetwork = this.getIpNetwork(context.ipAddress);
+    const previousIpNetwork = this.getIpNetwork(latestSession?.ip);
+    const reasons: string[] = [];
+
+    if (context.deviceId && !sameDeviceSeen) {
+      reasons.push('new_device');
+    }
+
+    if (
+      currentIpNetwork &&
+      previousIpNetwork &&
+      currentIpNetwork !== previousIpNetwork
+    ) {
+      reasons.push('ip_network_changed');
+    }
+
+    if (!reasons.length) {
+      return;
+    }
+
+    await this.activityLogModel.create({
+      userId: new Types.ObjectId(userId),
+      category: ActivityCategory.AUTH,
+      action: ActivityAction.SUSPICIOUS_LOGIN,
+      ip: context.ipAddress,
+      device: context.deviceId,
+      userAgent: context.userAgent,
+      requestId: req.requestId,
+      correlationId: req.correlationId,
+      platform: this.toActivityPlatform(context.platform),
+      metadata: {
+        reasons,
+        previousDevice: latestSession?.device,
+        previousIp: latestSession?.ip,
+      },
+    });
+
+    void this.notificationsService
+      .notify({
+        userId,
+        title: 'New login detected',
+        message:
+          'We noticed a login from a new device or network. Review your login history if this was not you.',
+        type: 'warning',
+        category: 'system',
+        channels:
+          userWantsAlerts?.loginNotifications === false
+            ? ['in_app']
+            : ['in_app', 'email'],
+        metadata: {
+          reasons,
+          device: context.deviceId,
+          ip: context.ipAddress,
+        },
+      })
+      .catch(() => undefined);
   }
 
   async refresh(req: AppRequest, res: Response, oldRefreshToken?: string) {
@@ -942,6 +1132,23 @@ export class AuthService {
     return (
       this.activityPlatformMap[platform?.toLowerCase()] ?? ActivityPlatform.WEB
     );
+  }
+
+  private getIpNetwork(ip?: string): string | undefined {
+    if (!ip) {
+      return undefined;
+    }
+
+    const normalizedIp = ip.split(',')[0]?.trim();
+    if (!normalizedIp) {
+      return undefined;
+    }
+
+    if (normalizedIp.includes(':')) {
+      return normalizedIp.split(':').slice(0, 4).join(':');
+    }
+
+    return normalizedIp.split('.').slice(0, 3).join('.');
   }
 
   private getRegisterRequestContext(req: AppRequest): RegisterRequestContext {

@@ -43,6 +43,14 @@ export default () => ({
     },
     magicLinkEnabled: process.env.AUTH_MAGIC_LINK_ENABLED === 'true',
   },
+  authSecurity: {
+    maxConcurrentSessions: parseInt(
+      process.env.AUTH_MAX_CONCURRENT_SESSIONS || '5',
+      10,
+    ),
+    suspiciousLoginDetectionEnabled:
+      process.env.AUTH_SUSPICIOUS_LOGIN_DETECTION_ENABLED !== 'false',
+  },
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],
   },

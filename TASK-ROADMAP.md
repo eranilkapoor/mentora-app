@@ -61,9 +61,9 @@
 | ✅ | Token Rotation on Refresh | Session DB | Prevent token replay attacks |
 | ✅ | Logout from All Devices | Session DB | Security control |
 | ✅ | Device Tracking (OS, browser, IP) | Headers | Fraud detection |
-| 🆕 | Concurrent Session Limit | Session DB | Prevent account sharing |
-| 🆕 | Suspicious Login Detection | ML / Heuristics | Geo anomaly, new device alerts |
-| 🆕 | Session Activity Timeline | Session DB | User transparency + audit |
+| ✅ | Concurrent Session Limit | Session DB | Prevent account sharing |
+| ✅ | Suspicious Login Detection | ML / Heuristics | Geo anomaly, new device alerts |
+| ✅ | Session Activity Timeline | Session DB | User transparency + audit |
 
 ### 2.3 Verification & KYC System
 

@@ -12,7 +12,7 @@ import {
   useGetLoginHistoryQuery,
   useRevokeSessionMutation,
 } from '@/store/services/securitySettingsApi.service';
-import { LoginHistoryItem } from './SecuritySettings.types';
+import { LoginActivityItem, LoginHistoryItem } from './SecuritySettings.types';
 import { loginHistoryStyles } from './LoginHistory.styles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { showConfirm } from '@/core/utils/confirm';
@@ -44,6 +44,27 @@ const getDeviceIcon = (
   const label = `${session.device ?? ''} ${session.userAgent ?? ''}`;
   if (/android|iphone|mobile/i.test(label)) return 'smartphone';
   if (/windows|mac|linux|browser/i.test(label)) return 'monitor';
+
+  return 'shield';
+};
+
+const formatActionLabel = (action?: string): string =>
+  action
+    ? action
+        .split('_')
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+        .join(' ')
+    : 'Security activity';
+
+const getActivityIcon = (
+  action?: string
+): React.ComponentProps<typeof Feather>['name'] => {
+  if (action?.includes('suspicious')) return 'alert-triangle';
+  if (action?.includes('logout') || action?.includes('revoked')) {
+    return 'log-out';
+  }
+  if (action?.includes('refresh')) return 'refresh-cw';
+  if (action?.includes('password')) return 'key';
 
   return 'shield';
 };
@@ -174,6 +195,40 @@ function HistoryRow({
   );
 }
 
+function ActivityRow({
+  item,
+  isLast,
+}: {
+  item: LoginActivityItem;
+  isLast: boolean;
+}): React.ReactElement {
+  const styles = useThemedStyles(loginHistoryStyles);
+  const { theme } = useTheme();
+  const isWarning = item.action === 'suspicious_login';
+
+  return (
+    <View style={[styles.activityRow, isLast && styles.rowLast]}>
+      <View
+        style={[styles.activityIcon, isWarning && styles.activityIconWarning]}
+      >
+        <Feather
+          name={getActivityIcon(item.action)}
+          size={15}
+          color={isWarning ? theme.colors.warning : theme.colors.primary}
+        />
+      </View>
+      <View style={styles.rowContent}>
+        <Text style={styles.title}>{formatActionLabel(item.action)}</Text>
+        <Text style={styles.meta}>{formatDateTime(item.createdAt)}</Text>
+        <Text style={styles.activityMeta}>
+          {[item.platform, item.ip, item.device].filter(Boolean).join(' / ') ||
+            'No device details available'}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 export default function LoginHistoryScreen({
   navigation,
 }: Props): React.ReactElement {
@@ -261,6 +316,24 @@ export default function LoginHistoryScreen({
             ))
           ) : (
             <Text style={styles.emptyText}>No login history found.</Text>
+          )}
+        </SettingsCard>
+
+        <SettingsCard
+          icon="shield"
+          title="Security Timeline"
+          subtitle="Audit login, refresh, logout, and session security events"
+        >
+          {data.timeline.length ? (
+            data.timeline.map((item, index) => (
+              <ActivityRow
+                key={item.id}
+                item={item}
+                isLast={index === data.timeline.length - 1}
+              />
+            ))
+          ) : (
+            <Text style={styles.emptyText}>No security activity found.</Text>
           )}
         </SettingsCard>
 
