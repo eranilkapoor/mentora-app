@@ -37,7 +37,6 @@
     "auth_phone_verified": "फोन नंबर सफलतापूर्वक वेरिफाई हुआ।",
     "auth_magic_link_sent": "मैजिक साइन-इन लिंक सफलतापूर्वक भेजा गया।",
     "auth_magic_link_verified": "सफलतापूर्वक साइन इन हुआ।",
-
     "user_not_found": "यूज़र नहीं मिला।",
     "user_already_blocked": "यह यूज़र पहले से ब्लॉक है।",
     "user_not_blocked": "यह यूज़र ब्लॉक नहीं है।",
@@ -50,7 +49,6 @@
     "user_blocked": "यूज़र सफलतापूर्वक ब्लॉक हुआ।",
     "user_unblocked": "यूज़र सफलतापूर्वक अनब्लॉक हुआ।",
     "user_reported": "यूज़र सफलतापूर्वक रिपोर्ट हुआ।",
-
     "profile_not_found": "प्रोफाइल नहीं मिली।",
     "profile_already_exists": "प्रोफाइल पहले से मौजूद है।",
     "profile_incomplete": "जारी रखने के लिए कृपया अपनी प्रोफाइल पूरी करें।",
@@ -76,12 +74,10 @@
     "profile_video_deleted": "वीडियो इंट्रो सफलतापूर्वक हटाया गया।",
     "profile_privacy_settings_fetched": "प्रोफाइल प्राइवेसी सेटिंग्स लोड हो गईं।",
     "profile_privacy_settings_updated": "प्रोफाइल प्राइवेसी सेटिंग्स अपडेट हुईं।",
-
     "preferences_not_found": "पसंद सेटिंग्स नहीं मिलीं।",
     "preferences_invalid_range": "कृपया मान्य पसंद सीमा चुनें।",
     "preferences_fetched": "पसंद सेटिंग्स लोड हो गईं।",
     "preferences_updated": "पसंद सेटिंग्स सफलतापूर्वक अपडेट हुईं।",
-
     "settings_not_found": "सेटिंग्स नहीं मिलीं।",
     "settings_update_failed": "सेटिंग्स अपडेट नहीं हो सकीं। कृपया फिर कोशिश करें।",
     "settings_account_change_failed": "अकाउंट जानकारी अपडेट नहीं हो सकी। कृपया फिर कोशिश करें।",
@@ -95,7 +91,6 @@
     "settings_account_change_requested": "वेरिफिकेशन अनुरोध भेज दिया गया।",
     "settings_device_revoked": "डिवाइस एक्सेस हटा दिया गया।",
     "settings_login_history_fetched": "लॉगिन हिस्ट्री लोड हो गई।",
-
     "match_not_found": "मैच नहीं मिला।",
     "match_already_exists": "यह मैच पहले से मौजूद है।",
     "match_request_already_sent": "मैच अनुरोध पहले ही भेजा जा चुका है।",
@@ -111,7 +106,6 @@
     "match_blocked": "प्रोफाइल ब्लॉक की गई।",
     "match_shortlisted": "प्रोफाइल शॉर्टलिस्ट हुई।",
     "match_shortlist_removed": "प्रोफाइल शॉर्टलिस्ट से हटाई गई।",
-
     "interest_already_sent": "इंटरेस्ट पहले ही भेजा जा चुका है।",
     "interest_not_found": "इंटरेस्ट अनुरोध नहीं मिला।",
     "interest_already_responded": "इस इंटरेस्ट अनुरोध का जवाब पहले ही दिया जा चुका है।",
@@ -120,7 +114,6 @@
     "interest_accepted": "इंटरेस्ट स्वीकार हुआ।",
     "interest_rejected": "इंटरेस्ट रिजेक्ट हुआ।",
     "interest_withdrawn": "इंटरेस्ट वापस लिया गया।",
-
     "chat_not_found": "चैट नहीं मिली।",
     "chat_access_denied": "आप इस चैट को एक्सेस नहीं कर सकते।",
     "chat_message_not_found": "मैसेज नहीं मिला।",
@@ -131,12 +124,10 @@
     "chat_message_sent": "मैसेज भेजा गया।",
     "chat_message_deleted": "मैसेज डिलीट किया गया।",
     "chat_message_read": "मैसेज पढ़ा हुआ मार्क हुआ।",
-
     "search_invalid_filter": "सर्च फिल्टर अमान्य है।",
     "search_invalid_sort": "सर्च सॉर्ट अमान्य है।",
     "search_results_fetched": "सर्च परिणाम लोड हो गए।",
     "search_filters_applied": "सर्च फिल्टर लागू हुए।",
-
     "subscription_not_found": "सब्सक्रिप्शन नहीं मिला।",
     "subscription_already_active": "एक सब्सक्रिप्शन पहले से सक्रिय है।",
     "subscription_expired": "आपका सब्सक्रिप्शन एक्सपायर हो गया है।",
@@ -147,7 +138,6 @@
     "subscription_renewed": "सब्सक्रिप्शन रिन्यू हुआ।",
     "subscription_cancelled": "सब्सक्रिप्शन कैंसल हुआ।",
     "subscription_billing_fetched": "बिलिंग जानकारी लोड हो गई।",
-
     "payment_failed": "पेमेंट विफल हुआ। कृपया फिर कोशिश करें।",
     "payment_not_found": "पेमेंट नहीं मिला।",
     "payment_already_verified": "पेमेंट पहले से वेरिफाई है।",
@@ -161,24 +151,20 @@
     "payment_failed_recorded": "पेमेंट विफलता रिकॉर्ड हुई।",
     "payment_refunded": "पेमेंट सफलतापूर्वक रिफंड हुआ।",
     "payment_webhook_processed": "पेमेंट वेबहुक प्रोसेस हुआ।",
-
     "admin_operation_failed": "एडमिन ऑपरेशन विफल हुआ।",
     "analytics_operation_failed": "एनालिटिक्स ऑपरेशन विफल हुआ।",
     "analytics_tracked": "एनालिटिक्स इवेंट ट्रैक हुआ।",
     "analytics_fetched": "एनालिटिक्स लोड हो गया।",
-
     "file_not_found": "फाइल नहीं मिली।",
     "file_upload_failed": "फाइल अपलोड विफल हुआ। कृपया फिर कोशिश करें।",
     "file_too_large": "फाइल बहुत बड़ी है।",
     "file_invalid_type": "यह फाइल प्रकार सपोर्टेड नहीं है।",
     "file_uploaded": "फाइल सफलतापूर्वक अपलोड हुई।",
     "file_deleted": "फाइल सफलतापूर्वक डिलीट हुई।",
-
     "notification_not_found": "नोटिफिकेशन नहीं मिला।",
     "notification_fetched": "नोटिफिकेशन लोड हो गए।",
     "notification_read": "नोटिफिकेशन पढ़ा हुआ मार्क हुआ।",
     "notification_all_read": "सभी नोटिफिकेशन पढ़े हुए मार्क हुए।",
-
     "common_validation_failed": "कृपया हाइलाइट किए गए फील्ड जांचें।",
     "common_invalid_request": "अनुरोध अमान्य है। कृपया फिर कोशिश करें।",
     "common_invalid_input": "इनपुट अमान्य है। कृपया जांचकर फिर कोशिश करें।",
@@ -196,19 +182,16 @@
     "common_endpoint_not_found": "यह कार्य अभी उपलब्ध नहीं है।",
     "common_method_not_allowed": "यह कार्य अनुमत नहीं है।",
     "common_request_timeout": "अनुरोध टाइम आउट हो गया। कृपया फिर कोशिश करें।",
-
     "third_party_error": "बाहरी सेवा त्रुटि। कृपया फिर कोशिश करें।",
     "third_party_sms_service_failed": "SMS सेवा उपलब्ध नहीं है। कृपया फिर कोशिश करें।",
     "third_party_email_service_failed": "ईमेल सेवा उपलब्ध नहीं है। कृपया फिर कोशिश करें।",
     "third_party_storage_service_failed": "स्टोरेज सेवा उपलब्ध नहीं है। कृपया फिर कोशिश करें।",
     "third_party_payment_gateway_error": "पेमेंट गेटवे त्रुटि। कृपया फिर कोशिश करें।",
-
     "referral_code_invalid": "रेफरल कोड अमान्य है।",
     "referral_self_not_allowed": "आप अपना खुद का रेफरल कोड इस्तेमाल नहीं कर सकते।",
     "referral_already_applied": "रेफरल कोड पहले से लागू है।",
     "referrals_fetched": "रेफरल जानकारी लोड हो गई।",
     "referral_reward_earned": "रेफरल रिवॉर्ड मिला।",
-
     "admin_user_verified": "यूज़र सफलतापूर्वक वेरिफाई हुआ।",
     "admin_profile_approved": "प्रोफाइल सफलतापूर्वक अप्रूव हुई।",
     "admin_profile_rejected": "प्रोफाइल सफलतापूर्वक रिजेक्ट हुई।",
@@ -225,7 +208,6 @@
     "admin_role_deleted": "रोल सफलतापूर्वक डिलीट हुआ।",
     "admin_user_roles_fetched": "यूज़र रोल लोड हो गए।",
     "admin_user_roles_updated": "यूज़र रोल सफलतापूर्वक अपडेट हुए।",
-
     "plans_fetched": "प्लान लोड हो गए।",
     "plan_fetched": "प्लान लोड हो गया।",
     "plan_created": "प्लान सफलतापूर्वक बनाया गया।",

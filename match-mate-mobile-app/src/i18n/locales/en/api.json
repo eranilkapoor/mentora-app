@@ -37,7 +37,6 @@
     "auth_phone_verified": "Phone number verified successfully.",
     "auth_magic_link_sent": "Magic sign-in link sent successfully.",
     "auth_magic_link_verified": "Signed in successfully.",
-
     "user_not_found": "User not found.",
     "user_already_blocked": "This user is already blocked.",
     "user_not_blocked": "This user is not blocked.",
@@ -50,7 +49,6 @@
     "user_blocked": "User blocked successfully.",
     "user_unblocked": "User unblocked successfully.",
     "user_reported": "User reported successfully.",
-
     "profile_not_found": "Profile not found.",
     "profile_already_exists": "Profile already exists.",
     "profile_incomplete": "Please complete your profile to continue.",
@@ -76,12 +74,10 @@
     "profile_video_deleted": "Video intro removed successfully.",
     "profile_privacy_settings_fetched": "Profile privacy settings loaded.",
     "profile_privacy_settings_updated": "Profile privacy settings updated.",
-
     "preferences_not_found": "Preferences not found.",
     "preferences_invalid_range": "Please choose a valid preference range.",
     "preferences_fetched": "Preferences loaded.",
     "preferences_updated": "Preferences updated successfully.",
-
     "settings_not_found": "Settings not found.",
     "settings_update_failed": "Unable to update settings. Please try again.",
     "settings_account_change_failed": "Unable to update account details. Please try again.",
@@ -95,7 +91,6 @@
     "settings_account_change_requested": "Verification request sent.",
     "settings_device_revoked": "Device access revoked.",
     "settings_login_history_fetched": "Login history loaded.",
-
     "match_not_found": "Match not found.",
     "match_already_exists": "This match already exists.",
     "match_request_already_sent": "Match request already sent.",
@@ -111,7 +106,6 @@
     "match_blocked": "Profile blocked.",
     "match_shortlisted": "Profile shortlisted.",
     "match_shortlist_removed": "Profile removed from shortlist.",
-
     "interest_already_sent": "Interest already sent.",
     "interest_not_found": "Interest request not found.",
     "interest_already_responded": "This interest request has already been responded to.",
@@ -120,7 +114,6 @@
     "interest_accepted": "Interest accepted.",
     "interest_rejected": "Interest rejected.",
     "interest_withdrawn": "Interest withdrawn.",
-
     "chat_not_found": "Chat not found.",
     "chat_access_denied": "You cannot access this chat.",
     "chat_message_not_found": "Message not found.",
@@ -131,12 +124,10 @@
     "chat_message_sent": "Message sent.",
     "chat_message_deleted": "Message deleted.",
     "chat_message_read": "Message marked as read.",
-
     "search_invalid_filter": "Invalid search filter.",
     "search_invalid_sort": "Invalid search sort.",
     "search_results_fetched": "Search results loaded.",
     "search_filters_applied": "Search filters applied.",
-
     "subscription_not_found": "Subscription not found.",
     "subscription_already_active": "A subscription is already active.",
     "subscription_expired": "Your subscription has expired.",
@@ -147,7 +138,6 @@
     "subscription_renewed": "Subscription renewed.",
     "subscription_cancelled": "Subscription cancelled.",
     "subscription_billing_fetched": "Billing details loaded.",
-
     "payment_failed": "Payment failed. Please try again.",
     "payment_not_found": "Payment not found.",
     "payment_already_verified": "Payment is already verified.",
@@ -161,24 +151,20 @@
     "payment_failed_recorded": "Payment failure recorded.",
     "payment_refunded": "Payment refunded successfully.",
     "payment_webhook_processed": "Payment webhook processed.",
-
     "admin_operation_failed": "Admin operation failed.",
     "analytics_operation_failed": "Analytics operation failed.",
     "analytics_tracked": "Analytics event tracked.",
     "analytics_fetched": "Analytics loaded.",
-
     "file_not_found": "File not found.",
     "file_upload_failed": "File upload failed. Please try again.",
     "file_too_large": "File is too large.",
     "file_invalid_type": "Unsupported file type.",
     "file_uploaded": "File uploaded successfully.",
     "file_deleted": "File deleted successfully.",
-
     "notification_not_found": "Notification not found.",
     "notification_fetched": "Notifications loaded.",
     "notification_read": "Notification marked as read.",
     "notification_all_read": "All notifications marked as read.",
-
     "common_validation_failed": "Please check the highlighted fields.",
     "common_invalid_request": "Invalid request. Please try again.",
     "common_invalid_input": "Invalid input. Please check and try again.",
@@ -196,19 +182,16 @@
     "common_endpoint_not_found": "This action is unavailable right now.",
     "common_method_not_allowed": "This action is not allowed.",
     "common_request_timeout": "Request timed out. Please try again.",
-
     "third_party_error": "External service error. Please try again.",
     "third_party_sms_service_failed": "SMS service is unavailable. Please try again.",
     "third_party_email_service_failed": "Email service is unavailable. Please try again.",
     "third_party_storage_service_failed": "Storage service is unavailable. Please try again.",
     "third_party_payment_gateway_error": "Payment gateway error. Please try again.",
-
     "referral_code_invalid": "Invalid referral code.",
     "referral_self_not_allowed": "You cannot use your own referral code.",
     "referral_already_applied": "Referral code already applied.",
     "referrals_fetched": "Referral details loaded.",
     "referral_reward_earned": "Referral reward earned.",
-
     "admin_user_verified": "User verified successfully.",
     "admin_profile_approved": "Profile approved successfully.",
     "admin_profile_rejected": "Profile rejected successfully.",
@@ -225,7 +208,6 @@
     "admin_role_deleted": "Role deleted successfully.",
     "admin_user_roles_fetched": "User roles loaded.",
     "admin_user_roles_updated": "User roles updated successfully.",
-
     "plans_fetched": "Plans loaded.",
     "plan_fetched": "Plan loaded.",
     "plan_created": "Plan created successfully.",
