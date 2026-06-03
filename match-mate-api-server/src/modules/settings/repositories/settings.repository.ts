@@ -38,6 +38,10 @@ import {
   UserBlock,
   UserBlockDocument,
 } from '@/modules/safety/schemas/user-block.schema';
+import {
+  UserProfileHide,
+  UserProfileHideDocument,
+} from '@/modules/safety/schemas/user-profile-hide.schema';
 
 function buildDotNotation(
   obj: Record<string, unknown>,
@@ -103,6 +107,9 @@ export class SettingsRepository {
 
     @InjectModel(UserBlock.name)
     private readonly userBlockModel: Model<UserBlockDocument>,
+
+    @InjectModel(UserProfileHide.name)
+    private readonly userProfileHideModel: Model<UserProfileHideDocument>,
   ) {}
 
   async getOrCreateUserSettings(userId: string) {
@@ -495,6 +502,88 @@ export class SettingsRepository {
       .exec();
 
     return Boolean(block);
+  }
+
+  //  Hide / unhide
+
+  hideProfile(userId: string, targetUserId: string, reason?: string) {
+    return this.userProfileHideModel
+      .findOneAndUpdate(
+        {
+          userId: new Types.ObjectId(userId),
+          hiddenUserId: new Types.ObjectId(targetUserId),
+        },
+        {
+          $set: {
+            ...(reason ? { reason } : {}),
+          },
+          $setOnInsert: {
+            userId: new Types.ObjectId(userId),
+            hiddenUserId: new Types.ObjectId(targetUserId),
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
+      .lean()
+      .exec();
+  }
+
+  unhideProfile(userId: string, targetUserId: string) {
+    return this.userProfileHideModel
+      .deleteOne({
+        userId: new Types.ObjectId(userId),
+        hiddenUserId: new Types.ObjectId(targetUserId),
+      })
+      .exec();
+  }
+
+  async getHiddenProfiles(userId: string) {
+    return this.userProfileHideModel
+      .find({ userId: new Types.ObjectId(userId) })
+      .sort({ createdAt: -1 })
+      .lean()
+      .exec();
+  }
+
+  async getHiddenRelationUserIds(userId: string): Promise<string[]> {
+    const uid = new Types.ObjectId(userId);
+    const hiddenRows = await this.userProfileHideModel
+      .find({
+        $or: [{ userId: uid }, { hiddenUserId: uid }],
+      })
+      .select('userId hiddenUserId')
+      .lean<Array<{ userId: Types.ObjectId; hiddenUserId: Types.ObjectId }>>()
+      .exec();
+
+    return [
+      ...new Set(
+        hiddenRows.map((row) =>
+          row.userId.equals(uid)
+            ? row.hiddenUserId.toString()
+            : row.userId.toString(),
+        ),
+      ),
+    ];
+  }
+
+  async isHiddenBetween(userId: string, targetUserId: string) {
+    const hidden = await this.userProfileHideModel
+      .findOne({
+        $or: [
+          {
+            userId: new Types.ObjectId(userId),
+            hiddenUserId: new Types.ObjectId(targetUserId),
+          },
+          {
+            userId: new Types.ObjectId(targetUserId),
+            hiddenUserId: new Types.ObjectId(userId),
+          },
+        ],
+      })
+      .lean()
+      .exec();
+
+    return Boolean(hidden);
   }
 
   //  Security: Device management

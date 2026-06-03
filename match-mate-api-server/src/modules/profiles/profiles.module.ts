@@ -10,6 +10,9 @@ import { PreferenceController } from './controllers/preference.controller';
 import { ProfilesService } from './services/profiles.service';
 import { MediaService } from './services/media.service';
 import { PreferenceService } from './services/preference.service';
+import { ProfileScoringService } from './services/profile-scoring.service';
+import { MediaModerationService } from './services/media-moderation.service';
+import { VideoThumbnailService } from './services/video-thumbnail.service';
 
 // Repositories
 import { ProfileRepository } from './repositories/profile.repository';
@@ -57,10 +60,20 @@ import { SettingsModule } from '../settings/settings.module';
     ProfilesService,
     MediaService,
     PreferenceService,
+    ProfileScoringService,
+    MediaModerationService,
+    VideoThumbnailService,
     ProfileRepository,
     MediaRepository,
     PreferenceRepository,
   ],
-  exports: [ProfilesService, MediaService, PreferenceService],
+  exports: [
+    ProfilesService,
+    MediaService,
+    PreferenceService,
+    ProfileScoringService,
+    MediaModerationService,
+    VideoThumbnailService,
+  ],
 })
 export class ProfilesModule {}

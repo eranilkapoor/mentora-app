@@ -43,6 +43,13 @@ export class BlockUserDto {
   targetUserId!: string;
 }
 
+export class HideProfileDto extends BlockUserDto {
+  @IsOptional()
+  @IsString()
+  @MaxLength(250)
+  reason?: string;
+}
+
 export class ReportUserDto extends BlockUserDto {
   @IsOptional()
   @IsString()

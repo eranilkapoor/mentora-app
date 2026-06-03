@@ -924,6 +924,14 @@ export default function ProfileScreen({
             </View>
             <View style={styles.profileMetaItem}>
               <Text style={styles.profileMetaValue}>
+                {toDisplayText(profileData.visibilityScore)}
+              </Text>
+              <Text style={styles.profileMetaLabel}>
+                {t('profile.meta_visibility')}
+              </Text>
+            </View>
+            <View style={styles.profileMetaItem}>
+              <Text style={styles.profileMetaValue}>
                 {formatProfileText(profileData.status)}
               </Text>
               <Text style={styles.profileMetaLabel}>
@@ -994,6 +1002,29 @@ export default function ProfileScreen({
             labelKey="profile.row_citizenship"
             value={formatProfileText(profileData.personal.citizenship)}
           />
+          <Row
+            labelKey="profile.row_nri"
+            value={toDisplayText(profileData.personal.isNri)}
+          />
+          {profileData.personal.isNri ? (
+            <>
+              <Row
+                labelKey="profile.row_residency_country"
+                value={enumLabel(
+                  'options.countries',
+                  profileData.personal.residencyCountry
+                )}
+              />
+              <Row
+                labelKey="profile.row_visa_status"
+                value={formatProfileText(profileData.personal.visaStatus)}
+              />
+              <Row
+                labelKey="profile.row_abroad_since"
+                value={formatProfileText(profileData.personal.abroadSince)}
+              />
+            </>
+          ) : null}
         </Section>
 
         <Section titleKey="profile.section_astro" icon="sun">

@@ -1,6 +1,10 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { UserBlock, UserBlockSchema } from './schemas/user-block.schema';
+import {
+  UserProfileHide,
+  UserProfileHideSchema,
+} from './schemas/user-profile-hide.schema';
 import { UserReport, UserReportSchema } from './schemas/user-report.schema';
 import {
   Verification,
@@ -19,6 +23,7 @@ import { KycService } from './services/kyc.service';
     StorageModule,
     MongooseModule.forFeature([
       { name: UserBlock.name, schema: UserBlockSchema },
+      { name: UserProfileHide.name, schema: UserProfileHideSchema },
       { name: UserReport.name, schema: UserReportSchema },
       { name: Verification.name, schema: VerificationSchema },
       { name: Profile.name, schema: ProfileSchema },

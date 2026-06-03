@@ -72,6 +72,10 @@ export interface PersonalSection {
   state?: string;
   city?: string;
   citizenship?: string;
+  isNri?: boolean;
+  residencyCountry?: Country;
+  visaStatus?: string;
+  abroadSince?: string;
   willingToRelocate?: boolean;
   motherTongue?: string;
   maritalStatus: MaritalStatus;

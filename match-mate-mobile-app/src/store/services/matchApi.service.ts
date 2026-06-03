@@ -13,6 +13,8 @@ export interface MatchImage {
   url: string;
   isPrimary?: boolean;
   isActive?: boolean;
+  isBlurred?: boolean;
+  blurReason?: string;
 }
 
 export interface DiscoveryProfile {
@@ -56,6 +58,12 @@ export interface DiscoveryProfile {
   age?: number;
   profileScore?: number;
   profileCompletionPercentage?: number;
+  visibilityScore?: number;
+  boostedMatchScore?: number;
+  activeBoost?: {
+    multiplier: number;
+    endsAt: string;
+  };
   matchScore?: number;
   isShortlisted?: boolean;
   lastActiveAt?: string;
@@ -64,6 +72,7 @@ export interface DiscoveryProfile {
     isMatched?: boolean;
     canViewPersonalDetails?: boolean;
     canViewPhotos?: boolean;
+    photosBlurred?: boolean;
     showPhone?: boolean;
     showEmail?: boolean;
     showIncome?: boolean;

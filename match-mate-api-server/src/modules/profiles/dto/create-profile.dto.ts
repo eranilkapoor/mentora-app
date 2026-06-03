@@ -161,6 +161,22 @@ export class PersonalDto {
 
   @IsOptional()
   @IsBoolean()
+  isNri?: boolean;
+
+  @IsOptional()
+  @IsEnum(Country)
+  residencyCountry?: Country;
+
+  @IsOptional()
+  @IsString()
+  visaStatus?: string;
+
+  @IsOptional()
+  @IsString()
+  abroadSince?: string;
+
+  @IsOptional()
+  @IsBoolean()
   willingToRelocate?: boolean;
 
   @IsOptional()

@@ -400,6 +400,31 @@ export class MatchRepository implements OnModuleInit {
       .exec();
   }
 
+  async recordProfileView(userId: string, targetUserId: string) {
+    return this.interactionModel
+      .findOneAndUpdate(
+        {
+          fromUserId: new Types.ObjectId(userId),
+          toUserId: new Types.ObjectId(targetUserId),
+          type: InteractionType.PROFILE_VIEW,
+        },
+        {
+          $set: {
+            status: InteractionStatus.ACCEPTED,
+            metadata: { source: 'match_detail', viewedAt: new Date() },
+          },
+          $setOnInsert: {
+            fromUserId: new Types.ObjectId(userId),
+            toUserId: new Types.ObjectId(targetUserId),
+            type: InteractionType.PROFILE_VIEW,
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
+      .lean<LeanInteraction>()
+      .exec();
+  }
+
   async getShortlistedUserIds(userId: string): Promise<string[]> {
     const rows = await this.interactionModel
       .find({

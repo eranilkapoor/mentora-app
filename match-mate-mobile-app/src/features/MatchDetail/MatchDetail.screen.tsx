@@ -13,6 +13,7 @@ import { EMPTY, HIDDEN_KEY } from './MatchDetail.constants';
 import {
   compact,
   getPhotos,
+  getPhotoItems,
   getProfileName,
   isRecentlyActive,
 } from './MatchDetail.utils';
@@ -37,6 +38,7 @@ export default function MatchDetailScreen({
   const profile = data?.data ?? undefined;
   const name = getProfileName(profile);
   const photos = useMemo(() => getPhotos(profile), [profile]);
+  const photoItems = useMemo(() => getPhotoItems(profile), [profile]);
 
   const {
     optimisticPendingInterest,
@@ -181,7 +183,7 @@ export default function MatchDetailScreen({
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ── Photo carousel ───────────────────────────────────── */}
         <View style={styles.carouselWrapper}>
-          <DetailPhotoCarousel photos={photos} name={name} />
+          <DetailPhotoCarousel photos={photoItems} name={name} />
           <View style={styles.carouselScrim} />
 
           {/* Hero overlay */}

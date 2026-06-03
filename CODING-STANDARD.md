@@ -1,4 +1,4 @@
-# **commonly accepted industry-standard naming rules** used in professional NestJS applications.
+# Commonly accepted industry-standard naming rules used in professional NestJS applications.
 
 ---
 

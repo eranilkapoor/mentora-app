@@ -19,6 +19,7 @@ import { PaymentPurpose } from '../enums/payment-purpose.enum';
 import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
 import { SubscriptionsService } from '@/modules/subscriptions/services/subscriptions.service';
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
+import { ProfileBoostService } from '@/modules/subscriptions/services/profile-boost.service';
 import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
@@ -34,6 +35,7 @@ export class PaymentsService {
     private readonly configService: ConfigService,
     private readonly subscriptionsService: SubscriptionsService,
     private readonly referralsService: ReferralsService,
+    private readonly profileBoostService: ProfileBoostService,
     @InjectModel(Plan.name)
     private readonly planModel: Model<Plan>,
   ) {}
@@ -168,6 +170,10 @@ export class PaymentsService {
       updated.userId.toString(),
       updated,
     );
+    await this.activateProfileBoostIfRequired(
+      updated.userId.toString(),
+      updated,
+    );
 
     return updated;
   }
@@ -240,6 +246,10 @@ export class PaymentsService {
       }
 
       await this.activateSubscriptionIfRequired(
+        updated.userId.toString(),
+        updated,
+      );
+      await this.activateProfileBoostIfRequired(
         updated.userId.toString(),
         updated,
       );
@@ -542,6 +552,32 @@ export class PaymentsService {
     await this.referralsService.awardSubscriptionReward(userId, {
       paymentId: payment._id?.toString(),
       netAmount: payment.netAmount,
+    });
+  }
+
+  private async activateProfileBoostIfRequired(
+    userId: string,
+    payment: {
+      _id?: { toString(): string };
+      purpose?: PaymentPurpose;
+      planId?: { toString(): string };
+      metadata?: Record<string, unknown>;
+    },
+  ) {
+    if (payment.purpose !== PaymentPurpose.PROFILE_BOOST) {
+      return;
+    }
+
+    const durationHours = Number(payment.metadata?.durationHours ?? 24);
+    const multiplier = Number(payment.metadata?.multiplier ?? 1.25);
+
+    await this.profileBoostService.activateBoost({
+      userId,
+      paymentId: payment._id?.toString(),
+      planId: payment.planId?.toString(),
+      durationHours: Number.isFinite(durationHours) ? durationHours : 24,
+      multiplier: Number.isFinite(multiplier) ? multiplier : 1.25,
+      source: 'payment',
     });
   }
 }

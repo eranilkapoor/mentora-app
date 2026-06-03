@@ -17,6 +17,7 @@ import { SettingsService } from '../services/settings.service';
 import {
   UpdatePrivacySettingsDto,
   BlockUserDto,
+  HideProfileDto,
   ReportUserDto,
 } from '../dto/privacy-settings.dto';
 import {
@@ -40,13 +41,20 @@ import {
   RequestEmailChangeDto,
   RequestPhoneChangeDto,
 } from '../dto/account-settings.dto';
+import { RecordConsentDto } from '../dto/consent.dto';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
+import { DataExportService } from '../services/data-export.service';
+import { ConsentService } from '../services/consent.service';
 
 @Controller('settings')
 @UseGuards(JwtAuthGuard)
 export class SettingsController {
-  constructor(private readonly settingsService: SettingsService) {}
+  constructor(
+    private readonly settingsService: SettingsService,
+    private readonly dataExportService: DataExportService,
+    private readonly consentService: ConsentService,
+  ) {}
 
   private async respond<T>(result: T | Promise<T>, code: SuccessCode) {
     return successResponse(await Promise.resolve(result), code);
@@ -115,6 +123,32 @@ export class SettingsController {
     return this.respond(
       this.settingsService.reportUser(req.user.sub, dto),
       SuccessCode.USER_REPORTED,
+    );
+  }
+
+  @Get('privacy/hidden')
+  getHiddenProfiles(@Req() req: AuthenticatedRequest) {
+    return this.respond(
+      this.settingsService.getHiddenProfiles(req.user.sub),
+      SuccessCode.SETTINGS_FETCHED,
+    );
+  }
+
+  @Post('privacy/hide')
+  @HttpCode(HttpStatus.OK)
+  hideProfile(@Req() req: AuthenticatedRequest, @Body() dto: HideProfileDto) {
+    return this.respond(
+      this.settingsService.hideProfile(req.user.sub, dto),
+      SuccessCode.SETTINGS_UPDATED,
+    );
+  }
+
+  @Post('privacy/unhide')
+  @HttpCode(HttpStatus.OK)
+  unhideProfile(@Req() req: AuthenticatedRequest, @Body() dto: BlockUserDto) {
+    return this.respond(
+      this.settingsService.unhideProfile(req.user.sub, dto),
+      SuccessCode.SETTINGS_UPDATED,
     );
   }
 
@@ -205,6 +239,41 @@ export class SettingsController {
     return this.respond(
       this.settingsService.requestPhoneChange(req.user.sub, dto),
       SuccessCode.SETTINGS_ACCOUNT_CHANGE_REQUESTED,
+    );
+  }
+
+  @Get('account/data-export')
+  downloadDataExport(@Req() req: AuthenticatedRequest) {
+    return this.respond(
+      this.dataExportService.exportUserData(req.user.sub),
+      SuccessCode.SETTINGS_FETCHED,
+    );
+  }
+
+  @Get('account/consents')
+  getConsents(@Req() req: AuthenticatedRequest) {
+    return this.respond(
+      this.consentService.getConsents(req.user.sub),
+      SuccessCode.SETTINGS_FETCHED,
+    );
+  }
+
+  @Post('account/consents')
+  @HttpCode(HttpStatus.OK)
+  recordConsent(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: RecordConsentDto,
+  ) {
+    const rawUserAgent = req.headers['user-agent'];
+    const userAgent =
+      typeof rawUserAgent === 'string' ? rawUserAgent : rawUserAgent?.[0];
+
+    return this.respond(
+      this.consentService.recordConsent(req.user.sub, dto, {
+        ip: req.ip,
+        userAgent,
+      }),
+      SuccessCode.SETTINGS_UPDATED,
     );
   }
 

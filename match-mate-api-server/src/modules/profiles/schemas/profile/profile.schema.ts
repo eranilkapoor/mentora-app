@@ -52,6 +52,9 @@ export class Profile {
   @Prop({ default: 0 })
   profileCompletionPercentage!: number;
 
+  @Prop({ default: 0 })
+  visibilityScore!: number;
+
   @Prop({ type: [String], index: true })
   searchTags?: string[];
 
@@ -94,6 +97,7 @@ ProfileSchema.index({
 ProfileSchema.index({
   isPremium: 1,
   lastActiveAt: -1,
+  visibilityScore: -1,
   profileScore: -1,
 });
 ProfileSchema.index({ location: '2dsphere' });

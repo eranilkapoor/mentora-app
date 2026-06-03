@@ -109,6 +109,8 @@ export class MatchesService {
       throwBadRequest(ErrorCode.INTEREST_CANNOT_SEND_SELF);
     }
 
+    await this.ensureUsersCanInteract(senderId, receiverId);
+
     // Prevent duplicate
     const existing = await this.repo.getExistingInterest(senderId, receiverId);
     if (existing) {
@@ -170,7 +172,7 @@ export class MatchesService {
   async getMyMatches(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const excludedUserIds =
-      await this.settingsService.getBlockedRelationUserIds(userId);
+      await this.settingsService.getUnavailableRelationUserIds(userId);
     const [matches, total] = await Promise.all([
       this.repo.getMatchesForUser(userId, skip, limit, excludedUserIds),
       this.repo.countMatchesForUserExcluding(userId, excludedUserIds),
@@ -185,7 +187,7 @@ export class MatchesService {
   async getReceivedInterests(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const excludedUserIds =
-      await this.settingsService.getBlockedRelationUserIds(userId);
+      await this.settingsService.getUnavailableRelationUserIds(userId);
     const [interests, total] = await Promise.all([
       this.repo.getReceivedInterests(userId, skip, limit, excludedUserIds),
       this.repo.countReceivedInterests(userId, excludedUserIds),
@@ -200,7 +202,7 @@ export class MatchesService {
   async getSentInterests(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const excludedUserIds =
-      await this.settingsService.getBlockedRelationUserIds(userId);
+      await this.settingsService.getUnavailableRelationUserIds(userId);
     const [interests, total] = await Promise.all([
       this.repo.getSentInterests(userId, skip, limit, excludedUserIds),
       this.repo.countSentInterests(userId, excludedUserIds),
@@ -218,6 +220,8 @@ export class MatchesService {
         reason: 'cannot_shortlist_self',
       });
     }
+
+    await this.ensureUsersCanInteract(userId, targetUserId);
 
     const profile = await this.repo.getProfileByUserId(targetUserId);
     if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
@@ -253,7 +257,7 @@ export class MatchesService {
   async getShortlistedProfiles(userId: string, page = 1, limit = 20) {
     const skip = (page - 1) * limit;
     const excludedUserIds =
-      await this.settingsService.getBlockedRelationUserIds(userId);
+      await this.settingsService.getUnavailableRelationUserIds(userId);
     const [profiles, total, shortlistedIds] = await Promise.all([
       this.repo.getShortlistedProfiles(userId, skip, limit, excludedUserIds),
       this.repo.countShortlisted(userId, excludedUserIds),
@@ -318,15 +322,23 @@ export class MatchesService {
       return this.repo.getProfileByUserId(targetUserId);
     }
 
-    const [profile, privacy, match, media, sentInterest, receivedInterest] =
-      await Promise.all([
-        this.repo.getProfileByUserId(targetUserId),
-        this.settingsService.getPrivacy(targetUserId),
-        this.repo.getMatchBetweenUsers(viewerId, targetUserId),
-        this.repo.getActiveMediaByUserId(targetUserId),
-        this.repo.getExistingInterest(viewerId, targetUserId),
-        this.repo.getExistingInterest(targetUserId, viewerId),
-      ]);
+    const [
+      profile,
+      privacy,
+      viewerPrivacy,
+      match,
+      media,
+      sentInterest,
+      receivedInterest,
+    ] = await Promise.all([
+      this.repo.getProfileByUserId(targetUserId),
+      this.settingsService.getPrivacy(targetUserId),
+      this.settingsService.getPrivacy(viewerId),
+      this.repo.getMatchBetweenUsers(viewerId, targetUserId),
+      this.repo.getActiveMediaByUserId(targetUserId),
+      this.repo.getExistingInterest(viewerId, targetUserId),
+      this.repo.getExistingInterest(targetUserId, viewerId),
+    ]);
 
     if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
@@ -336,18 +348,40 @@ export class MatchesService {
     );
     if (isBlocked) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
+    const isHidden = await this.settingsService.isHiddenBetween(
+      viewerId,
+      targetUserId,
+    );
+    if (isHidden) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
+
+    if (!viewerPrivacy?.incognitoMode) {
+      await this.repo.recordProfileView(viewerId, targetUserId);
+    }
+
     const isMatched = Boolean(match);
     const canViewPersonalDetails = this.canViewVisibility(
       privacy?.profileVisibility,
       isMatched,
     );
-    const canViewPhotos =
-      this.canViewVisibility(privacy?.showPhotosTo, isMatched) &&
-      !(privacy?.blurPhotosForUnmatched && !isMatched);
+    const photoVisibilityAllowed = this.canViewVisibility(
+      privacy?.showPhotosTo,
+      isMatched,
+    );
+    const shouldBlurPhotos =
+      photoVisibilityAllowed &&
+      Boolean(privacy?.blurPhotosForUnmatched && !isMatched);
+    const canViewPhotos = photoVisibilityAllowed && !shouldBlurPhotos;
+    const displayMedia = photoVisibilityAllowed
+      ? media.map((item) => ({
+          ...item,
+          isBlurred: shouldBlurPhotos,
+          blurReason: shouldBlurPhotos ? 'interest_required' : undefined,
+        }))
+      : [];
 
     return {
       ...profile,
-      images: canViewPhotos ? media : [],
+      images: displayMedia,
       personal: {
         firstName: profile.personal?.firstName,
         lastName: canViewPersonalDetails
@@ -356,6 +390,13 @@ export class MatchesService {
         city: profile.personal?.city,
         state: profile.personal?.state,
         country: profile.personal?.country,
+        isNri: profile.personal?.isNri,
+        residencyCountry: canViewPersonalDetails
+          ? profile.personal?.residencyCountry
+          : undefined,
+        visaStatus: canViewPersonalDetails
+          ? profile.personal?.visaStatus
+          : undefined,
         gender: profile.personal?.gender,
         maritalStatus: profile.personal?.maritalStatus,
         religion: canViewPersonalDetails
@@ -383,6 +424,7 @@ export class MatchesService {
         isMatched,
         canViewPersonalDetails,
         canViewPhotos,
+        photosBlurred: shouldBlurPhotos,
         showPhone: Boolean(privacy?.showPhone && isMatched),
         showEmail: Boolean(privacy?.showEmail && isMatched),
         showIncome: Boolean(privacy?.showIncome && canViewPersonalDetails),
@@ -399,5 +441,16 @@ export class MatchesService {
             : undefined,
       },
     };
+  }
+
+  private async ensureUsersCanInteract(userId: string, targetUserId: string) {
+    const [isBlocked, isHidden] = await Promise.all([
+      this.settingsService.isBlockedBetween(userId, targetUserId),
+      this.settingsService.isHiddenBetween(userId, targetUserId),
+    ]);
+
+    if (isBlocked || isHidden) {
+      throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
+    }
   }
 }

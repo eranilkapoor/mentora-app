@@ -29,16 +29,30 @@ export default function MembershipScreen(): React.ReactElement {
     selectedPlan,
     setSelectedPlan,
     selectedPlanItem,
+    boostPlan,
     selectedIndex,
     activePlanName = 'Free',
     isFetchingPlans,
   } = useMembershipData(activeTab);
 
-  const { handleCreateOrder, isCreatingOrder } = useMembershipActions();
+  const { handleCreateOrder, handleCreateBoostOrder, isCreatingOrder } =
+    useMembershipActions();
 
   const onCreateOrder = useCallback(() => {
     void handleCreateOrder(selectedPlanItem);
   }, [handleCreateOrder, selectedPlanItem]);
+
+  const onCreateBoostOrder = useCallback(() => {
+    if (!boostPlan) return;
+    void handleCreateBoostOrder({
+      id: boostPlan._id,
+      name: boostPlan.name.replace(/_/g, ' '),
+      price: `${boostPlan.currency} ${boostPlan.price}`,
+      duration: '24 hours',
+      best: false,
+      source: boostPlan,
+    });
+  }, [boostPlan, handleCreateBoostOrder]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -103,6 +117,32 @@ export default function MembershipScreen(): React.ReactElement {
             onSelectPlan={setSelectedPlan}
           />
         )}
+
+        {boostPlan ? (
+          <View style={styles.boostCard}>
+            <View style={styles.boostIcon}>
+              <Feather name="zap" size={18} color={theme.colors.primary} />
+            </View>
+            <View style={styles.boostCopy}>
+              <Text style={styles.boostTitle}>Profile Boost</Text>
+              <Text style={styles.boostSubtitle}>
+                Priority discovery ranking for 24 hours
+              </Text>
+            </View>
+            <TouchableOpacity
+              style={styles.boostButton}
+              activeOpacity={0.85}
+              disabled={isCreatingOrder}
+              onPress={onCreateBoostOrder}
+              accessibilityRole="button"
+              accessibilityLabel="Buy profile boost"
+            >
+              <Text style={styles.boostButtonText}>
+                {boostPlan.currency} {boostPlan.price}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        ) : null}
       </ScrollView>
 
       {/* ── Sticky CTA ─────────────────────────────────────────────── */}

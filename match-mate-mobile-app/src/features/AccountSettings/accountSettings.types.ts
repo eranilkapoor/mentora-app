@@ -63,3 +63,30 @@ export interface RequestPhoneChangePayload {
   countryCode: string;
   phone: string;
 }
+
+export type ConsentType =
+  | 'privacy_policy'
+  | 'terms'
+  | 'community_guidelines'
+  | 'data_processing'
+  | 'marketing';
+
+export interface UserConsent {
+  _id?: string;
+  userId?: string;
+  type: ConsentType;
+  version: string;
+  accepted: boolean;
+  acceptedAt?: string;
+  revokedAt?: string;
+  source?: string;
+}
+
+export interface RecordConsentPayload {
+  type: ConsentType;
+  version: string;
+  accepted?: boolean;
+  source?: string;
+}
+
+export type DataExportResponse = Record<string, unknown>;

@@ -53,6 +53,10 @@ export interface BlockedUsersResponse {
   blockedUsers: BlockedUserSummary[];
 }
 
+export interface HiddenProfilesResponse {
+  hiddenProfiles: HiddenProfileSummary[];
+}
+
 export interface BlockedUserSummary {
   userId: string;
   name: string;
@@ -61,4 +65,12 @@ export interface BlockedUserSummary {
   avatarUrl?: string;
   isVerified?: boolean;
   blockedAt?: string;
+}
+
+export interface HiddenProfileSummary extends Omit<
+  BlockedUserSummary,
+  'blockedAt'
+> {
+  reason?: string;
+  hiddenAt?: string;
 }

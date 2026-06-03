@@ -5,10 +5,13 @@ import {
   AccountSettings,
   AccountSettingsResponse,
   ConnectProviderPayload,
+  DataExportResponse,
   DeactivateAccountPayload,
+  RecordConsentPayload,
   RequestEmailChangePayload,
   RequestPhoneChangePayload,
   UpdateAccountSettingsPayload,
+  UserConsent,
 } from '../../features/AccountSettings/accountSettings.types';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
 
@@ -148,6 +151,35 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['AccountSettings'],
     }),
+    getDataExport: builder.query<DataExportResponse, void>({
+      query: () => ({
+        url: '/settings/account/data-export',
+        method: 'GET',
+      }),
+      transformResponse: (
+        response: DataExportResponse | ApiResponse<DataExportResponse>
+      ) => unwrapApiResponse(response),
+    }),
+    getConsents: builder.query<UserConsent[], void>({
+      query: () => ({
+        url: '/settings/account/consents',
+        method: 'GET',
+      }),
+      transformResponse: (
+        response: UserConsent[] | ApiResponse<UserConsent[]>
+      ) => unwrapApiResponse(response),
+      providesTags: ['AccountSettings'],
+    }),
+    recordConsent: builder.mutation<UserConsent, RecordConsentPayload>({
+      query: (body) => ({
+        url: '/settings/account/consents',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: UserConsent | ApiResponse<UserConsent>) =>
+        unwrapApiResponse(response),
+      invalidatesTags: ['AccountSettings'],
+    }),
   }),
 
   overrideExisting: false,
@@ -164,4 +196,7 @@ export const {
   useDisconnectLinkedAccountMutation,
   useRequestEmailChangeMutation,
   useRequestPhoneChangeMutation,
+  useGetDataExportQuery,
+  useGetConsentsQuery,
+  useRecordConsentMutation,
 } = accountSettingsApi;

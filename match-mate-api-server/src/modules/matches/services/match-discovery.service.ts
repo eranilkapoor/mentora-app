@@ -9,6 +9,7 @@ import {
 } from '../repositories/match-discovery.repository';
 import { MatchQueryDto, NearbyQueryDto } from '../dto/match-query.dto';
 import { SettingsService } from '@/modules/settings/services/settings.service';
+import { ProfileBoostService } from '@/modules/subscriptions/services/profile-boost.service';
 import { ErrorCode } from '@/common/constants';
 import { throwBadRequest } from '@/common/exceptions/throw-app-exception';
 
@@ -31,6 +32,7 @@ export class MatchDiscoveryService {
   constructor(
     private readonly discoveryRepo: MatchDiscoveryRepository,
     private readonly settingsService: SettingsService,
+    private readonly profileBoostService: ProfileBoostService,
   ) {}
 
   //  Recommended matches
@@ -56,18 +58,24 @@ export class MatchDiscoveryService {
       filter,
       skip,
       limit,
-      { profileScore: -1, lastActiveAt: -1 },
+      { visibilityScore: -1, profileScore: -1, lastActiveAt: -1 },
     );
 
     const weights =
       (preference?.weights as Record<string, number>) ?? DEFAULT_WEIGHTS;
 
-    const scored = (await this.withImages(profiles))
-      .map((p) => ({
+    const scored = await this.withBoosts(
+      (await this.withImages(profiles)).map((p) => ({
         ...p,
         matchScore: this.calculateMatchScore(p, preference, weights),
-      }))
-      .sort((a, b) => b.matchScore - a.matchScore);
+      })),
+    );
+
+    scored.sort(
+      (a, b) =>
+        Number(b.boostedMatchScore ?? b.matchScore) -
+        Number(a.boostedMatchScore ?? a.matchScore),
+    );
 
     return this.paginate(scored, total, skip, limit, query.page ?? 1);
   }
@@ -120,7 +128,7 @@ export class MatchDiscoveryService {
     }
 
     return this.paginate(
-      await this.withImages(profiles),
+      await this.withBoosts(await this.withImages(profiles)),
       total,
       skip,
       limit,
@@ -170,7 +178,7 @@ export class MatchDiscoveryService {
     );
 
     return this.paginate(
-      await this.withImages(profiles),
+      await this.withBoosts(await this.withImages(profiles)),
       total,
       skip,
       limit,
@@ -209,7 +217,7 @@ export class MatchDiscoveryService {
     );
 
     return this.paginate(
-      await this.withImages(profiles),
+      await this.withBoosts(await this.withImages(profiles)),
       total,
       skip,
       limit,
@@ -417,7 +425,9 @@ export class MatchDiscoveryService {
     preference: Record<string, unknown> | null,
     weights: Record<string, number>,
   ): number {
-    if (!preference) return Number(profile.profileScore ?? 50);
+    if (!preference) {
+      return Number(profile.visibilityScore ?? profile.profileScore ?? 50);
+    }
 
     const filters = preference.filters as Record<string, unknown> | undefined;
     let score = 0;
@@ -561,12 +571,12 @@ export class MatchDiscoveryService {
   }
 
   private async resolveContext(userId: string, query: MatchQueryDto) {
-    const [myProfile, preference, interactedIds, blockedUserIds] =
+    const [myProfile, preference, interactedIds, unavailableUserIds] =
       await Promise.all([
         this.discoveryRepo.getProfile(userId),
         this.discoveryRepo.getPreference(userId),
         this.discoveryRepo.getInteractedUserIds(userId),
-        this.settingsService.getBlockedRelationUserIds(userId),
+        this.settingsService.getUnavailableRelationUserIds(userId),
       ]);
 
     if (!myProfile) {
@@ -584,7 +594,7 @@ export class MatchDiscoveryService {
       preference: preference as unknown as Record<string, unknown> | null,
       interactedIds: this.uniqueObjectIds([
         ...interactedIds,
-        ...blockedUserIds.map((id) => new Types.ObjectId(id)),
+        ...unavailableUserIds.map((id) => new Types.ObjectId(id)),
       ]),
       page,
       limit,
@@ -691,6 +701,39 @@ export class MatchDiscoveryService {
       ...profile,
       images: mediaByUserId.get(String(profile.userId)) ?? [],
     }));
+  }
+
+  private async withBoosts<T extends LeanProfile & Record<string, unknown>>(
+    profiles: T[],
+  ): Promise<
+    Array<
+      T & {
+        activeBoost?: { multiplier: number; endsAt: Date };
+        boostedMatchScore?: number;
+      }
+    >
+  > {
+    const boostMap = await this.profileBoostService.getActiveBoostMap(
+      profiles.map((profile) => String(profile.userId)),
+    );
+
+    return profiles.map((profile) => {
+      const boost = boostMap.get(String(profile.userId));
+      if (!boost) return profile;
+
+      const matchScore = Number(
+        profile.matchScore ?? profile.profileScore ?? 0,
+      );
+      const multiplier = Number(boost.multiplier ?? 1.25);
+      return {
+        ...profile,
+        activeBoost: {
+          multiplier,
+          endsAt: boost.endsAt,
+        },
+        boostedMatchScore: Math.min(100, Math.round(matchScore * multiplier)),
+      };
+    });
   }
 
   private escapeRegex(value: string): string {

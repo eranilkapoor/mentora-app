@@ -100,6 +100,18 @@ export class Personal {
   citizenship?: string;
 
   @Prop({ default: false })
+  isNri?: boolean;
+
+  @Prop()
+  residencyCountry?: Country;
+
+  @Prop()
+  visaStatus?: string;
+
+  @Prop()
+  abroadSince?: string;
+
+  @Prop({ default: false })
   willingToRelocate?: boolean;
 
   @Prop()

@@ -358,6 +358,25 @@ export const envValidationSchema = Joi.object({
       .required(),
   }),
 
+  MEDIA_AI_MODERATION_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  MEDIA_FFMPEG_PATH: optionalString,
+
+  MEDIA_MAX_IMAGE_BYTES: Joi.number()
+    .integer()
+    .min(1_048_576)
+    .max(52_428_800)
+    .default(10_485_760),
+
+  MEDIA_MAX_VIDEO_BYTES: Joi.number()
+    .integer()
+    .min(5_242_880)
+    .max(524_288_000)
+    .default(104_857_600),
+
   JWT_SECRET: Joi.string().trim().min(32).max(512).required(),
 
   JWT_ACCESS_EXPIRES_IN: optionalDuration.default('15m'),

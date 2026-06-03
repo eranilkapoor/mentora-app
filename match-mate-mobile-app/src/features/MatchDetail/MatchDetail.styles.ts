@@ -15,6 +15,29 @@ export const matchDetailStyles = (theme: Theme) =>
       width: isWeb ? 400 : windowWidth,
       height: 420,
     },
+    photoPrivacyFrame: {
+      width: isWeb ? 400 : windowWidth,
+      height: 420,
+      position: 'relative',
+      overflow: 'hidden',
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    photoPrivacyOverlay: {
+      position: 'absolute',
+      left: 0,
+      right: 0,
+      top: 0,
+      bottom: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.overlayDark,
+      gap: 8,
+    },
+    photoPrivacyText: {
+      color: theme.colors.white,
+      fontSize: 13,
+      fontWeight: '700',
+    },
     // Fixed: overlayDark → rgba constant
     carouselScrim: {
       position: 'absolute',

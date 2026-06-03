@@ -21,6 +21,8 @@ export class AccountSetting {
   @Prop() deactivatedAt?: Date;
   @Prop() deactivationReason?: string;
   @Prop() deletionScheduledAt?: Date;
+  @Prop() deletionCompletedAt?: Date;
+  @Prop() deletionReason?: string;
 
   @Prop({ type: [LinkedAccount], default: [] })
   linkedAccounts!: LinkedAccount[];

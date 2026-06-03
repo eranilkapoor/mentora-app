@@ -47,7 +47,17 @@ import {
   ProfileSchema,
 } from '../profiles/schemas/profile/profile.schema';
 import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
+import {
+  Preference,
+  PreferenceSchema,
+} from '../profiles/schemas/preference/preference.schema';
 import { ChatRealtimeModule } from '../chat/chat-realtime.module';
+import { StorageModule } from '../storage/storage.module';
+import { AccountDeletionService } from './services/account-deletion.service';
+import { AccountDeletionTask } from './tasks/account-deletion.task';
+import { DataExportService } from './services/data-export.service';
+import { ConsentService } from './services/consent.service';
+import { UserConsent, UserConsentSchema } from './schemas/user-consent.schema';
 import {
   ActivityLog,
   ActivityLogSchema,
@@ -57,6 +67,7 @@ import {
   imports: [
     SafetyModule,
     ChatRealtimeModule,
+    StorageModule,
     MongooseModule.forFeature([
       { name: AccountSetting.name, schema: AccountSettingSchema },
       { name: PrivacySetting.name, schema: PrivacySettingSchema },
@@ -71,11 +82,20 @@ import {
       { name: UserSession.name, schema: UserSessionSchema },
       { name: Profile.name, schema: ProfileSchema },
       { name: Media.name, schema: MediaSchema },
+      { name: Preference.name, schema: PreferenceSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
+      { name: UserConsent.name, schema: UserConsentSchema },
     ]),
   ],
   controllers: [SettingsController],
-  providers: [SettingsService, SettingsRepository],
-  exports: [SettingsService],
+  providers: [
+    SettingsService,
+    SettingsRepository,
+    AccountDeletionService,
+    AccountDeletionTask,
+    DataExportService,
+    ConsentService,
+  ],
+  exports: [SettingsService, AccountDeletionService],
 })
 export class SettingsModule {}

@@ -3,6 +3,7 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { PlanService } from '../services/plan.service';
 import { SubscriptionsService } from '../services/subscriptions.service';
+import { ProfileBoostService } from '../services/profile-boost.service';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
 
@@ -12,6 +13,7 @@ export class SubscriptionsController {
   constructor(
     private readonly planService: PlanService,
     private readonly subscriptionsService: SubscriptionsService,
+    private readonly profileBoostService: ProfileBoostService,
   ) {}
 
   @Get('plans')
@@ -34,6 +36,14 @@ export class SubscriptionsController {
   async getBillingSummary(@Req() req: AuthenticatedRequest) {
     return successResponse(
       await this.subscriptionsService.getBillingSummary(req.user.sub),
+      SuccessCode.SUBSCRIPTION_BILLING_FETCHED,
+    );
+  }
+
+  @Get('boosts')
+  async getMyBoosts(@Req() req: AuthenticatedRequest) {
+    return successResponse(
+      await this.profileBoostService.getMyBoosts(req.user.sub),
       SuccessCode.SUBSCRIPTION_BILLING_FETCHED,
     );
   }

@@ -12,12 +12,14 @@ export const COLLECTION_NAMES = {
   VERIFICATION: 'verifications',
 
   USER_BLOCK: 'user_blocks',
+  USER_PROFILE_HIDE: 'user_profile_hides',
   USER_REPORT: 'user_reports',
 
   PLAN: 'plans',
   FEATURE: 'features',
   PLAN_FEATURE: 'plan_features',
   SUBSCRIPTION: 'subscriptions',
+  PROFILE_BOOST: 'profile_boosts',
   PAYMENT: 'payments',
   REFERRAL_REWARD: 'referral_rewards',
 
@@ -42,4 +44,5 @@ export const COLLECTION_NAMES = {
   ACCESSIBILITY_SETTING: 'accessibility_settings',
   MEDIA_SETTING: 'media_settings',
   AI_SETTING: 'ai_settings',
+  USER_CONSENT: 'user_consents',
 };

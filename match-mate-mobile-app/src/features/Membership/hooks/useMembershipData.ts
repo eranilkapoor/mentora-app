@@ -84,6 +84,9 @@ export function useMembershipData(activeTab: MembershipTab) {
     typeof activeSubscription?.planId === 'object'
       ? formatPlanName(activeSubscription.planId.name)
       : undefined;
+  const boostPlan = backendPlans.find(
+    (plan) => plan.planType === 'profile_boost'
+  );
 
   return {
     displayPlans,
@@ -93,6 +96,7 @@ export function useMembershipData(activeTab: MembershipTab) {
     selectedPlan,
     setSelectedPlan,
     selectedPlanItem,
+    boostPlan,
     selectedIndex,
     activePlanName,
     isFetchingPlans,

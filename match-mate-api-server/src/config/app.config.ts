@@ -54,4 +54,16 @@ export default () => ({
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],
   },
+  media: {
+    aiModerationEnabled: process.env.MEDIA_AI_MODERATION_ENABLED === 'true',
+    ffmpegPath: process.env.MEDIA_FFMPEG_PATH || '',
+    maxImageBytes: parseInt(
+      process.env.MEDIA_MAX_IMAGE_BYTES || String(10 * 1024 * 1024),
+      10,
+    ),
+    maxVideoBytes: parseInt(
+      process.env.MEDIA_MAX_VIDEO_BYTES || String(100 * 1024 * 1024),
+      10,
+    ),
+  },
 });

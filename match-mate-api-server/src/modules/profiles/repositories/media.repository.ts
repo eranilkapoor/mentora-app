@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import {
   Media,
   MediaDocument,
+  MediaModerationStatus,
   MediaStatus,
 } from '../schemas/media/media.schema';
 import { MediaType } from '@/common/enums';
@@ -16,6 +17,9 @@ export interface CreateMediaInput {
   size?: number;
   isPrimary: boolean;
   type: MediaType;
+  moderationStatus?: MediaModerationStatus;
+  moderationReasons?: string[];
+  moderationMetadata?: Record<string, unknown>;
 }
 
 @Injectable()
@@ -29,8 +33,11 @@ export class MediaRepository {
     const docs = inputs.map((input) => ({
       ...input,
       userId: new Types.ObjectId(userId),
-      status: MediaStatus.ACTIVE,
-      isActive: true,
+      status:
+        input.moderationStatus === MediaModerationStatus.FLAGGED
+          ? MediaStatus.PROCESSING
+          : MediaStatus.ACTIVE,
+      isActive: input.moderationStatus !== MediaModerationStatus.FLAGGED,
       uploadedAt: new Date(),
     }));
     return this.mediaModel.insertMany(docs);
@@ -61,6 +68,45 @@ export class MediaRepository {
 
   async findById(mediaId: string) {
     return this.mediaModel.findById(mediaId).lean();
+  }
+
+  async getReviewQueue(limit = 50) {
+    return this.mediaModel
+      .find({
+        moderationStatus: MediaModerationStatus.FLAGGED,
+        status: MediaStatus.PROCESSING,
+      })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean()
+      .exec();
+  }
+
+  async review(
+    mediaId: string,
+    reviewerId: string,
+    approve: boolean,
+    note?: string,
+  ) {
+    return this.mediaModel
+      .findByIdAndUpdate(
+        mediaId,
+        {
+          $set: {
+            moderationStatus: approve
+              ? MediaModerationStatus.APPROVED
+              : MediaModerationStatus.REJECTED,
+            status: approve ? MediaStatus.ACTIVE : MediaStatus.DELETED,
+            isActive: approve,
+            reviewedBy: new Types.ObjectId(reviewerId),
+            reviewedAt: new Date(),
+            reviewNote: note,
+          },
+        },
+        { new: true },
+      )
+      .lean()
+      .exec();
   }
 
   async setPrimary(userId: string, mediaId: string, type: MediaType) {

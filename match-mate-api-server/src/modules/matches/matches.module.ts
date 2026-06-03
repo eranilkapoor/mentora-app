@@ -23,11 +23,13 @@ import {
 } from '../profiles/schemas/interaction/interaction.schema';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { SettingsModule } from '../settings/settings.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 @Module({
   imports: [
     NotificationsModule,
     SettingsModule,
+    SubscriptionsModule,
     MongooseModule.forFeature([
       { name: Match.name, schema: MatchSchema },
       { name: Interest.name, schema: InterestSchema },

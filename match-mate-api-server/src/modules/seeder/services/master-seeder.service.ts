@@ -317,6 +317,13 @@ export class MasterSeederService {
               location: profile.location,
               profileScore: 82 + (profile.index % 16),
               profileCompletionPercentage: 82 + (profile.index % 16),
+              visibilityScore: Math.min(
+                100,
+                78 +
+                  (profile.index % 16) +
+                  (profile.index % 3 === 0 ? 6 : 0) +
+                  (profile.index % 10 === 0 ? 5 : 0),
+              ),
               searchTags: profile.searchTags,
               aiTags: profile.aiTags,
               isPremium: profile.index % 10 === 0,
@@ -909,7 +916,8 @@ export class MasterSeederService {
       | 'PLATINUM_YEARLY'
       | 'ASSISTED_QUARTERLY'
       | 'ASSISTED_HALF_YEARLY'
-      | 'ASSISTED_YEARLY';
+      | 'ASSISTED_YEARLY'
+      | 'PROFILE_BOOST_24H';
 
     type FeatureValue = number | boolean | string;
 

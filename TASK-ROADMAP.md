@@ -97,22 +97,22 @@
 | ✅ | View My Profile | Auth | Core |
 | ✅ | Edit Profile | Auth | Updates |
 | ✅ | Partner Preferences | Profile | Feed into match engine |
-| 🆕 | Profile Strength / Completeness Score | Profile | Nudge users to complete profile |
-| 🆕 | Profile Visibility Score (searchability) | Algorithm | Engagement driver |
-| 🆕 | Soft-Delete / Deactivate Account | Auth | GDPR compliance |
-| 🆕 | Account Deletion (Right to Erasure) | DB + Storage | GDPR / IT Act 2023 |
-| 🆕 | Profile Boost (paid feature) | Subscription | Monetization lever |
+| ✅ | Profile Strength / Completeness Score | Profile | Nudge users to complete profile |
+| ✅ | Profile Visibility Score (searchability) | Algorithm | Engagement driver |
+| ✅ | Soft-Delete / Deactivate Account | Auth | GDPR compliance |
+| ✅ | Account Deletion (Right to Erasure) | DB + Storage | GDPR / IT Act 2023 |
+| ✅ | Profile Boost (paid feature) | Subscription | Monetization lever |
 
 ### 3.2 Matrimonial-Specific Bio Fields
 
 | Status | Task | Dependency | Why |
 |--------|------|------------|-----|
-| 🆕 | Horoscope / Kundli Details | Profile DB | Core for Indian matrimony |
-| 🆕 | Family Background Section | Profile DB | Key matrimonial data point |
-| 🆕 | Lifestyle Preferences (diet, habits) | Profile DB | Better match scoring |
-| 🆕 | Career & Education Details (structured) | Profile DB | Searchable fields |
-| 🆕 | Community / Caste / Sub-caste Fields | Profile DB | Market-specific matching |
-| 🆕 | NRI Flag & Abroad Location | Profile DB | NRI segment is premium |
+| ✅ | Horoscope / Kundli Details | Profile DB | Core for Indian matrimony |
+| ✅ | Family Background Section | Profile DB | Key matrimonial data point |
+| ✅ | Lifestyle Preferences (diet, habits) | Profile DB | Better match scoring |
+| ✅ | Career & Education Details (structured) | Profile DB | Searchable fields |
+| ✅ | Community / Caste / Sub-caste Fields | Profile DB | Market-specific matching |
+| ✅ | NRI Flag & Abroad Location | Profile DB | NRI segment is premium |
 
 ### 3.3 Media System
 
@@ -121,11 +121,11 @@
 | ✅ | Upload Images (S3 / local) | Storage | Core UX |
 | ✅ | Upload Videos (intro video) | Storage / CDN | Premium feature |
 | ✅ | Set Primary Profile Photo | Media | UX |
-| ⚠️ | AI Image Moderation (nudity / offensive) | AI API (AWS Rekognition) | Content safety |
-| 🆕 | Manual Review Queue for Flagged Media | Admin Panel | Moderation workflow |
-| 🆕 | Photo Privacy (blur until interest accepted) | Media + Match | Safety & trust |
-| 🆕 | Watermarking on Exported Photos | Media | Prevent photo scraping |
-| 🆕 | Profile Video Thumbnail Auto-generation | FFmpeg | Better UX |
+| ✅ | AI Image Moderation (nudity / offensive) | AI API (AWS Rekognition) | Content safety |
+| ✅ | Manual Review Queue for Flagged Media | Admin Panel | Moderation workflow |
+| ✅ | Photo Privacy (blur until interest accepted) | Media + Match | Safety & trust |
+| ✅ | Watermarking on Exported Photos | Media | Prevent photo scraping |
+| ✅ | Profile Video Thumbnail Auto-generation | FFmpeg | Better UX |
 
 ### 3.4 Privacy, Consent & Settings
 
@@ -133,10 +133,10 @@
 |--------|------|------------|-----|
 | ✅ | Privacy Settings (who can see what) | Auth | User control |
 | ✅ | Notification Settings | Notification Service | Engagement control |
-| 🆕 | Hide Profile from Specific Users | Interaction | User safety |
-| 🆕 | Incognito Browse Mode (premium) | Subscription | Browse without showing viewed |
-| 🆕 | Data Download (GDPR data export) | DB + Storage | Legal compliance |
-| 🆕 | Consent Management (privacy policy versioning) | Auth | PDPB / GDPR compliance |
+| ✅ | Hide Profile from Specific Users | Interaction | User safety |
+| ✅ | Incognito Browse Mode (premium) | Subscription | Browse without showing viewed |
+| ✅ | Data Download (GDPR data export) | DB + Storage | Legal compliance |
+| ✅ | Consent Management (privacy policy versioning) | Auth | PDPB / GDPR compliance |
 
 ---
 

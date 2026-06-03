@@ -110,7 +110,11 @@ export class MatchDiscoveryRepository {
     filter: FilterQuery<ProfileDocument>,
     skip: number,
     limit: number,
-    sort: Record<string, 1 | -1> = { profileScore: -1, lastActiveAt: -1 },
+    sort: Record<string, 1 | -1> = {
+      visibilityScore: -1,
+      profileScore: -1,
+      lastActiveAt: -1,
+    },
   ): Promise<DiscoveryResult> {
     const [profiles, total]: [LeanProfile[], number] = await Promise.all([
       this.profileModel
@@ -148,7 +152,7 @@ export class MatchDiscoveryRepository {
     const [profiles, total]: [LeanProfile[], number] = await Promise.all([
       this.profileModel
         .find(geoFilter)
-        .sort({ lastActiveAt: -1, profileScore: -1 })
+        .sort({ lastActiveAt: -1, visibilityScore: -1, profileScore: -1 })
         .skip(skip)
         .limit(limit)
         .select('-__v')

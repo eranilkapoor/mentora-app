@@ -11,6 +11,8 @@ import {
   UploadedFiles,
   HttpCode,
   HttpStatus,
+  Body,
+  Query,
 } from '@nestjs/common';
 import {
   FileFieldsInterceptor,
@@ -21,6 +23,10 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
+import { RolesGuard } from '@/modules/auth/guards/roles.guard';
+import { Roles } from '@/common/decorators/roles.decorator';
+import { Role } from '@/common/enums';
+import { ReviewMediaDto } from '../dto/media-review.dto';
 
 @UseGuards(JwtAuthGuard)
 @Controller('profiles/media')
@@ -163,5 +169,32 @@ export class MediaController {
       SuccessCode.PROFILE_VIDEO_DELETED,
       'Profile video successfully deleted',
     );
+  }
+
+  @Get('admin/review-queue')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MODERATOR)
+  async getReviewQueue(@Query('limit') limit?: string) {
+    const data = await this.mediaService.getReviewQueue(
+      limit ? Number(limit) : undefined,
+    );
+    return successResponse(data, SuccessCode.SUCCESS);
+  }
+
+  @Patch('admin/:mediaId/review')
+  @UseGuards(RolesGuard)
+  @Roles(Role.ADMIN, Role.MODERATOR)
+  async reviewMedia(
+    @Req() req: AuthenticatedRequest,
+    @Param('mediaId') mediaId: string,
+    @Body() dto: ReviewMediaDto,
+  ) {
+    const data = await this.mediaService.reviewMedia(
+      req.user.sub,
+      mediaId,
+      dto.approve,
+      dto.note,
+    );
+    return successResponse(data, SuccessCode.FILE_UPLOADED);
   }
 }

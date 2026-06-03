@@ -36,6 +36,7 @@ import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,
   BlockUserDto,
+  HideProfileDto,
   ReportUserDto,
 } from '../dto/privacy-settings.dto';
 import {
@@ -255,8 +256,130 @@ export class SettingsService {
     return this.repo.getBlockedRelationUserIds(userId);
   }
 
+  async getUnavailableRelationUserIds(userId: string) {
+    const [blockedUserIds, hiddenUserIds] = await Promise.all([
+      this.repo.getBlockedRelationUserIds(userId),
+      this.repo.getHiddenRelationUserIds(userId),
+    ]);
+
+    return [...new Set([...blockedUserIds, ...hiddenUserIds])];
+  }
+
   isBlockedBetween(userId: string, targetUserId: string) {
     return this.repo.isBlockedBetween(userId, targetUserId);
+  }
+
+  isHiddenBetween(userId: string, targetUserId: string) {
+    return this.repo.isHiddenBetween(userId, targetUserId);
+  }
+
+  async hideProfile(userId: string, dto: HideProfileDto) {
+    if (userId === dto.targetUserId) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'cannot_hide_self',
+      });
+    }
+
+    return this.repo.hideProfile(userId, dto.targetUserId, dto.reason);
+  }
+
+  unhideProfile(userId: string, dto: BlockUserDto) {
+    return this.repo.unhideProfile(userId, dto.targetUserId);
+  }
+
+  async getHiddenProfiles(userId: string) {
+    const rows = await this.repo.getHiddenProfiles(userId);
+    const hiddenUserIds = rows.map((row) => row.hiddenUserId.toString());
+
+    if (hiddenUserIds.length === 0) {
+      return { hiddenProfiles: [] };
+    }
+
+    const [profiles, media] = await Promise.all([
+      this.profileModel
+        .find({
+          userId: { $in: hiddenUserIds.map((id) => new Types.ObjectId(id)) },
+        })
+        .select('userId personal age isVerified')
+        .lean<
+          Array<{
+            userId: Types.ObjectId;
+            personal?: {
+              firstName?: string;
+              lastName?: string;
+              city?: string;
+              state?: string;
+            };
+            age?: number;
+            isVerified?: boolean;
+          }>
+        >()
+        .exec(),
+      this.mediaModel
+        .find({
+          userId: { $in: hiddenUserIds.map((id) => new Types.ObjectId(id)) },
+          type: MediaType.IMAGE,
+          status: MediaStatus.ACTIVE,
+          isActive: true,
+        })
+        .sort({ isPrimary: -1, uploadedAt: -1, createdAt: -1 })
+        .select('userId url thumbnailUrl isPrimary')
+        .lean<
+          Array<{
+            userId: Types.ObjectId;
+            url?: string;
+            thumbnailUrl?: string;
+            isPrimary?: boolean;
+          }>
+        >()
+        .exec(),
+    ]);
+
+    const profileByUserId = new Map(
+      profiles.map((profile) => [profile.userId.toString(), profile]),
+    );
+    const mediaByUserId = new Map<string, (typeof media)[number]>();
+    media.forEach((item) => {
+      const key = item.userId.toString();
+      if (!mediaByUserId.has(key)) {
+        mediaByUserId.set(key, item);
+      }
+    });
+
+    return {
+      hiddenProfiles: rows.map((row) => {
+        const rowWithTimestamp = row as typeof row & {
+          createdAt?: Date;
+        };
+        const hiddenUserId = row.hiddenUserId.toString();
+        const profile = profileByUserId.get(hiddenUserId);
+        const photo = mediaByUserId.get(hiddenUserId);
+        const name =
+          [profile?.personal?.firstName, profile?.personal?.lastName]
+            .filter(Boolean)
+            .join(' ')
+            .trim() || 'MatchMate Member';
+        const location =
+          [profile?.personal?.city, profile?.personal?.state]
+            .filter(Boolean)
+            .join(', ') || undefined;
+
+        return {
+          userId: hiddenUserId,
+          name,
+          ...(profile?.age ? { age: profile.age } : {}),
+          ...(location ? { location } : {}),
+          ...(photo?.thumbnailUrl || photo?.url
+            ? { avatarUrl: photo.thumbnailUrl ?? photo.url }
+            : {}),
+          isVerified: profile?.isVerified === true,
+          ...(row.reason ? { reason: row.reason } : {}),
+          ...(rowWithTimestamp.createdAt instanceof Date
+            ? { hiddenAt: rowWithTimestamp.createdAt.toISOString() }
+            : {}),
+        };
+      }),
+    };
   }
 
   private emitUserBlocked(blockerId: string, blockedUserId: string) {

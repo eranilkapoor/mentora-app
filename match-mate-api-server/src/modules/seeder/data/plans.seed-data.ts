@@ -188,4 +188,20 @@ export const PLAN_SEEDS: Plan[] = [
     isActive: true,
     version: 1,
   },
+  {
+    name: 'PROFILE_BOOST_24H',
+    slug: 'profile-boost-24h',
+    tier: PlanTier.GOLD,
+    planType: PlanType.PROFILE_BOOST,
+    billingCycle: BillingCycle.MONTHLY,
+    price: 199,
+    durationDays: 1,
+    currency: 'INR',
+    isPopular: false,
+    sortOrder: 50,
+    description:
+      'One-time 24 hour visibility boost for priority discovery ranking.',
+    isActive: true,
+    version: 1,
+  },
 ];

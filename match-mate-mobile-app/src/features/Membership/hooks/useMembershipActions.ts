@@ -45,5 +45,46 @@ export function useMembershipActions() {
     [createOrder, t]
   );
 
-  return { handleCreateOrder, isCreatingOrder };
+  const handleCreateBoostOrder = useCallback(
+    async (selectedPlanItem: DisplayPlan | null): Promise<void> => {
+      if (!selectedPlanItem?.source?._id) {
+        showError({
+          title: t('membership.plans_unavailable_title'),
+          message: t('membership.plans_unavailable_message'),
+        });
+        return;
+      }
+
+      try {
+        const order = await createOrder({
+          planId: selectedPlanItem.source._id,
+          currency: selectedPlanItem.source.currency,
+          purpose: 'profile_boost',
+          idempotencyKey: `boost-${selectedPlanItem.source._id}-${Date.now()}`,
+          description: 'Profile boost',
+          metadata: {
+            durationHours: 24,
+            multiplier: 1.25,
+          },
+        }).unwrap();
+
+        showSuccess({
+          title: t('membership.order_created_title'),
+          message: t('membership.order_created_message', {
+            orderId: order.orderId,
+            currency: order.currency,
+            amount: order.netAmount,
+          }),
+        });
+      } catch {
+        showError({
+          title: t('membership.payment_failed_title'),
+          message: t('membership.payment_failed_message'),
+        });
+      }
+    },
+    [createOrder, t]
+  );
+
+  return { handleCreateOrder, handleCreateBoostOrder, isCreatingOrder };
 }

@@ -1,5 +1,8 @@
 import { Injectable, Inject } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import { MediaRepository } from '../repositories/media.repository';
+import { Profile, ProfileDocument } from '../schemas/profile/profile.schema';
 import { StorageService } from '../../storage/services/storage.service';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from '@/common/cache/cache.constants';
@@ -12,6 +15,9 @@ import {
   throwNotFound,
 } from '@/common/exceptions/throw-app-exception';
 import { AppException } from '@/common/exceptions/app.exception';
+import { ProfileScoringService } from './profile-scoring.service';
+import { MediaModerationService } from './media-moderation.service';
+import { VideoThumbnailService } from './video-thumbnail.service';
 
 const MAX_IMAGES = 10;
 const MAX_VIDEOS = 1;
@@ -24,6 +30,11 @@ export class MediaService {
   constructor(
     private readonly mediaRepo: MediaRepository,
     private readonly storageService: StorageService,
+    private readonly profileScoringService: ProfileScoringService,
+    private readonly moderationService: MediaModerationService,
+    private readonly videoThumbnailService: VideoThumbnailService,
+    @InjectModel(Profile.name)
+    private readonly profileModel: Model<ProfileDocument>,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
   ) {}
 
@@ -48,6 +59,9 @@ export class MediaService {
         });
       }
 
+      const moderation = files.map((file) =>
+        this.moderationService.moderate(file, MediaType.IMAGE),
+      );
       const uploaded = await this.storageService.uploadFiles(
         files,
         IMAGE_STORAGE_FOLDER,
@@ -62,10 +76,14 @@ export class MediaService {
         ...img,
         type: MediaType.IMAGE,
         isPrimary: !hasPrimary && index === primaryIndex,
+        moderationStatus: moderation[index].status,
+        moderationReasons: moderation[index].reasons,
+        moderationMetadata: moderation[index].metadata,
       }));
 
       const result = await this.mediaRepo.create(userId, inputs);
       await this.invalidateCache(userId);
+      await this.refreshProfileScores(userId);
 
       return result;
     } catch (error) {
@@ -92,6 +110,7 @@ export class MediaService {
         MediaType.IMAGE,
       );
       await this.invalidateCache(userId);
+      await this.refreshProfileScores(userId);
       return result;
     } catch (error) {
       if (error instanceof AppException) throw error;
@@ -127,6 +146,7 @@ export class MediaService {
       }
 
       await this.invalidateCache(userId);
+      await this.refreshProfileScores(userId);
 
       return { success: true };
     } catch (error) {
@@ -157,12 +177,26 @@ export class MediaService {
         });
       }
 
+      const moderation = files.map((file) =>
+        this.moderationService.moderate(file, MediaType.VIDEO),
+      );
+      const generatedThumbnails =
+        thumbnails.length > 0
+          ? thumbnails
+          : (
+              await Promise.all(
+                files.map((file) =>
+                  this.videoThumbnailService.generateThumbnail(file),
+                ),
+              )
+            ).filter((file): file is Express.Multer.File => Boolean(file));
+
       const uploaded = await this.storageService.uploadFiles(
         files,
         VIDEO_STORAGE_FOLDER,
       );
       const uploadedThumbnails = await this.storageService.uploadFiles(
-        thumbnails.slice(0, files.length),
+        generatedThumbnails.slice(0, files.length),
         VIDEO_THUMBNAIL_STORAGE_FOLDER,
       );
 
@@ -178,10 +212,14 @@ export class MediaService {
         mimeType: files[index]?.mimetype,
         size: files[index]?.size,
         isPrimary: !hasPrimary && index === 0,
+        moderationStatus: moderation[index].status,
+        moderationReasons: moderation[index].reasons,
+        moderationMetadata: moderation[index].metadata,
       }));
 
       const result = await this.mediaRepo.create(userId, inputs);
       await this.invalidateCache(userId);
+      await this.refreshProfileScores(userId);
 
       return result;
     } catch (error) {
@@ -208,6 +246,7 @@ export class MediaService {
         MediaType.VIDEO,
       );
       await this.invalidateCache(userId);
+      await this.refreshProfileScores(userId);
 
       return result;
     } catch (error) {
@@ -216,6 +255,29 @@ export class MediaService {
         reason: 'failed_to_set_primary_video',
       });
     }
+  }
+
+  getReviewQueue(limit?: number) {
+    return this.mediaRepo.getReviewQueue(limit);
+  }
+
+  async reviewMedia(
+    reviewerId: string,
+    mediaId: string,
+    approve: boolean,
+    note?: string,
+  ) {
+    const media = await this.mediaRepo.review(
+      mediaId,
+      reviewerId,
+      approve,
+      note,
+    );
+    if (media?.userId) {
+      await this.invalidateCache(String(media.userId));
+      await this.refreshProfileScores(String(media.userId));
+    }
+    return media;
   }
 
   async removeVideo(_req: AppRequest, userId: string, mediaId: string) {
@@ -241,6 +303,7 @@ export class MediaService {
       }
 
       await this.invalidateCache(userId);
+      await this.refreshProfileScores(userId);
 
       return { success: true };
     } catch (error) {
@@ -276,5 +339,34 @@ export class MediaService {
     await this.cache.del(`profile:${userId}`);
     await this.cache.del(`media:images:${userId}`);
     await this.cache.del(`media:videos:${userId}`);
+  }
+
+  private async refreshProfileScores(userId: string) {
+    const [profile, imageCount, videoCount] = await Promise.all([
+      this.profileModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .lean()
+        .exec(),
+      this.mediaRepo.countByUser(userId, MediaType.IMAGE),
+      this.mediaRepo.countByUser(userId, MediaType.VIDEO),
+    ]);
+
+    if (!profile) return;
+
+    const { missingFields: _missingFields, ...derived } =
+      this.profileScoringService.calculate(profile, {
+        imageCount,
+        videoCount,
+      });
+    void _missingFields;
+
+    await this.profileModel
+      .updateOne(
+        { userId: new Types.ObjectId(userId) },
+        { $set: derived },
+        { runValidators: true },
+      )
+      .exec();
+    await this.cache.del(`profile:${userId}`);
   }
 }

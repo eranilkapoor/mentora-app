@@ -10,6 +10,8 @@ export interface ProfileImage {
   _id?: string;
   url: string;
   thumbnailUrl?: string | null;
+  isBlurred?: boolean;
+  blurReason?: string;
   isPrimary?: boolean;
   isActive?: boolean;
   filename?: string;
@@ -38,6 +40,7 @@ export interface ProfileData {
   videoIntro?: ProfileImage | null;
   profileScore?: number;
   profileCompletionPercentage?: number;
+  visibilityScore?: number;
   summary?: {
     profileCompletionPercentage?: number;
     profileScore?: number;

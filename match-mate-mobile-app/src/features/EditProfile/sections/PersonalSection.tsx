@@ -191,6 +191,41 @@ export function PersonalSection({
       />
 
       <ToggleRow
+        label="NRI profile"
+        value={personal.isNri ?? false}
+        onChange={(v) => onSet('isNri', v)}
+      />
+
+      {personal.isNri ? (
+        <>
+          <DropdownPicker
+            label="Residency country"
+            options={CountryOptions}
+            value={personal.residencyCountry ?? personal.country}
+            onChange={(val) => onSet('residencyCountry', val as Country)}
+          />
+          <View style={styles.row}>
+            <View style={styles.halfField}>
+              <FormInput
+                label="Visa status"
+                value={personal.visaStatus ?? ''}
+                onChange={(v) => onSet('visaStatus', v)}
+                placeholder="Work visa, PR, citizen"
+              />
+            </View>
+            <View style={styles.halfField}>
+              <FormInput
+                label="Abroad since"
+                value={personal.abroadSince ?? ''}
+                onChange={(v) => onSet('abroadSince', v)}
+                placeholder="YYYY"
+              />
+            </View>
+          </View>
+        </>
+      ) : null}
+
+      <ToggleRow
         label={t('edit_profile.fields.willing_to_relocate')}
         value={personal.willingToRelocate}
         onChange={(v) => onSet('willingToRelocate', v)}

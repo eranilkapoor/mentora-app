@@ -13,12 +13,26 @@ export const getProfileName = (profile?: DiscoveryProfile): string =>
     .trim() || 'MatchMate Member';
 
 export const getPhotos = (profile?: DiscoveryProfile): string[] => {
+  return getPhotoItems(profile).map((photo) => photo.url);
+};
+
+export interface DetailPhotoItem {
+  url: string;
+  isBlurred?: boolean;
+}
+
+export const getPhotoItems = (
+  profile?: DiscoveryProfile
+): DetailPhotoItem[] => {
   const photos = profile?.images
     ?.filter((img) => img.isActive !== false)
     .sort((a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary)))
-    .map((img) => resolveApiUrl(img.url))
-    .filter((url): url is string => Boolean(url));
-  return photos?.length ? photos : [FALLBACK_PHOTO as string];
+    .map((img) => {
+      const url = resolveApiUrl(img.url);
+      return url ? { url, isBlurred: img.isBlurred } : null;
+    })
+    .filter((photo): photo is DetailPhotoItem => Boolean(photo));
+  return photos?.length ? photos : [{ url: FALLBACK_PHOTO as string }];
 };
 
 export const isRecentlyActive = (lastActiveAt?: string): boolean =>

@@ -313,6 +313,51 @@ export const membershipStyles = (theme: Theme) =>
     featureCheck: { color: theme.colors.success },
     featureZero: { color: theme.colors.textMuted },
 
+    boostCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: theme.colors.surface,
+      borderRadius: 14,
+      padding: 14,
+      marginBottom: 20,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
+      gap: 12,
+    },
+    boostIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+    },
+    boostCopy: {
+      flex: 1,
+    },
+    boostTitle: {
+      fontSize: 14,
+      fontWeight: '800',
+      color: theme.colors.textPrimary,
+    },
+    boostSubtitle: {
+      fontSize: 12,
+      lineHeight: 17,
+      color: theme.colors.textSecondary,
+      marginTop: 2,
+    },
+    boostButton: {
+      borderRadius: 18,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      backgroundColor: theme.colors.primary,
+    },
+    boostButtonText: {
+      fontSize: 12,
+      fontWeight: '800',
+      color: theme.colors.white,
+    },
+
     // ─── Trust Badges ─────────────────────────────────────────────────────
     trustRow: {
       flexDirection: 'row',

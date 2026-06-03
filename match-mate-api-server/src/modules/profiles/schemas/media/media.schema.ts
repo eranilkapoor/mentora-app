@@ -9,6 +9,13 @@ export enum MediaStatus {
   PROCESSING = 'processing',
 }
 
+export enum MediaModerationStatus {
+  APPROVED = 'approved',
+  FLAGGED = 'flagged',
+  REJECTED = 'rejected',
+  PENDING = 'pending',
+}
+
 @Schema({ collection: COLLECTION_NAMES.MEDIA, timestamps: true })
 export class Media {
   @Prop({ type: Types.ObjectId, required: true, index: true })
@@ -38,6 +45,29 @@ export class Media {
   @Prop({ type: String, enum: MediaStatus, default: MediaStatus.ACTIVE })
   status!: MediaStatus;
 
+  @Prop({
+    type: String,
+    enum: MediaModerationStatus,
+    default: MediaModerationStatus.APPROVED,
+    index: true,
+  })
+  moderationStatus!: MediaModerationStatus;
+
+  @Prop({ type: [String], default: [] })
+  moderationReasons!: string[];
+
+  @Prop({ type: Object, default: {} })
+  moderationMetadata?: Record<string, unknown>;
+
+  @Prop({ type: Types.ObjectId })
+  reviewedBy?: Types.ObjectId;
+
+  @Prop()
+  reviewedAt?: Date;
+
+  @Prop()
+  reviewNote?: string;
+
   @Prop({ type: Boolean, default: true })
   isActive!: boolean;
 
@@ -50,3 +80,4 @@ export const MediaSchema = SchemaFactory.createForClass(Media);
 
 MediaSchema.index({ type: 1 });
 MediaSchema.index({ isPrimary: 1, isActive: 1 });
+MediaSchema.index({ moderationStatus: 1, status: 1, createdAt: -1 });

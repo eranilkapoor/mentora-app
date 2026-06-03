@@ -73,6 +73,10 @@ export const INITIAL_PROFILE: ProfileData = {
     state: '',
     city: '',
     citizenship: '',
+    isNri: false,
+    residencyCountry: Countries.INDIA,
+    visaStatus: '',
+    abroadSince: '',
     motherTongue: '',
   },
   physical: {

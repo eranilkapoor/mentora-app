@@ -4,6 +4,7 @@ import { ApiResponse } from '@/core/types';
 import {
   PrivacySettings,
   BlockedUsersResponse,
+  HiddenProfilesResponse,
   PrivacySettingsResponse,
   UpdatePrivacySettingsPayload,
 } from '../../features/PrivacySettings/PrivacySettings.types';
@@ -72,6 +73,44 @@ export const privacySettingsApi = baseApi.injectEndpoints({
           : (response as BlockedUsersResponse),
       providesTags: ['PrivacySettings'],
     }),
+    getHiddenProfiles: builder.query<HiddenProfilesResponse, void>({
+      query: () => ({
+        url: '/settings/privacy/hidden',
+        method: 'GET',
+      }),
+      transformResponse: (
+        response: HiddenProfilesResponse | ApiResponse<HiddenProfilesResponse>
+      ) =>
+        response && 'data' in response && response.data
+          ? response.data
+          : (response as HiddenProfilesResponse),
+      providesTags: ['PrivacySettings'],
+    }),
+    hideProfile: builder.mutation<
+      void,
+      { targetUserId: string; reason?: string }
+    >({
+      query: (body) => ({
+        url: '/settings/privacy/hide',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: [
+        'PrivacySettings',
+        'Shortlist',
+        { type: 'Match', id: 'DISCOVERY' },
+        { type: 'Match', id: 'MY' },
+        { type: 'Match', id: 'INTERESTS' },
+      ],
+    }),
+    unhideProfile: builder.mutation<void, { targetUserId: string }>({
+      query: (body) => ({
+        url: '/settings/privacy/unhide',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['PrivacySettings', { type: 'Match', id: 'DISCOVERY' }],
+    }),
     unblockUser: builder.mutation<void, { targetUserId: string }>({
       query: (body) => ({
         url: '/settings/privacy/unblock',
@@ -127,6 +166,9 @@ export const {
   useGetPrivacySettingsQuery,
   useUpdatePrivacySettingsMutation,
   useGetBlockedUsersQuery,
+  useGetHiddenProfilesQuery,
+  useHideProfileMutation,
+  useUnhideProfileMutation,
   useUnblockUserMutation,
   useBlockUserMutation,
   useReportUserMutation,

@@ -15,7 +15,7 @@ export interface MembershipPlan {
   name: string;
   slug: string;
   tier: string;
-  planType?: 'self_service' | 'assisted';
+  planType?: 'self_service' | 'assisted' | 'profile_boost';
   billingCycle: string;
   price: number;
   durationDays: number;
@@ -69,9 +69,20 @@ export interface BillingSummary {
   };
 }
 
+export interface ProfileBoost {
+  _id: string;
+  userId: string;
+  startsAt: string;
+  endsAt: string;
+  multiplier: number;
+  status: string;
+  source?: string;
+}
+
 export interface CreatePaymentOrderRequest {
   planId: string;
   currency?: string;
+  purpose?: 'subscription' | 'profile_boost';
   idempotencyKey?: string;
   description?: string;
   metadata?: Record<string, unknown>;
@@ -137,6 +148,16 @@ export const membershipApi = baseApi.injectEndpoints({
       providesTags: ['Membership', 'Payment'],
     }),
 
+    getProfileBoosts: builder.query<ProfileBoost[], void>({
+      query: () => ({
+        url: '/subscriptions/boosts',
+        method: 'GET',
+      }),
+      transformResponse: (response: ApiResponse<ProfileBoost[]>) =>
+        unwrapApiResponse(response, []),
+      providesTags: ['Membership'],
+    }),
+
     createMembershipOrder: builder.mutation<
       PaymentOrder,
       CreatePaymentOrderRequest
@@ -159,5 +180,6 @@ export const {
   useGetMembershipPlansQuery,
   useGetActiveSubscriptionQuery,
   useGetBillingSummaryQuery,
+  useGetProfileBoostsQuery,
   useCreateMembershipOrderMutation,
 } = membershipApi;

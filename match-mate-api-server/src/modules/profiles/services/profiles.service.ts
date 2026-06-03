@@ -33,6 +33,7 @@ import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { MediaService } from './media.service';
 import { PreferenceService } from './preference.service';
+import { ProfileScoringService } from './profile-scoring.service';
 import { UpdateProfileLocationDto } from '../dto/location.dto';
 import { SettingsService } from '@/modules/settings/services/settings.service';
 import {
@@ -72,6 +73,7 @@ export class ProfilesService {
     private readonly analyticsService: AnalyticsService,
     private readonly mediaService: MediaService,
     private readonly preferenceService: PreferenceService,
+    private readonly profileScoringService: ProfileScoringService,
     private readonly settingsService: SettingsService,
     private readonly logger: AppLogger,
   ) {}
@@ -261,6 +263,14 @@ export class ProfilesService {
   private buildCreatePayload(dto: CreateProfileDto): Record<string, unknown> {
     const birthDate = new Date(dto.personal.dateOfBirth);
     const age = this.calculateAge(birthDate);
+    const { missingFields: _missingFields, ...derived } =
+      this.profileScoringService.calculate({
+        personal: dto.personal as unknown as Record<string, unknown>,
+        physical: dto.physical as unknown as Record<string, unknown>,
+        education: dto.education as unknown as Record<string, unknown>,
+        family: dto.family as unknown as Record<string, unknown> | undefined,
+      });
+    void _missingFields;
 
     return {
       profileFor: dto.personal.profileFor,
@@ -269,8 +279,7 @@ export class ProfilesService {
       education: dto.education,
       family: dto.family ?? {},
       age,
-      profileScore: this.calculateProfileScore(dto),
-      profileCompletionPercentage: this.calculateCompletion(dto),
+      ...derived,
       searchTags: this.buildSearchTags(dto),
       status: ProfileStatus.ACTIVE,
       lastActiveAt: new Date(),
@@ -322,9 +331,17 @@ export class ProfilesService {
 
     // Recalculate derived fields from the merged state
     const merged = { ...existing, ...normalized };
+    const { missingFields: _missingFields, ...derived } =
+      this.profileScoringService.calculate(
+        merged,
+        this.getMediaSummaryFromProfile(merged),
+      );
+    void _missingFields;
     normalized.searchTags = this.buildSearchTagsFromMerged(merged);
     normalized.profileCompletionPercentage =
-      this.calculateCompletionFromMerged(merged);
+      derived.profileCompletionPercentage;
+    normalized.profileScore = derived.profileScore;
+    normalized.visibilityScore = derived.visibilityScore;
     normalized.lastActiveAt = new Date();
 
     return normalized;
@@ -342,6 +359,10 @@ export class ProfilesService {
           profile.profileCompletionPercentage ?? 0,
         ),
         profileScore: Number(profile.profileScore ?? 0),
+        visibilityScore: Number(profile.visibilityScore ?? 0),
+        missingFields: Array.isArray(profile.missingFields)
+          ? profile.missingFields
+          : [],
         hasAboutMe: Boolean(personal.aboutMe),
       },
       sections: {
@@ -430,57 +451,33 @@ export class ProfilesService {
     return Math.round((feet * 12 + inches) * 2.54);
   }
 
-  private calculateProfileScore(dto: CreateProfileDto): number {
-    let score = 60;
-    if (dto.personal.aboutMe) score += 10;
-    if ((dto.personal.personalityBadges?.length ?? 0) >= 3) score += 5;
-    if (dto.education.annualIncomeAmount) score += 10;
-    if (dto.family) score += 10;
-    return Math.min(score, 100);
+  async refreshDerivedScores(userId: string) {
+    const profile = await this.profileRepo.findByUserId(userId);
+    if (!profile) return null;
+
+    const [images, videos] = await Promise.all([
+      this.mediaService.getImages(userId),
+      this.mediaService.getVideos(userId),
+    ]);
+    const { missingFields: _missingFields, ...derived } =
+      this.profileScoringService.calculate(profile as Record<string, unknown>, {
+        imageCount: Array.isArray(images) ? images.length : 0,
+        videoCount: Array.isArray(videos) ? videos.length : 0,
+      });
+    void _missingFields;
+
+    const updated = await this.profileRepo.update(userId, derived);
+    await this.cache.del(`profile:${userId}`);
+    return updated;
   }
 
-  private calculateCompletion(dto: CreateProfileDto): number {
-    const checks = [
-      Boolean(dto.personal.profileFor),
-      Boolean(dto.personal.firstName),
-      Boolean(dto.personal.gender),
-      Boolean(dto.personal.dateOfBirth),
-      Boolean(dto.personal.religion),
-      Boolean(dto.personal.maritalStatus),
-      Boolean(dto.physical.height),
-      Boolean(dto.education.qualification),
-      Boolean(dto.education.occupation),
-      Boolean(dto.personal.aboutMe),
-      (dto.personal.personalityBadges?.length ?? 0) >= 3,
-      Boolean(dto.family),
-    ];
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
-  }
-
-  private calculateCompletionFromMerged(
-    profile: Record<string, unknown>,
-  ): number {
-    const personal = (profile.personal ?? {}) as Record<string, unknown>;
-    const physical = (profile.physical ?? {}) as Record<string, unknown>;
-    const education = (profile.education ?? {}) as Record<string, unknown>;
-
-    const checks = [
-      Boolean(personal.profileFor),
-      Boolean(personal.firstName),
-      Boolean(personal.gender),
-      Boolean(personal.dateOfBirth),
-      Boolean(personal.religion),
-      Boolean(personal.maritalStatus),
-      Boolean(physical.height),
-      Boolean(education.qualification),
-      Boolean(education.occupation),
-      Boolean(personal.aboutMe),
-      Array.isArray(personal.personalityBadges) &&
-        personal.personalityBadges.length >= 3,
-      Boolean(profile.family),
-    ];
-
-    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  private getMediaSummaryFromProfile(profile: Record<string, unknown>) {
+    const images = profile.images;
+    const videoIntro = profile.videoIntro;
+    return {
+      imageCount: Array.isArray(images) ? images.length : undefined,
+      videoCount: videoIntro ? 1 : undefined,
+    };
   }
 
   private buildSearchTags(dto: CreateProfileDto): string[] {
@@ -491,6 +488,9 @@ export class ProfilesService {
       dto.personal.city,
       dto.personal.state,
       dto.personal.country,
+      dto.personal.isNri ? 'nri' : undefined,
+      dto.personal.residencyCountry,
+      dto.personal.visaStatus,
       dto.personal.motherTongue,
       dto.education.qualification,
       dto.education.occupation,
@@ -513,6 +513,9 @@ export class ProfilesService {
       personal.city,
       personal.state,
       personal.country,
+      personal.isNri ? 'nri' : undefined,
+      personal.residencyCountry,
+      personal.visaStatus,
       personal.motherTongue,
       education.qualification,
       education.occupation,
@@ -627,6 +630,7 @@ export class ProfilesService {
       'lastActiveAt',
       'profileCompletionPercentage',
       'profileScore',
+      'visibilityScore',
       'searchTags',
     ].includes(field);
   }

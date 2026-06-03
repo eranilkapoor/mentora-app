@@ -62,6 +62,10 @@ export interface SchemaProfile {
     state?: string;
     city?: string;
     citizenship?: string;
+    isNri?: boolean;
+    residencyCountry?: Country;
+    visaStatus?: string;
+    abroadSince?: string;
     willingToRelocate?: boolean;
     motherTongue?: string;
     maritalStatus?: MaritalStatus;
@@ -130,6 +134,7 @@ export interface SchemaProfile {
   location?: { type?: 'Point'; coordinates?: [number, number] };
   profileScore?: number;
   profileCompletionPercentage?: number;
+  visibilityScore?: number;
   isPremium?: boolean;
   isVerified?: boolean;
   verification?: {
