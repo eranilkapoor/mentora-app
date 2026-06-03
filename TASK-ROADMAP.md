@@ -148,37 +148,36 @@
 |--------|------|------------|-----|
 | ✅ | Recommended Matches API | Profile + Algorithm | Core business logic |
 | ✅ | Filters API (age, location, community…) | Search | UX control |
-| ⚠️ | ML-based Ranking Engine | Data pipeline | Competitive edge |
-| 🆕 | Compatibility Score Engine | Profile fields | Show % match to user |
-| 🆕 | Mutual Preference Scoring | Both profiles | Better match quality |
-| 🆕 | Nearby Matches (geolocation) | Location | Convenience |
-| 🆕 | Premium Match Curator (human + AI) | Admin + ML | Concierge upsell |
-| 🆕 | "Daily Matches" Push Notification | Scheduler + Notif | Daily re-engagement |
+| ✅ | ML-based Ranking Engine | Data pipeline | Competitive edge |
+| ✅ | Compatibility Score Engine | Profile fields | Show % match to user |
+| ✅ | Mutual Preference Scoring | Both profiles | Better match quality |
+| ✅ | Nearby Matches (geolocation) | Location | Convenience |
+| ✅ | Premium Match Curator (human + AI) | Admin + ML | Concierge upsell |
+| ✅ | "Daily Matches" Push Notification | Scheduler + Notif | Daily re-engagement |
 
 ### 4.2 Interaction System
 
 | Status | Task | Dependency | Why |
 |--------|------|------------|-----|
 | ✅ | View Profile (tracked) | Interaction DB | Analytics input |
-| 📂 | Like / Pass / Super Like | Interaction DB | Engagement |
 | ✅ | Send Interest | Interaction DB | Matrimony-specific CTA |
 | ✅ | Accept / Reject Interest | Interaction DB | Match trigger |
 | ✅ | Shortlist / Save Profile | Interaction DB | Bookmark for later |
 | ✅ | Block User | Moderation | Safety |
 | ✅ | Report User / Content | Moderation | Safety + compliance |
-| 🆕 | "Who Viewed Me" Feature (premium) | Interaction + Sub | Monetization lever |
-| 🆕 | "Who Liked Me" Feature (premium) | Interaction + Sub | Monetization lever |
-| 🆕 | Interaction Limit by Subscription Tier | RBAC + Sub | Enforce plan limits |
+| ✅ | "Who Viewed Me" Feature (premium) | Interaction + Sub | Monetization lever |
+| ✅ | "Who Liked Me" Feature (premium) | Interaction + Sub | Monetization lever |
+| ✅ | Interaction Limit by Subscription Tier | RBAC + Sub | Enforce plan limits |
 
 ### 4.3 Match Creation & Lifecycle
 
 | Status | Task | Dependency | Why |
 |--------|------|------------|-----|
 | ✅ | Match Creation Logic (on mutual interest) | Interaction | Core |
-| ⚠️ | Match Expiry Logic | Subscription + Scheduler | Premium upsell |
-| 🆕 | Match Quality Score (post-match) | ML | Track match health |
-| 🆕 | Unmatch Feature | Match DB | User control |
-| 🆕 | Match Statistics per User | Analytics | Engagement insights |
+| ✅ | Match Expiry Logic | Subscription + Scheduler | Premium upsell |
+| ✅ | Match Quality Score (post-match) | ML | Track match health |
+| ✅ | Unmatch Feature | Match DB | User control |
+| ✅ | Match Statistics per User | Analytics | Engagement insights |
 
 ---
 

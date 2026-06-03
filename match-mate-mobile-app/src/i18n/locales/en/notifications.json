@@ -18,8 +18,7 @@
     "match_request": "You received a match request",
     "match_accepted": "Your match request was accepted",
     "profile_view": "Someone viewed your profile",
-    "like": "Someone liked your profile",
-    "super_like": "You got a super like"
+    "interest": "Someone sent you an interest"
   },
   "sections": {
     "today": "Today",

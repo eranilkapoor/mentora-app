@@ -13,6 +13,10 @@ import {
   ProfileDocument,
 } from '@/modules/profiles/schemas/profile/profile.schema';
 import {
+  Preference,
+  PreferenceDocument,
+} from '@/modules/profiles/schemas/preference/preference.schema';
+import {
   Media,
   MediaDocument,
   MediaStatus,
@@ -52,6 +56,8 @@ type LeanInteraction = FlattenMaps<Interaction> & {
   _id: Types.ObjectId;
   fromUserId: Types.ObjectId;
   toUserId: Types.ObjectId;
+  createdAt?: Date;
+  updatedAt?: Date;
 };
 
 @Injectable()
@@ -65,6 +71,9 @@ export class MatchRepository implements OnModuleInit {
 
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
+
+    @InjectModel(Preference.name)
+    private readonly preferenceModel: Model<PreferenceDocument>,
 
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
@@ -317,6 +326,13 @@ export class MatchRepository implements OnModuleInit {
       .exec();
   }
 
+  async getPreferenceByUserId(userId: string) {
+    return this.preferenceModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+  }
+
   async getProfilesByUserIds(userIds: string[]): Promise<LeanProfile[]> {
     const uniqueIds = [...new Set(userIds)].map((id) => new Types.ObjectId(id));
     return this.profileModel
@@ -357,6 +373,29 @@ export class MatchRepository implements OnModuleInit {
         targetUserId: new Types.ObjectId(rightUserId),
         isActive: true,
       })
+      .lean<LeanMatch>()
+      .exec();
+  }
+
+  async unmatchUsers(userId: string, targetUserId: string, reason?: string) {
+    const [leftUserId, rightUserId] = [userId, targetUserId].sort();
+    return this.matchModel
+      .findOneAndUpdate(
+        {
+          userId: new Types.ObjectId(leftUserId),
+          targetUserId: new Types.ObjectId(rightUserId),
+          isActive: true,
+        },
+        {
+          $set: {
+            isActive: false,
+            unmatchedBy: new Types.ObjectId(userId),
+            unmatchedAt: new Date(),
+            ...(reason ? { unmatchReason: reason } : {}),
+          },
+        },
+        { new: true },
+      )
       .lean<LeanMatch>()
       .exec();
   }
@@ -423,6 +462,94 @@ export class MatchRepository implements OnModuleInit {
       )
       .lean<LeanInteraction>()
       .exec();
+  }
+
+  async getProfileViewers(
+    userId: string,
+    skip = 0,
+    limit = 20,
+    excludedUserIds: string[] = [],
+  ): Promise<LeanInteraction[]> {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
+    return this.interactionModel
+      .find({
+        toUserId: new Types.ObjectId(userId),
+        type: InteractionType.PROFILE_VIEW,
+        status: InteractionStatus.ACCEPTED,
+        ...(excludedObjectIds.length
+          ? { fromUserId: { $nin: excludedObjectIds } }
+          : {}),
+      })
+      .sort({ updatedAt: -1, createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean<LeanInteraction[]>()
+      .exec();
+  }
+
+  async countProfileViewers(userId: string, excludedUserIds: string[] = []) {
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
+    return this.interactionModel.countDocuments({
+      toUserId: new Types.ObjectId(userId),
+      type: InteractionType.PROFILE_VIEW,
+      status: InteractionStatus.ACCEPTED,
+      ...(excludedObjectIds.length
+        ? { fromUserId: { $nin: excludedObjectIds } }
+        : {}),
+    });
+  }
+
+  async getStats(userId: string, excludedUserIds: string[] = []) {
+    const uid = new Types.ObjectId(userId);
+    const excludedObjectIds = this.toObjectIds(excludedUserIds);
+    const excludedPairFilter = excludedObjectIds.length
+      ? {
+          userId: { $nin: excludedObjectIds },
+          targetUserId: { $nin: excludedObjectIds },
+        }
+      : {};
+
+    const [
+      activeMatches,
+      sentInterests,
+      receivedInterests,
+      acceptedInterests,
+      shortlisted,
+      profileViews,
+    ] = await Promise.all([
+      this.matchModel.countDocuments({
+        isActive: true,
+        ...excludedPairFilter,
+        $or: [{ userId: uid }, { targetUserId: uid }],
+      }),
+      this.interestModel.countDocuments({
+        senderId: uid,
+        ...(excludedObjectIds.length
+          ? { receiverId: { $nin: excludedObjectIds } }
+          : {}),
+      }),
+      this.interestModel.countDocuments({
+        receiverId: uid,
+        ...(excludedObjectIds.length
+          ? { senderId: { $nin: excludedObjectIds } }
+          : {}),
+      }),
+      this.interestModel.countDocuments({
+        $or: [{ senderId: uid }, { receiverId: uid }],
+        status: InterestStatus.ACCEPTED,
+      }),
+      this.countShortlisted(userId, excludedUserIds),
+      this.countProfileViewers(userId, excludedUserIds),
+    ]);
+
+    return {
+      activeMatches,
+      sentInterests,
+      receivedInterests,
+      acceptedInterests,
+      shortlisted,
+      profileViews,
+    };
   }
 
   async getShortlistedUserIds(userId: string): Promise<string[]> {

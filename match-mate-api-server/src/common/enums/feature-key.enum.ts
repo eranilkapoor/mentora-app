@@ -54,19 +54,12 @@ export enum FeatureKey {
   // ==========================================
   //  ENGAGEMENT
   // ==========================================
-  DAILY_LIKES = 'daily_likes',
-  DAILY_SUPER_LIKES = 'daily_super_likes',
-
-  UNLIMITED_LIKES = 'unlimited_likes',
-  UNLIMITED_SUPER_LIKES = 'unlimited_super_likes',
-
   SEND_INTEREST = 'send_interest',
   VIEW_INTERESTS = 'view_interests',
 
   ACCEPT_INTEREST = 'accept_interest',
   REJECT_INTEREST = 'reject_interest',
 
-  SUPER_LIKE = 'super_like',
   PRIORITY_INTEREST = 'priority_interest',
 
   SHORTLIST_PROFILES = 'shortlist_profiles',
@@ -317,14 +310,10 @@ export enum FeatureKey {
   MESSAGE_LIMIT = 'message_limit',
 
   MATCH_LIMIT = 'match_limit',
-  SWIPE_LIMIT = 'swipe_limit',
 
   // ==========================================
   //  ENGAGEMENT & GAMIFICATION
   // ==========================================
-  DAILY_SWIPES = 'daily_swipes',
-  UNLIMITED_SWIPES = 'unlimited_swipes',
-
   STREAK_REWARDS = 'streak_rewards',
   DAILY_LOGIN_REWARDS = 'daily_login_rewards',
 

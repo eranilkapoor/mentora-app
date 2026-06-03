@@ -4,6 +4,7 @@ import { MatchesController } from './controllers/matches.controller';
 import { MatchesService } from './services/matches.service';
 import { MatchDiscoveryService } from './services/match-discovery.service';
 import { MatchNotificationService } from './services/match-notification.service';
+import { MatchCompatibilityService } from './services/match-compatibility.service';
 import { MatchRepository } from './repositories/match.repository';
 import { MatchDiscoveryRepository } from './repositories/match-discovery.repository';
 import { Match, MatchSchema } from './schemas/match.schema';
@@ -24,6 +25,7 @@ import {
 import { NotificationsModule } from '../notifications/notifications.module';
 import { SettingsModule } from '../settings/settings.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
+import { DailyMatchDigestTask } from './tasks/daily-match-digest.task';
 
 @Module({
   imports: [
@@ -44,9 +46,11 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
   providers: [
     MatchesService,
     MatchDiscoveryService,
+    MatchCompatibilityService,
     MatchNotificationService,
     MatchRepository,
     MatchDiscoveryRepository,
+    DailyMatchDigestTask,
   ],
   exports: [MatchesService, MatchDiscoveryService],
 })

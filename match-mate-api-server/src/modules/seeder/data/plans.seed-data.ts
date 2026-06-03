@@ -36,7 +36,7 @@ export const PLAN_SEEDS: Plan[] = [
     isPopular: true,
     sortOrder: 2,
     description:
-      'Gold monthly subscription with unlimited likes, chat, and advanced filters.',
+      'Gold monthly subscription with unlimited interests, chat, and advanced filters.',
     isActive: true,
     version: 1,
   },

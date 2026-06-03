@@ -15,6 +15,7 @@ import { MatchesService } from '../services/matches.service';
 import { MatchDiscoveryService } from '../services/match-discovery.service';
 import { SendInterestDto } from '../dto/send-interest.dto';
 import { RespondInterestDto } from '../dto/respond-interest.dto';
+import { UnmatchDto } from '../dto/unmatch.dto';
 import { MatchQueryDto, NearbyQueryDto } from '../dto/match-query.dto';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
@@ -89,6 +90,42 @@ export class MatchesController {
         query.limit,
       ),
       SuccessCode.MATCHES_FETCHED,
+    );
+  }
+
+  @Get('stats')
+  async getMatchStats(@Req() req: AuthenticatedRequest) {
+    return successResponse(
+      await this.matchesService.getMatchStats(req.user.sub),
+      SuccessCode.ANALYTICS_FETCHED,
+    );
+  }
+
+  @Get('who-viewed-me')
+  async getWhoViewedMe(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: MatchQueryDto,
+  ) {
+    return successResponse(
+      await this.matchesService.getWhoViewedMe(
+        req.user.sub,
+        query.page,
+        query.limit,
+      ),
+      SuccessCode.MATCHES_FETCHED,
+    );
+  }
+
+  @Post('unmatch/:userId')
+  @HttpCode(HttpStatus.OK)
+  async unmatch(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() dto: UnmatchDto,
+  ) {
+    return successResponse(
+      await this.matchesService.unmatch(req.user.sub, userId, dto.reason),
+      SuccessCode.MATCH_REMOVED,
     );
   }
 

@@ -360,52 +360,6 @@ export const FEATURE_SEEDS: Feature[] = [
   //  ENGAGEMENT
   // ==========================================
   {
-    key: FeatureKey.DAILY_LIKES,
-    name: 'Daily Likes',
-    category: FeatureCategory.ENGAGEMENT,
-    description: 'Number of likes per day',
-    type: 'limit',
-    defaultValue: true,
-    metadata: {
-      limit: 25,
-    },
-    isActive: true,
-    version: 1,
-  },
-  {
-    key: FeatureKey.DAILY_SUPER_LIKES,
-    name: 'Daily Super Likes',
-    category: FeatureCategory.ENGAGEMENT,
-    description: 'Number of super likes per day',
-    type: 'limit',
-    defaultValue: false,
-    metadata: {
-      limit: 5,
-    },
-    isActive: true,
-    version: 1,
-  },
-  {
-    key: FeatureKey.UNLIMITED_LIKES,
-    name: 'Unlimited Likes',
-    category: FeatureCategory.ENGAGEMENT,
-    description: 'Unlimited profile likes',
-    type: 'boolean',
-    defaultValue: false,
-    isActive: true,
-    version: 1,
-  },
-  {
-    key: FeatureKey.UNLIMITED_SUPER_LIKES,
-    name: 'Unlimited Super Likes',
-    category: FeatureCategory.ENGAGEMENT,
-    description: 'Unlimited super likes',
-    type: 'boolean',
-    defaultValue: false,
-    isActive: true,
-    version: 1,
-  },
-  {
     key: FeatureKey.SEND_INTEREST,
     name: 'Send Interest',
     category: FeatureCategory.ENGAGEMENT,
@@ -442,16 +396,6 @@ export const FEATURE_SEEDS: Feature[] = [
     description: 'Reject received interest requests',
     type: 'boolean',
     defaultValue: true,
-    isActive: true,
-    version: 1,
-  },
-  {
-    key: FeatureKey.SUPER_LIKE,
-    name: 'Super Like',
-    category: FeatureCategory.ENGAGEMENT,
-    description: 'Send super like to profiles',
-    type: 'boolean',
-    defaultValue: false,
     isActive: true,
     version: 1,
   },
@@ -1865,34 +1809,10 @@ export const FEATURE_SEEDS: Feature[] = [
     isActive: true,
     version: 1,
   },
-  {
-    key: FeatureKey.SWIPE_LIMIT,
-    name: 'Swipe Limit',
-    category: FeatureCategory.LIMITS,
-    description: 'Maximum swipes allowed per day',
-    type: 'limit',
-    defaultValue: true,
-    metadata: {
-      limit: 50,
-    },
-    isActive: true,
-    version: 1,
-  },
-
   // ==========================================
   //  ENGAGEMENT & GAMIFICATION
   // ==========================================
 
-  {
-    key: FeatureKey.UNLIMITED_SWIPES,
-    name: 'Unlimited Swipes',
-    category: FeatureCategory.GAMIFICATION,
-    description: 'Unlimited profile swipes',
-    type: 'boolean',
-    defaultValue: false,
-    isActive: true,
-    version: 1,
-  },
   {
     key: FeatureKey.MATCH_QUIZ,
     name: 'Match Quiz',

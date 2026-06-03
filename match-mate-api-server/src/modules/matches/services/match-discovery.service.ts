@@ -12,20 +12,7 @@ import { SettingsService } from '@/modules/settings/services/settings.service';
 import { ProfileBoostService } from '@/modules/subscriptions/services/profile-boost.service';
 import { ErrorCode } from '@/common/constants';
 import { throwBadRequest } from '@/common/exceptions/throw-app-exception';
-
-//  Scoring weights default (overridden by user preference weights)
-
-const DEFAULT_WEIGHTS = {
-  age: 10,
-  height: 10,
-  religion: 15,
-  caste: 10,
-  location: 10,
-  education: 10,
-  occupation: 10,
-  lifestyle: 10,
-  horoscope: 15,
-};
+import { MatchCompatibilityService } from './match-compatibility.service';
 
 @Injectable()
 export class MatchDiscoveryService {
@@ -33,6 +20,7 @@ export class MatchDiscoveryService {
     private readonly discoveryRepo: MatchDiscoveryRepository,
     private readonly settingsService: SettingsService,
     private readonly profileBoostService: ProfileBoostService,
+    private readonly compatibilityService: MatchCompatibilityService,
   ) {}
 
   //  Recommended matches
@@ -61,14 +49,8 @@ export class MatchDiscoveryService {
       { visibilityScore: -1, profileScore: -1, lastActiveAt: -1 },
     );
 
-    const weights =
-      (preference?.weights as Record<string, number>) ?? DEFAULT_WEIGHTS;
-
     const scored = await this.withBoosts(
-      (await this.withImages(profiles)).map((p) => ({
-        ...p,
-        matchScore: this.calculateMatchScore(p, preference, weights),
-      })),
+      await this.withCompatibility(myProfile, preference, profiles),
     );
 
     scored.sort(
@@ -418,141 +400,6 @@ export class MatchDiscoveryService {
     return filter;
   }
 
-  //  Score a profile against user preferences
-
-  private calculateMatchScore(
-    profile: Record<string, unknown>,
-    preference: Record<string, unknown> | null,
-    weights: Record<string, number>,
-  ): number {
-    if (!preference) {
-      return Number(profile.visibilityScore ?? profile.profileScore ?? 50);
-    }
-
-    const filters = preference.filters as Record<string, unknown> | undefined;
-    let score = 0;
-
-    const personal = profile.personal as Record<string, unknown> | undefined;
-    // const physical = profile.physical as Record<string, unknown> | undefined;
-    const education = profile.education as Record<string, unknown> | undefined;
-
-    // Age match
-    const ageFilter = filters?.age as
-      | { min?: number; max?: number }
-      | undefined;
-    const profileAge = profile.age as number | undefined;
-    if (ageFilter && profileAge) {
-      const inRange =
-        profileAge >= (ageFilter.min ?? 18) &&
-        profileAge <= (ageFilter.max ?? 60);
-      score += inRange ? weights.age : weights.age * 0.3;
-    } else {
-      score += weights.age * 0.7;
-    }
-
-    // Height match
-    const heightFilter = filters?.height as
-      | { min?: number; max?: number }
-      | undefined;
-    const physical = profile.physical as Record<string, unknown> | undefined;
-    const profileHeight = physical?.height as number | undefined;
-    if (heightFilter && profileHeight) {
-      const inRange =
-        profileHeight >= (heightFilter.min ?? 0) &&
-        profileHeight <= (heightFilter.max ?? 300);
-      score += inRange ? weights.height : weights.height * 0.3;
-    } else {
-      score += weights.height * 0.7;
-    }
-
-    // Religion match
-    const religionFilter = filters?.religion as string[] | undefined;
-    if (religionFilter?.length && personal?.religion) {
-      score += religionFilter.includes(personal.religion as string)
-        ? weights.religion
-        : 0;
-    } else {
-      score += weights.religion * 0.5;
-    }
-
-    // Caste match
-    const casteFilter = filters?.caste as string[] | undefined;
-    if (casteFilter?.length && personal?.caste) {
-      score += casteFilter.includes(personal.caste as string)
-        ? weights.caste
-        : 0;
-    } else {
-      score += weights.caste * 0.5;
-    }
-
-    // Location match
-    const cityFilter = filters?.city as string[] | undefined;
-    if (cityFilter?.length && personal?.city) {
-      score += cityFilter.includes(personal.city as string)
-        ? weights.location
-        : weights.location * 0.5;
-    } else {
-      score += weights.location * 0.5;
-    }
-
-    // Education match
-    const qualFilter = filters?.qualification as string[] | undefined;
-    if (qualFilter?.length && education?.qualification) {
-      score += qualFilter.includes(education.qualification as string)
-        ? weights.education
-        : weights.education * 0.3;
-    } else {
-      score += weights.education * 0.6;
-    }
-
-    // Occupation match
-    const occupationFilter = filters?.occupationType as string[] | undefined;
-    if (occupationFilter?.length && education?.occupationType) {
-      score += occupationFilter.includes(education.occupationType as string)
-        ? weights.occupation
-        : weights.occupation * 0.3;
-    } else {
-      score += weights.occupation * 0.6;
-    }
-
-    // Lifestyle match
-    const smokingFilter = filters?.smoking as string[] | undefined;
-    const drinkingFilter = filters?.drinking as string[] | undefined;
-    const eatingFilter = filters?.eating as string[] | undefined;
-
-    let lifestyleScore = 0;
-    let lifestyleChecks = 0;
-
-    if (smokingFilter?.length && personal?.smoking) {
-      lifestyleScore += smokingFilter.includes(personal.smoking as string)
-        ? 1
-        : 0;
-      lifestyleChecks++;
-    }
-    if (drinkingFilter?.length && personal?.drinking) {
-      lifestyleScore += drinkingFilter.includes(personal.drinking as string)
-        ? 1
-        : 0;
-      lifestyleChecks++;
-    }
-    if (eatingFilter?.length && personal?.eating) {
-      lifestyleScore += eatingFilter.includes(personal.eating as string)
-        ? 1
-        : 0;
-      lifestyleChecks++;
-    }
-
-    score +=
-      lifestyleChecks > 0
-        ? (lifestyleScore / lifestyleChecks) * weights.lifestyle
-        : weights.lifestyle * 0.5;
-
-    // Horoscope  manglik match bonus
-    score += weights.horoscope * 0.5; // Neutral until kundli matching added
-
-    return Math.round(Math.min(score, 100));
-  }
-
   //  Helpers
 
   private getProfileGender(
@@ -701,6 +548,42 @@ export class MatchDiscoveryService {
       ...profile,
       images: mediaByUserId.get(String(profile.userId)) ?? [],
     }));
+  }
+
+  private async withCompatibility<T extends LeanProfile>(
+    myProfile: Record<string, unknown>,
+    myPreference: Record<string, unknown> | null,
+    profiles: T[],
+  ): Promise<
+    (T & { images: unknown[]; matchScore: number; compatibility: unknown })[]
+  > {
+    const profilesWithImages = await this.withImages(profiles);
+    const candidatePreferences =
+      await this.discoveryRepo.getPreferencesByUserIds(
+        profiles.map((profile) => String(profile.userId)),
+      );
+    const preferenceByUserId = new Map(
+      candidatePreferences.map((candidatePreference) => [
+        String(candidatePreference.userId),
+        candidatePreference,
+      ]),
+    );
+
+    return profilesWithImages.map((profile) => {
+      const compatibility =
+        this.compatibilityService.calculateMutualCompatibility(
+          myProfile,
+          myPreference,
+          profile,
+          preferenceByUserId.get(String(profile.userId)) ?? null,
+        );
+
+      return {
+        ...profile,
+        matchScore: compatibility.score,
+        compatibility,
+      };
+    });
   }
 
   private async withBoosts<T extends LeanProfile & Record<string, unknown>>(

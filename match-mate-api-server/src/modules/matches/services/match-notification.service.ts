@@ -124,6 +124,65 @@ export class MatchNotificationService {
     });
   }
 
+  async notifyUnmatched(
+    actorId: string,
+    targetUserId: string,
+    matchId: string,
+  ): Promise<void> {
+    const actorProfile = await this.repo.getProfileByUserId(actorId);
+    const actorName = this.getDisplayName(actorProfile);
+
+    await this.notificationsService.notify({
+      userId: targetUserId,
+      title: 'Match updated',
+      message: `${actorName} has ended this match.`,
+      type: 'info',
+      category: 'system',
+      actorId,
+      actorName,
+      referenceId: matchId,
+      priority: 'normal',
+      channels: ['in_app'],
+      action: {
+        screen: 'Matches',
+        params: { tab: 'matched' },
+      },
+      metadata: {
+        matchId,
+        actorId,
+        status: 'unmatched',
+      },
+    });
+  }
+
+  async notifyDailyMatches(
+    userId: string,
+    count: number,
+    topProfileId?: string,
+  ): Promise<void> {
+    if (count <= 0) return;
+
+    await this.notificationsService.notify({
+      userId,
+      title: 'Your daily matches are ready',
+      message: `We found ${count} recommended profiles for you today.`,
+      type: 'match',
+      category: 'match_found',
+      referenceId: topProfileId,
+      priority: 'normal',
+      channels: ['in_app', 'push'],
+      action: {
+        screen: 'Matches',
+        params: { tab: 'recommended' },
+      },
+      metadata: {
+        count,
+        topProfileId,
+        source: 'daily_match_digest',
+      },
+    });
+  }
+
   private getDisplayName(profile?: LeanProfile | null): string {
     const name = [profile?.personal?.firstName, profile?.personal?.lastName]
       .filter(Boolean)

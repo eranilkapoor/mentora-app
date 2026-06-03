@@ -4,12 +4,15 @@ import { MatchRepository } from '../repositories/match.repository';
 import { InterestStatus } from '../schemas/interest.schema';
 import { SettingsService } from '@/modules/settings/services/settings.service';
 import { ErrorCode } from '@/common/constants';
+import { FeatureKey } from '@/common/enums';
 import {
   throwBadRequest,
   throwForbidden,
   throwNotFound,
 } from '@/common/exceptions/throw-app-exception';
 import { MatchNotificationService } from './match-notification.service';
+import { FeatureService } from '@/modules/subscriptions/services/feature.service';
+import { MatchCompatibilityService } from './match-compatibility.service';
 
 @Injectable()
 export class MatchesService {
@@ -17,6 +20,8 @@ export class MatchesService {
     private readonly repo: MatchRepository,
     private readonly settingsService: SettingsService,
     private readonly matchNotificationService: MatchNotificationService,
+    private readonly featureService: FeatureService,
+    private readonly compatibilityService: MatchCompatibilityService,
   ) {}
 
   private toObjectIdString(value: Types.ObjectId | string): string {
@@ -110,6 +115,7 @@ export class MatchesService {
     }
 
     await this.ensureUsersCanInteract(senderId, receiverId);
+    await this.checkFeature(senderId, FeatureKey.SEND_INTEREST);
 
     // Prevent duplicate
     const existing = await this.repo.getExistingInterest(senderId, receiverId);
@@ -139,6 +145,13 @@ export class MatchesService {
     if (interest.receiverId.toString() !== userId) {
       throwForbidden(ErrorCode.ACCESS_DENIED);
     }
+
+    await this.checkFeature(
+      userId,
+      action === 'ACCEPT'
+        ? FeatureKey.ACCEPT_INTEREST
+        : FeatureKey.REJECT_INTEREST,
+    );
 
     if (interest.status !== InterestStatus.PENDING) {
       throwBadRequest(ErrorCode.INTEREST_ALREADY_RESPONDED, {
@@ -222,6 +235,7 @@ export class MatchesService {
     }
 
     await this.ensureUsersCanInteract(userId, targetUserId);
+    await this.checkFeature(userId, FeatureKey.SHORTLIST_PROFILES);
 
     const profile = await this.repo.getProfileByUserId(targetUserId);
     if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
@@ -290,6 +304,80 @@ export class MatchesService {
     };
   }
 
+  async getWhoViewedMe(userId: string, page = 1, limit = 20) {
+    await this.checkFeature(userId, FeatureKey.WHO_VIEWED_ME);
+    const skip = (page - 1) * limit;
+    const excludedUserIds =
+      await this.settingsService.getUnavailableRelationUserIds(userId);
+    const [views, total] = await Promise.all([
+      this.repo.getProfileViewers(userId, skip, limit, excludedUserIds),
+      this.repo.countProfileViewers(userId, excludedUserIds),
+    ]);
+    const viewerIds = views.map((view) => view.fromUserId.toString());
+    const [profiles, media] = await Promise.all([
+      this.repo.getProfilesByUserIds(viewerIds),
+      this.repo.getActiveMediaByUserIds(viewerIds),
+    ]);
+    const profileByUser = new Map(
+      profiles.map((profile) => [profile.userId.toString(), profile]),
+    );
+    const mediaByUser = new Map<string, unknown[]>();
+    media.forEach((item) => {
+      const itemUserId = item.userId.toString();
+      mediaByUser.set(itemUserId, [
+        ...(mediaByUser.get(itemUserId) ?? []),
+        item,
+      ]);
+    });
+
+    return {
+      success: true,
+      data: views
+        .map((view) => {
+          const viewerId = view.fromUserId.toString();
+          const profile = profileByUser.get(viewerId);
+          if (!profile) return null;
+
+          return {
+            viewerId,
+            viewedAt: view.updatedAt ?? view.createdAt,
+            profile: {
+              ...profile,
+              images: mediaByUser.get(viewerId) ?? [],
+            },
+          };
+        })
+        .filter(Boolean),
+      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+    };
+  }
+
+  async getMatchStats(userId: string) {
+    await this.checkFeature(userId, FeatureKey.PROFILE_ANALYTICS);
+    const excludedUserIds =
+      await this.settingsService.getUnavailableRelationUserIds(userId);
+    return this.repo.getStats(userId, excludedUserIds);
+  }
+
+  async unmatch(userId: string, targetUserId: string, reason?: string) {
+    if (userId === targetUserId) {
+      throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'cannot_unmatch_self',
+      });
+    }
+
+    const match = await this.repo.unmatchUsers(userId, targetUserId, reason);
+    if (!match) return throwNotFound(ErrorCode.MATCH_NOT_FOUND);
+
+    await this.matchNotificationService.notifyUnmatched(
+      userId,
+      targetUserId,
+      match._id.toString(),
+    );
+
+    return { success: true, data: match };
+  }
+
   async withdrawInterest(senderId: string, interestId: string) {
     const interest = await this.repo.getInterestById(interestId);
     if (!interest) return throwNotFound(ErrorCode.INTEREST_NOT_FOUND);
@@ -324,16 +412,22 @@ export class MatchesService {
 
     const [
       profile,
+      viewerProfile,
       privacy,
       viewerPrivacy,
+      viewerPreference,
+      targetPreference,
       match,
       media,
       sentInterest,
       receivedInterest,
     ] = await Promise.all([
       this.repo.getProfileByUserId(targetUserId),
+      this.repo.getProfileByUserId(viewerId),
       this.settingsService.getPrivacy(targetUserId),
       this.settingsService.getPrivacy(viewerId),
+      this.repo.getPreferenceByUserId(viewerId),
+      this.repo.getPreferenceByUserId(targetUserId),
       this.repo.getMatchBetweenUsers(viewerId, targetUserId),
       this.repo.getActiveMediaByUserId(targetUserId),
       this.repo.getExistingInterest(viewerId, targetUserId),
@@ -355,8 +449,18 @@ export class MatchesService {
     if (isHidden) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
     if (!viewerPrivacy?.incognitoMode) {
+      await this.checkFeature(viewerId, FeatureKey.DAILY_PROFILE_VIEWS);
       await this.repo.recordProfileView(viewerId, targetUserId);
     }
+
+    const compatibility =
+      viewerProfile &&
+      this.compatibilityService.calculateMutualCompatibility(
+        viewerProfile,
+        viewerPreference,
+        profile,
+        targetPreference,
+      );
 
     const isMatched = Boolean(match);
     const canViewPersonalDetails = this.canViewVisibility(
@@ -440,6 +544,12 @@ export class MatchesService {
             ? 'received'
             : undefined,
       },
+      ...(compatibility
+        ? {
+            compatibility,
+            matchScore: compatibility.score,
+          }
+        : {}),
     };
   }
 
@@ -452,5 +562,12 @@ export class MatchesService {
     if (isBlocked || isHidden) {
       throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
     }
+  }
+
+  private checkFeature(userId: string, featureKey: FeatureKey) {
+    return this.featureService.checkAccess(featureKey, {
+      userId,
+      timestamp: new Date(),
+    });
   }
 }

@@ -117,7 +117,7 @@ export class AnalyticsService {
       topEvents,
       impressions,
       profileViews,
-      likes,
+      interests,
       matches,
       chats,
       recentTrend,
@@ -187,7 +187,10 @@ export class AnalyticsService {
         ...match,
         eventType: AnalyticsEventType.PROFILE_VIEWED,
       }),
-      this.repo.count({ ...match, eventType: AnalyticsEventType.LIKE_SENT }),
+      this.repo.count({
+        ...match,
+        eventType: AnalyticsEventType.MATCH_REQUEST_SENT,
+      }),
       this.repo.count({
         ...match,
         eventType: AnalyticsEventType.MATCH_ACCEPTED,
@@ -222,8 +225,8 @@ export class AnalyticsService {
       },
       conversion: {
         impressionToViewRate: safeRate(profileViews, impressions),
-        viewToLikeRate: safeRate(likes, profileViews),
-        likeToMatchRate: safeRate(matches, likes),
+        viewToInterestRate: safeRate(interests, profileViews),
+        interestToMatchRate: safeRate(matches, interests),
         matchToChatRate: safeRate(chats, matches),
       },
       dimensions: {
@@ -249,8 +252,8 @@ export class AnalyticsService {
         label: 'Profile View',
       },
       {
-        eventType: AnalyticsEventType.LIKE_SENT,
-        label: 'Like Sent',
+        eventType: AnalyticsEventType.MATCH_REQUEST_SENT,
+        label: 'Interest Sent',
       },
       {
         eventType: AnalyticsEventType.MATCH_ACCEPTED,

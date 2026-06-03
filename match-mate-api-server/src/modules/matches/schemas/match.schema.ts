@@ -21,6 +21,15 @@ export class Match {
 
   @Prop({ default: true })
   isActive!: boolean;
+
+  @Prop({ type: Types.ObjectId })
+  unmatchedBy?: Types.ObjectId;
+
+  @Prop()
+  unmatchedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  unmatchReason?: string;
 }
 
 export type MatchDocument = Match & Document;

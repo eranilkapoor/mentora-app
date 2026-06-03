@@ -65,6 +65,16 @@ export interface DiscoveryProfile {
     endsAt: string;
   };
   matchScore?: number;
+  compatibility?: {
+    score: number;
+    myPreferenceScore: number;
+    theirPreferenceScore: number;
+    signals?: Array<{
+      key: string;
+      matched: boolean;
+      weight: number;
+    }>;
+  };
   isShortlisted?: boolean;
   lastActiveAt?: string;
   createdAt?: string;
@@ -102,6 +112,21 @@ export interface InterestRecord {
   status: 'pending' | 'accepted' | 'rejected';
   createdAt?: string;
   profile?: DiscoveryProfile;
+}
+
+export interface ProfileViewerRecord {
+  viewerId: string;
+  viewedAt?: string;
+  profile?: DiscoveryProfile;
+}
+
+export interface MatchStats {
+  activeMatches: number;
+  sentInterests: number;
+  receivedInterests: number;
+  acceptedInterests: number;
+  shortlisted: number;
+  profileViews: number;
 }
 
 export interface PaginationMeta {
@@ -213,6 +238,29 @@ export const matchApi = baseApi.injectEndpoints({
       providesTags: ['Shortlist'],
     }),
 
+    getWhoViewedMe: builder.query<
+      PaginatedResponse<ProfileViewerRecord>,
+      { page?: number; limit?: number } | void
+    >({
+      query: (params) => ({
+        url: '/matches/who-viewed-me',
+        method: 'GET',
+        params: {
+          page: params?.page ?? 1,
+          limit: params?.limit ?? 20,
+        },
+      }),
+      providesTags: [{ type: 'Match', id: 'VIEWERS' }],
+    }),
+
+    getMatchStats: builder.query<ApiResponse<MatchStats>, void>({
+      query: () => ({
+        url: '/matches/stats',
+        method: 'GET',
+      }),
+      providesTags: [{ type: 'Match', id: 'STATS' }],
+    }),
+
     getMatchProfile: builder.query<ApiResponse<DiscoveryProfile>, string>({
       query: (userId) => ({
         url: `/matches/profile/${userId}`,
@@ -278,6 +326,18 @@ export const matchApi = baseApi.injectEndpoints({
       invalidatesTags: ['Shortlist'],
     }),
 
+    unmatchProfile: builder.mutation<
+      unknown,
+      { userId: string; reason?: string }
+    >({
+      query: ({ userId, reason }) => ({
+        url: `/matches/unmatch/${userId}`,
+        method: 'POST',
+        body: reason ? { reason } : {},
+      }),
+      invalidatesTags: matchListTags,
+    }),
+
     respondToInterest: builder.mutation<
       unknown,
       { interestId: string; action: 'ACCEPT' | 'REJECT' }
@@ -306,12 +366,15 @@ export const {
   useGetDiscoveryProfilesQuery,
   useGetMatchProfileQuery,
   useGetMyMatchesQuery,
+  useGetMatchStatsQuery,
   useGetShortlistedProfilesQuery,
+  useGetWhoViewedMeQuery,
   useGetReceivedInterestsQuery,
   useGetSentInterestsQuery,
   useRemoveShortlistedProfileMutation,
   useRespondToInterestMutation,
   useSendInterestMutation,
   useShortlistProfileMutation,
+  useUnmatchProfileMutation,
   useWithdrawInterestMutation,
 } = matchApi;

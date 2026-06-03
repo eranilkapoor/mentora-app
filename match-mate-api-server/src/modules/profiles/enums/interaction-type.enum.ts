@@ -3,11 +3,6 @@ export enum InteractionType {
   VIEW = 'view',
   PROFILE_VIEW = 'profile_view',
 
-  //  MATCHING SIGNALS
-  LIKE = 'like',
-  PASS = 'pass',
-  SUPER_LIKE = 'super_like',
-
   //  INTENT (optional if using Interest system)
   SEND_INTEREST = 'send_interest',
   WITHDRAW_INTEREST = 'withdraw_interest',
@@ -29,7 +24,6 @@ export enum InteractionType {
   UNBLOCK = 'unblock',
   REPORT = 'report',
 
-  //  NEGATIVE SIGNALS (VERY IMPORTANT FOR ML)
-  SKIP = 'skip', // softer pass
+  //  NEGATIVE SIGNALS
   HIDE = 'hide',
 }

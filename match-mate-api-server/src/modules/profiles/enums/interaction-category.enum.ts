@@ -7,7 +7,7 @@ export enum InteractionCategory {
 }
 
 export const InteractionCategoryMap = {
-  like: 'matching',
-  pass: 'matching',
+  send_interest: 'matching',
+  shortlist: 'engagement',
   block: 'safety',
 };

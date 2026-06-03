@@ -41,7 +41,7 @@ export const POLICY_SECTIONS: SectionItem[] = [
         title: '1.4 App Activity',
         bullets: [
           'Profile views',
-          'Matches, likes, shortlist',
+          'Matches, interests, shortlist',
           'Chat messages (encrypted)',
           'Verification documents',
         ],

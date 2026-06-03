@@ -81,6 +81,21 @@ export class MatchDiscoveryRepository {
       .exec();
   }
 
+  async getPreferencesByUserIds(userIds: string[]): Promise<LeanPreference[]> {
+    const objectIds = userIds
+      .filter((id) => Types.ObjectId.isValid(id))
+      .map((id) => new Types.ObjectId(id));
+
+    if (objectIds.length === 0) {
+      return [];
+    }
+
+    return this.preferenceModel
+      .find({ userId: { $in: objectIds } })
+      .lean<LeanPreference[]>()
+      .exec();
+  }
+
   async getInteractedUserIds(userId: string): Promise<Types.ObjectId[]> {
     const uid = new Types.ObjectId(userId);
 
@@ -104,6 +119,20 @@ export class MatchDiscoveryRepository {
       ...sent.map((i) => i.receiverId),
       ...received.map((i) => i.senderId),
     ];
+  }
+
+  async getActiveDiscoveryUserIds(limit = 500): Promise<string[]> {
+    const profiles = await this.profileModel
+      .find({
+        deletedAt: { $exists: false },
+      })
+      .sort({ lastActiveAt: -1, updatedAt: -1 })
+      .limit(limit)
+      .select('userId')
+      .lean<Array<{ userId: Types.ObjectId }>>()
+      .exec();
+
+    return profiles.map((profile) => profile.userId.toString());
   }
 
   async findProfiles(
