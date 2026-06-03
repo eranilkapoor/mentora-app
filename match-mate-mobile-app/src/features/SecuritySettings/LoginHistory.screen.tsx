@@ -1,6 +1,8 @@
 import React from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
+import type { TFunction } from 'i18next';
 import Feather from 'react-native-vector-icons/Feather';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
@@ -22,20 +24,24 @@ type Props = {
   navigation: SettingsNavigationProp;
 };
 
-const formatDateTime = (value?: string): string => {
-  if (!value) return 'Not available';
+const formatDateTime = (value: string | undefined, t: TFunction): string => {
+  if (!value) return t('common.not_available');
 
   return new Date(value).toLocaleString();
 };
 
-const getDeviceLabel = (session: LoginHistoryItem): string => {
+const getDeviceLabel = (session: LoginHistoryItem, t: TFunction): string => {
   if (session.device) return session.device;
-  if (session.userAgent?.includes('Android')) return 'Android device';
-  if (session.userAgent?.includes('iPhone')) return 'iPhone';
-  if (session.userAgent?.includes('Windows')) return 'Windows browser';
-  if (session.userAgent?.includes('Mac')) return 'Mac browser';
+  if (session.userAgent?.includes('Android'))
+    return t('settings.security.device_android');
+  if (session.userAgent?.includes('iPhone'))
+    return t('settings.security.device_iphone');
+  if (session.userAgent?.includes('Windows'))
+    return t('settings.security.device_windows');
+  if (session.userAgent?.includes('Mac'))
+    return t('settings.security.device_mac');
 
-  return 'Unknown device';
+  return t('settings.security.device_unknown');
 };
 
 const getDeviceIcon = (
@@ -121,10 +127,12 @@ function HistoryRow({
   session,
   isLast,
   onRevoke,
+  t,
 }: {
   session: LoginHistoryItem;
   isLast: boolean;
   onRevoke: (session: LoginHistoryItem) => void;
+  t: TFunction;
 }): React.ReactElement {
   const styles = useThemedStyles(loginHistoryStyles);
   const { theme } = useTheme();
@@ -144,7 +152,7 @@ function HistoryRow({
       </View>
       <View style={styles.rowContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>{getDeviceLabel(session)}</Text>
+          <Text style={styles.title}>{getDeviceLabel(session, t)}</Text>
           <View style={[styles.badge, isActive && styles.badgeActive]}>
             <Text
               style={[styles.badgeText, isActive && styles.badgeTextActive]}
@@ -154,29 +162,34 @@ function HistoryRow({
           </View>
         </View>
         <Text style={styles.meta}>
-          Signed in {formatDateTime(session.signedInAt)}
+          {t('settings.security.signed_in')}{' '}
+          {formatDateTime(session.signedInAt, t)}
         </Text>
         <View style={styles.detailGrid}>
           <DetailChip
-            label="Last active"
-            value={formatDateTime(session.lastActiveAt)}
+            label={t('settings.security.last_active')}
+            value={formatDateTime(session.lastActiveAt, t)}
           />
           <DetailChip
-            label="IP address"
-            value={session.ip ?? 'Not available'}
+            label={t('settings.security.ip_address')}
+            value={session.ip ?? t('common.not_available')}
           />
           <DetailChip
-            label="Expires"
-            value={formatDateTime(session.expiresAt)}
+            label={t('settings.security.expires')}
+            value={formatDateTime(session.expiresAt, t)}
           />
           <DetailChip
-            label={session.loggedOutAt ? 'Signed out' : 'Session'}
+            label={
+              session.loggedOutAt
+                ? t('settings.security.signed_out')
+                : t('settings.security.session')
+            }
             value={
               session.loggedOutAt
-                ? formatDateTime(session.loggedOutAt)
+                ? formatDateTime(session.loggedOutAt, t)
                 : session.isActive
-                  ? 'Currently active'
-                  : 'Inactive'
+                  ? t('settings.security.currently_active')
+                  : t('settings.security.inactive')
             }
           />
         </View>
@@ -187,7 +200,9 @@ function HistoryRow({
             accessibilityRole="button"
           >
             <Feather name="log-out" size={14} color={theme.colors.error} />
-            <Text style={styles.revokeText}>Sign out this session</Text>
+            <Text style={styles.revokeText}>
+              {t('settings.security.sign_out_this_session')}
+            </Text>
           </TouchableOpacity>
         ) : null}
       </View>
@@ -198,9 +213,11 @@ function HistoryRow({
 function ActivityRow({
   item,
   isLast,
+  t,
 }: {
   item: LoginActivityItem;
   isLast: boolean;
+  t: TFunction;
 }): React.ReactElement {
   const styles = useThemedStyles(loginHistoryStyles);
   const { theme } = useTheme();
@@ -219,10 +236,10 @@ function ActivityRow({
       </View>
       <View style={styles.rowContent}>
         <Text style={styles.title}>{formatActionLabel(item.action)}</Text>
-        <Text style={styles.meta}>{formatDateTime(item.createdAt)}</Text>
+        <Text style={styles.meta}>{formatDateTime(item.createdAt, t)}</Text>
         <Text style={styles.activityMeta}>
           {[item.platform, item.ip, item.device].filter(Boolean).join(' / ') ||
-            'No device details available'}
+            t('settings.security.no_device_details_available')}
         </Text>
       </View>
     </View>
@@ -233,6 +250,7 @@ export default function LoginHistoryScreen({
   navigation,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(loginHistoryStyles);
+  const { t } = useTranslation();
   const { data, isLoading, refetch } = useGetLoginHistoryQuery();
   const [revokeSession] = useRevokeSessionMutation();
 
@@ -242,21 +260,21 @@ export default function LoginHistoryScreen({
 
   const handleRevokeSession = (session: LoginHistoryItem): void => {
     showConfirm({
-      title: 'Sign out session?',
-      message: 'This device will need to log in again.',
-      confirmText: 'Sign out',
+      title: t('settings.security.sign_out_session_title'),
+      message: t('settings.security.sign_out_session_message'),
+      confirmText: t('settings.security.sign_out_session_confirm'),
       destructive: true,
       onConfirm: () => {
         void revokeSession({ sessionId: session.sessionId })
           .unwrap()
           .then(() => {
-            showSuccess({ title: 'Session signed out' });
+            showSuccess({ title: t('settings.security.session_signed_out') });
             void refetch();
           })
           .catch(() => {
             showError({
-              title: 'Unable to sign out session',
-              message: 'Please try again.',
+              title: t('settings.security.unable_sign_out_session_title'),
+              message: t('settings.security.unable_sign_out_session_message'),
             });
           });
       },
@@ -265,7 +283,11 @@ export default function LoginHistoryScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Header showBack onBackPress={navigation.goBack} title="Login History" />
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('settings.security.login_history_title')}
+      />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}
@@ -275,13 +297,13 @@ export default function LoginHistoryScreen({
           <OverviewTile
             icon="activity"
             value={data.sessions.filter((session) => session.isActive).length}
-            label="Active sessions"
+            label={t('settings.security.active_sessions')}
             active
           />
           <OverviewTile
             icon="clock"
             value={data.sessions.length}
-            label="Total records"
+            label={t('settings.security.total_records')}
           />
           <OverviewTile
             icon="globe"
@@ -290,19 +312,19 @@ export default function LoginHistoryScreen({
                 ? data.sessions[0].ip.split('.').slice(0, 2).join('.') + '.*'
                 : '--'
             }
-            label="Latest IP"
+            label={t('settings.security.latest_ip')}
           />
         </View>
 
         <SettingsCard
           icon="clock"
-          title="Recent Sign-ins"
-          subtitle="Review device, IP, and session activity for your account"
+          title={t('settings.security.recent_signins')}
+          subtitle={t('settings.security.recent_signins_sub')}
         >
           <SettingsSelectItem
             icon="refresh-cw"
-            label="Refresh history"
-            sublabel="Load the latest session activity"
+            label={t('settings.security.refresh_history')}
+            sublabel={t('settings.security.refresh_history_sub')}
             onPress={() => void refetch()}
           />
           {data.sessions.length ? (
@@ -312,17 +334,20 @@ export default function LoginHistoryScreen({
                 session={session}
                 isLast={index === data.sessions.length - 1}
                 onRevoke={handleRevokeSession}
+                t={t}
               />
             ))
           ) : (
-            <Text style={styles.emptyText}>No login history found.</Text>
+            <Text style={styles.emptyText}>
+              {t('settings.security.no_login_history')}
+            </Text>
           )}
         </SettingsCard>
 
         <SettingsCard
           icon="shield"
-          title="Security Timeline"
-          subtitle="Audit login, refresh, logout, and session security events"
+          title={t('settings.security.security_timeline')}
+          subtitle={t('settings.security.security_timeline_sub')}
         >
           {data.timeline.length ? (
             data.timeline.map((item, index) => (
@@ -330,10 +355,13 @@ export default function LoginHistoryScreen({
                 key={item.id}
                 item={item}
                 isLast={index === data.timeline.length - 1}
+                t={t}
               />
             ))
           ) : (
-            <Text style={styles.emptyText}>No security activity found.</Text>
+            <Text style={styles.emptyText}>
+              {t('settings.security.no_security_activity')}
+            </Text>
           )}
         </SettingsCard>
 

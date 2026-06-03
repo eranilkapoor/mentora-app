@@ -28,6 +28,7 @@ import { EMOJIS } from '../../core/constants';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useAppSelector } from '@/store/hooks';
+import { useTranslation } from 'react-i18next';
 import {
   ChatMessage,
   useCreateDirectRoomMutation,
@@ -85,6 +86,7 @@ export default function ChatScreen({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(chatStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const currentUserId = useAppSelector((state) => state.auth.user?.userId);
   const { userId, roomId, partnerName, partnerPhoto } = route.params ?? {};
@@ -142,8 +144,8 @@ export default function ChatScreen({
         if (!affectsThisChat) return;
 
         showInfo({
-          title: 'Conversation unavailable',
-          message: 'This conversation is no longer available.',
+          title: t('chat.conversation_unavailable_title'),
+          message: t('chat.conversation_unavailable_message'),
         });
         navigation.goBack();
       }
@@ -152,7 +154,7 @@ export default function ChatScreen({
     return () => {
       subscription.remove();
     };
-  }, [currentUserId, navigation, userId]);
+  }, [currentUserId, navigation, userId, t]);
 
   useEffect(() => {
     if (activeRoomId || !userId) {
@@ -178,8 +180,8 @@ export default function ChatScreen({
         }
       } catch {
         showError({
-          title: 'Chat unavailable',
-          message: 'You can chat after both users have accepted the match.',
+          title: t('chat.chat_unavailable_title'),
+          message: t('chat.chat_unavailable_message'),
         });
         navigation.goBack();
       }
@@ -190,7 +192,7 @@ export default function ChatScreen({
     return () => {
       isMounted = false;
     };
-  }, [activeRoomId, createDirectRoom, navigation, userId]);
+  }, [activeRoomId, createDirectRoom, navigation, userId, t]);
 
   const messages = useMemo(
     () =>
@@ -246,9 +248,12 @@ export default function ChatScreen({
       setShowEmojiPicker(false);
       listRef.current?.scrollToOffset({ offset: 0, animated: true });
     } catch {
-      showError({ title: 'Message not sent', message: 'Please try again.' });
+      showError({
+        title: t('chat.message_not_sent_title'),
+        message: t('chat.message_not_sent_message'),
+      });
     }
-  }, [activeRoomId, inputText, isSending, sendMessage]);
+  }, [activeRoomId, inputText, isSending, sendMessage, t]);
 
   const handlePickImage = useCallback(async (): Promise<void> => {
     if (!activeRoomId || isUploadingAttachment || isSending) return;
@@ -258,8 +263,8 @@ export default function ChatScreen({
         await ImagePicker.requestMediaLibraryPermissionsAsync();
       if (permission.status !== 'granted') {
         showError({
-          title: 'Permission needed',
-          message: 'Allow photo access to send images in chat.',
+          title: t('chat.permission_needed_title'),
+          message: t('chat.permission_needed_message'),
         });
         return;
       }
@@ -299,8 +304,8 @@ export default function ChatScreen({
       }).unwrap();
     } catch {
       showError({
-        title: 'Image not sent',
-        message: 'Please try again.',
+        title: t('chat.image_not_sent_title'),
+        message: t('chat.image_not_sent_message'),
       });
     }
   }, [
@@ -309,6 +314,7 @@ export default function ChatScreen({
     isUploadingAttachment,
     sendMessage,
     uploadChatAttachments,
+    t,
   ]);
 
   const handleDeleteMessage = useCallback(
@@ -316,9 +322,9 @@ export default function ChatScreen({
       if (!activeRoomId || message.senderId !== 'me') return;
 
       showConfirm({
-        title: 'Delete message?',
-        message: 'This message will be removed from the conversation.',
-        confirmText: 'Delete',
+        title: t('chat.delete_message_title'),
+        message: t('chat.delete_message_message'),
+        confirmText: t('common.delete'),
         destructive: true,
         onConfirm: () => {
           void deleteChatMessage({
@@ -327,27 +333,29 @@ export default function ChatScreen({
           })
             .unwrap()
             .then(() => {
-              showSuccess({ title: 'Message deleted' });
+              showSuccess({ title: t('chat.message_deleted_title') });
             })
             .catch(() => {
               showError({
-                title: 'Unable to delete',
-                message: 'Please try again.',
+                title: t('chat.unable_delete_title'),
+                message: t('chat.unable_delete_message'),
               });
             });
         },
       });
     },
-    [activeRoomId, deleteChatMessage]
+    [activeRoomId, deleteChatMessage, t]
   );
 
   const handleReportUser = useCallback((): void => {
     if (!userId) return;
 
     showConfirm({
-      title: 'Report user?',
-      message: `Report ${partnerName ?? 'this user'}?`,
-      confirmText: 'Report',
+      title: t('chat.report_user_title'),
+      message: t('chat.report_user_message', {
+        user: partnerName ?? t('chat.this_user'),
+      }),
+      confirmText: t('chat.report'),
       destructive: true,
       onConfirm: () => {
         void reportUser({
@@ -357,49 +365,48 @@ export default function ChatScreen({
           .unwrap()
           .then(() => {
             showSuccess({
-              title: 'Report submitted',
-              message:
-                'Our team will review this chat. This user has also been blocked.',
+              title: t('chat.report_submitted_title'),
+              message: t('chat.report_submitted_message'),
             });
             navigation.goBack();
           })
           .catch(() => {
             showError({
-              title: 'Unable to report',
-              message: 'Please try again.',
+              title: t('chat.unable_report_title'),
+              message: t('chat.unable_report_message'),
             });
           });
       },
     });
-  }, [navigation, partnerName, reportUser, userId]);
+  }, [navigation, partnerName, reportUser, userId, t]);
 
   const handleBlockUser = useCallback((): void => {
     if (!userId) return;
 
     showConfirm({
-      title: 'Block user?',
-      message: 'You will no longer receive messages from this user.',
-      confirmText: 'Block',
+      title: t('chat.block_user_title'),
+      message: t('chat.block_user_message'),
+      confirmText: t('chat.block'),
       destructive: true,
       onConfirm: () => {
         void blockUser({ targetUserId: userId })
           .unwrap()
           .then(() => {
             showSuccess({
-              title: 'User blocked',
-              message: 'This user has been blocked.',
+              title: t('chat.user_blocked_title'),
+              message: t('chat.user_blocked_message'),
             });
             navigation.goBack();
           })
           .catch(() => {
             showError({
-              title: 'Unable to block',
-              message: 'Please try again.',
+              title: t('chat.unable_block_title'),
+              message: t('chat.unable_block_message'),
             });
           });
       },
     });
-  }, [blockUser, navigation, userId]);
+  }, [blockUser, navigation, userId, t]);
 
   const appendEmoji = useCallback((emoji: string): void => {
     setInputText((prev) => prev + emoji);
@@ -426,21 +433,29 @@ export default function ChatScreen({
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title={partnerName ?? 'Chat'}
-        subtitle={isCreatingRoom || isFetching ? 'Syncing...' : 'Messages'}
+        title={partnerName ?? t('chat.chat')}
+        subtitle={
+          isCreatingRoom || isFetching
+            ? t('common.loading')
+            : t('chat.messages')
+        }
         avatarUri={partnerPhoto ?? 'https://i.pravatar.cc/150?img=12'}
         onIdentityPress={handleOpenProfile}
-        identityAccessibilityLabel={`View ${partnerName ?? 'this user'} profile`}
+        identityAccessibilityLabel={
+          partnerName
+            ? t('chat.view_user_profile', { name: partnerName })
+            : t('chat.view_this_user_profile')
+        }
         actions={[
           {
             icon: 'flag',
             onPress: handleReportUser,
-            accessibilityLabel: 'Report user',
+            accessibilityLabel: t('chat.report_user'),
           },
           {
             icon: 'slash',
             onPress: handleBlockUser,
-            accessibilityLabel: 'Block user',
+            accessibilityLabel: t('chat.block_user'),
           },
         ]}
       />
@@ -490,7 +505,7 @@ export default function ChatScreen({
               style={styles.iconBtn}
               activeOpacity={0.7}
               accessibilityRole="button"
-              accessibilityLabel="Open emoji picker"
+              accessibilityLabel={t('chat.open_emoji_picker')}
             >
               <Feather
                 name="smile"
@@ -510,7 +525,7 @@ export default function ChatScreen({
               style={styles.iconBtn}
               activeOpacity={0.7}
               accessibilityRole="button"
-              accessibilityLabel="Send image"
+              accessibilityLabel={t('chat.send_image')}
             >
               <Feather name="image" size={20} color={theme.colors.textMuted} />
             </TouchableOpacity>
@@ -518,7 +533,7 @@ export default function ChatScreen({
             <TextInput
               ref={inputRef}
               style={styles.input}
-              placeholder="Type a message..."
+              placeholder={t('chat.type_message')}
               placeholderTextColor={theme.colors.textMuted}
               value={inputText}
               onChangeText={(value) => {
@@ -529,7 +544,7 @@ export default function ChatScreen({
               }}
               multiline
               blurOnSubmit={false}
-              accessibilityLabel="Message input"
+              accessibilityLabel={t('chat.message_input')}
             />
 
             <TouchableOpacity
@@ -543,7 +558,7 @@ export default function ChatScreen({
               activeOpacity={0.85}
               disabled={!inputText.trim() || !activeRoomId || isSending}
               accessibilityRole="button"
-              accessibilityLabel="Send message"
+              accessibilityLabel={t('chat.send_message')}
             >
               <Feather
                 name="send"

@@ -13,6 +13,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { showError, showSuccess } from '@/core/utils/toast';
@@ -20,22 +21,25 @@ import { useGetReferralSummaryQuery } from '@/store/services/referralApi.service
 import { SettingsNavigationProp } from '@/navigation/types';
 import { referRewardsStyles } from './ReferRewards.styles';
 import { ReferredUser } from './ReferRewards.types';
+import { TFunction } from 'i18next';
 
 type Props = {
   navigation: SettingsNavigationProp;
 };
 
-const formatDate = (value?: string): string => {
-  if (!value) return 'Joined recently';
+const formatDate = (value: string | undefined, t: TFunction): string => {
+  if (!value) return t('settings.referrals.joined_recently');
   return new Date(value).toLocaleDateString();
 };
 
-function copyToClipboard(value: string): Promise<boolean> {
+async function copyToClipboard(value: string): Promise<boolean> {
   if (Platform.OS === 'web' && globalThis.navigator?.clipboard) {
-    return globalThis.navigator.clipboard
-      .writeText(value)
-      .then(() => true)
-      .catch(() => false);
+    try {
+      await globalThis.navigator.clipboard.writeText(value);
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   return Promise.resolve(false);
@@ -49,6 +53,7 @@ function RewardRow({
   isLast?: boolean;
 }): React.ReactElement {
   const styles = useThemedStyles(referRewardsStyles);
+  const { t } = useTranslation();
   const initial = item.name.trim().charAt(0).toUpperCase() || 'M';
 
   return (
@@ -61,10 +66,14 @@ function RewardRow({
           <Text style={styles.rowTitle} numberOfLines={1}>
             {item.name}
           </Text>
-          <Text style={styles.pointsText}>+{item.totalPoints} pts</Text>
+          <Text style={styles.pointsText}>
+            {t('settings.referrals.points_short', {
+              count: item.totalPoints,
+            })}
+          </Text>
         </View>
         <Text style={styles.rowMeta}>
-          {formatDate(item.joinedAt)}
+          {formatDate(item.joinedAt, t)}
           {item.email ? ` • ${item.email}` : ''}
         </Text>
         <View style={styles.badge}>
@@ -83,10 +92,12 @@ export default function ReferRewardsScreen({
   const { data, isLoading, refetch } = useGetReferralSummaryQuery();
   const summary = data?.data;
 
+  const { t } = useTranslation();
+
   const message = useMemo(() => {
     const code = summary?.referralCode ?? '';
-    return `Join Match Mate with my referral code ${code} and complete your registration.`;
-  }, [summary?.referralCode]);
+    return t('settings.referrals.share_message', { code });
+  }, [summary?.referralCode, t]);
 
   const openShare = async (type: 'native' | 'sms' | 'email' | 'whatsapp') => {
     if (!summary?.referralCode) return;
@@ -102,7 +113,7 @@ export default function ReferRewardsScreen({
         type === 'sms'
           ? `sms:?body=${encoded}`
           : type === 'email'
-            ? `mailto:?subject=${encodeURIComponent('Join Match Mate')}&body=${encoded}`
+            ? `mailto:?subject=${encodeURIComponent(t('settings.referrals.share_subject'))}&body=${encoded}`
             : `whatsapp://send?text=${encoded}`;
 
       const supported = await Linking.canOpenURL(url);
@@ -113,8 +124,8 @@ export default function ReferRewardsScreen({
       await Linking.openURL(url);
     } catch {
       showError({
-        title: 'Sharing failed',
-        message: 'Unable to open this option right now.',
+        title: t('settings.referrals.sharing_failed_title'),
+        message: t('settings.referrals.sharing_failed_message'),
       });
     }
   };
@@ -123,7 +134,9 @@ export default function ReferRewardsScreen({
     if (!summary?.referralCode) return;
     const copied = await copyToClipboard(summary.referralCode);
     if (copied) {
-      showSuccess({ title: 'Referral code copied' });
+      showSuccess({
+        title: t('settings.referrals.copy_referral_code_success'),
+      });
       return;
     }
     await Share.share({ message: summary.referralCode });
@@ -136,7 +149,7 @@ export default function ReferRewardsScreen({
   return (
     <SafeAreaView style={styles.safe}>
       <Header
-        title="Refer & Rewards"
+        title={t('settings.referrals.title')}
         showBack
         onBackPress={() => navigation.goBack()}
       />
@@ -145,15 +158,22 @@ export default function ReferRewardsScreen({
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.heroCard}>
-          <Text style={styles.eyebrow}>Rewards wallet</Text>
-          <Text style={styles.title}>{summary?.totalPoints ?? 0} points</Text>
+          <Text style={styles.eyebrow}>
+            {t('settings.referrals.rewards_wallet')}
+          </Text>
+          <Text style={styles.title}>
+            {t('settings.referrals.points', {
+              count: summary?.totalPoints ?? 0,
+            })}
+          </Text>
           <Text style={styles.subtitle}>
-            Earn points when friends join with your code. Subscription rewards
-            are added automatically after successful payments.
+            {t('settings.referrals.earn_points')}
           </Text>
 
           <View style={styles.codeBox}>
-            <Text style={styles.codeLabel}>Your referral code</Text>
+            <Text style={styles.codeLabel}>
+              {t('settings.referrals.your_referral_code')}
+            </Text>
             <View style={styles.codeRow}>
               <Text style={styles.codeText}>
                 {summary?.referralCode ?? '------'}
@@ -164,7 +184,7 @@ export default function ReferRewardsScreen({
                   void handleCopy();
                 }}
                 accessibilityRole="button"
-                accessibilityLabel="Copy referral code"
+                accessibilityLabel={t('settings.referrals.copy_referral_code')}
               >
                 <Feather name="copy" size={18} color={theme.colors.primary} />
               </TouchableOpacity>
@@ -176,28 +196,42 @@ export default function ReferRewardsScreen({
               <Text style={styles.metricValue}>
                 {summary?.redeemablePoints ?? 0}
               </Text>
-              <Text style={styles.metricLabel}>Redeemable</Text>
+              <Text style={styles.metricLabel}>
+                {t('settings.referrals.redeemable')}
+              </Text>
             </View>
             <View style={styles.metricTile}>
               <Text style={styles.metricValue}>
                 {summary?.redemptionThreshold ?? 1000}
               </Text>
-              <Text style={styles.metricLabel}>Threshold</Text>
+              <Text style={styles.metricLabel}>
+                {t('settings.referrals.threshold')}
+              </Text>
             </View>
             <View style={styles.metricTile}>
               <Text style={styles.metricValue}>
                 {Math.round((summary?.subscriptionRewardRate ?? 0.05) * 100)}%
               </Text>
-              <Text style={styles.metricLabel}>Plan bonus</Text>
+              <Text style={styles.metricLabel}>
+                {t('settings.referrals.plan_bonus')}
+              </Text>
             </View>
           </View>
 
           <View style={styles.shareRow}>
             {[
-              ['send', 'Share', 'native'],
-              ['message-circle', 'SMS', 'sms'],
-              ['mail', 'Email', 'email'],
-              ['message-square', 'WhatsApp', 'whatsapp'],
+              ['send', t('settings.referrals.share_option_native'), 'native'],
+              [
+                'message-circle',
+                t('settings.referrals.share_option_sms'),
+                'sms',
+              ],
+              ['mail', t('settings.referrals.share_option_email'), 'email'],
+              [
+                'message-square',
+                t('settings.referrals.share_option_whatsapp'),
+                'whatsapp',
+              ],
             ].map(([icon, label, type]) => (
               <TouchableOpacity
                 key={type}
@@ -221,8 +255,8 @@ export default function ReferRewardsScreen({
         </View>
 
         <SettingsCard
-          title="Referred users"
-          subtitle="Track registrations and subscription bonuses from your network."
+          title={t('settings.referrals.referred_users')}
+          subtitle={t('settings.referrals.referred_users_sub')}
         >
           {summary?.referredUsers?.length ? (
             summary.referredUsers.map((item, index) => (
@@ -234,7 +268,7 @@ export default function ReferRewardsScreen({
             ))
           ) : (
             <Text style={styles.emptyText}>
-              No referrals yet. Share your code to start earning rewards.
+              {t('settings.referrals.no_referrals')}
             </Text>
           )}
         </SettingsCard>
@@ -245,13 +279,16 @@ export default function ReferRewardsScreen({
             void refetch();
           }}
           accessibilityRole="button"
+          accessibilityLabel={t('settings.referrals.refresh_rewards')}
         >
           <Feather
             name="refresh-cw"
             size={14}
             color={theme.colors.textSecondary}
           />
-          <Text style={styles.shareButtonText}>Refresh rewards</Text>
+          <Text style={styles.shareButtonText}>
+            {t('settings.referrals.refresh_rewards')}
+          </Text>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
