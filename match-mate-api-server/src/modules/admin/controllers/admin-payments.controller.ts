@@ -5,27 +5,33 @@ import {
   Param,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
-import { PaymentsService } from '../services/payments.service';
-import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
-import { RolesGuard } from '../../auth/guards/roles.guard';
-import { PermissionsGuard } from '../../auth/guards/permissions.guard';
+import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { RolesGuard } from '@/modules/auth/guards/roles.guard';
+import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Permission, Role } from '@/common/enums';
-import { AdminListPaymentsDto } from '../dto/admin-list-payments.dto';
-import { AdminRefundPaymentDto } from '../dto/admin-refund-payment.dto';
-import { PaymentReconciliationDto } from '../dto/payment-reconciliation.dto';
-import { PaymentSettlementReportDto } from '../dto/payment-settlement-report.dto';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
+import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
+import { PaymentsService } from '@/modules/payments/services/payments.service';
+import { AdminListPaymentsDto } from '@/modules/payments/dto/admin-list-payments.dto';
+import { AdminRefundPaymentDto } from '@/modules/payments/dto/admin-refund-payment.dto';
+import { PaymentReconciliationDto } from '@/modules/payments/dto/payment-reconciliation.dto';
+import { PaymentSettlementReportDto } from '@/modules/payments/dto/payment-settlement-report.dto';
+import { AdminAuditService } from '../services/admin-audit.service';
 
 @Controller('admin/payments')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
-@Roles(Role.ADMIN)
-export class PaymentAdminController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+@Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FINANCE)
+export class AdminPaymentsController {
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly auditService: AdminAuditService,
+  ) {}
 
   @Permissions(Permission.PAYMENT_VIEW)
   @Get('reports/reconciliation')
@@ -75,12 +81,20 @@ export class PaymentAdminController {
   @Permissions(Permission.PAYMENT_REFUND)
   @Post(':orderId/refund')
   async refundPayment(
+    @Req() req: AuthenticatedRequest,
     @Param('orderId') orderId: string,
     @Body() dto: AdminRefundPaymentDto,
   ) {
-    return successResponse(
-      await this.paymentsService.adminInitiateRefund(orderId, dto),
-      SuccessCode.PAYMENT_REFUNDED,
-    );
+    const data = await this.paymentsService.adminInitiateRefund(orderId, dto);
+    await this.auditService.write({
+      req,
+      actorId: req.user.sub,
+      action: 'payment.refund_initiated',
+      resource: 'payment',
+      targetId: orderId,
+      reason: dto.reason,
+      after: data as Record<string, unknown>,
+    });
+    return successResponse(data, SuccessCode.PAYMENT_REFUNDED);
   }
 }

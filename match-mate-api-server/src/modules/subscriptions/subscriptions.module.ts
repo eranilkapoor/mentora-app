@@ -20,8 +20,6 @@ import { PlanService } from './services/plan.service';
 import { FeatureService } from './services/feature.service';
 import { ProfileBoostService } from './services/profile-boost.service';
 
-// Controller
-import { PlanController } from './controllers/plan.controller';
 import { SubscriptionsController } from './controllers/subscriptions.controller';
 
 // Guards
@@ -58,7 +56,7 @@ import { ProfileBoostExpiryTask } from './tasks/profile-boost-expiry.task';
     SubscriptionExpiryTask,
     ProfileBoostExpiryTask,
   ],
-  controllers: [PlanController, SubscriptionsController],
+  controllers: [SubscriptionsController],
   exports: [
     SubscriptionsService,
     PlanService,

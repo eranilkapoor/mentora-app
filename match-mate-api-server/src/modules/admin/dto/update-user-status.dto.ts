@@ -1,4 +1,11 @@
-import { IsBoolean, IsMongoId, IsOptional, ValidateIf } from 'class-validator';
+import {
+  IsBoolean,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  MaxLength,
+  ValidateIf,
+} from 'class-validator';
 
 export class UpdateUserStatusDto {
   @IsMongoId()
@@ -11,6 +18,11 @@ export class UpdateUserStatusDto {
   @IsOptional()
   @IsBoolean()
   isVerified?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(500)
+  reason?: string;
 
   // At least one of the two must be present
   @ValidateIf(

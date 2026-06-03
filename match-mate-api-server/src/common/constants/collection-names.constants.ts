@@ -33,6 +33,7 @@ export const COLLECTION_NAMES = {
   CHAT_MESSAGE: 'chat_messages',
 
   ACTIVITY_LOG: 'activity_logs',
+  ADMIN_AUDIT_LOG: 'admin_audit_logs',
 
   NOTIFICATION: 'notifications',
   NOTIFICATION_TEMPLATE: 'notification_templates',

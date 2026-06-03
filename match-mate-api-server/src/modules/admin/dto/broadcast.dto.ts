@@ -16,6 +16,8 @@ export enum BroadcastTarget {
   ALL = 'all',
   PREMIUM = 'premium',
   UNVERIFIED = 'unverified',
+  BLOCKED = 'blocked',
+  ACTIVE = 'active',
 }
 
 export class BroadcastDto {

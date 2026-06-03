@@ -746,14 +746,75 @@ export class MasterSeederService {
     );
 
     const moderatorPermissionIds = allPermissions
-      .filter((permission) => permission.name.startsWith('user:'))
+      .filter((permission) =>
+        ['user:', 'profile:', 'media:', 'report:', 'block:', 'chat:'].some(
+          (prefix) => permission.name.startsWith(prefix),
+        ),
+      )
       .map((permission) => permission._id);
+
+    const permissionIdsByPrefix = (prefixes: string[]) =>
+      allPermissions
+        .filter((permission) =>
+          prefixes.some((prefix) => permission.name.startsWith(prefix)),
+        )
+        .map((permission) => permission._id);
 
     const roles = [
       {
-        name: AppRole.ADMIN,
+        name: AppRole.SUPER_ADMIN,
         description: 'Super Admin',
         permissions: adminPermissionIds,
+      },
+      {
+        name: AppRole.ADMIN,
+        description: 'Admin',
+        permissions: adminPermissionIds,
+      },
+      {
+        name: AppRole.SUPPORT,
+        description: 'Support Operator',
+        permissions: permissionIdsByPrefix([
+          'user:',
+          'report:',
+          'block:',
+          'activity:',
+        ]),
+      },
+      {
+        name: AppRole.FINANCE,
+        description: 'Finance Operator',
+        permissions: permissionIdsByPrefix([
+          'payment:',
+          'subscription:',
+          'plan:',
+          'analytics:',
+          'dashboard:',
+        ]),
+      },
+      {
+        name: AppRole.KYC_REVIEWER,
+        description: 'KYC Reviewer',
+        permissions: permissionIdsByPrefix(['profile:', 'media:', 'activity:']),
+      },
+      {
+        name: AppRole.CONTENT_MODERATOR,
+        description: 'Content Moderator',
+        permissions: permissionIdsByPrefix([
+          'media:',
+          'chat:',
+          'report:',
+          'block:',
+        ]),
+      },
+      {
+        name: AppRole.MARKETING_ADMIN,
+        description: 'Marketing Admin',
+        permissions: permissionIdsByPrefix([
+          'notification:',
+          'analytics:',
+          'dashboard:',
+        ]),
       },
 
       {

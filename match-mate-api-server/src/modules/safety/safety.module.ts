@@ -31,6 +31,6 @@ import { KycService } from './services/kyc.service';
   ],
   controllers: [KycController],
   providers: [KycService],
-  exports: [MongooseModule],
+  exports: [MongooseModule, KycService],
 })
 export class SafetyModule {}

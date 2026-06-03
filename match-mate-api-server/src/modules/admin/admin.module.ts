@@ -4,10 +4,16 @@ import { MongooseModule } from '@nestjs/mongoose';
 // Controllers
 import { AdminController } from './controllers/admin.controller';
 import { RbacController } from './controllers/rbac.controller';
+import { AdminModerationController } from './controllers/admin-moderation.controller';
+import { AdminPaymentsController } from './controllers/admin-payments.controller';
+import { AdminPlansController } from './controllers/admin-plans.controller';
+import { AdminNotificationsController } from './controllers/admin-notifications.controller';
+import { AdminAnalyticsController } from './controllers/admin-analytics.controller';
 
 // Services
 import { AdminService } from './services/admin.service';
 import { RbacService } from './services/rbac.service';
+import { AdminAuditService } from './services/admin-audit.service';
 
 // Repository
 import { AdminRepository } from './repositories/admin.repository';
@@ -15,7 +21,41 @@ import { AdminRepository } from './repositories/admin.repository';
 // Schemas
 import { Permission, PermissionSchema } from './schemas/permission.schema';
 import { Role, RoleSchema } from './schemas/role.schema';
+import {
+  AdminAuditLog,
+  AdminAuditLogSchema,
+} from './schemas/admin-audit-log.schema';
 import { User, UserSchema } from '@/modules/auth/schemas/user.schema';
+import {
+  Profile,
+  ProfileSchema,
+} from '@/modules/profiles/schemas/profile/profile.schema';
+import {
+  Media,
+  MediaSchema,
+} from '@/modules/profiles/schemas/media/media.schema';
+import {
+  Verification,
+  VerificationSchema,
+} from '@/modules/safety/schemas/verification.schema';
+import {
+  UserReport,
+  UserReportSchema,
+} from '@/modules/safety/schemas/user-report.schema';
+import {
+  Payment,
+  PaymentSchema,
+} from '@/modules/payments/schemas/payment.schema';
+import {
+  Subscription,
+  SubscriptionSchema,
+} from '@/modules/subscriptions/schemas/subscription.schema';
+import { ProfilesModule } from '../profiles/profiles.module';
+import { SafetyModule } from '../safety/safety.module';
+import { AnalyticsModule } from '../analytics/analytics.module';
+import { NotificationsModule } from '../notifications/notifications.module';
+import { PaymentsModule } from '../payments/payments.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 
 @Module({
   imports: [
@@ -24,12 +64,34 @@ import { User, UserSchema } from '@/modules/auth/schemas/user.schema';
       { name: User.name, schema: UserSchema },
       { name: Permission.name, schema: PermissionSchema },
       { name: Role.name, schema: RoleSchema },
+      { name: AdminAuditLog.name, schema: AdminAuditLogSchema },
+      { name: Profile.name, schema: ProfileSchema },
+      { name: Media.name, schema: MediaSchema },
+      { name: Verification.name, schema: VerificationSchema },
+      { name: UserReport.name, schema: UserReportSchema },
+      { name: Payment.name, schema: PaymentSchema },
+      { name: Subscription.name, schema: SubscriptionSchema },
     ]),
+    ProfilesModule,
+    SafetyModule,
+    AnalyticsModule,
+    NotificationsModule,
+    PaymentsModule,
+    SubscriptionsModule,
   ],
-  controllers: [AdminController, RbacController],
-  providers: [AdminService, RbacService, AdminRepository],
+  controllers: [
+    AdminController,
+    RbacController,
+    AdminModerationController,
+    AdminPaymentsController,
+    AdminPlansController,
+    AdminNotificationsController,
+    AdminAnalyticsController,
+  ],
+  providers: [AdminService, RbacService, AdminRepository, AdminAuditService],
   exports: [
     RbacService, // export so other modules can check permissions if needed
+    AdminAuditService,
   ],
 })
 export class AdminModule {}

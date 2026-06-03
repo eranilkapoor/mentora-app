@@ -4,7 +4,6 @@ import { Payment, PaymentSchema } from './schemas/payment.schema';
 import { PaymentsService } from './services/payments.service';
 import { PaymentRepository } from './repositories/payment.repository';
 import { PaymentsController } from './controllers/payments.controller';
-import { PaymentAdminController } from './controllers/payment.admin.controller';
 import { Plan, PlanSchema } from '../subscriptions/schemas/plan.schema';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { ReferralsModule } from '../referrals/referrals.module';
@@ -30,7 +29,7 @@ import { PaymentMaintenanceTask } from './tasks/payment-maintenance.task';
     ReferralsModule,
   ],
   providers: [PaymentsService, PaymentRepository, PaymentMaintenanceTask],
-  controllers: [PaymentsController, PaymentAdminController],
+  controllers: [PaymentsController],
   exports: [PaymentsService],
 })
 export class PaymentsModule {}
