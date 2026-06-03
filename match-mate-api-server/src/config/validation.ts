@@ -469,6 +469,13 @@ export const envValidationSchema = Joi.object({
   NOTIFICATION_PUSH_FCM_CLIENT_EMAIL: optionalEmail,
 
   NOTIFICATION_PUSH_FCM_PRIVATE_KEY: optionalString,
+
+  CHAT_PROFANITY_FILTER_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(true),
+
+  CHAT_PROFANITY_BLOCKED_WORDS: optionalString,
 })
   .custom(validateNotificationProviders)
   .custom(validateProductionProviders)

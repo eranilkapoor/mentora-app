@@ -34,6 +34,7 @@ export const COLLECTION_NAMES = {
   NOTIFICATION: 'notifications',
   NOTIFICATION_TEMPLATE: 'notification_templates',
   NOTIFICATION_LOG: 'notification_logs',
+  NOTIFICATION_DEVICE_TOKEN: 'notification_device_tokens',
 
   ACCOUNT_SETTING: 'account_settings',
   PRIVACY_SETTING: 'privacy_settings',

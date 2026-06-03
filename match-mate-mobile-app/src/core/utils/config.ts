@@ -165,6 +165,9 @@ export const resolveApiUrl = (url: string): string | null => {
 export const getClientVersion = (): string =>
   getPublicEnv('EXPO_PUBLIC_CLIENT_VERSION') ?? DEFAULTS.CLIENT_VERSION;
 
+export const isPushNotificationsEnabled = (): boolean =>
+  getPublicEnv('EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED') === 'true';
+
 let _config: { env: Env; apiUrl: string } | null = null;
 
 const getConfig = (): { env: Env; apiUrl: string } => {

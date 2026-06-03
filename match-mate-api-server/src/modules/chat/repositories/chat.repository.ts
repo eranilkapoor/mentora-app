@@ -160,6 +160,21 @@ export class ChatRepository {
     return this.messageModel.findById(messageId).lean();
   }
 
+  softDeleteMessageForEveryone(messageId: string) {
+    return this.messageModel.findByIdAndUpdate(
+      messageId,
+      {
+        $set: {
+          isDeletedForEveryone: true,
+          deletedAt: new Date(),
+          content: 'Message deleted',
+          attachments: [],
+        },
+      },
+      { new: true },
+    );
+  }
+
   async findMessagesByIds(messageIds: string[]) {
     if (messageIds.length === 0) {
       return [];

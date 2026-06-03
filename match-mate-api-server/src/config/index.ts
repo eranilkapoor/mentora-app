@@ -7,6 +7,7 @@ import payment from './payment.config';
 import storage from './storage.config';
 import throttle from './throttle.config';
 import membership from './membership.config';
+import chat from './chat.config';
 
 export default [
   app,
@@ -18,4 +19,5 @@ export default [
   storage,
   throttle,
   membership,
+  chat,
 ];

@@ -56,6 +56,12 @@ export interface UnreadNotificationCountResponse {
   unreadCount: number;
 }
 
+export interface RegisterDeviceTokenPayload {
+  token: string;
+  deviceId: string;
+  platform: 'ios' | 'android' | 'web' | 'unknown';
+}
+
 export const notificationApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
     getNotifications: builder.query<
@@ -105,6 +111,28 @@ export const notificationApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['Notification'],
     }),
+
+    registerNotificationDeviceToken: builder.mutation<
+      ApiResponse<unknown>,
+      RegisterDeviceTokenPayload
+    >({
+      query: (body) => ({
+        url: '/notifications/device-tokens',
+        method: 'POST',
+        body,
+      }),
+    }),
+
+    revokeNotificationDeviceToken: builder.mutation<
+      ApiResponse<unknown>,
+      Partial<RegisterDeviceTokenPayload>
+    >({
+      query: (body) => ({
+        url: '/notifications/device-tokens/revoke',
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
   overrideExisting: false,
 });
@@ -114,4 +142,6 @@ export const {
   useGetUnreadNotificationCountQuery,
   useMarkNotificationReadMutation,
   useMarkAllNotificationsReadMutation,
+  useRegisterNotificationDeviceTokenMutation,
+  useRevokeNotificationDeviceTokenMutation,
 } = notificationApi;

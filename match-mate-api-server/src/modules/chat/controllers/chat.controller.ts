@@ -1,14 +1,20 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
-  Patch,
   Post,
+  Patch,
   Query,
   Req,
   UseGuards,
+  UseInterceptors,
+  UploadedFiles,
 } from '@nestjs/common';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { ChatService } from '../services/chat.service';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { Public } from '@/common/decorators/public.decorator';
@@ -124,6 +130,42 @@ export class ChatController {
       data,
       SuccessCode.CHAT_MESSAGE_SENT,
       'Message sent successfully',
+    );
+  }
+
+  @Post('attachments')
+  @UseInterceptors(FilesInterceptor('files', 5))
+  @HttpCode(HttpStatus.CREATED)
+  async uploadAttachments(
+    @Req() req: AppRequest,
+    @UploadedFiles() files: Express.Multer.File[],
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.service.uploadAttachments(
+      req.user?.sub ?? '',
+      files ?? [],
+    );
+    return successResponse(
+      data,
+      SuccessCode.FILE_UPLOADED,
+      'Chat attachments uploaded',
+    );
+  }
+
+  @Delete('rooms/:roomId/messages/:messageId')
+  async deleteMessage(
+    @Req() req: AppRequest,
+    @Param('roomId') roomId: string,
+    @Param('messageId') messageId: string,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.service.deleteOwnMessage(
+      req.user?.sub ?? '',
+      roomId,
+      messageId,
+    );
+    return successResponse(
+      data,
+      SuccessCode.CHAT_MESSAGE_DELETED,
+      'Message deleted successfully',
     );
   }
 

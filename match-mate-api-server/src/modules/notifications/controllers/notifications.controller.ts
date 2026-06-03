@@ -19,6 +19,10 @@ import { NotificationAnalyticsQueryDto } from '../dto/notification-analytics-que
 import { NotificationDlqQueryDto } from '../dto/notification-dlq-query.dto';
 import { NotificationDlqReplayAllDto } from '../dto/notification-dlq-replay-all.dto';
 import { NotificationDlqPurgeDto } from '../dto/notification-dlq-purge.dto';
+import {
+  RegisterDeviceTokenDto,
+  RevokeDeviceTokenDto,
+} from '../dto/register-device-token.dto';
 import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Permission } from '@/common/enums';
 import { PermissionsGuard } from '../../auth/guards/permissions.guard';
@@ -50,6 +54,32 @@ export class NotificationsController {
       { unreadCount: data },
       SuccessCode.NOTIFICATION_FETCHED,
       'Unread count fetched successfully',
+    );
+  }
+
+  @Post('device-tokens')
+  async registerDeviceToken(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: RegisterDeviceTokenDto,
+  ) {
+    const data = await this.service.registerDeviceToken(userId, dto);
+    return successResponse(
+      data,
+      SuccessCode.NOTIFICATION_DEVICE_TOKEN_REGISTERED,
+      'Notification device token registered successfully',
+    );
+  }
+
+  @Post('device-tokens/revoke')
+  async revokeDeviceToken(
+    @CurrentUser('sub') userId: string,
+    @Body() dto: RevokeDeviceTokenDto,
+  ) {
+    const data = await this.service.revokeDeviceToken(userId, dto);
+    return successResponse(
+      data,
+      SuccessCode.NOTIFICATION_DEVICE_TOKEN_REMOVED,
+      'Notification device token removed successfully',
     );
   }
 

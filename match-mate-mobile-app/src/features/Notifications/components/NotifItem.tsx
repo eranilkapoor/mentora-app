@@ -14,7 +14,7 @@ export function NotifItem({
 }: {
   item: Notification;
   isLast: boolean;
-  onPress: (id: string) => void;
+  onPress: (item: Notification) => void;
 }): React.ReactElement {
   const styles = useThemedStyles(notificationStyles);
   const { theme } = useTheme();
@@ -26,7 +26,7 @@ export function NotifItem({
         isLast && styles.notifItemLast,
         item.unread && styles.notifItemUnread,
       ]}
-      onPress={() => onPress(item.id)}
+      onPress={() => onPress(item)}
       accessibilityRole="button"
       accessibilityLabel={item.title}
     >

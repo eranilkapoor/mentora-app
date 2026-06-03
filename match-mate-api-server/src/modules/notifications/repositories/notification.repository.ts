@@ -13,6 +13,10 @@ import {
   NotificationLog,
   NotificationLogDocument,
 } from '../schemas/notification-logs.schema';
+import {
+  NotificationDeviceToken,
+  NotificationDeviceTokenDocument,
+} from '../schemas/notification-device-token.schema';
 import { User, UserDocument } from '../../auth/schemas/user.schema';
 import {
   DeliveryLogChannel,
@@ -31,6 +35,9 @@ export class NotificationRepository {
     @InjectModel(NotificationLog.name)
     private readonly logModel: Model<NotificationLogDocument>,
 
+    @InjectModel(NotificationDeviceToken.name)
+    private readonly deviceTokenModel: Model<NotificationDeviceTokenDocument>,
+
     @InjectModel(User.name)
     private readonly userModel: Model<UserDocument>,
   ) {}
@@ -41,6 +48,18 @@ export class NotificationRepository {
 
   findById(notificationId: string) {
     return this.model.findById(notificationId).lean();
+  }
+
+  findRecentByDedupeKey(userId: string, dedupeKey: string, since: Date) {
+    return this.model
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        dedupeKey,
+        isDeleted: { $ne: true },
+        createdAt: { $gte: since },
+      })
+      .sort({ createdAt: -1 })
+      .lean();
   }
 
   async findByUser(
@@ -192,6 +211,64 @@ export class NotificationRepository {
 
   findUserById(userId: string) {
     return this.userModel.findById(userId).lean();
+  }
+
+  upsertDeviceToken(params: {
+    userId: string;
+    deviceId: string;
+    token: string;
+    platform: 'ios' | 'android' | 'web' | 'unknown';
+  }) {
+    return this.deviceTokenModel.findOneAndUpdate(
+      {
+        userId: new Types.ObjectId(params.userId),
+        deviceId: params.deviceId,
+      },
+      {
+        $set: {
+          token: params.token,
+          platform: params.platform,
+          isActive: true,
+          revokedAt: undefined,
+          lastUsedAt: new Date(),
+        },
+      },
+      { upsert: true, new: true },
+    );
+  }
+
+  revokeDeviceToken(
+    userId: string,
+    query: { token?: string; deviceId?: string },
+  ) {
+    const filter: Record<string, unknown> = {
+      userId: new Types.ObjectId(userId),
+      isActive: true,
+    };
+
+    if (query.token) {
+      filter.token = query.token;
+    }
+
+    if (query.deviceId) {
+      filter.deviceId = query.deviceId;
+    }
+
+    return this.deviceTokenModel.updateMany(filter, {
+      $set: { isActive: false, revokedAt: new Date() },
+    });
+  }
+
+  async findActivePushTokens(userId: string) {
+    const rows = await this.deviceTokenModel
+      .find({
+        userId: new Types.ObjectId(userId),
+        isActive: true,
+      })
+      .select('token')
+      .lean<Array<{ token: string }>>();
+
+    return [...new Set(rows.map((row) => row.token).filter(Boolean))];
   }
 
   async getDeliveryAnalytics(query: {

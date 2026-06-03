@@ -17,6 +17,7 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import * as ImagePicker from 'expo-image-picker';
 import Feather from 'react-native-vector-icons/Feather';
 import {
   SafeAreaView,
@@ -33,6 +34,8 @@ import {
   useGetMessagesQuery,
   useMarkRoomReadMutation,
   useSendMessageMutation,
+  useUploadChatAttachmentsMutation,
+  useDeleteChatMessageMutation,
 } from '@/store/services/chatApi.service';
 import {
   useBlockUserMutation,
@@ -52,21 +55,29 @@ import {
   UserBlockedPayload,
 } from '@/core/realtime/realtime.service';
 
-const mapMessage = (message: ChatMessage): Message => ({
-  id: message.id,
-  senderId: message.senderId,
-  text: message.content ?? '',
-  timestamp: message.createdAt
-    ? new Date(message.createdAt).getTime()
-    : Date.now(),
-  type: String(message.type).toLowerCase() === 'image' ? 'image' : 'text',
-  status: message.readAt
-    ? 'read'
-    : message.deliveredAt ||
-        String(message.status).toUpperCase() === 'DELIVERED'
-      ? 'delivered'
-      : 'sent',
-});
+const mapMessage = (message: ChatMessage): Message => {
+  const isImage = String(message.type).toLowerCase() === 'image';
+  const imageUrl = isImage
+    ? (message.attachments as Array<{ url?: string }> | undefined)?.[0]?.url
+    : undefined;
+
+  return {
+    id: message.id,
+    senderId: message.senderId,
+    text: message.content ?? '',
+    timestamp: message.createdAt
+      ? new Date(message.createdAt).getTime()
+      : Date.now(),
+    type: isImage ? 'image' : 'text',
+    ...(imageUrl ? { imageUrl } : {}),
+    status: message.readAt
+      ? 'read'
+      : message.deliveredAt ||
+          String(message.status).toUpperCase() === 'DELIVERED'
+        ? 'delivered'
+        : 'sent',
+  };
+};
 
 export default function ChatScreen({
   navigation,
@@ -91,6 +102,9 @@ export default function ChatScreen({
   const [createDirectRoom, { isLoading: isCreatingRoom }] =
     useCreateDirectRoomMutation();
   const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
+  const [uploadChatAttachments, { isLoading: isUploadingAttachment }] =
+    useUploadChatAttachmentsMutation();
+  const [deleteChatMessage] = useDeleteChatMessageMutation();
   const [markRoomRead] = useMarkRoomReadMutation();
   const [blockUser] = useBlockUserMutation();
   const [reportUser] = useReportUserMutation();
@@ -236,13 +250,96 @@ export default function ChatScreen({
     }
   }, [activeRoomId, inputText, isSending, sendMessage]);
 
-  const handlePickImage = useCallback((): void => {
-    showInfo({
-      title: 'Image messages',
-      message:
-        'Image sending will be available after media upload is connected to chat attachments.',
-    });
-  }, []);
+  const handlePickImage = useCallback(async (): Promise<void> => {
+    if (!activeRoomId || isUploadingAttachment || isSending) return;
+
+    try {
+      const permission =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+      if (permission.status !== 'granted') {
+        showError({
+          title: 'Permission needed',
+          message: 'Allow photo access to send images in chat.',
+        });
+        return;
+      }
+
+      const result = await ImagePicker.launchImageLibraryAsync({
+        mediaTypes: ImagePicker.MediaTypeOptions.Images,
+        quality: 0.82,
+      });
+
+      if (result.canceled || !result.assets[0]) {
+        return;
+      }
+
+      const asset = result.assets[0];
+      const formData = new FormData();
+      formData.append('files', {
+        uri: asset.uri,
+        name: asset.fileName ?? `chat-image-${Date.now()}.jpg`,
+        type: asset.mimeType ?? 'image/jpeg',
+      } as unknown as Blob);
+
+      const uploadResponse = await uploadChatAttachments(formData).unwrap();
+      const attachment = uploadResponse.success
+        ? uploadResponse.data?.[0]
+        : undefined;
+
+      if (!attachment) {
+        throw new Error('Upload failed');
+      }
+
+      await sendMessage({
+        roomId: activeRoomId,
+        content: '',
+        type: 'IMAGE',
+        attachments: [attachment],
+        clientMessageId: `${Date.now()}`,
+      }).unwrap();
+    } catch {
+      showError({
+        title: 'Image not sent',
+        message: 'Please try again.',
+      });
+    }
+  }, [
+    activeRoomId,
+    isSending,
+    isUploadingAttachment,
+    sendMessage,
+    uploadChatAttachments,
+  ]);
+
+  const handleDeleteMessage = useCallback(
+    (message: Message): void => {
+      if (!activeRoomId || message.senderId !== 'me') return;
+
+      showConfirm({
+        title: 'Delete message?',
+        message: 'This message will be removed from the conversation.',
+        confirmText: 'Delete',
+        destructive: true,
+        onConfirm: () => {
+          void deleteChatMessage({
+            roomId: activeRoomId,
+            messageId: message.id,
+          })
+            .unwrap()
+            .then(() => {
+              showSuccess({ title: 'Message deleted' });
+            })
+            .catch(() => {
+              showError({
+                title: 'Unable to delete',
+                message: 'Please try again.',
+              });
+            });
+        },
+      });
+    },
+    [activeRoomId, deleteChatMessage]
+  );
 
   const handleReportUser = useCallback((): void => {
     if (!userId) return;
@@ -313,7 +410,7 @@ export default function ChatScreen({
   const renderMessage: ListRenderItem<Message> = useCallback(
     ({ item, index }) => (
       <>
-        <MessageBubble item={item} />
+        <MessageBubble item={item} onLongPress={handleDeleteMessage} />
         {index < messages.length - 1 &&
           formatDateLabel(item.timestamp) !==
             formatDateLabel(messages[index + 1]?.timestamp ?? 0) && (
@@ -321,7 +418,7 @@ export default function ChatScreen({
           )}
       </>
     ),
-    [messages]
+    [handleDeleteMessage, messages]
   );
 
   return (
@@ -407,7 +504,9 @@ export default function ChatScreen({
             </TouchableOpacity>
 
             <TouchableOpacity
-              onPress={handlePickImage}
+              onPress={() => {
+                void handlePickImage();
+              }}
               style={styles.iconBtn}
               activeOpacity={0.7}
               accessibilityRole="button"

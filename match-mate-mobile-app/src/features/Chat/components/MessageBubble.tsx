@@ -1,4 +1,4 @@
-import { Image, Text, View } from 'react-native';
+import { Image, Text, TouchableOpacity, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
@@ -35,7 +35,13 @@ function MessageStatusTicks({
   );
 }
 
-export function MessageBubble({ item }: { item: Message }): React.ReactElement {
+export function MessageBubble({
+  item,
+  onLongPress,
+}: {
+  item: Message;
+  onLongPress?: (message: Message) => void;
+}): React.ReactElement {
   const isMe = item.senderId === 'me';
   const styles = useThemedStyles(chatStyles);
 
@@ -43,8 +49,11 @@ export function MessageBubble({ item }: { item: Message }): React.ReactElement {
     <View
       style={[styles.messageRow, isMe ? styles.rightAlign : styles.leftAlign]}
     >
-      <View
+      <TouchableOpacity
         style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
+        activeOpacity={0.9}
+        onLongPress={() => onLongPress?.(item)}
+        accessibilityRole="text"
       >
         {item.type === 'image' && item.imageUrl ? (
           <Image source={{ uri: item.imageUrl }} style={styles.image} />
@@ -60,7 +69,7 @@ export function MessageBubble({ item }: { item: Message }): React.ReactElement {
           </Text>
           {isMe ? <MessageStatusTicks status={item.status} /> : null}
         </View>
-      </View>
+      </TouchableOpacity>
     </View>
   );
 }

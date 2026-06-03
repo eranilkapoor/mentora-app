@@ -17,6 +17,9 @@ export interface Notification {
   iconColor?: string;
   type: NotificationType;
   category: NotificationCategory;
+  actorId?: string;
+  actorName?: string;
+  actorImage?: string;
   action?: {
     screen: string;
     params?: Record<string, unknown>;

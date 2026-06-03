@@ -40,6 +40,7 @@ export class MatchNotificationService {
       actorName: senderName,
       actorImage: senderMedia[0]?.url,
       referenceId: interestId,
+      dedupeKey: `interest-sent:${interestId}`,
       priority: 'high',
       channels: ['in_app', 'push', 'email'],
       action: {
@@ -83,6 +84,7 @@ export class MatchNotificationService {
         actorName: senderName,
         actorImage: senderMedia[0]?.url,
         referenceId: matchId,
+        dedupeKey: `match-found:${matchId ?? interestId}:${responderId}`,
         priority: 'high',
         channels: ['in_app', 'push'],
         action: {
@@ -114,6 +116,7 @@ export class MatchNotificationService {
       actorName: receiverName,
       actorImage: receiverMedia[0]?.url,
       referenceId: interestId,
+      dedupeKey: `interest-response:${interestId}:${status}`,
       priority: status === InterestStatus.ACCEPTED ? 'high' : 'normal',
       channels: ['in_app', 'push'],
       action: {
@@ -141,6 +144,7 @@ export class MatchNotificationService {
       actorId,
       actorName,
       referenceId: matchId,
+      dedupeKey: `match-unmatched:${matchId}`,
       priority: 'normal',
       channels: ['in_app'],
       action: {
@@ -169,6 +173,7 @@ export class MatchNotificationService {
       type: 'match',
       category: 'match_found',
       referenceId: topProfileId,
+      dedupeKey: `daily-matches:${userId}:${new Date().toISOString().slice(0, 10)}`,
       priority: 'normal',
       channels: ['in_app', 'push'],
       action: {

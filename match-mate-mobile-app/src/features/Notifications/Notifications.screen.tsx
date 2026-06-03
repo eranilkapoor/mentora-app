@@ -32,6 +32,7 @@ import {
 } from './Notifications.types';
 import { EmptyState } from './components/EmptyState';
 import { NotifItem } from './components/NotifItem';
+import { navigateFromNotificationAction } from './notificationNavigation';
 
 const getNotificationId = (item: AppNotification): string =>
   String(item._id ?? item.referenceId ?? item.createdAt ?? item.title);
@@ -107,6 +108,9 @@ export default function NotificationsScreen({
         iconColor: notificationColorByType(theme, item.type),
         type: item.type,
         category: item.category,
+        ...(item.actorId ? { actorId: item.actorId } : {}),
+        ...(item.actorName ? { actorName: item.actorName } : {}),
+        ...(item.actorImage ? { actorImage: item.actorImage } : {}),
         ...(item.action ? { action: item.action } : {}),
       })),
     [data, theme]
@@ -152,13 +156,18 @@ export default function NotificationsScreen({
   }, [markAllNotificationsRead]);
 
   const markRead = useCallback(
-    async (id: string): Promise<void> => {
-      const item = notifications.find((notification) => notification.id === id);
+    async (item: Notification): Promise<void> => {
       if (item?.unread) {
-        await markNotificationRead({ id }).unwrap();
+        await markNotificationRead({ id: item.id }).unwrap();
       }
+
+      navigateFromNotificationAction(item.action, {
+        ...(item.actorId ? { actorId: item.actorId } : {}),
+        title: item.actorName ?? item.title,
+        ...(item.actorImage ? { image: item.actorImage } : {}),
+      });
     },
-    [markNotificationRead, notifications]
+    [markNotificationRead]
   );
 
   return (
@@ -235,8 +244,8 @@ export default function NotificationsScreen({
                     key={item.id}
                     item={item}
                     isLast={index === section.data.length - 1}
-                    onPress={(notificationId) => {
-                      void markRead(notificationId);
+                    onPress={(notification) => {
+                      void markRead(notification);
                     }}
                   />
                 ))}

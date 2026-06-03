@@ -62,6 +62,11 @@ export class CreateNotificationDto {
   referenceId?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(180)
+  dedupeKey?: string;
+
+  @IsOptional()
   @IsIn(NOTIFICATION_PRIORITIES)
   priority?: (typeof NOTIFICATION_PRIORITIES)[number];
 

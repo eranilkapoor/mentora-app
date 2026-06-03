@@ -589,7 +589,8 @@ export class ProfilesService {
           type: 'system',
           category: 'system',
           channels: ['in_app', 'push'],
-          metadata: { source, changedFields },
+          dedupeKey: `profile-updated:${userId}:${source}`,
+          metadata: { source, changedFields, dedupeWindowSeconds: 60 },
         }),
       );
     }
@@ -817,6 +818,7 @@ export class ProfilesService {
         type: 'system',
         category: 'system',
         channels,
+        dedupeKey: `profile-onboarding-completed:${String(user._id)}`,
         metadata: {
           source: 'onboarding-profile',
           isOnboardingCompleted: true,

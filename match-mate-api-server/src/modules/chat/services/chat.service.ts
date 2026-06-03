@@ -1,7 +1,9 @@
 import { HttpStatus, Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { AppLogger } from '@/common/logger/logger.service';
 import { NotificationsService } from '../../notifications/services/notifications.service';
+import { StorageService } from '../../storage/services/storage.service';
 import { ChatPresenceService } from './chat-presence.service';
 import { ChatRealtimeService } from './chat-realtime.service';
 import { ChatAccessService } from './chat-access.service';
@@ -115,6 +117,8 @@ export class ChatService {
     private readonly access: ChatAccessService,
     private readonly notificationsService: NotificationsService,
     private readonly logger: AppLogger,
+    private readonly storageService: StorageService,
+    private readonly configService: ConfigService,
   ) {}
 
   health() {
@@ -478,10 +482,14 @@ export class ChatService {
 
     await this.access.ensureMessagingAllowed(userId, receiverId);
 
-    const content = dto.content.trim();
-    if (!content) {
+    const content = dto.content?.trim() ?? '';
+    const attachments = dto.attachments ?? [];
+    if (!content && attachments.length === 0) {
       throwBadRequest(ErrorCode.CHAT_MESSAGE_EMPTY);
     }
+
+    this.ensureMessageIsSafe(content);
+    this.ensureAttachmentsAreValid(attachments);
 
     const message = await this.repo.createMessage({
       roomId: dto.roomId,
@@ -489,7 +497,7 @@ export class ChatService {
       receiverId,
       content,
       type: dto.type ?? ChatMessageType.TEXT,
-      attachments: dto.attachments ?? [],
+      attachments,
       replyToMessageId: dto.replyToMessageId,
       clientMessageId: dto.clientMessageId,
     });
@@ -497,7 +505,9 @@ export class ChatService {
     const sentAt = (message as { createdAt?: Date }).createdAt ?? new Date();
     room.lastMessageId = this.toObjectId(message._id);
     room.lastMessageSenderId = new Types.ObjectId(userId);
-    room.lastMessageText = this.buildPreview(content);
+    room.lastMessageText = this.buildPreview(
+      content || this.buildAttachmentPreview(dto.type ?? ChatMessageType.FILE),
+    );
     room.lastMessageAt = sentAt;
     room.lastActivityAt = sentAt;
     room.messageCount = (room.messageCount ?? 0) + 1;
@@ -523,11 +533,15 @@ export class ChatService {
       .notify({
         userId: receiverId,
         title: 'New message',
-        message: this.buildNotificationPreview(content),
+        message: this.buildNotificationPreview(
+          content ||
+            this.buildAttachmentPreview(dto.type ?? ChatMessageType.FILE),
+        ),
         category: 'message_received',
         type: 'chat',
         actorId: userId,
         referenceId: String(message._id),
+        dedupeKey: `chat-message:${String(message._id)}`,
         action: {
           screen: 'ChatDetails',
           params: {
@@ -550,6 +564,66 @@ export class ChatService {
       });
 
     return messagePayload;
+  }
+
+  async uploadAttachments(userId: string, files: Express.Multer.File[]) {
+    this.access.ensureValidObjectId(userId, 'invalid_user_id');
+
+    if (!files.length) {
+      throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+        reason: 'chat_attachment_required',
+      });
+    }
+
+    if (files.length > 5) {
+      throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+        reason: 'chat_attachment_limit_exceeded',
+      });
+    }
+
+    const allowedMimePattern = /^(image|video)\//i;
+    for (const file of files) {
+      if (!allowedMimePattern.test(file.mimetype)) {
+        throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+          reason: 'unsupported_chat_attachment_type',
+        });
+      }
+    }
+
+    const uploaded = await this.storageService.uploadFiles(files, 'chat');
+
+    return uploaded.map((file, index) => ({
+      url: file.url,
+      name: files[index]?.originalname,
+      mimeType: files[index]?.mimetype,
+      size: files[index]?.size,
+    }));
+  }
+
+  async deleteOwnMessage(userId: string, roomId: string, messageId: string) {
+    await this.access.getAuthorizedRoom(userId, roomId);
+
+    const message = await this.repo.findMessageById(messageId);
+    if (
+      !message ||
+      String(message.roomId) !== roomId ||
+      String(message.senderId) !== userId
+    ) {
+      return throwBadRequest(ErrorCode.CHAT_MESSAGE_NOT_FOUND);
+    }
+
+    const deleted = await this.repo.softDeleteMessageForEveryone(messageId);
+    this.realtime.emitToConversation(roomId, 'message:deleted', {
+      roomId,
+      messageId,
+      deletedAt: deleted?.deletedAt ?? new Date(),
+    });
+
+    return {
+      roomId,
+      messageId,
+      deletedAt: deleted?.deletedAt ?? new Date(),
+    };
   }
 
   async markRoomRead(userId: string, roomId: string, dto: MarkRoomReadDto) {
@@ -933,6 +1007,91 @@ export class ChatService {
 
   private buildNotificationPreview(content: string) {
     return content.length > 80 ? `${content.slice(0, 77)}...` : content;
+  }
+
+  private buildAttachmentPreview(type: ChatMessageType) {
+    switch (type) {
+      case ChatMessageType.IMAGE:
+        return 'Photo';
+      case ChatMessageType.VIDEO:
+        return 'Video';
+      case ChatMessageType.AUDIO:
+        return 'Voice message';
+      default:
+        return 'Attachment';
+    }
+  }
+
+  private ensureAttachmentsAreValid(
+    attachments: Array<{ url: string; mimeType?: string; size?: number }>,
+  ) {
+    if (attachments.length > 5) {
+      throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+        reason: 'chat_attachment_limit_exceeded',
+      });
+    }
+
+    for (const attachment of attachments) {
+      if (!attachment.url || !/^https?:\/\//i.test(attachment.url)) {
+        throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+          reason: 'chat_attachment_url_invalid',
+        });
+      }
+
+      if (
+        attachment.mimeType &&
+        !/^(image|video)\//i.test(attachment.mimeType)
+      ) {
+        throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+          reason: 'chat_attachment_type_invalid',
+        });
+      }
+
+      if (attachment.size && attachment.size > 25 * 1024 * 1024) {
+        throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+          reason: 'chat_attachment_too_large',
+        });
+      }
+    }
+  }
+
+  private ensureMessageIsSafe(content: string) {
+    const enabled = this.configService.get<boolean>(
+      'chat.profanityFilter.enabled',
+      true,
+    );
+
+    if (!enabled || !content) {
+      return;
+    }
+
+    const configuredWords = this.configService.get<string>(
+      'chat.profanityFilter.blockedWords',
+      '',
+    );
+    const blockedWords = configuredWords
+      .split(',')
+      .map((word) => word.trim().toLowerCase())
+      .filter(Boolean);
+
+    if (blockedWords.length === 0) {
+      return;
+    }
+
+    const normalized = content.toLowerCase();
+    const matched = blockedWords.find((word) =>
+      new RegExp(`\\b${this.escapeRegExp(word)}\\b`, 'i').test(normalized),
+    );
+
+    if (matched) {
+      throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+        reason: 'chat_message_contains_blocked_language',
+      });
+    }
+  }
+
+  private escapeRegExp(value: string) {
+    return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   }
 
   private toObjectId(value: unknown): Types.ObjectId {

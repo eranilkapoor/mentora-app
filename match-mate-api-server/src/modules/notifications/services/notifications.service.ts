@@ -2,6 +2,10 @@ import { Injectable } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { NotificationRepository } from '../repositories/notification.repository';
 import { CreateNotificationDto } from '../dto/create-notification.dto';
+import {
+  RegisterDeviceTokenDto,
+  RevokeDeviceTokenDto,
+} from '../dto/register-device-token.dto';
 import { ListNotificationsDto } from '../dto/list-notifications.dto';
 import { NotificationAnalyticsQueryDto } from '../dto/notification-analytics-query.dto';
 import { NotificationDlqQueryDto } from '../dto/notification-dlq-query.dto';
@@ -86,6 +90,11 @@ export class NotificationsService {
       });
     }
 
+    const existingNotification = await this.findRecentDuplicate(dto);
+    if (existingNotification) {
+      return existingNotification;
+    }
+
     const user = await this.notificationRepo.findUserById(dto.userId);
     if (!user) {
       return throwNotFound(ErrorCode.USER_NOT_FOUND, {
@@ -113,6 +122,7 @@ export class NotificationsService {
       actorName: dto.actorName,
       actorImage: dto.actorImage,
       referenceId: dto.referenceId,
+      dedupeKey: dto.dedupeKey,
       action: dto.action,
       metadata: dto.metadata,
       priority: dto.priority ?? 'normal',
@@ -131,7 +141,10 @@ export class NotificationsService {
       message: dto.message,
       subject: dto.title,
       templateKey: undefined,
-      metadata: dto.metadata,
+      metadata: {
+        ...(dto.metadata ?? {}),
+        ...(dto.action ? { action: dto.action } : {}),
+      },
       decision,
     });
 
@@ -155,6 +168,25 @@ export class NotificationsService {
 
   getUnreadCount(userId: string) {
     return this.notificationRepo.countUnread(userId);
+  }
+
+  registerDeviceToken(userId: string, dto: RegisterDeviceTokenDto) {
+    return this.notificationRepo.upsertDeviceToken({
+      userId,
+      deviceId: dto.deviceId,
+      token: dto.token,
+      platform: dto.platform,
+    });
+  }
+
+  revokeDeviceToken(userId: string, dto: RevokeDeviceTokenDto) {
+    if (!dto.token && !dto.deviceId) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'notification_device_token_or_device_required',
+      });
+    }
+
+    return this.notificationRepo.revokeDeviceToken(userId, dto);
   }
 
   async markRead(userId: string, notificationId: string) {
@@ -390,6 +422,23 @@ export class NotificationsService {
         reason: 'notification_queue_disabled',
       });
     }
+  }
+
+  private async findRecentDuplicate(dto: CreateNotificationDto) {
+    if (!dto.dedupeKey) {
+      return null;
+    }
+
+    const windowSeconds =
+      typeof dto.metadata?.dedupeWindowSeconds === 'number'
+        ? dto.metadata.dedupeWindowSeconds
+        : 300;
+
+    return this.notificationRepo.findRecentByDedupeKey(
+      dto.userId,
+      dto.dedupeKey,
+      new Date(Date.now() - Math.max(windowSeconds, 1) * 1000),
+    );
   }
 
   private async dispatchAcrossChannels(

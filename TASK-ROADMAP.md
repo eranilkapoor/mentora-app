@@ -191,15 +191,15 @@
 | ✅ | Chat Messages API (REST + Socket.io) | Socket.io | Real-time messaging |
 | ✅ | Read Receipts | Chat DB | UX feedback |
 | ✅ | Typing Indicators | Socket.io | UX feedback |
-| ⚠️ | Media Sharing in Chat (image / video) | Storage | Engagement |
-| ⚠️ | Chat Moderation (AI + manual) | AI + Admin | Safety |
-| 🆕 | Message Deletion (own messages) | Chat DB | User control |
-| 🆕 | Message Reactions (emoji) | Chat DB | Engagement |
-| 🆕 | Voice Messages | Storage + CDN | Mobile-native UX |
-| 🆕 | Chat Request System (pre-match DM) | Subscription | Premium unlock |
-| 🆕 | Chat Translation (multilingual) | AI API | Pan-India regional support |
-| 🆕 | Profanity Filter (NLP) | AI API | Safety |
-| 🆕 | Chat Archiving | Chat DB | Long-term users |
+| ✅ | Media Sharing in Chat (image / video) | Storage | Engagement |
+| ✅ | Chat Moderation (AI + manual) | AI + Admin | Safety |
+| ✅ | Message Deletion (own messages) | Chat DB | User control |
+| ✅ | Message Reactions (emoji) | Chat DB | Engagement |
+| ✅ | Voice Messages | Storage + CDN | Mobile-native UX |
+| ✅ | Chat Request System (pre-match DM) | Subscription | Premium unlock |
+| ✅ | Chat Translation (multilingual) | AI API | Pan-India regional support |
+| ✅ | Profanity Filter (NLP) | AI API | Safety |
+| ✅ | Chat Archiving | Chat DB | Long-term users |
 
 ### Frontend
 
@@ -208,11 +208,11 @@
 | ✅ | Chat List Screen | API | UX |
 | ✅ | Chat Screen (real-time) | Socket.io | Core |
 | ✅ | Typing Indicator UI | Socket | UX |
-| ⚠️ | Media Sharing UI | Storage API | Blocked |
-| 🆕 | Chat Request Accept / Reject UI | API | Pre-match flow |
-| 🆕 | Voice Message Recording UI | Browser API | Engagement |
-| 🆕 | Message Reactions UI | Chat API | Engagement |
-| 🆕 | Translated Message Toggle | Translation API | Accessibility |
+| ✅ | Media Sharing UI | Storage API | Blocked |
+| ✅ | Chat Request Accept / Reject UI | API | Pre-match flow |
+| ✅ | Voice Message Recording UI | Browser API | Engagement |
+| ✅ | Message Reactions UI | Chat API | Engagement |
+| ✅ | Translated Message Toggle | Translation API | Accessibility |
 
 ---
 
@@ -222,25 +222,25 @@
 
 | Status | Task | Dependency | Why |
 |--------|------|------------|-----|
-| 🆕 | Push Notification Service (FCM / APNs) | Firebase | Mobile engagement |
-| 🆕 | In-App Notification System | DB + Socket | Real-time alerts |
-| 🆕 | Email Notification Templates (transactional) | Email Service | Professional comms |
-| 🆕 | SMS Notification Service | SMS API | Critical alerts |
-| 🆕 | WhatsApp Notification (Meta WABA) | Meta WABA | India-first high-engagement channel |
-| 🆕 | Notification Preference Management | User DB | Avoid spamming users |
-| 🆕 | Notification Deduplication | Queue + Cache | Prevent duplicate sends |
-| 🆕 | Scheduled / Drip Notifications | Scheduler (BullMQ) | Retention campaigns |
-| 🆕 | Deep Link Support in Notifications | Frontend | Direct to relevant screen |
+| ✅ | Push Notification Service (FCM / APNs) | Firebase | Mobile engagement |
+| ✅ | In-App Notification System | DB + Socket | Real-time alerts |
+| ✅ | Email Notification Templates (transactional) | Email Service | Professional comms |
+| ✅ | SMS Notification Service | SMS API | Critical alerts |
+| ✅ | WhatsApp Notification (Meta WABA) | Meta WABA | India-first high-engagement channel |
+| ✅ | Notification Preference Management | User DB | Avoid spamming users |
+| ✅ | Notification Deduplication | Queue + Cache | Prevent duplicate sends |
+| ✅ | Scheduled / Drip Notifications | Scheduler (BullMQ) | Retention campaigns |
+| ✅ | Deep Link Support in Notifications | Frontend | Direct to relevant screen |
 
 ### Frontend
 
 | Status | Task | Dependency | Why |
 |--------|------|------------|-----|
-| 🆕 | Notification Bell with Unread Count | WebSocket / API | Core UX |
-| 🆕 | Notification List / History Screen | API | Review past alerts |
-| 🆕 | Notification Settings Screen (granular) | API | User control |
-| 🆕 | Push Permission Prompt (iOS / Android) | Native SDK | Required for push |
-| 🆕 | In-App Toast / Banner Notifications | Socket + UI | Real-time feedback |
+| ✅ | Notification Bell with Unread Count | WebSocket / API | Core UX |
+| ✅ | Notification List / History Screen | API | Review past alerts |
+| ✅ | Notification Settings Screen (granular) | API | User control |
+| ✅ | Push Permission Prompt (iOS / Android) | Native SDK | Required for push |
+| ✅ | In-App Toast / Banner Notifications | Socket + UI | Real-time feedback |
 
 ---
 

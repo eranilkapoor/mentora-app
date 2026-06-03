@@ -69,6 +69,13 @@ export interface ChatMessage {
   createdAt?: string;
 }
 
+export interface ChatAttachment {
+  url: string;
+  name?: string;
+  mimeType?: string;
+  size?: number;
+}
+
 export interface ChatMessagesResponse {
   roomId: string;
   items: ChatMessage[];
@@ -128,12 +135,41 @@ export const chatApi = baseApi.injectEndpoints({
 
     sendMessage: builder.mutation<
       ApiResponse<ChatMessage>,
-      { roomId: string; content: string; clientMessageId?: string }
+      {
+        roomId: string;
+        content?: string;
+        type?: 'TEXT' | 'IMAGE' | 'VIDEO' | 'AUDIO' | 'FILE';
+        clientMessageId?: string;
+        attachments?: ChatAttachment[];
+      }
     >({
       query: ({ roomId, ...body }) => ({
         url: `/chats/rooms/${roomId}/messages`,
         method: 'POST',
         body,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
+
+    uploadChatAttachments: builder.mutation<
+      ApiResponse<ChatAttachment[]>,
+      FormData
+    >({
+      query: (body) => ({
+        url: '/chats/attachments',
+        method: 'POST',
+        body,
+        formData: true,
+      }),
+    }),
+
+    deleteChatMessage: builder.mutation<
+      ApiResponse<{ roomId: string; messageId: string; deletedAt: string }>,
+      { roomId: string; messageId: string }
+    >({
+      query: ({ roomId, messageId }) => ({
+        url: `/chats/rooms/${roomId}/messages/${messageId}`,
+        method: 'DELETE',
       }),
       invalidatesTags: ['Chat'],
     }),
@@ -177,5 +213,7 @@ export const {
   useGetMessagesQuery,
   useMarkRoomReadMutation,
   useSendMessageMutation,
+  useUploadChatAttachmentsMutation,
+  useDeleteChatMessageMutation,
   useUpdateRoomSettingsMutation,
 } = chatApi;

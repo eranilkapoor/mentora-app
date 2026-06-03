@@ -14,6 +14,10 @@ import {
   NotificationLog,
   NotificationLogSchema,
 } from './schemas/notification-logs.schema';
+import {
+  NotificationDeviceToken,
+  NotificationDeviceTokenSchema,
+} from './schemas/notification-device-token.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
 import { NotificationsService } from './services/notifications.service';
 import { NotificationRepository } from './repositories/notification.repository';
@@ -39,6 +43,10 @@ import { NotificationsGateway } from './controllers/notifications.gateway';
         schema: NotificationTemplateSchema,
       },
       { name: NotificationLog.name, schema: NotificationLogSchema },
+      {
+        name: NotificationDeviceToken.name,
+        schema: NotificationDeviceTokenSchema,
+      },
       { name: User.name, schema: UserSchema },
     ]),
   ],

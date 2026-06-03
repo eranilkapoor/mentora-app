@@ -8,6 +8,7 @@ import {
   NotificationChannelProvider,
   NotificationChannelResult,
 } from '../interfaces/notification-channel.interface';
+import { NotificationRepository } from '../repositories/notification.repository';
 
 @Injectable()
 export class PushNotificationProvider implements NotificationChannelProvider {
@@ -17,6 +18,7 @@ export class PushNotificationProvider implements NotificationChannelProvider {
   constructor(
     private readonly configService: ConfigService,
     private readonly logger: AppLogger,
+    private readonly notificationRepo: NotificationRepository,
   ) {}
 
   async send(
@@ -35,7 +37,7 @@ export class PushNotificationProvider implements NotificationChannelProvider {
       };
     }
 
-    const deviceTokens = this.extractDeviceTokens(payload.metadata);
+    const deviceTokens = await this.resolveDeviceTokens(payload);
 
     if (deviceTokens.length === 0) {
       return {
@@ -212,6 +214,15 @@ export class PushNotificationProvider implements NotificationChannelProvider {
     );
 
     return this.firebaseApp;
+  }
+
+  private async resolveDeviceTokens(payload: NotificationChannelPayload) {
+    const metadataTokens = this.extractDeviceTokens(payload.metadata);
+    if (metadataTokens.length > 0) {
+      return metadataTokens;
+    }
+
+    return this.notificationRepo.findActivePushTokens(payload.userId);
   }
 
   private extractDeviceTokens(metadata?: Record<string, unknown>) {

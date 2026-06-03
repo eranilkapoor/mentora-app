@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as Location from 'expo-location';
 import * as LocalAuthentication from 'expo-local-authentication';
+import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -16,8 +17,14 @@ import {
   connectRealtime,
   disconnectRealtime,
 } from '@/core/realtime/realtime.service';
+import { isPushNotificationsEnabled } from '@/core/utils/config';
 import { authMethodConfig } from '@/features/Auth/shared/authMethodConfig';
 import { useGetSecuritySettingsQuery } from '@/store/services/securitySettingsApi.service';
+import { useRegisterNotificationDeviceTokenMutation } from '@/store/services/notificationApi.service';
+import {
+  navigateFromNotificationAction,
+  parseNotificationAction,
+} from '@/features/Notifications/notificationNavigation';
 
 interface Props {
   children: React.ReactNode;
@@ -33,8 +40,20 @@ interface LocationSyncSnapshot {
 const LOCATION_SYNC_TTL_MS = 24 * 60 * 60 * 1000;
 const LOCATION_SYNC_DISTANCE_METERS = 2000;
 
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldPlaySound: false,
+    shouldSetBadge: true,
+    shouldShowBanner: true,
+    shouldShowList: true,
+  }),
+});
+
 const getLocationSyncKey = (userId: string): string =>
   `profile-location-sync:${userId}`;
+
+const getPushTokenSyncKey = (userId: string): string =>
+  `notification-push-token:${userId}`;
 
 const toRadians = (value: number): number => (value * Math.PI) / 180;
 
@@ -72,6 +91,7 @@ export default function AppInitializer({ children }: Props) {
   const locationSyncInFlight = useRef(false);
   const biometricPromptInFlight = useRef(false);
   const [updateProfileLocation] = useUpdateProfileLocationMutation();
+  const [registerPushToken] = useRegisterNotificationDeviceTokenMutation();
   const { data: securityData, isLoading: securityLoading } =
     useGetSecuritySettingsQuery(undefined, {
       skip:
@@ -139,6 +159,114 @@ export default function AppInitializer({ children }: Props) {
       disconnectRealtime();
     };
   }, [accessToken, dispatch]);
+
+  useEffect(() => {
+    if (
+      !accessToken ||
+      !userId ||
+      !isPushNotificationsEnabled() ||
+      Platform.OS === 'web'
+    ) {
+      return;
+    }
+
+    let isCancelled = false;
+
+    const registerDeviceForPush = async () => {
+      try {
+        const existingPermission = await Notifications.getPermissionsAsync();
+        let status = existingPermission.status;
+
+        if (status !== 'granted') {
+          const requestedPermission =
+            await Notifications.requestPermissionsAsync();
+          status = requestedPermission.status;
+        }
+
+        if (status !== 'granted' || isCancelled) {
+          return;
+        }
+
+        const devicePushToken = await Notifications.getDevicePushTokenAsync();
+        const token = String(devicePushToken.data ?? '').trim();
+        if (!token) {
+          return;
+        }
+
+        const deviceId = await getDeviceId();
+        const storageKey = getPushTokenSyncKey(userId);
+        const cached = await Storage.getItem<{
+          token: string;
+          deviceId: string;
+        }>(storageKey);
+
+        if (cached?.token === token && cached.deviceId === deviceId) {
+          return;
+        }
+
+        await registerPushToken({
+          token,
+          deviceId,
+          platform:
+            Platform.OS === 'ios' || Platform.OS === 'android'
+              ? Platform.OS
+              : 'unknown',
+        }).unwrap();
+
+        await Storage.setItem(storageKey, { token, deviceId });
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[AppInitializer] push registration failed:', error);
+        }
+      }
+    };
+
+    void registerDeviceForPush();
+
+    return () => {
+      isCancelled = true;
+    };
+  }, [accessToken, registerPushToken, userId]);
+
+  useEffect(() => {
+    if (!isPushNotificationsEnabled() || Platform.OS === 'web') {
+      return;
+    }
+
+    const subscription = Notifications.addNotificationResponseReceivedListener(
+      (response) => {
+        const data = response.notification.request.content.data as Record<
+          string,
+          unknown
+        >;
+        const action =
+          parseNotificationAction(data.action) ??
+          parseNotificationAction({
+            screen: data.screen,
+            params: data.params,
+          });
+
+        const title =
+          typeof data.title === 'string'
+            ? data.title
+            : response.notification.request.content.title;
+
+        navigateFromNotificationAction(action, {
+          ...(typeof data.actorId === 'string'
+            ? { actorId: data.actorId }
+            : {}),
+          ...(title ? { title } : {}),
+          ...(typeof data.actorImage === 'string'
+            ? { image: data.actorImage }
+            : {}),
+        });
+      }
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
 
   useEffect(() => {
     if (!authMethodConfig.biometric || Platform.OS === 'web') {

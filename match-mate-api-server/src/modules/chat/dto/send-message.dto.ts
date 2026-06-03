@@ -5,6 +5,7 @@ import {
   IsOptional,
   IsString,
   MaxLength,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
@@ -30,9 +31,10 @@ export class MessageAttachmentDto {
 }
 
 export class SendMessageBodyDto {
+  @ValidateIf((dto: SendMessageBodyDto) => !dto.attachments?.length)
   @IsString()
   @MaxLength(5000)
-  content!: string;
+  content?: string;
 
   @IsOptional()
   @IsEnum(ChatMessageType)

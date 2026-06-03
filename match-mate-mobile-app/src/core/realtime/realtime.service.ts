@@ -11,6 +11,7 @@ import {
   notificationApi,
 } from '@/store/services/notificationApi.service';
 import { io, Socket } from 'socket.io-client';
+import { showInfo } from '@/core/utils/toast';
 
 type RealtimeNamespace = 'chats' | 'notifications';
 
@@ -29,6 +30,12 @@ interface MessageReadPayload {
   userId: string;
   upToMessageId?: string | null;
   readAt?: string;
+}
+
+interface MessageDeletedPayload {
+  roomId: string;
+  messageId: string;
+  deletedAt?: string;
 }
 
 export interface UserBlockedPayload {
@@ -126,6 +133,28 @@ const updateRoomMessageReceipts = (
   });
 };
 
+const removeDeletedMessageFromCache = (
+  dispatch: AppDispatch,
+  payload: MessageDeletedPayload
+): void => {
+  const queryArgs = [
+    { roomId: payload.roomId, limit: 50 },
+    { roomId: payload.roomId, limit: 30 },
+  ];
+
+  queryArgs.forEach((queryArg) => {
+    dispatch(
+      chatApi.util.updateQueryData('getMessages', queryArg, (draft) => {
+        if (!draft.success || !draft.data?.items) return;
+
+        draft.data.items = draft.data.items.filter(
+          (message) => message.id !== payload.messageId
+        );
+      })
+    );
+  });
+};
+
 const prependNotificationToCache = (
   dispatch: AppDispatch,
   notification: AppNotification
@@ -195,6 +224,11 @@ export const connectRealtime = (token: string, dispatch: AppDispatch): void => {
     dispatch(chatApi.util.invalidateTags(['Chat']));
   });
 
+  chatSocket.on('message:deleted', (payload: MessageDeletedPayload) => {
+    removeDeletedMessageFromCache(dispatch, payload);
+    dispatch(chatApi.util.invalidateTags(['Chat']));
+  });
+
   chatSocket.on('typing', (payload: RealtimeTypingPayload) => {
     DeviceEventEmitter.emit(REALTIME_TYPING_EVENT, payload);
   });
@@ -206,6 +240,10 @@ export const connectRealtime = (token: string, dispatch: AppDispatch): void => {
 
   notificationSocket.on('notification:new', (notification: AppNotification) => {
     prependNotificationToCache(dispatch, notification);
+    showInfo({
+      title: notification.title,
+      message: notification.message,
+    });
     dispatch(notificationApi.util.invalidateTags(['Notification']));
   });
 
