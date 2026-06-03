@@ -38,7 +38,6 @@ export const matchDetailStyles = (theme: Theme) =>
       fontSize: 13,
       fontWeight: '700',
     },
-    // Fixed: overlayDark → rgba constant
     carouselScrim: {
       position: 'absolute',
       bottom: 0,
