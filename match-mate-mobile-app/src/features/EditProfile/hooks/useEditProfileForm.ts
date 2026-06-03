@@ -560,6 +560,7 @@ export function useEditProfileForm() {
     removedVideoIds,
     serverVideos,
     setPrimaryVideo,
+    t,
   ]);
 
   const updateSection = useCallback(
