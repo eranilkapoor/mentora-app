@@ -83,8 +83,11 @@ export interface CreatePaymentOrderRequest {
   planId: string;
   currency?: string;
   purpose?: 'subscription' | 'profile_boost';
+  gateway?: 'razorpay' | 'stripe' | 'apple_iap' | 'google_play' | 'manual';
   idempotencyKey?: string;
   description?: string;
+  couponCode?: string;
+  customerGstin?: string;
   metadata?: Record<string, unknown>;
 }
 
@@ -93,11 +96,59 @@ export interface PaymentOrder {
   gatewayOrderId?: string;
   amount: number;
   taxAmount: number;
+  discountAmount?: number;
   netAmount: number;
+  couponCode?: string;
   currency: string;
   status: string;
   gateway: string;
   expiresAt: string;
+}
+
+export interface ValidateCouponRequest {
+  planId: string;
+  code: string;
+}
+
+export interface CouponValidationResult {
+  couponCode?: string;
+  discountAmount: number;
+  couponSummary?: {
+    code: string;
+    title?: string;
+    discountType: string;
+    discountValue: number;
+    discountAmount: number;
+  };
+}
+
+export interface VerifyStoreSubscriptionRequest {
+  gateway: 'apple_iap' | 'google_play';
+  planId: string;
+  productId: string;
+  transactionId: string;
+  originalTransactionId?: string;
+  receiptData?: string;
+  purchaseToken?: string;
+  couponCode?: string;
+  payload?: Record<string, unknown>;
+}
+
+export interface StartFreeTrialRequest {
+  planId: string;
+  trialDays?: number;
+}
+
+export interface PaymentInvoice {
+  invoiceNumber: string;
+  orderId: string;
+  currency: string;
+  taxableAmount: number;
+  discountAmount: number;
+  gstPercentage: number;
+  gstAmount: number;
+  totalAmount: number;
+  issuedAt: string;
 }
 
 const unwrapApiResponse = <T>(response: ApiResponse<T>, fallback: T): T => {
@@ -171,6 +222,57 @@ export const membershipApi = baseApi.injectEndpoints({
         unwrapApiResponse(response, {} as PaymentOrder),
       invalidatesTags: ['Payment'],
     }),
+
+    validateMembershipCoupon: builder.mutation<
+      CouponValidationResult,
+      ValidateCouponRequest
+    >({
+      query: (body) => ({
+        url: '/payments/coupons/validate',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: ApiResponse<CouponValidationResult>) =>
+        unwrapApiResponse(response, { discountAmount: 0 }),
+    }),
+
+    verifyStoreSubscription: builder.mutation<
+      BillingPayment,
+      VerifyStoreSubscriptionRequest
+    >({
+      query: (body) => ({
+        url: '/payments/store/verify-subscription',
+        method: 'POST',
+        body,
+      }),
+      transformResponse: (response: ApiResponse<BillingPayment>) =>
+        unwrapApiResponse(response, {} as BillingPayment),
+      invalidatesTags: ['Membership', 'Payment'],
+    }),
+
+    startFreeTrial: builder.mutation<ActiveSubscription, StartFreeTrialRequest>(
+      {
+        query: (body) => ({
+          url: '/subscriptions/trial',
+          method: 'POST',
+          body,
+        }),
+        transformResponse: (
+          response: ApiResponse<{ subscription?: ActiveSubscription }>
+        ) => unwrapApiResponse(response, {}).subscription as ActiveSubscription,
+        invalidatesTags: ['Membership'],
+      }
+    ),
+
+    getPaymentInvoice: builder.query<PaymentInvoice | null, string>({
+      query: (orderId) => ({
+        url: `/payments/${orderId}/invoice`,
+        method: 'GET',
+      }),
+      transformResponse: (response: ApiResponse<PaymentInvoice>) =>
+        unwrapApiResponse(response, null),
+      providesTags: ['Payment'],
+    }),
   }),
 
   overrideExisting: false,
@@ -182,4 +284,8 @@ export const {
   useGetBillingSummaryQuery,
   useGetProfileBoostsQuery,
   useCreateMembershipOrderMutation,
+  useValidateMembershipCouponMutation,
+  useVerifyStoreSubscriptionMutation,
+  useStartFreeTrialMutation,
+  useGetPaymentInvoiceQuery,
 } = membershipApi;

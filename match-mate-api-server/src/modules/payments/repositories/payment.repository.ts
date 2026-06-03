@@ -43,6 +43,9 @@ export class PaymentRepository {
     method?: PaymentMethod;
     signatureVerified: boolean;
     gatewayPayload?: Record<string, unknown>;
+    storeProductId?: string;
+    storeTransactionId?: string;
+    storeOriginalTransactionId?: string;
   }) {
     return this.model
       .findOneAndUpdate(
@@ -56,6 +59,9 @@ export class PaymentRepository {
             signatureVerified: params.signatureVerified,
             paidAt: new Date(),
             gatewayPayload: params.gatewayPayload,
+            storeProductId: params.storeProductId,
+            storeTransactionId: params.storeTransactionId,
+            storeOriginalTransactionId: params.storeOriginalTransactionId,
           },
           $inc: {
             attemptCount: 1,
@@ -275,6 +281,45 @@ export class PaymentRepository {
       if (toDate) {
         createdAt.$lte = toDate;
       }
+    }
+
+    return this.model.countDocuments(filter).exec();
+  }
+
+  expireStalePending(beforeDate: Date) {
+    return this.model
+      .updateMany(
+        {
+          status: PaymentStatus.PENDING,
+          expiresAt: { $lt: beforeDate },
+        },
+        {
+          $set: {
+            status: PaymentStatus.EXPIRED,
+            failedAt: new Date(),
+            failureCode: 'payment_expired',
+            failureReason: 'Payment was not completed before expiry.',
+          },
+        },
+      )
+      .exec();
+  }
+
+  attachInvoice(orderId: string, invoiceId: Types.ObjectId) {
+    return this.model
+      .findOneAndUpdate({ orderId }, { $set: { invoiceId } }, { new: true })
+      .lean()
+      .exec();
+  }
+
+  countSuccessfulCouponUsage(params: { couponCode: string; userId?: string }) {
+    const filter: Record<string, unknown> = {
+      couponCode: params.couponCode.toUpperCase(),
+      status: PaymentStatus.SUCCESS,
+    };
+
+    if (params.userId) {
+      filter.userId = new Types.ObjectId(params.userId);
     }
 
     return this.model.countDocuments(filter).exec();

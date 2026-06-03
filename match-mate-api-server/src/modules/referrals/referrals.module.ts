@@ -9,8 +9,13 @@ import {
   ReferralReward,
   ReferralRewardSchema,
 } from './schemas/referral-reward.schema';
+import {
+  WalletTransaction,
+  WalletTransactionSchema,
+} from './schemas/wallet-transaction.schema';
 import { ReferralsController } from './controllers/referrals.controller';
 import { ReferralsService } from './services/referrals.service';
+import { WalletService } from './services/wallet.service';
 
 @Module({
   imports: [
@@ -18,10 +23,11 @@ import { ReferralsService } from './services/referrals.service';
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
       { name: ReferralReward.name, schema: ReferralRewardSchema },
+      { name: WalletTransaction.name, schema: WalletTransactionSchema },
     ]),
   ],
   controllers: [ReferralsController],
-  providers: [ReferralsService],
-  exports: [ReferralsService],
+  providers: [ReferralsService, WalletService],
+  exports: [ReferralsService, WalletService],
 })
 export class ReferralsModule {}

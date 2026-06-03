@@ -40,6 +40,16 @@ export class CreateOrderDto {
   description?: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(40)
+  couponCode?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(15)
+  customerGstin?: string;
+
+  @IsOptional()
   @IsObject()
   metadata?: Record<string, unknown>;
 }

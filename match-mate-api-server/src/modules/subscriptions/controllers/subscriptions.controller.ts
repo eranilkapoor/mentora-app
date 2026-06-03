@@ -1,4 +1,4 @@
-import { Controller, Get, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { PlanService } from '../services/plan.service';
@@ -6,6 +6,7 @@ import { SubscriptionsService } from '../services/subscriptions.service';
 import { ProfileBoostService } from '../services/profile-boost.service';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
+import { StartFreeTrialDto } from '../dto/start-free-trial.dto';
 
 @Controller('subscriptions')
 @UseGuards(JwtAuthGuard)
@@ -37,6 +38,21 @@ export class SubscriptionsController {
     return successResponse(
       await this.subscriptionsService.getBillingSummary(req.user.sub),
       SuccessCode.SUBSCRIPTION_BILLING_FETCHED,
+    );
+  }
+
+  @Post('trial')
+  async startFreeTrial(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: StartFreeTrialDto,
+  ) {
+    return successResponse(
+      await this.subscriptionsService.startFreeTrial(
+        req.user.sub,
+        dto.planId,
+        dto.trialDays,
+      ),
+      SuccessCode.SUBSCRIPTION_CREATED,
     );
   }
 

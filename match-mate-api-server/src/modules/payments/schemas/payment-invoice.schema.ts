@@ -1,0 +1,62 @@
+import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
+import { Document, Types } from 'mongoose';
+import { COLLECTION_NAMES } from '@/common/constants';
+
+@Schema({ collection: COLLECTION_NAMES.PAYMENT_INVOICE, timestamps: true })
+export class PaymentInvoice {
+  @Prop({ required: true, unique: true, index: true })
+  invoiceNumber!: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Payment', required: true, index: true })
+  paymentId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
+  userId!: Types.ObjectId;
+
+  @Prop({ required: true })
+  orderId!: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'Plan' })
+  planId?: Types.ObjectId;
+
+  @Prop({ default: 'INR', uppercase: true })
+  currency!: string;
+
+  @Prop({ required: true, min: 0 })
+  taxableAmount!: number;
+
+  @Prop({ default: 0, min: 0 })
+  discountAmount!: number;
+
+  @Prop({ default: 0, min: 0 })
+  gstPercentage!: number;
+
+  @Prop({ default: 0, min: 0 })
+  gstAmount!: number;
+
+  @Prop({ required: true, min: 0 })
+  totalAmount!: number;
+
+  @Prop({ default: '998439' })
+  sacCode!: string;
+
+  @Prop()
+  customerGstin?: string;
+
+  @Prop({ type: Object })
+  customer?: {
+    name?: string;
+    email?: string;
+    phone?: string;
+  };
+
+  @Prop({ default: Date.now })
+  issuedAt!: Date;
+}
+
+export type PaymentInvoiceDocument = PaymentInvoice & Document;
+export const PaymentInvoiceSchema =
+  SchemaFactory.createForClass(PaymentInvoice);
+
+PaymentInvoiceSchema.index({ userId: 1, issuedAt: -1 });
+PaymentInvoiceSchema.index({ issuedAt: -1 });

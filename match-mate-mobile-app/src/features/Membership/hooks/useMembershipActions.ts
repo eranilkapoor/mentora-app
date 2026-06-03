@@ -1,4 +1,5 @@
 import { useCallback } from 'react';
+import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useCreateMembershipOrderMutation } from '@/store/services/membershipApi.service';
 import { showError, showSuccess } from '@/core/utils/toast';
@@ -23,6 +24,12 @@ export function useMembershipActions() {
         const order = await createOrder({
           planId: selectedPlanItem.source._id,
           currency: selectedPlanItem.source.currency,
+          gateway:
+            Platform.OS === 'ios'
+              ? 'apple_iap'
+              : Platform.OS === 'android'
+                ? 'google_play'
+                : 'razorpay',
           idempotencyKey: `${selectedPlanItem.source._id}-${Date.now()}`,
           description: `${selectedPlanItem.name} membership`,
         }).unwrap();

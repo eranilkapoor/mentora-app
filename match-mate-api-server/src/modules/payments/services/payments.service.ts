@@ -14,8 +14,20 @@ import { ListPaymentsDto } from '../dto/list-payments.dto';
 import { PaymentWebhookDto } from '../dto/payment-webhook.dto';
 import { PaymentReconciliationDto } from '../dto/payment-reconciliation.dto';
 import { PaymentSettlementReportDto } from '../dto/payment-settlement-report.dto';
+import { ValidateCouponDto } from '../dto/validate-coupon.dto';
+import { VerifyStoreSubscriptionDto } from '../dto/verify-store-subscription.dto';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
+import { PaymentMethod } from '../enums/payment-method.enum';
+import { CouponDiscountType, CouponStatus } from '../enums/coupon.enum';
+import {
+  PromotionCoupon,
+  PromotionCouponDocument,
+} from '../schemas/promotion-coupon.schema';
+import {
+  PaymentInvoice,
+  PaymentInvoiceDocument,
+} from '../schemas/payment-invoice.schema';
 import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
 import { SubscriptionsService } from '@/modules/subscriptions/services/subscriptions.service';
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
@@ -38,6 +50,10 @@ export class PaymentsService {
     private readonly profileBoostService: ProfileBoostService,
     @InjectModel(Plan.name)
     private readonly planModel: Model<Plan>,
+    @InjectModel(PromotionCoupon.name)
+    private readonly couponModel: Model<PromotionCouponDocument>,
+    @InjectModel(PaymentInvoice.name)
+    private readonly invoiceModel: Model<PaymentInvoiceDocument>,
   ) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
@@ -70,8 +86,14 @@ export class PaymentsService {
     );
 
     const amount = Number(plan.price);
+    const discount = await this.calculateCouponDiscount({
+      userId,
+      plan,
+      couponCode: dto.couponCode,
+      amount,
+    });
     const taxAmount = Number(((amount * taxPercentage) / 100).toFixed(2));
-    const discountAmount = 0;
+    const discountAmount = discount.discountAmount;
     const netAmount = Number((amount + taxAmount - discountAmount).toFixed(2));
 
     const orderId = this.generateOrderId();
@@ -85,6 +107,7 @@ export class PaymentsService {
       amount,
       taxAmount,
       discountAmount,
+      couponCode: discount.couponCode,
       netAmount,
       currency: (dto.currency ?? 'INR').toUpperCase(),
       status: PaymentStatus.PENDING,
@@ -96,7 +119,9 @@ export class PaymentsService {
       metadata: {
         ...(dto.metadata ?? {}),
         description: dto.description,
+        coupon: discount.couponSummary,
       },
+      customer: dto.customerGstin ? { gstin: dto.customerGstin } : undefined,
     });
 
     return {
@@ -104,7 +129,9 @@ export class PaymentsService {
       gatewayOrderId: payment.gatewayOrderId,
       amount: payment.amount,
       taxAmount: payment.taxAmount,
+      discountAmount: payment.discountAmount,
       netAmount: payment.netAmount,
+      couponCode: payment.couponCode,
       currency: payment.currency,
       status: payment.status,
       gateway: payment.gateway,
@@ -174,6 +201,7 @@ export class PaymentsService {
       updated.userId.toString(),
       updated,
     );
+    await this.createInvoiceIfRequired(updated);
 
     return updated;
   }
@@ -253,6 +281,7 @@ export class PaymentsService {
         updated.userId.toString(),
         updated,
       );
+      await this.createInvoiceIfRequired(updated);
 
       return { processed: true, status: updated.status };
     }
@@ -314,6 +343,169 @@ export class PaymentsService {
     }
 
     return payment;
+  }
+
+  async validateCoupon(userId: string, dto: ValidateCouponDto) {
+    const plan = await this.planModel.findById(dto.planId).lean().exec();
+
+    if (!plan || !plan.isActive) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'invalid_or_inactive_plan',
+      });
+    }
+
+    const amount = Number(plan.price);
+    return this.calculateCouponDiscount({
+      userId,
+      plan,
+      couponCode: dto.code,
+      amount,
+    });
+  }
+
+  async verifyStoreSubscription(
+    userId: string,
+    dto: VerifyStoreSubscriptionDto,
+  ) {
+    this.ensureUserId(userId);
+    const plan = await this.planModel.findById(dto.planId).lean().exec();
+
+    if (!plan || !plan.isActive) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'invalid_or_inactive_plan',
+      });
+    }
+
+    this.ensureMobileStoreReceiptAllowed(dto);
+
+    const amount = Number(plan.price);
+    const discount = await this.calculateCouponDiscount({
+      userId,
+      plan,
+      couponCode: dto.couponCode,
+      amount,
+    });
+    const taxPercentage = Number(
+      this.configService.get<string>('payments.gstPercentage') ?? '0',
+    );
+    const taxAmount = Number(((amount * taxPercentage) / 100).toFixed(2));
+    const netAmount = Number(
+      (amount + taxAmount - discount.discountAmount).toFixed(2),
+    );
+    const orderId = this.generateOrderId();
+
+    const payment = await this.paymentRepo.create({
+      userId: new Types.ObjectId(userId),
+      planId: new Types.ObjectId(dto.planId),
+      orderId,
+      gatewayOrderId: dto.transactionId,
+      gatewayPaymentId: dto.transactionId,
+      amount,
+      taxAmount,
+      discountAmount: discount.discountAmount,
+      couponCode: discount.couponCode,
+      netAmount,
+      currency: plan.currency ?? 'INR',
+      gateway: dto.gateway,
+      method:
+        dto.gateway === PaymentGateway.APPLE_IAP
+          ? PaymentMethod.APPLE_PAY
+          : PaymentMethod.GOOGLE_PAY,
+      purpose: PaymentPurpose.SUBSCRIPTION,
+      status: PaymentStatus.SUCCESS,
+      signatureVerified: true,
+      initiatedAt: new Date(),
+      paidAt: new Date(),
+      storeProductId: dto.productId,
+      storeTransactionId: dto.transactionId,
+      storeOriginalTransactionId: dto.originalTransactionId,
+      gatewayPayload: {
+        provider: dto.gateway,
+        productId: dto.productId,
+        transactionId: dto.transactionId,
+        originalTransactionId: dto.originalTransactionId,
+        payload: dto.payload,
+      },
+      metadata: {
+        coupon: discount.couponSummary,
+      },
+    });
+
+    await this.activateSubscriptionIfRequired(userId, payment, {
+      paymentProvider: dto.gateway,
+      autoRenew: true,
+      storeProductId: dto.productId,
+      storeTransactionId: dto.transactionId,
+      storeOriginalTransactionId: dto.originalTransactionId,
+    });
+    await this.createInvoiceIfRequired(payment);
+
+    return payment;
+  }
+
+  async getInvoice(userId: string, orderId: string) {
+    const payment = await this.paymentRepo.findByOrderIdAndUser(
+      orderId,
+      userId,
+    );
+
+    if (!payment) {
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND);
+    }
+
+    const invoice = await this.invoiceModel
+      .findOne({ paymentId: payment._id })
+      .lean()
+      .exec();
+
+    if (!invoice) {
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND, {
+        reason: 'invoice_not_generated',
+      });
+    }
+
+    return invoice;
+  }
+
+  async adminGstReport(query: { fromDate?: string; toDate?: string }) {
+    const fromDate = query.fromDate
+      ? new Date(query.fromDate)
+      : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const toDate = query.toDate ? new Date(query.toDate) : new Date();
+
+    const invoices = await this.invoiceModel
+      .find({ issuedAt: { $gte: fromDate, $lte: toDate } })
+      .sort({ issuedAt: -1 })
+      .lean()
+      .exec();
+
+    const totals = invoices.reduce(
+      (acc, invoice) => {
+        acc.taxableAmount += Number(invoice.taxableAmount ?? 0);
+        acc.discountAmount += Number(invoice.discountAmount ?? 0);
+        acc.gstAmount += Number(invoice.gstAmount ?? 0);
+        acc.totalAmount += Number(invoice.totalAmount ?? 0);
+        return acc;
+      },
+      {
+        taxableAmount: 0,
+        discountAmount: 0,
+        gstAmount: 0,
+        totalAmount: 0,
+      },
+    );
+
+    return {
+      range: { fromDate, toDate },
+      invoiceCount: invoices.length,
+      totals,
+      invoices,
+    };
+  }
+
+  async expireStalePendingPayments() {
+    const result = await this.paymentRepo.expireStalePending(new Date());
+    return { expiredCount: result.modifiedCount };
   }
 
   adminListPayments(query: AdminListPaymentsDto) {
@@ -484,6 +676,207 @@ export class PaymentsService {
     };
   }
 
+  private async calculateCouponDiscount(params: {
+    userId: string;
+    plan: Plan & { _id: Types.ObjectId };
+    couponCode?: string;
+    amount: number;
+  }) {
+    const normalizedCode = params.couponCode?.trim().toUpperCase();
+
+    if (!normalizedCode) {
+      return {
+        couponCode: undefined,
+        discountAmount: 0,
+        couponSummary: undefined,
+      };
+    }
+
+    const now = new Date();
+    const coupon = await this.couponModel
+      .findOne({
+        code: normalizedCode,
+        status: CouponStatus.ACTIVE,
+        validFrom: { $lte: now },
+        validTill: { $gte: now },
+      })
+      .lean()
+      .exec();
+
+    if (!coupon) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coupon_invalid_or_expired',
+      });
+    }
+
+    if (
+      coupon.eligibleTiers?.length &&
+      !coupon.eligibleTiers.includes(params.plan.tier)
+    ) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coupon_not_valid_for_plan_tier',
+      });
+    }
+
+    if (
+      coupon.eligiblePlanTypes?.length &&
+      !coupon.eligiblePlanTypes.includes(params.plan.planType)
+    ) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coupon_not_valid_for_plan_type',
+      });
+    }
+
+    if (
+      coupon.eligiblePlanIds?.length &&
+      !coupon.eligiblePlanIds.some(
+        (planId) => String(planId) === String(params.plan._id),
+      )
+    ) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coupon_not_valid_for_plan',
+      });
+    }
+
+    const [totalUses, userUses] = await Promise.all([
+      this.paymentRepo.countSuccessfulCouponUsage({
+        couponCode: normalizedCode,
+      }),
+      this.paymentRepo.countSuccessfulCouponUsage({
+        couponCode: normalizedCode,
+        userId: params.userId,
+      }),
+    ]);
+
+    if (coupon.maxRedemptions && totalUses >= coupon.maxRedemptions) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coupon_redemption_limit_reached',
+      });
+    }
+
+    if (
+      coupon.maxRedemptionsPerUser &&
+      userUses >= coupon.maxRedemptionsPerUser
+    ) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coupon_user_limit_reached',
+      });
+    }
+
+    const rawDiscount =
+      coupon.discountType === CouponDiscountType.PERCENT
+        ? (params.amount * Number(coupon.discountValue)) / 100
+        : Number(coupon.discountValue);
+    const cappedDiscount = coupon.maxDiscountAmount
+      ? Math.min(rawDiscount, Number(coupon.maxDiscountAmount))
+      : rawDiscount;
+    const discountAmount = Number(
+      Math.min(params.amount, Math.max(0, cappedDiscount)).toFixed(2),
+    );
+
+    return {
+      couponCode: normalizedCode,
+      discountAmount,
+      couponSummary: {
+        code: normalizedCode,
+        title: coupon.title,
+        discountType: coupon.discountType,
+        discountValue: coupon.discountValue,
+        discountAmount,
+      },
+    };
+  }
+
+  private ensureMobileStoreReceiptAllowed(dto: VerifyStoreSubscriptionDto) {
+    const mode =
+      this.configService.get<string>('payments.mobileStoreVerificationMode') ??
+      'sandbox';
+
+    if (mode === 'disabled') {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'mobile_store_billing_disabled',
+      });
+    }
+
+    if (dto.gateway === PaymentGateway.APPLE_IAP && !dto.receiptData) {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'apple_receipt_required',
+      });
+    }
+
+    if (dto.gateway === PaymentGateway.GOOGLE_PLAY && !dto.purchaseToken) {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'google_purchase_token_required',
+      });
+    }
+
+    if (mode === 'strict') {
+      const strictEnabled = this.configService.get<boolean>(
+        'payments.mobileStoreStrictVerificationEnabled',
+      );
+
+      if (!strictEnabled) {
+        return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+          reason: 'strict_store_verification_not_configured',
+        });
+      }
+    }
+  }
+
+  private async createInvoiceIfRequired(payment: {
+    _id?: { toString(): string };
+    orderId: string;
+    userId: { toString(): string };
+    planId?: { toString(): string };
+    amount?: number;
+    discountAmount?: number;
+    taxAmount?: number;
+    netAmount?: number;
+    currency?: string;
+    customer?: { gstin?: string };
+  }) {
+    if (!payment._id || !payment.orderId) {
+      return;
+    }
+
+    const existing = await this.invoiceModel
+      .findOne({ paymentId: new Types.ObjectId(payment._id.toString()) })
+      .lean()
+      .exec();
+
+    if (existing) {
+      return existing;
+    }
+
+    const issuedAt = new Date();
+    const invoice = await this.invoiceModel.create({
+      invoiceNumber: `INV-${issuedAt.getFullYear()}-${payment.orderId.replace(/^ORD_/, '')}`,
+      paymentId: new Types.ObjectId(payment._id.toString()),
+      userId: new Types.ObjectId(payment.userId.toString()),
+      orderId: payment.orderId,
+      planId: payment.planId
+        ? new Types.ObjectId(payment.planId.toString())
+        : undefined,
+      currency: payment.currency ?? 'INR',
+      taxableAmount: Number(payment.amount ?? 0),
+      discountAmount: Number(payment.discountAmount ?? 0),
+      gstPercentage: Number(
+        this.configService.get<string>('payments.gstPercentage') ?? '0',
+      ),
+      gstAmount: Number(payment.taxAmount ?? 0),
+      totalAmount: Number(payment.netAmount ?? 0),
+      customerGstin: payment.customer?.gstin,
+      issuedAt,
+    });
+
+    await this.paymentRepo.attachInvoice(
+      payment.orderId,
+      new Types.ObjectId(invoice._id.toString()),
+    );
+
+    return invoice;
+  }
+
   private ensureUserId(userId: string) {
     if (!userId) {
       return throwUnauthorized(ErrorCode.AUTH_UNAUTHORIZED);
@@ -539,6 +932,17 @@ export class PaymentsService {
       purpose?: PaymentPurpose;
       planId?: { toString(): string };
       netAmount?: number;
+      gateway?: PaymentGateway;
+      storeProductId?: string;
+      storeTransactionId?: string;
+      storeOriginalTransactionId?: string;
+    },
+    options?: {
+      paymentProvider?: PaymentGateway;
+      autoRenew?: boolean;
+      storeProductId?: string;
+      storeTransactionId?: string;
+      storeOriginalTransactionId?: string;
     },
   ) {
     if (payment.purpose !== PaymentPurpose.SUBSCRIPTION || !payment.planId) {
@@ -548,6 +952,17 @@ export class PaymentsService {
     await this.subscriptionsService.purchasePlan(
       userId,
       payment.planId.toString(),
+      {
+        paymentId: payment._id?.toString(),
+        paymentProvider: options?.paymentProvider ?? payment.gateway,
+        autoRenew: options?.autoRenew,
+        storeProductId: options?.storeProductId ?? payment.storeProductId,
+        storeTransactionId:
+          options?.storeTransactionId ?? payment.storeTransactionId,
+        storeOriginalTransactionId:
+          options?.storeOriginalTransactionId ??
+          payment.storeOriginalTransactionId,
+      },
     );
     await this.referralsService.awardSubscriptionReward(userId, {
       paymentId: payment._id?.toString(),

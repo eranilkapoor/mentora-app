@@ -21,6 +21,9 @@ export const COLLECTION_NAMES = {
   SUBSCRIPTION: 'subscriptions',
   PROFILE_BOOST: 'profile_boosts',
   PAYMENT: 'payments',
+  PROMOTION_COUPON: 'promotion_coupons',
+  PAYMENT_INVOICE: 'payment_invoices',
+  WALLET_TRANSACTION: 'wallet_transactions',
   REFERRAL_REWARD: 'referral_rewards',
 
   ANALYTICS_EVENT: 'analytics_events',

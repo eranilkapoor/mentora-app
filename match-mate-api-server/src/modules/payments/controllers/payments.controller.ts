@@ -16,6 +16,8 @@ import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
 import { FailPaymentDto } from '../dto/fail-payment.dto';
 import { ListPaymentsDto } from '../dto/list-payments.dto';
 import { PaymentWebhookDto } from '../dto/payment-webhook.dto';
+import { ValidateCouponDto } from '../dto/validate-coupon.dto';
+import { VerifyStoreSubscriptionDto } from '../dto/verify-store-subscription.dto';
 import { Public } from '@/common/decorators/public.decorator';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { SuccessCode } from '@/common/constants';
@@ -45,6 +47,28 @@ export class PaymentsController {
     return successResponse(
       await this.paymentsService.verifyPayment(req.user.sub, dto),
       SuccessCode.PAYMENT_VERIFIED,
+    );
+  }
+
+  @Post('store/verify-subscription')
+  async verifyStoreSubscription(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: VerifyStoreSubscriptionDto,
+  ) {
+    return successResponse(
+      await this.paymentsService.verifyStoreSubscription(req.user.sub, dto),
+      SuccessCode.PAYMENT_VERIFIED,
+    );
+  }
+
+  @Post('coupons/validate')
+  async validateCoupon(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: ValidateCouponDto,
+  ) {
+    return successResponse(
+      await this.paymentsService.validateCoupon(req.user.sub, dto),
+      SuccessCode.COUPON_VALIDATED,
     );
   }
 
@@ -90,6 +114,17 @@ export class PaymentsController {
     return successResponse(
       await this.paymentsService.getUserPaymentDetail(req.user.sub, orderId),
       SuccessCode.PAYMENT_FETCHED,
+    );
+  }
+
+  @Get(':orderId/invoice')
+  async getInvoice(
+    @Req() req: AuthenticatedRequest,
+    @Param('orderId') orderId: string,
+  ) {
+    return successResponse(
+      await this.paymentsService.getInvoice(req.user.sub, orderId),
+      SuccessCode.PAYMENT_INVOICE_FETCHED,
     );
   }
 }

@@ -19,5 +19,12 @@ export interface ReferralSummary {
   redemptionThreshold: number;
   registrationBonusPoints: number;
   subscriptionRewardRate: number;
+  wallet?: {
+    balance: number;
+    redeemablePoints: number;
+    pendingPoints: number;
+    redemptionThreshold: number;
+    transactions: unknown[];
+  };
   referredUsers: ReferralUserSummary[];
 }

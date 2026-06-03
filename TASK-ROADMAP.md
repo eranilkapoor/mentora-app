@@ -253,26 +253,26 @@
 | ✅ | Plan System (Free / Premium / Gold) | DB | Monetization tiers |
 | ✅ | Feature Access Control (RBAC) | Plans | Paywall enforcement |
 | ✅ | Tier Upgrade / Downgrade Logic | Subscription DB | Plan management |
-| 📂 | Upgrade Plan API (payment integration) | Payment Gateway | Revenue trigger |
+| ✅ | Upgrade Plan API (payment integration) | Payment Gateway | Revenue trigger |
 | ✅ | Purchase History | DB | Transparency & support |
-| 🆕 | Plan Expiry Reminders (T-7, T-3, T-1 days) | Scheduler + Notif | Reduce churn |
-| 🆕 | Promotional Coupons / Discount Codes | Promo DB | Growth marketing |
-| 🆕 | Auto-Renewal / Subscription Lifecycle | Payment Gateway | Recurring revenue |
-| 🆕 | Free Trial System | Subscription | Conversion funnel |
-| 🆕 | Coin / Credit System (micro-purchases) | Wallet DB | Granular monetization |
+| ✅ | Plan Expiry Reminders (T-7, T-3, T-1 days) | Scheduler + Notif | Reduce churn |
+| ✅ | Promotional Coupons / Discount Codes | Promo DB | Growth marketing |
+| ✅ | Auto-Renewal / Subscription Lifecycle | Payment Gateway | Recurring revenue |
+| ✅ | Free Trial System | Subscription | Conversion funnel |
+| ✅ | Coin / Credit System (micro-purchases) | Wallet DB | Granular monetization |
 
 ### 7.2 Payments
 
 | Status | Task | Dependency | Why |
 |--------|------|------------|-----|
 | ✅ | Razorpay / Stripe Integration | Payment Gateway | Revenue |
-| ⚠️ | Payment Webhook Handling (verify signature) | Payment | Prevent fraud |
-| ⚠️ | Refund System | Payment + Support | User trust |
-| 🆕 | UPI Payment Support | Razorpay / Cashfree | India-first payment method |
-| 🆕 | Invoice / Receipt Generation (PDF) | PDF Service | GST compliance |
-| 🆕 | GST Calculation & Filing Data Export | Finance | Legal requirement India |
-| 🆕 | Failed Payment Retry Logic | Queue + Payment | Revenue recovery |
-| 🆕 | Payment Analytics Dashboard | Admin | Business intelligence |
+| ✅ | Payment Webhook Handling (verify signature) | Payment | Prevent fraud |
+| ✅ | Refund System | Payment + Support | User trust |
+| ✅ | UPI Payment Support | Razorpay / Cashfree | India-first payment method |
+| ✅ | Invoice / Receipt Generation (PDF) | PDF Service | GST compliance |
+| ✅ | GST Calculation & Filing Data Export | Finance | Legal requirement India |
+| ✅ | Failed Payment Retry Logic | Queue + Payment | Revenue recovery |
+| ✅ | Payment Analytics Dashboard | Admin | Business intelligence |
 
 ### 7.3 Referral & Growth
 
@@ -280,9 +280,9 @@
 |--------|------|------------|-----|
 | ✅ | Referral Code Generation | User DB | Viral growth |
 | ✅ | Referral Earnings / Wallet | Wallet DB | Incentive |
-| 🆕 | Referral Campaign Tracking (UTM) | Analytics | Marketing ROI |
-| 🆕 | Referral Leaderboard | Gamification | Virality boost |
-| 🆕 | Family / Group Plans (matrimonial package) | Subscription | Market-specific feature |
+| ✅ | Referral Campaign Tracking (UTM) | Analytics | Marketing ROI |
+| ✅ | Referral Leaderboard | Gamification | Virality boost |
+| ✅ | Family / Group Plans (matrimonial package) | Subscription | Market-specific feature |
 
 ---
 

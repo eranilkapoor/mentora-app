@@ -8,17 +8,28 @@ import { PaymentAdminController } from './controllers/payment.admin.controller';
 import { Plan, PlanSchema } from '../subscriptions/schemas/plan.schema';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { ReferralsModule } from '../referrals/referrals.module';
+import {
+  PromotionCoupon,
+  PromotionCouponSchema,
+} from './schemas/promotion-coupon.schema';
+import {
+  PaymentInvoice,
+  PaymentInvoiceSchema,
+} from './schemas/payment-invoice.schema';
+import { PaymentMaintenanceTask } from './tasks/payment-maintenance.task';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: Payment.name, schema: PaymentSchema },
       { name: Plan.name, schema: PlanSchema },
+      { name: PromotionCoupon.name, schema: PromotionCouponSchema },
+      { name: PaymentInvoice.name, schema: PaymentInvoiceSchema },
     ]),
     SubscriptionsModule,
     ReferralsModule,
   ],
-  providers: [PaymentsService, PaymentRepository],
+  providers: [PaymentsService, PaymentRepository, PaymentMaintenanceTask],
   controllers: [PaymentsController, PaymentAdminController],
   exports: [PaymentsService],
 })

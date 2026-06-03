@@ -12,6 +12,7 @@ import {
 } from '@/modules/payments/schemas/payment.schema';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { PlanTier, SubscriptionStatus } from '@/common/enums';
+import { PaymentGateway } from '@/modules/payments/enums/payment-gateway.enum';
 import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
 import { ErrorCode } from '@/common/constants';
 import { throwNotFound } from '@/common/exceptions/throw-app-exception';
@@ -32,7 +33,19 @@ export class SubscriptionsService {
     private readonly userRepo: UserRepository,
   ) {}
 
-  async purchasePlan(userId: string, planId: string) {
+  async purchasePlan(
+    userId: string,
+    planId: string,
+    options?: {
+      paymentId?: string;
+      paymentProvider?: PaymentGateway;
+      autoRenew?: boolean;
+      trialEndsAt?: Date;
+      storeProductId?: string;
+      storeTransactionId?: string;
+      storeOriginalTransactionId?: string;
+    },
+  ) {
     const plan = await this.planModel.findById(planId).lean().exec();
 
     if (!plan || !plan.isActive) {
@@ -45,7 +58,7 @@ export class SubscriptionsService {
     await this.subModel.updateMany(
       {
         userId: new Types.ObjectId(userId),
-        status: SubscriptionStatus.ACTIVE,
+        status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
       },
       {
         $set: {
@@ -66,6 +79,13 @@ export class SubscriptionsService {
       startDate,
       endDate,
       status: SubscriptionStatus.ACTIVE,
+      paymentId: options?.paymentId,
+      paymentProvider: options?.paymentProvider,
+      autoRenew: options?.autoRenew ?? false,
+      trialEndsAt: options?.trialEndsAt,
+      storeProductId: options?.storeProductId,
+      storeTransactionId: options?.storeTransactionId,
+      storeOriginalTransactionId: options?.storeOriginalTransactionId,
     });
 
     // Sync user membership tier for fast reads
@@ -80,11 +100,50 @@ export class SubscriptionsService {
     return { success: true, subscription };
   }
 
+  async startFreeTrial(userId: string, planId: string, trialDays = 7) {
+    const previousSubscription = await this.subModel
+      .exists({ userId: new Types.ObjectId(userId) })
+      .exec();
+    const previousSuccessfulPayment = await this.paymentModel
+      .exists({
+        userId: new Types.ObjectId(userId),
+        status: PaymentStatus.SUCCESS,
+      })
+      .exec();
+
+    if (previousSubscription || previousSuccessfulPayment) {
+      return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'free_trial_not_available',
+      });
+    }
+
+    const trialEndsAt = new Date(Date.now() + trialDays * 86_400_000);
+    const result = await this.purchasePlan(userId, planId, {
+      trialEndsAt,
+      autoRenew: false,
+    });
+
+    await this.subModel.findByIdAndUpdate(result.subscription._id, {
+      $set: { status: SubscriptionStatus.TRIAL, endDate: trialEndsAt },
+    });
+
+    const plan = await this.planModel.findById(planId).lean().exec();
+    await this.userRepo.updateMembership(userId, {
+      tier: plan?.tier ?? PlanTier.FREE,
+      status: SubscriptionStatus.TRIAL,
+      startDate: result.subscription.startDate,
+      expiresAt: trialEndsAt,
+      planId,
+    });
+
+    return result;
+  }
+
   async getActiveSubscription(userId: string) {
     return this.subModel
       .findOne({
         userId: new Types.ObjectId(userId),
-        status: SubscriptionStatus.ACTIVE,
+        status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
         endDate: { $gt: new Date() },
       })
       .populate('planId')
@@ -195,11 +254,40 @@ export class SubscriptionsService {
   async expireOverdueSubscriptions() {
     const result = await this.subModel.updateMany(
       {
-        status: SubscriptionStatus.ACTIVE,
+        status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
         endDate: { $lt: new Date() },
       },
       { $set: { status: SubscriptionStatus.EXPIRED } },
     );
     return { expiredCount: result.modifiedCount };
+  }
+
+  async markExpiryRemindersDue(offsetDays: number[]) {
+    const now = new Date();
+    const results = [];
+
+    for (const offset of offsetDays) {
+      const start = new Date(now.getTime() + offset * 86_400_000);
+      start.setHours(0, 0, 0, 0);
+      const end = new Date(start);
+      end.setHours(23, 59, 59, 999);
+
+      const result = await this.subModel.updateMany(
+        {
+          status: {
+            $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL],
+          },
+          endDate: { $gte: start, $lte: end },
+          reminderOffsetsSent: { $ne: offset },
+        },
+        {
+          $addToSet: { reminderOffsetsSent: offset },
+        },
+      );
+
+      results.push({ offsetDays: offset, markedCount: result.modifiedCount });
+    }
+
+    return { reminders: results };
   }
 }

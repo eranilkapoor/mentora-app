@@ -18,6 +18,8 @@ import {
 } from '../schemas/referral-reward.schema';
 import { ReferralRewardStatus } from '../enums/referral-reward-status.enum';
 import { ReferralSummary } from '../dto/referral-summary.dto';
+import { WalletService } from './wallet.service';
+import { WalletTransactionSource } from '../enums/wallet-transaction.enum';
 
 const REGISTRATION_BONUS_POINTS = 100;
 const SUBSCRIPTION_REWARD_RATE = 0.05;
@@ -32,6 +34,7 @@ export class ReferralsService {
     private readonly profileModel: Model<ProfileDocument>,
     @InjectModel(ReferralReward.name)
     private readonly rewardModel: Model<ReferralRewardDocument>,
+    private readonly walletService: WalletService,
   ) {}
 
   async getMySummary(userId: string): Promise<ReferralSummary> {
@@ -59,10 +62,7 @@ export class ReferralsService {
       profiles.map((profile) => [String(profile.userId), profile]),
     );
 
-    const totalPoints = rewards.reduce(
-      (sum, reward) => sum + Number(reward.totalPoints ?? 0),
-      0,
-    );
+    const wallet = await this.walletService.getSummary(userId);
 
     const referredUsers = rewards.map((reward) => {
       const referredUser = reward.referredUserId as unknown as {
@@ -97,14 +97,69 @@ export class ReferralsService {
 
     return {
       referralCode: user.referralCode!,
-      totalPoints,
-      redeemablePoints: totalPoints >= REDEMPTION_THRESHOLD ? totalPoints : 0,
-      pendingPoints: totalPoints < REDEMPTION_THRESHOLD ? totalPoints : 0,
+      totalPoints: wallet.balance,
+      redeemablePoints: wallet.redeemablePoints,
+      pendingPoints: wallet.pendingPoints,
       redemptionThreshold: REDEMPTION_THRESHOLD,
       registrationBonusPoints: REGISTRATION_BONUS_POINTS,
       subscriptionRewardRate: SUBSCRIPTION_REWARD_RATE,
+      wallet,
       referredUsers,
     };
+  }
+
+  getWallet(userId: string) {
+    return this.walletService.getSummary(userId);
+  }
+
+  redeemWallet(userId: string, points: number) {
+    return this.walletService.redeem(userId, points);
+  }
+
+  async getLeaderboard(limit = 25) {
+    const safeLimit = Math.min(Math.max(limit, 1), 100);
+    const leaders = await this.rewardModel.aggregate<{
+      _id: Types.ObjectId;
+      totalPoints: number;
+      referredCount: number;
+      subscriptionPoints: number;
+    }>([
+      {
+        $group: {
+          _id: '$referrerId',
+          totalPoints: { $sum: '$totalPoints' },
+          referredCount: { $sum: 1 },
+          subscriptionPoints: { $sum: '$subscriptionPoints' },
+        },
+      },
+      { $sort: { totalPoints: -1, referredCount: -1 } },
+      { $limit: safeLimit },
+    ]);
+
+    const userIds = leaders.map((leader) => leader._id);
+    const profiles = await this.profileModel
+      .find({ userId: { $in: userIds } })
+      .select('userId personal.firstName personal.lastName')
+      .lean()
+      .exec();
+    const profileByUserId = new Map(
+      profiles.map((profile) => [String(profile.userId), profile]),
+    );
+
+    return leaders.map((leader, index) => {
+      const profile = profileByUserId.get(String(leader._id));
+      return {
+        rank: index + 1,
+        userId: String(leader._id),
+        name:
+          [profile?.personal?.firstName, profile?.personal?.lastName]
+            .filter(Boolean)
+            .join(' ') || 'Match Mate member',
+        totalPoints: leader.totalPoints,
+        referredCount: leader.referredCount,
+        subscriptionPoints: leader.subscriptionPoints,
+      };
+    });
   }
 
   async ensureReferralCode(userId: string): Promise<UserDocument> {
@@ -173,6 +228,16 @@ export class ReferralsService {
     );
 
     await this.recalculateUserReferralPoints(String(referrer._id));
+    await this.walletService.credit({
+      userId: referrer._id,
+      points: REGISTRATION_BONUS_POINTS,
+      source: WalletTransactionSource.REFERRAL_REGISTRATION,
+      referenceId: reward._id.toString(),
+      metadata: {
+        referredUserId: referredUser._id.toString(),
+        referralCode: normalizedCode,
+      },
+    });
 
     if (reward.referrerId.toString() !== referrer._id.toString()) {
       return throwConflict(ErrorCode.REFERRAL_ALREADY_APPLIED);
@@ -226,6 +291,17 @@ export class ReferralsService {
     await reward.save();
 
     await this.recalculateUserReferralPoints(String(reward.referrerId));
+    await this.walletService.credit({
+      userId: reward.referrerId,
+      points: subscriptionPoints,
+      source: WalletTransactionSource.REFERRAL_SUBSCRIPTION,
+      referenceId: payment.paymentId,
+      metadata: {
+        referredUserId,
+        subscriptionAmount: netAmount,
+        subscriptionRewardRate: SUBSCRIPTION_REWARD_RATE,
+      },
+    });
   }
 
   private normalizeReferralCode(code?: string): string | undefined {

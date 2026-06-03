@@ -46,6 +46,15 @@ export class PaymentAdminController {
   }
 
   @Permissions(Permission.PAYMENT_VIEW)
+  @Get('reports/gst')
+  async gstReport(@Query() query: { fromDate?: string; toDate?: string }) {
+    return successResponse(
+      await this.paymentsService.adminGstReport(query),
+      SuccessCode.PAYMENT_GST_REPORT_FETCHED,
+    );
+  }
+
+  @Permissions(Permission.PAYMENT_VIEW)
   @Get()
   async listPayments(@Query() query: AdminListPaymentsDto) {
     return successResponse(

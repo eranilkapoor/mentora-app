@@ -24,6 +24,9 @@ export class Subscription {
   cancelledReason?: string;
 
   @Prop()
+  trialEndsAt?: Date;
+
+  @Prop()
   paymentId?: string;
 
   @Prop({ type: String, enum: PaymentProvider })
@@ -31,6 +34,18 @@ export class Subscription {
 
   @Prop({ default: false })
   autoRenew?: boolean;
+
+  @Prop()
+  storeProductId?: string;
+
+  @Prop()
+  storeTransactionId?: string;
+
+  @Prop()
+  storeOriginalTransactionId?: string;
+
+  @Prop({ type: [Number], default: [] })
+  reminderOffsetsSent?: number[];
 
   @Prop({
     enum: SubscriptionStatus,

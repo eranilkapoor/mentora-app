@@ -42,6 +42,12 @@ export class Payment {
   @Prop({ default: 0, min: 0 })
   discountAmount!: number;
 
+  @Prop({ uppercase: true, trim: true, index: true, sparse: true })
+  couponCode?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'PaymentInvoice', index: true })
+  invoiceId?: Types.ObjectId;
+
   @Prop({ required: true, min: 0 })
   netAmount!: number;
 
@@ -95,6 +101,15 @@ export class Payment {
   @Prop({ type: Object })
   gatewayPayload?: Record<string, unknown>;
 
+  @Prop({ index: true, sparse: true })
+  storeProductId?: string;
+
+  @Prop({ index: true, sparse: true })
+  storeTransactionId?: string;
+
+  @Prop({ index: true, sparse: true })
+  storeOriginalTransactionId?: string;
+
   @Prop({ type: Object })
   metadata?: Record<string, unknown>;
 
@@ -103,6 +118,7 @@ export class Payment {
     name?: string;
     email?: string;
     phone?: string;
+    gstin?: string;
   };
 
   @Prop({ default: 0 })
