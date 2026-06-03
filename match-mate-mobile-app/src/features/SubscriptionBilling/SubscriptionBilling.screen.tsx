@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Feather from 'react-native-vector-icons/Feather';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
@@ -22,8 +23,11 @@ type Props = {
   navigation: SettingsNavigationProp;
 };
 
-const formatDate = (value?: string | null): string => {
-  if (!value) return 'Not available';
+const formatDate = (
+  value?: string | null,
+  fallback = 'Not available'
+): string => {
+  if (!value) return fallback;
 
   return new Date(value).toLocaleDateString();
 };
@@ -35,9 +39,13 @@ const formatAmount = (amount: number, currency = 'INR'): string =>
     maximumFractionDigits: 0,
   }).format(amount);
 
-const getPlanName = (plan?: MembershipPlan | string): string => {
-  if (!plan) return 'Free plan';
-  if (typeof plan === 'string') return 'Membership plan';
+const getPlanName = (
+  plan?: MembershipPlan | string,
+  fallback = 'Free plan',
+  stringFallback = 'Membership plan'
+): string => {
+  if (!plan) return fallback;
+  if (typeof plan === 'string') return stringFallback;
 
   return plan.name;
 };
@@ -77,6 +85,7 @@ function SubscriptionRow({
 }): React.ReactElement {
   const styles = useThemedStyles(subscriptionBillingStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={[styles.row, isLast && styles.rowLast]}>
@@ -92,24 +101,31 @@ function SubscriptionRow({
           />
         </View>
         <Text style={styles.rowMeta}>
-          {formatDate(item.startDate)} - {formatDate(item.endDate)}
+          {formatDate(item.startDate, t('common.not_available'))} -{' '}
+          {formatDate(item.endDate, t('common.not_available'))}
         </Text>
         <View style={styles.rowFooter}>
           <View style={styles.smallPill}>
             <Text style={styles.smallPillText}>
-              Auto renew {item.autoRenew ? 'on' : 'off'}
+              {t('membership.billing.auto_renew_state', {
+                state: item.autoRenew ? t('common.on') : t('common.off'),
+              })}
             </Text>
           </View>
           {item.cancelledAt ? (
             <View style={styles.smallPill}>
               <Text style={styles.smallPillText}>
-                Cancelled {formatDate(item.cancelledAt)}
+                {t('membership.billing.cancelled_on', {
+                  date: formatDate(item.cancelledAt, t('common.not_available')),
+                })}
               </Text>
             </View>
           ) : null}
         </View>
         {item.cancelledReason ? (
-          <Text style={styles.rowMeta}>Reason: {item.cancelledReason}</Text>
+          <Text style={styles.rowMeta}>
+            {t('membership.billing.reason', { reason: item.cancelledReason })}
+          </Text>
         ) : null}
       </View>
     </View>
@@ -125,6 +141,7 @@ function PaymentRow({
 }): React.ReactElement {
   const styles = useThemedStyles(subscriptionBillingStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const paid = item.status === 'success';
 
   return (
@@ -144,15 +161,27 @@ function PaymentRow({
           <StatusBadge status={item.status} success={paid} />
         </View>
         <Text style={styles.rowMeta}>
-          {getPlanName(item.planId)} via {item.gateway}
+          {t('membership.billing.payment_via', {
+            plan: getPlanName(
+              item.planId,
+              t('membership.billing.free_plan'),
+              t('membership.billing.membership_plan')
+            ),
+            gateway: item.gateway,
+          })}
           {item.method ? ` (${item.method})` : ''}
         </Text>
         <Text style={styles.rowMeta}>
-          {formatDate(item.paidAt ?? item.failedAt ?? item.initiatedAt)}
+          {formatDate(
+            item.paidAt ?? item.failedAt ?? item.initiatedAt,
+            t('common.not_available')
+          )}
         </Text>
         <View style={styles.rowFooter}>
           <View style={styles.smallPill}>
-            <Text style={styles.smallPillText}>Order {item.orderId}</Text>
+            <Text style={styles.smallPillText}>
+              {t('membership.billing.order_id', { id: item.orderId })}
+            </Text>
           </View>
           <View style={styles.smallPill}>
             <Text style={styles.smallPillText}>{item.purpose}</Text>
@@ -175,13 +204,16 @@ function BenefitRow({
 }): React.ReactElement {
   const styles = useThemedStyles(subscriptionBillingStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const title =
-    feature.featureId?.name ?? feature.featureId?.key ?? 'Plan benefit';
+    feature.featureId?.name ??
+    feature.featureId?.key ??
+    t('membership.billing.plan_benefit');
   const value =
     typeof feature.value === 'boolean'
       ? feature.value
-        ? 'Included'
-        : 'Not included'
+        ? t('membership.billing.included')
+        : t('membership.billing.not_included')
       : feature.value !== undefined
         ? String(feature.value)
         : feature.featureId?.description;
@@ -203,12 +235,18 @@ export default function SubscriptionBillingScreen({
   navigation,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(subscriptionBillingStyles);
+  const { t } = useTranslation();
   const appNavigation = useNavigation<AppNavigationProp>();
   const { data, isLoading, refetch } = useGetBillingSummaryQuery();
 
   const currentPlanName = useMemo(
-    () => getPlanName(data?.currentPlan?.planId),
-    [data?.currentPlan?.planId]
+    () =>
+      getPlanName(
+        data?.currentPlan?.planId,
+        t('membership.billing.free_plan'),
+        t('membership.billing.membership_plan')
+      ),
+    [data?.currentPlan?.planId, t]
   );
   const currentPlanFeatures = useMemo(
     () => getPlanFeatures(data?.currentPlan?.planId) ?? [],
@@ -225,7 +263,7 @@ export default function SubscriptionBillingScreen({
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title="Subscription & Billing"
+        title={t('membership.billing.title')}
       />
 
       <ScrollView
@@ -235,12 +273,19 @@ export default function SubscriptionBillingScreen({
         <View style={styles.heroCard}>
           <View style={styles.heroTop}>
             <View>
-              <Text style={styles.planLabel}>Current membership</Text>
+              <Text style={styles.planLabel}>
+                {t('membership.billing.current_membership')}
+              </Text>
               <Text style={styles.planTitle}>{currentPlanName}</Text>
               <Text style={styles.planSubtitle}>
                 {data.currentPlan
-                  ? `Valid until ${formatDate(data.currentPlan.endDate)}`
-                  : 'Upgrade to unlock premium profile access'}
+                  ? t('membership.billing.valid_until', {
+                      date: formatDate(
+                        data.currentPlan.endDate,
+                        t('common.not_available')
+                      ),
+                    })
+                  : t('membership.billing.upgrade_hint')}
               </Text>
             </View>
             <StatusBadge
@@ -251,21 +296,27 @@ export default function SubscriptionBillingScreen({
 
           <View style={styles.metricStrip}>
             <View style={styles.metricTile}>
-              <Text style={styles.metricLabel}>Total paid</Text>
+              <Text style={styles.metricLabel}>
+                {t('membership.billing.total_paid')}
+              </Text>
               <Text style={styles.metricValue}>
                 {formatAmount(data.billing.totalPaid, data.billing.currency)}
               </Text>
             </View>
             <View style={styles.metricTile}>
-              <Text style={styles.metricLabel}>Payments</Text>
+              <Text style={styles.metricLabel}>
+                {t('membership.billing.payments')}
+              </Text>
               <Text style={styles.metricValue}>
                 {data.billing.successfulPayments}
               </Text>
             </View>
             <View style={styles.metricTile}>
-              <Text style={styles.metricLabel}>Auto renew</Text>
+              <Text style={styles.metricLabel}>
+                {t('membership.billing.auto_renew')}
+              </Text>
               <Text style={styles.metricValue}>
-                {data.billing.autoRenew ? 'On' : 'Off'}
+                {data.billing.autoRenew ? t('common.on') : t('common.off')}
               </Text>
             </View>
           </View>
@@ -273,37 +324,44 @@ export default function SubscriptionBillingScreen({
 
         <SettingsCard
           icon="credit-card"
-          title="Plan Details"
-          subtitle="Membership status and renewal settings"
+          title={t('membership.billing.plan_details')}
+          subtitle={t('membership.billing.plan_details_sub')}
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryTile}>
-              <Text style={styles.label}>Plan</Text>
+              <Text style={styles.label}>{t('membership.billing.plan')}</Text>
               <Text style={styles.value}>{currentPlanName}</Text>
             </View>
             <View style={styles.summaryTile}>
-              <Text style={styles.label}>Status</Text>
+              <Text style={styles.label}>{t('membership.billing.status')}</Text>
               <Text style={styles.value}>
                 {data.currentPlan?.status ?? 'free'}
               </Text>
             </View>
             <View style={styles.summaryTile}>
-              <Text style={styles.label}>Valid until</Text>
+              <Text style={styles.label}>
+                {t('membership.billing.valid_until_label')}
+              </Text>
               <Text style={styles.value}>
-                {formatDate(data.currentPlan?.endDate)}
+                {formatDate(
+                  data.currentPlan?.endDate,
+                  t('common.not_available')
+                )}
               </Text>
             </View>
             <View style={styles.summaryTile}>
-              <Text style={styles.label}>Auto renew</Text>
+              <Text style={styles.label}>
+                {t('membership.billing.auto_renew')}
+              </Text>
               <Text style={styles.value}>
-                {data.billing.autoRenew ? 'On' : 'Off'}
+                {data.billing.autoRenew ? t('common.on') : t('common.off')}
               </Text>
             </View>
           </View>
           <SettingsSelectItem
             icon="zap"
-            label="Manage Membership"
-            sublabel="View available plans and upgrade options"
+            label={t('membership.billing.manage_membership')}
+            sublabel={t('membership.billing.manage_membership_sub')}
             onPress={() =>
               appNavigation.navigate('Tabs', { screen: 'Membership' })
             }
@@ -313,8 +371,8 @@ export default function SubscriptionBillingScreen({
 
         <SettingsCard
           icon="award"
-          title="Plan Benefits"
-          subtitle="Premium access currently attached to your account"
+          title={t('membership.billing.plan_benefits')}
+          subtitle={t('membership.billing.plan_benefits_sub')}
         >
           {currentPlanFeatures.length ? (
             currentPlanFeatures.map((feature, index) => (
@@ -328,16 +386,17 @@ export default function SubscriptionBillingScreen({
             <>
               <BenefitRow
                 feature={{
-                  value: 'Create and maintain your matrimonial profile',
-                  featureId: { name: 'Basic profile access' },
+                  value: t('membership.billing.basic_profile_access_sub'),
+                  featureId: {
+                    name: t('membership.billing.basic_profile_access'),
+                  },
                 }}
                 isLast={false}
               />
               <BenefitRow
                 feature={{
-                  value:
-                    'Upgrade to unlock premium chat and visibility features',
-                  featureId: { name: 'Premium features' },
+                  value: t('membership.billing.premium_features_sub'),
+                  featureId: { name: t('membership.billing.premium_features') },
                 }}
                 isLast
               />
@@ -347,39 +406,53 @@ export default function SubscriptionBillingScreen({
 
         <SettingsCard
           icon="file-text"
-          title="Billing Summary"
-          subtitle="Payments completed from this account"
+          title={t('membership.billing.billing_summary')}
+          subtitle={t('membership.billing.billing_summary_sub')}
         >
           <View style={styles.summaryGrid}>
             <View style={styles.summaryTile}>
-              <Text style={styles.label}>Total paid</Text>
+              <Text style={styles.label}>
+                {t('membership.billing.total_paid')}
+              </Text>
               <Text style={styles.value}>
                 {formatAmount(data.billing.totalPaid, data.billing.currency)}
               </Text>
             </View>
             <View style={styles.summaryTile}>
-              <Text style={styles.label}>Successful payments</Text>
+              <Text style={styles.label}>
+                {t('membership.billing.successful_payments')}
+              </Text>
               <Text style={styles.value}>
                 {data.billing.successfulPayments}
               </Text>
             </View>
             <View style={styles.summaryTile}>
-              <Text style={styles.label}>Last payment</Text>
+              <Text style={styles.label}>
+                {t('membership.billing.last_payment')}
+              </Text>
               <Text style={styles.value}>
-                {formatDate(data.billing.lastPaymentAt)}
+                {formatDate(
+                  data.billing.lastPaymentAt,
+                  t('common.not_available')
+                )}
               </Text>
             </View>
             <View style={styles.summaryTile}>
-              <Text style={styles.label}>Next renewal</Text>
+              <Text style={styles.label}>
+                {t('membership.billing.next_renewal')}
+              </Text>
               <Text style={styles.value}>
-                {formatDate(data.billing.nextRenewalAt)}
+                {formatDate(
+                  data.billing.nextRenewalAt,
+                  t('common.not_available')
+                )}
               </Text>
             </View>
           </View>
           <SettingsSelectItem
             icon="refresh-cw"
-            label="Refresh billing"
-            sublabel="Pull the latest payment and plan details"
+            label={t('membership.billing.refresh_billing')}
+            sublabel={t('membership.billing.refresh_billing_sub')}
             onPress={() => void refetch()}
             isLast
           />
@@ -387,8 +460,8 @@ export default function SubscriptionBillingScreen({
 
         <SettingsCard
           icon="clock"
-          title="Previous Plans"
-          subtitle="Membership plan history for this account"
+          title={t('membership.billing.previous_plans')}
+          subtitle={t('membership.billing.previous_plans_sub')}
         >
           {data.subscriptions.length ? (
             data.subscriptions.map((subscription, index) => (
@@ -399,14 +472,16 @@ export default function SubscriptionBillingScreen({
               />
             ))
           ) : (
-            <Text style={styles.emptyText}>No membership history yet.</Text>
+            <Text style={styles.emptyText}>
+              {t('membership.billing.no_membership_history')}
+            </Text>
           )}
         </SettingsCard>
 
         <SettingsCard
           icon="dollar-sign"
-          title="Billing Details"
-          subtitle="Recent orders, invoices, and payment status"
+          title={t('membership.billing.billing_details')}
+          subtitle={t('membership.billing.billing_details_sub')}
         >
           {data.payments.length ? (
             data.payments.map((payment, index) => (
@@ -417,7 +492,9 @@ export default function SubscriptionBillingScreen({
               />
             ))
           ) : (
-            <Text style={styles.emptyText}>No billing records yet.</Text>
+            <Text style={styles.emptyText}>
+              {t('membership.billing.no_billing_records')}
+            </Text>
           )}
         </SettingsCard>
 

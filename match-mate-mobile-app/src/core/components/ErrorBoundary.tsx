@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { createStyles } from '../styles/ErrorBoundary.styles';
 interface Props {
@@ -61,6 +62,7 @@ interface FallbackProps {
 
 const DefaultFallback: React.FC<FallbackProps> = ({ onRetry, error }) => {
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   // Pass the full theme — not three separate args
   const styles = React.useMemo(() => createStyles(theme), [theme]);
@@ -68,9 +70,9 @@ const DefaultFallback: React.FC<FallbackProps> = ({ onRetry, error }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.title}>Something went wrong</Text>
+        <Text style={styles.title}>{t('common.error_boundary_title')}</Text>
         <Text style={styles.subtitle}>
-          An unexpected error occurred. Please try again.
+          {t('common.error_boundary_message')}
         </Text>
 
         {/* Only show raw error message in dev builds */}
@@ -82,10 +84,10 @@ const DefaultFallback: React.FC<FallbackProps> = ({ onRetry, error }) => {
           style={styles.button}
           onPress={onRetry}
           accessibilityRole="button"
-          accessibilityLabel="Retry"
+          accessibilityLabel={t('common.retry')}
           activeOpacity={0.8}
         >
-          <Text style={styles.buttonText}>Try Again</Text>
+          <Text style={styles.buttonText}>{t('common.try_again_button')}</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

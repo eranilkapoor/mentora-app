@@ -1,6 +1,7 @@
 import React, { useCallback } from 'react';
 import { Alert, ScrollView, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
@@ -28,6 +29,7 @@ const PROVIDERS = [
 export default function LinkedAccountsScreen({
   navigation,
 }: Props): React.ReactElement {
+  const { t } = useTranslation();
   const styles = useThemedStyles(sharedSettingsStyles);
   const { data, isLoading } = useGetAccountSettingsQuery();
   const [connectProvider] = useConnectProviderMutation();
@@ -38,30 +40,33 @@ export default function LinkedAccountsScreen({
       try {
         await connectProvider({ provider }).unwrap();
         Alert.alert(
-          `${label} connected`,
-          'This account can now be used for sign in.'
+          t('settings.account.provider_connected_title', { provider: label }),
+          t('settings.account.provider_connected_message')
         );
       } catch (error) {
         console.error('Connect provider failed:', error);
-        Alert.alert('Unable to connect', 'Please try again.');
+        Alert.alert(
+          t('settings.account.provider_connect_failed'),
+          t('common.try_again_message')
+        );
       }
     },
-    [connectProvider]
+    [connectProvider, t]
   );
 
   const handleDisconnect = useCallback(
     (provider: string, label: string) => {
       showConfirm({
-        title: `Disconnect ${label}?`,
-        message: `You will no longer be able to sign in with ${label}.`,
-        confirmText: 'Disconnect',
+        title: t('settings.account.disconnect_title', { provider: label }),
+        message: t('settings.account.disconnect_message', { provider: label }),
+        confirmText: t('settings.account.disconnect_confirm'),
         destructive: true,
         onConfirm: () => {
           void disconnectProvider({ provider });
         },
       });
     },
-    [disconnectProvider]
+    [disconnectProvider, t]
   );
 
   if (isLoading || !data) {
@@ -73,13 +78,13 @@ export default function LinkedAccountsScreen({
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title="Linked Accounts"
+        title={t('settings.account.linked_accounts')}
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <SettingsCard
           icon="link"
-          title="Linked Accounts"
-          subtitle="Connect social accounts for faster sign in"
+          title={t('settings.account.linked_accounts')}
+          subtitle={t('settings.account.linked_accounts_subtitle')}
         >
           {PROVIDERS.map((item, index) => {
             const linked = data.account.linkedAccounts?.find(
@@ -92,8 +97,16 @@ export default function LinkedAccountsScreen({
                 key={item.provider}
                 icon={item.icon}
                 label={item.label}
-                sublabel={connected ? 'Connected' : 'Not connected'}
-                value={connected ? 'Disconnect' : 'Connect'}
+                sublabel={
+                  connected
+                    ? t('settings.account.connected')
+                    : t('settings.account.linked_not_connected')
+                }
+                value={
+                  connected
+                    ? t('settings.account.disconnect_confirm')
+                    : t('settings.account.connect')
+                }
                 isLast={index === PROVIDERS.length - 1}
                 onPress={() =>
                   connected

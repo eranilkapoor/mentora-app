@@ -68,7 +68,7 @@ export function useMembershipActions() {
           currency: selectedPlanItem.source.currency,
           purpose: 'profile_boost',
           idempotencyKey: `boost-${selectedPlanItem.source._id}-${Date.now()}`,
-          description: 'Profile boost',
+          description: t('membership.boost.title'),
           metadata: {
             durationHours: 24,
             multiplier: 1.25,

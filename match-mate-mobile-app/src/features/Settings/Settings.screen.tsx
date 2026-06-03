@@ -223,17 +223,17 @@ export default function SettingsScreen({
 
         {/* Membership & Billing */}
 
-        <Section icon="credit-card" title="Membership & Billing">
+        <Section icon="credit-card" title={t('settings.membership_billing')}>
           <SettingRow
             icon="credit-card"
-            label="Subscription & Billing"
-            subLabel="Current plan, billing history, and previous plans"
+            label={t('membership.billing.title')}
+            subLabel={t('settings.subscription_billing_sub')}
             onPress={() => navigation.navigate('SubscriptionBilling')}
           />
           <SettingRow
             icon="gift"
-            label="Refer & Rewards"
-            subLabel="Share your code, track referrals, and redeem points"
+            label={t('settings.referrals.title')}
+            subLabel={t('settings.referrals_sub')}
             onPress={() => navigation.navigate('ReferRewards')}
             isLast
           />

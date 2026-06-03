@@ -159,7 +159,8 @@ export const authApi = baseApi.injectEndpoints({
           return {
             error: {
               status: 'CUSTOM_ERROR',
-              error: error instanceof Error ? error.message : 'Logout failed',
+              error:
+                error instanceof Error ? error.message : 'AUTH.LOGOUT_FAILED',
             },
           };
         }

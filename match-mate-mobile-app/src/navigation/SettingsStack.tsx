@@ -79,7 +79,7 @@ export default function SettingsStack(): React.ReactElement {
       <Stack.Screen
         name="ProfileVerification"
         component={KycVerificationScreen}
-        options={{ title: 'Profile verification' }}
+        options={{ title: t('settings.kyc.title') }}
       />
       <Stack.Screen
         name="ManageDevices"
@@ -89,22 +89,22 @@ export default function SettingsStack(): React.ReactElement {
       <Stack.Screen
         name="LoginHistory"
         component={LoginHistoryScreen}
-        options={{ title: 'Login History' }}
+        options={{ title: t('settings.security.login_history_title') }}
       />
       <Stack.Screen
         name="TwoFactorSetup"
         component={TwoFactorSetupScreen}
-        options={{ title: 'Two-factor authentication' }}
+        options={{ title: t('settings.two_factor.title') }}
       />
       <Stack.Screen
         name="SubscriptionBilling"
         component={SubscriptionBillingScreen}
-        options={{ title: 'Subscription & Billing' }}
+        options={{ title: t('membership.billing.title') }}
       />
       <Stack.Screen
         name="ReferRewards"
         component={ReferRewardsScreen}
-        options={{ title: 'Refer & Rewards' }}
+        options={{ title: t('settings.referrals.title') }}
       />
       <Stack.Screen
         name="BlockedUsers"
@@ -154,12 +154,12 @@ export default function SettingsStack(): React.ReactElement {
       <Stack.Screen
         name="Faqs"
         component={FaqsScreen}
-        options={{ title: 'FAQs' }}
+        options={{ title: t('settings.support_center.faqs') }}
       />
       <Stack.Screen
         name="CommunityGuidelines"
         component={CommunityGuidelinesScreen}
-        options={{ title: 'Community Guidelines' }}
+        options={{ title: t('settings.support_center.community_guidelines') }}
       />
       <Stack.Screen
         name="PrivacyPolicy"

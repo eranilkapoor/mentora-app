@@ -2,6 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useRoute } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import { AuthStackParamList } from '@/navigation/types';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -16,6 +17,7 @@ import { showError } from '@/core/utils/toast';
 type Route = RouteProp<AuthStackParamList, 'TwoFactorChallenge'>;
 
 export default function TwoFactorChallengeScreen(): React.ReactElement {
+  const { t } = useTranslation();
   const route = useRoute<Route>();
   const styles = useThemedStyles(authSharedStyles);
   const dispatch = useAppDispatch();
@@ -36,7 +38,7 @@ export default function TwoFactorChallengeScreen(): React.ReactElement {
         !response.data.user
       ) {
         showError({
-          title: 'Verification failed',
+          title: t('auth.two_factor.verification_failed'),
           ...(response.message ? { message: response.message } : {}),
         });
         return;
@@ -55,27 +57,38 @@ export default function TwoFactorChallengeScreen(): React.ReactElement {
       }
     } catch {
       showError({
-        title: 'Verification failed',
-        message: 'Please check the code and try again.',
+        title: t('auth.two_factor.verification_failed'),
+        message: t('auth.two_factor.check_code_message'),
       });
     }
-  }, [code, dispatch, route.params.challengeId, useRecovery, verifyTwoFactor]);
+  }, [
+    code,
+    dispatch,
+    route.params.challengeId,
+    t,
+    useRecovery,
+    verifyTwoFactor,
+  ]);
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Header title="Two-factor verification" />
+      <Header title={t('auth.two_factor.title')} />
       <View style={styles.container}>
-        <Text style={styles.title}>Enter your security code</Text>
+        <Text style={styles.title}>{t('auth.two_factor.enter_code')}</Text>
         <Text style={styles.subtitle}>
           {route.params.method === 'sms'
-            ? 'We sent a one-time code to your verified phone number.'
-            : 'Use your authenticator app or a recovery code to continue.'}
+            ? t('auth.two_factor.sms_subtitle')
+            : t('auth.two_factor.authenticator_subtitle')}
         </Text>
 
         <TextInput
           value={code}
           onChangeText={setCode}
-          placeholder={useRecovery ? 'Recovery code' : '6-digit code'}
+          placeholder={
+            useRecovery
+              ? t('auth.two_factor.recovery_code')
+              : t('auth.two_factor.six_digit_code')
+          }
           autoCapitalize="characters"
           keyboardType={useRecovery ? 'default' : 'number-pad'}
           style={styles.input}
@@ -87,7 +100,9 @@ export default function TwoFactorChallengeScreen(): React.ReactElement {
           disabled={isLoading || !code.trim()}
         >
           <Text style={styles.primaryButtonText}>
-            {isLoading ? 'Verifying...' : 'Verify'}
+            {isLoading
+              ? t('auth.two_factor.verifying')
+              : t('auth.two_factor.verify')}
           </Text>
         </TouchableOpacity>
 
@@ -96,7 +111,9 @@ export default function TwoFactorChallengeScreen(): React.ReactElement {
           onPress={() => setUseRecovery((value) => !value)}
         >
           <Text style={styles.resendText}>
-            {useRecovery ? 'Use authenticator code' : 'Use recovery code'}
+            {useRecovery
+              ? t('auth.two_factor.use_authenticator_code')
+              : t('auth.two_factor.use_recovery_code')}
           </Text>
         </TouchableOpacity>
       </View>

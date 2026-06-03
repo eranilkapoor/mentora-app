@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SettingsNavigationProp } from '@/navigation/types';
@@ -27,6 +28,7 @@ type Props = {
 
 export default function FaqsScreen({ navigation }: Props): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
+  const { t } = useTranslation();
   const [expanded, setExpanded] = useState<number | null>(null);
 
   const toggleFaq = useCallback((index: number): void => {
@@ -36,7 +38,11 @@ export default function FaqsScreen({ navigation }: Props): React.ReactElement {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Header showBack onBackPress={navigation.goBack} title="FAQs" />
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('settings.support_center.faqs')}
+      />
 
       <ScrollView
         contentContainerStyle={styles.scrollContent}

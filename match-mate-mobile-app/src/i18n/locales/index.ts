@@ -18,6 +18,10 @@ import edit_profile from './en/edit_profile.json';
 import options from './en/options.json';
 import onboarding from './en/onboarding.json';
 import api from './en/api.json';
+import privacy_policy from './en/privacy_policy.json';
+import terms from './en/terms.json';
+import community_guidelines from './en/community_guidelines.json';
+import faqs from './en/faqs.json';
 
 import hiCommon from './hi/common.json';
 import hiAuth from './hi/auth.json';
@@ -39,6 +43,10 @@ import hiEdit_profile from './hi/edit_profile.json';
 import hiOptions from './hi/options.json';
 import hiOnboarding from './hi/onboarding.json';
 import hiApi from './hi/api.json';
+import hiPrivacy_policy from './hi/privacy_policy.json';
+import hiTerms from './hi/terms.json';
+import hiCommunity_guidelines from './hi/community_guidelines.json';
+import hiFaqs from './hi/faqs.json';
 
 export const en = {
   common,
@@ -61,6 +69,10 @@ export const en = {
   options,
   onboarding,
   api,
+  privacy_policy,
+  terms,
+  community_guidelines,
+  faqs,
 };
 
 export const hi = {
@@ -84,4 +96,8 @@ export const hi = {
   options: hiOptions,
   onboarding: hiOnboarding,
   api: hiApi,
+  privacy_policy: hiPrivacy_policy,
+  terms: hiTerms,
+  community_guidelines: hiCommunity_guidelines,
+  faqs: hiFaqs,
 };

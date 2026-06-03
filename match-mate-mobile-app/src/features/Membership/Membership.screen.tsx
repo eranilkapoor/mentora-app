@@ -48,11 +48,12 @@ export default function MembershipScreen(): React.ReactElement {
       id: boostPlan._id,
       name: boostPlan.name.replace(/_/g, ' '),
       price: `${boostPlan.currency} ${boostPlan.price}`,
-      duration: '24 hours',
+      durationLabel: t('membership.boost.duration'),
       best: false,
+      featureValues: {},
       source: boostPlan,
     });
-  }, [boostPlan, handleCreateBoostOrder]);
+  }, [boostPlan, handleCreateBoostOrder, t]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -124,9 +125,11 @@ export default function MembershipScreen(): React.ReactElement {
               <Feather name="zap" size={18} color={theme.colors.primary} />
             </View>
             <View style={styles.boostCopy}>
-              <Text style={styles.boostTitle}>Profile Boost</Text>
+              <Text style={styles.boostTitle}>
+                {t('membership.boost.title')}
+              </Text>
               <Text style={styles.boostSubtitle}>
-                Priority discovery ranking for 24 hours
+                {t('membership.boost.subtitle')}
               </Text>
             </View>
             <TouchableOpacity
@@ -135,7 +138,7 @@ export default function MembershipScreen(): React.ReactElement {
               disabled={isCreatingOrder}
               onPress={onCreateBoostOrder}
               accessibilityRole="button"
-              accessibilityLabel="Buy profile boost"
+              accessibilityLabel={t('membership.boost.buy')}
             >
               <Text style={styles.boostButtonText}>
                 {boostPlan.currency} {boostPlan.price}

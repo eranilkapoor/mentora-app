@@ -30,6 +30,7 @@
   "filter_caste_sc": "SC",
   "filter_verified_only": "Verified profiles only",
   "toolbar_profiles_found": "{{count}} Profiles Found",
+  "toolbar_filters_applied": "{{count}} filters applied",
   "toolbar_filters_applied_one": "{{count}} filter applied",
   "toolbar_filters_applied_other": "{{count}} filters applied",
   "toolbar_subtitle": "Discover your best matches",
@@ -93,5 +94,10 @@
   "empty_title": "No Profiles Yet",
   "empty_subtitle": "Update your preferences or check another tab.",
   "empty_search_title": "No Results Found",
-  "empty_search_subtitle": "Try different keywords or clear your filters."
+  "empty_search_subtitle": "Try different keywords or clear your filters.",
+  "online_now": "Online Now",
+  "online_count": "{{count}} online",
+  "total_count": "{{count}} total",
+  "no_online_now_title": "No one online right now",
+  "no_online_now_message": "Check back in a bit - matches go online throughout the day."
 }

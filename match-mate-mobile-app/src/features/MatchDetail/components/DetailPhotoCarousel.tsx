@@ -60,7 +60,7 @@ export const DetailPhotoCarousel = React.memo(function DetailPhotoCarousel({
           <View style={styles.photoPrivacyOverlay}>
             <Feather name="lock" size={18} color={theme.colors.white} />
             <Text style={styles.photoPrivacyText}>
-              Photo unlocks after match
+              {t('match_detail.photo_unlocks_after_match')}
             </Text>
           </View>
         ) : null}

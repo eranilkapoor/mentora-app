@@ -111,9 +111,13 @@ export default function AccountSettingsScreen({
           />
           <SettingsSelectItem
             icon="shield"
-            label="Profile KYC verification"
-            sublabel="Submit documents and selfie for profile verification"
-            value={settings?.profileVerified ? 'Approved' : 'Manage'}
+            label={t('settings.account.profile_kyc_verification')}
+            sublabel={t('settings.account.profile_kyc_verification_sub')}
+            value={
+              settings?.profileVerified
+                ? t('settings.account.approved')
+                : t('settings.account.manage')
+            }
             isLast
             onPress={() => navigation.navigate('ProfileVerification')}
           />

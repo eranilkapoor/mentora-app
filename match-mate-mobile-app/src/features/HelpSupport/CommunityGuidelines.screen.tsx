@@ -1,6 +1,7 @@
 import React from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -11,40 +12,20 @@ type Props = {
   navigation: SettingsNavigationProp;
 };
 
-const GUIDELINES = [
-  {
-    title: 'Use truthful profile details',
-    body: 'Use your real identity, current photos, accurate relationship status, and honest family, education, and profession details.',
-  },
-  {
-    title: 'Communicate respectfully',
-    body: 'Do not harass, threaten, pressure, shame, or send abusive messages. Matrimonial conversations should remain consent-based and family-safe.',
-  },
-  {
-    title: 'Protect privacy',
-    body: 'Do not share another member phone number, email, photos, address, documents, or chat screenshots without permission.',
-  },
-  {
-    title: 'Avoid fraud and solicitation',
-    body: 'Do not request money, promote outside services, impersonate anyone, or use MatchMate for commercial lead generation.',
-  },
-  {
-    title: 'Report unsafe behavior',
-    body: 'Use report and block actions when a profile looks fake, suspicious, abusive, or violates privacy expectations.',
-  },
-];
+const GUIDELINE_KEYS = ['truthful', 'respect', 'privacy', 'fraud', 'report'];
 
 export default function CommunityGuidelinesScreen({
   navigation,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(communityGuidelinesStyles);
+  const { t } = useTranslation();
 
   return (
     <SafeAreaView style={styles.safe}>
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title="Community Guidelines"
+        title={t('settings.support_center.community_guidelines')}
       />
 
       <ScrollView
@@ -53,21 +34,25 @@ export default function CommunityGuidelinesScreen({
       >
         <SettingsCard
           icon="shield"
-          title="Community Guidelines"
-          subtitle="Keep matrimonial discovery safe, honest, and respectful"
+          title={t('settings.support_center.community_guidelines')}
+          subtitle={t('community_guidelines.subtitle')}
         >
-          {GUIDELINES.map((item, index) => (
+          {GUIDELINE_KEYS.map((key, index) => (
             <View
-              key={item.title}
+              key={key}
               style={[
                 styles.guidelineRow,
-                index === GUIDELINES.length - 1 && styles.guidelineRowLast,
+                index === GUIDELINE_KEYS.length - 1 && styles.guidelineRowLast,
               ]}
             >
               <Text style={styles.guidelineNumber}>{index + 1}</Text>
               <View style={styles.guidelineContent}>
-                <Text style={styles.guidelineTitle}>{item.title}</Text>
-                <Text style={styles.guidelineBody}>{item.body}</Text>
+                <Text style={styles.guidelineTitle}>
+                  {t(`community_guidelines.items.${key}.title`)}
+                </Text>
+                <Text style={styles.guidelineBody}>
+                  {t(`community_guidelines.items.${key}.body`)}
+                </Text>
               </View>
             </View>
           ))}

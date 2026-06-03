@@ -4,5 +4,6 @@
   "language_notice": "Some content may require a restart to fully apply the new language.",
   "available_languages": "Available Languages",
   "english": "English",
-  "hindi": "Hindi"
+  "hindi": "Hindi",
+  "select_language_hint": "Select language"
 }

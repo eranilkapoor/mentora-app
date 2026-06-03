@@ -43,7 +43,9 @@ export function VideoIntroSection({
     ? (resolveApiUrl(video.thumbnailUrl) ?? video.thumbnailUrl)
     : undefined;
   const isPendingVideo = video?._id?.startsWith('pending-') ?? false;
-  const videoTitle = isPendingVideo ? 'New intro selected' : 'Video intro';
+  const videoTitle = isPendingVideo
+    ? t('edit_profile.video_intro.new_intro_selected')
+    : t('edit_profile.video_intro.video_intro');
 
   return (
     <SectionCard
@@ -65,7 +67,7 @@ export function VideoIntroSection({
             <InlineVideoPlayer
               videoUrl={videoUrl}
               thumbnailUrl={thumbnailUrl}
-              placeholderText="Intro video uploaded"
+              placeholderText={t('edit_profile.video_intro.uploaded')}
               previewStyle={styles.videoIntroPreview}
               thumbnailStyle={styles.videoIntroThumbnail}
               thumbnailImageStyle={styles.videoIntroThumbnailImage}
@@ -85,13 +87,15 @@ export function VideoIntroSection({
             </View>
             <Text style={styles.videoIntroSubtitle}>
               {isPendingVideo
-                ? 'Save this section to publish your new introduction.'
-                : 'Visitors will see this as your profile introduction.'}
+                ? t('edit_profile.video_intro.pending_subtitle')
+                : t('edit_profile.video_intro.published_subtitle')}
             </Text>
             {video.isPrimary && (
               <View style={styles.videoIntroBadge}>
                 <Feather name="star" size={11} color={theme.colors.accent} />
-                <Text style={styles.videoIntroBadgeText}>Primary intro</Text>
+                <Text style={styles.videoIntroBadgeText}>
+                  {t('edit_profile.video_intro.primary_intro')}
+                </Text>
               </View>
             )}
           </View>
@@ -116,7 +120,9 @@ export function VideoIntroSection({
                   video.isPrimary ? theme.colors.accent : theme.colors.textMuted
                 }
               />
-              <Text style={styles.videoIntroActionText}>Primary</Text>
+              <Text style={styles.videoIntroActionText}>
+                {t('edit_profile.video_intro.primary')}
+              </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -136,7 +142,7 @@ export function VideoIntroSection({
                   styles.videoIntroActionTextDanger,
                 ]}
               >
-                Remove
+                {t('common.delete')}
               </Text>
             </TouchableOpacity>
           </View>
@@ -148,21 +154,23 @@ export function VideoIntroSection({
           disabled={videoUploading}
           activeOpacity={0.7}
           accessibilityRole="button"
-          accessibilityLabel="Upload video intro"
+          accessibilityLabel={t('edit_profile.video_intro.upload')}
         >
           {videoUploading ? (
             <ActivityIndicator size="small" color={theme.colors.primary} />
           ) : (
             <>
               <Feather name="video" size={28} color={theme.colors.textMuted} />
-              <Text style={styles.addPhotoText}>Add intro</Text>
+              <Text style={styles.addPhotoText}>
+                {t('edit_profile.video_intro.add_intro')}
+              </Text>
             </>
           )}
         </TouchableOpacity>
       )}
       {!video && !videosLoading ? (
         <Text style={styles.photoHint}>
-          Add one short video introduction so visitors can know you better.
+          {t('edit_profile.video_intro.add_hint')}
         </Text>
       ) : null}
     </SectionCard>

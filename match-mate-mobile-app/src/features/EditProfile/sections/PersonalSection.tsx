@@ -191,7 +191,7 @@ export function PersonalSection({
       />
 
       <ToggleRow
-        label="NRI profile"
+        label={t('edit_profile.fields.nri_profile')}
         value={personal.isNri ?? false}
         onChange={(v) => onSet('isNri', v)}
       />
@@ -199,7 +199,7 @@ export function PersonalSection({
       {personal.isNri ? (
         <>
           <DropdownPicker
-            label="Residency country"
+            label={t('edit_profile.fields.residency_country')}
             options={CountryOptions}
             value={personal.residencyCountry ?? personal.country}
             onChange={(val) => onSet('residencyCountry', val as Country)}
@@ -207,15 +207,15 @@ export function PersonalSection({
           <View style={styles.row}>
             <View style={styles.halfField}>
               <FormInput
-                label="Visa status"
+                label={t('edit_profile.fields.visa_status')}
                 value={personal.visaStatus ?? ''}
                 onChange={(v) => onSet('visaStatus', v)}
-                placeholder="Work visa, PR, citizen"
+                placeholder={t('edit_profile.placeholders.visa_status')}
               />
             </View>
             <View style={styles.halfField}>
               <FormInput
-                label="Abroad since"
+                label={t('edit_profile.fields.abroad_since')}
                 value={personal.abroadSince ?? ''}
                 onChange={(v) => onSet('abroadSince', v)}
                 placeholder="YYYY"
@@ -240,7 +240,7 @@ export function PersonalSection({
       />
 
       <MultiSelectPill
-        label="Personality badges"
+        label={t('edit_profile.fields.personality_badges')}
         options={PERSONALITY_BADGE_OPTIONS}
         value={personal.personalityBadges ?? []}
         onChange={(v) =>
@@ -252,7 +252,7 @@ export function PersonalSection({
         minSelection={3}
         maxSelection={10}
         showSelectedCount
-        helperText="Select 3 to 10 badges that describe you."
+        helperText={t('edit_profile.fields.personality_badges_helper')}
       />
     </SectionCard>
   );

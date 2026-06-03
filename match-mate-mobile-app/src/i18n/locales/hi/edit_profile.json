@@ -35,6 +35,22 @@
     "remove_confirm_title": "फोटो हटाएं",
     "remove_confirm_message": "क्या आप वाकई यह फोटो हटाना चाहते हैं?"
   },
+  "video_intro": {
+    "video_intro": "वीडियो परिचय",
+    "new_intro_selected": "नया परिचय चुना गया",
+    "uploaded": "परिचय वीडियो अपलोड हो गया",
+    "pending_subtitle": "अपना नया परिचय प्रकाशित करने के लिए इस सेक्शन को सेव करें।",
+    "published_subtitle": "विज़िटर इसे आपके प्रोफ़ाइल परिचय के रूप में देखेंगे।",
+    "primary_intro": "प्राथमिक परिचय",
+    "primary": "प्राथमिक",
+    "upload": "वीडियो परिचय अपलोड करें",
+    "add_intro": "परिचय जोड़ें",
+    "add_hint": "एक छोटा वीडियो परिचय जोड़ें ताकि विज़िटर आपको बेहतर जान सकें।",
+    "only_one_allowed": "केवल एक वीडियो परिचय की अनुमति है। पहले मौजूदा वीडियो हटाएं।",
+    "remove_confirm_title": "वीडियो परिचय हटाएं?",
+    "remove_confirm_message": "यह आपके वर्तमान प्रोफ़ाइल परिचय वीडियो को इस सेक्शन को सेव करने के बाद हटा देगा।",
+    "upload_failed": "वीडियो परिचय अपलोड नहीं हो पाया।"
+  },
   "fields": {
     "first_name": "पहला नाम *",
     "last_name": "अंतिम नाम",
@@ -73,6 +89,12 @@
     "daughters_count": "बेटियां",
     "willing_to_relocate": "स्थानांतरित होने के लिए तैयार",
     "citizenship": "नागरिकता",
+    "nri_profile": "NRI प्रोफ़ाइल",
+    "residency_country": "निवास देश",
+    "visa_status": "वीज़ा स्थिति",
+    "abroad_since": "विदेश में कब से",
+    "personality_badges": "व्यक्तित्व बैज",
+    "personality_badges_helper": "अपने बारे में बताने वाले 3 से 10 बैज चुनें।",
     "manglik_status": "मांगलिक स्थिति",
     "rashi": "राशि",
     "nakshatra": "नक्षत्र",
@@ -114,7 +136,8 @@
     "country": "उदा. भारत",
     "state": "उदा. दिल्ली",
     "city": "उदा. नई दिल्ली",
-    "citizenship": "उदा. भारतीय"
+    "citizenship": "उदा. भारतीय",
+    "visa_status": "वर्क वीज़ा, PR, नागरिक"
   },
   "date_picker": {
     "title": "जन्म तिथि चुनें",
@@ -131,7 +154,8 @@
     "load_failed": "प्रोफ़ाइल लोड करने में विफल। कृपया पुनः प्रयास करें।",
     "save_failed": "सहेजने में विफल। कृपया पुनः प्रयास करें।",
     "date_incomplete": "कृपया दिन, महीना और वर्ष चुनें।",
-    "invalid_date": "कृपया मान्य तारीख चुनें।"
+    "invalid_date": "कृपया मान्य तारीख चुनें।",
+    "personality_badges_required": "कृपया 3 से 10 व्यक्तित्व बैज चुनें।"
   },
   "success": {
     "section_saved": "बदलाव सफलतापूर्वक सहेजे गए।"

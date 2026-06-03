@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
@@ -96,6 +97,7 @@ const createStyles = (theme: Theme) =>
 export default function BlockedUsersScreen({
   navigation,
 }: Props): React.ReactElement {
+  const { t } = useTranslation();
   const styles = useThemedStyles(sharedSettingsStyles);
   const { theme } = useTheme();
   const localStyles = React.useMemo(() => createStyles(theme), [theme]);
@@ -105,26 +107,28 @@ export default function BlockedUsersScreen({
   const handleUnblock = useCallback(
     (targetUserId: string, name: string) => {
       showConfirm({
-        title: 'Unblock user?',
-        message: `${name} may be able to view or contact you depending on your privacy settings.`,
-        confirmText: 'Unblock',
+        title: t('settings.blocked_users_screen.unblock_title'),
+        message: t('settings.blocked_users_screen.unblock_message', { name }),
+        confirmText: t('settings.blocked_users_screen.unblock'),
         onConfirm: () => {
           void unblockUser({ targetUserId })
             .unwrap()
             .then(() => {
-              showSuccess({ title: 'User unblocked' });
+              showSuccess({
+                title: t('settings.blocked_users_screen.unblocked_title'),
+              });
             })
             .catch((error: unknown) => {
               console.error('Unblock failed:', error);
               showError({
-                title: 'Unable to unblock',
-                message: 'Please try again.',
+                title: t('settings.blocked_users_screen.unable_unblock_title'),
+                message: t('common.try_again_message'),
               });
             });
         },
       });
     },
-    [unblockUser]
+    [t, unblockUser]
   );
 
   const renderBlockedUser = useCallback(
@@ -133,7 +137,10 @@ export default function BlockedUsersScreen({
         ? resolveApiUrl(user.avatarUrl)
         : null;
       const avatarUrl = resolvedAvatar ?? FALLBACK_AVATAR;
-      const meta = [user.age ? `${user.age} yrs` : undefined, user.location]
+      const meta = [
+        user.age ? t('profile.age_years', { age: user.age }) : undefined,
+        user.location,
+      ]
         .filter(Boolean)
         .join(' • ');
 
@@ -161,17 +168,22 @@ export default function BlockedUsersScreen({
               ) : null}
             </View>
             <Text style={localStyles.meta} numberOfLines={1}>
-              {meta || 'Blocked profile'}
+              {meta || t('settings.blocked_users_screen.blocked_profile')}
             </Text>
           </View>
           <TouchableOpacity
             style={localStyles.unblockButton}
             onPress={() => handleUnblock(user.userId, user.name)}
             accessibilityRole="button"
-            accessibilityLabel={`Unblock ${user.name}`}
+            accessibilityLabel={t(
+              'settings.blocked_users_screen.unblock_user_label',
+              { name: user.name }
+            )}
           >
             <Feather name="unlock" size={13} color={theme.colors.error} />
-            <Text style={localStyles.unblockText}>Unblock</Text>
+            <Text style={localStyles.unblockText}>
+              {t('settings.blocked_users_screen.unblock')}
+            </Text>
           </TouchableOpacity>
         </View>
       );
@@ -180,6 +192,7 @@ export default function BlockedUsersScreen({
       data?.blockedUsers.length,
       handleUnblock,
       localStyles,
+      t,
       theme.colors.error,
       theme.colors.success,
     ]
@@ -193,18 +206,22 @@ export default function BlockedUsersScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Header showBack onBackPress={navigation.goBack} title="Blocked Users" />
+      <Header
+        showBack
+        onBackPress={navigation.goBack}
+        title={t('settings.blocked_users')}
+      />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <SettingsCard
           icon="slash"
-          title="Blocked Users"
-          subtitle="Manage people you have blocked"
+          title={t('settings.blocked_users')}
+          subtitle={t('settings.blocked_users_sub')}
         >
           {blockedUsers.length === 0 ? (
             <SettingsSelectItem
               icon="check-circle"
-              label="No blocked users"
-              sublabel="Profiles you block will appear here."
+              label={t('settings.blocked_users_screen.empty_title')}
+              sublabel={t('settings.blocked_users_screen.empty_message')}
               disabled
               isLast
               onPress={() => undefined}

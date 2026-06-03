@@ -9,6 +9,7 @@ import {
   StyleSheet,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { LanguageOption } from '../Language.types';
 import { Language } from '../../../store/slices/settings.slice';
@@ -38,6 +39,7 @@ interface Props {
 export const LanguageOptionItem = React.memo(
   ({ item, isActive, isLast, styles, onPress }: Props): React.ReactElement => {
     const { theme } = useTheme();
+    const { t } = useTranslation();
 
     const handlePress = useCallback(() => {
       onPress(item.code);
@@ -55,7 +57,7 @@ export const LanguageOptionItem = React.memo(
         accessibilityRole="radio"
         accessibilityState={{ checked: isActive }}
         accessibilityLabel={item.label}
-        accessibilityHint="Select language"
+        accessibilityHint={t('language.select_language_hint')}
       >
         <View style={styles.optionLeft}>
           <View

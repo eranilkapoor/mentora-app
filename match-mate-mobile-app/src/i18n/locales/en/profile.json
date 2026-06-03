@@ -6,6 +6,7 @@
   "tap_to_edit": "Tap to edit your profile",
   "name": "Name",
   "age": "Age",
+  "age_years": "{{age}} yrs",
   "gender": "Gender",
   "dob": "Date of Birth",
   "height": "Height",

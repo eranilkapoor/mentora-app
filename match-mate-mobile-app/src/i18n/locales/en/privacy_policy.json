@@ -1,0 +1,75 @@
+{
+  "title": "Privacy Policy - MatchMate",
+  "last_updated": "Last updated: 1st January 2026",
+  "intro": "MatchMate is committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use the MatchMate Mobile Application and Website.",
+  "sections": {
+    "collect": {
+      "heading": "1. Information We Collect",
+      "personal": {
+        "title": "1.1 Personal Information",
+        "full_name": "Full Name",
+        "gender": "Gender",
+        "date_of_birth": "Date of Birth",
+        "marital_status": "Marital Status",
+        "phone_number": "Phone Number",
+        "email_address": "Email Address",
+        "city_country": "City / Country",
+        "profile_photos": "Profile Photos",
+        "education_occupation": "Education & Occupation",
+        "partner_preferences": "Partner Preferences"
+      },
+      "auth": {
+        "title": "1.2 Login & Authentication",
+        "email_password": "Email + Password",
+        "phone_otp": "Phone Number + OTP",
+        "social_login": "Social Login (Google, Facebook, Apple)"
+      },
+      "usage": {
+        "title": "1.3 Usage & Device Information",
+        "device_type": "Device type",
+        "ip_address": "IP address",
+        "app_interactions": "App interactions",
+        "crash_logs": "Crash logs",
+        "cookies": "Cookies (on web)"
+      },
+      "activity": {
+        "title": "1.4 App Activity",
+        "profile_views": "Profile views",
+        "matches": "Matches, interests, shortlist",
+        "chat_messages": "Chat messages (encrypted)",
+        "verification_documents": "Verification documents"
+      }
+    },
+    "use": {
+      "heading": "2. How We Use Your Information",
+      "account": "Create/manage your account",
+      "matching": "Match you with other users",
+      "chat": "Provide chat features",
+      "experience": "Improve user experience",
+      "fraud": "Prevent fraud",
+      "support": "Provide support",
+      "notifications": "Send important notifications"
+    },
+    "sharing": {
+      "heading": "3. Sharing Your Information",
+      "providers": "Service providers",
+      "authorities": "Legal authorities",
+      "users": "Other users (limited profile info)"
+    },
+    "security": {
+      "heading": "4. Security",
+      "paragraph": "We use encryption, secure servers, access control, and regular security audits to protect your data."
+    },
+    "rights": {
+      "heading": "5. Your Rights",
+      "access": "Access or edit your info",
+      "delete": "Delete your account",
+      "visibility": "Update visibility settings",
+      "consent": "Withdraw consent"
+    },
+    "contact": {
+      "heading": "6. Contact Us",
+      "paragraph": "Company: Webnza Infotech / MatchMate\nEmail: support@webnza.com\nWebsite: www.webnza.com\nAddress: New Delhi"
+    }
+  }
+}

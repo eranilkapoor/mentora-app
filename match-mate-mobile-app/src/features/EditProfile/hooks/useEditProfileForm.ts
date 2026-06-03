@@ -363,8 +363,7 @@ export function useEditProfileForm() {
     if (videos.length >= 1) {
       showError({
         title: t('common.error'),
-        message:
-          'Only one video intro is allowed. Remove the existing video first.',
+        message: t('edit_profile.video_intro.only_one_allowed'),
       });
       return;
     }
@@ -447,9 +446,8 @@ export function useEditProfileForm() {
       };
 
       showConfirm({
-        title: 'Remove video intro?',
-        message:
-          'This will remove your current profile introduction video after you save this section.',
+        title: t('edit_profile.video_intro.remove_confirm_title'),
+        message: t('edit_profile.video_intro.remove_confirm_message'),
         confirmText: t('common.delete'),
         destructive: true,
         onConfirm: markForRemoval,
@@ -539,7 +537,7 @@ export function useEditProfileForm() {
 
       const response = await addMediaVideos(formData).unwrap();
       if (!response.success) {
-        throw new Error('Unable to upload video intro.');
+        throw new Error(t('edit_profile.video_intro.upload_failed'));
       }
 
       firstUploadedVideoId = response.data?.find((video) => video._id)?._id;
@@ -574,7 +572,7 @@ export function useEditProfileForm() {
       ) {
         showError({
           title: t('common.error'),
-          message: 'Please select 3 to 10 personality badges.',
+          message: t('edit_profile.errors.personality_badges_required'),
         });
         return;
       }

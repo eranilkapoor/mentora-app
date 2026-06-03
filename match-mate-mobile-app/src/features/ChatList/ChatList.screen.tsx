@@ -18,6 +18,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -41,15 +42,15 @@ import { ChatFilter, ChatListProps, ChatMatch } from './ChatList.types';
 const FALLBACK_AVATAR = 'https://i.pravatar.cc/150?img=12';
 const FILTERS: Array<{
   key: ChatFilter;
-  label: string;
+  labelKey: string;
   icon: React.ComponentProps<typeof Feather>['name'];
 }> = [
-  { key: 'all', label: 'All', icon: 'inbox' },
-  { key: 'unread', label: 'Unread', icon: 'message-circle' },
-  { key: 'online', label: 'Online', icon: 'radio' },
-  { key: 'pinned', label: 'Pinned', icon: 'star' },
-  { key: 'muted', label: 'Muted', icon: 'bell-off' },
-  { key: 'archived', label: 'Archived', icon: 'archive' },
+  { key: 'all', labelKey: 'chat.filters.all', icon: 'inbox' },
+  { key: 'unread', labelKey: 'chat.filters.unread', icon: 'message-circle' },
+  { key: 'online', labelKey: 'chat.filters.online', icon: 'radio' },
+  { key: 'pinned', labelKey: 'chat.filters.pinned', icon: 'star' },
+  { key: 'muted', labelKey: 'chat.filters.muted', icon: 'bell-off' },
+  { key: 'archived', labelKey: 'chat.filters.archived', icon: 'archive' },
 ];
 const PAGE_SIZE = 20;
 
@@ -72,6 +73,7 @@ export default function ChatListScreen({
 }: ChatListProps): React.ReactElement {
   const styles = useThemedStyles(chatListStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const currentUserId = useAppSelector((state) => state.auth.user?.userId);
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<ChatFilter>('all');
@@ -175,7 +177,7 @@ export default function ChatListScreen({
             ? fullName
             : generatedName.length > 0
               ? generatedName
-              : 'MatchMate Member';
+              : t('chat.matchmate_member');
         const avatarUrl = participant.avatarUrl
           ? resolveApiUrl(participant.avatarUrl)
           : null;
@@ -188,7 +190,7 @@ export default function ChatListScreen({
           city:
             [participant.city, participant.country]
               .filter(Boolean)
-              .join(', ') || '-',
+              .join(', ') || t('common.empty_value'),
           lastMessage: conversation.lastMessage?.text ?? '',
           lastMessageStatus: getLastMessageStatus(conversation.lastMessage),
           ...(conversation.lastMessage?.senderId
@@ -203,7 +205,7 @@ export default function ChatListScreen({
           isMuted: Boolean(conversation.settings?.mutedUntil),
         };
       }),
-    [conversationPages]
+    [conversationPages, t]
   );
 
   const visibleMatches = matches;
@@ -238,12 +240,12 @@ export default function ChatListScreen({
         }).unwrap();
       } catch {
         showError({
-          title: 'Unable to update chat',
-          message: 'Please try again.',
+          title: t('chat.unable_update_title'),
+          message: t('common.try_again_message'),
         });
       }
     },
-    [isUpdatingSettings, updateRoomSettings]
+    [isUpdatingSettings, t, updateRoomSettings]
   );
 
   const handleToggleMute = useCallback(
@@ -259,12 +261,12 @@ export default function ChatListScreen({
         }).unwrap();
       } catch {
         showError({
-          title: 'Unable to update chat',
-          message: 'Please try again.',
+          title: t('chat.unable_update_title'),
+          message: t('common.try_again_message'),
         });
       }
     },
-    [isUpdatingSettings, updateRoomSettings]
+    [isUpdatingSettings, t, updateRoomSettings]
   );
 
   const handleToggleArchive = useCallback(
@@ -278,12 +280,12 @@ export default function ChatListScreen({
         }).unwrap();
       } catch {
         showError({
-          title: 'Unable to update chat',
-          message: 'Please try again.',
+          title: t('chat.unable_update_title'),
+          message: t('common.try_again_message'),
         });
       }
     },
-    [isUpdatingSettings, updateRoomSettings]
+    [isUpdatingSettings, t, updateRoomSettings]
   );
 
   const renderItem: ListRenderItem<ChatMatch> = useCallback(
@@ -328,17 +330,19 @@ export default function ChatListScreen({
   return (
     <SafeAreaView style={styles.safe}>
       <Header
-        title="Messages"
+        title={t('chat.messages')}
         {...(!isLoading
           ? {
               subtitle:
                 totalUnread > 0
-                  ? `${totalUnread} unread`
-                  : `${visibleMatches.length} conversations`,
+                  ? t('chat.unread_count', { count: totalUnread })
+                  : t('chat.conversation_count', {
+                      count: visibleMatches.length,
+                    }),
             }
           : {})}
         enableSearch
-        searchPlaceholder="Search name, city, or message"
+        searchPlaceholder={t('chat.search_placeholder')}
         onSearchChange={setQuery}
       />
 
@@ -351,6 +355,7 @@ export default function ChatListScreen({
         >
           {FILTERS.map((filter) => {
             const selected = activeFilter === filter.key;
+            const label = t(filter.labelKey);
             return (
               <TouchableOpacity
                 key={filter.key}
@@ -358,7 +363,9 @@ export default function ChatListScreen({
                 onPress={() => setActiveFilter(filter.key)}
                 activeOpacity={0.8}
                 accessibilityRole="button"
-                accessibilityLabel={`${filter.label} conversations`}
+                accessibilityLabel={t('chat.filter_accessibility_label', {
+                  filter: label,
+                })}
               >
                 <Feather
                   name={filter.icon}
@@ -373,7 +380,7 @@ export default function ChatListScreen({
                     selected && styles.filterChipTextActive,
                   ]}
                 >
-                  {filter.label}
+                  {label}
                 </Text>
                 {filter.key === 'unread' && totalUnread > 0 ? (
                   <View
@@ -412,20 +419,20 @@ export default function ChatListScreen({
 
           <Text style={styles.emptyTitle}>
             {query.length > 0 || activeFilter !== 'all'
-              ? 'No conversations found'
-              : 'No conversations yet'}
+              ? t('chat.no_conversations_found')
+              : t('chat.no_conversations_yet')}
           </Text>
 
           <Text style={styles.emptySub}>
             {query.length > 0
-              ? `No matches for "${query}"`
+              ? t('chat.no_matches_for_query', { query })
               : activeFilter === 'unread'
-                ? 'You are all caught up.'
+                ? t('chat.caught_up')
                 : activeFilter === 'online'
-                  ? 'No matched members are online right now.'
+                  ? t('chat.no_online_members')
                   : activeFilter === 'archived'
-                    ? 'Archived conversations will appear here.'
-                    : 'Start chatting after an interest is accepted.'}
+                    ? t('chat.archived_empty')
+                    : t('chat.start_after_interest')}
           </Text>
 
           {query.length === 0 && activeFilter === 'all' && (
@@ -433,7 +440,9 @@ export default function ChatListScreen({
               style={styles.emptyBtn}
               onPress={() => navigation.getParent()?.navigate('Matches')}
             >
-              <Text style={styles.emptyBtnText}>Browse Matches</Text>
+              <Text style={styles.emptyBtnText}>
+                {t('chat.browse_matches')}
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -455,7 +464,7 @@ export default function ChatListScreen({
           onEndReachedThreshold={0.35}
           ListFooterComponent={
             isFetching && page > 1 ? (
-              <Text style={styles.loadingMoreText}>Loading more...</Text>
+              <Text style={styles.loadingMoreText}>{t('common.loading')}</Text>
             ) : null
           }
           showsVerticalScrollIndicator={false}

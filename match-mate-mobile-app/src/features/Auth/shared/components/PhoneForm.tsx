@@ -118,15 +118,15 @@ export function PhoneForm({
             <Feather name="gift" size={14} color={theme.colors.link} />
             <Text style={styles.linkText}>
               {showReferralCode
-                ? 'Hide referral code'
-                : 'Have a referral code?'}
+                ? t('auth.referral.hide')
+                : t('auth.referral.have_code')}
             </Text>
           </TouchableOpacity>
 
           {showReferralCode ? (
             <>
               <Text style={[styles.label, styles.labelSpacing]}>
-                Referral code
+                {t('auth.referral.label')}
               </Text>
               <View
                 style={[
@@ -147,7 +147,7 @@ export function PhoneForm({
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="Enter referral code"
+                  placeholder={t('auth.referral.placeholder')}
                   placeholderTextColor={theme.colors.textMuted}
                   autoCapitalize="characters"
                   value={referralCode ?? ''}

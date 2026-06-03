@@ -127,7 +127,11 @@ export default function SecuritySettingsScreen({
             icon="lock"
             label={t('settings.security.two_factor')}
             sublabel={t('settings.security.two_factor_sub')}
-            value={settings?.twoFactorEnabled ? 'Enabled' : 'Disabled'}
+            value={
+              settings?.twoFactorEnabled
+                ? t('common.enabled')
+                : t('common.disabled')
+            }
             onPress={() => navigation.navigate('TwoFactorSetup')}
           />
           <SettingsSelectItem
@@ -197,8 +201,8 @@ export default function SecuritySettingsScreen({
         >
           <SettingsSelectItem
             icon="clock"
-            label="Login History"
-            sublabel="Recent sign-ins, devices, and session status"
+            label={t('settings.security.login_history_title')}
+            sublabel={t('settings.security.login_history_sub')}
             onPress={() => navigation.navigate('LoginHistory')}
           />
           <SettingsSelectItem

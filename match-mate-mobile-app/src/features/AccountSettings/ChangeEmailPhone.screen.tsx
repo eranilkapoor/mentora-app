@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useRoute } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
@@ -58,6 +59,7 @@ const createStyles = (theme: Theme) =>
 export default function ChangeEmailPhoneScreen({
   navigation,
 }: Props): React.ReactElement {
+  const { t } = useTranslation();
   const route =
     useRoute<RouteProp<SettingsStackParamList, 'ChangeEmailPhone'>>();
   const { theme } = useTheme();
@@ -70,10 +72,12 @@ export default function ChangeEmailPhoneScreen({
 
   const mode = route.params.mode;
   const isEmail = mode === 'email';
-  const title = isEmail ? 'Change Email' : 'Change Phone';
+  const title = isEmail
+    ? t('settings.account.change_email')
+    : t('settings.account.change_phone');
   const helper = isEmail
-    ? 'Enter the new email address. We will start verification before it becomes your sign-in email.'
-    : 'Enter the new phone number without country code. We will send OTP verification before updating it.';
+    ? t('settings.account.change_email_helper')
+    : t('settings.account.change_phone_helper');
   const placeholder = isEmail ? 'name@example.com' : '9876543210';
   const isLoading = isEmail ? isEmailLoading : isPhoneLoading;
 
@@ -97,13 +101,16 @@ export default function ChangeEmailPhoneScreen({
       }
 
       Alert.alert(
-        'Verification started',
-        'Please complete verification to finish this change.'
+        t('settings.account.verification_started'),
+        t('settings.account.verification_started_message')
       );
       navigation.goBack();
     } catch (error) {
       console.error('Account change request failed:', error);
-      Alert.alert('Unable to start verification', 'Please try again.');
+      Alert.alert(
+        t('settings.account.verification_failed'),
+        t('common.try_again_message')
+      );
     }
   }, [
     canSubmit,
@@ -112,6 +119,7 @@ export default function ChangeEmailPhoneScreen({
     navigation,
     requestEmailChange,
     requestPhoneChange,
+    t,
     value,
   ]);
 
@@ -122,7 +130,7 @@ export default function ChangeEmailPhoneScreen({
         <SettingsCard
           icon={isEmail ? 'mail' : 'phone'}
           title={title}
-          subtitle="Verification required"
+          subtitle={t('settings.account.verification_required')}
         >
           <TextInput
             value={value}
@@ -136,8 +144,12 @@ export default function ChangeEmailPhoneScreen({
           <Text style={styles.helper}>{helper}</Text>
           <SettingsSelectItem
             icon="send"
-            label={isLoading ? 'Sending...' : 'Send Verification'}
-            sublabel={canSubmit ? '' : 'Enter a valid value to continue'}
+            label={
+              isLoading
+                ? t('settings.account.sending')
+                : t('settings.account.send_verification')
+            }
+            sublabel={canSubmit ? '' : t('settings.account.enter_valid_value')}
             disabled={!canSubmit || isLoading}
             isLast
             onPress={handleSubmit}

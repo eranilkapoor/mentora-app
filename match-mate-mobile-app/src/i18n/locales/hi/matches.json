@@ -30,6 +30,7 @@
   "filter_caste_sc": "एससी",
   "filter_verified_only": "केवल सत्यापित प्रोफाइल",
   "toolbar_profiles_found": "{{count}} प्रोफाइल मिली",
+  "toolbar_filters_applied": "{{count}} फ़िल्टर लागू किए गए",
   "toolbar_filters_applied_one": "{{count}} फ़िल्टर लागू किया गया",
   "toolbar_filters_applied_other": "{{count}} फ़िल्टर लागू किए गए",
   "toolbar_subtitle": "अपने सर्वश्रेष्ठ मैच खोजें",
@@ -93,5 +94,10 @@
   "empty_title": "अभी तक कोई प्रोफाइल नहीं",
   "empty_subtitle": "आपके मैच यहां दिखाई देंगे",
   "empty_search_title": "कोई प्रोफाइल नहीं मिली",
-  "empty_search_subtitle": "कृपया अपने खोज मानदंडों को समायोजित करें और पुनः प्रयास करें।"
+  "empty_search_subtitle": "कृपया अपने खोज मानदंडों को समायोजित करें और पुनः प्रयास करें।",
+  "online_now": "अभी ऑनलाइन",
+  "online_count": "{{count}} ऑनलाइन",
+  "total_count": "{{count}} कुल",
+  "no_online_now_title": "अभी कोई ऑनलाइन नहीं है",
+  "no_online_now_message": "थोड़ी देर बाद देखें - matches पूरे दिन ऑनलाइन आते रहते हैं।"
 }

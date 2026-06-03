@@ -1,16 +1,14 @@
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, ScrollView } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { privacyPolicyStyles } from './PrivacyPolicy.styles';
 import { PolicySection } from './components/PolicySection';
 import { POLICY_SECTIONS } from './PrivacyPolicy.constants';
 import Header from '@/core/components/Header';
 import { PrivacyPolicyScreenProps } from './PrivacyPolicy.types';
-import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
-
-// ─── Main Screen ─────────────────────────────────────────────────────────────
 
 export default function PrivacyPolicyScreen({
   navigation,
@@ -33,16 +31,12 @@ export default function PrivacyPolicyScreen({
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.card}>
-          <Text style={styles.title}>Privacy Policy — MatchMate</Text>
-          <Text style={styles.updateText}>Last updated: 1st January 2026</Text>
-
-          <Text style={styles.paragraph}>
-            MatchMate ("we", "our", "us") is committed to protecting your
-            personal information and your right to privacy. This Privacy Policy
-            explains how we collect, use, disclose, and safeguard your
-            information when you use the MatchMate Mobile Application and
-            Website.
+          <Text style={styles.title}>{t('privacy_policy.title')}</Text>
+          <Text style={styles.updateText}>
+            {t('privacy_policy.last_updated')}
           </Text>
+
+          <Text style={styles.paragraph}>{t('privacy_policy.intro')}</Text>
 
           {POLICY_SECTIONS.map((section) => (
             <PolicySection key={section.heading} section={section} />

@@ -1,0 +1,18 @@
+{
+  "profile": {
+    "question": "मैं अपनी प्रोफ़ाइल कैसे बनाऊं या अपडेट करूं?",
+    "answer": "Profile > Edit Profile पर जाएं। बेहतर match recommendations के लिए साफ़ फोटो जोड़ें और सभी sections पूरे करें।"
+  },
+  "matches": {
+    "question": "MatchMate matches कैसे खोजता है?",
+    "answer": "हमारा algorithm आपकी age, location, education, interests और अन्य profile parameters जैसी preferences के आधार पर matches recommend करता है।"
+  },
+  "safety": {
+    "question": "क्या मेरी जानकारी सुरक्षित है?",
+    "answer": "हां। हम आपकी personal information की सुरक्षा के लिए secure servers, encrypted data transfer और strict privacy policies का उपयोग करते हैं।"
+  },
+  "delete": {
+    "question": "मैं अपना खाता कैसे हटाऊं?",
+    "answer": "Settings > Account > Delete Account पर जाएं। deletion के बाद आपका data standard retention timelines के भीतर हटाया जाएगा।"
+  }
+}

@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { onlineMatchesStyles } from './OnlineMatches.styles';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
@@ -112,6 +113,7 @@ const MatchCard = React.memo(function MatchCard({
 }): React.ReactElement {
   const styles = useThemedStyles(onlineMatchesStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
 
   return (
     <View style={styles.card}>
@@ -127,7 +129,9 @@ const MatchCard = React.memo(function MatchCard({
           {item.isOnline && (
             <View style={styles.onlineBadge}>
               <View style={styles.onlineDot} />
-              <Text style={styles.onlineBadgeText}>Online now</Text>
+              <Text style={styles.onlineBadgeText}>
+                {t('matches.online_now')}
+              </Text>
             </View>
           )}
           {item.isNew === true && (
@@ -169,7 +173,7 @@ const MatchCard = React.memo(function MatchCard({
               size={15}
               color={theme.colors.white}
             />
-            <Text style={styles.chatText}>Chat</Text>
+            <Text style={styles.chatText}>{t('chat.chat')}</Text>
           </TouchableOpacity>
           <TouchableOpacity
             style={styles.profileBtn}
@@ -178,7 +182,7 @@ const MatchCard = React.memo(function MatchCard({
             accessibilityRole="button"
           >
             <Feather name="user" size={15} color={theme.colors.primary} />
-            <Text style={styles.profileText}>View Profile</Text>
+            <Text style={styles.profileText}>{t('common.view_profile')}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -193,6 +197,7 @@ export default function OnlineMatchesScreen({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(onlineMatchesStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [matches, setMatches] = useState<OnlineMatch[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -237,12 +242,14 @@ export default function OnlineMatchesScreen({
             <Feather name="wifi" size={20} color={theme.colors.primary} />
           </View>
           <View>
-            <Text style={styles.headerTitle}>Online Now</Text>
+            <Text style={styles.headerTitle}>{t('matches.online_now')}</Text>
             {!loading && (
               <Text style={styles.headerSub}>
-                <Text style={styles.onlineCountText}>{onlineCount} online</Text>
+                <Text style={styles.onlineCountText}>
+                  {t('matches.online_count', { count: onlineCount })}
+                </Text>
                 {' · '}
-                {matches.length} total
+                {t('matches.total_count', { count: matches.length })}
               </Text>
             )}
           </View>
@@ -267,9 +274,11 @@ export default function OnlineMatchesScreen({
           <View style={styles.emptyIconWrapper}>
             <Feather name="wifi-off" size={34} color={theme.colors.primary} />
           </View>
-          <Text style={styles.emptyTitle}>No one online right now</Text>
+          <Text style={styles.emptyTitle}>
+            {t('matches.no_online_now_title')}
+          </Text>
           <Text style={styles.emptySub}>
-            Check back in a bit — matches go online throughout the day.
+            {t('matches.no_online_now_message')}
           </Text>
         </View>
       ) : (

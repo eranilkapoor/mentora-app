@@ -4,6 +4,7 @@ import { helpSupportStyles } from '../HelpSupport.styles';
 import { TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useTranslation } from 'react-i18next';
 
 export function FaqCard({
   faq,
@@ -20,6 +21,8 @@ export function FaqCard({
 }): React.ReactElement {
   const styles = useThemedStyles(helpSupportStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
+  const question = t(faq.question);
 
   return (
     <View style={[styles.faqContainer, isLast && styles.faqContainerLast]}>
@@ -27,7 +30,7 @@ export function FaqCard({
         onPress={() => onToggle(index)}
         style={[styles.faqHeader, expanded && styles.faqHeaderActive]}
         accessibilityRole="button"
-        accessibilityLabel={faq.question}
+        accessibilityLabel={question}
         accessibilityState={{ expanded }}
       >
         <View
@@ -45,7 +48,7 @@ export function FaqCard({
         <Text
           style={[styles.faqQuestion, expanded && styles.faqQuestionActive]}
         >
-          {faq.question}
+          {question}
         </Text>
         <Feather
           name={expanded ? 'chevron-up' : 'chevron-down'}
@@ -54,7 +57,7 @@ export function FaqCard({
         />
       </TouchableOpacity>
 
-      {expanded && <Text style={styles.faqAnswer}>{faq.answer}</Text>}
+      {expanded && <Text style={styles.faqAnswer}>{t(faq.answer)}</Text>}
     </View>
   );
 }

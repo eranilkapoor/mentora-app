@@ -43,20 +43,20 @@ export default function HelpSupportScreen({
   const CONTACT_ITEMS: ContactItem[] = [
     {
       icon: 'mail',
-      label: 'Email Support',
+      label: t('settings.support_center.email_support'),
       value: SUPPORT_EMAIL,
       action: openEmail,
     },
     {
       icon: 'phone',
-      label: 'Call Us',
+      label: t('settings.support_center.call_us'),
       value: SUPPORT_PHONE,
       action: openPhone,
     },
     {
       icon: 'message-circle',
-      label: 'WhatsApp',
-      value: 'Chat with us on WhatsApp',
+      label: t('settings.support_center.whatsapp'),
+      value: t('settings.support_center.whatsapp_sub'),
       action: openWhatsApp,
       iconColor: theme.colors.whatsapp,
       isLast: true,
@@ -78,40 +78,41 @@ export default function HelpSupportScreen({
           <View style={styles.headerIconWrapper}>
             <Feather name="life-buoy" size={22} color={theme.colors.primary} />
           </View>
-          <Text style={styles.headerTitle}>Help & Support</Text>
+          <Text style={styles.headerTitle}>
+            {t('settings.support_center.title')}
+          </Text>
           <Text style={styles.headerSubtitle}>
-            We're here to help. Contact support, review policies, or find quick
-            answers in our resource center.
+            {t('settings.support_center.subtitle')}
           </Text>
         </View>
 
         <SettingsCard
           icon="book-open"
-          title="Resources"
-          subtitle="Support articles, safety guidance, and legal information"
+          title={t('settings.support_center.resources')}
+          subtitle={t('settings.support_center.resources_sub')}
         >
           <SettingsSelectItem
             icon="help-circle"
-            label="FAQs"
-            sublabel="Common questions about profiles, matches, and payments"
+            label={t('settings.support_center.faqs')}
+            sublabel={t('settings.support_center.faqs_sub')}
             onPress={() => navigation.navigate('Faqs')}
           />
           <SettingsSelectItem
             icon="shield"
-            label="Community Guidelines"
-            sublabel="Safety, respect, and profile authenticity rules"
+            label={t('settings.support_center.community_guidelines')}
+            sublabel={t('settings.support_center.community_guidelines_sub')}
             onPress={() => navigation.navigate('CommunityGuidelines')}
           />
           <SettingsSelectItem
             icon="file-text"
-            label="Terms & Conditions"
-            sublabel="Service terms for using MatchMate"
+            label={t('settings.support_center.terms')}
+            sublabel={t('settings.support_center.terms_sub')}
             onPress={() => navigation.navigate('TermsConditions')}
           />
           <SettingsSelectItem
             icon="lock"
-            label="Privacy Policy"
-            sublabel="How profile and account data is handled"
+            label={t('settings.support_center.privacy')}
+            sublabel={t('settings.support_center.privacy_sub')}
             onPress={() => navigation.navigate('PrivacyPolicy')}
             isLast
           />
@@ -122,7 +123,9 @@ export default function HelpSupportScreen({
             <View style={styles.sectionIconWrapper}>
               <Feather name="phone" size={13} color={theme.colors.primary} />
             </View>
-            <Text style={styles.sectionTitle}>Contact Support</Text>
+            <Text style={styles.sectionTitle}>
+              {t('settings.support_center.contact_support')}
+            </Text>
           </View>
 
           {CONTACT_ITEMS.map((item) => (

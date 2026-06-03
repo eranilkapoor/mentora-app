@@ -52,5 +52,6 @@
   "block_confirm": "ब्लॉक करें",
   "block_success_title": "प्रोफ़ाइल ब्लॉक की गई",
   "block_success_message": "{{name}} ब्लॉक कर दिया गया है।",
-  "block_failed_title": "ब्लॉक करना असफल"
+  "block_failed_title": "ब्लॉक करना असफल",
+  "photo_unlocks_after_match": "मैच के बाद फोटो अनलॉक होगी"
 }

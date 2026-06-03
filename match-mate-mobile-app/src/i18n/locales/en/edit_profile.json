@@ -35,6 +35,22 @@
     "remove_confirm_title": "Remove Photo",
     "remove_confirm_message": "Are you sure you want to remove this photo?"
   },
+  "video_intro": {
+    "video_intro": "Video intro",
+    "new_intro_selected": "New intro selected",
+    "uploaded": "Intro video uploaded",
+    "pending_subtitle": "Save this section to publish your new introduction.",
+    "published_subtitle": "Visitors will see this as your profile introduction.",
+    "primary_intro": "Primary intro",
+    "primary": "Primary",
+    "upload": "Upload video intro",
+    "add_intro": "Add intro",
+    "add_hint": "Add one short video introduction so visitors can know you better.",
+    "only_one_allowed": "Only one video intro is allowed. Remove the existing video first.",
+    "remove_confirm_title": "Remove video intro?",
+    "remove_confirm_message": "This will remove your current profile introduction video after you save this section.",
+    "upload_failed": "Unable to upload video intro."
+  },
   "fields": {
     "first_name": "First Name *",
     "last_name": "Last Name",
@@ -73,6 +89,12 @@
     "daughters_count": "Daughters",
     "willing_to_relocate": "Willing to Relocate",
     "citizenship": "Citizenship",
+    "nri_profile": "NRI profile",
+    "residency_country": "Residency country",
+    "visa_status": "Visa status",
+    "abroad_since": "Abroad since",
+    "personality_badges": "Personality badges",
+    "personality_badges_helper": "Select 3 to 10 badges that describe you.",
     "manglik_status": "Manglik Status",
     "rashi": "Rashi",
     "nakshatra": "Nakshatra",
@@ -114,7 +136,8 @@
     "country": "e.g India",
     "state": "e.g Delhi",
     "city": "e.g New Delhi",
-    "citizenship": "e.g Indian"
+    "citizenship": "e.g Indian",
+    "visa_status": "Work visa, PR, citizen"
   },
   "date_picker": {
     "title": "Select Date of Birth",
@@ -131,7 +154,8 @@
     "load_failed": "Failed to load profile. Please try again.",
     "save_failed": "Failed to save. Please try again.",
     "date_incomplete": "Please select day, month and year.",
-    "invalid_date": "Please select a valid date."
+    "invalid_date": "Please select a valid date.",
+    "personality_badges_required": "Please select 3 to 10 personality badges."
   },
   "success": {
     "section_saved": "Changes saved successfully."

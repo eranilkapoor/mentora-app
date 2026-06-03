@@ -1,0 +1,25 @@
+{
+  "subtitle": "Keep matrimonial discovery safe, honest, and respectful",
+  "items": {
+    "truthful": {
+      "title": "Use truthful profile details",
+      "body": "Use your real identity, current photos, accurate relationship status, and honest family, education, and profession details."
+    },
+    "respect": {
+      "title": "Communicate respectfully",
+      "body": "Do not harass, threaten, pressure, shame, or send abusive messages. Matrimonial conversations should remain consent-based and family-safe."
+    },
+    "privacy": {
+      "title": "Protect privacy",
+      "body": "Do not share another member phone number, email, photos, address, documents, or chat screenshots without permission."
+    },
+    "fraud": {
+      "title": "Avoid fraud and solicitation",
+      "body": "Do not request money, promote outside services, impersonate anyone, or use MatchMate for commercial lead generation."
+    },
+    "report": {
+      "title": "Report unsafe behavior",
+      "body": "Use report and block actions when a profile looks fake, suspicious, abusive, or violates privacy expectations."
+    }
+  }
+}

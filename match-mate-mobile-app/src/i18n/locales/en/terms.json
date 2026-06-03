@@ -1,0 +1,27 @@
+{
+  "title": "Terms & Conditions",
+  "last_updated": "Last updated: 1st January 2026",
+  "intro": "These terms describe the rules for using MatchMate. By using the app, you agree to follow these terms and our community safety standards.",
+  "sections": {
+    "use": {
+      "title": "Use of MatchMate",
+      "body": "You agree to provide accurate profile information, use the service respectfully, and avoid impersonation, harassment, spam, or unlawful activity."
+    },
+    "profiles": {
+      "title": "Profiles and Matches",
+      "body": "Match suggestions, compatibility scores, and recommendations are informational. You are responsible for evaluating and communicating with other members safely."
+    },
+    "payments": {
+      "title": "Subscriptions and Payments",
+      "body": "Paid features are governed by the plan terms shown at purchase. Taxes, renewals, cancellations, and refunds follow the applicable app store or payment provider rules."
+    },
+    "account": {
+      "title": "Account Actions",
+      "body": "You may deactivate or request deletion from Account Settings. Some records may be retained where required for security, legal, fraud prevention, or payment compliance."
+    },
+    "safety": {
+      "title": "Safety",
+      "body": "Do not share sensitive financial information with other members. Report suspicious behaviour and use blocking tools when needed."
+    }
+  }
+}

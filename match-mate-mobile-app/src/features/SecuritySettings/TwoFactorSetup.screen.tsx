@@ -1,6 +1,7 @@
 import React, { useCallback, useState } from 'react';
 import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
@@ -28,6 +29,7 @@ type Props = {
 export default function TwoFactorSetupScreen({
   navigation,
 }: Props): React.ReactElement {
+  const { t } = useTranslation();
   const styles = useThemedStyles(sharedSettingsStyles);
   const { theme } = useTheme();
   const local = React.useMemo(() => createStyles(theme), [theme]);
@@ -50,57 +52,63 @@ export default function TwoFactorSetupScreen({
       if (response.success) {
         setRecoveryCodes(response.data?.recoveryCodes ?? []);
         setTotpCode('');
-        showSuccess({ title: 'Authenticator enabled' });
+        showSuccess({ title: t('settings.two_factor.authenticator_enabled') });
         void refetch();
       }
     } catch {
-      showError({ title: 'Invalid code', message: 'Please try again.' });
+      showError({
+        title: t('settings.two_factor.invalid_code'),
+        message: t('common.try_again_message'),
+      });
     }
-  }, [enableTotp, refetch, totpCode]);
+  }, [enableTotp, refetch, t, totpCode]);
 
   const handleEnableSms = useCallback(async () => {
     try {
       const response = await enableSms({ code: smsCode }).unwrap();
       if (response.success) {
         setSmsCode('');
-        showSuccess({ title: 'SMS 2FA enabled' });
+        showSuccess({ title: t('settings.two_factor.sms_enabled') });
         void refetch();
       }
     } catch {
-      showError({ title: 'Invalid OTP', message: 'Please try again.' });
+      showError({
+        title: t('settings.two_factor.invalid_otp'),
+        message: t('common.try_again_message'),
+      });
     }
-  }, [enableSms, refetch, smsCode]);
+  }, [enableSms, refetch, smsCode, t]);
 
   const handleRequestSms = useCallback(async () => {
     try {
       const response = await requestSms().unwrap();
       if (response.success) {
         showSuccess({
-          title: 'OTP sent',
-          message: 'Enter the SMS code to enable two-factor authentication.',
+          title: t('settings.two_factor.otp_sent'),
+          message: t('settings.two_factor.otp_sent_message'),
         });
       }
     } catch {
       showError({
-        title: 'SMS OTP failed',
-        message: 'Please verify your phone number and try again.',
+        title: t('settings.two_factor.sms_failed'),
+        message: t('settings.two_factor.sms_failed_message'),
       });
     }
-  }, [requestSms]);
+  }, [requestSms, t]);
 
   const handleDisable = useCallback(async () => {
     try {
       await disableTwoFactor(disableCode ? { code: disableCode } : {}).unwrap();
       setDisableCode('');
-      showSuccess({ title: 'Two-factor authentication disabled' });
+      showSuccess({ title: t('settings.two_factor.disabled_title') });
       void refetch();
     } catch {
       showError({
-        title: 'Disable failed',
-        message: 'Enter a valid authenticator code if required.',
+        title: t('settings.two_factor.disable_failed'),
+        message: t('settings.two_factor.disable_failed_message'),
       });
     }
-  }, [disableCode, disableTwoFactor, refetch]);
+  }, [disableCode, disableTwoFactor, refetch, t]);
 
   const handleRegenerateRecoveryCodes = useCallback(async () => {
     try {
@@ -110,16 +118,16 @@ export default function TwoFactorSetupScreen({
       if (response.success) {
         setRecoveryCodes(response.data?.recoveryCodes ?? []);
         setRecoveryCodeInput('');
-        showSuccess({ title: 'Recovery codes regenerated' });
+        showSuccess({ title: t('settings.two_factor.recovery_regenerated') });
         void refetch();
       }
     } catch {
       showError({
-        title: 'Invalid code',
-        message: 'Enter a valid authenticator code to regenerate codes.',
+        title: t('settings.two_factor.invalid_code'),
+        message: t('settings.two_factor.recovery_invalid_message'),
       });
     }
-  }, [recoveryCodeInput, refetch, regenerateRecoveryCodes]);
+  }, [recoveryCodeInput, refetch, regenerateRecoveryCodes, t]);
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
@@ -130,53 +138,59 @@ export default function TwoFactorSetupScreen({
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title="Two-factor authentication"
+        title={t('settings.two_factor.title')}
       />
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <SettingsCard
           icon="shield"
-          title="Current status"
-          subtitle={`2FA is ${data.enabled ? 'enabled' : 'disabled'}`}
+          title={t('settings.two_factor.current_status')}
+          subtitle={t('settings.two_factor.status_subtitle', {
+            status: data.enabled ? t('common.enabled') : t('common.disabled'),
+          })}
         >
           <View style={local.statusBox}>
             <Text style={local.statusTitle}>{data.method}</Text>
             <Text style={local.statusText}>
-              Recovery codes remaining: {data.recoveryCodesRemaining}
+              {t('settings.two_factor.recovery_remaining', {
+                count: data.recoveryCodesRemaining,
+              })}
             </Text>
           </View>
         </SettingsCard>
 
         <SettingsCard
           icon="key"
-          title="Authenticator app"
-          subtitle="Use Google Authenticator, Authy, or any TOTP app"
+          title={t('settings.two_factor.authenticator_app')}
+          subtitle={t('settings.two_factor.authenticator_app_sub')}
         >
           <SettingsSelectItem
             icon="plus-circle"
-            label="Start authenticator setup"
-            sublabel="Generate a secret and verify a 6-digit code"
+            label={t('settings.two_factor.start_authenticator')}
+            sublabel={t('settings.two_factor.start_authenticator_sub')}
             onPress={() => void setupTotp()}
           />
           {setupData?.data ? (
             <View style={local.setupBox}>
-              <Text style={local.label}>Manual secret</Text>
+              <Text style={local.label}>
+                {t('settings.two_factor.manual_secret')}
+              </Text>
               <Text selectable style={local.secret}>
                 {setupData.data.secret}
               </Text>
               <Text style={local.help}>
-                Add this secret in your authenticator app, then enter the code.
+                {t('settings.two_factor.manual_secret_help')}
               </Text>
               <TextInput
                 value={totpCode}
                 onChangeText={setTotpCode}
-                placeholder="6-digit code"
+                placeholder={t('settings.two_factor.six_digit_code')}
                 placeholderTextColor={theme.colors.inputPlaceholder}
                 keyboardType="number-pad"
                 style={local.input}
               />
               <SettingsSelectItem
                 icon="check"
-                label="Enable authenticator"
+                label={t('settings.two_factor.enable_authenticator')}
                 onPress={handleEnableTotp}
                 isLast
               />
@@ -186,26 +200,26 @@ export default function TwoFactorSetupScreen({
 
         <SettingsCard
           icon="smartphone"
-          title="SMS 2FA"
-          subtitle="Send a one-time code to your verified phone"
+          title={t('settings.two_factor.sms_title')}
+          subtitle={t('settings.two_factor.sms_subtitle')}
         >
           <SettingsSelectItem
             icon="send"
-            label="Send SMS OTP"
+            label={t('settings.two_factor.send_sms_otp')}
             onPress={handleRequestSms}
           />
           <View style={local.setupBox}>
             <TextInput
               value={smsCode}
               onChangeText={setSmsCode}
-              placeholder="SMS OTP"
+              placeholder={t('settings.two_factor.sms_otp')}
               placeholderTextColor={theme.colors.inputPlaceholder}
               keyboardType="number-pad"
               style={local.input}
             />
             <SettingsSelectItem
               icon="check"
-              label="Enable SMS 2FA"
+              label={t('settings.two_factor.enable_sms')}
               onPress={handleEnableSms}
               isLast
             />
@@ -215,8 +229,8 @@ export default function TwoFactorSetupScreen({
         {recoveryCodes.length ? (
           <SettingsCard
             icon="lock"
-            title="Recovery codes"
-            subtitle="Store these codes securely. Each code works once."
+            title={t('settings.two_factor.recovery_codes')}
+            subtitle={t('settings.two_factor.recovery_codes_sub')}
           >
             <View style={local.codesBox}>
               {recoveryCodes.map((item) => (
@@ -231,21 +245,21 @@ export default function TwoFactorSetupScreen({
         {data.enabled && data.method === 'authenticator' ? (
           <SettingsCard
             icon="refresh-cw"
-            title="Recovery code backup"
-            subtitle="Regenerate backup codes after verifying your authenticator"
+            title={t('settings.two_factor.recovery_backup')}
+            subtitle={t('settings.two_factor.recovery_backup_sub')}
           >
             <View style={local.setupBox}>
               <TextInput
                 value={recoveryCodeInput}
                 onChangeText={setRecoveryCodeInput}
-                placeholder="Authenticator code"
+                placeholder={t('settings.two_factor.authenticator_code')}
                 placeholderTextColor={theme.colors.inputPlaceholder}
                 keyboardType="number-pad"
                 style={local.input}
               />
               <SettingsSelectItem
                 icon="refresh-cw"
-                label="Regenerate recovery codes"
+                label={t('settings.two_factor.regenerate_recovery_codes')}
                 onPress={handleRegenerateRecoveryCodes}
                 isLast
               />
@@ -254,19 +268,24 @@ export default function TwoFactorSetupScreen({
         ) : null}
 
         {data.enabled ? (
-          <SettingsCard icon="x-circle" title="Disable 2FA">
+          <SettingsCard
+            icon="x-circle"
+            title={t('settings.two_factor.disable_title')}
+          >
             <View style={local.setupBox}>
               <TextInput
                 value={disableCode}
                 onChangeText={setDisableCode}
-                placeholder="Authenticator code if required"
+                placeholder={t(
+                  'settings.two_factor.authenticator_code_optional'
+                )}
                 placeholderTextColor={theme.colors.inputPlaceholder}
                 keyboardType="number-pad"
                 style={local.input}
               />
               <SettingsSelectItem
                 icon="x-circle"
-                label="Disable two-factor authentication"
+                label={t('settings.two_factor.disable_action')}
                 destructive
                 onPress={handleDisable}
                 isLast
