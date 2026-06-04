@@ -237,7 +237,7 @@ async function bootstrap(): Promise<void> {
   await app.listen(port, '0.0.0.0');
 
   logger.log(
-    `Server running → http://localhost:${port}/${apiPrefix}/v${apiVersion}`,
+    `Server running → http://localhost:${port}/${apiPrefix}/${apiVersion}`,
   );
   if (env !== 'production') {
     logger.log(`Swagger docs → http://localhost:${port}/${apiPrefix}/docs`);
