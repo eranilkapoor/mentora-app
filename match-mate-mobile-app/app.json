@@ -1,7 +1,7 @@
 {
   "expo": {
-    "name": "match-mate-mobile-app",
-    "slug": "match-mate-mobile-app",
+    "name": "Match Mate",
+    "slug": "match-mate",
     "version": "1.0.0",
     "scheme": "matchmate",
     "orientation": "portrait",
