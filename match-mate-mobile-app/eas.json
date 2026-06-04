@@ -11,7 +11,14 @@
         "EXPO_PUBLIC_ENV": "development",
         "EXPO_PUBLIC_API_BASE_URL": "https://matchmate.webnza.com",
         "EXPO_PUBLIC_API_PATH": "/api/v1",
-        "EXPO_PUBLIC_CLIENT_VERSION": "1.0.0"
+        "EXPO_PUBLIC_CLIENT_VERSION": "1.0.0",
+        "EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED": true,
+        "EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED": false,
+        "EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED": false
       },
       "android": {
         "buildType": "apk"
@@ -27,7 +34,14 @@
         "EXPO_PUBLIC_ENV": "production",
         "EXPO_PUBLIC_API_BASE_URL": "https://matchmate.webnza.com",
         "EXPO_PUBLIC_API_PATH": "/api/v1",
-        "EXPO_PUBLIC_CLIENT_VERSION": "1.0.0"
+        "EXPO_PUBLIC_CLIENT_VERSION": "1.0.0",
+        "EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED": true,
+        "EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED": false,
+        "EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED": false
       },
       "android": {
         "buildType": "apk"
@@ -43,7 +57,14 @@
         "EXPO_PUBLIC_ENV": "production",
         "EXPO_PUBLIC_API_BASE_URL": "https://matchmate.webnza.com",
         "EXPO_PUBLIC_API_PATH": "/api/v1",
-        "EXPO_PUBLIC_CLIENT_VERSION": "1.0.0"
+        "EXPO_PUBLIC_CLIENT_VERSION": "1.0.0",
+        "EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED": true,
+        "EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED": false,
+        "EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED": false,
+        "EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED": false
       },
       "android": {
         "buildType": "app-bundle"

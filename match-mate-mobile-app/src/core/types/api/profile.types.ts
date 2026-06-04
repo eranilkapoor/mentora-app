@@ -7,17 +7,17 @@ import {
 } from './../../types/index';
 
 export interface ProfileImage {
-  _id?: string;
+  _id?: string | undefined;
   url: string;
-  thumbnailUrl?: string | null;
-  isBlurred?: boolean;
-  blurReason?: string;
-  isPrimary?: boolean;
-  isActive?: boolean;
-  filename?: string;
-  mimeType?: string;
-  size?: number;
-  uploadedAt?: Date;
+  thumbnailUrl?: string | null | undefined;
+  isBlurred?: boolean | undefined;
+  blurReason?: string | undefined;
+  isPrimary?: boolean | undefined;
+  isActive?: boolean | undefined;
+  filename?: string | undefined;
+  mimeType?: string | undefined;
+  size?: number | undefined;
+  uploadedAt?: Date | undefined;
 }
 
 export interface OnboardingProfileRequest {

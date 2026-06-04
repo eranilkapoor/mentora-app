@@ -59,7 +59,7 @@ export default function ChangePasswordScreen({
               label={t('change_password.current')}
               value={values.oldPassword}
               placeholder={t('change_password.placeholders.current')}
-              error={errors.oldPassword}
+              error={errors?.oldPassword}
               visible={visibility.oldPassword}
               onChangeText={(t) => setValue('oldPassword', t)}
               onToggleVisibility={() => toggleVisibility('oldPassword')}
@@ -73,7 +73,7 @@ export default function ChangePasswordScreen({
               label={t('change_password.new')}
               value={values.newPassword}
               placeholder={t('change_password.placeholders.new')}
-              error={errors.newPassword}
+              error={errors?.newPassword}
               visible={visibility.newPassword}
               onChangeText={(t) => setValue('newPassword', t)}
               onToggleVisibility={() => toggleVisibility('newPassword')}
@@ -89,7 +89,7 @@ export default function ChangePasswordScreen({
               label={t('change_password.confirm')}
               value={values.confirmPassword}
               placeholder={t('change_password.placeholders.confirm')}
-              error={errors.confirmPassword}
+              error={errors?.confirmPassword}
               visible={visibility.confirmPassword}
               onChangeText={(t) => setValue('confirmPassword', t)}
               onToggleVisibility={() => toggleVisibility('confirmPassword')}

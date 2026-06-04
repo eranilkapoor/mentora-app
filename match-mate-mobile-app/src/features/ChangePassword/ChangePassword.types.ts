@@ -1,5 +1,6 @@
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 import { type SettingsNavigationProp } from '../../navigation/types';
+import { TFunction } from 'i18next';
 
 export interface ChangePasswordScreenProps {
   navigation: SettingsNavigationProp;
@@ -19,7 +20,7 @@ export interface FormErrors {
 
 export const validatePasswords = (
   values: FormValues,
-  t: (key: string, params?: Record<string, unknown>) => string
+  t: TFunction
 ): FormErrors => {
   const errors: FormErrors = {};
 

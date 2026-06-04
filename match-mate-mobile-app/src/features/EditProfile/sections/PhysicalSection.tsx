@@ -56,7 +56,7 @@ export function PhysicalSection({
         <View style={styles.halfField}>
           <FormInput
             label={t('edit_profile.fields.weight')}
-            value={physical.weight}
+            value={physical.weight ?? ''}
             onChange={(v) => onSet('weight', v)}
             keyboardType="numeric"
             placeholder={t('edit_profile.placeholders.weight')}
@@ -67,7 +67,7 @@ export function PhysicalSection({
       <SingleSelectPill
         label={t('edit_profile.fields.blood_group')}
         options={BloodGroupOptions}
-        value={physical.bloodGroup}
+        value={physical.bloodGroup ?? BloodGroups.APLUS}
         onChange={(v) =>
           onSet('bloodGroup', v as PhysicalSectionType['bloodGroup'])
         }
@@ -76,7 +76,7 @@ export function PhysicalSection({
       <SingleSelectPill
         label={t('edit_profile.fields.body_type')}
         options={BodyTypeOptions}
-        value={physical.bodyType}
+        value={physical.bodyType ?? BodyTypes.AVERAGE}
         onChange={(v) =>
           onSet('bodyType', v as PhysicalSectionType['bodyType'])
         }
@@ -86,7 +86,7 @@ export function PhysicalSection({
       <SingleSelectPill
         label={t('edit_profile.fields.complexion')}
         options={ComplexionOptions}
-        value={physical.complexion}
+        value={physical.complexion ?? Complexions.FAIR}
         onChange={(v) =>
           onSet('complexion', v as PhysicalSectionType['complexion'])
         }
@@ -102,7 +102,7 @@ export function PhysicalSection({
       {physical.disabilityStatus && (
         <FormInput
           label={t('edit_profile.fields.disability_note')}
-          value={physical.disabilityNote}
+          value={physical.disabilityNote ?? ''}
           onChange={(v) => onSet('disabilityNote', v)}
           multiline
           placeholder={t('edit_profile.placeholders.disability_note')}

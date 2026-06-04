@@ -63,16 +63,22 @@ export default function OnboardingScreen(): React.ReactElement {
 
     const currentIndex = ONBOARDING_STEPS.indexOf(currentStep);
     if (currentIndex < ONBOARDING_STEPS.length - 1) {
-      setCurrentStep(ONBOARDING_STEPS[currentIndex + 1]);
-      clearAllErrors();
+      const nextStep = ONBOARDING_STEPS[currentIndex + 1];
+      if (nextStep) {
+        setCurrentStep(nextStep);
+        clearAllErrors();
+      }
     }
   }, [currentStep, validateBasic, validatePreferences, clearAllErrors]);
 
   const handlePrevious = useCallback((): void => {
     const currentIndex = ONBOARDING_STEPS.indexOf(currentStep);
     if (currentIndex > 0) {
-      setCurrentStep(ONBOARDING_STEPS[currentIndex - 1]);
-      clearAllErrors();
+      const previousStep = ONBOARDING_STEPS[currentIndex - 1];
+      if (previousStep) {
+        setCurrentStep(previousStep);
+        clearAllErrors();
+      }
     }
   }, [currentStep, clearAllErrors]);
 

@@ -13,7 +13,7 @@ interface PasswordFieldProps {
   label: string;
   value: string;
   placeholder: string;
-  error?: string;
+  error?: string | undefined;
   visible: boolean;
   onChangeText: (text: string) => void;
   onToggleVisibility: () => void;

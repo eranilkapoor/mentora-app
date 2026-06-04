@@ -62,13 +62,13 @@ export function LifestyleSection({
       />
       <TagInput
         label={t('edit_profile.fields.hobbies')}
-        value={personal.hobbies}
+        value={(personal.hobbies as string[]) || []}
         onChange={(v) => onSet('hobbies', v)}
         placeholder={t('edit_profile.placeholders.hobbies')}
       />
       <TagInput
         label={t('edit_profile.fields.languages_known')}
-        value={personal.languages}
+        value={(personal.languages as string[]) || []}
         onChange={(v) => onSet('languages', v)}
         placeholder={t('edit_profile.placeholders.languages_known')}
       />

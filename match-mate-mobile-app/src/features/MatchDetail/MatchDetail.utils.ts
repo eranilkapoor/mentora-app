@@ -18,7 +18,7 @@ export const getPhotos = (profile?: DiscoveryProfile): string[] => {
 
 export interface DetailPhotoItem {
   url: string;
-  isBlurred?: boolean;
+  isBlurred: boolean;
 }
 
 export const getPhotoItems = (
@@ -32,7 +32,9 @@ export const getPhotoItems = (
       return url ? { url, isBlurred: img.isBlurred } : null;
     })
     .filter((photo): photo is DetailPhotoItem => Boolean(photo));
-  return photos?.length ? photos : [{ url: FALLBACK_PHOTO as string }];
+  return photos?.length
+    ? photos
+    : [{ url: FALLBACK_PHOTO as string, isBlurred: false }];
 };
 
 export const isRecentlyActive = (lastActiveAt?: string): boolean =>

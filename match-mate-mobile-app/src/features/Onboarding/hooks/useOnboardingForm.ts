@@ -121,10 +121,12 @@ export function useOnboardingForm() {
       aspect: [4, 5] as [number, number],
     });
 
-    if (!result.canceled && result.assets[0]) {
+    const asset = result.assets?.[0];
+
+    if (!result.canceled && asset?.uri) {
       setPhotos((prev) => [
         ...prev,
-        { url: result.assets[0].uri, isPrimary: prev.length === 0 },
+        { url: asset.uri, isPrimary: prev.length === 0 },
       ]);
     }
   }, [photos.length, t]);
@@ -139,7 +141,10 @@ export function useOnboardingForm() {
     setPhotos((prev) => {
       const next = prev.filter((_, i) => i !== index);
       if (next.length > 0 && !next.some((img) => img.isPrimary)) {
-        next[0] = { ...next[0], isPrimary: true };
+        const firstPhoto = next[0];
+        if (firstPhoto) {
+          next[0] = { ...firstPhoto, isPrimary: true };
+        }
       }
       return next;
     });

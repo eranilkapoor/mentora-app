@@ -238,7 +238,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
         label={t('edit_profile.family.siblings_note')}
         multiline
         placeholder={t('edit_profile.family.siblings_note_placeholder')}
-        value={siblings.note}
+        value={siblings.note ?? ''}
         onChange={(note) => updateSiblings({ note })}
       />
     </View>
