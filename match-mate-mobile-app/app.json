@@ -100,9 +100,7 @@
       ],
       "expo-web-browser"
     ],
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
+    "runtimeVersion": "1.0.0",
     "updates": {
       "url": "https://u.expo.dev/3378719c-798c-4ae3-ae74-18602b1267eb",
       "enabled": true,
