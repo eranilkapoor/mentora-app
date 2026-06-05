@@ -26,26 +26,54 @@ const getGoogleClientIdForCurrentPlatform = (): string | undefined => {
   return getEnv('EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID');
 };
 
-export const authMethodConfig = {
+const DEFAULTS = {
   emailPassword: true,
-  phoneOtp: isEnabled('EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED'),
-  magicLink: isEnabled('EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED'),
-  biometric: isEnabled('EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED'),
+  phoneOtp: true,
+  magicLink: false,
+  biometric: false,
+  social: {
+    google: false,
+    facebook: false,
+    apple: false,
+  },
+} as const;
+
+const getAuthMethodConfig = () => ({
+  emailPassword: true,
+  phoneOtp:
+    isEnabled('EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED') ?? DEFAULTS.phoneOtp,
+  magicLink:
+    isEnabled('EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED') ?? DEFAULTS.magicLink,
+  biometric:
+    isEnabled('EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED') ?? DEFAULTS.biometric,
   social: {
     google:
-      isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED') &&
-      Boolean(getGoogleClientIdForCurrentPlatform()),
+      (isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED') &&
+        Boolean(getGoogleClientIdForCurrentPlatform())) ??
+      DEFAULTS.social.google,
     facebook:
-      isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED') &&
-      Boolean(getEnv('EXPO_PUBLIC_FACEBOOK_CLIENT_ID')),
+      (isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED') &&
+        Boolean(getEnv('EXPO_PUBLIC_FACEBOOK_CLIENT_ID'))) ??
+      DEFAULTS.social.facebook,
     apple:
-      isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED') &&
-      Platform.OS === 'ios',
+      (isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED') &&
+        Platform.OS === 'ios') ??
+      DEFAULTS.social.apple,
   },
-};
+});
+
+export const authMethodConfig = new Proxy(
+  {} as ReturnType<typeof getAuthMethodConfig>,
+  {
+    get(_target, prop: string) {
+      const config = getAuthMethodConfig();
+      return config[prop as keyof typeof config];
+    },
+  }
+);
 
 export const isSocialProviderEnabled = (provider: SocialProvider): boolean =>
-  authMethodConfig.social[provider];
+  getAuthMethodConfig().social[provider];
 
 export const hasAnySocialProviderEnabled = (): boolean =>
-  Object.values(authMethodConfig.social).some(Boolean);
+  Object.values(getAuthMethodConfig().social).some(Boolean);
