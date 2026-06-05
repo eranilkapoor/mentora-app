@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Match Mate",
-    "slug": "match-mate",
+    "slug": "match-mate-mobile-app",
     "version": "1.0.0",
     "scheme": "matchmate",
     "orientation": "portrait",
@@ -26,7 +26,7 @@
         "foregroundImage": "./src/assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": false,
+      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
