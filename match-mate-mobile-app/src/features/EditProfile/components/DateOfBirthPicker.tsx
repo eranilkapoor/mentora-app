@@ -17,6 +17,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 import { showError } from '@/core/utils/toast';
 
 /* ──────────────────────────────────────────────────────────────
@@ -358,14 +359,6 @@ export const DatePicker = memo(function DatePicker({
           color: theme.colors.textSecondary,
         },
 
-        required: {
-          marginLeft: 4,
-
-          fontWeight: '700',
-
-          color: theme.colors.error,
-        },
-
         trigger: {
           minHeight: 50,
 
@@ -610,7 +603,7 @@ export const DatePicker = memo(function DatePicker({
         <View style={styles.labelRow}>
           <Text style={styles.label}>{label}</Text>
 
-          {required ? <Text style={styles.required}>*</Text> : null}
+          {required ? <RequiredAsterisk /> : null}
         </View>
       ) : null}
 

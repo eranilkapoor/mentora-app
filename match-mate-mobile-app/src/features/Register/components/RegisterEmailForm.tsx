@@ -1,11 +1,5 @@
-import React, { useState } from 'react';
-import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  ActivityIndicator,
-} from 'react-native';
+import React from 'react';
+import { Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
@@ -15,6 +9,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 import { FormErrors } from '@/features/Auth/shared/auth.types';
 import { authSharedStyles } from '@/features/Auth/shared/auth.styles';
+import { AuthTextField } from '@/features/Auth/shared/components/AuthTextField';
 
 interface Props {
   errors: FormErrors;
@@ -53,125 +48,45 @@ export function RegisterEmailForm({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const [focusedField, setFocusedField] = useState<
-    'email' | 'password' | 'referral' | null
-  >(null);
-
   return (
     <>
-      {/* Email */}
-      <Text style={styles.label}>{t('auth.fields.email') as string}</Text>
+      <AuthTextField
+        label={t('auth.fields.email') as string}
+        icon="mail"
+        value={email}
+        onChange={onEmailChange}
+        error={errors.email}
+        placeholder={t('auth.placeholders.email') as string}
+        keyboardType="email-address"
+        autoCapitalize="none"
+        autoComplete="email"
+        textContentType="username"
+        returnKeyType="next"
+        disabled={loading}
+      />
 
-      <View
-        style={[
-          styles.inputWrapper,
-          focusedField === 'email' && styles.inputFocused,
-          errors.email && styles.inputError,
-        ]}
-      >
-        <Feather
-          name="mail"
-          size={16}
-          color={
-            focusedField === 'email'
-              ? theme.colors.primary
-              : theme.colors.textMuted
-          }
-          style={styles.inputIcon}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder={t('auth.placeholders.email') as string}
-          placeholderTextColor={theme.colors.textMuted}
-          keyboardType="email-address"
-          autoCapitalize="none"
-          autoComplete="email"
-          value={email}
-          onChangeText={onEmailChange}
-          editable={!loading}
-          textContentType="username"
-          returnKeyType="next"
-          accessibilityLabel={t('auth.fields.email') as string}
-          onFocus={() => setFocusedField('email')}
-          onBlur={() => setFocusedField(null)}
-        />
-      </View>
-
-      {errors.email ? (
-        <Text style={styles.errorText}>{errors.email}</Text>
-      ) : null}
-
-      {/* Password */}
-      <Text style={[styles.label, styles.labelSpacing]}>
-        {t('auth.fields.password') as string}
-      </Text>
-
-      <View
-        style={[
-          styles.inputWrapper,
-          focusedField === 'password' && styles.inputFocused,
-          errors.password && styles.inputError,
-        ]}
-      >
-        <Feather
-          name="lock"
-          size={16}
-          color={
-            focusedField === 'password'
-              ? theme.colors.primary
-              : theme.colors.textMuted
-          }
-          style={styles.inputIcon}
-        />
-
-        <TextInput
-          style={styles.input}
-          placeholder={
-            t('auth.placeholders.new_password', {
-              min: PASSWORD_MIN_LENGTH,
-            }) as string
-          }
-          placeholderTextColor={theme.colors.textMuted}
-          secureTextEntry={!showPassword}
-          value={password}
-          onChangeText={onPasswordChange}
-          editable={!loading}
-          textContentType="newPassword"
-          returnKeyType="done"
-          onSubmitEditing={onSubmit}
-          accessibilityLabel={t('auth.fields.password') as string}
-          onFocus={() => setFocusedField('password')}
-          onBlur={() => setFocusedField(null)}
-        />
-
-        <TouchableOpacity
-          onPress={onTogglePassword}
-          style={styles.eyeButton}
-          disabled={loading}
-          activeOpacity={0.7}
-          accessibilityRole="button"
-          accessibilityLabel={
-            showPassword
-              ? (t('auth.actions.hide_password') as string)
-              : (t('auth.actions.show_password') as string)
-          }
-        >
-          <Feather
-            name={showPassword ? 'eye-off' : 'eye'}
-            size={18}
-            color={
-              focusedField === 'password'
-                ? theme.colors.primary
-                : theme.colors.textMuted
-            }
-          />
-        </TouchableOpacity>
-      </View>
-
-      {errors.password ? (
-        <Text style={styles.errorText}>{errors.password}</Text>
-      ) : null}
+      <AuthTextField
+        label={t('auth.fields.password') as string}
+        icon="lock"
+        value={password}
+        onChange={onPasswordChange}
+        error={errors.password}
+        placeholder={
+          t('auth.placeholders.new_password', {
+            min: PASSWORD_MIN_LENGTH,
+          }) as string
+        }
+        secure
+        secureVisible={showPassword}
+        textContentType="newPassword"
+        returnKeyType="done"
+        onSubmitEditing={onSubmit}
+        disabled={loading}
+        labelSpacing
+        onToggleSecure={onTogglePassword}
+        showSecureLabel={t('auth.actions.show_password') as string}
+        hideSecureLabel={t('auth.actions.hide_password') as string}
+      />
 
       <TouchableOpacity
         style={styles.inlineLinkRow}
@@ -189,45 +104,19 @@ export function RegisterEmailForm({
       </TouchableOpacity>
 
       {showReferralCode ? (
-        <>
-          <Text style={[styles.label, styles.labelSpacing]}>
-            {t('auth.referral.label')}
-          </Text>
-          <View
-            style={[
-              styles.inputWrapper,
-              focusedField === 'referral' && styles.inputFocused,
-              errors.referralCode && styles.inputError,
-            ]}
-          >
-            <Feather
-              name="gift"
-              size={16}
-              color={
-                focusedField === 'referral'
-                  ? theme.colors.primary
-                  : theme.colors.textMuted
-              }
-              style={styles.inputIcon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder={t('auth.referral.placeholder')}
-              placeholderTextColor={theme.colors.textMuted}
-              autoCapitalize="characters"
-              value={referralCode}
-              onChangeText={onReferralCodeChange}
-              editable={!loading}
-              maxLength={10}
-              returnKeyType="done"
-              onFocus={() => setFocusedField('referral')}
-              onBlur={() => setFocusedField(null)}
-            />
-          </View>
-          {errors.referralCode ? (
-            <Text style={styles.errorText}>{errors.referralCode}</Text>
-          ) : null}
-        </>
+        <AuthTextField
+          label={t('auth.referral.label')}
+          icon="gift"
+          value={referralCode}
+          onChange={onReferralCodeChange}
+          error={errors.referralCode}
+          placeholder={t('auth.referral.placeholder')}
+          autoCapitalize="characters"
+          maxLength={10}
+          returnKeyType="done"
+          disabled={loading}
+          labelSpacing
+        />
       ) : null}
 
       {/* Create account button */}

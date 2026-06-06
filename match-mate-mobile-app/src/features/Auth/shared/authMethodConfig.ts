@@ -12,7 +12,25 @@ const getEnv = (key: string): string | undefined => {
   return trimmed;
 };
 
-const isEnabled = (key: string): boolean => getEnv(key) === 'true';
+const parseBooleanFlag = (key: string, defaultValue: boolean): boolean => {
+  const value = getEnv(key);
+
+  if (!value) {
+    return defaultValue;
+  }
+
+  const normalizedValue = value.toLowerCase();
+
+  if (['true', '1', 'yes', 'y', 'on', 'enabled'].includes(normalizedValue)) {
+    return true;
+  }
+
+  if (['false', '0', 'no', 'n', 'off', 'disabled'].includes(normalizedValue)) {
+    return false;
+  }
+
+  return defaultValue;
+};
 
 const getGoogleClientIdForCurrentPlatform = (): string | undefined => {
   if (Platform.OS === 'ios') {
@@ -40,25 +58,34 @@ const DEFAULTS = {
 
 const getAuthMethodConfig = () => ({
   emailPassword: true,
-  phoneOtp:
-    isEnabled('EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED') ?? DEFAULTS.phoneOtp,
-  magicLink:
-    isEnabled('EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED') ?? DEFAULTS.magicLink,
-  biometric:
-    isEnabled('EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED') ?? DEFAULTS.biometric,
+  phoneOtp: parseBooleanFlag(
+    'EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED',
+    DEFAULTS.phoneOtp
+  ),
+  magicLink: parseBooleanFlag(
+    'EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED',
+    DEFAULTS.magicLink
+  ),
+  biometric: parseBooleanFlag(
+    'EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED',
+    DEFAULTS.biometric
+  ),
   social: {
     google:
-      (isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED') &&
-        Boolean(getGoogleClientIdForCurrentPlatform())) ??
-      DEFAULTS.social.google,
+      parseBooleanFlag(
+        'EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED',
+        DEFAULTS.social.google
+      ) && Boolean(getGoogleClientIdForCurrentPlatform()),
     facebook:
-      (isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED') &&
-        Boolean(getEnv('EXPO_PUBLIC_FACEBOOK_CLIENT_ID'))) ??
-      DEFAULTS.social.facebook,
+      parseBooleanFlag(
+        'EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED',
+        DEFAULTS.social.facebook
+      ) && Boolean(getEnv('EXPO_PUBLIC_FACEBOOK_CLIENT_ID')),
     apple:
-      (isEnabled('EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED') &&
-        Platform.OS === 'ios') ??
-      DEFAULTS.social.apple,
+      parseBooleanFlag(
+        'EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED',
+        DEFAULTS.social.apple
+      ) && Platform.OS === 'ios',
   },
 });
 

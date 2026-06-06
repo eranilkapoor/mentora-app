@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 
 export interface FormInputProps extends Omit<
   TextInputProps,
@@ -89,13 +90,6 @@ export function FormInput({
           fontSize: 13,
           fontWeight: '600',
           color: theme.colors.textSecondary,
-        },
-
-        required: {
-          marginLeft: 4,
-          color: theme.colors.error,
-          fontSize: 13,
-          fontWeight: '700',
         },
 
         inputWrapper: {
@@ -194,7 +188,7 @@ export function FormInput({
         <View style={styles.labelRow}>
           <Text style={[styles.label, labelStyle]}>{label}</Text>
 
-          {required ? <Text style={styles.required}>*</Text> : null}
+          {required ? <RequiredAsterisk /> : null}
         </View>
       ) : null}
 

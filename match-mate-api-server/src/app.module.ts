@@ -26,6 +26,8 @@ import { ReferralsModule } from './modules/referrals/referrals.module';
 import { SeederModule } from './modules/seeder/seeder.module';
 import { SettingsModule } from './modules/settings/settings.module';
 
+const nodeEnv = process.env.NODE_ENV || 'development';
+
 @Module({
   imports: [
     // ==========================================
@@ -34,7 +36,7 @@ import { SettingsModule } from './modules/settings/settings.module';
     ConfigModule.forRoot({
       isGlobal: true,
       //  KEY PART
-      envFilePath: [`.env.${process.env.NODE_ENV}`, '.env'],
+      envFilePath: [`.env.${nodeEnv}`, '.env'],
       load: configArray,
       validationSchema: envValidationSchema,
     }),

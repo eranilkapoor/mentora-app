@@ -19,7 +19,8 @@ export function useMatchListData(
   query: string,
   filters: FilterState,
   page: number,
-  setPage: (n: number) => void
+  setPage: (n: number) => void,
+  nearbyLocationReady = true
 ) {
   const { t } = useTranslation();
 
@@ -78,7 +79,9 @@ export function useMatchListData(
       radiusKm: 100,
       ...discoveryFilters,
     },
-    { skip: !isDiscoveryTab }
+    {
+      skip: !isDiscoveryTab || (activeTab === 'nearby' && !nearbyLocationReady),
+    }
   );
 
   const {

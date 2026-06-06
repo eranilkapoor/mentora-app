@@ -100,4 +100,14 @@
   "total_count": "{{count}} कुल",
   "no_online_now_title": "अभी कोई ऑनलाइन नहीं है",
   "no_online_now_message": "थोड़ी देर बाद देखें - matches पूरे दिन ऑनलाइन आते रहते हैं।"
+,
+  "tab_online": "Online",
+  "nearby_location_permission_title": "Location Needed",
+  "nearby_location_permission_message": "Allow location access to refresh nearby matches. We only check it when you open Nearby.",
+  "nearby_location_enable_title": "Enable Location Sharing?",
+  "nearby_location_enable_message": "Nearby matches use your current location. If you allow access, we will turn on Location Sharing in settings and refresh your nearby profiles.",
+  "nearby_location_enable_confirm": "Allow Location",
+  "nearby_location_enable_cancel": "Not Now",
+  "nearby_location_enable_failed_title": "Location Not Enabled",
+  "nearby_location_enable_failed_message": "We could not save your location sharing preference. Please try again."
 }

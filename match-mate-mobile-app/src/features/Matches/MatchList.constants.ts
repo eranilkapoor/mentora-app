@@ -33,6 +33,7 @@ export const DEFAULT_FILTERS: FilterState = {
 export const TAB_CONFIG = [
   { key: 'recommended', labelKey: 'matches.tab_recommended', icon: 'star' },
   { key: 'new', labelKey: 'matches.tab_new', icon: 'zap' },
+  { key: 'online', labelKey: 'matches.tab_online', icon: 'wifi' },
   { key: 'nearby', labelKey: 'matches.tab_nearby', icon: 'map-pin' },
   { key: 'matched', labelKey: 'matches.tab_matched', icon: 'heart' },
   { key: 'shortlisted', labelKey: 'matches.tab_shortlisted', icon: 'bookmark' },

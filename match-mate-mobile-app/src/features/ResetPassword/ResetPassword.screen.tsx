@@ -2,7 +2,6 @@ import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
-  TextInput,
   TouchableOpacity,
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -18,6 +17,7 @@ import { useResetPasswordMutation } from '@/store/services/authApi.service';
 import { resetPasswordStyles } from './ResetPassword.styles';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 import { FormErrors, ResetPasswordScreenProps } from './ResetPassword.types';
+import { AuthTextField } from '@/features/Auth/shared/components/AuthTextField';
 
 // ─── Password strength check ──────────────────────────────────────────────────
 
@@ -273,59 +273,28 @@ export default function ResetPasswordScreen({
           )}
 
           <View style={styles.form}>
-            {/* New Password */}
-            <Text style={styles.label}>{t('auth.fields.new_password')}</Text>
-            <View
-              style={[
-                styles.inputWrapper,
-                errors.password && styles.inputError,
-              ]}
-            >
-              <Feather
-                name="lock"
-                size={16}
-                color={theme.colors.textMuted}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder={t('auth.placeholders.new_password')}
-                placeholderTextColor={theme.colors.textMuted}
-                secureTextEntry={!showPassword}
-                value={password}
-                onChangeText={(text) => {
-                  setPassword(text);
-                  clearError('password');
-                }}
-                editable={!loading}
-                textContentType="newPassword"
-                autoComplete="password-new"
-                accessibilityLabel={t('auth.fields.new_password')}
-              />
-              <TouchableOpacity
-                onPress={() => setShowPassword((p) => !p)}
-                style={styles.eyeButton}
-                disabled={loading}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  showPassword
-                    ? t('auth.actions.hide_password')
-                    : t('auth.actions.show_password')
-                }
-              >
-                <Feather
-                  name={showPassword ? 'eye-off' : 'eye'}
-                  size={18}
-                  color={theme.colors.textMuted}
-                />
-              </TouchableOpacity>
-            </View>
+            <AuthTextField
+              label={t('auth.fields.new_password')}
+              icon="lock"
+              value={password}
+              onChange={(text) => {
+                setPassword(text);
+                clearError('password');
+              }}
+              error={errors.password}
+              placeholder={t('auth.placeholders.new_password')}
+              secure
+              secureVisible={showPassword}
+              textContentType="newPassword"
+              autoComplete="password-new"
+              disabled={loading}
+              onToggleSecure={() => setShowPassword((p) => !p)}
+              showSecureLabel={t('auth.actions.show_password')}
+              hideSecureLabel={t('auth.actions.hide_password')}
+            />
 
             {/* Strength indicator */}
             <StrengthBar password={password} />
-            {errors.password && (
-              <Text style={styles.errorText}>{errors.password}</Text>
-            )}
 
             {/* Password rules hint */}
             <View style={styles.rulesCard}>
@@ -367,55 +336,26 @@ export default function ResetPasswordScreen({
               ))}
             </View>
 
-            {/* Confirm Password */}
-            <Text style={[styles.label, styles.labelSpacing]}>
-              {t('auth.fields.confirm_password')}
-            </Text>
-            <View
-              style={[
-                styles.inputWrapper,
-                errors.confirmPassword && styles.inputError,
-              ]}
-            >
-              <Feather
-                name="lock"
-                size={16}
-                color={theme.colors.textMuted}
-                style={styles.inputIcon}
-              />
-              <TextInput
-                style={styles.input}
-                placeholder={t('auth.placeholders.confirm_password')}
-                placeholderTextColor={theme.colors.textMuted}
-                secureTextEntry={!showConfirmPassword}
-                value={confirmPassword}
-                onChangeText={(text) => {
-                  setConfirmPassword(text);
-                  clearError('confirmPassword');
-                }}
-                editable={!loading}
-                textContentType="newPassword"
-                autoComplete="password-new"
-                accessibilityLabel={t('auth.fields.confirm_password')}
-              />
-              <TouchableOpacity
-                onPress={() => setShowConfirmPassword((p) => !p)}
-                style={styles.eyeButton}
-                disabled={loading}
-                accessibilityRole="button"
-                accessibilityLabel={
-                  showConfirmPassword
-                    ? t('auth.actions.hide_password')
-                    : t('auth.actions.show_password')
-                }
-              >
-                <Feather
-                  name={showConfirmPassword ? 'eye-off' : 'eye'}
-                  size={18}
-                  color={theme.colors.textMuted}
-                />
-              </TouchableOpacity>
-            </View>
+            <AuthTextField
+              label={t('auth.fields.confirm_password')}
+              icon="lock"
+              value={confirmPassword}
+              onChange={(text) => {
+                setConfirmPassword(text);
+                clearError('confirmPassword');
+              }}
+              error={errors.confirmPassword}
+              placeholder={t('auth.placeholders.confirm_password')}
+              secure
+              secureVisible={showConfirmPassword}
+              textContentType="newPassword"
+              autoComplete="password-new"
+              disabled={loading}
+              labelSpacing
+              onToggleSecure={() => setShowConfirmPassword((p) => !p)}
+              showSecureLabel={t('auth.actions.show_password')}
+              hideSecureLabel={t('auth.actions.hide_password')}
+            />
 
             {/* Match indicator */}
             {confirmPassword.length > 0 && (
@@ -448,10 +388,6 @@ export default function ResetPasswordScreen({
                 </Text>
               </View>
             )}
-            {errors.confirmPassword && (
-              <Text style={styles.errorText}>{errors.confirmPassword}</Text>
-            )}
-
             {/* Submit */}
             <TouchableOpacity
               style={[styles.primaryButton, loading && styles.disabledButton]}

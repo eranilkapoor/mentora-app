@@ -115,13 +115,14 @@ export const onboardingStyles = (theme: Theme) =>
     input: {
       borderWidth: 1,
       borderColor: theme.colors.border,
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 13,
       marginBottom: 12,
       fontSize: 15,
       color: theme.colors.textPrimary,
       backgroundColor: theme.colors.inputBackground,
+      minHeight: 52,
     },
     inputError: {
       borderColor: theme.colors.error,
@@ -395,39 +396,4 @@ export const onboardingStyles = (theme: Theme) =>
     },
 
     // ── Date Picker ───────────────────────────────────────────────────────────
-    datePickerOverlay: {
-      position: 'absolute',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      backgroundColor: theme.colors.modalOverlay,
-      justifyContent: 'center',
-      padding: 20,
-    },
-    datePickerContainer: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 12,
-      padding: 20,
-    },
-    datePickerActions: {
-      flexDirection: 'row',
-      justifyContent: 'flex-end',
-      marginTop: 16,
-      gap: 16,
-    },
-    datePickerCancelText: {
-      fontSize: 15,
-      fontWeight: '500',
-      color: theme.colors.textMuted,
-      paddingVertical: 4,
-      paddingHorizontal: 8,
-    },
-    datePickerConfirmText: {
-      fontSize: 15,
-      fontWeight: '700',
-      color: theme.colors.primary,
-      paddingVertical: 4,
-      paddingHorizontal: 8,
-    },
   });

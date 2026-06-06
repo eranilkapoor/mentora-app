@@ -20,6 +20,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 
 // ─────────────────────────────────────────────────────────────
 // Types
@@ -159,11 +160,6 @@ function DropdownPickerComponent<T extends string = string>({
           fontSize: 13,
           fontWeight: '600',
           color: theme.colors.textSecondary,
-        },
-
-        required: {
-          marginLeft: 4,
-          color: theme.colors.error,
         },
 
         trigger: {
@@ -444,7 +440,7 @@ function DropdownPickerComponent<T extends string = string>({
           <View style={styles.labelRow}>
             <Text style={[styles.label, labelStyle]}>{label}</Text>
 
-            {required && <Text style={styles.required}>*</Text>}
+            {required && <RequiredAsterisk />}
           </View>
         )}
 

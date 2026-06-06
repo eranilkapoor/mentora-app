@@ -194,6 +194,34 @@ function validateProductionProviders(
   return env;
 }
 
+function validateAuthProviderConfig(
+  env: Record<string, unknown>,
+  helpers: Joi.CustomHelpers,
+) {
+  if (env.AUTH_SOCIAL_GOOGLE_ENABLED && !env.GOOGLE_CLIENT_ID) {
+    return helpers.error('any.custom', {
+      customMessage:
+        'GOOGLE_CLIENT_ID is required when AUTH_SOCIAL_GOOGLE_ENABLED=true',
+    });
+  }
+
+  if (env.AUTH_SOCIAL_FACEBOOK_ENABLED && !env.FACEBOOK_CLIENT_ID) {
+    return helpers.error('any.custom', {
+      customMessage:
+        'FACEBOOK_CLIENT_ID is required when AUTH_SOCIAL_FACEBOOK_ENABLED=true',
+    });
+  }
+
+  if (env.AUTH_SOCIAL_APPLE_ENABLED && !env.APPLE_CLIENT_ID) {
+    return helpers.error('any.custom', {
+      customMessage:
+        'APPLE_CLIENT_ID is required when AUTH_SOCIAL_APPLE_ENABLED=true',
+    });
+  }
+
+  return env;
+}
+
 export const envValidationSchema = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'staging', 'production')
@@ -477,6 +505,7 @@ export const envValidationSchema = Joi.object({
 
   CHAT_PROFANITY_BLOCKED_WORDS: optionalString,
 })
+  .custom(validateAuthProviderConfig)
   .custom(validateNotificationProviders)
   .custom(validateProductionProviders)
   .prefs({ abortEarly: false, convert: true })

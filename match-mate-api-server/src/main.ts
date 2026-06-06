@@ -12,7 +12,6 @@ import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import * as express from 'express';
 import * as path from 'path';
-import 'dotenv/config';
 import Redis from 'ioredis';
 
 import { AppModule } from './app.module';

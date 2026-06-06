@@ -16,6 +16,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { authSharedStyles } from '../auth.styles';
 import { PhoneFormProps } from '../auth.types';
 import { CountryCodeDropdown } from './CountryCodeDropdown';
+import { AuthTextField } from './AuthTextField';
 
 import { OTP_LENGTH, PHONE_MAX_LENGTH } from '@/core/constants';
 
@@ -48,7 +49,6 @@ export function PhoneForm({
 
   const [phoneFocused, setPhoneFocused] = useState(false);
   const [otpFocused, setOtpFocused] = useState(false);
-  const [referralFocused, setReferralFocused] = useState(false);
 
   return (
     <>
@@ -124,45 +124,19 @@ export function PhoneForm({
           </TouchableOpacity>
 
           {showReferralCode ? (
-            <>
-              <Text style={[styles.label, styles.labelSpacing]}>
-                {t('auth.referral.label')}
-              </Text>
-              <View
-                style={[
-                  styles.inputWrapper,
-                  referralFocused && styles.inputFocused,
-                  errors.referralCode && styles.inputError,
-                ]}
-              >
-                <Feather
-                  name="gift"
-                  size={16}
-                  color={
-                    referralFocused
-                      ? theme.colors.primary
-                      : theme.colors.textMuted
-                  }
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  style={styles.input}
-                  placeholder={t('auth.referral.placeholder')}
-                  placeholderTextColor={theme.colors.textMuted}
-                  autoCapitalize="characters"
-                  value={referralCode ?? ''}
-                  onChangeText={onReferralCodeChange}
-                  editable={!loading}
-                  maxLength={10}
-                  returnKeyType="done"
-                  onFocus={() => setReferralFocused(true)}
-                  onBlur={() => setReferralFocused(false)}
-                />
-              </View>
-              {errors.referralCode ? (
-                <Text style={styles.errorText}>{errors.referralCode}</Text>
-              ) : null}
-            </>
+            <AuthTextField
+              label={t('auth.referral.label')}
+              icon="gift"
+              value={referralCode ?? ''}
+              onChange={onReferralCodeChange}
+              error={errors.referralCode}
+              placeholder={t('auth.referral.placeholder')}
+              autoCapitalize="characters"
+              maxLength={10}
+              returnKeyType="done"
+              disabled={loading}
+              labelSpacing
+            />
           ) : null}
         </>
       ) : null}

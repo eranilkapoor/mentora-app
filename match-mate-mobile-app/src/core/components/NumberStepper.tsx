@@ -13,6 +13,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { RequiredAsterisk } from './RequiredAsterisk';
 
 export interface NumberStepperProps {
   /**
@@ -159,10 +160,6 @@ function NumberStepperComponent({
           color: theme.colors.textSecondary,
         },
 
-        required: {
-          color: theme.colors.error,
-        },
-
         sublabel: {
           marginTop: 4,
 
@@ -271,7 +268,7 @@ function NumberStepperComponent({
           <Text style={[styles.label, labelStyle]}>
             {label}
 
-            {required ? <Text style={styles.required}> *</Text> : null}
+            {required ? <RequiredAsterisk /> : null}
           </Text>
           {sublabel ? (
             <Text style={[styles.sublabel, sublabelStyle]}>{sublabel}</Text>

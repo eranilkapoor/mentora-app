@@ -1,5 +1,6 @@
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
+import * as AuthSession from 'expo-auth-session';
 import * as AppleAuthentication from 'expo-apple-authentication';
 import * as Facebook from 'expo-auth-session/providers/facebook';
 import * as Google from 'expo-auth-session/providers/google';
@@ -11,11 +12,23 @@ WebBrowser.maybeCompleteAuthSession();
 
 type SocialProfile = SocialLoginRequest;
 
+const DISABLED_GOOGLE_CLIENT_ID =
+  'disabled-google-auth.apps.googleusercontent.com';
+const DISABLED_FACEBOOK_CLIENT_ID = '0';
+
 const getEnv = (key: string): string | undefined => {
   const value = (process.env as Record<string, string | undefined>)[key];
   const trimmed = value?.trim();
   if (!trimmed) return undefined;
   return trimmed;
+};
+
+const getWebOrigin = (): string | undefined => {
+  if (Platform.OS !== 'web') {
+    return undefined;
+  }
+
+  return globalThis.location?.origin;
 };
 
 const pickNameParts = (
@@ -36,17 +49,22 @@ export function useSocialAuth(): {
   const googleWebClientId = getEnv('EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID');
   const googleIosClientId = getEnv('EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID');
   const googleAndroidClientId = getEnv('EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID');
+  const googleRedirectUri =
+    getEnv('EXPO_PUBLIC_GOOGLE_REDIRECT_URI') ??
+    getWebOrigin() ??
+    AuthSession.makeRedirectUri({ scheme: 'matchmate' });
   const facebookClientId = getEnv('EXPO_PUBLIC_FACEBOOK_CLIENT_ID');
 
   const [, , promptGoogle] = Google.useAuthRequest({
-    androidClientId: googleAndroidClientId ?? '',
-    iosClientId: googleIosClientId ?? '',
-    webClientId: googleWebClientId ?? '',
+    androidClientId: googleAndroidClientId ?? DISABLED_GOOGLE_CLIENT_ID,
+    iosClientId: googleIosClientId ?? DISABLED_GOOGLE_CLIENT_ID,
+    webClientId: googleWebClientId ?? DISABLED_GOOGLE_CLIENT_ID,
+    redirectUri: googleRedirectUri,
     scopes: ['openid', 'profile', 'email'],
   });
 
   const [, , promptFacebook] = Facebook.useAuthRequest({
-    clientId: facebookClientId ?? '',
+    clientId: facebookClientId ?? DISABLED_FACEBOOK_CLIENT_ID,
     scopes: ['public_profile', 'email'],
   });
 

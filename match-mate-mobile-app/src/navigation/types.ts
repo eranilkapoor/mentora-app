@@ -36,7 +36,6 @@ export type HomeStackParamList = {
 // ─── Matches Stack ────────────────────────────────────────────────────────────
 export type MatchesStackParamList = {
   MatchList: undefined;
-  OnlineMatches: undefined;
   MatchDetails: { userId: string };
   ChatDetails: {
     userId: string;

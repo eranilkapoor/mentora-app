@@ -1,4 +1,11 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
+import * as Location from 'expo-location';
 import {
   ActivityIndicator,
   FlatList,
@@ -28,6 +35,49 @@ import { MatchTabs } from './components/MatchTabs';
 import { MatchEmpty } from './components/MatchEmpty';
 import { MatchFilterModal } from './components/MatchFilterModal';
 import { MatchListToolbar } from './components/MatchListToolbar';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useUpdateProfileLocationMutation } from '@/store/services/profileApi.service';
+import { useUpdateLocalizationSettingsMutation } from '@/store/services/localizationSettingsApi.service';
+import { setLocationSharing } from '@/store/slices/settings.slice';
+import { getDeviceId } from '@/core/utils/device';
+import { Storage } from '@/core/utils/storage';
+import { showError } from '@/core/utils/toast';
+import { showConfirm } from '@/core/utils/confirm';
+
+interface LocationSyncSnapshot {
+  latitude: number;
+  longitude: number;
+  deviceId: string;
+  syncedAt: number;
+}
+
+const LOCATION_SYNC_TTL_MS = 24 * 60 * 60 * 1000;
+const LOCATION_SYNC_DISTANCE_METERS = 2000;
+
+const getLocationSyncKey = (userId: string): string =>
+  `profile-location-sync:${userId}`;
+
+const toRadians = (value: number): number => (value * Math.PI) / 180;
+
+const distanceInMeters = (
+  from: { latitude: number; longitude: number },
+  to: { latitude: number; longitude: number }
+): number => {
+  const earthRadiusMeters = 6371000;
+  const dLat = toRadians(to.latitude - from.latitude);
+  const dLon = toRadians(to.longitude - from.longitude);
+  const fromLat = toRadians(from.latitude);
+  const toLat = toRadians(to.latitude);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(fromLat) *
+      Math.cos(toLat) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+
+  return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+};
 
 function SkeletonCard(): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
@@ -49,6 +99,11 @@ export default function MatchListScreen({
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
+  const userId = useAppSelector((state) => state.auth.user?.userId);
+  const locationSharing = useAppSelector(
+    (state) => state.settings.locationSharing
+  );
 
   const [activeTab, setActiveTab] = useState<TabKey>('recommended');
   const [query, setQuery] = useState('');
@@ -56,6 +111,11 @@ export default function MatchListScreen({
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
+  const [nearbyLocationReady, setNearbyLocationReady] = useState(true);
+  const nearbyLocationInFlight = useRef(false);
+  const nearbyPermissionPromptInFlight = useRef(false);
+  const [updateProfileLocation] = useUpdateProfileLocationMutation();
+  const [updateLocalizationSettings] = useUpdateLocalizationSettingsMutation();
 
   const {
     visibleMatches,
@@ -72,7 +132,14 @@ export default function MatchListScreen({
     refetchShortlistedStatus,
     refetchSentInterests,
     refetchReceivedInterests,
-  } = useMatchListData(activeTab, query, filters, page, setPage);
+  } = useMatchListData(
+    activeTab,
+    query,
+    filters,
+    page,
+    setPage,
+    nearbyLocationReady
+  );
 
   const { handlePrimaryAction, handleShortlist } =
     useMatchListActions(navigation);
@@ -132,10 +199,167 @@ export default function MatchListScreen({
 
   // ─── Handlers ─────────────────────────────────────────────────────────
 
-  const handleTabChange = useCallback((key: TabKey) => {
-    setActiveTab(key);
+  const openNearbyTab = useCallback(() => {
+    setNearbyLocationReady(false);
+    setActiveTab('nearby');
     setPage(1);
   }, []);
+
+  const enableNearbyLocationSharing = useCallback(async () => {
+    if (nearbyPermissionPromptInFlight.current) {
+      return;
+    }
+
+    nearbyPermissionPromptInFlight.current = true;
+
+    try {
+      let permission = await Location.getForegroundPermissionsAsync();
+      if (permission.status === Location.PermissionStatus.UNDETERMINED) {
+        permission = await Location.requestForegroundPermissionsAsync();
+      }
+
+      if (permission.status !== Location.PermissionStatus.GRANTED) {
+        showError({
+          title: t('matches.nearby_location_permission_title'),
+          message: t('matches.nearby_location_permission_message'),
+        });
+        return;
+      }
+
+      dispatch(setLocationSharing(true));
+      await updateLocalizationSettings({ shareLocation: true }).unwrap();
+      openNearbyTab();
+    } catch (error) {
+      dispatch(setLocationSharing(false));
+      showError({
+        title: t('matches.nearby_location_enable_failed_title'),
+        message: t('matches.nearby_location_enable_failed_message'),
+      });
+
+      if (__DEV__) {
+        console.warn('[MatchList] nearby location enable failed:', error);
+      }
+    } finally {
+      nearbyPermissionPromptInFlight.current = false;
+    }
+  }, [dispatch, openNearbyTab, t, updateLocalizationSettings]);
+
+  const handleTabChange = useCallback(
+    (key: TabKey) => {
+      if (key === 'nearby' && !locationSharing) {
+        showConfirm({
+          title: t('matches.nearby_location_enable_title'),
+          message: t('matches.nearby_location_enable_message'),
+          confirmText: t('matches.nearby_location_enable_confirm'),
+          cancelText: t('matches.nearby_location_enable_cancel'),
+          onConfirm: () => {
+            void enableNearbyLocationSharing();
+          },
+        });
+        return;
+      }
+
+      setNearbyLocationReady(key !== 'nearby');
+      setActiveTab(key);
+      setPage(1);
+    },
+    [enableNearbyLocationSharing, locationSharing, t]
+  );
+
+  useEffect(() => {
+    if (activeTab !== 'nearby') {
+      setNearbyLocationReady(true);
+      return;
+    }
+
+    if (!userId || !locationSharing || nearbyLocationInFlight.current) {
+      setNearbyLocationReady(true);
+      return;
+    }
+
+    let isCancelled = false;
+    nearbyLocationInFlight.current = true;
+    setNearbyLocationReady(false);
+
+    const syncNearbyLocation = async () => {
+      try {
+        const deviceId = await getDeviceId();
+        const storageKey = getLocationSyncKey(userId);
+        const cached = await Storage.getItem<LocationSyncSnapshot>(storageKey);
+        const now = Date.now();
+        const sameDevice = cached?.deviceId === deviceId;
+        const isFresh =
+          cached !== null && now - cached.syncedAt < LOCATION_SYNC_TTL_MS;
+
+        if (sameDevice && isFresh) {
+          return;
+        }
+
+        let permission = await Location.getForegroundPermissionsAsync();
+        if (permission.status === Location.PermissionStatus.UNDETERMINED) {
+          permission = await Location.requestForegroundPermissionsAsync();
+        }
+
+        if (permission.status !== Location.PermissionStatus.GRANTED) {
+          showError({
+            title: t('matches.nearby_location_permission_title'),
+            message: t('matches.nearby_location_permission_message'),
+          });
+          return;
+        }
+
+        const location = await Location.getCurrentPositionAsync({
+          accuracy: Location.Accuracy.Balanced,
+        });
+
+        if (isCancelled) {
+          return;
+        }
+
+        const nextLocation = {
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        };
+
+        const movedEnough =
+          !cached ||
+          !sameDevice ||
+          distanceInMeters(
+            {
+              latitude: cached.latitude,
+              longitude: cached.longitude,
+            },
+            nextLocation
+          ) >= LOCATION_SYNC_DISTANCE_METERS;
+
+        if (movedEnough) {
+          await updateProfileLocation(nextLocation).unwrap();
+        }
+
+        await Storage.setItem<LocationSyncSnapshot>(storageKey, {
+          ...nextLocation,
+          deviceId,
+          syncedAt: now,
+        });
+      } catch (error) {
+        if (__DEV__) {
+          console.warn('[MatchList] nearby location sync failed:', error);
+        }
+      } finally {
+        nearbyLocationInFlight.current = false;
+        if (!isCancelled) {
+          setNearbyLocationReady(true);
+        }
+      }
+    };
+
+    void syncNearbyLocation();
+
+    return () => {
+      isCancelled = true;
+      nearbyLocationInFlight.current = false;
+    };
+  }, [activeTab, locationSharing, t, updateProfileLocation, userId]);
 
   const handleFiltersChange = useCallback((patch: Partial<FilterState>) => {
     setFilters((prev) => ({ ...prev, ...patch }));

@@ -14,6 +14,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
 import { RemoveChipButton } from './RemoveChipButton';
+import { RequiredAsterisk } from './RequiredAsterisk';
 
 // ─── Props ────────────────────────────────────────────────────────────────────
 
@@ -79,11 +80,6 @@ const createStyles = (theme: Theme, hasError: boolean, isDisabled: boolean) =>
       fontWeight: '600',
       color: theme.colors.textSecondary,
     },
-    required: {
-      fontSize: 13,
-      fontWeight: '600',
-      color: theme.colors.error,
-    },
     countText: {
       fontSize: 12,
       color: theme.colors.textMuted,
@@ -106,11 +102,12 @@ const createStyles = (theme: Theme, hasError: boolean, isDisabled: boolean) =>
       flex: 1,
       borderWidth: 1,
       borderColor: hasError ? theme.colors.error : theme.colors.border,
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 11,
       fontSize: 15,
       color: theme.colors.textPrimary,
+      minHeight: 52,
       backgroundColor: hasError
         ? theme.colors.errorLight
         : isDisabled
@@ -119,8 +116,8 @@ const createStyles = (theme: Theme, hasError: boolean, isDisabled: boolean) =>
     },
     addButton: {
       width: 44,
-      height: 44,
-      borderRadius: 10,
+      height: 52,
+      borderRadius: 12,
       alignItems: 'center',
       justifyContent: 'center',
     },
@@ -287,7 +284,7 @@ function TagInputComponent({
       <View style={styles.headerRow}>
         <View style={styles.labelRow}>
           <Text style={styles.label}>{label}</Text>
-          {required ? <Text style={styles.required}> *</Text> : null}
+          {required ? <RequiredAsterisk /> : null}
         </View>
 
         {/* Count badge — only shown when maxTags is set */}

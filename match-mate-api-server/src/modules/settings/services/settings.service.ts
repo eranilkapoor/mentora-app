@@ -98,6 +98,7 @@ export class SettingsService {
     return {
       ...settings,
       account: accountData,
+      localization: this.normalizeLocalization(settings.localization),
     };
   }
 
@@ -715,12 +716,14 @@ export class SettingsService {
 
   //  Localization
 
-  getLocalization(userId: string) {
-    return this.repo.getLocalization(userId);
+  async getLocalization(userId: string) {
+    return this.normalizeLocalization(await this.repo.getLocalization(userId));
   }
 
-  updateLocalization(userId: string, dto: UpdateLocalizationSettingsDto) {
-    return this.repo.updateLocalization(userId, dto);
+  async updateLocalization(userId: string, dto: UpdateLocalizationSettingsDto) {
+    return this.normalizeLocalization(
+      await this.repo.updateLocalization(userId, dto),
+    );
   }
 
   //  Accessibility
@@ -751,6 +754,18 @@ export class SettingsService {
 
   updateAi(userId: string, dto: UpdateAiSettingsDto) {
     return this.repo.updateAi(userId, dto);
+  }
+
+  private normalizeLocalization(settings: unknown) {
+    const localization =
+      settings && typeof settings === 'object'
+        ? (settings as Record<string, unknown>)
+        : {};
+
+    return {
+      ...localization,
+      shareLocation: Boolean(localization.shareLocation),
+    };
   }
 
   private getOrCreateVerification(

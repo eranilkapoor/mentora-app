@@ -1,5 +1,4 @@
 import React, { useEffect, useRef, useState } from 'react';
-import * as Location from 'expo-location';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Notifications from 'expo-notifications';
 import { Platform } from 'react-native';
@@ -7,7 +6,6 @@ import { Platform } from 'react-native';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { logout as logoutAction, setUser } from '@/store/slices/auth.slice';
 import { useVerifyUserQuery } from '@/store/services/authApi.service';
-import { useUpdateProfileLocationMutation } from '@/store/services/profileApi.service';
 import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
 import Loader from '@/core/components/Loader';
 import { getDeviceId } from '@/core/utils/device';
@@ -30,16 +28,6 @@ interface Props {
   children: React.ReactNode;
 }
 
-interface LocationSyncSnapshot {
-  latitude: number;
-  longitude: number;
-  deviceId: string;
-  syncedAt: number;
-}
-
-const LOCATION_SYNC_TTL_MS = 24 * 60 * 60 * 1000;
-const LOCATION_SYNC_DISTANCE_METERS = 2000;
-
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
     shouldPlaySound: false,
@@ -49,33 +37,8 @@ Notifications.setNotificationHandler({
   }),
 });
 
-const getLocationSyncKey = (userId: string): string =>
-  `profile-location-sync:${userId}`;
-
 const getPushTokenSyncKey = (userId: string): string =>
   `notification-push-token:${userId}`;
-
-const toRadians = (value: number): number => (value * Math.PI) / 180;
-
-const distanceInMeters = (
-  from: { latitude: number; longitude: number },
-  to: { latitude: number; longitude: number }
-): number => {
-  const earthRadiusMeters = 6371000;
-  const dLat = toRadians(to.latitude - from.latitude);
-  const dLon = toRadians(to.longitude - from.longitude);
-  const fromLat = toRadians(from.latitude);
-  const toLat = toRadians(to.latitude);
-
-  const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-    Math.cos(fromLat) *
-      Math.cos(toLat) *
-      Math.sin(dLon / 2) *
-      Math.sin(dLon / 2);
-
-  return earthRadiusMeters * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-};
 
 export default function AppInitializer({ children }: Props) {
   const dispatch = useAppDispatch();
@@ -88,9 +51,7 @@ export default function AppInitializer({ children }: Props) {
     !authMethodConfig.biometric || Platform.OS === 'web'
   );
   const isFirstLoad = useRef(true);
-  const locationSyncInFlight = useRef(false);
   const biometricPromptInFlight = useRef(false);
-  const [updateProfileLocation] = useUpdateProfileLocationMutation();
   const [registerPushToken] = useRegisterNotificationDeviceTokenMutation();
   const { data: securityData, isLoading: securityLoading } =
     useGetSecuritySettingsQuery(undefined, {
@@ -327,98 +288,6 @@ export default function AppInitializer({ children }: Props) {
 
     void authenticate();
   }, [accessToken, dispatch, securityData, securityLoading]);
-
-  useEffect(() => {
-    if (!accessToken || !userId || locationSyncInFlight.current) {
-      return;
-    }
-
-    let isCancelled = false;
-    locationSyncInFlight.current = true;
-
-    const syncLocation = async () => {
-      try {
-        const deviceId = await getDeviceId();
-        const storageKey = getLocationSyncKey(userId);
-        const cached = await Storage.getItem<LocationSyncSnapshot>(storageKey);
-
-        const now = Date.now();
-        const sameDevice = cached?.deviceId === deviceId;
-        const isFresh =
-          cached !== null && now - cached.syncedAt < LOCATION_SYNC_TTL_MS;
-
-        if (sameDevice && isFresh) {
-          return;
-        }
-
-        let permission = await Location.getForegroundPermissionsAsync();
-        if (permission.status === Location.PermissionStatus.UNDETERMINED) {
-          permission = await Location.requestForegroundPermissionsAsync();
-        }
-
-        if (permission.status !== Location.PermissionStatus.GRANTED) {
-          return;
-        }
-
-        const location = await Location.getCurrentPositionAsync({
-          accuracy: Location.Accuracy.Balanced,
-        });
-
-        if (isCancelled) {
-          return;
-        }
-
-        const nextLocation = {
-          latitude: location.coords.latitude,
-          longitude: location.coords.longitude,
-        };
-
-        const movedEnough =
-          !cached ||
-          !sameDevice ||
-          distanceInMeters(
-            {
-              latitude: cached.latitude,
-              longitude: cached.longitude,
-            },
-            nextLocation
-          ) >= LOCATION_SYNC_DISTANCE_METERS;
-
-        if (!movedEnough) {
-          await Storage.setItem<LocationSyncSnapshot>(storageKey, {
-            ...nextLocation,
-            deviceId,
-            syncedAt: now,
-          });
-          return;
-        }
-
-        await updateProfileLocation({
-          latitude: nextLocation.latitude,
-          longitude: nextLocation.longitude,
-        }).unwrap();
-
-        await Storage.setItem<LocationSyncSnapshot>(storageKey, {
-          ...nextLocation,
-          deviceId,
-          syncedAt: now,
-        });
-      } catch (error) {
-        if (__DEV__) {
-          console.warn('[AppInitializer] location sync failed:', error);
-        }
-      } finally {
-        locationSyncInFlight.current = false;
-      }
-    };
-
-    void syncLocation();
-
-    return () => {
-      isCancelled = true;
-      locationSyncInFlight.current = false;
-    };
-  }, [accessToken, updateProfileLocation, userId]);
 
   if (
     !langReady ||

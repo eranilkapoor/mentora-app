@@ -11,6 +11,7 @@ export interface LocalizationSettings {
   preferredLanguages: string[];
   region: string;
   timezone: string;
+  shareLocation: boolean;
   dateFormat: 'DD/MM/YYYY' | 'MM/DD/YYYY' | 'YYYY-MM-DD';
   currency: string;
 }

@@ -1,4 +1,10 @@
-import { IsArray, IsIn, IsOptional, IsString } from 'class-validator';
+import {
+  IsArray,
+  IsBoolean,
+  IsIn,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 
 export class UpdateLocalizationSettingsDto {
   @IsOptional() @IsString() appLanguage?: string;
@@ -10,6 +16,7 @@ export class UpdateLocalizationSettingsDto {
 
   @IsOptional() @IsString() region?: string;
   @IsOptional() @IsString() timezone?: string;
+  @IsOptional() @IsBoolean() shareLocation?: boolean;
 
   @IsOptional()
   @IsIn(['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'])

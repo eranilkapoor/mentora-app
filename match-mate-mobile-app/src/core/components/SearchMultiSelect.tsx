@@ -81,13 +81,14 @@ const createStyles = (theme: Theme) =>
     input: {
       borderWidth: 1,
       borderColor: theme.colors.border,
-      borderRadius: 10,
+      borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 13,
       marginBottom: 4,
       fontSize: 15,
       color: theme.colors.textPrimary,
       backgroundColor: theme.colors.inputBackground,
+      minHeight: 52,
     },
     inputError: {
       borderColor: theme.colors.error,

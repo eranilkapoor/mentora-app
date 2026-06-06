@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -96,6 +96,31 @@ export default function LocalizationSettingsScreen({
     [updateLocalizationSettings]
   );
 
+  useEffect(() => {
+    if (settings?.shareLocation !== undefined) {
+      dispatch(setLocationSharing(Boolean(settings.shareLocation)));
+    }
+  }, [dispatch, settings?.shareLocation]);
+
+  const handleLocationSharingChange = useCallback(
+    (value: boolean) => {
+      const previousValue = locationSharing;
+      dispatch(setLocationSharing(value));
+
+      void updateLocalizationSettings({ shareLocation: value })
+        .unwrap()
+        .then((response) => {
+          dispatch(
+            setLocationSharing(Boolean(response.localization.shareLocation))
+          );
+        })
+        .catch(() => {
+          dispatch(setLocationSharing(previousValue));
+        });
+    },
+    [dispatch, locationSharing, updateLocalizationSettings]
+  );
+
   if (isLoading || !settings) {
     return <Loader fullScreen size="large" />;
   }
@@ -141,7 +166,7 @@ export default function LocalizationSettingsScreen({
             label={t('settings.share_location')}
             sublabel={t('settings.share_location_sub')}
             value={locationSharing}
-            onChange={(value) => dispatch(setLocationSharing(value))}
+            onChange={handleLocationSharingChange}
           />
           <SettingsSelectItem
             icon="map"

@@ -11,6 +11,7 @@ export class LocalizationSetting {
   @Prop({ type: [String], default: ['en'] }) preferredLanguages!: string[];
   @Prop({ default: 'IN' }) region!: string;
   @Prop({ default: 'Asia/Kolkata' }) timezone!: string;
+  @Prop({ default: false }) shareLocation!: boolean;
   @Prop({
     type: String,
     enum: ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'],

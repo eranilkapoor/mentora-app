@@ -1,5 +1,5 @@
-import React, { useCallback, useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, Modal } from 'react-native';
+import React, { useCallback } from 'react';
+import { StyleSheet, View, Text, TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -20,13 +20,11 @@ import {
   Religions,
   Qualifications,
   Countries,
-  Days,
-  Months,
-  YearOptions,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
-import { showError } from '@/core/utils/toast';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
+import { DatePicker } from '@/features/EditProfile/components/DateOfBirthPicker';
+import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 
 interface Props {
   basic: BasicData;
@@ -35,105 +33,20 @@ interface Props {
   onClearError: (field: string) => void;
 }
 
-// ─── Date picker sub-component — isolated state ───────────────────────────────
-
-interface DatePickerModalProps {
-  currentValue: string;
-  onConfirm: (formatted: string) => void;
-  onCancel: () => void;
-}
-
-function DatePickerModal({
-  currentValue,
-  onConfirm,
-  onCancel,
-}: DatePickerModalProps): React.ReactElement {
-  const { t } = useTranslation();
+function RequiredTextLabel({
+  children,
+}: {
+  children: string;
+}): React.ReactElement {
   const styles = useThemedStyles(onboardingStyles);
-  const DayOptions = useEnumOptions(Days, 'options.days');
-  const MonthOptions = useEnumOptions(Months, 'options.months');
-
-  const initialParts = currentValue ? currentValue.split('-') : [];
-  const [day, setDay] = useState(initialParts[2] ?? '');
-  const [month, setMonth] = useState(initialParts[1] ?? '');
-  const [year, setYear] = useState(initialParts[0] ?? '');
-
-  const handleConfirm = useCallback(() => {
-    if (!day || !month || !year) {
-      showError({
-        title: t('common.error'),
-        message: t('onboarding.errors.date_incomplete'),
-      });
-      return;
-    }
-    onConfirm(`${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`);
-  }, [day, month, year, onConfirm, t]);
 
   return (
-    <Modal transparent animationType="fade" onRequestClose={onCancel}>
-      <TouchableOpacity
-        style={styles.datePickerOverlay}
-        activeOpacity={1}
-        onPress={onCancel}
-      >
-        <TouchableOpacity
-          activeOpacity={1}
-          onPress={() => {}}
-          style={styles.datePickerContainer}
-        >
-          <Text style={styles.stepTitle}>
-            {t('onboarding.date_picker.title')}
-          </Text>
-
-          <DropdownPicker
-            label={t('onboarding.date_picker.day')}
-            options={DayOptions}
-            value={day}
-            onChange={setDay}
-            required
-          />
-          <DropdownPicker
-            label={t('onboarding.date_picker.month')}
-            options={MonthOptions}
-            value={month}
-            onChange={setMonth}
-            required
-          />
-          <DropdownPicker
-            label={t('onboarding.date_picker.year')}
-            options={YearOptions}
-            value={year}
-            onChange={setYear}
-            required
-          />
-
-          <View style={styles.datePickerActions}>
-            <TouchableOpacity
-              onPress={onCancel}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.cancel')}
-            >
-              <Text style={styles.datePickerCancelText}>
-                {t('common.cancel')}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              onPress={handleConfirm}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.confirm')}
-            >
-              <Text style={styles.datePickerConfirmText}>
-                {t('common.confirm')}
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </TouchableOpacity>
-      </TouchableOpacity>
-    </Modal>
+    <View style={basicStepStyles.requiredLabelRow}>
+      <Text style={styles.label}>{children}</Text>
+      <RequiredAsterisk />
+    </View>
   );
 }
-
-// ─── BasicStep ────────────────────────────────────────────────────────────────
 
 export function BasicStep({
   basic,
@@ -145,7 +58,6 @@ export function BasicStep({
   const { theme } = useTheme();
   const styles = useThemedStyles(onboardingStyles);
 
-  const [datePickerVisible, setDatePickerVisible] = useState(false);
   const GenderOptions = useEnumOptions(Genders, 'options.gender');
   const ProfileForOptions = useEnumOptions(ProfileFors, 'options.profile_for');
   const MaritalStatusOptions = useEnumOptions(
@@ -165,13 +77,12 @@ export function BasicStep({
     [errors, styles]
   );
 
-  const handleDateConfirm = useCallback(
-    (formatted: string) => {
-      onSetField('dateOfBirth', formatted);
+  const handleDateChange = useCallback(
+    (value: string) => {
+      onSetField('dateOfBirth', value);
       onClearError('dateOfBirth');
-      setDatePickerVisible(false);
     },
-    [onSetField, onClearError]
+    [onClearError, onSetField]
   );
 
   return (
@@ -179,7 +90,6 @@ export function BasicStep({
       <Text style={styles.stepTitle}>{t('onboarding.basic.title')}</Text>
       <Text style={styles.subtitle}>{t('onboarding.basic.subtitle')}</Text>
 
-      {/* Profile For */}
       <DropdownPicker
         label={t('onboarding.fields.profile_for')}
         options={ProfileForOptions}
@@ -189,8 +99,7 @@ export function BasicStep({
       />
       <ErrorText field="profileFor" errors={errors} />
 
-      {/* First Name */}
-      <Text style={styles.label}>{t('onboarding.fields.first_name')} *</Text>
+      <RequiredTextLabel>{t('onboarding.fields.first_name')}</RequiredTextLabel>
       <TextInput
         placeholder={t('onboarding.placeholders.first_name')}
         placeholderTextColor={theme.colors.textMuted}
@@ -202,7 +111,6 @@ export function BasicStep({
       />
       <ErrorText field="firstName" errors={errors} />
 
-      {/* Last Name */}
       <Text style={styles.label}>{t('onboarding.fields.last_name')}</Text>
       <TextInput
         placeholder={t('onboarding.placeholders.last_name')}
@@ -214,7 +122,6 @@ export function BasicStep({
         accessibilityLabel={t('onboarding.fields.last_name')}
       />
 
-      {/* Gender */}
       <SingleSelectPill
         label={t('onboarding.fields.gender')}
         options={GenderOptions}
@@ -224,27 +131,16 @@ export function BasicStep({
       />
       <ErrorText field="gender" errors={errors} />
 
-      {/* Date of Birth */}
-      <Text style={styles.label}>{t('onboarding.fields.date_of_birth')} *</Text>
-      <TouchableOpacity
-        onPress={() => setDatePickerVisible(true)}
-        style={inputStyle('dateOfBirth')}
-        accessibilityRole="button"
-        accessibilityLabel={t('onboarding.fields.date_of_birth')}
-      >
-        <Text
-          style={
-            basic.dateOfBirth
-              ? styles.dropdownValueText
-              : styles.dropdownPlaceholder
-          }
-        >
-          {basic.dateOfBirth || t('onboarding.placeholders.select_date')}
-        </Text>
-      </TouchableOpacity>
-      <ErrorText field="dateOfBirth" errors={errors} />
+      <DatePicker
+        label={t('onboarding.fields.date_of_birth')}
+        value={basic.dateOfBirth}
+        onChange={handleDateChange}
+        {...(errors.dateOfBirth ? { error: errors.dateOfBirth } : {})}
+        required
+        placeholder={t('onboarding.placeholders.select_date')}
+        modalTitle={t('onboarding.date_picker.title')}
+      />
 
-      {/* Marital Status */}
       <SingleSelectPill
         label={t('onboarding.fields.marital_status')}
         options={MaritalStatusOptions}
@@ -254,7 +150,6 @@ export function BasicStep({
       />
       <ErrorText field="maritalStatus" errors={errors} />
 
-      {/* Religion */}
       <DropdownPicker
         label={t('onboarding.fields.religion')}
         options={ReligionOptions}
@@ -264,7 +159,6 @@ export function BasicStep({
       />
       <ErrorText field="religion" errors={errors} />
 
-      {/* Country */}
       <DropdownPicker
         label={t('onboarding.fields.country')}
         options={CountryOptions}
@@ -274,7 +168,6 @@ export function BasicStep({
       />
       <ErrorText field="country" errors={errors} />
 
-      {/* Qualification */}
       <DropdownPicker
         label={t('onboarding.fields.qualification')}
         options={QualificationOptions}
@@ -284,8 +177,7 @@ export function BasicStep({
       />
       <ErrorText field="qualification" errors={errors} />
 
-      {/* Occupation */}
-      <Text style={styles.label}>{t('onboarding.fields.occupation')} *</Text>
+      <RequiredTextLabel>{t('onboarding.fields.occupation')}</RequiredTextLabel>
       <TextInput
         placeholder={t('onboarding.placeholders.occupation')}
         placeholderTextColor={theme.colors.textMuted}
@@ -296,8 +188,7 @@ export function BasicStep({
       />
       <ErrorText field="occupation" errors={errors} />
 
-      {/* Height */}
-      <Text style={styles.label}>{t('onboarding.fields.height')} *</Text>
+      <RequiredTextLabel>{t('onboarding.fields.height')}</RequiredTextLabel>
       <TextInput
         placeholder={t('onboarding.placeholders.height')}
         placeholderTextColor={theme.colors.textMuted}
@@ -308,15 +199,13 @@ export function BasicStep({
         accessibilityLabel={t('onboarding.fields.height')}
       />
       <ErrorText field="height" errors={errors} />
-
-      {/* Date picker modal — self-contained, no external state needed */}
-      {datePickerVisible && (
-        <DatePickerModal
-          currentValue={basic.dateOfBirth}
-          onConfirm={handleDateConfirm}
-          onCancel={() => setDatePickerVisible(false)}
-        />
-      )}
     </View>
   );
 }
+
+const basicStepStyles = StyleSheet.create({
+  requiredLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+});
