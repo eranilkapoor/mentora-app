@@ -118,6 +118,10 @@ export default function PrivacySettingsScreen({
           <SettingsSelectItem
             icon="globe"
             label={t('settings.privacy.who_can_see')}
+            sublabel={t('settings.privacy.who_can_see_sub', {
+              defaultValue:
+                'Choose whether everyone, contacts, premium members, or no one can discover your profile.',
+            })}
             value={formatValue(
               profileVisibilityOptions,
               settings.profileVisibility
@@ -150,24 +154,40 @@ export default function PrivacySettingsScreen({
           <SettingsToggleItem
             icon="phone"
             label={t('settings.privacy.show_phone')}
+            sublabel={t('settings.privacy.show_phone_sub', {
+              defaultValue:
+                'When enabled, allowed viewers can see your phone number on your profile.',
+            })}
             value={settings.showPhone ?? false}
             onChange={(v) => handleToggle('showPhone', v)}
           />
           <SettingsToggleItem
             icon="mail"
             label={t('settings.privacy.show_email')}
+            sublabel={t('settings.privacy.show_email_sub', {
+              defaultValue:
+                'When enabled, allowed viewers can see your email address.',
+            })}
             value={settings.showEmail ?? false}
             onChange={(v) => handleToggle('showEmail', v)}
           />
           <SettingsToggleItem
             icon="dollar-sign"
             label={t('settings.privacy.show_income')}
+            sublabel={t('settings.privacy.show_income_sub', {
+              defaultValue:
+                'Show or hide your annual income in profile and match details.',
+            })}
             value={settings.showIncome ?? false}
             onChange={(v) => handleToggle('showIncome', v)}
           />
           <SettingsToggleItem
             icon="calendar"
             label={t('settings.privacy.show_exact_age')}
+            sublabel={t('settings.privacy.show_exact_age_sub', {
+              defaultValue:
+                'Turn off to show an age range instead of your exact age where supported.',
+            })}
             value={settings.showExactAge ?? false}
             isLast
             onChange={(v) => handleToggle('showExactAge', v)}
@@ -183,6 +203,10 @@ export default function PrivacySettingsScreen({
           <SettingsSelectItem
             icon="image"
             label={t('settings.privacy.show_photos_to')}
+            sublabel={t('settings.privacy.show_photos_to_sub', {
+              defaultValue:
+                'Choose who can view your profile photos without additional approval.',
+            })}
             value={formatValue(visibilityOptions, settings.showPhotosTo)}
             onPress={() => setActiveSelect('showPhotosTo')}
           />
@@ -196,6 +220,10 @@ export default function PrivacySettingsScreen({
           <SettingsToggleItem
             icon="scissors"
             label={t('settings.privacy.allow_screenshots')}
+            sublabel={t('settings.privacy.allow_screenshots_sub', {
+              defaultValue:
+                'Disable to discourage screenshots where platform protections are available.',
+            })}
             value={settings.allowScreenshots ?? false}
             isLast
             onChange={(v) => handleToggle('allowScreenshots', v)}
@@ -211,12 +239,20 @@ export default function PrivacySettingsScreen({
           <SettingsToggleItem
             icon="circle"
             label={t('settings.privacy.show_online_status')}
+            sublabel={t('settings.privacy.show_online_status_sub', {
+              defaultValue:
+                'Let others see when you are currently active in the app.',
+            })}
             value={settings.showOnlineStatus ?? false}
             onChange={(v) => handleToggle('showOnlineStatus', v)}
           />
           <SettingsSelectItem
             icon="clock"
             label={t('settings.privacy.show_last_seen')}
+            sublabel={t('settings.privacy.show_last_seen_sub', {
+              defaultValue:
+                'Control who can see the last time you were active.',
+            })}
             value={formatValue(visibilityOptions, settings.showLastSeen)}
             isLast
             onPress={() => setActiveSelect('showLastSeen')}

@@ -77,11 +77,103 @@ import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 import { NumberStepper } from '@/core/components/NumberStepper';
 import { ToggleRow } from '@/core/components/ToggleRow';
 
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+const DEFAULT_AGE_RANGE = { min: AGE_RANGE.min, max: 25 } as const;
+const DEFAULT_HEIGHT_RANGE = { min: HEIGHT_RANGE.min, max: 170 } as const;
+const DEFAULT_INCOME_RANGE = {
+  min: INCOME_RANGE.min,
+  max: INCOME_STEP * 10,
+} as const;
+
+const normalizeRange = (
+  range: PartnerFilters['age'],
+  fallback: { min: number; max: number }
+): RangeValue => {
+  const rawMin = range?.min;
+  const rawMax = range?.max;
+  const min =
+    typeof rawMin === 'number' && Number.isFinite(rawMin)
+      ? rawMin
+      : fallback.min;
+  const max =
+    typeof rawMax === 'number' && Number.isFinite(rawMax)
+      ? rawMax
+      : fallback.max;
+
+  if (typeof min !== 'number' || typeof max !== 'number') {
+    return fallback;
+  }
+
+  return {
+    min: Math.min(min, max),
+    max: Math.max(min, max),
+  };
+};
+
+const normalizeFilterRanges = (filters: PartnerFilters): PartnerFilters => {
+  const rest: PartnerFilters = { ...filters };
+  delete rest.age;
+  delete rest.height;
+  delete rest.annualIncome;
+
+  return {
+    ...rest,
+    ...(hasCompleteRange(filters.age)
+      ? { age: normalizeRange(filters.age, AGE_RANGE) }
+      : {}),
+    ...(hasCompleteRange(filters.height)
+      ? { height: normalizeRange(filters.height, HEIGHT_RANGE) }
+      : {}),
+    ...(hasCompleteRange(filters.annualIncome)
+      ? { annualIncome: normalizeRange(filters.annualIncome, INCOME_RANGE) }
+      : {}),
+  };
+};
+
+const hasAnyRangeBound = (range: PartnerFilters['age']): boolean =>
+  isFiniteNumber(range?.min) || isFiniteNumber(range?.max);
+
+const hasCompleteRange = (range: PartnerFilters['age']): boolean =>
+  isFiniteNumber(range?.min) && isFiniteNumber(range?.max);
+
+const getIncompleteRangeLabel = (
+  filters: PartnerFilters
+): 'age' | 'height' | 'annualIncome' | null => {
+  if (hasAnyRangeBound(filters.age) && !hasCompleteRange(filters.age)) {
+    return 'age';
+  }
+
+  if (hasAnyRangeBound(filters.height) && !hasCompleteRange(filters.height)) {
+    return 'height';
+  }
+
+  if (
+    hasAnyRangeBound(filters.annualIncome) &&
+    !hasCompleteRange(filters.annualIncome)
+  ) {
+    return 'annualIncome';
+  }
+
+  return null;
+};
+
+const getRangeFieldLabelKey = (
+  field: 'age' | 'height' | 'annualIncome'
+): string => {
+  if (field === 'annualIncome') {
+    return 'preference.fields.annual_income';
+  }
+
+  return `preference.fields.${field}`;
+};
+
 const INITIAL_PREFERENCE: PreferenceData = {
   filters: {
-    age: { min: 0, max: 0 },
-    height: { min: 0, max: 0 },
-    annualIncome: { min: 0, max: 0 },
+    age: { ...DEFAULT_AGE_RANGE },
+    height: { ...DEFAULT_HEIGHT_RANGE },
+    annualIncome: { ...DEFAULT_INCOME_RANGE },
     maritalStatus: ['never_married'],
     religion: [],
     caste: [],
@@ -201,12 +293,37 @@ export default function EditPreferenceScreen({
 
     if (data?.success && data?.data) {
       const incoming = data.data as PreferenceData;
+      const incomingFilters = incoming.filters ?? {};
+      const incomingRanges: Partial<PartnerFilters> = {
+        ...(incomingFilters.age
+          ? {
+              age: hasCompleteRange(incomingFilters.age)
+                ? normalizeRange(incomingFilters.age, AGE_RANGE)
+                : DEFAULT_AGE_RANGE,
+            }
+          : {}),
+        ...(incomingFilters.height
+          ? {
+              height: hasCompleteRange(incomingFilters.height)
+                ? normalizeRange(incomingFilters.height, HEIGHT_RANGE)
+                : DEFAULT_HEIGHT_RANGE,
+            }
+          : {}),
+        ...(incomingFilters.annualIncome
+          ? {
+              annualIncome: hasCompleteRange(incomingFilters.annualIncome)
+                ? normalizeRange(incomingFilters.annualIncome, INCOME_RANGE)
+                : DEFAULT_INCOME_RANGE,
+            }
+          : {}),
+      };
 
       setPreference((prev) => ({
         ...prev,
         filters: {
           ...prev.filters,
-          ...(incoming.filters ?? {}),
+          ...incomingFilters,
+          ...incomingRanges,
         },
         settings: {
           ...prev.settings,
@@ -249,7 +366,24 @@ export default function EditPreferenceScreen({
       try {
         switch (section) {
           case 'filters':
-            await updateFilters(preference.filters as PartnerFilters).unwrap();
+            {
+              const incompleteRange = getIncompleteRangeLabel(
+                preference.filters
+              );
+
+              if (incompleteRange) {
+                showError({
+                  title: t('common.error'),
+                  message: t('preference.errors.incomplete_range', {
+                    field: t(getRangeFieldLabelKey(incompleteRange)),
+                  }),
+                });
+                return;
+              }
+            }
+            await updateFilters(
+              normalizeFilterRanges(preference.filters)
+            ).unwrap();
             break;
           case 'settings':
             await updateSettings(preference.settings as MatchSettings).unwrap();
@@ -414,6 +548,8 @@ export default function EditPreferenceScreen({
               onChange={(v) => setFilters('age', v)}
               minLimit={AGE_RANGE.min}
               maxLimit={AGE_RANGE.max}
+              defaultMinValue={DEFAULT_AGE_RANGE.min}
+              defaultMaxValue={DEFAULT_AGE_RANGE.max}
               unit={t('preference.units.years')}
             />
 
@@ -423,6 +559,8 @@ export default function EditPreferenceScreen({
               onChange={(v) => setFilters('height', v)}
               minLimit={HEIGHT_RANGE.min}
               maxLimit={HEIGHT_RANGE.max}
+              defaultMinValue={DEFAULT_HEIGHT_RANGE.min}
+              defaultMaxValue={DEFAULT_HEIGHT_RANGE.max}
               unit="cm"
             />
 
@@ -433,6 +571,8 @@ export default function EditPreferenceScreen({
               minLimit={INCOME_RANGE.min}
               maxLimit={INCOME_RANGE.max}
               step={INCOME_STEP}
+              defaultMinValue={DEFAULT_INCOME_RANGE.min}
+              defaultMaxValue={DEFAULT_INCOME_RANGE.max}
               unit={t('preference.units.currency')}
             />
 

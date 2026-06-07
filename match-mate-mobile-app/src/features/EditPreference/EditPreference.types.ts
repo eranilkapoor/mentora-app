@@ -16,8 +16,8 @@ import {
 } from '@/core/types';
 
 export interface Range {
-  min: number;
-  max: number;
+  min?: number | null;
+  max?: number | null;
 }
 
 // ─── Filters ──────────────────────────────────────────────────────────────────

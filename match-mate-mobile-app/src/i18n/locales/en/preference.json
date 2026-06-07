@@ -68,7 +68,13 @@
   "range": {
     "min": "Min",
     "max": "Max",
-    "unit_hint": "Enter value in {{unit}}"
+    "unit_hint": "Enter value in {{unit}}",
+    "scroll_hint": "Scroll to choose values in {{unit}}",
+    "picker_hint": "Tap the range bar to choose values in {{unit}}",
+    "drag_hint": "Drag the two handles to choose values in {{unit}}",
+    "not_selected": "Not selected",
+    "clear": "Clear range",
+    "reset": "Reset range"
   },
   "units": {
     "years": "years",
@@ -106,6 +112,7 @@
   },
   "errors": {
     "load_failed": "Failed to load preferences. Please try again.",
-    "save_failed": "Failed to save preferences. Please try again."
+    "save_failed": "Failed to save preferences. Please try again.",
+    "incomplete_range": "Please enter both minimum and maximum values for {{field}}, or leave both blank."
   }
 }

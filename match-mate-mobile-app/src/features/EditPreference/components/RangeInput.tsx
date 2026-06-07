@@ -1,15 +1,16 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import {
-  View,
-  Text,
-  TextInput,
-  StyleSheet,
+  GestureResponderEvent,
+  PanResponder,
+  Pressable,
   StyleProp,
-  ViewStyle,
+  StyleSheet,
+  Text,
   TextStyle,
-  KeyboardTypeOptions,
-  Platform,
+  TouchableOpacity,
+  View,
+  ViewStyle,
 } from 'react-native';
 
 import { useTranslation } from 'react-i18next';
@@ -21,141 +22,183 @@ export interface RangeValue {
   max: number;
 }
 
+export interface NullableRangeValue {
+  min?: number | null;
+  max?: number | null;
+}
+
 export interface RangeInputProps {
   label: string;
-
-  value?: RangeValue;
-
-  onChange: (value: RangeValue) => void;
-
-  /**
-   * Allowed limits
-   */
+  value?: NullableRangeValue | null;
+  onChange: (value: NullableRangeValue) => void;
   minLimit: number;
   maxLimit: number;
-
-  /**
-   * Step increment
-   * default: 1
-   */
   step?: number;
-
-  /**
-   * Unit label
-   * Example: kg, cm, years
-   */
   unit?: string;
-
-  /**
-   * Input configs
-   */
-  keyboardType?: KeyboardTypeOptions;
-
-  /**
-   * State
-   */
+  defaultMinValue?: number;
+  defaultMaxValue?: number;
   disabled?: boolean;
   required?: boolean;
-
-  /**
-   * Validation
-   */
   error?: string;
   helperText?: string;
-
-  /**
-   * Labels
-   */
   minLabel?: string;
   maxLabel?: string;
-
-  /**
-   * Allow empty typing temporarily
-   * default: true
-   */
-  allowEmpty?: boolean;
-
-  /**
-   * Input max length
-   */
-  maxLength?: number;
-
-  /**
-   * Styling
-   */
   containerStyle?: StyleProp<ViewStyle>;
   labelStyle?: StyleProp<TextStyle>;
-  inputStyle?: StyleProp<TextStyle>;
-
-  /**
-   * Accessibility
-   */
+  inputStyle?: StyleProp<ViewStyle>;
   accessibilityLabel?: string;
   testID?: string;
 }
+
+type HandleSide = 'min' | 'max';
+
+const HANDLE_SIZE = 30;
 
 function RangeInputComponent({
   label,
   value,
   onChange,
-
   minLimit,
   maxLimit,
-
   step = 1,
   unit,
-
-  keyboardType,
-
+  defaultMinValue,
+  defaultMaxValue,
   disabled = false,
   required = false,
-
   error,
   helperText,
-
   minLabel,
   maxLabel,
-
-  allowEmpty = true,
-
-  maxLength = 6,
-
   containerStyle,
   labelStyle,
   inputStyle,
-
   accessibilityLabel,
   testID,
 }: RangeInputProps): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const [trackWidth, setTrackWidth] = useState(0);
+  const trackRef = useRef<View>(null);
+  const trackXRef = useRef(0);
 
-  /**
-   * Local text state
-   * Prevents cursor jumping and typing lag
-   */
-  const [minText, setMinText] = useState(String(value?.min ?? minLimit));
+  const safeStep = Math.max(1, step);
+  const rangeSpan = Math.max(maxLimit - minLimit, safeStep);
 
-  const [maxText, setMaxText] = useState(String(value?.max ?? maxLimit));
+  const clampValue = useCallback(
+    (nextValue: number): number =>
+      Math.min(Math.max(nextValue, minLimit), maxLimit),
+    [maxLimit, minLimit]
+  );
 
-  /**
-   * Sync external updates safely
-   */
-  useEffect(() => {
-    const next = String(value?.min ?? minLimit);
+  const snapValue = useCallback(
+    (nextValue: number): number => {
+      const stepped = Math.round(nextValue / safeStep) * safeStep;
+      return clampValue(stepped);
+    },
+    [clampValue, safeStep]
+  );
 
-    if (next !== minText) {
-      setMinText(next);
-    }
-  }, [value?.min, minLimit, minText]);
+  const normalizeBound = useCallback(
+    (bound: number | null | undefined): number | null => {
+      if (typeof bound !== 'number' || !Number.isFinite(bound)) {
+        return null;
+      }
 
-  useEffect(() => {
-    const next = String(value?.max ?? maxLimit);
+      return clampValue(bound);
+    },
+    [clampValue]
+  );
 
-    if (next !== maxText) {
-      setMaxText(next);
-    }
-  }, [value?.max, maxLimit, maxText]);
+  const resolvedMin =
+    normalizeBound(value?.min) ?? normalizeBound(defaultMinValue) ?? minLimit;
+  const resolvedMax =
+    normalizeBound(value?.max) ?? normalizeBound(defaultMaxValue) ?? maxLimit;
+  const displayMin = Math.min(resolvedMin, resolvedMax);
+  const displayMax = Math.max(resolvedMin, resolvedMax);
+
+  const percentForValue = useCallback(
+    (nextValue: number): number =>
+      ((nextValue - minLimit) / Math.max(maxLimit - minLimit, 1)) * 100,
+    [maxLimit, minLimit]
+  );
+
+  const valueFromLocation = useCallback(
+    (locationX: number): number => {
+      if (trackWidth <= 0) {
+        return minLimit;
+      }
+
+      const safeX = Math.min(Math.max(locationX, 0), trackWidth);
+      const percent = safeX / trackWidth;
+
+      return snapValue(minLimit + rangeSpan * percent);
+    },
+    [minLimit, rangeSpan, snapValue, trackWidth]
+  );
+
+  const minPercent = percentForValue(displayMin);
+  const maxPercent = percentForValue(displayMax);
+
+  const measureTrack = useCallback((): void => {
+    trackRef.current?.measureInWindow((x) => {
+      trackXRef.current = x;
+    });
+  }, []);
+
+  const updateHandle = useCallback(
+    (side: HandleSide, nextValue: number): void => {
+      if (disabled) {
+        return;
+      }
+
+      if (side === 'min') {
+        onChange({
+          min: Math.min(nextValue, displayMax),
+          max: displayMax,
+        });
+        return;
+      }
+
+      onChange({
+        min: displayMin,
+        max: Math.max(nextValue, displayMin),
+      });
+    },
+    [disabled, displayMax, displayMin, onChange]
+  );
+
+  const updateHandleFromPageX = useCallback(
+    (side: HandleSide, pageX: number): void => {
+      updateHandle(side, valueFromLocation(pageX - trackXRef.current));
+    },
+    [updateHandle, valueFromLocation]
+  );
+
+  const createHandleResponder = useCallback(
+    (side: HandleSide) =>
+      PanResponder.create({
+        onStartShouldSetPanResponder: () => !disabled,
+        onMoveShouldSetPanResponder: () => !disabled,
+        onPanResponderGrant: (event) => {
+          measureTrack();
+          updateHandleFromPageX(side, event.nativeEvent.pageX);
+        },
+        onPanResponderMove: (event) => {
+          updateHandleFromPageX(side, event.nativeEvent.pageX);
+        },
+      }),
+    [disabled, measureTrack, updateHandleFromPageX]
+  );
+
+  const minResponder = useMemo(
+    () => createHandleResponder('min'),
+    [createHandleResponder]
+  );
+  const maxResponder = useMemo(
+    () => createHandleResponder('max'),
+    [createHandleResponder]
+  );
 
   const styles = useMemo(
     () =>
@@ -164,279 +207,299 @@ function RangeInputComponent({
           marginBottom: 16,
           opacity: disabled ? 0.6 : 1,
         },
-
         labelRow: {
           flexDirection: 'row',
           alignItems: 'center',
           marginBottom: 6,
         },
-
         label: {
           flex: 1,
           fontSize: 13,
           fontWeight: '600',
           color: theme.colors.textSecondary,
         },
-
         required: {
           color: theme.colors.error,
         },
-
         helper: {
           marginTop: 4,
           fontSize: 11,
           color: theme.colors.textMuted,
         },
-
-        errorText: {
-          marginTop: 4,
-          fontSize: 11,
-          color: theme.colors.error,
-        },
-
-        row: {
+        valueRow: {
           flexDirection: 'row',
-          alignItems: 'flex-start',
-          marginTop: 8,
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginTop: 12,
+          gap: 12,
         },
-
-        rangeBox: {
+        valuePill: {
           flex: 1,
-        },
-
-        rangeLabel: {
-          marginBottom: 6,
-          fontSize: 11,
-          fontWeight: '500',
-          color: theme.colors.textMuted,
-          textAlign: 'center',
-          textTransform: 'uppercase',
-          letterSpacing: 0.4,
-        },
-
-        input: {
+          minHeight: 42,
+          justifyContent: 'center',
+          borderRadius: 12,
           borderWidth: 1,
           borderColor: error ? theme.colors.error : theme.colors.border,
-          borderRadius: 12,
-          paddingHorizontal: 12,
-          paddingVertical: Platform.OS === 'web' ? 10 : 12,
-          fontSize: 15,
-          color: theme.colors.textPrimary,
           backgroundColor: theme.colors.inputBackground,
-          textAlign: 'center',
+          paddingHorizontal: 12,
         },
-
-        separator: {
-          marginHorizontal: 10,
-          marginTop: 36,
-          fontSize: 18,
+        valueLabel: {
+          fontSize: 10,
+          fontWeight: '800',
+          textTransform: 'uppercase',
+          letterSpacing: 0.4,
           color: theme.colors.textMuted,
-          fontWeight: '300',
         },
-
-        unitText: {
+        valueText: {
+          marginTop: 2,
+          fontSize: 13,
+          fontWeight: '800',
+          color: theme.colors.textPrimary,
+        },
+        trackWrap: {
+          marginTop: 20,
+          paddingVertical: 22,
+        },
+        track: {
+          height: 10,
+          borderRadius: 999,
+          backgroundColor: theme.colors.backgroundLight,
+          borderWidth: StyleSheet.hairlineWidth,
+          borderColor: theme.colors.border,
+          overflow: 'visible',
+        },
+        fill: {
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          borderRadius: 999,
+          backgroundColor: theme.colors.primary,
+        },
+        thumb: {
+          position: 'absolute',
+          top: -(HANDLE_SIZE - 10) / 2,
+          width: HANDLE_SIZE,
+          height: HANDLE_SIZE,
+          borderRadius: HANDLE_SIZE / 2,
+          borderWidth: 3,
+          borderColor: theme.colors.surface,
+          backgroundColor: theme.colors.primary,
+          shadowColor: theme.colors.black,
+          shadowOpacity: 0.16,
+          shadowRadius: 8,
+          shadowOffset: { width: 0, height: 3 },
+          elevation: 4,
+        },
+        thumbMax: {
+          backgroundColor: theme.colors.accent,
+        },
+        thumbTouchArea: {
+          position: 'absolute',
+          top: -18,
+          width: 48,
+          height: 48,
+          alignItems: 'center',
+          justifyContent: 'center',
+        },
+        limitRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginTop: 4,
+        },
+        limitText: {
+          fontSize: 11,
+          fontWeight: '700',
+          color: theme.colors.textMuted,
+        },
+        resetButton: {
+          alignSelf: 'flex-start',
+          minHeight: 32,
+          justifyContent: 'center',
+          marginTop: 10,
+          paddingHorizontal: 12,
+          borderRadius: 10,
+          borderWidth: 1,
+          borderColor: theme.colors.border,
+          backgroundColor: theme.colors.surface,
+        },
+        resetText: {
+          fontSize: 12,
+          fontWeight: '700',
+          color: theme.colors.textSecondary,
+        },
+        errorText: {
           marginTop: 6,
           fontSize: 11,
-          color: theme.colors.textMuted,
-          textAlign: 'center',
+          color: theme.colors.error,
         },
       }),
     [disabled, error, theme]
   );
 
-  const clampValue = useCallback(
-    (num: number): number => {
-      const stepped = Math.round(num / step) * step;
-
-      return Math.min(Math.max(stepped, minLimit), maxLimit);
-    },
-    [maxLimit, minLimit, step]
-  );
-
-  const parseValue = useCallback(
-    (text: string): number | null => {
-      const cleaned = text.trim();
-
-      if (cleaned === '') {
-        return null;
-      }
-
-      const parsed = Number(cleaned);
-
-      if (!Number.isFinite(parsed)) {
-        return null;
-      }
-
-      return clampValue(parsed);
-    },
-    [clampValue]
-  );
-
-  const handleMinChange = useCallback(
-    (text: string): void => {
-      /**
-       * Allow only numbers
-       */
-      const sanitized = text.replace(/[^\d]/g, '');
-
-      setMinText(sanitized);
-
-      const parsed = parseValue(sanitized);
-
-      if (parsed === null) {
-        if (!allowEmpty) {
-          setMinText(String(minLimit));
+  const formatValue = useCallback(
+    (option: number): string => {
+      if (unit === '₹' || unit === 'â‚¹' || unit === 'Ã¢â€šÂ¹') {
+        if (option >= 10000000) {
+          return `₹ ${option / 10000000}Cr`;
         }
 
+        if (option >= 100000) {
+          return `₹ ${option / 100000}L`;
+        }
+
+        if (option >= 1000) {
+          return `₹ ${option / 1000}K`;
+        }
+
+        return `₹ ${option}`;
+      }
+
+      return unit ? `${option} ${unit}` : String(option);
+    },
+    [unit]
+  );
+
+  const handleTrackPress = useCallback(
+    (event: GestureResponderEvent): void => {
+      if (disabled || trackWidth <= 0) {
         return;
       }
 
-      const currentMax = value?.max ?? maxLimit;
+      const nextValue = valueFromLocation(event.nativeEvent.locationX);
+      const minDistance = Math.abs(nextValue - displayMin);
+      const maxDistance = Math.abs(nextValue - displayMax);
 
-      const nextMin = Math.min(parsed, currentMax);
-
-      onChange({
-        min: nextMin,
-        max: currentMax,
-      });
+      updateHandle(minDistance <= maxDistance ? 'min' : 'max', nextValue);
     },
-    [allowEmpty, maxLimit, minLimit, onChange, parseValue, value?.max]
+    [
+      disabled,
+      displayMax,
+      displayMin,
+      trackWidth,
+      updateHandle,
+      valueFromLocation,
+    ]
   );
 
-  const handleMaxChange = useCallback(
-    (text: string): void => {
-      /**
-       * Allow only numbers
-       */
-      const sanitized = text.replace(/[^\d]/g, '');
-
-      setMaxText(sanitized);
-
-      const parsed = parseValue(sanitized);
-
-      if (parsed === null) {
-        if (!allowEmpty) {
-          setMaxText(String(maxLimit));
-        }
-
-        return;
-      }
-
-      const currentMin = value?.min ?? minLimit;
-
-      const nextMax = Math.max(parsed, currentMin);
-
-      onChange({
-        min: currentMin,
-        max: nextMax,
-      });
-    },
-    [allowEmpty, maxLimit, minLimit, onChange, parseValue, value?.min]
-  );
-
-  const handleMinBlur = useCallback(() => {
-    if (minText.trim() === '') {
-      setMinText(String(minLimit));
-
-      onChange({
-        min: minLimit,
-        max: value?.max ?? maxLimit,
-      });
-    }
-  }, [maxLimit, minLimit, minText, onChange, value?.max]);
-
-  const handleMaxBlur = useCallback(() => {
-    if (maxText.trim() === '') {
-      setMaxText(String(maxLimit));
-
-      onChange({
-        min: value?.min ?? minLimit,
-        max: maxLimit,
-      });
-    }
-  }, [maxLimit, maxText, minLimit, onChange, value?.min]);
+  const handleReset = useCallback((): void => {
+    onChange({
+      min: normalizeBound(defaultMinValue) ?? minLimit,
+      max: normalizeBound(defaultMaxValue) ?? maxLimit,
+    });
+  }, [
+    defaultMaxValue,
+    defaultMinValue,
+    maxLimit,
+    minLimit,
+    normalizeBound,
+    onChange,
+  ]);
 
   return (
     <View style={[styles.container, containerStyle]} testID={testID}>
       <View style={styles.labelRow}>
         <Text style={[styles.label, labelStyle]}>
           {label}
-
           {required ? <Text style={styles.required}> *</Text> : null}
         </Text>
       </View>
 
-      {unit ? (
-        <Text style={styles.helper}>
-          {t('preference.range.unit_hint', {
-            unit,
-          })}
-        </Text>
-      ) : helperText ? (
+      {helperText ? (
         <Text style={styles.helper}>{helperText}</Text>
+      ) : unit ? (
+        <Text style={styles.helper}>
+          {t('preference.range.drag_hint', { unit })}
+        </Text>
       ) : null}
 
-      <View style={styles.row}>
-        {/* MIN */}
-        <View style={styles.rangeBox}>
-          <Text style={styles.rangeLabel}>
+      <View style={styles.valueRow}>
+        <View style={[styles.valuePill, inputStyle]}>
+          <Text style={styles.valueLabel}>
             {minLabel ?? t('preference.range.min')}
           </Text>
-
-          <TextInput
-            editable={!disabled}
-            value={minText}
-            onChangeText={handleMinChange}
-            onBlur={handleMinBlur}
-            keyboardType={
-              keyboardType ?? (Platform.OS === 'ios' ? 'number-pad' : 'numeric')
-            }
-            placeholder={String(minLimit)}
-            placeholderTextColor={theme.colors.textMuted}
-            accessibilityLabel={
-              accessibilityLabel
-                ? `${accessibilityLabel} minimum`
-                : `${label} minimum`
-            }
-            style={[styles.input, inputStyle]}
-            returnKeyType="done"
-            maxLength={maxLength}
-          />
-
-          {unit ? <Text style={styles.unitText}>{unit}</Text> : null}
+          <Text style={styles.valueText}>{formatValue(displayMin)}</Text>
         </View>
 
-        <Text style={styles.separator}>—</Text>
-
-        {/* MAX */}
-        <View style={styles.rangeBox}>
-          <Text style={styles.rangeLabel}>
+        <View style={[styles.valuePill, inputStyle]}>
+          <Text style={styles.valueLabel}>
             {maxLabel ?? t('preference.range.max')}
           </Text>
-
-          <TextInput
-            editable={!disabled}
-            value={maxText}
-            onChangeText={handleMaxChange}
-            onBlur={handleMaxBlur}
-            keyboardType={
-              keyboardType ?? (Platform.OS === 'ios' ? 'number-pad' : 'numeric')
-            }
-            placeholder={String(maxLimit)}
-            placeholderTextColor={theme.colors.textMuted}
-            accessibilityLabel={
-              accessibilityLabel
-                ? `${accessibilityLabel} maximum`
-                : `${label} maximum`
-            }
-            style={[styles.input, inputStyle]}
-            returnKeyType="done"
-            maxLength={maxLength}
-          />
-
-          {unit ? <Text style={styles.unitText}>{unit}</Text> : null}
+          <Text style={styles.valueText}>{formatValue(displayMax)}</Text>
         </View>
       </View>
+
+      <Pressable
+        disabled={disabled}
+        onPress={handleTrackPress}
+        accessibilityRole="adjustable"
+        accessibilityLabel={accessibilityLabel ?? label}
+        style={styles.trackWrap}
+      >
+        <View
+          ref={trackRef}
+          style={styles.track}
+          onLayout={(event) => {
+            setTrackWidth(event.nativeEvent.layout.width);
+            measureTrack();
+          }}
+        >
+          <View
+            style={[
+              styles.fill,
+              {
+                left: `${minPercent}%`,
+                right: `${100 - maxPercent}%`,
+              },
+            ]}
+          />
+
+          <View
+            style={[
+              styles.thumbTouchArea,
+              {
+                left: `${minPercent}%`,
+                transform: [{ translateX: -24 }],
+              },
+            ]}
+            {...minResponder.panHandlers}
+          >
+            <View pointerEvents="none" style={styles.thumb} />
+          </View>
+
+          <View
+            style={[
+              styles.thumbTouchArea,
+              {
+                left: `${maxPercent}%`,
+                transform: [{ translateX: -24 }],
+              },
+            ]}
+            {...maxResponder.panHandlers}
+          >
+            <View
+              pointerEvents="none"
+              style={[styles.thumb, styles.thumbMax]}
+            />
+          </View>
+        </View>
+
+        <View style={styles.limitRow}>
+          <Text style={styles.limitText}>{formatValue(minLimit)}</Text>
+          <Text style={styles.limitText}>{formatValue(maxLimit)}</Text>
+        </View>
+      </Pressable>
+
+      <TouchableOpacity
+        activeOpacity={0.8}
+        disabled={disabled}
+        onPress={handleReset}
+        accessibilityRole="button"
+        accessibilityLabel={t('preference.range.reset')}
+        style={styles.resetButton}
+      >
+        <Text style={styles.resetText}>{t('preference.range.reset')}</Text>
+      </TouchableOpacity>
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
     </View>

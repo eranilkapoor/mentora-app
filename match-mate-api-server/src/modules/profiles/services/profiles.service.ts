@@ -26,7 +26,7 @@ import {
   ActivityPlatform,
 } from '../schemas/settings/activity-logs.schema';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
-import { ProfileStatus, Qualification } from '@/common/enums';
+import { PersonalityBadge, ProfileStatus, Qualification } from '@/common/enums';
 import { InjectModel } from '@nestjs/mongoose';
 import { OnboardingProfileDto } from '@/modules/profiles/dto/onboarding-profile.dto';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
@@ -61,6 +61,12 @@ interface ApplyUpdateOptions {
 
 @Injectable()
 export class ProfilesService {
+  private readonly defaultPersonalityBadges = [
+    PersonalityBadge.FAMILY_ORIENTED,
+    PersonalityBadge.MARRIAGE_FOCUSED,
+    PersonalityBadge.FRIENDLY,
+  ];
+
   constructor(
     private readonly userRepo: UserRepository,
     private readonly profileRepo: ProfileRepository,
@@ -110,6 +116,10 @@ export class ProfilesService {
 
       const profile = await this.profileRepo.findByUserId(userId);
       if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
+      const normalizedProfile = await this.ensureDefaultPersonalityBadges(
+        userId,
+        profile,
+      );
 
       const [images, videos] = await Promise.all([
         this.mediaService.getImages(userId),
@@ -119,7 +129,7 @@ export class ProfilesService {
       const enriched = await this.withVerificationStatus(
         userId,
         this.enrichProfile({
-          ...(profile as Record<string, unknown>),
+          ...normalizedProfile,
           images,
           videoIntro:
             videos.find((video) => video.isPrimary) ?? videos[0] ?? null,
@@ -144,6 +154,7 @@ export class ProfilesService {
       userId,
       { personal: dto },
       'profile-personal-update',
+      { notifyUser: false },
     );
   }
 
@@ -153,6 +164,7 @@ export class ProfilesService {
       userId,
       { physical: dto },
       'profile-physical-update',
+      { notifyUser: false },
     );
   }
 
@@ -166,6 +178,7 @@ export class ProfilesService {
       userId,
       { education: dto },
       'profile-education-update',
+      { notifyUser: false },
     );
   }
 
@@ -175,6 +188,7 @@ export class ProfilesService {
       userId,
       { family: dto },
       'profile-family-update',
+      { notifyUser: false },
     );
   }
 
@@ -274,7 +288,12 @@ export class ProfilesService {
 
     return {
       profileFor: dto.personal.profileFor,
-      personal: dto.personal,
+      personal: {
+        ...dto.personal,
+        personalityBadges: this.resolvePersonalityBadges(
+          dto.personal.personalityBadges,
+        ),
+      },
       physical: dto.physical,
       education: dto.education,
       family: dto.family ?? {},
@@ -297,6 +316,11 @@ export class ProfilesService {
         ...((existing.personal as Record<string, unknown>) ?? {}),
         ...dto.personal,
       };
+      merged.personalityBadges = this.resolvePersonalityBadges(
+        Array.isArray(merged.personalityBadges)
+          ? merged.personalityBadges
+          : undefined,
+      );
       normalized.personal = merged;
       if (dto.personal.dateOfBirth) {
         normalized.age = this.calculateAge(new Date(dto.personal.dateOfBirth));
@@ -756,6 +780,7 @@ export class ProfilesService {
           religion: dto.basic.religion,
           maritalStatus: dto.basic.maritalStatus,
           country: dto.basic.country,
+          personalityBadges: this.defaultPersonalityBadges,
         },
         physical: {
           height: dto.basic.height,
@@ -892,6 +917,40 @@ export class ProfilesService {
       device:
         this.getHeaderString(req, 'x-device-id') ||
         this.getHeaderString(req, 'user-agent'),
+    };
+  }
+
+  private resolvePersonalityBadges(
+    badges?: Array<PersonalityBadge | string>,
+  ): PersonalityBadge[] {
+    if (Array.isArray(badges) && badges.length >= 3) {
+      return badges.slice(0, 10) as PersonalityBadge[];
+    }
+
+    return [...this.defaultPersonalityBadges];
+  }
+
+  private async ensureDefaultPersonalityBadges(
+    userId: string,
+    profile: Record<string, unknown>,
+  ): Promise<Record<string, unknown>> {
+    const personal = (profile.personal ?? {}) as Record<string, unknown>;
+    const currentBadges = personal.personalityBadges;
+
+    if (Array.isArray(currentBadges) && currentBadges.length >= 3) {
+      return profile;
+    }
+
+    const personalWithDefaults = {
+      ...personal,
+      personalityBadges: this.defaultPersonalityBadges,
+    };
+    await this.profileRepo.update(userId, { personal: personalWithDefaults });
+    await this.cache.del(`profile:${userId}`);
+
+    return {
+      ...profile,
+      personal: personalWithDefaults,
     };
   }
 

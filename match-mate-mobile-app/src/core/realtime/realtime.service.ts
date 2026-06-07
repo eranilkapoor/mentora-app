@@ -194,6 +194,20 @@ const updateUnreadNotificationCount = (
   );
 };
 
+const shouldShowRealtimeToast = (notification: AppNotification): boolean => {
+  const source = notification.metadata?.source;
+
+  if (
+    notification.category === 'system' &&
+    typeof source === 'string' &&
+    source.startsWith('profile-')
+  ) {
+    return false;
+  }
+
+  return true;
+};
+
 export const connectRealtime = (token: string, dispatch: AppDispatch): void => {
   if (activeToken === token && chatSocket?.connected) {
     return;
@@ -240,10 +254,12 @@ export const connectRealtime = (token: string, dispatch: AppDispatch): void => {
 
   notificationSocket.on('notification:new', (notification: AppNotification) => {
     prependNotificationToCache(dispatch, notification);
-    showInfo({
-      title: notification.title,
-      message: notification.message,
-    });
+    if (shouldShowRealtimeToast(notification)) {
+      showInfo({
+        title: notification.title,
+        message: notification.message,
+      });
+    }
     dispatch(notificationApi.util.invalidateTags(['Notification']));
   });
 

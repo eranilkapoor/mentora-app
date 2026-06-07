@@ -264,6 +264,10 @@ export default function NotificationSettingsScreen({
           <SettingsSelectItem
             icon="bell"
             label={t('settings.notifications.enable_all')}
+            sublabel={t('settings.notifications.enable_all_sub', {
+              defaultValue:
+                'Turn on key in-app and push notifications immediately.',
+            })}
             isLast={false}
             onPress={() => {
               void update({
@@ -276,6 +280,10 @@ export default function NotificationSettingsScreen({
           <SettingsSelectItem
             icon="bell-off"
             label={t('settings.notifications.disable_all')}
+            sublabel={t('settings.notifications.disable_all_sub', {
+              defaultValue:
+                'Pause all notification channels until you turn them on again.',
+            })}
             destructive
             isLast
             onPress={handleDisableAll}
@@ -390,6 +398,9 @@ export default function NotificationSettingsScreen({
           <SettingsSelectItem
             icon="sunrise"
             label={t('settings.notifications.quiet_start')}
+            sublabel={t('settings.notifications.quiet_start_sub', {
+              defaultValue: 'Notifications are silenced from this time.',
+            })}
             value={settings?.quietHours?.start as string}
             disabled={!settings?.quietHours?.enabled}
             onPress={() => setActiveQuietField('start')}
@@ -397,6 +408,9 @@ export default function NotificationSettingsScreen({
           <SettingsSelectItem
             icon="sunset"
             label={t('settings.notifications.quiet_end')}
+            sublabel={t('settings.notifications.quiet_end_sub', {
+              defaultValue: 'Notifications resume after this time.',
+            })}
             value={settings?.quietHours?.end as string}
             disabled={!settings?.quietHours?.enabled}
             onPress={() => setActiveQuietField('end')}
@@ -404,6 +418,10 @@ export default function NotificationSettingsScreen({
           <SettingsSelectItem
             icon="clock"
             label={t('settings.notifications.timezone')}
+            sublabel={t('settings.notifications.timezone_sub', {
+              defaultValue:
+                'Quiet hours follow this timezone even when you travel.',
+            })}
             value={settings?.quietHours?.timezone as string}
             disabled={!settings?.quietHours?.enabled}
             isLast

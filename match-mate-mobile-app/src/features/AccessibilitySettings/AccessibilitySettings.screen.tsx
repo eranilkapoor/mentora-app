@@ -101,6 +101,10 @@ export default function AccessibilitySettingsScreen({
           <SettingsSelectItem
             icon="type"
             label={t('settings.accessibility.font_size')}
+            sublabel={t('settings.accessibility.font_size_sub', {
+              defaultValue:
+                'Adjust app text size for better readability across screens.',
+            })}
             value={formatValue(fontSizeOptions, settings?.fontSize ?? 'medium')}
             onPress={() => setFontSizeOpen(true)}
           />

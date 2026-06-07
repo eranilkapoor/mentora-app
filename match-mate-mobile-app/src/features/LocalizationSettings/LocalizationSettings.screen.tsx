@@ -149,6 +149,10 @@ export default function LocalizationSettingsScreen({
           <SettingsSelectItem
             icon="message-square"
             label={t('settings.localization.app_language')}
+            sublabel={t('settings.localization.app_language_sub', {
+              defaultValue:
+                'Change the language used for labels, messages, and app content.',
+            })}
             value={currentLanguageLabel}
             isLast
             onPress={() => navigation.navigate('Languages')}
@@ -171,12 +175,20 @@ export default function LocalizationSettingsScreen({
           <SettingsSelectItem
             icon="map"
             label={t('settings.localization.region_label')}
+            sublabel={t('settings.localization.region_label_sub', {
+              defaultValue:
+                'Used to personalize defaults such as location, currency, and content.',
+            })}
             value={formatValue(regionOptions, settings.region)}
             onPress={() => setActiveSelect('region')}
           />
           <SettingsSelectItem
             icon="clock"
             label={t('settings.localization.timezone')}
+            sublabel={t('settings.localization.timezone_sub', {
+              defaultValue:
+                'Used for quiet hours, notifications, and activity timestamps.',
+            })}
             value={settings?.timezone}
             isLast
             onPress={() => setActiveSelect('timezone')}
@@ -192,12 +204,20 @@ export default function LocalizationSettingsScreen({
           <SettingsSelectItem
             icon="calendar"
             label={t('settings.localization.date_format')}
+            sublabel={t('settings.localization.date_format_sub', {
+              defaultValue:
+                'Choose how dates appear across profile, billing, and activity screens.',
+            })}
             value={settings?.dateFormat ?? 'YYYY-MM-DD'}
             onPress={() => setActiveSelect('dateFormat')}
           />
           <SettingsSelectItem
             icon="dollar-sign"
             label={t('settings.localization.currency')}
+            sublabel={t('settings.localization.currency_sub', {
+              defaultValue:
+                'Choose the currency used for plans, billing, and rewards.',
+            })}
             value={settings?.currency?.toUpperCase() ?? 'INR'}
             isLast
             onPress={() => setActiveSelect('currency')}

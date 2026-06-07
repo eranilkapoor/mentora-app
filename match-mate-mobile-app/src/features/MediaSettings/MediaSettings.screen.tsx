@@ -93,6 +93,10 @@ export default function MediaSettingsScreen({
           <SettingsSelectItem
             icon="sliders"
             label={t('settings.media.media_quality')}
+            sublabel={t('settings.media.media_quality_sub', {
+              defaultValue:
+                'Higher quality uses more data; lower quality loads faster on slow networks.',
+            })}
             value={formatValue(qualityOptions, settings?.mediaQuality)}
             isLast
             onPress={() => setQualityOpen(true)}

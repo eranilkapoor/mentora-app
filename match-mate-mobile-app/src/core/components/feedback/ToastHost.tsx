@@ -10,38 +10,53 @@ import { Theme } from '@/core/theme/types';
 
 type FeedbackType = 'success' | 'error' | 'info' | 'warning';
 
+const FEEDBACK_COLORS: Record<
+  FeedbackType,
+  {
+    color: string;
+    light: string;
+  }
+> = {
+  success: {
+    color: '#16A34A',
+    light: 'rgba(22, 163, 74, 0.14)',
+  },
+  error: {
+    color: '#DC2626',
+    light: 'rgba(220, 38, 38, 0.14)',
+  },
+  info: {
+    color: '#2563EB',
+    light: 'rgba(37, 99, 235, 0.14)',
+  },
+  warning: {
+    color: '#D97706',
+    light: 'rgba(217, 119, 6, 0.16)',
+  },
+};
+
 const FEEDBACK_META: Record<
   FeedbackType,
   {
     icon: React.ComponentProps<typeof Feather>['name'];
     label: string;
-    colorKey: 'success' | 'error' | 'info' | 'warning';
-    lightKey: 'successLight' | 'errorLight' | 'infoLight' | 'warningLight';
   }
 > = {
   success: {
     icon: 'check-circle',
     label: 'Success',
-    colorKey: 'success',
-    lightKey: 'successLight',
   },
   error: {
     icon: 'alert-circle',
     label: 'Error',
-    colorKey: 'error',
-    lightKey: 'errorLight',
   },
   info: {
     icon: 'info',
     label: 'Info',
-    colorKey: 'info',
-    lightKey: 'infoLight',
   },
   warning: {
     icon: 'alert-triangle',
     label: 'Warning',
-    colorKey: 'warning',
-    lightKey: 'warningLight',
   },
 };
 
@@ -55,8 +70,8 @@ function FeedbackToast({
   const { theme } = useTheme();
   const styles = useMemo(() => makeStyles(theme), [theme]);
   const meta = FEEDBACK_META[type];
-  const color = theme.colors[meta.colorKey];
-  const iconBackground = theme.colors[meta.lightKey];
+  const color = FEEDBACK_COLORS[type].color;
+  const iconBackground = FEEDBACK_COLORS[type].light;
 
   return (
     <View style={[styles.toastCard, { borderLeftColor: color }]}>
@@ -64,7 +79,7 @@ function FeedbackToast({
         <Feather name={meta.icon} size={18} color={color} />
       </View>
       <View style={styles.toastContent}>
-        <Text style={styles.toastEyebrow}>{meta.label}</Text>
+        <Text style={[styles.toastEyebrow, { color }]}>{meta.label}</Text>
         <Text style={styles.toastTitle} numberOfLines={2}>
           {text1}
         </Text>

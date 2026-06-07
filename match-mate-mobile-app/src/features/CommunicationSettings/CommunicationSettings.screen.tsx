@@ -121,6 +121,10 @@ export default function CommunicationSettingsScreen({
           <SettingsSelectItem
             icon="send"
             label={t('settings.communication.who_can_message')}
+            sublabel={t('settings.communication.who_can_message_sub', {
+              defaultValue:
+                'Choose who can start or continue conversations with you.',
+            })}
             value={formatValue(permissionOptions, settings?.whoCanMessage)}
             onPress={() => setActiveSelect('whoCanMessage')}
           />
@@ -176,18 +180,30 @@ export default function CommunicationSettingsScreen({
           <SettingsSelectItem
             icon="phone"
             label={t('settings.communication.who_can_call')}
+            sublabel={t('settings.communication.who_can_call_sub', {
+              defaultValue:
+                'Choose who can request voice or video calls with you.',
+            })}
             value={formatValue(permissionOptions, settings?.whoCanCall)}
             onPress={() => setActiveSelect('whoCanCall')}
           />
           <SettingsToggleItem
             icon="phone-call"
             label={t('settings.communication.voice_calls')}
+            sublabel={t('settings.communication.voice_calls_sub', {
+              defaultValue:
+                'Allow voice calls from people who match your call permission.',
+            })}
             value={settings?.allowVoiceCalls ?? true}
             onChange={(v) => handleToggle('allowVoiceCalls', v)}
           />
           <SettingsToggleItem
             icon="video"
             label={t('settings.communication.video_calls')}
+            sublabel={t('settings.communication.video_calls_sub', {
+              defaultValue:
+                'Allow video calls from people who match your call permission.',
+            })}
             value={settings?.allowVideoCalls ?? true}
             isLast
             onChange={(v) => handleToggle('allowVideoCalls', v)}
