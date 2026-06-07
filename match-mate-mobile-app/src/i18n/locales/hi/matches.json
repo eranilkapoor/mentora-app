@@ -99,8 +99,7 @@
   "online_count": "{{count}} ऑनलाइन",
   "total_count": "{{count}} कुल",
   "no_online_now_title": "अभी कोई ऑनलाइन नहीं है",
-  "no_online_now_message": "थोड़ी देर बाद देखें - matches पूरे दिन ऑनलाइन आते रहते हैं।"
-,
+  "no_online_now_message": "थोड़ी देर बाद देखें - matches पूरे दिन ऑनलाइन आते रहते हैं।",
   "tab_online": "Online",
   "nearby_location_permission_title": "Location Needed",
   "nearby_location_permission_message": "Allow location access to refresh nearby matches. We only check it when you open Nearby.",
