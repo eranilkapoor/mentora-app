@@ -25,6 +25,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
         url: '/settings/account',
         method: 'GET',
       }),
+      keepUnusedDataFor: 0,
       transformResponse: (
         response: AccountSettings | ApiResponse<AccountSettings>
       ) => wrapSettingsResponse('account', response),
@@ -94,18 +95,6 @@ export const accountSettingsApi = baseApi.injectEndpoints({
     scheduleDeletion: builder.mutation<void, void>({
       query: () => ({
         url: '/settings/account/delete',
-        method: 'POST',
-      }),
-
-      invalidatesTags: ['AccountSettings'],
-    }),
-
-    /**
-     * Connect Social Provider
-     */
-    connectProvider: builder.mutation<void, ConnectProviderPayload>({
-      query: ({ provider }) => ({
-        url: `/settings/account/linked/${provider}`,
         method: 'POST',
       }),
 
@@ -190,7 +179,6 @@ export const {
   useUpdateAccountSettingsMutation,
   useDeactivateAccountMutation,
   useScheduleDeletionMutation,
-  useConnectProviderMutation,
   useDisconnectProviderMutation,
   useDeleteAccountRequestMutation,
   useDisconnectLinkedAccountMutation,

@@ -36,7 +36,6 @@ import { UpdateMediaSettingsDto } from '../dto/media-settings.dto';
 import { UpdateAiSettingsDto } from '../dto/ai-settings.dto';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import {
-  ConnectLinkedAccountDto,
   DeactivateAccountDto,
   RequestEmailChangeDto,
   RequestPhoneChangeDto,
@@ -191,18 +190,6 @@ export class SettingsController {
     return this.respond(
       this.settingsService.scheduleAccountDeletion(req.user.sub),
       SuccessCode.SETTINGS_ACCOUNT_DELETION_SCHEDULED,
-    );
-  }
-
-  @Post('account/linked/:provider')
-  @HttpCode(HttpStatus.OK)
-  connectLinkedAccount(
-    @Req() req: AuthenticatedRequest,
-    @Param() dto: ConnectLinkedAccountDto,
-  ) {
-    return this.respond(
-      this.settingsService.connectLinkedAccount(req.user.sub, dto),
-      SuccessCode.SETTINGS_ACCOUNT_LINKED,
     );
   }
 

@@ -2,14 +2,6 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
 
-@Schema({ _id: false })
-class LinkedAccount {
-  @Prop() provider!: string;
-  @Prop() providerId?: string;
-  @Prop({ default: false }) connected!: boolean;
-  @Prop() connectedAt?: Date;
-}
-
 @Schema({ collection: COLLECTION_NAMES.ACCOUNT_SETTING, timestamps: true })
 export class AccountSetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
@@ -23,9 +15,6 @@ export class AccountSetting {
   @Prop() deletionScheduledAt?: Date;
   @Prop() deletionCompletedAt?: Date;
   @Prop() deletionReason?: string;
-
-  @Prop({ type: [LinkedAccount], default: [] })
-  linkedAccounts!: LinkedAccount[];
 }
 
 export type AccountSettingDocument = AccountSetting & Document;

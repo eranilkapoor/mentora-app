@@ -1,14 +1,9 @@
-import { IsEmail, IsIn, IsOptional, IsString, Matches } from 'class-validator';
+import { IsEmail, IsOptional, IsString, Matches } from 'class-validator';
 
 export class DeactivateAccountDto {
   @IsOptional()
   @IsString()
   reason?: string;
-}
-
-export class ConnectLinkedAccountDto {
-  @IsIn(['google', 'facebook', 'apple'])
-  provider!: string;
 }
 
 export class RequestEmailChangeDto {

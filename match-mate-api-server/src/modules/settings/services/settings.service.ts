@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
 import { Model, Types } from 'mongoose';
 import { Status } from '@/common/enums';
+import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import {
   UserSession,
@@ -55,7 +56,6 @@ import { UpdateAccessibilitySettingsDto } from '../dto/accessibility-settings.dt
 import { UpdateMediaSettingsDto } from '../dto/media-settings.dto';
 import { UpdateAiSettingsDto } from '../dto/ai-settings.dto';
 import {
-  ConnectLinkedAccountDto,
   DeactivateAccountDto,
   RequestEmailChangeDto,
   RequestPhoneChangeDto,
@@ -88,16 +88,10 @@ export class SettingsService {
 
   async getAllSettings(userId: string) {
     const settings = await this.repo.getAllSettings(userId);
-    const account = await this.repo.getAccount(userId);
-
-    const accountData: Record<string, unknown> =
-      typeof account?.toObject === 'function'
-        ? (account.toObject() as Record<string, unknown>)
-        : ((account as Record<string, unknown> | null) ?? {});
 
     return {
       ...settings,
-      account: accountData,
+      account: await this.getAccount(userId),
       localization: this.normalizeLocalization(settings.localization),
     };
   }
@@ -417,9 +411,11 @@ export class SettingsService {
       typeof account?.toObject === 'function'
         ? (account.toObject() as Record<string, unknown>)
         : ((account as Record<string, unknown> | null) ?? {});
+    const linkedAccounts = this.buildLinkedAccounts(user ?? undefined);
 
     return {
       ...accountData,
+      linkedAccounts,
       emailVerified: isEmailVerified,
       phoneVerified: isPhoneVerified,
       profileVerified: isProfileVerified,
@@ -434,7 +430,9 @@ export class SettingsService {
   }
 
   updateAccount(userId: string, dto: Record<string, unknown>) {
-    return this.repo.updateAccount(userId, dto);
+    const { linkedAccounts: _linkedAccounts, ...safeDto } = dto;
+    void _linkedAccounts;
+    return this.repo.updateAccount(userId, safeDto);
   }
 
   async deactivateAccount(userId: string, dto: DeactivateAccountDto) {
@@ -468,40 +466,66 @@ export class SettingsService {
     return this.repo.updateAccount(userId, { deletionScheduledAt });
   }
 
-  async connectLinkedAccount(userId: string, dto: ConnectLinkedAccountDto) {
-    const account = await this.repo.getAccount(userId);
-    const linkedAccounts = account?.linkedAccounts ?? [];
-    const existingIndex = linkedAccounts.findIndex(
-      (linked) => linked.provider === dto.provider,
-    );
-    const nextLinkedAccount = {
-      provider: dto.provider,
-      providerId: dto.provider,
-      connected: true,
-      connectedAt: new Date(),
-    };
-
-    if (existingIndex >= 0) {
-      linkedAccounts[existingIndex] = {
-        ...linkedAccounts[existingIndex],
-        ...nextLinkedAccount,
-      };
-    } else {
-      linkedAccounts.push(nextLinkedAccount);
+  async disconnectLinkedAccount(userId: string, provider: string) {
+    const socialProvider = this.toSocialProvider(provider);
+    if (!socialProvider) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'unsupported_linked_account_provider',
+        provider,
+      });
     }
 
-    return this.repo.updateAccount(userId, { linkedAccounts });
-  }
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'user_not_found',
+      });
+    }
 
-  async disconnectLinkedAccount(userId: string, provider: string) {
-    const account = await this.repo.getAccount(userId);
-    const linkedAccounts = (account?.linkedAccounts ?? []).map((linked) =>
-      linked.provider === provider
-        ? { ...linked, connected: false, connectedAt: undefined }
-        : linked,
+    const targetIndexes = user.authAccounts
+      .map((account, index) => ({
+        index,
+        provider: String(account.provider),
+      }))
+      .filter((account) => account.provider === String(socialProvider))
+      .map((account) => account.index);
+    const targetIndexSet = new Set(targetIndexes);
+    const targetIndex = targetIndexes[0] ?? -1;
+
+    const hasProvider = user.authAccounts.some(
+      (account) => String(account.provider) === String(socialProvider),
     );
 
-    return this.repo.updateAccount(userId, { linkedAccounts });
+    if (!hasProvider) {
+      return this.getAccount(userId);
+    }
+
+    const remainingUsableAccounts = this.getUsableAuthAccounts(
+      user.authAccounts.filter((_, index) => !targetIndexSet.has(index)),
+    );
+
+    if (remainingUsableAccounts.length === 0) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'last_login_method',
+        provider: socialProvider,
+      });
+    }
+
+    const removedAccount = user.authAccounts[targetIndex];
+    user.authAccounts = user.authAccounts.filter(
+      (_, index) => !targetIndexSet.has(index),
+    );
+
+    if (
+      removedAccount?.isPrimary &&
+      !user.authAccounts.some((account) => account.isPrimary)
+    ) {
+      user.authAccounts[0].isPrimary = true;
+    }
+
+    await user.save();
+
+    return this.getAccount(userId);
   }
 
   requestEmailChange(_userId: string, dto: RequestEmailChangeDto) {
@@ -766,6 +790,92 @@ export class SettingsService {
       ...localization,
       shareLocation: Boolean(localization.shareLocation),
     };
+  }
+
+  private buildLinkedAccounts(user?: {
+    authAccounts?: Array<{
+      provider?: AuthProvider | string;
+      providerId?: string;
+      passwordHash?: string;
+      isVerified?: boolean;
+      isPrimary?: boolean;
+      lastUsedAt?: Date;
+    }>;
+  }) {
+    const socialProviders = [
+      AuthProvider.GOOGLE,
+      AuthProvider.FACEBOOK,
+      AuthProvider.APPLE,
+    ].map(String);
+    const authAccounts = user?.authAccounts ?? [];
+    const usableAuthAccounts = this.getUsableAuthAccounts(authAccounts);
+
+    return socialProviders.map((provider) => {
+      const account = authAccounts.find(
+        (item) => String(item.provider) === provider,
+      );
+      const connected = Boolean(account);
+      const remainingUsableAccounts = usableAuthAccounts.filter(
+        (item) => String(item.provider) !== provider,
+      );
+      const canDisconnect = connected && remainingUsableAccounts.length > 0;
+
+      return {
+        provider,
+        providerId: account?.providerId,
+        connected,
+        connectedAt: account?.lastUsedAt,
+        isVerified: Boolean(account?.isVerified),
+        isPrimary: Boolean(account?.isPrimary),
+        canDisconnect,
+        ...(!canDisconnect && connected
+          ? { disconnectReason: 'last_login_method' }
+          : {}),
+      };
+    });
+  }
+
+  private toSocialProvider(provider: string): AuthProvider | undefined {
+    const normalizedProvider = provider.toLowerCase();
+    const socialProviders = [
+      AuthProvider.GOOGLE,
+      AuthProvider.FACEBOOK,
+      AuthProvider.APPLE,
+    ].map(String);
+
+    return socialProviders.find((item) => item === normalizedProvider) as
+      | AuthProvider
+      | undefined;
+  }
+
+  private isUsableAuthAccount(account?: {
+    provider?: AuthProvider | string;
+    passwordHash?: string;
+  }): boolean {
+    const provider = String(account?.provider ?? '');
+
+    if (!provider) {
+      return false;
+    }
+
+    if (provider === String(AuthProvider.EMAIL)) {
+      return Boolean(account?.passwordHash);
+    }
+
+    return [
+      AuthProvider.PHONE,
+      AuthProvider.GOOGLE,
+      AuthProvider.FACEBOOK,
+      AuthProvider.APPLE,
+    ]
+      .map(String)
+      .includes(provider);
+  }
+
+  private getUsableAuthAccounts<
+    T extends { provider?: AuthProvider | string; passwordHash?: string },
+  >(authAccounts: T[]): T[] {
+    return authAccounts.filter((account) => this.isUsableAuthAccount(account));
   }
 
   private getOrCreateVerification(

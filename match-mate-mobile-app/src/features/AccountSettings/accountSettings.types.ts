@@ -12,6 +12,10 @@ export interface LinkedAccount {
   providerId?: string;
   connected: boolean;
   connectedAt?: string;
+  isPrimary?: boolean;
+  isVerified?: boolean;
+  canDisconnect?: boolean;
+  disconnectReason?: string;
 }
 
 export interface AccountSettings {

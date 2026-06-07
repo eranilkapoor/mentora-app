@@ -7,6 +7,8 @@ import { JwtService } from '@nestjs/jwt';
 import { randomUUID } from 'crypto';
 import {
   BillingCycle,
+  MediaType,
+  MimeType,
   PlanTier,
   Role,
   Status,
@@ -68,6 +70,12 @@ import {
   SecuritySetting,
   SecuritySettingDocument,
 } from '@/modules/settings/schemas/security-setting.schema';
+import {
+  Media,
+  MediaDocument,
+  MediaModerationStatus,
+  MediaStatus,
+} from '@/modules/profiles/schemas/media/media.schema';
 
 interface TokenAttachUser {
   _id: { toString(): string };
@@ -108,6 +116,8 @@ export class AuthService {
     private readonly activityLogModel: Model<ActivityLogDocument>,
     @InjectModel(SecuritySetting.name)
     private readonly securitySettingModel: Model<SecuritySettingDocument>,
+    @InjectModel(Media.name)
+    private readonly mediaModel: Model<MediaDocument>,
     @InjectModel(Verification.name)
     private readonly verificationModel: Model<VerificationDocument>,
     private readonly notificationsService: NotificationsService,
@@ -835,7 +845,7 @@ export class AuthService {
       options.source,
       options.provider,
     );
-    this.triggerPostRegisterJobs(userId, req, {
+    await this.triggerPostRegisterJobs(userId, req, {
       provider: options.provider,
       source: options.source,
       hasEmail: options.hasEmail,
@@ -1152,7 +1162,7 @@ export class AuthService {
     return AuthProvider.EMAIL;
   }
 
-  private triggerPostRegisterJobs(
+  private async triggerPostRegisterJobs(
     userId: string,
     req: AppRequest,
     options: {
@@ -1163,7 +1173,7 @@ export class AuthService {
       phone?: { countryCode: string; phone: string };
       sendOtp?: boolean;
     },
-  ): void {
+  ): Promise<void> {
     const jobs: Array<Promise<unknown>> = [];
     const channels: Array<'in_app' | 'email'> = options.hasEmail
       ? ['in_app', 'email']
@@ -1211,7 +1221,7 @@ export class AuthService {
       }),
     );
 
-    void Promise.allSettled(jobs);
+    await Promise.allSettled(jobs);
   }
 
   private readonly analyticsPlatformMap: Record<string, AnalyticsPlatform> = {
@@ -1452,6 +1462,10 @@ export class AuthService {
 
       if (existingUser) {
         this.assertUserCanAuthenticate(existingUser);
+        await this.syncSocialProfilePhoto(
+          existingUser._id.toString(),
+          verifiedProfile.profilePhoto,
+        );
 
         return this.issueTokensOrChallenge(req, res, existingUser, {
           provider,
@@ -1483,6 +1497,10 @@ export class AuthService {
         });
         existingEmailUser.isEmailVerified = true;
         await existingEmailUser.save();
+        await this.syncSocialProfilePhoto(
+          existingEmailUser._id.toString(),
+          verifiedProfile.profilePhoto,
+        );
 
         return this.issueTokensOrChallenge(req, res, existingEmailUser, {
           provider,
@@ -1545,6 +1563,10 @@ export class AuthService {
         isEmailVerified: Boolean(verifiedProfile.email ?? dto.email),
         isPhoneVerified: false,
       });
+      await this.syncSocialProfilePhoto(
+        user._id.toString(),
+        verifiedProfile.profilePhoto,
+      );
 
       const tokens = await this.attachToken(req, res, user);
 
@@ -1814,6 +1836,48 @@ export class AuthService {
     if (value.includes('windows')) return 'windows';
     if (value.includes('mac')) return 'macos';
     return 'unknown';
+  }
+
+  private async syncSocialProfilePhoto(
+    userId: string,
+    profilePhoto?: string,
+  ): Promise<void> {
+    if (!profilePhoto || !Types.ObjectId.isValid(userId)) {
+      return;
+    }
+
+    const objectUserId = new Types.ObjectId(userId);
+    const existingImage = await this.mediaModel
+      .findOne({
+        userId: objectUserId,
+        type: MediaType.IMAGE,
+        status: MediaStatus.ACTIVE,
+        isActive: true,
+      })
+      .select('_id')
+      .lean()
+      .exec();
+
+    if (existingImage) {
+      return;
+    }
+
+    await this.mediaModel.create({
+      userId: objectUserId,
+      type: MediaType.IMAGE,
+      url: profilePhoto,
+      thumbnailUrl: profilePhoto,
+      mimeType: MimeType.IMAGE_JPEG,
+      isPrimary: true,
+      status: MediaStatus.ACTIVE,
+      moderationStatus: MediaModerationStatus.APPROVED,
+      moderationReasons: [],
+      moderationMetadata: {
+        source: 'social_auth',
+      },
+      isActive: true,
+      uploadedAt: new Date(),
+    });
   }
 
   getRefreshCookieOptions(): CookieOptions {
