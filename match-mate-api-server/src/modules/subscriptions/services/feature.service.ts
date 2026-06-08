@@ -48,7 +48,11 @@ export class FeatureService {
     const { userId } = context;
 
     const subscription = await this.subModel
-      .findOne({ userId, status: 'active', endDate: { $gt: new Date() } })
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        status: 'active',
+        endDate: { $gt: new Date() },
+      })
       .lean()
       .exec();
 
@@ -111,7 +115,11 @@ export class FeatureService {
 
   async getFeaturesForUser(userId: string): Promise<Record<string, unknown>> {
     const subscription = await this.subModel
-      .findOne({ userId, status: 'active', endDate: { $gt: new Date() } })
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        status: 'active',
+        endDate: { $gt: new Date() },
+      })
       .lean()
       .exec();
 

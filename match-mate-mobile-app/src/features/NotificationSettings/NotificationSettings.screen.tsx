@@ -192,7 +192,7 @@ export default function NotificationSettingsScreen({
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title={t('settings.notifications.title')}
+        title={t('settings.notification_settings.title')}
       />
 
       <ScrollView

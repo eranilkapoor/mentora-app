@@ -20,7 +20,6 @@ import { throwNotFound } from '@/common/exceptions/throw-app-exception';
 @Injectable()
 export class SubscriptionsService {
   constructor(
-    // Fixed: use Subscription.name instead of string literal
     @InjectModel(Subscription.name)
     private readonly subModel: Model<SubscriptionDocument>,
 

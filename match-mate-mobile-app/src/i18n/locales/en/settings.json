@@ -144,7 +144,7 @@
     "delete_scheduled_message": "Your account will be permanently deleted in 30 days. Sign in before then to cancel."
   },
   "notifications": {
-    "title": "Notifications",
+    "title": "Notification Settings",
     "all_notifications": "All Notifications",
     "master_sublabel": "Master control for all notification types",
     "enable_all": "Enable All",
@@ -199,7 +199,7 @@
     "timezone_sub": "Quiet hours follow this timezone even when you travel."
   },
   "security": {
-    "title": "Security",
+    "title": "Security Settings",
     "account_controls": "Account Controls",
     "authentication": "Authentication",
     "authentication_subtitle": "Protect your account with extra layers",
@@ -415,7 +415,7 @@
     "joined_recently": "Joined recently"
   },
   "privacy": {
-    "title": "Privacy",
+    "title": "Privacy Settings",
     "profile_visibility": "Profile Visibility",
     "profile_visibility_subtitle": "Control who can see your profile",
     "who_can_see": "Who Can See My Profile",
@@ -453,7 +453,7 @@
     "allow_messages_from": "Allow Messages From"
   },
   "communication": {
-    "title": "Communication",
+    "title": "Communication Settings",
     "messaging": "Messaging",
     "messaging_subtitle": "Control your chat experience",
     "who_can_message": "Who Can Message Me",
@@ -478,7 +478,7 @@
     "video_calls_sub": "Allow video calls from people who match your call permission."
   },
   "accessibility": {
-    "title": "Accessibility",
+    "title": "Accessibility Settings",
     "text": "Text",
     "text_subtitle": "Adjust text size and style",
     "font_size": "Font Size",
@@ -497,7 +497,7 @@
     "screen_reader_optimized_sub": "Enhance compatibility with VoiceOver and TalkBack"
   },
   "media": {
-    "title": "Media",
+    "title": "Media Settings",
     "playback": "Playback",
     "playback_subtitle": "Control how media plays",
     "video_autoplay": "Video Autoplay",
@@ -533,7 +533,7 @@
     "use_profile_data_sub": "Allow AI to analyse your profile to improve matches"
   },
   "localization": {
-    "title": "Language & Region",
+    "title": "Localization Settings",
     "language": "Language",
     "language_subtitle": "Set your preferred app language",
     "app_language": "App Language",
