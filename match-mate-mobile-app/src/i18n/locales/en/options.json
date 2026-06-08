@@ -255,5 +255,27 @@
     "O-": "O Negative",
     "AB+": "AB Positive",
     "AB-": "AB Negative"
+  },
+  "personality_badges": {
+    "family_oriented": "Family Oriented",
+    "marriage_focused": "Marriage Focused",
+    "traditional_values": "Traditional Values",
+    "modern_thinker": "Modern Thinker",
+    "career_focused": "Career Focused",
+    "entrepreneur": "Entrepreneur",
+    "spiritual": "Spiritual",
+    "religious": "Religious",
+    "traveler": "Traveler",
+    "foodie": "Foodie",
+    "book_lover": "Book Lover",
+    "music_lover": "Music Lover",
+    "fitness_enthusiast": "Fitness Enthusiast",
+    "pet_lover": "Pet Lover",
+    "nature_lover": "Nature Lover",
+    "ambitious": "Ambitious",
+    "calm_nature": "Calm Nature",
+    "friendly": "Friendly",
+    "humorous": "Humorous",
+    "supportive": "Supportive"
   }
 }

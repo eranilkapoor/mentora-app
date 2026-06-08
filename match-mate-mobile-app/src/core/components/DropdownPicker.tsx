@@ -30,6 +30,7 @@ export interface DropdownOption<T extends string = string> {
   label: string;
   value: T;
   disabled?: boolean;
+  searchText?: string;
 }
 
 export interface DropdownPickerProps<T extends string = string> {
@@ -82,6 +83,20 @@ export interface DropdownPickerProps<T extends string = string> {
 // ─────────────────────────────────────────────────────────────
 // Component
 // ─────────────────────────────────────────────────────────────
+
+const normalizeSearchText = (value: unknown): string =>
+  String(value ?? '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/_/g, ' ')
+    .toLocaleLowerCase();
+
+const getOptionSearchText = <T extends string>(
+  option: DropdownOption<T>
+): string =>
+  normalizeSearchText(
+    [option.label, option.value, option.searchText].join(' ')
+  );
 
 function DropdownPickerComponent<T extends string = string>({
   options,
@@ -346,8 +361,10 @@ function DropdownPickerComponent<T extends string = string>({
       return options;
     }
 
+    const normalizedSearch = normalizeSearchText(search);
+
     return options.filter((item) =>
-      item.label.toLowerCase().includes(search.toLowerCase())
+      getOptionSearchText(item).includes(normalizedSearch)
     );
   }, [options, search, searchable]);
 

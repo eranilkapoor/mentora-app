@@ -31,6 +31,7 @@ if (
 export interface OptionType {
   label: string;
   value: string;
+  searchText?: string;
 }
 
 export interface SearchMultiSelectProps {
@@ -185,6 +186,18 @@ const createStyles = (theme: Theme) =>
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
+const normalizeSearchText = (value: unknown): string =>
+  String(value ?? '')
+    .normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/_/g, ' ')
+    .toLocaleLowerCase();
+
+const getOptionSearchText = (option: OptionType): string =>
+  normalizeSearchText(
+    [option.label, option.value, option.searchText].join(' ')
+  );
+
 function SearchMultiSelectComponent(
   {
     label,
@@ -212,9 +225,12 @@ function SearchMultiSelectComponent(
   // ─── Derived ───────────────────────────────────────────────────────────────
 
   const filteredOptions = useMemo(() => {
-    const trimmed = query.trim().toLowerCase();
+    const trimmed = normalizeSearchText(query.trim());
     if (!trimmed) return options.slice(0, maxSuggestions);
-    return options.filter((opt) => opt.label.toLowerCase().includes(trimmed));
+
+    return options
+      .filter((opt) => getOptionSearchText(opt).includes(trimmed))
+      .slice(0, maxSuggestions);
   }, [query, options, maxSuggestions]);
 
   const getLabel = useCallback(

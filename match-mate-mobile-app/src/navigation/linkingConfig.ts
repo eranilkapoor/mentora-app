@@ -12,8 +12,11 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
     screens: {
       Auth: {
         screens: {
+          Welcome: 'welcome',
           Login: 'login',
           Register: 'register',
+          PrivacyPolicy: 'privacy-policy',
+          TermsConditions: 'terms-conditions',
           ForgotPassword: 'forgot-password',
           ResetPassword: {
             path: 'reset-password',

@@ -6,6 +6,7 @@ import { getSharedScreenOptions } from './sharedScreenOptions';
 
 import HomeScreen from '@/features/Home/Home.screen';
 import NotificationsScreen from '@/features/Notifications/Notifications.screen';
+import NotificationDetailScreen from '@/features/Notifications/NotificationDetail.screen';
 import MatchDetailsScreen from '@/features/MatchDetail/MatchDetail.screen';
 import ChatScreen from '@/features/Chat/Chat.screen';
 
@@ -21,6 +22,10 @@ export default function HomeStack(): React.ReactElement {
     >
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen
+        name="NotificationDetail"
+        component={NotificationDetailScreen}
+      />
       <Stack.Screen name="MatchDetails" component={MatchDetailsScreen} />
       <Stack.Screen name="ChatDetails" component={ChatScreen} />
     </Stack.Navigator>

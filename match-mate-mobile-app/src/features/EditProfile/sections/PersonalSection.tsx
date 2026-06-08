@@ -2,13 +2,7 @@ import React from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import {
-  Countries,
-  Country,
-  Genders,
-  MaritalStatuses,
-  PersonalityBadges,
-} from '@/core/types';
+import { Countries, Country, Genders, MaritalStatuses } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
 import { NumberStepper } from '../../../core/components/NumberStepper';
@@ -25,16 +19,7 @@ import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 import { MultiSelectPill } from '@/core/components/MultiSelectPill';
-
-const PERSONALITY_BADGE_OPTIONS = Object.values(PersonalityBadges).map(
-  (value) => ({
-    value,
-    label: value
-      .split('_')
-      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-      .join(' '),
-  })
-);
+import { getPersonalityBadgeOptions } from '@/core/utils/personalityBadges';
 
 interface Props {
   personal: PersonalSectionType;
@@ -60,6 +45,7 @@ export function PersonalSection({
     'options.marital_status'
   );
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
+  const PersonalityBadgeOptions = getPersonalityBadgeOptions(t);
 
   return (
     <SectionCard
@@ -241,7 +227,7 @@ export function PersonalSection({
 
       <MultiSelectPill
         label={t('edit_profile.fields.personality_badges')}
-        options={PERSONALITY_BADGE_OPTIONS}
+        options={PersonalityBadgeOptions}
         value={personal.personalityBadges ?? []}
         onChange={(v) =>
           onSet(

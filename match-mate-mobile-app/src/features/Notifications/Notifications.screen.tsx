@@ -103,6 +103,7 @@ export default function NotificationsScreen({
         title: item.title,
         message: item.message,
         time: formatRelativeTime(item.createdAt),
+        ...(item.createdAt ? { createdAt: item.createdAt } : {}),
         unread: !item.isRead,
         icon: notificationIconByCategory[item.category],
         iconColor: notificationColorByType(theme, item.type),
@@ -112,6 +113,7 @@ export default function NotificationsScreen({
         ...(item.actorName ? { actorName: item.actorName } : {}),
         ...(item.actorImage ? { actorImage: item.actorImage } : {}),
         ...(item.action ? { action: item.action } : {}),
+        ...(item.metadata ? { metadata: item.metadata } : {}),
       })),
     [data, theme]
   );
@@ -161,13 +163,17 @@ export default function NotificationsScreen({
         await markNotificationRead({ id: item.id }).unwrap();
       }
 
-      navigateFromNotificationAction(item.action, {
+      const didNavigate = navigateFromNotificationAction(item.action, {
         ...(item.actorId ? { actorId: item.actorId } : {}),
         title: item.actorName ?? item.title,
         ...(item.actorImage ? { image: item.actorImage } : {}),
       });
+
+      if (!didNavigate) {
+        navigation.navigate('NotificationDetail', item);
+      }
     },
-    [markNotificationRead]
+    [markNotificationRead, navigation]
   );
 
   return (

@@ -54,6 +54,10 @@ import { Section } from './components/Section';
 import { Row } from './components/Row';
 import { TagList } from './components/TagList';
 import { showError } from '@/core/utils/toast';
+import {
+  getPersonalityBadgeIcon,
+  getPersonalityBadgeLabel,
+} from '@/core/utils/personalityBadges';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { resolveApiUrl } from '@/core/utils/config';
 import { InlineVideoPlayer } from '@/core/components/media/InlineVideoPlayer';
@@ -645,8 +649,12 @@ export default function ProfileScreen({
   );
 
   const personalityBadges = useMemo(
-    () => toStringList(profileData.personal.personalityBadges),
-    [profileData.personal.personalityBadges]
+    () =>
+      toStringList(profileData.personal.personalityBadges).map((badge) => ({
+        label: getPersonalityBadgeLabel(badge, t),
+        icon: getPersonalityBadgeIcon(badge),
+      })),
+    [profileData.personal.personalityBadges, t]
   );
 
   const languagesKnown = useMemo(
@@ -1263,7 +1271,7 @@ export default function ProfileScreen({
               <Text style={styles.tagSectionLabel}>
                 {t('profile.personality_label')}
               </Text>
-              <TagList items={personalityBadges.map(formatCamelCase)} />
+              <TagList items={personalityBadges} />
             </View>
           )}
           {hobbies.length > 0 && (

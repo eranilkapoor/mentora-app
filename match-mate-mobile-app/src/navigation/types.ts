@@ -4,11 +4,14 @@ import { NavigatorScreenParams, RouteProp } from '@react-navigation/native';
 
 // ─── Auth Stack ───────────────────────────────────────────────────────────────
 export type AuthStackParamList = {
+  Welcome: undefined;
   Login: undefined;
   Register: undefined;
   ForgotPassword: undefined;
   ResetPassword: { accessToken?: string; token?: string };
   MagicLogin: { token?: string };
+  PrivacyPolicy: undefined;
+  TermsConditions: undefined;
   TwoFactorChallenge: {
     challengeId: string;
     method?: 'sms' | 'email' | 'authenticator';
@@ -24,6 +27,26 @@ export type OnboardingStackParamList = {
 export type HomeStackParamList = {
   HomeScreen: undefined;
   Notifications: undefined;
+  NotificationDetail: {
+    id: string;
+    title: string;
+    message: string;
+    time: string;
+    unread: boolean;
+    icon: string;
+    iconColor?: string;
+    type: string;
+    category: string;
+    actorId?: string;
+    actorName?: string;
+    actorImage?: string;
+    action?: {
+      screen: string;
+      params?: Record<string, unknown>;
+    };
+    metadata?: Record<string, unknown>;
+    createdAt?: string;
+  };
   MatchDetails: { userId: string };
   ChatDetails: {
     userId: string;

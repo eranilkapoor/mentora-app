@@ -16,6 +16,9 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.webnza.matchmate",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Allow Match Mate to use your location to show nearby matrimonial matches. / नजदीकी वैवाहिक मैच दिखाने के लिए Match Mate को आपका स्थान उपयोग करने दें।"
+      },
       "associatedDomains": [
         "applinks:matchmate.webnza.com",
         "applinks:www.matchmate.webnza.com"
@@ -86,7 +89,7 @@
       [
         "expo-location",
         {
-          "locationWhenInUsePermission": "Allow MatchMate to use your location to show nearby matrimonial matches."
+          "locationWhenInUsePermission": "Allow Match Mate to use your location to show nearby matrimonial matches. / नजदीकी वैवाहिक मैच दिखाने के लिए Match Mate को आपका स्थान उपयोग करने दें।"
         }
       ],
       "expo-font",

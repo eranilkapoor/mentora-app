@@ -62,7 +62,15 @@ export function NotifItem({
         </Text>
       </View>
 
-      {item.unread && <View style={styles.unreadDot} />}
+      {item.action ? (
+        <Feather
+          name="chevron-right"
+          size={16}
+          color={theme.colors.textMuted}
+        />
+      ) : item.unread ? (
+        <View style={styles.unreadDot} />
+      ) : null}
     </TouchableOpacity>
   );
 }

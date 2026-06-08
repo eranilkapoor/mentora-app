@@ -25,5 +25,27 @@
     "yesterday": "कल",
     "earlier": "पहले",
     "new": "नई"
+  },
+  "detail": {
+    "title": "सूचना विवरण",
+    "received": "प्राप्त हुआ",
+    "from": "किससे",
+    "status": "स्थिति",
+    "read": "पढ़ा हुआ",
+    "unread": "अपठित",
+    "view_profile": "प्रोफाइल देखें",
+    "open_chat": "चैट खोलें",
+    "view_matches": "मैच देखें",
+    "view_notifications": "सूचनाओं पर वापस जाएं",
+    "open_related": "संबंधित आइटम खोलें"
+  },
+  "categories": {
+    "interest_received": "इंटरेस्ट प्राप्त हुआ",
+    "interest_accepted": "इंटरेस्ट स्वीकार हुआ",
+    "profile_view": "प्रोफाइल देखी गई",
+    "match_found": "मैच मिला",
+    "message_received": "संदेश प्राप्त हुआ",
+    "subscription": "सब्सक्रिप्शन",
+    "system": "सिस्टम"
   }
 }

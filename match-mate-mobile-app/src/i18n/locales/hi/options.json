@@ -255,5 +255,27 @@
     "O-": "ओ नेगेटिव",
     "AB+": "एबी पॉजिटिव",
     "AB-": "एबी नेगेटिव"
+  },
+  "personality_badges": {
+    "family_oriented": "परिवार केंद्रित",
+    "marriage_focused": "विवाह केंद्रित",
+    "traditional_values": "पारंपरिक मूल्य",
+    "modern_thinker": "आधुनिक सोच",
+    "career_focused": "करियर केंद्रित",
+    "entrepreneur": "उद्यमी",
+    "spiritual": "आध्यात्मिक",
+    "religious": "धार्मिक",
+    "traveler": "यात्रा प्रेमी",
+    "foodie": "भोजन प्रेमी",
+    "book_lover": "पुस्तक प्रेमी",
+    "music_lover": "संगीत प्रेमी",
+    "fitness_enthusiast": "फिटनेस प्रेमी",
+    "pet_lover": "पालतू प्रेमी",
+    "nature_lover": "प्रकृति प्रेमी",
+    "ambitious": "महत्वाकांक्षी",
+    "calm_nature": "शांत स्वभाव",
+    "friendly": "मिलनसार",
+    "humorous": "हंसमुख",
+    "supportive": "सहयोगी"
   }
 }

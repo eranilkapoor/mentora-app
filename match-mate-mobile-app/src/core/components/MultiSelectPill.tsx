@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { useTranslation } from 'react-i18next';
+import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
 
@@ -18,6 +19,7 @@ export interface OptionType<T extends string = string> {
   label: string;
   value: T;
   disabled?: boolean;
+  icon?: string;
 }
 
 export interface MultiSelectPillProps<T extends string = string> {
@@ -252,6 +254,8 @@ function MultiSelectPillComponent<T extends string = string>({
 
           alignItems: 'center',
           justifyContent: 'center',
+          flexDirection: 'row',
+          gap: 7,
         },
 
         selectedPill: {
@@ -439,6 +443,15 @@ function MultiSelectPillComponent<T extends string = string>({
                 optionDisabled && disabledPillStyle,
               ]}
             >
+              {option.icon ? (
+                <Feather
+                  name={option.icon}
+                  size={14}
+                  color={
+                    selected ? theme.colors.primary : theme.colors.textMuted
+                  }
+                />
+              ) : null}
               <Text
                 style={[
                   styles.pillText,

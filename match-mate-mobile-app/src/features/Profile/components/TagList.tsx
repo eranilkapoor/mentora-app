@@ -7,7 +7,7 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { profileStyles } from '../Profile.styles';
 
 interface Props {
-  items: string[];
+  items: Array<string | { label: string; icon?: string }>;
 }
 
 export function TagList({ items }: Props): React.ReactElement {
@@ -22,9 +22,18 @@ export function TagList({ items }: Props): React.ReactElement {
   return (
     <View style={styles.tagList}>
       {items.map((item, index) => (
-        <View key={`${item}-${index}`} style={styles.tag}>
-          <Feather name="check" size={12} color={theme.colors.primary} />
-          <Text style={styles.tagText}>{item}</Text>
+        <View
+          key={`${typeof item === 'string' ? item : item.label}-${index}`}
+          style={styles.tag}
+        >
+          <Feather
+            name={typeof item === 'string' ? 'check' : (item.icon ?? 'heart')}
+            size={12}
+            color={theme.colors.primary}
+          />
+          <Text style={styles.tagText}>
+            {typeof item === 'string' ? item : item.label}
+          </Text>
         </View>
       ))}
     </View>

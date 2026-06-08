@@ -12,6 +12,7 @@ export interface Notification {
   title: string;
   message: string;
   time: string;
+  createdAt?: string;
   unread: boolean;
   icon: string;
   iconColor?: string;
@@ -24,6 +25,7 @@ export interface Notification {
     screen: string;
     params?: Record<string, unknown>;
   };
+  metadata?: Record<string, unknown>;
 }
 
 export type NotificationSectionTitle = 'today' | 'yesterday' | 'earlier';
