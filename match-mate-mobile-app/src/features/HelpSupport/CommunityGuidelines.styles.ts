@@ -1,14 +1,15 @@
 import { StyleSheet } from 'react-native';
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 
-export const communityGuidelinesStyles = (theme: Theme) =>
+export const communityGuidelinesStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    safe: StyleSheet.flatten(base.safe),
     scrollContent: {
-      padding: 16,
+      ...StyleSheet.flatten(base.scrollContent),
       paddingBottom: 48,
     },
     guidelineRow: {
@@ -48,7 +49,5 @@ export const communityGuidelinesStyles = (theme: Theme) =>
       lineHeight: 19,
       color: theme.colors.textMuted,
     },
-    footer: {
-      height: 24,
-    },
+    footer: StyleSheet.flatten(base.footer),
   });

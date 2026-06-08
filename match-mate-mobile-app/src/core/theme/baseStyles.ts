@@ -16,10 +16,29 @@ export const createBaseStyles = (theme: Theme) =>
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
     },
+    safe: {
+      flex: 1,
+      backgroundColor: theme.colors.backgroundPage,
+    },
     screen: {
       flex: 1,
       backgroundColor: theme.colors.backgroundPage,
       paddingHorizontal: theme.layout.screenPadding,
+    },
+    scrollContent: {
+      paddingHorizontal: 16,
+      paddingTop: 16,
+      paddingBottom: 40,
+    },
+    scrollContentCompact: {
+      paddingHorizontal: 16,
+      paddingTop: 12,
+      paddingBottom: 28,
+    },
+    scrollContentRelaxed: {
+      paddingHorizontal: 16,
+      paddingTop: 20,
+      paddingBottom: 48,
     },
     section: {
       marginBottom: theme.layout.sectionSpacing,
@@ -36,6 +55,21 @@ export const createBaseStyles = (theme: Theme) =>
     center: {
       justifyContent: 'center',
       alignItems: 'center',
+    },
+    footer: {
+      height: 24,
+    },
+    loadingWrapper: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 12,
+      paddingHorizontal: 24,
+    },
+    loadingText: {
+      fontSize: 13,
+      color: theme.colors.textMuted,
+      fontFamily: theme.typography.fontFamily.regular,
     },
 
     // ─── Cards ────────────────────────────────────────────────────────────
@@ -54,6 +88,25 @@ export const createBaseStyles = (theme: Theme) =>
     },
 
     // ─── Typography ───────────────────────────────────────────────────────
+    // Shared card variants used by settings, notifications, and legal screens.
+    sectionCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 8,
+      marginBottom: 14,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      overflow: 'hidden',
+      ...theme.shadows.sm,
+    },
+    contentCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 8,
+      padding: 16,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+      ...theme.shadows.sm,
+    },
+    // Text primitives
     h1: {
       fontSize: theme.typography.h1.fontSize,
       fontWeight: theme.typography.h1.fontWeight as FontWeight,

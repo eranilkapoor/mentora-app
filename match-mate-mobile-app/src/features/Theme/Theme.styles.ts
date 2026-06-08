@@ -1,17 +1,14 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const themeStyles = (theme: Theme) =>
+export const themeStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
-    scrollContent: {
-      paddingHorizontal: 16,
-      paddingTop: 20,
-      paddingBottom: 40,
-    },
+    safe: StyleSheet.flatten(base.safe),
+    scrollContent: StyleSheet.flatten(base.scrollContentRelaxed),
 
     // ─── Header Card ──────────────────────────────────────────────────────
     headerCard: {

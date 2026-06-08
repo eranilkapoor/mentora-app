@@ -1,14 +1,15 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const privacyPolicyStyles = (theme: Theme) =>
+export const privacyPolicyStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    safe: StyleSheet.flatten(base.safe),
     scrollContent: {
-      padding: 16,
+      ...StyleSheet.flatten(base.scrollContent),
       paddingBottom: 40,
     },
     card: {
@@ -68,7 +69,5 @@ export const privacyPolicyStyles = (theme: Theme) =>
       lineHeight: 22,
       color: theme.colors.textBody,
     },
-    footer: {
-      height: 24,
-    },
+    footer: StyleSheet.flatten(base.footer),
   });

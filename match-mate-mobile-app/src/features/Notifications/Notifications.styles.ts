@@ -1,43 +1,19 @@
 import { StyleSheet } from 'react-native';
 
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 
-export const notificationStyles = (theme: Theme) =>
+export const notificationStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
-    scrollContent: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 40,
-    },
-    detailScrollContent: {
-      paddingHorizontal: 16,
-      paddingTop: 16,
-      paddingBottom: 40,
-    },
-    loadingWrapper: {
-      flex: 1,
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: 12,
-      paddingHorizontal: 24,
-    },
-    loadingText: {
-      fontSize: 13,
-      color: theme.colors.textMuted,
-    },
-    sectionCard: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 8,
-      marginBottom: 14,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      overflow: 'hidden',
-      ...theme.shadows.sm,
-    },
+    safe: StyleSheet.flatten(base.safe),
+    scrollContent: StyleSheet.flatten(base.scrollContent),
+    detailScrollContent: StyleSheet.flatten(base.scrollContent),
+    loadingWrapper: StyleSheet.flatten(base.loadingWrapper),
+    loadingText: StyleSheet.flatten(base.loadingText),
+    sectionCard: StyleSheet.flatten(base.sectionCard),
     sectionHeader: {
       flexDirection: 'row',
       alignItems: 'center',
