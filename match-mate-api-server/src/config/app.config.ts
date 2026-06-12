@@ -53,6 +53,7 @@ export default () => ({
   },
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],
+    maxAgeSeconds: parseInt(process.env.CORS_MAX_AGE_SECONDS || '86400', 10),
   },
   media: {
     aiModerationEnabled: process.env.MEDIA_AI_MODERATION_ENABLED === 'true',

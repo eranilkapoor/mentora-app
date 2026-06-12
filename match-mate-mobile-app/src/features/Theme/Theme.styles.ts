@@ -12,13 +12,7 @@ export const themeStyles = (
 
     // ─── Header Card ──────────────────────────────────────────────────────
     headerCard: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 12,
-      padding: 20,
-      marginBottom: 20,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      elevation: 1,
+      ...StyleSheet.flatten(base.headerCard),
     },
     headerIconWrapper: {
       width: 48,
@@ -43,30 +37,16 @@ export const themeStyles = (
 
     // ─── Section Card ─────────────────────────────────────────────────────
     sectionCard: {
-      backgroundColor: theme.colors.surface,
+      ...StyleSheet.flatten(base.sectionCard),
       borderRadius: 12,
       marginBottom: 16,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      elevation: 1,
       overflow: 'hidden',
     },
     sectionHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
+      ...StyleSheet.flatten(base.sectionHeader),
     },
     sectionIconWrapper: {
-      width: 28,
-      height: 28,
-      borderRadius: 8,
-      backgroundColor: theme.colors.primaryLight,
-      alignItems: 'center',
-      justifyContent: 'center',
+      ...StyleSheet.flatten(base.sectionIcon),
     },
     sectionTitle: {
       fontSize: 14,
@@ -78,13 +58,7 @@ export const themeStyles = (
 
     // ─── Option Row ───────────────────────────────────────────────────────
     optionRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: 16,
-      paddingVertical: 16,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
+      ...StyleSheet.flatten(base.optionRow),
     },
     optionRowLast: {
       borderBottomWidth: 0,
@@ -99,12 +73,7 @@ export const themeStyles = (
       flex: 1,
     },
     optionIconWrapper: {
-      width: 36,
-      height: 36,
-      borderRadius: 10,
-      backgroundColor: theme.colors.backgroundLight,
-      alignItems: 'center',
-      justifyContent: 'center',
+      ...StyleSheet.flatten(base.optionIcon),
     },
     optionIconWrapperActive: {
       backgroundColor: theme.colors.surfaceElevated,

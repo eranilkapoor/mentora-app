@@ -35,13 +35,11 @@ import {
   AGE_RANGE,
   HEIGHT_RANGE,
   INCOME_RANGE,
-  INCOME_STEP,
   MATCH_SCORE_RANGE,
   WEIGHT_KEYS,
   ABOUT_PARTNER_MAX,
 } from '@/core/constants';
 import { PreferenceSectionCard } from './components/PreferenceSectionCard';
-import { RangeInput, RangeValue } from './components/RangeInput';
 import { WeightSlider } from './components/WeightSlider';
 import {
   EatingHabits,
@@ -84,13 +82,13 @@ const DEFAULT_AGE_RANGE = { min: AGE_RANGE.min, max: 25 } as const;
 const DEFAULT_HEIGHT_RANGE = { min: HEIGHT_RANGE.min, max: 170 } as const;
 const DEFAULT_INCOME_RANGE = {
   min: INCOME_RANGE.min,
-  max: INCOME_STEP * 10,
+  max: 1000000,
 } as const;
 
 const normalizeRange = (
   range: PartnerFilters['age'],
   fallback: { min: number; max: number }
-): RangeValue => {
+): Required<NonNullable<PartnerFilters['age']>> => {
   const rawMin = range?.min;
   const rawMax = range?.max;
   const min =
@@ -167,6 +165,23 @@ const getRangeFieldLabelKey = (
   }
 
   return `preference.fields.${field}`;
+};
+
+type RangeFilterKey = 'age' | 'height' | 'annualIncome';
+type RangeBound = 'min' | 'max';
+
+const formatRangeInputValue = (value: number | null | undefined): string =>
+  isFiniteNumber(value) ? String(value) : '';
+
+const parseRangeInputValue = (text: string): number | null => {
+  const trimmed = text.trim();
+
+  if (!trimmed) {
+    return null;
+  }
+
+  const parsed = Number(trimmed);
+  return Number.isFinite(parsed) ? parsed : null;
 };
 
 const INITIAL_PREFERENCE: PreferenceData = {
@@ -469,6 +484,86 @@ export default function EditPreferenceScreen({
     }));
   }, []);
 
+  const setRangeBound = useCallback(
+    (key: RangeFilterKey, bound: RangeBound, text: string) => {
+      const parsedValue = parseRangeInputValue(text);
+
+      setPreference((p) => ({
+        ...p,
+        filters: {
+          ...p.filters,
+          [key]: {
+            ...(p.filters[key] ?? {}),
+            [bound]: parsedValue,
+          },
+        },
+      }));
+    },
+    []
+  );
+
+  const renderRangeField = useCallback(
+    ({
+      key,
+      label,
+      unit,
+      minPlaceholder,
+      maxPlaceholder,
+    }: {
+      key: RangeFilterKey;
+      label: string;
+      unit: string;
+      minPlaceholder: string;
+      maxPlaceholder: string;
+    }) => {
+      const range = preference.filters[key] ?? {};
+
+      return (
+        <View style={styles.field}>
+          <Text style={styles.fieldLabel}>{label}</Text>
+          <Text style={styles.fieldSublabel}>
+            {t('preference.range.unit_hint', { unit })}
+          </Text>
+
+          <View style={styles.rangeRow}>
+            <View style={styles.rangeHalfWrapper}>
+              <Text style={styles.rangeHalfLabel}>
+                {t('preference.range.min')}
+              </Text>
+              <TextInput
+                value={formatRangeInputValue(range.min)}
+                onChangeText={(text) => setRangeBound(key, 'min', text)}
+                placeholder={minPlaceholder}
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="numeric"
+                style={styles.rangeInput}
+                accessibilityLabel={`${label} ${t('preference.range.min')}`}
+              />
+            </View>
+
+            <Text style={styles.rangeSeparator}>-</Text>
+
+            <View style={styles.rangeHalfWrapper}>
+              <Text style={styles.rangeHalfLabel}>
+                {t('preference.range.max')}
+              </Text>
+              <TextInput
+                value={formatRangeInputValue(range.max)}
+                onChangeText={(text) => setRangeBound(key, 'max', text)}
+                placeholder={maxPlaceholder}
+                placeholderTextColor={theme.colors.textMuted}
+                keyboardType="numeric"
+                style={styles.rangeInput}
+                accessibilityLabel={`${label} ${t('preference.range.max')}`}
+              />
+            </View>
+          </View>
+        </View>
+      );
+    },
+    [preference.filters, setRangeBound, styles, t, theme.colors.textMuted]
+  );
+
   const sectionProps = { sectionLoading, onSave: handleSave };
 
   if (pageLoading) {
@@ -542,39 +637,29 @@ export default function EditPreferenceScreen({
             sectionKey="filters"
             {...sectionProps}
           >
-            <RangeInput
-              label={t('preference.fields.age')}
-              value={preference.filters.age as RangeValue}
-              onChange={(v) => setFilters('age', v)}
-              minLimit={AGE_RANGE.min}
-              maxLimit={AGE_RANGE.max}
-              defaultMinValue={DEFAULT_AGE_RANGE.min}
-              defaultMaxValue={DEFAULT_AGE_RANGE.max}
-              unit={t('preference.units.years')}
-            />
+            {renderRangeField({
+              key: 'age',
+              label: t('preference.fields.age'),
+              unit: t('preference.units.years'),
+              minPlaceholder: String(DEFAULT_AGE_RANGE.min),
+              maxPlaceholder: String(DEFAULT_AGE_RANGE.max),
+            })}
 
-            <RangeInput
-              label={t('preference.fields.height')}
-              value={preference.filters.height as RangeValue}
-              onChange={(v) => setFilters('height', v)}
-              minLimit={HEIGHT_RANGE.min}
-              maxLimit={HEIGHT_RANGE.max}
-              defaultMinValue={DEFAULT_HEIGHT_RANGE.min}
-              defaultMaxValue={DEFAULT_HEIGHT_RANGE.max}
-              unit="cm"
-            />
+            {renderRangeField({
+              key: 'height',
+              label: t('preference.fields.height'),
+              unit: 'cm',
+              minPlaceholder: String(DEFAULT_HEIGHT_RANGE.min),
+              maxPlaceholder: String(DEFAULT_HEIGHT_RANGE.max),
+            })}
 
-            <RangeInput
-              label={t('preference.fields.annual_income')}
-              value={preference.filters.annualIncome as RangeValue}
-              onChange={(v) => setFilters('annualIncome', v)}
-              minLimit={INCOME_RANGE.min}
-              maxLimit={INCOME_RANGE.max}
-              step={INCOME_STEP}
-              defaultMinValue={DEFAULT_INCOME_RANGE.min}
-              defaultMaxValue={DEFAULT_INCOME_RANGE.max}
-              unit={t('preference.units.currency')}
-            />
+            {renderRangeField({
+              key: 'annualIncome',
+              label: t('preference.fields.annual_income'),
+              unit: t('preference.units.currency'),
+              minPlaceholder: String(DEFAULT_INCOME_RANGE.min),
+              maxPlaceholder: String(DEFAULT_INCOME_RANGE.max),
+            })}
 
             <MultiSelectPill
               label={t('preference.fields.marital_status')}

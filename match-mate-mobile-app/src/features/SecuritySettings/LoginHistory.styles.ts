@@ -18,22 +18,18 @@ export const loginHistoryStyles = (
       marginBottom: 16,
     },
     overviewTile: {
+      ...StyleSheet.flatten(base.metricTile),
       flex: 1,
       minHeight: 82,
-      borderRadius: 10,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       backgroundColor: theme.colors.surface,
-      padding: 12,
-      justifyContent: 'space-between',
     },
     overviewIcon: {
+      ...StyleSheet.flatten(base.sectionIcon),
       width: 30,
       height: 30,
       borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.primaryLight,
     },
     overviewValue: {
       marginTop: 10,
@@ -47,12 +43,10 @@ export const loginHistoryStyles = (
       color: theme.colors.textMuted,
     },
     row: {
+      ...StyleSheet.flatten(base.listRow),
       flexDirection: 'row',
       gap: 12,
-      paddingHorizontal: 14,
       paddingVertical: 16,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
     },
     rowLast: {
       borderBottomWidth: 0,
@@ -62,12 +56,10 @@ export const loginHistoryStyles = (
       alignItems: 'center',
     },
     deviceIcon: {
+      ...StyleSheet.flatten(base.optionIcon),
       width: 38,
       height: 38,
       borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.backgroundLight,
     },
     timelineLine: {
       width: StyleSheet.hairlineWidth,
@@ -79,20 +71,12 @@ export const loginHistoryStyles = (
       flex: 1,
     },
     activityRow: {
+      ...StyleSheet.flatten(base.listRow),
       flexDirection: 'row',
       gap: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 14,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
     },
     activityIcon: {
-      width: 34,
-      height: 34,
-      borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.primaryLight,
+      ...StyleSheet.flatten(base.iconTile),
     },
     activityIconWarning: {
       backgroundColor: theme.colors.warningLight,
@@ -163,11 +147,7 @@ export const loginHistoryStyles = (
       color: theme.colors.textPrimary,
     },
     badge: {
-      alignSelf: 'flex-start',
-      borderRadius: 999,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      backgroundColor: theme.colors.primaryLight,
+      ...StyleSheet.flatten(base.badge),
     },
     badgeActive: {
       backgroundColor: theme.colors.successLight,

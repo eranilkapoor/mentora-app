@@ -21,18 +21,12 @@ export const settingsStyles = (
     },
 
     profileBanner: {
-      backgroundColor: theme.colors.surface,
+      ...StyleSheet.flatten(base.contentCard),
       borderRadius: 12,
-      padding: 16,
       marginBottom: 20,
-
       flexDirection: 'row',
       alignItems: 'center',
       gap: 14,
-
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-
       shadowColor: theme.colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 10,
@@ -100,17 +94,9 @@ export const settingsStyles = (
     },
 
     section: {
-      backgroundColor: theme.colors.surface,
-
+      ...StyleSheet.flatten(base.sectionCard),
       borderRadius: 12,
-
-      overflow: 'hidden',
-
       marginBottom: 20,
-
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-
       shadowColor: theme.colors.black,
       shadowOpacity: 0.04,
       shadowRadius: 10,
@@ -123,28 +109,12 @@ export const settingsStyles = (
     },
 
     sectionHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-
-      gap: 10,
-
-      paddingHorizontal: 16,
+      ...StyleSheet.flatten(base.sectionHeader),
       paddingVertical: 13,
-
-      borderBottomWidth: StyleSheet.hairlineWidth,
-
-      borderBottomColor: theme.colors.divider,
     },
 
     sectionIconWrapper: {
-      width: 28,
-      height: 28,
-      borderRadius: 8,
-
-      alignItems: 'center',
-      justifyContent: 'center',
-
-      backgroundColor: theme.colors.primaryLight,
+      ...StyleSheet.flatten(base.sectionIcon),
     },
 
     sectionTitle: {
@@ -154,18 +124,9 @@ export const settingsStyles = (
     },
 
     row: {
+      ...StyleSheet.flatten(base.optionRow),
       minHeight: 64,
-
-      paddingHorizontal: 16,
       paddingVertical: 10,
-
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-
-      borderBottomWidth: StyleSheet.hairlineWidth,
-
-      borderBottomColor: theme.colors.divider,
 
       ...(Platform.OS === 'web'
         ? ({
@@ -186,14 +147,10 @@ export const settingsStyles = (
     },
 
     rowIconWrapper: {
+      ...StyleSheet.flatten(base.optionIcon),
       width: 38,
       height: 38,
       borderRadius: 10,
-
-      alignItems: 'center',
-      justifyContent: 'center',
-
-      backgroundColor: theme.colors.backgroundLight,
     },
 
     rowLabelWrapper: {
@@ -218,13 +175,10 @@ export const settingsStyles = (
     },
 
     rowBadge: {
-      backgroundColor: theme.colors.primaryLight,
-
+      ...StyleSheet.flatten(base.badge),
       borderRadius: 8,
-
       paddingHorizontal: 8,
       paddingVertical: 4,
-
       marginRight: 8,
     },
 

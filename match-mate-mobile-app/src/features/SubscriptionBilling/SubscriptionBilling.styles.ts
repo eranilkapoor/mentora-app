@@ -13,11 +13,8 @@ export const subscriptionBillingStyles = (
       paddingBottom: 48,
     },
     heroCard: {
+      ...StyleSheet.flatten(base.contentCard),
       borderRadius: 12,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      backgroundColor: theme.colors.surface,
-      padding: 16,
       marginBottom: 16,
     },
     heroTop: {
@@ -49,12 +46,8 @@ export const subscriptionBillingStyles = (
       marginTop: 16,
     },
     metricTile: {
-      flex: 1,
+      ...StyleSheet.flatten(base.metricTile),
       minHeight: 72,
-      borderRadius: 10,
-      padding: 12,
-      backgroundColor: theme.colors.backgroundLight,
-      justifyContent: 'space-between',
     },
     metricValue: {
       fontSize: 16,
@@ -76,15 +69,12 @@ export const subscriptionBillingStyles = (
       borderBottomColor: theme.colors.divider,
     },
     summaryTile: {
+      ...StyleSheet.flatten(base.metricTile),
       flexGrow: 1,
       flexBasis: '47%',
       minHeight: 78,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      borderRadius: 10,
-      padding: 12,
-      justifyContent: 'space-between',
-      backgroundColor: theme.colors.backgroundLight,
     },
     label: {
       fontSize: 11,
@@ -100,23 +90,18 @@ export const subscriptionBillingStyles = (
       lineHeight: 20,
     },
     row: {
+      ...StyleSheet.flatten(base.listRow),
       flexDirection: 'row',
       gap: 12,
-      paddingHorizontal: 14,
-      paddingVertical: 14,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
     },
     rowLast: {
       borderBottomWidth: 0,
     },
     rowIcon: {
+      ...StyleSheet.flatten(base.optionIcon),
       width: 36,
       height: 36,
       borderRadius: 10,
-      alignItems: 'center',
-      justifyContent: 'center',
-      backgroundColor: theme.colors.backgroundLight,
     },
     rowBody: {
       flex: 1,
@@ -145,10 +130,7 @@ export const subscriptionBillingStyles = (
       flexWrap: 'wrap',
     },
     smallPill: {
-      borderRadius: 999,
-      paddingHorizontal: 9,
-      paddingVertical: 4,
-      backgroundColor: theme.colors.backgroundLight,
+      ...StyleSheet.flatten(base.smallPill),
     },
     smallPillText: {
       fontSize: 11,
@@ -167,11 +149,7 @@ export const subscriptionBillingStyles = (
       borderBottomWidth: 0,
     },
     benefitIcon: {
-      width: 28,
-      height: 28,
-      borderRadius: 8,
-      alignItems: 'center',
-      justifyContent: 'center',
+      ...StyleSheet.flatten(base.sectionIcon),
       backgroundColor: theme.colors.successLight,
     },
     benefitContent: {
@@ -189,11 +167,7 @@ export const subscriptionBillingStyles = (
       color: theme.colors.textMuted,
     },
     badge: {
-      alignSelf: 'flex-start',
-      borderRadius: 999,
-      paddingHorizontal: 8,
-      paddingVertical: 3,
-      backgroundColor: theme.colors.primaryLight,
+      ...StyleSheet.flatten(base.badge),
     },
     badgeText: {
       fontSize: 11,

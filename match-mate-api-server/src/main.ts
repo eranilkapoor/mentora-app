@@ -117,6 +117,10 @@ async function bootstrap(): Promise<void> {
   // ── CORS Configuration ──────────────────────────────────────────────
   const allowedOrigins = configService.get<string[]>('cors.origins') ?? [];
   const allowAnyOrigin = allowedOrigins.includes('*');
+  const corsMaxAgeSeconds = configService.get<number>(
+    'cors.maxAgeSeconds',
+    86400,
+  );
 
   app.enableCors({
     origin: (origin, callback) => {
@@ -128,6 +132,8 @@ async function bootstrap(): Promise<void> {
     },
     credentials: true,
     methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+    maxAge: corsMaxAgeSeconds,
+    optionsSuccessStatus: 204,
     allowedHeaders: [
       'Content-Type',
       'Authorization',

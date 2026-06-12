@@ -238,6 +238,8 @@ export const envValidationSchema = Joi.object({
     .default('*')
     .custom(validateAllowedOrigins),
 
+  CORS_MAX_AGE_SECONDS: Joi.number().integer().min(0).max(86400).default(86400),
+
   API_PREFIX: Joi.string()
     .trim()
     .pattern(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/i)

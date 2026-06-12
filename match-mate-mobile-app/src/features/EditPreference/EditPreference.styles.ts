@@ -1,6 +1,6 @@
 import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
-import { Platform, StyleSheet } from 'react-native';
+import { StyleSheet } from 'react-native';
 
 export const editPreferenceStyles = (
   theme: Theme,
@@ -16,43 +16,18 @@ export const editPreferenceStyles = (
 
     // ── Section Card ──────────────────────────────────────────────────────────
     sectionCard: {
-      backgroundColor: theme.colors.surface,
+      ...StyleSheet.flatten(base.sectionCard),
       borderRadius: 12,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
       marginBottom: 16,
-      overflow: 'hidden',
-      ...(Platform.OS === 'ios' || Platform.OS === 'android'
-        ? {
-            boxShadow: '0px 1px 4px rgba(0, 0, 0, 0.04)',
-          }
-        : {
-            shadowColor: theme.colors.black,
-            shadowOffset: {
-              width: 0,
-              height: 1,
-            },
-            shadowOpacity: 0.04,
-            shadowRadius: 4,
-            elevation: 1,
-          }),
     },
     sectionHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
+      ...StyleSheet.flatten(base.sectionHeader),
     },
     sectionIconWrapper: {
+      ...StyleSheet.flatten(base.sectionIcon),
       width: 26,
       height: 26,
       borderRadius: 7,
-      backgroundColor: theme.colors.primaryLight,
-      alignItems: 'center',
-      justifyContent: 'center',
     },
     sectionTitle: {
       fontSize: 14,
@@ -120,15 +95,11 @@ export const editPreferenceStyles = (
       marginTop: 4,
     },
     rangeInput: {
+      ...StyleSheet.flatten(base.input),
       flex: 1,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
       borderRadius: 12,
-      paddingHorizontal: 12,
       paddingVertical: 11,
       fontSize: 15,
-      color: theme.colors.textPrimary,
-      backgroundColor: theme.colors.inputBackground,
       textAlign: 'center',
       minHeight: 52,
     },
@@ -190,15 +161,11 @@ export const editPreferenceStyles = (
       gap: 8,
     },
     tagInput: {
+      ...StyleSheet.flatten(base.input),
       flex: 1,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
       borderRadius: 12,
-      paddingHorizontal: 12,
       paddingVertical: 11,
       fontSize: 15,
-      color: theme.colors.textPrimary,
-      backgroundColor: theme.colors.inputBackground,
       minHeight: 52,
     },
     tagAddBtn: {
@@ -232,14 +199,10 @@ export const editPreferenceStyles = (
 
     // ── About Partner ─────────────────────────────────────────────────────────
     textArea: {
-      borderWidth: 1,
-      borderColor: theme.colors.border,
+      ...StyleSheet.flatten(base.input),
       borderRadius: 12,
-      paddingHorizontal: 12,
       paddingVertical: 12,
       fontSize: 15,
-      color: theme.colors.textPrimary,
-      backgroundColor: theme.colors.inputBackground,
       minHeight: 120,
       textAlignVertical: 'top',
     },
