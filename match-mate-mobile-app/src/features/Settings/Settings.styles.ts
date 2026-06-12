@@ -1,16 +1,18 @@
 import { Platform, StyleSheet } from 'react-native';
 
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 
-export const settingsStyles = (theme: Theme) =>
+export const settingsStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    safe: StyleSheet.flatten(base.safe),
 
     container: {
-      padding: 12,
+      ...StyleSheet.flatten(base.scrollContentCompact),
+      paddingHorizontal: 12,
       paddingBottom: 40,
     },
 

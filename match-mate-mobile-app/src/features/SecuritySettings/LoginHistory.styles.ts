@@ -1,14 +1,15 @@
 import { StyleSheet } from 'react-native';
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 
-export const loginHistoryStyles = (theme: Theme) =>
+export const loginHistoryStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    safe: StyleSheet.flatten(base.safe),
     scrollContent: {
-      padding: 16,
+      ...StyleSheet.flatten(base.scrollContent),
       paddingBottom: 48,
     },
     overview: {
@@ -187,7 +188,5 @@ export const loginHistoryStyles = (theme: Theme) =>
       fontSize: 13,
       lineHeight: 19,
     },
-    footer: {
-      height: 24,
-    },
+    footer: StyleSheet.flatten(base.footer),
   });

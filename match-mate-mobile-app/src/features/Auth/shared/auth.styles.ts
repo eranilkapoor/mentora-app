@@ -1,15 +1,20 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { Platform, StyleSheet } from 'react-native';
 
-export const authSharedStyles = (theme: Theme) =>
+export const authSharedStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
     safe: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    container: { flex: 1 },
+    container: StyleSheet.flatten(base.container),
     scrollContent: {
-      padding: 20,
+      ...StyleSheet.flatten(base.scrollContent),
+      paddingHorizontal: 20,
       paddingTop: 80,
       justifyContent: 'flex-start',
     },

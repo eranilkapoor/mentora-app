@@ -1,14 +1,15 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { isWeb, windowWidth } from '@/core/utils/device';
 import { Platform, StyleSheet } from 'react-native';
 
-export const profileStyles = (theme: Theme) =>
+export const profileStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
-    container: { flex: 1 },
+    safe: StyleSheet.flatten(base.safe),
+    container: StyleSheet.flatten(base.container),
     scrollContent: { paddingBottom: 10 },
     centerContainer: {
       flex: 1,
@@ -374,7 +375,7 @@ export const profileStyles = (theme: Theme) =>
       width: '80%',
     },
     skeletonLineShort: { width: '50%' },
-    footer: { height: 24 },
+    footer: StyleSheet.flatten(base.footer),
     pdfActionBar: {
       flexDirection: 'row',
       gap: 12,

@@ -1,15 +1,17 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const onboardingStyles = (theme: Theme) =>
+export const onboardingStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
     safe: {
       flex: 1,
       backgroundColor: theme.colors.background,
     },
-    container: {
-      flex: 1,
-    },
+    container: StyleSheet.flatten(base.container),
     content: {
       flexGrow: 1,
       paddingVertical: 24,
@@ -252,7 +254,7 @@ export const onboardingStyles = (theme: Theme) =>
 
     // ── Layout ────────────────────────────────────────────────────────────────
     row: {
-      flexDirection: 'row',
+      ...StyleSheet.flatten(base.row),
       gap: 12,
     },
     halfField: {

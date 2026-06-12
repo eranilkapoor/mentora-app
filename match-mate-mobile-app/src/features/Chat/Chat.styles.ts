@@ -1,12 +1,13 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { Platform, StyleSheet } from 'react-native';
 
-export const chatStyles = (theme: Theme) =>
+export const chatStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    container: StyleSheet.flatten(base.container),
     flex: {
       flex: 1,
       alignItems: 'center',

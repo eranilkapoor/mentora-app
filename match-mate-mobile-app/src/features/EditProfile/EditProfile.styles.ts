@@ -1,17 +1,16 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const editProfileStyles = (theme: Theme) =>
+export const editProfileStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
-    flex: {
-      flex: 1,
-    },
+    safe: StyleSheet.flatten(base.safe),
+    flex: StyleSheet.flatten(base.container),
     scrollContent: {
-      padding: 16,
+      ...StyleSheet.flatten(base.scrollContent),
       paddingBottom: 48,
     },
 
@@ -213,7 +212,7 @@ export const editProfileStyles = (theme: Theme) =>
     // ── Form Fields ───────────────────────────────────────────────────────────
 
     row: {
-      flexDirection: 'row',
+      ...StyleSheet.flatten(base.row),
       gap: 10,
     },
     halfField: {

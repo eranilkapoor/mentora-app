@@ -1,33 +1,31 @@
 import { Theme } from '@/core/theme/types';
 // import { isWeb, windowWidth } from '@/core/utils/device';
 import { StyleSheet } from 'react-native';
+import { createBaseStyles } from '../theme/baseStyles';
 
-export const commonStyles = (theme: Theme) =>
-  StyleSheet.create({
-    screen: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+export const commonStyles = (theme: Theme) => {
+  const base = createBaseStyles(theme);
+
+  return StyleSheet.create({
+    screen: StyleSheet.flatten(base.screen),
     container: {
-      flex: 1,
+      ...StyleSheet.flatten(base.container),
       paddingHorizontal: 16,
     },
     card: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 20,
+      ...StyleSheet.flatten(base.cardBordered),
+      borderRadius: 8,
       padding: 16,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
     },
 
     title: {
+      ...StyleSheet.flatten(base.h2),
       fontSize: 24,
       fontWeight: '700',
-      color: theme.colors.textPrimary,
     },
 
     subtitle: {
-      fontSize: 15,
+      ...StyleSheet.flatten(base.body),
       color: theme.colors.textSecondary,
     },
 
@@ -44,3 +42,4 @@ export const commonStyles = (theme: Theme) =>
       fontWeight: '600',
     },
   });
+};

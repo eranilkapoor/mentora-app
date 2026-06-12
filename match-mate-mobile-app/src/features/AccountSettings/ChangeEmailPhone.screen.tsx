@@ -13,6 +13,7 @@ import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -29,10 +30,16 @@ type Props = {
   navigation: SettingsNavigationProp;
 };
 
-const createStyles = (theme: Theme) =>
+const createStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: { flex: 1, backgroundColor: theme.colors.backgroundPage },
-    scrollContent: { padding: 16, paddingBottom: 32 },
+    safe: StyleSheet.flatten(base.safe),
+    scrollContent: {
+      ...StyleSheet.flatten(base.scrollContent),
+      paddingBottom: 32,
+    },
     input: {
       marginHorizontal: 14,
       marginTop: 14,
@@ -53,7 +60,10 @@ const createStyles = (theme: Theme) =>
       fontSize: 12,
       lineHeight: 18,
     },
-    footer: { height: 16 },
+    footer: {
+      ...StyleSheet.flatten(base.footer),
+      height: 16,
+    },
   });
 
 export default function ChangeEmailPhoneScreen({

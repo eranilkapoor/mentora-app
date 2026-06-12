@@ -1,12 +1,13 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { Platform, StyleSheet } from 'react-native';
 
-export const matchListStyles = (theme: Theme) =>
+export const matchListStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    safe: StyleSheet.flatten(base.safe),
     listContent: {
       paddingBottom: 32,
     },

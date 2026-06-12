@@ -1,14 +1,15 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const changePasswordStyles = (theme: Theme) =>
+export const changePasswordStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    safe: StyleSheet.flatten(base.safe),
     scrollContent: {
-      padding: 16,
+      ...StyleSheet.flatten(base.scrollContent),
       paddingBottom: 48,
     },
     infoBanner: {

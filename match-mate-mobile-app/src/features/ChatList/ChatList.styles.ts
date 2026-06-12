@@ -1,12 +1,13 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const chatListStyles = (theme: Theme) =>
+export const chatListStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    safe: StyleSheet.flatten(base.safe),
 
     // ─── Header ───────────────────────────────────────────────────────────
     header: {
@@ -302,15 +303,10 @@ export const chatListStyles = (theme: Theme) =>
     },
 
     // ─── Loading ──────────────────────────────────────────────────────────
-    loadingContainer: {
-      flex: 1,
-      justifyContent: 'center',
-      alignItems: 'center',
-      gap: 12,
-    },
+    loadingContainer: StyleSheet.flatten(base.loadingWrapper),
     loadingText: {
+      ...StyleSheet.flatten(base.loadingText),
       fontSize: 14,
-      color: theme.colors.textMuted,
     },
 
     // ─── Skeleton ─────────────────────────────────────────────────────────

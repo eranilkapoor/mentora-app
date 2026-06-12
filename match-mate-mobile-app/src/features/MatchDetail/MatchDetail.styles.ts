@@ -1,13 +1,14 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { isWeb, windowWidth } from '@/core/utils/device';
 import { Platform, StyleSheet } from 'react-native';
 
-export const matchDetailStyles = (theme: Theme) =>
+export const matchDetailStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    container: StyleSheet.flatten(base.container),
 
     // ─── Carousel ─────────────────────────────────────────────────────────
     carouselWrapper: { position: 'relative' },

@@ -1,12 +1,13 @@
 import { StyleSheet } from 'react-native';
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 
-export const welcomeStyles = (theme: Theme) =>
+export const welcomeStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    safe: StyleSheet.flatten(base.safe),
     content: {
       flex: 1,
       justifyContent: 'center',

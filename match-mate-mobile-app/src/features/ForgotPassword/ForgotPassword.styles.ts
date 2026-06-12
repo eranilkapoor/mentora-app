@@ -1,15 +1,17 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { StyleSheet } from 'react-native';
 
-export const forgotPasswordStyles = (theme: Theme) =>
+export const forgotPasswordStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    safe: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
-    container: { flex: 1 },
+    safe: StyleSheet.flatten(base.safe),
+    container: StyleSheet.flatten(base.container),
     scrollContent: {
-      padding: 20,
+      ...StyleSheet.flatten(base.scrollContent),
+      paddingHorizontal: 20,
       paddingTop: 32,
     },
     iconWrapper: {

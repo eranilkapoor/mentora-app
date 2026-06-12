@@ -1,14 +1,17 @@
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { Platform, StyleSheet } from 'react-native';
 
-export const membershipStyles = (theme: Theme) =>
+export const membershipStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: theme.colors.backgroundPage,
-    },
+    container: StyleSheet.flatten(base.container),
     scroll: {
+      ...StyleSheet.flatten(base.scrollContentCompact),
       paddingHorizontal: 16,
+      paddingTop: 0,
       paddingBottom: 10,
     },
 
