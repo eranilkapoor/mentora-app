@@ -1,8 +1,10 @@
 import React from 'react';
-import { View, Text, Platform, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
 
 interface Props {
   title: string;
@@ -11,25 +13,15 @@ interface Props {
   children: React.ReactNode;
 }
 
-const createStyles = (theme: Theme) =>
+const createStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
     card: {
-      backgroundColor: theme.colors.surface,
+      ...StyleSheet.flatten(base.sectionCard),
       borderRadius: 12,
       marginBottom: 16,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      overflow: 'hidden',
-      ...Platform.select({
-        web: {},
-        default: {
-          shadowColor: theme.colors.black,
-          shadowOffset: { width: 0, height: 1 },
-          shadowOpacity: 0.04,
-          shadowRadius: 4,
-          elevation: 1,
-        },
-      }),
     },
     header: {
       paddingHorizontal: 14,
@@ -67,7 +59,7 @@ export function SettingsCard({
   children,
 }: Props): React.ReactElement {
   const { theme } = useTheme();
-  const styles = React.useMemo(() => createStyles(theme), [theme]);
+  const styles = useThemedStyles(createStyles);
 
   return (
     <View style={styles.card}>

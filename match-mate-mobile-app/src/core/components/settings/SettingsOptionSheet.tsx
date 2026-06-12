@@ -5,11 +5,15 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  useWindowDimensions,
   View,
+  ViewStyle,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { CONTENT_WIDTH, isTabletWidth } from '@/core/utils/device';
 import { Theme } from '@/core/theme/types';
 
 export interface SettingsOption<T extends string> {
@@ -107,7 +111,21 @@ export function SettingsOptionSheet<T extends string>({
 }: Props<T>): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const { width } = useWindowDimensions();
+  const isWide = isTabletWidth(width);
   const styles = useMemo(() => createStyles(theme), [theme]);
+  const sheetFrameStyle = useMemo(
+    () =>
+      StyleSheet.create({
+        value: {
+          paddingBottom: Math.max(insets.bottom, 20),
+          width: isWide ? CONTENT_WIDTH.phone : '100%',
+          alignSelf: 'center',
+        } as ViewStyle,
+      }).value,
+    [insets.bottom, isWide]
+  );
 
   return (
     <Modal
@@ -124,7 +142,7 @@ export function SettingsOptionSheet<T extends string>({
           onPress={onClose}
         />
 
-        <View style={styles.sheet}>
+        <View style={[styles.sheet, sheetFrameStyle]}>
           <View style={styles.handle} />
 
           <View style={styles.header}>

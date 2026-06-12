@@ -1,6 +1,5 @@
 import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
-import { isWeb, windowWidth } from '@/core/utils/device';
 import { Platform, StyleSheet } from 'react-native';
 
 export const profileStyles = (
@@ -20,7 +19,7 @@ export const profileStyles = (
       backgroundColor: theme.colors.backgroundPage,
     },
     photo: {
-      width: isWeb ? 400 : windowWidth,
+      width: '100%',
       height: 320,
     },
     dotRow: {
@@ -353,7 +352,7 @@ export const profileStyles = (
     },
     skeletonContainer: { flex: 1 },
     skeletonPhoto: {
-      width: windowWidth,
+      width: '100%',
       height: 320,
       backgroundColor: theme.colors.backgroundLight,
     },

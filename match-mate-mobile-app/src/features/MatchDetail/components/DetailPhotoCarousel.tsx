@@ -7,13 +7,14 @@ import {
   NativeSyntheticEvent,
   View,
   Text,
+  useWindowDimensions,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchDetailStyles } from '../MatchDetail.styles';
-import { isWeb, windowWidth } from '@/core/utils/device';
+import { getResponsiveMediaWidth } from '@/core/utils/device';
 import { DetailPhotoItem } from '../MatchDetail.utils';
 
 interface Props {
@@ -28,27 +29,28 @@ export const DetailPhotoCarousel = React.memo(function DetailPhotoCarousel({
   const styles = useThemedStyles(matchDetailStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const photoWidth = getResponsiveMediaWidth(width);
   const [activeIndex, setActiveIndex] = useState(0);
   // Ref instead of state — error tracking without re-renders
   const failedPhotos = useRef<Set<string>>(new Set());
 
   const onScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
-      const width = isWeb ? 400 : windowWidth;
-      const index = Math.round(e.nativeEvent.contentOffset.x / width);
+      const index = Math.round(e.nativeEvent.contentOffset.x / photoWidth);
       setActiveIndex(index);
     },
-    []
+    [photoWidth]
   );
 
   const renderPhoto: ListRenderItem<DetailPhotoItem> = useCallback(
     ({ item }) => (
-      <View style={styles.photoPrivacyFrame}>
+      <View style={[styles.photoPrivacyFrame, { width: photoWidth }]}>
         <Image
           source={{
             uri: failedPhotos.current.has(item.url) ? undefined : item.url,
           }}
-          style={styles.photo}
+          style={[styles.photo, { width: photoWidth }]}
           blurRadius={item.isBlurred ? 18 : 0}
           resizeMode="cover"
           accessibilityLabel={t('match_detail.photo_label', { name })}
@@ -66,7 +68,7 @@ export const DetailPhotoCarousel = React.memo(function DetailPhotoCarousel({
         ) : null}
       </View>
     ),
-    [name, styles, t, theme.colors.white]
+    [name, photoWidth, styles, t, theme.colors.white]
   );
 
   return (
@@ -79,6 +81,11 @@ export const DetailPhotoCarousel = React.memo(function DetailPhotoCarousel({
         onMomentumScrollEnd={onScroll}
         renderItem={renderPhoto}
         keyExtractor={(item, i) => `${item.url}-${i}`}
+        getItemLayout={(_, index) => ({
+          length: photoWidth,
+          offset: photoWidth * index,
+          index,
+        })}
         initialNumToRender={1}
         maxToRenderPerBatch={2}
       />

@@ -1,5 +1,4 @@
 import { Theme } from '@/core/theme/types';
-// import { isWeb, windowWidth } from '@/core/utils/device';
 import { StyleSheet } from 'react-native';
 import { createBaseStyles } from '../theme/baseStyles';
 

@@ -1,5 +1,4 @@
 import { StyleSheet } from 'react-native';
-import { windowHeight } from '../utils/device';
 import { Theme } from '../theme/types';
 
 export const mobileStyles = (theme: Theme) =>
@@ -11,9 +10,7 @@ export const mobileStyles = (theme: Theme) =>
       backgroundColor: theme.colors.backgroundPage,
     },
     mobileFrame: {
-      width: 390,
-      maxWidth: 420,
-      height: windowHeight,
+      maxWidth: 430,
       backgroundColor: theme.colors.backgroundPage,
       borderRadius: 20,
       overflow: 'hidden',

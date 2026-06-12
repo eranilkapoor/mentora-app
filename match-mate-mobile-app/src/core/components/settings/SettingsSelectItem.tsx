@@ -1,8 +1,10 @@
-import React, { useMemo } from 'react';
+import React from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
+import { useThemedStyles } from '@/core/theme/useThemedStyles';
 
 interface Props {
   icon?: React.ComponentProps<typeof Feather>['name'];
@@ -15,24 +17,17 @@ interface Props {
   onPress: () => void;
 }
 
-const createStyles = (theme: Theme) =>
+const createStyles = (
+  theme: Theme,
+  base: ReturnType<typeof createBaseStyles>
+) =>
   StyleSheet.create({
     row: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      paddingHorizontal: 14,
-      paddingVertical: 14,
-      borderBottomWidth: StyleSheet.hairlineWidth,
-      borderBottomColor: theme.colors.divider,
+      ...StyleSheet.flatten(base.listRow),
     },
     rowLast: { borderBottomWidth: 0 },
     iconWrapper: {
-      width: 34,
-      height: 34,
-      borderRadius: 8,
-      backgroundColor: theme.colors.primaryLight,
-      alignItems: 'center',
-      justifyContent: 'center',
+      ...StyleSheet.flatten(base.iconTile),
       marginRight: 12,
     },
     iconWrapperDestructive: {
@@ -72,7 +67,7 @@ export function SettingsSelectItem({
   onPress,
 }: Props): React.ReactElement {
   const { theme } = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useThemedStyles(createStyles);
 
   return (
     <Pressable

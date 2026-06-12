@@ -6,6 +6,18 @@ export const { width: windowWidth, height: windowHeight } =
   Dimensions.get('window');
 export const { version, ios, android } = Constants?.expoConfig ?? {};
 
+export const BREAKPOINTS = {
+  compact: 480,
+  tablet: 768,
+  desktop: 1024,
+} as const;
+
+export const CONTENT_WIDTH = {
+  phone: 430,
+  tablet: 720,
+  desktop: 960,
+} as const;
+
 // ✅ Universal iOS check
 export const isIos = Platform.OS === 'ios';
 
@@ -17,6 +29,20 @@ export const isWeb = Platform.OS === 'web';
 
 // ✅ Universal mobile check
 export const isMobile = isIos || isAndroid;
+
+export const isTabletWidth = (width: number): boolean =>
+  width >= BREAKPOINTS.tablet;
+
+export const getResponsiveContentWidth = (
+  width: number,
+  maxWidth = CONTENT_WIDTH.tablet
+): number => Math.min(width, maxWidth);
+
+export const getResponsiveMediaWidth = (
+  width: number,
+  horizontalInset = 0,
+  maxWidth = CONTENT_WIDTH.phone
+): number => Math.max(0, Math.min(width - horizontalInset, maxWidth));
 
 // ✅ Universal UUID generator (no crypto dependency)
 export const generateUUID = (): string => {

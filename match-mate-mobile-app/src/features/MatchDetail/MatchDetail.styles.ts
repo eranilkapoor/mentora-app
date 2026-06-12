@@ -1,6 +1,5 @@
 import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
-import { isWeb, windowWidth } from '@/core/utils/device';
 import { Platform, StyleSheet } from 'react-native';
 
 export const matchDetailStyles = (
@@ -13,11 +12,11 @@ export const matchDetailStyles = (
     // ─── Carousel ─────────────────────────────────────────────────────────
     carouselWrapper: { position: 'relative' },
     photo: {
-      width: isWeb ? 400 : windowWidth,
+      width: '100%',
       height: 420,
     },
     photoPrivacyFrame: {
-      width: isWeb ? 400 : windowWidth,
+      width: '100%',
       height: 420,
       position: 'relative',
       overflow: 'hidden',

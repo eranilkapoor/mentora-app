@@ -1,5 +1,4 @@
 import { StyleSheet, Platform } from 'react-native';
-import { isWeb, windowWidth } from '@/core/utils/device';
 import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 
@@ -100,7 +99,7 @@ export const homeStyles = (
     // ─── Photo ────────────────────────────────────────────────────────────
     photoWrapper: { position: 'relative' },
     photo: {
-      width: isWeb ? 375 : windowWidth - 32,
+      width: '100%',
       height: 340,
     },
     photoScrim: {

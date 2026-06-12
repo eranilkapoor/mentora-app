@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   FlatList,
   ListRenderItem,
+  useWindowDimensions,
 } from 'react-native';
 import * as Print from 'expo-print';
 import * as Sharing from 'expo-sharing';
@@ -38,7 +39,7 @@ import {
   DrinkingHabits,
   EatingHabits,
 } from '../../core/types';
-import { windowWidth } from '../../core/utils/device';
+import { getResponsiveMediaWidth } from '../../core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { profileStyles } from './Profile.styles';
 import {
@@ -522,9 +523,11 @@ const createProfilePdfHtml = (
 function ProfilePhoto({
   uri,
   index,
+  width,
 }: {
   uri: string;
   index: number;
+  width: number;
 }): React.ReactElement {
   const styles = useThemedStyles(profileStyles);
   const { t } = useTranslation();
@@ -537,7 +540,7 @@ function ProfilePhoto({
   return (
     <Image
       source={typeof source === 'string' ? { uri: source } : source}
-      style={styles.photo}
+      style={[styles.photo, { width }]}
       resizeMode="cover"
       accessibilityLabel={t('profile.photo_label', { number: index + 1 })}
       onError={() => setHasError(true)}
@@ -624,6 +627,8 @@ export default function ProfileScreen({
   const styles = useThemedStyles(profileStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const { width } = useWindowDimensions();
+  const photoWidth = getResponsiveMediaWidth(width);
 
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [pdfAction, setPdfAction] = useState<PdfAction | null>(null);
@@ -728,10 +733,10 @@ export default function ProfileScreen({
 
   const handleScroll = useCallback(
     (e: NativeSyntheticEvent<NativeScrollEvent>): void => {
-      const index = Math.round(e.nativeEvent.contentOffset.x / windowWidth);
+      const index = Math.round(e.nativeEvent.contentOffset.x / photoWidth);
       setActivePhotoIndex(Math.min(index, photos.length - 1));
     },
-    [photos.length]
+    [photoWidth, photos.length]
   );
 
   // ─── PDF ─────────────────────────────────────────────────────────────────
@@ -801,8 +806,10 @@ export default function ProfileScreen({
   );
 
   const renderPhoto: ListRenderItem<string> = useCallback(
-    ({ item, index }) => <ProfilePhoto uri={item} index={index} />,
-    []
+    ({ item, index }) => (
+      <ProfilePhoto uri={item} index={index} width={photoWidth} />
+    ),
+    [photoWidth]
   );
 
   // ─── Error state ──────────────────────────────────────────────────────────
@@ -877,6 +884,11 @@ export default function ProfileScreen({
             renderItem={renderPhoto}
             onScroll={handleScroll}
             scrollEventThrottle={16}
+            getItemLayout={(_, index) => ({
+              length: photoWidth,
+              offset: photoWidth * index,
+              index,
+            })}
             initialNumToRender={1}
             maxToRenderPerBatch={2}
           />

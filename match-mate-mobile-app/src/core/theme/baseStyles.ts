@@ -106,6 +106,22 @@ export const createBaseStyles = (theme: Theme) =>
       borderColor: theme.colors.divider,
       ...theme.shadows.sm,
     },
+    iconTile: {
+      width: 34,
+      height: 34,
+      borderRadius: 8,
+      backgroundColor: theme.colors.primaryLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    listRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      paddingHorizontal: 14,
+      paddingVertical: 14,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+    },
     // Text primitives
     h1: {
       fontSize: theme.typography.h1.fontSize,
