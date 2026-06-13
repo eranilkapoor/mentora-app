@@ -14,6 +14,7 @@ import {
   WalletTransactionSchema,
 } from './schemas/wallet-transaction.schema';
 import { ReferralsController } from './controllers/referrals.controller';
+import { WalletController } from './controllers/wallet.controller';
 import { ReferralsService } from './services/referrals.service';
 import { WalletService } from './services/wallet.service';
 
@@ -26,7 +27,7 @@ import { WalletService } from './services/wallet.service';
       { name: WalletTransaction.name, schema: WalletTransactionSchema },
     ]),
   ],
-  controllers: [ReferralsController],
+  controllers: [ReferralsController, WalletController],
   providers: [ReferralsService, WalletService],
   exports: [ReferralsService, WalletService],
 })

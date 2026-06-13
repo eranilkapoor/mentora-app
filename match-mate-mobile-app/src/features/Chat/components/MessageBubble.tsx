@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react';
 import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Audio } from 'expo-av';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
@@ -46,7 +48,47 @@ export function MessageBubble({
 }): React.ReactElement {
   const isMe = item.senderId === 'me';
   const styles = useThemedStyles(chatStyles);
+  const { theme } = useTheme();
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const quickReactions = ['👍', '❤️', '😂'];
+
+  useEffect(
+    () => () => {
+      if (sound) {
+        void sound.unloadAsync();
+      }
+    },
+    [sound]
+  );
+
+  const toggleAudioPlayback = async (): Promise<void> => {
+    if (!item.audioUrl) return;
+
+    if (sound) {
+      const status = await sound.getStatusAsync();
+      if (status.isLoaded && status.isPlaying) {
+        await sound.pauseAsync();
+        setIsPlayingAudio(false);
+        return;
+      }
+      await sound.replayAsync();
+      setIsPlayingAudio(true);
+      return;
+    }
+
+    const created = await Audio.Sound.createAsync(
+      { uri: item.audioUrl },
+      { shouldPlay: true },
+      (status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          setIsPlayingAudio(false);
+        }
+      }
+    );
+    setSound(created.sound);
+    setIsPlayingAudio(true);
+  };
 
   return (
     <View
@@ -60,6 +102,39 @@ export function MessageBubble({
       >
         {item.type === 'image' && item.imageUrl ? (
           <Image source={{ uri: item.imageUrl }} style={styles.image} />
+        ) : item.type === 'audio' && item.audioUrl ? (
+          <TouchableOpacity
+            style={styles.audioBubble}
+            onPress={() => {
+              void toggleAudioPlayback();
+            }}
+            activeOpacity={0.8}
+            accessibilityRole="button"
+            accessibilityLabel="Play voice message"
+          >
+            <View style={[styles.audioPlayBtn, isMe && styles.audioPlayBtnMe]}>
+              <Feather
+                name={isPlayingAudio ? 'pause' : 'play'}
+                size={15}
+                color={isMe ? theme.colors.primary : theme.colors.white}
+              />
+            </View>
+            <View style={styles.audioWave}>
+              {[0, 1, 2, 3, 4].map((bar) => (
+                <View
+                  key={bar}
+                  style={[
+                    styles.audioWaveBar,
+                    isMe && styles.audioWaveBarMe,
+                    { height: 10 + ((bar % 3) + 1) * 5 },
+                  ]}
+                />
+              ))}
+            </View>
+            <Text style={[styles.audioLabel, isMe && styles.audioLabelMe]}>
+              Voice message
+            </Text>
+          </TouchableOpacity>
         ) : (
           <Text style={[styles.messageText, isMe && styles.myText]}>
             {item.text}

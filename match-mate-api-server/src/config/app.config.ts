@@ -85,6 +85,17 @@ export default () => ({
       10,
     ),
   },
+  matches: {
+    expiryEnabled: process.env.MATCH_EXPIRY_ENABLED === 'true',
+    expiryDays: parseInt(process.env.MATCH_EXPIRY_DAYS || '90', 10),
+    expiryLimit: parseInt(process.env.MATCH_EXPIRY_LIMIT || '500', 10),
+    dailyDigestEnabled: process.env.MATCH_DAILY_DIGEST_ENABLED !== 'false',
+    dailyDigestDryRun: process.env.MATCH_DAILY_DIGEST_DRY_RUN === 'true',
+    dailyDigestLimit: parseInt(
+      process.env.MATCH_DAILY_DIGEST_LIMIT || '500',
+      10,
+    ),
+  },
   monitoring: {
     enabled: process.env.MONITORING_ENABLED === 'true',
     provider: process.env.MONITORING_PROVIDER || 'log',

@@ -24,6 +24,7 @@ export class ChatAccessService {
   async getAuthorizedRoom(
     userId: string,
     roomId: string,
+    allowedStatuses: ChatRoomStatus[] = [ChatRoomStatus.ACTIVE],
   ): Promise<ChatRoomDocument> {
     this.ensureValidObjectId(roomId, 'invalid_room_id');
     const room = await this.repo.findRoomById(roomId);
@@ -37,9 +38,10 @@ export class ChatAccessService {
       throwForbidden(ErrorCode.CHAT_ACCESS_DENIED);
     }
 
-    if (room.status !== ChatRoomStatus.ACTIVE) {
+    if (!allowedStatuses.includes(room.status)) {
       throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
-        reason: 'chat_room_not_active',
+        reason: 'chat_room_status_not_allowed',
+        status: room.status,
       });
     }
 

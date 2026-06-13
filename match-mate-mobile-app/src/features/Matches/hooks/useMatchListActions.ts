@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
 import {
   useRemoveShortlistedProfileMutation,
+  useDismissCuratedMatchMutation,
   useRespondToInterestMutation,
   useSendInterestMutation,
   useShortlistProfileMutation,
@@ -22,6 +23,7 @@ export function useMatchListActions(
   const [removeShortlistedProfile] = useRemoveShortlistedProfileMutation();
   const [respondToInterest] = useRespondToInterestMutation();
   const [createDirectRoom] = useCreateDirectRoomMutation();
+  const [dismissCuratedMatch] = useDismissCuratedMatchMutation();
 
   const handlePrimaryAction = useCallback(
     async (item: MatchItem): Promise<void> => {
@@ -140,5 +142,28 @@ export function useMatchListActions(
     [respondToInterest, t]
   );
 
-  return { handlePrimaryAction, handleRejectRequest, handleShortlist };
+  const handleDismissCurated = useCallback(
+    async (item: MatchItem): Promise<void> => {
+      if (!item.curationId) {
+        return;
+      }
+
+      try {
+        await dismissCuratedMatch({ curatedMatchId: item.curationId }).unwrap();
+      } catch {
+        Alert.alert(
+          t('matches.action_failed_title'),
+          t('matches.try_again_message')
+        );
+      }
+    },
+    [dismissCuratedMatch, t]
+  );
+
+  return {
+    handlePrimaryAction,
+    handleRejectRequest,
+    handleDismissCurated,
+    handleShortlist,
+  };
 }

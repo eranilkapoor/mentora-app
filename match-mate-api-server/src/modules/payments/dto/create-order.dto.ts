@@ -1,6 +1,7 @@
 import {
   IsEnum,
   IsMongoId,
+  IsNumber,
   IsObject,
   IsOptional,
   IsString,
@@ -12,8 +13,17 @@ import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { PaymentPurpose } from '../enums/payment-purpose.enum';
 
 export class CreateOrderDto {
+  @IsOptional()
   @IsMongoId()
-  planId!: string;
+  planId?: string;
+
+  @IsOptional()
+  @IsNumber()
+  amount?: number;
+
+  @IsOptional()
+  @IsNumber()
+  coinAmount?: number;
 
   @IsOptional()
   @IsEnum(PaymentGateway)

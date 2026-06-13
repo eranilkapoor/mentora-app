@@ -23,6 +23,9 @@ import { ReviewKycDto } from '@/modules/safety/dto/kyc.dto';
 import { VerificationStatus } from '@/modules/safety/schemas/verification.schema';
 import { AdminService } from '../services/admin.service';
 import { AdminAuditService } from '../services/admin-audit.service';
+import { ChatService } from '@/modules/chat/services/chat.service';
+import { ChatModerationStatus } from '@/modules/chat/enums/chat.enums';
+import { ReviewChatMessageDto } from '@/modules/chat/dto/review-chat-message.dto';
 
 const MODERATION_ROLES = [
   Role.SUPER_ADMIN,
@@ -40,6 +43,7 @@ export class AdminModerationController {
     private readonly adminService: AdminService,
     private readonly mediaService: MediaService,
     private readonly kycService: KycService,
+    private readonly chatService: ChatService,
     private readonly auditService: AdminAuditService,
   ) {}
 
@@ -77,6 +81,45 @@ export class AdminModerationController {
       action: dto.approve ? 'media.approved' : 'media.rejected',
       resource: 'media',
       targetId: mediaId,
+      reason: dto.note,
+      after: data ? (data as unknown as Record<string, unknown>) : undefined,
+    });
+    return successResponse(data, SuccessCode.ADMIN_USER_UPDATED);
+  }
+
+  @Get('chat')
+  async getChatModerationQueue(
+    @Query('status')
+    status: ChatModerationStatus = ChatModerationStatus.FLAGGED,
+    @Query('limit') limit?: string,
+  ) {
+    return successResponse(
+      await this.chatService.getModerationQueue(
+        status,
+        limit ? Number(limit) : undefined,
+      ),
+      SuccessCode.ADMIN_MODERATION_QUEUE_FETCHED,
+    );
+  }
+
+  @Patch('chat/:messageId/review')
+  async reviewChatMessage(
+    @Req() req: AuthenticatedRequest,
+    @Param('messageId') messageId: string,
+    @Body() dto: ReviewChatMessageDto,
+  ) {
+    const data = await this.chatService.reviewMessage(
+      req.user.sub,
+      messageId,
+      dto.approve,
+      dto.note,
+    );
+    await this.auditService.write({
+      req,
+      actorId: req.user.sub,
+      action: dto.approve ? 'chat_message.approved' : 'chat_message.rejected',
+      resource: 'chat_message',
+      targetId: messageId,
       reason: dto.note,
       after: data ? (data as unknown as Record<string, unknown>) : undefined,
     });

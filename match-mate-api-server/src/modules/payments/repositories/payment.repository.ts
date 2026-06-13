@@ -36,6 +36,48 @@ export class PaymentRepository {
       .exec();
   }
 
+  findSuccessfulStoreTransaction(params: {
+    gateway: PaymentGateway;
+    transactionId: string;
+  }) {
+    return this.model
+      .findOne({
+        gateway: params.gateway,
+        storeTransactionId: params.transactionId,
+        status: PaymentStatus.SUCCESS,
+      })
+      .lean()
+      .exec();
+  }
+
+  countStoreRenewals(params: {
+    gateway?: PaymentGateway;
+    fromDate?: Date;
+    toDate?: Date;
+  }) {
+    const filter: Record<string, unknown> = {
+      status: PaymentStatus.SUCCESS,
+      purpose: PaymentPurpose.SUBSCRIPTION,
+      storeOriginalTransactionId: { $exists: true },
+    };
+
+    if (params.gateway) {
+      filter.gateway = params.gateway;
+    }
+
+    if (params.fromDate || params.toDate) {
+      filter.paidAt = {};
+      if (params.fromDate) {
+        (filter.paidAt as Record<string, unknown>).$gte = params.fromDate;
+      }
+      if (params.toDate) {
+        (filter.paidAt as Record<string, unknown>).$lte = params.toDate;
+      }
+    }
+
+    return this.model.countDocuments(filter).exec();
+  }
+
   markSuccess(params: {
     orderId: string;
     gatewayPaymentId: string;

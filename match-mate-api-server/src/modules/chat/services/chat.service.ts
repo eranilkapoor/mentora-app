@@ -18,6 +18,7 @@ import { UpdateRoomSettingsDto } from '../dto/update-room-settings.dto';
 import {
   ChatMessageStatus,
   ChatMessageType,
+  ChatModerationStatus,
   ChatRoomStatus,
   ChatRoomType,
 } from '../enums/chat.enums';
@@ -46,6 +47,8 @@ interface ConversationResponse {
   roomId: string;
   type: ChatRoomType;
   status: ChatRoomStatus;
+  requestedById?: string;
+  requestedAt?: Date;
   participant: UserSummary;
   lastMessage?: {
     id?: string;
@@ -152,26 +155,18 @@ export class ChatService {
 
     let room = await this.repo.findDirectRoomByUsers(userId, dto.targetUserId);
 
+    const match = await this.repo.findActiveMatchBetween(
+      userId,
+      dto.targetUserId,
+    );
+
     if (!room) {
-      const match = await this.repo.findActiveMatchBetween(
-        userId,
-        dto.targetUserId,
-      );
-
-      if (!match) {
-        return throwAppException(
-          ErrorCode.CHAT_ACCESS_DENIED,
-          HttpStatus.FORBIDDEN,
-          {
-            reason: 'direct_chat_requires_match',
-          },
-        );
-      }
-
       room = await this.repo.createDirectRoom({
         createdById: userId,
         participantIds: [userId, dto.targetUserId],
-        startedFromMatchId: String(match._id),
+        ...(match ? { startedFromMatchId: String(match._id) } : {}),
+        status: match ? ChatRoomStatus.ACTIVE : ChatRoomStatus.PENDING,
+        ...(!match ? { requestedById: userId } : {}),
       });
     }
 
@@ -188,6 +183,28 @@ export class ChatService {
 
     const initialMessage =
       typeof dto.initialMessage === 'string' ? dto.initialMessage.trim() : '';
+
+    if (room.status === ChatRoomStatus.PENDING && room.messageCount === 0) {
+      const requestText =
+        initialMessage || "Hi, I'd like to connect and chat with you.";
+      const message = await this.createRoomMessage(room, userId, {
+        content: requestText,
+        type: ChatMessageType.TEXT,
+        clientMessageId: dto.clientMessageId,
+        attachments: [],
+      });
+      await this.repo.setRoomRequestMessage(
+        room.id as string,
+        String(message.id),
+      );
+      await this.emitConversationUpdates(room);
+      void this.notifyChatRequest(room, userId, dto.targetUserId, requestText);
+      return this.getConversationDetail(userId, room.id as string);
+    }
+
+    if (room.status === ChatRoomStatus.PENDING) {
+      return this.getConversationDetail(userId, room.id as string);
+    }
 
     if (initialMessage.length > 0) {
       return this.sendMessage(userId, {
@@ -431,7 +448,10 @@ export class ChatService {
   }
 
   async getConversationDetail(userId: string, roomId: string) {
-    const room = await this.access.getAuthorizedRoom(userId, roomId);
+    const room = await this.access.getAuthorizedRoom(userId, roomId, [
+      ChatRoomStatus.ACTIVE,
+      ChatRoomStatus.PENDING,
+    ]);
     const otherUserId = this.getOtherParticipantId(room.participants, userId);
     const unreadRows = await this.repo.countUnreadByRoomIds(userId, [roomId]);
     const [users, profiles] = await Promise.all([
@@ -451,7 +471,10 @@ export class ChatService {
   }
 
   async getMessages(userId: string, roomId: string, query: ListMessagesDto) {
-    await this.access.getAuthorizedRoom(userId, roomId);
+    await this.access.getAuthorizedRoom(userId, roomId, [
+      ChatRoomStatus.ACTIVE,
+      ChatRoomStatus.PENDING,
+    ]);
 
     const limit = query.limit ?? 30;
     const rows = await this.repo.listMessages(
@@ -481,6 +504,71 @@ export class ChatService {
     };
   }
 
+  async respondToChatRequest(
+    userId: string,
+    roomId: string,
+    action: 'ACCEPT' | 'REJECT',
+  ) {
+    this.access.ensureValidObjectId(roomId, 'invalid_room_id');
+    const room = await this.repo.respondToChatRequest({
+      roomId,
+      responderId: userId,
+      status:
+        action === 'ACCEPT' ? ChatRoomStatus.ACTIVE : ChatRoomStatus.REJECTED,
+    });
+
+    if (!room) {
+      return throwAppException(
+        ErrorCode.CHAT_ACCESS_DENIED,
+        HttpStatus.FORBIDDEN,
+        { reason: 'chat_request_not_found_or_not_actionable' },
+      );
+    }
+
+    await this.emitConversationUpdates(room);
+
+    const requesterId = room.requestedById ? String(room.requestedById) : '';
+    if (requesterId) {
+      void this.notificationsService.notify({
+        userId: requesterId,
+        title:
+          action === 'ACCEPT'
+            ? 'Chat request accepted'
+            : 'Chat request declined',
+        message:
+          action === 'ACCEPT'
+            ? 'You can now continue the conversation.'
+            : 'Your chat request was declined.',
+        category: 'message_received',
+        type: 'chat',
+        actorId: userId,
+        referenceId: String(room._id),
+        dedupeKey: `chat-request-response:${String(room._id)}:${action}`,
+        action: {
+          screen: 'ChatDetails',
+          params: {
+            roomId: String(room._id),
+            userId,
+          },
+        },
+        metadata: {
+          roomId: String(room._id),
+          action,
+        },
+      });
+    }
+
+    if (action === 'REJECT') {
+      return {
+        roomId: String(room._id),
+        status: room.status,
+        respondedAt: room.respondedAt,
+      };
+    }
+
+    return this.getConversationDetail(userId, String(room._id));
+  }
+
   async sendMessage(userId: string, dto: SendMessageDto) {
     const room = await this.access.getAuthorizedRoom(userId, dto.roomId);
     const receiverId = this.getOtherParticipantId(room.participants, userId);
@@ -496,10 +584,7 @@ export class ChatService {
     this.ensureMessageIsSafe(content);
     this.ensureAttachmentsAreValid(attachments);
 
-    const message = await this.repo.createMessage({
-      roomId: dto.roomId,
-      senderId: userId,
-      receiverId,
+    const messagePayload = await this.createRoomMessage(room, userId, {
       content,
       type: dto.type ?? ChatMessageType.TEXT,
       attachments,
@@ -507,17 +592,87 @@ export class ChatService {
       clientMessageId: dto.clientMessageId,
     });
 
+    await this.emitConversationUpdates(room);
+
+    void this.notificationsService
+      .notify({
+        userId: receiverId,
+        title: 'New message',
+        message: this.buildNotificationPreview(
+          content ||
+            this.buildAttachmentPreview(dto.type ?? ChatMessageType.FILE),
+        ),
+        category: 'message_received',
+        type: 'chat',
+        actorId: userId,
+        referenceId: messagePayload.id,
+        dedupeKey: `chat-message:${messagePayload.id}`,
+        action: {
+          screen: 'ChatDetails',
+          params: {
+            roomId: String(room._id),
+            userId,
+          },
+        },
+        metadata: {
+          roomId: String(room._id),
+          messageId: messagePayload.id,
+          senderId: userId,
+        },
+      })
+      .catch((error: unknown) => {
+        this.logger.warn(
+          `Failed to create chat notification for room ${String(room._id)}: ${
+            error instanceof Error ? error.message : String(error)
+          }`,
+        );
+      });
+
+    return messagePayload;
+  }
+
+  private async createRoomMessage(
+    room: ChatRoomDocument,
+    senderId: string,
+    dto: {
+      content: string;
+      type: ChatMessageType;
+      attachments: Array<{
+        url: string;
+        name?: string;
+        mimeType?: string;
+        size?: number;
+      }>;
+      replyToMessageId?: string;
+      clientMessageId?: string;
+    },
+  ) {
+    const receiverId = this.getOtherParticipantId(room.participants, senderId);
+    const moderation = this.getMessageModeration(dto.content);
+    const message = await this.repo.createMessage({
+      roomId: room.id as string,
+      senderId,
+      receiverId,
+      content: dto.content,
+      type: dto.type,
+      attachments: dto.attachments,
+      moderationStatus: moderation.status,
+      moderationReasons: moderation.reasons,
+      replyToMessageId: dto.replyToMessageId,
+      clientMessageId: dto.clientMessageId,
+    });
+
     const sentAt = (message as { createdAt?: Date }).createdAt ?? new Date();
     room.lastMessageId = this.toObjectId(message._id);
-    room.lastMessageSenderId = new Types.ObjectId(userId);
+    room.lastMessageSenderId = new Types.ObjectId(senderId);
     room.lastMessageText = this.buildPreview(
-      content || this.buildAttachmentPreview(dto.type ?? ChatMessageType.FILE),
+      dto.content || this.buildAttachmentPreview(dto.type),
     );
     room.lastMessageAt = sentAt;
     room.lastActivityAt = sentAt;
     room.messageCount = (room.messageCount ?? 0) + 1;
 
-    const senderState = this.getParticipantState(room, userId);
+    const senderState = this.getParticipantState(room, senderId);
     const receiverState = this.getParticipantState(room, receiverId);
     senderState.archivedAt = undefined;
     senderState.unreadCount = 0;
@@ -532,42 +687,6 @@ export class ChatService {
       'message:new',
       messagePayload,
     );
-    await this.emitConversationUpdates(room);
-
-    void this.notificationsService
-      .notify({
-        userId: receiverId,
-        title: 'New message',
-        message: this.buildNotificationPreview(
-          content ||
-            this.buildAttachmentPreview(dto.type ?? ChatMessageType.FILE),
-        ),
-        category: 'message_received',
-        type: 'chat',
-        actorId: userId,
-        referenceId: String(message._id),
-        dedupeKey: `chat-message:${String(message._id)}`,
-        action: {
-          screen: 'ChatDetails',
-          params: {
-            roomId: String(room._id),
-            userId,
-          },
-        },
-        metadata: {
-          roomId: String(room._id),
-          messageId: String(message._id),
-          senderId: userId,
-        },
-      })
-      .catch((error: unknown) => {
-        this.logger.warn(
-          `Failed to create chat notification for room ${String(room._id)}: ${
-            error instanceof Error ? error.message : String(error)
-          }`,
-        );
-      });
-
     return messagePayload;
   }
 
@@ -586,7 +705,7 @@ export class ChatService {
       });
     }
 
-    const allowedMimePattern = /^(image|video)\//i;
+    const allowedMimePattern = /^(image|video|audio)\//i;
     for (const file of files) {
       if (!allowedMimePattern.test(file.mimetype)) {
         throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
@@ -603,6 +722,51 @@ export class ChatService {
       mimeType: files[index]?.mimetype,
       size: files[index]?.size,
     }));
+  }
+
+  getModerationQueue(status = ChatModerationStatus.FLAGGED, limit = 50) {
+    return this.repo.listModerationQueue(
+      status,
+      Math.min(Math.max(Number(limit) || 50, 1), 100),
+    );
+  }
+
+  async reviewMessage(
+    reviewerId: string,
+    messageId: string,
+    approve: boolean,
+    note?: string,
+  ) {
+    this.access.ensureValidObjectId(messageId, 'invalid_message_id');
+    this.access.ensureValidObjectId(reviewerId, 'invalid_reviewer_id');
+
+    const moderationStatus = approve
+      ? ChatModerationStatus.APPROVED
+      : ChatModerationStatus.REJECTED;
+    const message = await this.repo.reviewMessage(
+      messageId,
+      reviewerId,
+      moderationStatus,
+      note,
+    );
+
+    if (!message) {
+      return throwBadRequest(ErrorCode.CHAT_MESSAGE_NOT_FOUND);
+    }
+
+    if (!approve) {
+      this.realtime.emitToConversation(
+        String(message.roomId),
+        'message:deleted',
+        {
+          roomId: String(message.roomId),
+          messageId,
+          deletedAt: message.deletedAt ?? new Date(),
+        },
+      );
+    }
+
+    return this.mapMessage(message);
   }
 
   async deleteOwnMessage(userId: string, roomId: string, messageId: string) {
@@ -778,6 +942,44 @@ export class ChatService {
     }
   }
 
+  private notifyChatRequest(
+    room: ChatRoomDocument,
+    requesterId: string,
+    receiverId: string,
+    message: string,
+  ) {
+    return this.notificationsService
+      .notify({
+        userId: receiverId,
+        title: 'New chat request',
+        message: this.buildNotificationPreview(message),
+        category: 'message_received',
+        type: 'chat',
+        actorId: requesterId,
+        referenceId: String(room._id),
+        dedupeKey: `chat-request:${String(room._id)}`,
+        action: {
+          screen: 'ChatDetails',
+          params: {
+            roomId: String(room._id),
+            userId: requesterId,
+          },
+        },
+        metadata: {
+          roomId: String(room._id),
+          requesterId,
+          status: ChatRoomStatus.PENDING,
+        },
+      })
+      .catch((error: unknown) => {
+        this.logger.warn(
+          `Failed to create chat request notification for room ${String(
+            room._id,
+          )}: ${error instanceof Error ? error.message : String(error)}`,
+        );
+      });
+  }
+
   private shouldIncludeRoom(
     room: {
       status?: ChatRoomStatus;
@@ -789,7 +991,10 @@ export class ChatService {
     currentUserId: string,
     includeArchived: boolean,
   ) {
-    if (room.status !== ChatRoomStatus.ACTIVE) {
+    if (
+      room.status !== ChatRoomStatus.ACTIVE &&
+      room.status !== ChatRoomStatus.PENDING
+    ) {
       return false;
     }
 
@@ -834,6 +1039,8 @@ export class ChatService {
       roomType: ChatRoomType;
       status: ChatRoomStatus;
       participants: Array<Types.ObjectId | string>;
+      requestedById?: Types.ObjectId | string;
+      requestedAt?: Date;
       participantStates?: Array<{
         userId: Types.ObjectId | string;
         archivedAt?: Date;
@@ -868,6 +1075,10 @@ export class ChatService {
       roomId: String(room._id),
       type: room.roomType,
       status: room.status,
+      requestedById: room.requestedById
+        ? String(room.requestedById)
+        : undefined,
+      requestedAt: room.requestedAt,
       participant: this.buildUserSummary(otherUserId, userMap, profileMap),
       lastMessage: room.lastMessageText
         ? {
@@ -1109,7 +1320,7 @@ export class ChatService {
 
       if (
         attachment.mimeType &&
-        !/^(image|video)\//i.test(attachment.mimeType)
+        !/^(image|video|audio)\//i.test(attachment.mimeType)
       ) {
         throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
           reason: 'chat_attachment_type_invalid',
@@ -1157,6 +1368,44 @@ export class ChatService {
         reason: 'chat_message_contains_blocked_language',
       });
     }
+  }
+
+  private getMessageModeration(content: string): {
+    status: ChatModerationStatus;
+    reasons: string[];
+  } {
+    const enabled = this.configService.get<boolean>(
+      'chat.profanityFilter.enabled',
+      true,
+    );
+
+    if (!enabled || !content) {
+      return { status: ChatModerationStatus.APPROVED, reasons: [] };
+    }
+
+    const reviewWords = this.parseWordList(
+      this.configService.get<string>('chat.profanityFilter.reviewWords', ''),
+    );
+    const normalized = content.toLowerCase();
+    const matched = reviewWords.filter((word) =>
+      new RegExp(`\\b${this.escapeRegExp(word)}\\b`, 'i').test(normalized),
+    );
+
+    if (matched.length === 0) {
+      return { status: ChatModerationStatus.APPROVED, reasons: [] };
+    }
+
+    return {
+      status: ChatModerationStatus.FLAGGED,
+      reasons: matched.map((word) => `review_word:${word}`),
+    };
+  }
+
+  private parseWordList(value: string): string[] {
+    return value
+      .split(',')
+      .map((word) => word.trim().toLowerCase())
+      .filter(Boolean);
   }
 
   private escapeRegExp(value: string) {

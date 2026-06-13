@@ -3,9 +3,11 @@ export enum ChatRoomType {
 }
 
 export enum ChatRoomStatus {
+  PENDING = 'PENDING',
   ACTIVE = 'ACTIVE',
   ARCHIVED = 'ARCHIVED',
   BLOCKED = 'BLOCKED',
+  REJECTED = 'REJECTED',
 }
 
 export enum ChatMessageType {
@@ -21,4 +23,10 @@ export enum ChatMessageStatus {
   SENT = 'SENT',
   DELIVERED = 'DELIVERED',
   READ = 'READ',
+}
+
+export enum ChatModerationStatus {
+  APPROVED = 'APPROVED',
+  FLAGGED = 'FLAGGED',
+  REJECTED = 'REJECTED',
 }

@@ -75,6 +75,14 @@ export interface DiscoveryProfile {
       weight: number;
     }>;
   };
+  curation?: {
+    id: string;
+    note?: string;
+    priority?: number;
+    curatedById?: string;
+    curatedAt?: string;
+    expiresAt?: string;
+  };
   isShortlisted?: boolean;
   lastActiveAt?: string;
   createdAt?: string;
@@ -143,7 +151,7 @@ type PaginatedResponse<T> = ApiResponse<T[]> & {
   meta?: PaginationMeta | null;
 };
 
-export type MatchTab = 'recommended' | 'new' | 'online' | 'nearby';
+export type MatchTab = 'recommended' | 'new' | 'online' | 'nearby' | 'curated';
 
 export interface DiscoveryProfileQuery {
   type: MatchTab;
@@ -169,6 +177,7 @@ const discoveryPath: Record<MatchTab, string> = {
   new: '/matches/new',
   online: '/matches/online',
   nearby: '/matches/nearby',
+  curated: '/matches/curated',
 };
 
 const matchListTags = [
@@ -357,6 +366,14 @@ export const matchApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: [{ type: 'Match', id: 'INTERESTS' }],
     }),
+
+    dismissCuratedMatch: builder.mutation<unknown, { curatedMatchId: string }>({
+      query: ({ curatedMatchId }) => ({
+        url: `/matches/curated/${curatedMatchId}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: [{ type: 'Match', id: 'DISCOVERY' }],
+    }),
   }),
 
   overrideExisting: false,
@@ -377,4 +394,5 @@ export const {
   useShortlistProfileMutation,
   useUnmatchProfileMutation,
   useWithdrawInterestMutation,
+  useDismissCuratedMatchMutation,
 } = matchApi;

@@ -31,6 +31,7 @@ export const DEFAULT_FILTERS: FilterState = {
 // ─── Tab config ───────────────────────────────────────────────────────────────
 
 export const TAB_CONFIG = [
+  { key: 'curated', labelKey: 'matches.tab_curated', icon: 'award' },
   { key: 'recommended', labelKey: 'matches.tab_recommended', icon: 'star' },
   { key: 'new', labelKey: 'matches.tab_new', icon: 'zap' },
   { key: 'online', labelKey: 'matches.tab_online', icon: 'wifi' },

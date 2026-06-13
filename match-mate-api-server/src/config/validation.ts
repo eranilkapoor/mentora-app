@@ -431,6 +431,31 @@ export const envValidationSchema = Joi.object({
     .max(5000)
     .default(500),
 
+  MATCH_EXPIRY_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  MATCH_EXPIRY_DAYS: Joi.number().integer().min(1).max(3650).default(90),
+
+  MATCH_EXPIRY_LIMIT: Joi.number().integer().min(1).max(5000).default(500),
+
+  MATCH_DAILY_DIGEST_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(true),
+
+  MATCH_DAILY_DIGEST_DRY_RUN: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  MATCH_DAILY_DIGEST_LIMIT: Joi.number()
+    .integer()
+    .min(1)
+    .max(5000)
+    .default(500),
+
   MONITORING_ENABLED: Joi.boolean()
     .truthy('true')
     .falsy('false')
@@ -461,6 +486,21 @@ export const envValidationSchema = Joi.object({
   PAYMENT_SIGNATURE_SECRET: optionalString,
 
   PAYMENT_WEBHOOK_SECRET: optionalString,
+
+  PAYMENT_ALLOW_UNSIGNED_VERIFICATION: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(true),
+
+  PAYMENT_MOBILE_STORE_VERIFICATION_MODE: Joi.string()
+    .trim()
+    .valid('disabled', 'sandbox', 'strict')
+    .default('sandbox'),
+
+  PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
 
   THROTTLE_TTL: Joi.number().integer().min(1).max(86400).default(60),
 
@@ -545,6 +585,8 @@ export const envValidationSchema = Joi.object({
     .default(true),
 
   CHAT_PROFANITY_BLOCKED_WORDS: optionalString,
+
+  CHAT_MODERATION_REVIEW_WORDS: optionalString,
 })
   .custom(validateAuthProviderConfig)
   .custom(validateNotificationProviders)

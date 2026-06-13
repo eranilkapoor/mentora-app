@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { MatchRepository } from '../repositories/match.repository';
 import { InterestStatus } from '../schemas/interest.schema';
@@ -22,6 +23,7 @@ export class MatchesService {
     private readonly matchNotificationService: MatchNotificationService,
     private readonly featureService: FeatureService,
     private readonly compatibilityService: MatchCompatibilityService,
+    private readonly configService: ConfigService,
   ) {}
 
   private toObjectIdString(value: Types.ObjectId | string): string {
@@ -169,6 +171,7 @@ export class MatchesService {
         ? await this.repo.createMatch(
             interest.senderId.toString(),
             interest.receiverId.toString(),
+            this.buildMatchExpiryDate(),
           )
         : null;
 
@@ -569,5 +572,23 @@ export class MatchesService {
       userId,
       timestamp: new Date(),
     });
+  }
+
+  expireOverdueMatches(limit?: number) {
+    return this.repo.expireMatches(new Date(), limit);
+  }
+
+  private buildMatchExpiryDate(): Date | undefined {
+    const enabled = this.configService.get<boolean>('matches.expiryEnabled');
+    if (!enabled) {
+      return undefined;
+    }
+
+    const expiryDays = this.configService.get<number>('matches.expiryDays', 90);
+    if (!Number.isFinite(expiryDays) || expiryDays <= 0) {
+      return undefined;
+    }
+
+    return new Date(Date.now() + expiryDays * 24 * 60 * 60 * 1000);
   }
 }

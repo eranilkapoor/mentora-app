@@ -3,6 +3,7 @@ import { baseApi } from './baseApi.service';
 
 export interface DirectRoomResponse {
   roomId?: string;
+  status?: 'PENDING' | 'ACTIVE' | 'REJECTED' | string;
   room?: {
     roomId?: string;
   };
@@ -26,6 +27,9 @@ export interface ChatParticipant {
 
 export interface ChatConversation {
   roomId: string;
+  status?: 'PENDING' | 'ACTIVE' | 'REJECTED' | string;
+  requestedById?: string;
+  requestedAt?: string;
   participant: ChatParticipant;
   lastMessage?: {
     id?: string;
@@ -60,7 +64,7 @@ export interface ChatMessage {
   roomId: string;
   senderId: string;
   receiverId: string;
-  type?: 'text' | 'image';
+  type?: 'text' | 'image' | 'audio' | 'TEXT' | 'IMAGE' | 'AUDIO';
   content?: string;
   attachments: unknown[];
   reactions?: Array<{
@@ -113,12 +117,28 @@ export const chatApi = baseApi.injectEndpoints({
 
     createDirectRoom: builder.mutation<
       ApiResponse<DirectRoomResponse>,
-      { targetUserId: string; initialMessage?: string }
+      {
+        targetUserId: string;
+        initialMessage?: string;
+        clientMessageId?: string;
+      }
     >({
       query: (body) => ({
         url: '/chats/rooms/direct',
         method: 'POST',
         body,
+      }),
+      invalidatesTags: ['Chat'],
+    }),
+
+    respondChatRequest: builder.mutation<
+      ApiResponse<ChatConversation | { roomId: string; status: string }>,
+      { roomId: string; action: 'ACCEPT' | 'REJECT' }
+    >({
+      query: ({ roomId, action }) => ({
+        url: `/chats/rooms/${roomId}/request/respond`,
+        method: 'POST',
+        body: { action },
       }),
       invalidatesTags: ['Chat'],
     }),
@@ -227,6 +247,7 @@ export const chatApi = baseApi.injectEndpoints({
 export const {
   useGetConversationsQuery,
   useCreateDirectRoomMutation,
+  useRespondChatRequestMutation,
   useGetMessagesQuery,
   useMarkRoomReadMutation,
   useSendMessageMutation,

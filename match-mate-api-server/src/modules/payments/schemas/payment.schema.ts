@@ -131,3 +131,11 @@ export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
 PaymentSchema.index({ userId: 1, createdAt: -1 });
 PaymentSchema.index({ status: 1, createdAt: -1 });
+PaymentSchema.index(
+  { gateway: 1, storeTransactionId: 1 },
+  {
+    unique: true,
+    sparse: true,
+  },
+);
+PaymentSchema.index({ gateway: 1, storeOriginalTransactionId: 1, paidAt: -1 });

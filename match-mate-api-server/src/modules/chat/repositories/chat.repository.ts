@@ -16,7 +16,12 @@ import {
   UserBlock,
   UserBlockDocument,
 } from '../../safety/schemas/user-block.schema';
-import { ChatMessageStatus, ChatRoomType } from '../enums/chat.enums';
+import {
+  ChatMessageStatus,
+  ChatModerationStatus,
+  ChatRoomStatus,
+  ChatRoomType,
+} from '../enums/chat.enums';
 import {
   CommunicationSetting,
   CommunicationSettingDocument,
@@ -78,8 +83,11 @@ export class ChatRepository {
     createdById: string;
     participantIds: string[];
     startedFromMatchId?: string;
+    status?: ChatRoomStatus;
+    requestedById?: string;
   }) {
     const sortedIds = [...params.participantIds].sort();
+    const now = new Date();
 
     return this.roomModel.create({
       roomType: ChatRoomType.DIRECT,
@@ -89,12 +97,49 @@ export class ChatRepository {
       startedFromMatchId: params.startedFromMatchId
         ? new Types.ObjectId(params.startedFromMatchId)
         : undefined,
+      requestedById: params.requestedById
+        ? new Types.ObjectId(params.requestedById)
+        : undefined,
+      requestedAt: params.requestedById ? now : undefined,
+      status: params.status ?? ChatRoomStatus.ACTIVE,
       participantStates: sortedIds.map((participantId) => ({
         userId: new Types.ObjectId(participantId),
         unreadCount: 0,
       })),
       messageCount: 0,
       lastActivityAt: new Date(),
+    });
+  }
+
+  async respondToChatRequest(params: {
+    roomId: string;
+    responderId: string;
+    status: ChatRoomStatus.ACTIVE | ChatRoomStatus.REJECTED;
+  }) {
+    return this.roomModel.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(params.roomId),
+        participants: new Types.ObjectId(params.responderId),
+        status: ChatRoomStatus.PENDING,
+        requestedById: { $ne: new Types.ObjectId(params.responderId) },
+      },
+      {
+        $set: {
+          status: params.status,
+          respondedById: new Types.ObjectId(params.responderId),
+          respondedAt: new Date(),
+          lastActivityAt: new Date(),
+        },
+      },
+      { new: true },
+    );
+  }
+
+  async setRoomRequestMessage(roomId: string, messageId: string) {
+    return this.roomModel.findByIdAndUpdate(roomId, {
+      $set: {
+        requestMessageId: new Types.ObjectId(messageId),
+      },
     });
   }
 
@@ -126,6 +171,8 @@ export class ChatRepository {
       mimeType?: string;
       size?: number;
     }>;
+    moderationStatus?: ChatModerationStatus;
+    moderationReasons?: string[];
     replyToMessageId?: string;
     clientMessageId?: string;
   }) {
@@ -136,6 +183,8 @@ export class ChatRepository {
       content: params.content,
       type: params.type,
       attachments: params.attachments,
+      moderationStatus: params.moderationStatus,
+      moderationReasons: params.moderationReasons,
       replyToMessageId: params.replyToMessageId
         ? new Types.ObjectId(params.replyToMessageId)
         : undefined,
@@ -200,6 +249,50 @@ export class ChatRepository {
       },
       { new: true },
     );
+  }
+
+  listModerationQueue(status: ChatModerationStatus, limit: number) {
+    return this.messageModel
+      .find({
+        moderationStatus: status,
+        isDeletedForEveryone: false,
+      })
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .lean()
+      .exec();
+  }
+
+  reviewMessage(
+    messageId: string,
+    reviewerId: string,
+    status: ChatModerationStatus.APPROVED | ChatModerationStatus.REJECTED,
+    note?: string,
+  ) {
+    const isRejected = status === ChatModerationStatus.REJECTED;
+    return this.messageModel
+      .findByIdAndUpdate(
+        messageId,
+        {
+          $set: {
+            moderationStatus: status,
+            reviewedBy: new Types.ObjectId(reviewerId),
+            reviewedAt: new Date(),
+            ...(note ? { reviewNote: note } : {}),
+            ...(isRejected
+              ? {
+                  isDeletedForEveryone: true,
+                  deletedAt: new Date(),
+                  content: 'Message removed by moderation',
+                  attachments: [],
+                }
+              : {}),
+          },
+        },
+        { new: true },
+      )
+      .lean()
+      .exec();
   }
 
   async findMessagesByIds(messageIds: string[]) {

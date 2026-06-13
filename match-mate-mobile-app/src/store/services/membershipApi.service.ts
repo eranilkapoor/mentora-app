@@ -80,9 +80,11 @@ export interface ProfileBoost {
 }
 
 export interface CreatePaymentOrderRequest {
-  planId: string;
+  planId?: string;
+  amount?: number;
+  coinAmount?: number;
   currency?: string;
-  purpose?: 'subscription' | 'profile_boost';
+  purpose?: 'subscription' | 'profile_boost' | 'coin_pack';
   gateway?: 'razorpay' | 'stripe' | 'apple_iap' | 'google_play' | 'manual';
   idempotencyKey?: string;
   description?: string;

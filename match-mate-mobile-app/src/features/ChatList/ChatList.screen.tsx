@@ -26,6 +26,7 @@ import { resolveApiUrl } from '@/core/utils/config';
 import {
   ChatConversation,
   useGetConversationsQuery,
+  useRespondChatRequestMutation,
   useUpdateRoomSettingsMutation,
 } from '@/store/services/chatApi.service';
 import { useAppSelector } from '@/store/hooks';
@@ -105,6 +106,8 @@ export default function ChatListScreen({
     useGetConversationsQuery(conversationQuery);
   const [updateRoomSettings, { isLoading: isUpdatingSettings }] =
     useUpdateRoomSettingsMutation();
+  const [respondChatRequest, { isLoading: isRespondingRequest }] =
+    useRespondChatRequestMutation();
 
   useEffect(() => {
     setPage(1);
@@ -185,6 +188,8 @@ export default function ChatListScreen({
         return {
           id: participant.userId,
           roomId: conversation.roomId,
+          status: conversation.status,
+          requestedById: conversation.requestedById,
           name,
           age: 0,
           city:
@@ -203,9 +208,23 @@ export default function ChatListScreen({
           isArchived: Boolean(conversation.settings?.archived),
           isPinned: Boolean(conversation.settings?.pinned),
           isMuted: Boolean(conversation.settings?.mutedUntil),
+          isRequestIncoming:
+            conversation.status === 'PENDING' &&
+            Boolean(
+              currentUserId &&
+              conversation.requestedById &&
+              conversation.requestedById !== currentUserId
+            ),
+          isRequestOutgoing:
+            conversation.status === 'PENDING' &&
+            Boolean(
+              currentUserId &&
+              conversation.requestedById &&
+              conversation.requestedById === currentUserId
+            ),
         };
       }),
-    [conversationPages, t]
+    [conversationPages, currentUserId, t]
   );
 
   const visibleMatches = matches;
@@ -288,6 +307,22 @@ export default function ChatListScreen({
     [isUpdatingSettings, t, updateRoomSettings]
   );
 
+  const handleRespondRequest = useCallback(
+    async (item: ChatMatch, action: 'ACCEPT' | 'REJECT') => {
+      if (!item.roomId || isRespondingRequest) return;
+
+      try {
+        await respondChatRequest({ roomId: item.roomId, action }).unwrap();
+      } catch {
+        showError({
+          title: t('chat.unable_update_title'),
+          message: t('common.try_again_message'),
+        });
+      }
+    },
+    [isRespondingRequest, respondChatRequest, t]
+  );
+
   const renderItem: ListRenderItem<ChatMatch> = useCallback(
     ({ item }) => (
       <ChatRow
@@ -307,6 +342,12 @@ export default function ChatListScreen({
         onToggleArchive={() => {
           void handleToggleArchive(item);
         }}
+        onAcceptRequest={() => {
+          void handleRespondRequest(item, 'ACCEPT');
+        }}
+        onRejectRequest={() => {
+          void handleRespondRequest(item, 'REJECT');
+        }}
         onPress={() =>
           navigation.navigate('ChatDetails', {
             userId: item.id,
@@ -322,6 +363,7 @@ export default function ChatListScreen({
       handleToggleArchive,
       handleToggleMute,
       handleTogglePin,
+      handleRespondRequest,
       navigation,
       typingByRoom,
     ]

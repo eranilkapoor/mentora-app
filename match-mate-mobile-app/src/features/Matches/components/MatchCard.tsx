@@ -12,6 +12,7 @@ interface Props {
   onViewProfile: () => void;
   onPrimaryAction: () => void;
   onRejectRequest: () => void;
+  onDismissCurated: () => void;
   onShortlist: () => void;
 }
 
@@ -20,6 +21,7 @@ export const MatchCard = React.memo(function MatchCard({
   onViewProfile,
   onPrimaryAction,
   onRejectRequest,
+  onDismissCurated,
   onShortlist,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
@@ -65,6 +67,14 @@ export const MatchCard = React.memo(function MatchCard({
         <View style={styles.photoScrim} />
 
         <View style={styles.badgeRow}>
+          {item.curationId && (
+            <View style={styles.curatedBadge}>
+              <Feather name="award" size={11} color={theme.colors.white} />
+              <Text style={styles.curatedBadgeText}>
+                {t('matches.badge_curated')}
+              </Text>
+            </View>
+          )}
           {item.isNew && (
             <View style={styles.newBadge}>
               <Text style={styles.newBadgeText}>
@@ -123,6 +133,15 @@ export const MatchCard = React.memo(function MatchCard({
           </View>
         </View>
 
+        {item.curationNote ? (
+          <View style={styles.curatorNote}>
+            <Feather name="award" size={13} color={theme.colors.primary} />
+            <Text style={styles.curatorNoteText} numberOfLines={2}>
+              {item.curationNote}
+            </Text>
+          </View>
+        ) : null}
+
         <View style={styles.actions}>
           <TouchableOpacity
             style={styles.outlineBtn}
@@ -165,6 +184,19 @@ export const MatchCard = React.memo(function MatchCard({
               <Feather name="x" size={14} color={theme.colors.error} />
               <Text style={styles.rejectText}>
                 {t('matches.reject_request')}
+              </Text>
+            </TouchableOpacity>
+          ) : item.curationId ? (
+            <TouchableOpacity
+              style={styles.rejectBtn}
+              onPress={onDismissCurated}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={t('matches.action_dismiss')}
+            >
+              <Feather name="x" size={14} color={theme.colors.error} />
+              <Text style={styles.rejectText}>
+                {t('matches.action_dismiss')}
               </Text>
             </TouchableOpacity>
           ) : (

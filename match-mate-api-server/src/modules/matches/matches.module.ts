@@ -5,10 +5,15 @@ import { MatchesService } from './services/matches.service';
 import { MatchDiscoveryService } from './services/match-discovery.service';
 import { MatchNotificationService } from './services/match-notification.service';
 import { MatchCompatibilityService } from './services/match-compatibility.service';
+import { PremiumMatchCuratorService } from './services/premium-match-curator.service';
 import { MatchRepository } from './repositories/match.repository';
 import { MatchDiscoveryRepository } from './repositories/match-discovery.repository';
 import { Match, MatchSchema } from './schemas/match.schema';
 import { Interest, InterestSchema } from './schemas/interest.schema';
+import {
+  CuratedMatch,
+  CuratedMatchSchema,
+} from './schemas/curated-match.schema';
 import {
   Profile,
   ProfileSchema,
@@ -26,6 +31,7 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { SettingsModule } from '../settings/settings.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { DailyMatchDigestTask } from './tasks/daily-match-digest.task';
+import { MatchExpiryTask } from './tasks/match-expiry.task';
 
 @Module({
   imports: [
@@ -35,6 +41,7 @@ import { DailyMatchDigestTask } from './tasks/daily-match-digest.task';
     MongooseModule.forFeature([
       { name: Match.name, schema: MatchSchema },
       { name: Interest.name, schema: InterestSchema },
+      { name: CuratedMatch.name, schema: CuratedMatchSchema },
       // Read-only access to Profile and Preference for discovery
       { name: Profile.name, schema: ProfileSchema },
       { name: Preference.name, schema: PreferenceSchema },
@@ -46,12 +53,14 @@ import { DailyMatchDigestTask } from './tasks/daily-match-digest.task';
   providers: [
     MatchesService,
     MatchDiscoveryService,
+    PremiumMatchCuratorService,
     MatchCompatibilityService,
     MatchNotificationService,
     MatchRepository,
     MatchDiscoveryRepository,
     DailyMatchDigestTask,
+    MatchExpiryTask,
   ],
-  exports: [MatchesService, MatchDiscoveryService],
+  exports: [MatchesService, MatchDiscoveryService, PremiumMatchCuratorService],
 })
 export class MatchesModule {}

@@ -20,6 +20,8 @@ export function ChatRow({
   onTogglePin,
   onToggleMute,
   onToggleArchive,
+  onAcceptRequest,
+  onRejectRequest,
   onPress,
 }: {
   item: ChatMatch;
@@ -28,6 +30,8 @@ export function ChatRow({
   onTogglePin?: () => void;
   onToggleMute?: () => void;
   onToggleArchive?: () => void;
+  onAcceptRequest?: () => void;
+  onRejectRequest?: () => void;
   onPress: () => void;
 }): React.ReactElement {
   const styles = useThemedStyles(chatListStyles);
@@ -124,61 +128,91 @@ export function ChatRow({
             </View>
           )}
         </View>
-        <View style={styles.quickActions}>
-          <TouchableOpacity
-            style={[
-              styles.quickActionBtn,
-              item.isPinned && styles.quickActionBtnActive,
-            ]}
-            onPress={(event) => stopRowPress(event, onTogglePin)}
-            accessibilityRole="button"
-            accessibilityLabel={item.isPinned ? 'Unpin chat' : 'Pin chat'}
-          >
-            <Feather
-              name="star"
-              size={13}
-              color={
-                item.isPinned ? theme.colors.primary : theme.colors.textMuted
+        {item.isRequestIncoming ? (
+          <View style={styles.requestActions}>
+            <TouchableOpacity
+              style={styles.requestAcceptBtn}
+              onPress={(event) => stopRowPress(event, onAcceptRequest)}
+              accessibilityRole="button"
+              accessibilityLabel="Accept chat request"
+            >
+              <Feather name="check" size={13} color={theme.colors.white} />
+              <Text style={styles.requestAcceptText}>Accept</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.requestRejectBtn}
+              onPress={(event) => stopRowPress(event, onRejectRequest)}
+              accessibilityRole="button"
+              accessibilityLabel="Reject chat request"
+            >
+              <Feather name="x" size={13} color={theme.colors.error} />
+              <Text style={styles.requestRejectText}>Reject</Text>
+            </TouchableOpacity>
+          </View>
+        ) : item.isRequestOutgoing ? (
+          <View style={styles.requestPendingPill}>
+            <Feather name="clock" size={12} color={theme.colors.textMuted} />
+            <Text style={styles.requestPendingText}>Request pending</Text>
+          </View>
+        ) : (
+          <View style={styles.quickActions}>
+            <TouchableOpacity
+              style={[
+                styles.quickActionBtn,
+                item.isPinned && styles.quickActionBtnActive,
+              ]}
+              onPress={(event) => stopRowPress(event, onTogglePin)}
+              accessibilityRole="button"
+              accessibilityLabel={item.isPinned ? 'Unpin chat' : 'Pin chat'}
+            >
+              <Feather
+                name="star"
+                size={13}
+                color={
+                  item.isPinned ? theme.colors.primary : theme.colors.textMuted
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.quickActionBtn,
+                item.isMuted && styles.quickActionBtnActive,
+              ]}
+              onPress={(event) => stopRowPress(event, onToggleMute)}
+              accessibilityRole="button"
+              accessibilityLabel={item.isMuted ? 'Unmute chat' : 'Mute chat'}
+            >
+              <Feather
+                name={item.isMuted ? 'bell-off' : 'bell'}
+                size={13}
+                color={
+                  item.isMuted ? theme.colors.primary : theme.colors.textMuted
+                }
+              />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.quickActionBtn,
+                item.isArchived && styles.quickActionBtnActive,
+              ]}
+              onPress={(event) => stopRowPress(event, onToggleArchive)}
+              accessibilityRole="button"
+              accessibilityLabel={
+                item.isArchived ? 'Unarchive chat' : 'Archive chat'
               }
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.quickActionBtn,
-              item.isMuted && styles.quickActionBtnActive,
-            ]}
-            onPress={(event) => stopRowPress(event, onToggleMute)}
-            accessibilityRole="button"
-            accessibilityLabel={item.isMuted ? 'Unmute chat' : 'Mute chat'}
-          >
-            <Feather
-              name={item.isMuted ? 'bell-off' : 'bell'}
-              size={13}
-              color={
-                item.isMuted ? theme.colors.primary : theme.colors.textMuted
-              }
-            />
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[
-              styles.quickActionBtn,
-              item.isArchived && styles.quickActionBtnActive,
-            ]}
-            onPress={(event) => stopRowPress(event, onToggleArchive)}
-            accessibilityRole="button"
-            accessibilityLabel={
-              item.isArchived ? 'Unarchive chat' : 'Archive chat'
-            }
-          >
-            <Feather
-              name={item.isArchived ? 'inbox' : 'archive'}
-              size={13}
-              color={
-                item.isArchived ? theme.colors.primary : theme.colors.textMuted
-              }
-            />
-          </TouchableOpacity>
-        </View>
+            >
+              <Feather
+                name={item.isArchived ? 'inbox' : 'archive'}
+                size={13}
+                color={
+                  item.isArchived
+                    ? theme.colors.primary
+                    : theme.colors.textMuted
+                }
+              />
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </Pressable>
   );

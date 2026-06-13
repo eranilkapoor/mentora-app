@@ -18,6 +18,7 @@ import {
   ViewStyle,
 } from 'react-native';
 import * as ImagePicker from 'expo-image-picker';
+import { Audio } from 'expo-av';
 import Feather from 'react-native-vector-icons/Feather';
 import {
   SafeAreaView,
@@ -58,10 +59,14 @@ import {
 } from '@/core/realtime/realtime.service';
 
 const mapMessage = (message: ChatMessage): Message => {
-  const isImage = String(message.type).toLowerCase() === 'image';
-  const imageUrl = isImage
-    ? (message.attachments as Array<{ url?: string }> | undefined)?.[0]?.url
-    : undefined;
+  const type = String(message.type).toLowerCase();
+  const isImage = type === 'image';
+  const isAudio = type === 'audio';
+  const attachmentUrl = (
+    message.attachments as Array<{ url?: string }> | undefined
+  )?.[0]?.url;
+  const imageUrl = isImage ? attachmentUrl : undefined;
+  const audioUrl = isAudio ? attachmentUrl : undefined;
 
   return {
     id: message.id,
@@ -70,8 +75,9 @@ const mapMessage = (message: ChatMessage): Message => {
     timestamp: message.createdAt
       ? new Date(message.createdAt).getTime()
       : Date.now(),
-    type: isImage ? 'image' : 'text',
+    type: isImage ? 'image' : isAudio ? 'audio' : 'text',
     ...(imageUrl ? { imageUrl } : {}),
+    ...(audioUrl ? { audioUrl } : {}),
     reactions: message.reactions ?? [],
     status: message.readAt
       ? 'read'
@@ -80,6 +86,13 @@ const mapMessage = (message: ChatMessage): Message => {
         ? 'delivered'
         : 'sent',
   };
+};
+
+const formatRecordingDuration = (durationMs: number): string => {
+  const totalSeconds = Math.max(0, Math.floor(durationMs / 1000));
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`;
 };
 
 export default function ChatScreen({
@@ -95,8 +108,12 @@ export default function ChatScreen({
   const [activeRoomId, setActiveRoomId] = useState(roomId);
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [recording, setRecording] = useState<Audio.Recording | null>(null);
+  const [recordingDurationMs, setRecordingDurationMs] = useState(0);
+  const [isRecordingBusy, setIsRecordingBusy] = useState(false);
   const inputRef = useRef<TextInput>(null);
   const listRef = useRef<FlatList<Message>>(null);
+  const recordingRef = useRef<Audio.Recording | null>(null);
   const inputBarSafeAreaStyle = useMemo<ViewStyle>(
     () => ({
       paddingBottom: Platform.OS === 'ios' ? Math.max(insets.bottom, 8) : 8,
@@ -123,6 +140,23 @@ export default function ChatScreen({
     if (!userId) return;
     navigation.navigate('MatchDetails', { userId });
   }, [navigation, userId]);
+
+  useEffect(
+    () => () => {
+      const activeRecording = recordingRef.current;
+      if (activeRecording) {
+        void activeRecording.stopAndUnloadAsync().catch(() => undefined);
+      }
+      void Audio.setAudioModeAsync({ allowsRecordingIOS: false }).catch(
+        () => undefined
+      );
+    },
+    []
+  );
+
+  useEffect(() => {
+    recordingRef.current = recording;
+  }, [recording]);
 
   useEffect(() => {
     if (!activeRoomId) return;
@@ -319,6 +353,119 @@ export default function ChatScreen({
     uploadChatAttachments,
     t,
   ]);
+
+  const handleStartVoiceRecording = useCallback(async (): Promise<void> => {
+    if (
+      !activeRoomId ||
+      isRecordingBusy ||
+      isUploadingAttachment ||
+      isSending
+    ) {
+      return;
+    }
+
+    try {
+      setIsRecordingBusy(true);
+      const permission = await Audio.requestPermissionsAsync();
+      if (!permission.granted) {
+        showError({
+          title: t('chat.microphone_permission_title'),
+          message: t('chat.microphone_permission_message'),
+        });
+        return;
+      }
+
+      await Audio.setAudioModeAsync({
+        allowsRecordingIOS: true,
+        playsInSilentModeIOS: true,
+      });
+
+      const nextRecording = new Audio.Recording();
+      nextRecording.setOnRecordingStatusUpdate((status) => {
+        if (status.isRecording) {
+          setRecordingDurationMs(status.durationMillis);
+        }
+      });
+      nextRecording.setProgressUpdateInterval(500);
+
+      await nextRecording.prepareToRecordAsync(
+        Audio.RecordingOptionsPresets.HIGH_QUALITY
+      );
+      await nextRecording.startAsync();
+      setRecording(nextRecording);
+      setRecordingDurationMs(0);
+      setShowEmojiPicker(false);
+    } catch {
+      showError({
+        title: t('chat.voice_not_started_title'),
+        message: t('chat.voice_not_started_message'),
+      });
+    } finally {
+      setIsRecordingBusy(false);
+    }
+  }, [activeRoomId, isRecordingBusy, isSending, isUploadingAttachment, t]);
+
+  const handleStopVoiceRecording = useCallback(
+    async (shouldSend = true): Promise<void> => {
+      if (!recording || isRecordingBusy) {
+        return;
+      }
+
+      try {
+        setIsRecordingBusy(true);
+        await recording.stopAndUnloadAsync();
+        await Audio.setAudioModeAsync({ allowsRecordingIOS: false });
+        const uri = recording.getURI();
+        const durationMs = recordingDurationMs;
+        setRecording(null);
+        setRecordingDurationMs(0);
+
+        if (!shouldSend || !uri || !activeRoomId || durationMs < 800) {
+          return;
+        }
+
+        const formData = new FormData();
+        formData.append('files', {
+          uri,
+          name: `voice-message-${Date.now()}.m4a`,
+          type: 'audio/m4a',
+        } as unknown as Blob);
+
+        const uploadResponse = await uploadChatAttachments(formData).unwrap();
+        const attachment = uploadResponse.success
+          ? uploadResponse.data?.[0]
+          : undefined;
+
+        if (!attachment) {
+          throw new Error('Upload failed');
+        }
+
+        await sendMessage({
+          roomId: activeRoomId,
+          content: '',
+          type: 'AUDIO',
+          attachments: [attachment],
+          clientMessageId: `${Date.now()}`,
+        }).unwrap();
+      } catch {
+        showError({
+          title: t('chat.voice_not_sent_title'),
+          message: t('chat.voice_not_sent_message'),
+        });
+      } finally {
+        setIsRecordingBusy(false);
+      }
+    },
+    [
+      activeRoomId,
+      isRecordingBusy,
+      recording,
+      recordingDurationMs,
+      sendMessage,
+      t,
+      uploadChatAttachments,
+    ]
+  );
 
   const handleDeleteMessage = useCallback(
     (message: Message): void => {
@@ -535,6 +682,27 @@ export default function ChatScreen({
             </View>
           )}
 
+          {recording ? (
+            <View style={styles.recordingBar}>
+              <View style={styles.recordingPulse} />
+              <Text style={styles.recordingText}>
+                {t('chat.recording_voice')} ·{' '}
+                {formatRecordingDuration(recordingDurationMs)}
+              </Text>
+              <TouchableOpacity
+                onPress={() => {
+                  void handleStopVoiceRecording(false);
+                }}
+                style={styles.recordingCancelBtn}
+                activeOpacity={0.7}
+                accessibilityRole="button"
+                accessibilityLabel={t('chat.cancel_voice_recording')}
+              >
+                <Feather name="x" size={16} color={theme.colors.error} />
+              </TouchableOpacity>
+            </View>
+          ) : null}
+
           <View style={[styles.inputBar, inputBarSafeAreaStyle]}>
             <TouchableOpacity
               onPress={() => setShowEmojiPicker((value) => !value)}
@@ -564,6 +732,36 @@ export default function ChatScreen({
               accessibilityLabel={t('chat.send_image')}
             >
               <Feather name="image" size={20} color={theme.colors.textMuted} />
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={() => {
+                if (recording) {
+                  void handleStopVoiceRecording(true);
+                } else {
+                  void handleStartVoiceRecording();
+                }
+              }}
+              style={[styles.iconBtn, recording && styles.recordingIconBtn]}
+              activeOpacity={0.7}
+              disabled={
+                !activeRoomId ||
+                isRecordingBusy ||
+                isUploadingAttachment ||
+                isSending
+              }
+              accessibilityRole="button"
+              accessibilityLabel={
+                recording
+                  ? t('chat.send_voice_recording')
+                  : t('chat.start_voice_recording')
+              }
+            >
+              <Feather
+                name={recording ? 'send' : 'mic'}
+                size={20}
+                color={recording ? theme.colors.white : theme.colors.textMuted}
+              />
             </TouchableOpacity>
 
             <TextInput

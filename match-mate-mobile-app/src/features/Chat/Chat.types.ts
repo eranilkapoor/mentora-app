@@ -20,8 +20,9 @@ export type Message = {
   senderId: string;
   text?: string;
   imageUrl?: string;
+  audioUrl?: string;
   timestamp: number;
-  type: 'text' | 'image';
+  type: 'text' | 'image' | 'audio';
   status: 'sent' | 'delivered' | 'read';
   reactions?: Array<{
     userId: string;

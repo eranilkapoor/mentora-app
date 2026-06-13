@@ -7,5 +7,8 @@ export default () => ({
       process.env.PAYMENT_MOBILE_STORE_VERIFICATION_MODE || 'sandbox',
     mobileStoreStrictVerificationEnabled:
       process.env.PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED === 'true',
+    allowUnsignedVerification:
+      process.env.PAYMENT_ALLOW_UNSIGNED_VERIFICATION !== 'false' &&
+      process.env.NODE_ENV !== 'production',
   },
 });

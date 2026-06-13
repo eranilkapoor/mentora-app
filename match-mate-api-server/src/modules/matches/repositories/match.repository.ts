@@ -131,20 +131,28 @@ export class MatchRepository implements OnModuleInit {
     return this.interestModel.findByIdAndDelete(id).lean<LeanInterest>().exec();
   }
 
-  async createMatch(user1: string, user2: string): Promise<LeanMatch> {
+  async createMatch(
+    user1: string,
+    user2: string,
+    expiresAt?: Date,
+  ): Promise<LeanMatch> {
     try {
-      return await this.upsertMatch(user1, user2);
+      return await this.upsertMatch(user1, user2, expiresAt);
     } catch (error) {
       if (this.isLegacyUsersIndexDuplicate(error)) {
         await this.dropLegacyUsersIndex();
-        return this.upsertMatch(user1, user2);
+        return this.upsertMatch(user1, user2, expiresAt);
       }
 
       throw error;
     }
   }
 
-  private async upsertMatch(user1: string, user2: string): Promise<LeanMatch> {
+  private async upsertMatch(
+    user1: string,
+    user2: string,
+    expiresAt?: Date,
+  ): Promise<LeanMatch> {
     const [leftUserId, rightUserId] = [user1, user2].sort();
     const doc = await this.matchModel.findOneAndUpdate(
       {
@@ -152,7 +160,14 @@ export class MatchRepository implements OnModuleInit {
         targetUserId: new Types.ObjectId(rightUserId),
       },
       {
-        $set: { isActive: true, isMutual: true, matchedOn: new Date() },
+        $set: {
+          isActive: true,
+          isMutual: true,
+          matchedOn: new Date(),
+          expiredAt: undefined,
+          expiryReason: undefined,
+          ...(expiresAt ? { expiresAt } : {}),
+        },
         $setOnInsert: { score: 100 },
       },
       { new: true, upsert: true },
@@ -398,6 +413,40 @@ export class MatchRepository implements OnModuleInit {
       )
       .lean<LeanMatch>()
       .exec();
+  }
+
+  async expireMatches(now: Date, limit = 500) {
+    const rows = await this.matchModel
+      .find({
+        isActive: true,
+        expiresAt: { $lte: now },
+      })
+      .select('_id')
+      .sort({ expiresAt: 1 })
+      .limit(limit)
+      .lean<Array<{ _id: Types.ObjectId }>>()
+      .exec();
+
+    const ids = rows.map((row) => row._id);
+    if (ids.length === 0) {
+      return { matchedCount: 0, modifiedCount: 0 };
+    }
+
+    const result = await this.matchModel.updateMany(
+      { _id: { $in: ids }, isActive: true },
+      {
+        $set: {
+          isActive: false,
+          expiredAt: now,
+          expiryReason: 'match_expired',
+        },
+      },
+    );
+
+    return {
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    };
   }
 
   async addShortlist(

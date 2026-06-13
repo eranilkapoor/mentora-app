@@ -18,6 +18,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { showError, showSuccess } from '@/core/utils/toast';
 import { useGetReferralSummaryQuery } from '@/store/services/referralApi.service';
+import { useGetWalletSummaryQuery } from '@/store/services/walletApi.service';
 import { SettingsNavigationProp } from '@/navigation/types';
 import { referRewardsStyles } from './ReferRewards.styles';
 import { ReferredUser } from './ReferRewards.types';
@@ -90,7 +91,9 @@ export default function ReferRewardsScreen({
   const styles = useThemedStyles(referRewardsStyles);
   const { theme } = useTheme();
   const { data, isLoading, refetch } = useGetReferralSummaryQuery();
+  const { data: walletData } = useGetWalletSummaryQuery();
   const summary = data?.data;
+  const wallet = walletData?.data;
 
   const { t } = useTranslation();
 
@@ -253,6 +256,38 @@ export default function ReferRewardsScreen({
             ))}
           </View>
         </View>
+
+        <SettingsCard
+          title={t('settings.referrals.coins_wallet', {
+            defaultValue: 'Coins wallet',
+          })}
+          subtitle={t('settings.referrals.coins_wallet_sub', {
+            defaultValue: 'Use credits for boosts, premium actions and add-ons',
+          })}
+        >
+          <View style={styles.walletSummaryRow}>
+            <View style={styles.walletBalanceTile}>
+              <Text style={styles.walletBalanceValue}>
+                {wallet?.balance ?? summary?.totalPoints ?? 0}
+              </Text>
+              <Text style={styles.walletBalanceLabel}>
+                {t('settings.referrals.available_coins', {
+                  defaultValue: 'Available coins',
+                })}
+              </Text>
+            </View>
+            <View style={styles.walletBalanceTile}>
+              <Text style={styles.walletBalanceValue}>
+                {wallet?.transactions?.length ?? 0}
+              </Text>
+              <Text style={styles.walletBalanceLabel}>
+                {t('settings.referrals.wallet_activity', {
+                  defaultValue: 'Recent activity',
+                })}
+              </Text>
+            </View>
+          </View>
+        </SettingsCard>
 
         <SettingsCard
           title={t('settings.referrals.referred_users')}

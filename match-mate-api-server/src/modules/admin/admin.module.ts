@@ -9,6 +9,7 @@ import { AdminPaymentsController } from './controllers/admin-payments.controller
 import { AdminPlansController } from './controllers/admin-plans.controller';
 import { AdminNotificationsController } from './controllers/admin-notifications.controller';
 import { AdminAnalyticsController } from './controllers/admin-analytics.controller';
+import { AdminCuratedMatchesController } from './controllers/admin-curated-matches.controller';
 
 // Services
 import { AdminService } from './services/admin.service';
@@ -56,6 +57,8 @@ import { AnalyticsModule } from '../analytics/analytics.module';
 import { NotificationsModule } from '../notifications/notifications.module';
 import { PaymentsModule } from '../payments/payments.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
+import { ChatModule } from '../chat/chat.module';
+import { MatchesModule } from '../matches/matches.module';
 
 @Module({
   imports: [
@@ -78,6 +81,8 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
     NotificationsModule,
     PaymentsModule,
     SubscriptionsModule,
+    ChatModule,
+    MatchesModule,
   ],
   controllers: [
     AdminController,
@@ -87,6 +92,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
     AdminPlansController,
     AdminNotificationsController,
     AdminAnalyticsController,
+    AdminCuratedMatchesController,
   ],
   providers: [AdminService, RbacService, AdminRepository, AdminAuditService],
   exports: [

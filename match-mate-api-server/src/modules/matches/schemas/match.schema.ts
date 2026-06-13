@@ -22,6 +22,15 @@ export class Match {
   @Prop({ default: true })
   isActive!: boolean;
 
+  @Prop()
+  expiresAt?: Date;
+
+  @Prop()
+  expiredAt?: Date;
+
+  @Prop({ trim: true, maxlength: 120 })
+  expiryReason?: string;
+
   @Prop({ type: Types.ObjectId })
   unmatchedBy?: Types.ObjectId;
 
@@ -36,4 +45,5 @@ export type MatchDocument = Match & Document;
 export const MatchSchema = SchemaFactory.createForClass(Match);
 
 MatchSchema.index({ score: 1, isActive: 1 });
+MatchSchema.index({ isActive: 1, expiresAt: 1 });
 MatchSchema.index({ userId: 1, targetUserId: 1 }, { unique: true });

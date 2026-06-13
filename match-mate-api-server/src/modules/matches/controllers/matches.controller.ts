@@ -13,6 +13,7 @@ import {
 } from '@nestjs/common';
 import { MatchesService } from '../services/matches.service';
 import { MatchDiscoveryService } from '../services/match-discovery.service';
+import { PremiumMatchCuratorService } from '../services/premium-match-curator.service';
 import { SendInterestDto } from '../dto/send-interest.dto';
 import { RespondInterestDto } from '../dto/respond-interest.dto';
 import { UnmatchDto } from '../dto/unmatch.dto';
@@ -28,6 +29,7 @@ export class MatchesController {
   constructor(
     private readonly matchesService: MatchesService,
     private readonly discoveryService: MatchDiscoveryService,
+    private readonly curatorService: PremiumMatchCuratorService,
   ) {}
 
   //  Discovery
@@ -75,6 +77,32 @@ export class MatchesController {
     return successResponse(
       await this.discoveryService.getOnlineMatches(req.user.sub, query),
       SuccessCode.MATCHES_FETCHED,
+    );
+  }
+
+  @Get('curated')
+  async getCuratedMatches(
+    @Req() req: AuthenticatedRequest,
+    @Query() query: MatchQueryDto,
+  ) {
+    return successResponse(
+      await this.curatorService.getCuratedMatches(req.user.sub, query),
+      SuccessCode.MATCHES_FETCHED,
+    );
+  }
+
+  @Delete('curated/:curatedMatchId')
+  @HttpCode(HttpStatus.OK)
+  async dismissCuratedMatch(
+    @Req() req: AuthenticatedRequest,
+    @Param('curatedMatchId') curatedMatchId: string,
+  ) {
+    return successResponse(
+      await this.curatorService.dismissCuratedMatch(
+        req.user.sub,
+        curatedMatchId,
+      ),
+      SuccessCode.MATCH_REMOVED,
     );
   }
 

@@ -44,6 +44,8 @@ export interface MatchItem {
   isInterestPending: boolean;
   interestId?: string;
   requestStatus?: string;
+  curationId?: string;
+  curationNote?: string;
 }
 
 export interface TabConfig {

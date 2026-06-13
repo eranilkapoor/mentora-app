@@ -31,6 +31,7 @@ import {
 import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
 import { SubscriptionsService } from '@/modules/subscriptions/services/subscriptions.service';
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
+import { WalletService } from '@/modules/referrals/services/wallet.service';
 import { ProfileBoostService } from '@/modules/subscriptions/services/profile-boost.service';
 import { ErrorCode } from '@/common/constants';
 import {
@@ -47,6 +48,7 @@ export class PaymentsService {
     private readonly configService: ConfigService,
     private readonly subscriptionsService: SubscriptionsService,
     private readonly referralsService: ReferralsService,
+    private readonly walletService: WalletService,
     private readonly profileBoostService: ProfileBoostService,
     @InjectModel(Plan.name)
     private readonly planModel: Model<Plan>,
@@ -59,11 +61,21 @@ export class PaymentsService {
   async createOrder(userId: string, dto: CreateOrderDto) {
     this.ensureUserId(userId);
 
-    const plan = await this.planModel.findById(dto.planId).lean().exec();
+    const purpose = dto.purpose ?? PaymentPurpose.SUBSCRIPTION;
+    const isCoinPack = purpose === PaymentPurpose.COIN_PACK;
+    const plan = dto.planId
+      ? await this.planModel.findById(dto.planId).lean().exec()
+      : null;
 
-    if (!plan || !plan.isActive) {
+    if (!isCoinPack && (!plan || !plan.isActive)) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'invalid_or_inactive_plan',
+      });
+    }
+
+    if (isCoinPack && (!dto.amount || !dto.coinAmount)) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coin_pack_amount_and_coins_required',
       });
     }
 
@@ -85,13 +97,15 @@ export class PaymentsService {
       this.configService.get<string>('payments.gstPercentage') ?? '0',
     );
 
-    const amount = Number(plan.price);
-    const discount = await this.calculateCouponDiscount({
-      userId,
-      plan,
-      couponCode: dto.couponCode,
-      amount,
-    });
+    const amount = Number(isCoinPack ? dto.amount : plan?.price);
+    const discount = isCoinPack
+      ? { discountAmount: 0, couponCode: undefined, couponSummary: undefined }
+      : await this.calculateCouponDiscount({
+          userId,
+          plan: plan!,
+          couponCode: dto.couponCode,
+          amount,
+        });
     const taxAmount = Number(((amount * taxPercentage) / 100).toFixed(2));
     const discountAmount = discount.discountAmount;
     const netAmount = Number((amount + taxAmount - discountAmount).toFixed(2));
@@ -101,7 +115,7 @@ export class PaymentsService {
 
     const payment = await this.paymentRepo.create({
       userId: new Types.ObjectId(userId),
-      planId: new Types.ObjectId(dto.planId),
+      planId: dto.planId ? new Types.ObjectId(dto.planId) : undefined,
       orderId,
       gatewayOrderId,
       amount,
@@ -112,13 +126,19 @@ export class PaymentsService {
       currency: (dto.currency ?? 'INR').toUpperCase(),
       status: PaymentStatus.PENDING,
       gateway: dto.gateway ?? PaymentGateway.RAZORPAY,
-      purpose: dto.purpose ?? PaymentPurpose.SUBSCRIPTION,
+      purpose,
       idempotencyKey: dto.idempotencyKey,
       initiatedAt: new Date(),
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       metadata: {
         ...(dto.metadata ?? {}),
         description: dto.description,
+        ...(isCoinPack
+          ? {
+              coinAmount: Math.round(Number(dto.coinAmount)),
+              walletProduct: 'coin_pack',
+            }
+          : {}),
         coupon: discount.couponSummary,
       },
       customer: dto.customerGstin ? { gstin: dto.customerGstin } : undefined,
@@ -201,6 +221,7 @@ export class PaymentsService {
       updated.userId.toString(),
       updated,
     );
+    await this.creditCoinPackIfRequired(updated.userId.toString(), updated);
     await this.createInvoiceIfRequired(updated);
 
     return updated;
@@ -281,6 +302,7 @@ export class PaymentsService {
         updated.userId.toString(),
         updated,
       );
+      await this.creditCoinPackIfRequired(updated.userId.toString(), updated);
       await this.createInvoiceIfRequired(updated);
 
       return { processed: true, status: updated.status };
@@ -368,6 +390,33 @@ export class PaymentsService {
     dto: VerifyStoreSubscriptionDto,
   ) {
     this.ensureUserId(userId);
+    this.ensureMobileStoreReceiptAllowed(dto);
+
+    const existingPayment =
+      await this.paymentRepo.findSuccessfulStoreTransaction({
+        gateway: dto.gateway,
+        transactionId: dto.transactionId,
+      });
+
+    if (existingPayment) {
+      if (existingPayment.userId.toString() !== userId) {
+        return throwConflict(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+          reason: 'store_transaction_already_claimed',
+        });
+      }
+
+      await this.subscriptionsService.reconcileStoreSubscription(userId, {
+        planId: existingPayment.planId?.toString() ?? dto.planId,
+        paymentId: existingPayment._id?.toString(),
+        paymentProvider: dto.gateway,
+        storeProductId: dto.productId,
+        storeTransactionId: dto.transactionId,
+        storeOriginalTransactionId: dto.originalTransactionId,
+      });
+
+      return existingPayment;
+    }
+
     const plan = await this.planModel.findById(dto.planId).lean().exec();
 
     if (!plan || !plan.isActive) {
@@ -375,8 +424,6 @@ export class PaymentsService {
         reason: 'invalid_or_inactive_plan',
       });
     }
-
-    this.ensureMobileStoreReceiptAllowed(dto);
 
     const amount = Number(plan.price);
     const discount = await this.calculateCouponDiscount({
@@ -586,9 +633,10 @@ export class PaymentsService {
     const staleMinutes = query.stalePendingMinutes ?? 30;
     const staleBefore = new Date(Date.now() - staleMinutes * 60 * 1000);
 
-    const [summary, stalePendingCount] = await Promise.all([
+    const [summary, stalePendingCount, storeRenewalCount] = await Promise.all([
       this.paymentRepo.getStatusSummary({ fromDate, toDate }),
       this.paymentRepo.countStalePending(staleBefore, fromDate, toDate),
+      this.paymentRepo.countStoreRenewals({ fromDate, toDate }),
     ]);
 
     const totals = summary.reduce(
@@ -618,6 +666,7 @@ export class PaymentsService {
       range: { fromDate, toDate },
       stalePendingMinutes: staleMinutes,
       stalePendingCount,
+      storeRenewalCount,
       successRate:
         totals.totalTransactions > 0
           ? Number(
@@ -899,8 +948,7 @@ export class PaymentsService {
     const secret = this.configService.get<string>('payments.signatureSecret');
 
     if (!secret) {
-      // In local/non-integrated environments, skip strict HMAC verification.
-      return true;
+      return this.canAllowUnsignedPaymentVerification();
     }
 
     const payload = `${params.orderId}|${params.paymentId}`;
@@ -912,7 +960,7 @@ export class PaymentsService {
     const secret = this.configService.get<string>('payments.webhookSecret');
 
     if (!secret) {
-      return true;
+      return this.canAllowUnsignedPaymentVerification();
     }
 
     if (!signature) {
@@ -923,6 +971,15 @@ export class PaymentsService {
     const digest = createHmac('sha256', secret).update(payload).digest('hex');
 
     return digest === signature;
+  }
+
+  private canAllowUnsignedPaymentVerification() {
+    const env = this.configService.get<string>('env', 'development');
+    const allowUnsigned = this.configService.get<boolean>(
+      'payments.allowUnsignedVerification',
+      false,
+    );
+    return env !== 'production' && allowUnsigned;
   }
 
   private async activateSubscriptionIfRequired(
@@ -993,6 +1050,40 @@ export class PaymentsService {
       durationHours: Number.isFinite(durationHours) ? durationHours : 24,
       multiplier: Number.isFinite(multiplier) ? multiplier : 1.25,
       source: 'payment',
+    });
+  }
+
+  private async creditCoinPackIfRequired(
+    userId: string,
+    payment: {
+      _id?: { toString(): string };
+      purpose?: PaymentPurpose;
+      metadata?: Record<string, unknown>;
+      orderId?: string;
+      netAmount?: number;
+      currency?: string;
+    },
+  ) {
+    if (payment.purpose !== PaymentPurpose.COIN_PACK) {
+      return;
+    }
+
+    const coins = Math.round(Number(payment.metadata?.coinAmount ?? 0));
+    if (!Number.isFinite(coins) || coins <= 0) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coin_pack_missing_coin_amount',
+      });
+    }
+
+    await this.walletService.creditCoinPurchase({
+      userId,
+      coins,
+      paymentId: payment._id?.toString() ?? payment.orderId ?? randomUUID(),
+      metadata: {
+        orderId: payment.orderId,
+        netAmount: payment.netAmount,
+        currency: payment.currency,
+      },
     });
   }
 }

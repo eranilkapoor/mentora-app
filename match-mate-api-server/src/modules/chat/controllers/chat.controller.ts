@@ -28,6 +28,7 @@ import { MarkRoomReadDto } from '../dto/mark-room-read.dto';
 import { SendMessageBodyDto, SendMessageDto } from '../dto/send-message.dto';
 import { UpdateRoomSettingsDto } from '../dto/update-room-settings.dto';
 import { ReactToMessageDto } from '../dto/react-to-message.dto';
+import { RespondChatRequestDto } from '../dto/respond-chat-request.dto';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
 
@@ -114,6 +115,24 @@ export class ChatController {
       data,
       SuccessCode.CHAT_FETCHED,
       'Messages fetched successfully',
+    );
+  }
+
+  @Post('rooms/:roomId/request/respond')
+  async respondToChatRequest(
+    @Req() req: AppRequest,
+    @Param('roomId') roomId: string,
+    @Body() dto: RespondChatRequestDto,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.service.respondToChatRequest(
+      req.user?.sub ?? '',
+      roomId,
+      dto.action,
+    );
+    return successResponse(
+      data,
+      SuccessCode.CHAT_FETCHED,
+      'Chat request updated',
     );
   }
 

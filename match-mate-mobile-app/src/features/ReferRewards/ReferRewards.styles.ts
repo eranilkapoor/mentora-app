@@ -114,6 +114,30 @@ export const referRewardsStyles = (
       fontWeight: '700',
       color: theme.colors.textSecondary,
     },
+    walletSummaryRow: {
+      flexDirection: 'row',
+      gap: 10,
+      paddingHorizontal: 14,
+      paddingBottom: 14,
+    },
+    walletBalanceTile: {
+      flex: 1,
+      minHeight: 74,
+      borderRadius: 10,
+      padding: 12,
+      backgroundColor: theme.colors.backgroundLight,
+      justifyContent: 'space-between',
+    },
+    walletBalanceValue: {
+      fontSize: 20,
+      fontWeight: '900',
+      color: theme.colors.primary,
+    },
+    walletBalanceLabel: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
+      fontWeight: '700',
+    },
     rewardRow: {
       flexDirection: 'row',
       gap: 12,

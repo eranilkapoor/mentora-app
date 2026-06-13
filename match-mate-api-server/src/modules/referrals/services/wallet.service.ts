@@ -90,6 +90,72 @@ export class WalletService {
     return this.getSummary(userId);
   }
 
+  async creditCoinPurchase(params: {
+    userId: string | Types.ObjectId;
+    coins: number;
+    paymentId: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    return this.credit({
+      userId: params.userId,
+      points: params.coins,
+      source: WalletTransactionSource.COIN_PURCHASE,
+      referenceId: params.paymentId,
+      metadata: params.metadata,
+    });
+  }
+
+  async spend(params: {
+    userId: string;
+    coins: number;
+    referenceId?: string;
+    reason?: string;
+    metadata?: Record<string, unknown>;
+  }) {
+    const requestedCoins = Math.round(Number(params.coins ?? 0));
+    if (requestedCoins <= 0) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'invalid_wallet_spend_amount',
+      });
+    }
+
+    if (params.referenceId) {
+      const existing = await this.walletModel.findOne({
+        userId: new Types.ObjectId(params.userId),
+        source: WalletTransactionSource.COIN_SPEND,
+        referenceId: params.referenceId,
+        status: WalletTransactionStatus.POSTED,
+      });
+
+      if (existing) {
+        return this.getSummary(params.userId);
+      }
+    }
+
+    const balance = await this.getBalance(params.userId);
+    if (requestedCoins > balance) {
+      return throwConflict(ErrorCode.PAYMENT_FAILED, {
+        reason: 'insufficient_wallet_balance',
+        balance,
+      });
+    }
+
+    await this.walletModel.create({
+      userId: new Types.ObjectId(params.userId),
+      type: WalletTransactionType.DEBIT,
+      source: WalletTransactionSource.COIN_SPEND,
+      points: -requestedCoins,
+      balanceAfter: balance - requestedCoins,
+      referenceId: params.referenceId,
+      metadata: {
+        ...(params.metadata ?? {}),
+        reason: params.reason,
+      },
+    });
+
+    return this.getSummary(params.userId);
+  }
+
   async getSummary(userId: string | Types.ObjectId) {
     const userObjectId = this.toObjectId(userId);
     const [balance, transactions] = await Promise.all([

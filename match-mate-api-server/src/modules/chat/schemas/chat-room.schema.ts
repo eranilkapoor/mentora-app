@@ -47,6 +47,21 @@ export class ChatRoom extends Document {
   @Prop({ type: Types.ObjectId, ref: 'Match' })
   startedFromMatchId?: Types.ObjectId;
 
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  requestedById?: Types.ObjectId;
+
+  @Prop()
+  requestedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  respondedById?: Types.ObjectId;
+
+  @Prop()
+  respondedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'ChatMessage' })
+  requestMessageId?: Types.ObjectId;
+
   @Prop({
     type: String,
     enum: ChatRoomStatus,

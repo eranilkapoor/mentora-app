@@ -76,6 +76,8 @@ export const mapToMatchItem = (
       profile.isShortlisted === true || shortlistedIds.has(profile.userId),
     isInterestPending: pendingInterestByUserId.has(profile.userId),
     ...(pendingInterestId ? { interestId: pendingInterestId } : {}),
+    ...(profile.curation?.id ? { curationId: profile.curation.id } : {}),
+    ...(profile.curation?.note ? { curationNote: profile.curation.note } : {}),
   };
 };
 

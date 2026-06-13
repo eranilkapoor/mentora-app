@@ -17,6 +17,8 @@ export type ChatListProps = {
 export type ChatMatch = {
   id: string;
   roomId?: string;
+  status?: string;
+  requestedById?: string;
   name: string;
   age: number;
   city: string;
@@ -30,6 +32,8 @@ export type ChatMatch = {
   isArchived: boolean;
   isPinned: boolean;
   isMuted: boolean;
+  isRequestIncoming?: boolean;
+  isRequestOutgoing?: boolean;
 };
 
 export type ChatFilter =

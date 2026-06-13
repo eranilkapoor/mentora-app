@@ -30,6 +30,7 @@ export const COLLECTION_NAMES = {
   ANALYTICS_DAILY_SUMMARY: 'analytics_daily_summaries',
 
   MATCH: 'matches',
+  CURATED_MATCH: 'curated_matches',
   CHAT_ROOM: 'chat_rooms',
   CHAT_MESSAGE: 'chat_messages',
 

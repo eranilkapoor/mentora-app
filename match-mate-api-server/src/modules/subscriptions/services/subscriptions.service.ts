@@ -99,6 +99,38 @@ export class SubscriptionsService {
     return { success: true, subscription };
   }
 
+  async reconcileStoreSubscription(
+    userId: string,
+    options: {
+      planId: string;
+      paymentId?: string;
+      paymentProvider: PaymentGateway;
+      storeProductId: string;
+      storeTransactionId: string;
+      storeOriginalTransactionId?: string;
+    },
+  ) {
+    const existing = await this.subModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        storeTransactionId: options.storeTransactionId,
+      })
+      .exec();
+
+    if (existing) {
+      return { success: true, subscription: existing, reconciled: true };
+    }
+
+    return this.purchasePlan(userId, options.planId, {
+      paymentId: options.paymentId,
+      paymentProvider: options.paymentProvider,
+      autoRenew: true,
+      storeProductId: options.storeProductId,
+      storeTransactionId: options.storeTransactionId,
+      storeOriginalTransactionId: options.storeOriginalTransactionId,
+    });
+  }
+
   async startFreeTrial(userId: string, planId: string, trialDays = 7) {
     const previousSubscription = await this.subModel
       .exists({ userId: new Types.ObjectId(userId) })

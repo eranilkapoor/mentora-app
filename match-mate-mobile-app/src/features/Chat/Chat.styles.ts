@@ -179,6 +179,47 @@ export const chatStyles = (
       height: 200,
       borderRadius: 12,
     },
+    audioBubble: {
+      minWidth: 190,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 10,
+    },
+    audioPlayBtn: {
+      width: 30,
+      height: 30,
+      borderRadius: 15,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primary,
+    },
+    audioPlayBtnMe: {
+      backgroundColor: theme.colors.white,
+    },
+    audioWave: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 3,
+      flex: 1,
+      minHeight: 28,
+    },
+    audioWaveBar: {
+      width: 3,
+      borderRadius: 3,
+      backgroundColor: theme.colors.primary,
+      opacity: 0.75,
+    },
+    audioWaveBarMe: {
+      backgroundColor: theme.colors.white,
+    },
+    audioLabel: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: theme.colors.textSecondary,
+    },
+    audioLabelMe: {
+      color: theme.colors.white,
+    },
     timeRow: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -260,6 +301,37 @@ export const chatStyles = (
     },
     emoji: { fontSize: 26 },
 
+    recordingBar: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingHorizontal: 12,
+      paddingVertical: 8,
+      backgroundColor: theme.colors.surface,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    recordingPulse: {
+      width: 9,
+      height: 9,
+      borderRadius: 5,
+      backgroundColor: theme.colors.error,
+    },
+    recordingText: {
+      flex: 1,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+    },
+    recordingCancelBtn: {
+      width: 32,
+      height: 32,
+      borderRadius: 16,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.backgroundLight,
+    },
+
     // ─── Input Bar ────────────────────────────────────────────────────────
     inputBar: {
       flexDirection: 'row',
@@ -279,6 +351,9 @@ export const chatStyles = (
       backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    recordingIconBtn: {
+      backgroundColor: theme.colors.error,
     },
     input: {
       flex: 1,

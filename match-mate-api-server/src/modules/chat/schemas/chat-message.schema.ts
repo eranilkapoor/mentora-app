@@ -1,7 +1,11 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
-import { ChatMessageStatus, ChatMessageType } from '../enums/chat.enums';
+import {
+  ChatMessageStatus,
+  ChatMessageType,
+  ChatModerationStatus,
+} from '../enums/chat.enums';
 
 @Schema({ _id: false })
 export class MessageAttachment {
@@ -56,6 +60,26 @@ export class ChatMessage extends Document {
   @Prop({ type: [MessageReaction], default: [] })
   reactions!: MessageReaction[];
 
+  @Prop({
+    type: String,
+    enum: ChatModerationStatus,
+    default: ChatModerationStatus.APPROVED,
+    index: true,
+  })
+  moderationStatus!: ChatModerationStatus;
+
+  @Prop({ type: [String], default: [] })
+  moderationReasons!: string[];
+
+  @Prop({ type: Types.ObjectId })
+  reviewedBy?: Types.ObjectId;
+
+  @Prop()
+  reviewedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 500 })
+  reviewNote?: string;
+
   @Prop({ type: Types.ObjectId, ref: 'ChatMessage' })
   replyToMessageId?: Types.ObjectId;
 
@@ -87,6 +111,7 @@ export const ChatMessageSchema = SchemaFactory.createForClass(ChatMessage);
 
 ChatMessageSchema.index({ roomId: 1, createdAt: -1 });
 ChatMessageSchema.index({ receiverId: 1, status: 1, roomId: 1 });
+ChatMessageSchema.index({ moderationStatus: 1, createdAt: -1 });
 ChatMessageSchema.index(
   { clientMessageId: 1, senderId: 1 },
   {
