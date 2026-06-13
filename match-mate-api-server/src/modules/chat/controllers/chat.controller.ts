@@ -27,6 +27,7 @@ import { ListMessagesDto } from '../dto/list-messages.dto';
 import { MarkRoomReadDto } from '../dto/mark-room-read.dto';
 import { SendMessageBodyDto, SendMessageDto } from '../dto/send-message.dto';
 import { UpdateRoomSettingsDto } from '../dto/update-room-settings.dto';
+import { ReactToMessageDto } from '../dto/react-to-message.dto';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
 
@@ -166,6 +167,26 @@ export class ChatController {
       data,
       SuccessCode.CHAT_MESSAGE_DELETED,
       'Message deleted successfully',
+    );
+  }
+
+  @Patch('rooms/:roomId/messages/:messageId/reaction')
+  async reactToMessage(
+    @Req() req: AppRequest,
+    @Param('roomId') roomId: string,
+    @Param('messageId') messageId: string,
+    @Body() dto: ReactToMessageDto,
+  ): Promise<ApiResponse<unknown>> {
+    const data = await this.service.reactToMessage(
+      req.user?.sub ?? '',
+      roomId,
+      messageId,
+      dto.emoji,
+    );
+    return successResponse(
+      data,
+      SuccessCode.CHAT_MESSAGE_SENT,
+      'Message reaction updated',
     );
   }
 

@@ -77,6 +77,19 @@ export class OtpService {
     return isValid;
   }
 
+  cleanupExpiredOtps(now = Date.now()) {
+    let removedCount = 0;
+
+    for (const [key, storedOtp] of this.otpStore.entries()) {
+      if (now > storedOtp.expiresAt) {
+        this.otpStore.delete(key);
+        removedCount += 1;
+      }
+    }
+
+    return { removedCount, remainingCount: this.otpStore.size };
+  }
+
   shouldExposeOtpForEnvironment(): boolean {
     return this.configService.get<string>('env') !== 'production';
   }

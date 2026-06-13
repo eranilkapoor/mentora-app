@@ -481,9 +481,12 @@ const createProfilePdfHtml = (
         <style>
           * { box-sizing: border-box; }
           body { margin:0; padding:32px; color:#1f2933; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f6f8fb; }
-          .page { background:#fff; border:1px solid #e5e9f0; border-radius:18px; overflow:hidden; }
+          .page { position:relative; background:#fff; border:1px solid #e5e9f0; border-radius:18px; overflow:hidden; }
+          .document-watermark { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:.045; transform:rotate(-28deg); font-size:72px; font-weight:800; letter-spacing:8px; color:#e94e77; text-transform:uppercase; }
           .hero { display:flex; gap:24px; padding:28px; background:#fff7f1; border-bottom:1px solid #efe3d7; }
-          .photo { width:150px; height:188px; border-radius:14px; object-fit:cover; background:#e5e7eb; }
+          .photo-wrap { position:relative; width:150px; height:188px; border-radius:14px; overflow:hidden; background:#e5e7eb; flex:0 0 auto; }
+          .photo { width:150px; height:188px; object-fit:cover; background:#e5e7eb; display:block; }
+          .photo-watermark { position:absolute; left:-18px; right:-18px; bottom:18px; transform:rotate(-22deg); background:rgba(17,24,39,.62); color:#fff; text-align:center; font-size:13px; font-weight:800; letter-spacing:2px; padding:6px 0; text-transform:uppercase; }
           h1 { margin:0 0 8px; font-size:30px; line-height:1.2; }
           .summary,.location { margin:0 0 8px; color:#667085; font-size:14px; }
           .section { padding:24px 28px; }
@@ -498,8 +501,12 @@ const createProfilePdfHtml = (
       </head>
       <body>
         <main class="page">
+          <div class="document-watermark">Match Mate</div>
           <section class="hero">
-            ${photoUrl ? `<img class="photo" src="${escapeHtml(photoUrl)}" />` : '<div class="photo"></div>'}
+            <div class="photo-wrap">
+              ${photoUrl ? `<img class="photo" src="${escapeHtml(photoUrl)}" />` : '<div class="photo"></div>'}
+              <div class="photo-watermark">Match Mate</div>
+            </div>
             <div>
               <h1>${escapeHtml(getDisplayName(profile))}</h1>
               <p class="summary">${escapeHtml(profileSummary)}</p>
@@ -512,7 +519,7 @@ const createProfilePdfHtml = (
             <h2>Profile Details</h2>
             <table>${rows}</table>
           </section>
-          <div class="footer">Generated from Match Mate</div>
+          <div class="footer">Generated from Match Mate. Shared profile copy is watermarked.</div>
         </main>
       </body>
     </html>`;

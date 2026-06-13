@@ -27,6 +27,7 @@ export const COLLECTION_NAMES = {
   REFERRAL_REWARD: 'referral_rewards',
 
   ANALYTICS_EVENT: 'analytics_events',
+  ANALYTICS_DAILY_SUMMARY: 'analytics_daily_summaries',
 
   MATCH: 'matches',
   CHAT_ROOM: 'chat_rooms',
@@ -39,6 +40,8 @@ export const COLLECTION_NAMES = {
   NOTIFICATION_TEMPLATE: 'notification_templates',
   NOTIFICATION_LOG: 'notification_logs',
   NOTIFICATION_DEVICE_TOKEN: 'notification_device_tokens',
+
+  SUPPORT_TICKET: 'support_tickets',
 
   ACCOUNT_SETTING: 'account_settings',
   PRIVACY_SETTING: 'privacy_settings',

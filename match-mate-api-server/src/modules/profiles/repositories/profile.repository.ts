@@ -3,6 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Profile, ProfileDocument } from '../schemas/profile/profile.schema';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
+import { ProfileStatus } from '@/common/enums';
 
 @Injectable()
 export class ProfileRepository {
@@ -70,5 +71,41 @@ export class ProfileRepository {
       { $set: { deletedAt: new Date(), status: 'deleted' } },
       { new: true },
     );
+  }
+
+  async archiveInactive(cutoff: Date, limit: number) {
+    const profiles = await this.profileModel
+      .find(
+        {
+          deletedAt: { $exists: false },
+          status: ProfileStatus.ACTIVE,
+          lastActiveAt: { $lt: cutoff },
+        },
+        { _id: 1 },
+      )
+      .sort({ lastActiveAt: 1 })
+      .limit(limit)
+      .lean()
+      .exec();
+
+    const profileIds = profiles.map((profile) => profile._id);
+    if (profileIds.length === 0) {
+      return { matchedCount: 0, modifiedCount: 0 };
+    }
+
+    const result = await this.profileModel.updateMany(
+      { _id: { $in: profileIds }, status: ProfileStatus.ACTIVE },
+      {
+        $set: {
+          status: ProfileStatus.INACTIVE,
+          updatedAt: new Date(),
+        },
+      },
+    );
+
+    return {
+      matchedCount: result.matchedCount,
+      modifiedCount: result.modifiedCount,
+    };
   }
 }

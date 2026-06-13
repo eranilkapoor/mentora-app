@@ -407,6 +407,30 @@ export const envValidationSchema = Joi.object({
     .max(524_288_000)
     .default(104_857_600),
 
+  MEDIA_DELETED_CLEANUP_RETENTION_DAYS: Joi.number()
+    .integer()
+    .min(0)
+    .max(365)
+    .default(7),
+
+  MEDIA_DELETED_CLEANUP_LIMIT: Joi.number()
+    .integer()
+    .min(1)
+    .max(500)
+    .default(100),
+
+  PROFILE_INACTIVE_ARCHIVE_DAYS: Joi.number()
+    .integer()
+    .min(0)
+    .max(3650)
+    .default(180),
+
+  PROFILE_INACTIVE_ARCHIVE_LIMIT: Joi.number()
+    .integer()
+    .min(1)
+    .max(5000)
+    .default(500),
+
   MONITORING_ENABLED: Joi.boolean()
     .truthy('true')
     .falsy('false')

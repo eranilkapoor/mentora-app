@@ -18,6 +18,18 @@ export class MessageAttachment {
   size?: number;
 }
 
+@Schema({ _id: false })
+export class MessageReaction {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
+  userId!: Types.ObjectId;
+
+  @Prop({ required: true, maxlength: 16 })
+  emoji!: string;
+
+  @Prop({ default: Date.now })
+  reactedAt!: Date;
+}
+
 @Schema({ collection: COLLECTION_NAMES.CHAT_MESSAGE, timestamps: true })
 export class ChatMessage extends Document {
   @Prop({ type: Types.ObjectId, ref: 'ChatRoom', required: true, index: true })
@@ -40,6 +52,9 @@ export class ChatMessage extends Document {
 
   @Prop({ type: [MessageAttachment], default: [] })
   attachments!: MessageAttachment[];
+
+  @Prop({ type: [MessageReaction], default: [] })
+  reactions!: MessageReaction[];
 
   @Prop({ type: Types.ObjectId, ref: 'ChatMessage' })
   replyToMessageId?: Types.ObjectId;

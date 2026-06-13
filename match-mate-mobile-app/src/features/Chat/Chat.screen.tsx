@@ -37,6 +37,7 @@ import {
   useSendMessageMutation,
   useUploadChatAttachmentsMutation,
   useDeleteChatMessageMutation,
+  useReactToMessageMutation,
 } from '@/store/services/chatApi.service';
 import {
   useBlockUserMutation,
@@ -71,6 +72,7 @@ const mapMessage = (message: ChatMessage): Message => {
       : Date.now(),
     type: isImage ? 'image' : 'text',
     ...(imageUrl ? { imageUrl } : {}),
+    reactions: message.reactions ?? [],
     status: message.readAt
       ? 'read'
       : message.deliveredAt ||
@@ -107,6 +109,7 @@ export default function ChatScreen({
   const [uploadChatAttachments, { isLoading: isUploadingAttachment }] =
     useUploadChatAttachmentsMutation();
   const [deleteChatMessage] = useDeleteChatMessageMutation();
+  const [reactToMessage] = useReactToMessageMutation();
   const [markRoomRead] = useMarkRoomReadMutation();
   const [blockUser] = useBlockUserMutation();
   const [reportUser] = useReportUserMutation();
@@ -347,6 +350,35 @@ export default function ChatScreen({
     [activeRoomId, deleteChatMessage, t]
   );
 
+  const handleReactToMessage = useCallback(
+    (message: Message, emoji: string): void => {
+      if (!activeRoomId || !currentUserId) return;
+
+      const existingReaction = message.reactions?.find(
+        (reaction) => reaction.userId === currentUserId
+      );
+      const nextEmoji = existingReaction?.emoji === emoji ? undefined : emoji;
+
+      void reactToMessage({
+        roomId: activeRoomId,
+        messageId: message.id,
+        emoji: nextEmoji,
+      })
+        .unwrap()
+        .catch(() => {
+          showError({
+            title: t('chat.reaction_failed_title', {
+              defaultValue: 'Reaction not updated',
+            }),
+            message: t('chat.reaction_failed_message', {
+              defaultValue: 'Please try again in a moment.',
+            }),
+          });
+        });
+    },
+    [activeRoomId, currentUserId, reactToMessage, t]
+  );
+
   const handleReportUser = useCallback((): void => {
     if (!userId) return;
 
@@ -417,7 +449,11 @@ export default function ChatScreen({
   const renderMessage: ListRenderItem<Message> = useCallback(
     ({ item, index }) => (
       <>
-        <MessageBubble item={item} onLongPress={handleDeleteMessage} />
+        <MessageBubble
+          item={item}
+          onLongPress={handleDeleteMessage}
+          onReact={handleReactToMessage}
+        />
         {index < messages.length - 1 &&
           formatDateLabel(item.timestamp) !==
             formatDateLabel(messages[index + 1]?.timestamp ?? 0) && (
@@ -425,7 +461,7 @@ export default function ChatScreen({
           )}
       </>
     ),
-    [handleDeleteMessage, messages]
+    [handleDeleteMessage, handleReactToMessage, messages]
   );
 
   return (

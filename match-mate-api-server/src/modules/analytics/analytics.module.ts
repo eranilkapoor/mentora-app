@@ -6,14 +6,23 @@ import {
   AnalyticsEvent,
   AnalyticsEventSchema,
 } from './schemas/analytics-event.schema';
+import {
+  AnalyticsDailySummary,
+  AnalyticsDailySummarySchema,
+} from './schemas/analytics-daily-summary.schema';
+import { AnalyticsAggregationTask } from './tasks/analytics-aggregation.task';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: AnalyticsEvent.name, schema: AnalyticsEventSchema },
+      {
+        name: AnalyticsDailySummary.name,
+        schema: AnalyticsDailySummarySchema,
+      },
     ]),
   ],
-  providers: [AnalyticsService, AnalyticsRepository],
+  providers: [AnalyticsService, AnalyticsRepository, AnalyticsAggregationTask],
   exports: [AnalyticsService],
 })
 export class AnalyticsModule {}

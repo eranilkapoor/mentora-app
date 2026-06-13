@@ -303,6 +303,29 @@ export class AnalyticsService {
     };
   }
 
+  async aggregateDailySummary(day = this.getPreviousUtcDay()) {
+    const from = new Date(`${day}T00:00:00.000Z`);
+    const to = new Date(`${day}T23:59:59.999Z`);
+    const query = {
+      from: from.toISOString(),
+      to: to.toISOString(),
+    } as AnalyticsQueryDto;
+
+    const [overview, funnel] = await Promise.all([
+      this.getOverview(query),
+      this.getFunnel(query),
+    ]);
+
+    return this.repo.upsertDailySummary({
+      day,
+      from,
+      to,
+      overview: overview as unknown as Record<string, unknown>,
+      funnel: funnel as unknown as Record<string, unknown>,
+      generatedAt: new Date(),
+    });
+  }
+
   private buildMatch(query: AnalyticsQueryDto): AnalyticsMatch {
     const match: AnalyticsMatch = {};
 
@@ -371,5 +394,11 @@ export class AnalyticsService {
       default:
         return '$eventType';
     }
+  }
+
+  private getPreviousUtcDay() {
+    const date = new Date();
+    date.setUTCDate(date.getUTCDate() - 1);
+    return date.toISOString().slice(0, 10);
   }
 }

@@ -75,6 +75,11 @@ type MessageLike = {
   type?: ChatMessageType;
   content?: string;
   attachments?: unknown[];
+  reactions?: Array<{
+    userId?: unknown;
+    emoji?: string;
+    reactedAt?: Date;
+  }>;
   replyToMessageId?: unknown;
   status?: ChatMessageStatus;
   deliveredAt?: Date | null;
@@ -626,6 +631,50 @@ export class ChatService {
     };
   }
 
+  async reactToMessage(
+    userId: string,
+    roomId: string,
+    messageId: string,
+    emoji?: string,
+  ) {
+    await this.access.getAuthorizedRoom(userId, roomId);
+
+    const message = await this.repo.findMessageById(messageId);
+    if (
+      !message ||
+      String(message.roomId) !== roomId ||
+      message.isDeletedForEveryone
+    ) {
+      return throwBadRequest(ErrorCode.CHAT_MESSAGE_NOT_FOUND);
+    }
+
+    const normalizedEmoji = emoji?.trim();
+    if (normalizedEmoji && normalizedEmoji.length > 16) {
+      throwBadRequest(ErrorCode.INVALID_INPUT, {
+        reason: 'chat_reaction_too_long',
+      });
+    }
+
+    const updated = await this.repo.setMessageReaction(
+      messageId,
+      userId,
+      normalizedEmoji || undefined,
+    );
+
+    if (!updated) {
+      return throwBadRequest(ErrorCode.CHAT_MESSAGE_NOT_FOUND);
+    }
+
+    const payload = this.mapMessage(updated);
+    this.realtime.emitToConversation(roomId, 'message:reaction', {
+      roomId,
+      messageId,
+      reactions: payload.reactions,
+    });
+
+    return payload;
+  }
+
   async markRoomRead(userId: string, roomId: string, dto: MarkRoomReadDto) {
     const room = await this.access.getAuthorizedRoom(userId, roomId);
 
@@ -901,6 +950,11 @@ export class ChatService {
     createdAt?: Date;
     updatedAt?: Date;
     clientMessageId?: string;
+    reactions: Array<{
+      userId: string;
+      emoji: string;
+      reactedAt?: Date;
+    }>;
   } {
     return {
       id: this.toSafeString(message._id),
@@ -912,6 +966,7 @@ export class ChatService {
       attachments: Array.isArray(message.attachments)
         ? message.attachments
         : [],
+      reactions: this.mapReactions(message.reactions),
       replyToMessageId: message.replyToMessageId
         ? this.toSafeString(message.replyToMessageId)
         : undefined,
@@ -922,6 +977,20 @@ export class ChatService {
       updatedAt: message.updatedAt,
       clientMessageId: message.clientMessageId,
     };
+  }
+
+  private mapReactions(reactions: MessageLike['reactions']) {
+    if (!Array.isArray(reactions)) {
+      return [];
+    }
+
+    return reactions
+      .filter((reaction) => reaction.emoji && reaction.userId)
+      .map((reaction) => ({
+        userId: this.toSafeString(reaction.userId),
+        emoji: reaction.emoji as string,
+        reactedAt: reaction.reactedAt,
+      }));
   }
 
   private buildUserSummary(

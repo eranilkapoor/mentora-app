@@ -1,469 +1,447 @@
-# 🚀 Enterprise Matrimonial App — Task Roadmap
+# Match Mate Task Roadmap
 
-> Current home: `docs/planning/TASK-ROADMAP.md`
->
-> Purpose: enterprise roadmap coverage across product, backend, mobile, operations, compliance, analytics, and monetization.
+Current home: `docs/planning/TASK-ROADMAP.md`
+
+Last audited: 2026-06-13
+
+This audit compares the roadmap against the current repository:
+
+- Backend: `match-mate-api-server/src`
+- Mobile: `match-mate-mobile-app/src`
+- Launch docs: `docs/launch`
 
 ## Status Legend
 
-| Icon | Status |
-|------|--------|
-| ✅ | Done / Completed |
-| ⏳ | Pending / In Progress |
-| 📂 | Open / Not Started |
-| 🚫 | Not Picked / Not Assigned |
-| ⚠️ | Blocked / Issue |
-| 🔥 | High Priority |
-| 💤 | On Hold |
-| 🆕 | Recommended Addition |
+| Status      | Meaning                                                                                                              |
+| ----------- | -------------------------------------------------------------------------------------------------------------------- |
+| DONE        | Implemented in the app/API and represented in the current codebase.                                                  |
+| PARTIAL     | Core code exists, but production launch still needs provider credentials, external setup, QA, or deeper integration. |
+| TODO        | Not implemented or not visible in the current repository.                                                            |
+| RECOMMENDED | Valuable addition, usually infrastructure, compliance, analytics, or scale work.                                     |
+| BLOCKED     | Cannot be completed only in code; waiting on vendor, console, cloud, legal, or production credentials.               |
 
----
+## Executive Audit Summary
 
-## 🧱 1. Core Platform (Foundation)
+The product is much further along than an early roadmap: the repo contains real modules for auth, sessions, profiles, preferences, media, KYC, matches, chat, notifications, payments, subscriptions, referrals, settings, analytics, admin, Redis caching, Socket.IO, Swagger, rate limiting, and launch-readiness documentation.
 
-### 1.1 Application Boot & Health
+The previous roadmap overstated completion for several enterprise items. Real provider-dependent or production-ops items such as Aadhaar/DigiLocker, external AI moderation, payment gateways, production FCM credentials, Sentry/APM, CDN, Kubernetes, cloud backups, and native Play/App Store billing SDKs should be treated as `PARTIAL`, `TODO`, or `BLOCKED` until production evidence exists.
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Root URL Check (`/`) | None | Quick sanity check for uptime |
-| ✅ | Health Check (`/health`) | None | Required for load balancers, Kubernetes |
-| ✅ | Readiness Probe (`/ready`) | DB, Redis | Separate liveness vs readiness for K8s |
-| ✅ | Graceful Shutdown Handler | Server | Zero-downtime deploys |
+## Fix Or Implement Right Now
 
-### 1.2 Config, Environment & Feature System
+| Priority | Task                                                                                                           |  Status | Why Now                                                                                   |
+| -------- | -------------------------------------------------------------------------------------------------------------- | ------: | ----------------------------------------------------------------------------------------- |
+| P0       | Fix mojibake/corrupt characters in backend comments/log messages where visible in `main.ts` and this roadmap   |    DONE | Cleaned the roadmap and backend bootstrap log/comment text.                               |
+| P0       | Run mobile and API typecheck/lint/build after the roadmap audit                                                |    DONE | API lint/typecheck and mobile lint/typecheck pass.                                        |
+| P0       | Wire real production notification provider secrets and verify one push end-to-end                              | BLOCKED | Code/env contract exists; real FCM credentials and device delivery proof are external.    |
+| P0       | Finish store billing SDK/product mapping or keep purchase CTA guarded for release                              |    DONE | Native billing is guarded by `EXPO_PUBLIC_STORE_BILLING_ENABLED=false` until SDK mapping. |
+| P1       | Add Sentry/Crashlytics SDKs and production DSNs                                                                | PARTIAL | Error reporter foundations exist; external SDK/provider wiring is not complete.           |
+| P1       | Add final release QA evidence: Android matrix, dark theme screenshots, token expiry, push taps, chat reconnect | PARTIAL | Play QA checklist and dark-theme audit docs exist; real device run evidence remains.      |
+| P1       | Tighten production CORS/env secrets review                                                                     |    DONE | Production CORS is restricted and a production secrets checklist exists.                  |
+| P2       | Implement OpenAPI-generated TS client or shared API contract                                                   |    TODO | Reduces drift between NestJS DTOs and mobile RTK Query types.                             |
+| P2       | Add background job coverage for OTP cleanup, orphaned media cleanup, analytics aggregation                     |    DONE | OTP cleanup, deleted-media cleanup, and daily analytics aggregation jobs are implemented. |
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Central Config System (`@nestjs/config` + Joi) | None | Prevent runtime crashes due to missing env |
-| ✅ | Environment Separation (dev/staging/prod) | Config | Safe deployments |
-| 🆕 | Secrets Manager Integration (AWS SM / Vault) | Config | Never store secrets in env files |
-| 🆕 | Feature Flag System (LaunchDarkly / Unleash) | Config | Safe rollouts, A/B testing |
-| 🆕 | Remote Config (Firebase RC / custom) | Config | Dynamic app behaviour without redeploy |
+## 1. Core Platform
 
----
+### 1.1 Application Boot And Health
 
-## 🔐 2. Authentication & Session System
+| Status | Task                       | Evidence / Next Action                                                |
+| ------ | -------------------------- | --------------------------------------------------------------------- |
+| DONE   | Root URL check (`/`)       | `AppController` exposes root health-style response.                   |
+| DONE   | Health/live check          | `AppController` and `AppService` include health and dependency state. |
+| DONE   | Readiness probe (`/ready`) | Readiness checks Mongo/Redis and shutdown state.                      |
+| DONE   | Graceful shutdown handler  | `main.ts` drains readiness and closes app/Socket.IO adapter.          |
+
+### 1.2 Config, Environment And Feature System
+
+| Status      | Task                                  | Evidence / Next Action                                                                                             |
+| ----------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| DONE        | Central config system with validation | `@nestjs/config`, Joi validation, and config files exist.                                                          |
+| DONE        | Environment separation                | Dev/staging/prod scripts and environment config are present.                                                       |
+| PARTIAL     | Feature flag system                   | Auth/social/store billing/media/monitoring flags exist via env; no LaunchDarkly/Unleash-style remote flag service. |
+| PARTIAL     | Remote config                         | Mobile/API env switches exist; no dynamic remote config service.                                                   |
+| RECOMMENDED | Secrets Manager integration           | Move production secrets from env-file workflow to AWS Secrets Manager/Vault/GCP Secret Manager.                    |
+
+## 2. Authentication And Session System
 
 ### 2.1 Authentication Flows
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Email Registration | None | Primary onboarding |
-| ✅ | Phone + OTP Registration | OTP Service | India-first users |
-| ✅ | Social Login (Google / Facebook) | OAuth 2.0 | Reduce friction |
-| ✅ | Apple Sign-In | OAuth | iOS App Store requirement |
-| ✅ | Login (Email / Phone / Social) | Auth | Core access |
-| ✅ | Forgot Password | Email Service | Account recovery |
-| ✅ | Magic Link Login | Email | Passwordless UX option |
-| ✅ | Biometric Auth (Face ID / Fingerprint) | Mobile SDK | Fast re-auth on mobile |
+| Status  | Task                         | Evidence / Next Action                                                                                 |
+| ------- | ---------------------------- | ------------------------------------------------------------------------------------------------------ |
+| DONE    | Email registration/login     | Backend auth controller and mobile login/register screens exist.                                       |
+| DONE    | Phone OTP registration/login | OTP API and mobile phone form exist. Production SMS provider still needs verification.                 |
+| PARTIAL | Google/Facebook social login | Backend strategies/config and mobile OAuth flow exist; production provider app setup must be verified. |
+| PARTIAL | Apple Sign-In                | Expo Apple dependency and backend config exist; production Apple credentials/review remain external.   |
+| DONE    | Forgot/reset password        | Backend endpoints and mobile screens exist.                                                            |
+| DONE    | Magic link login             | Backend endpoints and mobile MagicLogin screen exist.                                                  |
+| PARTIAL | Biometric auth               | Expo local authentication dependency/settings exist; final device QA and UX verification needed.       |
 
-### 2.2 Token & Session Management
+### 2.2 Token And Session Management
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Access + Refresh Token System (JWT) | Auth | Secure sessions |
-| ✅ | Token Rotation on Refresh | Session DB | Prevent token replay attacks |
-| ✅ | Logout from All Devices | Session DB | Security control |
-| ✅ | Device Tracking (OS, browser, IP) | Headers | Fraud detection |
-| ✅ | Concurrent Session Limit | Session DB | Prevent account sharing |
-| ✅ | Suspicious Login Detection | ML / Heuristics | Geo anomaly, new device alerts |
-| ✅ | Session Activity Timeline | Session DB | User transparency + audit |
+| Status | Task                       | Evidence / Next Action                                                                                |
+| ------ | -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| DONE   | Access and refresh JWTs    | Auth token service and refresh strategy exist.                                                        |
+| DONE   | Refresh token rotation     | Session-backed refresh flow exists.                                                                   |
+| DONE   | Logout current/all devices | Auth/session endpoints and security settings screens exist.                                           |
+| DONE   | Device tracking            | Session schema and device management/login history screens exist.                                     |
+| DONE   | Concurrent session limit   | Config and auth security enforcement exist.                                                           |
+| DONE   | Suspicious login detection | Detects new device/IP-network changes, records activity, and sends alerts based on security settings. |
+| DONE   | Session activity timeline  | Login history and device management are implemented.                                                  |
 
-### 2.3 Verification & KYC System
+### 2.3 Verification And KYC
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Email Verification | Email Service | Trust |
-| ✅ | Phone Verification (OTP) | SMS / OTP | Mandatory in India |
-| ✅ | Profile KYC Verification | Storage + Admin | Prevent fake users |
-| ✅ | Aadhaar / DigiLocker eKYC | Govt API | Legal & high-trust verification |
-| ✅ | Selfie-to-Photo Liveness Check | AI / Vision API | Ensure user is real person |
-| ✅ | Document Upload + Manual Review Queue | Storage + Admin | KYC workflow |
-| ✅ | Verification Badge System | Profile | Show verified checkmarks on profile |
+| Status  | Task                                    | Evidence / Next Action                                                                                |
+| ------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| DONE    | Email/phone verification                | Auth verification and OTP flows exist.                                                                |
+| PARTIAL | Profile KYC verification                | Safety/KYC module and mobile KYC screen exist; operational workflow needs production setup.           |
+| PARTIAL | Aadhaar/DigiLocker eKYC                 | `ekyc/initiate` route exists; real government provider integration/credentials are not launch-proven. |
+| TODO    | Selfie-to-photo liveness check          | No real liveness provider integration found.                                                          |
+| DONE    | Document upload and manual review queue | KYC/media/admin moderation queues exist.                                                              |
+| DONE    | Verification badge system               | Profile/account/list UI render verified state from verification/profile data.                         |
 
-### 2.4 Two-Factor Authentication (2FA)
+### 2.4 Two-Factor Authentication
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | TOTP 2FA (Google Authenticator) | Auth | Enterprise security add-on |
-| ✅ | SMS 2FA Toggle | OTP | User-configurable |
-| ✅ | Recovery Codes Generation | Auth | 2FA backup |
+| Status | Task           | Evidence / Next Action                                                       |
+| ------ | -------------- | ---------------------------------------------------------------------------- |
+| DONE   | TOTP 2FA       | Backend TOTP setup/enable/verify and mobile setup screens exist.             |
+| DONE   | SMS 2FA toggle | Backend SMS 2FA endpoints exist. SMS provider needs production verification. |
+| DONE   | Recovery codes | Backend recovery-code generation/regeneration exists.                        |
 
----
-
-## 👤 3. User & Profile System
+## 3. User And Profile System
 
 ### 3.1 Profile Management
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Onboarding Profile (multi-step wizard) | Auth | First-time setup |
-| ✅ | View My Profile | Auth | Core |
-| ✅ | Edit Profile | Auth | Updates |
-| ✅ | Partner Preferences | Profile | Feed into match engine |
-| ✅ | Profile Strength / Completeness Score | Profile | Nudge users to complete profile |
-| ✅ | Profile Visibility Score (searchability) | Algorithm | Engagement driver |
-| ✅ | Soft-Delete / Deactivate Account | Auth | GDPR compliance |
-| ✅ | Account Deletion (Right to Erasure) | DB + Storage | GDPR / IT Act 2023 |
-| ✅ | Profile Boost (paid feature) | Subscription | Monetization lever |
+| Status | Task                                   | Evidence / Next Action                                                                                |
+| ------ | -------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| DONE   | Multi-step onboarding profile          | Mobile onboarding and backend profile onboarding endpoint exist.                                      |
+| DONE   | View/edit my profile                   | Profile, EditProfile, profile APIs, and services exist.                                               |
+| DONE   | Partner preferences                    | Preference APIs and EditPreference screen exist.                                                      |
+| DONE   | Profile completeness score             | Completion/progress UI and backend profile data exist.                                                |
+| DONE   | Profile visibility/searchability score | Backend calculates profile/visibility scores and match discovery indexes, sorts, and filters by them. |
+| DONE   | Deactivate account                     | Settings account deactivate endpoint exists.                                                          |
+| DONE   | Account deletion/right to erasure      | Account deletion request/task and data export/consent services exist.                                 |
+| DONE   | Profile boost                          | Subscription profile boost service/tasks exist.                                                       |
 
-### 3.2 Matrimonial-Specific Bio Fields
+### 3.2 Matrimonial Bio Fields
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Horoscope / Kundli Details | Profile DB | Core for Indian matrimony |
-| ✅ | Family Background Section | Profile DB | Key matrimonial data point |
-| ✅ | Lifestyle Preferences (diet, habits) | Profile DB | Better match scoring |
-| ✅ | Career & Education Details (structured) | Profile DB | Searchable fields |
-| ✅ | Community / Caste / Sub-caste Fields | Profile DB | Market-specific matching |
-| ✅ | NRI Flag & Abroad Location | Profile DB | NRI segment is premium |
+| Status | Task                             | Evidence / Next Action                                  |
+| ------ | -------------------------------- | ------------------------------------------------------- |
+| DONE   | Horoscope/Kundli details         | Astro edit section and backend profile schemas exist.   |
+| DONE   | Family background                | Family edit section/schema exists.                      |
+| DONE   | Lifestyle preferences            | Lifestyle fields and preference matching exist.         |
+| DONE   | Career and education details     | Education/career sections and schemas exist.            |
+| DONE   | Community/caste/sub-caste fields | Enums/profile fields exist.                             |
+| DONE   | NRI flag and abroad location     | Profile personal fields include NRI/visa/location data. |
 
 ### 3.3 Media System
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Upload Images (S3 / local) | Storage | Core UX |
-| ✅ | Upload Videos (intro video) | Storage / CDN | Premium feature |
-| ✅ | Set Primary Profile Photo | Media | UX |
-| ✅ | AI Image Moderation (nudity / offensive) | AI API (AWS Rekognition) | Content safety |
-| ✅ | Manual Review Queue for Flagged Media | Admin Panel | Moderation workflow |
-| ✅ | Photo Privacy (blur until interest accepted) | Media + Match | Safety & trust |
-| ✅ | Watermarking on Exported Photos | Media | Prevent photo scraping |
-| ✅ | Profile Video Thumbnail Auto-generation | FFmpeg | Better UX |
+| Status  | Task                            | Evidence / Next Action                                                                                        |
+| ------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------- |
+| DONE    | Image upload                    | Media controller and mobile photo upload UI exist.                                                            |
+| DONE    | Video intro upload              | Video upload, thumbnail utility, and UI exist.                                                                |
+| DONE    | Set primary photo/video         | Backend primary endpoints and mobile actions exist.                                                           |
+| PARTIAL | AI image/video moderation       | Moderation hooks/config exist; external provider credentials not proven.                                      |
+| DONE    | Manual review queue             | Admin media review queue exists.                                                                              |
+| DONE    | Photo privacy                   | Media/privacy settings and match-based access exist.                                                          |
+| DONE    | Watermarking exported photos    | Profile PDF export now applies document and profile-photo watermarks.                                         |
+| DONE    | Video thumbnail auto-generation | Upload flow generates and stores FFmpeg thumbnails when none are supplied; runtime needs `MEDIA_FFMPEG_PATH`. |
 
-### 3.4 Privacy, Consent & Settings
+### 3.4 Privacy, Consent And Settings
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Privacy Settings (who can see what) | Auth | User control |
-| ✅ | Notification Settings | Notification Service | Engagement control |
-| ✅ | Hide Profile from Specific Users | Interaction | User safety |
-| ✅ | Incognito Browse Mode (premium) | Subscription | Browse without showing viewed |
-| ✅ | Data Download (GDPR data export) | DB + Storage | Legal compliance |
-| ✅ | Consent Management (privacy policy versioning) | Auth | PDPB / GDPR compliance |
+| Status | Task                    | Evidence / Next Action                                                               |
+| ------ | ----------------------- | ------------------------------------------------------------------------------------ |
+| DONE   | Privacy settings        | Privacy settings APIs and mobile screen exist.                                       |
+| DONE   | Notification settings   | Granular notification settings API/UI exist.                                         |
+| DONE   | Hide/block/report users | Settings/safety APIs and mobile flows exist.                                         |
+| DONE   | Incognito browse mode   | Privacy settings and match profile view suppression exist; confirm paywall behavior. |
+| DONE   | Data download           | Account data export endpoint exists.                                                 |
+| DONE   | Consent management      | Consent schema/service/API exist.                                                    |
 
----
+## 4. Matching Engine
 
-## ❤️ 4. Matching Engine
+### 4.1 Discovery And Feed
 
-### 4.1 Match Discovery & Feed
+| Status  | Task                            | Evidence / Next Action                                                                   |
+| ------- | ------------------------------- | ---------------------------------------------------------------------------------------- |
+| DONE    | Recommended matches API         | `matches/recommended` and discovery service exist.                                       |
+| DONE    | Filters API                     | Match query/filter DTOs and mobile filter modal exist.                                   |
+| PARTIAL | ML-based ranking engine         | Rule/scoring logic exists; no true ML pipeline found.                                    |
+| DONE    | Compatibility score engine      | Compatibility service and match score UI exist.                                          |
+| DONE    | Mutual preference scoring       | Preference weights and match discovery logic exist.                                      |
+| DONE    | Nearby matches                  | `matches/nearby` and location support exist.                                             |
+| TODO    | Premium match curator           | No human/AI curator workflow found.                                                      |
+| PARTIAL | Daily matches push notification | Scheduled digest task and notification service exist; campaign QA/provider setup needed. |
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Recommended Matches API | Profile + Algorithm | Core business logic |
-| ✅ | Filters API (age, location, community…) | Search | UX control |
-| ✅ | ML-based Ranking Engine | Data pipeline | Competitive edge |
-| ✅ | Compatibility Score Engine | Profile fields | Show % match to user |
-| ✅ | Mutual Preference Scoring | Both profiles | Better match quality |
-| ✅ | Nearby Matches (geolocation) | Location | Convenience |
-| ✅ | Premium Match Curator (human + AI) | Admin + ML | Concierge upsell |
-| ✅ | "Daily Matches" Push Notification | Scheduler + Notif | Daily re-engagement |
+### 4.2 Interactions
 
-### 4.2 Interaction System
+| Status  | Task                                    | Evidence / Next Action                                                        |
+| ------- | --------------------------------------- | ----------------------------------------------------------------------------- |
+| DONE    | Tracked profile views                   | Match profile/view APIs and analytics schemas exist.                          |
+| DONE    | Send/accept/reject interest             | Interest endpoints and mobile actions exist.                                  |
+| DONE    | Shortlist/save profile                  | Shortlist endpoints and mobile action exist.                                  |
+| DONE    | Block/report user/content               | Settings/safety/admin moderation routes exist.                                |
+| DONE    | Who viewed me                           | Endpoint and feature gate exist.                                              |
+| PARTIAL | Who liked me                            | Interest received/sent flows exist; dedicated premium UI should be confirmed. |
+| DONE    | Interaction limits by subscription tier | Feature guard and subscription feature system exist.                          |
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | View Profile (tracked) | Interaction DB | Analytics input |
-| ✅ | Send Interest | Interaction DB | Matrimony-specific CTA |
-| ✅ | Accept / Reject Interest | Interaction DB | Match trigger |
-| ✅ | Shortlist / Save Profile | Interaction DB | Bookmark for later |
-| ✅ | Block User | Moderation | Safety |
-| ✅ | Report User / Content | Moderation | Safety + compliance |
-| ✅ | "Who Viewed Me" Feature (premium) | Interaction + Sub | Monetization lever |
-| ✅ | "Who Liked Me" Feature (premium) | Interaction + Sub | Monetization lever |
-| ✅ | Interaction Limit by Subscription Tier | RBAC + Sub | Enforce plan limits |
+### 4.3 Match Lifecycle
 
-### 4.3 Match Creation & Lifecycle
+| Status  | Task                              | Evidence / Next Action                                                                 |
+| ------- | --------------------------------- | -------------------------------------------------------------------------------------- |
+| DONE    | Match creation on mutual interest | Match service handles interest response/match creation.                                |
+| PARTIAL | Match expiry logic                | Subscription/profile boost expiry tasks exist; match expiry policy needs verification. |
+| PARTIAL | Match quality score               | Compatibility/statistics exist; post-match health scoring is not clearly separate.     |
+| DONE    | Unmatch                           | `unmatch` endpoint and mobile flow exist.                                              |
+| DONE    | Match statistics per user         | `matches/stats` endpoint exists.                                                       |
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Match Creation Logic (on mutual interest) | Interaction | Core |
-| ✅ | Match Expiry Logic | Subscription + Scheduler | Premium upsell |
-| ✅ | Match Quality Score (post-match) | ML | Track match health |
-| ✅ | Unmatch Feature | Match DB | User control |
-| ✅ | Match Statistics per User | Analytics | Engagement insights |
-
----
-
-## 💬 5. Chat System
+## 5. Chat System
 
 ### Backend
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Chat List API | Match | Messaging hub |
-| ✅ | Chat Messages API (REST + Socket.io) | Socket.io | Real-time messaging |
-| ✅ | Read Receipts | Chat DB | UX feedback |
-| ✅ | Typing Indicators | Socket.io | UX feedback |
-| ✅ | Media Sharing in Chat (image / video) | Storage | Engagement |
-| ✅ | Chat Moderation (AI + manual) | AI + Admin | Safety |
-| ✅ | Message Deletion (own messages) | Chat DB | User control |
-| ✅ | Message Reactions (emoji) | Chat DB | Engagement |
-| ✅ | Voice Messages | Storage + CDN | Mobile-native UX |
-| ✅ | Chat Request System (pre-match DM) | Subscription | Premium unlock |
-| ✅ | Chat Translation (multilingual) | AI API | Pan-India regional support |
-| ✅ | Profanity Filter (NLP) | AI API | Safety |
-| ✅ | Chat Archiving | Chat DB | Long-term users |
+| Status  | Task                        | Evidence / Next Action                                                                                                                          |
+| ------- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Chat list/conversations API | Chat controller exposes conversations/contacts.                                                                                                 |
+| DONE    | REST and Socket.IO messages | Chat controller and gateway exist.                                                                                                              |
+| DONE    | Read receipts               | Mark-room-read endpoint and realtime events exist.                                                                                              |
+| DONE    | Typing indicators           | Gateway typing DTO/events exist.                                                                                                                |
+| DONE    | Media sharing               | Chat attachments endpoint exists.                                                                                                               |
+| PARTIAL | Chat moderation             | Permissions/admin moderation foundation exists; AI/manual chat moderation workflow needs proof.                                                 |
+| DONE    | Message deletion            | Delete message endpoint exists.                                                                                                                 |
+| DONE    | Message reactions           | Backend now stores per-user reactions, exposes `PATCH /chats/rooms/:roomId/messages/:messageId/reaction`, and emits `message:reaction` updates. |
+| PARTIAL | Voice messages              | Backend supports audio attachment messaging; mobile recorder UX is not complete.                                                                |
+| PARTIAL | Chat request/pre-match DM   | Direct room/access service exists; final premium gating/UX should be confirmed.                                                                 |
+| TODO    | Chat translation            | No translation provider/API found.                                                                                                              |
+| PARTIAL | Profanity filter            | Configurable blocked-word filter exists; no advanced NLP/provider moderation found.                                                             |
+| DONE    | Chat archiving              | Room settings, archived filters, and mobile archive UI exist.                                                                                   |
 
 ### Frontend
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Chat List Screen | API | UX |
-| ✅ | Chat Screen (real-time) | Socket.io | Core |
-| ✅ | Typing Indicator UI | Socket | UX |
-| ✅ | Media Sharing UI | Storage API | Blocked |
-| ✅ | Chat Request Accept / Reject UI | API | Pre-match flow |
-| ✅ | Voice Message Recording UI | Browser API | Engagement |
-| ✅ | Message Reactions UI | Chat API | Engagement |
-| ✅ | Translated Message Toggle | Translation API | Accessibility |
+| Status  | Task                           | Evidence / Next Action                                                                               |
+| ------- | ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| DONE    | Chat list screen               | `ChatList` feature exists.                                                                           |
+| DONE    | Chat screen realtime messaging | `Chat` feature and realtime service exist.                                                           |
+| DONE    | Typing indicator UI            | Chat UI/realtime integration exists.                                                                 |
+| PARTIAL | Media sharing UI               | Attachment backend exists; UI should be tested on Android/iOS.                                       |
+| PARTIAL | Chat request accept/reject UI  | Access/room flow exists; dedicated pre-match request UX should be verified.                          |
+| TODO    | Voice message recording UI     | No recorder UI found.                                                                                |
+| DONE    | Message reactions UI           | Chat bubbles now show reaction summaries and quick reaction controls backed by the new API mutation. |
+| TODO    | Translated message toggle      | No translation toggle/provider found.                                                                |
 
----
-
-## 🔔 6. Notifications System
+## 6. Notifications
 
 ### Backend
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Push Notification Service (FCM / APNs) | Firebase | Mobile engagement |
-| ✅ | In-App Notification System | DB + Socket | Real-time alerts |
-| ✅ | Email Notification Templates (transactional) | Email Service | Professional comms |
-| ✅ | SMS Notification Service | SMS API | Critical alerts |
-| ✅ | WhatsApp Notification (Meta WABA) | Meta WABA | India-first high-engagement channel |
-| ✅ | Notification Preference Management | User DB | Avoid spamming users |
-| ✅ | Notification Deduplication | Queue + Cache | Prevent duplicate sends |
-| ✅ | Scheduled / Drip Notifications | Scheduler (BullMQ) | Retention campaigns |
-| ✅ | Deep Link Support in Notifications | Frontend | Direct to relevant screen |
+| Status  | Task                               | Evidence / Next Action                                                                          |
+| ------- | ---------------------------------- | ----------------------------------------------------------------------------------------------- |
+| PARTIAL | Push notification service          | Firebase Admin/provider exists; production FCM credentials must be configured and tested.       |
+| DONE    | In-app notifications               | Notification schema/API/realtime gateway exist.                                                 |
+| PARTIAL | Email notification templates       | Template system/provider exists; SES/provider config needs production verification.             |
+| PARTIAL | SMS notifications                  | SMS provider exists; Twilio/provider config needs production verification.                      |
+| TODO    | WhatsApp notifications             | No Meta WABA provider found.                                                                    |
+| DONE    | Notification preference management | Settings and notification preference APIs exist.                                                |
+| DONE    | Notification deduplication         | Dedupe key/window logic exists.                                                                 |
+| PARTIAL | Scheduled/drip notifications       | Queue and scheduled digest/reminder foundations exist; campaign builder/rules are not complete. |
+| DONE    | Deep link support                  | Notification action navigation exists in mobile.                                                |
 
 ### Frontend
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Notification Bell with Unread Count | WebSocket / API | Core UX |
-| ✅ | Notification List / History Screen | API | Review past alerts |
-| ✅ | Notification Settings Screen (granular) | API | User control |
-| ✅ | Push Permission Prompt (iOS / Android) | Native SDK | Required for push |
-| ✅ | In-App Toast / Banner Notifications | Socket + UI | Real-time feedback |
+| Status | Task                                      | Evidence / Next Action                                                                  |
+| ------ | ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| DONE   | Notification list/history                 | `Notifications` and detail screens exist.                                               |
+| DONE   | Unread count                              | API and UI support unread count.                                                        |
+| DONE   | Notification settings                     | Granular settings screen exists.                                                        |
+| DONE   | Push permission prompt/token registration | Mobile permission prompt, device push token registration, and logout revoke flow exist. |
+| DONE   | In-app toast/banner notifications         | Toast host and realtime notification toast/cache update behavior are wired.             |
 
----
+## 7. Subscription And Monetization
 
-## 💰 7. Subscription & Monetization
+### 7.1 Plans And Access
 
-### 7.1 Plans & Feature Access
-
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Plan System (Free / Premium / Gold) | DB | Monetization tiers |
-| ✅ | Feature Access Control (RBAC) | Plans | Paywall enforcement |
-| ✅ | Tier Upgrade / Downgrade Logic | Subscription DB | Plan management |
-| ✅ | Upgrade Plan API (payment integration) | Payment Gateway | Revenue trigger |
-| ✅ | Purchase History | DB | Transparency & support |
-| ✅ | Plan Expiry Reminders (T-7, T-3, T-1 days) | Scheduler + Notif | Reduce churn |
-| ✅ | Promotional Coupons / Discount Codes | Promo DB | Growth marketing |
-| ✅ | Auto-Renewal / Subscription Lifecycle | Payment Gateway | Recurring revenue |
-| ✅ | Free Trial System | Subscription | Conversion funnel |
-| ✅ | Coin / Credit System (micro-purchases) | Wallet DB | Granular monetization |
+| Status  | Task                                 | Evidence / Next Action                                                                            |
+| ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| DONE    | Plan system                          | Plans/features schemas, seed data, admin APIs, and mobile membership UI exist.                    |
+| DONE    | Feature access control               | Feature guard/decorator/service exist.                                                            |
+| DONE    | Upgrade/downgrade/plan lifecycle     | Subscription service and billing screens exist.                                                   |
+| PARTIAL | Upgrade plan API/payment integration | Order/verify/store verification APIs exist; real gateway/store production flow still needs setup. |
+| DONE    | Purchase history                     | Billing summary/payment history APIs and UI exist.                                                |
+| DONE    | Plan expiry reminders                | Subscription expiry task includes reminders.                                                      |
+| DONE    | Coupons/discount codes               | Coupon schemas/validate flow exist.                                                               |
+| PARTIAL | Auto-renewal/subscription lifecycle  | Store transaction fields exist; actual store subscription reconciliation needs external setup.    |
+| DONE    | Free trial                           | Trial endpoint/service exists.                                                                    |
+| PARTIAL | Coin/credit wallet                   | Referral wallet exists; broader micro-purchase wallet not complete.                               |
 
 ### 7.2 Payments
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Razorpay / Stripe Integration | Payment Gateway | Revenue |
-| ✅ | Payment Webhook Handling (verify signature) | Payment | Prevent fraud |
-| ✅ | Refund System | Payment + Support | User trust |
-| ✅ | UPI Payment Support | Razorpay / Cashfree | India-first payment method |
-| ✅ | Invoice / Receipt Generation (PDF) | PDF Service | GST compliance |
-| ✅ | GST Calculation & Filing Data Export | Finance | Legal requirement India |
-| ✅ | Failed Payment Retry Logic | Queue + Payment | Revenue recovery |
-| ✅ | Payment Analytics Dashboard | Admin | Business intelligence |
+| Status  | Task                               | Evidence / Next Action                                                                                |
+| ------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| PARTIAL | Razorpay/Stripe/web gateway        | Payment gateway abstraction/schema exists; real gateway SDK/credentials need production verification. |
+| DONE    | Payment webhook handling/signature | Webhook endpoint and HMAC verification exist.                                                         |
+| DONE    | Refund system                      | Admin refund endpoint/service exists.                                                                 |
+| PARTIAL | UPI support                        | UPI payment method enum exists; real UPI gateway flow needs verification.                             |
+| PARTIAL | Invoice/receipt generation         | Invoice model/API exists; PDF generation/export should be verified.                                   |
+| DONE    | GST report/export                  | Admin GST report endpoint exists.                                                                     |
+| DONE    | Failed payment retry/maintenance   | Payment maintenance task exists.                                                                      |
+| PARTIAL | Payment analytics dashboard        | Admin payment reports exist; full dashboard UI not visible.                                           |
 
-### 7.3 Referral & Growth
+### 7.3 Referral And Growth
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Referral Code Generation | User DB | Viral growth |
-| ✅ | Referral Earnings / Wallet | Wallet DB | Incentive |
-| ✅ | Referral Campaign Tracking (UTM) | Analytics | Marketing ROI |
-| ✅ | Referral Leaderboard | Gamification | Virality boost |
-| ✅ | Family / Group Plans (matrimonial package) | Subscription | Market-specific feature |
+| Status  | Task                           | Evidence / Next Action                                    |
+| ------- | ------------------------------ | --------------------------------------------------------- |
+| DONE    | Referral code generation       | Referral service generates unique codes.                  |
+| DONE    | Referral earnings/wallet       | Referral wallet schema/API/mobile screen exist.           |
+| PARTIAL | Referral campaign tracking/UTM | Referral module exists; UTM analytics should be expanded. |
+| DONE    | Referral leaderboard           | API exists.                                               |
+| TODO    | Family/group plans             | No dedicated family plan workflow found.                  |
 
----
+## 8. Admin Panel And Moderation
 
-## 🛠 8. Admin Panel & Moderation
+| Status  | Task                             | Evidence / Next Action                                                                                                                             |
+| ------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Admin APIs                       | Admin controllers cover dashboard, users, plans, payments, notifications, moderation, RBAC.                                                        |
+| DONE    | Role-based admin access          | Roles/permissions guards and RBAC controller exist.                                                                                                |
+| DONE    | User management                  | Admin user list/detail/status routes exist.                                                                                                        |
+| DONE    | KYC/media moderation queue       | Admin moderation controller exists.                                                                                                                |
+| DONE    | Bulk communication               | Admin broadcast/notification dispatch routes exist.                                                                                                |
+| DONE    | Admin audit logs                 | Admin audit schema/service/controller exist.                                                                                                       |
+| DONE    | Dashboard metrics                | Admin dashboard/analytics endpoints exist.                                                                                                         |
+| PARTIAL | Success story/CMS                | Feature is listed in seed/admin data; UI/workflow should be verified.                                                                              |
+| DONE    | Support ticket/helpdesk          | Full support module now exists with user ticket CRUD/replies, support-staff admin endpoints, notifications, and mobile Help & Support integration. |
+| PARTIAL | Fake profile detection dashboard | Moderation/analytics foundations exist; no ML fake-profile dashboard found.                                                                        |
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Admin Panel APIs (CRUD operations) | DB | Operations |
-| ✅ | Role-Based Admin Access (Super / Support / Finance) | RBAC | Internal security |
-| ✅ | User Management (search, ban, KYC approve) | Admin DB | Ops workflow |
-| ✅ | Content Moderation Queue (photos, chats) | AI + Admin | Safety |
-| ✅ | Bulk Communication Tool (email / push blast) | Notification + Admin | Marketing ops |
-| ✅ | Admin Audit Logs (who did what, when) | Activity Log | Compliance |
-| ✅ | Dashboard Metrics (DAU, MAU, revenue) | Analytics DB | Business decisions |
-| ✅ | Match Success Story Management | CMS | Social proof / PR |
-| ✅ | Support Ticket System / Helpdesk | Support Tool | Customer service |
-| ✅ | Fake Profile Detection Dashboard | ML + Admin | Quality control |
-
----
-
-## 📊 9. Analytics & Tracking
+## 9. Analytics And Tracking
 
 ### Backend
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Activity / Interaction Logs | DB | Audit & analytics source |
-| ✅ | Profile Analytics (views, likes received) | Interaction DB | Engagement data |
-| ✅ | Funnel Tracking (registration → match → chat) | Events | Conversion optimisation |
-| ✅ | Admin Dashboard Metrics | DB + BI Tool | Business decisions |
-| ✅ | Event Tracking System (Mixpanel / Amplitude) | Events SDK | Granular user behaviour |
-| ✅ | Cohort Analysis (weekly / monthly retention) | Analytics | Growth decisions |
-| ✅ | A/B Testing Infrastructure | Feature Flags | Product optimisation |
-| ✅ | Match Success Rate Tracking | Analytics | Core KPI |
-| ✅ | Revenue Analytics (MRR, ARR, churn) | Finance + DB | Investor metrics |
-| ✅ | Profile Quality Score Tracking | ML + Analytics | Platform health metric |
+| Status  | Task                           | Evidence / Next Action                                                                                              |
+| ------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Activity/interaction logs      | Analytics and activity log schemas/services exist.                                                                  |
+| DONE    | Profile analytics              | Match/profile analytics endpoints exist.                                                                            |
+| PARTIAL | Funnel tracking                | Analytics module exists; end-to-end event taxonomy needs expansion.                                                 |
+| DONE    | Admin dashboard metrics        | Admin analytics/dashboard endpoints exist.                                                                          |
+| PARTIAL | Event tracking system          | Backend event tracking exists; no Mixpanel/Amplitude integration found.                                             |
+| TODO    | Cohort analysis                | No cohort pipeline found.                                                                                           |
+| TODO    | A/B testing infrastructure     | Env flags exist, but no experiment platform.                                                                        |
+| PARTIAL | Match success rate tracking    | Feature enum/analytics exist; KPI dashboard needs proof.                                                            |
+| PARTIAL | Revenue analytics              | Payment/admin reports exist; MRR/ARR/churn dashboard not complete.                                                  |
+| PARTIAL | Profile quality score tracking | Profile/match scoring and daily analytics aggregation exist; dedicated quality trend dashboard remains future work. |
 
 ### Frontend
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Profile Analytics UI (who viewed me, send interet) | API | User engagement |
-| ✅ | Insights / Stats Dashboard for user | Analytics API | Retention feature |
-| ✅ | Match Success Story Submission UI | API + CMS | Social proof |
-| ✅ | Account Activity Log UI | API | Trust & transparency |
+| Status  | Task                              | Evidence / Next Action                                                   |
+| ------- | --------------------------------- | ------------------------------------------------------------------------ |
+| DONE    | Profile analytics UI              | Who-viewed/profile analytics UI exists.                                  |
+| PARTIAL | User insights/stats dashboard     | Some stats are visible; dedicated insights dashboard should be verified. |
+| PARTIAL | Success story submission UI       | Not clearly visible as a dedicated feature.                              |
+| DONE    | Account activity/login history UI | Security login history screen exists.                                    |
 
----
+## 10. Security
 
-## 🛡️ 10. Security
+| Status      | Task                          | Evidence / Next Action                                                                 |
+| ----------- | ----------------------------- | -------------------------------------------------------------------------------------- |
+| DONE        | Rate limiting per IP/user     | Nest throttler and custom rate-limit guard exist.                                      |
+| DONE        | Brute-force protection        | Rate limits and auth protections exist; lockout policy should be tested.               |
+| DONE        | Input validation/sanitization | Global validation pipe with whitelist and DTO validators exists.                       |
+| PARTIAL     | Data encryption at rest       | Password hashing exists; field-level PII encryption is not clearly implemented.        |
+| DONE        | Audit logs                    | Admin/activity logs exist.                                                             |
+| PARTIAL     | Internal API key system       | Swagger and CORS allow `X-API-Key`; service-to-service enforcement should be verified. |
+| BLOCKED     | HTTPS/HSTS                    | Needs production reverse proxy/load balancer configuration.                            |
+| DONE        | Strict CORS policy support    | CORS config supports allowed origins; production env must be reviewed.                 |
+| DONE        | Helmet/security headers       | Helmet is wired in `main.ts`.                                                          |
+| RECOMMENDED | OWASP checklist review        | Add a formal pre-launch security checklist.                                            |
+| BLOCKED     | Penetration testing           | External vendor/process task.                                                          |
+| PARTIAL     | GDPR/PDPB compliance layer    | Consent, deletion, export exist; legal review and policy pages still required.         |
+| DONE        | Data masking for logs         | Logging/error handling redacts sensitive fields.                                       |
+| RECOMMENDED | Vulnerability scanning        | Add Dependabot/Snyk/GitHub Actions checks.                                             |
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Rate Limiting (per IP + per user) | Throttler | Prevent abuse |
-| ✅ | Brute Force Protection (lockout) | Auth | Login security |
-| ✅ | Input Sanitization & Validation | Pipes + Joi | Prevent injection |
-| ✅ | Data Encryption at Rest (PII fields) | DB encryption | Compliance |
-| ✅ | Audit Logs | Activity Log | Legal & security |
-| ⚠️ | Internal API Key System | API Gateway | Service-to-service auth |
-| 🆕 | HTTPS Enforced + HSTS | Infrastructure | Transport security |
-| 🆕 | CORS Policy (strict origins) | NestJS config | Browser security |
-| 🆕 | Helmet.js (security headers) | Middleware | OWASP hardening |
-| 🆕 | OWASP Top 10 Checklist Review | Security audit | Enterprise requirement |
-| 🆕 | Penetration Testing Schedule | External vendor | Pre-launch must |
-| 🆕 | GDPR / PDPB Compliance Layer | Legal + Backend | Privacy law (India + EU) |
-| 🆕 | Data Masking for Logs (PII scrubbing) | Logger middleware | Compliance |
-| 🆕 | Vulnerability Scanning (Snyk / Dependabot) | CI/CD | Dependency security |
+## 11. Logging And Monitoring
 
----
+| Status      | Task                            | Evidence / Next Action                                 |
+| ----------- | ------------------------------- | ------------------------------------------------------ |
+| DONE        | Central logger                  | Winston-backed `AppLogger` exists.                     |
+| DONE        | Correlation/request tracing     | Correlation middleware/interceptor exist.              |
+| PARTIAL     | Error monitoring                | Adapter exists; Sentry SDK/DSN not fully wired.        |
+| BLOCKED     | Log storage                     | Needs ELK/CloudWatch/Datadog setup.                    |
+| RECOMMENDED | APM                             | Add Datadog/New Relic/OpenTelemetry.                   |
+| RECOMMENDED | Uptime monitoring               | Add external uptime checks.                            |
+| RECOMMENDED | Alerting rules                  | Add PagerDuty/OpsGenie/Slack alerts.                   |
+| RECOMMENDED | Custom product metrics          | Track match rate, notification delivery, chat latency. |
+| RECOMMENDED | DB query performance monitoring | Add Mongo slow-query monitoring/APM.                   |
+| RECOMMENDED | Socket.IO metrics               | Add connection/reconnect/room metrics.                 |
 
-## 📜 11. Logging & Monitoring
-
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Central Logger (Winston) | None | Structured logging |
-| ✅ | Request Tracing (Correlation ID) | Logger | Distributed tracing |
-| ✅ | Error Monitoring (Sentry) | Logger | Crash tracking |
-| ✅ | Log Storage (ELK / CloudWatch) | Logger | Production visibility |
-| 🆕 | APM (Datadog / New Relic) | Infrastructure | Performance monitoring |
-| 🆕 | Uptime Monitoring (Pingdom / UptimeRobot) | Infrastructure | SLA tracking |
-| 🆕 | Alerting Rules (PagerDuty / OpsGenie) | Monitoring | On-call escalation |
-| 🆕 | Custom Metrics (match rate, chat latency) | APM + Prometheus | Product KPIs in monitoring |
-| 🆕 | Database Query Performance Monitoring | DB + APM | Slow query detection |
-| 🆕 | Socket.io Connection Metrics | Custom | Chat system health |
-
----
-
-## ⚙️ 12. Performance & Scaling
+## 12. Performance And Scaling
 
 ### Backend
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | Redis Caching (profiles, sessions, feeds) | Redis | Speed |
-| ✅ | CDN for Media (CloudFront / Cloudflare) | Storage | Faster loading |
-| ✅ | DB Index Optimization (MongoDB) | Mongo | Query performance |
-| ⚠️ | Queue System (BullMQ + Redis) | Redis | Background job processing |
-| 🆕 | Database Read Replica / Sharding Strategy | MongoDB Atlas | Scale for 1M+ users |
-| 🆕 | Connection Pooling | DB driver config | Resource efficiency |
-| 🆕 | Cursor-based Pagination | API design | Large dataset performance |
-| 🆕 | Response Compression (gzip / brotli) | Middleware | Reduced bandwidth |
-| 🆕 | Horizontal Scaling Strategy (stateless pods) | Kubernetes | High availability |
-| 🆕 | Load Testing (k6 / Artillery) | CI/CD | Validate scale targets |
+| Status      | Task                           | Evidence / Next Action                                                 |
+| ----------- | ------------------------------ | ---------------------------------------------------------------------- |
+| DONE        | Redis caching                  | Redis/local cache module exists.                                       |
+| PARTIAL     | CDN for media                  | S3/storage support exists; CDN production setup not proven.            |
+| DONE        | DB indexes                     | Schemas define indexes across key collections.                         |
+| PARTIAL     | Queue system                   | BullMQ notification queue exists; queue coverage is not universal.     |
+| RECOMMENDED | Read replica/sharding strategy | Needed for scale, not repo code.                                       |
+| PARTIAL     | Connection pooling             | Mongo driver config exists; production pool tuning should be reviewed. |
+| DONE        | Pagination                     | Pagination audit and paged APIs/screens exist.                         |
+| DONE        | Response compression           | `compression` middleware exists.                                       |
+| RECOMMENDED | Horizontal scaling strategy    | Needs deployment/Kubernetes plan.                                      |
+| RECOMMENDED | Load testing                   | Add k6/Artillery scripts.                                              |
 
 ### Frontend
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ⚠️ | Lazy Loading (routes, images) | UI framework | Initial load performance |
-| ⚠️ | Image Optimization (WebP, srcset) | CDN | Bandwidth saving |
-| 🆕 | Code Splitting per Route | Webpack / Vite | Faster first paint |
-| 🆕 | Skeleton Loading Screens | UI | Perceived performance |
-| 🆕 | Offline Mode / PWA Support | Service Worker | Low-network India users |
-| 🆕 | Prefetching Match Profiles | React Query | Instant swipe feel |
+| Status  | Task                       | Evidence / Next Action                                                        |
+| ------- | -------------------------- | ----------------------------------------------------------------------------- |
+| PARTIAL | Lazy loading/routes/images | Native navigation exists; image/video optimization needs QA.                  |
+| PARTIAL | Image optimization         | Local placeholders and media handling exist; CDN/WebP pipeline not proven.    |
+| PARTIAL | Skeleton loading screens   | Chat list has skeletons; broaden to high-traffic lists.                       |
+| TODO    | Offline mode/PWA support   | No offline-first mode found.                                                  |
+| PARTIAL | Prefetching match profiles | Match list/detail flow exists; explicit prefetch strategy should be verified. |
 
----
+## 13. Background Jobs
 
-## 📦 13. Background Jobs
+| Status  | Task                           | Evidence / Next Action                                                                                                         |
+| ------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| PARTIAL | Email queue                    | Notification queue exists; email delivery provider/worker needs production verification.                                       |
+| DONE    | Notification queue             | BullMQ notification queue/worker/DLQ exists.                                                                                   |
+| PARTIAL | Match recalculation/digest job | Daily match digest task exists; recalculation policy needs expansion.                                                          |
+| DONE    | Profile expiry/archive job     | Scheduled profile archive task now moves stale active profiles to inactive using configurable inactivity days and batch limit. |
+| DONE    | Subscription expiry cron job   | Subscription expiry task exists.                                                                                               |
+| DONE    | OTP cleanup job                | Scheduled in-memory expired OTP cleanup now runs every 5 minutes.                                                              |
+| DONE    | Analytics aggregation job      | Daily analytics summary job materializes overview and funnel data.                                                             |
+| DONE    | Media cleanup job              | Scheduled deleted-media cleanup removes old files/thumbnails and hard-deletes cleaned records.                                 |
+| TODO    | Fraud detection batch scan     | No batch fake-profile scanner found.                                                                                           |
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ⚠️ | Email Queue (transactional + marketing) | BullMQ | Async, reliable delivery |
-| ⚠️ | Notification Queue (push / SMS / WA) | BullMQ | Scalability |
-| ⚠️ | Match Recalculation Job (nightly) | Queue + Scheduler | Keep feeds fresh |
-| 🆕 | Profile Expiry / Archival Job | Scheduler | Inactive profile management |
-| 🆕 | Subscription Expiry Cron Job | Scheduler | Auto-downgrade + alerts |
-| 🆕 | OTP Cleanup Job (expired OTPs) | Scheduler | DB hygiene |
-| 🆕 | Analytics Aggregation Job | Scheduler | Pre-compute dashboard data |
-| 🆕 | Media Cleanup Job (orphaned files) | Storage + Scheduler | Cost management |
-| 🆕 | Fraud Detection Batch Scan | ML + Scheduler | Periodic fake profile sweep |
+## 14. Frontend Contract And API Standards
 
----
+| Status  | Task                              | Evidence / Next Action                                                 |
+| ------- | --------------------------------- | ---------------------------------------------------------------------- |
+| DONE    | API versioning (`/api/v1`)        | Global prefix/versioning exist.                                        |
+| DONE    | Standard response envelope        | `successResponse`, API response DTO, and error codes exist.            |
+| DONE    | Mobile token handling             | Secure storage/base API refresh flow exists.                           |
+| DONE    | Swagger/OpenAPI docs              | Swagger setup exists in non-production.                                |
+| DONE    | API error code registry           | Error/success code constants exist.                                    |
+| PARTIAL | Cursor/offset pagination standard | Pagination exists; contract should be normalized across all list APIs. |
+| TODO    | OpenAPI to TS SDK generation      | Not implemented.                                                       |
+| TODO    | Storybook component library       | Not implemented.                                                       |
+| PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.   |
 
-## 📱 14. Frontend Contract & API Standards
+## 15. DevOps And Infrastructure
 
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| ✅ | API Versioning (`/api/v1/…`) | Backend | Breaking change safety |
-| ✅ | Standardized API Response Envelope | Backend | Consistency |
-| ✅ | Mobile vs Web Token Handling | Auth | Security differentiation |
-| 🆕 | OpenAPI / Swagger Docs Auto-generated | NestJS decorators | FE dev speed |
-| 🆕 | API Error Code Registry (`MATCH_001` etc.) | Backend | FE can map user-friendly messages |
-| 🆕 | Cursor + Offset Pagination Standard | API design | Consistent FE handling |
-| 🆕 | SDK / API Client Auto-generation (OpenAPI → TS) | Tooling | Eliminate manual API types |
-| 🆕 | Storybook Component Library | Frontend | Design system & FE speed |
-| 🆕 | Internationalization / i18n (hi, ta, te, bn…) | Frontend + Backend | Pan-India regional expansion |
+| Status  | Task                          | Evidence / Next Action                                              |
+| ------- | ----------------------------- | ------------------------------------------------------------------- |
+| TODO    | Docker containerization       | No complete Docker setup found in repo root/API/mobile.             |
+| TODO    | Kubernetes deployment         | No manifests/Helm charts found.                                     |
+| TODO    | CI/CD pipeline                | No GitHub Actions workflow found in current audit.                  |
+| TODO    | Infrastructure as Code        | No Terraform/IaC found.                                             |
+| TODO    | Blue-green/canary deployments | Not implemented.                                                    |
+| TODO    | Database migration strategy   | Mongo schemas/seeders exist; no versioned migration workflow found. |
+| BLOCKED | Disaster recovery/RTO/RPO     | Operational cloud task.                                             |
+| BLOCKED | Multi-region failover         | Operational cloud task.                                             |
+| BLOCKED | Automated backup verification | Operational cloud task.                                             |
 
----
+## Updated Build Order
 
-## 🏗️ 15. DevOps & Infrastructure
-
-| Status | Task | Dependency | Why |
-|--------|------|------------|-----|
-| 🆕 | Docker Containerization (all services) | Docker | Consistent environments |
-| 🆕 | Kubernetes Deployment (EKS / GKE) | Docker + K8s | Production orchestration |
-| 🆕 | CI/CD Pipeline (GitHub Actions) | Repo | Automated test + deploy |
-| 🆕 | Infrastructure as Code (Terraform) | Cloud | Reproducible infra |
-| 🆕 | Blue-Green / Canary Deployments | K8s + CI/CD | Zero-downtime releases |
-| 🆕 | Database Migration Strategy (versioned) | Mongo Migrate | Safe schema changes |
-| 🆕 | Disaster Recovery Plan + RTO/RPO Targets | Infra | Business continuity |
-| 🆕 | Multi-region Failover (AWS Mumbai + secondary) | AWS | 99.9% SLA |
-| 🆕 | Automated Backup Verification | DB + S3 | Backup is only good if it restores |
-
----
-
-## 🧠 Recommended Build Order
-
-```
-Phase 1  →  Auth + Session
-Phase 2  →  Profile + Media
-Phase 3  →  Discovery + Interaction
-Phase 4  →  Match Logic
-Phase 5  →  Chat System
-Phase 6  →  Notifications
-Phase 7  →  Subscription & Payments
-Phase 8  →  Security & Compliance
-Phase 9  →  Logging & Monitoring
-Phase 10 →  Scale + Analytics + Admin Panel
-```
-
----
+1. Stabilize launch-critical provider paths: push, SMS/email, payments/store billing, crash reporting.
+2. Run full API/mobile verification: lint, typecheck, build, smoke tests, Android release QA.
+3. Complete Play Console compliance: privacy URL, data safety, app access, content rating, account deletion instructions.
+4. Harden production operations: secrets manager, monitoring/APM, backups, uptime alerts.
+5. Finish monetization polish: native billing SDK, receipt verification, refund/invoice QA.
+6. Expand post-launch product depth: voice messages, translation, fraud detection, cohort analytics, success stories.
+7. Add scale infrastructure: Docker, CI/CD, load tests, CDN, broader queue coverage, migration workflow.

@@ -280,6 +280,57 @@ export class MediaService {
     return media;
   }
 
+  async cleanupDeletedMedia(retentionDays = 7, limit = 100) {
+    const safeRetentionDays = Math.max(0, retentionDays);
+    const safeLimit = Math.min(Math.max(limit, 1), 500);
+    const cutoff = new Date(
+      Date.now() - safeRetentionDays * 24 * 60 * 60 * 1000,
+    );
+    const deletedMedia = await this.mediaRepo.findDeletedOlderThan(
+      cutoff,
+      safeLimit,
+    );
+
+    let fileDeleteCount = 0;
+    let recordDeleteCount = 0;
+    const failedMediaIds: string[] = [];
+
+    for (const media of deletedMedia) {
+      try {
+        if (media.filename) {
+          await this.storageService.deleteFile(
+            media.filename,
+            this.getStorageFolder(media.type),
+          );
+          fileDeleteCount += 1;
+        }
+
+        if (media.thumbnailUrl) {
+          const thumbnailFilename = this.extractFilename(media.thumbnailUrl);
+          if (thumbnailFilename) {
+            await this.storageService.deleteFile(
+              thumbnailFilename,
+              VIDEO_THUMBNAIL_STORAGE_FOLDER,
+            );
+            fileDeleteCount += 1;
+          }
+        }
+
+        await this.mediaRepo.hardDelete(String(media._id));
+        recordDeleteCount += 1;
+      } catch {
+        failedMediaIds.push(String(media._id));
+      }
+    }
+
+    return {
+      scannedCount: deletedMedia.length,
+      fileDeleteCount,
+      recordDeleteCount,
+      failedMediaIds,
+    };
+  }
+
   async removeVideo(_req: AppRequest, userId: string, mediaId: string) {
     try {
       const media = await this.assertOwnership(userId, mediaId);
@@ -368,5 +419,15 @@ export class MediaService {
       )
       .exec();
     await this.cache.del(`profile:${userId}`);
+  }
+
+  private getStorageFolder(type: MediaType) {
+    return type === MediaType.VIDEO
+      ? VIDEO_STORAGE_FOLDER
+      : IMAGE_STORAGE_FOLDER;
+  }
+
+  private extractFilename(url: string) {
+    return url.split('?')[0]?.split('/').pop();
   }
 }

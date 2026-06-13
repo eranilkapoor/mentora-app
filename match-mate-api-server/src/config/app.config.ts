@@ -66,6 +66,24 @@ export default () => ({
       process.env.MEDIA_MAX_VIDEO_BYTES || String(100 * 1024 * 1024),
       10,
     ),
+    deletedCleanupRetentionDays: parseInt(
+      process.env.MEDIA_DELETED_CLEANUP_RETENTION_DAYS || '7',
+      10,
+    ),
+    deletedCleanupLimit: parseInt(
+      process.env.MEDIA_DELETED_CLEANUP_LIMIT || '100',
+      10,
+    ),
+  },
+  profiles: {
+    inactiveArchiveDays: parseInt(
+      process.env.PROFILE_INACTIVE_ARCHIVE_DAYS || '180',
+      10,
+    ),
+    inactiveArchiveLimit: parseInt(
+      process.env.PROFILE_INACTIVE_ARCHIVE_LIMIT || '500',
+      10,
+    ),
   },
   monitoring: {
     enabled: process.env.MONITORING_ENABLED === 'true',

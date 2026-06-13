@@ -135,6 +135,22 @@ export class MediaRepository {
     );
   }
 
+  async findDeletedOlderThan(cutoff: Date, limit = 100) {
+    return this.mediaModel
+      .find({
+        status: MediaStatus.DELETED,
+        updatedAt: { $lte: cutoff },
+      })
+      .sort({ updatedAt: 1 })
+      .limit(limit)
+      .lean()
+      .exec();
+  }
+
+  async hardDelete(mediaId: string) {
+    return this.mediaModel.findByIdAndDelete(mediaId).lean().exec();
+  }
+
   async countByUser(userId: string, type: MediaType) {
     return this.mediaModel.countDocuments({
       userId: new Types.ObjectId(userId),

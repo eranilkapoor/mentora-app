@@ -13,6 +13,8 @@ import { PreferenceService } from './services/preference.service';
 import { ProfileScoringService } from './services/profile-scoring.service';
 import { MediaModerationService } from './services/media-moderation.service';
 import { VideoThumbnailService } from './services/video-thumbnail.service';
+import { MediaCleanupTask } from './tasks/media-cleanup.task';
+import { ProfileArchiveTask } from './tasks/profile-archive.task';
 
 // Repositories
 import { ProfileRepository } from './repositories/profile.repository';
@@ -63,6 +65,8 @@ import { SettingsModule } from '../settings/settings.module';
     ProfileScoringService,
     MediaModerationService,
     VideoThumbnailService,
+    MediaCleanupTask,
+    ProfileArchiveTask,
     ProfileRepository,
     MediaRepository,
     PreferenceRepository,

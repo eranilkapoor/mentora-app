@@ -26,6 +26,7 @@ import { PaymentsModule } from './modules/payments/payments.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { SeederModule } from './modules/seeder/seeder.module';
 import { SettingsModule } from './modules/settings/settings.module';
+import { SupportModule } from './modules/support/support.module';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 
@@ -71,6 +72,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     PaymentsModule,
     ReferralsModule,
     SettingsModule,
+    SupportModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],

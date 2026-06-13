@@ -12,6 +12,8 @@ import LanguageScreen from '@/features/Language/Language.screen';
 import ThemeScreen from '@/features/Theme/Theme.screen';
 import NotificationSettingsScreen from '@/features/NotificationSettings/NotificationSettings.screen';
 import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
+import SupportTicketsScreen from '@/features/HelpSupport/SupportTickets.screen';
+import SupportTicketDetailScreen from '@/features/HelpSupport/SupportTicketDetail.screen';
 import FaqsScreen from '@/features/HelpSupport/FaqsScreen';
 import CommunityGuidelinesScreen from '@/features/HelpSupport/CommunityGuidelines.screen';
 import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicy.screen';
@@ -150,6 +152,16 @@ export default function SettingsStack(): React.ReactElement {
         name="HelpSupport"
         component={HelpSupportScreen}
         options={{ title: t('settings.help_and_support') }}
+      />
+      <Stack.Screen
+        name="SupportTickets"
+        component={SupportTicketsScreen}
+        options={{ title: t('settings.support_tickets.title') }}
+      />
+      <Stack.Screen
+        name="SupportTicketDetail"
+        component={SupportTicketDetailScreen}
+        options={{ title: t('settings.support_tickets.detail_title') }}
       />
       <Stack.Screen
         name="Faqs"

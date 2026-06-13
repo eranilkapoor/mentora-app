@@ -247,6 +247,7 @@ export const baseApi = createApi({
     'Shortlist',
     'Chat',
     'Notification',
+    'SupportTicket',
   ],
 
   endpoints: () => ({}),

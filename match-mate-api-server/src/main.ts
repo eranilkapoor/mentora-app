@@ -26,19 +26,11 @@ import {
 } from '@/common/cache/cache.constants';
 import { AppService } from './app.service';
 
-/**
- * Graceful shutdown timeout (ms).
- * If shutdown exceeds this duration, force-exit to avoid hanging.
- */
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
 
-/**
- * Handles graceful shutdown for SIGINT / SIGTERM.
- * Runs exactly once to avoid double-close races on Redis.
- */
 async function shutdown(
   signal: string,
   app: NestExpressApplication,
@@ -49,7 +41,7 @@ async function shutdown(
   const configService = app.get(ConfigService);
   const drainMs = configService.get<number>('app.shutdownDrainMs', 5000);
 
-  logger.log(`Received ${signal} — starting graceful shutdown`);
+  logger.log(`Received ${signal} - starting graceful shutdown`);
   appService.markShuttingDown();
   logger.log(`Readiness disabled; draining traffic for ${drainMs}ms`);
 
@@ -57,19 +49,15 @@ async function shutdown(
     await sleep(drainMs);
   }
 
-  // Force-exit if shutdown hangs
   const forceExit = setTimeout(() => {
-    logger.error('Graceful shutdown timed out — forcing exit');
+    logger.error('Graceful shutdown timed out - forcing exit');
     process.exit(1);
   }, SHUTDOWN_TIMEOUT_MS);
 
-  forceExit.unref(); // Prevent timer from keeping process alive
+  forceExit.unref();
 
   try {
-    // 1. Stop accepting new HTTP / WS connections
     await app.close();
-
-    // 2. Close Socket.IO Redis pub/sub clients AFTER NestJS DI teardown
     await wsAdapter.close();
 
     logger.log('Graceful shutdown complete');
@@ -84,13 +72,9 @@ async function shutdown(
   }
 }
 
-/**
- * Application bootstrap function.
- * Configures middleware, global filters, adapters, versioning, Swagger, static assets, and shutdown hooks.
- */
 async function bootstrap(): Promise<void> {
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    bufferLogs: true, // Allow logger propagation before app is ready
+    bufferLogs: true,
     abortOnError: false,
   });
 
@@ -100,23 +84,19 @@ async function bootstrap(): Promise<void> {
 
   app.useLogger(logger);
 
-  // ── Security Hardening ───────────────────────────────────────────────
   app.disable('x-powered-by');
 
-  // ── Middleware (order matters) ───────────────────────────────────────
-  // compress → secure headers → body parsers → cookies → CORS
   app.use(compression({ level: 6 }));
   app.use(
     helmet({
-      contentSecurityPolicy: false, // Swagger UI requires inline scripts
-      crossOriginResourcePolicy: false, // Needed for /uploads served cross-origin
+      contentSecurityPolicy: false,
+      crossOriginResourcePolicy: false,
     }),
   );
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
   app.use(cookieParser());
 
-  // ── CORS Configuration ──────────────────────────────────────────────
   const allowedOrigins = configService.get<string[]>('cors.origins') ?? [];
   const allowAnyOrigin = allowedOrigins.includes('*');
   const corsMaxAgeSeconds = configService.get<number>(
@@ -126,7 +106,7 @@ async function bootstrap(): Promise<void> {
 
   app.enableCors({
     origin: (origin, callback) => {
-      if (!origin) return callback(null, true); // Allow mobile apps, Postman, server-to-server
+      if (!origin) return callback(null, true);
       if (allowAnyOrigin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
@@ -156,7 +136,6 @@ async function bootstrap(): Promise<void> {
     ],
   });
 
-  // ── Validation ──────────────────────────────────────────────────────
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -168,11 +147,9 @@ async function bootstrap(): Promise<void> {
     }),
   );
 
-  // ── Global Filters & Interceptors ───────────────────────────────────
   app.useGlobalFilters(new AllExceptionsFilter(logger, monitoring));
   app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
-  // ── WebSocket Adapter ───────────────────────────────────────────────
   const pubClient = app.get<Redis | null>(REDIS_PUB_CLIENT, { strict: false });
   const subClient = app.get<Redis | null>(REDIS_SUB_CLIENT, { strict: false });
 
@@ -187,7 +164,6 @@ async function bootstrap(): Promise<void> {
   await wsAdapter.connect();
   app.useWebSocketAdapter(wsAdapter);
 
-  // ── API Versioning & Prefix ─────────────────────────────────────────
   const apiPrefix = configService.getOrThrow<string>('api.prefix');
   const apiVersion = configService.getOrThrow<string>('api.version');
   const env = configService.get<string>('env', 'development');
@@ -199,7 +175,6 @@ async function bootstrap(): Promise<void> {
   });
   app.setGlobalPrefix(apiPrefix);
 
-  // ── Swagger (non-production only) ───────────────────────────────────
   if (env !== 'production') {
     const swaggerConfig = new DocumentBuilder()
       .setTitle('Matrimony API')
@@ -218,7 +193,6 @@ async function bootstrap(): Promise<void> {
     });
   }
 
-  // ── Static Files ────────────────────────────────────────────────────
   const uploadsPath = path.join(process.cwd(), 'uploads');
   app.useStaticAssets(uploadsPath, {
     prefix: '/uploads',
@@ -231,7 +205,6 @@ async function bootstrap(): Promise<void> {
     },
   });
 
-  // ── Graceful Shutdown Hooks ─────────────────────────────────────────
   const shutdownSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
   for (const signal of shutdownSignals) {
     process.once(signal, () => {
@@ -239,19 +212,17 @@ async function bootstrap(): Promise<void> {
     });
   }
 
-  // ── Start Server ───────────────────────────────────────────────────
   const port = configService.getOrThrow<number>('PORT');
   await app.listen(port, '0.0.0.0');
 
   logger.log(
-    `Server running → http://localhost:${port}/${apiPrefix}/${apiVersion}`,
+    `Server running -> http://localhost:${port}/${apiPrefix}/${apiVersion}`,
   );
   if (env !== 'production') {
-    logger.log(`Swagger docs → http://localhost:${port}/${apiPrefix}/docs`);
+    logger.log(`Swagger docs -> http://localhost:${port}/${apiPrefix}/docs`);
   }
 }
 
-// ── Bootstrap Entry Point ─────────────────────────────────────────────
 bootstrap().catch((err: unknown) => {
   process.stderr.write(
     `Application failed to start: ${

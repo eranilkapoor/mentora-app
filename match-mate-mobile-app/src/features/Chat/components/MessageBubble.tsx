@@ -38,12 +38,15 @@ function MessageStatusTicks({
 export function MessageBubble({
   item,
   onLongPress,
+  onReact,
 }: {
   item: Message;
   onLongPress?: (message: Message) => void;
+  onReact?: (message: Message, emoji: string) => void;
 }): React.ReactElement {
   const isMe = item.senderId === 'me';
   const styles = useThemedStyles(chatStyles);
+  const quickReactions = ['👍', '❤️', '😂'];
 
   return (
     <View
@@ -69,7 +72,32 @@ export function MessageBubble({
           </Text>
           {isMe ? <MessageStatusTicks status={item.status} /> : null}
         </View>
+        {item.reactions?.length ? (
+          <View style={styles.reactionSummary}>
+            {item.reactions.map((reaction) => (
+              <Text
+                key={`${reaction.userId}-${reaction.emoji}`}
+                style={styles.reactionSummaryText}
+              >
+                {reaction.emoji}
+              </Text>
+            ))}
+          </View>
+        ) : null}
       </TouchableOpacity>
+      <View style={[styles.reactionBar, isMe && styles.reactionBarMe]}>
+        {quickReactions.map((emoji) => (
+          <TouchableOpacity
+            key={emoji}
+            style={styles.reactionButton}
+            onPress={() => onReact?.(item, emoji)}
+            accessibilityRole="button"
+            accessibilityLabel={`React with ${emoji}`}
+          >
+            <Text style={styles.reactionButtonText}>{emoji}</Text>
+          </TouchableOpacity>
+        ))}
+      </View>
     </View>
   );
 }

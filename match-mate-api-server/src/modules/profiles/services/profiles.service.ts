@@ -495,6 +495,22 @@ export class ProfilesService {
     return updated;
   }
 
+  async archiveInactiveProfiles(inactiveDays: number, limit: number) {
+    if (inactiveDays <= 0) {
+      return { matchedCount: 0, modifiedCount: 0, skipped: true };
+    }
+
+    const cutoff = new Date(Date.now() - inactiveDays * 24 * 60 * 60 * 1000);
+    const result = await this.profileRepo.archiveInactive(cutoff, limit);
+
+    return {
+      ...result,
+      skipped: false,
+      cutoff,
+      inactiveDays,
+    };
+  }
+
   private getMediaSummaryFromProfile(profile: Record<string, unknown>) {
     const images = profile.images;
     const videoIntro = profile.videoIntro;

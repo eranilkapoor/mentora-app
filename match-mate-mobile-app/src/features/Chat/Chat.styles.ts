@@ -204,6 +204,44 @@ export const chatStyles = (
     secondTick: {
       marginLeft: -8,
     },
+    reactionSummary: {
+      flexDirection: 'row',
+      alignSelf: 'flex-start',
+      gap: 2,
+      marginTop: 5,
+      paddingHorizontal: 6,
+      paddingVertical: 2,
+      borderRadius: 10,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    reactionSummaryText: {
+      fontSize: 12,
+      lineHeight: 16,
+    },
+    reactionBar: {
+      flexDirection: 'row',
+      gap: 4,
+      marginTop: 2,
+      marginLeft: 6,
+    },
+    reactionBarMe: {
+      marginLeft: 0,
+      marginRight: 6,
+    },
+    reactionButton: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    reactionButtonText: {
+      fontSize: 15,
+      lineHeight: 19,
+    },
 
     // ─── Emoji Picker ─────────────────────────────────────────────────────
     emojiBox: {

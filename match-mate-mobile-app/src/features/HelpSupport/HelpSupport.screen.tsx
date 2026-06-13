@@ -92,6 +92,12 @@ export default function HelpSupportScreen({
           subtitle={t('settings.support_center.resources_sub')}
         >
           <SettingsSelectItem
+            icon="life-buoy"
+            label={t('settings.support_tickets.title')}
+            sublabel={t('settings.support_tickets.entry_sub')}
+            onPress={() => navigation.navigate('SupportTickets')}
+          />
+          <SettingsSelectItem
             icon="help-circle"
             label={t('settings.support_center.faqs')}
             sublabel={t('settings.support_center.faqs_sub')}
