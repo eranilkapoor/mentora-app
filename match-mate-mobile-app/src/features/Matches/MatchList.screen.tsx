@@ -141,7 +141,7 @@ export default function MatchListScreen({
     nearbyLocationReady
   );
 
-  const { handlePrimaryAction, handleShortlist } =
+  const { handlePrimaryAction, handleRejectRequest, handleShortlist } =
     useMatchListActions(navigation);
 
   // ─── Derived ──────────────────────────────────────────────────────────
@@ -420,12 +420,15 @@ export default function MatchListScreen({
         onPrimaryAction={() => {
           void handlePrimaryAction(item);
         }}
+        onRejectRequest={() => {
+          void handleRejectRequest(item);
+        }}
         onShortlist={() => {
           void handleShortlist(item);
         }}
       />
     ),
-    [handlePrimaryAction, handleShortlist, navigation]
+    [handlePrimaryAction, handleRejectRequest, handleShortlist, navigation]
   );
 
   const ListHeader = useCallback(

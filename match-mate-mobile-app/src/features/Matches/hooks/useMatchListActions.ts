@@ -118,5 +118,27 @@ export function useMatchListActions(
     [removeShortlistedProfile, shortlistProfile, t]
   );
 
-  return { handlePrimaryAction, handleShortlist };
+  const handleRejectRequest = useCallback(
+    async (item: MatchItem): Promise<void> => {
+      if (!item.requestStatus || !item.interestId) {
+        return;
+      }
+
+      try {
+        await respondToInterest({
+          interestId: item.interestId,
+          action: 'REJECT',
+        }).unwrap();
+        Alert.alert(t('matches.rejected'));
+      } catch {
+        Alert.alert(
+          t('matches.action_failed_title'),
+          t('matches.try_again_message')
+        );
+      }
+    },
+    [respondToInterest, t]
+  );
+
+  return { handlePrimaryAction, handleRejectRequest, handleShortlist };
 }

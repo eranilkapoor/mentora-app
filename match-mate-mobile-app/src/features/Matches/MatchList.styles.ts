@@ -265,6 +265,23 @@ export const matchListStyles = (
     primaryBtnSuccess: { backgroundColor: theme.colors.success },
     primaryBtnAccept: { backgroundColor: theme.colors.success },
     primaryText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
+    rejectBtn: {
+      flex: 1,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 6,
+      borderWidth: 1.5,
+      borderColor: theme.colors.error,
+      borderRadius: 12,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.surface,
+    },
+    rejectText: {
+      color: theme.colors.error,
+      fontWeight: '700',
+      fontSize: 13,
+    },
     shortlistBtn: {
       width: 44,
       borderRadius: 12,

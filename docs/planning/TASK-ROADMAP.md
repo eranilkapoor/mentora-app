@@ -173,25 +173,25 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### 4.2 Interactions
 
-| Status  | Task                                    | Evidence / Next Action                                                        |
-| ------- | --------------------------------------- | ----------------------------------------------------------------------------- |
-| DONE    | Tracked profile views                   | Match profile/view APIs and analytics schemas exist.                          |
-| DONE    | Send/accept/reject interest             | Interest endpoints and mobile actions exist.                                  |
-| DONE    | Shortlist/save profile                  | Shortlist endpoints and mobile action exist.                                  |
-| DONE    | Block/report user/content               | Settings/safety/admin moderation routes exist.                                |
-| DONE    | Who viewed me                           | Endpoint and feature gate exist.                                              |
-| PARTIAL | Who liked me                            | Interest received/sent flows exist; dedicated premium UI should be confirmed. |
-| DONE    | Interaction limits by subscription tier | Feature guard and subscription feature system exist.                          |
+| Status | Task                                    | Evidence / Next Action                                                           |
+| ------ | --------------------------------------- | -------------------------------------------------------------------------------- |
+| DONE   | Tracked profile views                   | Match profile/view APIs and analytics schemas exist.                             |
+| DONE   | Send/accept/reject interest             | Interest endpoints and mobile actions exist.                                     |
+| DONE   | Shortlist/save profile                  | Shortlist endpoints and mobile action exist.                                     |
+| DONE   | Block/report user/content               | Settings/safety/admin moderation routes exist.                                   |
+| DONE   | Who viewed me                           | Endpoint and feature gate exist.                                                 |
+| DONE   | Who liked me                            | Received-interest API and mobile Requests tab show users who expressed interest. |
+| DONE   | Interaction limits by subscription tier | Feature guard and subscription feature system exist.                             |
 
 ### 4.3 Match Lifecycle
 
-| Status  | Task                              | Evidence / Next Action                                                                 |
-| ------- | --------------------------------- | -------------------------------------------------------------------------------------- |
-| DONE    | Match creation on mutual interest | Match service handles interest response/match creation.                                |
-| PARTIAL | Match expiry logic                | Subscription/profile boost expiry tasks exist; match expiry policy needs verification. |
-| PARTIAL | Match quality score               | Compatibility/statistics exist; post-match health scoring is not clearly separate.     |
-| DONE    | Unmatch                           | `unmatch` endpoint and mobile flow exist.                                              |
-| DONE    | Match statistics per user         | `matches/stats` endpoint exists.                                                       |
+| Status | Task                              | Evidence / Next Action                                                                           |
+| ------ | --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| DONE   | Match creation on mutual interest | Match service handles interest response/match creation.                                          |
+| TODO   | Match expiry logic                | No clear expiring-match policy/task found; current expiry jobs are for subscriptions and boosts. |
+| DONE   | Match quality score               | Compatibility service returns match scores and mobile match detail renders score UI.             |
+| DONE   | Unmatch                           | `unmatch` endpoint and mobile flow exist.                                                        |
+| DONE   | Match statistics per user         | `matches/stats` endpoint exists.                                                                 |
 
 ## 5. Chat System
 
@@ -204,27 +204,27 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | Read receipts               | Mark-room-read endpoint and realtime events exist.                                                                                              |
 | DONE    | Typing indicators           | Gateway typing DTO/events exist.                                                                                                                |
 | DONE    | Media sharing               | Chat attachments endpoint exists.                                                                                                               |
-| PARTIAL | Chat moderation             | Permissions/admin moderation foundation exists; AI/manual chat moderation workflow needs proof.                                                 |
+| PARTIAL | Chat moderation             | Block/report, delete, profanity guard, and admin moderation foundation exist; dedicated chat moderation queue/provider is not complete.         |
 | DONE    | Message deletion            | Delete message endpoint exists.                                                                                                                 |
 | DONE    | Message reactions           | Backend now stores per-user reactions, exposes `PATCH /chats/rooms/:roomId/messages/:messageId/reaction`, and emits `message:reaction` updates. |
 | PARTIAL | Voice messages              | Backend supports audio attachment messaging; mobile recorder UX is not complete.                                                                |
-| PARTIAL | Chat request/pre-match DM   | Direct room/access service exists; final premium gating/UX should be confirmed.                                                                 |
+| TODO    | Chat request/pre-match DM   | Direct chat currently requires an accepted match; no pending pre-match message-request lifecycle found.                                         |
 | TODO    | Chat translation            | No translation provider/API found.                                                                                                              |
-| PARTIAL | Profanity filter            | Configurable blocked-word filter exists; no advanced NLP/provider moderation found.                                                             |
+| DONE    | Profanity filter            | Configurable blocked-word guard rejects unsafe chat messages before saving.                                                                     |
 | DONE    | Chat archiving              | Room settings, archived filters, and mobile archive UI exist.                                                                                   |
 
 ### Frontend
 
-| Status  | Task                           | Evidence / Next Action                                                                               |
-| ------- | ------------------------------ | ---------------------------------------------------------------------------------------------------- |
-| DONE    | Chat list screen               | `ChatList` feature exists.                                                                           |
-| DONE    | Chat screen realtime messaging | `Chat` feature and realtime service exist.                                                           |
-| DONE    | Typing indicator UI            | Chat UI/realtime integration exists.                                                                 |
-| PARTIAL | Media sharing UI               | Attachment backend exists; UI should be tested on Android/iOS.                                       |
-| PARTIAL | Chat request accept/reject UI  | Access/room flow exists; dedicated pre-match request UX should be verified.                          |
-| TODO    | Voice message recording UI     | No recorder UI found.                                                                                |
-| DONE    | Message reactions UI           | Chat bubbles now show reaction summaries and quick reaction controls backed by the new API mutation. |
-| TODO    | Translated message toggle      | No translation toggle/provider found.                                                                |
+| Status | Task                           | Evidence / Next Action                                                                               |
+| ------ | ------------------------------ | ---------------------------------------------------------------------------------------------------- |
+| DONE   | Chat list screen               | `ChatList` feature exists.                                                                           |
+| DONE   | Chat screen realtime messaging | `Chat` feature and realtime service exist.                                                           |
+| DONE   | Typing indicator UI            | Chat UI/realtime integration exists.                                                                 |
+| DONE   | Media sharing UI               | Chat screen uploads image attachments and sends image messages through the attachment API.           |
+| DONE   | Chat request accept/reject UI  | Match request cards now expose accept and reject actions backed by the interest response API.        |
+| TODO   | Voice message recording UI     | No recorder UI found.                                                                                |
+| DONE   | Message reactions UI           | Chat bubbles now show reaction summaries and quick reaction controls backed by the new API mutation. |
+| TODO   | Translated message toggle      | No translation toggle/provider found.                                                                |
 
 ## 6. Notifications
 
@@ -267,7 +267,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | Coupons/discount codes               | Coupon schemas/validate flow exist.                                                               |
 | PARTIAL | Auto-renewal/subscription lifecycle  | Store transaction fields exist; actual store subscription reconciliation needs external setup.    |
 | DONE    | Free trial                           | Trial endpoint/service exists.                                                                    |
-| PARTIAL | Coin/credit wallet                   | Referral wallet exists; broader micro-purchase wallet not complete.                               |
+| TODO    | Coin/credit wallet                   | Referral rewards wallet exists, but no general coin/credit purchase/spend wallet is implemented.  |
 
 ### 7.2 Payments
 

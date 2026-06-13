@@ -11,6 +11,7 @@ interface Props {
   item: MatchItem;
   onViewProfile: () => void;
   onPrimaryAction: () => void;
+  onRejectRequest: () => void;
   onShortlist: () => void;
 }
 
@@ -18,6 +19,7 @@ export const MatchCard = React.memo(function MatchCard({
   item,
   onViewProfile,
   onPrimaryAction,
+  onRejectRequest,
   onShortlist,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
@@ -152,28 +154,43 @@ export const MatchCard = React.memo(function MatchCard({
             <Text style={styles.primaryText}>{primaryLabel}</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity
-            style={[
-              styles.shortlistBtn,
-              item.isShortlisted && styles.shortlistBtnActive,
-            ]}
-            onPress={onShortlist}
-            activeOpacity={0.8}
-            accessibilityRole="button"
-            accessibilityLabel={
-              item.isShortlisted
-                ? t('matches.remove_shortlist_label', { name: item.name })
-                : t('matches.shortlist_label', { name: item.name })
-            }
-          >
-            <Feather
-              name="bookmark"
-              size={16}
-              color={
-                item.isShortlisted ? theme.colors.white : theme.colors.accent
+          {item.requestStatus ? (
+            <TouchableOpacity
+              style={styles.rejectBtn}
+              onPress={onRejectRequest}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={t('matches.reject_request')}
+            >
+              <Feather name="x" size={14} color={theme.colors.error} />
+              <Text style={styles.rejectText}>
+                {t('matches.reject_request')}
+              </Text>
+            </TouchableOpacity>
+          ) : (
+            <TouchableOpacity
+              style={[
+                styles.shortlistBtn,
+                item.isShortlisted && styles.shortlistBtnActive,
+              ]}
+              onPress={onShortlist}
+              activeOpacity={0.8}
+              accessibilityRole="button"
+              accessibilityLabel={
+                item.isShortlisted
+                  ? t('matches.remove_shortlist_label', { name: item.name })
+                  : t('matches.shortlist_label', { name: item.name })
               }
-            />
-          </TouchableOpacity>
+            >
+              <Feather
+                name="bookmark"
+                size={16}
+                color={
+                  item.isShortlisted ? theme.colors.white : theme.colors.accent
+                }
+              />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
     </View>
