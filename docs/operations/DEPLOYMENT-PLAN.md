@@ -1,6 +1,10 @@
 
 # Recommended AWS architecture For arround (**10K monthly users**)
 
+> Current home: `docs/operations/DEPLOYMENT-PLAN.md`
+>
+> Purpose: deployment architecture, infrastructure sizing, release operations, and production hosting guidance.
+
 | Need           | AWS Service                                   | Recommended start                         |
 | -------------- | --------------------------------------------- | ----------------------------------------- |
 | NestJS API     | **Elastic Beanstalk Docker / Node.js**        | 1–2 EC2 instances, `t3.small`/`t3.medium` |

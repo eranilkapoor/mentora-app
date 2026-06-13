@@ -1,5 +1,9 @@
 # 📘**Project Management Plan for Matrimonial Website & Mobile Application**
 
+> Current home: `docs/planning/PROJECT-PLAN.md`
+>
+> Purpose: product scope, delivery plan, responsibilities, milestones, and project-management notes.
+
 ### **Project Title:**
 
 **“MatchMate” – A Smart Matrimonial Platform (Web + Mobile App)**

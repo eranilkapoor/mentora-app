@@ -13,12 +13,31 @@ This repository is a modular monorepo-style project with two primary application
 match-mate-app/
   match-mate-api-server/       NestJS API server
   match-mate-mobile-app/       Expo React Native app
-  TASK-ROADMAP.md              Product and engineering roadmap
-  PROJECT-PLAN.md              Planning notes
-  DEPLOYMENT-PLAN.md           Deployment notes
-  COMMANDS.md                  Common command reference
-  Settings.md                  Settings architecture notes
+  docs/                         Planning, launch, operations, and standards docs
+    README.md                   Documentation index
+    planning/                   Product, technical, roadmap, and flow plans
+    launch/                     Launch readiness, QA, EAS, billing, and monitoring
+    operations/                 Deployment and command references
+    standards/                  Coding and naming standards
+  README.md                     Repository entry point
 ```
+
+## Documentation
+
+The detailed project documentation lives under [docs](docs/README.md).
+
+| Area | Document |
+|---|---|
+| Product and delivery plan | [Project Plan](docs/planning/PROJECT-PLAN.md) |
+| Technical architecture | [Technical Plan](docs/planning/TECHNICAL-PLAN.md) |
+| Enterprise feature roadmap | [Task Roadmap](docs/planning/TASK-ROADMAP.md) |
+| UX and screen flows | [Flow Plan](docs/planning/FLOW-PLAN.md) |
+| Launch readiness | [Launch Plan](docs/launch/LAUNCH-PLAN.md) |
+| Play Store QA | [Play Store QA Checklist](docs/launch/PLAY-STORE-QA-CHECKLIST.md) |
+| EAS production build | [EAS Production Checklist](docs/launch/EAS-PRODUCTION-CHECKLIST.md) |
+| Deployment operations | [Deployment Plan](docs/operations/DEPLOYMENT-PLAN.md) |
+| Developer commands | [Commands](docs/operations/COMMANDS.md) |
+| Coding standards | [Coding Standard](docs/standards/CODING-STANDARD.md) |
 
 ## Current Architecture
 

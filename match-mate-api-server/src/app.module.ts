@@ -16,6 +16,7 @@ import { CorrelationIdMiddleware } from '@/common/middleware/correlation-id.midd
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard';
 import { LoggerModule } from '@/common/logger/logger.module';
+import { MonitoringModule } from '@/common/monitoring/monitoring.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ChatModule } from './modules/chat/chat.module';
@@ -55,6 +56,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     // OTHER MODULES
     // ==========================================
     LoggerModule,
+    MonitoringModule,
     CacheModule,
     StorageModule,
     MongoModule,

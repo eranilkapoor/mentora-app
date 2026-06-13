@@ -37,7 +37,7 @@ const getEnvValue = (value: string | undefined): string | undefined => {
   return trimmedValue;
 };
 
-const getPublicEnv = (key: string): string | undefined => {
+export const getPublicEnv = (key: string): string | undefined => {
   return getEnvValue((process.env as Record<string, string | undefined>)[key]);
 };
 

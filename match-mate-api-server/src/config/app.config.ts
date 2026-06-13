@@ -67,4 +67,9 @@ export default () => ({
       10,
     ),
   },
+  monitoring: {
+    enabled: process.env.MONITORING_ENABLED === 'true',
+    provider: process.env.MONITORING_PROVIDER || 'log',
+    sentryDsn: process.env.SENTRY_DSN || '',
+  },
 });

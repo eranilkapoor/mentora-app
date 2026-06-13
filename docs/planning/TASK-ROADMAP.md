@@ -1,5 +1,9 @@
 # 🚀 Enterprise Matrimonial App — Task Roadmap
 
+> Current home: `docs/planning/TASK-ROADMAP.md`
+>
+> Purpose: enterprise roadmap coverage across product, backend, mobile, operations, compliance, analytics, and monetization.
+
 ## Status Legend
 
 | Icon | Status |

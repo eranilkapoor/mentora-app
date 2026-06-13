@@ -1,8 +1,9 @@
 import React, { useCallback, useMemo } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
+  ListRenderItem,
   RefreshControl,
-  ScrollView,
   Text,
   View,
 } from 'react-native';
@@ -76,6 +77,7 @@ const sectionIconMap: Record<NotifSection['title'], string> = {
   yesterday: 'clock',
   earlier: 'archive',
 };
+const PAGE_SIZE = 20;
 
 export default function NotificationsScreen({
   navigation,
@@ -83,22 +85,48 @@ export default function NotificationsScreen({
   const styles = useThemedStyles(notificationStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const [page, setPage] = React.useState(1);
+  const [notificationPages, setNotificationPages] = React.useState<
+    AppNotification[]
+  >([]);
 
   const {
     data,
     isLoading,
     isFetching,
     refetch: refetchNotifications,
-  } = useGetNotificationsQuery({ page: 1, limit: 50 });
+  } = useGetNotificationsQuery({ page, limit: PAGE_SIZE });
   const { data: unreadData, refetch: refetchUnread } =
     useGetUnreadNotificationCountQuery();
   const [markNotificationRead] = useMarkNotificationReadMutation();
   const [markAllNotificationsRead, { isLoading: isMarkingAll }] =
     useMarkAllNotificationsReadMutation();
 
+  React.useEffect(() => {
+    if (!data?.success) return;
+
+    setNotificationPages((prev) => {
+      const next = page === 1 ? [] : [...prev];
+
+      data.data.items.forEach((item) => {
+        const existingIndex = next.findIndex(
+          (entry) => getNotificationId(entry) === getNotificationId(item)
+        );
+
+        if (existingIndex >= 0) {
+          next[existingIndex] = item;
+        } else {
+          next.push(item);
+        }
+      });
+
+      return next;
+    });
+  }, [data, page]);
+
   const notifications = useMemo<Notification[]>(
     () =>
-      (data?.success ? data.data.items : []).map((item) => ({
+      notificationPages.map((item) => ({
         id: getNotificationId(item),
         title: item.title,
         message: item.message,
@@ -115,7 +143,7 @@ export default function NotificationsScreen({
         ...(item.action ? { action: item.action } : {}),
         ...(item.metadata ? { metadata: item.metadata } : {}),
       })),
-    [data, theme]
+    [notificationPages, theme]
   );
 
   const sections = useMemo<NotifSection[]>(() => {
@@ -125,7 +153,7 @@ export default function NotificationsScreen({
       earlier: [],
     };
 
-    for (const item of data?.success ? data.data.items : []) {
+    for (const item of notificationPages) {
       const mapped = notifications.find(
         (notification) => notification.id === getNotificationId(item)
       );
@@ -141,7 +169,7 @@ export default function NotificationsScreen({
         data: grouped[title],
       }))
       .filter((section) => section.data.length > 0);
-  }, [data, notifications]);
+  }, [notificationPages, notifications]);
 
   const unreadCount =
     unreadData?.success && unreadData.data
@@ -149,12 +177,16 @@ export default function NotificationsScreen({
       : notifications.filter((item) => item.unread).length;
 
   const refresh = useCallback((): void => {
+    setNotificationPages([]);
+    setPage(1);
     void refetchNotifications();
     void refetchUnread();
   }, [refetchNotifications, refetchUnread]);
 
   const markAllRead = useCallback(async (): Promise<void> => {
     await markAllNotificationsRead().unwrap();
+    setNotificationPages([]);
+    setPage(1);
   }, [markAllNotificationsRead]);
 
   const markRead = useCallback(
@@ -174,6 +206,51 @@ export default function NotificationsScreen({
       }
     },
     [markNotificationRead, navigation]
+  );
+
+  const hasMore = Boolean(data?.success && data.data.hasNextPage);
+
+  const loadMore = useCallback((): void => {
+    if (!hasMore || isFetching) return;
+    setPage((value) => value + 1);
+  }, [hasMore, isFetching]);
+
+  const renderSection: ListRenderItem<NotifSection> = useCallback(
+    ({ item: section }) => (
+      <View style={styles.sectionCard}>
+        <View style={styles.sectionHeader}>
+          <View style={styles.sectionIconWrapper}>
+            <Feather
+              name={section.icon}
+              size={13}
+              color={theme.colors.primary}
+            />
+          </View>
+
+          <Text style={styles.sectionTitle}>
+            {t(`notifications.sections.${section.title}`)}
+          </Text>
+
+          {section.data.some((item) => item.unread) && (
+            <Text style={styles.sectionCount}>
+              {section.data.filter((item) => item.unread).length}
+            </Text>
+          )}
+        </View>
+
+        {section.data.map((item, index) => (
+          <NotifItem
+            key={item.id}
+            item={item}
+            isLast={index === section.data.length - 1}
+            onPress={(notification) => {
+              void markRead(notification);
+            }}
+          />
+        ))}
+      </View>
+    ),
+    [markRead, styles, t, theme.colors.primary]
   );
 
   return (
@@ -208,9 +285,14 @@ export default function NotificationsScreen({
           <Text style={styles.loadingText}>{t('notifications.loading')}</Text>
         </View>
       ) : (
-        <ScrollView
+        <FlatList
+          data={sections}
+          keyExtractor={(item) => item.title}
+          renderItem={renderSection}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
+          onEndReached={loadMore}
+          onEndReachedThreshold={0.35}
           refreshControl={
             <RefreshControl
               refreshing={isFetching || isMarkingAll}
@@ -219,46 +301,15 @@ export default function NotificationsScreen({
               tintColor={theme.colors.primary}
             />
           }
-        >
-          {notifications.length === 0 ? (
-            <EmptyState />
-          ) : (
-            sections.map((section) => (
-              <View key={section.title} style={styles.sectionCard}>
-                <View style={styles.sectionHeader}>
-                  <View style={styles.sectionIconWrapper}>
-                    <Feather
-                      name={section.icon}
-                      size={13}
-                      color={theme.colors.primary}
-                    />
-                  </View>
-
-                  <Text style={styles.sectionTitle}>
-                    {t(`notifications.sections.${section.title}`)}
-                  </Text>
-
-                  {section.data.some((item) => item.unread) && (
-                    <Text style={styles.sectionCount}>
-                      {section.data.filter((item) => item.unread).length}
-                    </Text>
-                  )}
-                </View>
-
-                {section.data.map((item, index) => (
-                  <NotifItem
-                    key={item.id}
-                    item={item}
-                    isLast={index === section.data.length - 1}
-                    onPress={(notification) => {
-                      void markRead(notification);
-                    }}
-                  />
-                ))}
-              </View>
-            ))
-          )}
-        </ScrollView>
+          ListEmptyComponent={
+            notifications.length === 0 ? <EmptyState /> : null
+          }
+          ListFooterComponent={
+            isFetching && page > 1 ? (
+              <Text style={styles.loadingText}>{t('common.loading')}</Text>
+            ) : null
+          }
+        />
       )}
     </SafeAreaView>
   );

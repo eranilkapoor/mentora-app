@@ -407,6 +407,21 @@ export const envValidationSchema = Joi.object({
     .max(524_288_000)
     .default(104_857_600),
 
+  MONITORING_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  MONITORING_PROVIDER: Joi.string()
+    .trim()
+    .valid('log', 'sentry')
+    .default('log'),
+
+  SENTRY_DSN: optionalString.when('MONITORING_PROVIDER', {
+    is: 'sentry',
+    then: envString.required(),
+  }),
+
   JWT_SECRET: Joi.string().trim().min(32).max(512).required(),
 
   JWT_ACCESS_EXPIRES_IN: optionalDuration.default('15m'),

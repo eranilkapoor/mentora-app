@@ -53,6 +53,8 @@
   "order_created_message": "ऑर्डर {{orderId}} तैयार है — {{currency}} {{amount}}",
   "payment_failed_title": "भुगतान विफल",
   "payment_failed_message": "हम आपका भुगतान शुरू नहीं कर सके। कृपया पुनः प्रयास करें।",
+  "store_billing_unavailable_title": "इन-ऐप बिलिंग उपलब्ध नहीं है",
+  "store_billing_unavailable_message": "इस बिल्ड में स्टोर सब्सक्रिप्शन अभी सक्षम नहीं हैं। कृपया अगले रिलीज के बाद फिर प्रयास करें।",
   "boost": {
     "title": "प्रोफ़ाइल बूस्ट",
     "subtitle": "24 घंटे के लिए priority discovery ranking",

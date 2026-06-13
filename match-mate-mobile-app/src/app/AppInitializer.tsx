@@ -23,6 +23,7 @@ import {
   navigateFromNotificationAction,
   parseNotificationAction,
 } from '@/features/Notifications/notificationNavigation';
+import { reportError, setErrorReporterUser } from '@/core/utils/errorReporter';
 
 interface Props {
   children: React.ReactNode;
@@ -82,7 +83,7 @@ export default function AppInitializer({ children }: Props) {
           ),
         ]);
       } catch (err) {
-        console.error('[AppInitializer] i18n error:', err);
+        reportError(err, { source: 'AppInitializer.applyLanguage' });
       } finally {
         if (isMounted) {
           setLangReady(true);
@@ -104,6 +105,10 @@ export default function AppInitializer({ children }: Props) {
       dispatch(setUser(data.data));
     }
   }, [data, dispatch]);
+
+  useEffect(() => {
+    setErrorReporterUser(userId ? { id: userId } : null);
+  }, [userId]);
 
   useEffect(() => {
     if (!accessToken) {
@@ -176,9 +181,10 @@ export default function AppInitializer({ children }: Props) {
 
         await Storage.setItem(storageKey, { token, deviceId });
       } catch (error) {
-        if (__DEV__) {
-          console.warn('[AppInitializer] push registration failed:', error);
-        }
+        reportError(error, {
+          source: 'AppInitializer.registerDeviceForPush',
+          userId,
+        });
       }
     };
 

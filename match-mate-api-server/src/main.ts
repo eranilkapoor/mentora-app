@@ -18,6 +18,7 @@ import { AppModule } from './app.module';
 import { AllExceptionsFilter } from './common/filters/all-exceptions.filter';
 import { AppLogger } from './common/logger/logger.service';
 import { LoggingInterceptor } from './common/logger/logging.interceptor';
+import { ErrorMonitoringService } from './common/monitoring/error-monitoring.service';
 import { HybridSocketIoAdapter } from './common/adapters/hybrid-socket-io.adapter';
 import {
   REDIS_PUB_CLIENT,
@@ -95,6 +96,7 @@ async function bootstrap(): Promise<void> {
 
   const configService = app.get(ConfigService);
   const logger = app.get(AppLogger);
+  const monitoring = app.get(ErrorMonitoringService);
 
   app.useLogger(logger);
 
@@ -167,7 +169,7 @@ async function bootstrap(): Promise<void> {
   );
 
   // ── Global Filters & Interceptors ───────────────────────────────────
-  app.useGlobalFilters(new AllExceptionsFilter(logger));
+  app.useGlobalFilters(new AllExceptionsFilter(logger, monitoring));
   app.useGlobalInterceptors(new LoggingInterceptor(logger));
 
   // ── WebSocket Adapter ───────────────────────────────────────────────

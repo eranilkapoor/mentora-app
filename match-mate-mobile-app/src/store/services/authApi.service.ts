@@ -23,6 +23,9 @@ import {
 } from '../../core/types';
 import { logout as logoutAction } from '../slices/auth.slice';
 import { baseApi, clearRefreshToken, getRefreshToken } from './baseApi.service';
+import { getDeviceId } from '@/core/utils/device';
+import { Storage } from '@/core/utils/storage';
+import { RootState } from '../index';
 
 export const authApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -126,6 +129,15 @@ export const authApi = baseApi.injectEndpoints({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
         try {
           const refreshToken = await getRefreshToken();
+          const state = _api.getState() as RootState;
+          const userId = state.auth.user?.userId;
+          const deviceId = await getDeviceId();
+
+          await baseQuery({
+            url: '/notifications/device-tokens/revoke',
+            method: 'POST',
+            body: { deviceId },
+          });
 
           const result = await baseQuery({
             url: '/auth/logout',
@@ -147,6 +159,9 @@ export const authApi = baseApi.injectEndpoints({
           }
 
           await clearRefreshToken();
+          if (userId) {
+            await Storage.removeItem(`notification-push-token:${userId}`);
+          }
           _api.dispatch(logoutAction());
 
           // Success

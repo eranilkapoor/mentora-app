@@ -1,5 +1,9 @@
 # Commonly accepted industry-standard naming rules used in professional NestJS applications.
 
+> Current home: `docs/standards/CODING-STANDARD.md`
+>
+> Purpose: shared naming, folder, file, class, function, NestJS, and React Native conventions.
+
 ---
 
 # 1. General Naming Conventions

@@ -8,6 +8,7 @@ import {
 import { Request, Response } from 'express';
 import { AppLogger } from '../logger/logger.service';
 import { ErrorCode } from '../constants';
+import { ErrorMonitoringService } from '../monitoring/error-monitoring.service';
 
 interface ValidationErrorResponse {
   code?: string;
@@ -19,7 +20,10 @@ interface ValidationErrorResponse {
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
-  constructor(private readonly logger: AppLogger) {}
+  constructor(
+    private readonly logger: AppLogger,
+    private readonly monitoring?: ErrorMonitoringService,
+  ) {}
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -90,6 +94,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
         timestamp: new Date().toISOString(),
       },
     );
+
+    this.monitoring?.captureException(exception, {
+      path: request.url,
+      method: request.method,
+      correlationId,
+      requestId,
+      statusCode: status,
+      code,
+    });
 
     // Custom 404 response
     if (status === HttpStatus.NOT_FOUND) {

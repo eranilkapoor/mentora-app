@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { reportError } from '@/core/utils/errorReporter';
 import { createStyles } from '../styles/ErrorBoundary.styles';
 interface Props {
   children: React.ReactNode;
@@ -27,10 +28,10 @@ class ErrorBoundary extends React.Component<Props, State> {
 
   componentDidCatch(error: Error, info: React.ErrorInfo): void {
     this.props.onError?.(error, info);
-
-    if (__DEV__) {
-      console.error('[ErrorBoundary]', error, info.componentStack);
-    }
+    reportError(error, {
+      source: 'ErrorBoundary',
+      componentStack: info.componentStack,
+    });
   }
 
   private handleRetry = (): void => {

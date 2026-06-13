@@ -1,5 +1,9 @@
 # ⚙️**TECHNICAL PLAN – MATRIMONIAL PLATFORM (WEB + MOBILE APP)**
 
+> Current home: `docs/planning/TECHNICAL-PLAN.md`
+>
+> Purpose: technical architecture, module boundaries, API strategy, infrastructure direction, and production-readiness priorities.
+
 ### **Tech Stack Overview**
 
 | Layer                 | Technology                                       |

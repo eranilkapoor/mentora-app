@@ -2,6 +2,10 @@
 
 ### 📱 Platforms:
 
+> Current home: `docs/planning/FLOW-PLAN.md`
+>
+> Purpose: user journeys, screen flows, and UX blueprint for web, Android, and iOS.
+
 * **Web (Desktop + Responsive)**
 * **Mobile App (Android & iOS, React Native)**
 

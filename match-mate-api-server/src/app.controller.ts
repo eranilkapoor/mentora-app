@@ -1,4 +1,4 @@
-import { Controller, Get, Res } from '@nestjs/common';
+import { Controller, Get, Header, Res } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { AppService } from './app.service';
@@ -38,5 +38,14 @@ export class AppController {
     }
 
     return readiness;
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('account-deletion')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  accountDeletionInstructions() {
+    return this.appService.getAccountDeletionInstructionsPage();
   }
 }

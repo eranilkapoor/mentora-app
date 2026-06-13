@@ -53,6 +53,8 @@
   "order_created_message": "Order {{orderId}} ready — {{currency}} {{amount}}",
   "payment_failed_title": "Payment Failed",
   "payment_failed_message": "We could not start your payment. Please try again.",
+  "store_billing_unavailable_title": "In-app billing unavailable",
+  "store_billing_unavailable_message": "Store subscriptions are not enabled for this build yet. Please try again after the next release.",
   "boost": {
     "title": "Profile Boost",
     "subtitle": "Priority discovery ranking for 24 hours",

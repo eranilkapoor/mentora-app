@@ -1,5 +1,9 @@
 # FRONTEND COMMANDS :-
 
+> Current home: `docs/operations/COMMANDS.md`
+>
+> Purpose: quick command reference for builds, local cleanup, verification, and common operational tasks.
+
 ## Build APK for Android testers
 ```
 eas build --platform android --profile preview

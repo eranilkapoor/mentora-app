@@ -1,8 +1,12 @@
 import { useCallback } from 'react';
-import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useCreateMembershipOrderMutation } from '@/store/services/membershipApi.service';
 import { showError, showSuccess } from '@/core/utils/toast';
+import {
+  getStoreBillingProvider,
+  isNativeStoreBillingPlatform,
+  isStoreBillingEnabled,
+} from '@/core/utils/billingConfig';
 import { DisplayPlan } from '../Membership.types';
 
 export function useMembershipActions() {
@@ -20,16 +24,19 @@ export function useMembershipActions() {
         return;
       }
 
+      if (isNativeStoreBillingPlatform() && !isStoreBillingEnabled()) {
+        showError({
+          title: t('membership.store_billing_unavailable_title'),
+          message: t('membership.store_billing_unavailable_message'),
+        });
+        return;
+      }
+
       try {
         const order = await createOrder({
           planId: selectedPlanItem.source._id,
           currency: selectedPlanItem.source.currency,
-          gateway:
-            Platform.OS === 'ios'
-              ? 'apple_iap'
-              : Platform.OS === 'android'
-                ? 'google_play'
-                : 'razorpay',
+          gateway: getStoreBillingProvider(),
           idempotencyKey: `${selectedPlanItem.source._id}-${Date.now()}`,
           description: `${selectedPlanItem.name} membership`,
         }).unwrap();
