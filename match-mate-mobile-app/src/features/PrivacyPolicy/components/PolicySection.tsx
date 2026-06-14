@@ -7,30 +7,37 @@ import { BulletList } from './BulletList';
 
 export function PolicySection({
   section,
+  index,
+  isLast,
 }: {
   section: SectionItem;
+  index: number;
+  isLast?: boolean;
 }): React.ReactElement {
   const styles = useThemedStyles(privacyPolicyStyles);
   const { t } = useTranslation();
 
   return (
-    <View style={styles.policySection}>
-      <Text style={styles.heading}>{t(section.heading)}</Text>
+    <View style={[styles.legalRow, isLast && styles.legalRowLast]}>
+      <Text style={styles.legalNumber}>{index + 1}</Text>
+      <View style={styles.legalContent}>
+        <Text style={styles.legalTitle}>{t(section.heading)}</Text>
 
-      {section.paragraph !== undefined && (
-        <Text style={styles.paragraph}>{t(section.paragraph)}</Text>
-      )}
+        {section.paragraph !== undefined && (
+          <Text style={styles.legalBody}>{t(section.paragraph)}</Text>
+        )}
 
-      {section.bullets !== undefined && (
-        <BulletList items={section.bullets.map((item) => t(item))} />
-      )}
+        {section.bullets !== undefined && (
+          <BulletList items={section.bullets.map((item) => t(item))} />
+        )}
 
-      {section.subSections?.map((sub) => (
-        <View key={sub.title}>
-          <Text style={styles.subHeading}>{t(sub.title)}</Text>
-          <BulletList items={sub.bullets.map((item) => t(item))} />
-        </View>
-      ))}
+        {section.subSections?.map((sub) => (
+          <View key={sub.title}>
+            <Text style={styles.subHeading}>{t(sub.title)}</Text>
+            <BulletList items={sub.bullets.map((item) => t(item))} />
+          </View>
+        ))}
+      </View>
     </View>
   );
 }

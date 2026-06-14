@@ -1,157 +1,39 @@
 import { baseApi } from './baseApi.service';
 import { ApiResponse } from '@/core/types';
+import type {
+  ActiveSubscription,
+  BillingPayment,
+  BillingSummary,
+  CancelSubscriptionRequest,
+  CouponValidationResult,
+  CreatePaymentOrderRequest,
+  MembershipPlan,
+  PaymentInvoice,
+  PaymentOrder,
+  ProfileBoost,
+  StartFreeTrialRequest,
+  ValidateCouponRequest,
+  VerifyStoreSubscriptionRequest,
+} from '@matchmate/api-contract';
 
-export interface MembershipPlanFeature {
-  value?: string | number | boolean;
-  featureId?: {
-    key?: string;
-    name?: string;
-    description?: string;
-  };
-}
-
-export interface MembershipPlan {
-  _id: string;
-  name: string;
-  slug: string;
-  tier: string;
-  planType?: 'self_service' | 'assisted' | 'profile_boost';
-  billingCycle: string;
-  price: number;
-  durationDays: number;
-  currency: string;
-  isPopular?: boolean;
-  description?: string;
-  features?: MembershipPlanFeature[];
-}
-
-export interface ActiveSubscription {
-  _id: string;
-  planId: MembershipPlan | string;
-  startDate: string;
-  endDate: string;
-  status: string;
-  autoRenew?: boolean;
-  cancelledAt?: string;
-  cancelledReason?: string;
-}
-
-export interface BillingPayment {
-  _id: string;
-  orderId: string;
-  planId?: MembershipPlan | string;
-  amount: number;
-  taxAmount: number;
-  discountAmount: number;
-  netAmount: number;
-  currency: string;
-  gateway: string;
-  method?: string;
-  purpose: string;
-  status: string;
-  initiatedAt: string;
-  paidAt?: string;
-  failedAt?: string;
-  failureReason?: string;
-}
-
-export interface BillingSummary {
-  currentPlan: ActiveSubscription | null;
-  subscriptions: ActiveSubscription[];
-  payments: BillingPayment[];
-  billing: {
-    currency: string;
-    totalPaid: number;
-    successfulPayments: number;
-    lastPaymentAt?: string;
-    nextRenewalAt?: string | null;
-    autoRenew: boolean;
-  };
-}
-
-export interface ProfileBoost {
-  _id: string;
-  userId: string;
-  startsAt: string;
-  endsAt: string;
-  multiplier: number;
-  status: string;
-  source?: string;
-}
-
-export interface CreatePaymentOrderRequest {
-  planId?: string;
-  amount?: number;
-  coinAmount?: number;
-  currency?: string;
-  purpose?: 'subscription' | 'profile_boost' | 'coin_pack';
-  gateway?: 'razorpay' | 'stripe' | 'apple_iap' | 'google_play' | 'manual';
-  idempotencyKey?: string;
-  description?: string;
-  couponCode?: string;
-  customerGstin?: string;
-  metadata?: Record<string, unknown>;
-}
-
-export interface PaymentOrder {
-  orderId: string;
-  gatewayOrderId?: string;
-  amount: number;
-  taxAmount: number;
-  discountAmount?: number;
-  netAmount: number;
-  couponCode?: string;
-  currency: string;
-  status: string;
-  gateway: string;
-  expiresAt: string;
-}
-
-export interface ValidateCouponRequest {
-  planId: string;
-  code: string;
-}
-
-export interface CouponValidationResult {
-  couponCode?: string;
-  discountAmount: number;
-  couponSummary?: {
-    code: string;
-    title?: string;
-    discountType: string;
-    discountValue: number;
-    discountAmount: number;
-  };
-}
-
-export interface VerifyStoreSubscriptionRequest {
-  gateway: 'apple_iap' | 'google_play';
-  planId: string;
-  productId: string;
-  transactionId: string;
-  originalTransactionId?: string;
-  receiptData?: string;
-  purchaseToken?: string;
-  couponCode?: string;
-  payload?: Record<string, unknown>;
-}
-
-export interface StartFreeTrialRequest {
-  planId: string;
-  trialDays?: number;
-}
-
-export interface PaymentInvoice {
-  invoiceNumber: string;
-  orderId: string;
-  currency: string;
-  taxableAmount: number;
-  discountAmount: number;
-  gstPercentage: number;
-  gstAmount: number;
-  totalAmount: number;
-  issuedAt: string;
-}
+export type {
+  ActiveSubscription,
+  BillingPayment,
+  BillingSummary,
+  CancelSubscriptionRequest,
+  CouponValidationResult,
+  CreatePaymentOrderRequest,
+  MembershipPlan,
+  MembershipPlanFeature,
+  PaymentGateway,
+  PaymentInvoice,
+  PaymentOrder,
+  ProfileBoost,
+  StartFreeTrialRequest,
+  ValidateCouponRequest,
+  VerifyPaymentRequest,
+  VerifyStoreSubscriptionRequest,
+} from '@matchmate/api-contract';
 
 const unwrapApiResponse = <T>(response: ApiResponse<T>, fallback: T): T => {
   if (response.success) return response.data;
@@ -266,6 +148,20 @@ export const membershipApi = baseApi.injectEndpoints({
       }
     ),
 
+    cancelSubscription: builder.mutation<
+      { success: boolean },
+      CancelSubscriptionRequest | void
+    >({
+      query: (body) => ({
+        url: '/subscriptions/cancel',
+        method: 'POST',
+        body: body ?? {},
+      }),
+      transformResponse: (response: ApiResponse<{ success: boolean }>) =>
+        unwrapApiResponse(response, { success: false }),
+      invalidatesTags: ['Membership', 'Payment'],
+    }),
+
     getPaymentInvoice: builder.query<PaymentInvoice | null, string>({
       query: (orderId) => ({
         url: `/payments/${orderId}/invoice`,
@@ -289,5 +185,6 @@ export const {
   useValidateMembershipCouponMutation,
   useVerifyStoreSubscriptionMutation,
   useStartFreeTrialMutation,
+  useCancelSubscriptionMutation,
   useGetPaymentInvoiceQuery,
 } = membershipApi;

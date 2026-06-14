@@ -18,7 +18,10 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { showError, showSuccess } from '@/core/utils/toast';
 import { useGetReferralSummaryQuery } from '@/store/services/referralApi.service';
-import { useGetWalletSummaryQuery } from '@/store/services/walletApi.service';
+import {
+  useGetWalletSummaryQuery,
+  WalletTransaction,
+} from '@/store/services/walletApi.service';
 import { SettingsNavigationProp } from '@/navigation/types';
 import { referRewardsStyles } from './ReferRewards.styles';
 import { ReferredUser } from './ReferRewards.types';
@@ -85,6 +88,58 @@ function RewardRow({
   );
 }
 
+function WalletTransactionRow({
+  item,
+  isLast,
+}: {
+  item: WalletTransaction;
+  isLast?: boolean;
+}): React.ReactElement {
+  const styles = useThemedStyles(referRewardsStyles);
+  const { theme } = useTheme();
+  const { t } = useTranslation();
+  const isDebit = item.type === 'debit' || item.type === 'expire';
+
+  return (
+    <View style={[styles.walletTransactionRow, isLast && styles.rewardRowLast]}>
+      <View
+        style={[
+          styles.walletTransactionIcon,
+          isDebit && styles.walletTransactionIconDebit,
+        ]}
+      >
+        <Feather
+          name={isDebit ? 'minus-circle' : 'plus-circle'}
+          size={16}
+          color={isDebit ? theme.colors.error : theme.colors.success}
+        />
+      </View>
+      <View style={styles.rowBody}>
+        <View style={styles.rowTop}>
+          <Text style={styles.rowTitle} numberOfLines={1}>
+            {item.source.replace(/_/g, ' ')}
+          </Text>
+          <Text
+            style={[
+              styles.walletTransactionPoints,
+              isDebit && styles.walletTransactionPointsDebit,
+            ]}
+          >
+            {isDebit ? '-' : '+'}
+            {item.points}
+          </Text>
+        </View>
+        <Text style={styles.rowMeta}>
+          {formatDate(item.createdAt, t)} ·{' '}
+          {t('settings.referrals.balance_after', {
+            count: item.balanceAfter,
+          })}
+        </Text>
+      </View>
+    </View>
+  );
+}
+
 export default function ReferRewardsScreen({
   navigation,
 }: Props): React.ReactElement {
@@ -94,6 +149,7 @@ export default function ReferRewardsScreen({
   const { data: walletData } = useGetWalletSummaryQuery();
   const summary = data?.data;
   const wallet = walletData?.data;
+  const recentTransactions = wallet?.transactions?.slice(0, 4) ?? [];
 
   const { t } = useTranslation();
 
@@ -259,20 +315,44 @@ export default function ReferRewardsScreen({
 
         <SettingsCard
           title={t('settings.referrals.coins_wallet', {
-            defaultValue: 'Coins wallet',
+            defaultValue: 'Coin wallet',
           })}
           subtitle={t('settings.referrals.coins_wallet_sub', {
             defaultValue: 'Use credits for boosts, premium actions and add-ons',
           })}
         >
+          <View style={styles.walletHero}>
+            <View style={styles.walletCoinIcon}>
+              <Feather name="database" size={18} color={theme.colors.primary} />
+            </View>
+            <View style={styles.walletHeroCopy}>
+              <Text style={styles.walletHeroLabel}>
+                {t('settings.referrals.available_coins', {
+                  defaultValue: 'Available coins',
+                })}
+              </Text>
+              <Text style={styles.walletHeroValue}>
+                {wallet?.balance ?? summary?.totalPoints ?? 0}
+              </Text>
+            </View>
+          </View>
+
           <View style={styles.walletSummaryRow}>
             <View style={styles.walletBalanceTile}>
               <Text style={styles.walletBalanceValue}>
-                {wallet?.balance ?? summary?.totalPoints ?? 0}
+                {wallet?.redeemablePoints ?? summary?.redeemablePoints ?? 0}
               </Text>
               <Text style={styles.walletBalanceLabel}>
-                {t('settings.referrals.available_coins', {
-                  defaultValue: 'Available coins',
+                {t('settings.referrals.redeemable')}
+              </Text>
+            </View>
+            <View style={styles.walletBalanceTile}>
+              <Text style={styles.walletBalanceValue}>
+                {wallet?.pendingPoints ?? 0}
+              </Text>
+              <Text style={styles.walletBalanceLabel}>
+                {t('settings.referrals.pending_coins', {
+                  defaultValue: 'Pending coins',
                 })}
               </Text>
             </View>
@@ -282,10 +362,33 @@ export default function ReferRewardsScreen({
               </Text>
               <Text style={styles.walletBalanceLabel}>
                 {t('settings.referrals.wallet_activity', {
-                  defaultValue: 'Recent activity',
+                  defaultValue: 'Activity',
                 })}
               </Text>
             </View>
+          </View>
+
+          <View style={styles.walletTransactions}>
+            <Text style={styles.walletSectionTitle}>
+              {t('settings.referrals.recent_wallet_activity', {
+                defaultValue: 'Recent wallet activity',
+              })}
+            </Text>
+            {recentTransactions.length ? (
+              recentTransactions.map((item, index) => (
+                <WalletTransactionRow
+                  key={item._id}
+                  item={item}
+                  isLast={index === recentTransactions.length - 1}
+                />
+              ))
+            ) : (
+              <Text style={styles.emptyText}>
+                {t('settings.referrals.no_wallet_activity', {
+                  defaultValue: 'No coin activity yet.',
+                })}
+              </Text>
+            )}
           </View>
         </SettingsCard>
 
@@ -309,7 +412,7 @@ export default function ReferRewardsScreen({
         </SettingsCard>
 
         <TouchableOpacity
-          style={styles.shareButton}
+          style={styles.refreshButton}
           onPress={() => {
             void refetch();
           }}

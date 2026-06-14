@@ -2,6 +2,7 @@ import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { View, Text, ScrollView } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { privacyPolicyStyles } from './PrivacyPolicy.styles';
 import { PolicySection } from './components/PolicySection';
@@ -30,20 +31,26 @@ export default function PrivacyPolicyScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          <Text style={styles.title}>{t('privacy_policy.title')}</Text>
-          <Text style={styles.updateText}>
-            {t('privacy_policy.last_updated')}
-          </Text>
+        <SettingsCard
+          icon="shield"
+          title={t('privacy_policy.title')}
+          subtitle={t('privacy_policy.last_updated')}
+        >
+          <View style={styles.legalIntro}>
+            <Text style={styles.paragraph}>{t('privacy_policy.intro')}</Text>
+          </View>
 
-          <Text style={styles.paragraph}>{t('privacy_policy.intro')}</Text>
-
-          {POLICY_SECTIONS.map((section) => (
-            <PolicySection key={section.heading} section={section} />
+          {POLICY_SECTIONS.map((section, index) => (
+            <PolicySection
+              key={section.heading}
+              section={section}
+              index={index}
+              isLast={index === POLICY_SECTIONS.length - 1}
+            />
           ))}
+        </SettingsCard>
 
-          <View style={styles.footer} />
-        </View>
+        <View style={styles.footer} />
       </ScrollView>
     </SafeAreaView>
   );

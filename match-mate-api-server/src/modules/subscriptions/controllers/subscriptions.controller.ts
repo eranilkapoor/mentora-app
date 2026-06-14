@@ -56,6 +56,17 @@ export class SubscriptionsController {
     );
   }
 
+  @Post('cancel')
+  async cancelSubscription(
+    @Req() req: AuthenticatedRequest,
+    @Body('reason') reason?: string,
+  ) {
+    return successResponse(
+      await this.subscriptionsService.cancelSubscription(req.user.sub, reason),
+      SuccessCode.SUBSCRIPTION_CANCELLED,
+    );
+  }
+
   @Get('boosts')
   async getMyBoosts(@Req() req: AuthenticatedRequest) {
     return successResponse(

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useNavigation } from '@react-navigation/native';
@@ -14,10 +14,13 @@ import {
   ActiveSubscription,
   BillingPayment,
   MembershipPlan,
+  useCancelSubscriptionMutation,
   useGetBillingSummaryQuery,
 } from '@/store/services/membershipApi.service';
 import { subscriptionBillingStyles } from './SubscriptionBilling.styles';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { showConfirm } from '@/core/utils/confirm';
+import { showError, showSuccess } from '@/core/utils/toast';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -238,6 +241,8 @@ export default function SubscriptionBillingScreen({
   const { t } = useTranslation();
   const appNavigation = useNavigation<AppNavigationProp>();
   const { data, isLoading, refetch } = useGetBillingSummaryQuery();
+  const [cancelSubscription, { isLoading: isCancellingRenewal }] =
+    useCancelSubscriptionMutation();
 
   const currentPlanName = useMemo(
     () =>
@@ -253,6 +258,32 @@ export default function SubscriptionBillingScreen({
     [data?.currentPlan?.planId]
   );
   const currentStatus = data?.currentPlan?.status ?? 'free';
+
+  const handleCancelRenewal = useCallback(() => {
+    showConfirm({
+      title: t('membership.billing.cancel_auto_renew'),
+      message: t('membership.billing.cancel_auto_renew_confirm'),
+      confirmText: t('membership.billing.cancel_auto_renew_confirm_cta'),
+      destructive: true,
+      onConfirm: async () => {
+        try {
+          await cancelSubscription({
+            reason: 'user_requested_from_billing_screen',
+          }).unwrap();
+          showSuccess({
+            title: t('membership.billing.cancel_auto_renew_success_title'),
+            message: t('membership.billing.cancel_auto_renew_success_message'),
+          });
+          await refetch();
+        } catch {
+          showError({
+            title: t('membership.billing.cancel_auto_renew_failed_title'),
+            message: t('membership.billing.cancel_auto_renew_failed_message'),
+          });
+        }
+      },
+    });
+  }, [cancelSubscription, refetch, t]);
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
@@ -365,8 +396,19 @@ export default function SubscriptionBillingScreen({
             onPress={() =>
               appNavigation.navigate('Tabs', { screen: 'Membership' })
             }
-            isLast
+            isLast={!data.billing.autoRenew}
           />
+          {data.currentPlan && data.billing.autoRenew ? (
+            <SettingsSelectItem
+              icon="x-circle"
+              label={t('membership.billing.cancel_auto_renew')}
+              sublabel={t('membership.billing.cancel_auto_renew_sub')}
+              destructive
+              disabled={isCancellingRenewal}
+              onPress={handleCancelRenewal}
+              isLast
+            />
+          ) : null}
         </SettingsCard>
 
         <SettingsCard

@@ -260,25 +260,17 @@ export class SubscriptionsService {
   async cancelSubscription(userId: string, reason?: string) {
     const sub = await this.subModel.findOne({
       userId: new Types.ObjectId(userId),
-      status: SubscriptionStatus.ACTIVE,
+      status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
     });
 
     if (!sub) return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND);
 
-    sub.status = SubscriptionStatus.CANCELLED;
+    sub.autoRenew = false;
     sub.cancelledAt = new Date();
     sub.cancelledReason = reason;
     await sub.save();
 
-    await this.userRepo.updateMembership(userId, {
-      tier: PlanTier.FREE,
-      status: SubscriptionStatus.CANCELLED,
-      startDate: sub.startDate,
-      expiresAt: sub.endDate,
-      planId: sub.planId.toString(),
-    });
-
-    return { success: true };
+    return { success: true, subscription: sub };
   }
 
   // Called by cron to expire subscriptions past their endDate

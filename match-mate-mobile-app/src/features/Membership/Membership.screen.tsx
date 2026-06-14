@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import type { PaymentGateway } from '@matchmate/api-contract';
 import { membershipStyles } from './Membership.styles';
 import { MembershipTab } from './Membership.types';
 import { useMembershipData } from './hooks/useMembershipData';
@@ -14,6 +15,7 @@ import { MembershipHeroCard } from './components/MembershipHeroCard';
 import { SelfServiceTab } from './components/SelfServiceTab';
 import { AssistedTab } from './components/AssistedTab';
 import { MembershipCta } from './components/MembershipCta';
+import { PaymentOptionSheet } from './components/PaymentOptionSheet';
 import { MEMBERSHIP_TABS } from './Membership.constants';
 
 export default function MembershipScreen(): React.ReactElement {
@@ -22,6 +24,7 @@ export default function MembershipScreen(): React.ReactElement {
   const { t } = useTranslation();
 
   const [activeTab, setActiveTab] = useState<MembershipTab>('self');
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
 
   const {
     displayPlans,
@@ -39,8 +42,16 @@ export default function MembershipScreen(): React.ReactElement {
     useMembershipActions();
 
   const onCreateOrder = useCallback(() => {
-    void handleCreateOrder(selectedPlanItem);
-  }, [handleCreateOrder, selectedPlanItem]);
+    setIsCheckoutOpen(true);
+  }, []);
+
+  const onConfirmCheckout = useCallback(
+    async (gateway: PaymentGateway) => {
+      await handleCreateOrder(selectedPlanItem, gateway);
+      setIsCheckoutOpen(false);
+    },
+    [handleCreateOrder, selectedPlanItem]
+  );
 
   const onCreateBoostOrder = useCallback(() => {
     if (!boostPlan) return;
@@ -155,6 +166,16 @@ export default function MembershipScreen(): React.ReactElement {
         isCreatingOrder={isCreatingOrder}
         isFetchingPlans={isFetchingPlans}
         onCreateOrder={onCreateOrder}
+      />
+
+      <PaymentOptionSheet
+        visible={isCheckoutOpen}
+        selectedPlanItem={selectedPlanItem}
+        isCreatingOrder={isCreatingOrder}
+        onClose={() => setIsCheckoutOpen(false)}
+        onContinue={(gateway) => {
+          void onConfirmCheckout(gateway);
+        }}
       />
     </SafeAreaView>
   );

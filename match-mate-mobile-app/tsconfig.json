@@ -5,7 +5,8 @@
     "module": "esnext",
 
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@matchmate/api-contract": ["../packages/api-contract/src/index.ts"]
     },
 
     "strict": true,
@@ -29,6 +30,6 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["src", "*.ts", "*.tsx"],
+  "include": ["src", "*.ts", "*.tsx", "../packages/api-contract/src/**/*.ts"],
   "exclude": ["node_modules", "dist", ".expo", "android", "ios"]
 }

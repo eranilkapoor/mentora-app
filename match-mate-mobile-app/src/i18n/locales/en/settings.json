@@ -447,7 +447,15 @@
     "share_subject": "Join Match Mate",
     "copy_referral_code": "Copy referral code",
     "points_short": "+{{count}} pts",
-    "joined_recently": "Joined recently"
+    "joined_recently": "Joined recently",
+    "coins_wallet": "Coin wallet",
+    "coins_wallet_sub": "Use credits for boosts, premium actions and add-ons",
+    "available_coins": "Available coins",
+    "pending_coins": "Pending coins",
+    "wallet_activity": "Activity",
+    "recent_wallet_activity": "Recent wallet activity",
+    "no_wallet_activity": "No coin activity yet.",
+    "balance_after": "Balance {{count}}"
   },
   "privacy": {
     "title": "Privacy Settings",

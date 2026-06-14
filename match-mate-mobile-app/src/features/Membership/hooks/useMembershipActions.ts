@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useCreateMembershipOrderMutation } from '@/store/services/membershipApi.service';
 import { showError, showSuccess } from '@/core/utils/toast';
+import type { PaymentGateway } from '@matchmate/api-contract';
 import {
   getStoreBillingProvider,
   isNativeStoreBillingPlatform,
@@ -15,7 +16,10 @@ export function useMembershipActions() {
     useCreateMembershipOrderMutation();
 
   const handleCreateOrder = useCallback(
-    async (selectedPlanItem: DisplayPlan | null): Promise<void> => {
+    async (
+      selectedPlanItem: DisplayPlan | null,
+      gateway: PaymentGateway = getStoreBillingProvider()
+    ): Promise<void> => {
       if (!selectedPlanItem?.source?._id) {
         showError({
           title: t('membership.plans_unavailable_title'),
@@ -36,7 +40,7 @@ export function useMembershipActions() {
         const order = await createOrder({
           planId: selectedPlanItem.source._id,
           currency: selectedPlanItem.source.currency,
-          gateway: getStoreBillingProvider(),
+          gateway,
           idempotencyKey: `${selectedPlanItem.source._id}-${Date.now()}`,
           description: `${selectedPlanItem.name} membership`,
         }).unwrap();
@@ -47,6 +51,7 @@ export function useMembershipActions() {
             orderId: order.orderId,
             currency: order.currency,
             amount: order.netAmount,
+            gateway: order.gateway,
           }),
         });
       } catch {

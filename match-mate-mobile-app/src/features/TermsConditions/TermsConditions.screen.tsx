@@ -3,6 +3,7 @@ import { ScrollView, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
+import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { privacyPolicyStyles } from '../PrivacyPolicy/PrivacyPolicy.styles';
 import { SettingsNavigationProp } from '@/navigation/types';
@@ -30,24 +31,37 @@ export default function TermsConditionsScreen({
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.card}>
-          <Text style={styles.title}>{t('terms.title')}</Text>
-          <Text style={styles.updateText}>{t('terms.last_updated')}</Text>
-          <Text style={styles.paragraph}>{t('terms.intro')}</Text>
+        <SettingsCard
+          icon="file-text"
+          title={t('terms.title')}
+          subtitle={t('terms.last_updated')}
+        >
+          <View style={styles.legalIntro}>
+            <Text style={styles.paragraph}>{t('terms.intro')}</Text>
+          </View>
 
-          {SECTION_KEYS.map((key) => (
-            <View key={key} style={styles.policySection}>
-              <Text style={styles.heading}>
-                {t(`terms.sections.${key}.title`)}
-              </Text>
-              <Text style={styles.paragraph}>
-                {t(`terms.sections.${key}.body`)}
-              </Text>
+          {SECTION_KEYS.map((key, index) => (
+            <View
+              key={key}
+              style={[
+                styles.legalRow,
+                index === SECTION_KEYS.length - 1 && styles.legalRowLast,
+              ]}
+            >
+              <Text style={styles.legalNumber}>{index + 1}</Text>
+              <View style={styles.legalContent}>
+                <Text style={styles.legalTitle}>
+                  {t(`terms.sections.${key}.title`)}
+                </Text>
+                <Text style={styles.legalBody}>
+                  {t(`terms.sections.${key}.body`)}
+                </Text>
+              </View>
             </View>
           ))}
+        </SettingsCard>
 
-          <View style={styles.footer} />
-        </View>
+        <View style={styles.footer} />
       </ScrollView>
     </SafeAreaView>
   );

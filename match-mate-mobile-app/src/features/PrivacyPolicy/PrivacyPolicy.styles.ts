@@ -32,6 +32,50 @@ export const privacyPolicyStyles = (
     policySection: {
       marginTop: 4,
     },
+    legalIntro: {
+      paddingHorizontal: 14,
+      paddingTop: 14,
+      paddingBottom: 12,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+    },
+    legalRow: {
+      flexDirection: 'row',
+      gap: 12,
+      paddingHorizontal: 14,
+      paddingVertical: 14,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
+    },
+    legalRowLast: {
+      borderBottomWidth: 0,
+    },
+    legalNumber: {
+      width: 26,
+      height: 26,
+      borderRadius: 13,
+      overflow: 'hidden',
+      textAlign: 'center',
+      lineHeight: 26,
+      fontSize: 13,
+      fontWeight: '700',
+      color: theme.colors.primary,
+      backgroundColor: theme.colors.primaryLight,
+    },
+    legalContent: {
+      flex: 1,
+    },
+    legalTitle: {
+      fontSize: 15,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+    },
+    legalBody: {
+      marginTop: 4,
+      fontSize: 13,
+      lineHeight: 19,
+      color: theme.colors.textMuted,
+    },
     heading: {
       fontSize: 18,
       fontWeight: '700',

@@ -2,7 +2,7 @@
 
 Current home: `docs/planning/TASK-ROADMAP.md`
 
-Last audited: 2026-06-13
+Last audited: 2026-06-14
 
 This audit compares the roadmap against the current repository:
 
@@ -37,7 +37,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | P1       | Add Sentry/Crashlytics SDKs and production DSNs                                                                | PARTIAL | Error reporter foundations exist; external SDK/provider wiring is not complete.           |
 | P1       | Add final release QA evidence: Android matrix, dark theme screenshots, token expiry, push taps, chat reconnect | PARTIAL | Play QA checklist and dark-theme audit docs exist; real device run evidence remains.      |
 | P1       | Tighten production CORS/env secrets review                                                                     |    DONE | Production CORS is restricted and a production secrets checklist exists.                  |
-| P2       | Implement OpenAPI-generated TS client or shared API contract                                                   |    TODO | Reduces drift between NestJS DTOs and mobile RTK Query types.                             |
+| P2       | Implement OpenAPI-generated TS client or shared API contract                                                   |    DONE | Shared `@matchmate/api-contract` package now drives mobile membership/payment RTK types.  |
 | P2       | Add background job coverage for OTP cleanup, orphaned media cleanup, analytics aggregation                     |    DONE | OTP cleanup, deleted-media cleanup, and daily analytics aggregation jobs are implemented. |
 
 ## 1. Core Platform
@@ -160,16 +160,16 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### 4.1 Discovery And Feed
 
-| Status  | Task                            | Evidence / Next Action                                                                                                                          |
-| ------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| DONE    | Recommended matches API         | `matches/recommended` and discovery service exist.                                                                                              |
-| DONE    | Filters API                     | Match query/filter DTOs and mobile filter modal exist.                                                                                          |
-| PARTIAL | ML-based ranking engine         | Rule/scoring logic exists; no true ML pipeline found.                                                                                           |
-| DONE    | Compatibility score engine      | Compatibility service and match score UI exist.                                                                                                 |
-| DONE    | Mutual preference scoring       | Preference weights and match discovery logic exist.                                                                                             |
-| DONE    | Nearby matches                  | `matches/nearby` and location support exist.                                                                                                    |
-| DONE    | Premium match curator           | Admins can assign/expire curated matches, users can view/dismiss curated recommendations, and mobile exposes a Curated feed with curator notes. |
-| PARTIAL | Daily matches push notification | Digest task now has enable/dry-run/limit controls and run summaries; real FCM device delivery QA still needs production credentials.            |
+| Status  | Task                            | Evidence / Next Action                                                                                                                                                |
+| ------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Recommended matches API         | `matches/recommended` and discovery service exist.                                                                                                                    |
+| DONE    | Filters API                     | Match query/filter DTOs and mobile filter modal exist.                                                                                                                |
+| PARTIAL | ML-based ranking engine         | Rule/scoring logic exists; no true ML pipeline found.                                                                                                                 |
+| DONE    | Compatibility score engine      | Compatibility service and match score UI exist.                                                                                                                       |
+| DONE    | Mutual preference scoring       | Preference weights and match discovery logic exist.                                                                                                                   |
+| DONE    | Nearby matches                  | `matches/nearby` and location support exist.                                                                                                                          |
+| DONE    | Premium match curator           | Admins can assign/expire curated matches, users can view/dismiss curated recommendations, and mobile exposes a Curated feed with curator notes.                       |
+| PARTIAL | Daily matches push notification | Digest task has enable/dry-run/limit controls and run summaries; mobile push registration exists, but real FCM device delivery QA still needs production credentials. |
 
 ### 4.2 Interactions
 
@@ -256,18 +256,18 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### 7.1 Plans And Access
 
-| Status  | Task                                 | Evidence / Next Action                                                                                                                                                                            |
-| ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DONE    | Plan system                          | Plans/features schemas, seed data, admin APIs, and mobile membership UI exist.                                                                                                                    |
-| DONE    | Feature access control               | Feature guard/decorator/service exist.                                                                                                                                                            |
-| DONE    | Upgrade/downgrade/plan lifecycle     | Subscription service and billing screens exist.                                                                                                                                                   |
-| PARTIAL | Upgrade plan API/payment integration | Payment flow now enforces production signature/webhook secrets, keeps dev unsigned mode explicit, and reports store renewal reconciliation counts; real gateway credentials still need launch QA. |
-| DONE    | Purchase history                     | Billing summary/payment history APIs and UI exist.                                                                                                                                                |
-| DONE    | Plan expiry reminders                | Subscription expiry task includes reminders.                                                                                                                                                      |
-| DONE    | Coupons/discount codes               | Coupon schemas/validate flow exist.                                                                                                                                                               |
-| PARTIAL | Auto-renewal/subscription lifecycle  | Store subscription verification is idempotent by transaction and reconciles auto-renew subscription records; strict Apple/Google receipt validation still needs provider setup.                   |
-| DONE    | Free trial                           | Trial endpoint/service exists.                                                                                                                                                                    |
-| DONE    | Coin/credit wallet                   | General wallet endpoints, spend ledger, coin-pack payment crediting, and mobile wallet summary are implemented.                                                                                   |
+| Status  | Task                                 | Evidence / Next Action                                                                                                                                                                                        |
+| ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Plan system                          | Plans/features schemas, seed data, admin APIs, and mobile membership UI exist.                                                                                                                                |
+| DONE    | Feature access control               | Feature guard/decorator/service exist.                                                                                                                                                                        |
+| DONE    | Upgrade/downgrade/plan lifecycle     | Subscription service and billing screens exist.                                                                                                                                                               |
+| PARTIAL | Upgrade plan API/payment integration | Membership CTA now opens a payment-method sheet before creating the provider order; backend signature/webhook hardening exists, but real Razorpay/Stripe/store SDK credential QA remains.                     |
+| DONE    | Purchase history                     | Billing summary/payment history APIs and UI exist.                                                                                                                                                            |
+| DONE    | Plan expiry reminders                | Subscription expiry task includes reminders.                                                                                                                                                                  |
+| DONE    | Coupons/discount codes               | Coupon schemas/validate flow exist.                                                                                                                                                                           |
+| PARTIAL | Auto-renewal/subscription lifecycle  | Store subscription verification is idempotent, billing shows renewal state, and users can cancel auto-renew without losing current access; strict Apple/Google receipt validation still needs provider setup. |
+| DONE    | Free trial                           | Trial endpoint/service exists.                                                                                                                                                                                |
+| DONE    | Coin/credit wallet                   | General wallet endpoints, spend ledger, coin-pack payment crediting, and mobile wallet summary are implemented.                                                                                               |
 
 ### 7.2 Payments
 
@@ -290,7 +290,6 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | Referral earnings/wallet       | Referral wallet schema/API/mobile screen exist.           |
 | PARTIAL | Referral campaign tracking/UTM | Referral module exists; UTM analytics should be expanded. |
 | DONE    | Referral leaderboard           | API exists.                                               |
-| TODO    | Family/group plans             | No dedicated family plan workflow found.                  |
 
 ## 8. Admin Panel And Moderation
 
@@ -410,17 +409,17 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ## 14. Frontend Contract And API Standards
 
-| Status  | Task                              | Evidence / Next Action                                                 |
-| ------- | --------------------------------- | ---------------------------------------------------------------------- |
-| DONE    | API versioning (`/api/v1`)        | Global prefix/versioning exist.                                        |
-| DONE    | Standard response envelope        | `successResponse`, API response DTO, and error codes exist.            |
-| DONE    | Mobile token handling             | Secure storage/base API refresh flow exists.                           |
-| DONE    | Swagger/OpenAPI docs              | Swagger setup exists in non-production.                                |
-| DONE    | API error code registry           | Error/success code constants exist.                                    |
-| PARTIAL | Cursor/offset pagination standard | Pagination exists; contract should be normalized across all list APIs. |
-| TODO    | OpenAPI to TS SDK generation      | Not implemented.                                                       |
-| TODO    | Storybook component library       | Not implemented.                                                       |
-| PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.   |
+| Status  | Task                              | Evidence / Next Action                                                                                                          |
+| ------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | API versioning (`/api/v1`)        | Global prefix/versioning exist.                                                                                                 |
+| DONE    | Standard response envelope        | `successResponse`, API response DTO, and error codes exist.                                                                     |
+| DONE    | Mobile token handling             | Secure storage/base API refresh flow exists.                                                                                    |
+| DONE    | Swagger/OpenAPI docs              | Swagger setup exists in non-production.                                                                                         |
+| DONE    | API error code registry           | Error/success code constants exist.                                                                                             |
+| PARTIAL | Cursor/offset pagination standard | Pagination exists; contract should be normalized across all list APIs.                                                          |
+| PARTIAL | OpenAPI to TS SDK generation      | Shared `@matchmate/api-contract` types are implemented for membership/payment; generated SDK from Swagger is still future work. |
+| TODO    | Storybook component library       | Not implemented.                                                                                                                |
+| PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.                                                            |
 
 ## 15. DevOps And Infrastructure
 

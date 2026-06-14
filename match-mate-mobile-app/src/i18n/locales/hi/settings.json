@@ -441,7 +441,15 @@
     "share_subject": "Match Mate में जुड़ें",
     "copy_referral_code": "रेफरल कोड कॉपी करें",
     "points_short": "+{{count}} अंक",
-    "joined_recently": "हाल ही में शामिल हुआ"
+    "joined_recently": "हाल ही में शामिल हुआ",
+    "coins_wallet": "कॉइन वॉलेट",
+    "coins_wallet_sub": "बूस्ट, प्रीमियम एक्शन और ऐड-ऑन के लिए क्रेडिट इस्तेमाल करें",
+    "available_coins": "उपलब्ध कॉइन",
+    "pending_coins": "लंबित कॉइन",
+    "wallet_activity": "गतिविधि",
+    "recent_wallet_activity": "हाल की वॉलेट गतिविधि",
+    "no_wallet_activity": "अभी कोई कॉइन गतिविधि नहीं है।",
+    "balance_after": "बैलेंस {{count}}"
   },
   "privacy": {
     "title": "गोपनीयता",
