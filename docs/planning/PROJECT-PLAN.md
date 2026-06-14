@@ -1,273 +1,226 @@
-# 📘**Project Management Plan for Matrimonial Website & Mobile Application**
+# Project Plan
 
 > Current home: `docs/planning/PROJECT-PLAN.md`
 >
-> Purpose: product scope, delivery plan, responsibilities, milestones, and project-management notes.
+> Purpose: product scope, delivery plan, responsibilities, milestones, risks, and project-management notes.
+>
+> Source-of-truth rule: keep delivery and governance decisions here. Keep architecture in [Technical Plan](TECHNICAL-PLAN.md), user journeys in [Flow Plan](FLOW-PLAN.md), and backlog/status details in [Task Roadmap](TASK-ROADMAP.md).
 
-### **Project Title:**
+## Project Summary
 
-**“MatchMate” – A Smart Matrimonial Platform (Web + Mobile App)**
+Match Mate is a matrimonial platform with a NestJS API server, an Expo React Native app for iOS, Android, and Web, and shared TypeScript API contract types. The current repository is focused on the customer mobile/web app experience, backend API, realtime chat, settings, membership, support, and admin APIs.
 
-### **Prepared By:**
+The project is past early concept planning and should now be managed as a launch-readiness and stabilization effort: keep the core flows reliable, reduce ambiguity between docs, verify production dependencies, and close launch-blocking gaps.
 
-Webnza! Infotech
+## Current Application Status
 
-**Project Manager:** Anil Kapoor
+### Implemented Product Areas
 
-**Version:** 1.0
+- Auth: welcome, login, register, forgot password, reset password, magic login, social/phone feature flags, 2FA challenge/setup.
+- Onboarding: first-time profile setup path.
+- Profiles: profile display, edit profile sections, photo/video intro management, PDF/share support.
+- Preferences: edit partner preferences and scoring weights.
+- Discovery and matches: Home, Matches, match detail, recommended/new/nearby/online/curated concepts, interests, shortlist, block/report paths.
+- Chat: chat list, conversation detail, realtime events, attachments, voice/media support, room settings concepts.
+- Membership and billing: plan list, payment method sheet, billing/subscription screens, referrals and wallet concepts.
+- Settings: account, linked accounts, privacy, notification, communication, security, localization, accessibility, AI, media, language, theme.
+- Verification and safety: KYC screen, blocked users, report/block flows, moderation API support.
+- Support: help center, FAQs, support tickets, ticket detail/replies.
+- Backend admin/API support: admin, analytics, notifications, payments, plans, support queues, moderation, RBAC, audit logs.
 
-**Date:** 10th November 2025
+### Current Delivery Focus
 
----
+- Stabilize launch-critical flows end to end.
+- Keep mobile, backend, and docs aligned.
+- Verify production env, provider credentials, billing, push notifications, media storage, and monitoring.
+- Reduce duplicated source-of-truth documents.
+- Expand focused testing where flows cross auth, payments, chat, notifications, settings, and profile media.
 
-## 1. **Executive Summary**
+## Project Objectives
 
-The **“MatchMate”** project aims to build a **modern, AI-driven matchmate platform** offering secure matchmaking, personalized recommendations, chat, and privacy-first profiles — accessible through both **web** and **mobile applications (Android & iOS)**.
+- Deliver a secure matrimonial experience for discovery, preferences, interest requests, mutual matches, chat, subscriptions, privacy, and support.
+- Preserve a modular backend architecture that can scale without prematurely splitting services.
+- Keep the mobile app ergonomic for repeated daily use, not just first-time onboarding.
+- Enable production readiness through clear environment, deployment, QA, billing, and monitoring checklists.
+- Keep documentation maintainable by assigning one owner document per subject area.
 
-The project aligns with the growing digital transformation in the matchmaking industry, expected to reach USD **$15+ billion by 2030**.
-Our goal is to deliver an **MVP in 6 months**, followed by iterative improvements.
+## Scope
 
----
+### In Scope
 
-## 2. **Project Objectives**
+- NestJS backend API, Socket.IO realtime gateway, schedulers, storage integration, provider integrations, and admin APIs.
+- Expo React Native app for iOS, Android, and Web.
+- Shared TypeScript contract package for membership, billing, payment, and subscription surfaces.
+- Auth, onboarding, profile, preferences, discovery, match interactions, chat, notifications, settings, billing, referrals, wallet, support, verification, moderation, and admin APIs.
+- Production configuration for MongoDB, Redis, object storage, push notifications, email/SMS where enabled, payment providers, app links, and EAS builds.
+- Launch readiness, QA, monitoring, deployment, and Play/App Store preparation.
 
-* Develop a scalable **matchmate platform** supporting high traffic and real-time interactions.
-* Create **user-friendly UI/UX** for web and mobile apps.
-* Implement **AI-based matchmaking**, **privacy control**, and **fraud detection**.
-* Enable **subscription plans**, **payment gateway integration**, and **admin CMS**.
-* Deliver the solution using **Agile Scrum methodology** ensuring fast iteration and investor visibility.
+### Out of Scope Until Explicitly Planned
 
----
+- A separate public marketing website or customer web portal outside the Expo web build.
+- A full admin frontend unless a dedicated admin app is added.
+- Offline matchmaking operations.
+- Physical event management.
+- Third-party data resale.
+- ML microservice extraction before stable matching and analytics data are available.
+- Native video calling until chat, moderation, billing, and safety policies are production-stable.
 
-## 3. **Project Scope**
+## Delivery Phases
 
-### **In Scope**
+| Phase | Goal | Primary Outputs |
+| ----- | ---- | --------------- |
+| 1. Stabilization | Confirm core app/API flows work reliably in development and staging | Auth, onboarding, profile, matches, chat, membership, settings, support smoke coverage |
+| 2. Production Readiness | Prepare production infrastructure and provider credentials | Production env, storage, Redis, push, payments, app links, monitoring, secrets checklist |
+| 3. Store and Launch QA | Validate mobile build quality and release requirements | EAS builds, Play/App Store metadata, screenshots, reviewer credentials, device matrix |
+| 4. Controlled Launch | Release to a limited audience and monitor real behavior | Monitoring dashboards, support workflow, crash/error tracking, feedback loop |
+| 5. Post-Launch Iteration | Improve conversion, safety, engagement, and reliability | Roadmap prioritization, analytics review, UX refinements, provider hardening |
 
-* Web application (React/React Native + Node.js backend).
-* Mobile apps (React Native).
-* Admin dashboard for moderation and analytics.
-* Secure authentication (Email, Phone OTP, Google, Facebook, Apple ID).
-* Profile management and verification.
-* AI-driven matching algorithm.
-* Chat and interest/request system.
-* Push notifications & Email service.
-* Payment integration (Stripe/Razorpay).
-* Hosting on AWS with CI/CD pipeline.
+## Milestone Checklist
 
-### **Out of Scope**
+### Stabilization
 
-* Offline matchmaking operations.
-* Third-party data resale.
-* Physical event management.
+- Auth and token refresh verified.
+- Onboarding completion and resume behavior verified.
+- Profile edit, image upload, video intro, and profile PDF/share verified.
+- Match lists, filters, match detail, interest, shortlist, block, and report verified.
+- Chat list, conversation, attachments, voice/media, read receipts, and socket reconnect verified.
+- Settings toggles and domain settings save without duplicate calls.
+- Support ticket create/list/detail/reply/close verified.
 
----
+### Production Readiness
 
-## 4. **Project Deliverables**
+- `.env.production` and EAS variables reviewed.
+- MongoDB production connection configured.
+- Redis configured for production sessions, queues, presence, and WebSocket scaling where required.
+- S3 or equivalent production media storage configured.
+- FCM/APNs push setup verified.
+- Email/SMS providers verified where enabled.
+- Payment webhook secrets and mobile store verification configured before real purchases.
+- Deep links and app links verified for reset password and magic login.
+- Liveness and readiness probes connected to deployment.
+- Logging, correlation IDs, error monitoring, and alert thresholds configured.
 
-| Deliverable               | Description                         | Due Date |
-| ------------------------- | ----------------------------------- | -------- |
-| Project Charter           | Signed document authorizing project | Week 1   |
-| Requirement Specification | BRD + SRS finalized                 | Week 2–4 |
-| UI/UX Design              | Wireframes, Figma mockups           | Week 5   |
-| Backend APIs              | Node.js + MongoDB services          | Week 8   |
-| Web Frontend              | React-based responsive portal       | Week 10  |
-| Mobile App                | React Native app for iOS & Android  | Week 12  |
-| Testing & QA              | Manual + Automated testing          | Week 14  |
-| Deployment                | Production deployment on AWS        | Week 16  |
-| Go-Live & Marketing       | Launch event + ads                  | Week 18  |
+### Store and Launch QA
 
----
+- Android and iOS production builds generated from clean EAS profiles.
+- Play/App Store billing products mapped if native subscriptions are enabled.
+- Store screenshots and metadata prepared.
+- Reviewer credentials prepared in private/local docs.
+- Privacy policy, terms, community guidelines, account deletion, and data export paths checked.
+- Device QA matrix completed.
+- Dark theme and accessibility checks completed.
 
-## 5. **Project Life Cycle**
+## Roles and Responsibilities
 
-Adopt a **Hybrid Agile (Scrum + Waterfall)** approach:
+| Area | Responsible Owner | Notes |
+| ---- | ----------------- | ----- |
+| Product scope and release decisions | Product/Project owner | Owns priorities, launch gate, and tradeoffs |
+| Backend API and infrastructure | Backend/Tech lead | Owns NestJS modules, providers, env, deployment readiness |
+| Mobile app | Mobile lead | Owns Expo app, navigation, UI flows, EAS builds |
+| UX and content | Product/UX owner | Owns flow clarity, empty states, localization, trust/safety copy |
+| QA | QA owner | Owns test matrix, regression checklist, release signoff |
+| DevOps/Operations | DevOps owner | Owns production deployment, monitoring, secrets, rollback |
+| Support/Moderation | Operations/Admin owner | Owns support queues, reports, KYC/media moderation readiness |
 
-* **Initiation & Planning:** Traditional waterfall for clear investor milestones.
-* **Execution:** Agile sprints for feature development.
-* **Monitoring:** Weekly sprint reviews.
-* **Closure:** Final testing, deployment, and transition.
+## Risk Register
 
----
+| Risk | Probability | Impact | Mitigation |
+| ---- | ----------- | ------ | ---------- |
+| Provider credentials not ready for launch | Medium | High | Track secrets in production checklist and verify each provider in staging |
+| Store billing mismatch | Medium | High | Keep native billing disabled until product IDs and backend verification are tested |
+| Chat realtime instability | Medium | High | Test reconnect, presence, Redis adapter, and fallback REST behavior |
+| Media upload/storage issues | Medium | High | Verify local/S3 paths, file size limits, thumbnails, moderation, and old URL resolution |
+| Notification fatigue | Medium | Medium | Use category/channel controls, quiet hours, and sane defaults |
+| Duplicate settings/API calls | Medium | Medium | Test toggle flows and debounce/optimistic update behavior where needed |
+| App Store / Play Store rejection | Low-Medium | High | Complete account deletion, privacy policy, permissions copy, billing compliance, reviewer credentials |
+| Documentation drift | Medium | Medium | Enforce doc ownership rules and update the relevant source-of-truth doc only |
+| Incomplete localization | Medium | Medium | Audit all visible copy and API response code translations |
+| Payment/refund support gaps | Medium | High | Ensure billing history, invoice, failed payment, refund/support paths are clear |
 
-## 6. **Development Approach**
+## Quality Strategy
 
-| Area            | Approach                                        |
-| --------------- | ----------------------------------------------- |
-| **Frontend**    | React/React Native (Web), React Native (Mobile) |
-| **Backend**     | Node.js with Express.js & Nest Framework        |
-| **Database**    | MongoDB + Redis (cache)                         |
-| **Hosting**     | AWS (EC2, S3, Lambda, CloudFront, RDS, Route53) |
-| **AI Matching** | TensorFlow.js or Python microservice            |
-| **CI/CD**       | GitHub Actions + AWS CodePipeline               |
-| **Security**    | JWT Auth, SSL, OWASP compliance                 |
+- Run backend lint, typecheck, tests, and build before release candidates.
+- Run mobile lint and typecheck before release candidates.
+- Add smoke checks for auth, onboarding, profile, match discovery, chat, membership, settings, and support.
+- Prefer focused regression tests for cross-module risks: token refresh, payments, chat, notifications, media, settings.
+- Keep launch QA checklists in `docs/launch/*` updated as release gates.
+- Treat production environment and provider verification as part of QA, not a separate afterthought.
 
----
+Recommended verification commands:
 
-## 7. **Work Breakdown Structure (WBS)**
+```bash
+cd match-mate-api-server
+npm run lint:check
+npm run typecheck
+npm run test
+npm run build
 
-**Level 1:** Project Initiation
-
-**Level 2:** Requirements & Design
-
-**Level 3:** Development
-
-**Level 4:** Testing
-
-**Level 5:** Deployment & Closure
-
-Example snapshot:
-
+cd ../match-mate-mobile-app
+npm run lint
+npm run typecheck
 ```
-1.0 Project Initiation
-   1.1 Define project charter
-   1.2 Identify stakeholders
-2.0 Requirements & Design
-   2.1 Business Requirement Gathering
-   2.2 UI/UX Design
-3.0 Development
-   3.1 Backend API Development
-   3.2 Frontend Development
-   3.3 Mobile App Development
-4.0 Testing
-   4.1 Unit & Integration Testing
-   4.2 UAT
-5.0 Deployment
-   5.1 Production Deployment
-   5.2 Go-Live & Training
-```
 
----
+## Communication and Reporting
 
-## 8. **Project Schedule (Milestones)**
+| Audience | Frequency | Channel | Purpose |
+| -------- | --------- | ------- | ------- |
+| Product/project owner | Weekly during stabilization, daily near release | Standup or written update | Scope, blockers, launch readiness |
+| Engineering | Daily during active development | Standup/chat | Implementation coordination |
+| QA | Per release candidate | Checklist and issue tracker | Regression status and signoff |
+| Operations/support | Weekly before launch, daily during launch week | Launch channel | Support, moderation, monitoring readiness |
+| Stakeholders/investors | Milestone-based | Demo and summary | Progress, risk, go/no-go decisions |
 
-| Milestone            | Duration | Responsible   |
-| -------------------- | -------- | ------------- |
-| Project Kickoff      | 1 Week   | PM            |
-| Requirement Analysis | 2 Weeks  | BA, PM        |
-| Design Phase         | 2 Weeks  | UI/UX Team    |
-| Development          | 6 Weeks  | Dev Team      |
-| Testing & QA         | 2 Weeks  | QA Team       |
-| Deployment           | 1 Week   | DevOps        |
-| Launch & Handover    | 1 Week   | PM, Marketing |
+## Change Management
 
----
+- Small implementation changes should be tracked in the task roadmap or issue tracker.
+- Scope changes that affect launch date, billing, compliance, provider setup, or architecture must be reviewed by the product/project owner and tech lead.
+- Documentation changes should update the owner doc only:
+  - Product/delivery: this file.
+  - Architecture/API: [Technical Plan](TECHNICAL-PLAN.md).
+  - UX flows: [Flow Plan](FLOW-PLAN.md).
+  - Roadmap/backlog: [Task Roadmap](TASK-ROADMAP.md).
+  - Launch gates: `docs/launch/*`.
 
-## 9. **Cost Estimate**
+## Recommended Next Actions
 
-| Component              | Estimated Cost (INR) |
-| ---------------------- | -------------------- |
-| Design & Branding      | ₹2,00,000            |
-| Web Development        | ₹5,00,000            |
-| Mobile App Development | ₹6,00,000            |
-| Backend & API          | ₹4,00,000            |
-| QA & Testing           | ₹2,00,000            |
-| AWS & Infrastructure   | ₹1,50,000            |
-| Marketing & Launch     | ₹2,50,000            |
-| **Total (MVP)**        | **₹23,00,000**       |
+1. Create a launch go/no-go checklist that references the existing launch, EAS, billing, monitoring, and production secrets docs.
+2. Add a concise status field to roadmap items: `not started`, `in progress`, `blocked`, `ready for QA`, `done`.
+3. Add release-candidate smoke tests for auth, onboarding, matches, chat, membership, settings, support, and notifications.
+4. Verify all production provider flags and disable incomplete providers in production builds.
+5. Create a private reviewer-credentials file from `docs/launch/REVIEWER-CREDENTIALS.template.md`.
+6. Audit localization coverage for settings, API response codes, membership, support, and security flows.
+7. Add owner and due date columns to launch-critical tasks.
 
----
+## Success Metrics
 
-## 10. **Team Structure & RACI Chart**
+### Launch Readiness
 
-| Role               | Responsible | Accountable | Consulted | Informed     |
-| ------------------ | ----------- | ----------- | --------- | ------------ |
-| Project Manager    | ✅         | ✅          | CTO       | Investors    |
-| Business Analyst   | ✅         | PM          | Users     | Stakeholders |
-| UI/UX Designer     | ✅         | PM          | Marketing | Dev Team     |
-| Backend Developer  | ✅         | Tech Lead   | PM        | QA           |
-| Frontend Developer | ✅         | Tech Lead   | UI/UX     | PM           |
-| Mobile Developer   | ✅         | Tech Lead   | Backend   | PM           |
-| QA Tester          | ✅         | QA Lead     | Dev       | PM           |
-| DevOps Engineer    | ✅         | CTO         | PM        | All          |
+- Zero known critical blockers in auth, onboarding, profile, matching, chat, payments, support, or settings.
+- Production env and EAS variables verified.
+- Store review requirements complete.
+- Monitoring and support workflow ready before public release.
 
----
+### Product Health After Launch
 
-## 11. **Risk Management Plan**
+- Registration to onboarding completion rate.
+- Profile completion rate.
+- Daily match-card engagement.
+- Interest sent/accepted ratio.
+- Chat activation after mutual match.
+- Subscription conversion and cancellation rate.
+- Support ticket volume and first-response time.
+- Crash-free sessions and API error rate.
 
-| Risk                  | Probability | Impact | Mitigation                 |
-| --------------------- | ----------- | ------ | -------------------------- |
-| Delay in Requirements | Medium      | High   | Weekly stakeholder reviews |
-| API Security Breach   | Low         | High   | Penetration testing        |
-| Budget Overrun        | Medium      | Medium | Phase-based release        |
-| App Store Rejection   | Low         | Medium | Follow guidelines          |
-| Low User Adoption     | Medium      | High   | Marketing + Free trial     |
+## Appendices
 
----
-
-## 12. **Quality Management**
-
-* Adhere to **ISO 9001** software quality standards.
-* Conduct code reviews & unit testing (>80% coverage).
-* Implement QA cycles per sprint.
-* Use CI/CD for continuous testing and feedback.
-
----
-
-## 13. **Change Management Plan**
-
-* All changes logged in **Change Request Log (CRL)**.
-* PM reviews impact (scope, cost, time).
-* Change Control Board (CCB) approves or rejects.
-* Updates reflected in the updated baseline.
-
----
-
-## 14. **Communication Plan**
-
-| Audience        | Frequency | Channel      | Purpose         |
-| --------------- | --------- | ------------ | --------------- |
-| Investors       | Monthly   | Email + Demo | Progress update |
-| Team            | Weekly    | Stand-up     | Task tracking   |
-| PM & Tech Leads | Daily     | Slack        | Coordination    |
-| Users (Beta)    | Monthly   | Survey       | Feedback        |
-
----
-
-## 15. **Procurement & Resource Plan**
-
-* Procurement of AWS services, third-party APIs (SMS, Email).
-* Tools: Jira, Figma, GitHub, Postman, Firebase.
-* Resources: 1 PM, 1 BA, 1 UI/UX, 3 Developers, 1 QA, 1 DevOps.
-
----
-
-## 16. **Stakeholder Management**
-
-| Stakeholder    | Interest | Power  | Strategy            |
-| -------------- | -------- | ------ | ------------------- |
-| Investors      | High     | High   | Frequent reporting  |
-| End Users      | High     | Medium | Beta feedback loop  |
-| Dev Team       | High     | Medium | Agile collaboration |
-| Marketing Team | Medium   | Medium | Early involvement   |
-
----
-
-## 17. **Monitoring & Reporting**
-
-* Bi-weekly sprint demo.
-* Burn-down charts & velocity tracking.
-* Dashboard with KPIs:
-  * Development progress (%)
-  * Bug rate
-  * Budget variance
-  * Uptime & performance
-
----
-
-## 18. **Project Closure**
-
-* Final QA Sign-off.
-* Handover documentation.
-* Post-launch performance report.
-* Lessons learned and final investor presentation.
-
----
-
-## 19. **Appendices**
-
-* A. Detailed SRS (to be attached)
-* B. UI Wireframes
-* C. Marketing Roadmap
-* D. Technical Architecture Diagram
-
----
+- [Technical Plan](TECHNICAL-PLAN.md)
+- [Database Plan](DATABASE-PLAN.md)
+- [Flow Plan](FLOW-PLAN.md)
+- [Task Roadmap](TASK-ROADMAP.md)
+- [Launch Plan](../launch/LAUNCH-PLAN.md)
+- [EAS Production Checklist](../launch/EAS-PRODUCTION-CHECKLIST.md)
+- [Production Secrets Checklist](../launch/PRODUCTION-SECRETS-CHECKLIST.md)
+- [Store Billing Integration](../launch/STORE-BILLING-INTEGRATION.md)
+- [Monitoring and APM Checklist](../launch/MONITORING-APM-CHECKLIST.md)
+- [Deployment Plan](../operations/DEPLOYMENT-PLAN.md)
+- [Commands](../operations/COMMANDS.md)

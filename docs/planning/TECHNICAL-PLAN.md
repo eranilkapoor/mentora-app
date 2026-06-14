@@ -611,6 +611,7 @@ Known practical note: Expo package type definitions can occasionally cause typec
 
 - Root `README.md`: high-level repository entry point, docs map, quick start, local commands, and env pointers.
 - `docs/planning/TECHNICAL-PLAN.md`: architecture, module map, API strategy, product-flow technical notes, production direction.
+- `docs/planning/DATABASE-PLAN.md`: MongoDB collections, entity relationships, Redis/cache usage, indexes, lifecycle, and database operations.
 - `docs/planning/PROJECT-PLAN.md`: product scope, delivery plan, roles, and milestones.
 - `docs/planning/TASK-ROADMAP.md`: enterprise feature backlog and roadmap status.
 - `docs/planning/FLOW-PLAN.md`: UX flow blueprint.

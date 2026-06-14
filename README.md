@@ -31,6 +31,7 @@ Detailed documentation lives under [docs](docs/README.md). To avoid duplicated a
 
 - Root `README.md`: repository orientation, setup, local commands, and links.
 - [Technical Plan](docs/planning/TECHNICAL-PLAN.md): architecture, module map, API strategy, endpoint reference, technical product flows, infrastructure, and production notes.
+- [Database Plan](docs/planning/DATABASE-PLAN.md): MongoDB collections, entity relationships, Redis/cache behavior, indexes, lifecycle, and database operations.
 - [Project Plan](docs/planning/PROJECT-PLAN.md): product scope, delivery model, responsibilities, and milestones.
 - [Task Roadmap](docs/planning/TASK-ROADMAP.md): enterprise feature roadmap and backlog.
 - [Flow Plan](docs/planning/FLOW-PLAN.md): UX and screen-flow blueprint.

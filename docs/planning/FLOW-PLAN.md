@@ -1,391 +1,390 @@
-# 🎨**UI/UX WIREFRAME BLUEPRINT – MATRIMONIAL PLATFORM**
-
-### 📱 Platforms:
+# Flow Plan
 
 > Current home: `docs/planning/FLOW-PLAN.md`
 >
-> Purpose: user journeys, screen flows, and UX blueprint for web, Android, and iOS.
+> Purpose: user journeys, screen flows, UX blueprint, and recommended flow improvements for the current Match Mate app.
+>
+> Source-of-truth rule: keep navigation and journey decisions here. Keep API/module details in [Technical Plan](TECHNICAL-PLAN.md), delivery scope in [Project Plan](PROJECT-PLAN.md), and backlog status in [Task Roadmap](TASK-ROADMAP.md).
 
-* **Web (Desktop + Responsive)**
-* **Mobile App (Android & iOS, React Native)**
+## Current Product Shape
 
----
+The current application is primarily an Expo React Native app backed by a NestJS API. The mobile app supports iOS, Android, and Web through Expo. A separate web marketing/customer portal is not currently represented as a dedicated frontend app in this repository, so web-specific landing-page wireframes should be treated as future scope unless a web app is added.
 
-## 🧭 **1. Overall User Flow**
+Implemented mobile navigation is organized around:
 
-```
-Splash / Welcome Screen
-      ↓
-Login / Register (Email | Phone | Google | Facebook | Apple)
-      ↓
-Onboarding Setup (Profile Creation + Preferences)
-      ↓
-Home Dashboard
-   ├── Recommended Matches
-   ├── New Users
-   ├── Profile View
-   ├── Like / Send Interest
-      ↓
-Match Requests (Received / Sent)
-      ↓
-Chat (Real-Time)
-      ↓
-Upgrade Plan (Subscription)
-      ↓
-Settings / Account / Logout
-```
+- Auth stack: Welcome, Login, Register, Forgot Password, Reset Password, Magic Login, 2FA Challenge, Privacy Policy, Terms.
+- Onboarding stack: first-time profile setup.
+- Bottom tabs: Home, Matches, Chats, Membership, Profile.
+- App-level Settings stack: profile editing, preferences, account, privacy, notifications, security, communication, accessibility, AI, media, localization, billing, referrals, support, legal, and theme/language screens.
 
-Admin Portal (separate)
+## Primary User Journey
 
-```
-Login → Dashboard → Users → Reports → Subscriptions → Analytics
+```text
+Welcome
+  -> Login / Register / Magic Login / Forgot Password
+  -> Optional 2FA Challenge
+  -> Onboarding
+  -> App Tabs
+       -> Home
+       -> Matches
+       -> Chats
+       -> Membership
+       -> Profile
+  -> Settings and Support
 ```
 
----
-
-## 💡 **2. Main Web Modules & Wireframes**
-
-### **A. Landing Page**
-
-* Header:
-  * Logo (left)
-  * Menu: Home | Search | About | Contact | Login / Register
-* Hero Banner: “Find Your Perfect Match”
-* Call-to-Action: *Start Now* button
-* Featured Members Carousel
-* Testimonials
-* Footer: Links, Privacy Policy, Terms
-
-**CTA Buttons:** “Join Free” → Registration Page
-
----
-
-### **B. Registration Page**
-
-* Tabs:
-
-  * **Signup with Email/Phone**
-  * **Signup with Google/Facebook**
-* Fields:
-  * Full Name
-  * Gender
-  * Date of Birth
-  * Email / Phone
-  * Password
-  * OTP Verification (for Phone)
-* Button: “Continue”
-* Progress Indicator: Step 1 of 3 (Next → Profile Details)
-
----
-
-### **C. Profile Setup**
-
-* Upload Profile Photo
-* Basic Details (Education, Profession, City)
-* Religious Info (Religion, Caste)
-* Family Info (Optional)
-* Preferences (Age range, Location, Education)
-* Button: “Save & Continue to Dashboard”
-
----
-
-### **D. Home Dashboard**
-
-* **Top Bar:** Search | Notifications | Profile Icon
-* **Side Bar:** Home, Matches, Interests, Chat, Upgrade, Settings
-* **Main Area:**
-
-  * Tabs: “Recommended”, “New”, “Nearby”
-  * User Cards Grid:
-    * Photo
-    * Name, Age, City
-    * “View Profile” | “Send Interest” buttons
-
----
-
-### **E. Profile View**
-
-* Left: Profile Image (carousel)
-* Right: Details
-  * Basic Info
-  * Education & Career
-  * Family Info
-  * Partner Preferences
-  * Buttons: “Send Interest”, “Chat Now”, “Block”, “Report”
-
----
-
-### **F. Chat Module**
-
-* Left Panel: List of Conversations (user name + last message)
-* Right Panel:
-  * Chat Header (User name + Online status)
-  * Chat Window (Messages + Images)
-  * Message Input Box + Send Icon
-* Real-time via **Socket.io**
-
----
-
-### **G. Interest / Requests Page**
-
-* Tabs: “Received” | “Sent”
-* Card View:
-  * User Image + Name + Age + Location
-  * Buttons: Accept | Reject | Chat
-
----
-
-### **H. Subscription Page**
-
-* Display Plans (Basic, Premium, Elite)
-* Plan Comparison Table
-* Features List per Plan
-* Button: “Upgrade Now”
-* Razorpay / Stripe Integration
-
----
-
-### **I. Settings Page**
-
-* Account Info (Edit Profile, Change Password)
-* Privacy Settings (Show/hide details)
-* Blocked Users
-* Logout
-
----
-
-### **J. Admin Dashboard**
-
-* Login → Dashboard
-* Panels:
-  * User Count, Active Matches, Revenue, Reports
-  * User Management (CRUD)
-  * Reports Handling
-  * Subscription Management
-  * Analytics (Charts for engagement)
-
----
-
-## 📲 **3. Mobile App Wireframe Flow (React Native)**
-
-**Navigation:**
-
-* Bottom Tab Bar → `Home | Matches | Chats | Requests | Profile`
-* Top Right Icons → Notifications, Settings
-
----
-
-### **1. Splash Screen**
-
-* App logo + tagline
-* Auto redirect to Login
-
-### **2. Login / Signup Screen**
-
-* Buttons: “Login with Phone”, “Login with Google”, “Login with Facebook”
-* OTP-based verification (if phone)
-* Option: “Continue as Guest” (limited access)
-
-### **3. Onboarding Flow (3–4 Steps)**
-
-1. Upload Profile Photo
-2. Add Basic Details (DOB, Gender, Religion)
-3. Set Preferences
-4. Done → Go to Home
-
-### **4. Home Screen**
-
-* Top Section:
-  * Search bar
-  * Chips: “Recommended”, “New”, “Nearby”
-* Card Swipe UI:
-  * Swipe right = Like
-  * Swipe left = Skip
-  * Tap = View Profile
-* Bottom Nav Tabs
-
----
-
-### **5. Profile Screen**
-
-* Profile Image + Gallery
-* Tabs:
-  * About
-  * Education & Profession
-  * Partner Preferences
-* Buttons: “Send Interest” | “Chat” | “Report”
-
----
-
-### **6. Chat Screen**
-
-* Chat list view (user photo + name + message preview)
-* Tap → Chat room
-  * Real-time messages
-  * Typing indicator
-  * Media send option
-
----
-
-### **7. Requests Screen**
-
-* Tabs:
-  * “Received” | “Sent”
-* Card layout for each user
-* Buttons: Accept / Reject / View Profile
-
----
-
-### **8. Upgrade Screen**
-
-* Subscription Plans
-* Payment Flow → Razorpay/Stripe Modal
-* Success Page → “Your plan is now active!”
-
----
-
-### **9. Settings Screen**
-
-* Profile Edit
-* Privacy Preferences
-* Notifications toggle
-* Logout
-
----
-
-### **Mobile Flow Summary**
-
-```
-Splash
- ↓
-Login/Signup
- ↓
-Onboarding Setup
- ↓
-Home (Matches)
- ↓
-View Profile → Chat or Send Interest
- ↓
-Requests → Accept → Chat
- ↓
-Upgrade to Premium
- ↓
-Settings / Logout
+## Auth Flow
+
+### Current Screens
+
+- Welcome
+- Login
+- Register
+- Forgot Password
+- Reset Password
+- Magic Login
+- Two Factor Challenge
+- Privacy Policy
+- Terms and Conditions
+
+### Flow
+
+```text
+Welcome
+  -> Login
+       -> Email login
+       -> Phone OTP login, when enabled
+       -> Social login, when providers are enabled
+       -> 2FA challenge, when required
+       -> App or Onboarding
+  -> Register
+       -> Email/phone/social-aware registration
+       -> Onboarding
+  -> Forgot Password
+       -> Reset Password
+  -> Magic Login
+       -> App or Onboarding
 ```
 
----
+### UX Requirements
 
-## 🧩 **4. Design Guidelines**
+- Auth methods must respect environment feature flags.
+- Legal links should remain reachable before registration.
+- Login/register errors should use localized API response codes where available.
+- Password reset and magic login deep links should route into the correct screen when the app is installed.
+- 2FA should clearly show the challenge method and recovery path without exposing sensitive details.
 
-| Element            | Recommendation                                              |
-| ------------------ | ----------------------------------------------------------- |
-| **Color Palette**  | Warm + Trust tones (e.g., #E63946, #F1FAEE, #1D3557)  |
-| **Typography**     | Poppins / Lato                                              |
-| **Icons**          | Lucide / Feather                                            |
-| **Layout System**  | 8pt Grid                                                    |
-| **UI Frameworks**  | Bootstrap (Web), NativeBase (Mobile)                        |
-| **Style Language** | TailwindCSS / Styled Components                             |
-| **Animations**     | Framer Motion (Web), Lottie (Mobile)                        |
+## Onboarding Flow
 
----
+### Current Intent
 
-## 🖼️ **5. Deliverables to Visualize Next**
+Onboarding should create the profile, preference baseline, settings defaults, and completion state before the user reaches the main app.
 
-[Web Wireframe](Wireframe-Web.png)
+### Recommended Step Model
 
----
+1. Basic identity: profile-for, name, gender, date of birth, marital status.
+2. Location and community: country, state, city, religion, caste/community, mother tongue.
+3. Education and career: education level, field, occupation, income, work location.
+4. Family and lifestyle: family type, family values, diet, drinking/smoking, disability, about.
+5. Partner preferences: age, height, location, religion/community, education, income, lifestyle.
+6. Photos and verification prompt: primary photo, optional video intro, profile quality checklist.
 
-## 🧩 3. Suggested Tech Stack
+### Recommendations
 
-| Layer                      | Technology                     | Reason                                    |
-| -------------------------- | ------------------------------ | ----------------------------------------- |
-| **Backend Framework**      | NestJS                         | Enterprise-grade modularity & scalability |
-| **Database**               | MongoDB                        | Flexible schema for profile & match data  |
-| **ODM**                    | Mongoose                       | Schema-based, mature, NestJS-friendly     |
-| **Cache**                  | Redis                          | For quick matchmaking & chat performance  |
-| **API Gateway**            | GraphQL (or REST with Swagger) | Optimized query fetching for profiles     |
-| **Authentication**         | JWT + Passport.js + OAuth      | Supports Email/OTP + Social logins        |
-| **Realtime Communication** | Socket.io                      | For chat & live status                    |
-| **Cloud Deployment**       | AWS (ECS / Lambda / EC2 + S3)  | Scalable and reliable                     |
-| **CI/CD**                  | GitHub Actions / Jenkins       | Continuous deployment                     |
-| **Testing**                | Jest / Supertest               | For API and unit testing                  |
+- Keep onboarding resumable if the app closes mid-flow.
+- Show a profile completion indicator after onboarding, not during every step.
+- Avoid blocking core discovery on optional details, but clearly mark high-impact missing fields.
+- Save each step independently to reduce data loss.
+- Route incomplete users back to onboarding before showing the main tabs.
 
----
+## Main App Navigation
 
+### Bottom Tabs
 
-# New Screen Flow Plan for Mobile App (Updated on : 2026-06-08)
+| Tab | Current Role |
+| --- | ------------ |
+| Home | Discovery entry point, recommended/new/nearby/curated match surfaces, notifications access |
+| Matches | Browse/filter match list and open match detail |
+| Chats | Conversation list and chat room flow |
+| Membership | Plans, upgrade, payment-method selection, subscription actions |
+| Profile | My profile, profile PDF/share actions, settings entry |
 
-## 📱 10 Flow Sections Explained
+### App-Level Settings
 
-**① Auth** — Splash → Welcome → Login/Register (Email, Phone OTP, Google, Facebook, Apple) → Forgot Password → OTP Verification. Both login and register paths merge into onboarding.
+Settings is reachable from Profile and top-level app affordances. It should remain a stack, not a tab, because it contains many secondary management screens.
 
-**② Onboarding (6 steps)** — Progressive profile building: Basic info → Location & family → Education & career → Lifestyle → Partner preferences → Photos & bio. Designed to feel lightweight (2 screens per step) rather than one overwhelming form.
+## Home Flow
 
-**③ Bottom Navigation** — 5 tabs: Home, Matches, Activity, Chats, Membership. Always accessible after onboarding.
+```text
+Home
+  -> Notifications
+       -> Notification Detail
+       -> Contextual target, when action metadata exists
+  -> Recommended / New / Nearby / Curated matches
+       -> Match Detail
+            -> Send Interest
+            -> Shortlist
+            -> Report / Block
+            -> Chat, when allowed
+```
 
-**④ Home** — Top nav with profile icon (left) + notifications + settings (right). Three content modes: Tinder-style swipe card, grid/list view, and daily curated picks. All tap into the same **Profile Detail screen** which has Send Interest, Block, Report, and Share.
+### UX Requirements
 
-**⑤ Matches** — Full match list with a dedicated Filter panel (age, religion, caste, education, income, diet), Match cards, and Sort options. This is the JeevanSathi/Shaadi.com-style browse experience.
+- Preserve discovery scroll/list state when returning from a profile.
+- Use skeleton/loading states for match cards.
+- Keep premium gates visible but non-blocking for free discovery.
+- Show empty states for no matches, no nearby permission, and filters too narrow.
+- Surface safety actions in profile detail without making them visually primary.
 
-**⑥ Activity** — 5 sub-tabs: Interest Sent, Interest Received, Who Viewed Me (premium gate), Online Matches, and Shortcuts (chat requests, saved, ignored).
+## Matches Flow
 
-**⑦ Chat** — Chat list with unread badges and online dots → Conversation screen with text, image, voice + read receipts + typing indicator. Chat Controls screen for block/report/mute and premium video call.
+```text
+Matches
+  -> Filter / Sort
+  -> Match List
+       -> Match Detail
+            -> Send Interest
+            -> Chat, if mutual match or chat request accepted
+            -> Shortlist
+            -> Block / Report
+```
 
-**⑧ Membership** — Free / Gold / Platinum plan cards with feature comparison → Payment screen with UPI, Card, Net Banking, Wallet (Razorpay/Stripe).
+### Filter Coverage
 
-**⑨ My Profile** — Accessible via top-nav profile icon. Edit sections, photo management with reordering, and privacy controls (who sees your profile, block list).
+Filters should align with backend match query support:
 
-**⑩ Settings & Notifications** — Settings covers account, password, blocked users, deactivation. Notifications screen lists all events (interests, matches, messages, views) with tap-to-navigate and push/email/SMS preference toggles.
+- Age and height range.
+- Location and nearby mode.
+- Religion, caste/community, mother tongue.
+- Education, occupation, income.
+- Online status and new profiles where supported.
+- Pagination/lazy loading for long lists.
 
-## 💡 Key Design Decisions
+### Recommendations
 
-- **Dual browse mode** on Home (swipe + grid) captures both Tinder-style swipers and traditional Shaadi-style browsers
-- **Activity tab** replaces the usual "inbox" pattern — it's a complete interaction hub
-- **Premium gates** are placed on high-value features (Who Viewed Me, Video Call, Priority listing) rather than core browsing — this keeps free users engaged
-- **Profile completion bar** on My Profile nudges users to fill out more details, which directly improves match quality
+- Add saved filter presets after core filtering is stable.
+- Show active filter chips so users understand why a list is narrow.
+- Keep the reset action obvious.
+- Avoid swipe-only controls; matrimonial browsing needs deliberate comparison.
 
+## Match Detail Flow
 
-## 🔔 Complete Notification Categories
+```text
+Match Detail
+  -> View personal, education, career, family, lifestyle, media, and preferences
+  -> Send / withdraw interest
+  -> Shortlist / remove shortlist
+  -> Start chat or request chat
+  -> Block / report
+```
 
-### Interactions
-- `New interest received` — the most important alert; all 3 channels on by default
-- `Interest accepted` — push + email only (no SMS needed for positive events)
-- `Profile viewed` — push only by default; gated behind Gold+ membership
-- `Shortlisted by someone` — push only; low urgency
+### UX Requirements
 
-### Messages
-- `New message` — all 3 channels; highest urgency for active conversations
-- `Video call request` — push only (time-sensitive); Platinum-gated
-- `Chat request` — push only; requires manual approval from user
+- Show verification and profile completion signals near identity details.
+- Keep profile images/video intro inspectable, not decorative only.
+- Make blocked/reported state persistent across Home, Matches, and Chat.
+- Handle restricted chat states with clear copy: pending interest, blocked, reported, unmatched, or premium gate.
 
-### Matches & Suggestions
-- `New match suggestion` — has a frequency control (Instant / Daily / Weekly) so users aren't overwhelmed
-- `Online now alert` — off by default; opt-in only since it can feel intrusive
-- `Profile score boost` — push + email; helpful nudge, not disruptive
+## Chats Flow
 
-### Account & Membership
-- `Membership expiry` — all 3 channels; critical reminder 7 days + 1 day before
-- `Payment confirmation` — push + email; standard receipt flow
-- `Security alerts` — all 3 channels, **toggle disabled** (cannot be turned off — this is a safety requirement)
-- `Promotions & offers` — email only by default; opt-in for push/SMS
+```text
+Chats
+  -> Chat List
+       -> Conversation
+            -> Send text
+            -> Send attachment / voice message, when enabled
+            -> Typing, delivered, read, reactions
+            -> Room settings
+                 -> Pin / mute / archive
+                 -> Block / report
+```
 
-### Quiet Hours
-- `Do not disturb` — expands a time picker (From / To) to define the silent window
+### UX Requirements
 
-## 💡 Key UX Decisions
+- Chat list should show unread count, last-message status, typing preview, mute/archive/pin state, and request actions.
+- Conversation should support safe retry for failed sends.
+- Voice and media messages should show upload/progress/failure states.
+- Chat requests should clearly separate accepted conversations from pending requests.
+- Moderation states should prevent unsafe messaging and explain what happened.
 
-**3-channel pills (Push / Email / SMS)** — users control the delivery channel per notification type, not just on/off. This is the pattern used by LinkedIn, Shaadi.com, and most modern apps.
+## Membership and Monetization Flow
 
-**Master toggle** — silences everything at once. Disables all individual toggles while keeping their state so re-enabling restores the previous config.
+```text
+Membership
+  -> Plan list / comparison
+  -> Payment method sheet
+       -> Web payment order
+       -> Mobile store subscription, when enabled
+  -> Verify payment / subscription
+  -> Current plan and billing summary
+  -> Cancel auto-renewal, invoice, refund/support paths
+```
 
-**Security alerts are locked** — they cannot be disabled regardless of master toggle state. This is a legal and safety requirement in most markets.
+### UX Requirements
 
-**Frequency control on match suggestions** — prevents the most common reason users uninstall matrimonial apps (too many low-quality notifications).
+- Keep `EXPO_PUBLIC_STORE_BILLING_ENABLED` guarded until Apple/Google product mapping is ready.
+- Show current plan, expiry, renewal state, and cancellation effect before payment actions.
+- Keep Razorpay/Stripe web payments separate from App Store / Google Play subscription verification.
+- Provide receipts/invoices and support routes from billing history.
+- Explain premium gates at the moment of need, not only on the plan page.
 
-**Membership gates are visible** — Gold+ and Platinum badges on locked features drive upgrade awareness naturally within settings.
+## Profile Flow
 
-**Default state philosophy:**
-- High-value interactions → all channels on
-- Casual suggestions → push only
-- Marketing → email only, push off
-- Security → all channels, always on
+```text
+Profile
+  -> My profile details
+  -> Download / share profile PDF
+  -> Settings
+       -> Edit Profile
+       -> Edit Preferences
+       -> Account / Privacy / Security / Billing / Support
+```
+
+### UX Requirements
+
+- Profile should show completion, verification, media, and key matrimonial fields.
+- PDF/share actions should handle missing photos and permissions gracefully.
+- Edit Profile should keep sections independently saveable.
+- Photo and video intro management should show primary media state and upload failure states.
+
+## Settings Flow
+
+### Current Settings Areas
+
+- Edit profile.
+- Edit preferences.
+- Account settings.
+- Change email/phone.
+- Linked accounts.
+- Profile verification / KYC.
+- Manage devices.
+- Login history.
+- Two-factor setup.
+- Subscription and billing.
+- Refer and rewards.
+- Blocked users.
+- Privacy settings.
+- Notification settings.
+- Communication settings.
+- Accessibility settings.
+- AI/recommendation settings.
+- Media settings.
+- Localization settings.
+- Security settings.
+- Language.
+- Theme.
+- Help and support.
+- Support tickets and ticket detail.
+- FAQs and community guidelines.
+- Privacy policy and terms.
+
+### Notification Settings Model
+
+Recommended categories:
+
+- Interactions: new interest, interest accepted, profile viewed, shortlisted.
+- Messages: new message, chat request, message reaction, media failure.
+- Matches and suggestions: new match, curated match, online/nearby alerts, profile score boost.
+- Account and membership: payment confirmation, subscription expiry, renewal/cancellation, referral reward.
+- Security: login alerts, password change, 2FA changes, device/session changes.
+- Support: ticket reply, ticket status update.
+- Promotions: offers and campaign announcements.
+
+Recommended controls:
+
+- Master notification toggle.
+- Channel-level controls where provider support exists: push, email, SMS.
+- Frequency control for match suggestions.
+- Quiet hours / do-not-disturb.
+- Locked-on security alerts where legally or operationally required.
+
+## Support Flow
+
+```text
+Settings
+  -> Help and Support
+       -> FAQs
+       -> Community Guidelines
+       -> Support Tickets
+            -> Create Ticket
+            -> Ticket Detail
+                 -> Replies
+                 -> Close Ticket
+```
+
+### Recommendations
+
+- Add contextual support entry points from payment failure, verification failure, media rejection, and account deletion flows.
+- Keep ticket categories aligned with backend support/admin queues.
+- Show expected response time and ticket status clearly.
+
+## Admin and Moderation Flow
+
+Admin is API-backed in the current backend. If an admin UI is added, it should cover:
+
+- Dashboard metrics.
+- User management.
+- RBAC.
+- Moderation queues for profile reports, media, KYC, and chat.
+- Support-ticket queue.
+- Plan and feature management.
+- Payments, refunds, reconciliation, GST/settlement reports.
+- Notification templates, broadcasts, analytics, and DLQ replay.
+- Audit logs.
+
+Admin UI work should be tracked separately from the mobile app flow unless an admin app is added to this repository.
+
+## Deep Link Flow
+
+Configured app scheme:
+
+```text
+matchmate://
+```
+
+Configured universal/app links:
+
+```text
+https://matchmate.webnza.com/reset-password
+https://www.matchmate.webnza.com/reset-password
+https://matchmate.webnza.com/magic-login
+https://www.matchmate.webnza.com/magic-login
+```
+
+Recommended deep-link targets:
+
+- Reset password.
+- Magic login.
+- Notification detail.
+- Match detail.
+- Chat room.
+- Support ticket detail.
+- Payment/subscription result.
+
+## Cross-Cutting UX Rules
+
+- Preserve user context when moving between list, detail, chat, and settings screens.
+- Always provide loading, empty, error, and retry states for network-backed screens.
+- Keep destructive actions confirmed: block, report, deactivate, delete account, cancel subscription.
+- Keep safety and trust signals visible: verification, profile completion, blocked/reported state, secure account notices.
+- Keep localization complete for all visible copy, including API success/error codes.
+- Keep accessibility in the interaction model: readable text, touch target size, screen reader labels, contrast, reduced motion where needed.
+- Avoid duplicate API calls from toggles and settings controls.
+- For long lists, use pagination/infinite loading and stable placeholders.
+
+## Recommended Improvements
+
+1. Add a documented auth-state matrix: logged out, logged in without onboarding, logged in with onboarding complete, token refresh failed, 2FA required.
+2. Add a profile-completion journey that links missing sections directly to `EditProfile` and `EditPreference`.
+3. Add explicit empty-state copy for discovery filters, no nearby permission, no chats, no notifications, and no support tickets.
+4. Add contextual support entry points from payment, verification, media moderation, and account deletion.
+5. Add saved filters only after current filter behavior and pagination are stable.
+6. Add deep-link QA cases for reset password, magic login, notification detail, match detail, chat, and payment result.
+7. Add UX acceptance criteria to each launch-critical flow in the task roadmap.
+
+## Documentation Ownership
+
+- Keep this file focused on user journeys and screen flow decisions.
+- Keep endpoint lists and technical architecture in [Technical Plan](TECHNICAL-PLAN.md).
+- Keep delivery scope, milestones, risks, and project governance in [Project Plan](PROJECT-PLAN.md).
+- Keep implementation backlog and launch work in [Task Roadmap](TASK-ROADMAP.md).
