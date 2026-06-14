@@ -317,7 +317,6 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | PARTIAL | Funnel tracking                | Analytics module exists; end-to-end event taxonomy needs expansion.                                                 |
 | DONE    | Admin dashboard metrics        | Admin analytics/dashboard endpoints exist.                                                                          |
 | PARTIAL | Event tracking system          | Backend event tracking exists; no Mixpanel/Amplitude integration found.                                             |
-| TODO    | Cohort analysis                | No cohort pipeline found.                                                                                           |
 | TODO    | A/B testing infrastructure     | Env flags exist, but no experiment platform.                                                                        |
 | PARTIAL | Match success rate tracking    | Feature enum/analytics exist; KPI dashboard needs proof.                                                            |
 | PARTIAL | Revenue analytics              | Payment/admin reports exist; MRR/ARR/churn dashboard not complete.                                                  |
