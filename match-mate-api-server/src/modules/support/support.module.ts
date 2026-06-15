@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { NotificationsModule } from '../notifications/notifications.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { AdminSupportTicketController } from './controllers/admin-support-ticket.controller';
 import { SupportTicketController } from './controllers/support-ticket.controller';
 import { SupportTicketRepository } from './repositories/support-ticket.repository';
@@ -16,6 +17,7 @@ import { SupportTicketService } from './services/support-ticket.service';
       { name: SupportTicket.name, schema: SupportTicketSchema },
     ]),
     NotificationsModule,
+    SubscriptionsModule,
   ],
   controllers: [SupportTicketController, AdminSupportTicketController],
   providers: [SupportTicketService, SupportTicketRepository],

@@ -2,7 +2,7 @@ import { Injectable, CanActivate, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 
 import { FEATURE_KEY } from '../decorators/feature.decorator';
-import { FeatureKey } from '@/common/enums';
+import { FeatureKey, Role } from '@/common/enums';
 import { FeatureService } from '../services/feature.service';
 import { ErrorCode } from '@/common/constants';
 import { throwForbidden } from '@/common/exceptions/throw-app-exception';
@@ -13,6 +13,7 @@ interface RequestWithUser {
   feature?: unknown;
   user?: {
     sub: string;
+    roles?: Role[];
   };
 }
 
@@ -37,6 +38,15 @@ export class FeatureGuard implements CanActivate {
 
     if (!user?.sub) {
       return throwForbidden(ErrorCode.AUTH_FORBIDDEN);
+    }
+
+    if (this.isStaffUser(user.roles)) {
+      request.feature = {
+        allowed: true,
+        bypassed: true,
+        reason: 'staff_role',
+      };
+      return true;
     }
 
     const contextData = {
@@ -69,5 +79,9 @@ export class FeatureGuard implements CanActivate {
     }
 
     return undefined;
+  }
+
+  private isStaffUser(roles: Role[] = []): boolean {
+    return roles.some((role) => role !== Role.USER);
   }
 }

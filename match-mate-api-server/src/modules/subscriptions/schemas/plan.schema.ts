@@ -26,6 +26,12 @@ export class Plan {
   @Prop({ required: true })
   durationDays!: number;
 
+  @Prop({ default: 0, min: 0 })
+  trialDays!: number;
+
+  @Prop({ default: false })
+  autoRenewDefault!: boolean;
+
   @Prop({ default: 'INR' })
   currency!: string;
 

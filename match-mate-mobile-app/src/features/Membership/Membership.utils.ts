@@ -13,11 +13,13 @@ export const formatPlanName = (name: string): string =>
     .join(' ');
 
 export const formatPlanPrice = (plan: MembershipPlan): string =>
-  new Intl.NumberFormat('en-IN', {
-    style: 'currency',
-    currency: plan.currency || 'INR',
-    maximumFractionDigits: 0,
-  }).format(plan.price);
+  plan.price <= 0
+    ? 'Free'
+    : new Intl.NumberFormat('en-IN', {
+        style: 'currency',
+        currency: plan.currency || 'INR',
+        maximumFractionDigits: 0,
+      }).format(plan.price);
 
 export const getDurationLabel = (durationDays: number): string => {
   if (durationDays >= 365) return '/ year';
@@ -33,7 +35,7 @@ export const getPlanTypeForTab = (
   tab === 'assisted' ? 'assisted' : 'self_service';
 
 const formatFeatureValue = (value: unknown): string => {
-  if (value === true || value === 1) return '✓';
+  if (value === true || value === 1) return 'Yes';
   if (value === false || value === 0 || value === null || value === undefined) {
     return '0';
   }
@@ -44,6 +46,36 @@ const formatFeatureValue = (value: unknown): string => {
 const getFeatureLabel = (key: string, name?: string): string =>
   name?.trim() ?? formatPlanName(key);
 
+const SELF_SERVICE_FEATURE_PRIORITY = [
+  'upload_photos',
+  'upload_videos',
+  'send_interest',
+  'message_limit',
+  'view_contact',
+  'who_viewed_me',
+  'advanced_search',
+  'daily_profile_views',
+  'profile_views',
+  'profile_boost',
+  'auto_renewal',
+  'support_tickets',
+];
+
+const ASSISTED_FEATURE_PRIORITY = [
+  'relationship_manager',
+  'dedicated_relationship_manager',
+  'concierge_matchmaking',
+  'personal_matchmaker',
+  'premium_badge',
+  'priority_support',
+  'advanced_matching',
+  'ai_recommendations',
+  'weekly_reports',
+  'contact_view_limit',
+  'match_success_rate',
+  'support_tickets',
+];
+
 export const buildDisplayPlans = (
   backendPlans: MembershipPlan[],
   tab: MembershipTab
@@ -52,13 +84,28 @@ export const buildDisplayPlans = (
 
   return backendPlans
     .filter(
-      (plan) => plan.price > 0 && (plan.planType ?? 'self_service') === planType
+      (plan) =>
+        (plan.planType ?? 'self_service') === planType &&
+        plan.planType !== 'profile_boost'
+    )
+    .sort(
+      (a, b) =>
+        (a.sortOrder ?? 999) - (b.sortOrder ?? 999) ||
+        a.price - b.price ||
+        a.durationDays - b.durationDays
     )
     .map((plan) => ({
       id: plan._id,
       name: formatPlanName(plan.name),
       price: formatPlanPrice(plan),
       durationLabel: getDurationLabel(plan.durationDays),
+      trialLabel:
+        (plan.trialDays ?? 0) > 0 ? `${plan.trialDays} days trial` : undefined,
+      renewalLabel: plan.autoRenewDefault
+        ? 'Auto-renewal enabled'
+        : 'Manual renewal',
+      tier: plan.tier,
+      isFree: plan.price <= 0,
       best: Boolean(plan.isPopular),
       ...(plan.description ? { description: plan.description } : {}),
       featureValues:
@@ -74,7 +121,8 @@ export const buildDisplayPlans = (
 
 export const buildFeatureRows = (
   plans: DisplayPlan[],
-  maxRows = 8
+  maxRows = 12,
+  tab: MembershipTab = 'self'
 ): DisplayFeatureRow[] => {
   const features = new Map<string, string>();
 
@@ -86,7 +134,25 @@ export const buildFeatureRows = (
     });
   });
 
+  const priority =
+    tab === 'assisted'
+      ? ASSISTED_FEATURE_PRIORITY
+      : SELF_SERVICE_FEATURE_PRIORITY;
+
   return Array.from(features.entries())
+    .sort(([a], [b]) => {
+      const aIndex = priority.indexOf(a);
+      const bIndex = priority.indexOf(b);
+
+      if (aIndex !== -1 || bIndex !== -1) {
+        return (
+          (aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex) -
+          (bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex)
+        );
+      }
+
+      return getFeatureLabel(a).localeCompare(getFeatureLabel(b));
+    })
     .slice(0, maxRows)
     .map(([key, label]) => ({
       key,

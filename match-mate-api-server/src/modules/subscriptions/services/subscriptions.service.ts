@@ -11,7 +11,7 @@ import {
   PaymentDocument,
 } from '@/modules/payments/schemas/payment.schema';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
-import { PlanTier, SubscriptionStatus } from '@/common/enums';
+import { PlanTier, PlanType, SubscriptionStatus } from '@/common/enums';
 import { PaymentGateway } from '@/modules/payments/enums/payment-gateway.enum';
 import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
 import { ErrorCode } from '@/common/constants';
@@ -80,7 +80,7 @@ export class SubscriptionsService {
       status: SubscriptionStatus.ACTIVE,
       paymentId: options?.paymentId,
       paymentProvider: options?.paymentProvider,
-      autoRenew: options?.autoRenew ?? false,
+      autoRenew: options?.autoRenew ?? Boolean(plan.autoRenewDefault),
       trialEndsAt: options?.trialEndsAt,
       storeProductId: options?.storeProductId,
       storeTransactionId: options?.storeTransactionId,
@@ -93,6 +93,7 @@ export class SubscriptionsService {
       status: SubscriptionStatus.ACTIVE,
       startDate,
       expiresAt: endDate,
+      autoRenew: options?.autoRenew ?? Boolean(plan.autoRenewDefault),
       planId: planId,
     });
 
@@ -131,9 +132,34 @@ export class SubscriptionsService {
     });
   }
 
-  async startFreeTrial(userId: string, planId: string, trialDays = 7) {
+  async startFreeTrial(userId: string, planId: string, trialDays?: number) {
+    const requestedPlan = await this.planModel.findById(planId).lean().exec();
+
+    if (
+      !requestedPlan ||
+      !requestedPlan.isActive ||
+      requestedPlan.price <= 0 ||
+      requestedPlan.planType === PlanType.PROFILE_BOOST
+    ) {
+      return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
+        reason: 'trial_plan_not_available',
+      });
+    }
+
+    const paidPlanIds = await this.planModel
+      .find({
+        price: { $gt: 0 },
+        planType: { $ne: PlanType.PROFILE_BOOST },
+      })
+      .select('_id')
+      .lean()
+      .exec();
+
     const previousSubscription = await this.subModel
-      .exists({ userId: new Types.ObjectId(userId) })
+      .exists({
+        userId: new Types.ObjectId(userId),
+        planId: { $in: paidPlanIds.map((plan) => plan._id) },
+      })
       .exec();
     const previousSuccessfulPayment = await this.paymentModel
       .exists({
@@ -148,26 +174,31 @@ export class SubscriptionsService {
       });
     }
 
-    const trialEndsAt = new Date(Date.now() + trialDays * 86_400_000);
+    const effectiveTrialDays = trialDays ?? requestedPlan.trialDays ?? 7;
+    const trialEndsAt = new Date(Date.now() + effectiveTrialDays * 86_400_000);
     const result = await this.purchasePlan(userId, planId, {
       trialEndsAt,
       autoRenew: false,
     });
 
-    await this.subModel.findByIdAndUpdate(result.subscription._id, {
-      $set: { status: SubscriptionStatus.TRIAL, endDate: trialEndsAt },
-    });
+    const trialSubscription = await this.subModel.findByIdAndUpdate(
+      result.subscription._id,
+      {
+        $set: { status: SubscriptionStatus.TRIAL, endDate: trialEndsAt },
+      },
+      { new: true },
+    );
 
-    const plan = await this.planModel.findById(planId).lean().exec();
     await this.userRepo.updateMembership(userId, {
-      tier: plan?.tier ?? PlanTier.FREE,
+      tier: requestedPlan.tier ?? PlanTier.FREE,
       status: SubscriptionStatus.TRIAL,
       startDate: result.subscription.startDate,
       expiresAt: trialEndsAt,
+      autoRenew: false,
       planId,
     });
 
-    return result;
+    return { success: true, subscription: trialSubscription };
   }
 
   async getActiveSubscription(userId: string) {
@@ -268,7 +299,27 @@ export class SubscriptionsService {
     sub.autoRenew = false;
     sub.cancelledAt = new Date();
     sub.cancelledReason = reason;
+
+    if (sub.status === SubscriptionStatus.TRIAL) {
+      sub.status = SubscriptionStatus.CANCELLED;
+      sub.endDate = new Date();
+    }
+
     await sub.save();
+
+    const plan = await this.planModel.findById(sub.planId).lean().exec();
+
+    await this.userRepo.updateMembership(userId, {
+      tier:
+        sub.status === SubscriptionStatus.CANCELLED
+          ? PlanTier.FREE
+          : (plan?.tier ?? PlanTier.FREE),
+      status: sub.status,
+      startDate: sub.startDate,
+      expiresAt: sub.endDate,
+      autoRenew: false,
+      planId: sub.planId.toString(),
+    });
 
     return { success: true, subscription: sub };
   }

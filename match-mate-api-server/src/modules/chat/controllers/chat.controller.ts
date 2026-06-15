@@ -31,9 +31,12 @@ import { ReactToMessageDto } from '../dto/react-to-message.dto';
 import { RespondChatRequestDto } from '../dto/respond-chat-request.dto';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
+import { FeatureKey } from '@/common/enums';
+import { FeatureRequired } from '@/modules/subscriptions/decorators/feature.decorator';
+import { FeatureGuard } from '@/modules/subscriptions/guards/feature.guard';
 
 @Controller('chats')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FeatureGuard)
 export class ChatController {
   constructor(private readonly service: ChatService) {}
 
@@ -44,6 +47,7 @@ export class ChatController {
   }
 
   @Get('conversations')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async getConversations(
     @Req() req: AppRequest,
     @Query() query: ListConversationsDto,
@@ -60,6 +64,7 @@ export class ChatController {
   }
 
   @Get('contacts')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async getContacts(
     @Req() req: AppRequest,
     @Query() query: ListChatContactsDto,
@@ -73,6 +78,7 @@ export class ChatController {
   }
 
   @Post('rooms/direct')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async createOrGetDirectRoom(
     @Req() req: AppRequest,
     @Body() dto: CreateDirectRoomDto,
@@ -85,6 +91,7 @@ export class ChatController {
   }
 
   @Get('rooms/:roomId')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async getConversationDetail(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,
@@ -101,6 +108,7 @@ export class ChatController {
   }
 
   @Get('rooms/:roomId/messages')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async getMessages(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,
@@ -119,6 +127,7 @@ export class ChatController {
   }
 
   @Post('rooms/:roomId/request/respond')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async respondToChatRequest(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,
@@ -137,6 +146,7 @@ export class ChatController {
   }
 
   @Post('rooms/:roomId/messages')
+  @FeatureRequired(FeatureKey.MESSAGE_LIMIT)
   async sendMessage(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,
@@ -154,6 +164,7 @@ export class ChatController {
   }
 
   @Post('attachments')
+  @FeatureRequired(FeatureKey.SEND_IMAGES_IN_CHAT)
   @UseInterceptors(FilesInterceptor('files', 5))
   @HttpCode(HttpStatus.CREATED)
   async uploadAttachments(
@@ -172,6 +183,7 @@ export class ChatController {
   }
 
   @Delete('rooms/:roomId/messages/:messageId')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async deleteMessage(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,
@@ -190,6 +202,7 @@ export class ChatController {
   }
 
   @Patch('rooms/:roomId/messages/:messageId/reaction')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async reactToMessage(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,
@@ -210,6 +223,7 @@ export class ChatController {
   }
 
   @Post('rooms/:roomId/read')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async markRoomRead(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,
@@ -228,6 +242,7 @@ export class ChatController {
   }
 
   @Patch('rooms/:roomId/settings')
+  @FeatureRequired(FeatureKey.CHAT_ACCESS)
   async updateRoomSettings(
     @Req() req: AppRequest,
     @Param('roomId') roomId: string,

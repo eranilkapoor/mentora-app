@@ -35,6 +35,10 @@ export interface DisplayPlan {
   name: string;
   price: string;
   durationLabel: string;
+  trialLabel?: string;
+  renewalLabel?: string;
+  tier?: string;
+  isFree?: boolean;
   best?: boolean;
   description?: string;
   featureValues: Record<string, string>;

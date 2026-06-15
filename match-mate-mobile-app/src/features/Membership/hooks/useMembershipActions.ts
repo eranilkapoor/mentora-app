@@ -1,6 +1,9 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useCreateMembershipOrderMutation } from '@/store/services/membershipApi.service';
+import {
+  useCreateMembershipOrderMutation,
+  useStartFreeTrialMutation,
+} from '@/store/services/membershipApi.service';
 import { showError, showSuccess } from '@/core/utils/toast';
 import type { PaymentGateway } from '@matchmate/api-contract';
 import {
@@ -14,6 +17,8 @@ export function useMembershipActions() {
   const { t } = useTranslation();
   const [createOrder, { isLoading: isCreatingOrder }] =
     useCreateMembershipOrderMutation();
+  const [startTrial, { isLoading: isStartingTrial }] =
+    useStartFreeTrialMutation();
 
   const handleCreateOrder = useCallback(
     async (
@@ -105,5 +110,46 @@ export function useMembershipActions() {
     [createOrder, t]
   );
 
-  return { handleCreateOrder, handleCreateBoostOrder, isCreatingOrder };
+  const handleStartTrial = useCallback(
+    async (selectedPlanItem: DisplayPlan | null): Promise<void> => {
+      if (
+        !selectedPlanItem?.source?._id ||
+        !selectedPlanItem.source.trialDays
+      ) {
+        showError({
+          title: t('membership.plans_unavailable_title'),
+          message: t('membership.plans_unavailable_message'),
+        });
+        return;
+      }
+
+      try {
+        await startTrial({
+          planId: selectedPlanItem.source._id,
+          trialDays: selectedPlanItem.source.trialDays,
+        }).unwrap();
+
+        showSuccess({
+          title: t('membership.trial_started_title'),
+          message: t('membership.trial_started_message', {
+            days: selectedPlanItem.source.trialDays,
+            name: selectedPlanItem.name,
+          }),
+        });
+      } catch {
+        showError({
+          title: t('membership.trial_failed_title'),
+          message: t('membership.trial_failed_message'),
+        });
+      }
+    },
+    [startTrial, t]
+  );
+
+  return {
+    handleCreateOrder,
+    handleCreateBoostOrder,
+    handleStartTrial,
+    isCreatingOrder: isCreatingOrder || isStartingTrial,
+  };
 }

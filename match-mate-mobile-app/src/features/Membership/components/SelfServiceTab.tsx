@@ -81,6 +81,12 @@ export function SelfServiceTab({
                 {plan.price}
               </Text>
               <Text style={styles.planDuration}>{plan.durationLabel}</Text>
+              {plan.trialLabel ? (
+                <Text style={styles.planMetaLabel}>{plan.trialLabel}</Text>
+              ) : null}
+              {plan.renewalLabel ? (
+                <Text style={styles.planMetaMuted}>{plan.renewalLabel}</Text>
+              ) : null}
               <View
                 style={[styles.radioOuter, active && styles.radioOuterActive]}
               >

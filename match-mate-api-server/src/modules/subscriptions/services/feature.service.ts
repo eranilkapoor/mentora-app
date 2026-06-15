@@ -16,12 +16,18 @@ import { FeatureContext } from '../interfaces/feature-context.interface';
 import { PlanService } from './plan.service';
 import { ErrorCode } from '@/common/constants';
 import { throwForbidden } from '@/common/exceptions/throw-app-exception';
+import { Plan, PlanDocument } from '../schemas/plan.schema';
+import { SubscriptionStatus, PlanTier } from '@/common/enums';
 
 //  Types
 
 type LeanPlanFeature = FlattenMaps<PlanFeature> & {
   _id: Types.ObjectId;
-  featureId: { key: FeatureKey };
+  featureId: {
+    key: FeatureKey;
+    type?: 'boolean' | 'limit' | 'quota' | 'tier' | 'duration';
+    isActive?: boolean;
+  };
 };
 
 const PLAN_FEATURES_CACHE_TTL = 300; // 5 minutes  plan features rarely change
@@ -36,6 +42,9 @@ export class FeatureService {
     @InjectModel(Subscription.name)
     private readonly subModel: Model<SubscriptionDocument>,
 
+    @InjectModel(Plan.name)
+    private readonly planModel: Model<PlanDocument>,
+
     @Inject(CACHE_SERVICE)
     private readonly cache: ICacheService,
 
@@ -47,22 +56,13 @@ export class FeatureService {
   async checkAccess(featureKey: FeatureKey, context: FeatureContext) {
     const { userId } = context;
 
-    const subscription = await this.subModel
-      .findOne({
-        userId: new Types.ObjectId(userId),
-        status: 'active',
-        endDate: { $gt: new Date() },
-      })
-      .lean()
-      .exec();
+    const planId = await this.resolvePlanIdForUser(userId);
 
-    if (!subscription) {
+    if (!planId) {
       return throwForbidden(ErrorCode.SUBSCRIPTION_REQUIRED);
     }
 
-    const planFeatures = await this.getCachedPlanFeatures(
-      subscription.planId.toString(),
-    );
+    const planFeatures = await this.getCachedPlanFeatures(planId);
 
     const feature = planFeatures.find((pf) => pf.featureId.key === featureKey);
 
@@ -72,8 +72,15 @@ export class FeatureService {
       });
     }
 
-    // -1 means unlimited
-    if (typeof feature.value === 'number' && feature.value !== -1) {
+    const usageLimitedTypes = new Set(['limit', 'quota', 'duration']);
+
+    // -1 means unlimited. Boolean features may be stored as 1 in legacy seeds,
+    // so only typed limit/quota/duration features consume usage.
+    if (
+      usageLimitedTypes.has(feature.featureId.type ?? 'boolean') &&
+      typeof feature.value === 'number' &&
+      feature.value !== -1
+    ) {
       await this.checkUsageLimit(userId, featureKey, feature.value);
     }
 
@@ -114,22 +121,13 @@ export class FeatureService {
   //  Feature map for a user
 
   async getFeaturesForUser(userId: string): Promise<Record<string, unknown>> {
-    const subscription = await this.subModel
-      .findOne({
-        userId: new Types.ObjectId(userId),
-        status: 'active',
-        endDate: { $gt: new Date() },
-      })
-      .lean()
-      .exec();
+    const planId = await this.resolvePlanIdForUser(userId);
 
-    if (!subscription) {
+    if (!planId) {
       return {}; // Free tier  no features
     }
 
-    const features = await this.getCachedPlanFeatures(
-      subscription.planId.toString(),
-    );
+    const features = await this.getCachedPlanFeatures(planId);
 
     const map: Record<string, unknown> = {};
     for (const feature of features) {
@@ -153,12 +151,22 @@ export class FeatureService {
 
     const features = await this.pfModel
       .find({ planId: new Types.ObjectId(planId) })
-      .populate<{ featureId: { key: FeatureKey } }>('featureId')
+      .populate<{
+        featureId: {
+          key: FeatureKey;
+          type?: 'boolean' | 'limit' | 'quota' | 'tier' | 'duration';
+          isActive?: boolean;
+        };
+      }>('featureId', 'key type isActive')
       .lean<LeanPlanFeature[]>()
       .exec();
 
-    await this.cache.set(cacheKey, features, PLAN_FEATURES_CACHE_TTL);
-    return features;
+    const activeFeatures = features.filter(
+      (feature) => feature.featureId?.isActive !== false,
+    );
+
+    await this.cache.set(cacheKey, activeFeatures, PLAN_FEATURES_CACHE_TTL);
+    return activeFeatures;
   }
 
   // Invalidate cache when plan features change (call from PlanService)
@@ -168,5 +176,36 @@ export class FeatureService {
 
   private getTodayKey(): string {
     return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
+  private async resolvePlanIdForUser(userId: string): Promise<string | null> {
+    const now = new Date();
+    const subscription = await this.subModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        status: {
+          $in: [
+            SubscriptionStatus.ACTIVE,
+            SubscriptionStatus.TRIAL,
+            SubscriptionStatus.GRACE_PERIOD,
+          ],
+        },
+        endDate: { $gt: now },
+      })
+      .sort({ endDate: -1 })
+      .lean()
+      .exec();
+
+    if (subscription?.planId) {
+      return subscription.planId.toString();
+    }
+
+    const freePlan = await this.planModel
+      .findOne({ tier: PlanTier.FREE, isActive: true })
+      .select('_id')
+      .lean()
+      .exec();
+
+    return freePlan?._id.toString() ?? null;
   }
 }

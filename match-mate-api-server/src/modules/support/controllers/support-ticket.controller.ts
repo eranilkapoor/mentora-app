@@ -15,13 +15,17 @@ import { SuccessCode } from '@/common/constants';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { FeatureKey } from '@/common/enums';
+import { FeatureRequired } from '@/modules/subscriptions/decorators/feature.decorator';
+import { FeatureGuard } from '@/modules/subscriptions/guards/feature.guard';
 import { CreateSupportTicketDto } from '../dto/create-support-ticket.dto';
 import { ListSupportTicketsDto } from '../dto/list-support-tickets.dto';
 import { ReplySupportTicketDto } from '../dto/reply-support-ticket.dto';
 import { SupportTicketService } from '../services/support-ticket.service';
 
 @Controller('support/tickets')
-@UseGuards(JwtAuthGuard)
+@FeatureRequired(FeatureKey.SUPPORT_TICKETS)
+@UseGuards(JwtAuthGuard, FeatureGuard)
 export class SupportTicketController {
   constructor(private readonly service: SupportTicketService) {}
 

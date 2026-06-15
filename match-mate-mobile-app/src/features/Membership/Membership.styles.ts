@@ -217,7 +217,22 @@ export const membershipStyles = (
     planDuration: {
       fontSize: 10,
       color: theme.colors.textMuted,
-      marginBottom: 10,
+      marginBottom: 4,
+      textAlign: 'center',
+    },
+    planMetaLabel: {
+      fontSize: 10,
+      fontWeight: '800',
+      color: theme.colors.success,
+      textAlign: 'center',
+      marginBottom: 2,
+    },
+    planMetaMuted: {
+      fontSize: 9,
+      lineHeight: 12,
+      color: theme.colors.textMuted,
+      textAlign: 'center',
+      marginBottom: 6,
     },
     radioOuter: {
       width: 18,

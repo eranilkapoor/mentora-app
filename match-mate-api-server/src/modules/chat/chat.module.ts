@@ -15,6 +15,7 @@ import {
 } from '../profiles/schemas/profile/profile.schema';
 import { Match, MatchSchema } from '../matches/schemas/match.schema';
 import { SafetyModule } from '../safety/safety.module';
+import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { ChatPresenceService } from './services/chat-presence.service';
 import { ChatAccessService } from './services/chat-access.service';
 import {
@@ -28,6 +29,7 @@ import { ChatRealtimeModule } from './chat-realtime.module';
     AuthModule,
     forwardRef(() => NotificationsModule),
     SafetyModule,
+    SubscriptionsModule,
     ChatRealtimeModule,
     MongooseModule.forFeature([
       { name: ChatMessage.name, schema: ChatMessageSchema },

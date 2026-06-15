@@ -191,6 +191,7 @@ export class MasterSeederService {
 
     await this.seedPermissions();
     await this.seedRoles();
+    await this.seedRoleTestUsers();
     await this.seedFeatures();
     await this.seedPlans();
     await this.seedPlanFeatures();
@@ -863,6 +864,74 @@ export class MasterSeederService {
     });
   }
 
+  private async seedRoleTestUsers() {
+    const now = new Date();
+    const passwordHash = await bcrypt.hash('Test@125#', 10);
+    const roles = Object.values(AppRole);
+
+    const result = await this.userModel.bulkWrite(
+      roles.map((role) => {
+        const email = `${role}@webnza.com`;
+
+        return {
+          updateOne: {
+            filter: { email },
+            update: {
+              $set: {
+                email,
+                status: Status.ACTIVE,
+                isEmailVerified: true,
+                isPhoneVerified: false,
+                isOnboardingCompleted: role === AppRole.USER,
+                roles: [role],
+                permissions: [],
+                authAccounts: [
+                  {
+                    provider: AuthProvider.EMAIL,
+                    providerId: email,
+                    passwordHash,
+                    isVerified: true,
+                    isPrimary: true,
+                    lastUsedAt: now,
+                  },
+                ],
+                lastPasswordChangedAt: now,
+                lastLoginAt: now,
+                updatedAt: now,
+                updatedBy: 'master-seeder',
+              },
+              $setOnInsert: {
+                membership: {
+                  tier: PlanTier.FREE,
+                  status: SubscriptionStatus.ACTIVE,
+                  startDate: now,
+                  autoRenew: false,
+                },
+                referralPoints: 0,
+                failedLoginAttempts: 0,
+                createdAt: now,
+                createdBy: 'master-seeder',
+              },
+            },
+            upsert: true,
+          },
+        };
+      }),
+      {
+        ordered: false,
+      },
+    );
+
+    this.logger.log(` Role test users seeded successfully`, {
+      matched: result.matchedCount,
+      modified: result.modifiedCount,
+      upserted: result.upsertedCount,
+      total: roles.length,
+      emails: roles.map((role) => `${role}@webnza.com`),
+      password: 'Test@125#',
+    });
+  }
+
   // =========================================================
   // FEATURES
   // =========================================================
@@ -989,6 +1058,7 @@ export class MasterSeederService {
     }
 
     const mappings: PlanFeatureSeed[] = [];
+    const mappingIndexByKey = new Map<string, number>();
 
     // ==========================================
     // HELPER
@@ -999,12 +1069,91 @@ export class MasterSeederService {
       featureKey: FeatureKey,
       value: FeatureValue = 1,
     ) => {
-      mappings.push({
+      const mappingKey = `${planSlug}:${featureKey}`;
+      const nextMapping = {
         planSlug,
         featureKey,
         value,
-      });
+      };
+      const existingIndex = mappingIndexByKey.get(mappingKey);
+
+      if (existingIndex !== undefined) {
+        mappings[existingIndex] = nextMapping;
+        return;
+      }
+
+      mappingIndexByKey.set(mappingKey, mappings.length);
+      mappings.push(nextMapping);
     };
+
+    const recurringPlanSlugs: PlanSlug[] = [
+      'FREE',
+      'GOLD_MONTHLY',
+      'GOLD_QUARTERLY',
+      'GOLD_YEARLY',
+      'PLATINUM_MONTHLY',
+      'PLATINUM_QUARTERLY',
+      'PLATINUM_YEARLY',
+      'ASSISTED_QUARTERLY',
+      'ASSISTED_HALF_YEARLY',
+      'ASSISTED_YEARLY',
+    ];
+
+    const platformFeatures: [FeatureKey, FeatureValue][] = [
+      [FeatureKey.EMAIL_REGISTRATION, 1],
+      [FeatureKey.PHONE_REGISTRATION, 1],
+      [FeatureKey.SOCIAL_LOGIN_GOOGLE, 1],
+      [FeatureKey.SOCIAL_LOGIN_APPLE, 1],
+      [FeatureKey.SOCIAL_LOGIN_FACEBOOK, 1],
+      [FeatureKey.EMAIL_VERIFICATION, 1],
+      [FeatureKey.PHONE_VERIFICATION, 1],
+      [FeatureKey.OTP_LOGIN, 1],
+      [FeatureKey.TWO_FACTOR_AUTH, 1],
+      [FeatureKey.DEVICE_MANAGEMENT, 1],
+      [FeatureKey.MULTI_DEVICE_LOGIN, 1],
+      [FeatureKey.SESSION_HISTORY, 1],
+      [FeatureKey.CREATE_PROFILE, 1],
+      [FeatureKey.EDIT_PROFILE, 1],
+      [FeatureKey.DELETE_PROFILE, 1],
+      [FeatureKey.BASIC_MATCHING, 1],
+      [FeatureKey.BASIC_SEARCH, 1],
+      [FeatureKey.BASIC_FILTERS, 1],
+      [FeatureKey.SEARCH_BY_RELIGION, 1],
+      [FeatureKey.SEARCH_BY_CASTE, 1],
+      [FeatureKey.SEARCH_BY_LOCATION, 1],
+      [FeatureKey.SEARCH_BY_EDUCATION, 1],
+      [FeatureKey.SEARCH_BY_PROFESSION, 1],
+      [FeatureKey.SEARCH_BY_HEIGHT, 1],
+      [FeatureKey.LOCATION_BASED_SEARCH, 1],
+      [FeatureKey.SMART_MATCHES, 1],
+      [FeatureKey.COMPATIBILITY_SCORE, 1],
+      [FeatureKey.RELIGION_PREFERENCES, 1],
+      [FeatureKey.CASTE_PREFERENCES, 1],
+      [FeatureKey.FAMILY_MANAGED_PROFILE, 1],
+      [FeatureKey.FAMILY_DETAILS, 1],
+      [FeatureKey.PUSH_NOTIFICATIONS, 1],
+      [FeatureKey.EMAIL_NOTIFICATIONS, 1],
+      [FeatureKey.PHOTO_APPROVAL, 1],
+      [FeatureKey.VIDEO_APPROVAL, 1],
+      [FeatureKey.PROFILE_VERIFICATION, 1],
+      [FeatureKey.REPORT_USER, 1],
+      [FeatureKey.BLOCK_USERS, 1],
+      [FeatureKey.SPAM_DETECTION, 1],
+      [FeatureKey.RESTRICTED_PROFILES, 1],
+      [FeatureKey.CUSTOMER_SUPPORT_CHAT, 1],
+      [FeatureKey.SUPPORT_TICKETS, 1],
+      [FeatureKey.ACCOUNT_DELETION, 1],
+      [FeatureKey.GDPR_COMPLIANCE, 1],
+      [FeatureKey.DATA_EXPORT, 1],
+      [FeatureKey.CONSENT_MANAGEMENT, 1],
+      [FeatureKey.PRIVACY_CONTROLS, 1],
+    ];
+
+    recurringPlanSlugs.forEach((planSlug) => {
+      platformFeatures.forEach(([feature, value]) =>
+        addFeature(planSlug, feature, value),
+      );
+    });
 
     // ==========================================
     // FREE PLAN
@@ -1015,12 +1164,14 @@ export class MasterSeederService {
         [FeatureKey.CREATE_PROFILE, 1],
         [FeatureKey.EDIT_PROFILE, 1],
         [FeatureKey.UPLOAD_PHOTOS, 5],
+        [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 5],
         [FeatureKey.SEND_INTEREST, 10],
         [FeatureKey.VIEW_INTERESTS, 1],
         [FeatureKey.ACCEPT_INTEREST, 1],
         [FeatureKey.REJECT_INTEREST, 1],
         [FeatureKey.SHORTLIST_PROFILES, 20],
         [FeatureKey.VIEW_PROFILE_PHOTOS, 1],
+        [FeatureKey.PROFILE_VIEWS, 25],
         [FeatureKey.BASIC_SEARCH, 1],
         [FeatureKey.BASIC_FILTERS, 1],
         [FeatureKey.MATCH_LIMIT, 20],
@@ -1043,14 +1194,23 @@ export class MasterSeederService {
     const goldFeatures: [FeatureKey, FeatureValue][] = [
       [FeatureKey.CREATE_PROFILE, 1],
       [FeatureKey.EDIT_PROFILE, 1],
+      [FeatureKey.ADVANCED_PROFILE_COMPLETION, 1],
       [FeatureKey.UPLOAD_PHOTOS, 20],
+      [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 20],
       [FeatureKey.UPLOAD_VIDEOS, 5],
+      [FeatureKey.PRIVATE_PHOTOS, 1],
+      [FeatureKey.HIDE_LAST_SEEN, 1],
+      [FeatureKey.HIDE_ONLINE_STATUS, 1],
+      [FeatureKey.HIDE_PROFILE_PHOTO, 1],
+      [FeatureKey.PROFILE_HIGHLIGHT, 1],
       [FeatureKey.UNLIMITED_CHAT, -1],
+      [FeatureKey.CHAT_WITH_MATCHES_ONLY, 1],
       [FeatureKey.SEND_INTEREST, -1],
       [FeatureKey.VIEW_INTERESTS, 1],
       [FeatureKey.ACCEPT_INTEREST, 1],
       [FeatureKey.REJECT_INTEREST, 1],
       [FeatureKey.VIEW_CONTACT, 1],
+      [FeatureKey.REQUEST_CONTACT, 1],
       [FeatureKey.VIEW_PHONE_NUMBER, 1],
       [FeatureKey.VIEW_EMAIL_ADDRESS, 1],
       [FeatureKey.CHAT_ACCESS, 1],
@@ -1061,12 +1221,17 @@ export class MasterSeederService {
       [FeatureKey.VOICE_CALL, 1],
       [FeatureKey.VIEW_PROFILE_PHOTOS, 1],
       [FeatureKey.VIEW_PRIVATE_PHOTOS, 1],
+      [FeatureKey.REQUEST_PHOTOS, 1],
+      [FeatureKey.VIEW_PROFILE_VIDEOS, 1],
       [FeatureKey.ADVANCED_SEARCH, 1],
       [FeatureKey.ADVANCED_FILTERS, 1],
+      [FeatureKey.SEARCH_BY_INCOME, 1],
       [FeatureKey.UNLIMITED_SEARCH, -1],
       [FeatureKey.UNLIMITED_PROFILE_VIEWS, -1],
+      [FeatureKey.PROFILE_VIEWS, -1],
       [FeatureKey.WHO_VIEWED_ME, 1],
       [FeatureKey.PROFILE_ANALYTICS, 1],
+      [FeatureKey.DAILY_ACTIVITY_STATS, 1],
       [FeatureKey.TOP_IN_SEARCH, 1],
       [FeatureKey.SHOW_ON_HOME, 1],
       [FeatureKey.SMART_MATCHES, 1],
@@ -1077,10 +1242,17 @@ export class MasterSeederService {
       [FeatureKey.FAMILY_DETAILS, 1],
       [FeatureKey.PUSH_NOTIFICATIONS, 1],
       [FeatureKey.EMAIL_NOTIFICATIONS, 1],
+      [FeatureKey.MARKETING_NOTIFICATIONS, 1],
       [FeatureKey.AD_FREE_EXPERIENCE, 1],
       [FeatureKey.PROFILE_BOOST, 2],
       [FeatureKey.DAILY_BOOSTS, 1],
       [FeatureKey.PRIORITY_SUPPORT, 1],
+      [FeatureKey.MONTHLY_SUBSCRIPTION, 30],
+      [FeatureKey.QUARTERLY_SUBSCRIPTION, 90],
+      [FeatureKey.YEARLY_SUBSCRIPTION, 365],
+      [FeatureKey.AUTO_RENEWAL, 1],
+      [FeatureKey.GRACE_PERIOD, 3],
+      [FeatureKey.WALLET_SYSTEM, 1],
       [FeatureKey.REPORT_USER, 1],
       [FeatureKey.BLOCK_USERS, 1],
     ];
@@ -1157,6 +1329,7 @@ export class MasterSeederService {
       [FeatureKey.LIFESTYLE_PREFERENCES, 1],
 
       [FeatureKey.FAMILY_MANAGED_PROFILE, 1],
+      [FeatureKey.FAMILY_CONTACT_VISIBILITY, 1],
       [FeatureKey.PARENT_LOGIN, 1],
       [FeatureKey.GUARDIAN_ACCESS, 1],
       [FeatureKey.FAMILY_PREFERENCES, 1],
@@ -1227,6 +1400,16 @@ export class MasterSeederService {
         addFeature(planSlug, feature, value),
       );
     });
+
+    (
+      [
+        [FeatureKey.PROFILE_BOOST, 1],
+        [FeatureKey.ONE_TIME_BOOST_PURCHASE, 1],
+        [FeatureKey.SPOTLIGHT_PROFILE, 1],
+      ] as [FeatureKey, FeatureValue][]
+    ).forEach(([feature, value]) =>
+      addFeature('PROFILE_BOOST_24H', feature, value),
+    );
 
     // ==========================================
     // BULK OPERATIONS

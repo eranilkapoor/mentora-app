@@ -31,6 +31,14 @@ export class CreatePlanDto {
   durationDays!: number;
 
   @IsOptional()
+  @IsNumber()
+  trialDays?: number;
+
+  @IsOptional()
+  @IsBoolean()
+  autoRenewDefault?: boolean;
+
+  @IsOptional()
   @IsString()
   currency?: string;
 

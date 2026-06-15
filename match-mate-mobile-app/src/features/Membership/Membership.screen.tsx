@@ -38,12 +38,21 @@ export default function MembershipScreen(): React.ReactElement {
     isFetchingPlans,
   } = useMembershipData(activeTab);
 
-  const { handleCreateOrder, handleCreateBoostOrder, isCreatingOrder } =
-    useMembershipActions();
+  const {
+    handleCreateOrder,
+    handleCreateBoostOrder,
+    handleStartTrial,
+    isCreatingOrder,
+  } = useMembershipActions();
 
   const onCreateOrder = useCallback(() => {
+    if (selectedPlanItem?.isFree) return;
+    if ((selectedPlanItem?.source?.trialDays ?? 0) > 0) {
+      void handleStartTrial(selectedPlanItem);
+      return;
+    }
     setIsCheckoutOpen(true);
-  }, []);
+  }, [handleStartTrial, selectedPlanItem]);
 
   const onConfirmCheckout = useCallback(
     async (gateway: PaymentGateway) => {

@@ -26,6 +26,8 @@ export function MembershipCta({
   const { t } = useTranslation();
 
   const isLoading = isCreatingOrder || isFetchingPlans;
+  const isFreePlan = Boolean(selectedPlanItem?.isFree);
+  const hasTrial = Boolean(selectedPlanItem?.source?.trialDays);
 
   return (
     <View style={styles.ctaContainer}>
@@ -33,15 +35,20 @@ export function MembershipCta({
         <Text style={styles.ctaPlan}>{selectedPlanItem?.name ?? ''}</Text>
         <Text style={styles.ctaPrice}>{selectedPlanItem?.price ?? ''}</Text>
         <Text style={styles.ctaDuration}>
-          {tab === 'assisted'
-            ? t('membership.tab_assisted')
-            : t('membership.tab_self')}
+          {selectedPlanItem?.trialLabel ??
+            selectedPlanItem?.renewalLabel ??
+            (tab === 'assisted'
+              ? t('membership.tab_assisted')
+              : t('membership.tab_self'))}
         </Text>
       </View>
       <TouchableOpacity
-        style={[styles.ctaButton, isLoading && styles.ctaButtonDisabled]}
+        style={[
+          styles.ctaButton,
+          (isLoading || isFreePlan) && styles.ctaButtonDisabled,
+        ]}
         activeOpacity={0.85}
-        disabled={isLoading || !selectedPlanItem?.source?._id}
+        disabled={isLoading || isFreePlan || !selectedPlanItem?.source?._id}
         onPress={onCreateOrder}
         accessibilityRole="button"
         accessibilityLabel={t('membership.cta_get_plan', {
@@ -52,7 +59,15 @@ export function MembershipCta({
           <ActivityIndicator size="small" color={theme.colors.white} />
         ) : (
           <Text style={styles.ctaButtonText}>
-            {t('membership.cta_get_plan', { name: selectedPlanItem?.name })}
+            {isFreePlan
+              ? t('membership.cta_current_plan')
+              : hasTrial
+                ? t('membership.cta_start_trial', {
+                    days: selectedPlanItem?.source?.trialDays,
+                  })
+                : t('membership.cta_get_plan', {
+                    name: selectedPlanItem?.name,
+                  })}
           </Text>
         )}
       </TouchableOpacity>

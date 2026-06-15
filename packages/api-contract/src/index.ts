@@ -34,6 +34,8 @@ export interface MembershipPlanFeature {
     key?: string;
     name?: string;
     description?: string;
+    category?: string;
+    type?: "boolean" | "limit" | "quota" | "tier" | "duration";
   };
 }
 
@@ -46,8 +48,11 @@ export interface MembershipPlan {
   billingCycle: string;
   price: number;
   durationDays: number;
+  trialDays?: number;
+  autoRenewDefault?: boolean;
   currency: string;
   isPopular?: boolean;
+  sortOrder?: number;
   description?: string;
   features?: MembershipPlanFeature[];
 }
@@ -58,6 +63,7 @@ export interface ActiveSubscription {
   startDate: string;
   endDate: string;
   status: string;
+  trialEndsAt?: string;
   autoRenew?: boolean;
   cancelledAt?: string;
   cancelledReason?: string;

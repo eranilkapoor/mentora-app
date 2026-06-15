@@ -21,8 +21,11 @@ import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
+import { FeatureKey } from '@/common/enums';
+import { FeatureRequired } from '@/modules/subscriptions/decorators/feature.decorator';
+import { FeatureGuard } from '@/modules/subscriptions/guards/feature.guard';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, FeatureGuard)
 @Controller('profiles/media')
 export class MediaController {
   constructor(private readonly mediaService: MediaService) {}
@@ -40,6 +43,7 @@ export class MediaController {
   }
 
   @Post('images')
+  @FeatureRequired(FeatureKey.UPLOAD_PHOTOS)
   @UseInterceptors(FilesInterceptor('images', 10))
   @HttpCode(HttpStatus.CREATED)
   async uploadImages(
@@ -102,6 +106,7 @@ export class MediaController {
   }
 
   @Post('videos')
+  @FeatureRequired(FeatureKey.UPLOAD_VIDEOS)
   @UseInterceptors(
     FileFieldsInterceptor([
       { name: 'videos', maxCount: 1 },

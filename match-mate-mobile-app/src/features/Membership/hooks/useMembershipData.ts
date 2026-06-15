@@ -43,26 +43,40 @@ export function useMembershipData(activeTab: MembershipTab) {
       return;
     }
 
+    const activePlanId =
+      typeof activeSubscription?.planId === 'object'
+        ? activeSubscription.planId._id
+        : activeSubscription?.planId;
+
     const defaultPlan =
-      selfPlans.find((plan) => plan.best)?.id ?? selfPlans[0]?.id;
+      selfPlans.find((plan) => plan.id === activePlanId)?.id ??
+      selfPlans.find((plan) => plan.best)?.id ??
+      selfPlans[0]?.id;
 
     if (defaultPlan) {
       setSelectedPlans((prev) => ({ ...prev, self: defaultPlan }));
     }
-  }, [selfPlans, selectedPlans.self]);
+  }, [activeSubscription?.planId, selfPlans, selectedPlans.self]);
 
   useEffect(() => {
     if (selectedPlans.assisted || !assistedPlans.length) {
       return;
     }
 
+    const activePlanId =
+      typeof activeSubscription?.planId === 'object'
+        ? activeSubscription.planId._id
+        : activeSubscription?.planId;
+
     const defaultPlan =
-      assistedPlans.find((plan) => plan.best)?.id ?? assistedPlans[0]?.id;
+      assistedPlans.find((plan) => plan.id === activePlanId)?.id ??
+      assistedPlans.find((plan) => plan.best)?.id ??
+      assistedPlans[0]?.id;
 
     if (defaultPlan) {
       setSelectedPlans((prev) => ({ ...prev, assisted: defaultPlan }));
     }
-  }, [assistedPlans, selectedPlans.assisted]);
+  }, [activeSubscription?.planId, assistedPlans, selectedPlans.assisted]);
 
   const setSelectedPlan = (planId: string) => {
     setSelectedPlans((prev) => ({ ...prev, [activeTab]: planId }));
@@ -76,8 +90,8 @@ export function useMembershipData(activeTab: MembershipTab) {
     displayPlans.findIndex((p) => p.id === selectedPlan)
   );
   const featureRows = useMemo<DisplayFeatureRow[]>(
-    () => buildFeatureRows(displayPlans),
-    [displayPlans]
+    () => buildFeatureRows(displayPlans, 12, activeTab),
+    [activeTab, displayPlans]
   );
 
   const activePlanName =
