@@ -238,14 +238,7 @@ export default function RegisterScreen({
               {t('auth.register.have_account')}
             </Text>
             <TouchableOpacity
-              onPress={() => {
-                if (navigation.canGoBack()) {
-                  navigation.goBack();
-                  return;
-                }
-
-                navigation.navigate('Login');
-              }}
+              onPress={() => navigation.navigate('Login')}
               disabled={loading}
               activeOpacity={0.7}
               accessibilityRole="button"
