@@ -13,3 +13,11 @@
 13. On Matches Screen optin Curated should only show when there is any curated matches provided by admin or support team and it should be auto active on matches screen by default not recommonded else recommonded should be the first one and selected by default.
 14. Can we make home screen & Matches screen display like grid as it currently now or it should have an option to make it like swapie kind as we see in tinder. I mean matches diaplay can we have in 2 types one is grid based another is swipe based, Suggest me what do you think and what we can do to make it much better and our application as enteprise level.
 15. What you think about renaming matches screen to Discover & add one more bottom link like activity and on that screen we should show Matched, Shortlisted, Requested, Accepted and other activity kind of matches, also suggest how many bottom link should we have do you think we should move Profile Screen link on Membership Screen top Right bar and the by clicking on it we should see the profile and same we then go to screen from profile, just suggest us what we can do or improve to make our application much better in UI and interface level to make enterpise level application.
+16. Completly setup the sentry because we have created the sentry account and added the dsn in the eas.json.
+17. Search & Filters on Home & Matches screen are not looking good on Android it is going down below the bottom notch of the mobile defaut buttons, please fix it on all the devices properly.
+18. Send interest popup is not looking good on android it should be a toast informaton.
+19. On match detail screen bottom space between bottom bar and action buttuns is wiered not looking good fix it, also below space of report and block is also not proper fix it as well.
+20. Highest Qualification dropdown and onther dropdown similer to it not showing scrollable items only limited one.
+21. Keep Religion, Caste, Sub Cast & Height Strcit Match if user keep preferences jut i see not able to see the profiles on the basis of cast if he/she put in preferences.
+22. On Chat Reaction will only show when user will hover on the message or focus on it. Else it shouldn't show looks wiered.
+23. 
