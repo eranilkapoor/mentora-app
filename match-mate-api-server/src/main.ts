@@ -194,17 +194,40 @@ async function bootstrap(): Promise<void> {
     });
   }
 
-  const uploadsPath = path.join(process.cwd(), 'uploads');
-  app.useStaticAssets(uploadsPath, {
-    prefix: '/uploads',
-    maxAge: '7d',
-    etag: true,
-    lastModified: true,
-    setHeaders: (res: express.Response): void => {
-      res.setHeader('Access-Control-Allow-Origin', '*');
-      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-    },
-  });
+  const storageDriver = configService.get<string>('storage.driver', 'local');
+  const s3BaseUrl = configService
+    .get<string>('storage.awsS3BaseUrl', '')
+    .replace(/\/+$/, '');
+
+  if (storageDriver === 's3' && s3BaseUrl) {
+    app.use(
+      '/uploads',
+      (
+        req: express.Request,
+        res: express.Response,
+        next: express.NextFunction,
+      ) => {
+        if (req.method !== 'GET' && req.method !== 'HEAD') {
+          return next();
+        }
+
+        const key = req.path.replace(/^\/+/, '');
+        return res.redirect(302, `${s3BaseUrl}/${key}`);
+      },
+    );
+  } else {
+    const uploadsPath = path.join(process.cwd(), 'uploads');
+    app.useStaticAssets(uploadsPath, {
+      prefix: '/uploads',
+      maxAge: '7d',
+      etag: true,
+      lastModified: true,
+      setHeaders: (res: express.Response): void => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+      },
+    });
+  }
 
   const shutdownSignals: NodeJS.Signals[] = ['SIGINT', 'SIGTERM'];
   for (const signal of shutdownSignals) {
