@@ -1,6 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import {
   BadRequestException,
+  RequestMethod,
   ValidationPipe,
   VersioningType,
 } from '@nestjs/common';
@@ -31,6 +32,13 @@ const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 const sleep = (ms: number): Promise<void> =>
   new Promise((resolve) => setTimeout(resolve, ms));
+
+const setUploadHeaders = (res: {
+  setHeader(name: string, value: number | string | readonly string[]): unknown;
+}): void => {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+};
 
 async function shutdown(
   signal: string,
@@ -175,7 +183,14 @@ async function bootstrap(): Promise<void> {
     defaultVersion: apiVersion,
     prefix: false,
   });
-  app.setGlobalPrefix(apiPrefix);
+  app.setGlobalPrefix(apiPrefix, {
+    exclude: [
+      { path: 'privacy-policy', method: RequestMethod.GET },
+      { path: 'terms-conditions', method: RequestMethod.GET },
+      { path: 'community-guidelines', method: RequestMethod.GET },
+      { path: 'faqs', method: RequestMethod.GET },
+    ],
+  });
 
   if (env !== 'production') {
     const swaggerConfig = new DocumentBuilder()
@@ -199,9 +214,19 @@ async function bootstrap(): Promise<void> {
   const s3BaseUrl = configService
     .get<string>('storage.awsS3BaseUrl', '')
     .replace(/\/+$/, '');
+  const uploadsPath = path.join(process.cwd(), 'uploads');
 
   if (storageDriver === 's3' && s3BaseUrl) {
     const storageService = app.get(StorageService);
+    app.use(
+      '/uploads',
+      express.static(uploadsPath, {
+        maxAge: '7d',
+        etag: true,
+        lastModified: true,
+        setHeaders: setUploadHeaders,
+      }),
+    );
     app.use(
       '/uploads',
       async (
@@ -243,16 +268,12 @@ async function bootstrap(): Promise<void> {
       },
     );
   } else {
-    const uploadsPath = path.join(process.cwd(), 'uploads');
     app.useStaticAssets(uploadsPath, {
       prefix: '/uploads',
       maxAge: '7d',
       etag: true,
       lastModified: true,
-      setHeaders: (res: express.Response): void => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-      },
+      setHeaders: setUploadHeaders,
     });
   }
 

@@ -10,8 +10,10 @@ import ForgotPasswordScreen from '@/features/ForgotPassword/ForgotPassword.scree
 import ResetPasswordScreen from '@/features/ResetPassword/ResetPassword.screen';
 import MagicLoginScreen from '@/features/MagicLogin/MagicLogin.screen';
 import TwoFactorChallengeScreen from '@/features/TwoFactor/TwoFactorChallenge.screen';
-import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicy.screen';
-import TermsConditionsScreen from '@/features/TermsConditions/TermsConditions.screen';
+import {
+  PrivacyPolicyScreen,
+  TermsConditionsScreen,
+} from '@/features/StaticPage/staticPageScreens';
 import { AuthStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AuthStackParamList>();
@@ -30,14 +32,8 @@ export default function AuthStack(): React.ReactElement {
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
       <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
       <Stack.Screen name="MagicLogin" component={MagicLoginScreen} />
-      <Stack.Screen
-        name="PrivacyPolicy"
-        component={PrivacyPolicyScreen as React.ComponentType<object>}
-      />
-      <Stack.Screen
-        name="TermsConditions"
-        component={TermsConditionsScreen as React.ComponentType<object>}
-      />
+      <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
+      <Stack.Screen name="TermsConditions" component={TermsConditionsScreen} />
       <Stack.Screen
         name="TwoFactorChallenge"
         component={TwoFactorChallengeScreen}

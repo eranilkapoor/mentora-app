@@ -12,10 +12,12 @@ import NotificationSettingsScreen from '@/features/NotificationSettings/Notifica
 import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
 import SupportTicketsScreen from '@/features/HelpSupport/SupportTickets.screen';
 import SupportTicketDetailScreen from '@/features/HelpSupport/SupportTicketDetail.screen';
-import FaqsScreen from '@/features/HelpSupport/FaqsScreen';
-import CommunityGuidelinesScreen from '@/features/HelpSupport/CommunityGuidelines.screen';
-import PrivacyPolicyScreen from '@/features/PrivacyPolicy/PrivacyPolicy.screen';
-import TermsConditionsScreen from '@/features/TermsConditions/TermsConditions.screen';
+import {
+  CommunityGuidelinesScreen,
+  FaqsScreen,
+  PrivacyPolicyScreen,
+  TermsConditionsScreen,
+} from '@/features/StaticPage/staticPageScreens';
 import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
 import AccountSettingsScreen from '@/features/AccountSettings/AccountSettings.screen';
 import ChangeEmailPhoneScreen from '@/features/AccountSettings/ChangeEmailPhone.screen';

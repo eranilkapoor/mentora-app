@@ -18,6 +18,9 @@ import { PhysicalSection } from './sections/PhysicalSection';
 import { EducationSection } from './sections/EducationSection';
 import { FamilySection } from './sections/FamilySection';
 import { LifestyleSection } from './sections/LifestyleSection';
+import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
+
+const UPLOAD_VIDEOS_FEATURE = 'upload_videos';
 
 type Props = {
   navigation: NativeStackNavigationProp<SettingsStackParamList, 'EditProfile'>;
@@ -28,6 +31,9 @@ export default function EditProfileScreen({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
+  const { hasFeature: canUploadVideos } = usePlanFeatureAccess(
+    UPLOAD_VIDEOS_FEATURE
+  );
 
   const {
     profile,
@@ -96,21 +102,23 @@ export default function EditProfileScreen({
             {...sectionProps}
           />
 
-          <VideoIntroSection
-            videos={videos}
-            videosLoading={videosLoading}
-            videoUploading={sectionLoading === 'videos'}
-            onPickVideo={() => {
-              void pickVideoIntro();
-            }}
-            onSetPrimary={(mediaId) => {
-              void handleSetPrimaryVideo(mediaId);
-            }}
-            onRemove={(mediaId) => {
-              void handleRemoveVideoIntro(mediaId);
-            }}
-            {...sectionProps}
-          />
+          {canUploadVideos ? (
+            <VideoIntroSection
+              videos={videos}
+              videosLoading={videosLoading}
+              videoUploading={sectionLoading === 'videos'}
+              onPickVideo={() => {
+                void pickVideoIntro();
+              }}
+              onSetPrimary={(mediaId) => {
+                void handleSetPrimaryVideo(mediaId);
+              }}
+              onRemove={(mediaId) => {
+                void handleRemoveVideoIntro(mediaId);
+              }}
+              {...sectionProps}
+            />
+          ) : null}
 
           <PersonalSection
             personal={profile.personal}

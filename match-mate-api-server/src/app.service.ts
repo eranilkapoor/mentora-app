@@ -8,6 +8,10 @@ import {
   REDIS_PUB_CLIENT,
   REDIS_SUB_CLIENT,
 } from '@/common/cache/cache.constants';
+import {
+  getStaticPageHtml,
+  StaticPageSlug,
+} from '@/common/static-pages/static-page-renderer';
 
 export type HealthStatus = 'ok' | 'degraded';
 
@@ -78,6 +82,14 @@ export class AppService {
     </main>
   </body>
 </html>`;
+  }
+
+  getStaticHelpPage(
+    slug: StaticPageSlug,
+    theme?: string,
+    language?: string,
+  ): string {
+    return getStaticPageHtml(slug, theme, language);
   }
 
   markShuttingDown(): void {

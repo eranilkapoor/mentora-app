@@ -204,12 +204,24 @@ export class StorageService implements OnModuleInit {
         error: this.toErrorMeta(error),
       });
 
-      const errorName = error instanceof Error ? error.name : '';
+      if (this.isMissingS3Object(error)) {
+        throw new AppException(
+          ErrorCode.FILE_NOT_FOUND,
+          HttpStatus.NOT_FOUND,
+          null,
+          undefined,
+          {
+            provider: 's3',
+            operation: 'get_object',
+            bucket: this.bucket,
+            key: normalizedKey,
+          },
+        );
+      }
+
       throw new AppException(
         ErrorCode.STORAGE_SERVICE_FAILED,
-        errorName === 'NoSuchKey'
-          ? HttpStatus.NOT_FOUND
-          : HttpStatus.SERVICE_UNAVAILABLE,
+        HttpStatus.SERVICE_UNAVAILABLE,
         null,
         undefined,
         {
@@ -384,5 +396,20 @@ export class StorageService implements OnModuleInit {
     }
 
     return { message: String(error) };
+  }
+
+  private isMissingS3Object(error: unknown): boolean {
+    if (!(error instanceof Error)) return false;
+
+    const metadata =
+      '$metadata' in error && typeof error.$metadata === 'object'
+        ? (error.$metadata as { httpStatusCode?: number })
+        : undefined;
+
+    return (
+      error.name === 'NoSuchKey' ||
+      error.name === 'NotFound' ||
+      metadata?.httpStatusCode === HttpStatus.NOT_FOUND
+    );
   }
 }

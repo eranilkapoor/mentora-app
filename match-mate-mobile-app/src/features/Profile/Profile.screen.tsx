@@ -64,6 +64,9 @@ import {
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { resolveApiUrl } from '@/core/utils/config';
 import { InlineVideoPlayer } from '@/core/components/media/InlineVideoPlayer';
+import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
+
+const UPLOAD_VIDEOS_FEATURE = 'upload_videos';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -790,6 +793,9 @@ export default function ProfileScreen({
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
   const photoWidth = getResponsiveMediaWidth(width);
+  const { hasFeature: canUploadVideos } = usePlanFeatureAccess(
+    UPLOAD_VIDEOS_FEATURE
+  );
 
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [pdfAction, setPdfAction] = useState<PdfAction | null>(null);
@@ -848,6 +854,8 @@ export default function ProfileScreen({
   );
 
   const videoIntro = useMemo(() => {
+    if (!canUploadVideos) return null;
+
     const video = profileData.videoIntro;
     if (!video?.url) return null;
     return {
@@ -857,7 +865,7 @@ export default function ProfileScreen({
         ? (resolveApiUrl(video.thumbnailUrl) ?? video.thumbnailUrl)
         : undefined,
     };
-  }, [profileData.videoIntro]);
+  }, [canUploadVideos, profileData.videoIntro]);
 
   const profileSummary = useMemo(
     () =>

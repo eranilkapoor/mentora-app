@@ -1,4 +1,4 @@
-import { Controller, Get, Header, Res } from '@nestjs/common';
+import { Controller, Get, Header, Query, Res } from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { AppService } from './app.service';
@@ -47,5 +47,51 @@ export class AppController {
   @Header('Content-Type', 'text/html; charset=utf-8')
   accountDeletionInstructions() {
     return this.appService.getAccountDeletionInstructionsPage();
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('privacy-policy')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  privacyPolicy(@Query('theme') theme?: string, @Query('lang') lang?: string) {
+    return this.appService.getStaticHelpPage('privacy-policy', theme, lang);
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('terms-conditions')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  termsConditions(
+    @Query('theme') theme?: string,
+    @Query('lang') lang?: string,
+  ) {
+    return this.appService.getStaticHelpPage('terms-conditions', theme, lang);
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('community-guidelines')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  communityGuidelines(
+    @Query('theme') theme?: string,
+    @Query('lang') lang?: string,
+  ) {
+    return this.appService.getStaticHelpPage(
+      'community-guidelines',
+      theme,
+      lang,
+    );
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('faqs')
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  faqs(@Query('theme') theme?: string, @Query('lang') lang?: string) {
+    return this.appService.getStaticHelpPage('faqs', theme, lang);
   }
 }
