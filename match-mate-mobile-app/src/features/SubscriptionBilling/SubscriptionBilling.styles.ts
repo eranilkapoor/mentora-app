@@ -166,6 +166,18 @@ export const subscriptionBillingStyles = (
       lineHeight: 18,
       color: theme.colors.textMuted,
     },
+    benefitValue: {
+      marginTop: 6,
+      alignSelf: 'flex-start',
+      paddingHorizontal: 8,
+      paddingVertical: 3,
+      borderRadius: 999,
+      overflow: 'hidden',
+      backgroundColor: theme.colors.primaryLight,
+      color: theme.colors.primary,
+      fontSize: 11,
+      fontWeight: '800',
+    },
     badge: {
       ...StyleSheet.flatten(base.badge),
     },

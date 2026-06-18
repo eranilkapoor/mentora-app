@@ -23,7 +23,11 @@ import {
   SelectKey,
 } from './LocalizationSettings.types';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { setLocationSharing } from '@/store/slices/settings.slice';
+import {
+  Language,
+  setLanguage,
+  setLocationSharing,
+} from '@/store/slices/settings.slice';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -86,6 +90,14 @@ export default function LocalizationSettingsScreen({
     []
   );
 
+  const languageOptions = useMemo<SettingsOption<Language>[]>(
+    () => [
+      { value: 'en', label: t('language.english') },
+      { value: 'hi', label: t('language.hindi') },
+    ],
+    [t]
+  );
+
   const handleUpdate = useCallback(
     <K extends keyof LocalizationSettings>(
       key: K,
@@ -94,6 +106,14 @@ export default function LocalizationSettingsScreen({
       void updateLocalizationSettings({ [key]: value });
     },
     [updateLocalizationSettings]
+  );
+
+  const handleLanguageChange = useCallback(
+    (value: Language) => {
+      dispatch(setLanguage(value));
+      void updateLocalizationSettings({ appLanguage: value });
+    },
+    [dispatch, updateLocalizationSettings]
   );
 
   useEffect(() => {
@@ -155,7 +175,7 @@ export default function LocalizationSettingsScreen({
             })}
             value={currentLanguageLabel}
             isLast
-            onPress={() => navigation.navigate('Languages')}
+            onPress={() => setActiveSelect('language')}
           />
         </SettingsCard>
 
@@ -227,6 +247,14 @@ export default function LocalizationSettingsScreen({
         <View style={styles.footer} />
       </ScrollView>
 
+      <SettingsOptionSheet
+        visible={activeSelect === 'language'}
+        title={t('settings.localization.app_language')}
+        options={languageOptions}
+        selectedValue={currentLanguage}
+        onSelect={handleLanguageChange}
+        onClose={() => setActiveSelect(null)}
+      />
       <SettingsOptionSheet
         visible={activeSelect === 'region'}
         title={t('settings.localization.region_label')}

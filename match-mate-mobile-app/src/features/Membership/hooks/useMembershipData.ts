@@ -14,6 +14,17 @@ import {
   MembershipTab,
 } from '../Membership.types';
 
+const isFeatureEnabled = (value: unknown): boolean => {
+  if (value === true) return true;
+  if (typeof value === 'number') return value > 0 || value === -1;
+  if (typeof value === 'string') {
+    const normalized = value.trim().toLowerCase();
+    return !['', '0', 'false', 'no', 'none'].includes(normalized);
+  }
+
+  return false;
+};
+
 export function useMembershipData(activeTab: MembershipTab) {
   const { data: backendPlans = [], isFetching: isFetchingPlans } =
     useGetMembershipPlansQuery();
@@ -101,6 +112,16 @@ export function useMembershipData(activeTab: MembershipTab) {
   const boostPlan = backendPlans.find(
     (plan) => plan.planType === 'profile_boost'
   );
+  const activePlan =
+    typeof activeSubscription?.planId === 'object'
+      ? activeSubscription.planId
+      : null;
+  const canUseProfileBoost = Boolean(
+    activePlan?.features?.some(
+      (item) =>
+        item.featureId?.key === 'profile_boost' && isFeatureEnabled(item.value)
+    )
+  );
 
   return {
     displayPlans,
@@ -111,6 +132,7 @@ export function useMembershipData(activeTab: MembershipTab) {
     setSelectedPlan,
     selectedPlanItem,
     boostPlan,
+    canUseProfileBoost,
     selectedIndex,
     activePlanName,
     isFetchingPlans,

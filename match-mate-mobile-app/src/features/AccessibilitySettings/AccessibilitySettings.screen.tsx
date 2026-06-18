@@ -22,7 +22,8 @@ import {
   AccessibilitySettings,
   AccessibilitySettingsScreenProps,
 } from './AccessibilitySettings.types';
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { setTheme, ThemeMode } from '@/store/slices/settings.slice';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -34,11 +35,13 @@ export default function AccessibilitySettingsScreen({
 }: AccessibilitySettingsScreenProps): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
+  const dispatch = useAppDispatch();
   const themeMode = useAppSelector((state) => state.settings.theme);
 
   const { data, isLoading } = useGetAccessibilitySettingsQuery();
   const [update] = useUpdateAccessibilitySettingsMutation();
   const [fontSizeOpen, setFontSizeOpen] = useState(false);
+  const [themeOpen, setThemeOpen] = useState(false);
 
   const settings = data?.accessibility;
 
@@ -48,6 +51,15 @@ export default function AccessibilitySettingsScreen({
       { value: 'medium', label: t('settings.options.medium') },
       { value: 'large', label: t('settings.options.large') },
       { value: 'extra_large', label: t('settings.options.extra_large') },
+    ],
+    [t]
+  );
+
+  const themeOptions = useMemo<SettingsOption<ThemeMode>[]>(
+    () => [
+      { value: 'system', label: t('theme.system') },
+      { value: 'light', label: t('theme.light') },
+      { value: 'dark', label: t('theme.dark') },
     ],
     [t]
   );
@@ -74,6 +86,13 @@ export default function AccessibilitySettingsScreen({
       void update({ [key]: value });
     },
     [update]
+  );
+
+  const handleThemeChange = useCallback(
+    (value: ThemeMode) => {
+      dispatch(setTheme(value));
+    },
+    [dispatch]
   );
 
   if (isLoading || !data) {
@@ -129,7 +148,7 @@ export default function AccessibilitySettingsScreen({
             label={t('settings.theme')}
             sublabel={t('settings.theme_sub')}
             value={themeLabel}
-            onPress={() => navigation.navigate('Themes')}
+            onPress={() => setThemeOpen(true)}
           />
           <SettingsToggleItem
             icon="sun"
@@ -166,6 +185,15 @@ export default function AccessibilitySettingsScreen({
 
         <View style={styles.footer} />
       </ScrollView>
+
+      <SettingsOptionSheet
+        visible={themeOpen}
+        title={t('settings.theme')}
+        options={themeOptions}
+        selectedValue={themeMode}
+        onSelect={handleThemeChange}
+        onClose={() => setThemeOpen(false)}
+      />
 
       <SettingsOptionSheet
         visible={fontSizeOpen}

@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { showError, showSuccess } from '@/core/utils/toast';
 import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
 import {
   useRemoveShortlistedProfileMutation,
@@ -81,15 +82,15 @@ export function useMatchListActions(
       // Send interest
       try {
         await sendInterest({ receiverId: item.id }).unwrap();
-        Alert.alert(
-          t('matches.interest_sent_title'),
-          t('matches.interest_sent_message', { name: item.name })
-        );
+        showSuccess({
+          title: t('matches.interest_sent_title'),
+          message: t('matches.interest_sent_message', { name: item.name }),
+        });
       } catch {
-        Alert.alert(
-          t('matches.interest_failed_title'),
-          t('matches.try_again_message')
-        );
+        showError({
+          title: t('matches.interest_failed_title'),
+          message: t('matches.try_again_message'),
+        });
       }
     },
     [

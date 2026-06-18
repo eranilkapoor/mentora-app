@@ -13,6 +13,10 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import {
+  getApiErrorMessage,
+  getApiResponseMessage,
+} from '@/core/utils/apiMessage';
 import { useResetPasswordMutation } from '@/store/services/authApi.service';
 import { resetPasswordStyles } from './ResetPassword.styles';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
@@ -157,10 +161,14 @@ export default function ResetPasswordScreen({
       if (response.success) {
         setSuccess(true);
       } else {
-        setErrors({ error: t('auth.errors.reset_failed') });
+        setErrors({
+          error: getApiResponseMessage(t, response, 'auth.errors.reset_failed'),
+        });
       }
-    } catch {
-      setErrors({ error: t('auth.errors.network_error') });
+    } catch (error) {
+      setErrors({
+        error: getApiErrorMessage(t, error, 'auth.errors.reset_failed'),
+      });
     }
   }, [password, confirmPassword, accessToken, resetPassword, validate, t]);
 

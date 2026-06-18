@@ -92,8 +92,6 @@ export type SettingsStackParamList = {
   EditProfile: undefined;
   EditPreference: undefined;
   ChangePassword: undefined;
-  Languages: undefined;
-  Themes: undefined;
   NotificationSettings: undefined;
   HelpSupport: undefined;
   SupportTickets: undefined;

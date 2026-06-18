@@ -8,8 +8,6 @@ import { getSharedScreenOptions } from './sharedScreenOptions';
 import SettingsScreen from '@/features/Settings/Settings.screen';
 import EditPreferenceScreen from '@/features/EditPreference/EditPreference.screen';
 import ChangePasswordScreen from '@/features/ChangePassword/ChangePassword.screen';
-import LanguageScreen from '@/features/Language/Language.screen';
-import ThemeScreen from '@/features/Theme/Theme.screen';
 import NotificationSettingsScreen from '@/features/NotificationSettings/NotificationSettings.screen';
 import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
 import SupportTicketsScreen from '@/features/HelpSupport/SupportTickets.screen';
@@ -52,16 +50,6 @@ export default function SettingsStack(): React.ReactElement {
         name="ChangePassword"
         component={ChangePasswordScreen}
         options={{ title: t('settings.change_password') }}
-      />
-      <Stack.Screen
-        name="Languages"
-        component={LanguageScreen}
-        options={{ title: t('settings.language') }}
-      />
-      <Stack.Screen
-        name="Themes"
-        component={ThemeScreen}
-        options={{ title: t('settings.theme') }}
       />
       <Stack.Screen
         name="NotificationSettings"

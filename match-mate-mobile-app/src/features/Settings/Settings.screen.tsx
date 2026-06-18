@@ -34,6 +34,7 @@ import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useLogoutMutation } from '@/store/services/authApi.service';
 import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
 import { useGetMyProfileQuery } from '@/store/services/profileApi.service';
+import { User } from '@/core/types/api/user.types';
 import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
 import { SettingsScreenProps } from './Settings.types';
@@ -45,6 +46,17 @@ const clampProfileCompletion = (value?: number): number => {
   }
 
   return Math.min(100, Math.max(0, Math.round(value)));
+};
+
+const getUserSubtitle = (user: User | null | undefined, fallback: string) => {
+  if (user?.email) return user.email;
+
+  if (user?.phone?.phone) {
+    const countryCode = user.phone.countryCode ?? '';
+    return `${countryCode} ${user.phone.phone}`.trim();
+  }
+
+  return user?.userId ?? fallback;
 };
 
 export default function SettingsScreen({
@@ -166,7 +178,7 @@ export default function SettingsScreen({
             </Text>
 
             <Text style={styles.profileEmail}>
-              {user?.email ?? t('profile.tap_to_view')}
+              {getUserSubtitle(user, t('profile.tap_to_view'))}
             </Text>
 
             <View style={styles.progressWrapper}>

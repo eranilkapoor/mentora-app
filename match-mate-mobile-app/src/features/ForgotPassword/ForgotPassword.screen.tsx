@@ -20,6 +20,10 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 
 import { EMAIL_REGEX } from '@/core/constants';
+import {
+  getApiErrorMessage,
+  getApiResponseMessage,
+} from '@/core/utils/apiMessage';
 
 import { useForgotPasswordMutation } from '@/store/services/authApi.service';
 
@@ -83,14 +87,29 @@ export default function ForgotPasswordScreen({
     }
 
     try {
-      await forgotPassword({
+      const response = await forgotPassword({
         email: email.trim(),
       }).unwrap();
 
-      setSubmitted(true);
-    } catch {
+      if (response.success) {
+        setSubmitted(true);
+        return;
+      }
+
       setErrors({
-        error: t('auth.errors.network_error'),
+        error: getApiResponseMessage(
+          t,
+          response,
+          'auth.errors.forgot_password_failed'
+        ),
+      });
+    } catch (error) {
+      setErrors({
+        error: getApiErrorMessage(
+          t,
+          error,
+          'auth.errors.forgot_password_failed'
+        ),
       });
     }
   }, [email, forgotPassword, t, validate]);

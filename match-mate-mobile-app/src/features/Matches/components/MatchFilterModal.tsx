@@ -10,6 +10,7 @@ import {
   View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -58,6 +59,7 @@ export function MatchFilterModal({
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
 
   const updateFilter = <K extends keyof FilterState>(
     key: K,
@@ -79,7 +81,12 @@ export function MatchFilterModal({
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.filterModalOverlay}
       >
-        <View style={styles.filterModalSheet}>
+        <View
+          style={[
+            styles.filterModalSheet,
+            { paddingBottom: Math.max(insets.bottom + 12, 22) },
+          ]}
+        >
           {/* Handle */}
           <View style={styles.filterModalHandle} />
 

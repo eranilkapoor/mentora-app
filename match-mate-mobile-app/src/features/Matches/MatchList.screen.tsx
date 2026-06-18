@@ -38,6 +38,7 @@ import { MatchListToolbar } from './components/MatchListToolbar';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { useUpdateProfileLocationMutation } from '@/store/services/profileApi.service';
 import { useUpdateLocalizationSettingsMutation } from '@/store/services/localizationSettingsApi.service';
+import { useGetDiscoveryProfilesQuery } from '@/store/services/matchApi.service';
 import { setLocationSharing } from '@/store/slices/settings.slice';
 import { getDeviceId } from '@/core/utils/device';
 import { Storage } from '@/core/utils/storage';
@@ -114,8 +115,17 @@ export default function MatchListScreen({
   const [nearbyLocationReady, setNearbyLocationReady] = useState(true);
   const nearbyLocationInFlight = useRef(false);
   const nearbyPermissionPromptInFlight = useRef(false);
+  const userSelectedTab = useRef(false);
   const [updateProfileLocation] = useUpdateProfileLocationMutation();
   const [updateLocalizationSettings] = useUpdateLocalizationSettingsMutation();
+  const { data: curatedPreview } = useGetDiscoveryProfilesQuery({
+    type: 'curated',
+    page: 1,
+    limit: 1,
+  });
+  const hasCuratedMatches = Boolean(
+    (curatedPreview?.meta?.total ?? curatedPreview?.data?.length ?? 0) > 0
+  );
 
   const {
     visibleMatches,
@@ -179,22 +189,29 @@ export default function MatchListScreen({
 
   const tabs = useMemo(
     () =>
-      TAB_CONFIG.map((tab) => ({
+      TAB_CONFIG.filter(
+        (tab) => tab.key !== 'curated' || hasCuratedMatches
+      ).map((tab) => ({
         ...tab,
         count:
-          tab.key === 'matched'
-            ? acceptedMatches.length
-            : tab.key === 'shortlisted'
-              ? shortlistedMatches.length
-              : tab.key === 'requests'
-                ? requestMatches.length
-                : activeTab === tab.key
-                  ? matches.length
-                  : 0,
+          tab.key === 'curated'
+            ? (curatedPreview?.meta?.total ?? curatedPreview?.data?.length ?? 0)
+            : tab.key === 'matched'
+              ? acceptedMatches.length
+              : tab.key === 'shortlisted'
+                ? shortlistedMatches.length
+                : tab.key === 'requests'
+                  ? requestMatches.length
+                  : activeTab === tab.key
+                    ? matches.length
+                    : 0,
       })),
     [
       acceptedMatches.length,
       activeTab,
+      curatedPreview?.data?.length,
+      curatedPreview?.meta?.total,
+      hasCuratedMatches,
       matches.length,
       requestMatches.length,
       shortlistedMatches.length,
@@ -250,6 +267,8 @@ export default function MatchListScreen({
 
   const handleTabChange = useCallback(
     (key: TabKey) => {
+      userSelectedTab.current = true;
+
       if (key === 'nearby' && !locationSharing) {
         showConfirm({
           title: t('matches.nearby_location_enable_title'),
@@ -269,6 +288,23 @@ export default function MatchListScreen({
     },
     [enableNearbyLocationSharing, locationSharing, t]
   );
+
+  useEffect(() => {
+    if (userSelectedTab.current) {
+      return;
+    }
+
+    if (hasCuratedMatches && activeTab !== 'curated') {
+      setActiveTab('curated');
+      setPage(1);
+      return;
+    }
+
+    if (!hasCuratedMatches && activeTab === 'curated') {
+      setActiveTab('recommended');
+      setPage(1);
+    }
+  }, [activeTab, hasCuratedMatches]);
 
   useEffect(() => {
     if (activeTab !== 'nearby') {

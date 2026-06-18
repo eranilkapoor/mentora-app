@@ -129,20 +129,11 @@ export default function SecuritySettingsScreen({
             sublabel={t('settings.security.two_factor_sub')}
             value={
               settings?.twoFactorEnabled
-                ? t('common.enabled')
+                ? settings.twoFactorMethod
+                  ? t(`settings.options.${settings.twoFactorMethod}`)
+                  : t('common.enabled')
                 : t('common.disabled')
             }
-            onPress={() => navigation.navigate('TwoFactorSetup')}
-          />
-          <SettingsSelectItem
-            icon="smartphone"
-            label={t('settings.security.two_factor_method')}
-            value={
-              settings?.twoFactorMethod
-                ? t(`settings.options.${settings.twoFactorMethod}`)
-                : t('settings.options.none')
-            }
-            sublabel={t('settings.security.two_factor_method_sub')}
             onPress={() => navigation.navigate('TwoFactorSetup')}
           />
           <SettingsToggleItem

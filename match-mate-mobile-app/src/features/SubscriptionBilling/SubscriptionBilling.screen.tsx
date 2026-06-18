@@ -16,11 +16,13 @@ import {
   MembershipPlan,
   useCancelSubscriptionMutation,
   useGetBillingSummaryQuery,
+  useGetMembershipPlansQuery,
 } from '@/store/services/membershipApi.service';
 import { subscriptionBillingStyles } from './SubscriptionBilling.styles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showSuccess } from '@/core/utils/toast';
+import { formatPlanName } from '@/features/Membership/Membership.utils';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -55,10 +57,36 @@ const getPlanName = (
 
 const getPlanFeatures = (
   plan?: MembershipPlan | string
-): MembershipPlan['features'] => {
+): NonNullable<MembershipPlan['features']> => {
   if (!plan || typeof plan === 'string') return [];
 
   return plan.features ?? [];
+};
+
+const resolvePlan = (
+  plan: MembershipPlan | string | undefined,
+  plans: MembershipPlan[]
+): MembershipPlan | undefined => {
+  if (!plan) return undefined;
+  if (typeof plan !== 'string') return plan;
+
+  return plans.find((item) => item._id === plan || item.slug === plan);
+};
+
+const formatFeatureValue = (
+  value: NonNullable<MembershipPlan['features']>[number]['value'],
+  t: ReturnType<typeof useTranslation>['t']
+): string | undefined => {
+  if (typeof value === 'boolean') {
+    return value
+      ? t('membership.billing.included')
+      : t('membership.billing.not_included');
+  }
+
+  if (value === -1) return t('membership.billing.unlimited');
+  if (value === undefined || value === null || value === '') return undefined;
+
+  return String(value);
 };
 
 function StatusBadge({
@@ -210,16 +238,10 @@ function BenefitRow({
   const { t } = useTranslation();
   const title =
     feature.featureId?.name ??
-    feature.featureId?.key ??
+    (feature.featureId?.key ? formatPlanName(feature.featureId.key) : null) ??
     t('membership.billing.plan_benefit');
-  const value =
-    typeof feature.value === 'boolean'
-      ? feature.value
-        ? t('membership.billing.included')
-        : t('membership.billing.not_included')
-      : feature.value !== undefined
-        ? String(feature.value)
-        : feature.featureId?.description;
+  const value = formatFeatureValue(feature.value, t);
+  const description = feature.featureId?.description;
 
   return (
     <View style={[styles.benefitRow, isLast && styles.benefitRowLast]}>
@@ -228,7 +250,10 @@ function BenefitRow({
       </View>
       <View style={styles.benefitContent}>
         <Text style={styles.benefitTitle}>{title}</Text>
-        {value ? <Text style={styles.benefitSubtitle}>{value}</Text> : null}
+        {description ? (
+          <Text style={styles.benefitSubtitle}>{description}</Text>
+        ) : null}
+        {value ? <Text style={styles.benefitValue}>{value}</Text> : null}
       </View>
     </View>
   );
@@ -241,23 +266,32 @@ export default function SubscriptionBillingScreen({
   const { t } = useTranslation();
   const appNavigation = useNavigation<AppNavigationProp>();
   const { data, isLoading, refetch } = useGetBillingSummaryQuery();
+  const { data: plans = [] } = useGetMembershipPlansQuery();
   const [cancelSubscription, { isLoading: isCancellingRenewal }] =
     useCancelSubscriptionMutation();
+  const resolvedCurrentPlan = useMemo(
+    () => resolvePlan(data?.currentPlan?.planId, plans),
+    [data?.currentPlan?.planId, plans]
+  );
 
   const currentPlanName = useMemo(
     () =>
       getPlanName(
-        data?.currentPlan?.planId,
+        resolvedCurrentPlan ?? data?.currentPlan?.planId,
         t('membership.billing.free_plan'),
         t('membership.billing.membership_plan')
       ),
-    [data?.currentPlan?.planId, t]
+    [data?.currentPlan?.planId, resolvedCurrentPlan, t]
   );
   const currentPlanFeatures = useMemo(
-    () => getPlanFeatures(data?.currentPlan?.planId) ?? [],
-    [data?.currentPlan?.planId]
+    () => getPlanFeatures(resolvedCurrentPlan ?? data?.currentPlan?.planId),
+    [data?.currentPlan?.planId, resolvedCurrentPlan]
   );
   const currentStatus = data?.currentPlan?.status ?? 'free';
+  const isTrialActive = Boolean(data?.currentPlan?.trialEndsAt);
+  const paymentProvider =
+    data?.currentPlan?.paymentProvider ??
+    data?.payments.find((payment) => payment.status === 'success')?.gateway;
 
   const handleCancelRenewal = useCallback(() => {
     showConfirm({
@@ -371,6 +405,30 @@ export default function SubscriptionBillingScreen({
             </View>
             <View style={styles.summaryTile}>
               <Text style={styles.label}>
+                {t('membership.billing.billing_cycle')}
+              </Text>
+              <Text style={styles.value}>
+                {resolvedCurrentPlan?.billingCycle ??
+                  t('membership.billing.not_applicable')}
+              </Text>
+            </View>
+            <View style={styles.summaryTile}>
+              <Text style={styles.label}>
+                {t('membership.billing.trial_status')}
+              </Text>
+              <Text style={styles.value}>
+                {isTrialActive
+                  ? t('membership.billing.trial_until', {
+                      date: formatDate(
+                        data.currentPlan?.trialEndsAt,
+                        t('common.not_available')
+                      ),
+                    })
+                  : t('membership.billing.no_active_trial')}
+              </Text>
+            </View>
+            <View style={styles.summaryTile}>
+              <Text style={styles.label}>
                 {t('membership.billing.valid_until_label')}
               </Text>
               <Text style={styles.value}>
@@ -386,6 +444,26 @@ export default function SubscriptionBillingScreen({
               </Text>
               <Text style={styles.value}>
                 {data.billing.autoRenew ? t('common.on') : t('common.off')}
+              </Text>
+            </View>
+            <View style={styles.summaryTile}>
+              <Text style={styles.label}>
+                {t('membership.billing.payment_provider')}
+              </Text>
+              <Text style={styles.value}>
+                {paymentProvider
+                  ? String(paymentProvider).replace(/_/g, ' ')
+                  : t('membership.billing.not_connected')}
+              </Text>
+            </View>
+            <View style={styles.summaryTile}>
+              <Text style={styles.label}>
+                {t('membership.billing.reconciliation')}
+              </Text>
+              <Text style={styles.value}>
+                {paymentProvider
+                  ? t('membership.billing.provider_synced')
+                  : t('membership.billing.provider_not_synced')}
               </Text>
             </View>
           </View>

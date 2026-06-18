@@ -33,6 +33,7 @@ export default function MembershipScreen(): React.ReactElement {
     setSelectedPlan,
     selectedPlanItem,
     boostPlan,
+    canUseProfileBoost,
     selectedIndex,
     activePlanName = 'Free',
     isFetchingPlans,
@@ -139,7 +140,7 @@ export default function MembershipScreen(): React.ReactElement {
           />
         )}
 
-        {boostPlan ? (
+        {boostPlan && canUseProfileBoost ? (
           <View style={styles.boostCard}>
             <View style={styles.boostIcon}>
               <Feather name="zap" size={18} color={theme.colors.primary} />
