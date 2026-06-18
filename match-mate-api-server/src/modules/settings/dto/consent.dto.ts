@@ -5,7 +5,7 @@ import {
   IsString,
   MaxLength,
 } from 'class-validator';
-import { ConsentType } from '../schemas/user-consent.schema';
+import { ConsentType } from '../enums/user-consent.enum';
 
 export class RecordConsentDto {
   @IsEnum(ConsentType)

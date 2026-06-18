@@ -52,8 +52,8 @@ import {
 import {
   Media,
   MediaDocument,
-  MediaStatus,
 } from '@/modules/profiles/schemas/media/media.schema';
+import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
 import {
   AccountSetting,
   AccountSettingDocument,

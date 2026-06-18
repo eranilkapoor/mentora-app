@@ -14,12 +14,14 @@ import { ErrorCode } from '@/common/constants';
 import { AppException } from '@/common/exceptions/app.exception';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
 import {
-  ActivityAction,
-  ActivityCategory,
   ActivityLog,
   ActivityLogDocument,
-  ActivityPlatform,
 } from '@/modules/profiles/schemas/settings/activity-logs.schema';
+import {
+  ActivityAction,
+  ActivityCategory,
+  ActivityPlatform,
+} from '@/modules/profiles/enums/activity-log.enums';
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
 import { UserRepository } from '../repositories/user.repository';
 import { UserDocument } from '../schemas/user.schema';

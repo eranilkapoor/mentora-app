@@ -10,6 +10,7 @@ import {
 import { ChatRepository } from '../repositories/chat.repository';
 import { ChatRoomDocument } from '../schemas/chat-room.schema';
 import { ChatRoomStatus } from '../enums/chat.enums';
+import { CommunicationAccess } from '@/modules/settings/enums/settings-preferences.enums';
 
 @Injectable()
 export class ChatAccessService {
@@ -82,8 +83,9 @@ export class ChatAccessService {
     const communicationSettingsRows =
       await this.repo.findCommunicationSettingsByUserIds([targetUserId]);
     const targetCommunicationSettings = communicationSettingsRows[0];
-    const rule = targetCommunicationSettings?.whoCanMessage ?? 'all';
-    if (rule === 'all') {
+    const rule =
+      targetCommunicationSettings?.whoCanMessage ?? CommunicationAccess.ALL;
+    if (rule === CommunicationAccess.ALL) {
       return;
     }
 

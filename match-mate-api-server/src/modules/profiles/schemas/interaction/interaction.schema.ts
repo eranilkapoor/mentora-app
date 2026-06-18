@@ -2,12 +2,7 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
 import { InteractionType } from '../../enums/interaction-type.enum';
-
-export enum InteractionStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-}
+import { InteractionStatus } from '../../enums/interaction-status.enum';
 
 @Schema({ collection: COLLECTION_NAMES.INTERACTION, timestamps: true })
 export class Interaction {

@@ -23,6 +23,14 @@ export const SUPPORT_TICKET_STATUSES = [
   'closed',
 ] as const;
 
+export const SUPPORT_TICKET_MESSAGE_AUTHOR_TYPES = [
+  'user',
+  'agent',
+  'system',
+] as const;
+
 export type SupportTicketCategory = (typeof SUPPORT_TICKET_CATEGORIES)[number];
 export type SupportTicketPriority = (typeof SUPPORT_TICKET_PRIORITIES)[number];
 export type SupportTicketStatus = (typeof SUPPORT_TICKET_STATUSES)[number];
+export type SupportTicketMessageAuthorType =
+  (typeof SUPPORT_TICKET_MESSAGE_AUTHOR_TYPES)[number];

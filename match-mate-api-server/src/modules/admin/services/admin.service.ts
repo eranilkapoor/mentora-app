@@ -2,7 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { AdminRepository } from '../repositories/admin.repository';
 import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
-import { BroadcastDto, BroadcastTarget } from '../dto/broadcast.dto';
+import { BroadcastDto } from '../dto/broadcast.dto';
+import { BroadcastTarget } from '../enums/broadcast.enums';
 import { AdminQueryDto } from '../dto/admin-query.dto';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { UserDocument } from '@/modules/auth/schemas/user.schema';
@@ -13,13 +14,13 @@ import {
 import {
   Media,
   MediaDocument,
-  MediaModerationStatus,
 } from '@/modules/profiles/schemas/media/media.schema';
+import { MediaModerationStatus } from '@/modules/profiles/enums/profile-media.enums';
 import {
   Verification,
   VerificationDocument,
-  VerificationStatus,
 } from '@/modules/safety/schemas/verification.schema';
+import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 import {
   UserReport,
   UserReportDocument,

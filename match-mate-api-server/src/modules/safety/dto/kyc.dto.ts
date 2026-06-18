@@ -2,7 +2,7 @@ import { IsIn, IsOptional, IsString, MaxLength } from 'class-validator';
 import {
   VerificationProvider,
   VerificationStatus,
-} from '../schemas/verification.schema';
+} from '../enums/verification.enums';
 
 export class SubmitKycDto {
   @IsOptional()

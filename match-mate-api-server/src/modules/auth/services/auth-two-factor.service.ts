@@ -14,14 +14,17 @@ import {
   SecuritySetting,
   SecuritySettingDocument,
 } from '@/modules/settings/schemas/security-setting.schema';
+import { TwoFactorMethod } from '@/modules/settings/enums/settings-preferences.enums';
 
-type TwoFactorMethod = 'sms' | 'authenticator';
+type TwoFactorChallengeMethod =
+  | TwoFactorMethod.SMS
+  | TwoFactorMethod.AUTHENTICATOR;
 
 type TwoFactorChallenge = {
   userId: string;
   provider: AuthProvider;
   source: string;
-  method: TwoFactorMethod;
+  method: TwoFactorChallengeMethod;
   createdAt: string;
 };
 
@@ -43,17 +46,17 @@ export class AuthTwoFactorService {
     const user = await this.userModel.findById(userId).lean().exec();
     const invalidSms =
       settings.twoFactorEnabled &&
-      settings.twoFactorMethod === 'sms' &&
+      settings.twoFactorMethod === TwoFactorMethod.SMS &&
       (!user || !this.hasVerifiedPhone(user));
     const invalidMethod =
       settings.twoFactorEnabled &&
-      settings.twoFactorMethod !== 'sms' &&
-      settings.twoFactorMethod !== 'authenticator';
+      settings.twoFactorMethod !== TwoFactorMethod.SMS &&
+      settings.twoFactorMethod !== TwoFactorMethod.AUTHENTICATOR;
 
     if (invalidSms || invalidMethod) {
       await this.disableInvalidTwoFactor(userId);
       settings.twoFactorEnabled = false;
-      settings.twoFactorMethod = 'none';
+      settings.twoFactorMethod = TwoFactorMethod.NONE;
     }
 
     return {
@@ -114,7 +117,7 @@ export class AuthTwoFactorService {
       {
         $set: {
           twoFactorEnabled: true,
-          twoFactorMethod: 'authenticator',
+          twoFactorMethod: TwoFactorMethod.AUTHENTICATOR,
           totpEnabledAt: new Date(),
           recoveryCodeHashes,
           recoveryCodesGeneratedAt: new Date(),
@@ -124,7 +127,7 @@ export class AuthTwoFactorService {
 
     return {
       enabled: true,
-      method: 'authenticator',
+      method: TwoFactorMethod.AUTHENTICATOR,
       recoveryCodes,
     };
   }
@@ -154,14 +157,14 @@ export class AuthTwoFactorService {
       {
         $set: {
           twoFactorEnabled: true,
-          twoFactorMethod: 'sms',
+          twoFactorMethod: TwoFactorMethod.SMS,
         },
         $setOnInsert: { userId: new Types.ObjectId(userId) },
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
 
-    return { enabled: true, method: 'sms' };
+    return { enabled: true, method: TwoFactorMethod.SMS };
   }
 
   async disable(userId: string, code?: string) {
@@ -169,7 +172,7 @@ export class AuthTwoFactorService {
 
     if (
       settings.twoFactorEnabled &&
-      settings.twoFactorMethod === 'authenticator'
+      settings.twoFactorMethod === TwoFactorMethod.AUTHENTICATOR
     ) {
       if (
         !code ||
@@ -188,12 +191,12 @@ export class AuthTwoFactorService {
       {
         $set: {
           twoFactorEnabled: false,
-          twoFactorMethod: 'none',
+          twoFactorMethod: TwoFactorMethod.NONE,
         },
       },
     );
 
-    return { enabled: false, method: 'none' };
+    return { enabled: false, method: TwoFactorMethod.NONE };
   }
 
   async regenerateRecoveryCodes(userId: string, code: string) {
@@ -225,25 +228,28 @@ export class AuthTwoFactorService {
 
   async beginChallenge(userId: string, provider: AuthProvider, source: string) {
     const settings = await this.getOrCreateSecurity(userId);
-    if (!settings.twoFactorEnabled || settings.twoFactorMethod === 'none') {
+    if (
+      !settings.twoFactorEnabled ||
+      settings.twoFactorMethod === TwoFactorMethod.NONE
+    ) {
       return null;
     }
 
     if (
-      settings.twoFactorMethod !== 'sms' &&
-      settings.twoFactorMethod !== 'authenticator'
+      settings.twoFactorMethod !== TwoFactorMethod.SMS &&
+      settings.twoFactorMethod !== TwoFactorMethod.AUTHENTICATOR
     ) {
       return null;
     }
 
     const method = settings.twoFactorMethod;
-    if (source === 'login-phone-otp' && method === 'sms') {
+    if (source === 'login-phone-otp' && method === TwoFactorMethod.SMS) {
       return null;
     }
 
     const challengeId = randomUUID();
 
-    if (method === 'sms') {
+    if (method === TwoFactorMethod.SMS) {
       const user = await this.userModel.findById(userId).lean().exec();
       if (!user || !this.hasVerifiedPhone(user)) {
         await this.disableInvalidTwoFactor(userId);
@@ -298,7 +304,7 @@ export class AuthTwoFactorService {
           HttpStatus.UNAUTHORIZED,
         );
       }
-    } else if (challenge.method === 'authenticator') {
+    } else if (challenge.method === TwoFactorMethod.AUTHENTICATOR) {
       if (
         !code ||
         !settings.totpSecret ||
@@ -309,7 +315,7 @@ export class AuthTwoFactorService {
           HttpStatus.UNAUTHORIZED,
         );
       }
-    } else if (challenge.method === 'sms') {
+    } else if (challenge.method === TwoFactorMethod.SMS) {
       const user = await this.userModel
         .findById(challenge.userId)
         .lean()
@@ -433,7 +439,7 @@ export class AuthTwoFactorService {
       {
         $set: {
           twoFactorEnabled: false,
-          twoFactorMethod: 'none',
+          twoFactorMethod: TwoFactorMethod.NONE,
         },
       },
     );

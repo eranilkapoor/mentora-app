@@ -1,22 +1,20 @@
 import {
   IsBoolean,
-  IsIn,
+  IsEnum,
   IsMongoId,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
-
-export type VisibilityLevel =
-  | 'everyone'
-  | 'accepted_matches'
-  | 'contacts_only'
-  | 'no_one';
+import {
+  ProfileVisibility,
+  VisibilityLevel,
+} from '../enums/settings-preferences.enums';
 
 export class UpdatePrivacySettingsDto {
   @IsOptional()
-  @IsIn(['public', 'private', 'contacts_only', 'premium_only'])
-  profileVisibility?: string;
+  @IsEnum(ProfileVisibility)
+  profileVisibility?: ProfileVisibility;
 
   @IsOptional() @IsBoolean() incognitoMode?: boolean;
   @IsOptional() @IsBoolean() showOnlyToPremium?: boolean;
@@ -26,7 +24,7 @@ export class UpdatePrivacySettingsDto {
   @IsOptional() @IsBoolean() showExactAge?: boolean;
 
   @IsOptional()
-  @IsIn(['everyone', 'accepted_matches', 'contacts_only', 'no_one'])
+  @IsEnum(VisibilityLevel)
   showPhotosTo?: VisibilityLevel;
 
   @IsOptional() @IsBoolean() blurPhotosForUnmatched?: boolean;
@@ -34,7 +32,7 @@ export class UpdatePrivacySettingsDto {
   @IsOptional() @IsBoolean() showOnlineStatus?: boolean;
 
   @IsOptional()
-  @IsIn(['everyone', 'accepted_matches', 'contacts_only', 'no_one'])
+  @IsEnum(VisibilityLevel)
   showLastSeen?: VisibilityLevel;
 }
 

@@ -24,15 +24,15 @@ import {
 import {
   Media,
   MediaDocument,
-  MediaStatus,
 } from '@/modules/profiles/schemas/media/media.schema';
+import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
 import { MediaType } from '@/common/enums';
 import { ChatRealtimeService } from '@/modules/chat/services/chat-realtime.service';
 import {
-  ActivityCategory,
   ActivityLog,
   ActivityLogDocument,
 } from '@/modules/profiles/schemas/settings/activity-logs.schema';
+import { ActivityCategory } from '@/modules/profiles/enums/activity-log.enums';
 import { SettingsRepository } from '../repositories/settings.repository';
 import {
   UpdatePrivacySettingsDto,

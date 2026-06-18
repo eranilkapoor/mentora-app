@@ -1,12 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { Media, MediaDocument } from '../schemas/media/media.schema';
 import {
-  Media,
-  MediaDocument,
   MediaModerationStatus,
   MediaStatus,
-} from '../schemas/media/media.schema';
+} from '../enums/profile-media.enums';
 import { MediaType } from '@/common/enums';
 
 export interface CreateMediaInput {

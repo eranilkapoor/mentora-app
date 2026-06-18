@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
+import { AccessibilityFontSize } from '../enums/settings-preferences.enums';
 
 @Schema({
   collection: COLLECTION_NAMES.ACCESSIBILITY_SETTING,
@@ -12,10 +13,10 @@ export class AccessibilitySetting {
 
   @Prop({
     type: String,
-    enum: ['small', 'medium', 'large', 'extra_large'],
-    default: 'medium',
+    enum: AccessibilityFontSize,
+    default: AccessibilityFontSize.MEDIUM,
   })
-  fontSize!: string;
+  fontSize!: AccessibilityFontSize;
 
   @Prop({ default: false }) highContrastMode!: boolean;
   @Prop({ default: false }) reduceAnimations!: boolean;

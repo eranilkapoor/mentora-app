@@ -12,13 +12,10 @@ import {
 import {
   Media,
   MediaDocument,
-  MediaStatus,
 } from '@/modules/profiles/schemas/media/media.schema';
-import {
-  Interest,
-  InterestDocument,
-  InterestStatus,
-} from '../schemas/interest.schema';
+import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
+import { Interest, InterestDocument } from '../schemas/interest.schema';
+import { InterestStatus } from '../enums/match.enums';
 import { Match, MatchDocument } from '../schemas/match.schema';
 
 //  Explicit lean types

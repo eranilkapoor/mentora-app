@@ -1,6 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
+import {
+  NOTIFICATION_DEVICE_PLATFORMS,
+  NotificationDevicePlatform,
+} from '../notification.constants';
 
 @Schema({
   collection: COLLECTION_NAMES.NOTIFICATION_DEVICE_TOKEN,
@@ -19,9 +23,9 @@ export class NotificationDeviceToken {
   @Prop({
     required: true,
     trim: true,
-    enum: ['ios', 'android', 'web', 'unknown'],
+    enum: NOTIFICATION_DEVICE_PLATFORMS,
   })
-  platform!: 'ios' | 'android' | 'web' | 'unknown';
+  platform!: NotificationDevicePlatform;
 
   @Prop({ default: true, index: true })
   isActive!: boolean;

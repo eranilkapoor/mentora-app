@@ -1,14 +1,21 @@
-import { Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  HeadBucketCommand,
+  S3Client,
+  S3ClientConfig,
+} from '@aws-sdk/client-s3';
 import { Upload } from '@aws-sdk/lib-storage';
 import * as fs from 'fs';
 import * as path from 'path';
 import { v4 as uuidv4 } from 'uuid';
 import { AppLogger } from '@/common/logger/logger.service';
+import { ErrorCode } from '@/common/constants';
+import { AppException } from '@/common/exceptions/app.exception';
 
 @Injectable()
-export class StorageService {
+export class StorageService implements OnModuleInit {
   private readonly isS3: boolean;
   private s3Client: S3Client | null = null;
   private readonly bucket: string;
@@ -23,27 +30,56 @@ export class StorageService {
     this.isS3 =
       this.configService.getOrThrow<string>('storage.driver') === 's3';
     this.bucket = this.configService.getOrThrow<string>('storage.awsS3Bucket');
-    this.s3BaseUrl = this.configService.getOrThrow<string>(
-      'storage.awsS3BaseUrl',
+    this.s3BaseUrl = this.normalizeBaseUrl(
+      this.configService.getOrThrow<string>('storage.awsS3BaseUrl'),
     );
     this.apiBaseUrl = this.configService.getOrThrow<string>('api.baseUrl');
     this.publicBaseUrl = this.apiBaseUrl.replace(/\/api(?:\/v\d+)?\/?$/i, '');
 
     if (this.isS3) {
-      this.s3Client = new S3Client({
+      const s3Config: S3ClientConfig = {
         region: this.configService.getOrThrow<string>('storage.awsRegion'),
-        credentials: {
-          accessKeyId: this.configService.getOrThrow<string>(
-            'storage.awsAccessKeyId',
-          ),
-          secretAccessKey: this.configService.getOrThrow<string>(
-            'storage.awsSecretAccessKey',
-          ),
-        },
+      };
+      const credentials = this.getExplicitS3Credentials();
+
+      if (credentials) {
+        s3Config.credentials = credentials;
+      }
+
+      this.s3Client = new S3Client(s3Config);
+      this.logger.log('Storage driver: S3', {
+        credentialsProvider: credentials
+          ? 'environment'
+          : 'aws-default-provider-chain',
       });
-      this.logger.log('Storage driver: S3');
     } else {
       this.logger.log('Storage driver: Local');
+    }
+  }
+
+  async onModuleInit(): Promise<void> {
+    if (!this.isS3 || !this.s3Client) return;
+
+    try {
+      await this.s3Client.send(new HeadBucketCommand({ Bucket: this.bucket }));
+      this.logger.log('S3 bucket access verified', { bucket: this.bucket });
+    } catch (error) {
+      this.logger.error('S3 bucket access verification failed', undefined, {
+        bucket: this.bucket,
+        region: this.configService.get<string>('storage.awsRegion'),
+        error: this.toErrorMeta(error),
+      });
+      throw new AppException(
+        ErrorCode.STORAGE_SERVICE_FAILED,
+        HttpStatus.SERVICE_UNAVAILABLE,
+        null,
+        undefined,
+        {
+          provider: 's3',
+          operation: 'head_bucket',
+          bucket: this.bucket,
+        },
+      );
     }
   }
 
@@ -94,21 +130,41 @@ export class StorageService {
     filename: string,
     folder: string,
   ): Promise<{ filename: string; url: string }> {
-    const key = `${folder}/${filename}`;
+    const key = this.buildKey(folder, filename);
 
-    const upload = new Upload({
-      client: this.s3Client!,
-      params: {
-        Bucket: this.bucket,
-        Key: key,
-        Body: file.buffer,
-        ContentType: file.mimetype,
-        // Remove ACL if your bucket doesn't allow public ACLs
-        // ACL: 'public-read',
-      },
-    });
+    try {
+      const upload = new Upload({
+        client: this.s3Client!,
+        params: {
+          Bucket: this.bucket,
+          Key: key,
+          Body: file.buffer,
+          ContentType: file.mimetype,
+        },
+      });
 
-    await upload.done();
+      await upload.done();
+    } catch (error) {
+      this.logger.error('S3 upload failed', undefined, {
+        bucket: this.bucket,
+        key,
+        contentType: file.mimetype,
+        size: file.size,
+        error: this.toErrorMeta(error),
+      });
+      throw new AppException(
+        ErrorCode.STORAGE_SERVICE_FAILED,
+        HttpStatus.SERVICE_UNAVAILABLE,
+        null,
+        undefined,
+        {
+          provider: 's3',
+          operation: 'put_object',
+          bucket: this.bucket,
+          key,
+        },
+      );
+    }
 
     const url = `${this.s3BaseUrl}/${key}`;
     this.logger.log(` Uploaded to S3: ${url}`);
@@ -118,15 +174,36 @@ export class StorageService {
 
   private async deleteFromS3(filename: string, folder: string): Promise<void> {
     if (!this.s3Client) return;
+    const key = this.buildKey(folder, filename);
 
-    await this.s3Client.send(
-      new DeleteObjectCommand({
-        Bucket: this.bucket,
-        Key: `${folder}/${filename}`,
-      }),
-    );
+    try {
+      await this.s3Client.send(
+        new DeleteObjectCommand({
+          Bucket: this.bucket,
+          Key: key,
+        }),
+      );
+    } catch (error) {
+      this.logger.error('S3 delete failed', undefined, {
+        bucket: this.bucket,
+        key,
+        error: this.toErrorMeta(error),
+      });
+      throw new AppException(
+        ErrorCode.STORAGE_SERVICE_FAILED,
+        HttpStatus.SERVICE_UNAVAILABLE,
+        null,
+        undefined,
+        {
+          provider: 's3',
+          operation: 'delete_object',
+          bucket: this.bucket,
+          key,
+        },
+      );
+    }
 
-    this.logger.log(` Deleted from S3: ${folder}/${filename}`);
+    this.logger.log(` Deleted from S3: ${key}`);
   }
 
   //  Local Internals
@@ -160,5 +237,50 @@ export class StorageService {
       await fs.promises.unlink(filePath);
       this.logger.log(` Deleted local file: ${filePath}`);
     }
+  }
+
+  private buildKey(folder: string, filename: string): string {
+    return `${folder}/${filename}`
+      .replace(/\\/g, '/')
+      .replace(/^\/+/, '')
+      .replace(/\/{2,}/g, '/');
+  }
+
+  private normalizeBaseUrl(url: string): string {
+    return url.replace(/\/+$/, '');
+  }
+
+  private getExplicitS3Credentials():
+    | { accessKeyId: string; secretAccessKey: string }
+    | undefined {
+    const accessKeyId = this.configService.get<string>(
+      'storage.awsAccessKeyId',
+    );
+    const secretAccessKey = this.configService.get<string>(
+      'storage.awsSecretAccessKey',
+    );
+
+    if (!accessKeyId || !secretAccessKey) {
+      return undefined;
+    }
+
+    return { accessKeyId, secretAccessKey };
+  }
+
+  private toErrorMeta(error: unknown): Record<string, unknown> {
+    if (error instanceof Error) {
+      const metadata =
+        '$metadata' in error && typeof error.$metadata === 'object'
+          ? error.$metadata
+          : undefined;
+
+      return {
+        name: error.name,
+        message: error.message,
+        metadata,
+      };
+    }
+
+    return { message: String(error) };
   }
 }

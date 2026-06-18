@@ -2,19 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
 import { MediaType, MimeType } from '@/common/enums';
-
-export enum MediaStatus {
-  ACTIVE = 'active',
-  DELETED = 'deleted',
-  PROCESSING = 'processing',
-}
-
-export enum MediaModerationStatus {
-  APPROVED = 'approved',
-  FLAGGED = 'flagged',
-  REJECTED = 'rejected',
-  PENDING = 'pending',
-}
+import {
+  MediaModerationStatus,
+  MediaStatus,
+} from '../../enums/profile-media.enums';
 
 @Schema({ collection: COLLECTION_NAMES.MEDIA, timestamps: true })
 export class Media {

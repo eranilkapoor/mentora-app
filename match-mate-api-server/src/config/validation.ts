@@ -2,6 +2,16 @@ import * as Joi from 'joi';
 
 const envString = Joi.string().trim();
 const optionalString = envString.empty('');
+const placeholderSecretValues = [
+  'your_access_key',
+  'your_secret_key',
+  'change_me',
+  'changeme',
+  'placeholder',
+  'replace_me',
+  'REPLACE_ME',
+];
+const optionalAwsCredential = envString.empty(['', ...placeholderSecretValues]);
 const hostSchema = Joi.alternatives().try(
   Joi.string().hostname(),
   Joi.string().ip(),
@@ -366,12 +376,12 @@ export const envValidationSchema = Joi.object({
 
   AWS_ACCESS_KEY_ID: optionalString.when('STORAGE_DRIVER', {
     is: 's3',
-    then: envString.required(),
+    then: optionalAwsCredential.optional(),
   }),
 
   AWS_SECRET_ACCESS_KEY: optionalString.when('STORAGE_DRIVER', {
     is: 's3',
-    then: envString.required(),
+    then: optionalAwsCredential.optional(),
   }),
 
   AWS_S3_BUCKET: s3BucketSchema.empty('').when('STORAGE_DRIVER', {
@@ -593,6 +603,7 @@ export const envValidationSchema = Joi.object({
   .custom(validateAuthProviderConfig)
   .custom(validateNotificationProviders)
   .custom(validateProductionProviders)
+  .and('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY')
   .prefs({ abortEarly: false, convert: true })
   .messages({
     'any.custom': '{{#customMessage}}',

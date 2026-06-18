@@ -1,12 +1,10 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
-
-export type VisibilityLevel =
-  | 'everyone'
-  | 'accepted_matches'
-  | 'contacts_only'
-  | 'no_one';
+import {
+  ProfileVisibility,
+  VisibilityLevel,
+} from '../enums/settings-preferences.enums';
 
 @Schema({ collection: COLLECTION_NAMES.PRIVACY_SETTING, timestamps: true })
 export class PrivacySetting {
@@ -16,10 +14,10 @@ export class PrivacySetting {
   //  Profile visibility
   @Prop({
     type: String,
-    enum: ['public', 'private', 'contacts_only', 'premium_only'],
-    default: 'public',
+    enum: ProfileVisibility,
+    default: ProfileVisibility.PUBLIC,
   })
-  profileVisibility!: string;
+  profileVisibility!: ProfileVisibility;
 
   @Prop({ default: false }) incognitoMode!: boolean;
   @Prop({ default: false }) showOnlyToPremium!: boolean;
@@ -33,8 +31,8 @@ export class PrivacySetting {
   //  Media
   @Prop({
     type: String,
-    enum: ['everyone', 'accepted_matches', 'contacts_only', 'no_one'],
-    default: 'everyone',
+    enum: VisibilityLevel,
+    default: VisibilityLevel.EVERYONE,
   })
   showPhotosTo!: VisibilityLevel;
 
@@ -45,8 +43,8 @@ export class PrivacySetting {
   @Prop({ default: true }) showOnlineStatus!: boolean;
   @Prop({
     type: String,
-    enum: ['everyone', 'accepted_matches', 'contacts_only', 'no_one'],
-    default: 'everyone',
+    enum: VisibilityLevel,
+    default: VisibilityLevel.EVERYONE,
   })
   showLastSeen!: VisibilityLevel;
 }

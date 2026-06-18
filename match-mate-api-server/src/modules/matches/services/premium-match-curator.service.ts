@@ -10,8 +10,8 @@ import { CurateMatchDto } from '../dto/curate-match.dto';
 import {
   CuratedMatch,
   CuratedMatchDocument,
-  CuratedMatchStatus,
 } from '../schemas/curated-match.schema';
+import { CuratedMatchStatus } from '../enums/match.enums';
 import {
   LeanProfile,
   MatchDiscoveryRepository,

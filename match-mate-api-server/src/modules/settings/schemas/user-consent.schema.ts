@@ -1,14 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
-
-export enum ConsentType {
-  PRIVACY_POLICY = 'privacy_policy',
-  TERMS = 'terms',
-  COMMUNITY_GUIDELINES = 'community_guidelines',
-  DATA_PROCESSING = 'data_processing',
-  MARKETING = 'marketing',
-}
+import { ConsentType } from '../enums/user-consent.enum';
 
 @Schema({
   collection: COLLECTION_NAMES.USER_CONSENT,

@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
+import { DateFormat } from '../enums/settings-preferences.enums';
 
 @Schema({ collection: COLLECTION_NAMES.LOCALIZATION_SETTING, timestamps: true })
 export class LocalizationSetting {
@@ -14,10 +15,10 @@ export class LocalizationSetting {
   @Prop({ default: false }) shareLocation!: boolean;
   @Prop({
     type: String,
-    enum: ['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'],
-    default: 'DD/MM/YYYY',
+    enum: DateFormat,
+    default: DateFormat.DAY_MONTH_YEAR,
   })
-  dateFormat!: string;
+  dateFormat!: DateFormat;
   @Prop({ default: 'INR' }) currency!: string;
 }
 

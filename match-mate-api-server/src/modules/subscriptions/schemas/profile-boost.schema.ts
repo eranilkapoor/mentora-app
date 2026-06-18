@@ -1,12 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
-
-export enum ProfileBoostStatus {
-  ACTIVE = 'active',
-  EXPIRED = 'expired',
-  CANCELLED = 'cancelled',
-}
+import { ProfileBoostStatus } from '../enums/profile-boost-status.enum';
 
 @Schema({ collection: COLLECTION_NAMES.PROFILE_BOOST, timestamps: true })
 export class ProfileBoost {

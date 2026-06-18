@@ -4,6 +4,8 @@ import { COLLECTION_NAMES } from '@/common/constants';
 import {
   NOTIFICATION_CATEGORIES,
   NOTIFICATION_PRIORITIES,
+  NOTIFICATION_TEMPLATE_STATUSES,
+  NotificationTemplateStatus,
 } from '../notification.constants';
 
 export type NotificationChannelConfig = {
@@ -18,8 +20,6 @@ export type NotificationDeliveryRules = {
   maxPerDay?: number;
   quietHours?: boolean;
 };
-
-export type NotificationStatus = 'draft' | 'active' | 'archived';
 
 @Schema({
   collection: COLLECTION_NAMES.NOTIFICATION_TEMPLATE,
@@ -202,11 +202,11 @@ export class NotificationTemplate {
   // mandatory notifications ignore user opt-out
 
   @Prop({
-    enum: ['draft', 'active', 'archived'],
+    enum: NOTIFICATION_TEMPLATE_STATUSES,
     default: 'active',
     index: true,
   })
-  status!: NotificationStatus;
+  status!: NotificationTemplateStatus;
 
   @Prop({
     default: true,

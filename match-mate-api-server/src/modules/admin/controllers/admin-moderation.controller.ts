@@ -20,7 +20,7 @@ import { MediaService } from '@/modules/profiles/services/media.service';
 import { ReviewMediaDto } from '@/modules/profiles/dto/media-review.dto';
 import { KycService } from '@/modules/safety/services/kyc.service';
 import { ReviewKycDto } from '@/modules/safety/dto/kyc.dto';
-import { VerificationStatus } from '@/modules/safety/schemas/verification.schema';
+import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 import { AdminService } from '../services/admin.service';
 import { AdminAuditService } from '../services/admin-audit.service';
 import { ChatService } from '@/modules/chat/services/chat.service';

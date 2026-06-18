@@ -11,9 +11,11 @@ import { StorageService } from '@/modules/storage/services/storage.service';
 import {
   Verification,
   VerificationDocument,
+} from '../schemas/verification.schema';
+import {
   VerificationProvider,
   VerificationStatus,
-} from '../schemas/verification.schema';
+} from '../enums/verification.enums';
 
 @Injectable()
 export class KycService {

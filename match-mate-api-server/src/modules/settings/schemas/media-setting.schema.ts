@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
+import { MediaQuality } from '../enums/settings-preferences.enums';
 
 @Schema({ collection: COLLECTION_NAMES.MEDIA_SETTING, timestamps: true })
 export class MediaSetting {
@@ -11,10 +12,10 @@ export class MediaSetting {
   @Prop({ default: false }) videoAutoplay!: boolean;
   @Prop({
     type: String,
-    enum: ['low', 'medium', 'high'],
-    default: 'medium',
+    enum: MediaQuality,
+    default: MediaQuality.MEDIUM,
   })
-  mediaQuality!: string;
+  mediaQuality!: MediaQuality;
   @Prop({ default: false }) blurPrivatePhotos!: boolean;
   @Prop({ default: true }) showMediaInGallery!: boolean;
 }

@@ -19,12 +19,14 @@ import {
   AnalyticsPlatform,
 } from '@/modules/analytics/enums/analytics-event.enum';
 import {
-  ActivityAction,
-  ActivityCategory,
   ActivityLog,
   ActivityLogDocument,
-  ActivityPlatform,
 } from '../schemas/settings/activity-logs.schema';
+import {
+  ActivityAction,
+  ActivityCategory,
+  ActivityPlatform,
+} from '../enums/activity-log.enums';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
 import { PersonalityBadge, ProfileStatus, Qualification } from '@/common/enums';
 import { InjectModel } from '@nestjs/mongoose';

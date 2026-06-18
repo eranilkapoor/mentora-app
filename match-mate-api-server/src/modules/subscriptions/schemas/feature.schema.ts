@@ -2,6 +2,10 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, SchemaTypes } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
 import { FeatureKey } from '@/common/enums';
+import {
+  FEATURE_VALUE_TYPES,
+  FeatureValueType,
+} from '../enums/feature-value-type.enum';
 
 @Schema({ collection: COLLECTION_NAMES.FEATURE, timestamps: true })
 export class Feature {
@@ -18,10 +22,10 @@ export class Feature {
   description?: string;
 
   @Prop({
-    enum: ['boolean', 'limit', 'quota', 'tier', 'duration'],
+    enum: FEATURE_VALUE_TYPES,
     default: 'boolean',
   })
-  type!: 'boolean' | 'limit' | 'quota' | 'tier' | 'duration';
+  type!: FeatureValueType;
 
   @Prop({ type: SchemaTypes.Mixed, default: null })
   defaultValue?: string | boolean | number | null;

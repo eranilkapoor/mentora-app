@@ -1,12 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
-
-export enum InterestStatus {
-  PENDING = 'pending',
-  ACCEPTED = 'accepted',
-  REJECTED = 'rejected',
-}
+import { InterestStatus } from '../enums/match.enums';
 
 @Schema({ collection: COLLECTION_NAMES.INTEREST, timestamps: true })
 export class Interest {

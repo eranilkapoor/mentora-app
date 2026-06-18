@@ -5,13 +5,14 @@ import {
   IsString,
   Length,
 } from 'class-validator';
+import { TwoFactorMethod } from '../enums/settings-preferences.enums';
 
 export class UpdateSecuritySettingsDto {
   @IsOptional() @IsBoolean() twoFactorEnabled?: boolean;
 
   @IsOptional()
-  @IsEnum(['none', 'sms', 'email', 'authenticator'])
-  twoFactorMethod?: string;
+  @IsEnum(TwoFactorMethod)
+  twoFactorMethod?: TwoFactorMethod;
 
   @IsOptional() @IsBoolean() biometricEnabled?: boolean;
   @IsOptional() @IsBoolean() appPinEnabled?: boolean;

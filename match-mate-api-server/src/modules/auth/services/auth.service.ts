@@ -40,12 +40,14 @@ import {
 } from '@/modules/subscriptions/schemas/subscription.schema';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
 import {
-  ActivityAction,
-  ActivityCategory,
   ActivityLog,
   ActivityLogDocument,
-  ActivityPlatform,
 } from '@/modules/profiles/schemas/settings/activity-logs.schema';
+import {
+  ActivityAction,
+  ActivityCategory,
+  ActivityPlatform,
+} from '@/modules/profiles/enums/activity-log.enums';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { AnalyticsService } from '../../analytics/services/analytics.service';
 import {
@@ -73,9 +75,11 @@ import {
 import {
   Media,
   MediaDocument,
+} from '@/modules/profiles/schemas/media/media.schema';
+import {
   MediaModerationStatus,
   MediaStatus,
-} from '@/modules/profiles/schemas/media/media.schema';
+} from '@/modules/profiles/enums/profile-media.enums';
 
 interface TokenAttachUser {
   _id: { toString(): string };

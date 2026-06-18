@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
+import { CommunicationAccess } from '../enums/settings-preferences.enums';
 
 @Schema({
   collection: COLLECTION_NAMES.COMMUNICATION_SETTING,
@@ -12,17 +13,17 @@ export class CommunicationSetting {
 
   @Prop({
     type: String,
-    enum: ['all', 'matches_only', 'contacts_only', 'no_one'],
-    default: 'all',
+    enum: CommunicationAccess,
+    default: CommunicationAccess.ALL,
   })
-  whoCanMessage!: string;
+  whoCanMessage!: CommunicationAccess;
 
   @Prop({
     type: String,
-    enum: ['all', 'matches_only', 'contacts_only', 'no_one'],
-    default: 'matches_only',
+    enum: CommunicationAccess,
+    default: CommunicationAccess.MATCHES_ONLY,
   })
-  whoCanCall!: string;
+  whoCanCall!: CommunicationAccess;
 
   @Prop({ default: true }) showReadReceipts!: boolean;
   @Prop({ default: true }) showTypingIndicator!: boolean;

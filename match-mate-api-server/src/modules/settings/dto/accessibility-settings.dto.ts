@@ -1,9 +1,10 @@
 import { IsBoolean, IsEnum, IsOptional } from 'class-validator';
+import { AccessibilityFontSize } from '../enums/settings-preferences.enums';
 
 export class UpdateAccessibilitySettingsDto {
   @IsOptional()
-  @IsEnum(['small', 'medium', 'large', 'extra_large'])
-  fontSize?: string;
+  @IsEnum(AccessibilityFontSize)
+  fontSize?: AccessibilityFontSize;
 
   @IsOptional() @IsBoolean() highContrastMode?: boolean;
   @IsOptional() @IsBoolean() reduceAnimations?: boolean;

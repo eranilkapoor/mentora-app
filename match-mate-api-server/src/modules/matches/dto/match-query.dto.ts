@@ -9,12 +9,7 @@ import {
   Min,
 } from 'class-validator';
 import { Caste, OccupationType, Qualification, Religion } from '@/common/enums';
-
-export enum MatchFeedType {
-  RECOMMENDED = 'recommended',
-  NEW = 'new',
-  NEARBY = 'nearby',
-}
+export { MatchFeedType } from '../enums/match.enums';
 
 export class MatchQueryDto {
   @IsOptional()

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MediaType } from '@/common/enums';
-import { MediaModerationStatus } from '../schemas/media/media.schema';
+import { MediaModerationStatus } from '../enums/profile-media.enums';
 
 export interface MediaModerationResult {
   status: MediaModerationStatus;

@@ -3,9 +3,11 @@ import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
 import {
   SUPPORT_TICKET_CATEGORIES,
+  SUPPORT_TICKET_MESSAGE_AUTHOR_TYPES,
   SUPPORT_TICKET_PRIORITIES,
   SUPPORT_TICKET_STATUSES,
   SupportTicketCategory,
+  SupportTicketMessageAuthorType,
   SupportTicketPriority,
   SupportTicketStatus,
 } from '../support.constants';
@@ -15,8 +17,12 @@ export class SupportTicketMessage {
   @Prop({ type: Types.ObjectId, required: true })
   authorId!: Types.ObjectId;
 
-  @Prop({ type: String, enum: ['user', 'agent', 'system'], default: 'user' })
-  authorType!: 'user' | 'agent' | 'system';
+  @Prop({
+    type: String,
+    enum: SUPPORT_TICKET_MESSAGE_AUTHOR_TYPES,
+    default: 'user',
+  })
+  authorType!: SupportTicketMessageAuthorType;
 
   @Prop({ required: true, trim: true, maxlength: 4000 })
   message!: string;

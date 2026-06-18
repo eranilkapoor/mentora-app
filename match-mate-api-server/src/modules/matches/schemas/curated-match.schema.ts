@@ -1,12 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
-
-export enum CuratedMatchStatus {
-  ACTIVE = 'active',
-  DISMISSED = 'dismissed',
-  EXPIRED = 'expired',
-}
+import { CuratedMatchStatus } from '../enums/match.enums';
 
 @Schema({ collection: COLLECTION_NAMES.CURATED_MATCH, timestamps: true })
 export class CuratedMatch {

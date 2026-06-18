@@ -1,19 +1,20 @@
 import {
   IsBoolean,
-  IsIn,
+  IsEnum,
   IsOptional,
   IsString,
   MaxLength,
 } from 'class-validator';
+import { CommunicationAccess } from '../enums/settings-preferences.enums';
 
 export class UpdateCommunicationSettingsDto {
   @IsOptional()
-  @IsIn(['all', 'matches_only', 'contacts_only', 'no_one'])
-  whoCanMessage?: string;
+  @IsEnum(CommunicationAccess)
+  whoCanMessage?: CommunicationAccess;
 
   @IsOptional()
-  @IsIn(['all', 'matches_only', 'contacts_only', 'no_one'])
-  whoCanCall?: string;
+  @IsEnum(CommunicationAccess)
+  whoCanCall?: CommunicationAccess;
 
   @IsOptional() @IsBoolean() showReadReceipts?: boolean;
   @IsOptional() @IsBoolean() showTypingIndicator?: boolean;

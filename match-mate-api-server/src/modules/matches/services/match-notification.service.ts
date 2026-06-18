@@ -3,7 +3,7 @@ import { Types } from 'mongoose';
 
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
 import { LeanProfile, MatchRepository } from '../repositories/match.repository';
-import { InterestStatus } from '../schemas/interest.schema';
+import { InterestStatus } from '../enums/match.enums';
 
 type InterestLike = {
   _id: Types.ObjectId;

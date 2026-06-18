@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
+import { TwoFactorMethod } from '../enums/settings-preferences.enums';
 
 @Schema({ _id: false })
 class LoginDevice {
@@ -20,10 +21,10 @@ export class SecuritySetting {
   @Prop({ default: false }) twoFactorEnabled!: boolean;
   @Prop({
     type: String,
-    enum: ['none', 'sms', 'email', 'authenticator'],
-    default: 'none',
+    enum: TwoFactorMethod,
+    default: TwoFactorMethod.NONE,
   })
-  twoFactorMethod!: string;
+  twoFactorMethod!: TwoFactorMethod;
 
   @Prop()
   totpSecret?: string;

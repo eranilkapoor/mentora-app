@@ -4,8 +4,8 @@ import { Model, Types } from 'mongoose';
 import {
   ProfileBoost,
   ProfileBoostDocument,
-  ProfileBoostStatus,
 } from '../schemas/profile-boost.schema';
+import { ProfileBoostStatus } from '../enums/profile-boost-status.enum';
 
 @Injectable()
 export class ProfileBoostService {

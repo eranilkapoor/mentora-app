@@ -1,10 +1,11 @@
 import {
   IsArray,
   IsBoolean,
-  IsIn,
+  IsEnum,
   IsOptional,
   IsString,
 } from 'class-validator';
+import { DateFormat } from '../enums/settings-preferences.enums';
 
 export class UpdateLocalizationSettingsDto {
   @IsOptional() @IsString() appLanguage?: string;
@@ -19,8 +20,8 @@ export class UpdateLocalizationSettingsDto {
   @IsOptional() @IsBoolean() shareLocation?: boolean;
 
   @IsOptional()
-  @IsIn(['DD/MM/YYYY', 'MM/DD/YYYY', 'YYYY-MM-DD'])
-  dateFormat?: string;
+  @IsEnum(DateFormat)
+  dateFormat?: DateFormat;
 
   @IsOptional() @IsString() currency?: string;
 }

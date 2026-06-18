@@ -2,11 +2,8 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FlattenMaps, Model, Types } from 'mongoose';
 import { AppLogger } from '@/common/logger/logger.service';
-import {
-  Interest,
-  InterestDocument,
-  InterestStatus,
-} from '../schemas/interest.schema';
+import { Interest, InterestDocument } from '../schemas/interest.schema';
+import { InterestStatus } from '../enums/match.enums';
 import { Match, MatchDocument } from '../schemas/match.schema';
 import {
   Profile,
@@ -19,13 +16,13 @@ import {
 import {
   Media,
   MediaDocument,
-  MediaStatus,
 } from '@/modules/profiles/schemas/media/media.schema';
+import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
 import {
   Interaction,
   InteractionDocument,
-  InteractionStatus,
 } from '@/modules/profiles/schemas/interaction/interaction.schema';
+import { InteractionStatus } from '@/modules/profiles/enums/interaction-status.enum';
 import { InteractionType } from '@/modules/profiles/enums/interaction-type.enum';
 
 //  Explicit lean types

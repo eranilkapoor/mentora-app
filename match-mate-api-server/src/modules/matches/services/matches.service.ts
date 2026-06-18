@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { MatchRepository } from '../repositories/match.repository';
-import { InterestStatus } from '../schemas/interest.schema';
+import { InterestStatus } from '../enums/match.enums';
 import { SettingsService } from '@/modules/settings/services/settings.service';
 import { ErrorCode } from '@/common/constants';
 import { FeatureKey } from '@/common/enums';
