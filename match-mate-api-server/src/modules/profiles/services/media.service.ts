@@ -94,7 +94,11 @@ export class MediaService {
 
   async getImages(userId: string) {
     try {
-      return await this.mediaRepo.findAllByUser(userId, MediaType.IMAGE);
+      const images = await this.mediaRepo.findAllByUser(
+        userId,
+        MediaType.IMAGE,
+      );
+      return this.withReadableUrls(images);
     } catch (error) {
       if (error instanceof AppException) throw error;
       return throwBadRequest(ErrorCode.PROFILE_IMAGE_NOT_FOUND);
@@ -230,7 +234,11 @@ export class MediaService {
 
   async getVideos(userId: string) {
     try {
-      return await this.mediaRepo.findAllByUser(userId, MediaType.VIDEO);
+      const videos = await this.mediaRepo.findAllByUser(
+        userId,
+        MediaType.VIDEO,
+      );
+      return this.withReadableUrls(videos);
     } catch (error) {
       if (error instanceof AppException) throw error;
       return throwBadRequest(ErrorCode.FILE_NOT_FOUND);
@@ -429,5 +437,21 @@ export class MediaService {
 
   private extractFilename(url: string) {
     return url.split('?')[0]?.split('/').pop();
+  }
+
+  private withReadableUrls<T extends { url: string; thumbnailUrl?: string }>(
+    media: T[],
+  ): T[] {
+    return media.map((item) => ({
+      ...item,
+      url: this.storageService.getReadableUrl(item.url) ?? item.url,
+      ...(item.thumbnailUrl
+        ? {
+            thumbnailUrl:
+              this.storageService.getReadableUrl(item.thumbnailUrl) ??
+              item.thumbnailUrl,
+          }
+        : {}),
+    }));
   }
 }

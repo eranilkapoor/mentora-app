@@ -25,6 +25,7 @@ import {
   REDIS_SUB_CLIENT,
 } from '@/common/cache/cache.constants';
 import { AppService } from './app.service';
+import { StorageService } from './modules/storage/services/storage.service';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
@@ -200,9 +201,10 @@ async function bootstrap(): Promise<void> {
     .replace(/\/+$/, '');
 
   if (storageDriver === 's3' && s3BaseUrl) {
+    const storageService = app.get(StorageService);
     app.use(
       '/uploads',
-      (
+      async (
         req: express.Request,
         res: express.Response,
         next: express.NextFunction,
@@ -212,7 +214,32 @@ async function bootstrap(): Promise<void> {
         }
 
         const key = req.path.replace(/^\/+/, '');
-        return res.redirect(302, `${s3BaseUrl}/${key}`);
+        try {
+          const object = await storageService.getS3Object(key);
+          res.setHeader('Access-Control-Allow-Origin', '*');
+          res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+          res.setHeader(
+            'Cache-Control',
+            object.cacheControl ?? 'public, max-age=604800',
+          );
+
+          if (object.contentType) {
+            res.setHeader('Content-Type', object.contentType);
+          }
+
+          if (typeof object.contentLength === 'number') {
+            res.setHeader('Content-Length', String(object.contentLength));
+          }
+
+          if (req.method === 'HEAD') {
+            return res.end();
+          }
+
+          object.body.on('error', next);
+          return object.body.pipe(res);
+        } catch (error) {
+          return next(error);
+        }
       },
     );
   } else {

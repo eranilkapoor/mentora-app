@@ -230,6 +230,8 @@ export const baseApi = createApi({
     'Preference',
     'Profile',
     'ProfileMedia',
+    'ProfileMediaImages',
+    'ProfileMediaVideos',
     'Auth',
     'AccountSettings',
     'PrivacySettings',

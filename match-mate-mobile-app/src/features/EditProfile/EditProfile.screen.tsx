@@ -99,7 +99,7 @@ export default function EditProfileScreen({
           <VideoIntroSection
             videos={videos}
             videosLoading={videosLoading}
-            videoUploading={imageUploading}
+            videoUploading={sectionLoading === 'videos'}
             onPickVideo={() => {
               void pickVideoIntro();
             }}

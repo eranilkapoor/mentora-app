@@ -24,7 +24,14 @@ export const profileApi = baseApi.injectEndpoints({
         body,
         formData: true,
       }),
-      invalidatesTags: ['Auth', 'Profile', 'ProfileMedia', 'Preference'],
+      invalidatesTags: [
+        'Auth',
+        'Profile',
+        'ProfileMedia',
+        'ProfileMediaImages',
+        'ProfileMediaVideos',
+        'Preference',
+      ],
     }),
 
     getMyProfile: builder.query<ApiResponse<ProfileData>, void>({
@@ -103,12 +110,12 @@ export const profileApi = baseApi.injectEndpoints({
 
     getMyProfileMediaImages: builder.query<ApiResponse<ProfileImage[]>, void>({
       query: () => '/profiles/media/images',
-      providesTags: ['ProfileMedia'],
+      providesTags: ['ProfileMediaImages'],
     }),
 
     getMyProfileMediaVideos: builder.query<ApiResponse<ProfileImage[]>, void>({
       query: () => '/profiles/media/videos',
-      providesTags: ['ProfileMedia'],
+      providesTags: ['ProfileMediaVideos'],
     }),
 
     addProfileMediaImages: builder.mutation<
@@ -121,7 +128,7 @@ export const profileApi = baseApi.injectEndpoints({
         body,
         formData: true,
       }),
-      invalidatesTags: ['ProfileMedia', 'Profile'],
+      invalidatesTags: ['ProfileMediaImages', 'Profile'],
     }),
 
     setPrimaryProfileMediaImage: builder.mutation<
@@ -132,7 +139,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/profiles/media/images/${mediaId}/primary`,
         method: 'PATCH',
       }),
-      invalidatesTags: ['ProfileMedia', 'Profile'],
+      invalidatesTags: ['ProfileMediaImages', 'Profile'],
     }),
 
     removeProfileMediaImage: builder.mutation<
@@ -143,7 +150,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/profiles/media/images/${mediaId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['ProfileMedia', 'Profile'],
+      invalidatesTags: ['ProfileMediaImages', 'Profile'],
     }),
 
     addProfileMediaVideos: builder.mutation<
@@ -156,7 +163,7 @@ export const profileApi = baseApi.injectEndpoints({
         body,
         formData: true,
       }),
-      invalidatesTags: ['ProfileMedia', 'Profile'],
+      invalidatesTags: ['ProfileMediaVideos', 'Profile'],
     }),
 
     setPrimaryProfileMediaVideo: builder.mutation<
@@ -167,7 +174,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/profiles/media/videos/${mediaId}/primary`,
         method: 'PATCH',
       }),
-      invalidatesTags: ['ProfileMedia', 'Profile'],
+      invalidatesTags: ['ProfileMediaVideos', 'Profile'],
     }),
 
     removeProfileMediaVideo: builder.mutation<
@@ -178,7 +185,7 @@ export const profileApi = baseApi.injectEndpoints({
         url: `/profiles/media/videos/${mediaId}`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['ProfileMedia', 'Profile'],
+      invalidatesTags: ['ProfileMediaVideos', 'Profile'],
     }),
   }),
 

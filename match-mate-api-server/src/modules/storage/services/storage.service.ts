@@ -2,6 +2,7 @@ import { HttpStatus, Injectable, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import {
   DeleteObjectCommand,
+  GetObjectCommand,
   HeadBucketCommand,
   S3Client,
   S3ClientConfig,
@@ -118,10 +119,107 @@ export class StorageService implements OnModuleInit {
 
   //  Get Public URL from filename
   getUrl(filename: string, folder = 'profiles'): string {
+    const key = this.buildKey(folder, filename);
     if (this.isS3) {
-      return `${this.s3BaseUrl}/${folder}/${filename}`;
+      return `${this.publicBaseUrl}/uploads/${key}`;
     }
-    return `${this.publicBaseUrl}/uploads/${folder}/${filename}`;
+    return `${this.publicBaseUrl}/uploads/${key}`;
+  }
+
+  getReadableUrl(url: string | undefined | null): string | undefined {
+    const trimmedUrl = url?.trim();
+    if (!trimmedUrl) return undefined;
+
+    if (!this.isS3) {
+      return trimmedUrl;
+    }
+
+    if (trimmedUrl.startsWith('/uploads/')) {
+      return `${this.publicBaseUrl}${trimmedUrl}`;
+    }
+
+    try {
+      const parsedUrl = new URL(trimmedUrl);
+      const parsedS3BaseUrl = new URL(this.s3BaseUrl);
+
+      if (parsedUrl.origin === parsedS3BaseUrl.origin) {
+        const key = this.normalizeKey(parsedUrl.pathname);
+        return `${this.publicBaseUrl}/uploads/${key}`;
+      }
+    } catch {
+      return trimmedUrl;
+    }
+
+    return trimmedUrl;
+  }
+
+  async getS3Object(key: string): Promise<{
+    body: NodeJS.ReadableStream;
+    contentType?: string;
+    contentLength?: number;
+    cacheControl?: string;
+  }> {
+    if (!this.isS3 || !this.s3Client) {
+      throw new AppException(ErrorCode.FILE_NOT_FOUND, HttpStatus.NOT_FOUND);
+    }
+
+    const normalizedKey = this.normalizeKey(key);
+
+    try {
+      const object = await this.s3Client.send(
+        new GetObjectCommand({
+          Bucket: this.bucket,
+          Key: normalizedKey,
+        }),
+      );
+
+      if (!object.Body || !('pipe' in object.Body)) {
+        throw new AppException(
+          ErrorCode.STORAGE_SERVICE_FAILED,
+          HttpStatus.SERVICE_UNAVAILABLE,
+          null,
+          undefined,
+          {
+            provider: 's3',
+            operation: 'get_object',
+            bucket: this.bucket,
+            key: normalizedKey,
+            reason: 'unreadable_body',
+          },
+        );
+      }
+
+      return {
+        body: object.Body as NodeJS.ReadableStream,
+        contentType: object.ContentType,
+        contentLength: object.ContentLength,
+        cacheControl: object.CacheControl,
+      };
+    } catch (error) {
+      if (error instanceof AppException) throw error;
+
+      this.logger.error('S3 read failed', undefined, {
+        bucket: this.bucket,
+        key: normalizedKey,
+        error: this.toErrorMeta(error),
+      });
+
+      const errorName = error instanceof Error ? error.name : '';
+      throw new AppException(
+        ErrorCode.STORAGE_SERVICE_FAILED,
+        errorName === 'NoSuchKey'
+          ? HttpStatus.NOT_FOUND
+          : HttpStatus.SERVICE_UNAVAILABLE,
+        null,
+        undefined,
+        {
+          provider: 's3',
+          operation: 'get_object',
+          bucket: this.bucket,
+          key: normalizedKey,
+        },
+      );
+    }
   }
 
   //  S3 Internals
@@ -166,7 +264,7 @@ export class StorageService implements OnModuleInit {
       );
     }
 
-    const url = `${this.s3BaseUrl}/${key}`;
+    const url = this.getUrl(filename, folder);
     this.logger.log(` Uploaded to S3: ${url}`);
 
     return { filename, url };
@@ -240,7 +338,11 @@ export class StorageService implements OnModuleInit {
   }
 
   private buildKey(folder: string, filename: string): string {
-    return `${folder}/${filename}`
+    return this.normalizeKey(`${folder}/${filename}`);
+  }
+
+  private normalizeKey(key: string): string {
+    return key
       .replace(/\\/g, '/')
       .replace(/^\/+/, '')
       .replace(/\/{2,}/g, '/');
