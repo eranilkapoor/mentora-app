@@ -1,59 +1,23 @@
 import { ApiResponse } from '@/core/types';
 import { baseApi } from './baseApi.service';
+import type {
+  CreateSupportTicketRequest,
+  ReplySupportTicketRequest,
+  SupportTicket,
+  SupportTicketsResponse,
+  SupportTicketStatus,
+} from '@matchmate/api-contract';
 
-export type SupportTicketCategory =
-  | 'account'
-  | 'billing'
-  | 'matches'
-  | 'chat'
-  | 'safety'
-  | 'technical'
-  | 'feedback'
-  | 'other';
-
-export type SupportTicketPriority = 'low' | 'normal' | 'high' | 'urgent';
-export type SupportTicketStatus = 'open' | 'pending' | 'resolved' | 'closed';
-
-export interface SupportTicketMessage {
-  authorId: string;
-  authorType: 'user' | 'agent' | 'system';
-  message: string;
-  attachments?: string[];
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface SupportTicket {
-  _id: string;
-  subject: string;
-  category: SupportTicketCategory;
-  priority: SupportTicketPriority;
-  status: SupportTicketStatus;
-  messages: SupportTicketMessage[];
-  lastUserReplyAt?: string;
-  lastAgentReplyAt?: string;
-  resolvedAt?: string;
-  closedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface SupportTicketsResponse {
-  items: SupportTicket[];
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
-
-export interface CreateSupportTicketPayload {
-  subject: string;
-  category: SupportTicketCategory;
-  priority: SupportTicketPriority;
-  message: string;
-}
+export type {
+  CreateSupportTicketRequest,
+  ReplySupportTicketRequest,
+  SupportTicket,
+  SupportTicketCategory,
+  SupportTicketMessage,
+  SupportTicketPriority,
+  SupportTicketsResponse,
+  SupportTicketStatus,
+} from '@matchmate/api-contract';
 
 export const supportApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -79,7 +43,7 @@ export const supportApi = baseApi.injectEndpoints({
 
     createSupportTicket: builder.mutation<
       ApiResponse<SupportTicket>,
-      CreateSupportTicketPayload
+      CreateSupportTicketRequest
     >({
       query: (body) => ({
         url: '/support/tickets',
@@ -91,7 +55,7 @@ export const supportApi = baseApi.injectEndpoints({
 
     replyToSupportTicket: builder.mutation<
       ApiResponse<SupportTicket>,
-      { ticketId: string; message: string }
+      ReplySupportTicketRequest
     >({
       query: ({ ticketId, message }) => ({
         url: `/support/tickets/${ticketId}/replies`,

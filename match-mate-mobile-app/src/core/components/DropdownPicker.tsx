@@ -2,9 +2,11 @@ import React, { memo, useCallback, useMemo, useRef, useState } from 'react';
 
 import {
   FlatList,
+  Modal,
   Keyboard,
   Platform,
   Pressable,
+  Dimensions,
   StyleProp,
   StyleSheet,
   Text,
@@ -140,6 +142,12 @@ function DropdownPickerComponent<T extends string = string>({
   const [visible, setVisible] = useState(false);
 
   const [search, setSearch] = useState('');
+  const [dropdownFrame, setDropdownFrame] = useState<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  } | null>(null);
 
   // ───────────────────────────────────────────────────────────
   // Styles
@@ -228,12 +236,6 @@ function DropdownPickerComponent<T extends string = string>({
         },
 
         dropdown: {
-          position: 'absolute',
-
-          top: 58,
-          left: 0,
-          right: 0,
-
           borderWidth: 1,
           borderColor: theme.colors.border,
 
@@ -262,6 +264,10 @@ function DropdownPickerComponent<T extends string = string>({
                 boxShadow: '0px 4px 12px rgba(0,0,0,0.10)',
               } as ViewStyle)
             : {}),
+        },
+
+        portalDropdown: {
+          position: 'absolute',
         },
 
         searchInput: {
@@ -339,6 +345,10 @@ function DropdownPickerComponent<T extends string = string>({
 
           zIndex: 9999,
         },
+
+        portalBackdrop: {
+          flex: 1,
+        },
       }),
     [theme, error, disabled, visible, maxHeight]
   );
@@ -378,13 +388,16 @@ function DropdownPickerComponent<T extends string = string>({
     }
 
     Keyboard.dismiss();
-
-    setVisible(true);
+    wrapperRef.current?.measureInWindow((x, y, width, height) => {
+      setDropdownFrame({ x, y, width, height });
+      setVisible(true);
+    });
   }, [disabled, loading]);
 
   const handleClose = useCallback(() => {
     setVisible(false);
     setSearch('');
+    setDropdownFrame(null);
   }, []);
 
   const handleSelect = useCallback(
@@ -444,14 +457,68 @@ function DropdownPickerComponent<T extends string = string>({
     [handleSelect, styles, t, theme.colors.primary, translateLabel, value]
   );
 
+  const dropdownContent = (
+    <View
+      style={[
+        styles.dropdown,
+        dropdownFrame && [
+          styles.portalDropdown,
+          {
+            top: dropdownFrame.y + dropdownFrame.height + 4,
+            left: dropdownFrame.x,
+            width: dropdownFrame.width,
+            maxHeight: Math.min(
+              maxHeight,
+              Math.max(
+                160,
+                Dimensions.get('window').height -
+                  dropdownFrame.y -
+                  dropdownFrame.height -
+                  24
+              )
+            ),
+          },
+        ],
+        dropdownStyle,
+      ]}
+    >
+      {searchable && (
+        <TextInput
+          value={search}
+          onChangeText={setSearch}
+          placeholder={t('common.search')}
+          placeholderTextColor={theme.colors.textMuted}
+          style={styles.searchInput}
+          autoCorrect={false}
+          autoCapitalize="none"
+        />
+      )}
+
+      <FlatList
+        data={filteredOptions}
+        keyExtractor={(item) => item.value}
+        keyboardShouldPersistTaps="handled"
+        nestedScrollEnabled
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+        ItemSeparatorComponent={() => <View style={styles.divider} />}
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyTextStyle}>
+              {emptyText ?? t('common.no_results_found')}
+            </Text>
+          </View>
+        }
+      />
+    </View>
+  );
+
   // ───────────────────────────────────────────────────────────
   // Render
   // ───────────────────────────────────────────────────────────
 
   return (
     <>
-      {visible && <Pressable style={styles.backdrop} onPress={handleClose} />}
-
       <View ref={wrapperRef} style={[styles.container, containerStyle]}>
         {!!label && (
           <View style={styles.labelRow}>
@@ -516,38 +583,16 @@ function DropdownPickerComponent<T extends string = string>({
             </View>
           </TouchableOpacity>
 
-          {visible && (
-            <View style={[styles.dropdown, dropdownStyle]}>
-              {searchable && (
-                <TextInput
-                  value={search}
-                  onChangeText={setSearch}
-                  placeholder={t('common.search')}
-                  placeholderTextColor={theme.colors.textMuted}
-                  style={styles.searchInput}
-                  autoCorrect={false}
-                  autoCapitalize="none"
-                />
-              )}
-
-              <FlatList
-                data={filteredOptions}
-                keyExtractor={(item) => item.value}
-                keyboardShouldPersistTaps="handled"
-                nestedScrollEnabled
-                renderItem={renderItem}
-                showsVerticalScrollIndicator={false}
-                ItemSeparatorComponent={() => <View style={styles.divider} />}
-                ListEmptyComponent={
-                  <View style={styles.empty}>
-                    <Text style={styles.emptyTextStyle}>
-                      {emptyText ?? t('common.no_results_found')}
-                    </Text>
-                  </View>
-                }
-              />
-            </View>
-          )}
+          <Modal
+            visible={visible}
+            transparent
+            animationType="none"
+            onRequestClose={handleClose}
+          >
+            <Pressable style={styles.portalBackdrop} onPress={handleClose}>
+              {dropdownFrame ? dropdownContent : null}
+            </Pressable>
+          </Modal>
         </View>
 
         {!!error && <Text style={[styles.error, errorStyle]}>{error}</Text>}

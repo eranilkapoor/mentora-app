@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Image, Text, TouchableOpacity, View } from 'react-native';
+import { Image, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { Audio } from 'expo-av';
 import Feather from 'react-native-vector-icons/Feather';
 
@@ -51,7 +51,8 @@ export function MessageBubble({
   const { theme } = useTheme();
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const quickReactions = ['👍', '❤️', '😂'];
+  const [showQuickReactions, setShowQuickReactions] = useState(false);
+  const quickReactions = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}'];
 
   useEffect(
     () => () => {
@@ -91,12 +92,17 @@ export function MessageBubble({
   };
 
   return (
-    <View
+    <Pressable
       style={[styles.messageRow, isMe ? styles.rightAlign : styles.leftAlign]}
+      onHoverIn={() => setShowQuickReactions(true)}
+      onHoverOut={() => setShowQuickReactions(false)}
+      onFocus={() => setShowQuickReactions(true)}
+      onBlur={() => setShowQuickReactions(false)}
     >
       <TouchableOpacity
         style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
         activeOpacity={0.9}
+        onPressIn={() => setShowQuickReactions(true)}
         onLongPress={() => onLongPress?.(item)}
         accessibilityRole="text"
       >
@@ -160,19 +166,24 @@ export function MessageBubble({
           </View>
         ) : null}
       </TouchableOpacity>
-      <View style={[styles.reactionBar, isMe && styles.reactionBarMe]}>
-        {quickReactions.map((emoji) => (
-          <TouchableOpacity
-            key={emoji}
-            style={styles.reactionButton}
-            onPress={() => onReact?.(item, emoji)}
-            accessibilityRole="button"
-            accessibilityLabel={`React with ${emoji}`}
-          >
-            <Text style={styles.reactionButtonText}>{emoji}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
-    </View>
+      {showQuickReactions ? (
+        <View style={[styles.reactionBar, isMe && styles.reactionBarMe]}>
+          {quickReactions.map((emoji) => (
+            <TouchableOpacity
+              key={emoji}
+              style={styles.reactionButton}
+              onPress={() => {
+                onReact?.(item, emoji);
+                setShowQuickReactions(false);
+              }}
+              accessibilityRole="button"
+              accessibilityLabel={`React with ${emoji}`}
+            >
+              <Text style={styles.reactionButtonText}>{emoji}</Text>
+            </TouchableOpacity>
+          ))}
+        </View>
+      ) : null}
+    </Pressable>
   );
 }

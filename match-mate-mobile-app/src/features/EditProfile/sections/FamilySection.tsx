@@ -57,6 +57,7 @@ export function FamilySection({
             label={t('edit_profile.fields.father_name')}
             value={family.fatherName ?? ''}
             onChange={(v) => onSet('fatherName', v)}
+            placeholder={t('edit_profile.placeholders.father_name')}
           />
         </View>
         <View style={styles.halfField}>
@@ -64,6 +65,7 @@ export function FamilySection({
             label={t('edit_profile.fields.mother_name')}
             value={family.motherName ?? ''}
             onChange={(v) => onSet('motherName', v)}
+            placeholder={t('edit_profile.placeholders.mother_name')}
           />
         </View>
       </View>
@@ -74,6 +76,7 @@ export function FamilySection({
             label={t('edit_profile.fields.father_occupation')}
             value={family.fatherOccupation ?? ''}
             onChange={(v) => onSet('fatherOccupation', v)}
+            placeholder={t('edit_profile.placeholders.father_occupation')}
           />
         </View>
         <View style={styles.halfField}>
@@ -81,6 +84,7 @@ export function FamilySection({
             label={t('edit_profile.fields.mother_occupation')}
             value={family.motherOccupation ?? ''}
             onChange={(v) => onSet('motherOccupation', v)}
+            placeholder={t('edit_profile.placeholders.mother_occupation')}
           />
         </View>
       </View>

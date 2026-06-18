@@ -137,7 +137,15 @@
     "state": "उदा. दिल्ली",
     "city": "उदा. नई दिल्ली",
     "citizenship": "उदा. भारतीय",
-    "visa_status": "वर्क वीज़ा, PR, नागरिक"
+    "visa_status": "वर्क वीज़ा, PR, नागरिक",
+    "father_name": "उदा. राजेश शर्मा",
+    "mother_name": "उदा. सुनीता शर्मा",
+    "father_occupation": "उदा. व्यवसायी",
+    "mother_occupation": "उदा. गृहिणी",
+    "sub_cast": "उदा. शर्मा",
+    "gotra": "उदा. कश्यप",
+    "rashi": "उदा. मेष",
+    "nakshatra": "उदा. रोहिणी"
   },
   "date_picker": {
     "title": "जन्म तिथि चुनें",

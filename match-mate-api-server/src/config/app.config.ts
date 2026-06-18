@@ -100,5 +100,6 @@ export default () => ({
     enabled: process.env.MONITORING_ENABLED === 'true',
     provider: process.env.MONITORING_PROVIDER || 'log',
     sentryDsn: process.env.SENTRY_DSN || '',
+    tracesSampleRate: Number(process.env.SENTRY_TRACES_SAMPLE_RATE || '0'),
   },
 });

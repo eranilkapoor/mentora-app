@@ -293,6 +293,11 @@ export class MatchDiscoveryService {
       filter['personal.caste'] = { $in: casteFilter };
     }
 
+    const subCasteFilter = filters?.subCaste as string[] | undefined;
+    if (subCasteFilter?.length) {
+      filter['personal.subCaste'] = { $in: subCasteFilter };
+    }
+
     //  Marital status
 
     const maritalFilter = filters?.maritalStatus as string[] | undefined;

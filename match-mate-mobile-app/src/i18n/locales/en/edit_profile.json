@@ -137,7 +137,15 @@
     "state": "e.g Delhi",
     "city": "e.g New Delhi",
     "citizenship": "e.g Indian",
-    "visa_status": "Work visa, PR, citizen"
+    "visa_status": "Work visa, PR, citizen",
+    "father_name": "e.g. Rajesh Sharma",
+    "mother_name": "e.g. Sunita Sharma",
+    "father_occupation": "e.g. Business owner",
+    "mother_occupation": "e.g. Homemaker",
+    "sub_cast": "e.g. Sharma",
+    "gotra": "e.g. Kashyap",
+    "rashi": "e.g. Mesh",
+    "nakshatra": "e.g. Rohini"
   },
   "date_picker": {
     "title": "Select Date of Birth",

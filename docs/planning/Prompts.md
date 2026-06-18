@@ -15,23 +15,33 @@ Last reviewed: 2026-06-18
 9. Matches filter modal now respects safe-area bottom padding so action buttons stay above Android navigation controls.
 10. Added missing `auth.errors.forgot_password_failed` translation in English and Hindi. `settings.notifications.disable_all_sub` already exists in both locales.
 11. Subscription & Billing now resolves current-plan benefits from the membership plan catalog, and shows billing cycle, trial status, payment provider, and provider reconciliation state.
+12. Profile PDF/share biodata now uses a sectioned biodata layout, includes a privacy note/footer, and masks exact age/date of birth, income, phone, and email according to current privacy settings.
+13. Edit Profile placeholder audit completed for the missing Family and Astro inputs, with English/Hindi placeholder keys added. Partner Preferences editable inputs already had placeholders during this scan.
+14. Added `npm run i18n:check` for the mobile app. The checker scans static `t('...')` keys and validates English/Hindi locale coverage.
+15. Fixed the missing English/Hindi locale keys exposed by the new i18n checker, including chat reaction failures, notification bulk-action subtitles, and Hindi linked-account labels.
+16. Chat quick reactions are now hidden by default and reveal only on hover, focus, or press interaction.
+17. Match Detail bottom CTA now uses device safe-area padding, and report/block actions wrap cleanly on narrow screens.
+18. Long onboarding/edit-profile dropdowns for religion, country, residency country, and qualification are now searchable with taller option panels.
+19. Match discovery now applies the saved `subCaste` preference filter in addition to the existing religion, caste, and height filters.
+20. Backend Sentry SDK wiring is now live through `ErrorMonitoringService`, initialized during API bootstrap when monitoring provider is `sentry` and `SENTRY_DSN` is configured.
+21. Mobile Sentry SDK wiring is now live through the shared `errorReporter`, initialized before root component registration when `EXPO_PUBLIC_ERROR_REPORTING_PROVIDER=sentry` and a DSN is configured.
+22. Added a backend regression spec for strict match discovery filters covering religion, caste, sub-caste, height, verification, and minimum score behavior.
+23. `DropdownPicker` now renders its options in a positioned modal portal, preventing nested scroll views/cards from clipping long dropdown lists.
+24. Production Sentry env flags now align with configured DSNs for mobile and backend, with trace sampling defaulted to `0` until APM sampling is intentionally enabled.
+25. Product recommendation documented: keep the current Home discovery grid/list and Matches/Chats bottom navigation structure for now; defer swipe mode or Discover/Activity split until analytics or UX evidence supports the extra navigation complexity.
+26. Support ticket/helpdesk request and response shapes now live in the shared `@matchmate/api-contract` package and are consumed by the mobile support API service.
 
-## Already Implemented Or Partially Implemented
+## Completed Or Audited
 
-1. Help & Support, Support Tickets, FAQs, Community Guidelines, Terms & Conditions, and Privacy Policy already have improved structured screens from recent support/legal work. Needs visual QA only.
-2. Subscription & Billing has richer billing/subscription data, payment flow integration, current-plan benefits, trial/cancel/auto-renew status, and provider reconciliation display. Needs device visual QA only.
-3. Seeder users, roles, subscriptions, feature/plan mapping, sample collection documents, and plan lifecycle defaults were recently expanded. Needs seeded-login QA against interest/chat/payment flows.
-4. OpenAPI/shared API contract exists under `packages/api-contract` and is consumed by membership/payment services. Broader generated-client migration remains a separate architecture task.
+1. Help & Support, Support Tickets, FAQs, Community Guidelines, Terms & Conditions, and Privacy Policy have structured screens and backend/helpdesk APIs. Remaining work is device visual QA only.
+2. Subscription & Billing has richer billing/subscription data, payment flow integration, current-plan benefits, trial/cancel/auto-renew status, and provider reconciliation display. Remaining work is device visual QA only.
+3. Seeder users, roles, subscriptions, feature/plan mapping, sample collection documents, and plan lifecycle defaults are implemented. Remaining work is seeded-login flow QA only.
+4. Shared API contract coverage now includes membership, billing, payment, subscription, and support ticket/helpdesk surfaces. Full Swagger-generated SDK migration is intentionally deferred as an architecture choice, not a current blocker.
+5. Home currently has search and list browsing only; there is no active Home filter modal to safe-area harden. Matches filter modal is already safe-area aware.
+6. DropdownPicker has nested scrolling/search support, long-list fields opt into search/taller panels, and the picker now uses a modal portal to avoid nested clipping.
 
-## Still Recommended Next Code Fixes
+## Remaining Manual QA
 
-1. Add a reusable missing-translation test that scans `t('...')` keys and validates English/Hindi locale coverage.
-2. Improve Profile PDF/share biodata HTML with masked sensitive fields based on privacy settings.
-3. Add placeholders to any remaining Edit Profile and Partner Preference fields after a focused field-by-field audit.
-4. Complete Android safe-area QA for Home filters in addition to the Matches filter modal fixed here.
-5. Fix Match Detail bottom action/report/block spacing after device screenshots.
-6. Investigate DropdownPicker clipping in nested scroll areas for Highest Qualification and similar fields; component already uses `FlatList` with `nestedScrollEnabled`, so this likely needs layout/portal handling.
-7. Enforce strict Religion, Caste, Sub-caste, and Height preference filters from backend query/service logic and verify with seeded profiles.
-8. Hide chat reactions until hover/focus/press state instead of always showing them.
-9. Complete Sentry SDK wiring for mobile and backend using the configured DSNs.
-10. Decide product UX for grid vs swipe mode and Discover/Activity bottom navigation split before implementation.
+1. Run seeded-profile/device QA for strict Religion, Caste, Sub-caste, and Height preference filters to confirm real result counts and edge cases beyond the unit-level regression test.
+2. Run seeded-login device QA across Support Tickets, Subscription Billing, Membership checkout, Interest, Chat, and Payment flows.
+3. Run final device visual QA for Help & Support, legal screens, Subscription & Billing, and the portal-based dropdowns.

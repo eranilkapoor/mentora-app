@@ -272,11 +272,13 @@ export const matchDetailStyles = (
     // ─── Safety ───────────────────────────────────────────────────────────
     safetyActions: {
       flexDirection: 'row',
+      flexWrap: 'wrap',
       gap: 10,
       paddingVertical: 14,
     },
     safetyButton: {
       flex: 1,
+      minWidth: 142,
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'center',
@@ -303,7 +305,6 @@ export const matchDetailStyles = (
       flexDirection: 'row',
       paddingHorizontal: 16,
       paddingVertical: 12,
-      paddingBottom: 28,
       backgroundColor: theme.colors.surface,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
@@ -367,7 +368,7 @@ export const matchDetailStyles = (
     },
 
     // ─── Empty ────────────────────────────────────────────────────────────
-    footerSpacer: { height: 110 },
+    footerSpacer: { height: 132 },
     emptyContainer: {
       flex: 1,
       minHeight: 360,

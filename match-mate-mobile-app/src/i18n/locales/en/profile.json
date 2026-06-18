@@ -106,5 +106,7 @@
   "pdf_failed_message": "We could not create your profile PDF. Please try again.",
   "sharing_unavailable_title": "Sharing Unavailable",
   "sharing_unavailable_message": "Your profile PDF was saved to {{uri}}",
+  "pdf_privacy_note": "Sensitive fields are masked according to your current privacy settings.",
+  "pdf_footer": "Generated from Match Mate. Shared profile copy is watermarked and privacy-safe.",
   "load_error_message": "Failed to load profile. Please try again."
 }

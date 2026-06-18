@@ -30,6 +30,7 @@ import {
 } from '../../core/utils/format';
 import Header from '../../core/components/Header';
 import { useGetMyProfileQuery } from '../../store/services/profileApi.service';
+import { useGetPrivacySettingsQuery } from '@/store/services/privacySettingsApi.service';
 import {
   Countries,
   Genders,
@@ -49,6 +50,7 @@ import {
   SchemaProfile,
   SiblingDisplayItem,
 } from './Profile.types';
+import { PrivacySettings } from '@/features/PrivacySettings/PrivacySettings.types';
 import { FALLBACK_PHOTO, FALLBACK_PHOTOS } from './Profile.constants';
 import { ProfileSkeleton } from './components/ProfileSkeleton';
 import { Section } from './components/Section';
@@ -66,6 +68,7 @@ import { InlineVideoPlayer } from '@/core/components/media/InlineVideoPlayer';
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const EMPTY_VALUE = '—';
+const MASKED_VALUE = '••••';
 
 // ─── Default profile ──────────────────────────────────────────────────────────
 
@@ -199,6 +202,44 @@ const getLocation = (profile: SchemaProfile): string =>
     .filter((v) => v !== EMPTY_VALUE)
     .join(', ') || EMPTY_VALUE;
 
+const getProfileEmail = (profile: SchemaProfile): string => {
+  const data = profile as SchemaProfile & {
+    email?: string;
+    user?: { email?: string };
+  };
+
+  return data.email ?? data.user?.email ?? EMPTY_VALUE;
+};
+
+const getProfilePhone = (profile: SchemaProfile): string => {
+  const data = profile as SchemaProfile & {
+    phone?: string | { countryCode?: string; phone?: string };
+    user?: { phone?: string | { countryCode?: string; phone?: string } };
+  };
+  const phone = data.phone ?? data.user?.phone;
+
+  if (!phone) return EMPTY_VALUE;
+  if (typeof phone === 'string') return phone;
+
+  return (
+    [phone.countryCode, phone.phone].filter(Boolean).join(' ') || EMPTY_VALUE
+  );
+};
+
+const maskEmail = (email: string): string => {
+  if (email === EMPTY_VALUE) return EMPTY_VALUE;
+  const [name = '', domain = ''] = email.split('@');
+  if (!domain) return MASKED_VALUE;
+  return `${name.slice(0, 2)}•••@${domain}`;
+};
+
+const maskPhone = (phone: string): string => {
+  if (phone === EMPTY_VALUE) return EMPTY_VALUE;
+  const digits = phone.replace(/\D/g, '');
+  if (digits.length < 4) return MASKED_VALUE;
+  return `${MASKED_VALUE}${digits.slice(-4)}`;
+};
+
 const getTimeOfBirth = (profile: SchemaProfile): string => {
   const { hour, minute, period } = profile.personal.timeOfBirth ?? {};
   const time = [hour, minute].filter(Boolean).join(':');
@@ -284,193 +325,293 @@ const copyPdfToDocumentDirectory = async (
   return dest;
 };
 
-const getPdfRows = (
+interface PdfSection {
+  title: string;
+  rows: Array<[string, string, boolean?]>;
+}
+
+const getPdfSections = (
   profile: SchemaProfile,
+  privacy: PrivacySettings | undefined,
   t: (key: string, options: { defaultValue: string }) => string
-): Array<[string, string]> => [
-  ['Name', getDisplayName(profile)],
-  [
-    'Profile For',
-    formatEnumLabel(t, 'options.profile_for', profile.profileFor, EMPTY_VALUE),
-  ],
-  [
-    'Age',
+): PdfSection[] => {
+  const showExactAge = privacy?.showExactAge ?? true;
+  const showIncome = privacy?.showIncome ?? false;
+  const showPhone = privacy?.showPhone ?? false;
+  const showEmail = privacy?.showEmail ?? false;
+  const age =
     toDisplayText(profile.age) !== EMPTY_VALUE
       ? `${profile.age} yrs`
-      : getFormattedAge(profile.personal.dateOfBirth ?? ''),
-  ],
-  ['Date of Birth', toDisplayText(profile.personal.dateOfBirth)],
-  [
-    'Gender',
-    formatEnumLabel(t, 'options.gender', profile.personal.gender, EMPTY_VALUE),
-  ],
-  ['Height', getFormattedHeight(profile.physical.height)],
-  ['Location', getLocation(profile)],
-  [
-    'Marital Status',
-    formatEnumLabel(
-      t,
-      'options.marital_status',
-      profile.personal.maritalStatus,
-      EMPTY_VALUE
-    ),
-  ],
-  [
-    'Religion',
-    formatEnumLabel(
-      t,
-      'options.religion',
-      profile.personal.religion,
-      EMPTY_VALUE
-    ),
-  ],
-  [
-    'Caste',
-    formatEnumLabel(t, 'options.caste', profile.personal.caste, EMPTY_VALUE),
-  ],
-  ['Mother Tongue', formatProfileText(profile.personal.motherTongue)],
-  [
-    'Manglik Status',
-    formatEnumLabel(
-      t,
-      'options.manglik_status',
-      profile.personal.manglikStatus,
-      EMPTY_VALUE
-    ),
-  ],
-  ['Time of Birth', getTimeOfBirth(profile)],
-  ['Place of Birth', getPlaceOfBirth(profile)],
-  [
-    'Education',
-    formatEnumLabel(
-      t,
-      'options.qualifications',
-      profile.education.qualification,
-      EMPTY_VALUE
-    ),
-  ],
-  ['Field of Study', formatProfileText(profile.education.field)],
-  ['College', formatProfileText(profile.education.university)],
-  [
-    'Occupation Type',
-    formatEnumLabel(
-      t,
-      'options.occupation_types',
-      profile.education.occupationType,
-      EMPTY_VALUE
-    ),
-  ],
-  ['Profession', formatProfileText(profile.education.occupation)],
-  ['Company', formatProfileText(profile.education.companyName)],
-  ['Job Role', formatProfileText(profile.education.jobRole)],
-  [
-    'Annual Income',
-    annualIncomeFormat(profile.education.annualIncomeAmount ?? ''),
-  ],
-  ['Weight', getFormattedWeight(profile.physical.weight)],
-  [
-    'Blood Group',
-    formatEnumLabel(
-      t,
-      'options.blood_groups',
-      profile.physical.bloodGroup,
-      EMPTY_VALUE
-    ),
-  ],
-  [
-    'Body Type',
-    formatEnumLabel(
-      t,
-      'options.body_types',
-      profile.physical.bodyType,
-      EMPTY_VALUE
-    ),
-  ],
-  [
-    'Complexion',
-    formatEnumLabel(
-      t,
-      'options.complexion',
-      profile.physical.complexion,
-      EMPTY_VALUE
-    ),
-  ],
-  ['Disability', toDisplayText(profile.physical.disabilityStatus)],
-  [
-    'Smoking',
-    formatEnumLabel(
-      t,
-      'options.smoking',
-      profile.personal.smoking,
-      EMPTY_VALUE
-    ),
-  ],
-  [
-    'Drinking',
-    formatEnumLabel(
-      t,
-      'options.drinking',
-      profile.personal.drinking,
-      EMPTY_VALUE
-    ),
-  ],
-  [
-    'Eating',
-    formatEnumLabel(t, 'options.eating', profile.personal.eating, EMPTY_VALUE),
-  ],
-  ['Father', formatProfileText(profile.family?.fatherName)],
-  ['Mother', formatProfileText(profile.family?.motherName)],
-  ['Father Occupation', formatProfileText(profile.family?.fatherOccupation)],
-  ['Mother Occupation', formatProfileText(profile.family?.motherOccupation)],
-  [
-    'Family Type',
-    formatEnumLabel(
-      t,
-      'options.family_types',
-      profile.family?.familyType,
-      EMPTY_VALUE
-    ),
-  ],
-  [
-    'Family Status',
-    formatEnumLabel(
-      t,
-      'options.family_status',
-      profile.family?.familyStatus,
-      EMPTY_VALUE
-    ),
-  ],
-  [
-    'Family Values',
-    formatEnumLabel(
-      t,
-      'options.family_values',
-      profile.family?.familyValues,
-      EMPTY_VALUE
-    ),
-  ],
-  ['Siblings', getSiblingCounts(profile)],
-  ['Hobbies', formatList(profile.personal.hobbies)],
-  [
-    'Languages Known',
-    formatList(profile.personal.languages ?? profile.personal.languagesKnown),
-  ],
-];
+      : getFormattedAge(profile.personal.dateOfBirth ?? '');
+  const phone = getProfilePhone(profile);
+  const email = getProfileEmail(profile);
+  const income = annualIncomeFormat(profile.education.annualIncomeAmount ?? '');
+
+  return [
+    {
+      title: 'Personal Details',
+      rows: [
+        ['Name', getDisplayName(profile)],
+        [
+          'Profile For',
+          formatEnumLabel(
+            t,
+            'options.profile_for',
+            profile.profileFor,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Age', showExactAge ? age : MASKED_VALUE, !showExactAge],
+        [
+          'Date of Birth',
+          showExactAge
+            ? toDisplayText(profile.personal.dateOfBirth)
+            : MASKED_VALUE,
+          !showExactAge,
+        ],
+        [
+          'Gender',
+          formatEnumLabel(
+            t,
+            'options.gender',
+            profile.personal.gender,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Height', getFormattedHeight(profile.physical.height)],
+        ['Location', getLocation(profile)],
+        [
+          'Marital Status',
+          formatEnumLabel(
+            t,
+            'options.marital_status',
+            profile.personal.maritalStatus,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Religion',
+          formatEnumLabel(
+            t,
+            'options.religion',
+            profile.personal.religion,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Caste',
+          formatEnumLabel(
+            t,
+            'options.caste',
+            profile.personal.caste,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Mother Tongue', formatProfileText(profile.personal.motherTongue)],
+      ],
+    },
+    {
+      title: 'Contact Visibility',
+      rows: [
+        [
+          'Phone',
+          showPhone ? phone : maskPhone(phone),
+          !showPhone && phone !== EMPTY_VALUE,
+        ],
+        [
+          'Email',
+          showEmail ? email : maskEmail(email),
+          !showEmail && email !== EMPTY_VALUE,
+        ],
+      ],
+    },
+    {
+      title: 'Education & Career',
+      rows: [
+        [
+          'Education',
+          formatEnumLabel(
+            t,
+            'options.qualifications',
+            profile.education.qualification,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Field of Study', formatProfileText(profile.education.field)],
+        ['College', formatProfileText(profile.education.university)],
+        [
+          'Occupation Type',
+          formatEnumLabel(
+            t,
+            'options.occupation_types',
+            profile.education.occupationType,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Profession', formatProfileText(profile.education.occupation)],
+        ['Company', formatProfileText(profile.education.companyName)],
+        ['Job Role', formatProfileText(profile.education.jobRole)],
+        ['Annual Income', showIncome ? income : MASKED_VALUE, !showIncome],
+      ],
+    },
+    {
+      title: 'Lifestyle & Physical',
+      rows: [
+        ['Weight', getFormattedWeight(profile.physical.weight)],
+        [
+          'Blood Group',
+          formatEnumLabel(
+            t,
+            'options.blood_groups',
+            profile.physical.bloodGroup,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Body Type',
+          formatEnumLabel(
+            t,
+            'options.body_types',
+            profile.physical.bodyType,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Complexion',
+          formatEnumLabel(
+            t,
+            'options.complexion',
+            profile.physical.complexion,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Disability', toDisplayText(profile.physical.disabilityStatus)],
+        [
+          'Smoking',
+          formatEnumLabel(
+            t,
+            'options.smoking',
+            profile.personal.smoking,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Drinking',
+          formatEnumLabel(
+            t,
+            'options.drinking',
+            profile.personal.drinking,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Eating',
+          formatEnumLabel(
+            t,
+            'options.eating',
+            profile.personal.eating,
+            EMPTY_VALUE
+          ),
+        ],
+      ],
+    },
+    {
+      title: 'Astro & Family',
+      rows: [
+        [
+          'Manglik Status',
+          formatEnumLabel(
+            t,
+            'options.manglik_status',
+            profile.personal.manglikStatus,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Time of Birth', getTimeOfBirth(profile)],
+        ['Place of Birth', getPlaceOfBirth(profile)],
+        ['Father', formatProfileText(profile.family?.fatherName)],
+        ['Mother', formatProfileText(profile.family?.motherName)],
+        [
+          'Father Occupation',
+          formatProfileText(profile.family?.fatherOccupation),
+        ],
+        [
+          'Mother Occupation',
+          formatProfileText(profile.family?.motherOccupation),
+        ],
+        [
+          'Family Type',
+          formatEnumLabel(
+            t,
+            'options.family_types',
+            profile.family?.familyType,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Family Status',
+          formatEnumLabel(
+            t,
+            'options.family_status',
+            profile.family?.familyStatus,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Family Values',
+          formatEnumLabel(
+            t,
+            'options.family_values',
+            profile.family?.familyValues,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Siblings', getSiblingCounts(profile)],
+      ],
+    },
+    {
+      title: 'Interests',
+      rows: [
+        ['Hobbies', formatList(profile.personal.hobbies)],
+        [
+          'Languages Known',
+          formatList(
+            profile.personal.languages ?? profile.personal.languagesKnown
+          ),
+        ],
+      ],
+    },
+  ];
+};
 
 const createProfilePdfHtml = (
   profile: SchemaProfile,
   photoUrl: string | undefined,
   profileSummary: string,
+  privacy: PrivacySettings | undefined,
   t: (key: string, options: { defaultValue: string }) => string
 ): string => {
-  const rows = getPdfRows(profile, t)
-    .map(
-      ([label, value]) => `
-        <tr>
-          <th>${escapeHtml(label)}</th>
-          <td>${escapeHtml(value || EMPTY_VALUE)}</td>
-        </tr>`
-    )
+  const sections = getPdfSections(profile, privacy, t)
+    .map((section) => {
+      const rows = section.rows
+        .filter(([, value]) => value !== EMPTY_VALUE)
+        .map(
+          ([label, value, masked]) => `
+            <tr>
+              <th>${escapeHtml(label)}</th>
+              <td class="${masked ? 'masked' : ''}">${escapeHtml(value || EMPTY_VALUE)}</td>
+            </tr>`
+        )
+        .join('');
+
+      if (!rows) return '';
+
+      return `
+        <section class="section-block">
+          <h2>${escapeHtml(section.title)}</h2>
+          <table>${rows}</table>
+        </section>`;
+    })
     .join('');
 
   return `
@@ -489,13 +630,16 @@ const createProfilePdfHtml = (
           .photo-watermark { position:absolute; left:-18px; right:-18px; bottom:18px; transform:rotate(-22deg); background:rgba(17,24,39,.62); color:#fff; text-align:center; font-size:13px; font-weight:800; letter-spacing:2px; padding:6px 0; text-transform:uppercase; }
           h1 { margin:0 0 8px; font-size:30px; line-height:1.2; }
           .summary,.location { margin:0 0 8px; color:#667085; font-size:14px; }
+          .privacy-note { margin-top:14px; padding:10px 12px; border-radius:10px; background:#fff; border:1px solid #ead9cc; color:#8a5a44; font-size:12px; line-height:1.45; }
           .section { padding:24px 28px; }
+          .section-block { break-inside:avoid; margin-bottom:22px; }
           h2 { margin:0 0 12px; color:#344054; font-size:15px; text-transform:uppercase; letter-spacing:.5px; }
           .about { margin:0 0 20px; color:#344054; font-size:14px; line-height:1.65; }
           table { width:100%; border-collapse:collapse; }
           th,td { padding:10px 0; border-bottom:1px solid #edf1f5; vertical-align:top; font-size:13px; }
           th { width:34%; color:#667085; font-weight:600; text-align:left; }
           td { color:#111827; text-align:right; font-weight:500; }
+          td.masked { color:#98a2b3; letter-spacing:1px; }
           .footer { padding:16px 28px; color:#98a2b3; font-size:11px; text-align:center; background:#fbfcfd; }
         </style>
       </head>
@@ -511,15 +655,25 @@ const createProfilePdfHtml = (
               <h1>${escapeHtml(getDisplayName(profile))}</h1>
               <p class="summary">${escapeHtml(profileSummary)}</p>
               <p class="location">${escapeHtml(getLocation(profile))}</p>
+              <div class="privacy-note">${escapeHtml(
+                t('profile.pdf_privacy_note', {
+                  defaultValue:
+                    'Sensitive fields are masked according to your current privacy settings.',
+                })
+              )}</div>
             </div>
           </section>
           <section class="section">
             <h2>About</h2>
             <p class="about">${escapeHtml(formatAboutMe(profile.personal.aboutMe))}</p>
-            <h2>Profile Details</h2>
-            <table>${rows}</table>
+            ${sections}
           </section>
-          <div class="footer">Generated from Match Mate. Shared profile copy is watermarked.</div>
+          <div class="footer">${escapeHtml(
+            t('profile.pdf_footer', {
+              defaultValue:
+                'Generated from Match Mate. Shared profile copy is watermarked and privacy-safe.',
+            })
+          )}</div>
         </main>
       </body>
     </html>`;
@@ -642,6 +796,7 @@ export default function ProfileScreen({
 
   const { data, isLoading, isFetching, isError, refetch } =
     useGetMyProfileQuery();
+  const { data: privacyResponse } = useGetPrivacySettingsQuery();
 
   const profileData = useMemo<SchemaProfile>(
     () =>
@@ -761,6 +916,7 @@ export default function ProfileScreen({
             profileData,
             photoUrl,
             profileSummary,
+            privacyResponse?.privacy,
             t
           );
           const { uri } = await Print.printToFileAsync({ html, base64: false });
@@ -809,7 +965,14 @@ export default function ProfileScreen({
         setPdfAction(null);
       }
     },
-    [pdfAction, printablePhoto, profileData, profileSummary, t]
+    [
+      pdfAction,
+      printablePhoto,
+      privacyResponse?.privacy,
+      profileData,
+      profileSummary,
+      t,
+    ]
   );
 
   const renderPhoto: ListRenderItem<string> = useCallback(

@@ -83,6 +83,7 @@ async function bootstrap(): Promise<void> {
   const monitoring = app.get(ErrorMonitoringService);
 
   app.useLogger(logger);
+  monitoring.initialize();
 
   app.disable('x-powered-by');
 

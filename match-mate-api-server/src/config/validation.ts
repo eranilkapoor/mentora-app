@@ -471,6 +471,8 @@ export const envValidationSchema = Joi.object({
     then: envString.required(),
   }),
 
+  SENTRY_TRACES_SAMPLE_RATE: Joi.number().min(0).max(1).default(0),
+
   JWT_SECRET: Joi.string().trim().min(32).max(512).required(),
 
   JWT_ACCESS_EXPIRES_IN: optionalDuration.default('15m'),

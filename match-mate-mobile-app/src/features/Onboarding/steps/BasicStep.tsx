@@ -155,6 +155,8 @@ export function BasicStep({
         options={ReligionOptions}
         value={basic.religion}
         onChange={(val) => onSetField('religion', val as Religion)}
+        searchable
+        maxHeight={320}
         required
       />
       <ErrorText field="religion" errors={errors} />
@@ -164,6 +166,8 @@ export function BasicStep({
         options={CountryOptions}
         value={basic.country}
         onChange={(val) => onSetField('country', val as Country)}
+        searchable
+        maxHeight={320}
         required
       />
       <ErrorText field="country" errors={errors} />
@@ -173,6 +177,8 @@ export function BasicStep({
         options={QualificationOptions}
         value={basic.qualification}
         onChange={(val) => onSetField('qualification', val as Qualification)}
+        searchable
+        maxHeight={340}
         required
       />
       <ErrorText field="qualification" errors={errors} />

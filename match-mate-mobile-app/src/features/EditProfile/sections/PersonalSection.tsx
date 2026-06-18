@@ -147,6 +147,8 @@ export function PersonalSection({
         options={CountryOptions}
         value={personal.country}
         onChange={(val) => onSet('country', val as Country)}
+        searchable
+        maxHeight={320}
         required
       />
 
@@ -189,6 +191,8 @@ export function PersonalSection({
             options={CountryOptions}
             value={personal.residencyCountry ?? personal.country}
             onChange={(val) => onSet('residencyCountry', val as Country)}
+            searchable
+            maxHeight={320}
           />
           <View style={styles.row}>
             <View style={styles.halfField}>

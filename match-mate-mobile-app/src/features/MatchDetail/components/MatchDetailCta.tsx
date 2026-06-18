@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchDetailStyles } from '../MatchDetail.styles';
@@ -19,9 +20,11 @@ export function MatchDetailCta({
   const styles = useThemedStyles(matchDetailStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const insets = useSafeAreaInsets();
+  const safeBottomPadding = Math.max(insets.bottom, 12) + 12;
 
   return (
-    <View style={styles.cta}>
+    <View style={[styles.cta, { paddingBottom: safeBottomPadding }]}>
       <TouchableOpacity
         style={styles.ctaOutline}
         onPress={onBack}

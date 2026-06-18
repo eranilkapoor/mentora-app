@@ -50,6 +50,8 @@ export function EducationSection({
         options={QualificationOptions}
         value={education.qualification}
         onChange={(val) => onSet('qualification', val)}
+        searchable
+        maxHeight={340}
         required
       />
 

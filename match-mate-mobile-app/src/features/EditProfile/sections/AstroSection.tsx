@@ -109,6 +109,7 @@ export function AstroSection({
             label={t('edit_profile.fields.sub_cast')}
             value={personal.subCast ?? ''}
             onChange={(v) => onSet('subCast', v)}
+            placeholder={t('edit_profile.placeholders.sub_cast')}
           />
         </View>
         <View style={styles.halfField}>
@@ -116,6 +117,7 @@ export function AstroSection({
             label={t('edit_profile.fields.gotra')}
             value={personal.gotra ?? ''}
             onChange={(v) => onSet('gotra', v)}
+            placeholder={t('edit_profile.placeholders.gotra')}
           />
         </View>
       </View>
@@ -134,6 +136,7 @@ export function AstroSection({
             label={t('edit_profile.fields.rashi')}
             value={personal.rashi ?? ''}
             onChange={(v) => onSet('rashi', v)}
+            placeholder={t('edit_profile.placeholders.rashi')}
           />
         </View>
         <View style={styles.halfField}>
@@ -141,6 +144,7 @@ export function AstroSection({
             label={t('edit_profile.fields.nakshatra')}
             value={personal.nakshatra ?? ''}
             onChange={(v) => onSet('nakshatra', v)}
+            placeholder={t('edit_profile.placeholders.nakshatra')}
           />
         </View>
       </View>
