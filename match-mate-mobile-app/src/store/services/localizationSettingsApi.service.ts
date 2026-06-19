@@ -5,6 +5,10 @@ import {
 } from '@/features/LocalizationSettings/LocalizationSettings.types';
 import { baseApi } from './baseApi.service';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
+import {
+  setLocalizationSettings,
+  updateLocalizationSettings as updateCachedLocalizationSettings,
+} from '../slices/settings.slice';
 
 export const localizationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,6 +22,16 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: LocalizationSettings) =>
         wrapSettingsResponse('localization', response),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            setLocalizationSettings(unwrapApiResponse(data).localization)
+          );
+        } catch {
+          // Keep persisted Redux defaults when remote settings are unavailable.
+        }
+      },
 
       providesTags: ['LocalizationSettings'],
     }),
@@ -36,7 +50,13 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: LocalizationSettings) =>
         wrapSettingsResponse('localization', response),
-      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
+        const previousLocalization = (
+          getState() as {
+            settings?: { localization?: LocalizationSettings };
+          }
+        ).settings?.localization;
+        dispatch(updateCachedLocalizationSettings(patch));
         const optimistic = dispatch(
           localizationSettingsApi.util.updateQueryData(
             'getLocalizationSettings',
@@ -50,6 +70,9 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
         try {
           const { data } = await queryFulfilled;
           dispatch(
+            setLocalizationSettings(unwrapApiResponse(data).localization)
+          );
+          dispatch(
             localizationSettingsApi.util.updateQueryData(
               'getLocalizationSettings',
               undefined,
@@ -60,6 +83,9 @@ export const localizationSettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousLocalization) {
+            dispatch(setLocalizationSettings(previousLocalization));
+          }
         }
       },
     }),

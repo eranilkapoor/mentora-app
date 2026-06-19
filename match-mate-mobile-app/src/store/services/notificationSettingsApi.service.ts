@@ -8,6 +8,10 @@ import {
   UpdateNotificationSettingsPayload,
 } from '@/features/NotificationSettings/NotificationSettings.types';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
+import {
+  setNotificationSettings,
+  updateNotificationSettings as updateCachedNotificationSettings,
+} from '../slices/settings.slice';
 
 export const notificationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -22,6 +26,16 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
       transformResponse: (
         response: NotificationSettings | ApiResponse<NotificationSettings>
       ) => wrapSettingsResponse('notification', response),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            setNotificationSettings(unwrapApiResponse(data).notification)
+          );
+        } catch {
+          // Keep local defaults when remote settings are unavailable.
+        }
+      },
 
       providesTags: ['NotificationSettings'],
     }),
@@ -41,7 +55,13 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
       transformResponse: (
         response: NotificationSettings | ApiResponse<NotificationSettings>
       ) => unwrapApiResponse(response),
-      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
+        const previousNotification = (
+          getState() as {
+            settings?: { notification?: NotificationSettings };
+          }
+        ).settings?.notification;
+        dispatch(updateCachedNotificationSettings(patch));
         const optimistic = dispatch(
           notificationSettingsApi.util.updateQueryData(
             'getNotificationSettings',
@@ -54,6 +74,7 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
 
         try {
           const { data } = await queryFulfilled;
+          dispatch(setNotificationSettings(data));
           dispatch(
             notificationSettingsApi.util.updateQueryData(
               'getNotificationSettings',
@@ -65,6 +86,9 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousNotification) {
+            dispatch(setNotificationSettings(previousNotification));
+          }
         }
       },
     }),
@@ -87,8 +111,24 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
       ) => unwrapApiResponse(response),
       async onQueryStarted(
         { event, channel, value },
-        { dispatch, queryFulfilled }
+        { dispatch, getState, queryFulfilled }
       ) {
+        const previousNotification = (
+          getState() as {
+            settings?: { notification?: NotificationSettings };
+          }
+        ).settings?.notification;
+        dispatch(
+          updateCachedNotificationSettings({
+            preferences: {
+              ...(previousNotification?.preferences ?? {}),
+              [event]: {
+                ...(previousNotification?.preferences?.[event] ?? {}),
+                [channel]: value,
+              },
+            } as NotificationSettings['preferences'],
+          })
+        );
         const optimistic = dispatch(
           notificationSettingsApi.util.updateQueryData(
             'getNotificationSettings',
@@ -104,6 +144,7 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
 
         try {
           const { data } = await queryFulfilled;
+          dispatch(setNotificationSettings(data));
           dispatch(
             notificationSettingsApi.util.updateQueryData(
               'getNotificationSettings',
@@ -115,6 +156,9 @@ export const notificationSettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousNotification) {
+            dispatch(setNotificationSettings(previousNotification));
+          }
         }
       },
     }),

@@ -19,11 +19,15 @@ import { isPushNotificationsEnabled } from '@/core/utils/config';
 import { authMethodConfig } from '@/features/Auth/shared/authMethodConfig';
 import { useGetSecuritySettingsQuery } from '@/store/services/securitySettingsApi.service';
 import { useRegisterNotificationDeviceTokenMutation } from '@/store/services/notificationApi.service';
+import { useGetLocalizationSettingsQuery } from '@/store/services/localizationSettingsApi.service';
+import { useGetNotificationSettingsQuery } from '@/store/services/notificationSettingsApi.service';
+import { DEFAULT_NOTIFICATION_SETTINGS } from '@/store/slices/settings.slice';
 import {
   navigateFromNotificationAction,
   parseNotificationAction,
 } from '@/features/Notifications/notificationNavigation';
 import { reportError, setErrorReporterUser } from '@/core/utils/errorReporter';
+import type { QuietHours } from '@/features/NotificationSettings/NotificationSettings.types';
 
 interface Props {
   children: React.ReactNode;
@@ -41,11 +45,55 @@ Notifications.setNotificationHandler({
 const getPushTokenSyncKey = (userId: string): string =>
   `notification-push-token:${userId}`;
 
+const getTimeInMinutes = (value?: string): number | null => {
+  if (!value || !/^\d{2}:\d{2}$/.test(value)) return null;
+  const [hours = '0', minutes = '0'] = value.split(':');
+  return Number(hours) * 60 + Number(minutes);
+};
+
+const getCurrentMinutesForTimezone = (timezone?: string): number => {
+  try {
+    const parts = new Intl.DateTimeFormat('en-US', {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: false,
+      timeZone: timezone ?? 'UTC',
+    }).formatToParts(new Date());
+    const hour = Number(parts.find((part) => part.type === 'hour')?.value ?? 0);
+    const minute = Number(
+      parts.find((part) => part.type === 'minute')?.value ?? 0
+    );
+    return hour * 60 + minute;
+  } catch {
+    const now = new Date();
+    return now.getHours() * 60 + now.getMinutes();
+  }
+};
+
+const isWithinQuietHours = (quietHours?: QuietHours): boolean => {
+  if (!quietHours?.enabled) return false;
+
+  const start = getTimeInMinutes(quietHours.start);
+  const end = getTimeInMinutes(quietHours.end);
+  if (start === null || end === null || start === end) return false;
+
+  const current = getCurrentMinutesForTimezone(quietHours.timezone);
+  return start < end
+    ? current >= start && current < end
+    : current >= start || current < end;
+};
+
 export default function AppInitializer({ children }: Props) {
   const dispatch = useAppDispatch();
   const accessToken = useAppSelector((s) => s.auth.accessToken);
   const userId = useAppSelector((s) => s.auth.user?.userId);
   const lang = useAppSelector((s) => s.settings.language);
+  const notificationSettings = useAppSelector(
+    (s) => s.settings.notification ?? DEFAULT_NOTIFICATION_SETTINGS
+  );
+  const notificationsMuted =
+    notificationSettings.doNotDisturb ||
+    isWithinQuietHours(notificationSettings.quietHours);
 
   const [langReady, setLangReady] = useState(false);
   const [biometricUnlocked, setBiometricUnlocked] = useState(
@@ -59,6 +107,8 @@ export default function AppInitializer({ children }: Props) {
       skip:
         !accessToken || !authMethodConfig.biometric || Platform.OS === 'web',
     });
+  useGetLocalizationSettingsQuery(undefined, { skip: !accessToken });
+  useGetNotificationSettingsQuery(undefined, { skip: !accessToken });
 
   const { data, isLoading } = useVerifyUserQuery(undefined, {
     // Only call the endpoint when a token exists
@@ -127,10 +177,29 @@ export default function AppInitializer({ children }: Props) {
   }, [accessToken, dispatch]);
 
   useEffect(() => {
+    Notifications.setNotificationHandler({
+      handleNotification: async () => ({
+        shouldPlaySound:
+          notificationSettings.soundEnabled && !notificationsMuted,
+        shouldSetBadge: !notificationsMuted,
+        shouldShowBanner:
+          notificationSettings.inAppEnabled && !notificationsMuted,
+        shouldShowList: notificationSettings.inAppEnabled,
+      }),
+    });
+  }, [
+    notificationSettings.inAppEnabled,
+    notificationSettings.soundEnabled,
+    notificationsMuted,
+  ]);
+
+  useEffect(() => {
     if (
       !accessToken ||
       !userId ||
       !isPushNotificationsEnabled() ||
+      !notificationSettings.pushEnabled ||
+      notificationsMuted ||
       Platform.OS === 'web'
     ) {
       return;
@@ -193,7 +262,13 @@ export default function AppInitializer({ children }: Props) {
     return () => {
       isCancelled = true;
     };
-  }, [accessToken, registerPushToken, userId]);
+  }, [
+    accessToken,
+    notificationSettings.pushEnabled,
+    notificationsMuted,
+    registerPushToken,
+    userId,
+  ]);
 
   useEffect(() => {
     if (!isPushNotificationsEnabled() || Platform.OS === 'web') {
