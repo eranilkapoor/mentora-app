@@ -56,7 +56,7 @@ import { ProfileSkeleton } from './components/ProfileSkeleton';
 import { Section } from './components/Section';
 import { Row } from './components/Row';
 import { TagList } from './components/TagList';
-import { showError } from '@/core/utils/toast';
+import { showError, showInfo } from '@/core/utils/toast';
 import {
   getPersonalityBadgeIcon,
   getPersonalityBadgeLabel,
@@ -68,6 +68,7 @@ import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
 
 const UPLOAD_VIDEOS_FEATURE = 'upload_videos';
+const DATA_EXPORT_FEATURE = 'data_export';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -150,6 +151,11 @@ const getPrintableProfilePhoto = (
       (url): url is string =>
         typeof url === 'string' && /^(https:|http:|data:)/i.test(url.trim())
     );
+
+const canEmbedPhotoInPdf = (privacy: PrivacySettings | undefined): boolean => {
+  if (!privacy) return false;
+  return privacy.showPhotosTo === 'everyone' && !privacy.blurPhotosForUnmatched;
+};
 
 const toDisplayText = (value: Primitive): string => {
   if (value === undefined || value === null) return EMPTY_VALUE;
@@ -799,6 +805,8 @@ export default function ProfileScreen({
   const { hasFeature: canUploadVideos } = usePlanFeatureAccess(
     UPLOAD_VIDEOS_FEATURE
   );
+  const { hasFeature: canExportProfile, isLoading: isExportFeatureLoading } =
+    usePlanFeatureAccess(DATA_EXPORT_FEATURE);
 
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [pdfAction, setPdfAction] = useState<PdfAction | null>(null);
@@ -917,6 +925,19 @@ export default function ProfileScreen({
   const handleProfilePdf = useCallback(
     async (action: PdfAction): Promise<void> => {
       if (pdfAction !== null) return;
+      if (!canExportProfile) {
+        showInfo({
+          title: t('profile.export_locked_title', {
+            defaultValue: 'Upgrade required',
+          }),
+          message: t('profile.export_locked_message', {
+            defaultValue:
+              'Your current plan does not include profile download or sharing.',
+          }),
+        });
+        return;
+      }
+
       setPdfAction(action);
 
       try {
@@ -935,8 +956,11 @@ export default function ProfileScreen({
         };
 
         let uri: string;
+        const pdfPhoto = canEmbedPhotoInPdf(privacyResponse?.privacy)
+          ? printablePhoto
+          : undefined;
         try {
-          uri = await buildPdf(printablePhoto);
+          uri = await buildPdf(pdfPhoto);
         } catch {
           // Photo embed failed — retry without image
           if (__DEV__) {
@@ -978,6 +1002,7 @@ export default function ProfileScreen({
     },
     [
       pdfAction,
+      canExportProfile,
       printablePhoto,
       privacyResponse?.privacy,
       profileData,
@@ -1495,14 +1520,17 @@ export default function ProfileScreen({
           activeOpacity={0.85}
           accessibilityRole="button"
           accessibilityLabel={t('profile.download_pdf_label')}
-          disabled={pdfAction !== null}
+          disabled={pdfAction !== null || isExportFeatureLoading}
           onPress={() => {
             void handleProfilePdf('download');
           }}
           style={[
             styles.pdfActionButton,
             styles.pdfDownloadButton,
-            pdfAction !== null && styles.pdfActionButtonDisabled,
+            (pdfAction !== null ||
+              isExportFeatureLoading ||
+              !canExportProfile) &&
+              styles.pdfActionButtonDisabled,
           ]}
         >
           {pdfAction === 'download' ? (
@@ -1521,14 +1549,17 @@ export default function ProfileScreen({
           activeOpacity={0.85}
           accessibilityRole="button"
           accessibilityLabel={t('profile.share_pdf_label')}
-          disabled={pdfAction !== null}
+          disabled={pdfAction !== null || isExportFeatureLoading}
           onPress={() => {
             void handleProfilePdf('share');
           }}
           style={[
             styles.pdfActionButton,
             styles.pdfShareButton,
-            pdfAction !== null && styles.pdfActionButtonDisabled,
+            (pdfAction !== null ||
+              isExportFeatureLoading ||
+              !canExportProfile) &&
+              styles.pdfActionButtonDisabled,
           ]}
         >
           {pdfAction === 'share' ? (

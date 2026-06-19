@@ -40,7 +40,6 @@ import { SkeletonList } from './components/SkeletonList';
 import { chatListStyles } from './ChatList.styles';
 import { ChatFilter, ChatListProps, ChatMatch } from './ChatList.types';
 
-const FALLBACK_AVATAR = 'https://i.pravatar.cc/150?img=12';
 const FILTERS: Array<{
   key: ChatFilter;
   labelKey: string;
@@ -201,7 +200,7 @@ export default function ChatListScreen({
           ...(conversation.lastMessage?.senderId
             ? { lastMessageSenderId: conversation.lastMessage.senderId }
             : {}),
-          avatarUrl: avatarUrl ?? FALLBACK_AVATAR,
+          ...(avatarUrl ? { avatarUrl } : {}),
           matchedAt: conversation.updatedAt ?? new Date().toISOString(),
           isOnline: Boolean(participant.isOnline),
           unreadCount: conversation.unreadCount,

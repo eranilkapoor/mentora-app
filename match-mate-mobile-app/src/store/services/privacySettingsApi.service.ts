@@ -9,6 +9,10 @@ import {
   UpdatePrivacySettingsPayload,
 } from '../../features/PrivacySettings/PrivacySettings.types';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
+import {
+  setPrivacySettings,
+  updatePrivacySettings as updateCachedPrivacySettings,
+} from '../slices/settings.slice';
 
 export const privacySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,6 +22,14 @@ export const privacySettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: PrivacySettings) =>
         wrapSettingsResponse('privacy', response),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setPrivacySettings(unwrapApiResponse(data).privacy));
+        } catch {
+          // Keep local defaults when remote settings are unavailable.
+        }
+      },
 
       providesTags: ['PrivacySettings'],
     }),
@@ -33,7 +45,13 @@ export const privacySettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: PrivacySettings) =>
         unwrapApiResponse(response),
-      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
+        const previousPrivacy = (
+          getState() as {
+            settings?: { privacy?: PrivacySettings };
+          }
+        ).settings?.privacy;
+        dispatch(updateCachedPrivacySettings(patch));
         const optimistic = dispatch(
           privacySettingsApi.util.updateQueryData(
             'getPrivacySettings',
@@ -46,6 +64,7 @@ export const privacySettingsApi = baseApi.injectEndpoints({
 
         try {
           const { data } = await queryFulfilled;
+          dispatch(setPrivacySettings(data));
           dispatch(
             privacySettingsApi.util.updateQueryData(
               'getPrivacySettings',
@@ -57,6 +76,9 @@ export const privacySettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousPrivacy) {
+            dispatch(setPrivacySettings(previousPrivacy));
+          }
         }
       },
     }),

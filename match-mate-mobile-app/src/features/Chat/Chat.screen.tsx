@@ -30,6 +30,8 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useAppSelector } from '@/store/hooks';
 import { useTranslation } from 'react-i18next';
+import { DEFAULT_COMMUNICATION_SETTINGS } from '@/store/slices/settings.slice';
+import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
 import {
   ChatMessage,
   useCreateDirectRoomMutation,
@@ -46,6 +48,7 @@ import {
 } from '@/store/services/privacySettingsApi.service';
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showInfo, showSuccess } from '@/core/utils/toast';
+import { resolveApiUrl } from '@/core/utils/config';
 import { chatStyles } from './Chat.styles';
 import { formatDateLabel, Message, Props } from './Chat.types';
 import { DateSeparator } from './components/DateSeparator';
@@ -57,6 +60,11 @@ import {
   REALTIME_USER_BLOCKED_EVENT,
   UserBlockedPayload,
 } from '@/core/realtime/realtime.service';
+
+const FEATURE_READ_RECEIPTS = 'read_receipts';
+const FEATURE_TYPING_INDICATOR = 'typing_indicator';
+const FEATURE_SEND_IMAGES_IN_CHAT = 'send_images_in_chat';
+const FEATURE_SEND_VOICE_NOTES = 'send_voice_notes';
 
 const mapMessage = (message: ChatMessage): Message => {
   const type = String(message.type).toLowerCase();
@@ -104,7 +112,14 @@ export default function ChatScreen({
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const currentUserId = useAppSelector((state) => state.auth.user?.userId);
+  const communicationSettings = useAppSelector(
+    (state) => state.settings.communication ?? DEFAULT_COMMUNICATION_SETTINGS
+  );
   const { userId, roomId, partnerName, partnerPhoto } = route.params ?? {};
+  const resolvedPartnerPhoto = useMemo(
+    () => (partnerPhoto ? resolveApiUrl(partnerPhoto) : null),
+    [partnerPhoto]
+  );
   const [activeRoomId, setActiveRoomId] = useState(roomId);
   const [inputText, setInputText] = useState('');
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -130,6 +145,32 @@ export default function ChatScreen({
   const [markRoomRead] = useMarkRoomReadMutation();
   const [blockUser] = useBlockUserMutation();
   const [reportUser] = useReportUserMutation();
+  const {
+    hasFeature: hasReadReceiptsFeature,
+    isLoading: isReadReceiptsFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_READ_RECEIPTS);
+  const {
+    hasFeature: hasTypingIndicatorFeature,
+    isLoading: isTypingIndicatorFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_TYPING_INDICATOR);
+  const {
+    hasFeature: hasImageChatFeature,
+    isLoading: isImageChatFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_SEND_IMAGES_IN_CHAT);
+  const {
+    hasFeature: hasVoiceNotesFeature,
+    isLoading: isVoiceNotesFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_SEND_VOICE_NOTES);
+  const readReceiptsEnabled =
+    !isReadReceiptsFeatureLoading &&
+    hasReadReceiptsFeature &&
+    communicationSettings.showReadReceipts;
+  const typingIndicatorEnabled =
+    !isTypingIndicatorFeatureLoading &&
+    hasTypingIndicatorFeature &&
+    communicationSettings.showTypingIndicator;
+  const canSendChatImages = !isImageChatFeatureLoading && hasImageChatFeature;
+  const canSendVoiceNotes = !isVoiceNotesFeatureLoading && hasVoiceNotesFeature;
   const lastReadRequestRef = useRef<string | null>(null);
   const { data, isFetching } = useGetMessagesQuery(
     { roomId: activeRoomId ?? '', limit: 50 },
@@ -248,6 +289,7 @@ export default function ChatScreen({
 
   useEffect(() => {
     if (!activeRoomId || !currentUserId || !data?.success) return;
+    if (!readReceiptsEnabled) return;
 
     const incomingUnreadMessages = data.data.items.filter(
       (message) => message.senderId !== currentUserId && !message.readAt
@@ -269,7 +311,7 @@ export default function ChatScreen({
       .catch(() => {
         lastReadRequestRef.current = null;
       });
-  }, [activeRoomId, currentUserId, data, markRoomRead]);
+  }, [activeRoomId, currentUserId, data, markRoomRead, readReceiptsEnabled]);
 
   const handleSend = useCallback(async (): Promise<void> => {
     const content = inputText.trim();
@@ -294,6 +336,17 @@ export default function ChatScreen({
 
   const handlePickImage = useCallback(async (): Promise<void> => {
     if (!activeRoomId || isUploadingAttachment || isSending) return;
+    if (!canSendChatImages) {
+      showInfo({
+        title: t('chat.feature_locked_title', {
+          defaultValue: 'Upgrade required',
+        }),
+        message: t('chat.image_feature_locked_message', {
+          defaultValue: 'Your current plan does not include chat images.',
+        }),
+      });
+      return;
+    }
 
     try {
       const permission =
@@ -347,6 +400,7 @@ export default function ChatScreen({
     }
   }, [
     activeRoomId,
+    canSendChatImages,
     isSending,
     isUploadingAttachment,
     sendMessage,
@@ -361,6 +415,17 @@ export default function ChatScreen({
       isUploadingAttachment ||
       isSending
     ) {
+      return;
+    }
+    if (!canSendVoiceNotes) {
+      showInfo({
+        title: t('chat.feature_locked_title', {
+          defaultValue: 'Upgrade required',
+        }),
+        message: t('chat.voice_feature_locked_message', {
+          defaultValue: 'Your current plan does not include voice notes.',
+        }),
+      });
       return;
     }
 
@@ -403,7 +468,14 @@ export default function ChatScreen({
     } finally {
       setIsRecordingBusy(false);
     }
-  }, [activeRoomId, isRecordingBusy, isSending, isUploadingAttachment, t]);
+  }, [
+    activeRoomId,
+    canSendVoiceNotes,
+    isRecordingBusy,
+    isSending,
+    isUploadingAttachment,
+    t,
+  ]);
 
   const handleStopVoiceRecording = useCallback(
     async (shouldSend = true): Promise<void> => {
@@ -420,7 +492,13 @@ export default function ChatScreen({
         setRecording(null);
         setRecordingDurationMs(0);
 
-        if (!shouldSend || !uri || !activeRoomId || durationMs < 800) {
+        if (
+          !shouldSend ||
+          !uri ||
+          !activeRoomId ||
+          durationMs < 800 ||
+          !canSendVoiceNotes
+        ) {
           return;
         }
 
@@ -458,6 +536,7 @@ export default function ChatScreen({
     },
     [
       activeRoomId,
+      canSendVoiceNotes,
       isRecordingBusy,
       recording,
       recordingDurationMs,
@@ -622,7 +701,7 @@ export default function ChatScreen({
             ? t('common.loading')
             : t('chat.messages')
         }
-        avatarUri={partnerPhoto ?? 'https://i.pravatar.cc/150?img=12'}
+        avatarUri={resolvedPartnerPhoto ?? undefined}
         onIdentityPress={handleOpenProfile}
         identityAccessibilityLabel={
           partnerName
@@ -722,47 +801,59 @@ export default function ChatScreen({
               />
             </TouchableOpacity>
 
-            <TouchableOpacity
-              onPress={() => {
-                void handlePickImage();
-              }}
-              style={styles.iconBtn}
-              activeOpacity={0.7}
-              accessibilityRole="button"
-              accessibilityLabel={t('chat.send_image')}
-            >
-              <Feather name="image" size={20} color={theme.colors.textMuted} />
-            </TouchableOpacity>
+            {canSendChatImages ? (
+              <TouchableOpacity
+                onPress={() => {
+                  void handlePickImage();
+                }}
+                style={styles.iconBtn}
+                activeOpacity={0.7}
+                disabled={!activeRoomId || isUploadingAttachment || isSending}
+                accessibilityRole="button"
+                accessibilityLabel={t('chat.send_image')}
+              >
+                <Feather
+                  name="image"
+                  size={20}
+                  color={theme.colors.textMuted}
+                />
+              </TouchableOpacity>
+            ) : null}
 
-            <TouchableOpacity
-              onPress={() => {
-                if (recording) {
-                  void handleStopVoiceRecording(true);
-                } else {
-                  void handleStartVoiceRecording();
+            {canSendVoiceNotes || recording ? (
+              <TouchableOpacity
+                onPress={() => {
+                  if (recording) {
+                    void handleStopVoiceRecording(true);
+                  } else {
+                    void handleStartVoiceRecording();
+                  }
+                }}
+                style={[styles.iconBtn, recording && styles.recordingIconBtn]}
+                activeOpacity={0.7}
+                disabled={
+                  !activeRoomId ||
+                  isRecordingBusy ||
+                  isUploadingAttachment ||
+                  isSending ||
+                  (!recording && !canSendVoiceNotes)
                 }
-              }}
-              style={[styles.iconBtn, recording && styles.recordingIconBtn]}
-              activeOpacity={0.7}
-              disabled={
-                !activeRoomId ||
-                isRecordingBusy ||
-                isUploadingAttachment ||
-                isSending
-              }
-              accessibilityRole="button"
-              accessibilityLabel={
-                recording
-                  ? t('chat.send_voice_recording')
-                  : t('chat.start_voice_recording')
-              }
-            >
-              <Feather
-                name={recording ? 'send' : 'mic'}
-                size={20}
-                color={recording ? theme.colors.white : theme.colors.textMuted}
-              />
-            </TouchableOpacity>
+                accessibilityRole="button"
+                accessibilityLabel={
+                  recording
+                    ? t('chat.send_voice_recording')
+                    : t('chat.start_voice_recording')
+                }
+              >
+                <Feather
+                  name={recording ? 'send' : 'mic'}
+                  size={20}
+                  color={
+                    recording ? theme.colors.white : theme.colors.textMuted
+                  }
+                />
+              </TouchableOpacity>
+            ) : null}
 
             <TextInput
               ref={inputRef}
@@ -772,7 +863,7 @@ export default function ChatScreen({
               value={inputText}
               onChangeText={(value) => {
                 setInputText(value);
-                if (activeRoomId) {
+                if (activeRoomId && typingIndicatorEnabled) {
                   emitTyping(activeRoomId, value.trim().length > 0);
                 }
               }}

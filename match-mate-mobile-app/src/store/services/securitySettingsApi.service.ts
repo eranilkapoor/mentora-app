@@ -11,6 +11,10 @@ import {
 } from '@/features/SecuritySettings/SecuritySettings.types';
 import { ApiResponse } from '@/core/types';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
+import {
+  setSecuritySettings,
+  updateSecuritySettings as updateCachedSecuritySettings,
+} from '../slices/settings.slice';
 
 export const securitySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -24,6 +28,14 @@ export const securitySettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: SecuritySettings) =>
         wrapSettingsResponse('security', response),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setSecuritySettings(unwrapApiResponse(data).security));
+        } catch {
+          // Keep local defaults when remote settings are unavailable.
+        }
+      },
 
       providesTags: ['SecuritySettings'],
     }),
@@ -42,7 +54,13 @@ export const securitySettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: SecuritySettings) =>
         unwrapApiResponse(response),
-      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
+        const previousSecurity = (
+          getState() as {
+            settings?: { security?: SecuritySettings };
+          }
+        ).settings?.security;
+        dispatch(updateCachedSecuritySettings(patch));
         const optimistic = dispatch(
           securitySettingsApi.util.updateQueryData(
             'getSecuritySettings',
@@ -55,6 +73,7 @@ export const securitySettingsApi = baseApi.injectEndpoints({
 
         try {
           const { data } = await queryFulfilled;
+          dispatch(setSecuritySettings(data));
           dispatch(
             securitySettingsApi.util.updateQueryData(
               'getSecuritySettings',
@@ -66,6 +85,9 @@ export const securitySettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousSecurity) {
+            dispatch(setSecuritySettings(previousSecurity));
+          }
         }
       },
     }),

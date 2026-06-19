@@ -26,6 +26,15 @@ import {
   CommunicationSetting,
   CommunicationSettingDocument,
 } from '../../settings/schemas/communication-setting.schema';
+import {
+  Media,
+  MediaDocument,
+} from '../../profiles/schemas/media/media.schema';
+import { MediaType } from '@/common/enums';
+import {
+  MediaModerationStatus,
+  MediaStatus,
+} from '../../profiles/enums/profile-media.enums';
 @Injectable()
 export class ChatRepository {
   constructor(
@@ -43,6 +52,9 @@ export class ChatRepository {
 
     @InjectModel(CommunicationSetting.name)
     private readonly communicationModel: Model<CommunicationSettingDocument>,
+
+    @InjectModel(Media.name)
+    private readonly mediaModel: Model<MediaDocument>,
 
     @InjectModel(Match.name)
     private readonly matchModel: Model<MatchDocument>,
@@ -64,6 +76,19 @@ export class ChatRepository {
   async findProfilesByUserIds(userIds: string[]) {
     return this.profileModel
       .find({ userId: { $in: this.toObjectIds(userIds) } })
+      .lean();
+  }
+
+  async findPrimaryImageMediaByUserIds(userIds: string[]) {
+    return this.mediaModel
+      .find({
+        userId: { $in: this.toObjectIds(userIds) },
+        type: MediaType.IMAGE,
+        status: MediaStatus.ACTIVE,
+        moderationStatus: MediaModerationStatus.APPROVED,
+        isActive: { $ne: false },
+      })
+      .sort({ isPrimary: -1, uploadedAt: -1, createdAt: -1 })
       .lean();
   }
 

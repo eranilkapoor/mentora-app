@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Notifications from 'expo-notifications';
+import * as ScreenCapture from 'expo-screen-capture';
 import { Platform } from 'react-native';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -18,10 +19,16 @@ import {
 import { isPushNotificationsEnabled } from '@/core/utils/config';
 import { authMethodConfig } from '@/features/Auth/shared/authMethodConfig';
 import { useGetSecuritySettingsQuery } from '@/store/services/securitySettingsApi.service';
+import { useGetAccountSettingsQuery } from '@/store/services/accountSettingsApi.service';
+import { useGetPrivacySettingsQuery } from '@/store/services/privacySettingsApi.service';
+import { useGetCommunicationSettingsQuery } from '@/store/services/communicationSettingsApi.service';
 import { useRegisterNotificationDeviceTokenMutation } from '@/store/services/notificationApi.service';
 import { useGetLocalizationSettingsQuery } from '@/store/services/localizationSettingsApi.service';
 import { useGetNotificationSettingsQuery } from '@/store/services/notificationSettingsApi.service';
-import { DEFAULT_NOTIFICATION_SETTINGS } from '@/store/slices/settings.slice';
+import {
+  DEFAULT_NOTIFICATION_SETTINGS,
+  DEFAULT_PRIVACY_SETTINGS,
+} from '@/store/slices/settings.slice';
 import {
   navigateFromNotificationAction,
   parseNotificationAction,
@@ -91,6 +98,9 @@ export default function AppInitializer({ children }: Props) {
   const notificationSettings = useAppSelector(
     (s) => s.settings.notification ?? DEFAULT_NOTIFICATION_SETTINGS
   );
+  const privacySettings = useAppSelector(
+    (s) => s.settings.privacy ?? DEFAULT_PRIVACY_SETTINGS
+  );
   const notificationsMuted =
     notificationSettings.doNotDisturb ||
     isWithinQuietHours(notificationSettings.quietHours);
@@ -109,6 +119,9 @@ export default function AppInitializer({ children }: Props) {
     });
   useGetLocalizationSettingsQuery(undefined, { skip: !accessToken });
   useGetNotificationSettingsQuery(undefined, { skip: !accessToken });
+  useGetAccountSettingsQuery(undefined, { skip: !accessToken });
+  useGetPrivacySettingsQuery(undefined, { skip: !accessToken });
+  useGetCommunicationSettingsQuery(undefined, { skip: !accessToken });
 
   const { data, isLoading } = useVerifyUserQuery(undefined, {
     // Only call the endpoint when a token exists
@@ -192,6 +205,38 @@ export default function AppInitializer({ children }: Props) {
     notificationSettings.soundEnabled,
     notificationsMuted,
   ]);
+
+  useEffect(() => {
+    if (Platform.OS === 'web') {
+      return;
+    }
+
+    const applyScreenCapturePolicy = async () => {
+      try {
+        if (!accessToken || privacySettings.allowScreenshots) {
+          await ScreenCapture.allowScreenCaptureAsync();
+          return;
+        }
+
+        await ScreenCapture.preventScreenCaptureAsync();
+      } catch (error) {
+        reportError(error, {
+          source: 'AppInitializer.applyScreenCapturePolicy',
+          allowScreenshots: privacySettings.allowScreenshots,
+        });
+      }
+    };
+
+    void applyScreenCapturePolicy();
+
+    return () => {
+      void ScreenCapture.allowScreenCaptureAsync().catch((error) => {
+        reportError(error, {
+          source: 'AppInitializer.releaseScreenCapturePolicy',
+        });
+      });
+    };
+  }, [accessToken, privacySettings.allowScreenshots]);
 
   useEffect(() => {
     if (

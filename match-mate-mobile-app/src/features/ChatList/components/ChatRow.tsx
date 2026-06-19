@@ -4,6 +4,7 @@ import { chatListStyles } from '../ChatList.styles';
 import {
   GestureResponderEvent,
   Image,
+  ImageSourcePropType,
   Platform,
   Pressable,
   TouchableOpacity,
@@ -12,6 +13,9 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
+
+const FALLBACK_AVATAR =
+  require('@/assets/images/avatar-placeholder.png') as ImageSourcePropType;
 
 export function ChatRow({
   item,
@@ -62,7 +66,7 @@ export function ChatRow({
       {/* Avatar */}
       <View style={styles.avatarWrap}>
         <Image
-          source={{ uri: item.avatarUrl }}
+          source={item.avatarUrl ? { uri: item.avatarUrl } : FALLBACK_AVATAR}
           style={[styles.avatar, item.unreadCount > 0 && styles.avatarUnread]}
         />
         {item.isOnline && <View style={styles.onlineDot} />}

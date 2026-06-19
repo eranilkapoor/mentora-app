@@ -23,8 +23,14 @@ import {
   CommunicationSettingsScreenProps,
 } from './CommunicationSettings.types';
 import { AutoReplyInput } from './components/AutoReplyInput';
+import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
 
 type SelectKey = 'whoCanMessage' | 'whoCanCall';
+
+const FEATURE_READ_RECEIPTS = 'read_receipts';
+const FEATURE_TYPING_INDICATOR = 'typing_indicator';
+const FEATURE_VOICE_CALL = 'voice_call';
+const FEATURE_VIDEO_CALL = 'video_call';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -39,9 +45,29 @@ export default function CommunicationSettingsScreen({
 
   const { data, isLoading } = useGetCommunicationSettingsQuery();
   const [updateSettings] = useUpdateCommunicationSettingsMutation();
+  const {
+    hasFeature: canUseReadReceipts,
+    isLoading: readReceiptsFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_READ_RECEIPTS);
+  const {
+    hasFeature: canUseTypingIndicator,
+    isLoading: typingIndicatorFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_TYPING_INDICATOR);
+  const { hasFeature: canUseVoiceCalls, isLoading: voiceCallFeatureLoading } =
+    usePlanFeatureAccess(FEATURE_VOICE_CALL);
+  const { hasFeature: canUseVideoCalls, isLoading: videoCallFeatureLoading } =
+    usePlanFeatureAccess(FEATURE_VIDEO_CALL);
 
   const settings = data?.communication;
   const [activeSelect, setActiveSelect] = useState<SelectKey | null>(null);
+  const featureLoading =
+    readReceiptsFeatureLoading ||
+    typingIndicatorFeatureLoading ||
+    voiceCallFeatureLoading ||
+    videoCallFeatureLoading;
+  const restrictedHint = t('settings.communication.plan_restricted', {
+    defaultValue: 'Upgrade your plan to use this communication option.',
+  });
 
   const [autoReplyMessage, setAutoReplyMessage] = useState(
     settings?.autoReplyMessage ?? ''
@@ -96,7 +122,7 @@ export default function CommunicationSettingsScreen({
     }
   }, [autoReplyMessage, handleUpdate, settings?.autoReplyMessage]);
 
-  if (isLoading || !settings) {
+  if (isLoading || featureLoading || !settings) {
     return <Loader fullScreen size="large" />;
   }
 
@@ -131,17 +157,35 @@ export default function CommunicationSettingsScreen({
           <SettingsToggleItem
             icon="check-circle"
             label={t('settings.communication.read_receipts')}
-            sublabel={t('settings.communication.read_receipts_sub')}
-            value={settings?.showReadReceipts ?? false}
-            onChange={(v) => handleToggle('showReadReceipts', v)}
+            sublabel={
+              canUseReadReceipts
+                ? t('settings.communication.read_receipts_sub')
+                : restrictedHint
+            }
+            value={canUseReadReceipts && (settings?.showReadReceipts ?? false)}
+            disabled={!canUseReadReceipts}
+            onChange={(v) => {
+              if (canUseReadReceipts) void handleToggle('showReadReceipts', v);
+            }}
           />
           <SettingsToggleItem
             icon="edit-2"
             label={t('settings.communication.typing_indicator')}
-            sublabel={t('settings.communication.typing_indicator_sub')}
-            value={settings?.showTypingIndicator ?? true}
+            sublabel={
+              canUseTypingIndicator
+                ? t('settings.communication.typing_indicator_sub')
+                : restrictedHint
+            }
+            value={
+              canUseTypingIndicator && (settings?.showTypingIndicator ?? true)
+            }
+            disabled={!canUseTypingIndicator}
             isLast
-            onChange={(v) => handleToggle('showTypingIndicator', v)}
+            onChange={(v) => {
+              if (canUseTypingIndicator) {
+                void handleToggle('showTypingIndicator', v);
+              }
+            }}
           />
         </SettingsCard>
 
@@ -185,28 +229,47 @@ export default function CommunicationSettingsScreen({
                 'Choose who can request voice or video calls with you.',
             })}
             value={formatValue(permissionOptions, settings?.whoCanCall)}
-            onPress={() => setActiveSelect('whoCanCall')}
+            disabled={!canUseVoiceCalls && !canUseVideoCalls}
+            onPress={() => {
+              if (canUseVoiceCalls || canUseVideoCalls) {
+                setActiveSelect('whoCanCall');
+              }
+            }}
           />
           <SettingsToggleItem
             icon="phone-call"
             label={t('settings.communication.voice_calls')}
-            sublabel={t('settings.communication.voice_calls_sub', {
-              defaultValue:
-                'Allow voice calls from people who match your call permission.',
-            })}
-            value={settings?.allowVoiceCalls ?? true}
-            onChange={(v) => handleToggle('allowVoiceCalls', v)}
+            sublabel={
+              canUseVoiceCalls
+                ? t('settings.communication.voice_calls_sub', {
+                    defaultValue:
+                      'Allow voice calls from people who match your call permission.',
+                  })
+                : restrictedHint
+            }
+            value={canUseVoiceCalls && (settings?.allowVoiceCalls ?? true)}
+            disabled={!canUseVoiceCalls}
+            onChange={(v) => {
+              if (canUseVoiceCalls) void handleToggle('allowVoiceCalls', v);
+            }}
           />
           <SettingsToggleItem
             icon="video"
             label={t('settings.communication.video_calls')}
-            sublabel={t('settings.communication.video_calls_sub', {
-              defaultValue:
-                'Allow video calls from people who match your call permission.',
-            })}
-            value={settings?.allowVideoCalls ?? true}
+            sublabel={
+              canUseVideoCalls
+                ? t('settings.communication.video_calls_sub', {
+                    defaultValue:
+                      'Allow video calls from people who match your call permission.',
+                  })
+                : restrictedHint
+            }
+            value={canUseVideoCalls && (settings?.allowVideoCalls ?? true)}
+            disabled={!canUseVideoCalls}
             isLast
-            onChange={(v) => handleToggle('allowVideoCalls', v)}
+            onChange={(v) => {
+              if (canUseVideoCalls) void handleToggle('allowVideoCalls', v);
+            }}
           />
         </SettingsCard>
 

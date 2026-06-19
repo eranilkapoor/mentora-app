@@ -3,6 +3,10 @@ import type { AccessibilitySettings } from '@/features/AccessibilitySettings/Acc
 import type { MediaSettings } from '@/features/MediaSettings/MediaSettings.types';
 import type { LocalizationSettings } from '@/features/LocalizationSettings/LocalizationSettings.types';
 import type { NotificationSettings } from '@/features/NotificationSettings/NotificationSettings.types';
+import type { AccountSettings } from '@/features/AccountSettings/accountSettings.types';
+import type { SecuritySettings } from '@/features/SecuritySettings/SecuritySettings.types';
+import type { PrivacySettings } from '@/features/PrivacySettings/PrivacySettings.types';
+import type { CommunicationSettings } from '@/features/CommunicationSettings/CommunicationSettings.types';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type Language = 'en' | 'hi';
@@ -76,6 +80,57 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
   },
 };
 
+export const DEFAULT_ACCOUNT_SETTINGS: AccountSettings = {
+  emailVerified: false,
+  phoneVerified: false,
+  profileVerified: false,
+  verification: {
+    isVerified: false,
+    isProfileVerified: false,
+    isEmailVerified: false,
+    isPhoneVerified: false,
+  },
+  isDeactivated: false,
+  linkedAccounts: [],
+};
+
+export const DEFAULT_SECURITY_SETTINGS: SecuritySettings = {
+  twoFactorEnabled: false,
+  twoFactorMethod: 'none',
+  biometricEnabled: false,
+  appPinEnabled: false,
+  suspiciousLoginAlerts: true,
+  loginNotifications: true,
+  loginDevices: [],
+};
+
+export const DEFAULT_PRIVACY_SETTINGS: PrivacySettings = {
+  profileVisibility: 'public',
+  incognitoMode: false,
+  showOnlyToPremium: false,
+  showPhone: false,
+  showEmail: false,
+  showIncome: false,
+  showExactAge: true,
+  showPhotosTo: 'everyone',
+  blurPhotosForUnmatched: false,
+  allowScreenshots: false,
+  showOnlineStatus: true,
+  showLastSeen: 'everyone',
+  allowMessagesFrom: 'matches_only',
+};
+
+export const DEFAULT_COMMUNICATION_SETTINGS: CommunicationSettings = {
+  whoCanMessage: 'matches_only',
+  whoCanCall: 'matches_only',
+  showReadReceipts: true,
+  showTypingIndicator: true,
+  autoReplyEnabled: false,
+  autoReplyMessage: '',
+  allowVoiceCalls: true,
+  allowVideoCalls: true,
+};
+
 export interface SettingsState {
   theme: ThemeMode;
   language: Language;
@@ -83,6 +138,10 @@ export interface SettingsState {
   media: MediaSettings;
   localization: LocalizationSettings;
   notification: NotificationSettings;
+  account: AccountSettings;
+  security: SecuritySettings;
+  privacy: PrivacySettings;
+  communication: CommunicationSettings;
 
   locationSharing: boolean;
   soundEnabled: boolean;
@@ -97,6 +156,10 @@ const initialState: SettingsState = {
   media: DEFAULT_MEDIA_SETTINGS,
   localization: DEFAULT_LOCALIZATION_SETTINGS,
   notification: DEFAULT_NOTIFICATION_SETTINGS,
+  account: DEFAULT_ACCOUNT_SETTINGS,
+  security: DEFAULT_SECURITY_SETTINGS,
+  privacy: DEFAULT_PRIVACY_SETTINGS,
+  communication: DEFAULT_COMMUNICATION_SETTINGS,
 
   locationSharing: false,
   soundEnabled: true,
@@ -226,6 +289,96 @@ const settingsSlice = createSlice({
       state.vibrationEnabled = state.notification.vibrationEnabled;
     },
 
+    setAccountSettings: (state, action: PayloadAction<AccountSettings>) => {
+      state.account = {
+        ...DEFAULT_ACCOUNT_SETTINGS,
+        ...action.payload,
+        verification: {
+          ...DEFAULT_ACCOUNT_SETTINGS.verification,
+          ...(action.payload.verification ?? {}),
+        },
+        linkedAccounts: action.payload.linkedAccounts ?? [],
+      };
+    },
+
+    updateAccountSettings: (
+      state,
+      action: PayloadAction<Partial<AccountSettings>>
+    ) => {
+      state.account = {
+        ...(state.account ?? DEFAULT_ACCOUNT_SETTINGS),
+        ...action.payload,
+        verification: {
+          ...(state.account?.verification ??
+            DEFAULT_ACCOUNT_SETTINGS.verification),
+          ...(action.payload.verification ?? {}),
+        },
+        linkedAccounts:
+          action.payload.linkedAccounts ??
+          state.account?.linkedAccounts ??
+          DEFAULT_ACCOUNT_SETTINGS.linkedAccounts,
+      };
+    },
+
+    setSecuritySettings: (state, action: PayloadAction<SecuritySettings>) => {
+      state.security = {
+        ...DEFAULT_SECURITY_SETTINGS,
+        ...action.payload,
+        loginDevices: action.payload.loginDevices ?? [],
+      };
+    },
+
+    updateSecuritySettings: (
+      state,
+      action: PayloadAction<Partial<SecuritySettings>>
+    ) => {
+      state.security = {
+        ...(state.security ?? DEFAULT_SECURITY_SETTINGS),
+        ...action.payload,
+        loginDevices:
+          action.payload.loginDevices ??
+          state.security?.loginDevices ??
+          DEFAULT_SECURITY_SETTINGS.loginDevices,
+      };
+    },
+
+    setPrivacySettings: (state, action: PayloadAction<PrivacySettings>) => {
+      state.privacy = {
+        ...DEFAULT_PRIVACY_SETTINGS,
+        ...action.payload,
+      };
+    },
+
+    updatePrivacySettings: (
+      state,
+      action: PayloadAction<Partial<PrivacySettings>>
+    ) => {
+      state.privacy = {
+        ...(state.privacy ?? DEFAULT_PRIVACY_SETTINGS),
+        ...action.payload,
+      };
+    },
+
+    setCommunicationSettings: (
+      state,
+      action: PayloadAction<CommunicationSettings>
+    ) => {
+      state.communication = {
+        ...DEFAULT_COMMUNICATION_SETTINGS,
+        ...action.payload,
+      };
+    },
+
+    updateCommunicationSettings: (
+      state,
+      action: PayloadAction<Partial<CommunicationSettings>>
+    ) => {
+      state.communication = {
+        ...(state.communication ?? DEFAULT_COMMUNICATION_SETTINGS),
+        ...action.payload,
+      };
+    },
+
     setLocationSharing: (state, action: PayloadAction<boolean>) => {
       state.locationSharing = action.payload;
     },
@@ -271,6 +424,14 @@ export const {
   updateLocalizationSettings,
   setNotificationSettings,
   updateNotificationSettings,
+  setAccountSettings,
+  updateAccountSettings,
+  setSecuritySettings,
+  updateSecuritySettings,
+  setPrivacySettings,
+  updatePrivacySettings,
+  setCommunicationSettings,
+  updateCommunicationSettings,
   resetSettings,
 } = settingsSlice.actions;
 

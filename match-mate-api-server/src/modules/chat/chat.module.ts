@@ -22,6 +22,7 @@ import {
   CommunicationSetting,
   CommunicationSettingSchema,
 } from '../settings/schemas/communication-setting.schema';
+import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
 import { ChatRealtimeModule } from './chat-realtime.module';
 
 @Module({
@@ -36,6 +37,7 @@ import { ChatRealtimeModule } from './chat-realtime.module';
       { name: ChatRoom.name, schema: ChatRoomSchema },
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
+      { name: Media.name, schema: MediaSchema },
       { name: CommunicationSetting.name, schema: CommunicationSettingSchema },
       { name: Match.name, schema: MatchSchema },
     ]),

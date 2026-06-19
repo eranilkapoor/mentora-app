@@ -104,6 +104,11 @@ type ProfileImageLike = {
   isActive?: boolean;
 };
 
+type MediaLike = ProfileImageLike & {
+  userId?: unknown;
+  thumbnailUrl?: string;
+};
+
 type ProfileLike = {
   personal?: {
     firstName?: string;
@@ -254,15 +259,17 @@ export class ChatService {
           .filter((participantId) => participantId !== userId),
       ),
     );
-    const [users, profiles] = await Promise.all([
+    const [users, profiles, media] = await Promise.all([
       this.repo.findUsersByIds(userIds),
       this.repo.findProfilesByUserIds(userIds),
+      this.repo.findPrimaryImageMediaByUserIds(userIds),
     ]);
 
     const userMap = new Map(users.map((user) => [String(user._id), user]));
     const profileMap = new Map(
       profiles.map((profile) => [String(profile.userId), profile]),
     );
+    const mediaMap = this.buildPrimaryMediaMap(media);
     const lastMessageMap = await this.buildLastMessageMap(rooms);
 
     let items = rooms
@@ -282,6 +289,7 @@ export class ChatService {
           userId,
           userMap,
           profileMap,
+          mediaMap,
           unreadMap.get(String(room._id)) ?? 0,
           lastMessageMap,
         ),
@@ -389,15 +397,17 @@ export class ChatService {
     const contactUserIds = Array.from(
       new Set([...matchedUserIds, ...roomPartnerIds]),
     ).filter((contactUserId) => !blockedUserIds.has(contactUserId));
-    const [users, profiles] = await Promise.all([
+    const [users, profiles, media] = await Promise.all([
       this.repo.findUsersByIds(contactUserIds),
       this.repo.findProfilesByUserIds(contactUserIds),
+      this.repo.findPrimaryImageMediaByUserIds(contactUserIds),
     ]);
 
     const userMap = new Map(users.map((user) => [String(user._id), user]));
     const profileMap = new Map(
       profiles.map((profile) => [String(profile.userId), profile]),
     );
+    const mediaMap = this.buildPrimaryMediaMap(media);
     const roomMap = new Map<string, string>();
 
     rooms.forEach((room) => {
@@ -413,7 +423,7 @@ export class ChatService {
     let items = contactUserIds.map((contactUserId) => ({
       roomId: roomMap.get(contactUserId) ?? null,
       isMatched: matchedUserIds.includes(contactUserId),
-      ...this.buildUserSummary(contactUserId, userMap, profileMap),
+      ...this.buildUserSummary(contactUserId, userMap, profileMap, mediaMap),
     }));
 
     if (query.search) {
@@ -454,9 +464,10 @@ export class ChatService {
     ]);
     const otherUserId = this.getOtherParticipantId(room.participants, userId);
     const unreadRows = await this.repo.countUnreadByRoomIds(userId, [roomId]);
-    const [users, profiles] = await Promise.all([
+    const [users, profiles, media] = await Promise.all([
       this.repo.findUsersByIds([otherUserId]),
       this.repo.findProfilesByUserIds([otherUserId]),
+      this.repo.findPrimaryImageMediaByUserIds([otherUserId]),
     ]);
     const lastMessageMap = await this.buildLastMessageMap([room]);
 
@@ -465,6 +476,7 @@ export class ChatService {
       userId,
       new Map(users.map((user) => [String(user._id), user])),
       new Map(profiles.map((profile) => [String(profile.userId), profile])),
+      this.buildPrimaryMediaMap(media),
       unreadRows[0]?.count ?? 0,
       lastMessageMap,
     );
@@ -911,14 +923,16 @@ export class ChatService {
     const participantIds = room.participants.map((participantId) =>
       String(participantId),
     );
-    const [users, profiles] = await Promise.all([
+    const [users, profiles, media] = await Promise.all([
       this.repo.findUsersByIds(participantIds),
       this.repo.findProfilesByUserIds(participantIds),
+      this.repo.findPrimaryImageMediaByUserIds(participantIds),
     ]);
     const userMap = new Map(users.map((user) => [String(user._id), user]));
     const profileMap = new Map(
       profiles.map((profile) => [String(profile.userId), profile]),
     );
+    const mediaMap = this.buildPrimaryMediaMap(media);
     const lastMessageMap = await this.buildLastMessageMap([room]);
 
     for (const participantId of participantIds) {
@@ -930,6 +944,7 @@ export class ChatService {
         participantId,
         userMap,
         profileMap,
+        mediaMap,
         unreadRows[0]?.count ?? 0,
         lastMessageMap,
       );
@@ -1059,6 +1074,7 @@ export class ChatService {
     currentUserId: string,
     userMap: Map<string, UserLike>,
     profileMap: Map<string, ProfileLike>,
+    mediaMap: Map<string, MediaLike>,
     unreadCount: number,
     lastMessageMap: Map<string, MessageLike> = new Map(),
   ): ConversationResponse {
@@ -1079,7 +1095,12 @@ export class ChatService {
         ? String(room.requestedById)
         : undefined,
       requestedAt: room.requestedAt,
-      participant: this.buildUserSummary(otherUserId, userMap, profileMap),
+      participant: this.buildUserSummary(
+        otherUserId,
+        userMap,
+        profileMap,
+        mediaMap,
+      ),
       lastMessage: room.lastMessageText
         ? {
             id: room.lastMessageId ? String(room.lastMessageId) : undefined,
@@ -1118,6 +1139,23 @@ export class ChatService {
     const messages = await this.repo.findMessagesByIds(messageIds);
 
     return new Map(messages.map((message) => [String(message._id), message]));
+  }
+
+  private buildPrimaryMediaMap(media: MediaLike[]): Map<string, MediaLike> {
+    const mediaMap = new Map<string, MediaLike>();
+
+    for (const item of media) {
+      const userId =
+        item.userId instanceof Types.ObjectId
+          ? item.userId.toHexString()
+          : typeof item.userId === 'string'
+            ? item.userId
+            : '';
+      if (!userId || mediaMap.has(userId)) continue;
+      mediaMap.set(userId, item);
+    }
+
+    return mediaMap;
   }
 
   private toSafeString(value: unknown): string {
@@ -1208,6 +1246,7 @@ export class ChatService {
     userId: string,
     userMap: Map<string, UserLike>,
     profileMap: Map<string, ProfileLike>,
+    mediaMap: Map<string, MediaLike>,
   ): UserSummary {
     const user = userMap.get(userId);
     const profile = profileMap.get(userId);
@@ -1229,6 +1268,13 @@ export class ChatService {
     const primaryImage =
       images.find((img) => img.isActive !== false && img.isPrimary === true) ??
       images.find((img) => img.isActive !== false);
+    const primaryMedia = mediaMap.get(userId);
+    const avatarUrl =
+      (typeof primaryMedia?.thumbnailUrl === 'string'
+        ? primaryMedia.thumbnailUrl
+        : undefined) ??
+      (typeof primaryMedia?.url === 'string' ? primaryMedia.url : undefined) ??
+      (typeof primaryImage?.url === 'string' ? primaryImage.url : undefined);
 
     const city =
       typeof profile?.personal?.city === 'string'
@@ -1253,8 +1299,7 @@ export class ChatService {
       fullName: [firstName, lastName].filter(Boolean).join(' '),
       firstName,
       lastName,
-      avatarUrl:
-        typeof primaryImage?.url === 'string' ? primaryImage.url : undefined,
+      avatarUrl,
       city,
       country,
       isVerified,

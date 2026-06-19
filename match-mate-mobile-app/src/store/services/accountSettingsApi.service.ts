@@ -14,6 +14,10 @@ import {
   UserConsent,
 } from '../../features/AccountSettings/accountSettings.types';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
+import {
+  setAccountSettings,
+  updateAccountSettings as updateCachedAccountSettings,
+} from '../slices/settings.slice';
 
 export const accountSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -29,6 +33,14 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       transformResponse: (
         response: AccountSettings | ApiResponse<AccountSettings>
       ) => wrapSettingsResponse('account', response),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setAccountSettings(unwrapApiResponse(data).account));
+        } catch {
+          // Keep local defaults when remote settings are unavailable.
+        }
+      },
 
       providesTags: ['AccountSettings'],
     }),
@@ -48,7 +60,13 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       transformResponse: (
         response: AccountSettings | ApiResponse<AccountSettings>
       ) => wrapSettingsResponse('account', response),
-      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
+        const previousAccount = (
+          getState() as {
+            settings?: { account?: AccountSettings };
+          }
+        ).settings?.account;
+        dispatch(updateCachedAccountSettings(patch));
         const optimistic = dispatch(
           accountSettingsApi.util.updateQueryData(
             'getAccountSettings',
@@ -61,6 +79,7 @@ export const accountSettingsApi = baseApi.injectEndpoints({
 
         try {
           const { data } = await queryFulfilled;
+          dispatch(setAccountSettings(unwrapApiResponse(data).account));
           dispatch(
             accountSettingsApi.util.updateQueryData(
               'getAccountSettings',
@@ -72,6 +91,9 @@ export const accountSettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousAccount) {
+            dispatch(setAccountSettings(previousAccount));
+          }
         }
       },
     }),

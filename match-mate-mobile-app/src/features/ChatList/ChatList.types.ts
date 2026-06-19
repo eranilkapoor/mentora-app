@@ -25,7 +25,7 @@ export type ChatMatch = {
   lastMessage: string;
   lastMessageSenderId?: string;
   lastMessageStatus: 'sent' | 'delivered' | 'read' | null;
-  avatarUrl: string;
+  avatarUrl?: string;
   matchedAt: string;
   isOnline: boolean;
   unreadCount: number;

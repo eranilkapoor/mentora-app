@@ -478,6 +478,9 @@ export class MatchesService {
       photoVisibilityAllowed &&
       Boolean(privacy?.blurPhotosForUnmatched && !isMatched);
     const canViewPhotos = photoVisibilityAllowed && !shouldBlurPhotos;
+    const canViewLastSeen =
+      Boolean(privacy?.showOnlineStatus) &&
+      this.canViewVisibility(privacy?.showLastSeen, isMatched);
     const displayMedia = photoVisibilityAllowed
       ? media.map((item) => ({
           ...item,
@@ -524,9 +527,7 @@ export class MatchesService {
         privacy?.showExactAge || canViewPersonalDetails
           ? profile.age
           : undefined,
-      lastActiveAt: privacy?.showOnlineStatus
-        ? profile.lastActiveAt
-        : undefined,
+      lastActiveAt: canViewLastSeen ? profile.lastActiveAt : undefined,
       privacy: {
         isMatched,
         canViewPersonalDetails,

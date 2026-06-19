@@ -5,6 +5,10 @@ import {
 } from '@/features/CommunicationSettings/CommunicationSettings.types';
 import { baseApi } from '@/store/services/baseApi.service';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
+import {
+  setCommunicationSettings,
+  updateCommunicationSettings as updateCachedCommunicationSettings,
+} from '../slices/settings.slice';
 
 export const communicationSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -17,6 +21,16 @@ export const communicationSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: CommunicationSettings) =>
         wrapSettingsResponse('communication', response),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(
+            setCommunicationSettings(unwrapApiResponse(data).communication)
+          );
+        } catch {
+          // Keep local defaults when remote settings are unavailable.
+        }
+      },
 
       providesTags: ['CommunicationSettings'],
     }),
@@ -32,7 +46,13 @@ export const communicationSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: CommunicationSettings) =>
         unwrapApiResponse(response),
-      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
+        const previousCommunication = (
+          getState() as {
+            settings?: { communication?: CommunicationSettings };
+          }
+        ).settings?.communication;
+        dispatch(updateCachedCommunicationSettings(patch));
         const optimistic = dispatch(
           communicationSettingsApi.util.updateQueryData(
             'getCommunicationSettings',
@@ -45,6 +65,7 @@ export const communicationSettingsApi = baseApi.injectEndpoints({
 
         try {
           const { data } = await queryFulfilled;
+          dispatch(setCommunicationSettings(data));
           dispatch(
             communicationSettingsApi.util.updateQueryData(
               'getCommunicationSettings',
@@ -56,6 +77,9 @@ export const communicationSettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousCommunication) {
+            dispatch(setCommunicationSettings(previousCommunication));
+          }
         }
       },
     }),

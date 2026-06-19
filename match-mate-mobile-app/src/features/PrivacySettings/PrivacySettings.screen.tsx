@@ -23,8 +23,14 @@ import {
   ProfileVisibility,
   VisibilityLevel,
 } from './PrivacySettings.types';
+import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
 
 type SelectKey = 'profileVisibility' | 'showPhotosTo' | 'showLastSeen';
+
+const FEATURE_INCOGNITO_MODE = 'incognito_mode';
+const FEATURE_PRIVATE_PHOTOS = 'private_photos';
+const FEATURE_HIDE_ONLINE_STATUS = 'hide_online_status';
+const FEATURE_HIDE_LAST_SEEN = 'hide_last_seen';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -39,9 +45,29 @@ export default function PrivacySettingsScreen({
 
   const { data, isLoading } = useGetPrivacySettingsQuery();
   const [updatePrivacySettings] = useUpdatePrivacySettingsMutation();
+  const { hasFeature: canUseIncognito, isLoading: incognitoFeatureLoading } =
+    usePlanFeatureAccess(FEATURE_INCOGNITO_MODE);
+  const {
+    hasFeature: canUsePrivatePhotoControls,
+    isLoading: privatePhotoFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_PRIVATE_PHOTOS);
+  const {
+    hasFeature: canHideOnlineStatus,
+    isLoading: onlineStatusFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_HIDE_ONLINE_STATUS);
+  const { hasFeature: canHideLastSeen, isLoading: lastSeenFeatureLoading } =
+    usePlanFeatureAccess(FEATURE_HIDE_LAST_SEEN);
   const [activeSelect, setActiveSelect] = useState<SelectKey | null>(null);
 
   const settings = data?.privacy;
+  const featureLoading =
+    incognitoFeatureLoading ||
+    privatePhotoFeatureLoading ||
+    onlineStatusFeatureLoading ||
+    lastSeenFeatureLoading;
+  const restrictedHint = t('settings.privacy.plan_restricted', {
+    defaultValue: 'Upgrade your plan to use this privacy option.',
+  });
 
   const profileVisibilityOptions = useMemo<SettingsOption<ProfileVisibility>[]>(
     () => [
@@ -93,7 +119,7 @@ export default function PrivacySettingsScreen({
     [updatePrivacySettings]
   );
 
-  if (isLoading || !settings) {
+  if (isLoading || featureLoading || !settings) {
     return <Loader fullScreen size="large" />;
   }
 
@@ -131,9 +157,16 @@ export default function PrivacySettingsScreen({
           <SettingsToggleItem
             icon="user-x"
             label={t('settings.privacy.incognito')}
-            sublabel={t('settings.privacy.incognito_sub')}
-            value={settings.incognitoMode ?? false}
-            onChange={(v) => handleToggle('incognitoMode', v)}
+            sublabel={
+              canUseIncognito
+                ? t('settings.privacy.incognito_sub')
+                : restrictedHint
+            }
+            value={canUseIncognito && (settings.incognitoMode ?? false)}
+            disabled={!canUseIncognito}
+            onChange={(v) => {
+              if (canUseIncognito) void handleToggle('incognitoMode', v);
+            }}
           />
           <SettingsToggleItem
             icon="star"
@@ -213,9 +246,21 @@ export default function PrivacySettingsScreen({
           <SettingsToggleItem
             icon="eye-off"
             label={t('settings.privacy.blur_photos')}
-            sublabel={t('settings.privacy.blur_photos_sub')}
-            value={settings.blurPhotosForUnmatched ?? false}
-            onChange={(v) => handleToggle('blurPhotosForUnmatched', v)}
+            sublabel={
+              canUsePrivatePhotoControls
+                ? t('settings.privacy.blur_photos_sub')
+                : restrictedHint
+            }
+            value={
+              canUsePrivatePhotoControls &&
+              (settings.blurPhotosForUnmatched ?? false)
+            }
+            disabled={!canUsePrivatePhotoControls}
+            onChange={(v) => {
+              if (canUsePrivatePhotoControls) {
+                void handleToggle('blurPhotosForUnmatched', v);
+              }
+            }}
           />
           <SettingsToggleItem
             icon="scissors"
@@ -239,23 +284,42 @@ export default function PrivacySettingsScreen({
           <SettingsToggleItem
             icon="circle"
             label={t('settings.privacy.show_online_status')}
-            sublabel={t('settings.privacy.show_online_status_sub', {
-              defaultValue:
-                'Let others see when you are currently active in the app.',
-            })}
-            value={settings.showOnlineStatus ?? false}
-            onChange={(v) => handleToggle('showOnlineStatus', v)}
+            sublabel={
+              canHideOnlineStatus
+                ? t('settings.privacy.show_online_status_sub', {
+                    defaultValue:
+                      'Let others see when you are currently active in the app.',
+                  })
+                : restrictedHint
+            }
+            value={
+              canHideOnlineStatus ? (settings.showOnlineStatus ?? true) : true
+            }
+            disabled={!canHideOnlineStatus}
+            onChange={(v) => {
+              if (canHideOnlineStatus) void handleToggle('showOnlineStatus', v);
+            }}
           />
           <SettingsSelectItem
             icon="clock"
             label={t('settings.privacy.show_last_seen')}
-            sublabel={t('settings.privacy.show_last_seen_sub', {
-              defaultValue:
-                'Control who can see the last time you were active.',
-            })}
-            value={formatValue(visibilityOptions, settings.showLastSeen)}
+            sublabel={
+              canHideLastSeen
+                ? t('settings.privacy.show_last_seen_sub', {
+                    defaultValue:
+                      'Control who can see the last time you were active.',
+                  })
+                : restrictedHint
+            }
+            value={formatValue(
+              visibilityOptions,
+              canHideLastSeen ? settings.showLastSeen : 'everyone'
+            )}
+            disabled={!canHideLastSeen}
             isLast
-            onPress={() => setActiveSelect('showLastSeen')}
+            onPress={() => {
+              if (canHideLastSeen) setActiveSelect('showLastSeen');
+            }}
           />
         </SettingsCard>
 
