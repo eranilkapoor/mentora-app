@@ -189,6 +189,7 @@ async function bootstrap(): Promise<void> {
       { path: 'terms-conditions', method: RequestMethod.GET },
       { path: 'community-guidelines', method: RequestMethod.GET },
       { path: 'faqs', method: RequestMethod.GET },
+      { path: 'account-deletion', method: RequestMethod.GET },
     ],
   });
 

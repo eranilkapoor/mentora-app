@@ -2,7 +2,8 @@ export type StaticPageSlug =
   | 'privacy-policy'
   | 'terms-conditions'
   | 'community-guidelines'
-  | 'faqs';
+  | 'faqs'
+  | 'account-deletion';
 
 export type StaticPageTheme = 'light' | 'dark' | 'system';
 export type StaticPageLanguage = 'en' | 'hi';
@@ -45,6 +46,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
             bullets: [
               'Full name, gender, date of birth, marital status, phone number, and email address.',
               'City, country, education, occupation, family details, and partner preferences.',
+              'Religion, community, mother tongue, lifestyle choices, income range, horoscope or kundli details, and other matrimonial profile fields when you add them.',
               'Profile photos, video introductions, verification documents, and other media you choose to upload.',
             ],
           },
@@ -61,6 +63,14 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
             bullets: [
               'Device type, operating system, app version, IP address, approximate region, and crash diagnostics.',
               'App interactions including profile views, matches, interests, shortlists, support requests, and notification preferences.',
+              'Security events such as login history, active sessions, suspicious sign-in signals, blocked users, and moderation actions.',
+            ],
+          },
+          {
+            title: 'Payments, rewards, and support',
+            bullets: [
+              'Subscription plan, trial, renewal, invoice, refund, payment provider reference, wallet, coin, referral, and campaign attribution details.',
+              'Support ticket messages, attachments, admin replies, and issue resolution history.',
             ],
           },
         ],
@@ -84,6 +94,16 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         ],
       },
       {
+        title: 'Camera, media, location, and notification permissions',
+        bullets: [
+          'Camera and photo/media access are used for profile photos, verification selfies, documents, and optional video introductions.',
+          'Microphone access may be used when you record or upload a video introduction or use communication features.',
+          'Location access, when enabled, helps improve nearby match recommendations and regional preferences.',
+          'Notification permission is used for matches, messages, security alerts, subscription updates, and support ticket replies.',
+          'You can revoke device permissions anytime from Android or iOS settings.',
+        ],
+      },
+      {
         title: 'Security and retention',
         body: 'We use encrypted transport, access controls, monitoring, secure storage, moderation workflows, and operational review to protect member data. We retain information only as long as needed for account operation, safety, fraud prevention, legal compliance, and legitimate business records.',
       },
@@ -92,9 +112,14 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         bullets: [
           'Access and update profile information from the app.',
           'Control privacy, searchability, communication, and notification settings.',
+          'Block or report members and request help through support tickets.',
           'Withdraw consent where applicable.',
           'Request account deletion or data export from account settings or support.',
         ],
+      },
+      {
+        title: 'Children and eligibility',
+        body: 'MatchMate is intended for adults who are legally eligible to use matrimonial services. We do not knowingly allow minors to create matrimonial profiles.',
       },
       {
         title: 'Contact us',
@@ -112,24 +137,48 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       'These terms describe the rules for using MatchMate. By creating an account or using the service, you agree to follow these terms, our privacy policy, and our community safety standards.',
     sections: [
       {
-        title: 'Use of MatchMate',
-        body: 'You agree to provide accurate profile information, use the service respectfully, and avoid impersonation, harassment, spam, scraping, commercial solicitation, or unlawful activity.',
+        title: 'Eligibility and account responsibility',
+        bullets: [
+          'You must be legally eligible to use a matrimonial service and create an account for a genuine matrimonial purpose.',
+          'You are responsible for keeping your login credentials secure and for all activity on your account.',
+          'Family-managed profiles must clearly represent the member truthfully and must be used with appropriate consent.',
+        ],
       },
       {
         title: 'Profiles and matches',
-        body: 'Match suggestions, compatibility scores, and recommendations are informational. You are responsible for evaluating profiles, conversations, and decisions safely.',
+        bullets: [
+          'You agree to provide accurate identity, relationship, family, education, occupation, location, and lifestyle information.',
+          'Match suggestions, compatibility scores, curator recommendations, and search results are informational.',
+          'You are responsible for evaluating profiles, conversations, and decisions safely before sharing personal details or meeting anyone.',
+        ],
       },
       {
         title: 'Subscriptions and payments',
-        body: 'Paid features are governed by the plan terms shown at purchase. Taxes, renewals, cancellations, trials, refunds, and payment verification follow the applicable app store, payment provider, and MatchMate billing rules.',
+        bullets: [
+          'Paid features are governed by the plan terms shown at purchase, including feature limits, trial period, renewal date, and price.',
+          'Taxes, renewals, cancellations, refunds, checkout status, and payment verification follow the applicable app store, payment provider, and MatchMate billing rules.',
+          'Some benefits such as boosts, coins, premium visibility, who-liked-me, video intro, or assisted services may depend on your active plan and feature availability.',
+        ],
+      },
+      {
+        title: 'Acceptable use',
+        bullets: [
+          'Do not impersonate others, create fake profiles, scrape data, send spam, harass members, or use MatchMate for commercial lead generation.',
+          'Do not request money, gifts, bank details, OTPs, passwords, or sensitive documents from other members.',
+          'Do not upload unlawful, explicit, hateful, violent, misleading, copyrighted, or privacy-violating content.',
+        ],
       },
       {
         title: 'Account actions',
         body: 'You may deactivate your account or request deletion from account settings. Some records may be retained where required for security, legal, fraud prevention, audit, or payment compliance.',
       },
       {
-        title: 'Safety',
-        body: 'Do not share sensitive financial information with other members. Report suspicious behavior and use blocking tools when needed.',
+        title: 'Safety, moderation, and enforcement',
+        body: 'We may review, restrict, remove, suspend, or terminate accounts, content, messages, or features when we detect abuse, fraud, fake profiles, payment risk, safety issues, or policy violations. Use report and block tools when needed.',
+      },
+      {
+        title: 'Third-party services',
+        body: 'Social login, payment checkout, analytics, cloud storage, notifications, verification, and communication providers may process limited data to deliver the feature you use. Their own terms may also apply.',
       },
     ],
   },
@@ -141,23 +190,51 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
     sections: [
       {
         title: 'Use truthful profile details',
-        body: 'Use your real identity, current photos, accurate relationship status, and honest family, education, profession, and lifestyle details.',
+        bullets: [
+          'Use your real identity, current photos, accurate relationship status, and honest family, education, profession, income, location, and lifestyle details.',
+          'Do not misrepresent age, marital status, religion, community, employment, education, visa status, family background, or intent.',
+          'Keep family-managed profiles transparent and respectful of the member represented.',
+        ],
+      },
+      {
+        title: 'Upload appropriate photos and videos',
+        bullets: [
+          'Use clear, recent, non-misleading photos and only upload media you have permission to share.',
+          'Do not upload explicit, violent, hateful, private, copyrighted, watermarked, or impersonation content.',
+          'Video introductions should be respectful, family-safe, and relevant to matrimonial discovery.',
+        ],
       },
       {
         title: 'Communicate respectfully',
-        body: 'Do not harass, threaten, pressure, shame, or send abusive messages. Matrimonial conversations should remain consent-based and family-safe.',
+        bullets: [
+          'Do not harass, threaten, pressure, shame, stalk, or send abusive messages.',
+          'Respect boundaries around contact details, calls, family involvement, and meeting decisions.',
+          'Avoid casteist, communal, sexist, body-shaming, hateful, or degrading language.',
+        ],
       },
       {
         title: 'Protect privacy',
-        body: 'Do not share another member phone number, email, photos, address, documents, or chat screenshots without permission.',
+        bullets: [
+          'Do not share another member phone number, email, photos, address, documents, profile data, or chat screenshots without permission.',
+          'Do not pressure members to move conversations outside MatchMate before they are comfortable.',
+          'Do not collect member data for marketing, recruitment, scraping, or external databases.',
+        ],
       },
       {
         title: 'Avoid fraud and solicitation',
-        body: 'Do not request money, promote outside services, impersonate anyone, or use MatchMate for commercial lead generation.',
+        bullets: [
+          'Do not request money, gifts, investments, loans, OTPs, passwords, bank details, or payment screenshots from other members.',
+          'Do not promote outside services, agencies, crypto schemes, job offers, immigration services, or commercial matchmaking without authorization.',
+          'Do not impersonate anyone or create multiple misleading accounts.',
+        ],
       },
       {
         title: 'Report unsafe behavior',
-        body: 'Use report and block actions when a profile looks fake, suspicious, abusive, or violates privacy expectations.',
+        bullets: [
+          'Use report and block actions when a profile looks fake, suspicious, abusive, or violates privacy expectations.',
+          'Open a support ticket for payment issues, impersonation, harassment, safety threats, or urgent moderation concerns.',
+          'Our team may review reports and take action such as warning, limiting, suspending, or removing accounts.',
+        ],
       },
     ],
   },
@@ -173,8 +250,32 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         body: 'Go to Profile > Edit Profile. Add clear photos and complete all sections for better match recommendations.',
       },
       {
+        title: 'Why should I verify my profile?',
+        body: 'Verification helps improve trust and may unlock a verified badge after review. You can start verification from Settings > Account Settings > Profile KYC verification.',
+      },
+      {
         title: 'How does MatchMate find matches?',
         body: 'MatchMate recommends matches based on your preferences such as age, location, education, interests, lifestyle, and other profile parameters.',
+      },
+      {
+        title: 'Why are some features hidden or locked?',
+        body: 'Some features depend on your active plan, trial, role, or safety status. If a feature such as video intro, who-liked-me, boosts, or premium filters is not included in your current plan, the app may hide it or show an upgrade option.',
+      },
+      {
+        title: 'How do subscriptions, trials, and renewals work?',
+        body: 'Plan details are shown before checkout. Paid plans may include a trial period, renewal date, feature limits, and cancellation rules. Manage billing from Membership & Billing or the payment provider used at checkout.',
+      },
+      {
+        title: 'How do I report or block someone?',
+        body: 'Use the report or block actions from profile, chat, or safety screens. For serious issues, create a support ticket with profile details and screenshots context.',
+      },
+      {
+        title: 'How do photos and video introductions work?',
+        body: 'Photos and optional video introductions are uploaded from Edit Profile when your plan and permissions allow them. Media may be reviewed, resized, stored securely, and shown according to your privacy settings.',
+      },
+      {
+        title: 'How do I contact support?',
+        body: `Open Help & Support > Support Tickets to create and track a request. You can also email ${SUPPORT_EMAIL} from your registered email address.`,
       },
       {
         title: 'Is my information safe?',
@@ -183,6 +284,67 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       {
         title: 'How do I delete my account?',
         body: 'Go to Settings > Account > Delete Account. Once confirmed, your data is removed or anonymized according to standard retention timelines.',
+      },
+    ],
+  },
+  'account-deletion': {
+    slug: 'account-deletion',
+    title: 'Account and Data Deletion',
+    eyebrow: 'User data request',
+    subtitle:
+      'How MatchMate members can delete their account and associated personal data.',
+    lastUpdated: 'Last updated: 1 January 2026',
+    intro:
+      'This page explains how to request deletion of your MatchMate account and personal data. It is provided for members, app store reviewers, and platform compliance checks.',
+    sections: [
+      {
+        title: 'Delete your account from the app',
+        bullets: [
+          'Open the MatchMate app and sign in to your account.',
+          'Go to Settings > Account Settings > Delete Account.',
+          'Review the confirmation message and submit the deletion request.',
+          'Your profile becomes unavailable after the request is accepted, subject to safety, fraud, payment, and legal checks.',
+        ],
+      },
+      {
+        title: 'If you cannot access the app',
+        body: `Email ${SUPPORT_EMAIL} from your registered email address with the subject "Account deletion request". Our support team may ask for limited verification before processing the request.`,
+      },
+      {
+        title: 'Public deletion request page',
+        body: 'This page is available without signing in so app stores, reviewers, and members can confirm how account and data deletion works. The preferred secure path is still the in-app request because it verifies the signed-in account automatically.',
+      },
+      {
+        title: 'Data scheduled for deletion or anonymization',
+        bullets: [
+          'Profile details, partner preferences, photos, video introductions, documents, and optional verification information.',
+          'Chat rooms, match activity, interests, shortlists, profile views, notifications, support tickets, and device/session records where deletion is legally and operationally permitted.',
+          'Referral, wallet, subscription, and payment-linked profile references are removed or anonymized where possible.',
+        ],
+      },
+      {
+        title: 'Data we may retain for limited purposes',
+        bullets: [
+          'Payment, tax, invoice, refund, and subscription records required by law or payment providers.',
+          'Security, fraud prevention, abuse reports, moderation decisions, and audit logs needed to protect members and the service.',
+          'Backup copies and system logs for a limited retention period before they expire through normal backup rotation.',
+        ],
+      },
+      {
+        title: 'Permissions and device access',
+        bullets: [
+          'MatchMate may request permissions such as camera, photos/media, notifications, location, microphone, or contacts only for app features you choose to use.',
+          'Deleting your account stops MatchMate from using your account data for member-facing features.',
+          'You can revoke device permissions anytime from your iOS or Android system settings. Uninstalling the app also removes app access from that device.',
+        ],
+      },
+      {
+        title: 'Timeline and confirmation',
+        body: `Most deletion requests are processed within 30 days unless retention is required for safety, legal, fraud prevention, or payment compliance. For help, contact ${SUPPORT_EMAIL}.`,
+      },
+      {
+        title: 'Cancellation during grace period',
+        body: 'If your account deletion is scheduled with a grace period, signing in again before permanent deletion may cancel or interrupt the deletion workflow where supported. After permanent deletion is completed, the account cannot be restored.',
       },
     ],
   },
@@ -347,6 +509,59 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
       },
     ],
   },
+  'account-deletion': {
+    slug: 'account-deletion',
+    title: 'खाता और डेटा हटाना',
+    eyebrow: 'यूजर डेटा अनुरोध',
+    subtitle:
+      'MatchMate सदस्य अपना खाता और संबंधित व्यक्तिगत डेटा कैसे हटा सकते हैं।',
+    lastUpdated: 'अंतिम अपडेट: 1 जनवरी 2026',
+    intro:
+      'यह पेज बताता है कि आप अपना MatchMate खाता और व्यक्तिगत डेटा हटाने का अनुरोध कैसे कर सकते हैं। यह सदस्यों, ऐप स्टोर समीक्षकों और प्लेटफॉर्म अनुपालन जांच के लिए उपलब्ध है।',
+    sections: [
+      {
+        title: 'ऐप से अपना खाता हटाएं',
+        bullets: [
+          'MatchMate ऐप खोलें और अपने खाते में साइन इन करें।',
+          'Settings > Account Settings > Delete Account पर जाएं।',
+          'पुष्टि संदेश पढ़ें और डिलीशन अनुरोध सबमिट करें।',
+          'अनुरोध स्वीकार होने के बाद आपका प्रोफाइल उपलब्ध नहीं रहेगा, सुरक्षा, धोखाधड़ी, भुगतान और कानूनी जांच के अधीन।',
+        ],
+      },
+      {
+        title: 'यदि आप ऐप एक्सेस नहीं कर पा रहे हैं',
+        body: `अपने पंजीकृत ईमेल पते से ${SUPPORT_EMAIL} पर "Account deletion request" विषय के साथ ईमेल भेजें। अनुरोध प्रोसेस करने से पहले हमारी सपोर्ट टीम सीमित सत्यापन मांग सकती है।`,
+      },
+      {
+        title: 'हटाए या अनाम किए जाने वाला डेटा',
+        bullets: [
+          'प्रोफाइल विवरण, साथी प्राथमिकताएं, फोटो, वीडियो परिचय, दस्तावेज और वैकल्पिक सत्यापन जानकारी।',
+          'चैट रूम, मैच गतिविधि, रुचियां, शॉर्टलिस्ट, प्रोफाइल व्यू, नोटिफिकेशन, सपोर्ट टिकट और डिवाइस/सेशन रिकॉर्ड जहां कानूनी और परिचालन रूप से अनुमति हो।',
+          'रेफरल, वॉलेट, सदस्यता और भुगतान से जुड़े प्रोफाइल संदर्भ जहां संभव हो हटाए या अनाम किए जाते हैं।',
+        ],
+      },
+      {
+        title: 'सीमित उद्देश्यों के लिए रखे जा सकने वाले डेटा',
+        bullets: [
+          'कानून या भुगतान प्रदाताओं द्वारा आवश्यक भुगतान, टैक्स, इनवॉइस, रिफंड और सदस्यता रिकॉर्ड।',
+          'सदस्यों और सेवा की सुरक्षा के लिए आवश्यक सुरक्षा, धोखाधड़ी रोकथाम, दुरुपयोग रिपोर्ट, मॉडरेशन निर्णय और ऑडिट लॉग।',
+          'बैकअप कॉपी और सिस्टम लॉग सीमित अवधि तक सामान्य बैकअप रोटेशन से समाप्त होने तक।',
+        ],
+      },
+      {
+        title: 'अनुमतियां और डिवाइस एक्सेस',
+        bullets: [
+          'MatchMate कैमरा, फोटो/मीडिया, नोटिफिकेशन, लोकेशन, माइक्रोफोन या कॉन्टैक्ट जैसी अनुमतियां केवल उन फीचर्स के लिए मांग सकता है जिन्हें आप उपयोग करना चुनते हैं।',
+          'खाता हटाने के बाद MatchMate आपके खाता डेटा का सदस्य-संबंधित फीचर्स में उपयोग बंद कर देता है।',
+          'आप iOS या Android सिस्टम सेटिंग से कभी भी डिवाइस अनुमतियां वापस ले सकते हैं। ऐप अनइंस्टॉल करने से उस डिवाइस से ऐप एक्सेस भी हट जाता है।',
+        ],
+      },
+      {
+        title: 'समयसीमा और पुष्टि',
+        body: `अधिकांश डिलीशन अनुरोध 30 दिनों के भीतर प्रोसेस किए जाते हैं, जब तक सुरक्षा, कानूनी, धोखाधड़ी रोकथाम या भुगतान अनुपालन के लिए डेटा रखना आवश्यक न हो। सहायता के लिए ${SUPPORT_EMAIL} से संपर्क करें।`,
+      },
+    ],
+  },
 };
 
 const escapeHtml = (value: string): string =>
@@ -474,129 +689,200 @@ export const getStaticPageHtml = (
       }
 
       * { box-sizing: border-box; }
+      html {
+        min-height: 100%;
+        background: var(--page);
+        scrollbar-width: none;
+      }
+      html::-webkit-scrollbar,
+      body::-webkit-scrollbar {
+        width: 0;
+        height: 0;
+        display: none;
+      }
       body {
         margin: 0;
+        min-height: 100%;
         background: var(--page);
         color: var(--body);
         font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        line-height: 1.65;
+        font-size: 14px;
+        line-height: 1.55;
+        overflow-wrap: anywhere;
+        -ms-overflow-style: none;
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
       }
       main {
-        width: min(920px, 100%);
+        width: min(760px, 100%);
         margin: 0 auto;
-        padding: max(24px, env(safe-area-inset-top)) 18px max(32px, env(safe-area-inset-bottom));
+        padding: max(14px, env(safe-area-inset-top)) 16px max(28px, env(safe-area-inset-bottom));
       }
       .hero {
-        padding: 26px 0 18px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 1px 2px var(--shadow);
+        margin: 0 0 14px;
+        padding: 18px;
       }
       .eyebrow {
         color: var(--primary);
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 800;
-        letter-spacing: 0;
-        margin: 0 0 8px;
+        letter-spacing: .6px;
+        margin: 0 0 7px;
         text-transform: uppercase;
       }
       h1 {
         color: var(--text);
-        font-size: clamp(30px, 7vw, 48px);
-        line-height: 1.08;
-        margin: 0 0 12px;
+        font-size: clamp(20px, 4vw, 28px);
+        line-height: 1.18;
+        margin: 0 0 6px;
       }
       .subtitle {
         color: var(--muted);
-        font-size: 17px;
+        font-size: 13px;
+        line-height: 1.5;
         margin: 0;
-        max-width: 720px;
       }
       .card {
         background: var(--surface);
         border: 1px solid var(--border);
-        border-radius: 8px;
-        box-shadow: 0 16px 40px var(--shadow);
+        border-radius: 12px;
+        box-shadow: 0 1px 2px var(--shadow);
         overflow: hidden;
       }
       .intro {
-        background: var(--primary-soft);
+        background: var(--page);
         border-bottom: 1px solid var(--border);
-        padding: 22px;
+        padding: 14px;
       }
       .intro p, .updated {
         margin: 0;
       }
+      .intro p {
+        color: var(--body);
+        font-size: 14px;
+        line-height: 1.6;
+      }
       .updated {
         color: var(--primary);
+        font-size: 12px;
         font-weight: 700;
-        margin-top: 12px;
+        margin-top: 10px;
       }
       .content {
-        padding: 6px 0;
+        padding: 0;
       }
       .section {
         display: grid;
-        grid-template-columns: 40px 1fr;
-        gap: 14px;
-        padding: 20px 22px;
+        grid-template-columns: 30px minmax(0, 1fr);
+        gap: 12px;
+        padding: 14px;
         border-bottom: 1px solid var(--border);
       }
       .section:last-child {
         border-bottom: 0;
       }
       .section-number {
-        width: 32px;
-        height: 32px;
-        border-radius: 999px;
+        width: 26px;
+        height: 26px;
+        border-radius: 13px;
         display: grid;
         place-items: center;
         background: var(--primary-soft);
         color: var(--primary);
-        font-weight: 800;
-        font-size: 14px;
+        font-weight: 700;
+        font-size: 13px;
+        line-height: 1;
       }
       h2 {
         color: var(--text);
-        font-size: 18px;
-        margin: 2px 0 8px;
+        font-size: 15px;
+        line-height: 1.35;
+        margin: 2px 0 5px;
       }
       p {
-        margin: 0 0 10px;
+        margin: 0 0 8px;
       }
       ul {
-        margin: 8px 0 0;
-        padding-left: 20px;
+        margin: 7px 0 0;
+        padding-left: 18px;
       }
       li {
-        margin: 7px 0;
+        margin: 5px 0;
+        padding-left: 2px;
       }
       .nested {
         display: grid;
-        gap: 10px;
-        margin-top: 12px;
+        gap: 8px;
+        margin-top: 10px;
       }
       .nested .section {
+        display: block;
         background: var(--surface-elevated);
         border: 1px solid var(--border);
         border-radius: 8px;
-        padding: 14px;
+        padding: 12px;
       }
       .nested .section-number {
         display: none;
       }
       footer {
         color: var(--muted);
-        font-size: 13px;
-        padding: 18px 2px 0;
+        font-size: 12px;
+        line-height: 1.5;
+        padding: 16px 2px 0;
       }
       a {
         color: var(--primary);
         font-weight: 700;
       }
-      @media (max-width: 520px) {
-        main { padding-left: 14px; padding-right: 14px; }
+      @media (min-width: 768px) {
+        main {
+          padding-top: 28px;
+          padding-bottom: 44px;
+        }
+        .hero {
+          padding: 22px;
+          margin-bottom: 18px;
+        }
+        h1 {
+          font-size: 30px;
+        }
+        .subtitle {
+          font-size: 15px;
+        }
+        .intro {
+          padding: 18px 20px;
+        }
         .section {
-          grid-template-columns: 1fr;
-          gap: 8px;
-          padding: 18px;
+          grid-template-columns: 34px minmax(0, 1fr);
+          gap: 14px;
+          padding: 18px 20px;
+        }
+        .section-number {
+          width: 28px;
+          height: 28px;
+          border-radius: 14px;
+        }
+        h2 {
+          font-size: 16px;
+        }
+      }
+
+      @media (max-width: 360px) {
+        main {
+          padding-left: 12px;
+          padding-right: 12px;
+        }
+        .hero {
+          padding: 16px;
+        }
+        .section {
+          gap: 10px;
+          padding: 13px;
         }
       }
     </style>

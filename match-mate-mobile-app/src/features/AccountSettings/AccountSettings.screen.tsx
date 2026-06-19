@@ -181,6 +181,12 @@ export default function AccountSettingsScreen({
             onPress={handleDeactivate}
           />
           <SettingsSelectItem
+            icon="file-text"
+            label={t('settings.account.account_deletion_policy')}
+            sublabel={t('settings.account.account_deletion_policy_sub')}
+            onPress={() => navigation.navigate('AccountDeletion')}
+          />
+          <SettingsSelectItem
             icon="trash-2"
             label={t('settings.account.delete')}
             sublabel={

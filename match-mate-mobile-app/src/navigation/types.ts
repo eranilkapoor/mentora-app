@@ -98,6 +98,7 @@ export type SettingsStackParamList = {
   SupportTicketDetail: { ticketId: string };
   Faqs: undefined;
   CommunityGuidelines: undefined;
+  AccountDeletion: undefined;
   PrivacyPolicy: undefined;
   TermsConditions: undefined;
   AccountSettings: undefined;
@@ -132,7 +133,7 @@ export type BottomTabParamList = {
 // Settings is a stack navigator reachable from the app level
 export type AppStackParamList = {
   Tabs: NavigatorScreenParams<BottomTabParamList> | undefined;
-  Settings: undefined; // navigates into SettingsStackNavigator
+  Settings: NavigatorScreenParams<SettingsStackParamList> | undefined;
 };
 
 // ─── Root Stack ───────────────────────────────────────────────────────────────

@@ -1,5 +1,11 @@
-import React, { useMemo, useRef, useState } from 'react';
-import { ActivityIndicator, Text, TouchableOpacity, View } from 'react-native';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
+import {
+  ActivityIndicator,
+  Platform,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import WebView from 'react-native-webview';
 import Feather from 'react-native-vector-icons/Feather';
@@ -14,7 +20,8 @@ export type StaticPageSlug =
   | 'privacy-policy'
   | 'terms-conditions'
   | 'community-guidelines'
-  | 'faqs';
+  | 'faqs'
+  | 'account-deletion';
 
 type NavigationLike = {
   goBack: () => void;
@@ -37,6 +44,7 @@ export default function StaticPageWebViewScreen({
   const webViewRef = useRef<WebView>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
+  const [webHtml, setWebHtml] = useState<string | null>(null);
 
   const pageUrl = useMemo(() => {
     const themeName = isDark ? 'dark' : 'light';
@@ -50,8 +58,40 @@ export default function StaticPageWebViewScreen({
   const handleRetry = (): void => {
     setHasError(false);
     setIsLoading(true);
+    setWebHtml(null);
     webViewRef.current?.reload();
   };
+
+  useEffect(() => {
+    if (Platform.OS !== 'web') return;
+
+    let isActive = true;
+    setIsLoading(true);
+    setHasError(false);
+    setWebHtml(null);
+
+    fetch(pageUrl)
+      .then(async (response) => {
+        if (!response.ok) {
+          throw new Error(`Static page failed with ${response.status}`);
+        }
+        return response.text();
+      })
+      .then((html) => {
+        if (!isActive) return;
+        setWebHtml(html);
+        setIsLoading(false);
+      })
+      .catch(() => {
+        if (!isActive) return;
+        setIsLoading(false);
+        setHasError(true);
+      });
+
+    return () => {
+      isActive = false;
+    };
+  }, [pageUrl]);
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -74,25 +114,42 @@ export default function StaticPageWebViewScreen({
         </View>
       ) : (
         <View style={styles.webView}>
-          <WebView
-            ref={webViewRef}
-            source={{ uri: pageUrl }}
-            style={styles.webView}
-            containerStyle={styles.webView}
-            startInLoadingState
-            javaScriptEnabled={false}
-            domStorageEnabled={false}
-            sharedCookiesEnabled={false}
-            thirdPartyCookiesEnabled={false}
-            setSupportMultipleWindows={false}
-            originWhitelist={['http://*', 'https://*']}
-            onLoadStart={() => setIsLoading(true)}
-            onLoadEnd={() => setIsLoading(false)}
-            onError={() => {
-              setIsLoading(false);
-              setHasError(true);
-            }}
-          />
+          {Platform.OS === 'web'
+            ? React.createElement('iframe', {
+                srcDoc: webHtml ?? '',
+                title: t(titleKey),
+                sandbox: '',
+                referrerPolicy: 'no-referrer',
+                style: {
+                  border: 0,
+                  flex: 1,
+                  height: '100%',
+                  width: '100%',
+                  backgroundColor: theme.colors.backgroundPage,
+                },
+              })
+            : null}
+          {Platform.OS !== 'web' ? (
+            <WebView
+              ref={webViewRef}
+              source={{ uri: pageUrl }}
+              style={styles.webView}
+              containerStyle={styles.webView}
+              startInLoadingState
+              javaScriptEnabled={false}
+              domStorageEnabled={false}
+              sharedCookiesEnabled={false}
+              thirdPartyCookiesEnabled={false}
+              setSupportMultipleWindows={false}
+              originWhitelist={['http://*', 'https://*']}
+              onLoadStart={() => setIsLoading(true)}
+              onLoadEnd={() => setIsLoading(false)}
+              onError={() => {
+                setIsLoading(false);
+                setHasError(true);
+              }}
+            />
+          ) : null}
           {isLoading ? (
             <View style={styles.loadingOverlay} pointerEvents="none">
               <ActivityIndicator size="large" color={theme.colors.primary} />

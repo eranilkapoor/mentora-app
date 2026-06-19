@@ -1,4 +1,12 @@
-import { Controller, Get, Header, Query, Res } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Header,
+  Query,
+  Res,
+  VERSION_NEUTRAL,
+  Version,
+} from '@nestjs/common';
 import { SkipThrottle } from '@nestjs/throttler';
 import { Response } from 'express';
 import { AppService } from './app.service';
@@ -44,16 +52,25 @@ export class AppController {
   @SkipThrottle()
   @SkipRateLimit()
   @Get('account-deletion')
+  @Version(VERSION_NEUTRAL)
   @Header('Content-Type', 'text/html; charset=utf-8')
-  accountDeletionInstructions() {
-    return this.appService.getAccountDeletionInstructionsPage();
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Cache-Control', 'public, max-age=300')
+  accountDeletionInstructions(
+    @Query('theme') theme?: string,
+    @Query('lang') lang?: string,
+  ) {
+    return this.appService.getAccountDeletionInstructionsPage(theme, lang);
   }
 
   @Public()
   @SkipThrottle()
   @SkipRateLimit()
   @Get('privacy-policy')
+  @Version(VERSION_NEUTRAL)
   @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Cache-Control', 'public, max-age=300')
   privacyPolicy(@Query('theme') theme?: string, @Query('lang') lang?: string) {
     return this.appService.getStaticHelpPage('privacy-policy', theme, lang);
   }
@@ -62,7 +79,10 @@ export class AppController {
   @SkipThrottle()
   @SkipRateLimit()
   @Get('terms-conditions')
+  @Version(VERSION_NEUTRAL)
   @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Cache-Control', 'public, max-age=300')
   termsConditions(
     @Query('theme') theme?: string,
     @Query('lang') lang?: string,
@@ -74,7 +94,10 @@ export class AppController {
   @SkipThrottle()
   @SkipRateLimit()
   @Get('community-guidelines')
+  @Version(VERSION_NEUTRAL)
   @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Cache-Control', 'public, max-age=300')
   communityGuidelines(
     @Query('theme') theme?: string,
     @Query('lang') lang?: string,
@@ -90,7 +113,10 @@ export class AppController {
   @SkipThrottle()
   @SkipRateLimit()
   @Get('faqs')
+  @Version(VERSION_NEUTRAL)
   @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Cache-Control', 'public, max-age=300')
   faqs(@Query('theme') theme?: string, @Query('lang') lang?: string) {
     return this.appService.getStaticHelpPage('faqs', theme, lang);
   }

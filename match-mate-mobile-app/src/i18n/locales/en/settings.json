@@ -141,7 +141,9 @@
     "delete_message": "This will permanently delete your account and all data after 30 days. This cannot be undone.",
     "delete_confirm": "Delete My Account",
     "delete_scheduled_title": "Deletion Scheduled",
-    "delete_scheduled_message": "Your account will be permanently deleted in 30 days. Sign in before then to cancel."
+    "delete_scheduled_message": "Your account will be permanently deleted in 30 days. Sign in before then to cancel.",
+    "account_deletion_policy": "Account Deletion Policy",
+    "account_deletion_policy_sub": "Review deletion timeline, retained records, and device permissions"
   },
   "notifications": {
     "title": "Notification Settings",
@@ -369,6 +371,8 @@
     "faqs_sub": "Common questions about profiles, matches, and payments",
     "community_guidelines": "Community Guidelines",
     "community_guidelines_sub": "Safety, respect, and profile authenticity rules",
+    "account_deletion": "Account & Data Deletion",
+    "account_deletion_sub": "Steps, timelines, retained records, and permissions",
     "terms": "Terms & Conditions",
     "terms_sub": "Service terms for using MatchMate",
     "privacy": "Privacy Policy",

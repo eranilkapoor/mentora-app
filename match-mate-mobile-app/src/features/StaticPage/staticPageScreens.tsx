@@ -54,3 +54,15 @@ export function FaqsScreen({
     />
   );
 }
+
+export function AccountDeletionScreen({
+  navigation,
+}: StaticPageScreenProps): React.ReactElement {
+  return (
+    <StaticPageWebViewScreen
+      navigation={navigation}
+      slug="account-deletion"
+      titleKey="settings.support_center.account_deletion"
+    />
+  );
+}

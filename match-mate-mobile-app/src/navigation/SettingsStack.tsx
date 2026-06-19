@@ -13,6 +13,7 @@ import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
 import SupportTicketsScreen from '@/features/HelpSupport/SupportTickets.screen';
 import SupportTicketDetailScreen from '@/features/HelpSupport/SupportTicketDetail.screen';
 import {
+  AccountDeletionScreen,
   CommunityGuidelinesScreen,
   FaqsScreen,
   PrivacyPolicyScreen,
@@ -162,6 +163,11 @@ export default function SettingsStack(): React.ReactElement {
         name="CommunityGuidelines"
         component={CommunityGuidelinesScreen}
         options={{ title: t('settings.support_center.community_guidelines') }}
+      />
+      <Stack.Screen
+        name="AccountDeletion"
+        component={AccountDeletionScreen}
+        options={{ title: t('settings.support_center.account_deletion') }}
       />
       <Stack.Screen
         name="PrivacyPolicy"

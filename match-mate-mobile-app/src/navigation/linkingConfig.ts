@@ -33,6 +33,25 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
           },
         },
       },
+      App: {
+        screens: {
+          Settings: {
+            path: 'settings',
+            screens: {
+              SettingsScreen: '',
+              AccountSettings: 'account',
+              AccountDeletion: 'account-deletion',
+              HelpSupport: 'help-support',
+              Faqs: 'faqs',
+              CommunityGuidelines: 'community-guidelines',
+              PrivacyPolicy: 'privacy-policy',
+              TermsConditions: 'terms-conditions',
+              SupportTickets: 'support-tickets',
+              SupportTicketDetail: 'support-tickets/:ticketId',
+            },
+          },
+        },
+      },
     },
   },
 };
