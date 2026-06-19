@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { showError, showSuccess } from '@/core/utils/toast';
 import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
 import {
   useRemoveShortlistedProfileMutation,
@@ -46,26 +47,34 @@ export function useHomeActions(
       if (item.isInterestPending && item.interestId) {
         try {
           await withdrawInterest({ interestId: item.interestId }).unwrap();
+          showSuccess({
+            title: t('home.withdraw_success_title', {
+              defaultValue: 'Interest Withdrawn',
+            }),
+            message: t('home.withdraw_success_message', {
+              defaultValue: 'Your interest request has been withdrawn.',
+            }),
+          });
         } catch {
-          Alert.alert(
-            t('home.withdraw_failed_title'),
-            t('home.withdraw_failed_message')
-          );
+          showError({
+            title: t('home.withdraw_failed_title'),
+            message: t('home.withdraw_failed_message'),
+          });
         }
         return;
       }
 
       try {
         await sendInterest({ receiverId: item.userId }).unwrap();
-        Alert.alert(
-          t('home.interest_sent_title'),
-          t('home.interest_sent_message', { name: item.name })
-        );
+        showSuccess({
+          title: t('home.interest_sent_title'),
+          message: t('home.interest_sent_message', { name: item.name }),
+        });
       } catch {
-        Alert.alert(
-          t('home.interest_failed_title'),
-          t('home.interest_failed_message')
-        );
+        showError({
+          title: t('home.interest_failed_title'),
+          message: t('home.interest_failed_message'),
+        });
       }
     },
     [createDirectRoom, navigation, sendInterest, withdrawInterest, t]
@@ -76,14 +85,32 @@ export function useHomeActions(
       try {
         if (item.isShortlisted) {
           await removeShortlistedProfile({ userId: item.userId }).unwrap();
+          showSuccess({
+            title: t('home.shortlist_removed_title', {
+              defaultValue: 'Removed from Shortlist',
+            }),
+            message: t('home.shortlist_removed_message', {
+              name: item.name,
+              defaultValue: `${item.name} was removed from your shortlist.`,
+            }),
+          });
           return;
         }
         await shortlistProfile({ userId: item.userId }).unwrap();
+        showSuccess({
+          title: t('home.shortlist_added_title', {
+            defaultValue: 'Shortlisted',
+          }),
+          message: t('home.shortlist_added_message', {
+            name: item.name,
+            defaultValue: `${item.name} was added to your shortlist.`,
+          }),
+        });
       } catch {
-        Alert.alert(
-          t('home.shortlist_failed_title'),
-          t('home.shortlist_failed_message')
-        );
+        showError({
+          title: t('home.shortlist_failed_title'),
+          message: t('home.shortlist_failed_message'),
+        });
       }
     },
     [removeShortlistedProfile, shortlistProfile, t]

@@ -14,6 +14,7 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { ProfileImage } from '@/core/types';
 import { MAX_PHOTOS } from '@/core/constants';
 import { resolveApiUrl } from '@/core/utils/config';
+import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 import { SectionCard } from '../components/SectionCard';
 import { editProfileStyles } from '../EditProfile.styles';
 import { SectionKey } from '../EditProfile.types';
@@ -41,6 +42,7 @@ export function PhotosSection({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
+  const { imageResizeMethod } = useMediaSettings();
   const { t } = useTranslation();
 
   return (
@@ -73,6 +75,7 @@ export function PhotosSection({
                 <Image
                   source={{ uri: resolveApiUrl(img.url) ?? img.url }}
                   style={styles.photo}
+                  resizeMethod={imageResizeMethod}
                 />
 
                 {isPrimary && (

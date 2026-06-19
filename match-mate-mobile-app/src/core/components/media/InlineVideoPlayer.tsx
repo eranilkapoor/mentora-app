@@ -12,6 +12,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { VideoView, useVideoPlayer } from 'expo-video';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 
 interface InlineVideoPlayerProps {
   videoUrl: string;
@@ -38,7 +39,8 @@ export function InlineVideoPlayer({
   playButtonStyle,
   placeholderTextStyle,
 }: InlineVideoPlayerProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, reduceAnimations } = useTheme();
+  const { shouldAutoplayVideo } = useMediaSettings();
   const [isPlaying, setIsPlaying] = useState(false);
   const [shouldPlay, setShouldPlay] = useState(false);
   const player = useVideoPlayer(videoUrl, (instance) => {
@@ -62,13 +64,20 @@ export function InlineVideoPlayer({
   }, [player]);
 
   useEffect(() => {
-    setIsPlaying(false);
-    setShouldPlay(false);
+    const canAutoplay = shouldAutoplayVideo && !reduceAnimations;
+    setIsPlaying(canAutoplay);
+    setShouldPlay(canAutoplay);
 
     return () => {
       safePause();
     };
-  }, [safePause, thumbnailUrl, videoUrl]);
+  }, [
+    reduceAnimations,
+    safePause,
+    shouldAutoplayVideo,
+    thumbnailUrl,
+    videoUrl,
+  ]);
 
   useEffect(() => {
     if (!shouldPlay || !isPlaying) return;

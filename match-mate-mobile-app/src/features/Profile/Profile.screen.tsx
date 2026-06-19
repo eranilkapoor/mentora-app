@@ -64,6 +64,7 @@ import {
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { resolveApiUrl } from '@/core/utils/config';
 import { InlineVideoPlayer } from '@/core/components/media/InlineVideoPlayer';
+import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
 
 const UPLOAD_VIDEOS_FEATURE = 'upload_videos';
@@ -695,6 +696,7 @@ function ProfilePhoto({
 }): React.ReactElement {
   const styles = useThemedStyles(profileStyles);
   const { t } = useTranslation();
+  const { imageResizeMethod } = useMediaSettings();
   const [hasError, setHasError] = useState(false);
 
   // resolveApiUrl returns absolute URLs from the media API.
@@ -706,6 +708,7 @@ function ProfilePhoto({
       source={typeof source === 'string' ? { uri: source } : source}
       style={[styles.photo, { width }]}
       resizeMode="cover"
+      resizeMethod={imageResizeMethod}
       accessibilityLabel={t('profile.photo_label', { number: index + 1 })}
       onError={() => setHasError(true)}
     />

@@ -19,6 +19,7 @@ export const getPhotos = (profile?: DiscoveryProfile): string[] => {
 export interface DetailPhotoItem {
   url: string;
   isBlurred: boolean;
+  blurReason?: string;
 }
 
 export const getPhotoItems = (
@@ -29,7 +30,13 @@ export const getPhotoItems = (
     .sort((a, b) => Number(Boolean(b.isPrimary)) - Number(Boolean(a.isPrimary)))
     .map((img) => {
       const url = resolveApiUrl(img.url);
-      return url ? { url, isBlurred: img.isBlurred } : null;
+      return url
+        ? {
+            url,
+            isBlurred: Boolean(img.isBlurred),
+            ...(img.blurReason ? { blurReason: img.blurReason } : {}),
+          }
+        : null;
     })
     .filter((photo): photo is DetailPhotoItem => Boolean(photo));
   return photos?.length

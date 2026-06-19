@@ -4,6 +4,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 import { matchListStyles } from '../MatchList.styles';
 import { MatchItem } from '../MatchList.types';
 
@@ -26,6 +27,7 @@ export const MatchCard = React.memo(function MatchCard({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
   const { theme } = useTheme();
+  const { imageResizeMethod } = useMediaSettings();
   const { t } = useTranslation();
 
   const primaryIcon: React.ComponentProps<typeof Feather>['name'] =
@@ -62,6 +64,7 @@ export const MatchCard = React.memo(function MatchCard({
           source={{ uri: item.avatarUrl }}
           style={styles.photo}
           resizeMode="cover"
+          resizeMethod={imageResizeMethod}
           accessibilityLabel={t('matches.photo_label', { name: item.name })}
         />
         <View style={styles.photoScrim} />

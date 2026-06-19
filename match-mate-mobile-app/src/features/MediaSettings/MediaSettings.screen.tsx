@@ -18,6 +18,11 @@ import {
 } from '@/store/services/mediaSettingsApi.service';
 import Loader from '@/core/components/Loader';
 import { MediaSettings, MediaSettingsScreenProps } from './MediaSettings.types';
+import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
+
+const FEATURE_UPLOAD_VIDEOS = 'upload_videos';
+const FEATURE_VIEW_PROFILE_PHOTOS = 'view_profile_photos';
+const FEATURE_PRIVATE_PHOTOS = 'private_photos';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -33,8 +38,19 @@ export default function MediaSettingsScreen({
   const { data, isLoading } = useGetMediaSettingsQuery();
   const [updateMediaSettings] = useUpdateMediaSettingsMutation();
   const [qualityOpen, setQualityOpen] = useState(false);
+  const { hasFeature: canUseVideo, isLoading: videoFeatureLoading } =
+    usePlanFeatureAccess(FEATURE_UPLOAD_VIDEOS);
+  const { hasFeature: canViewProfilePhotos, isLoading: photoFeatureLoading } =
+    usePlanFeatureAccess(FEATURE_VIEW_PROFILE_PHOTOS);
+  const { hasFeature: canUsePrivatePhotos, isLoading: privateFeatureLoading } =
+    usePlanFeatureAccess(FEATURE_PRIVATE_PHOTOS);
 
   const settings = data?.media;
+  const featureLoading =
+    videoFeatureLoading || photoFeatureLoading || privateFeatureLoading;
+  const restrictedHint = t('settings.media.plan_restricted', {
+    defaultValue: 'Upgrade your plan to use this media option.',
+  });
 
   const qualityOptions = useMemo<
     SettingsOption<MediaSettings['mediaQuality']>[]
@@ -61,7 +77,7 @@ export default function MediaSettingsScreen({
     [updateMediaSettings]
   );
 
-  if (isLoading || !data) {
+  if (isLoading || featureLoading || !data) {
     return <Loader fullScreen size="large" />;
   }
 
@@ -86,9 +102,16 @@ export default function MediaSettingsScreen({
           <SettingsToggleItem
             icon="play"
             label={t('settings.media.video_autoplay')}
-            sublabel={t('settings.media.video_autoplay_sub')}
-            value={settings?.videoAutoplay ?? false}
-            onChange={(v) => handleToggle('videoAutoplay', v)}
+            sublabel={
+              canUseVideo
+                ? t('settings.media.video_autoplay_sub')
+                : restrictedHint
+            }
+            value={canUseVideo && (settings?.videoAutoplay ?? false)}
+            disabled={!canUseVideo}
+            onChange={(v) => {
+              if (canUseVideo) handleToggle('videoAutoplay', v);
+            }}
           />
           <SettingsSelectItem
             icon="sliders"
@@ -112,16 +135,34 @@ export default function MediaSettingsScreen({
           <SettingsToggleItem
             icon="download"
             label={t('settings.media.auto_download')}
-            sublabel={t('settings.media.auto_download_sub')}
-            value={settings?.autoDownloadPhotos ?? false}
-            onChange={(v) => handleToggle('autoDownloadPhotos', v)}
+            sublabel={
+              canViewProfilePhotos
+                ? t('settings.media.auto_download_sub')
+                : restrictedHint
+            }
+            value={
+              canViewProfilePhotos && (settings?.autoDownloadPhotos ?? false)
+            }
+            disabled={!canViewProfilePhotos}
+            onChange={(v) => {
+              if (canViewProfilePhotos) handleToggle('autoDownloadPhotos', v);
+            }}
           />
           <SettingsToggleItem
             icon="eye-off"
             label={t('settings.media.blur_private')}
-            sublabel={t('settings.media.blur_private_sub')}
-            value={settings?.blurPrivatePhotos ?? false}
-            onChange={(v) => handleToggle('blurPrivatePhotos', v)}
+            sublabel={
+              canUsePrivatePhotos
+                ? t('settings.media.blur_private_sub')
+                : restrictedHint
+            }
+            value={
+              canUsePrivatePhotos && (settings?.blurPrivatePhotos ?? false)
+            }
+            disabled={!canUsePrivatePhotos}
+            onChange={(v) => {
+              if (canUsePrivatePhotos) handleToggle('blurPrivatePhotos', v);
+            }}
           />
           <SettingsToggleItem
             icon="grid"

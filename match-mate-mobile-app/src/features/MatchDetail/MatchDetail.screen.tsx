@@ -5,6 +5,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { getApiErrorMessage } from '@/core/utils/apiMessage';
 import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
 import { useGetMatchProfileQuery } from '@/store/services/matchApi.service';
 import { matchDetailStyles } from './MatchDetail.styles';
@@ -25,6 +26,20 @@ import { MatchScoreBar } from './components/MatchScoreBar';
 import { MatchDetailCta } from './components/MatchDetailCta';
 import { MatchDetailEmpty } from './components/MatchDetailEmpty';
 
+const getApiErrorCode = (error: unknown): string | undefined => {
+  if (!error || typeof error !== 'object' || !('data' in error)) {
+    return undefined;
+  }
+
+  const data = (error as { data?: unknown }).data;
+  if (data && typeof data === 'object' && 'code' in data) {
+    const code = (data as { code?: unknown }).code;
+    return typeof code === 'string' ? code : undefined;
+  }
+
+  return undefined;
+};
+
 export default function MatchDetailScreen({
   navigation,
   route,
@@ -34,11 +49,46 @@ export default function MatchDetailScreen({
   const { t } = useTranslation();
   const { userId } = route.params;
 
-  const { data, isLoading } = useGetMatchProfileQuery(userId);
+  const { data, isLoading, isFetching, isError, error, refetch } =
+    useGetMatchProfileQuery(userId);
   const profile = data?.data ?? undefined;
   const name = getProfileName(profile);
   const photos = useMemo(() => getPhotos(profile), [profile]);
   const photoItems = useMemo(() => getPhotoItems(profile), [profile]);
+  const emptyState = useMemo(() => {
+    if (!isError) return undefined;
+
+    const code = getApiErrorCode(error);
+    if (code === 'PROFILE.NOT_FOUND') {
+      return {
+        title: t('match_detail.unavailable_title'),
+        subtitle: t('match_detail.unavailable_subtitle'),
+      };
+    }
+
+    if (
+      code === 'SUBSCRIPTION.FEATURE_NOT_AVAILABLE' ||
+      code === 'SUBSCRIPTION.REQUIRED'
+    ) {
+      return {
+        title: t('match_detail.access_limited_title', {
+          defaultValue: 'Profile Views Limited',
+        }),
+        subtitle: getApiErrorMessage(
+          t,
+          error,
+          'match_detail.access_limited_subtitle'
+        ),
+      };
+    }
+
+    return {
+      title: t('match_detail.load_failed_title', {
+        defaultValue: 'Unable to Load Profile',
+      }),
+      subtitle: getApiErrorMessage(t, error, 'common.something_went_wrong'),
+    };
+  }, [error, isError, t]);
 
   const {
     optimisticPendingInterest,
@@ -173,7 +223,15 @@ export default function MatchDetailScreen({
   // ─── Loading / empty ──────────────────────────────────────────────────
 
   if (isLoading || !profile) {
-    return <MatchDetailEmpty isLoading={isLoading} />;
+    return (
+      <MatchDetailEmpty
+        isLoading={isLoading || isFetching}
+        title={emptyState?.title}
+        subtitle={emptyState?.subtitle}
+        actionLabel={!isLoading ? t('common.retry') : undefined}
+        onAction={!isLoading ? refetch : undefined}
+      />
+    );
   }
 
   // ─── Render ───────────────────────────────────────────────────────────

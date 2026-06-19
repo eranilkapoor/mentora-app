@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from 'react';
+import React, { useCallback, useEffect, useRef } from 'react';
 import {
   FlatList,
   Image,
@@ -9,6 +9,7 @@ import { getResponsiveMediaWidth } from '@/core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { homeStyles } from '../Home.styles';
 import { FALLBACK_PHOTO } from '../Home.constants';
+import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 
 interface Props {
   photos: string[];
@@ -21,6 +22,7 @@ export const PhotoCarousel = React.memo(function PhotoCarousel({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(homeStyles);
   const { width } = useWindowDimensions();
+  const { imageResizeMethod, shouldPrefetchPhotos } = useMediaSettings();
   const photoWidth = getResponsiveMediaWidth(width, 32);
   // Use a ref instead of state — avoids re-renders from error tracking
   const failedPhotos = useRef<Set<string>>(new Set());
@@ -35,6 +37,7 @@ export const PhotoCarousel = React.memo(function PhotoCarousel({
           source={typeof uri === 'string' ? { uri } : uri}
           style={[styles.photo, { width: photoWidth }]}
           resizeMode="cover"
+          resizeMethod={imageResizeMethod}
           accessibilityLabel={`Photo of ${name}`}
           onError={() => {
             failedPhotos.current.add(item);
@@ -42,8 +45,18 @@ export const PhotoCarousel = React.memo(function PhotoCarousel({
         />
       );
     },
-    [name, photoWidth, styles]
+    [imageResizeMethod, name, photoWidth, styles]
   );
+
+  useEffect(() => {
+    if (!shouldPrefetchPhotos) return;
+
+    photos.forEach((photo) => {
+      if (typeof photo === 'string' && !failedPhotos.current.has(photo)) {
+        void Image.prefetch(photo);
+      }
+    });
+  }, [photos, shouldPrefetchPhotos]);
 
   return (
     <FlatList
@@ -58,6 +71,9 @@ export const PhotoCarousel = React.memo(function PhotoCarousel({
         offset: photoWidth * index,
         index,
       })}
+      initialNumToRender={1}
+      maxToRenderPerBatch={shouldPrefetchPhotos ? 4 : 2}
+      windowSize={shouldPrefetchPhotos ? 5 : 3}
     />
   );
 });

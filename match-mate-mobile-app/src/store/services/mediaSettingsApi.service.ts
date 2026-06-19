@@ -5,6 +5,10 @@ import {
 } from '@/features/MediaSettings/MediaSettings.types';
 import { baseApi } from './baseApi.service';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
+import {
+  setMediaSettings,
+  updateMediaSettings as updateCachedMediaSettings,
+} from '../slices/settings.slice';
 
 export const mediaSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -18,6 +22,14 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: MediaSettings) =>
         wrapSettingsResponse('media', response),
+      async onQueryStarted(_arg, { dispatch, queryFulfilled }) {
+        try {
+          const { data } = await queryFulfilled;
+          dispatch(setMediaSettings(unwrapApiResponse(data).media));
+        } catch {
+          // Keep local defaults when remote settings are unavailable.
+        }
+      },
 
       providesTags: ['MediaSettings'],
     }),
@@ -36,7 +48,13 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: MediaSettings) =>
         wrapSettingsResponse('media', response),
-      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
+        const previousMedia = (
+          getState() as {
+            settings?: { media?: MediaSettings };
+          }
+        ).settings?.media;
+        dispatch(updateCachedMediaSettings(patch));
         const optimistic = dispatch(
           mediaSettingsApi.util.updateQueryData(
             'getMediaSettings',
@@ -49,6 +67,7 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
 
         try {
           const { data } = await queryFulfilled;
+          dispatch(setMediaSettings(unwrapApiResponse(data).media));
           dispatch(
             mediaSettingsApi.util.updateQueryData(
               'getMediaSettings',
@@ -60,6 +79,9 @@ export const mediaSettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousMedia) {
+            dispatch(setMediaSettings(previousMedia));
+          }
         }
       },
     }),

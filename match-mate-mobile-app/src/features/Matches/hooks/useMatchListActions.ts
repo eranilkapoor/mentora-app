@@ -70,11 +70,19 @@ export function useMatchListActions(
       if (item.isInterestPending && item.interestId) {
         try {
           await withdrawInterest({ interestId: item.interestId }).unwrap();
+          showSuccess({
+            title: t('matches.withdraw_success_title', {
+              defaultValue: 'Interest Withdrawn',
+            }),
+            message: t('matches.withdraw_success_message', {
+              defaultValue: 'Your interest request has been withdrawn.',
+            }),
+          });
         } catch {
-          Alert.alert(
-            t('matches.withdraw_failed_title'),
-            t('matches.try_again_message')
-          );
+          showError({
+            title: t('matches.withdraw_failed_title'),
+            message: t('matches.try_again_message'),
+          });
         }
         return;
       }
@@ -108,14 +116,32 @@ export function useMatchListActions(
       try {
         if (item.isShortlisted) {
           await removeShortlistedProfile({ userId: item.id }).unwrap();
+          showSuccess({
+            title: t('matches.shortlist_removed_title', {
+              defaultValue: 'Removed from Shortlist',
+            }),
+            message: t('matches.shortlist_removed_message', {
+              name: item.name,
+              defaultValue: `${item.name} was removed from your shortlist.`,
+            }),
+          });
           return;
         }
         await shortlistProfile({ userId: item.id }).unwrap();
+        showSuccess({
+          title: t('matches.shortlist_added_title', {
+            defaultValue: 'Shortlisted',
+          }),
+          message: t('matches.shortlist_added_message', {
+            name: item.name,
+            defaultValue: `${item.name} was added to your shortlist.`,
+          }),
+        });
       } catch {
-        Alert.alert(
-          t('matches.shortlist_failed_title'),
-          t('matches.try_again_message')
-        );
+        showError({
+          title: t('matches.shortlist_failed_title'),
+          message: t('matches.try_again_message'),
+        });
       }
     },
     [removeShortlistedProfile, shortlistProfile, t]

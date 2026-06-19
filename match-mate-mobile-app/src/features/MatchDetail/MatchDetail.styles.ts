@@ -389,4 +389,16 @@ export const matchDetailStyles = (
       textAlign: 'center',
       lineHeight: 20,
     },
+    emptyAction: {
+      marginTop: 4,
+      borderRadius: 22,
+      backgroundColor: theme.colors.primary,
+      paddingHorizontal: 22,
+      paddingVertical: 11,
+    },
+    emptyActionText: {
+      color: theme.colors.white,
+      fontSize: 14,
+      fontWeight: '800',
+    },
   });

@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
   FlatList,
   Image,
@@ -15,6 +15,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchDetailStyles } from '../MatchDetail.styles';
 import { getResponsiveMediaWidth } from '@/core/utils/device';
+import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 import { DetailPhotoItem } from '../MatchDetail.utils';
 
 interface Props {
@@ -30,6 +31,8 @@ export const DetailPhotoCarousel = React.memo(function DetailPhotoCarousel({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const { width } = useWindowDimensions();
+  const { imageResizeMethod, shouldPrefetchPhotos, shouldBlurPrivatePhotos } =
+    useMediaSettings();
   const photoWidth = getResponsiveMediaWidth(width);
   const [activeIndex, setActiveIndex] = useState(0);
   // Ref instead of state — error tracking without re-renders
@@ -43,32 +46,56 @@ export const DetailPhotoCarousel = React.memo(function DetailPhotoCarousel({
     [photoWidth]
   );
 
+  useEffect(() => {
+    if (!shouldPrefetchPhotos) return;
+
+    photos.forEach((photo) => {
+      if (photo.url && !failedPhotos.current.has(photo.url)) {
+        void Image.prefetch(photo.url);
+      }
+    });
+  }, [photos, shouldPrefetchPhotos]);
+
   const renderPhoto: ListRenderItem<DetailPhotoItem> = useCallback(
-    ({ item }) => (
-      <View style={[styles.photoPrivacyFrame, { width: photoWidth }]}>
-        <Image
-          source={{
-            uri: failedPhotos.current.has(item.url) ? undefined : item.url,
-          }}
-          style={[styles.photo, { width: photoWidth }]}
-          blurRadius={item.isBlurred ? 18 : 0}
-          resizeMode="cover"
-          accessibilityLabel={t('match_detail.photo_label', { name })}
-          onError={() => {
-            failedPhotos.current.add(item.url);
-          }}
-        />
-        {item.isBlurred ? (
-          <View style={styles.photoPrivacyOverlay}>
-            <Feather name="lock" size={18} color={theme.colors.white} />
-            <Text style={styles.photoPrivacyText}>
-              {t('match_detail.photo_unlocks_after_match')}
-            </Text>
-          </View>
-        ) : null}
-      </View>
-    ),
-    [name, photoWidth, styles, t, theme.colors.white]
+    ({ item }) => {
+      const shouldBlur =
+        item.isBlurred || (shouldBlurPrivatePhotos && Boolean(item.blurReason));
+
+      return (
+        <View style={[styles.photoPrivacyFrame, { width: photoWidth }]}>
+          <Image
+            source={{
+              uri: failedPhotos.current.has(item.url) ? undefined : item.url,
+            }}
+            style={[styles.photo, { width: photoWidth }]}
+            blurRadius={shouldBlur ? 18 : 0}
+            resizeMode="cover"
+            resizeMethod={imageResizeMethod}
+            accessibilityLabel={t('match_detail.photo_label', { name })}
+            onError={() => {
+              failedPhotos.current.add(item.url);
+            }}
+          />
+          {shouldBlur ? (
+            <View style={styles.photoPrivacyOverlay}>
+              <Feather name="lock" size={18} color={theme.colors.white} />
+              <Text style={styles.photoPrivacyText}>
+                {t('match_detail.photo_unlocks_after_match')}
+              </Text>
+            </View>
+          ) : null}
+        </View>
+      );
+    },
+    [
+      imageResizeMethod,
+      name,
+      photoWidth,
+      shouldBlurPrivatePhotos,
+      styles,
+      t,
+      theme.colors.white,
+    ]
   );
 
   return (
@@ -87,7 +114,8 @@ export const DetailPhotoCarousel = React.memo(function DetailPhotoCarousel({
           index,
         })}
         initialNumToRender={1}
-        maxToRenderPerBatch={2}
+        maxToRenderPerBatch={shouldPrefetchPhotos ? 4 : 2}
+        windowSize={shouldPrefetchPhotos ? 5 : 3}
       />
 
       {/* Counter pill */}

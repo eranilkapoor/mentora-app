@@ -1,5 +1,6 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import type { AccessibilitySettings } from '@/features/AccessibilitySettings/AccessibilitySettings.types';
+import type { MediaSettings } from '@/features/MediaSettings/MediaSettings.types';
 
 export type ThemeMode = 'light' | 'dark' | 'system';
 export type Language = 'en' | 'hi';
@@ -12,10 +13,19 @@ export const DEFAULT_ACCESSIBILITY_SETTINGS: AccessibilitySettings = {
   boldText: false,
 };
 
+export const DEFAULT_MEDIA_SETTINGS: MediaSettings = {
+  autoDownloadPhotos: false,
+  videoAutoplay: false,
+  mediaQuality: 'medium',
+  blurPrivatePhotos: false,
+  showMediaInGallery: true,
+};
+
 interface SettingsState {
   theme: ThemeMode;
   language: Language;
   accessibility: AccessibilitySettings;
+  media: MediaSettings;
 
   locationSharing: boolean;
   soundEnabled: boolean;
@@ -27,6 +37,7 @@ const initialState: SettingsState = {
   theme: 'system',
   language: 'en',
   accessibility: DEFAULT_ACCESSIBILITY_SETTINGS,
+  media: DEFAULT_MEDIA_SETTINGS,
 
   locationSharing: false,
   soundEnabled: true,
@@ -64,6 +75,23 @@ const settingsSlice = createSlice({
     ) => {
       state.accessibility = {
         ...(state.accessibility ?? DEFAULT_ACCESSIBILITY_SETTINGS),
+        ...action.payload,
+      };
+    },
+
+    setMediaSettings: (state, action: PayloadAction<MediaSettings>) => {
+      state.media = {
+        ...DEFAULT_MEDIA_SETTINGS,
+        ...action.payload,
+      };
+    },
+
+    updateMediaSettings: (
+      state,
+      action: PayloadAction<Partial<MediaSettings>>
+    ) => {
+      state.media = {
+        ...(state.media ?? DEFAULT_MEDIA_SETTINGS),
         ...action.payload,
       };
     },
@@ -107,6 +135,8 @@ export const {
   toggleLocationSharing,
   setAccessibilitySettings,
   updateAccessibilitySettings,
+  setMediaSettings,
+  updateMediaSettings,
   resetSettings,
 } = settingsSlice.actions;
 
