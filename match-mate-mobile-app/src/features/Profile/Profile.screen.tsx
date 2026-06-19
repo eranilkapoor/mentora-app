@@ -994,7 +994,10 @@ export default function ProfileScreen({
 
   if (!isLoading && (isError || data?.success === false)) {
     return (
-      <SafeAreaView style={styles.centerContainer}>
+      <SafeAreaView
+        style={styles.centerContainer}
+        edges={['top', 'left', 'right']}
+      >
         <Feather name="alert-circle" size={48} color={theme.colors.danger} />
         <Text style={styles.errorTitle}>{t('common.error_title')}</Text>
         <Text style={styles.errorSubtitle}>
@@ -1020,7 +1023,7 @@ export default function ProfileScreen({
 
   if (isLoading) {
     return (
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
         <Header
           title={t('profile.title')}
           actions={[
@@ -1038,7 +1041,7 @@ export default function ProfileScreen({
   // ─── Render ───────────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <Header
         title={t('profile.title')}
         actions={[

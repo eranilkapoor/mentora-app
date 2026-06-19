@@ -504,7 +504,7 @@ export default function MatchListScreen({
   );
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <Header
         title={t('matches.title')}
         subtitle={t('matches.subtitle')}

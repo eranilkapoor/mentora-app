@@ -12,6 +12,89 @@ export const formatPlanName = (name: string): string =>
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
     .join(' ');
 
+const isObjectIdLike = (value: string): boolean => /^[a-f\d]{24}$/i.test(value);
+
+export const formatPlanCycleLabel = (
+  billingCycle?: string,
+  durationDays?: number
+): string => {
+  const normalizedCycle = billingCycle?.trim().toLowerCase();
+
+  switch (normalizedCycle) {
+    case 'monthly':
+      return 'Monthly';
+    case 'quarterly':
+      return '3 Months';
+    case 'half_yearly':
+    case 'half-yearly':
+      return '6 Months';
+    case 'yearly':
+    case 'annual':
+      return 'Yearly';
+    default:
+      break;
+  }
+
+  if (typeof durationDays === 'number') {
+    if (durationDays >= 365) return 'Yearly';
+    if (durationDays >= 180) return '6 Months';
+    if (durationDays >= 90) return '3 Months';
+    if (durationDays >= 30) return 'Monthly';
+  }
+
+  return billingCycle ? formatPlanName(billingCycle) : '';
+};
+
+export const formatMembershipPlanDisplayName = (
+  planOrName:
+    | Pick<
+        MembershipPlan,
+        'name' | 'slug' | 'tier' | 'planType' | 'billingCycle' | 'durationDays'
+      >
+    | string,
+  fallback = 'Membership plan'
+): string => {
+  if (typeof planOrName === 'string') {
+    const value = planOrName.trim();
+    if (!value || isObjectIdLike(value)) return fallback;
+    const normalizedValue = value.toLowerCase().replace(/-/g, '_');
+
+    if (normalizedValue.startsWith('assisted')) {
+      const assistedCycle = normalizedValue.includes('half_yearly')
+        ? '6 Months'
+        : normalizedValue.includes('quarterly')
+          ? '3 Months'
+          : normalizedValue.includes('yearly')
+            ? 'Yearly'
+            : '';
+
+      return ['Assisted Matchmaking', assistedCycle].filter(Boolean).join(' ');
+    }
+
+    return formatPlanName(value);
+  }
+
+  const cycleLabel = formatPlanCycleLabel(
+    planOrName.billingCycle,
+    planOrName.durationDays
+  );
+
+  if (planOrName.planType === 'assisted') {
+    return ['Assisted Matchmaking', cycleLabel].filter(Boolean).join(' ');
+  }
+
+  const tierLabel =
+    planOrName.tier && planOrName.tier !== 'free'
+      ? formatPlanName(planOrName.tier)
+      : null;
+
+  if (tierLabel && cycleLabel) {
+    return `${tierLabel} ${cycleLabel}`;
+  }
+
+  return formatPlanName(planOrName.name ?? planOrName.slug ?? fallback);
+};
+
 export const formatPlanPrice = (plan: MembershipPlan): string =>
   plan.price <= 0
     ? 'Free'
@@ -96,7 +179,7 @@ export const buildDisplayPlans = (
     )
     .map((plan) => ({
       id: plan._id,
-      name: formatPlanName(plan.name),
+      name: formatMembershipPlanDisplayName(plan),
       price: formatPlanPrice(plan),
       durationLabel: getDurationLabel(plan.durationDays),
       trialLabel:

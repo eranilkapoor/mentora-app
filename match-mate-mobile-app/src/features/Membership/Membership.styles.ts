@@ -408,7 +408,6 @@ export const membershipStyles = (
       alignItems: 'center',
       paddingHorizontal: 16,
       paddingVertical: 12,
-      paddingBottom: 28,
       backgroundColor: theme.colors.surface,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
@@ -683,6 +682,14 @@ export const membershipStyles = (
     cardTopAccent: {
       height: 4,
       backgroundColor: theme.colors.accent,
+    },
+    assistedDescriptionText: {
+      paddingHorizontal: 16,
+      paddingVertical: 14,
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+      lineHeight: 21,
     },
     benefitRow: {
       flexDirection: 'row',

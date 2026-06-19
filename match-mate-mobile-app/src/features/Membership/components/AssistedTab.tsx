@@ -42,7 +42,7 @@ export function AssistedTab({
 
       <View style={styles.card}>
         <View style={styles.cardTopAccent} />
-        <Text style={styles.benefitText}>
+        <Text style={styles.assistedDescriptionText}>
           {selected?.description ?? t('membership.screen_subtitle')}
         </Text>
       </View>

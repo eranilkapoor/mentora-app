@@ -22,7 +22,11 @@ import { subscriptionBillingStyles } from './SubscriptionBilling.styles';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showSuccess } from '@/core/utils/toast';
-import { formatPlanName } from '@/features/Membership/Membership.utils';
+import {
+  formatMembershipPlanDisplayName,
+  formatPlanCycleLabel,
+  formatPlanName,
+} from '@/features/Membership/Membership.utils';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -50,9 +54,11 @@ const getPlanName = (
   stringFallback = 'Membership plan'
 ): string => {
   if (!plan) return fallback;
-  if (typeof plan === 'string') return stringFallback;
+  if (typeof plan === 'string') {
+    return formatMembershipPlanDisplayName(plan, stringFallback);
+  }
 
-  return plan.name;
+  return formatMembershipPlanDisplayName(plan);
 };
 
 const getPlanFeatures = (
@@ -71,6 +77,14 @@ const resolvePlan = (
   if (typeof plan !== 'string') return plan;
 
   return plans.find((item) => item._id === plan || item.slug === plan);
+};
+
+const getBillingCycleLabel = (
+  plan?: MembershipPlan,
+  fallback = 'Not applicable'
+): string => {
+  if (!plan) return fallback;
+  return formatPlanCycleLabel(plan.billingCycle, plan.durationDays) || fallback;
 };
 
 const formatFeatureValue = (
@@ -408,8 +422,10 @@ export default function SubscriptionBillingScreen({
                 {t('membership.billing.billing_cycle')}
               </Text>
               <Text style={styles.value}>
-                {resolvedCurrentPlan?.billingCycle ??
-                  t('membership.billing.not_applicable')}
+                {getBillingCycleLabel(
+                  resolvedCurrentPlan,
+                  t('membership.billing.not_applicable')
+                )}
               </Text>
             </View>
             <View style={styles.summaryTile}>

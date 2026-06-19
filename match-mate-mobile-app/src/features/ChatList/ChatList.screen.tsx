@@ -370,7 +370,7 @@ export default function ChatListScreen({
   );
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <Header
         title={t('chat.messages')}
         {...(!isLoading

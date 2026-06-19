@@ -1,6 +1,6 @@
 import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
-import { StyleSheet } from 'react-native';
+import { Platform, StyleSheet } from 'react-native';
 
 export const editPreferenceStyles = (
   theme: Theme,
@@ -48,7 +48,7 @@ export const editPreferenceStyles = (
       justifyContent: 'center',
       gap: 8,
       margin: 16,
-      marginTop: 4,
+      marginTop: Platform.OS === 'web' ? 4 : 14,
       backgroundColor: theme.colors.primary,
       paddingVertical: 13,
       borderRadius: 10,
@@ -203,14 +203,16 @@ export const editPreferenceStyles = (
       borderRadius: 12,
       paddingVertical: 12,
       fontSize: 15,
-      minHeight: 120,
+      minHeight: Platform.OS === 'web' ? 100 : 132,
       textAlignVertical: 'top',
+      marginBottom: Platform.OS === 'web' ? 0 : 8,
     },
     charCount: {
       fontSize: 11,
       color: theme.colors.textMuted,
       textAlign: 'right',
       marginTop: 4,
+      marginBottom: Platform.OS === 'web' ? 0 : 12,
     },
 
     // ── Info Banner ───────────────────────────────────────────────────────────

@@ -77,7 +77,7 @@ export default function MembershipScreen(): React.ReactElement {
   }, [boostPlan, handleCreateBoostOrder, t]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <Header
         title={t('membership.screen_title')}
         subtitle={t('membership.screen_subtitle')}

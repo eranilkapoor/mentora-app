@@ -100,7 +100,7 @@ export default function HomeScreen({
   );
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={styles.safe} edges={['top', 'left', 'right']}>
       <Header
         title={t('home.title')}
         subtitle={t('home.subtitle')}
