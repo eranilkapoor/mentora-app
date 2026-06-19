@@ -12,6 +12,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 
 import { FormInput } from './FormInput';
 import { NumberStepper } from '../../../core/components/NumberStepper';
@@ -36,12 +37,20 @@ export const SiblingsEditor = memo(function SiblingsEditor({
   value,
   onChange,
 }: SiblingsEditorProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
   const { t } = useTranslation();
 
   const siblings = value ?? INITIAL_SIBLINGS;
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
 
   const updateSiblings = useCallback(
     (patch: Partial<Siblings>): void => {
@@ -258,10 +267,18 @@ const SiblingCard = memo(function SiblingCard({
   index,
   onUpdate,
 }: SiblingCardProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
   const { t } = useTranslation();
 
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
 
   const isBrother = detail.type === 'brother';
 

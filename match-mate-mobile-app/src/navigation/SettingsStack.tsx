@@ -41,11 +41,13 @@ import ReferRewardsScreen from '@/features/ReferRewards/ReferRewards.screen';
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
 export default function SettingsStack(): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, reduceAnimations } = useTheme();
   const { t } = useTranslation();
 
   return (
-    <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
+    <Stack.Navigator
+      screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
+    >
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
       <Stack.Screen name="EditPreference" component={EditPreferenceScreen} />

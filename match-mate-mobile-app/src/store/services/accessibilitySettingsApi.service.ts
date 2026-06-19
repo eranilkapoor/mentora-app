@@ -5,6 +5,7 @@ import {
 } from '@/features/AccessibilitySettings/AccessibilitySettings.types';
 import { baseApi } from './baseApi.service';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
+import { updateAccessibilitySettings } from '../slices/settings.slice';
 
 export const accessibilitySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -40,6 +41,8 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
       transformResponse: (response: AccessibilitySettings) =>
         unwrapApiResponse(response),
       async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+        dispatch(updateAccessibilitySettings(patch));
+
         const optimistic = dispatch(
           accessibilitySettingsApi.util.updateQueryData(
             'getAccessibilitySettings',

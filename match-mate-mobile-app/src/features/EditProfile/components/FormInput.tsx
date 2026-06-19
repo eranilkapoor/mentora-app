@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 
 export interface FormInputProps extends Omit<
@@ -68,118 +69,130 @@ export function FormInput({
 
   ...rest
 }: FormInputProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
 
   const [focused, setFocused] = useState(false);
 
   const styles = useMemo(
     () =>
-      StyleSheet.create({
-        container: {
-          marginBottom: 16,
-          width: '100%',
-        },
+      applyAccessibilityToStyles(
+        StyleSheet.create({
+          container: {
+            marginBottom: 16,
+            width: '100%',
+          },
 
-        labelRow: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginBottom: 6,
-        },
+          labelRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 6,
+          },
 
-        label: {
-          fontSize: 13,
-          fontWeight: '600',
-          color: theme.colors.textSecondary,
-        },
+          label: {
+            fontSize: 13,
+            fontWeight: '600',
+            color: theme.colors.textSecondary,
+          },
 
-        inputWrapper: {
-          width: '100%',
-          minHeight: multiline ? 100 : 48,
+          inputWrapper: {
+            width: '100%',
+            minHeight: multiline ? 100 : 48,
 
-          flexDirection: 'row',
-          alignItems: multiline ? 'flex-start' : 'center',
+            flexDirection: 'row',
+            alignItems: multiline ? 'flex-start' : 'center',
 
-          borderWidth: 1,
-          borderRadius: 12,
+            borderWidth: 1,
+            borderRadius: 12,
 
-          borderColor: error
-            ? theme.colors.error
-            : focused
-              ? theme.colors.primary
-              : theme.colors.border,
+            borderColor: error
+              ? theme.colors.error
+              : focused
+                ? theme.colors.primary
+                : theme.colors.border,
 
-          backgroundColor: editable
-            ? theme.colors.inputBackground
-            : theme.colors.backgroundLight,
+            backgroundColor: editable
+              ? theme.colors.inputBackground
+              : theme.colors.backgroundLight,
 
-          overflow: 'hidden',
+            overflow: 'hidden',
 
-          ...(Platform.OS === 'web'
-            ? ({
-                outlineWidth: 0,
-                outlineStyle: 'none',
-                boxSizing: 'border-box',
-              } as never)
-            : {}),
-        },
+            ...(Platform.OS === 'web'
+              ? ({
+                  outlineWidth: 0,
+                  outlineStyle: 'none',
+                  boxSizing: 'border-box',
+                } as never)
+              : {}),
+          },
 
-        inputWrapperFocused: {
-          borderWidth: 1.5,
-        },
+          inputWrapperFocused: {
+            borderWidth: 1.5,
+          },
 
-        inputWrapperDisabled: {
-          opacity: 0.6,
-        },
+          inputWrapperDisabled: {
+            opacity: 0.6,
+          },
 
-        sideElement: {
-          justifyContent: 'center',
-          alignItems: 'center',
-          paddingHorizontal: 12,
-          paddingTop: multiline ? 12 : 0,
-        },
+          sideElement: {
+            justifyContent: 'center',
+            alignItems: 'center',
+            paddingHorizontal: 12,
+            paddingTop: multiline ? 12 : 0,
+          },
 
-        input: {
-          flex: 1,
+          input: {
+            flex: 1,
 
-          minHeight: multiline ? 100 : 48,
+            minHeight: multiline ? 100 : 48,
 
-          fontSize: 15,
-          color: theme.colors.textPrimary,
+            fontSize: 15,
+            color: theme.colors.textPrimary,
 
-          paddingHorizontal: 14,
-          paddingVertical: multiline ? 12 : 0,
+            paddingHorizontal: 14,
+            paddingVertical: multiline ? 12 : 0,
 
-          backgroundColor: theme.colors.transparent,
+            backgroundColor: theme.colors.transparent,
 
-          ...(Platform.OS === 'web'
-            ? ({
-                outlineWidth: 0,
-                outlineStyle: 'none',
-                borderWidth: 0,
-                boxSizing: 'border-box',
-              } as never)
-            : {}),
-        },
+            ...(Platform.OS === 'web'
+              ? ({
+                  outlineWidth: 0,
+                  outlineStyle: 'none',
+                  borderWidth: 0,
+                  boxSizing: 'border-box',
+                } as never)
+              : {}),
+          },
 
-        multilineInput: {
-          textAlignVertical: 'top',
-        },
+          multilineInput: {
+            textAlignVertical: 'top',
+          },
 
-        helperText: {
-          marginTop: 6,
-          fontSize: 12,
-          lineHeight: 16,
-          color: theme.colors.textMuted,
-        },
+          helperText: {
+            marginTop: 6,
+            fontSize: 12,
+            lineHeight: 16,
+            color: theme.colors.textMuted,
+          },
 
-        errorText: {
-          marginTop: 6,
-          fontSize: 12,
-          lineHeight: 16,
-          color: theme.colors.error,
-        },
-      }),
-    [theme, error, editable, multiline, focused]
+          errorText: {
+            marginTop: 6,
+            fontSize: 12,
+            lineHeight: 16,
+            color: theme.colors.error,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [
+      accessibility.boldText,
+      editable,
+      error,
+      focused,
+      fontScale,
+      multiline,
+      theme,
+    ]
   );
 
   return (

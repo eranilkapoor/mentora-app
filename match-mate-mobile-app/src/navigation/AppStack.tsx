@@ -10,10 +10,12 @@ import { AppStackParamList } from './types';
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
 export default function AppStack(): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, reduceAnimations } = useTheme();
 
   return (
-    <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
+    <Stack.Navigator
+      screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
+    >
       <Stack.Screen name="Tabs" component={BottomTabs} />
       <Stack.Screen name="Settings" component={SettingsStack} />
     </Stack.Navigator>

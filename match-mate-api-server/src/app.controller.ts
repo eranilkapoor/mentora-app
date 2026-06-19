@@ -59,8 +59,19 @@ export class AppController {
   accountDeletionInstructions(
     @Query('theme') theme?: string,
     @Query('lang') lang?: string,
+    @Query('fontSize') fontSize?: string,
+    @Query('boldText') boldText?: string,
+    @Query('highContrast') highContrast?: string,
+    @Query('reduceMotion') reduceMotion?: string,
   ) {
-    return this.appService.getAccountDeletionInstructionsPage(theme, lang);
+    return this.appService.getAccountDeletionInstructionsPage({
+      theme,
+      language: lang,
+      fontSize,
+      boldText,
+      highContrast,
+      reduceMotion,
+    });
   }
 
   @Public()
@@ -71,8 +82,22 @@ export class AppController {
   @Header('Content-Type', 'text/html; charset=utf-8')
   @Header('Access-Control-Allow-Origin', '*')
   @Header('Cache-Control', 'public, max-age=300')
-  privacyPolicy(@Query('theme') theme?: string, @Query('lang') lang?: string) {
-    return this.appService.getStaticHelpPage('privacy-policy', theme, lang);
+  privacyPolicy(
+    @Query('theme') theme?: string,
+    @Query('lang') lang?: string,
+    @Query('fontSize') fontSize?: string,
+    @Query('boldText') boldText?: string,
+    @Query('highContrast') highContrast?: string,
+    @Query('reduceMotion') reduceMotion?: string,
+  ) {
+    return this.appService.getStaticHelpPage('privacy-policy', {
+      theme,
+      language: lang,
+      fontSize,
+      boldText,
+      highContrast,
+      reduceMotion,
+    });
   }
 
   @Public()
@@ -86,8 +111,19 @@ export class AppController {
   termsConditions(
     @Query('theme') theme?: string,
     @Query('lang') lang?: string,
+    @Query('fontSize') fontSize?: string,
+    @Query('boldText') boldText?: string,
+    @Query('highContrast') highContrast?: string,
+    @Query('reduceMotion') reduceMotion?: string,
   ) {
-    return this.appService.getStaticHelpPage('terms-conditions', theme, lang);
+    return this.appService.getStaticHelpPage('terms-conditions', {
+      theme,
+      language: lang,
+      fontSize,
+      boldText,
+      highContrast,
+      reduceMotion,
+    });
   }
 
   @Public()
@@ -101,12 +137,19 @@ export class AppController {
   communityGuidelines(
     @Query('theme') theme?: string,
     @Query('lang') lang?: string,
+    @Query('fontSize') fontSize?: string,
+    @Query('boldText') boldText?: string,
+    @Query('highContrast') highContrast?: string,
+    @Query('reduceMotion') reduceMotion?: string,
   ) {
-    return this.appService.getStaticHelpPage(
-      'community-guidelines',
+    return this.appService.getStaticHelpPage('community-guidelines', {
       theme,
-      lang,
-    );
+      language: lang,
+      fontSize,
+      boldText,
+      highContrast,
+      reduceMotion,
+    });
   }
 
   @Public()
@@ -117,7 +160,21 @@ export class AppController {
   @Header('Content-Type', 'text/html; charset=utf-8')
   @Header('Access-Control-Allow-Origin', '*')
   @Header('Cache-Control', 'public, max-age=300')
-  faqs(@Query('theme') theme?: string, @Query('lang') lang?: string) {
-    return this.appService.getStaticHelpPage('faqs', theme, lang);
+  faqs(
+    @Query('theme') theme?: string,
+    @Query('lang') lang?: string,
+    @Query('fontSize') fontSize?: string,
+    @Query('boldText') boldText?: string,
+    @Query('highContrast') highContrast?: string,
+    @Query('reduceMotion') reduceMotion?: string,
+  ) {
+    return this.appService.getStaticHelpPage('faqs', {
+      theme,
+      language: lang,
+      fontSize,
+      boldText,
+      highContrast,
+      reduceMotion,
+    });
   }
 }

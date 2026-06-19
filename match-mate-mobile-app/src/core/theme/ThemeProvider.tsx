@@ -1,29 +1,136 @@
-import React, { createContext, useContext, useMemo } from 'react';
+import React, { createContext, useContext, useEffect, useMemo } from 'react';
 import { useColorScheme } from 'react-native';
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { useGetAccessibilitySettingsQuery } from '@/store/services/accessibilitySettingsApi.service';
+import {
+  DEFAULT_ACCESSIBILITY_SETTINGS,
+  setAccessibilitySettings,
+} from '@/store/slices/settings.slice';
+import type { AccessibilitySettings } from '@/features/AccessibilitySettings/AccessibilitySettings.types';
 import { lightTheme } from './lightTheme';
 import { darkTheme } from './darkTheme';
-import { Theme } from './types';
+import { ColorPalette, Theme } from './types';
 
 interface ThemeContextValue {
   theme: Theme;
   isDark: boolean;
+  accessibility: AccessibilitySettings;
+  fontScale: number;
+  reduceAnimations: boolean;
+  screenReaderOptimized: boolean;
 }
 
 const ThemeContext = createContext<ThemeContextValue>({
   theme: lightTheme,
   isDark: false,
+  accessibility: DEFAULT_ACCESSIBILITY_SETTINGS,
+  fontScale: 1,
+  reduceAnimations: false,
+  screenReaderOptimized: false,
 });
+
+const FONT_SCALE_BY_SIZE: Record<AccessibilitySettings['fontSize'], number> = {
+  small: 0.94,
+  medium: 1,
+  large: 1.12,
+  extra_large: 1.22,
+};
+
+const toHighContrastColors = (
+  colors: ColorPalette,
+  isDark: boolean
+): ColorPalette => ({
+  ...colors,
+  background: isDark ? '#000000' : '#FFFFFF',
+  backgroundPage: isDark ? '#000000' : '#FFFFFF',
+  backgroundLight: isDark ? '#111111' : '#FFF4F7',
+  surface: isDark ? '#0B0B0B' : '#FFFFFF',
+  surfaceElevated: isDark ? '#111111' : '#FFFFFF',
+  textPrimary: isDark ? '#FFFFFF' : '#111111',
+  textSecondary: isDark ? '#F3F4F6' : '#242424',
+  textMuted: isDark ? '#E5E7EB' : '#4B5563',
+  textBody: isDark ? '#FFFFFF' : '#1F2937',
+  border: isDark ? '#D1D5DB' : '#6B7280',
+  divider: isDark ? '#6B7280' : '#9CA3AF',
+  borderStrong: isDark ? '#FFFFFF' : '#374151',
+  inputBorder: isDark ? '#FFFFFF' : '#374151',
+  inputPlaceholder: isDark ? '#D1D5DB' : '#4B5563',
+});
+
+const applyAccessibilityToTheme = (
+  baseTheme: Theme,
+  accessibility: AccessibilitySettings,
+  isDark: boolean
+): Theme => {
+  const fontScale = FONT_SCALE_BY_SIZE[accessibility.fontSize] ?? 1;
+  const boldWeight = accessibility.boldText ? '700' : undefined;
+  const scaleText = <T extends { fontSize: number; fontWeight?: string }>(
+    value: T
+  ): T => ({
+    ...value,
+    fontSize: Math.round(value.fontSize * fontScale),
+    fontWeight: boldWeight ?? value.fontWeight,
+  });
+
+  return {
+    ...baseTheme,
+    colors: accessibility.highContrastMode
+      ? toHighContrastColors(baseTheme.colors, isDark)
+      : baseTheme.colors,
+    typography: {
+      ...baseTheme.typography,
+      h1: scaleText(baseTheme.typography.h1),
+      h2: scaleText(baseTheme.typography.h2),
+      h3: scaleText(baseTheme.typography.h3),
+      body: scaleText(baseTheme.typography.body),
+      caption: scaleText(baseTheme.typography.caption),
+      button: scaleText(baseTheme.typography.button),
+    },
+    shadows: accessibility.reduceAnimations
+      ? {
+          sm: { ...baseTheme.shadows.sm, elevation: 0, shadowOpacity: 0 },
+          md: { ...baseTheme.shadows.md, elevation: 0, shadowOpacity: 0 },
+          lg: { ...baseTheme.shadows.lg, elevation: 0, shadowOpacity: 0 },
+        }
+      : baseTheme.shadows,
+  };
+};
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const mode = useAppSelector((s) => s.settings.theme);
+  const accessibility = useAppSelector(
+    (s) => s.settings.accessibility ?? DEFAULT_ACCESSIBILITY_SETTINGS
+  );
+  const accessToken = useAppSelector((s) => s.auth.accessToken);
+  const dispatch = useAppDispatch();
   const systemScheme = useColorScheme();
+  const { data } = useGetAccessibilitySettingsQuery(undefined, {
+    skip: !accessToken,
+  });
 
   const isDark = mode === 'system' ? systemScheme === 'dark' : mode === 'dark';
+  const fontScale = FONT_SCALE_BY_SIZE[accessibility.fontSize] ?? 1;
+
+  useEffect(() => {
+    if (data?.accessibility) {
+      dispatch(setAccessibilitySettings(data.accessibility));
+    }
+  }, [data?.accessibility, dispatch]);
 
   const value = useMemo<ThemeContextValue>(
-    () => ({ theme: isDark ? darkTheme : lightTheme, isDark }),
-    [isDark]
+    () => ({
+      theme: applyAccessibilityToTheme(
+        isDark ? darkTheme : lightTheme,
+        accessibility,
+        isDark
+      ),
+      isDark,
+      accessibility,
+      fontScale,
+      reduceAnimations: accessibility.reduceAnimations,
+      screenReaderOptimized: accessibility.screenReaderOptimized,
+    }),
+    [accessibility, fontScale, isDark]
   );
 
   return (

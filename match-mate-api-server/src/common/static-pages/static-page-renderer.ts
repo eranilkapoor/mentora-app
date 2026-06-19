@@ -7,6 +7,16 @@ export type StaticPageSlug =
 
 export type StaticPageTheme = 'light' | 'dark' | 'system';
 export type StaticPageLanguage = 'en' | 'hi';
+export type StaticPageFontSize = 'small' | 'medium' | 'large' | 'extra_large';
+
+export interface StaticPageRenderOptions {
+  theme?: string;
+  language?: string;
+  fontSize?: string;
+  boldText?: string | boolean;
+  highContrast?: string | boolean;
+  reduceMotion?: string | boolean;
+}
 
 interface StaticPageSection {
   title: string;
@@ -609,19 +619,54 @@ const normalizeLanguage = (language?: string): StaticPageLanguage => {
   return normalized === 'hi' ? 'hi' : 'en';
 };
 
+const normalizeFontSize = (fontSize?: string): StaticPageFontSize => {
+  if (
+    fontSize === 'small' ||
+    fontSize === 'large' ||
+    fontSize === 'extra_large'
+  ) {
+    return fontSize;
+  }
+
+  return 'medium';
+};
+
+const normalizeBoolean = (value?: string | boolean): boolean =>
+  value === true || value === 'true' || value === '1';
+
+const fontScaleBySize: Record<StaticPageFontSize, string> = {
+  small: '0.94',
+  medium: '1',
+  large: '1.12',
+  extra_large: '1.22',
+};
+
 export const getStaticPageHtml = (
   slug: StaticPageSlug,
-  theme?: string,
-  language?: string,
+  optionsOrTheme?: StaticPageRenderOptions | string,
+  legacyLanguage?: string,
 ): string => {
-  const selectedLanguage = normalizeLanguage(language);
+  const options =
+    typeof optionsOrTheme === 'string'
+      ? { theme: optionsOrTheme, language: legacyLanguage }
+      : (optionsOrTheme ?? {});
+  const selectedLanguage = normalizeLanguage(options.language);
   const page = selectedLanguage === 'hi' ? hindiPages[slug] : pages[slug];
-  const selectedTheme = normalizeTheme(theme);
+  const selectedTheme = normalizeTheme(options.theme);
+  const selectedFontSize = normalizeFontSize(options.fontSize);
+  const boldText = normalizeBoolean(options.boldText);
+  const highContrast = normalizeBoolean(options.highContrast);
+  const reduceMotion = normalizeBoolean(options.reduceMotion);
   const themeAttribute =
     selectedTheme === 'system' ? '' : ` data-theme="${selectedTheme}"`;
+  const accessibilityAttributes = ` data-font-size="${selectedFontSize}"${
+    boldText ? ' data-bold-text="true"' : ''
+  }${highContrast ? ' data-high-contrast="true"' : ''}${
+    reduceMotion ? ' data-reduce-motion="true"' : ''
+  }`;
 
   return `<!doctype html>
-<html lang="${selectedLanguage}"${themeAttribute}>
+<html lang="${selectedLanguage}"${themeAttribute}${accessibilityAttributes}>
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
@@ -629,6 +674,7 @@ export const getStaticPageHtml = (
     <title>${escapeHtml(page.title)} - MatchMate</title>
     <style>
       :root {
+        --font-scale: ${fontScaleBySize[selectedFontSize]};
         --primary: #E94E77;
         --primary-soft: #FFF1F3;
         --accent: #D9A441;
@@ -660,6 +706,7 @@ export const getStaticPageHtml = (
 
       html[data-theme="light"] {
         color-scheme: light;
+        --font-scale: ${fontScaleBySize[selectedFontSize]};
         --primary: #E94E77;
         --primary-soft: #FFF1F3;
         --accent: #D9A441;
@@ -675,6 +722,7 @@ export const getStaticPageHtml = (
 
       html[data-theme="dark"] {
         color-scheme: dark;
+        --font-scale: ${fontScaleBySize[selectedFontSize]};
         --primary: #FF5C8A;
         --primary-soft: rgba(255, 92, 138, 0.14);
         --accent: #C89B3C;
@@ -706,12 +754,47 @@ export const getStaticPageHtml = (
         background: var(--page);
         color: var(--body);
         font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
-        font-size: 14px;
+        font-size: calc(14px * var(--font-scale));
         line-height: 1.55;
         overflow-wrap: anywhere;
         -ms-overflow-style: none;
         -webkit-font-smoothing: antialiased;
         text-rendering: optimizeLegibility;
+      }
+      html[data-bold-text="true"] body {
+        font-weight: 700;
+      }
+      html[data-high-contrast="true"] {
+        --primary: #D91F5C;
+        --primary-soft: #FFE6EE;
+        --page: #FFFFFF;
+        --surface: #FFFFFF;
+        --surface-elevated: #FFFFFF;
+        --text: #111111;
+        --body: #1F2937;
+        --muted: #374151;
+        --border: #4B5563;
+        --shadow: rgba(0, 0, 0, 0.16);
+      }
+      html[data-theme="dark"][data-high-contrast="true"] {
+        --primary: #FF7EA3;
+        --primary-soft: rgba(255, 126, 163, 0.18);
+        --page: #000000;
+        --surface: #080808;
+        --surface-elevated: #111111;
+        --text: #FFFFFF;
+        --body: #FFFFFF;
+        --muted: #F3F4F6;
+        --border: #D1D5DB;
+        --shadow: rgba(0, 0, 0, 0.40);
+      }
+      html[data-reduce-motion="true"] *,
+      html[data-reduce-motion="true"] *::before,
+      html[data-reduce-motion="true"] *::after {
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
       }
       main {
         width: min(760px, 100%);
@@ -728,7 +811,7 @@ export const getStaticPageHtml = (
       }
       .eyebrow {
         color: var(--primary);
-        font-size: 12px;
+        font-size: calc(12px * var(--font-scale));
         font-weight: 800;
         letter-spacing: .6px;
         margin: 0 0 7px;
@@ -736,13 +819,13 @@ export const getStaticPageHtml = (
       }
       h1 {
         color: var(--text);
-        font-size: clamp(20px, 4vw, 28px);
+        font-size: clamp(calc(20px * var(--font-scale)), 4vw, calc(28px * var(--font-scale)));
         line-height: 1.18;
         margin: 0 0 6px;
       }
       .subtitle {
         color: var(--muted);
-        font-size: 13px;
+        font-size: calc(13px * var(--font-scale));
         line-height: 1.5;
         margin: 0;
       }
@@ -763,12 +846,12 @@ export const getStaticPageHtml = (
       }
       .intro p {
         color: var(--body);
-        font-size: 14px;
+        font-size: calc(14px * var(--font-scale));
         line-height: 1.6;
       }
       .updated {
         color: var(--primary);
-        font-size: 12px;
+        font-size: calc(12px * var(--font-scale));
         font-weight: 700;
         margin-top: 10px;
       }
@@ -794,12 +877,12 @@ export const getStaticPageHtml = (
         background: var(--primary-soft);
         color: var(--primary);
         font-weight: 700;
-        font-size: 13px;
+        font-size: calc(13px * var(--font-scale));
         line-height: 1;
       }
       h2 {
         color: var(--text);
-        font-size: 15px;
+        font-size: calc(15px * var(--font-scale));
         line-height: 1.35;
         margin: 2px 0 5px;
       }
@@ -831,7 +914,7 @@ export const getStaticPageHtml = (
       }
       footer {
         color: var(--muted);
-        font-size: 12px;
+        font-size: calc(12px * var(--font-scale));
         line-height: 1.5;
         padding: 16px 2px 0;
       }
@@ -849,10 +932,10 @@ export const getStaticPageHtml = (
           margin-bottom: 18px;
         }
         h1 {
-          font-size: 30px;
+          font-size: calc(30px * var(--font-scale));
         }
         .subtitle {
-          font-size: 15px;
+          font-size: calc(15px * var(--font-scale));
         }
         .intro {
           padding: 18px 20px;
@@ -868,7 +951,7 @@ export const getStaticPageHtml = (
           border-radius: 14px;
         }
         h2 {
-          font-size: 16px;
+          font-size: calc(16px * var(--font-scale));
         }
       }
 

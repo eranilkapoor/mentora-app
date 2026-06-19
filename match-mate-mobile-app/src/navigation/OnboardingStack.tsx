@@ -8,10 +8,12 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 const Stack = createNativeStackNavigator<OnboardingStackParamList>();
 
 export default function OnboardingStack(): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, reduceAnimations } = useTheme();
 
   return (
-    <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
+    <Stack.Navigator
+      screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
+    >
       <Stack.Screen name="OnboardingScreen" component={OnboardingScreen} />
     </Stack.Navigator>
   );

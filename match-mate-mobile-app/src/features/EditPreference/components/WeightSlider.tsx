@@ -13,6 +13,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 
 export interface WeightSliderProps {
   /**
@@ -145,100 +146,104 @@ function WeightSliderComponent({
   trackStyle,
   fillStyle,
 }: WeightSliderProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
 
   const styles = useMemo(
     () =>
-      StyleSheet.create<Styles>({
-        container: {
-          marginBottom: 16,
-          opacity: disabled ? 0.6 : 1,
-        },
+      applyAccessibilityToStyles(
+        StyleSheet.create<Styles>({
+          container: {
+            marginBottom: 16,
+            opacity: disabled ? 0.6 : 1,
+          },
 
-        headerRow: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: 12,
-        },
+          headerRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: 12,
+          },
 
-        labelWrapper: {
-          flex: 1,
-          paddingRight: 12,
-        },
+          labelWrapper: {
+            flex: 1,
+            paddingRight: 12,
+          },
 
-        label: {
-          fontSize: 13,
-          fontWeight: '600',
-          color: theme.colors.textSecondary,
-        },
+          label: {
+            fontSize: 13,
+            fontWeight: '600',
+            color: theme.colors.textSecondary,
+          },
 
-        helperText: {
-          marginTop: 4,
-          fontSize: 11,
-          color: error ? theme.colors.error : theme.colors.textMuted,
-        },
+          helperText: {
+            marginTop: 4,
+            fontSize: 11,
+            color: error ? theme.colors.error : theme.colors.textMuted,
+          },
 
-        errorText: {
-          marginTop: 6,
-          fontSize: 11,
-          color: theme.colors.error,
-        },
+          errorText: {
+            marginTop: 6,
+            fontSize: 11,
+            color: theme.colors.error,
+          },
 
-        required: {
-          color: theme.colors.error,
-        },
+          required: {
+            color: theme.colors.error,
+          },
 
-        controlsRow: {
-          flexDirection: 'row',
-          alignItems: 'center',
-        },
+          controlsRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+          },
 
-        button: {
-          width: 32,
-          height: 32,
-          borderRadius: 10,
+          button: {
+            width: 32,
+            height: 32,
+            borderRadius: 10,
 
-          borderWidth: 1,
-          borderColor: theme.colors.border,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
 
-          backgroundColor: theme.colors.inputBackground,
+            backgroundColor: theme.colors.inputBackground,
 
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
 
-        buttonDisabled: {
-          opacity: 0.4,
-        },
+          buttonDisabled: {
+            opacity: 0.4,
+          },
 
-        value: {
-          minWidth: 64,
-          marginHorizontal: 12,
+          value: {
+            minWidth: 64,
+            marginHorizontal: 12,
 
-          fontSize: 15,
-          fontWeight: '700',
+            fontSize: 15,
+            fontWeight: '700',
 
-          color: theme.colors.primary,
-          textAlign: 'center',
-        },
+            color: theme.colors.primary,
+            textAlign: 'center',
+          },
 
-        track: {
-          height: 8,
-          borderRadius: 999,
+          track: {
+            height: 8,
+            borderRadius: 999,
 
-          overflow: 'hidden',
+            overflow: 'hidden',
 
-          backgroundColor: theme.colors.backgroundLight,
-        },
+            backgroundColor: theme.colors.backgroundLight,
+          },
 
-        fill: {
-          height: '100%',
-          borderRadius: 999,
-          backgroundColor: theme.colors.primary,
-        },
-      }),
-    [disabled, error, theme]
+          fill: {
+            height: '100%',
+            borderRadius: 999,
+            backgroundColor: theme.colors.primary,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, disabled, error, fontScale, theme]
   );
 
   const safeValue = useMemo<number>(() => {

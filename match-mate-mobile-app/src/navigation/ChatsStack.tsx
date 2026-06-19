@@ -11,10 +11,12 @@ import MatchDetailsScreen from '@/features/MatchDetail/MatchDetail.screen';
 const Stack = createNativeStackNavigator<ChatsStackParamList>();
 
 export default function ChatsStack(): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, reduceAnimations } = useTheme();
 
   return (
-    <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
+    <Stack.Navigator
+      screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
+    >
       <Stack.Screen name="ChatList" component={ChatListScreen} />
       <Stack.Screen name="ChatDetails" component={ChatScreen} />
       <Stack.Screen name="MatchDetails" component={MatchDetailsScreen} />

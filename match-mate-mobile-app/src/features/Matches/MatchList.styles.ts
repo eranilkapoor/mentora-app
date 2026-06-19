@@ -385,16 +385,38 @@ export const matchListStyles = (
     filterModalOverlay: {
       flex: 1,
       backgroundColor: theme.colors.overlayDark,
-      justifyContent: 'flex-end',
+      justifyContent: Platform.OS === 'web' ? 'center' : 'flex-end',
+      alignItems: Platform.OS === 'web' ? 'center' : 'stretch',
+      paddingHorizontal: Platform.OS === 'web' ? 16 : 0,
+      paddingVertical: Platform.OS === 'web' ? 24 : 0,
     },
     filterModalSheet: {
-      maxHeight: '90%',
+      width: Platform.OS === 'web' ? '100%' : undefined,
+      maxWidth: Platform.OS === 'web' ? 430 : undefined,
+      maxHeight: Platform.OS === 'web' ? '88%' : '90%',
       backgroundColor: theme.colors.surface,
-      borderTopLeftRadius: 28,
-      borderTopRightRadius: 28,
+      borderTopLeftRadius: Platform.OS === 'web' ? 22 : 28,
+      borderTopRightRadius: Platform.OS === 'web' ? 22 : 28,
+      borderBottomLeftRadius: Platform.OS === 'web' ? 22 : 0,
+      borderBottomRightRadius: Platform.OS === 'web' ? 22 : 0,
+      borderWidth: Platform.OS === 'web' ? StyleSheet.hairlineWidth : 0,
+      borderColor: theme.colors.divider,
+      overflow: 'hidden',
       paddingTop: 12,
       paddingHorizontal: 16,
       paddingBottom: 22,
+      ...Platform.select({
+        android: { elevation: 12 },
+        ios: {
+          shadowColor: theme.colors.black,
+          shadowOffset: { width: 0, height: 8 },
+          shadowOpacity: 0.18,
+          shadowRadius: 24,
+        },
+        web: {
+          boxShadow: `0px 18px 50px ${theme.colors.black}33`,
+        },
+      }),
     },
     // Fixed: borderStrong → border
     filterModalHandle: {
@@ -404,12 +426,24 @@ export const matchListStyles = (
       backgroundColor: theme.colors.border,
       alignSelf: 'center',
       marginBottom: 16,
+      ...Platform.select({
+        web: {
+          display: 'none',
+        },
+      }),
     },
     filterModalHeader: {
       flexDirection: 'row',
       alignItems: 'center',
       justifyContent: 'space-between',
       marginBottom: 18,
+    },
+    filterModalBody: {
+      flexGrow: 1,
+      flexShrink: 1,
+    },
+    filterModalScrollContent: {
+      paddingBottom: 12,
     },
     filterModalTitle: {
       fontSize: 22,

@@ -9,12 +9,21 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { Theme } from '@/core/theme/types';
 import { ConfirmOptions, registerConfirmPresenter } from '@/core/utils/confirm';
 
 export default function ConfirmHost(): React.ReactElement | null {
-  const { theme } = useTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const { theme, fontScale, accessibility, reduceAnimations } = useTheme();
+  const styles = useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        makeStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
   const [options, setOptions] = useState<ConfirmOptions | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
@@ -53,7 +62,7 @@ export default function ConfirmHost(): React.ReactElement | null {
     <Modal
       transparent
       visible
-      animationType="fade"
+      animationType={reduceAnimations ? 'none' : 'fade'}
       statusBarTranslucent
       onRequestClose={close}
     >

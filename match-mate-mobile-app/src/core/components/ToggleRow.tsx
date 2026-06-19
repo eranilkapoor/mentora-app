@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 
 export interface ToggleRowProps {
   /**
@@ -121,80 +122,84 @@ function ToggleRowComponent({
   helperTextStyle,
   errorTextStyle,
 }: ToggleRowProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
 
   const styles = useMemo(() => {
     const isSmall = size === 'small';
     const isLarge = size === 'large';
 
-    return StyleSheet.create({
-      container: {
-        marginBottom: 16,
-        opacity: disabled ? 0.6 : 1,
-      },
+    return applyAccessibilityToStyles(
+      StyleSheet.create({
+        container: {
+          marginBottom: 16,
+          opacity: disabled ? 0.6 : 1,
+        },
 
-      row: {
-        minHeight: isSmall ? 48 : isLarge ? 60 : 54,
+        row: {
+          minHeight: isSmall ? 48 : isLarge ? 60 : 54,
 
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'space-between',
+          flexDirection: 'row',
+          alignItems: 'center',
+          justifyContent: 'space-between',
 
-        paddingVertical: isSmall ? 6 : 8,
-      },
+          paddingVertical: isSmall ? 6 : 8,
+        },
 
-      content: {
-        flex: 1,
-        paddingRight: 14,
-      },
+        content: {
+          flex: 1,
+          paddingRight: 14,
+        },
 
-      contentPressable: {
-        flex: 1,
-        alignSelf: 'stretch',
-        justifyContent: 'center',
-      },
+        contentPressable: {
+          flex: 1,
+          alignSelf: 'stretch',
+          justifyContent: 'center',
+        },
 
-      label: {
-        fontSize: isSmall ? 13 : isLarge ? 16 : 14,
-        lineHeight: isSmall ? 18 : isLarge ? 22 : 20,
+        label: {
+          fontSize: isSmall ? 13 : isLarge ? 16 : 14,
+          lineHeight: isSmall ? 18 : isLarge ? 22 : 20,
 
-        fontWeight: '600',
-        color: theme.colors.textPrimary,
-      },
+          fontWeight: '600',
+          color: theme.colors.textPrimary,
+        },
 
-      required: {
-        color: theme.colors.error,
-      },
+        required: {
+          color: theme.colors.error,
+        },
 
-      sublabel: {
-        marginTop: 4,
+        sublabel: {
+          marginTop: 4,
 
-        fontSize: isSmall ? 11 : isLarge ? 13 : 12,
+          fontSize: isSmall ? 11 : isLarge ? 13 : 12,
 
-        lineHeight: isSmall ? 16 : isLarge ? 20 : 18,
+          lineHeight: isSmall ? 16 : isLarge ? 20 : 18,
 
-        color: error ? theme.colors.error : theme.colors.textMuted,
-      },
+          color: error ? theme.colors.error : theme.colors.textMuted,
+        },
 
-      helperText: {
-        marginTop: 6,
+        helperText: {
+          marginTop: 6,
 
-        fontSize: 11,
-        lineHeight: 16,
+          fontSize: 11,
+          lineHeight: 16,
 
-        color: theme.colors.textMuted,
-      },
+          color: theme.colors.textMuted,
+        },
 
-      errorText: {
-        marginTop: 6,
+        errorText: {
+          marginTop: 6,
 
-        fontSize: 11,
-        lineHeight: 16,
+          fontSize: 11,
+          lineHeight: 16,
 
-        color: theme.colors.error,
-      },
-    });
-  }, [disabled, error, size, theme]);
+          color: theme.colors.error,
+        },
+      }),
+      fontScale,
+      accessibility.boldText
+    );
+  }, [accessibility.boldText, disabled, error, fontScale, size, theme]);
 
   const handleRowPress = useCallback((): void => {
     if (disabled) {

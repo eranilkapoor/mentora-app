@@ -10,6 +10,7 @@ import {
 } from '@/common/cache/cache.constants';
 import {
   getStaticPageHtml,
+  StaticPageRenderOptions,
   StaticPageSlug,
 } from '@/common/static-pages/static-page-renderer';
 
@@ -41,18 +42,22 @@ export class AppService {
   }
 
   getAccountDeletionInstructionsPage(
-    theme?: string,
-    language?: string,
+    optionsOrTheme?: StaticPageRenderOptions | string,
+    legacyLanguage?: string,
   ): string {
-    return getStaticPageHtml('account-deletion', theme, language);
+    return getStaticPageHtml(
+      'account-deletion',
+      optionsOrTheme,
+      legacyLanguage,
+    );
   }
 
   getStaticHelpPage(
     slug: StaticPageSlug,
-    theme?: string,
-    language?: string,
+    optionsOrTheme?: StaticPageRenderOptions | string,
+    legacyLanguage?: string,
   ): string {
-    return getStaticPageHtml(slug, theme, language);
+    return getStaticPageHtml(slug, optionsOrTheme, legacyLanguage);
   }
 
   markShuttingDown(): void {

@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 
 export interface OptionType<T extends string = string> {
   label: string;
@@ -163,138 +164,142 @@ function MultiSelectPillComponent<T extends string = string>({
   pillTextStyle,
   selectedPillTextStyle,
 }: MultiSelectPillProps<T>): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
 
   const { t } = useTranslation();
 
   const styles = useMemo(
     () =>
-      StyleSheet.create({
-        container: {
-          marginBottom: 16,
+      applyAccessibilityToStyles(
+        StyleSheet.create({
+          container: {
+            marginBottom: 16,
 
-          opacity: disabled ? 0.7 : 1,
-        },
+            opacity: disabled ? 0.7 : 1,
+          },
 
-        headerRow: {
-          flexDirection: 'row',
+          headerRow: {
+            flexDirection: 'row',
 
-          alignItems: 'center',
+            alignItems: 'center',
 
-          justifyContent: 'space-between',
+            justifyContent: 'space-between',
 
-          marginBottom: 6,
+            marginBottom: 6,
 
-          gap: 10,
-        },
+            gap: 10,
+          },
 
-        label: {
-          flexShrink: 1,
+          label: {
+            flexShrink: 1,
 
-          fontSize: 13,
+            fontSize: 13,
 
-          fontWeight: '600',
+            fontWeight: '600',
 
-          color: theme.colors.textSecondary,
-        },
+            color: theme.colors.textSecondary,
+          },
 
-        required: {
-          color: theme.colors.error,
-        },
+          required: {
+            color: theme.colors.error,
+          },
 
-        selectedCount: {
-          fontSize: 12,
+          selectedCount: {
+            fontSize: 12,
 
-          fontWeight: '700',
+            fontWeight: '700',
 
-          color: theme.colors.primary,
-        },
+            color: theme.colors.primary,
+          },
 
-        helperText: {
-          marginBottom: 8,
+          helperText: {
+            marginBottom: 8,
 
-          fontSize: 11,
+            fontSize: 11,
 
-          lineHeight: 16,
+            lineHeight: 16,
 
-          color: error ? theme.colors.error : theme.colors.textMuted,
-        },
+            color: error ? theme.colors.error : theme.colors.textMuted,
+          },
 
-        errorText: {
-          marginTop: 6,
+          errorText: {
+            marginTop: 6,
 
-          fontSize: 11,
+            fontSize: 11,
 
-          lineHeight: 16,
+            lineHeight: 16,
 
-          color: theme.colors.error,
-        },
+            color: theme.colors.error,
+          },
 
-        pillContainer: {
-          flexDirection: direction === 'column' ? 'column' : 'row',
+          pillContainer: {
+            flexDirection: direction === 'column' ? 'column' : 'row',
 
-          flexWrap: direction === 'row' ? 'wrap' : 'nowrap',
+            flexWrap: direction === 'row' ? 'wrap' : 'nowrap',
 
-          gap: 8,
-        },
+            gap: 8,
+          },
 
-        pill: {
-          minHeight: 40,
+          pill: {
+            minHeight: 40,
 
-          paddingHorizontal: 14,
-          paddingVertical: 10,
+            paddingHorizontal: 14,
+            paddingVertical: 10,
 
-          borderRadius: 999,
+            borderRadius: 999,
 
-          borderWidth: 1,
+            borderWidth: 1,
 
-          borderColor: theme.colors.border,
+            borderColor: theme.colors.border,
 
-          backgroundColor: theme.colors.inputBackground,
+            backgroundColor: theme.colors.inputBackground,
 
-          alignItems: 'center',
-          justifyContent: 'center',
-          flexDirection: 'row',
-          gap: 7,
-        },
+            alignItems: 'center',
+            justifyContent: 'center',
+            flexDirection: 'row',
+            gap: 7,
+          },
 
-        selectedPill: {
-          backgroundColor: theme.colors.primaryLight,
+          selectedPill: {
+            backgroundColor: theme.colors.primaryLight,
 
-          borderColor: theme.colors.primary,
-        },
+            borderColor: theme.colors.primary,
+          },
 
-        disabledPill: {
-          opacity: 0.45,
-        },
+          disabledPill: {
+            opacity: 0.45,
+          },
 
-        pillPressed: {
-          opacity: 0.7,
-        },
+          pillPressed: {
+            opacity: 0.7,
+          },
 
-        pillText: {
-          fontSize: 13,
+          pillText: {
+            fontSize: 13,
 
-          fontWeight: '500',
+            fontWeight: '500',
 
-          color: theme.colors.textSecondary,
+            color: theme.colors.textSecondary,
 
-          textTransform: 'capitalize',
-        },
+            textTransform: 'capitalize',
+          },
 
-        selectedPillText: {
-          color: theme.colors.primary,
+          selectedPillText: {
+            color: theme.colors.primary,
 
-          fontWeight: '700',
-        },
+            fontWeight: '700',
+          },
 
-        emptyText: {
-          fontSize: 13,
+          emptyText: {
+            fontSize: 13,
 
-          color: theme.colors.textMuted,
-        },
-      }),
-    [direction, disabled, error, theme]
+            color: theme.colors.textMuted,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, direction, disabled, error, fontScale, theme]
   );
 
   /**

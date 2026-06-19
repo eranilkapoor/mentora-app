@@ -39,7 +39,7 @@ export default function StaticPageWebViewScreen({
   slug,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(staticPageWebViewStyles);
-  const { theme, isDark } = useTheme();
+  const { theme, isDark, accessibility } = useTheme();
   const { i18n, t } = useTranslation();
   const webViewRef = useRef<WebView>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -50,10 +50,17 @@ export default function StaticPageWebViewScreen({
     const themeName = isDark ? 'dark' : 'light';
     const language = i18n.resolvedLanguage ?? i18n.language ?? 'en';
     const normalizedLanguage = language.split('-')[0] ?? 'en';
-    return `${getApiOrigin()}/${slug}?theme=${themeName}&lang=${encodeURIComponent(
-      normalizedLanguage
-    )}`;
-  }, [i18n.language, i18n.resolvedLanguage, isDark, slug]);
+    const params = new URLSearchParams({
+      theme: themeName,
+      lang: normalizedLanguage,
+      fontSize: accessibility.fontSize,
+      boldText: String(accessibility.boldText),
+      highContrast: String(accessibility.highContrastMode),
+      reduceMotion: String(accessibility.reduceAnimations),
+    });
+
+    return `${getApiOrigin()}/${slug}?${params.toString()}`;
+  }, [accessibility, i18n.language, i18n.resolvedLanguage, isDark, slug]);
 
   const handleRetry = (): void => {
     setHasError(false);

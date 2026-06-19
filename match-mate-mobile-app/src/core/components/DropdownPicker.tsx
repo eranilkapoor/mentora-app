@@ -22,6 +22,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 
 // ─────────────────────────────────────────────────────────────
@@ -133,7 +134,7 @@ function DropdownPickerComponent<T extends string = string>({
 
   emptyText,
 }: DropdownPickerProps<T>): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
 
   const { t } = useTranslation();
 
@@ -155,202 +156,214 @@ function DropdownPickerComponent<T extends string = string>({
 
   const styles = useMemo(
     () =>
-      StyleSheet.create({
-        container: {
-          width: '100%',
-          marginBottom: 16,
+      applyAccessibilityToStyles(
+        StyleSheet.create({
+          container: {
+            width: '100%',
+            marginBottom: 16,
 
-          // IMPORTANT
-          overflow: 'visible',
+            // IMPORTANT
+            overflow: 'visible',
 
-          zIndex: visible ? 9999 : 1,
-        },
-
-        wrapper: {
-          width: '100%',
-          position: 'relative',
-
-          overflow: 'visible',
-        },
-
-        labelRow: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          marginBottom: 6,
-        },
-
-        label: {
-          fontSize: 13,
-          fontWeight: '600',
-          color: theme.colors.textSecondary,
-        },
-
-        trigger: {
-          minHeight: 52,
-
-          borderWidth: 1,
-          borderColor: error ? theme.colors.error : theme.colors.border,
-
-          borderRadius: 12,
-
-          backgroundColor: disabled
-            ? theme.colors.backgroundLight
-            : theme.colors.inputBackground,
-
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        },
-
-        triggerDisabled: {
-          opacity: 0.6,
-        },
-
-        triggerContent: {
-          flex: 1,
-          flexDirection: 'row',
-          alignItems: 'center',
-        },
-
-        triggerActions: {
-          flexDirection: 'row',
-          alignItems: 'center',
-        },
-
-        triggerText: {
-          flex: 1,
-
-          fontSize: 15,
-          color: theme.colors.textPrimary,
-        },
-
-        placeholder: {
-          color: theme.colors.textMuted,
-        },
-
-        leftIcon: {
-          marginRight: 10,
-        },
-
-        dropdown: {
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-
-          borderRadius: 12,
-
-          backgroundColor: theme.colors.surface,
-
-          overflow: 'hidden',
-
-          maxHeight,
-
-          shadowColor: theme.colors.black,
-          shadowOffset: {
-            width: 0,
-            height: 4,
+            zIndex: visible ? 9999 : 1,
           },
-          shadowOpacity: 0.1,
-          shadowRadius: 8,
 
-          elevation: 8,
+          wrapper: {
+            width: '100%',
+            position: 'relative',
 
-          zIndex: 99999,
+            overflow: 'visible',
+          },
 
-          ...(Platform.OS === 'web'
-            ? ({
-                boxShadow: '0px 4px 12px rgba(0,0,0,0.10)',
-              } as ViewStyle)
-            : {}),
-        },
+          labelRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginBottom: 6,
+          },
 
-        portalDropdown: {
-          position: 'absolute',
-        },
+          label: {
+            fontSize: 13,
+            fontWeight: '600',
+            color: theme.colors.textSecondary,
+          },
 
-        searchInput: {
-          height: 48,
+          trigger: {
+            minHeight: 52,
 
-          borderBottomWidth: StyleSheet.hairlineWidth,
+            borderWidth: 1,
+            borderColor: error ? theme.colors.error : theme.colors.border,
 
-          borderBottomColor: theme.colors.divider,
+            borderRadius: 12,
 
-          paddingHorizontal: 14,
+            backgroundColor: disabled
+              ? theme.colors.backgroundLight
+              : theme.colors.inputBackground,
 
-          fontSize: 15,
-          color: theme.colors.textPrimary,
-        },
+            paddingHorizontal: 14,
+            paddingVertical: 12,
 
-        option: {
-          minHeight: 48,
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          },
 
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          triggerDisabled: {
+            opacity: 0.6,
+          },
 
-          paddingHorizontal: 14,
-          paddingVertical: 12,
-        },
+          triggerContent: {
+            flex: 1,
+            flexDirection: 'row',
+            alignItems: 'center',
+          },
 
-        optionSelected: {
-          backgroundColor: theme.colors.primaryLight,
-        },
+          triggerActions: {
+            flexDirection: 'row',
+            alignItems: 'center',
+          },
 
-        optionDisabled: {
-          opacity: 0.4,
-        },
+          triggerText: {
+            flex: 1,
 
-        optionText: {
-          flex: 1,
+            fontSize: 15,
+            color: theme.colors.textPrimary,
+          },
 
-          fontSize: 15,
-          color: theme.colors.textPrimary,
-        },
+          placeholder: {
+            color: theme.colors.textMuted,
+          },
 
-        optionTextSelected: {
-          color: theme.colors.primary,
-          fontWeight: '600',
-        },
+          leftIcon: {
+            marginRight: 10,
+          },
 
-        divider: {
-          height: StyleSheet.hairlineWidth,
-          backgroundColor: theme.colors.divider,
-        },
+          dropdown: {
+            borderWidth: 1,
+            borderColor: theme.colors.border,
 
-        error: {
-          marginTop: 6,
+            borderRadius: 12,
 
-          fontSize: 12,
-          color: theme.colors.error,
-        },
+            backgroundColor: theme.colors.surface,
 
-        empty: {
-          padding: 20,
-          alignItems: 'center',
-        },
+            overflow: 'hidden',
 
-        emptyTextStyle: {
-          fontSize: 14,
-          color: theme.colors.textMuted,
-        },
+            maxHeight,
 
-        clearButton: {
-          marginRight: 10,
-        },
+            shadowColor: theme.colors.black,
+            shadowOffset: {
+              width: 0,
+              height: 4,
+            },
+            shadowOpacity: 0.1,
+            shadowRadius: 8,
 
-        backdrop: {
-          ...StyleSheet.absoluteFillObject,
+            elevation: 8,
 
-          zIndex: 9999,
-        },
+            zIndex: 99999,
 
-        portalBackdrop: {
-          flex: 1,
-        },
-      }),
-    [theme, error, disabled, visible, maxHeight]
+            ...(Platform.OS === 'web'
+              ? ({
+                  boxShadow: '0px 4px 12px rgba(0,0,0,0.10)',
+                } as ViewStyle)
+              : {}),
+          },
+
+          portalDropdown: {
+            position: 'absolute',
+          },
+
+          searchInput: {
+            height: 48,
+
+            borderBottomWidth: StyleSheet.hairlineWidth,
+
+            borderBottomColor: theme.colors.divider,
+
+            paddingHorizontal: 14,
+
+            fontSize: 15,
+            color: theme.colors.textPrimary,
+          },
+
+          option: {
+            minHeight: 48,
+
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+
+            paddingHorizontal: 14,
+            paddingVertical: 12,
+          },
+
+          optionSelected: {
+            backgroundColor: theme.colors.primaryLight,
+          },
+
+          optionDisabled: {
+            opacity: 0.4,
+          },
+
+          optionText: {
+            flex: 1,
+
+            fontSize: 15,
+            color: theme.colors.textPrimary,
+          },
+
+          optionTextSelected: {
+            color: theme.colors.primary,
+            fontWeight: '600',
+          },
+
+          divider: {
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: theme.colors.divider,
+          },
+
+          error: {
+            marginTop: 6,
+
+            fontSize: 12,
+            color: theme.colors.error,
+          },
+
+          empty: {
+            padding: 20,
+            alignItems: 'center',
+          },
+
+          emptyTextStyle: {
+            fontSize: 14,
+            color: theme.colors.textMuted,
+          },
+
+          clearButton: {
+            marginRight: 10,
+          },
+
+          backdrop: {
+            ...StyleSheet.absoluteFillObject,
+
+            zIndex: 9999,
+          },
+
+          portalBackdrop: {
+            flex: 1,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [
+      accessibility.boldText,
+      disabled,
+      error,
+      fontScale,
+      maxHeight,
+      theme,
+      visible,
+    ]
   );
 
   // ───────────────────────────────────────────────────────────

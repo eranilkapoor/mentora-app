@@ -57,9 +57,11 @@ export function MatchFilterModal({
   onClear,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(matchListStyles);
-  const { theme } = useTheme();
+  const { theme, reduceAnimations, screenReaderOptimized } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const modalPaddingBottom =
+    Platform.OS === 'web' ? 16 : Math.max(insets.bottom + 12, 22);
 
   const updateFilter = <K extends keyof FilterState>(
     key: K,
@@ -71,7 +73,9 @@ export function MatchFilterModal({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType={
+        reduceAnimations ? 'none' : Platform.OS === 'web' ? 'fade' : 'slide'
+      }
       transparent
       statusBarTranslucent
       hardwareAccelerated
@@ -80,11 +84,12 @@ export function MatchFilterModal({
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={styles.filterModalOverlay}
+        accessibilityViewIsModal={screenReaderOptimized}
       >
         <View
           style={[
             styles.filterModalSheet,
-            { paddingBottom: Math.max(insets.bottom + 12, 22) },
+            { paddingBottom: modalPaddingBottom },
           ]}
         >
           {/* Handle */}
@@ -113,6 +118,8 @@ export function MatchFilterModal({
           </View>
 
           <ScrollView
+            style={styles.filterModalBody}
+            contentContainerStyle={styles.filterModalScrollContent}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
           >

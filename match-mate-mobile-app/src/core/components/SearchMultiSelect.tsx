@@ -15,6 +15,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { RemoveChipButton } from './RemoveChipButton';
 
 // ─── Enable LayoutAnimation on Android ───────────────────────────────────────
@@ -213,11 +214,19 @@ function SearchMultiSelectComponent(
   }: SearchMultiSelectProps,
   ref: React.ForwardedRef<TextInput>
 ): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility, reduceAnimations } = useTheme();
   const { t } = useTranslation();
 
   // Stable styles — only recreated when theme changes
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
 
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
@@ -268,9 +277,11 @@ function SearchMultiSelectComponent(
   );
 
   const toggleExpanded = useCallback((): void => {
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    if (!reduceAnimations) {
+      LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    }
     setExpanded((prev) => !prev);
-  }, []);
+  }, [reduceAnimations]);
 
   // ─── Render ────────────────────────────────────────────────────────────────
 

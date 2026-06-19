@@ -19,12 +19,12 @@ import { AuthStackParamList } from './types';
 const Stack = createNativeStackNavigator<AuthStackParamList>();
 
 export default function AuthStack(): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, reduceAnimations } = useTheme();
 
   return (
     <Stack.Navigator
       initialRouteName="Welcome"
-      screenOptions={getSharedScreenOptions(theme)}
+      screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
     >
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />

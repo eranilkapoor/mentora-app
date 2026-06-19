@@ -17,6 +17,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 import { showError } from '@/core/utils/toast';
 
@@ -170,75 +171,79 @@ const DropdownList = memo(function DropdownList({
   selected,
   onSelect,
 }: DropdownListProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
 
   const styles = useMemo(
     () =>
-      StyleSheet.create({
-        container: {
-          flex: 1,
-          minWidth: 0,
-        },
+      applyAccessibilityToStyles(
+        StyleSheet.create({
+          container: {
+            flex: 1,
+            minWidth: 0,
+          },
 
-        title: {
-          marginBottom: 8,
+          title: {
+            marginBottom: 8,
 
-          fontSize: 12,
-          fontWeight: '700',
-          textTransform: 'uppercase',
+            fontSize: 12,
+            fontWeight: '700',
+            textTransform: 'uppercase',
 
-          textAlign: 'center',
+            textAlign: 'center',
 
-          color: theme.colors.textMuted,
-        },
+            color: theme.colors.textMuted,
+          },
 
-        listWrapper: {
-          borderWidth: 1,
-          borderRadius: 12,
-          borderColor: theme.colors.border,
+          listWrapper: {
+            borderWidth: 1,
+            borderRadius: 12,
+            borderColor: theme.colors.border,
 
-          backgroundColor: theme.colors.surface,
+            backgroundColor: theme.colors.surface,
 
-          overflow: 'hidden',
+            overflow: 'hidden',
 
-          maxHeight: 220,
-        },
+            maxHeight: 220,
+          },
 
-        list: {
-          flexGrow: 0,
-        },
+          list: {
+            flexGrow: 0,
+          },
 
-        item: {
-          minHeight: 46,
+          item: {
+            minHeight: 46,
 
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
 
-          paddingHorizontal: 12,
-          paddingVertical: 10,
+            paddingHorizontal: 12,
+            paddingVertical: 10,
 
-          borderBottomWidth: StyleSheet.hairlineWidth,
-          borderBottomColor: theme.colors.divider,
-        },
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: theme.colors.divider,
+          },
 
-        itemSelected: {
-          backgroundColor: theme.colors.primaryLight,
-        },
+          itemSelected: {
+            backgroundColor: theme.colors.primaryLight,
+          },
 
-        itemText: {
-          flex: 1,
+          itemText: {
+            flex: 1,
 
-          fontSize: 14,
-          color: theme.colors.textPrimary,
-        },
+            fontSize: 14,
+            color: theme.colors.textPrimary,
+          },
 
-        itemTextSelected: {
-          fontWeight: '700',
-          color: theme.colors.primary,
-        },
-      }),
-    [theme]
+          itemTextSelected: {
+            fontWeight: '700',
+            color: theme.colors.primary,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
   );
 
   return (
@@ -322,7 +327,7 @@ export const DatePicker = memo(function DatePicker({
 
   modalTitle,
 }: DatePickerProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility, reduceAnimations } = useTheme();
 
   const { t } = useTranslation();
 
@@ -339,184 +344,188 @@ export const DatePicker = memo(function DatePicker({
 
   const styles = useMemo(
     () =>
-      StyleSheet.create({
-        container: {
-          width: '100%',
-          marginBottom: 16,
-        },
-
-        labelRow: {
-          flexDirection: 'row',
-          alignItems: 'center',
-
-          marginBottom: 6,
-        },
-
-        label: {
-          fontSize: 13,
-          fontWeight: '600',
-
-          color: theme.colors.textSecondary,
-        },
-
-        trigger: {
-          minHeight: 50,
-
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-
-          borderWidth: 1,
-          borderRadius: 12,
-
-          paddingHorizontal: 14,
-
-          borderColor: error ? theme.colors.error : theme.colors.border,
-
-          backgroundColor: disabled
-            ? theme.colors.backgroundLight
-            : theme.colors.inputBackground,
-        },
-
-        triggerDisabled: {
-          opacity: 0.6,
-        },
-
-        triggerText: {
-          flex: 1,
-
-          fontSize: 15,
-        },
-
-        valueText: {
-          color: theme.colors.textPrimary,
-        },
-
-        placeholderText: {
-          color: theme.colors.textMuted,
-        },
-
-        errorText: {
-          marginTop: 6,
-
-          fontSize: 12,
-
-          color: theme.colors.error,
-        },
-
-        overlay: {
-          flex: 1,
-
-          justifyContent: 'center',
-
-          padding: 16,
-
-          backgroundColor: theme.colors.modalOverlay,
-        },
-
-        modalCard: {
-          width: '100%',
-          maxWidth: 720,
-
-          alignSelf: 'center',
-
-          borderRadius: 20,
-
-          backgroundColor: theme.colors.surface,
-
-          padding: 18,
-
-          overflow: 'hidden',
-
-          shadowColor: theme.colors.black,
-          shadowOffset: {
-            width: 0,
-            height: 6,
+      applyAccessibilityToStyles(
+        StyleSheet.create({
+          container: {
+            width: '100%',
+            marginBottom: 16,
           },
-          shadowOpacity: 0.14,
-          shadowRadius: 12,
 
-          elevation: 10,
-        },
+          labelRow: {
+            flexDirection: 'row',
+            alignItems: 'center',
 
-        modalTitle: {
-          marginBottom: 18,
+            marginBottom: 6,
+          },
 
-          textAlign: 'center',
+          label: {
+            fontSize: 13,
+            fontWeight: '600',
 
-          fontSize: 17,
-          fontWeight: '700',
+            color: theme.colors.textSecondary,
+          },
 
-          color: theme.colors.textPrimary,
-        },
+          trigger: {
+            minHeight: 50,
 
-        pickerRow: {
-          width: '100%',
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
 
-          flexDirection: 'row',
-          alignItems: 'flex-start',
+            borderWidth: 1,
+            borderRadius: 12,
 
-          gap: 10,
-        },
+            paddingHorizontal: 14,
 
-        preview: {
-          marginTop: 18,
+            borderColor: error ? theme.colors.error : theme.colors.border,
 
-          alignItems: 'center',
+            backgroundColor: disabled
+              ? theme.colors.backgroundLight
+              : theme.colors.inputBackground,
+          },
 
-          paddingHorizontal: 12,
-          paddingVertical: 10,
+          triggerDisabled: {
+            opacity: 0.6,
+          },
 
-          borderRadius: 12,
+          triggerText: {
+            flex: 1,
 
-          backgroundColor: theme.colors.primaryLight,
-        },
+            fontSize: 15,
+          },
 
-        previewText: {
-          fontSize: 14,
-          fontWeight: '700',
+          valueText: {
+            color: theme.colors.textPrimary,
+          },
 
-          color: theme.colors.primary,
-        },
+          placeholderText: {
+            color: theme.colors.textMuted,
+          },
 
-        actions: {
-          flexDirection: 'row',
-          justifyContent: 'flex-end',
+          errorText: {
+            marginTop: 6,
 
-          marginTop: 22,
-        },
+            fontSize: 12,
 
-        cancelButton: {
-          paddingHorizontal: 16,
-          paddingVertical: 10,
-        },
+            color: theme.colors.error,
+          },
 
-        confirmButton: {
-          marginLeft: 10,
+          overlay: {
+            flex: 1,
 
-          paddingHorizontal: 18,
-          paddingVertical: 10,
+            justifyContent: 'center',
 
-          borderRadius: 10,
+            padding: 16,
 
-          backgroundColor: theme.colors.primary,
-        },
+            backgroundColor: theme.colors.modalOverlay,
+          },
 
-        cancelText: {
-          fontSize: 15,
-          fontWeight: '600',
+          modalCard: {
+            width: '100%',
+            maxWidth: 720,
 
-          color: theme.colors.textMuted,
-        },
+            alignSelf: 'center',
 
-        confirmText: {
-          fontSize: 15,
-          fontWeight: '700',
+            borderRadius: 20,
 
-          color: theme.colors.white,
-        },
-      }),
-    [theme, disabled, error]
+            backgroundColor: theme.colors.surface,
+
+            padding: 18,
+
+            overflow: 'hidden',
+
+            shadowColor: theme.colors.black,
+            shadowOffset: {
+              width: 0,
+              height: 6,
+            },
+            shadowOpacity: 0.14,
+            shadowRadius: 12,
+
+            elevation: 10,
+          },
+
+          modalTitle: {
+            marginBottom: 18,
+
+            textAlign: 'center',
+
+            fontSize: 17,
+            fontWeight: '700',
+
+            color: theme.colors.textPrimary,
+          },
+
+          pickerRow: {
+            width: '100%',
+
+            flexDirection: 'row',
+            alignItems: 'flex-start',
+
+            gap: 10,
+          },
+
+          preview: {
+            marginTop: 18,
+
+            alignItems: 'center',
+
+            paddingHorizontal: 12,
+            paddingVertical: 10,
+
+            borderRadius: 12,
+
+            backgroundColor: theme.colors.primaryLight,
+          },
+
+          previewText: {
+            fontSize: 14,
+            fontWeight: '700',
+
+            color: theme.colors.primary,
+          },
+
+          actions: {
+            flexDirection: 'row',
+            justifyContent: 'flex-end',
+
+            marginTop: 22,
+          },
+
+          cancelButton: {
+            paddingHorizontal: 16,
+            paddingVertical: 10,
+          },
+
+          confirmButton: {
+            marginLeft: 10,
+
+            paddingHorizontal: 18,
+            paddingVertical: 10,
+
+            borderRadius: 10,
+
+            backgroundColor: theme.colors.primary,
+          },
+
+          cancelText: {
+            fontSize: 15,
+            fontWeight: '600',
+
+            color: theme.colors.textMuted,
+          },
+
+          confirmText: {
+            fontSize: 15,
+            fontWeight: '700',
+
+            color: theme.colors.white,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, disabled, error, fontScale, theme]
   );
 
   const [visible, setVisible] = useState(false);
@@ -635,7 +644,7 @@ export const DatePicker = memo(function DatePicker({
       <Modal
         visible={visible}
         transparent
-        animationType="fade"
+        animationType={reduceAnimations ? 'none' : 'fade'}
         presentationStyle="overFullScreen"
         statusBarTranslucent
         onRequestClose={closePicker}

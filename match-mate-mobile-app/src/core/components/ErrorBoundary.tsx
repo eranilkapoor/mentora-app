@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { reportError } from '@/core/utils/errorReporter';
 import { createStyles } from '../styles/ErrorBoundary.styles';
 interface Props {
@@ -62,11 +63,19 @@ interface FallbackProps {
 }
 
 const DefaultFallback: React.FC<FallbackProps> = ({ onRetry, error }) => {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
   const { t } = useTranslation();
 
   // Pass the full theme — not three separate args
-  const styles = React.useMemo(() => createStyles(theme), [theme]);
+  const styles = React.useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
 
   return (
     <SafeAreaView style={styles.container}>

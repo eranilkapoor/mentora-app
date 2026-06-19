@@ -12,7 +12,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export default function RootNavigator(): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, reduceAnimations } = useTheme();
   const accessToken = useAppSelector((s) => s.auth.accessToken);
   const isOnboardingCompleted = useAppSelector(
     (s) => s.auth.user?.isOnboardingCompleted
@@ -22,7 +22,9 @@ export default function RootNavigator(): React.ReactElement {
   const hasOnboarded = Boolean(isOnboardingCompleted);
 
   return (
-    <Stack.Navigator screenOptions={getSharedScreenOptions(theme)}>
+    <Stack.Navigator
+      screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
+    >
       {!isLoggedIn ? (
         <Stack.Screen name="Auth" component={AuthStack} />
       ) : !hasOnboarded ? (

@@ -17,6 +17,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 
 import {
   Hour,
@@ -105,7 +106,7 @@ function TimeOfBirthPickerComponent({
   error,
   containerStyle,
 }: TimeOfBirthPickerProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility, reduceAnimations } = useTheme();
 
   const { t } = useTranslation();
 
@@ -117,200 +118,204 @@ function TimeOfBirthPickerComponent({
 
   const styles = useMemo(
     () =>
-      StyleSheet.create<Styles>({
-        container: {
-          marginBottom: 18,
+      applyAccessibilityToStyles(
+        StyleSheet.create<Styles>({
+          container: {
+            marginBottom: 18,
 
-          // IMPORTANT
-          overflow: 'visible',
+            // IMPORTANT
+            overflow: 'visible',
 
-          ...(Platform.OS === 'web'
-            ? {
-                zIndex: 9999,
-              }
-            : {}),
-        },
-
-        label: {
-          marginBottom: 8,
-          fontSize: 13,
-          fontWeight: '600',
-          color: theme.colors.textSecondary,
-        },
-
-        row: {
-          flexDirection: 'row',
-          gap: 10,
-
-          // IMPORTANT
-          overflow: 'visible',
-
-          ...(Platform.OS === 'web'
-            ? {
-                zIndex: 9999,
-              }
-            : {}),
-        },
-
-        column: {
-          flex: 1,
-
-          // IMPORTANT
-          position: 'relative',
-          overflow: 'visible',
-
-          ...(Platform.OS === 'web'
-            ? {
-                zIndex: 9999,
-              }
-            : {}),
-        },
-
-        trigger: {
-          minHeight: 48,
-
-          paddingHorizontal: 14,
-
-          borderWidth: 1,
-          borderRadius: 12,
-
-          borderColor: theme.colors.border,
-
-          backgroundColor: theme.colors.inputBackground,
-
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        },
-
-        triggerActive: {
-          borderColor: theme.colors.primary,
-        },
-
-        triggerDisabled: {
-          opacity: 0.5,
-        },
-
-        triggerError: {
-          borderColor: theme.colors.error,
-        },
-
-        triggerText: {
-          flex: 1,
-
-          fontSize: 14,
-          fontWeight: '500',
-
-          color: theme.colors.textPrimary,
-        },
-
-        placeholderText: {
-          color: theme.colors.textMuted,
-        },
-
-        modalOverlay: {
-          flex: 1,
-          backgroundColor: theme.colors.modalOverlay,
-          justifyContent: 'center',
-          alignItems: 'center',
-          padding: 20,
-        },
-
-        dropdownContainer: {
-          width: '100%',
-          maxWidth: 340,
-
-          maxHeight: 360,
-
-          borderRadius: 16,
-
-          overflow: 'hidden',
-
-          backgroundColor: theme.colors.surface,
-
-          shadowColor: theme.colors.black,
-          shadowOffset: {
-            width: 0,
-            height: 6,
+            ...(Platform.OS === 'web'
+              ? {
+                  zIndex: 9999,
+                }
+              : {}),
           },
-          shadowOpacity: 0.12,
-          shadowRadius: 10,
 
-          elevation: 10,
-        },
+          label: {
+            marginBottom: 8,
+            fontSize: 13,
+            fontWeight: '600',
+            color: theme.colors.textSecondary,
+          },
 
-        dropdownHeader: {
-          minHeight: 54,
+          row: {
+            flexDirection: 'row',
+            gap: 10,
 
-          paddingHorizontal: 16,
+            // IMPORTANT
+            overflow: 'visible',
 
-          borderBottomWidth: StyleSheet.hairlineWidth,
-          borderBottomColor: theme.colors.divider,
+            ...(Platform.OS === 'web'
+              ? {
+                  zIndex: 9999,
+                }
+              : {}),
+          },
 
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        },
+          column: {
+            flex: 1,
 
-        dropdownTitle: {
-          fontSize: 16,
-          fontWeight: '700',
-          color: theme.colors.textPrimary,
-        },
+            // IMPORTANT
+            position: 'relative',
+            overflow: 'visible',
 
-        closeButton: {
-          width: 34,
-          height: 34,
+            ...(Platform.OS === 'web'
+              ? {
+                  zIndex: 9999,
+                }
+              : {}),
+          },
 
-          borderRadius: 17,
+          trigger: {
+            minHeight: 48,
 
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
+            paddingHorizontal: 14,
 
-        dropdownList: {
-          maxHeight: 300,
-        },
+            borderWidth: 1,
+            borderRadius: 12,
 
-        dropdownItem: {
-          minHeight: 48,
+            borderColor: theme.colors.border,
 
-          paddingHorizontal: 16,
-          paddingVertical: 12,
+            backgroundColor: theme.colors.inputBackground,
 
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-        },
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          },
 
-        dropdownItemSelected: {
-          backgroundColor: theme.colors.primaryLight,
-        },
+          triggerActive: {
+            borderColor: theme.colors.primary,
+          },
 
-        dropdownItemText: {
-          flex: 1,
+          triggerDisabled: {
+            opacity: 0.5,
+          },
 
-          fontSize: 15,
-          color: theme.colors.textPrimary,
-        },
+          triggerError: {
+            borderColor: theme.colors.error,
+          },
 
-        dropdownItemTextSelected: {
-          color: theme.colors.primary,
-          fontWeight: '600',
-        },
+          triggerText: {
+            flex: 1,
 
-        divider: {
-          height: StyleSheet.hairlineWidth,
-          backgroundColor: theme.colors.divider,
-        },
+            fontSize: 14,
+            fontWeight: '500',
 
-        errorText: {
-          marginTop: 6,
-          fontSize: 12,
-          color: theme.colors.error,
-        },
-      }),
-    [theme]
+            color: theme.colors.textPrimary,
+          },
+
+          placeholderText: {
+            color: theme.colors.textMuted,
+          },
+
+          modalOverlay: {
+            flex: 1,
+            backgroundColor: theme.colors.modalOverlay,
+            justifyContent: 'center',
+            alignItems: 'center',
+            padding: 20,
+          },
+
+          dropdownContainer: {
+            width: '100%',
+            maxWidth: 340,
+
+            maxHeight: 360,
+
+            borderRadius: 16,
+
+            overflow: 'hidden',
+
+            backgroundColor: theme.colors.surface,
+
+            shadowColor: theme.colors.black,
+            shadowOffset: {
+              width: 0,
+              height: 6,
+            },
+            shadowOpacity: 0.12,
+            shadowRadius: 10,
+
+            elevation: 10,
+          },
+
+          dropdownHeader: {
+            minHeight: 54,
+
+            paddingHorizontal: 16,
+
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: theme.colors.divider,
+
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          },
+
+          dropdownTitle: {
+            fontSize: 16,
+            fontWeight: '700',
+            color: theme.colors.textPrimary,
+          },
+
+          closeButton: {
+            width: 34,
+            height: 34,
+
+            borderRadius: 17,
+
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+
+          dropdownList: {
+            maxHeight: 300,
+          },
+
+          dropdownItem: {
+            minHeight: 48,
+
+            paddingHorizontal: 16,
+            paddingVertical: 12,
+
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          },
+
+          dropdownItemSelected: {
+            backgroundColor: theme.colors.primaryLight,
+          },
+
+          dropdownItemText: {
+            flex: 1,
+
+            fontSize: 15,
+            color: theme.colors.textPrimary,
+          },
+
+          dropdownItemTextSelected: {
+            color: theme.colors.primary,
+            fontWeight: '600',
+          },
+
+          divider: {
+            height: StyleSheet.hairlineWidth,
+            backgroundColor: theme.colors.divider,
+          },
+
+          errorText: {
+            marginTop: 6,
+            fontSize: 12,
+            color: theme.colors.error,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
   );
 
   // ───────────────────────────────────────────────────────────
@@ -502,7 +507,7 @@ function TimeOfBirthPickerComponent({
       <Modal
         visible={!!openDropdown}
         transparent
-        animationType="fade"
+        animationType={reduceAnimations ? 'none' : 'fade'}
         onRequestClose={handleClose}
       >
         <Pressable style={styles.modalOverlay} onPress={handleClose}>

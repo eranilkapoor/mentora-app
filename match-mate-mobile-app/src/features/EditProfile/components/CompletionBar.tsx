@@ -10,6 +10,7 @@ import {
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 
 export interface CompletionBarProps {
   percent: number;
@@ -33,7 +34,7 @@ export const CompletionBar = memo(function CompletionBar({
   style,
   testID,
 }: CompletionBarProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
   const { t } = useTranslation();
 
   /**
@@ -72,71 +73,75 @@ export const CompletionBar = memo(function CompletionBar({
 
   const styles = useMemo(
     () =>
-      StyleSheet.create({
-        container: {
-          backgroundColor: theme.colors.surface,
-          borderRadius: 16,
-          padding: 16,
-          marginBottom: 16,
+      applyAccessibilityToStyles(
+        StyleSheet.create({
+          container: {
+            backgroundColor: theme.colors.surface,
+            borderRadius: 16,
+            padding: 16,
+            marginBottom: 16,
 
-          ...(Platform.OS === 'ios'
-            ? {
-                shadowColor: theme.colors.black,
-                shadowOffset: {
-                  width: 0,
-                  height: 2,
-                },
-                shadowOpacity: 0.06,
-                shadowRadius: 6,
-              }
-            : {
-                elevation: 2,
-              }),
-        },
+            ...(Platform.OS === 'ios'
+              ? {
+                  shadowColor: theme.colors.black,
+                  shadowOffset: {
+                    width: 0,
+                    height: 2,
+                  },
+                  shadowOpacity: 0.06,
+                  shadowRadius: 6,
+                }
+              : {
+                  elevation: 2,
+                }),
+          },
 
-        header: {
-          flexDirection: 'row',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          marginBottom: 14,
-        },
+          header: {
+            flexDirection: 'row',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginBottom: 14,
+          },
 
-        content: {
-          flex: 1,
-          paddingRight: 12,
-        },
+          content: {
+            flex: 1,
+            paddingRight: 12,
+          },
 
-        title: {
-          fontSize: 16,
-          fontWeight: '700',
-          color: theme.colors.textPrimary,
-          marginBottom: 4,
-        },
+          title: {
+            fontSize: 16,
+            fontWeight: '700',
+            color: theme.colors.textPrimary,
+            marginBottom: 4,
+          },
 
-        subtitle: {
-          fontSize: 13,
-          lineHeight: 18,
-          color: theme.colors.textMuted,
-        },
+          subtitle: {
+            fontSize: 13,
+            lineHeight: 18,
+            color: theme.colors.textMuted,
+          },
 
-        percentage: {
-          fontSize: 28,
-          fontWeight: '800',
-        },
+          percentage: {
+            fontSize: 28,
+            fontWeight: '800',
+          },
 
-        progressTrack: {
-          height,
-          borderRadius: height / 2,
-          backgroundColor: theme.colors.backgroundLight,
-          overflow: 'hidden',
-        },
+          progressTrack: {
+            height,
+            borderRadius: height / 2,
+            backgroundColor: theme.colors.backgroundLight,
+            overflow: 'hidden',
+          },
 
-        progressFill: {
-          height: '100%',
-          borderRadius: height / 2,
-        },
-      }),
-    [height, theme]
+          progressFill: {
+            height: '100%',
+            borderRadius: height / 2,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, height, theme]
   );
 
   return (

@@ -7,6 +7,7 @@ import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { Theme } from '@/core/theme/types';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { SettingsNavigationProp } from '@/navigation/types';
@@ -31,8 +32,16 @@ export default function TwoFactorSetupScreen({
 }: Props): React.ReactElement {
   const { t } = useTranslation();
   const styles = useThemedStyles(sharedSettingsStyles);
-  const { theme } = useTheme();
-  const local = React.useMemo(() => createStyles(theme), [theme]);
+  const { theme, fontScale, accessibility } = useTheme();
+  const local = React.useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
   const { data, isLoading, refetch } = useGetTwoFactorStatusQuery();
   const [setupTotp, { data: setupData }] = useSetupTotpMutation();
   const [enableTotp] = useEnableTotpMutation();

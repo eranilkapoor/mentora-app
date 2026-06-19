@@ -15,6 +15,7 @@ import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { Theme } from '@/core/theme/types';
 import { resolveApiUrl } from '@/core/utils/config';
 import { showConfirm } from '@/core/utils/confirm';
@@ -99,8 +100,16 @@ export default function BlockedUsersScreen({
 }: Props): React.ReactElement {
   const { t } = useTranslation();
   const styles = useThemedStyles(sharedSettingsStyles);
-  const { theme } = useTheme();
-  const localStyles = React.useMemo(() => createStyles(theme), [theme]);
+  const { theme, fontScale, accessibility } = useTheme();
+  const localStyles = React.useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
   const { data, isLoading } = useGetBlockedUsersQuery();
   const [unblockUser] = useUnblockUserMutation();
 

@@ -15,6 +15,7 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { CONTENT_WIDTH, isTabletWidth } from '@/core/utils/device';
 import { Theme } from '@/core/theme/types';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 
 export interface SettingsOption<T extends string> {
   label: string;
@@ -109,12 +110,26 @@ export function SettingsOptionSheet<T extends string>({
   onSelect,
   onClose,
 }: Props<T>): React.ReactElement {
-  const { theme } = useTheme();
+  const {
+    theme,
+    fontScale,
+    accessibility,
+    reduceAnimations,
+    screenReaderOptimized,
+  } = useTheme();
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
   const { width } = useWindowDimensions();
   const isWide = isTabletWidth(width);
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const styles = useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
   const sheetFrameStyle = useMemo(
     () =>
       StyleSheet.create({
@@ -131,10 +146,13 @@ export function SettingsOptionSheet<T extends string>({
     <Modal
       visible={visible}
       transparent
-      animationType="slide"
+      animationType={reduceAnimations ? 'none' : 'slide'}
       onRequestClose={onClose}
     >
-      <View style={styles.backdrop}>
+      <View
+        style={styles.backdrop}
+        accessibilityViewIsModal={screenReaderOptimized}
+      >
         <Pressable
           style={StyleSheet.absoluteFill}
           accessibilityRole="button"

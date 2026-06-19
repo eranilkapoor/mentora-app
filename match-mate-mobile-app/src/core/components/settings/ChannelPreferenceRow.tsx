@@ -2,6 +2,7 @@ import React, { useMemo } from 'react';
 import { View, Text, StyleSheet, Switch } from 'react-native';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { ChannelPreference } from '@/features/NotificationSettings/NotificationSettings.types';
 
 interface ChannelConfig {
@@ -75,8 +76,16 @@ export function ChannelPreferenceRow({
   isLast = false,
   onChange,
 }: Props): React.ReactElement {
-  const { theme } = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { theme, fontScale, accessibility } = useTheme();
+  const styles = useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
 
   return (
     <View style={[styles.container, isLast && styles.containerLast]}>

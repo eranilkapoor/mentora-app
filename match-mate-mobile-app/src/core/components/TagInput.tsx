@@ -13,6 +13,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { RemoveChipButton } from './RemoveChipButton';
 import { RequiredAsterisk } from './RequiredAsterisk';
 
@@ -199,7 +200,7 @@ function TagInputComponent({
   accessibilityLabel,
   emptyMessage,
 }: TagInputProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility } = useTheme();
   const inputRef = useRef<TextInput>(null);
   const [text, setText] = useState('');
 
@@ -207,8 +208,13 @@ function TagInputComponent({
   const isDisabled = disabled || !editable;
 
   const styles = useMemo(
-    () => createStyles(theme, Boolean(error), isDisabled),
-    [theme, error, isDisabled]
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme, Boolean(error), isDisabled),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, error, fontScale, isDisabled, theme]
   );
 
   const tags = useMemo<string[]>(() => value ?? [], [value]);

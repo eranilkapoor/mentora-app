@@ -63,7 +63,7 @@ export function PaymentOptionSheet({
   onContinue,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
-  const { theme } = useTheme();
+  const { theme, reduceAnimations, screenReaderOptimized } = useTheme();
   const { t } = useTranslation();
 
   const paymentOptions = useMemo(
@@ -80,13 +80,16 @@ export function PaymentOptionSheet({
   return (
     <Modal
       visible={visible}
-      animationType="slide"
+      animationType={reduceAnimations ? 'none' : 'slide'}
       transparent
       statusBarTranslucent
       hardwareAccelerated
       onRequestClose={onClose}
     >
-      <View style={styles.checkoutOverlay}>
+      <View
+        style={styles.checkoutOverlay}
+        accessibilityViewIsModal={screenReaderOptimized}
+      >
         <View style={styles.checkoutSheet}>
           <View style={styles.checkoutHandle} />
           <View style={styles.checkoutHeader}>

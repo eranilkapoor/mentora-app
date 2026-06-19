@@ -6,6 +6,7 @@ import Toast, {
 } from 'react-native-toast-message';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { Theme } from '@/core/theme/types';
 
 type FeedbackType = 'success' | 'error' | 'info' | 'warning';
@@ -67,8 +68,16 @@ function FeedbackToast({
 }: ToastConfigParams<unknown> & {
   type: FeedbackType;
 }): React.ReactElement {
-  const { theme } = useTheme();
-  const styles = useMemo(() => makeStyles(theme), [theme]);
+  const { theme, fontScale, accessibility } = useTheme();
+  const styles = useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        makeStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
   const meta = FEEDBACK_META[type];
   const color = FEEDBACK_COLORS[type].color;
   const iconBackground = FEEDBACK_COLORS[type].light;

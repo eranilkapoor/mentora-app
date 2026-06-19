@@ -13,6 +13,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { RequiredAsterisk } from './RequiredAsterisk';
 
 export interface NumberStepperProps {
@@ -123,105 +124,109 @@ function NumberStepperComponent({
   sublabelStyle,
   valueStyle,
 }: NumberStepperProps): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, fontScale, accessibility, reduceAnimations } = useTheme();
 
   const styles = useMemo(
     () =>
-      StyleSheet.create({
-        container: {
-          marginBottom: 16,
-          opacity: disabled ? 0.6 : 1,
-        },
+      applyAccessibilityToStyles(
+        StyleSheet.create({
+          container: {
+            marginBottom: 16,
+            opacity: disabled ? 0.6 : 1,
+          },
 
-        borderedContainer: {
-          borderWidth: 1,
-          borderColor: theme.colors.border,
-          borderRadius: 14,
-          backgroundColor: theme.colors.surface,
-          padding: 14,
-        },
+          borderedContainer: {
+            borderWidth: 1,
+            borderColor: theme.colors.border,
+            borderRadius: 14,
+            backgroundColor: theme.colors.surface,
+            padding: 14,
+          },
 
-        row: {
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          minHeight: 52,
-        },
+          row: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            minHeight: 52,
+          },
 
-        labelContainer: {
-          flex: 1,
-          paddingRight: 16,
-        },
+          labelContainer: {
+            flex: 1,
+            paddingRight: 16,
+          },
 
-        label: {
-          fontSize: size === 'small' ? 12 : size === 'large' ? 15 : 13,
+          label: {
+            fontSize: size === 'small' ? 12 : size === 'large' ? 15 : 13,
 
-          fontWeight: '600',
-          color: theme.colors.textSecondary,
-        },
+            fontWeight: '600',
+            color: theme.colors.textSecondary,
+          },
 
-        sublabel: {
-          marginTop: 4,
+          sublabel: {
+            marginTop: 4,
 
-          fontSize: size === 'small' ? 10 : size === 'large' ? 13 : 11,
+            fontSize: size === 'small' ? 10 : size === 'large' ? 13 : 11,
 
-          lineHeight: size === 'small' ? 14 : size === 'large' ? 18 : 16,
+            lineHeight: size === 'small' ? 14 : size === 'large' ? 18 : 16,
 
-          color: theme.colors.textMuted,
-        },
+            color: theme.colors.textMuted,
+          },
 
-        controls: {
-          flexDirection: 'row',
-          alignItems: 'center',
-        },
+          controls: {
+            flexDirection: 'row',
+            alignItems: 'center',
+          },
 
-        button: {
-          width: size === 'small' ? 30 : size === 'large' ? 40 : 34,
+          button: {
+            width: size === 'small' ? 30 : size === 'large' ? 40 : 34,
 
-          height: size === 'small' ? 30 : size === 'large' ? 40 : 34,
+            height: size === 'small' ? 30 : size === 'large' ? 40 : 34,
 
-          borderRadius: size === 'small' ? 8 : size === 'large' ? 12 : 10,
+            borderRadius: size === 'small' ? 8 : size === 'large' ? 12 : 10,
 
-          borderWidth: 1,
-          borderColor: theme.colors.border,
+            borderWidth: 1,
+            borderColor: theme.colors.border,
 
-          backgroundColor: theme.colors.inputBackground,
+            backgroundColor: theme.colors.inputBackground,
 
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
 
-        buttonDisabled: {
-          opacity: 0.4,
-        },
+          buttonDisabled: {
+            opacity: 0.4,
+          },
 
-        valueContainer: {
-          minWidth: 70,
-          alignItems: 'center',
-          justifyContent: 'center',
-        },
+          valueContainer: {
+            minWidth: 70,
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
 
-        value: {
-          minWidth: 64,
-          textAlign: 'center',
+          value: {
+            minWidth: 64,
+            textAlign: 'center',
 
-          fontSize: size === 'small' ? 14 : size === 'large' ? 20 : 16,
+            fontSize: size === 'small' ? 14 : size === 'large' ? 20 : 16,
 
-          fontWeight: '700',
-          color: theme.colors.primary,
-        },
+            fontWeight: '700',
+            color: theme.colors.primary,
+          },
 
-        helperText: {
-          marginTop: 6,
+          helperText: {
+            marginTop: 6,
 
-          fontSize: size === 'small' ? 10 : size === 'large' ? 13 : 11,
+            fontSize: size === 'small' ? 10 : size === 'large' ? 13 : 11,
 
-          lineHeight: size === 'small' ? 14 : size === 'large' ? 18 : 16,
+            lineHeight: size === 'small' ? 14 : size === 'large' ? 18 : 16,
 
-          color: error ? theme.colors.error : theme.colors.textMuted,
-        },
-      }),
-    [disabled, error, size, theme]
+            color: error ? theme.colors.error : theme.colors.textMuted,
+          },
+        }),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, disabled, error, fontScale, size, theme]
   );
 
   const safeValue = Math.min(Math.max(value, min), max);
@@ -301,7 +306,7 @@ function NumberStepperComponent({
 
               decreaseDisabled && styles.buttonDisabled,
 
-              pressed && !decreaseDisabled
+              pressed && !decreaseDisabled && !reduceAnimations
                 ? {
                     opacity: 0.8,
                     transform: [{ scale: 0.97 }],
@@ -341,7 +346,7 @@ function NumberStepperComponent({
 
               increaseDisabled && styles.buttonDisabled,
 
-              pressed && !increaseDisabled
+              pressed && !increaseDisabled && !reduceAnimations
                 ? {
                     opacity: 0.8,
                     transform: [{ scale: 0.97 }],

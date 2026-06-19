@@ -7,7 +7,8 @@ import type { Theme } from '@/core/theme/types';
  * Centralised here so any header style change propagates everywhere.
  */
 export function getSharedScreenOptions(
-  theme: Theme
+  theme: Theme,
+  reduceAnimations = false
 ): NativeStackNavigationOptions {
   return {
     headerShown: false,
@@ -25,6 +26,10 @@ export function getSharedScreenOptions(
     contentStyle: {
       backgroundColor: theme.colors.backgroundPage,
     },
-    animation: isAndroid ? 'slide_from_right' : 'default',
+    animation: reduceAnimations
+      ? 'none'
+      : isAndroid
+        ? 'slide_from_right'
+        : 'default',
   };
 }

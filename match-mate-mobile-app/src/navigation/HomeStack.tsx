@@ -13,12 +13,12 @@ import ChatScreen from '@/features/Chat/Chat.screen';
 const Stack = createNativeStackNavigator<HomeStackParamList>();
 
 export default function HomeStack(): React.ReactElement {
-  const { theme } = useTheme();
+  const { theme, reduceAnimations } = useTheme();
 
   return (
     <Stack.Navigator
       initialRouteName="HomeScreen"
-      screenOptions={getSharedScreenOptions(theme)}
+      screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
     >
       <Stack.Screen name="HomeScreen" component={HomeScreen} />
       <Stack.Screen name="Notifications" component={NotificationsScreen} />

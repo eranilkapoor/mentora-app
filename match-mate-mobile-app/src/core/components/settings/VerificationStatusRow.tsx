@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
+import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 
 interface Props {
   icon: React.ComponentProps<typeof Feather>['name'];
@@ -63,8 +64,16 @@ export function VerificationStatusRow({
   verified,
   isLast = false,
 }: Props): React.ReactElement {
-  const { theme } = useTheme();
-  const styles = useMemo(() => createStyles(theme), [theme]);
+  const { theme, fontScale, accessibility } = useTheme();
+  const styles = useMemo(
+    () =>
+      applyAccessibilityToStyles(
+        createStyles(theme),
+        fontScale,
+        accessibility.boldText
+      ),
+    [accessibility.boldText, fontScale, theme]
+  );
 
   return (
     <View style={[styles.row, isLast && styles.rowLast]}>
