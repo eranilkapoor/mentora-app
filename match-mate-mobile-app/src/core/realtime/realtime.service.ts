@@ -12,6 +12,8 @@ import {
 } from '@/store/services/notificationApi.service';
 import { io, Socket } from 'socket.io-client';
 import { showInfo } from '@/core/utils/toast';
+import { authApi } from '@/store/services/authApi.service';
+import { isRealtimeAuthError } from './realtime-auth.utils';
 
 type RealtimeNamespace = 'chats' | 'notifications';
 
@@ -56,6 +58,7 @@ export interface RealtimeTypingPayload {
 let chatSocket: Socket | null = null;
 let notificationSocket: Socket | null = null;
 let activeToken: string | null = null;
+let authRecoveryInFlight: Promise<unknown> | null = null;
 
 const buildNamespaceUrl = (namespace: RealtimeNamespace): string =>
   `${getApiOrigin()}/${namespace}`;
@@ -70,6 +73,40 @@ const createSocket = (namespace: RealtimeNamespace, token: string): Socket =>
     reconnectionDelayMax: 5000,
     timeout: 12000,
   });
+
+const recoverRealtimeAuthentication = (dispatch: AppDispatch): void => {
+  if (authRecoveryInFlight) return;
+
+  chatSocket?.disconnect();
+  notificationSocket?.disconnect();
+
+  const request = dispatch(
+    authApi.endpoints.verifyUser.initiate(undefined, {
+      forceRefetch: true,
+      subscribe: false,
+    })
+  );
+  authRecoveryInFlight = request
+    .unwrap()
+    .catch(() => {
+      disconnectRealtime();
+    })
+    .finally(() => {
+      request.unsubscribe();
+      authRecoveryInFlight = null;
+    });
+};
+
+const attachAuthenticationRecovery = (
+  socket: Socket,
+  dispatch: AppDispatch
+): void => {
+  socket.on('connect_error', (error: Error) => {
+    if (isRealtimeAuthError(error)) {
+      recoverRealtimeAuthentication(dispatch);
+    }
+  });
+};
 
 const appendMessageToRoomCache = (
   dispatch: AppDispatch,
@@ -218,6 +255,8 @@ export const connectRealtime = (token: string, dispatch: AppDispatch): void => {
 
   chatSocket = createSocket('chats', token);
   notificationSocket = createSocket('notifications', token);
+  attachAuthenticationRecovery(chatSocket, dispatch);
+  attachAuthenticationRecovery(notificationSocket, dispatch);
 
   chatSocket.on('message:new', (message: ChatMessage) => {
     appendMessageToRoomCache(dispatch, message);

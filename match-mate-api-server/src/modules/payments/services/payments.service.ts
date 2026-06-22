@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ConfigService } from '@nestjs/config';
-import { createHmac, randomUUID } from 'crypto';
+import { randomUUID } from 'crypto';
 import { Model, Types } from 'mongoose';
 import { PaymentRepository } from '../repositories/payment.repository';
 import { AdminListPaymentsDto } from '../dto/admin-list-payments.dto';
@@ -40,6 +40,7 @@ import {
   throwNotFound,
   throwUnauthorized,
 } from '@/common/exceptions/throw-app-exception';
+import { verifyPaymentSignature } from '../utils/payment-signature.util';
 
 @Injectable()
 export class PaymentsService {
@@ -952,8 +953,7 @@ export class PaymentsService {
     }
 
     const payload = `${params.orderId}|${params.paymentId}`;
-    const digest = createHmac('sha256', secret).update(payload).digest('hex');
-    return digest === params.signature;
+    return verifyPaymentSignature(payload, params.signature, secret);
   }
 
   private verifyWebhookSignature(dto: PaymentWebhookDto, signature?: string) {
@@ -968,9 +968,7 @@ export class PaymentsService {
     }
 
     const payload = `${dto.eventId}|${dto.orderId}|${dto.status}`;
-    const digest = createHmac('sha256', secret).update(payload).digest('hex');
-
-    return digest === signature;
+    return verifyPaymentSignature(payload, signature, secret);
   }
 
   private canAllowUnsignedPaymentVerification() {

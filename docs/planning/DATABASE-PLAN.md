@@ -410,11 +410,23 @@ Recommended deletion behavior:
 - Use bulk writes in seeders and admin maintenance jobs where possible.
 - Keep real credentials out of seed data and docs.
 
+## Migration Scope
+
+The versioned MongoDB migration runner is shared by the complete database. It is not necessary or desirable to create an empty migration for every existing Mongoose collection. Schema files remain the field-definition source of truth, while migrations record ordered production data or index transitions that cannot be handled safely by ordinary application startup.
+
+Current manifest status:
+
+- One migration is registered: `202606220001 normalize-profile-sibling-counts`.
+- It repairs historical profile sibling totals/details and is currently pending in the reviewed development database.
+- Migrations are deliberately not applied automatically during API startup.
+
+For every future production data transformation, collection rename, destructive field change, or index transition, add an immutable migration and test before deployment. Before the first production release, also capture an index baseline for every Mongoose schema and run an index-drift report in staging. Apply pending migrations only after backup and staging verification with `npm run migration:up` or the compiled production command `npm run migration:up:prod`.
+
 ## Recommended Improvements
 
 1. Move OTP storage from in-memory `Map` to the cache service with keys such as `auth:otp:{countryCode}:{phone}` and TTL.
 2. Move chat presence from in-memory maps to Redis before running multiple API instances.
-3. Add a migration/index verification command that checks required MongoDB indexes in staging and production.
+3. Extend the implemented versioned migration runner with an index verification migration/check for staging and production.
 4. Add retention policy constants for notifications, notification logs, analytics events, audit logs, support tickets, and chat moderation artifacts.
 5. Add data deletion/anonymization jobs for account deletion completion.
 6. Add a database seed manifest that lists required seed groups: plans, features, plan features, notification templates, settings defaults, admin/RBAC, support examples, dummy profiles.

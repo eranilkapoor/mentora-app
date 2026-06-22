@@ -1,3 +1,9 @@
+export type {
+  components as OpenApiComponents,
+  operations as OpenApiOperations,
+  paths as OpenApiPaths,
+} from "./generated";
+
 export interface ApiResponse<T> {
   success: boolean;
   code?: string;

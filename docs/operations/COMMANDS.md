@@ -111,6 +111,28 @@ npm install
 npm run build
 ```
 
+## Run MongoDB migrations before restarting production
+
+Run migrations once per release after the build succeeds. The migration runner
+uses a database lease lock, so concurrent deployment attempts cannot apply the
+same migration twice.
+
+```bash
+# Development/staging source command
+npm run migration:status
+npm run migration:up
+
+# Production compiled command
+npm run migration:status:prod
+npm run migration:up:prod
+
+# Build and migrate in one release preparation command
+npm run deploy:prepare
+```
+
+Do not add migration execution to every PM2 application start. Run it as a
+single release step before restarting or replacing API instances.
+
 ## Run API with PM2
 ```
 pm2 start dist/main.js --name matchmate-api

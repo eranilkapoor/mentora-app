@@ -15,11 +15,18 @@
     "typecheck:mobile": "npm --prefix match-mate-mobile-app run typecheck",
     "build:api": "npm --prefix match-mate-api-server run build",
     "test:api": "npm --prefix match-mate-api-server run test -- --runInBand",
-    "verify": "npm run lint && npm run typecheck:api && npm run build:api",
-    "ci": "npm run verify && npm run test:api"
+    "test:mobile": "npm --prefix match-mate-mobile-app run test",
+    "i18n:check": "npm --prefix match-mate-mobile-app run i18n:check",
+    "migration:validate": "npm --prefix match-mate-api-server run migration:validate",
+    "contracts:snapshot": "node scripts/snapshot-openapi.mjs",
+    "contracts:generate": "openapi-typescript packages/api-contract/openapi.json --output packages/api-contract/src/generated.ts --immutable --alphabetize",
+    "contracts:check": "npm run contracts:generate -- --check",
+    "verify": "npm run lint && npm run typecheck:api && npm run typecheck:mobile && npm run contracts:check && npm run migration:validate && npm run build:api",
+    "ci": "npm run verify && npm run test:api && npm run test:mobile && npm run i18n:check"
   },
   "devDependencies": {
-    "husky": "^9.1.7"
+    "husky": "^9.1.7",
+    "openapi-typescript": "^7.13.0"
   },
   "engines": {
     "node": ">=20",

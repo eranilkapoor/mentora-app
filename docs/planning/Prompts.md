@@ -2,27 +2,36 @@
 
 Last reviewed: 2026-06-22
 
-## Next Tasks TO DO
+## Completed In This Batch
 
-**Key Findings**
-1. **No automated tests exist** for API or mobile. The API test and coverage scripts currently point to an empty test suite, and the referenced E2E config is missing. See [package.json](D:/Projects/match-mate-app/match-mate-api-server/package.json:25).
+- [x] Repository hygiene: ignore/remove TypeScript build metadata and stop tracking the local mobile `.env.development` while retaining `.env.example`.
+- [x] Generate the complete TypeScript route/schema contract from a committed Swagger snapshot through `contracts:snapshot`, `contracts:generate`, and `contracts:check`.
+- [x] Reconcile conflicting OpenAPI, Sentry, privacy-paywall, testing, vulnerability scanning, and CI statuses in `TASK-ROADMAP.md`.
+- [x] Add API regression tests for sibling normalization and subscription feature quotas (2 suites, 6 tests).
+- [x] Add mobile regression tests for membership feature interpretation (1 suite, 15 tests).
+- [x] Expand API regression coverage to auth token claims, constant-time payment signatures, store-subscription reconciliation, privacy self-protection, chat authorization, feature guards, migration manifests, sibling backfill, and admin status validation (11 suites, 34 tests).
+- [x] Expand mobile regression coverage to premium upgrade dialogs/navigation, settings synchronization, profile sibling normalization, and realtime authentication error handling (5 suites, 27 tests).
+- [x] Add ordered/checksummed MongoDB migration tooling with durable history, lease locking, status/up/down commands, CI manifest validation, and compiled production release commands.
+- [x] Add the first data migration to repair historical profile sibling counts/details in batches.
+- [x] Add GitHub Actions verification for lint, API/mobile typechecks, generated-contract drift, API build, tests, and translation validation.
+- [x] Add Dependabot monitoring for root, API, and mobile npm dependencies.
+- [x] Repair malformed Hindi settings JSON and missing English/Hindi keys found by the new CI translation gate.
+- [x] Repair API startup after clean builds by keeping incremental TypeScript metadata inside `dist`, and remove the Swagger circular-reflection failure from admin status validation.
+- [x] Add realtime socket authentication recovery through the existing refresh-token flow so an expired persisted access token does not reconnect forever.
+- [x] Remove overlapping template-literal paths from the generated OpenAPI contract while retaining exact immutable route and schema types.
 
-2. **No CI pipeline exists.** Husky runs local checks, but GitHub Actions or equivalent is absent. Root verification also omits mobile type-checking. See [package.json](D:/Projects/match-mate-app/package.json:17).
+## Verification
 
-3. **API contracts only cover membership, payments, and support.** Most profile, match, chat, settings, and notification contracts can still drift between frontend and backend. See [index.ts](D:/Projects/match-mate-app/packages/api-contract/src/index.ts:1).
+- API TypeScript, ESLint, build, and Jest: passed (11 suites, 34 tests).
+- Mobile TypeScript, ESLint, and Jest: passed (5 suites, 27 tests).
+- OpenAPI generated-contract check: passed.
+- i18n parity: passed for 1,346 static keys across English and Hindi.
+- Runtime smoke test: API booted against MongoDB and `/api/v1/ready` returned HTTP 200.
 
-4. **The roadmap contains conflicting statuses.** Shared contracts are marked both `DONE` and OpenAPI generation `PARTIAL`; Sentry is described as unwired even though both mobile and API SDK integrations now exist. See [TASK-ROADMAP.md](D:/Projects/match-mate-app/docs/planning/TASK-ROADMAP.md:37).
+## Next Tasks
 
-5. **Provider validation remains launch-critical:** FCM delivery, SES/Twilio, Razorpay/Stripe, Apple/Google billing, social login, KYC and media moderation all require production credentials and device/provider QA.
-
-6. **Security and operations need hardening:** versioned Mongo migrations, dependency scanning, PII field encryption, secrets-manager integration, backup verification, uptime monitoring and load testing remain incomplete.
-
-7. **Repository hygiene:** `tsconfig.tsbuildinfo` is untracked and should be ignored. The mobile `.env.development` is tracked; although variables are public Expo values, environment-specific values are better managed through examples and deployment configuration.
-
-**Best Next Code Work**
-1. Add API unit/integration tests for authentication, feature access, payments, subscriptions, profile privacy and sibling normalization.
-2. Add mobile tests for premium gating, settings persistence, chat actions and profile editing.
-3. Add CI for lint, both type-checks, API build, tests, i18n validation and formatting.
-4. Generate the full TypeScript API contract from Swagger.
-5. Add versioned Mongo migration tooling.
-6. Reconcile `TASK-ROADMAP.md` with the latest implementation.
+1. Add provider-backed staging tests for FCM, SES/Twilio, Razorpay/Stripe, social login, KYC, and media moderation once staging credentials are available.
+2. Configure production Sentry projects/source maps, uptime checks, alert rules, and operational dashboards.
+3. Add deployment automation after the target AWS/container architecture and deployment credentials are finalized.
+4. Continue coverage for full refresh-token rotation, payment webhook integration, profile editing components, and end-to-end realtime reconnect behavior.
+5. Add an index drift verifier and establish a reviewed baseline for all production collections; the current migration manifest contains only the sibling normalization data migration.

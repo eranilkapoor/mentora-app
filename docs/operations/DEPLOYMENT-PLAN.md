@@ -171,6 +171,24 @@ AWS_SES_FROM_EMAIL=no-reply@yourdomain.com
 
 Never commit `.env`.
 
+## 6. Database migration release step
+
+Every API release must validate and apply versioned MongoDB migrations after
+building the artifact and before shifting traffic to the new application
+version:
+
+```bash
+npm ci
+npm run deploy:prepare
+npm prune --omit=dev
+```
+
+`deploy:prepare` builds the API and runs the compiled migration CLI. Applied
+migrations are recorded in `schema_migrations`; a lease in
+`schema_migration_locks` prevents concurrent release jobs from applying the
+same migration. If a migration is marked irreversible, restore from a verified
+backup rather than deleting its history record manually.
+
 ---
 
 # GitHub Actions deployment

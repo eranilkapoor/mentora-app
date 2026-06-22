@@ -2,7 +2,7 @@
 
 Current home: `docs/planning/TASK-ROADMAP.md`
 
-Last audited: 2026-06-14
+Last audited: 2026-06-22
 
 This audit compares the roadmap against the current repository:
 
@@ -34,10 +34,10 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | P0       | Run mobile and API typecheck/lint/build after the roadmap audit                                                |    DONE | API lint/typecheck and mobile lint/typecheck pass.                                        |
 | P0       | Wire real production notification provider secrets and verify one push end-to-end                              | BLOCKED | Code/env contract exists; real FCM credentials and device delivery proof are external.    |
 | P0       | Finish store billing SDK/product mapping or keep purchase CTA guarded for release                              |    DONE | Native billing is guarded by `EXPO_PUBLIC_STORE_BILLING_ENABLED=false` until SDK mapping. |
-| P1       | Add Sentry/Crashlytics SDKs and production DSNs                                                                | PARTIAL | Error reporter foundations exist; external SDK/provider wiring is not complete.           |
+| P1       | Configure production Sentry projects, DSNs, source maps, and alert rules                                        | PARTIAL | Sentry SDKs and global exception capture are wired in mobile and API; production projects and alerting remain external. |
 | P1       | Add final release QA evidence: Android matrix, dark theme screenshots, token expiry, push taps, chat reconnect | PARTIAL | Play QA checklist and dark-theme audit docs exist; real device run evidence remains.      |
 | P1       | Tighten production CORS/env secrets review                                                                     |    DONE | Production CORS is restricted and a production secrets checklist exists.                  |
-| P2       | Implement OpenAPI-generated TS client or shared API contract                                                   |    DONE | Shared `@matchmate/api-contract` package now drives mobile membership/payment RTK types.  |
+| P2       | Implement OpenAPI-generated TS client or shared API contract                                                   |    DONE | `@matchmate/api-contract` now includes the complete generated Swagger route/schema contract plus curated domain types. |
 | P2       | Add background job coverage for OTP cleanup, orphaned media cleanup, analytics aggregation                     |    DONE | OTP cleanup, deleted-media cleanup, and daily analytics aggregation jobs are implemented. |
 
 ## 1. Core Platform
@@ -152,7 +152,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE   | Privacy settings        | Privacy settings APIs and mobile screen exist.                                       |
 | DONE   | Notification settings   | Granular notification settings API/UI exist.                                         |
 | DONE   | Hide/block/report users | Settings/safety APIs and mobile flows exist.                                         |
-| DONE   | Incognito browse mode   | Privacy settings and match profile view suppression exist; confirm paywall behavior. |
+| DONE   | Incognito browse mode   | Privacy settings, match profile-view suppression, visible locked controls, and upgrade prompting are implemented. |
 | DONE   | Data download           | Account data export endpoint exists.                                                 |
 | DONE   | Consent management      | Consent schema/service/API exist.                                                    |
 
@@ -348,7 +348,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | BLOCKED     | Penetration testing           | External vendor/process task.                                                          |
 | PARTIAL     | GDPR/PDPB compliance layer    | Consent, deletion, export exist; legal review and policy pages still required.         |
 | DONE        | Data masking for logs         | Logging/error handling redacts sensitive fields.                                       |
-| RECOMMENDED | Vulnerability scanning        | Add Dependabot/Snyk/GitHub Actions checks.                                             |
+| PARTIAL     | Vulnerability scanning        | Dependabot now monitors all three npm lockfiles; add CodeQL/Snyk and container scanning as deployment artifacts are introduced. |
 
 ## 11. Logging And Monitoring
 
@@ -356,7 +356,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | ----------- | ------------------------------- | ------------------------------------------------------ |
 | DONE        | Central logger                  | Winston-backed `AppLogger` exists.                     |
 | DONE        | Correlation/request tracing     | Correlation middleware/interceptor exist.              |
-| PARTIAL     | Error monitoring                | Adapter exists; Sentry SDK/DSN not fully wired.        |
+| PARTIAL     | Error monitoring                | Mobile/API Sentry SDK capture is wired; production DSNs, source maps, dashboards, and alert rules need deployment setup. |
 | BLOCKED     | Log storage                     | Needs ELK/CloudWatch/Datadog setup.                    |
 | RECOMMENDED | APM                             | Add Datadog/New Relic/OpenTelemetry.                   |
 | RECOMMENDED | Uptime monitoring               | Add external uptime checks.                            |
@@ -416,7 +416,8 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | Swagger/OpenAPI docs              | Swagger setup exists in non-production.                                                                                         |
 | DONE    | API error code registry           | Error/success code constants exist.                                                                                             |
 | PARTIAL | Cursor/offset pagination standard | Pagination exists; contract should be normalized across all list APIs.                                                          |
-| PARTIAL | OpenAPI to TS SDK generation      | Shared `@matchmate/api-contract` types are implemented for membership/payment; generated SDK from Swagger is still future work. |
+| DONE    | OpenAPI to TS SDK generation      | Swagger is snapshotted into `packages/api-contract/openapi.json`; complete immutable route/schema types are generated and checked through root scripts. |
+| PARTIAL | Automated regression tests        | API auth, payment-signature, subscription, privacy, chat, feature-gate, profile, migration, and admin DTO invariants have 34 tests; mobile plan gates, upgrade navigation, settings, sibling editing, and realtime auth classification have 27 tests. Broader integration/device coverage remains. |
 | TODO    | Storybook component library       | Not implemented.                                                                                                                |
 | PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.                                                            |
 
@@ -426,10 +427,10 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | ------- | ----------------------------- | ------------------------------------------------------------------- |
 | TODO    | Docker containerization       | No complete Docker setup found in repo root/API/mobile.             |
 | TODO    | Kubernetes deployment         | No manifests/Helm charts found.                                     |
-| TODO    | CI/CD pipeline                | No GitHub Actions workflow found in current audit.                  |
+| PARTIAL | CI/CD pipeline                | GitHub Actions now installs all workspaces and runs lint, API/mobile typechecks, contract drift checks, API build, tests, and i18n validation; deployment automation remains TODO. |
 | TODO    | Infrastructure as Code        | No Terraform/IaC found.                                             |
 | TODO    | Blue-green/canary deployments | Not implemented.                                                    |
-| TODO    | Database migration strategy   | Mongo schemas/seeders exist; no versioned migration workflow found. |
+| DONE    | Database migration strategy   | Database-wide ordered/checksummed Mongo runner, durable history, distributed lease locking, status/up/down commands, CI validation, and production commands are implemented. The manifest currently has one pending sibling-normalization data migration; collection/index baselining remains separate improvement work. |
 | BLOCKED | Disaster recovery/RTO/RPO     | Operational cloud task.                                             |
 | BLOCKED | Multi-region failover         | Operational cloud task.                                             |
 | BLOCKED | Automated backup verification | Operational cloud task.                                             |
@@ -442,4 +443,4 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 4. Harden production operations: secrets manager, monitoring/APM, backups, uptime alerts.
 5. Finish monetization polish: native billing SDK, receipt verification, refund/invoice QA.
 6. Expand post-launch product depth: voice messages, translation, fraud detection, cohort analytics, success stories.
-7. Add scale infrastructure: Docker, CI/CD, load tests, CDN, broader queue coverage, migration workflow.
+7. Add scale infrastructure: Docker, deployment automation, load tests, CDN, broader queue coverage, and Mongo index-drift verification.

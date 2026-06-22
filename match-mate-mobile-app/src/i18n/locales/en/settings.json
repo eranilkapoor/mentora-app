@@ -56,6 +56,7 @@
   "sign_out": "Sign Out",
   "signing_out": "Signing out...",
   "sign_out_confirm": "Are you sure you want to sign out?",
+  "sign_out_success": "You have been signed out successfully.",
   "edit_profile": "Edit Profile",
   "edit_profile_sub": "Update your personal information",
   "edit_preferences": "Partner Preferences",
@@ -464,6 +465,7 @@
     "balance_after": "Balance {{count}}"
   },
   "privacy": {
+    "plan_restricted": "Upgrade your plan to use this privacy option.",
     "title": "Privacy Settings",
     "profile_visibility": "Profile Visibility",
     "profile_visibility_subtitle": "Control who can see your profile",
@@ -502,6 +504,7 @@
     "allow_messages_from": "Allow Messages From"
   },
   "communication": {
+    "plan_restricted": "Upgrade your plan to use this communication option.",
     "title": "Communication Settings",
     "messaging": "Messaging",
     "messaging_subtitle": "Control your chat experience",

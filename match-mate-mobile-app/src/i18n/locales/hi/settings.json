@@ -56,6 +56,7 @@
   "sign_out": "साइन आउट",
   "signing_out": "साइन आउट हो रहा है...",
   "sign_out_confirm": "क्या आप सुनिश्चित हैं कि आप साइन आउट करना चाहते हैं?",
+  "sign_out_success": "आप सफलतापूर्वक साइन आउट हो गए हैं।",
   "edit_profile": "प्रोफ़ाइल संपादित करें",
   "edit_profile_sub": "अपनी व्यक्तिगत जानकारी अपडेट करें",
   "edit_preferences": "साझेदार वरीयताएँ",
@@ -464,6 +465,7 @@
     "balance_after": "बैलेंस {{count}}"
   },
   "privacy": {
+    "plan_restricted": "इस गोपनीयता विकल्प का उपयोग करने के लिए अपनी योजना अपग्रेड करें।",
     "title": "गोपनीयता",
     "profile_visibility": "प्रोफाइल दृश्यमानता",
     "profile_visibility_subtitle": "नियंत्रित करें कि कौन आपकी प्रोफाइल देख सकता है",
@@ -502,6 +504,7 @@
     "allow_messages_from": "संदेश प्राप्त करें"
   },
   "communication": {
+    "plan_restricted": "इस संचार विकल्प का उपयोग करने के लिए अपनी योजना अपग्रेड करें।",
     "title": "संचार",
     "messaging": "मैसेजिंग",
     "messaging_subtitle": "अपने चैट अनुभव को नियंत्रित करें",
@@ -524,7 +527,7 @@
     "voice_calls": "वॉयस कॉल की अनुमति दें",
     "voice_calls_sub": "उन लोगों से वॉइस कॉल की अनुमति दें जो आपकी कॉल अनुमति से मेल खाते हैं।",
     "video_calls": "वीडियो कॉल की अनुमति दें",
-    "video_calls_sub": "उन लोगों से वीडियो कॉल की अनुमति दें जो आपकी कॉल अनुमति से मेल खाते हैं।",
+    "video_calls_sub": "उन लोगों से वीडियो कॉल की अनुमति दें जो आपकी कॉल अनुमति से मेल खाते हैं।"
   },
   "accessibility": {
     "title": "सुलभता",
@@ -543,9 +546,10 @@
     "screen_reader": "स्क्रीन रीडर",
     "screen_reader_subtitle": "सहायक तकनीकों के लिए अनुकूलित करें",
     "screen_reader_optimized": "स्क्रीन रीडर अनुकूलित",
-    "screen_reader_optimized_sub": "VoiceOver और TalkBack के साथ संगतता बढ़ाएं",
+    "screen_reader_optimized_sub": "VoiceOver और TalkBack के साथ संगतता बढ़ाएं"
   },
   "media": {
+    "plan_restricted": "इस मीडिया विकल्प का उपयोग करने के लिए अपनी योजना अपग्रेड करें।",
     "title": "मीडिया",
     "playback": "प्लेबैक",
     "playback_subtitle": "नियंत्रित करें कि मीडिया कैसे चलता है",

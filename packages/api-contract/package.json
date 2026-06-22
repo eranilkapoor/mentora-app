@@ -9,5 +9,9 @@
       "types": "./src/index.ts",
       "default": "./src/index.ts"
     }
+  },
+  "scripts": {
+    "generate": "npm --prefix ../.. run contracts:generate",
+    "check": "npm --prefix ../.. run contracts:check"
   }
 }

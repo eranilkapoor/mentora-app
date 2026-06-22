@@ -2,6 +2,8 @@
   "loading_title": "प्रोफ़ाइल लोड हो रही है...",
   "unavailable_title": "प्रोफ़ाइल उपलब्ध नहीं",
   "unavailable_subtitle": "यह प्रोफ़ाइल छिपी हो सकती है या अब उपलब्ध नहीं है।",
+  "load_failed_title": "प्रोफ़ाइल लोड नहीं हो सकी",
+  "access_limited_title": "प्रोफ़ाइल देखने की सीमा",
   "photo_label": "{{name}} की फोटो",
   "online_now": "अब ऑनलाइन",
   "hidden_value": "मैच के बाद दिखाई देगा",

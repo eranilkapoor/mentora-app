@@ -17,67 +17,22 @@ import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { FormInput } from './FormInput';
 import { NumberStepper } from '../../../core/components/NumberStepper';
 
-import { INITIAL_SIBLINGS } from '../EditProfile.constants';
-
 import {
   SiblingDetail,
   Siblings,
   SiblingsEditorProps,
 } from '../EditProfile.types';
 import { Theme } from '@/core/theme/types';
-
-type SiblingType = 'brother' | 'sister';
+import {
+  createSiblingDetail,
+  normalizeSiblings,
+  ProfileSiblingType,
+} from '../utils/siblings.utils';
 
 interface IndexedSibling {
   detail: SiblingDetail;
   index: number;
 }
-
-const createSiblingDetail = (type: SiblingType): SiblingDetail => ({
-  type,
-  married: false,
-  occupation: '',
-});
-
-const normalizeSiblingDetails = (
-  details: SiblingDetail[],
-  type: SiblingType,
-  count: number
-): SiblingDetail[] => {
-  const matching = details.filter((item) => item.type === type).slice(0, count);
-  return matching.length < count
-    ? [
-        ...matching,
-        ...Array.from({ length: count - matching.length }, () =>
-          createSiblingDetail(type)
-        ),
-      ]
-    : matching;
-};
-
-const normalizeSiblings = (value?: Siblings): Siblings => {
-  const source = value ?? INITIAL_SIBLINGS;
-  const brothersCount = Math.max(0, Math.floor(source.brothersCount || 0));
-  const sistersCount = Math.max(0, Math.floor(source.sistersCount || 0));
-  const sourceDetails = Array.isArray(source.details) ? source.details : [];
-  const details = [
-    ...normalizeSiblingDetails(sourceDetails, 'brother', brothersCount),
-    ...normalizeSiblingDetails(sourceDetails, 'sister', sistersCount),
-  ];
-
-  return {
-    ...source,
-    brothersCount,
-    sistersCount,
-    details,
-    marriedBrothersCount: details.filter(
-      (item) => item.type === 'brother' && item.married
-    ).length,
-    marriedSistersCount: details.filter(
-      (item) => item.type === 'sister' && item.married
-    ).length,
-  };
-};
 
 export const SiblingsEditor = memo(function SiblingsEditor({
   value,
@@ -109,7 +64,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
    * Generic sibling count updater
    */
   const updateSiblingCount = useCallback(
-    (type: SiblingType, count: number): void => {
+    (type: ProfileSiblingType, count: number): void => {
       const currentDetails = siblings.details ?? [];
 
       const sameType = currentDetails.filter((item) => item.type === type);

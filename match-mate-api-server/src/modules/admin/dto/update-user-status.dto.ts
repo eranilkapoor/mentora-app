@@ -1,11 +1,27 @@
 import {
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  Validate,
   IsBoolean,
   IsMongoId,
   IsOptional,
   IsString,
   MaxLength,
-  ValidateIf,
 } from 'class-validator';
+import { ApiHideProperty } from '@nestjs/swagger';
+
+@ValidatorConstraint({ name: 'atLeastOneUserStatusField', async: false })
+class AtLeastOneUserStatusFieldConstraint implements ValidatorConstraintInterface {
+  validate(_value: unknown, args: ValidationArguments): boolean {
+    const value = args.object as UpdateUserStatusDto;
+    return value.isBlocked !== undefined || value.isVerified !== undefined;
+  }
+
+  defaultMessage(): string {
+    return 'Either isBlocked or isVerified must be provided';
+  }
+}
 
 export class UpdateUserStatusDto {
   @IsMongoId()
@@ -24,10 +40,7 @@ export class UpdateUserStatusDto {
   @MaxLength(500)
   reason?: string;
 
-  // At least one of the two must be present
-  @ValidateIf(
-    (o: UpdateUserStatusDto) =>
-      o.isBlocked === undefined && o.isVerified === undefined,
-  )
-  _atLeastOne?: never;
+  @ApiHideProperty()
+  @Validate(AtLeastOneUserStatusFieldConstraint)
+  private readonly _statusSelection?: boolean;
 }

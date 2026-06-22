@@ -1,0 +1,25 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      repository-tooling:
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /match-mate-api-server
+    schedule:
+      interval: weekly
+    groups:
+      api-dependencies:
+        patterns: ['*']
+
+  - package-ecosystem: npm
+    directory: /match-mate-mobile-app
+    schedule:
+      interval: weekly
+    groups:
+      mobile-dependencies:
+        patterns: ['*']
