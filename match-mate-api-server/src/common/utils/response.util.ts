@@ -29,7 +29,7 @@ export const successResponse = <T>(
       true,
       code,
       message ?? data.message,
-      data.data as T,
+      data.data,
       undefined,
       data.meta ?? responseMeta,
     );

@@ -36,15 +36,19 @@ export default () => ({
     sms: {
       enabled: process.env.NOTIFICATION_SMS_ENABLED === 'true',
       provider: process.env.NOTIFICATION_SMS_PROVIDER || 'log',
-      senderId: process.env.NOTIFICATION_SMS_SENDER_ID || '',
-      apiKey: process.env.NOTIFICATION_SMS_API_KEY || '',
-      twilio: {
-        accountSid: process.env.NOTIFICATION_SMS_TWILIO_ACCOUNT_SID || '',
-        authToken: process.env.NOTIFICATION_SMS_TWILIO_AUTH_TOKEN || '',
-        from:
-          process.env.NOTIFICATION_SMS_TWILIO_FROM ||
-          process.env.NOTIFICATION_SMS_SENDER_ID ||
+      msg91: {
+        authKey: process.env.NOTIFICATION_SMS_MSG91_AUTH_KEY || '',
+        templateId: process.env.NOTIFICATION_SMS_MSG91_TEMPLATE_ID || '',
+        otpTemplateId:
+          process.env.NOTIFICATION_SMS_MSG91_OTP_TEMPLATE_ID ||
+          process.env.NOTIFICATION_SMS_MSG91_TEMPLATE_ID ||
           '',
+        baseUrl:
+          process.env.NOTIFICATION_SMS_MSG91_BASE_URL ||
+          'https://control.msg91.com',
+        timeoutMs: Number(
+          process.env.NOTIFICATION_SMS_MSG91_TIMEOUT_MS || '10000',
+        ),
       },
     },
     push: {

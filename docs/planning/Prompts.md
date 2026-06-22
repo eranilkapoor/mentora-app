@@ -19,10 +19,14 @@ Last reviewed: 2026-06-22
 - [x] Repair API startup after clean builds by keeping incremental TypeScript metadata inside `dist`, and remove the Swagger circular-reflection failure from admin status validation.
 - [x] Add realtime socket authentication recovery through the existing refresh-token flow so an expired persisted access token does not reconnect forever.
 - [x] Remove overlapping template-literal paths from the generated OpenAPI contract while retaining exact immutable route and schema types.
+- [x] Add read-only Mongo index drift auditing across all registered models with JSON/strict modes and production-safe `autoIndex` defaults.
+- [x] Audit the configured database (46 collections, 189 expected indexes) and add an immutable migration for the one missing payment store-transaction index.
+- [x] Remove MongoDB-driver types from public settings unblock/unhide responses and repair stricter dependency-driven ESLint findings.
+- [x] Replace Twilio SMS delivery with the MSG91 Flow API, approved-template variables, OTP overrides, normalized recipients, timeout/error handling, environment validation, and provider contract tests.
 
 ## Verification
 
-- API TypeScript, ESLint, build, and Jest: passed (11 suites, 34 tests).
+- API TypeScript, ESLint, build, and Jest: passed (14 suites, 42 tests).
 - Mobile TypeScript, ESLint, and Jest: passed (5 suites, 27 tests).
 - OpenAPI generated-contract check: passed.
 - i18n parity: passed for 1,346 static keys across English and Hindi.
@@ -30,8 +34,8 @@ Last reviewed: 2026-06-22
 
 ## Next Tasks
 
-1. Add provider-backed staging tests for FCM, SES/Twilio, Razorpay/Stripe, social login, KYC, and media moderation once staging credentials are available.
+1. Add provider-backed staging tests for FCM, SES/MSG91, Razorpay/Stripe, social login, KYC, and media moderation once staging credentials are available.
 2. Configure production Sentry projects/source maps, uptime checks, alert rules, and operational dashboards.
 3. Add deployment automation after the target AWS/container architecture and deployment credentials are finalized.
 4. Continue coverage for full refresh-token rotation, payment webhook integration, profile editing components, and end-to-end realtime reconnect behavior.
-5. Add an index drift verifier and establish a reviewed baseline for all production collections; the current migration manifest contains only the sibling normalization data migration.
+5. Run explain-plan checks for discovery, chat history, notification lists, payment history, and admin queues against production-like data volumes.

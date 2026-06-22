@@ -277,7 +277,7 @@ export class AuthPasswordService {
 
     return user.authAccounts.find(
       (account) => account.provider === AuthProvider.EMAIL,
-    ) as EmailAuthAccount | undefined;
+    );
   }
 
   private buildResetPasswordLink(token: string): string {

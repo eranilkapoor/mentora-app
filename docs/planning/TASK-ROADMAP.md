@@ -235,7 +235,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | PARTIAL | Push notification service          | Firebase Admin/provider exists; production FCM credentials must be configured and tested.       |
 | DONE    | In-app notifications               | Notification schema/API/realtime gateway exist.                                                 |
 | PARTIAL | Email notification templates       | Template system/provider exists; SES/provider config needs production verification.             |
-| PARTIAL | SMS notifications                  | SMS provider exists; Twilio/provider config needs production verification.                      |
+| PARTIAL | SMS notifications                  | MSG91 Flow API provider, OTP variables, timeout/error handling, environment validation, and tests exist; approved DLT templates and production delivery still need verification. |
 | TODO    | WhatsApp notifications             | No Meta WABA provider found.                                                                    |
 | DONE    | Notification preference management | Settings and notification preference APIs exist.                                                |
 | DONE    | Notification deduplication         | Dedupe key/window logic exists.                                                                 |
@@ -417,7 +417,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | API error code registry           | Error/success code constants exist.                                                                                             |
 | PARTIAL | Cursor/offset pagination standard | Pagination exists; contract should be normalized across all list APIs.                                                          |
 | DONE    | OpenAPI to TS SDK generation      | Swagger is snapshotted into `packages/api-contract/openapi.json`; complete immutable route/schema types are generated and checked through root scripts. |
-| PARTIAL | Automated regression tests        | API auth, payment-signature, subscription, privacy, chat, feature-gate, profile, migration, and admin DTO invariants have 34 tests; mobile plan gates, upgrade navigation, settings, sibling editing, and realtime auth classification have 27 tests. Broader integration/device coverage remains. |
+| PARTIAL | Automated regression tests        | API auth, payments, subscriptions, privacy, chat, feature gates, profiles, migrations, index drift, MSG91 delivery, and admin DTO invariants have 42 tests; mobile plan gates, upgrade navigation, settings, sibling editing, and realtime auth classification have 27 tests. Broader integration/device coverage remains. |
 | TODO    | Storybook component library       | Not implemented.                                                                                                                |
 | PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.                                                            |
 
@@ -430,7 +430,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | PARTIAL | CI/CD pipeline                | GitHub Actions now installs all workspaces and runs lint, API/mobile typechecks, contract drift checks, API build, tests, and i18n validation; deployment automation remains TODO. |
 | TODO    | Infrastructure as Code        | No Terraform/IaC found.                                             |
 | TODO    | Blue-green/canary deployments | Not implemented.                                                    |
-| DONE    | Database migration strategy   | Database-wide ordered/checksummed Mongo runner, durable history, distributed lease locking, status/up/down commands, CI validation, and production commands are implemented. The manifest currently has one pending sibling-normalization data migration; collection/index baselining remains separate improvement work. |
+| DONE    | Database migration strategy   | Database-wide ordered/checksummed runner, durable history, lease locking, two pending migrations, read-only index drift auditing, production-safe `autoIndex`, and build/migrate/audit release commands are implemented. |
 | BLOCKED | Disaster recovery/RTO/RPO     | Operational cloud task.                                             |
 | BLOCKED | Multi-region failover         | Operational cloud task.                                             |
 | BLOCKED | Automated backup verification | Operational cloud task.                                             |
@@ -443,4 +443,4 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 4. Harden production operations: secrets manager, monitoring/APM, backups, uptime alerts.
 5. Finish monetization polish: native billing SDK, receipt verification, refund/invoice QA.
 6. Expand post-launch product depth: voice messages, translation, fraud detection, cohort analytics, success stories.
-7. Add scale infrastructure: Docker, deployment automation, load tests, CDN, broader queue coverage, and Mongo index-drift verification.
+7. Add scale infrastructure: Docker, deployment automation, load tests, CDN, broader queue coverage, and production-data explain-plan checks.

@@ -74,7 +74,7 @@ export class AdminPlansController {
       action: 'plan.created',
       resource: 'plan',
       targetId: data?._id?.toString(),
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.PLAN_CREATED);
   }
@@ -93,7 +93,7 @@ export class AdminPlansController {
       action: 'plan.updated',
       resource: 'plan',
       targetId: id,
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.PLAN_UPDATED);
   }
@@ -111,7 +111,7 @@ export class AdminPlansController {
       action: 'feature.created',
       resource: 'feature',
       targetId: data?._id?.toString(),
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.FEATURE_CREATED);
   }
@@ -129,7 +129,7 @@ export class AdminPlansController {
       action: 'feature.assigned_to_plan',
       resource: 'plan_feature',
       targetId: dto.planId,
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.FEATURE_ASSIGNED);
   }
@@ -152,7 +152,7 @@ export class AdminPlansController {
       resource: 'plan_feature',
       targetId: planId,
       metadata: { featureId },
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.FEATURE_REMOVED);
   }

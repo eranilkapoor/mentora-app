@@ -231,19 +231,13 @@ export class ProfilesService {
       const existing = await this.profileRepo.findByUserId(userId);
       if (!existing) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
-      const normalized = this.normalizeUpdate(
-        dto,
-        existing as unknown as Record<string, unknown>,
-      );
-      const changedFields = this.getChangedProfileFields(
-        existing as unknown as Record<string, unknown>,
-        normalized,
-      );
+      const normalized = this.normalizeUpdate(dto, existing);
+      const changedFields = this.getChangedProfileFields(existing, normalized);
 
       if (changedFields.length === 0) {
         return this.withVerificationStatus(
           userId,
-          this.enrichProfile(existing as unknown as Record<string, unknown>),
+          this.enrichProfile(existing),
         );
       }
 
@@ -256,7 +250,7 @@ export class ProfilesService {
           ((result?.toObject?.() ?? result) as unknown as Record<
             string,
             unknown
-          >) ?? (existing as unknown as Record<string, unknown>),
+          >) ?? existing,
         ),
       );
 
@@ -341,7 +335,7 @@ export class ProfilesService {
 
     if (dto.education) {
       normalized.education = {
-        ...((existing.education as Record<string, unknown>) ?? {}),
+        ...(existing.education ?? {}),
         ...dto.education,
       };
     }
@@ -350,7 +344,7 @@ export class ProfilesService {
       normalized.family = normalizeFamilySiblings({
         ...((existing.family as Record<string, unknown>) ?? {}),
         ...dto.family,
-      } as FamilyDto);
+      });
     }
 
     if (dto.location) {
@@ -702,7 +696,7 @@ export class ProfilesService {
     }
 
     if (value && typeof value === 'object') {
-      return Object.keys(value as Record<string, unknown>)
+      return Object.keys(value)
         .sort()
         .reduce<Record<string, unknown>>((acc, key) => {
           acc[key] = this.normalizeProfileValue(

@@ -133,26 +133,19 @@ function validateNotificationProviders(
 
   if (
     env.NOTIFICATION_SMS_ENABLED &&
-    env.NOTIFICATION_SMS_PROVIDER === 'twilio'
+    env.NOTIFICATION_SMS_PROVIDER === 'msg91'
   ) {
-    if (!env.NOTIFICATION_SMS_TWILIO_ACCOUNT_SID) {
+    if (!env.NOTIFICATION_SMS_MSG91_AUTH_KEY) {
       return helpers.error('any.custom', {
         customMessage:
-          'NOTIFICATION_SMS_TWILIO_ACCOUNT_SID is required when NOTIFICATION_SMS_PROVIDER=twilio',
+          'NOTIFICATION_SMS_MSG91_AUTH_KEY is required when NOTIFICATION_SMS_PROVIDER=msg91',
       });
     }
 
-    if (!env.NOTIFICATION_SMS_TWILIO_AUTH_TOKEN) {
+    if (!env.NOTIFICATION_SMS_MSG91_TEMPLATE_ID) {
       return helpers.error('any.custom', {
         customMessage:
-          'NOTIFICATION_SMS_TWILIO_AUTH_TOKEN is required when NOTIFICATION_SMS_PROVIDER=twilio',
-      });
-    }
-
-    if (!env.NOTIFICATION_SMS_TWILIO_FROM && !env.NOTIFICATION_SMS_SENDER_ID) {
-      return helpers.error('any.custom', {
-        customMessage:
-          'Either NOTIFICATION_SMS_TWILIO_FROM or NOTIFICATION_SMS_SENDER_ID is required when NOTIFICATION_SMS_PROVIDER=twilio',
+          'NOTIFICATION_SMS_MSG91_TEMPLATE_ID is required when NOTIFICATION_SMS_PROVIDER=msg91',
       });
     }
   }
@@ -348,6 +341,8 @@ export const envValidationSchema = Joi.object({
   MONGO_RETRY_ATTEMPTS: Joi.number().integer().min(0).max(20).default(5),
 
   MONGO_RETRY_DELAY: Joi.number().integer().min(0).max(60000).default(5000),
+
+  MONGO_AUTO_INDEX: Joi.boolean(),
 
   SEEDER_CONFIRM: optionalString,
 
@@ -561,18 +556,24 @@ export const envValidationSchema = Joi.object({
 
   NOTIFICATION_SMS_PROVIDER: Joi.string()
     .trim()
-    .valid('log', 'twilio')
+    .valid('log', 'msg91')
     .default('log'),
 
-  NOTIFICATION_SMS_SENDER_ID: optionalString,
+  NOTIFICATION_SMS_MSG91_AUTH_KEY: optionalString,
 
-  NOTIFICATION_SMS_API_KEY: optionalString,
+  NOTIFICATION_SMS_MSG91_TEMPLATE_ID: optionalString,
 
-  NOTIFICATION_SMS_TWILIO_ACCOUNT_SID: optionalString,
+  NOTIFICATION_SMS_MSG91_OTP_TEMPLATE_ID: optionalString,
 
-  NOTIFICATION_SMS_TWILIO_AUTH_TOKEN: optionalString,
+  NOTIFICATION_SMS_MSG91_BASE_URL: optionalUri.default(
+    'https://control.msg91.com',
+  ),
 
-  NOTIFICATION_SMS_TWILIO_FROM: optionalString,
+  NOTIFICATION_SMS_MSG91_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(1000)
+    .max(60000)
+    .default(10000),
 
   NOTIFICATION_PUSH_ENABLED: Joi.boolean().default(false),
 

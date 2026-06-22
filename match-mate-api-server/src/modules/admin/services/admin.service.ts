@@ -39,7 +39,6 @@ import { Status } from '@/common/enums';
 import { AnalyticsService } from '@/modules/analytics/services/analytics.service';
 import { AnalyticsQueryDto } from '@/modules/analytics/dto/analytics-query.dto';
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
-import { NotificationChannel } from '@/modules/notifications/notification.constants';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { AdminAuditService } from './admin-audit.service';
 import { ErrorCode } from '@/common/constants';
@@ -215,7 +214,7 @@ export class AdminService {
           message: dto.message,
           category: 'system',
           type: 'system',
-          channels: channels as NotificationChannel[],
+          channels: channels,
           priority: 'normal',
           actorId,
           dedupeKey: `admin-broadcast-${targetLabel}-${dto.title}-${String(user._id)}`,

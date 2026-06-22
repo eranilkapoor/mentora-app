@@ -93,7 +93,7 @@ export class AdminPaymentsController {
       resource: 'payment',
       targetId: orderId,
       reason: dto.reason,
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.PAYMENT_REFUNDED);
   }

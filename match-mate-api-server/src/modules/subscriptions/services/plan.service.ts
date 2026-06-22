@@ -129,7 +129,7 @@ export class PlanService {
         reason: 'feature_already_exists',
       });
     const feature = await this.featureModel.create(dto);
-    return feature.toObject() as LeanFeature;
+    return feature.toObject();
   }
 
   async getFeatures(): Promise<LeanFeature[]> {

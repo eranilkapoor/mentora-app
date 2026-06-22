@@ -14,13 +14,13 @@
 | File uploads   | **S3**                                        | Profile images, documents, chat media     |
 | CDN            | **CloudFront**                                | Serve S3 media faster                     |
 | Email          | **Amazon SES**                                | OTP, verification, transactional email    |
-| SMS            | **AWS End User Messaging / SNS SMS**          | OTP only, keep usage controlled           |
+| SMS            | **MSG91**                                     | OTP and critical transactional alerts     |
 | Secrets        | **AWS Secrets Manager / SSM Parameter Store** | JWT, DB URI, Redis URI                    |
 | Logs           | **CloudWatch Logs**                           | App logs + metrics                        |
 | Domain/SSL     | **Route 53 + ACM**                            | `matchmate.webnza.com`                      |
 | CI/CD          | **GitHub Actions**                            | Build + deploy API                        |
 
-Elastic Beanstalk is a good fit because it provisions EC2, load balancing, health monitoring, and autoscaling for you. ([AWS Documentation][1]) SES is pay-as-you-go and currently charges around **$0.10 per 1,000 emails** for standard outbound email. ([Amazon Web Services, Inc.][2]) AWS SMS pricing depends on destination/carrier and AWS says SMS cost includes transport plus carrier fees, so keep SMS mostly for OTP and important alerts. ([Amazon Web Services, Inc.][3])
+Elastic Beanstalk is a good fit because it provisions EC2, load balancing, health monitoring, and autoscaling for you. ([AWS Documentation][1]) SES is pay-as-you-go and currently charges around **$0.10 per 1,000 emails** for standard outbound email. ([Amazon Web Services, Inc.][2]) Keep MSG91 SMS mostly for OTP and important transactional alerts, with DLT-approved templates for Indian recipients.
 
 ## Recommended starting plan
 
@@ -46,7 +46,7 @@ Email:
 - Amazon SES
 
 SMS:
-- AWS End User Messaging / SNS SMS
+- MSG91 Flow API
 
 Region:
 - ap-south-1 Mumbai if most users are in India
@@ -183,7 +183,8 @@ npm run deploy:prepare
 npm prune --omit=dev
 ```
 
-`deploy:prepare` builds the API and runs the compiled migration CLI. Applied
+`deploy:prepare` builds the API, runs the compiled migration CLI, and performs
+a strict read-only comparison of registered Mongoose indexes with MongoDB. Applied
 migrations are recorded in `schema_migrations`; a lease in
 `schema_migration_locks` prevents concurrent release jobs from applying the
 same migration. If a migration is marked irreversible, restore from a verified
@@ -317,6 +318,20 @@ Recommended IAM permission for app:
 ---
 
 # SMS setup
+
+Configure MSG91 only after the sender and templates are approved in the MSG91/DLT dashboards:
+
+```env
+NOTIFICATION_SMS_ENABLED=true
+NOTIFICATION_SMS_PROVIDER=msg91
+NOTIFICATION_SMS_MSG91_AUTH_KEY=<server-side MSG91 auth key>
+NOTIFICATION_SMS_MSG91_TEMPLATE_ID=<approved default Flow/template ID>
+NOTIFICATION_SMS_MSG91_OTP_TEMPLATE_ID=<approved OTP Flow/template ID, optional fallback to default>
+NOTIFICATION_SMS_MSG91_BASE_URL=https://control.msg91.com
+NOTIFICATION_SMS_MSG91_TIMEOUT_MS=10000
+```
+
+The default MSG91 template must define a `MESSAGE` variable. The phone OTP flow additionally sends `OTP` and `EXPIRY` variables. A notification may provide an internal `msg91TemplateId` and `msg91Variables` override when a separate approved template is required. Never expose the auth key to the mobile or web client.
 
 Use SMS only for:
 

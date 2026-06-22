@@ -148,7 +148,7 @@ export class AdminNotificationsController {
       action: 'notification_dlq.replayed',
       resource: 'notification_dlq',
       targetId: jobId,
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.NOTIFICATION_FETCHED);
   }
@@ -168,7 +168,7 @@ export class AdminNotificationsController {
       actorId: req.user.sub,
       action: 'notification_dlq.replay_all',
       resource: 'notification_dlq',
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.NOTIFICATION_FETCHED);
   }
@@ -185,7 +185,7 @@ export class AdminNotificationsController {
       actorId: req.user.sub,
       action: 'notification_dlq.purged',
       resource: 'notification_dlq',
-      after: data as Record<string, unknown>,
+      after: data,
     });
     return successResponse(data, SuccessCode.NOTIFICATION_FETCHED);
   }

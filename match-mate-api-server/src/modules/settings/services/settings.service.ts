@@ -34,6 +34,7 @@ import {
 } from '@/modules/profiles/schemas/settings/activity-logs.schema';
 import { ActivityCategory } from '@/modules/profiles/enums/activity-log.enums';
 import { SettingsRepository } from '../repositories/settings.repository';
+import type { SettingsDeletionResult } from '../interfaces/settings-operation.interface';
 import {
   UpdatePrivacySettingsDto,
   BlockUserDto,
@@ -147,7 +148,10 @@ export class SettingsService {
     return report;
   }
 
-  unblockUser(userId: string, dto: BlockUserDto) {
+  unblockUser(
+    userId: string,
+    dto: BlockUserDto,
+  ): Promise<SettingsDeletionResult> {
     return this.repo.unblockUser(userId, dto.targetUserId);
   }
 
@@ -278,7 +282,10 @@ export class SettingsService {
     return this.repo.hideProfile(userId, dto.targetUserId, dto.reason);
   }
 
-  unhideProfile(userId: string, dto: BlockUserDto) {
+  unhideProfile(
+    userId: string,
+    dto: BlockUserDto,
+  ): Promise<SettingsDeletionResult> {
     return this.repo.unhideProfile(userId, dto.targetUserId);
   }
 
@@ -584,7 +591,7 @@ export class SettingsService {
     if (system) update['preferences.system'] = system;
     if (quietHours) update['quietHours'] = quietHours;
 
-    return this.repo.updateNotification(userId, update as never);
+    return this.repo.updateNotification(userId, update);
   }
 
   updateNotificationChannel(
@@ -594,7 +601,7 @@ export class SettingsService {
   ) {
     return this.repo.updateNotification(userId, {
       [`preferences.${params.event}.${params.channel}`]: dto.value,
-    } as never);
+    });
   }
 
   //  Communication

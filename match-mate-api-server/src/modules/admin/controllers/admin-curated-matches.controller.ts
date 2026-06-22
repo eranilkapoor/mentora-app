@@ -58,7 +58,7 @@ export class AdminCuratedMatchesController {
       resource: 'curated_match',
       targetId: dto.userId,
       reason: dto.note,
-      after: data ? (data as unknown as Record<string, unknown>) : undefined,
+      after: data ? data : undefined,
     });
     return successResponse(data, SuccessCode.MATCHES_FETCHED);
   }
@@ -75,7 +75,7 @@ export class AdminCuratedMatchesController {
       action: 'curated_match.expired',
       resource: 'curated_match',
       targetId: curatedMatchId,
-      after: data ? (data as unknown as Record<string, unknown>) : undefined,
+      after: data ? data : undefined,
     });
     return successResponse(data, SuccessCode.MATCH_REMOVED);
   }

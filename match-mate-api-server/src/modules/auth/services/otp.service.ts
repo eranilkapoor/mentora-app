@@ -33,6 +33,16 @@ export class OtpService {
       message: `MatchMate OTP: ${otp}. Valid for 5 minutes.`,
       notificationId: `otp-${Date.now()}`,
       templateKey: 'auth.phone_otp',
+      metadata: {
+        msg91TemplateId: this.configService.get<string>(
+          'notification.sms.msg91.otpTemplateId',
+          '',
+        ),
+        msg91Variables: {
+          OTP: otp,
+          EXPIRY: '5',
+        },
+      },
     });
 
     if (

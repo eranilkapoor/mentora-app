@@ -22,7 +22,7 @@ export class MongoRepository<T> implements IRepository<T> {
 
   async create(data: Partial<T>): Promise<T> {
     const doc = new this.model(data);
-    return (await doc.save()).toObject() as T;
+    return (await doc.save()).toObject();
   }
 
   async updateById(id: string, data: Partial<T>): Promise<T | null> {

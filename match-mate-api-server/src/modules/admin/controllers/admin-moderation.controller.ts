@@ -82,7 +82,7 @@ export class AdminModerationController {
       resource: 'media',
       targetId: mediaId,
       reason: dto.note,
-      after: data ? (data as unknown as Record<string, unknown>) : undefined,
+      after: data ? data : undefined,
     });
     return successResponse(data, SuccessCode.ADMIN_USER_UPDATED);
   }
@@ -121,7 +121,7 @@ export class AdminModerationController {
       resource: 'chat_message',
       targetId: messageId,
       reason: dto.note,
-      after: data ? (data as unknown as Record<string, unknown>) : undefined,
+      after: data ? data : undefined,
     });
     return successResponse(data, SuccessCode.ADMIN_USER_UPDATED);
   }

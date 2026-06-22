@@ -35,6 +35,7 @@ export const MongoModule = MongooseModule.forRootAsync({
 
     return {
       uri,
+      autoIndex: configService.get<boolean>('mongo.autoIndex', false),
       retryAttempts: configService.getOrThrow<number>('mongo.retryAttempts', 5),
       retryDelay: configService.getOrThrow<number>('mongo.retryDelay', 5000),
     };

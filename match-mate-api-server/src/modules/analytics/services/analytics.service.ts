@@ -320,8 +320,8 @@ export class AnalyticsService {
       day,
       from,
       to,
-      overview: overview as unknown as Record<string, unknown>,
-      funnel: funnel as unknown as Record<string, unknown>,
+      overview: overview,
+      funnel: funnel,
       generatedAt: new Date(),
     });
   }

@@ -416,19 +416,20 @@ The versioned MongoDB migration runner is shared by the complete database. It is
 
 Current manifest status:
 
-- One migration is registered: `202606220001 normalize-profile-sibling-counts`.
-- It repairs historical profile sibling totals/details and is currently pending in the reviewed development database.
+- Two migrations are registered: profile sibling normalization and creation of the unique sparse payment gateway/store-transaction index.
+- Both migrations are currently pending in the reviewed development database.
 - Migrations are deliberately not applied automatically during API startup.
+- `npm run index:audit` compares all registered Mongoose indexes with MongoDB without modifying the database. Add `-- --strict` to also fail on legacy indexes.
 
-For every future production data transformation, collection rename, destructive field change, or index transition, add an immutable migration and test before deployment. Before the first production release, also capture an index baseline for every Mongoose schema and run an index-drift report in staging. Apply pending migrations only after backup and staging verification with `npm run migration:up` or the compiled production command `npm run migration:up:prod`.
+For every future production data transformation, collection rename, destructive field change, or index transition, add an immutable migration and test before deployment. Staging and production default to `MONGO_AUTO_INDEX=false`; release automation applies migrations and then performs a strict index audit. Apply pending migrations only after backup and staging verification with `npm run migration:up` or the compiled production command `npm run migration:up:prod`.
 
 ## Recommended Improvements
 
 1. Move OTP storage from in-memory `Map` to the cache service with keys such as `auth:otp:{countryCode}:{phone}` and TTL.
 2. Move chat presence from in-memory maps to Redis before running multiple API instances.
-3. Extend the implemented versioned migration runner with an index verification migration/check for staging and production.
+3. Review strict index-audit output before each release and remove obsolete indexes only through reviewed migrations.
 4. Add retention policy constants for notifications, notification logs, analytics events, audit logs, support tickets, and chat moderation artifacts.
-5. Add data deletion/anonymization jobs for account deletion completion.
+5. Add integration coverage and operational metrics for the implemented account deletion/anonymization and S3 erasure job.
 6. Add a database seed manifest that lists required seed groups: plans, features, plan features, notification templates, settings defaults, admin/RBAC, support examples, dummy profiles.
 7. Add MongoDB explain-plan checks for match discovery, chat history, notification list, payment history, and admin queues.
 8. Add queue health and DLQ metrics to monitoring dashboards.

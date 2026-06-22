@@ -603,9 +603,7 @@ export class NotificationsService {
           'sent',
       hasDeliveryFailure,
       delivery: {
-        ...((existingNotification?.delivery as
-          | Record<string, unknown>
-          | undefined) ?? {}),
+        ...(existingNotification?.delivery ?? {}),
         ...deliveryState,
       },
     });

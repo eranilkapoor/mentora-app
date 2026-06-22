@@ -42,6 +42,7 @@ import {
   UserProfileHide,
   UserProfileHideDocument,
 } from '@/modules/safety/schemas/user-profile-hide.schema';
+import type { SettingsDeletionResult } from '../interfaces/settings-operation.interface';
 
 function buildDotNotation(
   obj: Record<string, unknown>,
@@ -446,13 +447,21 @@ export class SettingsRepository {
     );
   }
 
-  unblockUser(userId: string, targetUserId: string) {
-    return this.userBlockModel
+  async unblockUser(
+    userId: string,
+    targetUserId: string,
+  ): Promise<SettingsDeletionResult> {
+    const result = await this.userBlockModel
       .deleteOne({
         userId: new Types.ObjectId(userId),
         blockedUserId: new Types.ObjectId(targetUserId),
       })
       .exec();
+
+    return {
+      acknowledged: result.acknowledged,
+      deletedCount: result.deletedCount,
+    };
   }
 
   async getBlockedUsers(userId: string) {
@@ -528,13 +537,21 @@ export class SettingsRepository {
       .exec();
   }
 
-  unhideProfile(userId: string, targetUserId: string) {
-    return this.userProfileHideModel
+  async unhideProfile(
+    userId: string,
+    targetUserId: string,
+  ): Promise<SettingsDeletionResult> {
+    const result = await this.userProfileHideModel
       .deleteOne({
         userId: new Types.ObjectId(userId),
         hiddenUserId: new Types.ObjectId(targetUserId),
       })
       .exec();
+
+    return {
+      acknowledged: result.acknowledged,
+      deletedCount: result.deletedCount,
+    };
   }
 
   async getHiddenProfiles(userId: string) {

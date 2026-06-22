@@ -4,7 +4,7 @@ import { normalizeFamilySiblings } from './family-normalization.util';
 
 const familyWithSiblings = (
   siblings: NonNullable<FamilyDto['siblings']>,
-): FamilyDto => ({ siblings }) as FamilyDto;
+): FamilyDto => ({ siblings });
 
 describe('normalizeFamilySiblings', () => {
   it('derives married totals from the selected sibling details', () => {

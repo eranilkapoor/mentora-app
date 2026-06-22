@@ -126,7 +126,12 @@ npm run migration:up
 npm run migration:status:prod
 npm run migration:up:prod
 
-# Build and migrate in one release preparation command
+# Read-only schema/database index comparison
+npm run index:audit
+npm run index:audit:strict
+npm run index:audit:prod
+
+# Build, migrate, and strictly verify indexes
 npm run deploy:prepare
 ```
 

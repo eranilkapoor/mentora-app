@@ -29,7 +29,10 @@
     "migration:down": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/migrations/migration.cli.ts down",
     "migration:up:prod": "node dist/infrastructure/databases/mongo/migrations/migration.cli.js up",
     "migration:status:prod": "node dist/infrastructure/databases/mongo/migrations/migration.cli.js status",
-    "deploy:prepare": "npm run build && npm run migration:up:prod",
+    "index:audit": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/index-audit.cli.ts",
+    "index:audit:strict": "npm run index:audit -- --strict",
+    "index:audit:prod": "node dist/infrastructure/databases/mongo/index-audit.cli.js --strict",
+    "deploy:prepare": "npm run build && npm run migration:up:prod && npm run index:audit:prod",
     "seed": "ts-node -r tsconfig-paths/register src/modules/seeder/seeder.runner.ts",
     "test": "jest",
     "test:watch": "jest --watch",
@@ -77,8 +80,7 @@
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "socket.io": "^4.8.3",
-    "twilio": "^5.13.1",
-    "uuid": "^9.0.1",
+    "uuid": "^11.1.1",
     "winston": "^3.19.0"
   },
   "devDependencies": {
@@ -98,7 +100,6 @@
     "@types/passport-instagram": "^1.0.5",
     "@types/passport-jwt": "^4.0.1",
     "@types/supertest": "^6.0.2",
-    "@types/uuid": "^10.0.0",
     "eslint": "^9.39.1",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
@@ -115,6 +116,11 @@
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0"
   },
+  "overrides": {
+    "js-yaml": "^4.1.1",
+    "multer": "^2.2.0",
+    "uuid": "^11.1.1"
+  },
   "jest": {
     "moduleFileExtensions": [
       "js",
@@ -123,7 +129,16 @@
     ],
     "rootDir": "src",
     "transform": {
-      "^.+\\.(t|j)s$": "ts-jest"
+      "^.+\\.(t|j)s$": [
+        "ts-jest",
+        {
+          "diagnostics": {
+            "ignoreCodes": [
+              151002
+            ]
+          }
+        }
+      ]
     },
     "collectCoverageFrom": [
       "app.controller.ts",
