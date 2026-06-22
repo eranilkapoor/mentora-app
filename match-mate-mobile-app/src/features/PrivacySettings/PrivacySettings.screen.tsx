@@ -24,6 +24,7 @@ import {
   VisibilityLevel,
 } from './PrivacySettings.types';
 import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
+import { useUpgradePrompt } from '../Membership/hooks/useUpgradePrompt';
 
 type SelectKey = 'profileVisibility' | 'showPhotosTo' | 'showLastSeen';
 
@@ -42,6 +43,7 @@ export default function PrivacySettingsScreen({
 }: PrivacySettingsScreenProps): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
 
   const { data, isLoading } = useGetPrivacySettingsQuery();
   const [updatePrivacySettings] = useUpdatePrivacySettingsMutation();
@@ -164,6 +166,9 @@ export default function PrivacySettingsScreen({
             }
             value={canUseIncognito && (settings.incognitoMode ?? false)}
             disabled={!canUseIncognito}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.privacy.incognito'))
+            }
             onChange={(v) => {
               if (canUseIncognito) void handleToggle('incognitoMode', v);
             }}
@@ -256,6 +261,9 @@ export default function PrivacySettingsScreen({
               (settings.blurPhotosForUnmatched ?? false)
             }
             disabled={!canUsePrivatePhotoControls}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.privacy.blur_photos'))
+            }
             onChange={(v) => {
               if (canUsePrivatePhotoControls) {
                 void handleToggle('blurPhotosForUnmatched', v);
@@ -296,6 +304,9 @@ export default function PrivacySettingsScreen({
               canHideOnlineStatus ? (settings.showOnlineStatus ?? true) : true
             }
             disabled={!canHideOnlineStatus}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.privacy.show_online_status'))
+            }
             onChange={(v) => {
               if (canHideOnlineStatus) void handleToggle('showOnlineStatus', v);
             }}
@@ -316,6 +327,9 @@ export default function PrivacySettingsScreen({
               canHideLastSeen ? settings.showLastSeen : 'everyone'
             )}
             disabled={!canHideLastSeen}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.privacy.show_last_seen'))
+            }
             isLast
             onPress={() => {
               if (canHideLastSeen) setActiveSelect('showLastSeen');

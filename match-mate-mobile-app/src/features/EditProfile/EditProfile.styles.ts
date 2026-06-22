@@ -208,6 +208,41 @@ export const editProfileStyles = (
     videoIntroActionTextDanger: {
       color: theme.colors.danger,
     },
+    lockedFeature: {
+      minHeight: 82,
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      padding: 14,
+      opacity: 0.68,
+      backgroundColor: theme.colors.backgroundLight,
+      borderRadius: 8,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    lockedFeatureIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+    },
+    lockedFeatureCopy: {
+      flex: 1,
+      minWidth: 0,
+    },
+    lockedFeatureTitle: {
+      fontSize: 14,
+      fontWeight: '700',
+      color: theme.colors.textPrimary,
+    },
+    lockedFeatureText: {
+      marginTop: 3,
+      fontSize: 12,
+      lineHeight: 17,
+      color: theme.colors.textMuted,
+    },
 
     // ── Form Fields ───────────────────────────────────────────────────────────
 

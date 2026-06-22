@@ -32,6 +32,7 @@ import { useAppSelector } from '@/store/hooks';
 import { useTranslation } from 'react-i18next';
 import { DEFAULT_COMMUNICATION_SETTINGS } from '@/store/slices/settings.slice';
 import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
+import { useUpgradePrompt } from '@/features/Membership/hooks/useUpgradePrompt';
 import {
   ChatMessage,
   useCreateDirectRoomMutation,
@@ -110,6 +111,7 @@ export default function ChatScreen({
   const styles = useThemedStyles(chatStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
   const insets = useSafeAreaInsets();
   const currentUserId = useAppSelector((state) => state.auth.user?.userId);
   const communicationSettings = useAppSelector(
@@ -337,14 +339,7 @@ export default function ChatScreen({
   const handlePickImage = useCallback(async (): Promise<void> => {
     if (!activeRoomId || isUploadingAttachment || isSending) return;
     if (!canSendChatImages) {
-      showInfo({
-        title: t('chat.feature_locked_title', {
-          defaultValue: 'Upgrade required',
-        }),
-        message: t('chat.image_feature_locked_message', {
-          defaultValue: 'Your current plan does not include chat images.',
-        }),
-      });
+      showUpgradePrompt(t('chat.send_image'));
       return;
     }
 
@@ -406,6 +401,7 @@ export default function ChatScreen({
     sendMessage,
     uploadChatAttachments,
     t,
+    showUpgradePrompt,
   ]);
 
   const handleStartVoiceRecording = useCallback(async (): Promise<void> => {
@@ -418,14 +414,7 @@ export default function ChatScreen({
       return;
     }
     if (!canSendVoiceNotes) {
-      showInfo({
-        title: t('chat.feature_locked_title', {
-          defaultValue: 'Upgrade required',
-        }),
-        message: t('chat.voice_feature_locked_message', {
-          defaultValue: 'Your current plan does not include voice notes.',
-        }),
-      });
+      showUpgradePrompt(t('chat.start_voice_recording'));
       return;
     }
 
@@ -474,6 +463,7 @@ export default function ChatScreen({
     isRecordingBusy,
     isSending,
     isUploadingAttachment,
+    showUpgradePrompt,
     t,
   ]);
 
@@ -801,59 +791,55 @@ export default function ChatScreen({
               />
             </TouchableOpacity>
 
-            {canSendChatImages ? (
-              <TouchableOpacity
-                onPress={() => {
-                  void handlePickImage();
-                }}
-                style={styles.iconBtn}
-                activeOpacity={0.7}
-                disabled={!activeRoomId || isUploadingAttachment || isSending}
-                accessibilityRole="button"
-                accessibilityLabel={t('chat.send_image')}
-              >
-                <Feather
-                  name="image"
-                  size={20}
-                  color={theme.colors.textMuted}
-                />
-              </TouchableOpacity>
-            ) : null}
+            <TouchableOpacity
+              onPress={() => {
+                void handlePickImage();
+              }}
+              style={[
+                styles.iconBtn,
+                !canSendChatImages && styles.iconBtnLocked,
+              ]}
+              activeOpacity={0.7}
+              disabled={!activeRoomId || isUploadingAttachment || isSending}
+              accessibilityRole="button"
+              accessibilityLabel={t('chat.send_image')}
+            >
+              <Feather name="image" size={20} color={theme.colors.textMuted} />
+            </TouchableOpacity>
 
-            {canSendVoiceNotes || recording ? (
-              <TouchableOpacity
-                onPress={() => {
-                  if (recording) {
-                    void handleStopVoiceRecording(true);
-                  } else {
-                    void handleStartVoiceRecording();
-                  }
-                }}
-                style={[styles.iconBtn, recording && styles.recordingIconBtn]}
-                activeOpacity={0.7}
-                disabled={
-                  !activeRoomId ||
-                  isRecordingBusy ||
-                  isUploadingAttachment ||
-                  isSending ||
-                  (!recording && !canSendVoiceNotes)
+            <TouchableOpacity
+              onPress={() => {
+                if (recording) {
+                  void handleStopVoiceRecording(true);
+                } else {
+                  void handleStartVoiceRecording();
                 }
-                accessibilityRole="button"
-                accessibilityLabel={
-                  recording
-                    ? t('chat.send_voice_recording')
-                    : t('chat.start_voice_recording')
-                }
-              >
-                <Feather
-                  name={recording ? 'send' : 'mic'}
-                  size={20}
-                  color={
-                    recording ? theme.colors.white : theme.colors.textMuted
-                  }
-                />
-              </TouchableOpacity>
-            ) : null}
+              }}
+              style={[
+                styles.iconBtn,
+                recording && styles.recordingIconBtn,
+                !canSendVoiceNotes && !recording && styles.iconBtnLocked,
+              ]}
+              activeOpacity={0.7}
+              disabled={
+                !activeRoomId ||
+                isRecordingBusy ||
+                isUploadingAttachment ||
+                isSending
+              }
+              accessibilityRole="button"
+              accessibilityLabel={
+                recording
+                  ? t('chat.send_voice_recording')
+                  : t('chat.start_voice_recording')
+              }
+            >
+              <Feather
+                name={recording ? 'send' : 'mic'}
+                size={20}
+                color={recording ? theme.colors.white : theme.colors.textMuted}
+              />
+            </TouchableOpacity>
 
             <TextInput
               ref={inputRef}

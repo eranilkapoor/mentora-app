@@ -7,6 +7,7 @@ import {
   PhysicalDto,
   EducationDto,
   FamilyDto,
+  SiblingsDto,
 } from '../dto/create-profile.dto';
 import { UpdateProfileDto } from '../dto/update-profile.dto';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
@@ -28,7 +29,12 @@ import {
   ActivityPlatform,
 } from '../enums/activity-log.enums';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
-import { PersonalityBadge, ProfileStatus, Qualification } from '@/common/enums';
+import {
+  PersonalityBadge,
+  ProfileStatus,
+  Qualification,
+  SiblingType,
+} from '@/common/enums';
 import { InjectModel } from '@nestjs/mongoose';
 import { OnboardingProfileDto } from '@/modules/profiles/dto/onboarding-profile.dto';
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
@@ -188,7 +194,7 @@ export class ProfilesService {
     return this.applyUpdate(
       req,
       userId,
-      { family: dto },
+      { family: this.normalizeFamily(dto) },
       'profile-family-update',
       { notifyUser: false },
     );
@@ -276,15 +282,66 @@ export class ProfilesService {
     }
   }
 
+  private normalizeFamily(family?: FamilyDto): FamilyDto | undefined {
+    if (!family?.siblings) return family;
+
+    const siblings = family.siblings;
+    const brothersCount = Math.max(
+      0,
+      Math.floor(Number(siblings.brothersCount) || 0),
+    );
+    const sistersCount = Math.max(
+      0,
+      Math.floor(Number(siblings.sistersCount) || 0),
+    );
+    const sourceDetails = Array.isArray(siblings.details)
+      ? siblings.details
+      : [];
+
+    const normalizeDetails = (type: SiblingType, count: number) => {
+      const matching = sourceDetails
+        .filter((detail) => detail.type === type)
+        .slice(0, count);
+
+      while (matching.length < count) {
+        matching.push({ type, married: false, occupation: '' });
+      }
+
+      return matching;
+    };
+
+    const details = [
+      ...normalizeDetails(SiblingType.BROTHER, brothersCount),
+      ...normalizeDetails(SiblingType.SISTER, sistersCount),
+    ];
+    const normalizedSiblings: SiblingsDto = {
+      ...siblings,
+      brothersCount,
+      sistersCount,
+      details,
+      marriedBrothersCount: details.filter(
+        (detail) =>
+          detail.type === SiblingType.BROTHER && detail.married === true,
+      ).length,
+      marriedSistersCount: details.filter(
+        (detail) =>
+          detail.type === SiblingType.SISTER && detail.married === true,
+      ).length,
+    };
+
+    return { ...family, siblings: normalizedSiblings };
+  }
+
   private buildCreatePayload(dto: CreateProfileDto): Record<string, unknown> {
     const birthDate = new Date(dto.personal.dateOfBirth);
     const age = this.calculateAge(birthDate);
+    const family = this.normalizeFamily(dto.family);
     const { missingFields: _missingFields, ...derived } =
       this.profileScoringService.calculate({
         personal: dto.personal as unknown as Record<string, unknown>,
         physical: dto.physical as unknown as Record<string, unknown>,
         education: dto.education as unknown as Record<string, unknown>,
-        family: dto.family as unknown as Record<string, unknown> | undefined,
+        family: family as unknown as Record<string, unknown> | undefined,
       });
     void _missingFields;
 
@@ -298,7 +355,7 @@ export class ProfilesService {
       },
       physical: dto.physical,
       education: dto.education,
-      family: dto.family ?? {},
+      family: family ?? {},
       age,
       ...derived,
       searchTags: this.buildSearchTags(dto),
@@ -345,10 +402,10 @@ export class ProfilesService {
     }
 
     if (dto.family) {
-      normalized.family = {
+      normalized.family = this.normalizeFamily({
         ...((existing.family as Record<string, unknown>) ?? {}),
         ...dto.family,
-      };
+      } as FamilyDto);
     }
 
     if (dto.location) {

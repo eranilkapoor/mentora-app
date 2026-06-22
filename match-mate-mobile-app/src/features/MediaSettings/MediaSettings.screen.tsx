@@ -19,6 +19,7 @@ import {
 import Loader from '@/core/components/Loader';
 import { MediaSettings, MediaSettingsScreenProps } from './MediaSettings.types';
 import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
+import { useUpgradePrompt } from '../Membership/hooks/useUpgradePrompt';
 
 const FEATURE_UPLOAD_VIDEOS = 'upload_videos';
 const FEATURE_VIEW_PROFILE_PHOTOS = 'view_profile_photos';
@@ -34,6 +35,7 @@ export default function MediaSettingsScreen({
 }: MediaSettingsScreenProps): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
 
   const { data, isLoading } = useGetMediaSettingsQuery();
   const [updateMediaSettings] = useUpdateMediaSettingsMutation();
@@ -109,6 +111,9 @@ export default function MediaSettingsScreen({
             }
             value={canUseVideo && (settings?.videoAutoplay ?? false)}
             disabled={!canUseVideo}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.media.video_autoplay'))
+            }
             onChange={(v) => {
               if (canUseVideo) handleToggle('videoAutoplay', v);
             }}
@@ -144,6 +149,9 @@ export default function MediaSettingsScreen({
               canViewProfilePhotos && (settings?.autoDownloadPhotos ?? false)
             }
             disabled={!canViewProfilePhotos}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.media.auto_download'))
+            }
             onChange={(v) => {
               if (canViewProfilePhotos) handleToggle('autoDownloadPhotos', v);
             }}
@@ -160,6 +168,9 @@ export default function MediaSettingsScreen({
               canUsePrivatePhotos && (settings?.blurPrivatePhotos ?? false)
             }
             disabled={!canUsePrivatePhotos}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.media.blur_private'))
+            }
             onChange={(v) => {
               if (canUsePrivatePhotos) handleToggle('blurPrivatePhotos', v);
             }}

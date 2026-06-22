@@ -1,11 +1,12 @@
 import React from 'react';
-import { TouchableOpacity, View, Text } from 'react-native';
+import { Image, TouchableOpacity, View, Text } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { notificationStyles } from '../Notifications.styles';
 import { Notification } from '../Notifications.types';
+import { resolveApiUrl } from '@/core/utils/config';
 
 export function NotifItem({
   item,
@@ -18,6 +19,9 @@ export function NotifItem({
 }): React.ReactElement {
   const styles = useThemedStyles(notificationStyles);
   const { theme } = useTheme();
+  const actorImage = item.actorImage
+    ? resolveApiUrl(item.actorImage)
+    : undefined;
 
   return (
     <TouchableOpacity
@@ -36,14 +40,18 @@ export function NotifItem({
           item.unread && styles.notifIconWrapperUnread,
         ]}
       >
-        <Feather
-          name={item.icon}
-          size={18}
-          color={
-            item.iconColor ??
-            (item.unread ? theme.colors.primary : theme.colors.textMuted)
-          }
-        />
+        {actorImage ? (
+          <Image source={{ uri: actorImage }} style={styles.notifActorImage} />
+        ) : (
+          <Feather
+            name={item.icon}
+            size={18}
+            color={
+              item.iconColor ??
+              (item.unread ? theme.colors.primary : theme.colors.textMuted)
+            }
+          />
+        )}
       </View>
 
       <View style={styles.notifContent}>
@@ -59,6 +67,10 @@ export function NotifItem({
 
         <Text style={styles.notifMessage} numberOfLines={2}>
           {item.message}
+        </Text>
+
+        <Text style={styles.notifCategory} numberOfLines={1}>
+          {item.category.replace(/_/g, ' ')}
         </Text>
       </View>
 

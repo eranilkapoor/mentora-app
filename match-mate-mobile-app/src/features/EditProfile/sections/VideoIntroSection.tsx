@@ -20,6 +20,8 @@ interface Props {
   onPickVideo: () => void;
   onSetPrimary: (mediaId: string) => void;
   onRemove: (mediaId: string) => void;
+  locked?: boolean;
+  onLockedPress?: () => void;
 }
 
 export function VideoIntroSection({
@@ -31,6 +33,8 @@ export function VideoIntroSection({
   onPickVideo,
   onSetPrimary,
   onRemove,
+  locked = false,
+  onLockedPress,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { theme } = useTheme();
@@ -53,9 +57,42 @@ export function VideoIntroSection({
       icon="video"
       sectionKey="videos"
       loadingKey={sectionLoading}
-      onSave={onSave}
+      onSave={locked ? undefined : onSave}
+      hideSaveButton={locked}
     >
-      {videosLoading ? (
+      {locked ? (
+        <TouchableOpacity
+          style={styles.lockedFeature}
+          onPress={onLockedPress}
+          activeOpacity={0.8}
+          accessibilityRole="button"
+          accessibilityLabel={t('edit_profile.video_intro.upgrade_required', {
+            defaultValue: 'Upgrade to unlock video introduction',
+          })}
+        >
+          <View style={styles.lockedFeatureIcon}>
+            <Feather name="lock" size={18} color={theme.colors.primary} />
+          </View>
+          <View style={styles.lockedFeatureCopy}>
+            <Text style={styles.lockedFeatureTitle}>
+              {t('edit_profile.video_intro.premium_title', {
+                defaultValue: 'Video introduction',
+              })}
+            </Text>
+            <Text style={styles.lockedFeatureText}>
+              {t('edit_profile.video_intro.premium_subtitle', {
+                defaultValue:
+                  'Upgrade your plan to upload a video introduction.',
+              })}
+            </Text>
+          </View>
+          <Feather
+            name="chevron-right"
+            size={18}
+            color={theme.colors.textMuted}
+          />
+        </TouchableOpacity>
+      ) : videosLoading ? (
         <ActivityIndicator
           size="small"
           color={theme.colors.primary}

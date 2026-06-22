@@ -342,6 +342,9 @@ export const membershipStyles = (
       borderColor: theme.colors.primaryBorder,
       gap: 12,
     },
+    boostCardLocked: {
+      opacity: 0.58,
+    },
     boostIcon: {
       width: 38,
       height: 38,

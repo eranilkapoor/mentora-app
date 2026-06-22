@@ -1,5 +1,11 @@
 {
   "screen_title": "Go Premium",
+  "locked_feature": {
+    "title": "Premium feature",
+    "message": "This option is not included in your current plan. Upgrade to unlock it.",
+    "named_message": "{{feature}} is not included in your current plan. Upgrade to unlock it.",
+    "view_plans": "View plans"
+  },
   "screen_subtitle": "Unlock exclusive features",
   "tab_self": "Self-Service",
   "tab_assisted": "Assisted",

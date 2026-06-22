@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react';
-import { View, ScrollView, Alert } from 'react-native';
+import { View, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
@@ -9,6 +9,7 @@ import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { VerificationStatusRow } from '@/core/components/settings/VerificationStatusRow';
 import { showConfirm } from '@/core/utils/confirm';
+import { showSuccess } from '@/core/utils/toast';
 import { useAppDispatch } from '@/store/hooks';
 import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
 import { logout as logoutAction } from '@/store/slices/auth.slice';
@@ -47,10 +48,10 @@ export default function AccountSettingsScreen({
           await clearRefreshToken();
           dispatch(logoutAction());
           dispatch(baseApi.util.resetApiState());
-          Alert.alert(
-            t('common.success'),
-            t('settings.account.deactivate_success')
-          );
+          showSuccess({
+            title: t('common.success'),
+            message: t('settings.account.deactivate_success'),
+          });
         });
       },
     });
@@ -67,10 +68,10 @@ export default function AccountSettingsScreen({
           await clearRefreshToken();
           dispatch(logoutAction());
           dispatch(baseApi.util.resetApiState());
-          Alert.alert(
-            t('settings.account.delete_scheduled_title'),
-            t('settings.account.delete_scheduled_message')
-          );
+          showSuccess({
+            title: t('settings.account.delete_scheduled_title'),
+            message: t('settings.account.delete_scheduled_message'),
+          });
         });
       },
     });

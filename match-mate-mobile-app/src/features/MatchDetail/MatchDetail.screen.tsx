@@ -25,6 +25,7 @@ import { DetailPhotoCarousel } from './components/DetailPhotoCarousel';
 import { MatchScoreBar } from './components/MatchScoreBar';
 import { MatchDetailCta } from './components/MatchDetailCta';
 import { MatchDetailEmpty } from './components/MatchDetailEmpty';
+import { useUpgradePrompt } from '../Membership/hooks/useUpgradePrompt';
 
 const getApiErrorCode = (error: unknown): string | undefined => {
   if (!error || typeof error !== 'object' || !('data' in error)) {
@@ -47,18 +48,23 @@ export default function MatchDetailScreen({
   const styles = useThemedStyles(matchDetailStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
   const { userId } = route.params;
 
   const { data, isLoading, isFetching, isError, error, refetch } =
     useGetMatchProfileQuery(userId);
   const profile = data?.data ?? undefined;
+  const errorCode = getApiErrorCode(error);
+  const isPlanRestricted =
+    errorCode === 'SUBSCRIPTION.FEATURE_NOT_AVAILABLE' ||
+    errorCode === 'SUBSCRIPTION.REQUIRED';
   const name = getProfileName(profile);
   const photos = useMemo(() => getPhotos(profile), [profile]);
   const photoItems = useMemo(() => getPhotoItems(profile), [profile]);
   const emptyState = useMemo(() => {
     if (!isError) return undefined;
 
-    const code = getApiErrorCode(error);
+    const code = errorCode;
     if (code === 'PROFILE.NOT_FOUND') {
       return {
         title: t('match_detail.unavailable_title'),
@@ -88,7 +94,7 @@ export default function MatchDetailScreen({
       }),
       subtitle: getApiErrorMessage(t, error, 'common.something_went_wrong'),
     };
-  }, [error, isError, t]);
+  }, [error, errorCode, isError, t]);
 
   const {
     optimisticPendingInterest,
@@ -228,8 +234,20 @@ export default function MatchDetailScreen({
         isLoading={isLoading || isFetching}
         title={emptyState?.title}
         subtitle={emptyState?.subtitle}
-        actionLabel={!isLoading ? t('common.retry') : undefined}
-        onAction={!isLoading ? refetch : undefined}
+        actionLabel={
+          !isLoading
+            ? isPlanRestricted
+              ? t('membership.locked_feature.view_plans')
+              : t('common.retry')
+            : undefined
+        }
+        onAction={
+          !isLoading
+            ? isPlanRestricted
+              ? () => showUpgradePrompt(t('match_detail.access_limited_title'))
+              : refetch
+            : undefined
+        }
       />
     );
   }

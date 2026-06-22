@@ -19,6 +19,7 @@ import { EducationSection } from './sections/EducationSection';
 import { FamilySection } from './sections/FamilySection';
 import { LifestyleSection } from './sections/LifestyleSection';
 import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
+import { useUpgradePrompt } from '@/features/Membership/hooks/useUpgradePrompt';
 
 const UPLOAD_VIDEOS_FEATURE = 'upload_videos';
 
@@ -31,6 +32,7 @@ export default function EditProfileScreen({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
   const { hasFeature: canUploadVideos } = usePlanFeatureAccess(
     UPLOAD_VIDEOS_FEATURE
   );
@@ -102,23 +104,25 @@ export default function EditProfileScreen({
             {...sectionProps}
           />
 
-          {canUploadVideos ? (
-            <VideoIntroSection
-              videos={videos}
-              videosLoading={videosLoading}
-              videoUploading={sectionLoading === 'videos'}
-              onPickVideo={() => {
-                void pickVideoIntro();
-              }}
-              onSetPrimary={(mediaId) => {
-                void handleSetPrimaryVideo(mediaId);
-              }}
-              onRemove={(mediaId) => {
-                void handleRemoveVideoIntro(mediaId);
-              }}
-              {...sectionProps}
-            />
-          ) : null}
+          <VideoIntroSection
+            videos={videos}
+            videosLoading={videosLoading}
+            videoUploading={sectionLoading === 'videos'}
+            locked={!canUploadVideos}
+            onLockedPress={() =>
+              showUpgradePrompt(t('edit_profile.sections.video_intro'))
+            }
+            onPickVideo={() => {
+              void pickVideoIntro();
+            }}
+            onSetPrimary={(mediaId) => {
+              void handleSetPrimaryVideo(mediaId);
+            }}
+            onRemove={(mediaId) => {
+              void handleRemoveVideoIntro(mediaId);
+            }}
+            {...sectionProps}
+          />
 
           <PersonalSection
             personal={profile.personal}

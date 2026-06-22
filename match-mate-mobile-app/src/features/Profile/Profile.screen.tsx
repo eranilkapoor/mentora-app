@@ -56,7 +56,7 @@ import { ProfileSkeleton } from './components/ProfileSkeleton';
 import { Section } from './components/Section';
 import { Row } from './components/Row';
 import { TagList } from './components/TagList';
-import { showError, showInfo } from '@/core/utils/toast';
+import { showError } from '@/core/utils/toast';
 import {
   getPersonalityBadgeIcon,
   getPersonalityBadgeLabel,
@@ -66,6 +66,7 @@ import { resolveApiUrl } from '@/core/utils/config';
 import { InlineVideoPlayer } from '@/core/components/media/InlineVideoPlayer';
 import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
+import { useUpgradePrompt } from '@/features/Membership/hooks/useUpgradePrompt';
 
 const UPLOAD_VIDEOS_FEATURE = 'upload_videos';
 const DATA_EXPORT_FEATURE = 'data_export';
@@ -800,6 +801,7 @@ export default function ProfileScreen({
   const styles = useThemedStyles(profileStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
   const { width } = useWindowDimensions();
   const photoWidth = getResponsiveMediaWidth(width);
   const { hasFeature: canUploadVideos } = usePlanFeatureAccess(
@@ -926,15 +928,11 @@ export default function ProfileScreen({
     async (action: PdfAction): Promise<void> => {
       if (pdfAction !== null) return;
       if (!canExportProfile) {
-        showInfo({
-          title: t('profile.export_locked_title', {
-            defaultValue: 'Upgrade required',
-          }),
-          message: t('profile.export_locked_message', {
-            defaultValue:
-              'Your current plan does not include profile download or sharing.',
-          }),
-        });
+        showUpgradePrompt(
+          t(
+            action === 'download' ? 'profile.download_pdf' : 'profile.share_pdf'
+          )
+        );
         return;
       }
 
@@ -1007,6 +1005,7 @@ export default function ProfileScreen({
       privacyResponse?.privacy,
       profileData,
       profileSummary,
+      showUpgradePrompt,
       t,
     ]
   );
@@ -1452,37 +1451,68 @@ export default function ProfileScreen({
           )}
         </Section>
 
-        {videoIntro && (
+        {(!canUploadVideos ? true : Boolean(videoIntro)) && (
           <Section titleKey="profile.section_video_intro" icon="video">
-            <View style={styles.videoIntroCard}>
-              <InlineVideoPlayer
-                videoUrl={videoIntro.url}
-                thumbnailUrl={videoIntro.thumbnailUrl}
-                placeholderText={t('profile.video_intro_available')}
-                previewStyle={styles.videoIntroPreview}
-                thumbnailStyle={styles.videoIntroThumbnail}
-                thumbnailImageStyle={styles.videoIntroThumbnailImage}
-                overlayStyle={styles.videoIntroOverlay}
-                placeholderStyle={styles.videoIntroPlaceholder}
-                playButtonStyle={styles.videoIntroPlayButton}
-                placeholderTextStyle={styles.videoIntroPlaceholderText}
-              />
-              <View style={styles.videoIntroContent}>
-                <View style={styles.videoIntroTitleRow}>
-                  <Feather
-                    name="video"
-                    size={15}
-                    color={theme.colors.primary}
-                  />
+            {!canUploadVideos ? (
+              <TouchableOpacity
+                style={styles.videoIntroLocked}
+                onPress={() =>
+                  showUpgradePrompt(t('profile.section_video_intro'))
+                }
+                activeOpacity={0.8}
+                accessibilityRole="button"
+              >
+                <View style={styles.videoIntroLockedIcon}>
+                  <Feather name="lock" size={18} color={theme.colors.primary} />
+                </View>
+                <View style={styles.videoIntroLockedCopy}>
                   <Text style={styles.videoIntroTitle}>
                     {t('profile.video_intro_available')}
                   </Text>
+                  <Text style={styles.videoIntroSubtitle}>
+                    {t('profile.video_intro_upgrade', {
+                      defaultValue:
+                        'Upgrade your plan to add a video introduction.',
+                    })}
+                  </Text>
                 </View>
-                <Text style={styles.videoIntroSubtitle}>
-                  {t('profile.video_intro_watch')}
-                </Text>
+                <Feather
+                  name="chevron-right"
+                  size={18}
+                  color={theme.colors.textMuted}
+                />
+              </TouchableOpacity>
+            ) : videoIntro ? (
+              <View style={styles.videoIntroCard}>
+                <InlineVideoPlayer
+                  videoUrl={videoIntro.url}
+                  thumbnailUrl={videoIntro.thumbnailUrl}
+                  placeholderText={t('profile.video_intro_available')}
+                  previewStyle={styles.videoIntroPreview}
+                  thumbnailStyle={styles.videoIntroThumbnail}
+                  thumbnailImageStyle={styles.videoIntroThumbnailImage}
+                  overlayStyle={styles.videoIntroOverlay}
+                  placeholderStyle={styles.videoIntroPlaceholder}
+                  playButtonStyle={styles.videoIntroPlayButton}
+                  placeholderTextStyle={styles.videoIntroPlaceholderText}
+                />
+                <View style={styles.videoIntroContent}>
+                  <View style={styles.videoIntroTitleRow}>
+                    <Feather
+                      name="video"
+                      size={15}
+                      color={theme.colors.primary}
+                    />
+                    <Text style={styles.videoIntroTitle}>
+                      {t('profile.video_intro_available')}
+                    </Text>
+                  </View>
+                  <Text style={styles.videoIntroSubtitle}>
+                    {t('profile.video_intro_watch')}
+                  </Text>
+                </View>
               </View>
-            </View>
+            ) : null}
           </Section>
         )}
 

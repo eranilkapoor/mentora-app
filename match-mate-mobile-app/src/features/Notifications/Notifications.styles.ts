@@ -10,7 +10,10 @@ export const notificationStyles = (
   StyleSheet.create({
     safe: StyleSheet.flatten(base.safe),
     scrollContent: StyleSheet.flatten(base.scrollContent),
-    detailScrollContent: StyleSheet.flatten(base.scrollContent),
+    detailScrollContent: {
+      ...StyleSheet.flatten(base.scrollContent),
+      paddingBottom: 48,
+    },
     loadingWrapper: StyleSheet.flatten(base.loadingWrapper),
     loadingText: StyleSheet.flatten(base.loadingText),
     sectionCard: StyleSheet.flatten(base.sectionCard),
@@ -63,6 +66,8 @@ export const notificationStyles = (
     },
     notifItemUnread: {
       backgroundColor: theme.colors.primaryLight,
+      borderLeftWidth: 3,
+      borderLeftColor: theme.colors.primary,
     },
     notifIconWrapper: {
       width: 40,
@@ -71,11 +76,17 @@ export const notificationStyles = (
       backgroundColor: theme.colors.backgroundLight,
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
     },
     notifIconWrapperUnread: {
       backgroundColor: theme.colors.surface,
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.primaryBorder,
+    },
+    notifActorImage: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
     },
     notifContent: {
       flex: 1,
@@ -107,6 +118,14 @@ export const notificationStyles = (
       color: theme.colors.textSecondary,
       lineHeight: 18,
     },
+    notifCategory: {
+      marginTop: 6,
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.colors.textMuted,
+      textTransform: 'uppercase',
+      letterSpacing: 0,
+    },
     unreadDot: {
       width: 8,
       height: 8,
@@ -137,6 +156,12 @@ export const notificationStyles = (
       borderColor: theme.colors.primaryBorder,
       alignItems: 'center',
       justifyContent: 'center',
+      overflow: 'hidden',
+    },
+    detailActorImage: {
+      width: '100%',
+      height: '100%',
+      resizeMode: 'cover',
     },
     detailHeaderText: {
       flex: 1,
@@ -148,7 +173,27 @@ export const notificationStyles = (
       color: theme.colors.primary,
       textTransform: 'uppercase',
       letterSpacing: 0,
-      marginBottom: 4,
+      flex: 1,
+    },
+    detailCategoryRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      marginBottom: 6,
+    },
+    detailStatusPill: {
+      paddingHorizontal: 7,
+      paddingVertical: 3,
+      borderRadius: 8,
+      backgroundColor: theme.colors.backgroundLight,
+    },
+    detailStatusPillUnread: {
+      backgroundColor: theme.colors.primaryLight,
+    },
+    detailStatusText: {
+      fontSize: 10,
+      fontWeight: '700',
+      color: theme.colors.textSecondary,
     },
     detailTitle: {
       fontSize: 18,

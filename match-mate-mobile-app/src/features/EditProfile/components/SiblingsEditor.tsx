@@ -33,6 +33,52 @@ interface IndexedSibling {
   index: number;
 }
 
+const createSiblingDetail = (type: SiblingType): SiblingDetail => ({
+  type,
+  married: false,
+  occupation: '',
+});
+
+const normalizeSiblingDetails = (
+  details: SiblingDetail[],
+  type: SiblingType,
+  count: number
+): SiblingDetail[] => {
+  const matching = details.filter((item) => item.type === type).slice(0, count);
+  return matching.length < count
+    ? [
+        ...matching,
+        ...Array.from({ length: count - matching.length }, () =>
+          createSiblingDetail(type)
+        ),
+      ]
+    : matching;
+};
+
+const normalizeSiblings = (value?: Siblings): Siblings => {
+  const source = value ?? INITIAL_SIBLINGS;
+  const brothersCount = Math.max(0, Math.floor(source.brothersCount || 0));
+  const sistersCount = Math.max(0, Math.floor(source.sistersCount || 0));
+  const sourceDetails = Array.isArray(source.details) ? source.details : [];
+  const details = [
+    ...normalizeSiblingDetails(sourceDetails, 'brother', brothersCount),
+    ...normalizeSiblingDetails(sourceDetails, 'sister', sistersCount),
+  ];
+
+  return {
+    ...source,
+    brothersCount,
+    sistersCount,
+    details,
+    marriedBrothersCount: details.filter(
+      (item) => item.type === 'brother' && item.married
+    ).length,
+    marriedSistersCount: details.filter(
+      (item) => item.type === 'sister' && item.married
+    ).length,
+  };
+};
+
 export const SiblingsEditor = memo(function SiblingsEditor({
   value,
   onChange,
@@ -40,7 +86,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
   const { theme, fontScale, accessibility } = useTheme();
   const { t } = useTranslation();
 
-  const siblings = value ?? INITIAL_SIBLINGS;
+  const siblings = useMemo(() => normalizeSiblings(value), [value]);
 
   const styles = useMemo(
     () =>
@@ -54,10 +100,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
 
   const updateSiblings = useCallback(
     (patch: Partial<Siblings>): void => {
-      onChange({
-        ...siblings,
-        ...patch,
-      });
+      onChange(normalizeSiblings({ ...siblings, ...patch }));
     },
     [onChange, siblings]
   );
@@ -81,11 +124,7 @@ export const SiblingsEditor = memo(function SiblingsEditor({
                 {
                   length: count - sameType.length,
                 },
-                (): SiblingDetail => ({
-                  type,
-                  married: false,
-                  occupation: '',
-                })
+                (): SiblingDetail => createSiblingDetail(type)
               ),
             ]
           : sameType.slice(0, count);
@@ -98,19 +137,6 @@ export const SiblingsEditor = memo(function SiblingsEditor({
         details,
         brothersCount: isBrother ? count : siblings.brothersCount,
         sistersCount: isBrother ? siblings.sistersCount : count,
-
-        /**
-         * Prevent invalid values
-         */
-        marriedBrothersCount: Math.min(
-          siblings.marriedBrothersCount,
-          isBrother ? count : siblings.brothersCount
-        ),
-
-        marriedSistersCount: Math.min(
-          siblings.marriedSistersCount,
-          isBrother ? siblings.sistersCount : count
-        ),
       });
     },
     [siblings, updateSiblings]
@@ -189,11 +215,11 @@ export const SiblingsEditor = memo(function SiblingsEditor({
         label={t('edit_profile.family.married_brothers')}
         value={siblings.marriedBrothersCount}
         max={siblings.brothersCount}
-        onChange={(count) =>
-          updateSiblings({
-            marriedBrothersCount: count,
-          })
-        }
+        onChange={() => undefined}
+        disabled
+        helperText={t('edit_profile.family.married_count_helper', {
+          defaultValue: 'Calculated from the married checkboxes below.',
+        })}
         suffix=""
         step={1}
       />
@@ -202,11 +228,11 @@ export const SiblingsEditor = memo(function SiblingsEditor({
         label={t('edit_profile.family.married_sisters')}
         value={siblings.marriedSistersCount}
         max={siblings.sistersCount}
-        onChange={(count) =>
-          updateSiblings({
-            marriedSistersCount: count,
-          })
-        }
+        onChange={() => undefined}
+        disabled
+        helperText={t('edit_profile.family.married_count_helper', {
+          defaultValue: 'Calculated from the married checkboxes below.',
+        })}
         suffix=""
         step={1}
       />

@@ -75,11 +75,11 @@ function SectionCardComponent({
         StyleSheet.create({
           card: {
             backgroundColor: theme.colors.surface,
-            borderRadius: 16,
+            borderRadius: 12,
             borderWidth: StyleSheet.hairlineWidth,
             borderColor: theme.colors.divider,
             marginBottom: 16,
-            overflow: 'visible',
+            overflow: 'hidden',
             zIndex: 1,
             elevation: 1,
 
@@ -103,17 +103,17 @@ function SectionCardComponent({
           header: {
             flexDirection: 'row',
             alignItems: 'center',
-            paddingHorizontal: 16,
-            paddingVertical: 14,
+            paddingHorizontal: 14,
+            paddingVertical: 12,
             borderBottomWidth: StyleSheet.hairlineWidth,
             borderBottomColor: theme.colors.divider,
-            backgroundColor: theme.colors.surface,
+            backgroundColor: theme.colors.backgroundPage,
           },
 
           iconWrapper: {
-            width: 32,
-            height: 32,
-            borderRadius: 10,
+            width: 26,
+            height: 26,
+            borderRadius: 7,
             backgroundColor: theme.colors.primaryLight,
             alignItems: 'center',
             justifyContent: 'center',
@@ -122,10 +122,11 @@ function SectionCardComponent({
 
           title: {
             flex: 1,
-            fontSize: 15,
+            fontSize: 13,
             fontWeight: '700',
             color: theme.colors.textSecondary,
-            letterSpacing: 0.3,
+            textTransform: 'uppercase',
+            letterSpacing: 0.6,
           },
 
           body: {

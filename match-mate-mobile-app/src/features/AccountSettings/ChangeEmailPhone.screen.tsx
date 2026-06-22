@@ -1,12 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import {
-  Alert,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { RouteProp, useRoute } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
@@ -25,6 +18,7 @@ import {
   useRequestEmailChangeMutation,
   useRequestPhoneChangeMutation,
 } from '@/store/services/accountSettingsApi.service';
+import { showError, showSuccess } from '@/core/utils/toast';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -110,17 +104,17 @@ export default function ChangeEmailPhoneScreen({
         }).unwrap();
       }
 
-      Alert.alert(
-        t('settings.account.verification_started'),
-        t('settings.account.verification_started_message')
-      );
+      showSuccess({
+        title: t('settings.account.verification_started'),
+        message: t('settings.account.verification_started_message'),
+      });
       navigation.goBack();
     } catch (error) {
       console.error('Account change request failed:', error);
-      Alert.alert(
-        t('settings.account.verification_failed'),
-        t('common.try_again_message')
-      );
+      showError({
+        title: t('settings.account.verification_failed'),
+        message: t('common.try_again_message'),
+      });
     }
   }, [
     canSubmit,

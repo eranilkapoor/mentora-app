@@ -28,13 +28,8 @@ export const changePasswordStyles = (
       fontWeight: '500',
       lineHeight: 18,
     },
-    card: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 12,
+    cardBody: {
       padding: 16,
-      marginBottom: 20,
-      elevation: 2,
-      boxShadow: `0px 2px 6px rgba(0, 0, 0, 0.06)`,
     },
     fieldWrapper: {
       marginBottom: 4,
@@ -136,7 +131,7 @@ export const changePasswordStyles = (
       backgroundColor: theme.colors.primary,
       paddingVertical: 15,
       borderRadius: 12,
-      marginBottom: 12,
+      marginTop: 20,
     },
     primaryButtonText: {
       color: theme.colors.white,

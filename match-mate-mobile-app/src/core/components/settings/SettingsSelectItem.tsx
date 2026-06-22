@@ -14,6 +14,7 @@ interface Props {
   isLast?: boolean;
   destructive?: boolean;
   disabled?: boolean;
+  onDisabledPress?: () => void;
   onPress: () => void;
 }
 
@@ -64,6 +65,7 @@ export function SettingsSelectItem({
   isLast = false,
   destructive = false,
   disabled = false,
+  onDisabledPress,
   onPress,
 }: Props): React.ReactElement {
   const { theme } = useTheme();
@@ -71,7 +73,7 @@ export function SettingsSelectItem({
 
   return (
     <Pressable
-      onPress={disabled ? undefined : onPress}
+      onPress={disabled ? onDisabledPress : onPress}
       style={({ pressed }) => [
         styles.row,
         isLast && styles.rowLast,
@@ -79,7 +81,7 @@ export function SettingsSelectItem({
         disabled && { opacity: 0.4 },
       ]}
       accessibilityRole="button"
-      accessibilityState={{ disabled }}
+      accessibilityState={{ disabled: disabled && !onDisabledPress }}
     >
       {icon ? (
         <View

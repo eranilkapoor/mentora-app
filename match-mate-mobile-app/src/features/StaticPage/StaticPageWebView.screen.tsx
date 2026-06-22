@@ -15,6 +15,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { getApiOrigin } from '@/core/utils/config';
 import { staticPageWebViewStyles } from './StaticPageWebView.styles';
+import { useAppSelector } from '@/store/hooks';
 
 export type StaticPageSlug =
   | 'privacy-policy'
@@ -25,6 +26,8 @@ export type StaticPageSlug =
 
 type NavigationLike = {
   goBack: () => void;
+  canGoBack?: () => boolean;
+  navigate?: (screen: string) => void;
 };
 
 type Props = {
@@ -42,6 +45,9 @@ export default function StaticPageWebViewScreen({
   const { theme, isDark, accessibility } = useTheme();
   const { i18n, t } = useTranslation();
   const webViewRef = useRef<WebView>(null);
+  const isAuthenticated = useAppSelector((state) =>
+    Boolean(state.auth.accessToken)
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
   const [webHtml, setWebHtml] = useState<string | null>(null);
@@ -67,6 +73,20 @@ export default function StaticPageWebViewScreen({
     setIsLoading(true);
     setWebHtml(null);
     webViewRef.current?.reload();
+  };
+
+  const handleBack = (): void => {
+    if (navigation.canGoBack?.()) {
+      navigation.goBack();
+      return;
+    }
+
+    if (Platform.OS === 'web' && globalThis.history?.length > 1) {
+      globalThis.history.back();
+      return;
+    }
+
+    navigation.navigate?.(isAuthenticated ? 'SettingsScreen' : 'Welcome');
   };
 
   useEffect(() => {
@@ -102,7 +122,7 @@ export default function StaticPageWebViewScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      <Header showBack onBackPress={navigation.goBack} title={t(titleKey)} />
+      <Header showBack onBackPress={handleBack} title={t(titleKey)} />
 
       {hasError ? (
         <View style={styles.errorContainer}>
@@ -123,6 +143,7 @@ export default function StaticPageWebViewScreen({
         <View style={styles.webView}>
           {Platform.OS === 'web'
             ? React.createElement('iframe', {
+                key: pageUrl,
                 srcDoc: webHtml ?? '',
                 title: t(titleKey),
                 sandbox: '',
@@ -132,6 +153,7 @@ export default function StaticPageWebViewScreen({
                   flex: 1,
                   height: '100%',
                   width: '100%',
+                  display: 'block',
                   backgroundColor: theme.colors.backgroundPage,
                 },
               })
@@ -152,6 +174,10 @@ export default function StaticPageWebViewScreen({
               onLoadStart={() => setIsLoading(true)}
               onLoadEnd={() => setIsLoading(false)}
               onError={() => {
+                setIsLoading(false);
+                setHasError(true);
+              }}
+              onHttpError={() => {
                 setIsLoading(false);
                 setHasError(true);
               }}

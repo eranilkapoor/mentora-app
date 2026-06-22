@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
+import { Image, ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { RouteProp } from '@react-navigation/native';
@@ -11,6 +11,7 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { HomeNavigationProp, HomeStackParamList } from '@/navigation/types';
 import { notificationStyles } from './Notifications.styles';
 import { navigateFromNotificationAction } from './notificationNavigation';
+import { resolveApiUrl } from '@/core/utils/config';
 
 type Props = {
   navigation: HomeNavigationProp;
@@ -44,6 +45,9 @@ export default function NotificationDetailScreen({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const notification = route.params;
+  const actorImage = notification.actorImage
+    ? resolveApiUrl(notification.actorImage)
+    : undefined;
 
   const formattedDate = useMemo(
     () => formatDateTime(notification.createdAt),
@@ -85,19 +89,40 @@ export default function NotificationDetailScreen({
         <View style={styles.detailCard}>
           <View style={styles.detailHeader}>
             <View style={styles.detailIconWrapper}>
-              <Feather
-                name={notification.icon}
-                size={24}
-                color={notification.iconColor ?? theme.colors.primary}
-              />
+              {actorImage ? (
+                <Image
+                  source={{ uri: actorImage }}
+                  style={styles.detailActorImage}
+                />
+              ) : (
+                <Feather
+                  name={notification.icon}
+                  size={24}
+                  color={notification.iconColor ?? theme.colors.primary}
+                />
+              )}
             </View>
 
             <View style={styles.detailHeaderText}>
-              <Text style={styles.detailCategory}>
-                {t(`notifications.categories.${notification.category}`, {
-                  defaultValue: notification.category.replace(/_/g, ' '),
-                })}
-              </Text>
+              <View style={styles.detailCategoryRow}>
+                <Text style={styles.detailCategory}>
+                  {t(`notifications.categories.${notification.category}`, {
+                    defaultValue: notification.category.replace(/_/g, ' '),
+                  })}
+                </Text>
+                <View
+                  style={[
+                    styles.detailStatusPill,
+                    notification.unread && styles.detailStatusPillUnread,
+                  ]}
+                >
+                  <Text style={styles.detailStatusText}>
+                    {notification.unread
+                      ? t('notifications.detail.unread')
+                      : t('notifications.detail.read')}
+                  </Text>
+                </View>
+              </View>
               <Text style={styles.detailTitle}>{notification.title}</Text>
             </View>
           </View>

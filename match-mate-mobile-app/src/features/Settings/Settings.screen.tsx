@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  Platform,
   Pressable,
   ActivityIndicator,
 } from 'react-native';
@@ -39,6 +38,7 @@ import { Section } from './components/Section';
 import { SettingRow } from './components/SettingRow';
 import { SettingsScreenProps } from './Settings.types';
 import { showConfirm } from '@/core/utils/confirm';
+import { showSuccess } from '@/core/utils/toast';
 
 const clampProfileCompletion = (value?: number): number => {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -111,30 +111,28 @@ export default function SettingsScreen({
       dispatch(logoutAction());
       dispatch(baseApi.util.resetApiState());
 
+      showSuccess({
+        title: t('settings.sign_out'),
+        message: t('settings.sign_out_success', {
+          defaultValue: 'You have been signed out securely.',
+        }),
+      });
+
       appNavigation.reset({
         index: 0,
         routes: [{ name: 'Tabs' }],
       });
     }
-  }, [dispatch, logoutMutation, appNavigation]);
+  }, [dispatch, logoutMutation, appNavigation, t]);
 
   const handleSignOut = useCallback(() => {
     if (isLoggingOut) return;
-
-    if (Platform.OS === 'web') {
-      const confirmed = window.confirm(t('settings.sign_out_confirm'));
-
-      if (confirmed) {
-        void performLogout();
-      }
-
-      return;
-    }
 
     showConfirm({
       title: t('settings.sign_out'),
       message: t('settings.sign_out_confirm'),
       confirmText: t('settings.sign_out'),
+      destructive: true,
       onConfirm: () => {
         void performLogout();
       },

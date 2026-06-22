@@ -21,7 +21,14 @@ export const editPreferenceStyles = (
       marginBottom: 16,
     },
     sectionHeader: {
-      ...StyleSheet.flatten(base.sectionHeader),
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      paddingHorizontal: 14,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.backgroundPage,
+      borderBottomWidth: StyleSheet.hairlineWidth,
+      borderBottomColor: theme.colors.divider,
     },
     sectionIconWrapper: {
       ...StyleSheet.flatten(base.sectionIcon),
@@ -30,11 +37,11 @@ export const editPreferenceStyles = (
       borderRadius: 7,
     },
     sectionTitle: {
-      fontSize: 14,
+      fontSize: 13,
       fontWeight: '700',
       color: theme.colors.textSecondary,
       textTransform: 'uppercase',
-      letterSpacing: 0.5,
+      letterSpacing: 0.6,
       flex: 1,
     },
     sectionBody: {

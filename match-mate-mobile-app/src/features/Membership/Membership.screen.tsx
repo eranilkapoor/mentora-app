@@ -17,11 +17,13 @@ import { AssistedTab } from './components/AssistedTab';
 import { MembershipCta } from './components/MembershipCta';
 import { PaymentOptionSheet } from './components/PaymentOptionSheet';
 import { MEMBERSHIP_TABS } from './Membership.constants';
+import { useUpgradePrompt } from './hooks/useUpgradePrompt';
 
 export default function MembershipScreen(): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
 
   const [activeTab, setActiveTab] = useState<MembershipTab>('self');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -140,10 +142,19 @@ export default function MembershipScreen(): React.ReactElement {
           />
         )}
 
-        {boostPlan && canUseProfileBoost ? (
-          <View style={styles.boostCard}>
+        {boostPlan ? (
+          <View
+            style={[
+              styles.boostCard,
+              !canUseProfileBoost && styles.boostCardLocked,
+            ]}
+          >
             <View style={styles.boostIcon}>
-              <Feather name="zap" size={18} color={theme.colors.primary} />
+              <Feather
+                name={canUseProfileBoost ? 'zap' : 'lock'}
+                size={18}
+                color={theme.colors.primary}
+              />
             </View>
             <View style={styles.boostCopy}>
               <Text style={styles.boostTitle}>
@@ -157,7 +168,11 @@ export default function MembershipScreen(): React.ReactElement {
               style={styles.boostButton}
               activeOpacity={0.85}
               disabled={isCreatingOrder}
-              onPress={onCreateBoostOrder}
+              onPress={
+                canUseProfileBoost
+                  ? onCreateBoostOrder
+                  : () => showUpgradePrompt(t('membership.boost.title'))
+              }
               accessibilityRole="button"
               accessibilityLabel={t('membership.boost.buy')}
             >

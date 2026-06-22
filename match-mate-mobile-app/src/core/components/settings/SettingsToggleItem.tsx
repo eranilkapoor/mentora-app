@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet } from 'react-native';
+import { Pressable, View, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { ToggleRow } from '@/core/components/ToggleRow';
@@ -13,6 +13,7 @@ interface Props {
   sublabel?: string;
   value: boolean;
   disabled?: boolean;
+  onDisabledPress?: () => void;
   isLast?: boolean;
   onChange: (value: boolean) => void;
 }
@@ -47,6 +48,7 @@ export function SettingsToggleItem({
   sublabel,
   value,
   disabled = false,
+  onDisabledPress,
   isLast = false,
   onChange,
 }: Props): React.ReactElement {
@@ -54,7 +56,12 @@ export function SettingsToggleItem({
   const styles = useThemedStyles(createStyles);
 
   return (
-    <View style={[styles.row, isLast && styles.rowLast]}>
+    <Pressable
+      style={[styles.row, isLast && styles.rowLast]}
+      onPress={disabled ? onDisabledPress : undefined}
+      accessibilityRole={disabled && onDisabledPress ? 'button' : undefined}
+      accessibilityState={{ disabled: disabled && !onDisabledPress }}
+    >
       {icon ? (
         <View
           style={[styles.iconWrapper, disabled && styles.iconWrapperDisabled]}
@@ -73,12 +80,12 @@ export function SettingsToggleItem({
           value={value}
           onChange={onChange}
           disabled={disabled}
-          enableRowPress
+          enableRowPress={!disabled}
           size="medium"
           containerStyle={styles.toggleContainer}
           rowStyle={styles.toggleRow}
         />
       </View>
-    </View>
+    </Pressable>
   );
 }

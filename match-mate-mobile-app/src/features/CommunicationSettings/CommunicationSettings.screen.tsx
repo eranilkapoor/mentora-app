@@ -24,6 +24,7 @@ import {
 } from './CommunicationSettings.types';
 import { AutoReplyInput } from './components/AutoReplyInput';
 import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
+import { useUpgradePrompt } from '../Membership/hooks/useUpgradePrompt';
 
 type SelectKey = 'whoCanMessage' | 'whoCanCall';
 
@@ -42,6 +43,7 @@ export default function CommunicationSettingsScreen({
 }: CommunicationSettingsScreenProps): React.ReactElement {
   const styles = useThemedStyles(sharedSettingsStyles);
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
 
   const { data, isLoading } = useGetCommunicationSettingsQuery();
   const [updateSettings] = useUpdateCommunicationSettingsMutation();
@@ -164,6 +166,9 @@ export default function CommunicationSettingsScreen({
             }
             value={canUseReadReceipts && (settings?.showReadReceipts ?? false)}
             disabled={!canUseReadReceipts}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.communication.read_receipts'))
+            }
             onChange={(v) => {
               if (canUseReadReceipts) void handleToggle('showReadReceipts', v);
             }}
@@ -180,6 +185,9 @@ export default function CommunicationSettingsScreen({
               canUseTypingIndicator && (settings?.showTypingIndicator ?? true)
             }
             disabled={!canUseTypingIndicator}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.communication.typing_indicator'))
+            }
             isLast
             onChange={(v) => {
               if (canUseTypingIndicator) {
@@ -230,6 +238,9 @@ export default function CommunicationSettingsScreen({
             })}
             value={formatValue(permissionOptions, settings?.whoCanCall)}
             disabled={!canUseVoiceCalls && !canUseVideoCalls}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.communication.calls'))
+            }
             onPress={() => {
               if (canUseVoiceCalls || canUseVideoCalls) {
                 setActiveSelect('whoCanCall');
@@ -249,6 +260,9 @@ export default function CommunicationSettingsScreen({
             }
             value={canUseVoiceCalls && (settings?.allowVoiceCalls ?? true)}
             disabled={!canUseVoiceCalls}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.communication.voice_calls'))
+            }
             onChange={(v) => {
               if (canUseVoiceCalls) void handleToggle('allowVoiceCalls', v);
             }}
@@ -266,6 +280,9 @@ export default function CommunicationSettingsScreen({
             }
             value={canUseVideoCalls && (settings?.allowVideoCalls ?? true)}
             disabled={!canUseVideoCalls}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.communication.video_calls'))
+            }
             isLast
             onChange={(v) => {
               if (canUseVideoCalls) void handleToggle('allowVideoCalls', v);

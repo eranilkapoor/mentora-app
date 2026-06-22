@@ -352,6 +352,10 @@ export const chatStyles = (
       alignItems: 'center',
       justifyContent: 'center',
     },
+    iconBtnLocked: {
+      opacity: 0.42,
+      backgroundColor: theme.colors.backgroundLight,
+    },
     recordingIconBtn: {
       backgroundColor: theme.colors.error,
     },
