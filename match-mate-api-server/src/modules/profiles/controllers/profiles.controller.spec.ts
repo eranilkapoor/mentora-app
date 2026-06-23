@@ -1,0 +1,105 @@
+import { ProfilesController } from './profiles.controller';
+import { SuccessCode } from '@/common/constants';
+import { Gender, MaritalStatus, ProfileFor, Religion } from '@/common/enums';
+
+describe('ProfilesController', () => {
+  const userId = 'user-1';
+  const req = { user: { sub: userId } } as never;
+
+  const service = {
+    onboardingProfile: jest.fn(),
+    createProfile: jest.fn(),
+    getMyProfile: jest.fn(),
+    updatePersonalInfo: jest.fn(),
+    updatePhysicalInfo: jest.fn(),
+    updateEducationInfo: jest.fn(),
+    updateFamilyInfo: jest.fn(),
+    updateLocation: jest.fn(),
+  };
+
+  let controller: ProfilesController;
+
+  beforeEach(() => {
+    jest.clearAllMocks();
+    controller = new ProfilesController(service as never);
+  });
+
+  it('saves onboarding and create-profile payloads for the current user', async () => {
+    const dto = { personal: { firstName: 'Asha' } } as never;
+    const files = [{ originalname: 'photo.jpg' }] as Express.Multer.File[];
+    service.onboardingProfile.mockResolvedValue({ id: 'profile-1' });
+    service.createProfile.mockResolvedValue({ id: 'profile-1' });
+
+    const onboarding = await controller.onboardingProfile(
+      req,
+      userId,
+      dto,
+      files,
+    );
+    const created = await controller.createProfile(req, dto);
+
+    expect(service.onboardingProfile).toHaveBeenCalledWith(
+      req,
+      userId,
+      dto,
+      files,
+    );
+    expect(service.createProfile).toHaveBeenCalledWith(userId, dto);
+    expect(onboarding.code).toBe(SuccessCode.PROFILE_CREATED);
+    expect(created.code).toBe(SuccessCode.PROFILE_CREATED);
+  });
+
+  it('normalizes missing onboarding files to an empty array', async () => {
+    service.onboardingProfile.mockResolvedValue({ id: 'profile-1' });
+
+    await controller.onboardingProfile(req, userId, {} as never, undefined!);
+
+    expect(service.onboardingProfile).toHaveBeenCalledWith(req, userId, {}, []);
+  });
+
+  it('fetches and updates profile sections', async () => {
+    service.getMyProfile.mockResolvedValue({ id: 'profile-1' });
+    service.updatePersonalInfo.mockResolvedValue({ section: 'personal' });
+    service.updatePhysicalInfo.mockResolvedValue({ section: 'physical' });
+    service.updateEducationInfo.mockResolvedValue({ section: 'education' });
+    service.updateFamilyInfo.mockResolvedValue({ section: 'family' });
+    service.updateLocation.mockResolvedValue({ section: 'location' });
+
+    const profile = await controller.getMyProfile(req);
+    await controller.updatePersonal(req, {
+      profileFor: ProfileFor.SELF,
+      firstName: 'Asha',
+      gender: Gender.FEMALE,
+      dateOfBirth: '1995-01-01',
+      religion: Religion.HINDU,
+      maritalStatus: MaritalStatus.NEVER_MARRIED,
+    });
+    await controller.updatePhysical(req, { height: 165 });
+    await controller.updateEducation(req, { occupation: 'Engineer' } as never);
+    await controller.updateFamily(req, { familyType: 'nuclear' } as never);
+    await controller.updateLocation(req, { city: 'Mumbai' } as never);
+
+    expect(service.getMyProfile).toHaveBeenCalledWith(userId);
+    expect(service.updatePersonalInfo).toHaveBeenCalledWith(req, userId, {
+      profileFor: ProfileFor.SELF,
+      firstName: 'Asha',
+      gender: Gender.FEMALE,
+      dateOfBirth: '1995-01-01',
+      religion: Religion.HINDU,
+      maritalStatus: MaritalStatus.NEVER_MARRIED,
+    });
+    expect(service.updatePhysicalInfo).toHaveBeenCalledWith(req, userId, {
+      height: 165,
+    });
+    expect(service.updateEducationInfo).toHaveBeenCalledWith(req, userId, {
+      occupation: 'Engineer',
+    });
+    expect(service.updateFamilyInfo).toHaveBeenCalledWith(req, userId, {
+      familyType: 'nuclear',
+    });
+    expect(service.updateLocation).toHaveBeenCalledWith(req, userId, {
+      city: 'Mumbai',
+    });
+    expect(profile.code).toBe(SuccessCode.PROFILE_FETCHED);
+  });
+});

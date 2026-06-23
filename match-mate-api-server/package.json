@@ -141,23 +141,24 @@
       ]
     },
     "collectCoverageFrom": [
-      "app.controller.ts",
-      "app.service.ts",
-      "common/logger/logger.interceptor.ts",
-      "modules/admin/admin.controller.ts",
-      "modules/admin/admin.service.ts",
-      "modules/analytics/analytics.controller.ts",
-      "modules/match/match.controller.ts",
-      "modules/match/match.service.ts",
-      "modules/plan/plan.controller.ts",
-      "modules/rbac/rbac.controller.ts",
-      "modules/subscription/subscription.service.ts"
+      "**/*.ts",
+      "!**/*.spec.ts",
+      "!**/*.interface.ts",
+      "!**/*.module.ts",
+      "!**/*.dto.ts",
+      "!**/*.schema.ts",
+      "!**/*.enum.ts",
+      "!**/*.constants.ts",
+      "!**/main.ts",
+      "!**/config/**",
+      "!**/template-samples/**",
+      "!**/data/**"
     ],
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
     "coverageThreshold": {
       "global": {
-        "branches": 80,
+        "branches": 95,
         "functions": 95,
         "lines": 95,
         "statements": 95
