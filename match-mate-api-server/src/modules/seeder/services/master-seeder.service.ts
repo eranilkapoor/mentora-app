@@ -1038,6 +1038,10 @@ export class MasterSeederService {
 
     type PlanSlug =
       | 'FREE'
+      | 'SILVER_HALF_YEARLY'
+      | 'SILVER_MONTHLY'
+      | 'SILVER_QUARTERLY'
+      | 'SILVER_YEARLY'
       | 'GOLD_MONTHLY'
       | 'GOLD_QUARTERLY'
       | 'GOLD_YEARLY'
@@ -1088,6 +1092,10 @@ export class MasterSeederService {
 
     const recurringPlanSlugs: PlanSlug[] = [
       'FREE',
+      'SILVER_HALF_YEARLY',
+      'SILVER_MONTHLY',
+      'SILVER_QUARTERLY',
+      'SILVER_YEARLY',
       'GOLD_MONTHLY',
       'GOLD_QUARTERLY',
       'GOLD_YEARLY',
@@ -1186,6 +1194,69 @@ export class MasterSeederService {
         [FeatureKey.CUSTOMER_SUPPORT_CHAT, 1],
       ] as [FeatureKey, FeatureValue][]
     ).forEach(([feature, value]) => addFeature('FREE', feature, value));
+
+    // ==========================================
+    // SILVER FEATURES
+    // ==========================================
+
+    const silverFeatures: [FeatureKey, FeatureValue][] = [
+      [FeatureKey.CREATE_PROFILE, 1],
+      [FeatureKey.EDIT_PROFILE, 1],
+      [FeatureKey.ADVANCED_PROFILE_COMPLETION, 1],
+      [FeatureKey.UPLOAD_PHOTOS, 10],
+      [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 10],
+      [FeatureKey.SEND_INTEREST, 50],
+      [FeatureKey.VIEW_INTERESTS, 1],
+      [FeatureKey.ACCEPT_INTEREST, 1],
+      [FeatureKey.REJECT_INTEREST, 1],
+      [FeatureKey.SHORTLIST_PROFILES, 50],
+      [FeatureKey.FAVORITE_PROFILES, 50],
+      [FeatureKey.CHAT_ACCESS, 1],
+      [FeatureKey.MESSAGE_LIMIT, 100],
+      [FeatureKey.READ_RECEIPTS, 1],
+      [FeatureKey.TYPING_INDICATOR, 1],
+      [FeatureKey.SEND_IMAGES_IN_CHAT, 1],
+      [FeatureKey.VIEW_CONTACT, 1],
+      [FeatureKey.REQUEST_CONTACT, 1],
+      [FeatureKey.VIEW_PHONE_NUMBER, 1],
+      [FeatureKey.VIEW_EMAIL_ADDRESS, 1],
+      [FeatureKey.VIEW_PROFILE_PHOTOS, 1],
+      [FeatureKey.VIEW_PRIVATE_PHOTOS, 1],
+      [FeatureKey.ADVANCED_SEARCH, 1],
+      [FeatureKey.ADVANCED_FILTERS, 1],
+      [FeatureKey.SEARCH_BY_INCOME, 1],
+      [FeatureKey.DAILY_PROFILE_VIEWS, 100],
+      [FeatureKey.PROFILE_VIEWS, 100],
+      [FeatureKey.WHO_VIEWED_ME, 1],
+      [FeatureKey.SAVED_SEARCHES, 10],
+      [FeatureKey.PUSH_NOTIFICATIONS, 1],
+      [FeatureKey.EMAIL_NOTIFICATIONS, 1],
+      [FeatureKey.AD_FREE_EXPERIENCE, 1],
+      [FeatureKey.PROFILE_BOOST, 1],
+      [FeatureKey.DAILY_BOOSTS, 1],
+      [FeatureKey.MONTHLY_SUBSCRIPTION, 30],
+      [FeatureKey.QUARTERLY_SUBSCRIPTION, 90],
+      [FeatureKey.YEARLY_SUBSCRIPTION, 365],
+      [FeatureKey.AUTO_RENEWAL, 1],
+      [FeatureKey.GRACE_PERIOD, 3],
+      [FeatureKey.REPORT_USER, 1],
+      [FeatureKey.BLOCK_USERS, 1],
+      [FeatureKey.CUSTOMER_SUPPORT_CHAT, 1],
+      [FeatureKey.SUPPORT_TICKETS, 1],
+    ];
+
+    (
+      [
+        'SILVER_HALF_YEARLY',
+        'SILVER_MONTHLY',
+        'SILVER_QUARTERLY',
+        'SILVER_YEARLY',
+      ] as PlanSlug[]
+    ).forEach((planSlug) => {
+      silverFeatures.forEach(([feature, value]) =>
+        addFeature(planSlug, feature, value),
+      );
+    });
 
     // ==========================================
     // GOLD FEATURES

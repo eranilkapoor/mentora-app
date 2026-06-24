@@ -24,6 +24,94 @@ export const PLAN_SEEDS: Plan[] = [
   },
 
   // ==========================================
+  //  SILVER HALF YEARLY
+  // ==========================================
+  {
+    name: 'SILVER_HALF_YEARLY',
+    slug: 'silver-half-yearly',
+    tier: PlanTier.SILVER,
+    planType: PlanType.SELF_SERVICE,
+    billingCycle: BillingCycle.HALF_YEARLY,
+    price: 3299,
+    durationDays: 180,
+    trialDays: 7,
+    autoRenewDefault: true,
+    currency: 'INR',
+    isPopular: false,
+    sortOrder: 2,
+    description:
+      'Silver half-yearly subscription with longer-term savings and stable premium access.',
+    isActive: true,
+    version: 1,
+  },
+
+  // ==========================================
+  //  SILVER MONTHLY
+  // ==========================================
+  {
+    name: 'SILVER_MONTHLY',
+    slug: 'silver-monthly',
+    tier: PlanTier.SILVER,
+    planType: PlanType.SELF_SERVICE,
+    billingCycle: BillingCycle.MONTHLY,
+    price: 699,
+    durationDays: 30,
+    trialDays: 7,
+    autoRenewDefault: true,
+    currency: 'INR',
+    isPopular: false,
+    sortOrder: 3,
+    description:
+      'Silver monthly subscription with extended profile visibility and communication limits.',
+    isActive: true,
+    version: 1,
+  },
+
+  // ==========================================
+  //  SILVER QUARTERLY
+  // ==========================================
+  {
+    name: 'SILVER_QUARTERLY',
+    slug: 'silver-quarterly',
+    tier: PlanTier.SILVER,
+    planType: PlanType.SELF_SERVICE,
+    billingCycle: BillingCycle.QUARTERLY,
+    price: 1799,
+    durationDays: 90,
+    trialDays: 7,
+    autoRenewDefault: true,
+    currency: 'INR',
+    isPopular: true,
+    sortOrder: 4,
+    description:
+      'Silver quarterly subscription with balanced premium access and savings.',
+    isActive: true,
+    version: 1,
+  },
+
+  // ==========================================
+  //  SILVER YEARLY
+  // ==========================================
+  {
+    name: 'SILVER_YEARLY',
+    slug: 'silver-yearly',
+    tier: PlanTier.SILVER,
+    planType: PlanType.SELF_SERVICE,
+    billingCycle: BillingCycle.YEARLY,
+    price: 5999,
+    durationDays: 365,
+    trialDays: 7,
+    autoRenewDefault: true,
+    currency: 'INR',
+    isPopular: false,
+    sortOrder: 5,
+    description:
+      'Silver yearly subscription with long-term value and core premium feature access.',
+    isActive: true,
+    version: 1,
+  },
+
+  // ==========================================
   //  GOLD MONTHLY
   // ==========================================
   {
@@ -38,7 +126,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: true,
-    sortOrder: 2,
+    sortOrder: 6,
     description:
       'Gold monthly subscription with unlimited interests, chat, and advanced filters.',
     isActive: true,
@@ -60,7 +148,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: false,
-    sortOrder: 3,
+    sortOrder: 7,
     description:
       'Gold quarterly subscription with premium matchmaking benefits.',
     isActive: true,
@@ -82,7 +170,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: false,
-    sortOrder: 4,
+    sortOrder: 8,
     description:
       'Gold yearly subscription with maximum savings and premium access.',
     isActive: true,
@@ -104,7 +192,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: false,
-    sortOrder: 5,
+    sortOrder: 9,
     description:
       'Platinum monthly subscription with AI matchmaking and priority ranking.',
     isActive: true,
@@ -126,7 +214,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: true,
-    sortOrder: 6,
+    sortOrder: 10,
     description:
       'Platinum quarterly plan with concierge matchmaking and premium visibility.',
     isActive: true,
@@ -148,7 +236,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: false,
-    sortOrder: 7,
+    sortOrder: 11,
     description:
       'Ultimate yearly platinum experience with all premium features unlocked.',
     isActive: true,
@@ -166,7 +254,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: false,
-    sortOrder: 8,
+    sortOrder: 12,
     description:
       'Assisted matchmaking for 3 months with relationship manager support.',
     isActive: true,
@@ -184,7 +272,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: true,
-    sortOrder: 9,
+    sortOrder: 13,
     description:
       'Assisted matchmaking for 6 months with concierge profile curation.',
     isActive: true,
@@ -202,7 +290,7 @@ export const PLAN_SEEDS: Plan[] = [
     autoRenewDefault: true,
     currency: 'INR',
     isPopular: false,
-    sortOrder: 10,
+    sortOrder: 14,
     description:
       'Premium assisted matchmaking for 12 months with personal matchmaker.',
     isActive: true,
