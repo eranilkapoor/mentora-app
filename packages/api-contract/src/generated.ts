@@ -3257,7 +3257,7 @@ export interface components {
         readonly CreatePlanDto: {
             readonly autoRenewDefault?: boolean;
             /** @enum {string} */
-            readonly billingCycle: "monthly" | "quarterly" | "half_yearly" | "yearly";
+            readonly billingCycle: "daily" | "weekly" | "monthly" | "quarterly" | "half_yearly" | "yearly";
             readonly currency?: string;
             readonly description?: string;
             readonly durationDays: number;

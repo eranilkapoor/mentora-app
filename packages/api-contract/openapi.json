@@ -10837,6 +10837,8 @@
           "billingCycle": {
             "type": "string",
             "enum": [
+              "daily",
+              "weekly",
               "monthly",
               "quarterly",
               "half_yearly",

@@ -755,7 +755,7 @@ export class AuthService {
           name: 'FREE',
           slug: 'free',
           tier: PlanTier.FREE,
-          billingCycle: BillingCycle.MONTHLY,
+          billingCycle: BillingCycle.YEARLY,
           price: 0,
           durationDays: 365,
           trialDays: 0,
