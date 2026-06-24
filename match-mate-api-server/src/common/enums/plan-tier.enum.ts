@@ -7,7 +7,7 @@ export enum PlanTier {
 
 export enum BillingCycle {
   DAILY = 'daily',
-  WEEKLY = 'weekly', 
+  WEEKLY = 'weekly',
   MONTHLY = 'monthly',
   QUARTERLY = 'quarterly',
   HALF_YEARLY = 'half_yearly',

@@ -750,7 +750,6 @@ export const FEATURE_SEEDS: Feature[] = [
     version: 1,
   },
 
-
   // ==========================================
   //  SEARCH & DISCOVERY
   // ==========================================
@@ -1855,7 +1854,7 @@ export const FEATURE_SEEDS: Feature[] = [
     defaultValue: true,
     isActive: true,
     version: 1,
-  },  
+  },
   {
     key: FeatureKey.FRAUD_DETECTION,
     name: 'Fraud Detection',
