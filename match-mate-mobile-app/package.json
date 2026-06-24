@@ -55,6 +55,7 @@
     "expo-video-thumbnails": "~10.0.8",
     "expo-web-browser": "~15.0.11",
     "i18next": "^26.0.3",
+    "match-mate-app": "file:..",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-i18next": "^17.0.2",
