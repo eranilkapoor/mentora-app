@@ -9,6 +9,7 @@ This directory contains product planning, technical architecture, launch readine
 - [Database Plan](planning/DATABASE-PLAN.md): MongoDB collections, entity relationships, Redis/cache behavior, indexes, lifecycle, and database operations.
 - [Task Roadmap](planning/TASK-ROADMAP.md): enterprise feature roadmap across auth, profiles, matching, chat, notifications, monetization, admin, analytics, compliance, and launch.
 - [Flow Plan](planning/FLOW-PLAN.md): UI/UX flow blueprint for onboarding, discovery, profile, settings, chat, and monetization journeys.
+- [Plan Feature Packaging](planning/PLAN-FEATURE-PACKAGING.md): free vs paid packaging policy, limits by tier, and plan-feature mapping model.
 
 ## Launch
 

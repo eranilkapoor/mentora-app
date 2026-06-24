@@ -1038,7 +1038,6 @@ export class MasterSeederService {
 
     type PlanSlug =
       | 'FREE'
-      | 'SILVER_HALF_YEARLY'
       | 'SILVER_MONTHLY'
       | 'SILVER_QUARTERLY'
       | 'SILVER_YEARLY'
@@ -1048,7 +1047,6 @@ export class MasterSeederService {
       | 'PLATINUM_MONTHLY'
       | 'PLATINUM_QUARTERLY'
       | 'PLATINUM_YEARLY'
-      | 'ASSISTED_QUARTERLY'
       | 'ASSISTED_HALF_YEARLY'
       | 'ASSISTED_YEARLY'
       | 'PROFILE_BOOST_24H';
@@ -1092,7 +1090,6 @@ export class MasterSeederService {
 
     const recurringPlanSlugs: PlanSlug[] = [
       'FREE',
-      'SILVER_HALF_YEARLY',
       'SILVER_MONTHLY',
       'SILVER_QUARTERLY',
       'SILVER_YEARLY',
@@ -1102,7 +1099,6 @@ export class MasterSeederService {
       'PLATINUM_MONTHLY',
       'PLATINUM_QUARTERLY',
       'PLATINUM_YEARLY',
-      'ASSISTED_QUARTERLY',
       'ASSISTED_HALF_YEARLY',
       'ASSISTED_YEARLY',
     ];
@@ -1133,8 +1129,6 @@ export class MasterSeederService {
       [FeatureKey.SEARCH_BY_PROFESSION, 1],
       [FeatureKey.SEARCH_BY_HEIGHT, 1],
       [FeatureKey.LOCATION_BASED_SEARCH, 1],
-      [FeatureKey.SMART_MATCHES, 1],
-      [FeatureKey.COMPATIBILITY_SCORE, 1],
       [FeatureKey.RELIGION_PREFERENCES, 1],
       [FeatureKey.CASTE_PREFERENCES, 1],
       [FeatureKey.FAMILY_MANAGED_PROFILE, 1],
@@ -1246,12 +1240,7 @@ export class MasterSeederService {
     ];
 
     (
-      [
-        'SILVER_HALF_YEARLY',
-        'SILVER_MONTHLY',
-        'SILVER_QUARTERLY',
-        'SILVER_YEARLY',
-      ] as PlanSlug[]
+      ['SILVER_MONTHLY', 'SILVER_QUARTERLY', 'SILVER_YEARLY'] as PlanSlug[]
     ).forEach((planSlug) => {
       silverFeatures.forEach(([feature, value]) =>
         addFeature(planSlug, feature, value),
@@ -1373,7 +1362,7 @@ export class MasterSeederService {
       [FeatureKey.GLOBAL_SEARCH, 1],
       [FeatureKey.INTERNATIONAL_MATCHES, 1],
       [FeatureKey.NRI_MATCHING, 1],
-      [FeatureKey.SAVED_SEARCHES, 1],
+      [FeatureKey.SAVED_SEARCHES, -1],
       [FeatureKey.RECENT_SEARCHES, 1],
       [FeatureKey.FEATURED_IN_SEARCH, 1],
       [FeatureKey.PRIORITY_SEARCH_RANKING, 1],
@@ -1462,7 +1451,6 @@ export class MasterSeederService {
         'PLATINUM_MONTHLY',
         'PLATINUM_QUARTERLY',
         'PLATINUM_YEARLY',
-        'ASSISTED_QUARTERLY',
         'ASSISTED_HALF_YEARLY',
         'ASSISTED_YEARLY',
       ] as PlanSlug[]
