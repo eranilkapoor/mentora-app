@@ -187,7 +187,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.PROFILE,
     description: 'Upload multiple profile images',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 10,
     metadata: {
       limit: 10,
     },
@@ -220,7 +220,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.PROFILE,
     description: 'Boost profile visibility',
     type: 'quota',
-    defaultValue: false,
+    defaultValue: 5,
     metadata: {
       limit: 5,
     },
@@ -418,7 +418,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.ENGAGEMENT,
     description: 'Shortlist profiles for quick access',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 50,
     metadata: {
       limit: 50,
     },
@@ -431,7 +431,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.ENGAGEMENT,
     description: 'Add profiles to favorites',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 100,
     metadata: {
       limit: 100,
     },
@@ -639,7 +639,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.MEDIA,
     description: 'Allow users to upload profile photos',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 5,
     metadata: {
       limit: 5,
     },
@@ -662,7 +662,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.MEDIA,
     description: 'Allow users to upload videos',
     type: 'limit',
-    defaultValue: false,
+    defaultValue: 5,
     metadata: {
       limit: 5,
     },
@@ -820,7 +820,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.SEARCH,
     description: 'Maximum number of profile views allowed per day',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 25,
     metadata: {
       limit: 25,
     },
@@ -903,7 +903,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.SEARCH,
     description: 'Save search filters and preferences',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 20,
     metadata: {
       limit: 20,
     },
@@ -946,7 +946,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.SEARCH,
     description: 'Track and expose profile view activity',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 25,
     metadata: {
       limit: 25,
     },
@@ -1629,7 +1629,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.BOOST,
     description: 'Daily profile boosts',
     type: 'limit',
-    defaultValue: false,
+    defaultValue: 1,
     metadata: {
       limit: 1,
     },
@@ -1642,7 +1642,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.BOOST,
     description: 'Weekly profile boosts',
     type: 'limit',
-    defaultValue: false,
+    defaultValue: 5,
     metadata: {
       limit: 5,
     },
@@ -1655,7 +1655,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.BOOST,
     description: 'Monthly profile boosts',
     type: 'limit',
-    defaultValue: false,
+    defaultValue: 30,
     metadata: {
       limit: 30,
     },
@@ -1693,7 +1693,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.PAYMENTS,
     description: 'Monthly premium plan',
     type: 'duration',
-    defaultValue: false,
+    defaultValue: 30,
     metadata: {
       limit: 30,
     },
@@ -1706,7 +1706,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.PAYMENTS,
     description: 'Yearly premium plan',
     type: 'duration',
-    defaultValue: false,
+    defaultValue: 365,
     metadata: {
       limit: 365,
     },
@@ -1780,7 +1780,7 @@ export const FEATURE_SEEDS: Feature[] = [
     description:
       'Keep limited premium access while renewal is being reconciled',
     type: 'duration',
-    defaultValue: false,
+    defaultValue: 3,
     metadata: {
       limit: 3,
     },
@@ -1793,7 +1793,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.PAYMENTS,
     description: 'Quarterly premium plan billing option',
     type: 'duration',
-    defaultValue: false,
+    defaultValue: 90,
     metadata: {
       limit: 90,
     },
@@ -1896,7 +1896,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.LIMITS,
     description: 'Maximum shortlisted profiles',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 100,
     metadata: {
       limit: 100,
     },
@@ -1909,7 +1909,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.LIMITS,
     description: 'Maximum contact views allowed',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 25,
     metadata: {
       limit: 25,
     },
@@ -1922,7 +1922,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.LIMITS,
     description: 'Maximum messages allowed',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 50,
     metadata: {
       limit: 50,
     },
@@ -1935,7 +1935,7 @@ export const FEATURE_SEEDS: Feature[] = [
     category: FeatureCategory.LIMITS,
     description: 'Maximum number of matches allowed',
     type: 'limit',
-    defaultValue: true,
+    defaultValue: 20,
     metadata: {
       limit: 20,
     },
