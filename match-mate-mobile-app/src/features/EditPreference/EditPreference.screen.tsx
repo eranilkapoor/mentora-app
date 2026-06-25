@@ -605,6 +605,7 @@ export default function EditPreferenceScreen({
             title={t('preference.sections.about')}
             icon="edit-3"
             sectionKey="about"
+            saveButtonStyle={styles.aboutSaveButton}
             {...sectionProps}
           >
             <Text style={styles.fieldLabel}>

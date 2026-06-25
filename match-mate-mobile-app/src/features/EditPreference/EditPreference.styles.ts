@@ -60,6 +60,9 @@ export const editPreferenceStyles = (
       paddingVertical: 13,
       borderRadius: 10,
     },
+    aboutSaveButton: {
+      marginTop: 74,
+    },
     saveBtnDisabled: {
       opacity: 0.6,
     },
