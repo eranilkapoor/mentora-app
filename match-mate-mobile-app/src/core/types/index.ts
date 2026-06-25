@@ -8,6 +8,7 @@ export * from './api/auth.types';
 export * from './api/user.types';
 export * from './api/profile.types';
 export * from './api/otp.types';
+export * from './api/analytics.types';
 
 export * from './profile/personal.types';
 export * from './profile/physical.types';

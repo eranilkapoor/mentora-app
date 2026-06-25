@@ -18,11 +18,21 @@ import {
   SocialLoginResponse,
   User,
   ResetPasswordRequest,
+  ResetPasswordCodeExchangeRequest,
+  ResetPasswordCodeExchangeResponse,
   AuthSessionsResponse,
   TwoFactorVerifyRequest,
+  AnalyticsEventType,
+  AnalyticsPlatform,
 } from '../../core/types';
+import { Platform } from 'react-native';
 import { logout as logoutAction } from '../slices/auth.slice';
-import { baseApi, clearRefreshToken, getRefreshToken } from './baseApi.service';
+import {
+  baseApi,
+  clearRefreshToken,
+  getRefreshToken,
+  setRefreshToken,
+} from './baseApi.service';
 import { getDeviceId } from '@/core/utils/device';
 import { Storage } from '@/core/utils/storage';
 import { RootState } from '../index';
@@ -113,6 +123,17 @@ export const authApi = baseApi.injectEndpoints({
       }),
     }),
 
+    exchangeResetPasswordCode: builder.mutation<
+      ApiResponse<ResetPasswordCodeExchangeResponse>,
+      ResetPasswordCodeExchangeRequest
+    >({
+      query: (body) => ({
+        url: '/auth/reset-password/exchange-code',
+        method: 'POST',
+        body,
+      }),
+    }),
+
     changePassword: builder.mutation<ApiResponse<User>, ChangePasswordRequest>({
       query: (body) => ({
         url: '/auth/change-password',
@@ -124,6 +145,59 @@ export const authApi = baseApi.injectEndpoints({
     verifyUser: builder.query<ApiResponse<User>, void>({
       query: () => '/auth/verify-user',
       providesTags: ['Auth'],
+    }),
+    refresh: builder.mutation<
+      ApiResponse<{ accessToken: string; refreshToken?: string }>,
+      void
+    >({
+      async queryFn(_arg, _api, _extraOptions, baseQuery) {
+        try {
+          const refreshToken = await getRefreshToken();
+
+          if (!refreshToken) {
+            return {
+              error: {
+                status: 'CUSTOM_ERROR',
+                error: 'AUTH.REFRESH_TOKEN_MISSING',
+              },
+            };
+          }
+
+          const result = await baseQuery({
+            url: '/auth/refresh',
+            method: 'POST',
+            credentials: 'include',
+            headers: {
+              'X-Refresh-Token': refreshToken,
+            },
+          });
+
+          if (result.error) {
+            return { error: result.error };
+          }
+
+          const response = result.data as ApiResponse<{
+            accessToken: string;
+            refreshToken?: string;
+          }>;
+
+          if (response?.data?.refreshToken) {
+            await setRefreshToken(response.data.refreshToken);
+          }
+
+          return {
+            data: response,
+          };
+        } catch (error) {
+          return {
+            error: {
+              status: 'CUSTOM_ERROR',
+              error:
+                error instanceof Error ? error.message : 'AUTH.REFRESH_FAILED',
+            },
+          };
+        }
+      },
     }),
     logout: builder.mutation<{ success: boolean }, void>({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
@@ -148,7 +222,6 @@ export const authApi = baseApi.injectEndpoints({
                   'X-Refresh-Token': refreshToken,
                 }
               : undefined,
-            body: refreshToken ? { refreshToken } : undefined,
           });
 
           // API Error
@@ -157,6 +230,21 @@ export const authApi = baseApi.injectEndpoints({
               error: result.error,
             };
           }
+
+          await baseQuery({
+            url: '/analytics/track',
+            method: 'POST',
+            body: {
+              eventType: AnalyticsEventType.USER_LOGGED_OUT,
+              platform:
+                Platform.OS === 'android'
+                  ? AnalyticsPlatform.ANDROID
+                  : Platform.OS === 'ios'
+                    ? AnalyticsPlatform.IOS
+                    : AnalyticsPlatform.WEB,
+              funnelStage: 'RETENTION',
+            },
+          });
 
           await clearRefreshToken();
           if (userId) {
@@ -226,9 +314,11 @@ export const {
   useRequestMagicLinkMutation,
   useVerifyMagicLinkMutation,
   useVerifyTwoFactorMutation,
+  useExchangeResetPasswordCodeMutation,
   useResetPasswordMutation,
   useChangePasswordMutation,
   useVerifyUserQuery,
+  useRefreshMutation,
   useLogoutMutation,
   useLogoutAllMutation,
   useGetSessionsQuery,

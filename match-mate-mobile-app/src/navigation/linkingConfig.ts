@@ -21,8 +21,7 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
           ResetPassword: {
             path: 'reset-password',
             parse: {
-              token: (token: string) => decodeURIComponent(token),
-              accessToken: (token: string) => decodeURIComponent(token),
+              code: (code: string) => decodeURIComponent(code),
             },
           },
           MagicLogin: {

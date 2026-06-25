@@ -11,6 +11,7 @@ import {
   AnalyticsDailySummarySchema,
 } from './schemas/analytics-daily-summary.schema';
 import { AnalyticsAggregationTask } from './tasks/analytics-aggregation.task';
+import { AnalyticsController } from './controllers/analytics.controller';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { AnalyticsAggregationTask } from './tasks/analytics-aggregation.task';
       },
     ]),
   ],
+  controllers: [AnalyticsController],
   providers: [AnalyticsService, AnalyticsRepository, AnalyticsAggregationTask],
   exports: [AnalyticsService],
 })

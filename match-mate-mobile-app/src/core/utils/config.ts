@@ -76,12 +76,18 @@ const joinApiUrl = (baseUrl: string, path: string): string => {
   return `${normalizedBaseUrl}${normalizedPath}`;
 };
 
+const enforceSecureBaseUrl = (url: string): string => {
+  if (!isProduction()) return url;
+  if (/^https:\/\//i.test(url)) return url;
+  return url.replace(/^http:\/\//i, 'https://');
+};
+
 export const getApiBaseUrl = (): string => {
   const apiBaseUrl = getPublicEnv('EXPO_PUBLIC_API_BASE_URL');
   const apiPath = getPublicEnv('EXPO_PUBLIC_API_PATH') ?? DEFAULTS.API_PATH;
 
   if (apiBaseUrl) {
-    return joinApiUrl(apiBaseUrl, apiPath);
+    return joinApiUrl(enforceSecureBaseUrl(apiBaseUrl), apiPath);
   }
 
   if (isProduction()) {
@@ -91,7 +97,7 @@ export const getApiBaseUrl = (): string => {
           'Using hardcoded fallback. Check your eas.json env config.'
       );
     }
-    return joinApiUrl(DEFAULTS.API_BASE_URL, apiPath);
+    return joinApiUrl(enforceSecureBaseUrl(DEFAULTS.API_BASE_URL), apiPath);
   }
 
   const apiPort = getPublicEnv('EXPO_PUBLIC_API_PORT') ?? DEFAULTS.API_PORT;

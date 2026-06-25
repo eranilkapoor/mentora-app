@@ -1599,6 +1599,10 @@ export class AuthService {
     return this.authPasswordService.forgotPassword(req, email);
   }
 
+  async exchangeResetPasswordCode(req: AppRequest, code: string) {
+    return this.authPasswordService.exchangeResetPasswordCode(req, code);
+  }
+
   async resetPassword(req: AppRequest, dto: ResetPasswordDto) {
     return this.authPasswordService.resetPassword(req, dto);
   }

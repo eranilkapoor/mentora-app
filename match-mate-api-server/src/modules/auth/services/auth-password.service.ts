@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   HttpStatus,
+  Inject,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -9,6 +10,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { JwtService } from '@nestjs/jwt';
 import { Model } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
+import { randomUUID } from 'node:crypto';
 
 import { ErrorCode } from '@/common/constants';
 import { AppException } from '@/common/exceptions/app.exception';
@@ -23,6 +25,8 @@ import {
   ActivityPlatform,
 } from '@/modules/profiles/enums/activity-log.enums';
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
+import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
+import { CACHE_SERVICE } from '@/common/cache/cache.constants';
 import { UserRepository } from '../repositories/user.repository';
 import { UserDocument } from '../schemas/user.schema';
 import {
@@ -57,6 +61,8 @@ export class AuthPasswordService {
     private readonly userSessionModel: Model<UserSessionDocument>,
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLogDocument>,
+    @Inject(CACHE_SERVICE)
+    private readonly cache: ICacheService,
     private readonly notificationsService: NotificationsService,
   ) {}
 
@@ -82,7 +88,15 @@ export class AuthPasswordService {
         { userId: user._id, type: 'password-reset' },
         { expiresIn: '15m' },
       );
-      const resetUrl = this.buildResetPasswordLink(resetToken);
+      const resetCode = this.generateResetPasswordCode();
+      await this.cache.set(
+        this.getResetPasswordCodeCacheKey(resetCode),
+        {
+          token: resetToken,
+        },
+        900,
+      );
+      const resetUrl = this.buildResetPasswordLink(resetCode);
 
       await this.notificationsService.notify({
         userId: String(user._id),
@@ -193,6 +207,39 @@ export class AuthPasswordService {
     }
   }
 
+  async exchangeResetPasswordCode(req: AppRequest, code: string) {
+    try {
+      const cacheKey = this.getResetPasswordCodeCacheKey(code.trim());
+      const cachedValue = await this.cache.get<{ token?: string }>(cacheKey);
+      const token = cachedValue?.token;
+
+      if (!token) {
+        throw new AppException(
+          ErrorCode.AUTH_INVALID_TOKEN,
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      await this.cache.del(cacheKey);
+      return { token };
+    } catch (error: unknown) {
+      if (error instanceof AppException) {
+        throw error;
+      }
+
+      throw new AppException(
+        ErrorCode.AUTH_INVALID_TOKEN,
+        HttpStatus.UNAUTHORIZED,
+        null,
+        undefined,
+        {
+          reason: 'password_reset_code_exchange_failed',
+          ...(req.correlationId ? { correlationId: req.correlationId } : {}),
+        },
+      );
+    }
+  }
+
   async changePassword(
     req: AppRequest,
     userId: string,
@@ -280,9 +327,17 @@ export class AuthPasswordService {
     );
   }
 
-  private buildResetPasswordLink(token: string): string {
+  private buildResetPasswordLink(code: string): string {
     const baseUrl = this.configService.getOrThrow<string>('app.webUrl');
-    return `${baseUrl}/reset-password?token=${encodeURIComponent(token)}`;
+    return `${baseUrl}/reset-password?code=${encodeURIComponent(code)}`;
+  }
+
+  private generateResetPasswordCode(): string {
+    return randomUUID().replace(/-/g, '');
+  }
+
+  private getResetPasswordCodeCacheKey(code: string): string {
+    return `auth:password-reset:${code}`;
   }
 
   private async revokeUserSessions(user: UserDocument): Promise<void> {

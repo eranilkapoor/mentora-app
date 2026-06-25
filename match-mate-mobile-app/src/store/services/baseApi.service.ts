@@ -17,8 +17,10 @@ import { logout, setAccessToken } from '../slices/auth.slice';
 
 import { generateUUID, getDeviceId } from '../../core/utils/device';
 import { getApiBaseUrl, getClientVersion } from '../../core/utils/config';
+import { reportError } from '@/core/utils/errorReporter';
 
 const mutex = new Mutex();
+let webRefreshToken: string | null = null;
 
 /* ──────────────────────────────────────────────
  * Secure Storage Helpers
@@ -26,7 +28,7 @@ const mutex = new Mutex();
 
 export async function getRefreshToken(): Promise<string | null> {
   if (Platform.OS === 'web') {
-    return globalThis.localStorage?.getItem('refreshToken') ?? null;
+    return webRefreshToken;
   }
 
   return SecureStore.getItemAsync('refreshToken');
@@ -34,7 +36,7 @@ export async function getRefreshToken(): Promise<string | null> {
 
 export async function setRefreshToken(token: string): Promise<void> {
   if (Platform.OS === 'web') {
-    globalThis.localStorage?.setItem('refreshToken', token);
+    webRefreshToken = token;
     return;
   }
 
@@ -43,7 +45,7 @@ export async function setRefreshToken(token: string): Promise<void> {
 
 export async function clearRefreshToken(): Promise<void> {
   if (Platform.OS === 'web') {
-    globalThis.localStorage?.removeItem('refreshToken');
+    webRefreshToken = null;
     return;
   }
 
@@ -101,13 +103,14 @@ async function performLogout(api: Parameters<BaseQueryFn>[1]): Promise<void> {
               'X-Refresh-Token': refreshToken,
             }
           : undefined,
-        body: refreshToken ? { refreshToken } : undefined,
       },
       api,
       {}
     );
   } catch (error) {
-    console.error('Logout API failed:', error);
+    reportError(error, {
+      source: 'baseApi.performLogout',
+    });
   }
 
   await clearRefreshToken();
@@ -170,7 +173,6 @@ const baseQueryWithAuth: BaseQueryFn<
                   'X-Refresh-Token': refreshToken,
                 }
               : undefined,
-            body: refreshToken ? { refreshToken } : undefined,
           },
           api,
           extraOptions
@@ -201,7 +203,9 @@ const baseQueryWithAuth: BaseQueryFn<
           await performLogout(api);
         }
       } catch (error) {
-        console.error('Refresh token error:', error);
+        reportError(error, {
+          source: 'baseApi.refreshFlow',
+        });
 
         await performLogout(api);
       } finally {

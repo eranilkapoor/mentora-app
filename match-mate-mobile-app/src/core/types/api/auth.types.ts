@@ -52,9 +52,18 @@ export interface ChangePasswordRequest {
 }
 
 export interface ResetPasswordRequest {
-  token: string;
+  token?: string;
+  code?: string;
   newPassword: string;
   confirmPassword: string;
+}
+
+export interface ResetPasswordCodeExchangeRequest {
+  code: string;
+}
+
+export interface ResetPasswordCodeExchangeResponse {
+  token: string;
 }
 
 export interface SocialLoginRequest {

@@ -4,7 +4,7 @@ import { AuthNavigationProp } from '@/navigation/types';
 
 export interface ResetPasswordScreenProps {
   navigation: AuthNavigationProp;
-  route: { params?: { accessToken?: string; token?: string } };
+  route: { params?: { code?: string } };
 }
 
 export interface FormErrors {

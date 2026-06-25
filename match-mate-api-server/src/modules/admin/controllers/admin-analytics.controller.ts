@@ -10,6 +10,7 @@ import { successResponse } from '@/common/utils/response.util';
 import { AnalyticsService } from '@/modules/analytics/services/analytics.service';
 import { TrackEventDto } from '@/modules/analytics/dto/track-event.dto';
 import { AnalyticsQueryDto } from '@/modules/analytics/dto/analytics-query.dto';
+import { AnalyticsSummaryQueryDto } from '@/modules/analytics/dto/analytics-summary-query.dto';
 
 @Controller('admin/analytics')
 @UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
@@ -35,6 +36,15 @@ export class AdminAnalyticsController {
     );
   }
 
+  @Get('taxonomy')
+  @Permissions(Permission.ANALYTICS_VIEW)
+  getTaxonomy() {
+    return successResponse(
+      this.analyticsService.getEventTaxonomy(),
+      SuccessCode.ANALYTICS_FETCHED,
+    );
+  }
+
   @Get('overview')
   @Permissions(Permission.ANALYTICS_VIEW)
   async getOverview(@Query() query: AnalyticsQueryDto) {
@@ -49,6 +59,15 @@ export class AdminAnalyticsController {
   async getFunnel(@Query() query: AnalyticsQueryDto) {
     return successResponse(
       await this.analyticsService.getFunnel(query),
+      SuccessCode.ANALYTICS_FETCHED,
+    );
+  }
+
+  @Get('summary/daily')
+  @Permissions(Permission.ANALYTICS_VIEW)
+  async getDailySummaries(@Query() query: AnalyticsSummaryQueryDto) {
+    return successResponse(
+      await this.analyticsService.getDailySummaries(query),
       SuccessCode.ANALYTICS_FETCHED,
     );
   }

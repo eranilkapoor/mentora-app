@@ -29,6 +29,11 @@ export class ResetPasswordDto {
   confirmPassword!: string;
 }
 
+export class ResetPasswordCodeExchangeDto {
+  @IsNotEmpty()
+  code!: string;
+}
+
 export class ChangePasswordDto {
   @IsNotEmpty()
   oldPassword!: string;

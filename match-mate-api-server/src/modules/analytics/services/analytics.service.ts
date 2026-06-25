@@ -2,10 +2,13 @@ import { Injectable } from '@nestjs/common';
 import { PipelineStage } from 'mongoose';
 import { AnalyticsRepository } from '../repositories/analytics.repository';
 import { AnalyticsQueryDto } from '../dto/analytics-query.dto';
+import { AnalyticsSummaryQueryDto } from '../dto/analytics-summary-query.dto';
 import { TrackEventDto } from '../dto/track-event.dto';
 import {
   AnalyticsEventType,
+  AnalyticsFunnelStage,
   AnalyticsGroupBy,
+  AnalyticsPlatform,
 } from '../enums/analytics-event.enum';
 
 interface AnalyticsDateRange {
@@ -32,6 +35,15 @@ interface FunnelStep {
 @Injectable()
 export class AnalyticsService {
   constructor(private readonly repo: AnalyticsRepository) {}
+
+  getEventTaxonomy() {
+    return {
+      eventTypes: Object.values(AnalyticsEventType),
+      platforms: Object.values(AnalyticsPlatform),
+      funnelStages: Object.values(AnalyticsFunnelStage),
+      groupByDimensions: Object.values(AnalyticsGroupBy),
+    };
+  }
 
   async trackEvent(dto: TrackEventDto) {
     return this.repo.create({
@@ -324,6 +336,27 @@ export class AnalyticsService {
       funnel: funnel,
       generatedAt: new Date(),
     });
+  }
+
+  async getDailySummaries(query: AnalyticsSummaryQueryDto) {
+    const limit = Math.min(Math.max(query.limit ?? 30, 1), 90);
+
+    if (query.day) {
+      const summary = await this.repo.getDailySummaryByDay(query.day);
+      return {
+        total: summary ? 1 : 0,
+        summaries: summary ? [summary] : [],
+      };
+    }
+
+    const from = query.from ? new Date(query.from) : undefined;
+    const to = query.to ? new Date(query.to) : undefined;
+
+    const summaries = await this.repo.getDailySummaries({ from, to, limit });
+    return {
+      total: summaries.length,
+      summaries,
+    };
   }
 
   private buildMatch(query: AnalyticsQueryDto): AnalyticsMatch {

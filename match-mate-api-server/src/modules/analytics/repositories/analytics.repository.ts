@@ -39,4 +39,31 @@ export class AnalyticsRepository {
       .lean()
       .exec();
   }
+
+  getDailySummaryByDay(day: string) {
+    return this.dailySummaryModel.findOne({ day }).lean().exec();
+  }
+
+  getDailySummaries(options: { from?: Date; to?: Date; limit: number }) {
+    const filter: {
+      day?: { $gte?: string; $lte?: string };
+    } = {};
+
+    if (options.from || options.to) {
+      filter.day = {};
+      if (options.from) {
+        filter.day.$gte = options.from.toISOString().slice(0, 10);
+      }
+      if (options.to) {
+        filter.day.$lte = options.to.toISOString().slice(0, 10);
+      }
+    }
+
+    return this.dailySummaryModel
+      .find(filter)
+      .sort({ day: -1 })
+      .limit(options.limit)
+      .lean()
+      .exec();
+  }
 }

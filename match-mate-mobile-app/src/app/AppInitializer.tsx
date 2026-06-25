@@ -2,12 +2,24 @@ import React, { useEffect, useRef, useState } from 'react';
 import * as LocalAuthentication from 'expo-local-authentication';
 import * as Notifications from 'expo-notifications';
 import * as ScreenCapture from 'expo-screen-capture';
-import { Platform } from 'react-native';
+import { AppState, AppStateStatus, Platform } from 'react-native';
 
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { logout as logoutAction, setUser } from '@/store/slices/auth.slice';
-import { useVerifyUserQuery } from '@/store/services/authApi.service';
-import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
+import {
+  logout as logoutAction,
+  setAccessToken,
+  setUser,
+} from '@/store/slices/auth.slice';
+import {
+  useRefreshMutation,
+  useVerifyUserQuery,
+} from '@/store/services/authApi.service';
+import {
+  baseApi,
+  clearRefreshToken,
+  getRefreshToken,
+  setRefreshToken,
+} from '@/store/services/baseApi.service';
 import Loader from '@/core/components/Loader';
 import { getDeviceId } from '@/core/utils/device';
 import { Storage } from '@/core/utils/storage';
@@ -34,6 +46,12 @@ import {
   parseNotificationAction,
 } from '@/features/Notifications/notificationNavigation';
 import { reportError, setErrorReporterUser } from '@/core/utils/errorReporter';
+import {
+  AnalyticsEventType,
+  AnalyticsFunnelStage,
+  AnalyticsPlatform,
+} from '@/core/types';
+import { useTrackAnalyticsEventMutation } from '@/store/services/analyticsApi.service';
 import type { QuietHours } from '@/features/NotificationSettings/NotificationSettings.types';
 
 interface Props {
@@ -110,8 +128,13 @@ export default function AppInitializer({ children }: Props) {
     !authMethodConfig.biometric || Platform.OS === 'web'
   );
   const isFirstLoad = useRef(true);
+  const appOpenTracked = useRef(false);
+  const loginTrackedForUser = useRef<string | null>(null);
+  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
   const biometricPromptInFlight = useRef(false);
   const [registerPushToken] = useRegisterNotificationDeviceTokenMutation();
+  const [trackAnalyticsEvent] = useTrackAnalyticsEventMutation();
+  const [refreshAuth, { isLoading: refreshLoading }] = useRefreshMutation();
   const { data: securityData, isLoading: securityLoading } =
     useGetSecuritySettingsQuery(undefined, {
       skip:
@@ -127,6 +150,41 @@ export default function AppInitializer({ children }: Props) {
     // Only call the endpoint when a token exists
     skip: !accessToken,
   });
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const restoreSession = async () => {
+      if (accessToken) return;
+
+      const refreshToken = await getRefreshToken();
+      if (!refreshToken) return;
+
+      try {
+        const response = await refreshAuth().unwrap();
+        const responseData = response?.data;
+        const nextAccessToken = responseData?.accessToken;
+
+        if (!nextAccessToken || !isMounted) {
+          return;
+        }
+
+        dispatch(setAccessToken(nextAccessToken));
+
+        if (responseData?.refreshToken) {
+          await setRefreshToken(responseData.refreshToken);
+        }
+      } catch {
+        await clearRefreshToken();
+      }
+    };
+
+    void restoreSession();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [accessToken, dispatch, refreshAuth]);
 
   // Sync i18n language on mount and whenever the user changes it
   useEffect(() => {
@@ -168,6 +226,78 @@ export default function AppInitializer({ children }: Props) {
       dispatch(setUser(data.data));
     }
   }, [data, dispatch]);
+
+  useEffect(() => {
+    if (!accessToken || !userId) {
+      appOpenTracked.current = false;
+      loginTrackedForUser.current = null;
+      return;
+    }
+
+    const platform =
+      Platform.OS === 'android'
+        ? AnalyticsPlatform.ANDROID
+        : Platform.OS === 'ios'
+          ? AnalyticsPlatform.IOS
+          : AnalyticsPlatform.WEB;
+
+    if (!appOpenTracked.current) {
+      void trackAnalyticsEvent({
+        eventType: AnalyticsEventType.APP_OPENED,
+        funnelStage: AnalyticsFunnelStage.RETENTION,
+        platform,
+        metadata: {
+          source: 'app_initializer',
+        },
+      }).catch((error) => {
+        reportError(error, { source: 'AppInitializer.trackAppOpened' });
+      });
+      appOpenTracked.current = true;
+    }
+
+    if (loginTrackedForUser.current !== userId) {
+      void trackAnalyticsEvent({
+        eventType: AnalyticsEventType.USER_LOGGED_IN,
+        funnelStage: AnalyticsFunnelStage.RETENTION,
+        platform,
+      }).catch((error) => {
+        reportError(error, { source: 'AppInitializer.trackUserLoggedIn' });
+      });
+      loginTrackedForUser.current = userId;
+    }
+  }, [accessToken, trackAnalyticsEvent, userId]);
+
+  useEffect(() => {
+    if (!accessToken || !userId) {
+      return;
+    }
+
+    const platform =
+      Platform.OS === 'android'
+        ? AnalyticsPlatform.ANDROID
+        : Platform.OS === 'ios'
+          ? AnalyticsPlatform.IOS
+          : AnalyticsPlatform.WEB;
+
+    const subscription = AppState.addEventListener('change', (nextState) => {
+      const previousState = appStateRef.current;
+      appStateRef.current = nextState;
+
+      if (previousState === 'active' && nextState === 'background') {
+        void trackAnalyticsEvent({
+          eventType: AnalyticsEventType.APP_BACKGROUND,
+          funnelStage: AnalyticsFunnelStage.RETENTION,
+          platform,
+        }).catch((error) => {
+          reportError(error, { source: 'AppInitializer.trackAppBackground' });
+        });
+      }
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [accessToken, trackAnalyticsEvent, userId]);
 
   useEffect(() => {
     setErrorReporterUser(userId ? { id: userId } : null);
@@ -417,6 +547,7 @@ export default function AppInitializer({ children }: Props) {
 
   if (
     !langReady ||
+    refreshLoading ||
     (accessToken && isLoading) ||
     (accessToken && !biometricUnlocked)
   ) {

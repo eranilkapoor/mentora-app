@@ -1,5 +1,6 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Platform } from 'react-native';
+import { reportError } from './errorReporter';
 
 const isWeb = Platform.OS === 'web';
 
@@ -16,7 +17,10 @@ export const Storage = {
         await AsyncStorage.setItem(key, stringValue);
       }
     } catch (error) {
-      console.error('Storage setItem error:', error);
+      reportError(error, {
+        source: 'Storage.setItem',
+        key,
+      });
     }
   },
 
@@ -32,11 +36,17 @@ export const Storage = {
       try {
         return JSON.parse(value) as T; // ✅ safe cast
       } catch {
-        console.warn(`Storage parse error for key: ${key}`);
+        reportError(new Error('Storage parse error'), {
+          source: 'Storage.getItem.parse',
+          key,
+        });
         return null;
       }
     } catch (error) {
-      console.error('Storage getItem error:', error);
+      reportError(error, {
+        source: 'Storage.getItem',
+        key,
+      });
       return null;
     }
   },
@@ -49,7 +59,10 @@ export const Storage = {
         await AsyncStorage.removeItem(key);
       }
     } catch (error) {
-      console.error('Storage removeItem error:', error);
+      reportError(error, {
+        source: 'Storage.removeItem',
+        key,
+      });
     }
   },
 
@@ -61,7 +74,9 @@ export const Storage = {
         await AsyncStorage.clear();
       }
     } catch (error) {
-      console.error('Storage clear error:', error);
+      reportError(error, {
+        source: 'Storage.clear',
+      });
     }
   },
 };

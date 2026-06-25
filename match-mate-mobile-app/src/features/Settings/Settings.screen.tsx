@@ -39,6 +39,7 @@ import { SettingRow } from './components/SettingRow';
 import { SettingsScreenProps } from './Settings.types';
 import { showConfirm } from '@/core/utils/confirm';
 import { showSuccess } from '@/core/utils/toast';
+import { reportError } from '@/core/utils/errorReporter';
 
 const clampProfileCompletion = (value?: number): number => {
   if (typeof value !== 'number' || Number.isNaN(value)) {
@@ -105,7 +106,9 @@ export default function SettingsScreen({
     try {
       await logoutMutation().unwrap();
     } catch (error) {
-      console.error('Logout Error:', error);
+      reportError(error, {
+        source: 'Settings.performLogout',
+      });
     } finally {
       await clearRefreshToken();
       dispatch(logoutAction());

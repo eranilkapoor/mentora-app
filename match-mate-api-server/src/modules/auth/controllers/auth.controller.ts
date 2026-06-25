@@ -17,6 +17,7 @@ import {
   PhoneVerifyDto,
   SocialLoginDto,
   ForgotPasswordDto,
+  ResetPasswordCodeExchangeDto,
   ResetPasswordDto,
   ChangePasswordDto,
   MagicLinkRequestDto,
@@ -131,6 +132,23 @@ export class AuthController {
       data,
       SuccessCode.AUTH_PASSWORD_RESET_SENT,
       'Password reset link sent to email',
+    );
+  }
+
+  @Public()
+  @Post('reset-password/exchange-code')
+  async exchangeResetPasswordCode(
+    @Req() req: AppRequest,
+    @Body() dto: ResetPasswordCodeExchangeDto,
+  ) {
+    const data = await this.authService.exchangeResetPasswordCode(
+      req,
+      dto.code,
+    );
+    return successResponse(
+      data,
+      SuccessCode.AUTH_LOGIN_SUCCESS,
+      'Reset password code exchanged successfully',
     );
   }
 

@@ -1,6 +1,7 @@
 import i18n, { Resource } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { en, hi } from './locales';
+import { reportError } from '@/core/utils/errorReporter';
 
 // Typed resources (better TS support)
 const resources: Resource = {
@@ -40,9 +41,9 @@ void i18n
     compatibilityJSON: 'v4',
   })
   .catch((err: unknown) => {
-    if (__DEV__) {
-      console.error('i18n init error:', err);
-    }
+    reportError(err, {
+      source: 'i18n.init',
+    });
   });
 
 export default i18n;

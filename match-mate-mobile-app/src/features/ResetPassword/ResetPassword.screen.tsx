@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import {
   View,
   Text,
@@ -17,7 +17,15 @@ import {
   getApiErrorMessage,
   getApiResponseMessage,
 } from '@/core/utils/apiMessage';
-import { useResetPasswordMutation } from '@/store/services/authApi.service';
+import {
+  useExchangeResetPasswordCodeMutation,
+  useResetPasswordMutation,
+} from '@/store/services/authApi.service';
+import {
+  ApiResponse,
+  ResetPasswordCodeExchangeResponse,
+  User,
+} from '@/core/types';
 import { resetPasswordStyles } from './ResetPassword.styles';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 import { FormErrors, ResetPasswordScreenProps } from './ResetPassword.types';
@@ -100,16 +108,64 @@ export default function ResetPasswordScreen({
   const { theme } = useTheme();
   const { t } = useTranslation();
 
-  const accessToken = route.params?.accessToken ?? route.params?.token ?? '';
+  const routeCode = route.params?.code ?? '';
 
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [resetToken, setResetToken] = useState('');
+  const [exchangingCode, setExchangingCode] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [success, setSuccess] = useState(false);
 
+  const [exchangeResetCode] = useExchangeResetPasswordCodeMutation();
   const [resetPassword, { isLoading: loading }] = useResetPasswordMutation();
+
+  useEffect(() => {
+    let isMounted = true;
+
+    if (!routeCode) {
+      return () => {
+        isMounted = false;
+      };
+    }
+
+    const exchangeCode = async () => {
+      try {
+        setExchangingCode(true);
+        const response: ApiResponse<ResetPasswordCodeExchangeResponse> =
+          await exchangeResetCode({ code: routeCode }).unwrap();
+        const token = response?.data?.token;
+
+        if (!isMounted) return;
+
+        if (token) {
+          setResetToken(token);
+          return;
+        }
+
+        setErrors({
+          error: getApiResponseMessage(t, response, 'auth.errors.reset_failed'),
+        });
+      } catch (error) {
+        if (!isMounted) return;
+        setErrors({
+          error: getApiErrorMessage(t, error, 'auth.errors.reset_failed'),
+        });
+      } finally {
+        if (isMounted) {
+          setExchangingCode(false);
+        }
+      }
+    };
+
+    void exchangeCode();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [exchangeResetCode, routeCode, t]);
 
   // ─── Validation ───────────────────────────────────────────────────────────
 
@@ -153,8 +209,8 @@ export default function ResetPasswordScreen({
     }
 
     try {
-      const response = await resetPassword({
-        token: accessToken,
+      const response: ApiResponse<User> = await resetPassword({
+        token: resetToken,
         newPassword: password,
         confirmPassword,
       }).unwrap();
@@ -170,7 +226,7 @@ export default function ResetPasswordScreen({
         error: getApiErrorMessage(t, error, 'auth.errors.reset_failed'),
       });
     }
-  }, [password, confirmPassword, accessToken, resetPassword, validate, t]);
+  }, [password, confirmPassword, resetPassword, resetToken, validate, t]);
 
   // ─── Success State ────────────────────────────────────────────────────────
 
@@ -211,7 +267,18 @@ export default function ResetPasswordScreen({
 
   // ─── Expired / Invalid Token ──────────────────────────────────────────────
 
-  if (!accessToken) {
+  if (!resetToken && exchangingCode) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.successContainer}>
+          <ActivityIndicator color={theme.colors.primary} size="large" />
+          <Text style={styles.successSubtitle}>{t('auth.reset.subtitle')}</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  if (!resetToken) {
     return (
       <SafeAreaView style={styles.safe}>
         <View style={styles.successContainer}>
@@ -295,7 +362,7 @@ export default function ResetPasswordScreen({
               secureVisible={showPassword}
               textContentType="newPassword"
               autoComplete="password-new"
-              disabled={loading}
+              disabled={loading || exchangingCode}
               onToggleSecure={() => setShowPassword((p) => !p)}
               showSecureLabel={t('auth.actions.show_password')}
               hideSecureLabel={t('auth.actions.hide_password')}
@@ -358,7 +425,7 @@ export default function ResetPasswordScreen({
               secureVisible={showConfirmPassword}
               textContentType="newPassword"
               autoComplete="password-new"
-              disabled={loading}
+              disabled={loading || exchangingCode}
               labelSpacing
               onToggleSecure={() => setShowConfirmPassword((p) => !p)}
               showSecureLabel={t('auth.actions.show_password')}
@@ -421,7 +488,7 @@ export default function ResetPasswordScreen({
             <TouchableOpacity
               style={styles.backLink}
               onPress={() => navigation.navigate('Login')}
-              disabled={loading}
+              disabled={loading || exchangingCode}
               accessibilityRole="button"
               accessibilityLabel={t('auth.actions.back_to_sign_in')}
             >

@@ -25,7 +25,7 @@ const persistConfig = {
 const authPersistConfig = {
   key: 'auth',
   storage: AsyncStorage,
-  whitelist: ['accessToken', 'user'],
+  whitelist: ['user'],
 };
 
 const settingsPersistConfig = {
