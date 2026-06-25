@@ -61,7 +61,7 @@ export const editPreferenceStyles = (
       borderRadius: 10,
     },
     aboutSaveButton: {
-      marginTop: 74,
+      marginTop: Platform.OS !== 'web' ? 74 : 4,
     },
     saveBtnDisabled: {
       opacity: 0.6,
