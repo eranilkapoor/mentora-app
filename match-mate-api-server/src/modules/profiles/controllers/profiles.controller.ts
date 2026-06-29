@@ -30,6 +30,21 @@ import { UpdateProfileLocationDto } from '@/modules/profiles/dto/location.dto';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
 
+export const profileImageFileFilter = (
+  _: Express.Request,
+  file: Express.Multer.File,
+  cb: (error: Error | null, acceptFile: boolean) => void,
+): void => {
+  const allowed = ['image/jpeg', 'image/png', 'image/webp'];
+
+  if (!allowed.includes(file.mimetype)) {
+    cb(new Error('Only JPG, PNG, WEBP images are allowed'), false);
+    return;
+  }
+
+  cb(null, true);
+};
+
 @UseGuards(JwtAuthGuard)
 @Controller('profiles')
 export class ProfilesController {
@@ -38,15 +53,7 @@ export class ProfilesController {
   @UseInterceptors(
     FilesInterceptor('profileImages', 6, {
       storage: memoryStorage(),
-      fileFilter: (_, file, cb) => {
-        const allowed = ['image/jpeg', 'image/png', 'image/webp'];
-
-        if (!allowed.includes(file.mimetype)) {
-          return cb(new Error('Only JPG, PNG, WEBP images are allowed'), false);
-        }
-
-        cb(null, true);
-      },
+      fileFilter: profileImageFileFilter,
       limits: { fileSize: 5 * 1024 * 1024 },
     }),
   )

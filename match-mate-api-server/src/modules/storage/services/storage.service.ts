@@ -120,9 +120,6 @@ export class StorageService implements OnModuleInit {
   //  Get Public URL from filename
   getUrl(filename: string, folder = 'profiles'): string {
     const key = this.buildKey(folder, filename);
-    if (this.isS3) {
-      return `${this.publicBaseUrl}/uploads/${key}`;
-    }
     return `${this.publicBaseUrl}/uploads/${key}`;
   }
 
@@ -354,10 +351,25 @@ export class StorageService implements OnModuleInit {
   }
 
   private normalizeKey(key: string): string {
-    return key
+    const normalizedKey = key
       .replace(/\\/g, '/')
       .replace(/^\/+/, '')
       .replace(/\/{2,}/g, '/');
+
+    if (
+      normalizedKey.includes('\0') ||
+      normalizedKey.split('/').some((segment) => segment === '..')
+    ) {
+      throw new AppException(
+        ErrorCode.INVALID_REQUEST,
+        HttpStatus.BAD_REQUEST,
+        null,
+        undefined,
+        { reason: 'invalid_storage_key' },
+      );
+    }
+
+    return normalizedKey;
   }
 
   private normalizeBaseUrl(url: string): string {

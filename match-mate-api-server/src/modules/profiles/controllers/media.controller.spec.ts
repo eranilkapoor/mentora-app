@@ -54,6 +54,42 @@ describe('MediaController', () => {
     expect(mediaService.addVideos).toHaveBeenCalledWith(req, userId, [], []);
   });
 
+  it('passes supplied video and thumbnail arrays during upload', async () => {
+    const videos = [{ originalname: 'intro.mp4' }] as Express.Multer.File[];
+    const thumbnails = [{ originalname: 'intro.jpg' }] as Express.Multer.File[];
+    mediaService.addVideos.mockResolvedValue([{ id: 'vid-1' }]);
+
+    const response = await controller.uploadVideos(req, {
+      videos,
+      thumbnails,
+    });
+
+    expect(mediaService.addVideos).toHaveBeenCalledWith(
+      req,
+      userId,
+      videos,
+      thumbnails,
+    );
+    expect(response.code).toBe(SuccessCode.PROFILE_VIDEO_UPLOADED);
+  });
+
+  it('sets and removes image media for current user', async () => {
+    mediaService.setPrimaryImage.mockResolvedValue({ id: 'img-1' });
+    mediaService.removeImage.mockResolvedValue({ success: true });
+
+    const setPrimary = await controller.setPrimaryImage(req, 'img-1');
+    const removed = await controller.removeImage(req, 'img-1');
+
+    expect(mediaService.setPrimaryImage).toHaveBeenCalledWith(
+      req,
+      userId,
+      'img-1',
+    );
+    expect(mediaService.removeImage).toHaveBeenCalledWith(req, userId, 'img-1');
+    expect(setPrimary.code).toBe(SuccessCode.PROFILE_IMAGE_REORDERED);
+    expect(removed.code).toBe(SuccessCode.PROFILE_IMAGE_DELETED);
+  });
+
   it('sets and removes video media for current user', async () => {
     mediaService.setPrimaryVideo.mockResolvedValue({ id: 'vid-1' });
     mediaService.removeVideo.mockResolvedValue({ success: true });

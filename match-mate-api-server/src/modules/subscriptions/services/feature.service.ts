@@ -161,7 +161,8 @@ export class FeatureService {
       .exec();
 
     const activeFeatures = features.filter(
-      (feature) => feature.featureId?.isActive !== false,
+      (feature) =>
+        Boolean(feature.featureId) && feature.featureId.isActive !== false,
     );
 
     await this.cache.set(cacheKey, activeFeatures, PLAN_FEATURES_CACHE_TTL);

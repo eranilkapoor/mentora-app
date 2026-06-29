@@ -1249,13 +1249,13 @@ export class AuthService {
       }
 
       this.assertUserCanAuthenticate(existingUser);
+      const emailAccount = existingUser.authAccounts.find(
+        (account) => account.provider === AuthProvider.EMAIL,
+      );
 
       if (
-        !existingUser.authAccounts[0].passwordHash ||
-        !(await bcrypt.compare(
-          dto.password,
-          existingUser.authAccounts[0].passwordHash,
-        ))
+        !emailAccount?.passwordHash ||
+        !(await bcrypt.compare(dto.password, emailAccount.passwordHash))
       ) {
         return throwUnauthorized(ErrorCode.AUTH_INVALID_CREDENTIALS);
       }

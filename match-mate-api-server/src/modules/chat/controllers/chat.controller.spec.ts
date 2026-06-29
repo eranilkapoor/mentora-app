@@ -56,6 +56,20 @@ describe('ChatController', () => {
     expect(contacts.code).toBe(SuccessCode.CHAT_FETCHED);
   });
 
+  it('fetches conversation detail and paginated room messages', async () => {
+    const query = { page: 2, limit: 30 } as never;
+    service.getConversationDetail.mockResolvedValue({ id: roomId });
+    service.getMessages.mockResolvedValue({ items: [] });
+
+    const detail = await controller.getConversationDetail(req, roomId);
+    const messages = await controller.getMessages(req, roomId, query);
+
+    expect(service.getConversationDetail).toHaveBeenCalledWith(userId, roomId);
+    expect(service.getMessages).toHaveBeenCalledWith(userId, roomId, query);
+    expect(detail.code).toBe(SuccessCode.CHAT_FETCHED);
+    expect(messages.code).toBe(SuccessCode.CHAT_FETCHED);
+  });
+
   it('creates rooms, sends messages, and reads messages with route params merged', async () => {
     service.createOrGetDirectRoom.mockResolvedValue({ id: roomId });
     service.sendMessage.mockResolvedValue({ id: 'message-1' });
@@ -132,5 +146,16 @@ describe('ChatController', () => {
     expect(reaction.code).toBe(SuccessCode.CHAT_MESSAGE_SENT);
     expect(request.code).toBe(SuccessCode.CHAT_FETCHED);
     expect(settings.code).toBe(SuccessCode.CHAT_FETCHED);
+  });
+
+  it('normalizes missing attachment files and missing request users', async () => {
+    service.uploadAttachments.mockResolvedValue([]);
+    service.getContacts.mockResolvedValue({ items: [] });
+
+    await controller.uploadAttachments({ headers: {} } as never, undefined!);
+    await controller.getContacts({ headers: {} } as never, {});
+
+    expect(service.uploadAttachments).toHaveBeenCalledWith('', []);
+    expect(service.getContacts).toHaveBeenCalledWith('', {});
   });
 });

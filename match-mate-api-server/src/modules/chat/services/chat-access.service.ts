@@ -50,10 +50,9 @@ export class ChatAccessService {
       (participantId) => participantId !== userId,
     );
     if (!otherParticipantId) {
-      throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
+      return throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
         reason: 'invalid_chat_room_participants',
       });
-      return room;
     }
 
     await this.ensureNotBlocked(userId, otherParticipantId);

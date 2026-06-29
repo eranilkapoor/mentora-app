@@ -1,4 +1,7 @@
-import { ProfilesController } from './profiles.controller';
+import {
+  profileImageFileFilter,
+  ProfilesController,
+} from './profiles.controller';
 import { SuccessCode } from '@/common/constants';
 import { Gender, MaritalStatus, ProfileFor, Religion } from '@/common/enums';
 
@@ -101,5 +104,32 @@ describe('ProfilesController', () => {
       city: 'Mumbai',
     });
     expect(profile.code).toBe(SuccessCode.PROFILE_FETCHED);
+  });
+
+  it.each(['image/jpeg', 'image/png', 'image/webp'])(
+    'accepts supported %s onboarding images',
+    (mimetype) => {
+      const callback = jest.fn();
+
+      profileImageFileFilter(
+        {} as Express.Request,
+        { mimetype } as Express.Multer.File,
+        callback,
+      );
+
+      expect(callback).toHaveBeenCalledWith(null, true);
+    },
+  );
+
+  it('rejects unsupported onboarding image formats', () => {
+    const callback = jest.fn();
+
+    profileImageFileFilter(
+      {} as Express.Request,
+      { mimetype: 'image/gif' } as Express.Multer.File,
+      callback,
+    );
+
+    expect(callback).toHaveBeenCalledWith(expect.any(Error), false);
   });
 });

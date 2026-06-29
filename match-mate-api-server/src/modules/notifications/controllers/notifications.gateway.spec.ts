@@ -85,6 +85,23 @@ describe('NotificationsGateway', () => {
     expect(client.data.userId).toBe(userId);
   });
 
+  it('accepts a raw token from the auth payload', async () => {
+    const client = socket({
+      handshake: {
+        auth: { token: 'raw-auth-token' },
+        headers: {},
+        query: {},
+      },
+    });
+
+    await gateway.handleConnection(client);
+
+    expect(jwtService.verifyAsync).toHaveBeenCalledWith(
+      'raw-auth-token',
+      expect.any(Object),
+    );
+  });
+
   it('accepts bearer token from headers and query params', async () => {
     const headerClient = socket({
       handshake: {
@@ -116,6 +133,23 @@ describe('NotificationsGateway', () => {
     });
   });
 
+  it('accepts a raw query token after unusable headers', async () => {
+    const client = socket({
+      handshake: {
+        auth: { token: '   ' },
+        headers: { authorization: ['Bearer ignored'] },
+        query: { token: 'raw-query-token' },
+      },
+    });
+
+    await gateway.handleConnection(client);
+
+    expect(jwtService.verifyAsync).toHaveBeenCalledWith(
+      'raw-query-token',
+      expect.any(Object),
+    );
+  });
+
   it('rejects sockets without a usable token', async () => {
     const client = socket({
       handshake: { auth: {}, headers: {}, query: {} },
@@ -130,5 +164,20 @@ describe('NotificationsGateway', () => {
       message: 'Unauthorized',
     });
     expect(client.disconnect).toHaveBeenCalledWith(true);
+  });
+
+  it('uses a generic message for non-Error authentication failures', async () => {
+    jwtService.verifyAsync.mockRejectedValue('denied');
+    const client = socket();
+
+    await gateway.handleConnection(client);
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Notification socket authentication failed: Unauthorized',
+    );
+  });
+
+  it('allows Socket.IO to handle disconnect cleanup', () => {
+    expect(gateway.handleDisconnect()).toBeUndefined();
   });
 });

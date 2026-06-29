@@ -67,6 +67,25 @@ describe('AdminModerationController', () => {
     expect(auditService.write).toHaveBeenCalled();
   });
 
+  it('uses an undefined media limit and records approved empty results', async () => {
+    mediaService.getReviewQueue.mockResolvedValue([]);
+    mediaService.reviewMedia.mockResolvedValue(null);
+    const req = { user: { sub: 'mod-1' } };
+
+    await controller.getMediaQueue();
+    await controller.reviewMedia(req as never, 'm1', {
+      approve: true,
+    });
+
+    expect(mediaService.getReviewQueue).toHaveBeenCalledWith(undefined);
+    expect(auditService.write).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'media.approved',
+        after: undefined,
+      }),
+    );
+  });
+
   it('gets and reviews chat moderation queue', async () => {
     chatService.getModerationQueue.mockResolvedValue([]);
     chatService.reviewMessage.mockResolvedValue({ _id: 'msg1' });
@@ -98,6 +117,29 @@ describe('AdminModerationController', () => {
     expect(reviewResponse.code).toBe(SuccessCode.ADMIN_USER_UPDATED);
   });
 
+  it('uses chat defaults and records rejected empty results', async () => {
+    chatService.getModerationQueue.mockResolvedValue([]);
+    chatService.reviewMessage.mockResolvedValue(null);
+    const req = { user: { sub: 'mod-1' } };
+
+    await controller.getChatModerationQueue();
+    await controller.reviewChatMessage(req as never, 'msg1', {
+      approve: false,
+      note: 'spam',
+    });
+
+    expect(chatService.getModerationQueue).toHaveBeenCalledWith(
+      ChatModerationStatus.FLAGGED,
+      undefined,
+    );
+    expect(auditService.write).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: 'chat_message.rejected',
+        after: undefined,
+      }),
+    );
+  });
+
   it('gets and reviews kyc queue', async () => {
     kycService.getReviewQueue.mockResolvedValue([]);
     kycService.review.mockResolvedValue({ _id: 'v1' });
@@ -118,5 +160,27 @@ describe('AdminModerationController', () => {
     });
     expect(queueResponse.code).toBe(SuccessCode.ADMIN_MODERATION_QUEUE_FETCHED);
     expect(reviewResponse.code).toBe(SuccessCode.ADMIN_PROFILE_APPROVED);
+  });
+
+  it('uses the pending KYC default and omits an empty review snapshot', async () => {
+    kycService.getReviewQueue.mockResolvedValue([]);
+    kycService.review.mockResolvedValue(null);
+    const req = { user: { sub: 'mod-1' } };
+
+    await controller.getKycQueue();
+    await controller.reviewKyc(req as never, 'u1', {
+      status: VerificationStatus.REJECTED,
+      rejectionReason: 'document mismatch',
+    });
+
+    expect(kycService.getReviewQueue).toHaveBeenCalledWith(
+      VerificationStatus.PENDING,
+    );
+    expect(auditService.write).toHaveBeenCalledWith(
+      expect.objectContaining({
+        action: `kyc.${VerificationStatus.REJECTED}`,
+        after: undefined,
+      }),
+    );
   });
 });

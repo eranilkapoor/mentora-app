@@ -102,4 +102,44 @@ describe('PaymentsController', () => {
     expect(payment.code).toBe(SuccessCode.PAYMENT_FETCHED);
     expect(invoice.code).toBe(SuccessCode.PAYMENT_INVOICE_FETCHED);
   });
+
+  it('verifies store subscriptions and validates coupons', async () => {
+    const storeDto = {
+      platform: 'android',
+      productId: 'gold-monthly',
+      purchaseToken: 'purchase-token',
+    } as never;
+    const couponDto = { code: 'WELCOME10', planId: 'plan-1' } as never;
+    service.verifyStoreSubscription.mockResolvedValue({ active: true });
+    service.validateCoupon.mockResolvedValue({ valid: true });
+
+    const verified = await controller.verifyStoreSubscription(req, storeDto);
+    const coupon = await controller.validateCoupon(req, couponDto);
+
+    expect(service.verifyStoreSubscription).toHaveBeenCalledWith(
+      userId,
+      storeDto,
+    );
+    expect(service.validateCoupon).toHaveBeenCalledWith(userId, couponDto);
+    expect(verified.code).toBe(SuccessCode.PAYMENT_VERIFIED);
+    expect(coupon.code).toBe(SuccessCode.COUPON_VALIDATED);
+  });
+
+  it('records failed payments and lists the current user history', async () => {
+    const failDto = {
+      orderId: 'order-1',
+      reason: 'cancelled',
+    } as never;
+    const query = { page: 2, limit: 20 } as never;
+    service.markPaymentFailed.mockResolvedValue({ recorded: true });
+    service.getUserPayments.mockResolvedValue({ items: [] });
+
+    const failed = await controller.markFailed(req, failDto);
+    const history = await controller.getMyPayments(req, query);
+
+    expect(service.markPaymentFailed).toHaveBeenCalledWith(userId, failDto);
+    expect(service.getUserPayments).toHaveBeenCalledWith(userId, query);
+    expect(failed.code).toBe(SuccessCode.PAYMENT_FAILED_RECORDED);
+    expect(history.code).toBe(SuccessCode.PAYMENTS_FETCHED);
+  });
 });

@@ -45,4 +45,66 @@ describe('AnalyticsController', () => {
     );
     expect(response.code).toBe(SuccessCode.ANALYTICS_TRACKED);
   });
+
+  it('normalizes array headers and uses their first values', async () => {
+    analyticsService.trackEvent.mockResolvedValue({ id: 'evt-2' });
+
+    await controller.track(
+      {
+        user: { sub: 'auth-user-2' },
+        headers: {
+          'x-platform': ['WEB'],
+          'user-agent': ['browser-agent'],
+        },
+      } as never,
+      {
+        eventType: AnalyticsEventType.APP_OPENED,
+      },
+    );
+
+    expect(analyticsService.trackEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        platform: 'web',
+        userAgent: 'browser-agent',
+      }),
+    );
+  });
+
+  it('preserves an explicit platform when headers are unavailable', async () => {
+    analyticsService.trackEvent.mockResolvedValue({ id: 'evt-3' });
+
+    await controller.track(
+      {
+        user: { sub: 'auth-user-3' },
+        headers: {},
+      } as never,
+      {
+        eventType: AnalyticsEventType.APP_OPENED,
+        platform: AnalyticsPlatform.IOS,
+      },
+    );
+
+    expect(analyticsService.trackEvent).toHaveBeenCalledWith(
+      expect.objectContaining({
+        platform: AnalyticsPlatform.IOS,
+        userAgent: undefined,
+      }),
+    );
+  });
+
+  it('handles an empty platform header array', async () => {
+    analyticsService.trackEvent.mockResolvedValue({ id: 'evt-4' });
+
+    await controller.track(
+      {
+        user: { sub: 'auth-user-4' },
+        headers: { 'x-platform': [] },
+      } as never,
+      { eventType: AnalyticsEventType.APP_OPENED },
+    );
+
+    expect(analyticsService.trackEvent).toHaveBeenCalledWith(
+      expect.objectContaining({ platform: '' }),
+    );
+  });
 });

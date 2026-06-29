@@ -1,7 +1,11 @@
-import { FeatureKey } from '@/common/enums';
+/* eslint-disable @typescript-eslint/unbound-method */
+import { Types } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
+import { FeatureKey } from '@/common/enums';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
 import { FeatureService } from './feature.service';
+
+const USER_ID = new Types.ObjectId().toString();
 
 const createCache = (): jest.Mocked<ICacheService> =>
   ({
@@ -12,44 +16,240 @@ const createCache = (): jest.Mocked<ICacheService> =>
     expire: jest.fn(),
   }) as unknown as jest.Mocked<ICacheService>;
 
-const createService = (cache: ICacheService): FeatureService =>
-  new FeatureService({} as never, {} as never, {} as never, cache, {} as never);
+const createFindChain = (result: unknown) => {
+  const chain = {
+    populate: jest.fn(),
+    select: jest.fn(),
+    sort: jest.fn(),
+    lean: jest.fn(),
+    exec: jest.fn().mockResolvedValue(result),
+  };
+  chain.populate.mockReturnValue(chain);
+  chain.select.mockReturnValue(chain);
+  chain.sort.mockReturnValue(chain);
+  chain.lean.mockReturnValue(chain);
+  return chain;
+};
 
-describe('FeatureService usage limits', () => {
-  it('increments usage and applies the daily expiry', async () => {
-    const cache = createCache();
-    cache.get.mockResolvedValue(1);
-    const service = createService(cache);
+const createFixture = () => {
+  const cache = createCache();
+  const planFeaturesChain = createFindChain([]);
+  const subscriptionChain = createFindChain(null);
+  const freePlanChain = createFindChain(null);
+  const pfModel = { find: jest.fn().mockReturnValue(planFeaturesChain) };
+  const subModel = {
+    findOne: jest.fn().mockReturnValue(subscriptionChain),
+  };
+  const planModel = { findOne: jest.fn().mockReturnValue(freePlanChain) };
+  const service = new FeatureService(
+    pfModel as never,
+    subModel as never,
+    planModel as never,
+    cache,
+    {} as never,
+  );
 
-    await service.checkUsageLimit('user-id', FeatureKey.SEND_INTEREST, 3);
+  return {
+    cache,
+    freePlanChain,
+    pfModel,
+    planFeaturesChain,
+    planModel,
+    service,
+    subModel,
+    subscriptionChain,
+  };
+};
 
-    expect(cache.incr.mock.calls).toHaveLength(1);
-    expect(cache.expire.mock.calls).toContainEqual([
-      expect.stringContaining('usage:user-id:'),
-      86_400,
-    ]);
-  });
+const feature = (
+  key: FeatureKey,
+  value: unknown,
+  type?: 'boolean' | 'limit' | 'quota' | 'tier' | 'duration',
+  isActive?: boolean,
+) => ({
+  _id: new Types.ObjectId(),
+  featureId: { key, type, isActive },
+  value,
+});
 
-  it('rejects usage once the plan limit is reached', async () => {
-    const cache = createCache();
-    cache.get.mockResolvedValue(3);
-    const service = createService(cache);
+describe('FeatureService', () => {
+  it('rejects access when no subscription or free plan exists', async () => {
+    const { service } = createFixture();
 
     await expect(
-      service.checkUsageLimit('user-id', FeatureKey.SEND_INTEREST, 3),
+      service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
+    ).rejects.toMatchObject({ code: ErrorCode.SUBSCRIPTION_REQUIRED });
+  });
+
+  it('rejects a feature that is absent from the current plan', async () => {
+    const { freePlanChain, service } = createFixture();
+    freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
+
+    await expect(
+      service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
     ).rejects.toMatchObject({
       code: ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE,
     });
-    expect(cache.incr.mock.calls).toHaveLength(0);
   });
 
-  it('never reports a negative remaining quota', async () => {
-    const cache = createCache();
-    cache.get.mockResolvedValue(8);
-    const service = createService(cache);
+  it.each([
+    ['limit', 3, true],
+    ['quota', 3, true],
+    ['duration', 3, true],
+    ['boolean', true, false],
+    [undefined, 3, false],
+    ['limit', -1, false],
+    ['limit', '3', false],
+  ] as const)(
+    'handles %s feature value %s with usage check=%s',
+    async (type, value, shouldCheckUsage) => {
+      const { cache, freePlanChain, planFeaturesChain, service } =
+        createFixture();
+      freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
+      planFeaturesChain.exec.mockResolvedValue([
+        feature(FeatureKey.SEND_INTEREST, value, type),
+      ]);
+      cache.get.mockResolvedValue(null);
+
+      await expect(
+        service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
+      ).resolves.toEqual({ allowed: true });
+
+      expect(cache.incr).toHaveBeenCalledTimes(shouldCheckUsage ? 1 : 0);
+    },
+  );
+
+  it.each([null, undefined, 1])(
+    'increments available usage when the current value is %s',
+    async (current) => {
+      const { cache, service } = createFixture();
+      cache.get.mockResolvedValue(current);
+
+      await service.checkUsageLimit(USER_ID, FeatureKey.SEND_INTEREST, 3);
+
+      expect(cache.incr).toHaveBeenCalledTimes(1);
+      expect(cache.expire).toHaveBeenCalledWith(
+        expect.stringContaining(`usage:${USER_ID}:`),
+        86_400,
+      );
+    },
+  );
+
+  it('rejects usage once the plan limit is reached', async () => {
+    const { cache, service } = createFixture();
+    cache.get.mockResolvedValue(3);
 
     await expect(
-      service.getRemainingUsage('user-id', FeatureKey.SEND_INTEREST, 5),
-    ).resolves.toBe(0);
+      service.checkUsageLimit(USER_ID, FeatureKey.SEND_INTEREST, 3),
+    ).rejects.toMatchObject({
+      code: ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE,
+    });
+    expect(cache.incr).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    [8, 0],
+    [2, 3],
+    [null, 5],
+    [undefined, 5],
+  ])('calculates remaining usage for %s', async (current, expected) => {
+    const { cache, service } = createFixture();
+    cache.get.mockResolvedValue(current);
+
+    await expect(
+      service.getRemainingUsage(USER_ID, FeatureKey.SEND_INTEREST, 5),
+    ).resolves.toBe(expected);
+  });
+
+  it('returns an empty feature map when no plan is available', async () => {
+    const { service } = createFixture();
+
+    await expect(service.getFeaturesForUser(USER_ID)).resolves.toEqual({});
+  });
+
+  it('maps plan feature values and defaults nullish values to true', async () => {
+    const { freePlanChain, planFeaturesChain, service } = createFixture();
+    freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
+    planFeaturesChain.exec.mockResolvedValue([
+      feature(FeatureKey.SEND_INTEREST, 5, 'limit'),
+      feature(FeatureKey.VIDEO_PROFILE, null, 'boolean'),
+    ]);
+
+    await expect(service.getFeaturesForUser(USER_ID)).resolves.toEqual({
+      [FeatureKey.SEND_INTEREST]: 5,
+      [FeatureKey.VIDEO_PROFILE]: true,
+    });
+  });
+
+  it('evaluates feature-map values as booleans', () => {
+    const { service } = createFixture();
+
+    expect(
+      service.hasFeature(
+        { [FeatureKey.SEND_INTEREST]: 1 },
+        FeatureKey.SEND_INTEREST,
+      ),
+    ).toBe(true);
+    expect(service.hasFeature({}, FeatureKey.SEND_INTEREST)).toBe(false);
+  });
+
+  it('uses cached plan features without querying MongoDB', async () => {
+    const { cache, freePlanChain, pfModel, service } = createFixture();
+    freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
+    cache.get.mockResolvedValue([
+      feature(FeatureKey.SEND_INTEREST, true, 'boolean'),
+    ]);
+
+    await expect(
+      service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
+    ).resolves.toEqual({ allowed: true });
+    expect(pfModel.find).not.toHaveBeenCalled();
+  });
+
+  it('filters inactive plan features and caches active rows', async () => {
+    const { cache, freePlanChain, planFeaturesChain, service } =
+      createFixture();
+    const planId = new Types.ObjectId();
+    const active = feature(FeatureKey.SEND_INTEREST, true, 'boolean', true);
+    const unspecified = feature(FeatureKey.VIDEO_PROFILE, true, 'boolean');
+    const inactive = feature(FeatureKey.PROFILE_BOOST, true, 'boolean', false);
+    const malformed = { _id: new Types.ObjectId(), featureId: undefined };
+    freePlanChain.exec.mockResolvedValue({ _id: planId });
+    planFeaturesChain.exec.mockResolvedValue([
+      active,
+      unspecified,
+      inactive,
+      malformed,
+    ]);
+
+    const result = await service.getFeaturesForUser(USER_ID);
+
+    expect(result).toEqual({
+      [FeatureKey.SEND_INTEREST]: true,
+      [FeatureKey.VIDEO_PROFILE]: true,
+    });
+    expect(cache.set).toHaveBeenCalledWith(
+      `plan_features:${planId.toString()}`,
+      [active, unspecified],
+      300,
+    );
+  });
+
+  it('invalidates cached plan features', async () => {
+    const { cache, service } = createFixture();
+
+    await service.invalidatePlanFeaturesCache('plan-id');
+
+    expect(cache.del).toHaveBeenCalledWith('plan_features:plan-id');
+  });
+
+  it('prefers an active subscription plan over the free-plan fallback', async () => {
+    const { planModel, service, subscriptionChain } = createFixture();
+    const planId = new Types.ObjectId();
+    subscriptionChain.exec.mockResolvedValue({ planId });
+
+    await service.getFeaturesForUser(USER_ID);
+
+    expect(planModel.findOne).not.toHaveBeenCalled();
   });
 });

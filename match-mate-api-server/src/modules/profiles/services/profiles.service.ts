@@ -442,14 +442,6 @@ export class ProfilesService {
     return age;
   }
 
-  private heightLabelToCm(label: string): number {
-    const match = /(\d+)\s*ft\s*(\d+)\s*in/.exec(label);
-    if (!match) return 0;
-    const feet = parseInt(match[1], 10);
-    const inches = parseInt(match[2], 10);
-    return Math.round((feet * 12 + inches) * 2.54);
-  }
-
   async refreshDerivedScores(userId: string) {
     const profile = await this.profileRepo.findByUserId(userId);
     if (!profile) return null;
@@ -723,32 +715,6 @@ export class ProfilesService {
     return this.activityPlatformMap[p?.toLowerCase()] ?? ActivityPlatform.WEB;
   }
 
-  private cmToFeetInches(cm: number): {
-    feet: number;
-    inches: number;
-    formatted: string;
-  } {
-    if (!cm || cm <= 0) {
-      return { feet: 0, inches: 0, formatted: '0 ft 0 in' };
-    }
-
-    const totalInches = cm / 2.54;
-
-    let feet = Math.floor(totalInches / 12);
-    let inches = Math.round(totalInches % 12);
-
-    if (inches === 12) {
-      feet += 1;
-      inches = 0;
-    }
-
-    return {
-      feet,
-      inches,
-      formatted: `${feet} ft ${inches} in`,
-    };
-  }
-
   async onboardingProfile(
     req: AuthenticatedRequest,
     userId: string,
@@ -972,16 +938,5 @@ export class ProfilesService {
     }
 
     return undefined;
-  }
-
-  private getCookieString(req: AppRequest, key: string): string | undefined {
-    const requestObject = req as unknown as Record<string, unknown>;
-    const cookies = requestObject['cookies'];
-    if (typeof cookies !== 'object' || cookies === null) {
-      return undefined;
-    }
-
-    const value = (cookies as Record<string, unknown>)[key];
-    return typeof value === 'string' ? value : undefined;
   }
 }

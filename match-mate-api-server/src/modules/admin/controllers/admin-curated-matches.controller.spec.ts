@@ -34,6 +34,17 @@ describe('AdminCuratedMatchesController', () => {
     expect(response.code).toBe(SuccessCode.MATCHES_FETCHED);
   });
 
+  it('lists curated matches without an optional limit', async () => {
+    curatorService.getAdminCuratedMatches.mockResolvedValue([]);
+
+    await controller.listCuratedMatches();
+
+    expect(curatorService.getAdminCuratedMatches).toHaveBeenCalledWith(
+      undefined,
+      undefined,
+    );
+  });
+
   it('curates and expires matches with audit writes', async () => {
     curatorService.curateMatch.mockResolvedValue({ _id: 'c1' });
     curatorService.expireCuratedMatch.mockResolvedValue({ _id: 'c1' });
@@ -58,5 +69,29 @@ describe('AdminCuratedMatchesController', () => {
     expect(create.code).toBe(SuccessCode.MATCHES_FETCHED);
     expect(expire.code).toBe(SuccessCode.MATCH_REMOVED);
     expect(auditService.write).toHaveBeenCalledTimes(2);
+  });
+
+  it('omits empty curator results from audit snapshots', async () => {
+    curatorService.curateMatch.mockResolvedValue(null);
+    curatorService.expireCuratedMatch.mockResolvedValue(null);
+    const req = { user: { sub: 'admin-1' } };
+
+    await controller.curateMatch(
+      req as never,
+      {
+        userId: 'u1',
+        targetUserId: 'u2',
+      } as never,
+    );
+    await controller.expireCuratedMatch(req as never, 'c1');
+
+    expect(auditService.write).toHaveBeenNthCalledWith(
+      1,
+      expect.objectContaining({ after: undefined }),
+    );
+    expect(auditService.write).toHaveBeenNthCalledWith(
+      2,
+      expect.objectContaining({ after: undefined }),
+    );
   });
 });

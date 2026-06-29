@@ -166,4 +166,42 @@ describe('MatchesController', () => {
     );
     expect(matchesService.getSentInterests).toHaveBeenCalledWith(userId, 3, 15);
   });
+
+  it('dismisses curated matches and returns match statistics', async () => {
+    curatorService.dismissCuratedMatch.mockResolvedValue({ dismissed: true });
+    matchesService.getMatchStats.mockResolvedValue({ matches: 12 });
+
+    const dismissed = await controller.dismissCuratedMatch(req, 'curated-1');
+    const stats = await controller.getMatchStats(req);
+
+    expect(curatorService.dismissCuratedMatch).toHaveBeenCalledWith(
+      userId,
+      'curated-1',
+    );
+    expect(matchesService.getMatchStats).toHaveBeenCalledWith(userId);
+    expect(dismissed.code).toBe(SuccessCode.MATCH_REMOVED);
+    expect(stats.code).toBe(SuccessCode.ANALYTICS_FETCHED);
+  });
+
+  it('unmatches and retrieves a target profile', async () => {
+    matchesService.unmatch.mockResolvedValue({ removed: true });
+    matchesService.getMatchProfile.mockResolvedValue({ userId: targetUserId });
+
+    const unmatched = await controller.unmatch(req, targetUserId, {
+      reason: 'not-compatible',
+    });
+    const profile = await controller.getMatchProfile(req, targetUserId);
+
+    expect(matchesService.unmatch).toHaveBeenCalledWith(
+      userId,
+      targetUserId,
+      'not-compatible',
+    );
+    expect(matchesService.getMatchProfile).toHaveBeenCalledWith(
+      userId,
+      targetUserId,
+    );
+    expect(unmatched.code).toBe(SuccessCode.MATCH_REMOVED);
+    expect(profile.code).toBe(SuccessCode.MATCHES_FETCHED);
+  });
 });

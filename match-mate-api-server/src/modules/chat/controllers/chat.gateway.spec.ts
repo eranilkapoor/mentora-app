@@ -133,6 +133,17 @@ describe('ChatGateway', () => {
     expect(client.disconnect).toHaveBeenCalledWith(true);
   });
 
+  it('logs a generic reason for non-Error authentication failures', async () => {
+    jwtService.verifyAsync.mockRejectedValue('denied');
+    const client = socket();
+
+    await gateway.handleConnection(client);
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Socket authentication failed: Unauthorized',
+    );
+  });
+
   it('updates presence when a connected socket disconnects', () => {
     const lastSeen = new Date('2026-06-23T00:00:00.000Z');
     presence.disconnect.mockReturnValue(userId);
@@ -146,6 +157,14 @@ describe('ChatGateway', () => {
       isOnline: false,
       lastSeen,
     });
+  });
+
+  it('does nothing when a disconnected socket has no active presence', () => {
+    presence.disconnect.mockReturnValue(undefined);
+
+    gateway.handleDisconnect(socket());
+
+    expect(server.to).not.toHaveBeenCalled();
   });
 
   it('joins and leaves conversation rooms after authorization', async () => {
@@ -220,5 +239,61 @@ describe('ChatGateway', () => {
     await expect(
       gateway.handleMessage(socket(), { roomId, content: 'Hello' }),
     ).rejects.toBeInstanceOf(WsException);
+  });
+
+  it.each([
+    [
+      {
+        auth: { token: 'raw-auth-token' },
+        headers: {},
+        query: {},
+      },
+      'raw-auth-token',
+    ],
+    [
+      {
+        auth: {},
+        headers: { authorization: 'Bearer header-token' },
+        query: {},
+      },
+      'header-token',
+    ],
+    [
+      {
+        auth: { token: '   ' },
+        headers: { authorization: ['ignored'] },
+        query: { token: 'Bearer query-token' },
+      },
+      'query-token',
+    ],
+    [
+      {
+        auth: { token: 123 },
+        headers: { authorization: 'Basic ignored' },
+        query: { token: 'raw-query-token' },
+      },
+      'raw-query-token',
+    ],
+  ])('accepts supported socket token shapes', async (handshake, token) => {
+    const client = socket({ handshake });
+
+    await gateway.handleConnection(client);
+
+    expect(jwtService.verifyAsync).toHaveBeenCalledWith(
+      token,
+      expect.any(Object),
+    );
+  });
+
+  it.each([
+    { auth: undefined, headers: {}, query: {} },
+    { auth: { token: '' }, headers: {}, query: { token: '' } },
+    { auth: {}, headers: {}, query: { token: 123 } },
+  ])('rejects unusable socket token shapes', async (handshake) => {
+    const client = socket({ handshake });
+
+    await gateway.handleConnection(client);
+
+    expect(client.disconnect).toHaveBeenCalledWith(true);
   });
 });

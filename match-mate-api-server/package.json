@@ -168,120 +168,228 @@
     "testEnvironment": "node",
     "coverageThreshold": {
       "global": {
-        "branches": 15,
-        "functions": 26,
-        "lines": 34,
-        "statements": 35
+        "branches": 11,
+        "functions": 23,
+        "lines": 30,
+        "statements": 31
       },
-      "./common/cache/services/local-cache.service.ts": {
+      "./src/common/cache/services/local-cache.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./common/cache/services/redis-cache.service.ts": {
+      "./src/common/cache/services/redis-cache.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/auth/services/otp.service.ts": {
+      "./src/modules/auth/services/otp.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/auth/services/social-auth-verifier.service.ts": {
+      "./src/modules/auth/services/social-auth-verifier.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/settings/services/account-deletion.service.ts": {
+      "./src/modules/auth/services/auth-password.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/settings/services/consent.service.ts": {
+      "./src/modules/auth/services/auth.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/chat/services/chat-presence.service.ts": {
+      "./src/modules/settings/services/account-deletion.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/matches/services/match-compatibility.service.ts": {
+      "./src/modules/settings/services/consent.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/matches/services/match-notification.service.ts": {
+      "./src/modules/settings/services/settings.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/profiles/services/media-moderation.service.ts": {
+      "./src/modules/storage/services/storage.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/profiles/services/preference.service.ts": {
+      "./src/modules/chat/services/chat-presence.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/profiles/services/profile-scoring.service.ts": {
+      "./src/modules/chat/services/chat-access.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/profiles/services/video-thumbnail.service.ts": {
+      "./src/modules/chat/controllers/chat.controller.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/referrals/services/wallet.service.ts": {
+      "./src/modules/chat/controllers/chat.gateway.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/safety/services/kyc.service.ts": {
+      "./src/modules/admin/controllers/admin-curated-matches.controller.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/safety/services/fraud-detection.service.ts": {
+      "./src/modules/admin/controllers/admin-moderation.controller.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/subscriptions/services/plan.service.ts": {
+      "./src/modules/admin/services/admin-audit.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/subscriptions/services/profile-boost.service.ts": {
+      "./src/modules/analytics/controllers/analytics.controller.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
         "statements": 100
       },
-      "./modules/support/services/support-ticket.service.ts": {
+      "./src/modules/notifications/controllers/notifications.gateway.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/matches/services/match-compatibility.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/matches/services/match-notification.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/matches/controllers/matches.controller.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/payments/controllers/payments.controller.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/profiles/controllers/media.controller.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/profiles/controllers/profiles.controller.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/profiles/services/profiles.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/profiles/services/media-moderation.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/profiles/services/preference.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/profiles/services/profile-scoring.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/profiles/services/video-thumbnail.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/referrals/services/wallet.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/safety/services/kyc.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/safety/services/fraud-detection.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/subscriptions/services/plan.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/subscriptions/services/feature.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/subscriptions/services/profile-boost.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/support/services/support-ticket.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,

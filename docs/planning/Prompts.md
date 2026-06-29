@@ -11,7 +11,7 @@ This tracker was reconciled against the current API, Expo mobile/web app, shared
 ### API
 
 - [x] All 25 API controllers have unit-level contract specs.
-- [x] API unit suite passes: 61 suites and 218 tests.
+- [x] API unit suite passes: 80 suites and 598 tests.
 - [x] Controller, socket, payment, notification, admin, analytics, migration, feature-gate, media, privacy, and fraud-detection coverage exists.
 - [x] OpenAPI snapshot and generated TypeScript contracts are checked by repository verification.
 - [x] Ordered/checksummed Mongo migrations and index drift auditing exist.
@@ -24,10 +24,10 @@ Current honest API coverage from `npm run test:cov -- --runInBand`:
 
 | Metric     | Current | Target |
 | ---------- | ------: | -----: |
-| Statements |  35.93% |    95% |
-| Branches   |  15.02% |    95% |
-| Functions  |  26.80% |    95% |
-| Lines      |  34.90% |    95% |
+| Statements |  56.35% |    95% |
+| Branches   |  42.03% |    95% |
+| Functions  |  49.32% |    95% |
+| Lines      |  55.53% |    95% |
 
 ### Mobile And Web
 
@@ -60,7 +60,7 @@ The following stale roadmap statements were corrected during this audit:
 
 - Fraud detection batch scanning is implemented, not TODO.
 - API Docker containerization exists, so the remaining task is image build/deploy verification rather than initial implementation.
-- Automated regression totals now reflect 61 API unit suites/218 tests, 1 API E2E suite/4 tests, and 6 mobile suites/32 tests.
+- Automated regression totals now reflect 80 API unit suites/598 tests, 1 API E2E suite/4 tests, and 6 mobile suites/32 tests.
 
 The following roadmap items remain correctly classified as external or provider-dependent: production FCM/MSG91/SES delivery, social provider approval, payment/store credentials, Apple/Google receipt validation, Aadhaar/DigiLocker, Sentry dashboards and source maps, CDN, backups, and multi-region recovery.
 
@@ -82,14 +82,16 @@ The following roadmap items remain correctly classified as external or provider-
    - Add authenticated Socket.IO tests for connect, room isolation, message delivery, read state, typing, reconnect, and revoked-token rejection.
 
 3. [x] **Turn coverage into a ratcheted CI gate.**
-   - API floors now enforce 35% statements, 15% branches, 26% functions, and 34% lines.
+   - API global floors now enforce the uncovered-pool baseline after Jest subtracts explicitly gated files: 31% statements, 11% branches, 23% functions, and 30% lines.
+   - Thirty-seven security, feature-gate, cache, controller, and focused domain files now carry explicit 100% statements/branches/functions/lines thresholds.
    - Mobile floors now enforce 2% statements, 1% branches, 1% functions, and 2% lines across the complete eligible source set.
    - CI replaces duplicate plain unit runs with coverage runs and uploads JSON/LCOV artifacts for both applications.
    - The final 95% application target remains the upward ratchet objective; completed critical modules can enforce stronger per-file thresholds immediately.
 
-4. [ ] **Cover the largest high-risk API services.**
-   - First: `auth.service.ts`, `chat.service.ts`, `profiles.service.ts`, `settings.service.ts`, and `storage.service.ts`.
-   - Next: match discovery/lifecycle, two-factor auth, referrals/wallet, account deletion, subscription plans/boosts, KYC, support tickets, OTP, and social token verification.
+4. [~] **Cover the largest high-risk API services.**
+   - Completed at 100%: the core auth service plus password/OTP/social auth helpers; the core profiles service plus profile scoring/preferences/media moderation/video thumbnails; chat access, presence, HTTP controller, and gateway; cache and storage services; account deletion, consent, and the complete settings service; plan, feature, and boost services; wallet; KYC/fraud; support tickets; match compatibility/notifications; focused admin/analytics/notification/profile/payment/match controllers.
+   - Remaining first: `chat.service.ts` and `payments.service.ts`.
+   - Remaining next: match discovery/lifecycle and curator, two-factor auth, referrals, subscriptions lifecycle, notifications/queue, analytics, RBAC/admin, settings controller, and master seeder.
    - Test denial, idempotency, concurrency, retry, rollback, malformed-provider-response, and not-found branches, not only happy paths.
 
 5. [ ] **Build mobile/web workflow tests.**

@@ -40,6 +40,10 @@ import { FeatureGuard } from '@/modules/subscriptions/guards/feature.guard';
 export class ChatController {
   constructor(private readonly service: ChatService) {}
 
+  private getUserId(req: AppRequest): string {
+    return req.user?.sub ?? '';
+  }
+
   @Public()
   @Get('health')
   health() {
@@ -53,7 +57,7 @@ export class ChatController {
     @Query() query: ListConversationsDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.getConversations(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       query,
     );
     return successResponse(
@@ -69,7 +73,7 @@ export class ChatController {
     @Req() req: AppRequest,
     @Query() query: ListChatContactsDto,
   ): Promise<ApiResponse<unknown>> {
-    const data = await this.service.getContacts(req.user?.sub ?? '', query);
+    const data = await this.service.getContacts(this.getUserId(req), query);
     return successResponse(
       data,
       SuccessCode.CHAT_FETCHED,
@@ -84,7 +88,7 @@ export class ChatController {
     @Body() dto: CreateDirectRoomDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.createOrGetDirectRoom(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       dto,
     );
     return successResponse(data, SuccessCode.CHAT_CREATED, 'Direct room ready');
@@ -97,7 +101,7 @@ export class ChatController {
     @Param('roomId') roomId: string,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.getConversationDetail(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       roomId,
     );
     return successResponse(
@@ -115,7 +119,7 @@ export class ChatController {
     @Query() query: ListMessagesDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.getMessages(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       roomId,
       query,
     );
@@ -134,7 +138,7 @@ export class ChatController {
     @Body() dto: RespondChatRequestDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.respondToChatRequest(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       roomId,
       dto.action,
     );
@@ -152,7 +156,7 @@ export class ChatController {
     @Param('roomId') roomId: string,
     @Body() dto: SendMessageBodyDto,
   ): Promise<ApiResponse<unknown>> {
-    const data = await this.service.sendMessage(req.user?.sub ?? '', {
+    const data = await this.service.sendMessage(this.getUserId(req), {
       ...dto,
       roomId,
     } satisfies SendMessageDto);
@@ -172,7 +176,7 @@ export class ChatController {
     @UploadedFiles() files: Express.Multer.File[],
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.uploadAttachments(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       files ?? [],
     );
     return successResponse(
@@ -190,7 +194,7 @@ export class ChatController {
     @Param('messageId') messageId: string,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.deleteOwnMessage(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       roomId,
       messageId,
     );
@@ -210,7 +214,7 @@ export class ChatController {
     @Body() dto: ReactToMessageDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.reactToMessage(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       roomId,
       messageId,
       dto.emoji,
@@ -230,7 +234,7 @@ export class ChatController {
     @Body() dto: MarkRoomReadDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.markRoomRead(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       roomId,
       dto,
     );
@@ -249,7 +253,7 @@ export class ChatController {
     @Body() dto: UpdateRoomSettingsDto,
   ): Promise<ApiResponse<unknown>> {
     const data = await this.service.updateRoomSettings(
-      req.user?.sub ?? '',
+      this.getUserId(req),
       roomId,
       dto,
     );
