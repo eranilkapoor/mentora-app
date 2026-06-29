@@ -404,7 +404,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | OTP cleanup job                | Scheduled in-memory expired OTP cleanup now runs every 5 minutes.                                                              |
 | DONE    | Analytics aggregation job      | Daily analytics summary job materializes overview and funnel data.                                                             |
 | DONE    | Media cleanup job              | Scheduled deleted-media cleanup removes old files/thumbnails and hard-deletes cleaned records.                                 |
-| TODO    | Fraud detection batch scan     | No batch fake-profile scanner found.                                                                                           |
+| DONE    | Fraud detection batch scan     | Rule-based fraud scanning, a daily scheduled task, a manual runner, and service/task tests are implemented.                    |
 
 ## 14. Frontend Contract And API Standards
 
@@ -417,7 +417,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | API error code registry           | Error/success code constants exist.                                                                                             |
 | PARTIAL | Cursor/offset pagination standard | Pagination exists; contract should be normalized across all list APIs.                                                          |
 | DONE    | OpenAPI to TS SDK generation      | Swagger is snapshotted into `packages/api-contract/openapi.json`; complete immutable route/schema types are generated and checked through root scripts. |
-| PARTIAL | Automated regression tests        | API auth, payments, subscriptions, privacy, chat, sockets, support, static pages, notifications, feature gates, profiles, referrals/wallet, KYC, migrations, index drift, MSG91 delivery, and admin DTO invariants have 105 tests across 35 suites; mobile plan gates, upgrade navigation, settings, sibling editing, and realtime auth classification have 27 tests. The honest API coverage baseline is now 21.39% statements / 20.35% lines after fixing stale coverage config; broader service/repository/job/integration/device coverage remains. |
+| PARTIAL | Automated regression tests        | API coverage spans 60 passing suites/209 tests; mobile coverage spans 5 passing suites/27 tests. Honest API coverage is 35.92% statements, 15.21% branches, 27.01% functions, and 34.88% lines. The 95% target is not yet met, CI does not enforce coverage, and API E2E/device suites remain. |
 | TODO    | Storybook component library       | Not implemented.                                                                                                                |
 | PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.                                                            |
 
@@ -425,7 +425,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 | Status  | Task                          | Evidence / Next Action                                              |
 | ------- | ----------------------------- | ------------------------------------------------------------------- |
-| TODO    | Docker containerization       | No complete Docker setup found in repo root/API/mobile.             |
+| PARTIAL | Docker containerization       | API `Dockerfile` and `.dockerignore` exist; CI image builds, registry publishing, runtime health checks, and deployment verification remain. |
 | TODO    | Kubernetes deployment         | No manifests/Helm charts found.                                     |
 | PARTIAL | CI/CD pipeline                | GitHub Actions now installs all workspaces and runs lint, API/mobile typechecks, contract drift checks, API build, tests, and i18n validation; deployment automation remains TODO. |
 | TODO    | Infrastructure as Code        | No Terraform/IaC found.                                             |
@@ -442,5 +442,5 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 3. Complete Play Console compliance: privacy URL, data safety, app access, content rating, account deletion instructions.
 4. Harden production operations: secrets manager, monitoring/APM, backups, uptime alerts.
 5. Finish monetization polish: native billing SDK, receipt verification, refund/invoice QA.
-6. Expand post-launch product depth: voice messages, translation, fraud detection, cohort analytics, success stories.
-7. Add scale infrastructure: Docker, deployment automation, load tests, CDN, broader queue coverage, and production-data explain-plan checks.
+6. Expand post-launch product depth: voice messages, translation, cohort analytics, and success stories.
+7. Add scale infrastructure: container build/deploy automation, load tests, CDN, broader queue coverage, and production-data explain-plan checks.

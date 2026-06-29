@@ -1104,6 +1104,10 @@ export class MasterSeederService {
     ];
 
     const platformFeatures: [FeatureKey, FeatureValue][] = [
+      // ==========================================
+      //  AUTH & ACCOUNT
+      // ==========================================
+
       [FeatureKey.EMAIL_REGISTRATION, 1],
       [FeatureKey.PHONE_REGISTRATION, 1],
       [FeatureKey.SOCIAL_LOGIN_GOOGLE, 1],
@@ -1116,6 +1120,7 @@ export class MasterSeederService {
       [FeatureKey.DEVICE_MANAGEMENT, 1],
       [FeatureKey.MULTI_DEVICE_LOGIN, 1],
       [FeatureKey.SESSION_HISTORY, 1],
+
       [FeatureKey.CREATE_PROFILE, 1],
       [FeatureKey.EDIT_PROFILE, 1],
       [FeatureKey.DELETE_PROFILE, 1],
@@ -1163,8 +1168,6 @@ export class MasterSeederService {
 
     (
       [
-        [FeatureKey.CREATE_PROFILE, 1],
-        [FeatureKey.EDIT_PROFILE, 1],
         [FeatureKey.UPLOAD_PHOTOS, 5],
         [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 5],
         [FeatureKey.SEND_INTEREST, 10],
@@ -1174,14 +1177,11 @@ export class MasterSeederService {
         [FeatureKey.SHORTLIST_PROFILES, 20],
         [FeatureKey.VIEW_PROFILE_PHOTOS, 1],
         [FeatureKey.PROFILE_VIEWS, 25],
-        [FeatureKey.BASIC_SEARCH, 1],
-        [FeatureKey.BASIC_FILTERS, 1],
         [FeatureKey.MATCH_LIMIT, 20],
         [FeatureKey.DAILY_PROFILE_VIEWS, 25],
         [FeatureKey.CHAT_ACCESS, 1],
         [FeatureKey.MESSAGE_LIMIT, 20],
         [FeatureKey.PROFILE_COMPLETION_SCORE, 1],
-        [FeatureKey.PROFILE_VERIFICATION, 1],
         [FeatureKey.PUSH_NOTIFICATIONS, 1],
         [FeatureKey.REPORT_USER, 1],
         [FeatureKey.BLOCK_USERS, 1],
@@ -1194,8 +1194,6 @@ export class MasterSeederService {
     // ==========================================
 
     const silverFeatures: [FeatureKey, FeatureValue][] = [
-      [FeatureKey.CREATE_PROFILE, 1],
-      [FeatureKey.EDIT_PROFILE, 1],
       [FeatureKey.ADVANCED_PROFILE_COMPLETION, 1],
       [FeatureKey.UPLOAD_PHOTOS, 10],
       [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 10],
@@ -1204,7 +1202,6 @@ export class MasterSeederService {
       [FeatureKey.ACCEPT_INTEREST, 1],
       [FeatureKey.REJECT_INTEREST, 1],
       [FeatureKey.SHORTLIST_PROFILES, 50],
-      [FeatureKey.FAVORITE_PROFILES, 50],
       [FeatureKey.CHAT_ACCESS, 1],
       [FeatureKey.MESSAGE_LIMIT, 100],
       [FeatureKey.READ_RECEIPTS, 1],
@@ -1252,8 +1249,6 @@ export class MasterSeederService {
     // ==========================================
 
     const goldFeatures: [FeatureKey, FeatureValue][] = [
-      [FeatureKey.CREATE_PROFILE, 1],
-      [FeatureKey.EDIT_PROFILE, 1],
       [FeatureKey.ADVANCED_PROFILE_COMPLETION, 1],
       [FeatureKey.UPLOAD_PHOTOS, 20],
       [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 20],
@@ -1300,6 +1295,7 @@ export class MasterSeederService {
       [FeatureKey.CASTE_PREFERENCES, 1],
       [FeatureKey.MANGLIK_MATCHING, 1],
       [FeatureKey.FAMILY_DETAILS, 1],
+      [FeatureKey.SAVED_SEARCHES, 10],
       [FeatureKey.PUSH_NOTIFICATIONS, 1],
       [FeatureKey.EMAIL_NOTIFICATIONS, 1],
       [FeatureKey.MARKETING_NOTIFICATIONS, 1],

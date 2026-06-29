@@ -1,127 +1,132 @@
-# MatchMate Prompt Audit Tracker
+# MatchMate Engineering Audit And Next Work
 
-Last reviewed: 2026-06-24
+Last reviewed: 2026-06-29
 
-## Completed In This Batch
+## Audit Scope
+
+This tracker was reconciled against the current API, Expo mobile/web app, shared API contract, CI workflow, feature packaging policy, and `TASK-ROADMAP.md`. It is the short execution queue; `TASK-ROADMAP.md` remains the full product ledger.
+
+## Verified Current State
 
 ### API
-- [x] Fixed stale API Jest coverage paths in `match-mate-api-server/package.json`.
-- [x] Raised API coverage gate to 95% across statements/branches/functions/lines.
-- [x] Added controller/socket contract tests across payments, matches, chat, notifications, support, profiles/preferences, referrals/wallet, subscriptions, and KYC.
-- [x] Added service-level coverage for export sanitization, profile quality/visibility scoring, media moderation, thumbnail skip behavior, and realtime emit services.
-- [x] API test suite passes with 35 suites and 105 tests.
-- [x] Hardened `payments.gateway.ts` typing by removing `any` and introducing strict request/response contracts.
-- [x] Added missing controller contract tests for auth, settings, and profile media controllers.
-- [x] Added provider smoke scripts for API health and provider configuration checks (`smoke-api.mjs`, `smoke-providers.mjs`).
-- [x] Added API deployment Docker artifacts (`Dockerfile`, `.dockerignore`).
-- [x] Added backend `release:check` automation script with migration/env validation, provider checks, lint/typecheck/tests/build, OpenAPI drift checks, and i18n checks.
-- [x] Added first rule-based backend fraud detection batch scan (service + daily cron task + runner + tests).
-- [x] Improved analytics completeness end-to-end:
-   - Backend taxonomy + daily summary endpoints.
-   - Authenticated mobile analytics tracking endpoint (`POST /analytics/track`).
-   - Mobile lifecycle/auth event wiring for `APP_OPENED`, `APP_BACKGROUND`, `USER_LOGGED_IN`, and `USER_LOGGED_OUT`.
-- [x] Expanded service-level test coverage for settings privacy/export and profile media behavior.
-- [~] Continued API coverage expansion with analytics service and scheduled-task unit tests (analytics aggregation + fraud scan).
-- [~] Continued API coverage expansion with auth service/task tests (`AuthPasswordService`, `OtpCleanupTask`).
-- [~] Continued API coverage expansion with payments service tests (create/verify/webhook/refund branch coverage).
-- [~] Continued API coverage expansion with notifications service tests (dedupe, queue-enabled dispatch path, DLQ admin gating, and channel-failure propagation).
-- [~] Continued API coverage expansion with notification queue service tests (enablement, enqueue defaults, DLQ listing, replay metadata update, and purge partial-failure handling).
-- [~] Continued API coverage expansion with admin module tests across controllers and services (admin, analytics, moderation, plans, payments, notifications, curated matches, RBAC, and audit flows).
 
-### FE (Mobile Hardening)
-- [x] Removed web `localStorage` refresh-token persistence and switched web refresh token to in-memory session storage in `baseApi.service.ts`.
-- [x] Stopped persisting `accessToken` in Redux persist (`auth` slice now persists `user` only).
-- [x] Added startup refresh bootstrap in `AppInitializer.tsx` to restore access token without persisting it.
-- [x] Removed redundant refresh token payload duplication (no refresh token in request body for refresh/logout; header-only path).
-- [x] Added explicit `refresh` auth mutation endpoint in `authApi.service.ts`.
-- [x] Enabled production telemetry flags in EAS profiles:
-  - `EXPO_PUBLIC_ERROR_REPORTING_ENABLED=true`
-  - `EXPO_PUBLIC_ERROR_REPORTING_PROVIDER=sentry`
-  (preview + production)
-- [x] Replaced key runtime `console.error`/`console.warn` paths with `reportError(...)` in:
-  - `src/store/services/baseApi.service.ts`
-  - `src/core/utils/storage.ts`
-  - `src/i18n/index.ts`
-  - `src/features/Settings/Settings.screen.tsx`
-- [x] Added reset-password code exchange scaffold (API + mobile):
-   - API now issues one-time `code` links for forgot-password and supports `POST /auth/reset-password/exchange-code`.
-   - Mobile reset screen now accepts deep-link `code`, exchanges it for a short-lived token, and then performs password reset.
-   - Legacy token-based reset requests were removed from mobile and backend reset flow.
-- [x] Updated OTA/runtime release controls in `app.json`:
-  - `runtimeVersion` -> `{ "policy": "appVersion" }`
-  - `updates.checkAutomatically` -> `ON_LOAD`
+- [x] All 25 API controllers have unit-level contract specs.
+- [x] API suite passes: 60 suites and 209 tests.
+- [x] Controller, socket, payment, notification, admin, analytics, migration, feature-gate, media, privacy, and fraud-detection coverage exists.
+- [x] OpenAPI snapshot and generated TypeScript contracts are checked by repository verification.
+- [x] Ordered/checksummed Mongo migrations and index drift auditing exist.
+- [x] API Dockerfile, provider smoke scripts, release checks, health/readiness endpoints, and graceful shutdown exist.
+- [x] Rule-based fraud batch scanning and its scheduled task exist.
+- [ ] There is no API end-to-end test directory even though `test:e2e` is defined.
+- [ ] The 95% coverage target is not yet met or enforced by CI.
 
-## Current Coverage Baseline (API)
+Current honest API coverage from `npm run test:cov -- --runInBand`:
 
-- `npm run test:cov -- --runInBand` runs and fails the 95% gate intentionally until further coverage is added.
-- Current honest API baseline:
-  - Statements: 21.39%
-  - Branches: 7.73%
-  - Functions: 14.74%
-  - Lines: 20.35%
-- Biggest uncovered areas remain service/repository/task modules: auth, profiles/media, settings/privacy/export, payments, notification providers/queues, admin/RBAC, analytics, storage, migrations branch paths, and scheduled jobs.
-- Biggest uncovered areas remain service/repository/task modules: auth, profiles/media, settings/privacy/export, payments, notification providers/queues, analytics, storage, migrations branch paths, and scheduled jobs.
+| Metric | Current | Target |
+| --- | ---: | ---: |
+| Statements | 35.92% | 95% |
+| Branches | 15.21% | 95% |
+| Functions | 27.01% | 95% |
+| Lines | 34.88% | 95% |
 
-## FE Task Status
+### Mobile And Web
 
-1. [x] High: Session token persistence hardening
-   - Completed: no persisted access token, no web localStorage refresh token.
-   - Remaining: if web is a core production target, move to strict httpOnly cookie-only refresh strategy end-to-end.
+- [x] Mobile suite passes: 5 suites and 27 tests.
+- [x] Existing tests cover realtime auth classification, sibling normalization, settings persistence, plan access, and upgrade prompts.
+- [x] Shared API contracts, secure token bootstrap, settings synchronization, feature prompts, localization, and error reporting foundations exist.
+- [ ] High-traffic screens, RTK Query services, navigation flows, accessibility behavior, and web-specific rendering have little or no automated coverage.
+- [ ] Mobile coverage is not collected or gated in CI.
+- [ ] `useUpgradePrompt.test.ts` exposes a deprecated React Navigation object-form `navigate` call that should be migrated.
 
-2. [x] High: Reset-password deep-link token exposure
-   - Completed. Deep-link reset now uses one-time `code` exchange flow.
-   - Legacy direct token acceptance removed from mobile deep-link parsing and API reset fallback logic.
+### CI And Release
 
-3. [x] High: Production observability disabled
-   - Completed for preview/production EAS env flags.
-   - Remaining: Sentry release health dashboards, alerts, and sourcemap verification in CI.
+- [x] GitHub Actions installs all workspaces and runs lint, typecheck, contract generation checks, migration validation, API build, API/mobile tests, and i18n validation.
+- [ ] CI does not run API or mobile coverage.
+- [ ] No API integration/E2E suite, mobile device E2E suite, load test, or provider sandbox test is part of the release gate.
+- [ ] Production provider credentials and operational evidence remain external launch work.
 
-4. [~] High: Transport hardening (pinning + integrity)
-   - In progress.
-   - Completed now: production API base URL is enforced to HTTPS in mobile config resolution.
-   - Remaining: certificate pinning strategy (API + socket) and device integrity attestation path.
+## Roadmap Reconciliation
 
-5. [x] Medium: Refresh token sent redundantly in header + body
-   - Completed: header-only transport path in mobile client refresh/logout calls.
+The following stale roadmap statements were corrected during this audit:
 
-6. [~] Medium: Runtime console logging
-   - In progress.
-   - Completed for core/high-risk files listed above.
-   - Remaining: replace/route remaining feature-level console logs.
+- Fraud detection batch scanning is implemented, not TODO.
+- API Docker containerization exists, so the remaining task is image build/deploy verification rather than initial implementation.
+- Automated regression totals and coverage now reflect 60 API suites/209 tests and 5 mobile suites/27 tests.
 
-7. [x] Medium: OTA/runtime strategy too static
-   - Completed: runtime policy + load-time update check.
+The following roadmap items remain correctly classified as external or provider-dependent: production FCM/MSG91/SES delivery, social provider approval, payment/store credentials, Apple/Google receipt validation, Aadhaar/DigiLocker, Sentry dashboards and source maps, CDN, backups, and multi-region recovery.
 
-8. [ ] Low: Permission minimization
-   - Pending review with product/feature ownership (voice/location requirements).
+## Next Code Work
 
-## Next Task Need TODO
+### P0 - Correctness And Release Confidence
 
-Best next code-side improvements:
+1. [ ] **Make plan and feature packaging machine-verifiable.**
+   - Add invariant tests around `FeatureKey`, seeded feature metadata, plan-feature mappings, plan duration/trial/renewal rules, and role entitlements.
+   - Fail when a key is missing, duplicated, mapped with the wrong value type, or exposed by mobile without a backend entitlement.
+   - Keep platform capabilities, paid entitlements, numeric limits, and role permissions distinct.
+   - Make the Membership and Subscription/Billing UI render the API-provided current-plan feature set instead of maintaining a second policy list.
 
-1. [Done] Add privacy/export and profile/media service-level tests (high-risk policy behavior).
-2. [Done] Harden payment gateway typing in `payments.gateway.ts` (remove `any`, add strict request/response contracts and tests).
-3. [Done] Add provider smoke-test scripts for staging (FCM, SES/MSG91, payments, S3, social login).
-4. [Done] Complete remaining controller contract tests for auth/profiles/settings. Admin/RBAC/wallet can be expanded further if route coverage is increased.
-5. [Done] Add first rule-based fraud detection batch scan (without ML dependency).
-6. [Done] Improve analytics completeness (event taxonomy + summary endpoints + mobile event wiring).
-   - Completed for high-traffic lifecycle/auth events.
-   - Optional follow-up: expand taxonomy adoption to additional feature-specific events.
-7. [Done] Add API Dockerfile + deployment-safe `.dockerignore`.
-8. Broaden loading/error/empty states for high-traffic FE screens.
-9. [Done] Add automated `release:check` script (CI, migrations, env validation, OpenAPI drift, i18n checks).
+2. [ ] **Create a real API E2E test harness.**
+   - Add `test/jest-e2e.json` and Supertest bootstrap with isolated Mongo state and deterministic Redis/provider substitutes.
+   - Cover register/login/refresh/logout, profile and preference updates, interest-to-match flow, chat authorization, subscription access, payment webhook idempotency, privacy/export/deletion, support tickets, and admin authorization.
+   - Add authenticated Socket.IO tests for connect, room isolation, message delivery, read state, typing, reconnect, and revoked-token rejection.
 
-## Next Tasks
+3. [ ] **Turn coverage into a ratcheted CI gate.**
+   - Run API coverage in CI at the current measured floor first; prevent regressions while increasing thresholds by tested domain.
+   - Keep 95% as the final target and require strong branch coverage for auth, access control, payments, privacy, storage, and subscriptions.
+   - Add mobile coverage collection and establish a measured baseline before setting its thresholds.
 
-1. Implement reset-password one-time code exchange flow across API + mobile deep links.
-2. Add certificate pinning and device integrity attestation strategy.
-3. Finish replacing remaining runtime `console.*` logging with centralized reporting.
-4. Configure production Sentry dashboards, alerting, and sourcemap verification checks.
-5. Continue API coverage expansion toward the 95% gate.
-   - Increment completed: analytics service + task coverage additions.
-   - Increment completed: auth password-reset/change-password and OTP cleanup task coverage additions.
-   - Increment completed: payments verification/webhook/refund guard-path coverage additions.
-   - Increment completed: notifications service dedupe/queue orchestration and delivery-failure branch coverage additions.
-   - Increment completed: notification queue service list/replay/purge branch coverage additions.
-   - Increment completed: admin module API and service-level coverage additions (controllers + admin/rbac/audit services).
-   - Remaining: large uncovered domains still include auth, payments services, storage, and migration branches.
+4. [ ] **Cover the largest high-risk API services.**
+   - First: `auth.service.ts`, `chat.service.ts`, `profiles.service.ts`, `settings.service.ts`, and `storage.service.ts`.
+   - Next: match discovery/lifecycle, two-factor auth, referrals/wallet, account deletion, subscription plans/boosts, KYC, support tickets, OTP, and social token verification.
+   - Test denial, idempotency, concurrency, retry, rollback, malformed-provider-response, and not-found branches, not only happy paths.
+
+5. [ ] **Build mobile/web workflow tests.**
+   - Cover login and token refresh, onboarding/edit profile, discovery filters, interest/shortlist feedback, match details privacy, chat media/presence, membership checkout, settings synchronization, static pages, and account deletion.
+   - Verify loading, empty, offline, permission-denied, feature-locked, provider-failure, dark theme, large text, reduced motion, and web layout states.
+   - Replace the deprecated object-form React Navigation call in `useUpgradePrompt.ts`.
+
+### P1 - Provider And Data Integrity
+
+6. [ ] **Harden storage and media with contract tests.**
+   - Test IAM-role S3 access, private/public object policies, signed URLs or proxy reads, missing objects, range requests for video, thumbnail cleanup, upload rollback, MIME spoofing, size limits, and orphan cleanup.
+
+7. [ ] **Complete payment and subscription integration evidence.**
+   - Add Razorpay/store sandbox flows, webhook replay tests, signature failures, duplicate transactions, refund reconciliation, trial cancellation, renewal/grace/expiry transitions, invoice generation, and current-plan refresh on success/failure.
+
+8. [ ] **Complete notification delivery testing.**
+   - Add queue-worker integration tests for FCM, SES, and MSG91 substitutes; verify retries, deduplication, DLQ replay, opt-outs, quiet hours, invalid token cleanup, and daily-match digest eligibility.
+
+9. [ ] **Test common security and infrastructure code.**
+   - Cover membership/rate-limit guards, exception filter, logging interceptor, correlation middleware, local/Redis cache behavior, Socket.IO Redis adapter fallback, readiness degradation, and graceful shutdown.
+
+10. [ ] **Normalize list APIs and client cache behavior.**
+    - Adopt one pagination contract for matches, chat, notifications, support, admin, wallet, and analytics.
+    - Verify cache tags, optimistic updates, deduplication, stale data invalidation, and reconnect refetch behavior.
+
+### P2 - Product Depth
+
+11. [ ] Expand analytics taxonomy and dashboards for funnels, match success, profile quality, referrals/UTM, revenue, churn, and payment failures.
+12. [ ] Add success-story submission/moderation/CMS workflow.
+13. [ ] Add remote feature configuration and experiment assignment with audit history and safe defaults.
+14. [ ] Add chat translation only after selecting a privacy-reviewed provider and retention policy.
+15. [ ] Add Storybook or an equivalent component catalog with accessibility checks.
+16. [ ] Add offline/retry strategy for selected read flows; do not promise full offline chat without a conflict model.
+
+## Recommended Implementation Order
+
+1. Plan-feature invariant tests and Membership API-driven rendering.
+2. API E2E harness plus auth/profile/interest/chat happy-path tests.
+3. CI coverage ratchet and coverage reporting artifacts.
+4. High-risk service branch tests: auth, profiles, settings, storage, chat.
+5. Mobile workflow/component coverage and navigation warning fix.
+6. Payment, subscription, notification, and S3 sandbox integration tests.
+7. Load, device, accessibility, and release-candidate QA suites.
+
+## Definition Of Production Ready
+
+- Unit, integration, E2E, contract, migration, and provider sandbox suites pass in CI.
+- Coverage cannot regress and reaches the agreed 95% target for critical business/security modules.
+- No plan feature is granted only by client-side UI logic; backend guards remain authoritative.
+- Payment, subscription, storage, notification, and social-auth flows have sandbox or staging evidence.
+- Mobile and web critical journeys pass with light/dark themes, accessibility settings, poor networks, expired sessions, and denied permissions.
+- Production monitoring, alerts, backups, restore drills, key rotation, and rollback procedures have recorded evidence.

@@ -264,3 +264,40 @@ When changing pricing or packaging:
    - No Assisted monthly plan exists
    - No Gold or Platinum half-yearly plan exists
    - All limit/quota/duration feature `defaultValue` fields are numeric (not boolean)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Here's the full feature breakdown. You can filter by plan tab at the top. Here's the design rationale:
+
+**Platform (all plans, non-negotiable):** These are infrastructure and trust features — auth flows, basic profile CRUD, push/email notifications, safety tools (report, block, fraud detection), GDPR/privacy controls, and customer support. Every user gets these regardless of plan.
+
+**Free:** A taste of the app — limited interests (e.g. 5/day), basic search with common filters (religion, caste, location, height), up to 3 photos, basic matching, limited chat and contact views, gamification hooks to drive engagement, and promo/referral entry points to push upgrades.
+
+**Silver:** The first paid step — removes ads, unlocks AI fake profile detection, Kundli matching, matrimony-specific preferences, SMS notifications, saved searches, contact requests, AI basic matching, and blurred photo mode. Good for users who are serious but budget-conscious.
+
+**Gold:** The workhorse plan — unlocks most AI features (conversation starters, recommendations, compatibility scores), voice calls, unlimited chat, video/image sharing in chat, who-viewed-me, advanced filters, income-based search, family features, and daily activity stats.
+
+**Platinum:** The full suite — incognito mode, video calls, AI compatibility deep-analysis, travel mode, unlimited boosts, spotlight, personal matchmaker, weekly reports, international/NRI search, and top-of-search placement.
+
+**Enterprise value guidance:** For B2B/white-label clients, every feature is "custom" — meaning configurable limits, SSO integration, admin dashboards, dedicated relationship managers, SLA-backed support, API access, custom branding, bulk seat pricing, and data residency controls. The features themselves aren't the differentiator; control, compliance, and concierge are.
+
+Click any plan tab to see only what's included in that tier. The "limited" badge means the feature exists but with a count cap (e.g. 5 messages/day, 3 contact views/week) — a key free-to-paid conversion trigger.

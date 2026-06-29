@@ -1,0 +1,314 @@
+
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--font-sans); }
+.wrap { padding: 1rem 0; }
+.tabs { display: flex; gap: 8px; margin-bottom: 1.5rem; flex-wrap: wrap; }
+.tab { padding: 6px 16px; border-radius: var(--radius); border: 0.5px solid var(--border-strong); background: transparent; color: var(--text-secondary); font-size: 13px; cursor: pointer; font-family: var(--font-sans); transition: all 0.15s; }
+.tab.active { background: var(--surface-2); border-color: var(--border-stronger); color: var(--text-primary); font-weight: 500; }
+.legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-secondary); }
+.dot { width: 10px; height: 10px; border-radius: 2px; }
+.dot-plat { background: #2a78d6; }
+.dot-gold { background: #1baf7a; }
+.dot-silver { background: #eda100; }
+.dot-free { background: #898781; }
+.dot-none { background: var(--surface-1); border: 0.5px solid var(--border); }
+.dot-platform { background: #e34948; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { padding: 8px 10px; text-align: left; font-weight: 500; font-size: 12px; color: var(--text-secondary); border-bottom: 0.5px solid var(--border-strong); position: sticky; top: 0; background: var(--surface-2); z-index: 1; }
+th.plan { text-align: center; min-width: 72px; }
+td { padding: 7px 10px; border-bottom: 0.5px solid var(--border); color: var(--text-primary); vertical-align: middle; }
+td.feature-name { font-size: 12px; color: var(--text-primary); }
+td.center { text-align: center; }
+tr:hover td { background: var(--surface-1); }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 500; }
+.check { font-size: 15px; }
+.cat-header td { background: var(--surface-1); font-weight: 500; font-size: 11px; color: var(--text-secondary); letter-spacing: 0.04em; text-transform: uppercase; border-top: 0.5px solid var(--border-strong); padding: 6px 10px; }
+.scroll { max-height: 520px; overflow-y: auto; border: 0.5px solid var(--border); border-radius: 12px; }
+.ent-badge { font-size: 11px; padding: 2px 7px; border-radius: 99px; background: var(--bg-pro); color: var(--text-pro); font-weight: 500; }
+.limit-badge { font-size: 11px; padding: 2px 7px; border-radius: 99px; background: var(--bg-warning); color: var(--text-warning); font-weight: 500; }
+.no-badge { font-size: 11px; padding: 2px 7px; border-radius: 99px; background: var(--bg-danger); color: var(--text-danger); font-weight: 500; }
+.yes-badge { font-size: 11px; padding: 2px 7px; border-radius: 99px; background: var(--bg-success); color: var(--text-success); font-weight: 500; }
+</style>
+
+<div class="wrap">
+<h2 class="sr-only">Feature plan matrix for matrimony app with Free, Silver, Gold, Platinum, and Enterprise tiers</h2>
+
+<div class="tabs">
+  <button class="tab active" onclick="showTab('all')">All features</button>
+  <button class="tab" onclick="showTab('platform')">Platform defaults</button>
+  <button class="tab" onclick="showTab('free')">Free</button>
+  <button class="tab" onclick="showTab('silver')">Silver</button>
+  <button class="tab" onclick="showTab('gold')">Gold</button>
+  <button class="tab" onclick="showTab('platinum')">Platinum</button>
+  <button class="tab" onclick="showTab('enterprise')">Enterprise</button>
+</div>
+
+<div class="legend">
+  <span class="legend-item"><span class="dot dot-platform"></span> Platform (all plans)</span>
+  <span class="legend-item"><span class="dot dot-free"></span> Free</span>
+  <span class="legend-item"><span class="dot dot-silver"></span> Silver</span>
+  <span class="legend-item"><span class="dot dot-gold"></span> Gold</span>
+  <span class="legend-item"><span class="dot dot-plat"></span> Platinum</span>
+</div>
+
+<div class="scroll" id="tableWrap">
+<table id="featureTable">
+<thead>
+<tr>
+  <th style="width:34%">Feature</th>
+  <th class="plan">Platform</th>
+  <th class="plan">Free</th>
+  <th class="plan">Silver</th>
+  <th class="plan">Gold</th>
+  <th class="plan">Platinum</th>
+  <th class="plan">Enterprise</th>
+</tr>
+</thead>
+<tbody id="tbody"></tbody>
+</table>
+</div>
+</div>
+
+<script>
+const P = 'platform', F = 'free', S = 'silver', G = 'gold', PL = 'platinum', E = 'enterprise';
+
+const TICK = {
+  [P]: '<span style="color:#e34948">●</span>',
+  [F]: '<span style="color:#898781">●</span>',
+  [S]: '<span style="color:#eda100">●</span>',
+  [G]: '<span style="color:#1baf7a">●</span>',
+  [PL]: '<span style="color:#2a78d6">●</span>',
+  [E]: '<span class="ent-badge">custom</span>',
+  'limited': '<span class="limit-badge">limited</span>',
+  'no': '<span class="no-badge">—</span>',
+  'yes': '<span class="yes-badge">yes</span>',
+};
+
+const data = [
+  { cat: 'Auth & Account (Platform)' },
+  { name: 'Email registration', tiers: [P,P,P,P,P,P] },
+  { name: 'Phone registration', tiers: [P,P,P,P,P,P] },
+  { name: 'Social login (Google/Apple/Facebook)', tiers: [P,P,P,P,P,P] },
+  { name: 'Email & phone verification', tiers: [P,P,P,P,P,P] },
+  { name: 'OTP login', tiers: [P,P,P,P,P,P] },
+  { name: 'Two-factor auth', tiers: [P,P,P,P,P,P] },
+  { name: 'Device management', tiers: [P,P,P,P,P,P] },
+  { name: 'Multi-device login', tiers: [P,P,P,P,P,P] },
+  { name: 'Session history', tiers: [P,null,null,G,PL,E] },
+
+  { cat: 'Profile' },
+  { name: 'Create / edit / delete profile', tiers: [P,P,P,P,P,P] },
+  { name: 'Profile completion score', tiers: [P,P,P,P,P,P] },
+  { name: 'Multiple profile photos (up to 3)', tiers: [null,'limited',S,G,PL,E] },
+  { name: 'Multiple profile photos (unlimited)', tiers: [null,null,null,null,PL,E] },
+  { name: 'Profile verification (basic)', tiers: [P,P,P,P,P,P] },
+  { name: 'Video profile', tiers: [null,null,null,G,PL,E] },
+  { name: 'Audio intro', tiers: [null,null,null,G,PL,E] },
+  { name: 'Advanced profile completion', tiers: [null,null,S,G,PL,E] },
+  { name: 'Profile boost', tiers: [null,null,null,G,PL,E] },
+  { name: 'Profile highlight / featured', tiers: [null,null,null,null,PL,E] },
+  { name: 'Hide profile photo / private photos', tiers: [null,null,null,G,PL,E] },
+  { name: 'Hide last seen / online status', tiers: [null,null,null,G,PL,E] },
+  { name: 'Incognito mode', tiers: [null,null,null,null,PL,E] },
+  { name: 'ID verification / verified badge', tiers: [null,null,S,G,PL,E] },
+  { name: 'Horoscope upload / astrology report', tiers: [null,null,null,G,PL,E] },
+
+  { cat: 'Engagement' },
+  { name: 'Send & view interests (limited)', tiers: [null,'limited','limited',null,null,E] },
+  { name: 'Send & view interests (unlimited)', tiers: [null,null,null,G,PL,E] },
+  { name: 'Accept / reject interest', tiers: [null,F,S,G,PL,E] },
+  { name: 'Priority interest', tiers: [null,null,null,G,PL,E] },
+  { name: 'Shortlist profiles', tiers: [null,'limited',S,G,PL,E] },
+  { name: 'Favorite profiles', tiers: [null,null,null,G,PL,E] },
+
+  { cat: 'Chat & Communication' },
+  { name: 'Basic chat access', tiers: [null,'limited',S,G,PL,E] },
+  { name: 'Unlimited chat', tiers: [null,null,null,G,PL,E] },
+  { name: 'Chat with matches only', tiers: [null,null,S,G,PL,E] },
+  { name: 'Read receipts & typing indicator', tiers: [null,null,null,G,PL,E] },
+  { name: 'Send images/videos in chat', tiers: [null,null,null,G,PL,E] },
+  { name: 'Voice notes', tiers: [null,null,null,null,PL,E] },
+  { name: 'Voice call', tiers: [null,null,null,G,PL,E] },
+  { name: 'Video call', tiers: [null,null,null,null,PL,E] },
+  { name: 'Message translation', tiers: [null,null,null,G,PL,E] },
+
+  { cat: 'Contact Access' },
+  { name: 'View contact (limited)', tiers: [null,'limited',S,null,null,E] },
+  { name: 'Request contact', tiers: [null,null,S,G,PL,E] },
+  { name: 'Direct contact access', tiers: [null,null,null,null,PL,E] },
+  { name: 'View phone number / email', tiers: [null,null,null,G,PL,E] },
+
+  { cat: 'Media' },
+  { name: 'Upload photos', tiers: [null,F,S,G,PL,E] },
+  { name: 'Upload videos', tiers: [null,null,null,G,PL,E] },
+  { name: 'View profile photos', tiers: [null,F,S,G,PL,E] },
+  { name: 'View private photos', tiers: [null,null,null,G,PL,E] },
+  { name: 'AI photo verification', tiers: [null,null,S,G,PL,E] },
+  { name: 'Blurred photo mode', tiers: [null,null,S,G,PL,E] },
+  { name: 'Private album / request photos', tiers: [null,null,null,G,PL,E] },
+
+  { cat: 'Search & Discovery' },
+  { name: 'Basic search & filters', tiers: [null,F,S,G,PL,E] },
+  { name: 'Search by religion / caste / location', tiers: [null,F,S,G,PL,E] },
+  { name: 'Search by education / profession / height', tiers: [null,F,S,G,PL,E] },
+  { name: 'Location-based search', tiers: [null,F,S,G,PL,E] },
+  { name: 'Advanced search & filters', tiers: [null,null,null,G,PL,E] },
+  { name: 'Search by income', tiers: [null,null,S,G,PL,E] },
+  { name: 'Unlimited search & profile views', tiers: [null,null,null,G,PL,E] },
+  { name: 'Global / international search', tiers: [null,null,null,null,PL,E] },
+  { name: 'NRI matching', tiers: [null,null,null,null,PL,E] },
+  { name: 'Saved & recent searches', tiers: [null,null,S,G,PL,E] },
+  { name: 'Who viewed me / profile analytics', tiers: [null,null,null,G,PL,E] },
+  { name: 'Top in search / priority ranking', tiers: [null,null,null,null,PL,E] },
+
+  { cat: 'Matchmaking & AI' },
+  { name: 'Basic matching', tiers: [null,F,S,G,PL,E] },
+  { name: 'Advanced matching', tiers: [null,null,S,G,PL,E] },
+  { name: 'Smart matches / AI recommendations', tiers: [null,null,null,G,PL,E] },
+  { name: 'AI profile summary / photo selection', tiers: [null,null,null,G,PL,E] },
+  { name: 'AI compatibility analysis', tiers: [null,null,null,null,PL,E] },
+  { name: 'AI conversation starter', tiers: [null,null,null,G,PL,E] },
+  { name: 'AI fake profile detection', tiers: [null,null,S,G,PL,E] },
+  { name: 'Compatibility & personality score', tiers: [null,null,null,G,PL,E] },
+  { name: 'Strict / smart preferences', tiers: [null,null,null,G,PL,E] },
+
+  { cat: 'Matrimony Specific' },
+  { name: 'Kundli matching', tiers: [null,null,S,G,PL,E] },
+  { name: 'Religion / caste preferences', tiers: [null,null,S,G,PL,E] },
+  { name: 'Manglik matching', tiers: [null,null,null,G,PL,E] },
+  { name: 'Community-based matching', tiers: [null,null,null,G,PL,E] },
+  { name: 'Marriage timeline / children preference', tiers: [null,null,S,G,PL,E] },
+  { name: 'Eating & lifestyle preferences', tiers: [null,null,S,G,PL,E] },
+
+  { cat: 'Family Features' },
+  { name: 'Family managed profile', tiers: [null,null,null,G,PL,E] },
+  { name: 'Parent login / guardian access', tiers: [null,null,null,G,PL,E] },
+  { name: 'Family details & preferences', tiers: [null,null,S,G,PL,E] },
+  { name: 'Family contact visibility', tiers: [null,null,null,null,PL,E] },
+
+  { cat: 'Analytics' },
+  { name: 'Interest & chat analytics', tiers: [null,null,null,G,PL,E] },
+  { name: 'Engagement score / match success rate', tiers: [null,null,null,null,PL,E] },
+  { name: 'Daily activity stats', tiers: [null,null,null,G,PL,E] },
+  { name: 'Weekly reports', tiers: [null,null,null,null,PL,E] },
+
+  { cat: 'Notifications' },
+  { name: 'Push & email notifications', tiers: [P,P,P,P,P,P] },
+  { name: 'SMS notifications', tiers: [null,null,S,G,PL,E] },
+  { name: 'Instant match alerts', tiers: [null,null,null,G,PL,E] },
+  { name: 'Daily match digest', tiers: [null,null,S,G,PL,E] },
+
+  { cat: 'Location Features' },
+  { name: 'Nearby profiles', tiers: [null,null,null,G,PL,E] },
+  { name: 'Location-based matching', tiers: [null,null,S,G,PL,E] },
+  { name: 'Travel mode', tiers: [null,null,null,null,PL,E] },
+
+  { cat: 'Premium Experience' },
+  { name: 'Ad-free experience', tiers: [null,null,S,G,PL,E] },
+  { name: 'Priority support', tiers: [null,null,null,G,PL,E] },
+  { name: 'VIP / Premium badge', tiers: [null,null,S,G,PL,E] },
+  { name: 'Relationship manager', tiers: [null,null,null,null,PL,E] },
+  { name: 'Dedicated relationship manager', tiers: [null,null,null,null,null,E] },
+  { name: 'Concierge / personal matchmaker', tiers: [null,null,null,null,PL,E] },
+
+  { cat: 'Boost / Monetization' },
+  { name: 'Weekly boosts', tiers: [null,null,S,G,PL,E] },
+  { name: 'Monthly boosts', tiers: [null,null,null,G,PL,E] },
+  { name: 'Unlimited boosts', tiers: [null,null,null,null,PL,E] },
+  { name: 'Spotlight profile', tiers: [null,null,null,null,PL,E] },
+  { name: 'One-time boost purchase', tiers: [null,F,S,G,PL,E] },
+
+  { cat: 'Payments & Subscriptions' },
+  { name: 'Auto-renewal & grace period', tiers: [P,P,P,P,P,P] },
+  { name: 'Promo codes', tiers: [null,F,S,G,PL,E] },
+  { name: 'Referral rewards / bonus', tiers: [null,null,S,G,PL,E] },
+  { name: 'Wallet system / earn credits', tiers: [null,null,null,G,PL,E] },
+
+  { cat: 'Safety & Trust' },
+  { name: 'Report user / block users', tiers: [P,P,P,P,P,P] },
+  { name: 'Safe mode / restricted profiles', tiers: [P,P,P,P,P,P] },
+  { name: 'Fraud & spam detection', tiers: [P,P,P,P,P,P] },
+  { name: 'Manual profile review', tiers: [P,P,P,P,P,P] },
+
+  { cat: 'Limit Based Features' },
+  { name: 'Shortlist limit', tiers: [null,'limited',S,G,PL,E] },
+  { name: 'Contact view limit', tiers: [null,'limited',S,G,PL,E] },
+  { name: 'Message limit', tiers: [null,'limited',S,G,PL,E] },
+  { name: 'Match limit', tiers: [null,'limited',S,G,PL,E] },
+
+  { cat: 'Gamification' },
+  { name: 'Streak & daily login rewards', tiers: [null,F,S,G,PL,E] },
+  { name: 'Match quiz', tiers: [null,F,S,G,PL,E] },
+  { name: 'Compatibility games', tiers: [null,null,S,G,PL,E] },
+
+  { cat: 'Support & Misc' },
+  { name: 'Customer support chat / tickets', tiers: [P,P,P,P,P,P] },
+  { name: 'Account export & deletion', tiers: [P,P,P,P,P,P] },
+  { name: 'GDPR / data export', tiers: [P,P,P,P,P,P] },
+  { name: 'Consent management / privacy controls', tiers: [P,P,P,P,P,P] },
+];
+
+const PLANS = [P, F, S, G, PL, E];
+
+function renderTier(val) {
+  if (!val) return '<td class="center">' + TICK.no + '</td>';
+  if (val === 'limited') return '<td class="center">' + TICK.limited + '</td>';
+  if (val === P) return '<td class="center">' + TICK[P] + '</td>';
+  if (val === F) return '<td class="center">' + TICK.yes + '</td>';
+  if (val === S) return '<td class="center">' + TICK.yes + '</td>';
+  if (val === G) return '<td class="center">' + TICK.yes + '</td>';
+  if (val === PL) return '<td class="center">' + TICK.yes + '</td>';
+  if (val === E) return '<td class="center">' + TICK[E] + '</td>';
+  return '<td class="center">—</td>';
+}
+
+let currentTab = 'all';
+
+function showTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  let html = '';
+  
+  data.forEach(row => {
+    if (row.cat) {
+      if (currentTab === 'all' || shouldShowCategory(row.cat)) {
+        html += `<tr class="cat-header"><td colspan="7">${row.cat}</td></tr>`;
+      }
+      return;
+    }
+    
+    const [pVal, fVal, sVal, gVal, plVal, eVal] = row.tiers;
+    
+    if (currentTab === 'platform' && pVal !== P) return;
+    if (currentTab === 'free' && !fVal && pVal !== P) return;
+    if (currentTab === 'silver' && !sVal && pVal !== P) return;
+    if (currentTab === 'gold' && !gVal && pVal !== P) return;
+    if (currentTab === 'platinum' && !plVal && pVal !== P) return;
+    if (currentTab === 'enterprise' && !eVal && pVal !== P) return;
+    
+    html += `<tr>
+      <td class="feature-name">${row.name}</td>
+      ${renderTier(pVal)}
+      ${renderTier(fVal)}
+      ${renderTier(sVal)}
+      ${renderTier(gVal)}
+      ${renderTier(plVal)}
+      ${renderTier(eVal)}
+    </tr>`;
+  });
+  
+  tbody.innerHTML = html;
+}
+
+function shouldShowCategory(cat) { return true; }
+
+renderTable();
+</script>
