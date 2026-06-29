@@ -161,17 +161,6 @@ export class SettingsController {
     );
   }
 
-  @Put('account')
-  updateAccount(
-    @Req() req: AuthenticatedRequest,
-    @Body() dto: Record<string, unknown>,
-  ) {
-    return this.respond(
-      this.settingsService.updateAccount(req.user.sub, dto),
-      SuccessCode.SETTINGS_UPDATED,
-    );
-  }
-
   @Post('account/deactivate')
   @HttpCode(HttpStatus.OK)
   deactivateAccount(

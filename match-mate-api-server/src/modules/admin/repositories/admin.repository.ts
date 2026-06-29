@@ -28,7 +28,7 @@ export class AdminRepository {
   findUsersForBroadcast(filter: FilterQuery<UserDocument>, limit = 1000) {
     return this.userModel
       .find(filter)
-      .select('_id email phone membership isBlocked isVerified')
+      .select('_id email phone membership status')
       .limit(limit)
       .lean();
   }

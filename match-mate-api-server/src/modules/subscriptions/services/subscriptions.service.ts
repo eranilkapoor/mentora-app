@@ -139,7 +139,9 @@ export class SubscriptionsService {
       !requestedPlan ||
       !requestedPlan.isActive ||
       requestedPlan.price <= 0 ||
-      requestedPlan.planType === PlanType.PROFILE_BOOST
+      requestedPlan.planType === PlanType.PROFILE_BOOST ||
+      requestedPlan.planType === PlanType.ENTERPRISE ||
+      requestedPlan.isCustom
     ) {
       return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
         reason: 'trial_plan_not_available',

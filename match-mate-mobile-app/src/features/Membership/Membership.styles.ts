@@ -50,7 +50,8 @@ export const membershipStyles = (
     // Fixed: accentLight → rgba on primary background
     heroSubtitle: {
       fontSize: 13,
-      color: theme.colors.accentLight,
+      color: theme.colors.white,
+      opacity: 0.86,
       lineHeight: 19,
       marginBottom: 16,
     },
@@ -59,10 +60,14 @@ export const membershipStyles = (
       gap: 12,
     },
     heroStat: {
-      backgroundColor: theme.colors.black + '0D', // 5% opacity on black for contrast on any background
+      flex: 1,
+      minWidth: 0,
+      backgroundColor: 'rgba(255, 255, 255, 0.14)',
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: 'rgba(255, 255, 255, 0.24)',
       borderRadius: 10,
-      paddingHorizontal: 12,
-      paddingVertical: 7,
+      paddingHorizontal: 6,
+      paddingVertical: 9,
       alignItems: 'center',
     },
     heroStatValue: {
@@ -72,8 +77,11 @@ export const membershipStyles = (
     },
     heroStatLabel: {
       fontSize: 10,
-      color: theme.colors.accentLight,
+      lineHeight: 14,
+      color: theme.colors.white,
+      opacity: 0.82,
       marginTop: 1,
+      textAlign: 'center',
     },
 
     // ─── Tabs ─────────────────────────────────────────────────────────────
@@ -151,6 +159,12 @@ export const membershipStyles = (
       marginBottom: 20,
       gap: 8,
     },
+    planRowTwo: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      marginBottom: 20,
+      gap: 12,
+    },
     planCard: {
       width: 132,
       minHeight: 150,
@@ -171,6 +185,11 @@ export const membershipStyles = (
         },
         web: {},
       }),
+    },
+    planCardExpanded: {
+      flex: 1,
+      width: 'auto',
+      minWidth: 0,
     },
     planCardActive: {
       borderColor: theme.colors.primary,
@@ -685,6 +704,82 @@ export const membershipStyles = (
     cardTopAccent: {
       height: 4,
       backgroundColor: theme.colors.accent,
+    },
+    enterpriseCard: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: 12,
+      borderWidth: 1,
+      borderColor: theme.colors.primaryBorder,
+      overflow: 'hidden',
+      marginBottom: 20,
+    },
+    enterpriseHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingTop: 16,
+    },
+    enterpriseIcon: {
+      width: 40,
+      height: 40,
+      borderRadius: 8,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
+    },
+    enterpriseHeaderCopy: {
+      flex: 1,
+      minWidth: 0,
+    },
+    enterpriseEyebrow: {
+      fontSize: 10,
+      lineHeight: 14,
+      fontWeight: '800',
+      color: theme.colors.primary,
+    },
+    enterpriseTitle: {
+      fontSize: 18,
+      lineHeight: 24,
+      fontWeight: '800',
+      color: theme.colors.textPrimary,
+    },
+    enterpriseDescription: {
+      paddingHorizontal: 16,
+      paddingTop: 14,
+      paddingBottom: 16,
+      fontSize: 13,
+      lineHeight: 20,
+      color: theme.colors.textSecondary,
+    },
+    enterpriseFooter: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      paddingHorizontal: 16,
+      paddingVertical: 12,
+      backgroundColor: theme.colors.backgroundLight,
+      borderTopWidth: StyleSheet.hairlineWidth,
+      borderTopColor: theme.colors.divider,
+    },
+    enterprisePrice: {
+      flex: 1,
+      fontSize: 16,
+      lineHeight: 22,
+      fontWeight: '800',
+      color: theme.colors.textPrimary,
+    },
+    enterpriseTerms: {
+      paddingHorizontal: 10,
+      paddingVertical: 5,
+      borderRadius: 12,
+      fontSize: 11,
+      fontWeight: '700',
+      color: theme.colors.primary,
+      backgroundColor: theme.colors.primaryLight,
     },
     assistedDescriptionText: {
       paddingHorizontal: 16,

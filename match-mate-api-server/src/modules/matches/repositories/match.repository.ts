@@ -1,7 +1,6 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { FlattenMaps, Model, Types } from 'mongoose';
-import { AppLogger } from '@/common/logger/logger.service';
 import { Interest, InterestDocument } from '../schemas/interest.schema';
 import { InterestStatus } from '../enums/match.enums';
 import { Match, MatchDocument } from '../schemas/match.schema';
@@ -58,7 +57,7 @@ type LeanInteraction = FlattenMaps<Interaction> & {
 };
 
 @Injectable()
-export class MatchRepository implements OnModuleInit {
+export class MatchRepository {
   constructor(
     @InjectModel(Interest.name)
     private readonly interestModel: Model<InterestDocument>,
@@ -77,13 +76,7 @@ export class MatchRepository implements OnModuleInit {
 
     @InjectModel(Interaction.name)
     private readonly interactionModel: Model<InteractionDocument>,
-
-    private readonly logger: AppLogger,
   ) {}
-
-  async onModuleInit(): Promise<void> {
-    await this.dropLegacyUsersIndex();
-  }
 
   async sendInterest(
     senderId: string,
@@ -133,16 +126,7 @@ export class MatchRepository implements OnModuleInit {
     user2: string,
     expiresAt?: Date,
   ): Promise<LeanMatch> {
-    try {
-      return await this.upsertMatch(user1, user2, expiresAt);
-    } catch (error) {
-      if (this.isLegacyUsersIndexDuplicate(error)) {
-        await this.dropLegacyUsersIndex();
-        return this.upsertMatch(user1, user2, expiresAt);
-      }
-
-      throw error;
-    }
+    return this.upsertMatch(user1, user2, expiresAt);
   }
 
   private async upsertMatch(
@@ -170,41 +154,6 @@ export class MatchRepository implements OnModuleInit {
       { new: true, upsert: true },
     );
     return doc.toObject() as LeanMatch;
-  }
-
-  private isLegacyUsersIndexDuplicate(error: unknown): boolean {
-    return (
-      typeof error === 'object' &&
-      error !== null &&
-      'code' in error &&
-      (error as { code?: number }).code === 11000 &&
-      String((error as { message?: string }).message ?? '').includes('users_1')
-    );
-  }
-
-  private async dropLegacyUsersIndex(): Promise<void> {
-    try {
-      const indexes = await this.matchModel.collection.indexes();
-      const legacyUsersIndex = indexes.find(
-        (index) => index.name === 'users_1',
-      );
-
-      if (!legacyUsersIndex) {
-        return;
-      }
-
-      await this.matchModel.collection.dropIndex('users_1');
-      this.logger.warn(
-        'Dropped legacy matches.users index. Match uniqueness is now handled by userId + targetUserId.',
-      );
-    } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
-      if (message.includes('index not found')) {
-        return;
-      }
-
-      this.logger.warn(`Unable to drop legacy matches.users index: ${message}`);
-    }
   }
 
   async getMatchesForUser(

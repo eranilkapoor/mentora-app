@@ -1,5 +1,5 @@
 import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
@@ -47,18 +47,18 @@ export function AssistedTab({
         </Text>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.planRow}
-      >
+      <View style={styles.planRowTwo}>
         {displayPlans.map((plan) => {
           const active = selectedPlan === plan.id;
 
           return (
             <TouchableOpacity
               key={plan.id}
-              style={[styles.planCard, active && styles.planCardActive]}
+              style={[
+                styles.planCard,
+                styles.planCardExpanded,
+                active && styles.planCardActive,
+              ]}
               onPress={() => {
                 if (plan.id) onSelectPlan(plan.id);
               }}
@@ -73,7 +73,7 @@ export function AssistedTab({
               {plan.best ? (
                 <View style={styles.popularBadge}>
                   <Text style={styles.popularBadgeText}>
-                    {t('membership.top_badge')}
+                    {t('membership.popular_badge')}
                   </Text>
                 </View>
               ) : null}
@@ -100,7 +100,7 @@ export function AssistedTab({
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </View>
 
       <View style={styles.featureTableCard}>
         <View style={styles.featureTableHeader}>

@@ -32,6 +32,9 @@ export class Plan {
   @Prop({ default: false })
   autoRenewDefault!: boolean;
 
+  @Prop({ default: false })
+  isCustom!: boolean;
+
   @Prop({ default: 'INR' })
   currency!: string;
 

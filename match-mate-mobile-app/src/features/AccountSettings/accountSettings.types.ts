@@ -21,12 +21,9 @@ export interface LinkedAccount {
 export interface AccountSettings {
   emailVerified: boolean;
   phoneVerified: boolean;
-  profileVerified?: boolean;
-  verification?: {
-    isVerified?: boolean;
-    isProfileVerified?: boolean;
-    isEmailVerified?: boolean;
-    isPhoneVerified?: boolean;
+  profileVerification: {
+    status: 'not_started' | 'pending' | 'approved' | 'rejected';
+    provider?: 'manual' | 'aadhaar' | 'digilocker' | 'liveness';
     verifiedAt?: string;
   };
   isDeactivated: boolean;
@@ -57,8 +54,6 @@ export interface ConnectProviderPayload {
 /**
  * Update Account Settings
  */
-export interface UpdateAccountSettingsPayload extends Partial<AccountSettings> {}
-
 export interface RequestEmailChangePayload {
   email: string;
 }

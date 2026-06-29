@@ -64,9 +64,6 @@ export class Profile {
   @Prop({ default: false })
   isPremium!: boolean;
 
-  @Prop({ default: false })
-  isVerified!: boolean;
-
   @Prop({
     type: String,
     enum: ProfileStatus,

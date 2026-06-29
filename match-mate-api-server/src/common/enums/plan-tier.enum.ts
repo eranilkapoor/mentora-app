@@ -3,6 +3,7 @@ export enum PlanTier {
   SILVER = 'silver',
   GOLD = 'gold',
   PLATINUM = 'platinum',
+  ENTERPRISE = 'enterprise',
 }
 
 export enum BillingCycle {
@@ -12,4 +13,5 @@ export enum BillingCycle {
   QUARTERLY = 'quarterly',
   HALF_YEARLY = 'half_yearly',
   YEARLY = 'yearly',
+  CUSTOM = 'custom',
 }

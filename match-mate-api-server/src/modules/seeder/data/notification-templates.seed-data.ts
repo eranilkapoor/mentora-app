@@ -305,7 +305,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     createdBy: 'system',
   },
   {
-    key: 'ID_VERIFICATION_APPROVED',
+    key: 'IDENTITY_VERIFICATION_APPROVED',
     eventKey: 'id.verification.approved',
     locale: 'en',
     name: 'ID Verification Approved',
@@ -333,7 +333,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     createdBy: 'system',
   },
   {
-    key: 'ID_VERIFICATION_REJECTED',
+    key: 'IDENTITY_VERIFICATION_REJECTED',
     eventKey: 'id.verification.rejected',
     locale: 'en',
     name: 'ID Verification Rejected',

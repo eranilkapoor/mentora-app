@@ -8,7 +8,7 @@ const createDto = (values: Partial<UpdateUserStatusDto>) =>
   });
 
 describe('UpdateUserStatusDto', () => {
-  it.each([{ isBlocked: false }, { isVerified: true }])(
+  it.each([{ isBlocked: false }, { isBlocked: true }])(
     'accepts a status update containing %p',
     async (values) => {
       await expect(validate(createDto(values))).resolves.toHaveLength(0);
@@ -17,13 +17,10 @@ describe('UpdateUserStatusDto', () => {
 
   it('rejects requests without a status field', async () => {
     const errors = await validate(createDto({ reason: 'No status supplied' }));
-    const statusSelectionError = errors.find(
-      ({ property }) => property === '_statusSelection',
+    const isBlockedError = errors.find(
+      ({ property }) => property === 'isBlocked',
     );
 
-    expect(statusSelectionError?.constraints).toMatchObject({
-      atLeastOneUserStatusField:
-        'Either isBlocked or isVerified must be provided',
-    });
+    expect(isBlockedError?.constraints?.isBoolean).toBeDefined();
   });
 });

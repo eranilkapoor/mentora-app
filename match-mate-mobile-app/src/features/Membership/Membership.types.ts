@@ -7,7 +7,7 @@ export interface MembershipScreenProps {
   navigation: BottomNavigationProp;
 }
 
-export type MembershipTab = 'self' | 'assisted';
+export type MembershipTab = 'self' | 'assisted' | 'enterprise';
 
 export interface FeatureRowProps {
   label: string;
@@ -39,6 +39,7 @@ export interface DisplayPlan {
   renewalLabel?: string;
   tier?: string;
   isFree?: boolean;
+  isCustom?: boolean;
   best?: boolean;
   description?: string;
   featureValues: Record<string, string>;

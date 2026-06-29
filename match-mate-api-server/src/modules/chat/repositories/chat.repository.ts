@@ -35,6 +35,28 @@ import {
   MediaModerationStatus,
   MediaStatus,
 } from '../../profiles/enums/profile-media.enums';
+import {
+  Verification,
+  VerificationDocument,
+} from '../../safety/schemas/verification.schema';
+import { VerificationStatus } from '../../safety/enums/verification.enums';
+
+export interface ChatProfileSummary {
+  userId: Types.ObjectId;
+  personal?: {
+    firstName?: string;
+    lastName?: string;
+    city?: string;
+    country?: string;
+  };
+  isPremium?: boolean;
+  profileImages?: Array<{
+    url?: string;
+    isPrimary?: boolean;
+    isActive?: boolean;
+  }>;
+  verificationStatus: VerificationStatus;
+}
 @Injectable()
 export class ChatRepository {
   constructor(
@@ -61,6 +83,9 @@ export class ChatRepository {
 
     @InjectModel(UserBlock.name)
     private readonly userBlockModel: Model<UserBlockDocument>,
+
+    @InjectModel(Verification.name)
+    private readonly verificationModel: Model<VerificationDocument>,
   ) {}
 
   async findUserById(userId: string) {
@@ -73,10 +98,28 @@ export class ChatRepository {
       .lean();
   }
 
-  async findProfilesByUserIds(userIds: string[]) {
-    return this.profileModel
-      .find({ userId: { $in: this.toObjectIds(userIds) } })
-      .lean();
+  async findProfilesByUserIds(
+    userIds: string[],
+  ): Promise<ChatProfileSummary[]> {
+    const objectIds = this.toObjectIds(userIds);
+    const [profiles, verifiedUserIds] = await Promise.all([
+      this.profileModel
+        .find({ userId: { $in: objectIds } })
+        .lean<Omit<ChatProfileSummary, 'verificationStatus'>[]>()
+        .exec(),
+      this.verificationModel.distinct('userId', {
+        userId: { $in: objectIds },
+        status: VerificationStatus.APPROVED,
+      }),
+    ]);
+    const verified = new Set(verifiedUserIds.map(String));
+
+    return profiles.map((profile) => ({
+      ...profile,
+      verificationStatus: verified.has(String(profile.userId))
+        ? VerificationStatus.APPROVED
+        : VerificationStatus.NOT_STARTED,
+    }));
   }
 
   async findPrimaryImageMediaByUserIds(userIds: string[]) {

@@ -92,7 +92,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | Status  | Task                                    | Evidence / Next Action                                                                                |
 | ------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------- |
 | DONE    | Email/phone verification                | Auth verification and OTP flows exist.                                                                |
-| PARTIAL | Profile KYC verification                | Safety/KYC module and mobile KYC screen exist; operational workflow needs production setup.           |
+| PARTIAL | Profile KYC verification                | `Verification.status` is the canonical identity outcome; duplicate profile/settings/KYC booleans were removed. Operational workflow and provider setup still need production verification. |
 | PARTIAL | Aadhaar/DigiLocker eKYC                 | `ekyc/initiate` route exists; real government provider integration/credentials are not launch-proven. |
 | TODO    | Selfie-to-photo liveness check          | No real liveness provider integration found.                                                          |
 | DONE    | Document upload and manual review queue | KYC/media/admin moderation queues exist.                                                              |
@@ -259,6 +259,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | Status  | Task                                 | Evidence / Next Action                                                                                                                                                                                        |
 | ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | DONE    | Plan system                          | Plans/features schemas, seed data, admin APIs, and mobile membership UI exist.                                                                                                                                |
+| DONE    | Enterprise custom plan                | `ENTERPRISE_CUSTOM` maps every capability to custom terms, adds SSO/API/branding/SLA/data-residency features, routes to sales, and is blocked from checkout/trial/coupon/store flows.                         |
 | DONE    | Feature access control               | Feature guard/decorator/service exist.                                                                                                                                                                        |
 | DONE    | Upgrade/downgrade/plan lifecycle     | Subscription service and billing screens exist.                                                                                                                                                               |
 | PARTIAL | Upgrade plan API/payment integration | Membership CTA now opens a payment-method sheet before creating the provider order; backend signature/webhook hardening exists, but real Razorpay/Stripe/store SDK credential QA remains.                     |
@@ -417,7 +418,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | API error code registry           | Error/success code constants exist.                                                                                             |
 | PARTIAL | Cursor/offset pagination standard | Pagination exists; contract should be normalized across all list APIs.                                                          |
 | DONE    | OpenAPI to TS SDK generation      | Swagger is snapshotted into `packages/api-contract/openapi.json`; complete immutable route/schema types are generated and checked through root scripts. |
-| PARTIAL | Automated regression tests        | API coverage spans 60 passing suites/209 tests; mobile coverage spans 5 passing suites/27 tests. Honest API coverage is 35.92% statements, 15.21% branches, 27.01% functions, and 34.88% lines. The 95% target is not yet met, CI does not enforce coverage, and API E2E/device suites remain. |
+| PARTIAL | Automated regression tests        | API coverage spans 62 unit suites/218 tests plus an initial 1-suite/4-test HTTP E2E harness; mobile spans 6 suites/29 tests. Last measured API coverage was 35.92% statements, 15.21% branches, 27.01% functions, and 34.88% lines. Database-backed API journeys, coverage enforcement, socket E2E, and device suites remain. |
 | TODO    | Storybook component library       | Not implemented.                                                                                                                |
 | PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.                                                            |
 
@@ -430,7 +431,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | PARTIAL | CI/CD pipeline                | GitHub Actions now installs all workspaces and runs lint, API/mobile typechecks, contract drift checks, API build, tests, and i18n validation; deployment automation remains TODO. |
 | TODO    | Infrastructure as Code        | No Terraform/IaC found.                                             |
 | TODO    | Blue-green/canary deployments | Not implemented.                                                    |
-| DONE    | Database migration strategy   | Database-wide ordered/checksummed runner, durable history, lease locking, two pending migrations, read-only index drift auditing, production-safe `autoIndex`, and build/migrate/audit release commands are implemented. |
+| DONE    | Database migration strategy   | Database-wide ordered/checksummed runner, durable history, lease locking, the required payment index migration, read-only index drift auditing, production-safe `autoIndex`, and build/migrate/audit release commands are implemented. |
 | BLOCKED | Disaster recovery/RTO/RPO     | Operational cloud task.                                             |
 | BLOCKED | Multi-region failover         | Operational cloud task.                                             |
 | BLOCKED | Automated backup verification | Operational cloud task.                                             |

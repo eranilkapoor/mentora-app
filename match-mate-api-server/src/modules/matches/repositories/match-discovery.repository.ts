@@ -17,6 +17,11 @@ import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
 import { Interest, InterestDocument } from '../schemas/interest.schema';
 import { InterestStatus } from '../enums/match.enums';
 import { Match, MatchDocument } from '../schemas/match.schema';
+import {
+  Verification,
+  VerificationDocument,
+} from '@/modules/safety/schemas/verification.schema';
+import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 
 //  Explicit lean types
 
@@ -57,7 +62,16 @@ export class MatchDiscoveryRepository {
 
     @InjectModel(Match.name)
     private readonly matchModel: Model<MatchDocument>,
+
+    @InjectModel(Verification.name)
+    private readonly verificationModel: Model<VerificationDocument>,
   ) {}
+
+  async getVerifiedUserIds(): Promise<Types.ObjectId[]> {
+    return this.verificationModel.distinct('userId', {
+      status: VerificationStatus.APPROVED,
+    });
+  }
 
   // Explicit return type stops TypeScript from trying to infer the full
   // Mongoose Document chain which blows past the serialization limit

@@ -3,10 +3,6 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
 import { AppException } from '@/common/exceptions/app.exception';
-import {
-  Profile,
-  ProfileDocument,
-} from '@/modules/profiles/schemas/profile/profile.schema';
 import { StorageService } from '@/modules/storage/services/storage.service';
 import {
   Verification,
@@ -22,8 +18,6 @@ export class KycService {
   constructor(
     @InjectModel(Verification.name)
     private readonly verificationModel: Model<VerificationDocument>,
-    @InjectModel(Profile.name)
-    private readonly profileModel: Model<ProfileDocument>,
     private readonly storageService: StorageService,
   ) {}
 
@@ -68,8 +62,6 @@ export class KycService {
           documentType: dto.documentType ?? 'identity_document',
           provider: VerificationProvider.MANUAL,
           status: VerificationStatus.PENDING,
-          isVerified: false,
-          isProfileVerified: false,
           rejectionReason: undefined,
           submittedAt: new Date(),
         },
@@ -126,8 +118,6 @@ export class KycService {
     const approved = dto.status === VerificationStatus.APPROVED;
     const update = {
       status: dto.status,
-      isVerified: approved,
-      isProfileVerified: approved,
       verifiedAt: approved ? new Date() : undefined,
       rejectionReason: approved ? undefined : dto.rejectionReason,
       reviewedBy: new Types.ObjectId(reviewerId),
@@ -143,11 +133,6 @@ export class KycService {
     if (!verification) {
       throw new AppException(ErrorCode.PROFILE_NOT_FOUND, HttpStatus.NOT_FOUND);
     }
-
-    await this.profileModel.findOneAndUpdate(
-      { userId: new Types.ObjectId(userId) },
-      { $set: { isVerified: approved } },
-    );
 
     return verification;
   }

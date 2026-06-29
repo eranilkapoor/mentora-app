@@ -31,12 +31,9 @@ export function useUpgradePrompt(): (featureName?: string) => void {
         onConfirm: () => {
           if (!navigationRef.isReady()) return;
           navigationRef.dispatch(
-            CommonActions.navigate({
-              name: 'App',
-              params: {
-                screen: 'Tabs',
-                params: { screen: 'Membership' },
-              },
+            CommonActions.navigate('App', {
+              screen: 'Tabs',
+              params: { screen: 'Membership' },
             })
           );
         },

@@ -63,7 +63,7 @@ export interface BlockedUserSummary {
   age?: number;
   location?: string;
   avatarUrl?: string;
-  isVerified?: boolean;
+  verificationStatus?: 'not_started' | 'pending' | 'approved' | 'rejected';
   blockedAt?: string;
 }
 

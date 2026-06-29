@@ -10,14 +10,10 @@ import {
   RecordConsentPayload,
   RequestEmailChangePayload,
   RequestPhoneChangePayload,
-  UpdateAccountSettingsPayload,
   UserConsent,
 } from '../../features/AccountSettings/accountSettings.types';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
-import {
-  setAccountSettings,
-  updateAccountSettings as updateCachedAccountSettings,
-} from '../slices/settings.slice';
+import { setAccountSettings } from '../slices/settings.slice';
 
 export const accountSettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -43,59 +39,6 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       },
 
       providesTags: ['AccountSettings'],
-    }),
-
-    /**
-     * Update account settings
-     */
-    updateAccountSettings: builder.mutation<
-      AccountSettingsResponse,
-      UpdateAccountSettingsPayload
-    >({
-      query: (body) => ({
-        url: '/settings/account',
-        method: 'PUT',
-        body,
-      }),
-      transformResponse: (
-        response: AccountSettings | ApiResponse<AccountSettings>
-      ) => wrapSettingsResponse('account', response),
-      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
-        const previousAccount = (
-          getState() as {
-            settings?: { account?: AccountSettings };
-          }
-        ).settings?.account;
-        dispatch(updateCachedAccountSettings(patch));
-        const optimistic = dispatch(
-          accountSettingsApi.util.updateQueryData(
-            'getAccountSettings',
-            undefined,
-            (draft) => {
-              draft.account = { ...draft.account, ...patch };
-            }
-          )
-        );
-
-        try {
-          const { data } = await queryFulfilled;
-          dispatch(setAccountSettings(unwrapApiResponse(data).account));
-          dispatch(
-            accountSettingsApi.util.updateQueryData(
-              'getAccountSettings',
-              undefined,
-              (draft) => {
-                draft.account = unwrapApiResponse(data).account;
-              }
-            )
-          );
-        } catch {
-          optimistic.undo();
-          if (previousAccount) {
-            dispatch(setAccountSettings(previousAccount));
-          }
-        }
-      },
     }),
 
     /**
@@ -198,7 +141,6 @@ export const accountSettingsApi = baseApi.injectEndpoints({
 
 export const {
   useGetAccountSettingsQuery,
-  useUpdateAccountSettingsMutation,
   useDeactivateAccountMutation,
   useScheduleDeletionMutation,
   useDisconnectProviderMutation,

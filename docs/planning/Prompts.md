@@ -11,13 +11,13 @@ This tracker was reconciled against the current API, Expo mobile/web app, shared
 ### API
 
 - [x] All 25 API controllers have unit-level contract specs.
-- [x] API suite passes: 60 suites and 209 tests.
+- [x] API unit suite passes: 62 suites and 218 tests.
 - [x] Controller, socket, payment, notification, admin, analytics, migration, feature-gate, media, privacy, and fraud-detection coverage exists.
 - [x] OpenAPI snapshot and generated TypeScript contracts are checked by repository verification.
 - [x] Ordered/checksummed Mongo migrations and index drift auditing exist.
 - [x] API Dockerfile, provider smoke scripts, release checks, health/readiness endpoints, and graceful shutdown exist.
 - [x] Rule-based fraud batch scanning and its scheduled task exist.
-- [ ] There is no API end-to-end test directory even though `test:e2e` is defined.
+- [~] API E2E foundation exists with 1 suite/4 HTTP tests; database-backed business journeys and authenticated sockets remain.
 - [ ] The 95% coverage target is not yet met or enforced by CI.
 
 Current honest API coverage from `npm run test:cov -- --runInBand`:
@@ -31,7 +31,7 @@ Current honest API coverage from `npm run test:cov -- --runInBand`:
 
 ### Mobile And Web
 
-- [x] Mobile suite passes: 5 suites and 27 tests.
+- [x] Mobile suite passes: 6 suites and 29 tests.
 - [x] Existing tests cover realtime auth classification, sibling normalization, settings persistence, plan access, and upgrade prompts.
 - [x] Shared API contracts, secure token bootstrap, settings synchronization, feature prompts, localization, and error reporting foundations exist.
 - [ ] High-traffic screens, RTK Query services, navigation flows, accessibility behavior, and web-specific rendering have little or no automated coverage.
@@ -42,7 +42,7 @@ Current honest API coverage from `npm run test:cov -- --runInBand`:
 
 - [x] GitHub Actions installs all workspaces and runs lint, typecheck, contract generation checks, migration validation, API build, API/mobile tests, and i18n validation.
 - [ ] CI does not run API or mobile coverage.
-- [ ] No API integration/E2E suite, mobile device E2E suite, load test, or provider sandbox test is part of the release gate.
+- [~] The deterministic HTTP E2E foundation now runs in the root CI command. Database-backed API journeys, mobile device E2E, load tests, and provider sandbox tests remain.
 - [ ] Production provider credentials and operational evidence remain external launch work.
 
 ## Roadmap Reconciliation
@@ -51,7 +51,7 @@ The following stale roadmap statements were corrected during this audit:
 
 - Fraud detection batch scanning is implemented, not TODO.
 - API Docker containerization exists, so the remaining task is image build/deploy verification rather than initial implementation.
-- Automated regression totals and coverage now reflect 60 API suites/209 tests and 5 mobile suites/27 tests.
+- Automated regression totals now reflect 62 API unit suites/218 tests, 1 API E2E suite/4 tests, and 6 mobile suites/29 tests.
 
 The following roadmap items remain correctly classified as external or provider-dependent: production FCM/MSG91/SES delivery, social provider approval, payment/store credentials, Apple/Google receipt validation, Aadhaar/DigiLocker, Sentry dashboards and source maps, CDN, backups, and multi-region recovery.
 
@@ -59,14 +59,16 @@ The following roadmap items remain correctly classified as external or provider-
 
 ### P0 - Correctness And Release Confidence
 
-1. [ ] **Make plan and feature packaging machine-verifiable.**
-   - Add invariant tests around `FeatureKey`, seeded feature metadata, plan-feature mappings, plan duration/trial/renewal rules, and role entitlements.
-   - Fail when a key is missing, duplicated, mapped with the wrong value type, or exposed by mobile without a backend entitlement.
-   - Keep platform capabilities, paid entitlements, numeric limits, and role permissions distinct.
-   - Make the Membership and Subscription/Billing UI render the API-provided current-plan feature set instead of maintaining a second policy list.
+1. [x] **Make plan and feature packaging machine-verifiable.**
+   - Added seed invariants for complete/unique `FeatureKey` coverage and Enterprise feature mappings.
+   - Added `ENTERPRISE_CUSTOM` with custom price, term, limits, integrations, governance, and support; payment/trial/coupon/store flows reject it.
+   - Added API-driven Enterprise Membership UI and Contact Sales routing.
+   - Consolidated profile identity verification to canonical `Verification.status`; removed profile/settings/KYC mirror booleans and overlapping verification feature keys.
+   - Added exported role-permission policies, privileged-boundary tests, fixed-plan numeric limit policies, and lifecycle invariants.
 
-2. [ ] **Create a real API E2E test harness.**
-   - Add `test/jest-e2e.json` and Supertest bootstrap with isolated Mongo state and deterministic Redis/provider substitutes.
+2. [~] **Create a real API E2E test harness.**
+   - Completed foundation: `test/jest-e2e.json`, real Nest HTTP adapter tests for root/live/ready/static/404 behavior, deterministic infrastructure substitutes, and root CI wiring.
+   - Next: add isolated Mongo state plus deterministic Redis/provider substitutes for business-flow E2E tests.
    - Cover register/login/refresh/logout, profile and preference updates, interest-to-match flow, chat authorization, subscription access, payment webhook idempotency, privacy/export/deletion, support tickets, and admin authorization.
    - Add authenticated Socket.IO tests for connect, room isolation, message delivery, read state, typing, reconnect, and revoked-token rejection.
 

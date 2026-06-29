@@ -1,4 +1,5 @@
 import React, { useCallback, useState } from 'react';
+import { CommonActions } from '@react-navigation/native';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -14,10 +15,12 @@ import { useMembershipActions } from './hooks/useMembershipActions';
 import { MembershipHeroCard } from './components/MembershipHeroCard';
 import { SelfServiceTab } from './components/SelfServiceTab';
 import { AssistedTab } from './components/AssistedTab';
+import { EnterpriseTab } from './components/EnterpriseTab';
 import { MembershipCta } from './components/MembershipCta';
 import { PaymentOptionSheet } from './components/PaymentOptionSheet';
 import { MEMBERSHIP_TABS } from './Membership.constants';
 import { useUpgradePrompt } from './hooks/useUpgradePrompt';
+import { navigationRef } from '@/navigation/navigationRef';
 
 export default function MembershipScreen(): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
@@ -50,6 +53,16 @@ export default function MembershipScreen(): React.ReactElement {
 
   const onCreateOrder = useCallback(() => {
     if (selectedPlanItem?.isFree) return;
+    if (selectedPlanItem?.isCustom) {
+      if (!navigationRef.isReady()) return;
+      navigationRef.dispatch(
+        CommonActions.navigate('App', {
+          screen: 'Settings',
+          params: { screen: 'SupportTickets' },
+        })
+      );
+      return;
+    }
     if ((selectedPlanItem?.source?.trialDays ?? 0) > 0) {
       void handleStartTrial(selectedPlanItem);
       return;
@@ -132,13 +145,19 @@ export default function MembershipScreen(): React.ReactElement {
             selectedIndex={selectedIndex}
             onSelectPlan={setSelectedPlan}
           />
-        ) : (
+        ) : activeTab === 'assisted' ? (
           <AssistedTab
             displayPlans={displayPlans}
             featureRows={featureRows}
             selectedPlan={selectedPlan}
             selectedIndex={selectedIndex}
             onSelectPlan={setSelectedPlan}
+          />
+        ) : (
+          <EnterpriseTab
+            displayPlans={displayPlans}
+            featureRows={featureRows}
+            selectedIndex={selectedIndex}
           />
         )}
 

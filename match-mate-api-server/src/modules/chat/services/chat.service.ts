@@ -28,6 +28,7 @@ import {
   throwAppException,
   throwBadRequest,
 } from '@/common/exceptions/throw-app-exception';
+import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 
 interface UserSummary {
   userId: string;
@@ -37,7 +38,7 @@ interface UserSummary {
   avatarUrl?: string;
   city?: string;
   country?: string;
-  isVerified: boolean;
+  verificationStatus: VerificationStatus;
   isPremium: boolean;
   isOnline: boolean;
   lastSeen: Date | null;
@@ -116,7 +117,7 @@ type ProfileLike = {
     city?: string;
     country?: string;
   };
-  isVerified?: boolean;
+  verificationStatus?: VerificationStatus;
   isPremium?: boolean;
   profileImages?: ProfileImageLike[];
 };
@@ -1286,7 +1287,8 @@ export class ChatService {
         ? profile.personal.country
         : undefined;
 
-    const isVerified = Boolean(profile?.isVerified);
+    const verificationStatus =
+      profile?.verificationStatus ?? VerificationStatus.NOT_STARTED;
 
     const isPremium = Boolean(
       profile?.isPremium ||
@@ -1302,7 +1304,7 @@ export class ChatService {
       avatarUrl,
       city,
       country,
-      isVerified,
+      verificationStatus,
       isPremium,
       isOnline: this.presence.isOnline(userId),
       lastSeen: this.presence.getLastSeen(userId),

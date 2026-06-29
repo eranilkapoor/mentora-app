@@ -1,7 +1,7 @@
 import {
   ensurePaymentStoreTransactionIndex,
   PAYMENT_STORE_TRANSACTION_INDEX,
-} from './202606220002-add-payment-store-transaction-index.migration';
+} from './202606220001-add-payment-store-transaction-index.migration';
 
 describe('payment store transaction index migration', () => {
   it('creates the unique sparse index after a clean preflight', async () => {

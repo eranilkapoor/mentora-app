@@ -63,6 +63,7 @@ import {
 } from '../dto/account-settings.dto';
 import { ErrorCode } from '@/common/constants';
 import { throwBadRequest } from '@/common/exceptions/throw-app-exception';
+import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 
 @Injectable()
 export class SettingsService {
@@ -165,12 +166,13 @@ export class SettingsService {
       return { blockedUsers: [] };
     }
 
-    const [profiles, media] = await Promise.all([
+    const objectIds = blockedUserIds.map((id) => new Types.ObjectId(id));
+    const [profiles, media, verifications] = await Promise.all([
       this.profileModel
         .find({
-          userId: { $in: blockedUserIds.map((id) => new Types.ObjectId(id)) },
+          userId: { $in: objectIds },
         })
-        .select('userId personal age isVerified')
+        .select('userId personal age')
         .lean<
           Array<{
             userId: Types.ObjectId;
@@ -181,7 +183,6 @@ export class SettingsService {
               state?: string;
             };
             age?: number;
-            isVerified?: boolean;
           }>
         >()
         .exec(),
@@ -203,12 +204,20 @@ export class SettingsService {
           }>
         >()
         .exec(),
+      this.verificationModel
+        .find({ userId: { $in: objectIds } })
+        .select('userId status')
+        .lean()
+        .exec(),
     ]);
 
     const profileByUserId = new Map(
       profiles.map((profile) => [profile.userId.toString(), profile]),
     );
     const mediaByUserId = new Map<string, (typeof media)[number]>();
+    const verificationByUserId = new Map(
+      verifications.map((item) => [item.userId.toString(), item.status]),
+    );
     media.forEach((item) => {
       const key = item.userId.toString();
       if (!mediaByUserId.has(key)) {
@@ -242,7 +251,9 @@ export class SettingsService {
           ...(photo?.thumbnailUrl || photo?.url
             ? { avatarUrl: photo.thumbnailUrl ?? photo.url }
             : {}),
-          isVerified: profile?.isVerified === true,
+          verificationStatus:
+            verificationByUserId.get(blockedUserId) ??
+            VerificationStatus.NOT_STARTED,
           ...(blockWithTimestamp.createdAt instanceof Date
             ? { blockedAt: blockWithTimestamp.createdAt.toISOString() }
             : {}),
@@ -297,12 +308,13 @@ export class SettingsService {
       return { hiddenProfiles: [] };
     }
 
-    const [profiles, media] = await Promise.all([
+    const objectIds = hiddenUserIds.map((id) => new Types.ObjectId(id));
+    const [profiles, media, verifications] = await Promise.all([
       this.profileModel
         .find({
-          userId: { $in: hiddenUserIds.map((id) => new Types.ObjectId(id)) },
+          userId: { $in: objectIds },
         })
-        .select('userId personal age isVerified')
+        .select('userId personal age')
         .lean<
           Array<{
             userId: Types.ObjectId;
@@ -313,7 +325,6 @@ export class SettingsService {
               state?: string;
             };
             age?: number;
-            isVerified?: boolean;
           }>
         >()
         .exec(),
@@ -335,12 +346,20 @@ export class SettingsService {
           }>
         >()
         .exec(),
+      this.verificationModel
+        .find({ userId: { $in: objectIds } })
+        .select('userId status')
+        .lean()
+        .exec(),
     ]);
 
     const profileByUserId = new Map(
       profiles.map((profile) => [profile.userId.toString(), profile]),
     );
     const mediaByUserId = new Map<string, (typeof media)[number]>();
+    const verificationByUserId = new Map(
+      verifications.map((item) => [item.userId.toString(), item.status]),
+    );
     media.forEach((item) => {
       const key = item.userId.toString();
       if (!mediaByUserId.has(key)) {
@@ -374,7 +393,9 @@ export class SettingsService {
           ...(photo?.thumbnailUrl || photo?.url
             ? { avatarUrl: photo.thumbnailUrl ?? photo.url }
             : {}),
-          isVerified: profile?.isVerified === true,
+          verificationStatus:
+            verificationByUserId.get(hiddenUserId) ??
+            VerificationStatus.NOT_STARTED,
           ...(row.reason ? { reason: row.reason } : {}),
           ...(rowWithTimestamp.createdAt instanceof Date
             ? { hiddenAt: rowWithTimestamp.createdAt.toISOString() }
@@ -402,17 +423,10 @@ export class SettingsService {
       this.repo.getAccount(userId),
       this.userModel.findById(userId).lean().exec(),
     ]);
-    const verification = await this.getOrCreateVerification(userId, {
-      isEmailVerified: Boolean(user?.isEmailVerified),
-      isPhoneVerified: Boolean(user?.isPhoneVerified),
-    });
-    const isEmailVerified = Boolean(
-      verification?.isEmailVerified ?? user?.isEmailVerified,
-    );
-    const isPhoneVerified = Boolean(
-      verification?.isPhoneVerified ?? user?.isPhoneVerified,
-    );
-    const isProfileVerified = Boolean(verification?.isProfileVerified);
+    const verification = await this.verificationModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
 
     const accountData: Record<string, unknown> =
       typeof account?.toObject === 'function'
@@ -423,23 +437,14 @@ export class SettingsService {
     return {
       ...accountData,
       linkedAccounts,
-      emailVerified: isEmailVerified,
-      phoneVerified: isPhoneVerified,
-      profileVerified: isProfileVerified,
-      verification: {
-        isVerified: isProfileVerified,
-        isProfileVerified,
-        isEmailVerified,
-        isPhoneVerified,
+      emailVerified: Boolean(user?.isEmailVerified),
+      phoneVerified: Boolean(user?.isPhoneVerified),
+      profileVerification: {
+        status: verification?.status ?? VerificationStatus.NOT_STARTED,
+        provider: verification?.provider,
         verifiedAt: verification?.verifiedAt,
       },
     };
-  }
-
-  updateAccount(userId: string, dto: Record<string, unknown>) {
-    const { linkedAccounts: _linkedAccounts, ...safeDto } = dto;
-    void _linkedAccounts;
-    return this.repo.updateAccount(userId, safeDto);
   }
 
   async deactivateAccount(userId: string, dto: DeactivateAccountDto) {
@@ -883,30 +888,5 @@ export class SettingsService {
     T extends { provider?: AuthProvider | string; passwordHash?: string },
   >(authAccounts: T[]): T[] {
     return authAccounts.filter((account) => this.isUsableAuthAccount(account));
-  }
-
-  private getOrCreateVerification(
-    userId: string,
-    defaults: {
-      isEmailVerified: boolean;
-      isPhoneVerified: boolean;
-    },
-  ) {
-    return this.verificationModel
-      .findOneAndUpdate(
-        { userId: new Types.ObjectId(userId) },
-        {
-          $setOnInsert: {
-            userId: new Types.ObjectId(userId),
-            isEmailVerified: defaults.isEmailVerified,
-            isPhoneVerified: defaults.isPhoneVerified,
-            isProfileVerified: false,
-            isVerified: false,
-          },
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true },
-      )
-      .lean()
-      .exec();
   }
 }

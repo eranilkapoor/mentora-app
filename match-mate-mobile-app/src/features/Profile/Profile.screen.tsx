@@ -281,10 +281,10 @@ const getChildrenSummary = (profile: SchemaProfile): string => {
 const getSiblingCounts = (profile: SchemaProfile): string => {
   const s = profile.family?.siblings;
   if (!s) return EMPTY_VALUE;
-  const brothers = s.brothersCount ?? s.brothers ?? 0;
-  const sisters = s.sistersCount ?? s.sisters ?? 0;
-  const mb = s.marriedBrothersCount ?? s.marriedBrothers ?? 0;
-  const ms = s.marriedSistersCount ?? s.marriedSisters ?? 0;
+  const brothers = s.brothersCount ?? 0;
+  const sisters = s.sistersCount ?? 0;
+  const mb = s.marriedBrothersCount ?? 0;
+  const ms = s.marriedSistersCount ?? 0;
   return [
     `${brothers} brother${brothers === 1 ? '' : 's'}`,
     `${sisters} sister${sisters === 1 ? '' : 's'}`,
@@ -823,11 +823,7 @@ export default function ProfileScreen({
     [data]
   );
 
-  const profileVerified = Boolean(
-    profileData.verification?.isProfileVerified ??
-    profileData.verification?.isVerified ??
-    profileData.isVerified
-  );
+  const profileVerified = profileData.verification?.status === 'approved';
 
   const hobbies = useMemo(
     () => toStringList(profileData.personal.hobbies),

@@ -35,6 +35,7 @@ export function useMembershipData(activeTab: MembershipTab) {
   >({
     self: '',
     assisted: '',
+    enterprise: '',
   });
 
   const selfPlans = useMemo<DisplayPlan[]>(
@@ -45,8 +46,17 @@ export function useMembershipData(activeTab: MembershipTab) {
     () => buildDisplayPlans(backendPlans, 'assisted'),
     [backendPlans]
   );
+  const enterprisePlans = useMemo<DisplayPlan[]>(
+    () => buildDisplayPlans(backendPlans, 'enterprise'),
+    [backendPlans]
+  );
 
-  const displayPlans = activeTab === 'assisted' ? assistedPlans : selfPlans;
+  const displayPlans =
+    activeTab === 'assisted'
+      ? assistedPlans
+      : activeTab === 'enterprise'
+        ? enterprisePlans
+        : selfPlans;
   const selectedPlan = selectedPlans[activeTab];
 
   useEffect(() => {
@@ -89,6 +99,22 @@ export function useMembershipData(activeTab: MembershipTab) {
     }
   }, [activeSubscription?.planId, assistedPlans, selectedPlans.assisted]);
 
+  useEffect(() => {
+    if (selectedPlans.enterprise || !enterprisePlans.length) return;
+
+    const activePlanId =
+      typeof activeSubscription?.planId === 'object'
+        ? activeSubscription.planId._id
+        : activeSubscription?.planId;
+    const defaultPlan =
+      enterprisePlans.find((plan) => plan.id === activePlanId)?.id ??
+      enterprisePlans[0]?.id;
+
+    if (defaultPlan) {
+      setSelectedPlans((prev) => ({ ...prev, enterprise: defaultPlan }));
+    }
+  }, [activeSubscription?.planId, enterprisePlans, selectedPlans.enterprise]);
+
   const setSelectedPlan = (planId: string) => {
     setSelectedPlans((prev) => ({ ...prev, [activeTab]: planId }));
   };
@@ -127,6 +153,7 @@ export function useMembershipData(activeTab: MembershipTab) {
     displayPlans,
     selfPlans,
     assistedPlans,
+    enterprisePlans,
     featureRows,
     selectedPlan,
     setSelectedPlan,

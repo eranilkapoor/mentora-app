@@ -50,6 +50,7 @@ import {
 } from '@/common/exceptions/throw-app-exception';
 import { AppException } from '@/common/exceptions/app.exception';
 import { normalizeFamilySiblings } from '../utils/family-normalization.util';
+import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 
 interface RegisterRequestContext {
   platform: ActivityPlatform;
@@ -413,44 +414,20 @@ export class ProfilesService {
   ) {
     const user = await this.userRepo.findById(userId);
     const verification = await this.verificationModel
-      .findOneAndUpdate(
-        { userId: new Types.ObjectId(userId) },
-        {
-          $setOnInsert: {
-            userId: new Types.ObjectId(userId),
-            isEmailVerified: Boolean(user?.isEmailVerified),
-            isPhoneVerified: Boolean(user?.isPhoneVerified),
-            isProfileVerified: Boolean(profile.isVerified),
-            isVerified: Boolean(profile.isVerified),
-            verifiedAt: profile.isVerified ? new Date() : undefined,
-          },
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true },
-      )
+      .findOne({ userId: new Types.ObjectId(userId) })
       .lean()
       .exec();
 
-    const isProfileVerified = Boolean(
-      verification?.isProfileVerified ?? profile.isVerified,
-    );
-
-    if (Boolean(profile.isVerified) !== isProfileVerified) {
-      await this.profileRepo.update(userId, { isVerified: isProfileVerified });
-    }
-
     return {
       ...profile,
-      isVerified: isProfileVerified,
       verification: {
-        isVerified: isProfileVerified,
-        isProfileVerified,
-        isEmailVerified: Boolean(
-          verification?.isEmailVerified ?? user?.isEmailVerified,
-        ),
-        isPhoneVerified: Boolean(
-          verification?.isPhoneVerified ?? user?.isPhoneVerified,
-        ),
+        status: verification?.status ?? VerificationStatus.NOT_STARTED,
+        provider: verification?.provider,
         verifiedAt: verification?.verifiedAt,
+      },
+      accountVerification: {
+        emailVerified: Boolean(user?.isEmailVerified),
+        phoneVerified: Boolean(user?.isPhoneVerified),
       },
     };
   }
@@ -477,15 +454,27 @@ export class ProfilesService {
     const profile = await this.profileRepo.findByUserId(userId);
     if (!profile) return null;
 
-    const [images, videos] = await Promise.all([
+    const [images, videos, verification] = await Promise.all([
       this.mediaService.getImages(userId),
       this.mediaService.getVideos(userId),
+      this.verificationModel
+        .findOne({ userId: new Types.ObjectId(userId) })
+        .select('status')
+        .lean()
+        .exec(),
     ]);
     const { missingFields: _missingFields, ...derived } =
-      this.profileScoringService.calculate(profile as Record<string, unknown>, {
-        imageCount: Array.isArray(images) ? images.length : 0,
-        videoCount: Array.isArray(videos) ? videos.length : 0,
-      });
+      this.profileScoringService.calculate(
+        {
+          ...(profile as Record<string, unknown>),
+          verificationStatus:
+            verification?.status ?? VerificationStatus.NOT_STARTED,
+        },
+        {
+          imageCount: Array.isArray(images) ? images.length : 0,
+          videoCount: Array.isArray(videos) ? videos.length : 0,
+        },
+      );
     void _missingFields;
 
     const updated = await this.profileRepo.update(userId, derived);

@@ -1,11 +1,12 @@
 import { Injectable } from '@nestjs/common';
+import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 
 export interface ProfileScoreInput {
   personal?: Record<string, unknown>;
   physical?: Record<string, unknown>;
   education?: Record<string, unknown>;
   family?: Record<string, unknown>;
-  isVerified?: boolean;
+  verificationStatus?: VerificationStatus;
   isPremium?: boolean;
   lastActiveAt?: Date | string;
 }
@@ -96,7 +97,7 @@ export class ProfileScoringService {
   ): number {
     let score = completion * 0.35 + profileScore * 0.3;
 
-    if (profile.isVerified) score += 12;
+    if (profile.verificationStatus === VerificationStatus.APPROVED) score += 12;
     if (profile.isPremium) score += 8;
     if (Number(media.imageCount ?? 0) >= 3) score += 8;
     if (Number(media.videoCount ?? 0) > 0) score += 5;

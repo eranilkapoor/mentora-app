@@ -12,32 +12,34 @@
 
 ### Billing Cycle Rules
 
-| Tier | Allowed Billing Cycles | Rationale |
-| ---- | ---- | ---- |
-| Free | Yearly (internal) | One static plan, no billing |
-| Silver | Monthly, Quarterly, Yearly | Entry paid; half-yearly removed to keep the tier simple and push users toward yearly |
-| Gold | Monthly, Quarterly, Yearly | Core revenue tier; half-yearly adds complexity with no differentiation gain |
-| Platinum | Monthly, Quarterly, Yearly | Same as Gold; users commit at monthly or yearly |
-| Assisted | Half-Yearly, Yearly | Service-led; quarterly too short to deliver human matchmaking value; monthly does not apply |
-| One-time boost | Daily (non-recurring SKU) | Impulse purchase, not a subscription |
+| Tier           | Allowed Billing Cycles     | Rationale                                                                                   |
+| -------------- | -------------------------- | ------------------------------------------------------------------------------------------- |
+| Free           | Yearly (internal)          | One static plan, no billing                                                                 |
+| Silver         | Monthly, Quarterly, Yearly | Entry paid; half-yearly removed to keep the tier simple and push users toward yearly        |
+| Gold           | Monthly, Quarterly, Yearly | Core revenue tier; half-yearly adds complexity with no differentiation gain                 |
+| Platinum       | Monthly, Quarterly, Yearly | Same as Gold; users commit at monthly or yearly                                             |
+| Assisted       | Half-Yearly, Yearly        | Service-led; quarterly too short to deliver human matchmaking value; monthly does not apply |
+| Enterprise     | Custom contract            | Price, term, limits, integrations, governance, and support are negotiated                   |
+| One-time boost | Daily (non-recurring SKU)  | Impulse purchase, not a subscription                                                        |
 
-### Full Plan List (13 plans total)
+### Full Plan List (14 plans total)
 
-| # | Plan name | Tier | Billing cycle | Price (INR) | Duration | Popular |
-| -- | ---- | ---- | ---- | ---- | ---- | ---- |
-| 1 | FREE | Free | — | 0 | 365 days | — |
-| 2 | SILVER_MONTHLY | Silver | Monthly | 699 | 30 days | — |
-| 3 | SILVER_QUARTERLY | Silver | Quarterly | 1,799 | 90 days | ✓ |
-| 4 | SILVER_YEARLY | Silver | Yearly | 5,999 | 365 days | — |
-| 5 | GOLD_MONTHLY | Gold | Monthly | 999 | 30 days | ✓ |
-| 6 | GOLD_QUARTERLY | Gold | Quarterly | 2,499 | 90 days | — |
-| 7 | GOLD_YEARLY | Gold | Yearly | 7,999 | 365 days | — |
-| 8 | PLATINUM_MONTHLY | Platinum | Monthly | 2,499 | 30 days | — |
-| 9 | PLATINUM_QUARTERLY | Platinum | Quarterly | 6,499 | 90 days | ✓ |
-| 10 | PLATINUM_YEARLY | Platinum | Yearly | 19,999 | 365 days | — |
-| 11 | ASSISTED_HALF_YEARLY | Assisted | Half-Yearly | 26,186 | 180 days | ✓ |
-| 12 | ASSISTED_YEARLY | Assisted | Yearly | 42,373 | 365 days | — |
-| 13 | PROFILE_BOOST_24H | Gold (boost SKU) | Daily | 199 | 1 day | — |
+| #   | Plan name            | Tier             | Billing cycle | Price (INR) | Duration | Popular |
+| --- | -------------------- | ---------------- | ------------- | ----------- | -------- | ------- |
+| 1   | FREE                 | Free             | —             | 0           | 365 days | —       |
+| 2   | SILVER_MONTHLY       | Silver           | Monthly       | 699         | 30 days  | —       |
+| 3   | SILVER_QUARTERLY     | Silver           | Quarterly     | 1,799       | 90 days  | ✓       |
+| 4   | SILVER_YEARLY        | Silver           | Yearly        | 5,999       | 365 days | —       |
+| 5   | GOLD_MONTHLY         | Gold             | Monthly       | 999         | 30 days  | ✓       |
+| 6   | GOLD_QUARTERLY       | Gold             | Quarterly     | 2,499       | 90 days  | —       |
+| 7   | GOLD_YEARLY          | Gold             | Yearly        | 7,999       | 365 days | —       |
+| 8   | PLATINUM_MONTHLY     | Platinum         | Monthly       | 2,499       | 30 days  | —       |
+| 9   | PLATINUM_QUARTERLY   | Platinum         | Quarterly     | 6,499       | 90 days  | ✓       |
+| 10  | PLATINUM_YEARLY      | Platinum         | Yearly        | 19,999      | 365 days | —       |
+| 11  | ASSISTED_HALF_YEARLY | Assisted         | Half-Yearly   | 26,186      | 180 days | ✓       |
+| 12  | ASSISTED_YEARLY      | Assisted         | Yearly        | 42,373      | 365 days | —       |
+| 13  | ENTERPRISE_CUSTOM    | Enterprise       | Custom        | Custom      | Custom   | —       |
+| 14  | PROFILE_BOOST_24H    | Gold (boost SKU) | Daily         | 199         | 1 day    | —       |
 
 ---
 
@@ -48,6 +50,7 @@
 Give users enough to complete a profile and feel the product. Strict limits on every action so they hit the paywall during normal use.
 
 Features included:
+
 - All auth and account basics
 - Create, edit, delete profile
 - Upload 5 photos
@@ -63,6 +66,7 @@ Features included:
 - Customer support chat
 
 Features NOT included in Free:
+
 - Advanced search or advanced filters
 - Contact details (phone, email)
 - Unlimited chat or interests
@@ -78,6 +82,7 @@ Features NOT included in Free:
 Target user: price-sensitive first-time subscriber who wants to actually connect with matches. Converts the highest volume of free users. Monthly is the anchor price; quarterly is the conversion sweet spot.
 
 Features added over Free:
+
 - Advanced profile completion tools
 - Upload 10 photos
 - Send 50 interests
@@ -96,6 +101,7 @@ Features added over Free:
 - Subscription lifecycle: auto-renewal, grace period
 
 NOT included in Silver (reserved for Gold+):
+
 - Unlimited chat or interests
 - Voice/video calls
 - Upload videos
@@ -110,6 +116,7 @@ NOT included in Silver (reserved for Gold+):
 Target user: serious user who needs unlimited access and real visibility. Typically 60–70% of paid plan revenue. Monthly is entry; Yearly drives long-term retention.
 
 Features added over Silver:
+
 - Upload 20 photos + 5 videos
 - Send unlimited interests
 - Unlimited chat
@@ -128,6 +135,7 @@ Features added over Silver:
 - Priority support
 
 NOT included in Gold (reserved for Platinum+):
+
 - Video calls
 - AI features
 - Global/NRI search
@@ -142,6 +150,7 @@ NOT included in Gold (reserved for Platinum+):
 Target user: user who wants every advantage, AI-powered matching, global search, and maximum visibility. Justified by AI + exclusive features, not just higher limits.
 
 Features added over Gold:
+
 - Video profile + audio intro
 - Featured profile + incognito mode
 - Private album
@@ -184,14 +193,35 @@ Features added over Gold:
 Target user: serious, time-constrained professional willing to pay a premium for a human matchmaker. Product entitlements are identical to Platinum. Pricing reflects the human service, not additional feature flags.
 
 Billing rationale:
+
 - Half-Yearly: standard entry to assisted service; provides enough time for meaningful curation and match presentation
 - Yearly: premium committed clients who want a full engagement cycle with their matchmaker
+
+---
+
+### Enterprise — Contract-configured platform
+
+Enterprise is not a checkout subscription and has no public price, fixed duration, trial, or automatic renewal. It is activated only after a signed commercial contract.
+
+Every feature value is seeded as `custom`, including all consumer capabilities plus:
+
+- SAML/OIDC single sign-on
+- Organization admin dashboard
+- Contracted API access and quotas
+- Custom branding and white-label options
+- Bulk seat management and pricing
+- SLA-backed support and escalation
+- Data residency and retention controls
+- Dedicated account manager
+
+The mobile/web Membership screen routes Enterprise enquiries to support/sales and never sends this plan to payment, coupon, trial, or app-store checkout APIs.
 
 ---
 
 ### PROFILE_BOOST_24H — One-time impulse SKU
 
 Non-recurring. Only grants:
+
 - 1 profile boost
 - One-time boost purchase flag
 - Spotlight profile (24h)
@@ -200,22 +230,22 @@ Non-recurring. Only grants:
 
 ## Limits Matrix
 
-| Capability | Free | Silver | Gold | Platinum / Assisted |
-| ---- | :----: | :----: | :----: | :----: |
-| Upload photos | 5 | 10 | 20 | 20 |
-| Upload videos | 0 | 0 | 5 | 5 |
-| Send interests | 10 | 50 | Unlimited | Unlimited |
-| Messages | 20 | 100 | Unlimited | Unlimited |
-| Daily profile views | 25 | 100 | Unlimited | Unlimited |
-| Profile views (total) | 25 | 100 | Unlimited | Unlimited |
-| Shortlist profiles | 20 | 50 | — | Unlimited |
-| Favourite profiles | 0 | 50 | — | Unlimited |
-| Saved searches | 0 | 10 | — | Unlimited |
-| Profile boosts | 0 | 1 daily | 2 quota | 7 weekly / 30 monthly / ∞ |
-| Match limit | 20 | — | — | Unlimited |
-| Contact view limit | 0 | enabled | enabled | Unlimited |
-| Shortlist limit (cap) | 20 | 50 | — | Unlimited |
-| Grace period (days) | 0 | 3 | 3 | 3 |
+| Capability            | Free | Silver  |   Gold    |    Platinum / Assisted    |
+| --------------------- | :--: | :-----: | :-------: | :-----------------------: |
+| Upload photos         |  5   |   10    |    20     |            20             |
+| Upload videos         |  0   |    0    |     5     |             5             |
+| Send interests        |  10  |   50    | Unlimited |         Unlimited         |
+| Messages              |  20  |   100   | Unlimited |         Unlimited         |
+| Daily profile views   |  25  |   100   | Unlimited |         Unlimited         |
+| Profile views (total) |  25  |   100   | Unlimited |         Unlimited         |
+| Shortlist profiles    |  20  |   50    |     —     |         Unlimited         |
+| Favourite profiles    |  0   |   50    |     —     |         Unlimited         |
+| Saved searches        |  0   |   10    |     —     |         Unlimited         |
+| Profile boosts        |  0   | 1 daily |  2 quota  | 7 weekly / 30 monthly / ∞ |
+| Match limit           |  20  |    —    |     —     |         Unlimited         |
+| Contact view limit    |  0   | enabled |  enabled  |         Unlimited         |
+| Shortlist limit (cap) |  20  |   50    |     —     |         Unlimited         |
+| Grace period (days)   |  0   |    3    |     3     |             3             |
 
 `—` = feature not explicitly limited; access is controlled by the feature flag value.
 
@@ -233,6 +263,7 @@ platformFeatures          → applied to every recurring plan (auth, safety, bas
    + silverFeatures        → All SILVER_* plans
    + goldFeatures          → All GOLD_* plans
    + platinumFeatures      → All PLATINUM_* and ASSISTED_* plans
+   + ENTERPRISE_CUSTOM     → Every feature mapped to `custom`
    + PROFILE_BOOST_24H     → Boost-only SKU
 ```
 
@@ -240,14 +271,15 @@ Later additions in the same plan override earlier platform defaults via the `add
 
 ### Recurring plan slug sets in seeder
 
-| Bundle | Plans |
-| ---- | ---- |
+| Bundle               | Plans                                                      |
+| -------------------- | ---------------------------------------------------------- |
 | `recurringPlanSlugs` | FREE + all Silver + all Gold + all Platinum + all Assisted |
-| Silver mapping | SILVER_MONTHLY, SILVER_QUARTERLY, SILVER_YEARLY |
-| Gold mapping | GOLD_MONTHLY, GOLD_QUARTERLY, GOLD_YEARLY |
-| Platinum mapping | PLATINUM_MONTHLY, PLATINUM_QUARTERLY, PLATINUM_YEARLY |
-| Assisted mapping | ASSISTED_HALF_YEARLY, ASSISTED_YEARLY |
-| Boost SKU | PROFILE_BOOST_24H |
+| Silver mapping       | SILVER_MONTHLY, SILVER_QUARTERLY, SILVER_YEARLY            |
+| Gold mapping         | GOLD_MONTHLY, GOLD_QUARTERLY, GOLD_YEARLY                  |
+| Platinum mapping     | PLATINUM_MONTHLY, PLATINUM_QUARTERLY, PLATINUM_YEARLY      |
+| Assisted mapping     | ASSISTED_HALF_YEARLY, ASSISTED_YEARLY                      |
+| Enterprise mapping   | ENTERPRISE_CUSTOM (all feature keys, value `custom`)       |
+| Boost SKU            | PROFILE_BOOST_24H                                          |
 
 ---
 
@@ -263,41 +295,6 @@ When changing pricing or packaging:
    - Silver: M, Q, Y — Gold: M, Q, Y — Platinum: M, Q, Y — Assisted: HY, Y
    - No Assisted monthly plan exists
    - No Gold or Platinum half-yearly plan exists
-   - All limit/quota/duration feature `defaultValue` fields are numeric (not boolean)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-Here's the full feature breakdown. You can filter by plan tab at the top. Here's the design rationale:
-
-**Platform (all plans, non-negotiable):** These are infrastructure and trust features — auth flows, basic profile CRUD, push/email notifications, safety tools (report, block, fraud detection), GDPR/privacy controls, and customer support. Every user gets these regardless of plan.
-
-**Free:** A taste of the app — limited interests (e.g. 5/day), basic search with common filters (religion, caste, location, height), up to 3 photos, basic matching, limited chat and contact views, gamification hooks to drive engagement, and promo/referral entry points to push upgrades.
-
-**Silver:** The first paid step — removes ads, unlocks AI fake profile detection, Kundli matching, matrimony-specific preferences, SMS notifications, saved searches, contact requests, AI basic matching, and blurred photo mode. Good for users who are serious but budget-conscious.
-
-**Gold:** The workhorse plan — unlocks most AI features (conversation starters, recommendations, compatibility scores), voice calls, unlimited chat, video/image sharing in chat, who-viewed-me, advanced filters, income-based search, family features, and daily activity stats.
-
-**Platinum:** The full suite — incognito mode, video calls, AI compatibility deep-analysis, travel mode, unlimited boosts, spotlight, personal matchmaker, weekly reports, international/NRI search, and top-of-search placement.
-
-**Enterprise value guidance:** For B2B/white-label clients, every feature is "custom" — meaning configurable limits, SSO integration, admin dashboards, dedicated relationship managers, SLA-backed support, API access, custom branding, bulk seat pricing, and data residency controls. The features themselves aren't the differentiator; control, compliance, and concierge are.
-
-Click any plan tab to see only what's included in that tier. The "limited" badge means the feature exists but with a count cap (e.g. 5 messages/day, 3 contact views/week) — a key free-to-paid conversion trigger.
+   - Fixed-plan limit/quota/duration values are numeric
+   - Enterprise maps every feature to the explicit string `custom`
+   - Enterprise cannot enter trial, coupon, payment, or store checkout flows

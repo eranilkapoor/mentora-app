@@ -115,7 +115,7 @@ export default function AccountSettingsScreen({
             label={t('settings.account.profile_kyc_verification')}
             sublabel={t('settings.account.profile_kyc_verification_sub')}
             value={
-              settings?.profileVerified
+              settings?.profileVerification.status === 'approved'
                 ? t('settings.account.approved')
                 : t('settings.account.manage')
             }

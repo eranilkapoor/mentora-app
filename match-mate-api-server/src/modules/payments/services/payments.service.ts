@@ -74,6 +74,12 @@ export class PaymentsService {
       });
     }
 
+    if (!isCoinPack && plan?.isCustom) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'custom_plan_requires_sales_contract',
+      });
+    }
+
     if (isCoinPack && (!dto.amount || !dto.coinAmount)) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'coin_pack_amount_and_coins_required',
@@ -377,6 +383,12 @@ export class PaymentsService {
       });
     }
 
+    if (plan.isCustom) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'custom_plan_does_not_accept_coupons',
+      });
+    }
+
     const amount = Number(plan.price);
     return this.calculateCouponDiscount({
       userId,
@@ -423,6 +435,12 @@ export class PaymentsService {
     if (!plan || !plan.isActive) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'invalid_or_inactive_plan',
+      });
+    }
+
+    if (plan.isCustom) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'custom_plan_requires_sales_contract',
       });
     }
 

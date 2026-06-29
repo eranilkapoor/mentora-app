@@ -222,7 +222,7 @@ User
 ### Discovery
 
 - `profiles.userId` unique index.
-- `profiles.status + verification.isProfileVerified + createdAt` for active/verified browsing.
+- `profiles.status + verifications.status + createdAt` for active/verified browsing; `verifications.status = approved` is the canonical identity outcome.
 - `profiles.personal.gender + personal.religion + personal.city` for common matrimonial filters.
 - `profiles.location` 2dsphere index for nearby discovery.
 - `preferences.userId` unique index.

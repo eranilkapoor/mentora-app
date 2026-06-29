@@ -54,10 +54,6 @@ import {
   AnalyticsEventType,
   AnalyticsPlatform,
 } from '@/modules/analytics/enums/analytics-event.enum';
-import {
-  Verification,
-  VerificationDocument,
-} from '@/modules/safety/schemas/verification.schema';
 import { AuthPasswordService } from './auth-password.service';
 import { ErrorCode } from '@/common/constants';
 import {
@@ -122,8 +118,6 @@ export class AuthService {
     private readonly securitySettingModel: Model<SecuritySettingDocument>,
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
-    @InjectModel(Verification.name)
-    private readonly verificationModel: Model<VerificationDocument>,
     private readonly notificationsService: NotificationsService,
     private readonly analyticsService: AnalyticsService,
     private readonly authPasswordService: AuthPasswordService,
@@ -619,11 +613,6 @@ export class AuthService {
         user._id.toString(),
         dto.referralCode,
       );
-      await this.syncVerificationStatus(user._id.toString(), {
-        isEmailVerified: false,
-        isPhoneVerified: false,
-      });
-
       const tokens = await this.attachToken(req, res, user);
 
       return {
@@ -942,44 +931,6 @@ export class AuthService {
       lastLoginDevice: context.device,
       lastLoginAt: new Date(),
     });
-  }
-
-  private async syncVerificationStatus(
-    userId: string,
-    status: {
-      isEmailVerified?: boolean;
-      isPhoneVerified?: boolean;
-      isProfileVerified?: boolean;
-    },
-  ): Promise<void> {
-    const set: Record<string, boolean | Date | undefined> = {};
-
-    if (typeof status.isEmailVerified === 'boolean') {
-      set.isEmailVerified = status.isEmailVerified;
-    }
-
-    if (typeof status.isPhoneVerified === 'boolean') {
-      set.isPhoneVerified = status.isPhoneVerified;
-    }
-
-    if (typeof status.isProfileVerified === 'boolean') {
-      set.isProfileVerified = status.isProfileVerified;
-      set.isVerified = status.isProfileVerified;
-      set.verifiedAt = status.isProfileVerified ? new Date() : undefined;
-    }
-
-    await this.verificationModel
-      .findOneAndUpdate(
-        { userId: new Types.ObjectId(userId) },
-        {
-          $set: set,
-          $setOnInsert: {
-            userId: new Types.ObjectId(userId),
-          },
-        },
-        { upsert: true, new: true, setDefaultsOnInsert: true },
-      )
-      .exec();
   }
 
   private async logLoginActivity(
@@ -1365,10 +1316,11 @@ export class AuthService {
 
       if (existingUser) {
         this.assertUserCanAuthenticate(existingUser);
-        await this.syncVerificationStatus(existingUser._id.toString(), {
-          isPhoneVerified: true,
-          isEmailVerified: Boolean(existingUser.isEmailVerified),
-        });
+        if (!existingUser.isPhoneVerified) {
+          await this.userRepo.update(existingUser._id.toString(), {
+            isPhoneVerified: true,
+          });
+        }
 
         return this.issueTokensOrChallenge(req, res, existingUser, {
           provider: AuthProvider.PHONE,
@@ -1428,11 +1380,6 @@ export class AuthService {
         user._id.toString(),
         referralCode,
       );
-      await this.syncVerificationStatus(user._id.toString(), {
-        isEmailVerified: false,
-        isPhoneVerified: true,
-      });
-
       const tokens = await this.attachToken(req, res, user);
 
       return {
@@ -1565,10 +1512,6 @@ export class AuthService {
         user._id.toString(),
         dto.referralCode,
       );
-      await this.syncVerificationStatus(user._id.toString(), {
-        isEmailVerified: Boolean(verifiedProfile.email ?? dto.email),
-        isPhoneVerified: false,
-      });
       await this.syncSocialProfilePhoto(
         user._id.toString(),
         verifiedProfile.profilePhoto,

@@ -39,6 +39,10 @@ export class CreatePlanDto {
   autoRenewDefault?: boolean;
 
   @IsOptional()
+  @IsBoolean()
+  isCustom?: boolean;
+
+  @IsOptional()
   @IsString()
   currency?: string;
 

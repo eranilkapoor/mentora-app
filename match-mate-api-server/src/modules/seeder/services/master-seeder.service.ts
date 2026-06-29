@@ -95,6 +95,10 @@ import {
   VerificationDocument,
 } from '@/modules/safety/schemas/verification.schema';
 import {
+  VerificationProvider,
+  VerificationStatus,
+} from '@/modules/safety/enums/verification.enums';
+import {
   Plan,
   PlanDocument,
 } from '@/modules/subscriptions/schemas/plan.schema';
@@ -112,9 +116,13 @@ import {
 } from '@/modules/notifications/schemas/notification-templates.schema';
 import {
   FEATURE_SEEDS,
+  ENTERPRISE_FEATURE_MAPPINGS,
+  FIXED_PLAN_LIMITS,
   INDIAN_DUMMY_PROFILE_SEED_DATA,
   NOTIFICATION_TEMPLATE_SEEDS,
   PLAN_SEEDS,
+  ROLE_PERMISSION_POLICIES,
+  resolveRolePermissions,
 } from '../data';
 
 @Injectable()
@@ -300,9 +308,6 @@ export class MasterSeederService {
         profile.gender,
         profile.index,
       );
-      const phoneOwner = phoneOwnerByNumber.get(profile.phone);
-      const canUsePhone = !phoneOwner || phoneOwner === profile.email;
-
       profileWrites.push({
         updateOne: {
           filter: { userId },
@@ -328,7 +333,6 @@ export class MasterSeederService {
               searchTags: profile.searchTags,
               aiTags: profile.aiTags,
               isPremium: profile.index % 10 === 0,
-              isVerified: profile.index % 3 === 0,
               status: ProfileStatus.ACTIVE,
               lastActiveAt: new Date(now.getTime() - profile.index * 3600000),
               updatedBy: userId,
@@ -399,12 +403,7 @@ export class MasterSeederService {
         },
       });
 
-      accountSettingsWrites.push(
-        this.buildSettingsUpsert(userId, {
-          emailVerified: true,
-          phoneVerified: canUsePhone,
-        }),
-      );
+      accountSettingsWrites.push(this.buildSettingsUpsert(userId));
       privacySettingsWrites.push(this.buildSettingsUpsert(userId));
       notificationSettingsWrites.push(this.buildSettingsUpsert(userId));
       communicationSettingsWrites.push(this.buildSettingsUpsert(userId));
@@ -421,10 +420,11 @@ export class MasterSeederService {
       aiSettingsWrites.push(this.buildSettingsUpsert(userId));
       verificationWrites.push(
         this.buildSettingsUpsert(userId, {
-          isVerified: profile.index % 3 === 0,
-          isPhoneVerified: canUsePhone,
-          isEmailVerified: true,
-          isProfileVerified: profile.index % 3 === 0,
+          status:
+            profile.index % 3 === 0
+              ? VerificationStatus.APPROVED
+              : VerificationStatus.NOT_STARTED,
+          provider: VerificationProvider.MANUAL,
           ...(profile.index % 3 === 0 ? { verifiedAt: now } : {}),
         }),
       );
@@ -742,93 +742,22 @@ export class MasterSeederService {
       .select('_id name')
       .lean();
 
-    const adminPermissionIds = allPermissions.map(
-      (permission) => permission._id,
+    const permissionIdByName = new Map(
+      allPermissions.map((permission) => [permission.name, permission._id]),
     );
-
-    const moderatorPermissionIds = allPermissions
-      .filter((permission) =>
-        ['user:', 'profile:', 'media:', 'report:', 'block:', 'chat:'].some(
-          (prefix) => permission.name.startsWith(prefix),
-        ),
-      )
-      .map((permission) => permission._id);
-
-    const permissionIdsByPrefix = (prefixes: string[]) =>
-      allPermissions
-        .filter((permission) =>
-          prefixes.some((prefix) => permission.name.startsWith(prefix)),
-        )
-        .map((permission) => permission._id);
-
-    const roles = [
-      {
-        name: AppRole.SUPER_ADMIN,
-        description: 'Super Admin',
-        permissions: adminPermissionIds,
-      },
-      {
-        name: AppRole.ADMIN,
-        description: 'Admin',
-        permissions: adminPermissionIds,
-      },
-      {
-        name: AppRole.SUPPORT,
-        description: 'Support Operator',
-        permissions: permissionIdsByPrefix([
-          'user:',
-          'report:',
-          'block:',
-          'activity:',
-        ]),
-      },
-      {
-        name: AppRole.FINANCE,
-        description: 'Finance Operator',
-        permissions: permissionIdsByPrefix([
-          'payment:',
-          'subscription:',
-          'plan:',
-          'analytics:',
-          'dashboard:',
-        ]),
-      },
-      {
-        name: AppRole.KYC_REVIEWER,
-        description: 'KYC Reviewer',
-        permissions: permissionIdsByPrefix(['profile:', 'media:', 'activity:']),
-      },
-      {
-        name: AppRole.CONTENT_MODERATOR,
-        description: 'Content Moderator',
-        permissions: permissionIdsByPrefix([
-          'media:',
-          'chat:',
-          'report:',
-          'block:',
-        ]),
-      },
-      {
-        name: AppRole.MARKETING_ADMIN,
-        description: 'Marketing Admin',
-        permissions: permissionIdsByPrefix([
-          'notification:',
-          'analytics:',
-          'dashboard:',
-        ]),
-      },
-
-      {
-        name: AppRole.MODERATOR,
-        description: 'Moderator',
-        permissions: moderatorPermissionIds,
-      },
-      {
-        name: AppRole.USER,
-        description: 'Regular User',
-        permissions: [],
-      },
-    ];
+    const roles = ROLE_PERMISSION_POLICIES.map((policy) => ({
+      name: policy.name,
+      description: policy.description,
+      permissions: resolveRolePermissions(policy).map((permission) => {
+        const permissionId = permissionIdByName.get(permission);
+        if (!permissionId) {
+          throw new Error(
+            `Permission seed missing for role policy: ${permission}`,
+          );
+        }
+        return permissionId;
+      }),
+    }));
 
     const result = await this.roleModel.bulkWrite(
       roles.map((role) => ({
@@ -1049,6 +978,7 @@ export class MasterSeederService {
       | 'PLATINUM_YEARLY'
       | 'ASSISTED_HALF_YEARLY'
       | 'ASSISTED_YEARLY'
+      | 'ENTERPRISE_CUSTOM'
       | 'PROFILE_BOOST_24H';
 
     type FeatureValue = number | boolean | string;
@@ -1142,7 +1072,7 @@ export class MasterSeederService {
       [FeatureKey.EMAIL_NOTIFICATIONS, 1],
       [FeatureKey.PHOTO_APPROVAL, 1],
       [FeatureKey.VIDEO_APPROVAL, 1],
-      [FeatureKey.PROFILE_VERIFICATION, 1],
+      [FeatureKey.IDENTITY_VERIFICATION, 1],
       [FeatureKey.REPORT_USER, 1],
       [FeatureKey.BLOCK_USERS, 1],
       [FeatureKey.SPAM_DETECTION, 1],
@@ -1244,6 +1174,10 @@ export class MasterSeederService {
       );
     });
 
+    ENTERPRISE_FEATURE_MAPPINGS.forEach(({ featureKey, value }) =>
+      addFeature('ENTERPRISE_CUSTOM', featureKey, value),
+    );
+
     // ==========================================
     // GOLD FEATURES
     // ==========================================
@@ -1333,8 +1267,6 @@ export class MasterSeederService {
       [FeatureKey.FEATURED_PROFILE, 1],
       [FeatureKey.PRIVATE_ALBUM, 1],
       [FeatureKey.INCOGNITO_MODE, 1],
-      [FeatureKey.ID_VERIFICATION, 1],
-      [FeatureKey.VERIFIED_BADGE, 1],
       [FeatureKey.HOROSCOPE_UPLOAD, 1],
       [FeatureKey.KUNDLI_MATCHING, 1],
       [FeatureKey.ASTROLOGY_REPORT, 1],
@@ -1466,6 +1398,12 @@ export class MasterSeederService {
       addFeature('PROFILE_BOOST_24H', feature, value),
     );
 
+    Object.entries(FIXED_PLAN_LIMITS).forEach(([planSlug, limits]) => {
+      Object.entries(limits).forEach(([featureKey, value]) => {
+        addFeature(planSlug as PlanSlug, featureKey as FeatureKey, value);
+      });
+    });
+
     // ==========================================
     // BULK OPERATIONS
     // ==========================================
@@ -1487,6 +1425,11 @@ export class MasterSeederService {
         continue;
       }
 
+      const persistedValue =
+        mapping.planSlug !== 'ENTERPRISE_CUSTOM' && feature.type === 'boolean'
+          ? Boolean(mapping.value)
+          : mapping.value;
+
       operations.push({
         updateOne: {
           filter: {
@@ -1498,7 +1441,7 @@ export class MasterSeederService {
             $set: {
               planId: new Types.ObjectId(plan._id),
               featureId: new Types.ObjectId(feature._id),
-              value: mapping.value,
+              value: persistedValue,
               updatedAt: new Date(),
             },
 

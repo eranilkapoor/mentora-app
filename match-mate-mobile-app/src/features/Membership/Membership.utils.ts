@@ -31,6 +31,8 @@ export const formatPlanCycleLabel = (
     case 'yearly':
     case 'annual':
       return 'Yearly';
+    case 'custom':
+      return 'Custom term';
     default:
       break;
   }
@@ -71,6 +73,8 @@ export const formatMembershipPlanDisplayName = (
       return ['Assisted Matchmaking', assistedCycle].filter(Boolean).join(' ');
     }
 
+    if (normalizedValue.startsWith('enterprise')) return 'Enterprise';
+
     return formatPlanName(value);
   }
 
@@ -82,6 +86,8 @@ export const formatMembershipPlanDisplayName = (
   if (planOrName.planType === 'assisted') {
     return ['Assisted Matchmaking', cycleLabel].filter(Boolean).join(' ');
   }
+
+  if (planOrName.planType === 'enterprise') return 'Enterprise';
 
   const tierLabel =
     planOrName.tier && planOrName.tier !== 'free'
@@ -96,15 +102,21 @@ export const formatMembershipPlanDisplayName = (
 };
 
 export const formatPlanPrice = (plan: MembershipPlan): string =>
-  plan.price <= 0
-    ? 'Free'
-    : new Intl.NumberFormat('en-IN', {
-        style: 'currency',
-        currency: plan.currency || 'INR',
-        maximumFractionDigits: 0,
-      }).format(plan.price);
+  plan.isCustom
+    ? 'Custom pricing'
+    : plan.price <= 0
+      ? 'Free'
+      : new Intl.NumberFormat('en-IN', {
+          style: 'currency',
+          currency: plan.currency || 'INR',
+          maximumFractionDigits: 0,
+        }).format(plan.price);
 
-export const getDurationLabel = (durationDays: number): string => {
+export const getDurationLabel = (
+  durationDays: number,
+  isCustom = false
+): string => {
+  if (isCustom) return 'Custom term';
   if (durationDays >= 365) return '/ year';
   if (durationDays >= 180) return '/ 6 months';
   if (durationDays >= 90) return '/ 3 months';
@@ -115,7 +127,11 @@ export const getDurationLabel = (durationDays: number): string => {
 export const getPlanTypeForTab = (
   tab: MembershipTab
 ): MembershipPlan['planType'] =>
-  tab === 'assisted' ? 'assisted' : 'self_service';
+  tab === 'assisted'
+    ? 'assisted'
+    : tab === 'enterprise'
+      ? 'enterprise'
+      : 'self_service';
 
 const formatFeatureValue = (value: unknown): string => {
   if (value === true || value === 1) return 'Yes';
@@ -159,13 +175,26 @@ const ASSISTED_FEATURE_PRIORITY = [
   'support_tickets',
 ];
 
+const ENTERPRISE_FEATURE_PRIORITY = [
+  'enterprise_sso',
+  'admin_dashboard',
+  'api_access',
+  'custom_branding',
+  'bulk_seat_management',
+  'sla_support',
+  'data_residency',
+  'dedicated_account_manager',
+  'privacy_controls',
+  'fraud_detection',
+  'support_tickets',
+];
+
 export const buildDisplayPlans = (
   backendPlans: MembershipPlan[],
   tab: MembershipTab
 ): DisplayPlan[] => {
   const planType = getPlanTypeForTab(tab);
-
-  return backendPlans
+  const sortedPlans = backendPlans
     .filter(
       (plan) =>
         (plan.planType ?? 'self_service') === planType &&
@@ -176,30 +205,35 @@ export const buildDisplayPlans = (
         (a.sortOrder ?? 999) - (b.sortOrder ?? 999) ||
         a.price - b.price ||
         a.durationDays - b.durationDays
-    )
-    .map((plan) => ({
-      id: plan._id,
-      name: formatMembershipPlanDisplayName(plan),
-      price: formatPlanPrice(plan),
-      durationLabel: getDurationLabel(plan.durationDays),
-      trialLabel:
-        (plan.trialDays ?? 0) > 0 ? `${plan.trialDays} days trial` : undefined,
-      renewalLabel: plan.autoRenewDefault
-        ? 'Auto-renewal enabled'
-        : 'Manual renewal',
-      tier: plan.tier,
-      isFree: plan.price <= 0,
-      best: Boolean(plan.isPopular),
-      ...(plan.description ? { description: plan.description } : {}),
-      featureValues:
-        plan.features?.reduce<Record<string, string>>((acc, item) => {
-          const key = item.featureId?.key;
-          if (!key) return acc;
-          acc[key] = formatFeatureValue(item.value);
-          return acc;
-        }, {}) ?? {},
-      source: plan,
-    }));
+    );
+  const recommendedPlan = [...sortedPlans]
+    .reverse()
+    .find((plan) => plan.isPopular);
+
+  return sortedPlans.map((plan) => ({
+    id: plan._id,
+    name: formatMembershipPlanDisplayName(plan),
+    price: formatPlanPrice(plan),
+    durationLabel: getDurationLabel(plan.durationDays, plan.isCustom),
+    trialLabel:
+      (plan.trialDays ?? 0) > 0 ? `${plan.trialDays} days trial` : undefined,
+    renewalLabel: plan.autoRenewDefault
+      ? 'Auto-renewal enabled'
+      : 'Manual renewal',
+    tier: plan.tier,
+    isFree: !plan.isCustom && plan.price <= 0,
+    isCustom: Boolean(plan.isCustom),
+    best: plan === recommendedPlan,
+    ...(plan.description ? { description: plan.description } : {}),
+    featureValues:
+      plan.features?.reduce<Record<string, string>>((acc, item) => {
+        const key = item.featureId?.key;
+        if (!key) return acc;
+        acc[key] = formatFeatureValue(item.value);
+        return acc;
+      }, {}) ?? {},
+    source: plan,
+  }));
 };
 
 export const buildFeatureRows = (
@@ -220,7 +254,9 @@ export const buildFeatureRows = (
   const priority =
     tab === 'assisted'
       ? ASSISTED_FEATURE_PRIORITY
-      : SELF_SERVICE_FEATURE_PRIORITY;
+      : tab === 'enterprise'
+        ? ENTERPRISE_FEATURE_PRIORITY
+        : SELF_SERVICE_FEATURE_PRIORITY;
 
   return Array.from(features.entries())
     .sort(([a], [b]) => {

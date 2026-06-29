@@ -45,9 +45,7 @@ export enum FeatureKey {
   HIDE_ONLINE_STATUS = 'hide_online_status', // Paid
   INCOGNITO_MODE = 'incognito_mode', // Paid
 
-  PROFILE_VERIFICATION = 'profile_verification', // Free
-  ID_VERIFICATION = 'id_verification', // Paid
-  VERIFIED_BADGE = 'verified_badge', // Paid
+  IDENTITY_VERIFICATION = 'identity_verification', // Free trust capability
 
   HOROSCOPE_UPLOAD = 'horoscope_upload', // Paid
   ASTROLOGY_REPORT = 'astrology_report', // Paid
@@ -354,6 +352,19 @@ export enum FeatureKey {
 
   CONSENT_MANAGEMENT = 'consent_management', // Free, Paid
   PRIVACY_CONTROLS = 'privacy_controls', // Free, Paid
+
+  // ==========================================
+  //  ENTERPRISE
+  // ==========================================
+
+  ENTERPRISE_SSO = 'enterprise_sso',
+  ADMIN_DASHBOARD = 'admin_dashboard',
+  API_ACCESS = 'api_access',
+  CUSTOM_BRANDING = 'custom_branding',
+  BULK_SEAT_MANAGEMENT = 'bulk_seat_management',
+  SLA_SUPPORT = 'sla_support',
+  DATA_RESIDENCY = 'data_residency',
+  DEDICATED_ACCOUNT_MANAGER = 'dedicated_account_manager',
 }
 
 // ==========================================
@@ -381,4 +392,5 @@ export enum FeatureCategory {
   LIMITS = 'Limit Based Features',
   GAMIFICATION = 'Engagement & Gamification',
   SUPPORT = 'Support & Miscellaneous',
+  ENTERPRISE = 'Enterprise',
 }

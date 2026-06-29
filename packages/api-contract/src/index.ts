@@ -32,7 +32,11 @@ export type PaymentStatus =
   | "refunded"
   | "cancelled";
 
-export type MembershipPlanType = "self_service" | "assisted" | "profile_boost";
+export type MembershipPlanType =
+  | "self_service"
+  | "assisted"
+  | "enterprise"
+  | "profile_boost";
 
 export interface MembershipPlanFeature {
   value?: string | number | boolean;
@@ -56,6 +60,7 @@ export interface MembershipPlan {
   durationDays: number;
   trialDays?: number;
   autoRenewDefault?: boolean;
+  isCustom?: boolean;
   currency: string;
   isPopular?: boolean;
   sortOrder?: number;

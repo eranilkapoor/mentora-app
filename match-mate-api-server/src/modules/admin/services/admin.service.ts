@@ -42,10 +42,7 @@ import { NotificationsService } from '@/modules/notifications/services/notificat
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { AdminAuditService } from './admin-audit.service';
 import { ErrorCode } from '@/common/constants';
-import {
-  throwBadRequest,
-  throwNotFound,
-} from '@/common/exceptions/throw-app-exception';
+import { throwNotFound } from '@/common/exceptions/throw-app-exception';
 
 @Injectable()
 export class AdminService {
@@ -156,22 +153,11 @@ export class AdminService {
     actorId?: string,
     req?: AuthenticatedRequest,
   ) {
-    if (dto.isBlocked === undefined && dto.isVerified === undefined) {
-      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
-        reason: 'admin_user_status_update_empty',
-      });
-    }
-
     const user = await this.repo.findUserById(dto.userId);
     if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
 
     const update: { status?: Status } = {};
-    if (dto.isVerified !== undefined) {
-      update.status = dto.isVerified ? Status.VERIFIED : Status.ACTIVE;
-    }
-    if (dto.isBlocked !== undefined) {
-      update.status = dto.isBlocked ? Status.BLOCKED : Status.ACTIVE;
-    }
+    update.status = dto.isBlocked ? Status.BLOCKED : Status.ACTIVE;
 
     const updated = await this.repo.updateUserStatus(dto.userId, update);
 

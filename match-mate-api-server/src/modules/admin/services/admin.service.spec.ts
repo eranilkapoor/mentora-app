@@ -1,5 +1,4 @@
 import { Types } from 'mongoose';
-import { ErrorCode } from '@/common/constants';
 import { Status, SubscriptionStatus } from '@/common/enums';
 import { MediaModerationStatus } from '@/modules/profiles/enums/profile-media.enums';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
@@ -120,12 +119,6 @@ describe('AdminService', () => {
       isBlocked: true,
     });
     expect(result.payments).toHaveLength(1);
-  });
-
-  it('rejects empty status updates', async () => {
-    await expect(
-      service.updateUserStatus({ userId: 'u1' }),
-    ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
   });
 
   it('updates user status and writes audit', async () => {

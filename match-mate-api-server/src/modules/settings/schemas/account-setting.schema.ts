@@ -7,8 +7,6 @@ export class AccountSetting {
   @Prop({ type: Types.ObjectId, required: true, unique: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ default: false }) emailVerified!: boolean;
-  @Prop({ default: false }) phoneVerified!: boolean;
   @Prop({ default: false }) isDeactivated!: boolean;
   @Prop() deactivatedAt?: Date;
   @Prop() deactivationReason?: string;

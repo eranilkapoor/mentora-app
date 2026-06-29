@@ -168,7 +168,7 @@ export default function BlockedUsersScreen({
               <Text style={localStyles.name} numberOfLines={1}>
                 {user.name}
               </Text>
-              {user.isVerified ? (
+              {user.verificationStatus === 'approved' ? (
                 <Feather
                   name="check-circle"
                   size={14}

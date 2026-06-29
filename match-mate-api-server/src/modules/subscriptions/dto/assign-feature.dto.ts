@@ -1,4 +1,5 @@
-import { IsMongoId, IsOptional, IsNumber } from 'class-validator';
+import { IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
+import { ApiPropertyOptional } from '@nestjs/swagger';
 
 export class AssignFeatureDto {
   @IsMongoId()
@@ -8,6 +9,9 @@ export class AssignFeatureDto {
   featureId!: string;
 
   @IsOptional()
-  @IsNumber()
-  value!: number;
+  @IsNotEmpty()
+  @ApiPropertyOptional({
+    oneOf: [{ type: 'boolean' }, { type: 'number' }, { type: 'string' }],
+  })
+  value?: boolean | number | string;
 }

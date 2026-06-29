@@ -1329,18 +1329,6 @@
         "tags": [
           "Settings"
         ]
-      },
-      "put": {
-        "operationId": "SettingsController_updateAccount_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Settings"
-        ]
       }
     },
     "/api/v1/settings/account/deactivate": {
@@ -10823,7 +10811,8 @@
               "free",
               "silver",
               "gold",
-              "platinum"
+              "platinum",
+              "enterprise"
             ]
           },
           "planType": {
@@ -10831,6 +10820,7 @@
             "enum": [
               "self_service",
               "assisted",
+              "enterprise",
               "profile_boost"
             ]
           },
@@ -10842,7 +10832,8 @@
               "monthly",
               "quarterly",
               "half_yearly",
-              "yearly"
+              "yearly",
+              "custom"
             ]
           },
           "price": {
@@ -10855,6 +10846,9 @@
             "type": "number"
           },
           "autoRenewDefault": {
+            "type": "boolean"
+          },
+          "isCustom": {
             "type": "boolean"
           },
           "currency": {
@@ -10918,9 +10912,7 @@
               "hide_last_seen",
               "hide_online_status",
               "incognito_mode",
-              "profile_verification",
-              "id_verification",
-              "verified_badge",
+              "identity_verification",
               "horoscope_upload",
               "kundli_matching",
               "astrology_report",
@@ -11079,7 +11071,15 @@
               "gdpr_compliance",
               "data_export",
               "consent_management",
-              "privacy_controls"
+              "privacy_controls",
+              "enterprise_sso",
+              "admin_dashboard",
+              "api_access",
+              "custom_branding",
+              "bulk_seat_management",
+              "sla_support",
+              "data_residency",
+              "dedicated_account_manager"
             ]
           },
           "description": {
@@ -11100,13 +11100,16 @@
             "type": "string"
           },
           "value": {
-            "type": "number"
+            "oneOf": [
+              { "type": "boolean" },
+              { "type": "number" },
+              { "type": "string" }
+            ]
           }
         },
         "required": [
           "planId",
-          "featureId",
-          "value"
+          "featureId"
         ]
       },
       "CreateNotificationDto": {

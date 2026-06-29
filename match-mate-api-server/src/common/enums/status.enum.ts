@@ -5,6 +5,5 @@ export enum Status {
   SUSPENDED = 'suspended',
   DELETED = 'deleted',
   INACTIVE = 'inactive',
-  VERIFIED = 'verified',
   REJECTED = 'rejected',
 }

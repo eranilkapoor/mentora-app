@@ -643,13 +643,8 @@ const fontScaleBySize: Record<StaticPageFontSize, string> = {
 
 export const getStaticPageHtml = (
   slug: StaticPageSlug,
-  optionsOrTheme?: StaticPageRenderOptions | string,
-  legacyLanguage?: string,
+  options: StaticPageRenderOptions = {},
 ): string => {
-  const options =
-    typeof optionsOrTheme === 'string'
-      ? { theme: optionsOrTheme, language: legacyLanguage }
-      : (optionsOrTheme ?? {});
   const selectedLanguage = normalizeLanguage(options.language);
   const page = selectedLanguage === 'hi' ? hindiPages[slug] : pages[slug];
   const selectedTheme = normalizeTheme(options.theme);

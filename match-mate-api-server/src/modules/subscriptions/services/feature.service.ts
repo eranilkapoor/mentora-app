@@ -74,8 +74,7 @@ export class FeatureService {
 
     const usageLimitedTypes = new Set(['limit', 'quota', 'duration']);
 
-    // -1 means unlimited. Boolean features may be stored as 1 in legacy seeds,
-    // so only typed limit/quota/duration features consume usage.
+    // Only typed limit/quota/duration features consume usage; -1 is unlimited.
     if (
       usageLimitedTypes.has(feature.featureId.type ?? 'boolean') &&
       typeof feature.value === 'number' &&

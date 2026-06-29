@@ -64,7 +64,7 @@ export async function ensurePaymentStoreTransactionIndex(
 }
 
 const migration: MongoMigration = {
-  id: '202606220002',
+  id: '202606220001',
   name: 'add-payment-store-transaction-index',
   checksum: 'sha256:payment-store-transaction-index-v1',
   async up(connection: Connection): Promise<void> {

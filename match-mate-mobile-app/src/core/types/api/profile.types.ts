@@ -47,7 +47,15 @@ export interface ProfileData {
     hasAboutMe?: boolean;
   };
   isPremium?: boolean;
-  isVerified?: boolean;
+  verification?: {
+    status: 'not_started' | 'pending' | 'approved' | 'rejected';
+    provider?: 'manual' | 'aadhaar' | 'digilocker' | 'liveness';
+    verifiedAt?: string | Date;
+  };
+  accountVerification?: {
+    emailVerified: boolean;
+    phoneVerified: boolean;
+  };
   status?: string;
   lastActiveAt?: string | Date;
 }

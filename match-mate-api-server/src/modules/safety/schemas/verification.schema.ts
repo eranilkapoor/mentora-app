@@ -44,21 +44,10 @@ export class Verification {
   @Prop({ type: Object })
   providerPayload?: Record<string, unknown>;
 
-  @Prop({ default: false })
-  isVerified!: boolean;
-
-  @Prop({ default: false })
-  isPhoneVerified?: boolean;
-
-  @Prop({ default: false })
-  isEmailVerified?: boolean;
-
-  @Prop({ default: false })
-  isProfileVerified?: boolean;
-
   @Prop()
   verifiedAt?: Date;
 }
 
 export type VerificationDocument = Verification & Document;
 export const VerificationSchema = SchemaFactory.createForClass(Verification);
+VerificationSchema.index({ status: 1, submittedAt: 1 });

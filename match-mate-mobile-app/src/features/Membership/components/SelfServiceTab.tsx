@@ -68,7 +68,7 @@ export function SelfServiceTab({
               {plan.best && (
                 <View style={styles.popularBadge}>
                   <Text style={styles.popularBadgeText}>
-                    {t('membership.top_badge')}
+                    {t('membership.popular_badge')}
                   </Text>
                 </View>
               )}

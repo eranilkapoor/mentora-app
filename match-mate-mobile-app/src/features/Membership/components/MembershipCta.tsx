@@ -28,6 +28,7 @@ export function MembershipCta({
   const isLoading = isCreatingOrder || isFetchingPlans;
   const isFreePlan = Boolean(selectedPlanItem?.isFree);
   const hasTrial = Boolean(selectedPlanItem?.source?.trialDays);
+  const isCustomPlan = Boolean(selectedPlanItem?.isCustom);
 
   return (
     <View style={styles.ctaContainer}>
@@ -39,7 +40,9 @@ export function MembershipCta({
             selectedPlanItem?.renewalLabel ??
             (tab === 'assisted'
               ? t('membership.tab_assisted')
-              : t('membership.tab_self'))}
+              : tab === 'enterprise'
+                ? t('membership.custom_terms')
+                : t('membership.tab_self'))}
         </Text>
       </View>
       <TouchableOpacity
@@ -59,15 +62,17 @@ export function MembershipCta({
           <ActivityIndicator size="small" color={theme.colors.white} />
         ) : (
           <Text style={styles.ctaButtonText}>
-            {isFreePlan
-              ? t('membership.cta_current_plan')
-              : hasTrial
-                ? t('membership.cta_start_trial', {
-                    days: selectedPlanItem?.source?.trialDays,
-                  })
-                : t('membership.cta_get_plan', {
-                    name: selectedPlanItem?.name,
-                  })}
+            {isCustomPlan
+              ? t('membership.contact_sales')
+              : isFreePlan
+                ? t('membership.cta_current_plan')
+                : hasTrial
+                  ? t('membership.cta_start_trial', {
+                      days: selectedPlanItem?.source?.trialDays,
+                    })
+                  : t('membership.cta_get_plan', {
+                      name: selectedPlanItem?.name,
+                    })}
           </Text>
         )}
       </TouchableOpacity>

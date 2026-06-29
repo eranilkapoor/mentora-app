@@ -1,4 +1,5 @@
 import { ProfileScoringService } from './profile-scoring.service';
+import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 
 describe('ProfileScoringService', () => {
   const service = new ProfileScoringService();
@@ -41,7 +42,7 @@ describe('ProfileScoringService', () => {
           annualIncomeAmount: 1500000,
         },
         family: { familyType: 'nuclear' },
-        isVerified: true,
+        verificationStatus: VerificationStatus.APPROVED,
         isPremium: true,
         lastActiveAt: new Date(),
       },

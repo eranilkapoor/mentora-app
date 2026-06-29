@@ -114,10 +114,6 @@ export interface SchemaProfile {
       sistersCount?: number;
       marriedBrothersCount?: number;
       marriedSistersCount?: number;
-      brothers?: number;
-      sisters?: number;
-      marriedBrothers?: number;
-      marriedSisters?: number;
       details?: Array<{
         type?: string;
         married?: boolean;
@@ -136,13 +132,14 @@ export interface SchemaProfile {
   profileCompletionPercentage?: number;
   visibilityScore?: number;
   isPremium?: boolean;
-  isVerified?: boolean;
   verification?: {
-    isVerified?: boolean;
-    isProfileVerified?: boolean;
-    isEmailVerified?: boolean;
-    isPhoneVerified?: boolean;
+    status: 'not_started' | 'pending' | 'approved' | 'rejected';
+    provider?: 'manual' | 'aadhaar' | 'digilocker' | 'liveness';
     verifiedAt?: string | Date;
+  };
+  accountVerification?: {
+    emailVerified: boolean;
+    phoneVerified: boolean;
   };
   status?: string;
   lastActiveAt?: string | Date;

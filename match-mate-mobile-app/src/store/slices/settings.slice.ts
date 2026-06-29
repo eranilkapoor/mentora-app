@@ -83,12 +83,8 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
 export const DEFAULT_ACCOUNT_SETTINGS: AccountSettings = {
   emailVerified: false,
   phoneVerified: false,
-  profileVerified: false,
-  verification: {
-    isVerified: false,
-    isProfileVerified: false,
-    isEmailVerified: false,
-    isPhoneVerified: false,
+  profileVerification: {
+    status: 'not_started',
   },
   isDeactivated: false,
   linkedAccounts: [],
@@ -293,30 +289,11 @@ const settingsSlice = createSlice({
       state.account = {
         ...DEFAULT_ACCOUNT_SETTINGS,
         ...action.payload,
-        verification: {
-          ...DEFAULT_ACCOUNT_SETTINGS.verification,
-          ...(action.payload.verification ?? {}),
+        profileVerification: {
+          ...DEFAULT_ACCOUNT_SETTINGS.profileVerification,
+          ...action.payload.profileVerification,
         },
         linkedAccounts: action.payload.linkedAccounts ?? [],
-      };
-    },
-
-    updateAccountSettings: (
-      state,
-      action: PayloadAction<Partial<AccountSettings>>
-    ) => {
-      state.account = {
-        ...(state.account ?? DEFAULT_ACCOUNT_SETTINGS),
-        ...action.payload,
-        verification: {
-          ...(state.account?.verification ??
-            DEFAULT_ACCOUNT_SETTINGS.verification),
-          ...(action.payload.verification ?? {}),
-        },
-        linkedAccounts:
-          action.payload.linkedAccounts ??
-          state.account?.linkedAccounts ??
-          DEFAULT_ACCOUNT_SETTINGS.linkedAccounts,
       };
     },
 
@@ -425,7 +402,6 @@ export const {
   setNotificationSettings,
   updateNotificationSettings,
   setAccountSettings,
-  updateAccountSettings,
   setSecuritySettings,
   updateSecuritySettings,
   setPrivacySettings,

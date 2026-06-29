@@ -2396,7 +2396,7 @@ export interface paths {
             readonly cookie?: never;
         };
         readonly get: operations["SettingsController_getAccount_v1"];
-        readonly put: operations["SettingsController_updateAccount_v1"];
+        readonly put?: never;
         readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
@@ -3154,7 +3154,7 @@ export interface components {
         readonly AssignFeatureDto: {
             readonly featureId: string;
             readonly planId: string;
-            readonly value: number;
+            readonly value?: boolean | number | string;
         };
         readonly AssignRolesDto: {
             readonly roleIds: readonly string[];
@@ -3206,7 +3206,7 @@ export interface components {
         readonly CreateFeatureDto: {
             readonly description?: string;
             /** @enum {string} */
-            readonly key: "email_registration" | "phone_registration" | "social_login_google" | "social_login_apple" | "social_login_facebook" | "email_verification" | "phone_verification" | "otp_login" | "two_factor_auth" | "device_management" | "multi_device_login" | "session_history" | "create_profile" | "edit_profile" | "delete_profile" | "advanced_profile_completion" | "profile_completion_score" | "multiple_profile_photos" | "video_profile" | "audio_intro" | "profile_boost" | "profile_highlight" | "featured_profile" | "hide_profile_photo" | "private_photos" | "private_album" | "hide_last_seen" | "hide_online_status" | "incognito_mode" | "profile_verification" | "id_verification" | "verified_badge" | "horoscope_upload" | "kundli_matching" | "astrology_report" | "send_interest" | "view_interests" | "accept_interest" | "reject_interest" | "priority_interest" | "shortlist_profiles" | "favorite_profiles" | "chat_access" | "unlimited_chat" | "chat_with_matches_only" | "chat_without_match" | "priority_chat" | "read_receipts" | "typing_indicator" | "message_translation" | "send_images_in_chat" | "send_videos_in_chat" | "send_voice_notes" | "voice_call" | "video_call" | "view_contact" | "request_contact" | "direct_contact_access" | "view_phone_number" | "view_email_address" | "upload_photos" | "upload_videos" | "view_profile_photos" | "view_private_photos" | "request_photos" | "view_profile_videos" | "request_private_videos" | "photo_approval" | "video_approval" | "ai_photo_verification" | "blurred_photo_mode" | "basic_search" | "advanced_search" | "basic_filters" | "advanced_filters" | "unlimited_search" | "search_by_religion" | "search_by_caste" | "search_by_location" | "search_by_income" | "search_by_education" | "search_by_profession" | "search_by_height" | "location_based_search" | "global_search" | "international_matches" | "nri_matching" | "saved_searches" | "recent_searches" | "daily_profile_views" | "unlimited_profile_views" | "profile_views" | "who_viewed_me" | "profile_analytics" | "top_in_search" | "show_on_home" | "priority_search_ranking" | "featured_in_search" | "basic_matching" | "advanced_matching" | "smart_matches" | "ai_recommendations" | "ai_profile_summary" | "ai_photo_selection" | "ai_compatibility_analysis" | "ai_conversation_starter" | "ai_interest_prediction" | "ai_fake_profile_detection" | "compatibility_score" | "personality_matching" | "interest_matching" | "location_matching" | "strict_preferences" | "smart_preferences" | "religion_preferences" | "caste_preferences" | "subcaste_preferences" | "manglik_matching" | "community_based_matching" | "marriage_timeline_preference" | "children_preference" | "eating_preferences" | "lifestyle_preferences" | "family_managed_profile" | "family_contact_visibility" | "parent_login" | "guardian_access" | "family_details" | "family_preferences" | "interest_analytics" | "chat_analytics" | "engagement_score" | "match_success_rate" | "daily_activity_stats" | "weekly_reports" | "push_notifications" | "email_notifications" | "sms_notifications" | "instant_match_alerts" | "daily_match_digest" | "marketing_notifications" | "location_based_matching" | "nearby_profiles" | "travel_mode" | "ad_free_experience" | "priority_support" | "vip_badge" | "premium_badge" | "relationship_manager" | "dedicated_relationship_manager" | "concierge_matchmaking" | "personal_matchmaker" | "daily_boosts" | "weekly_boosts" | "monthly_boosts" | "unlimited_boosts" | "spotlight_profile" | "monthly_subscription" | "quarterly_subscription" | "yearly_subscription" | "one_time_boost_purchase" | "wallet_system" | "promo_codes" | "referral_rewards" | "referral_bonus" | "earn_credits" | "auto_renewal" | "grace_period" | "report_user" | "block_users" | "safe_mode" | "restricted_profiles" | "fraud_detection" | "spam_detection" | "manual_profile_review" | "shortlist_limit" | "contact_view_limit" | "message_limit" | "match_limit" | "streak_rewards" | "daily_login_rewards" | "match_quiz" | "compatibility_games" | "customer_support_chat" | "support_tickets" | "account_export" | "account_deletion" | "gdpr_compliance" | "data_export" | "consent_management" | "privacy_controls";
+            readonly key: "email_registration" | "phone_registration" | "social_login_google" | "social_login_apple" | "social_login_facebook" | "email_verification" | "phone_verification" | "otp_login" | "two_factor_auth" | "device_management" | "multi_device_login" | "session_history" | "create_profile" | "edit_profile" | "delete_profile" | "advanced_profile_completion" | "profile_completion_score" | "multiple_profile_photos" | "video_profile" | "audio_intro" | "profile_boost" | "profile_highlight" | "featured_profile" | "hide_profile_photo" | "private_photos" | "private_album" | "hide_last_seen" | "hide_online_status" | "incognito_mode" | "identity_verification" | "horoscope_upload" | "kundli_matching" | "astrology_report" | "send_interest" | "view_interests" | "accept_interest" | "reject_interest" | "priority_interest" | "shortlist_profiles" | "favorite_profiles" | "chat_access" | "unlimited_chat" | "chat_with_matches_only" | "chat_without_match" | "priority_chat" | "read_receipts" | "typing_indicator" | "message_translation" | "send_images_in_chat" | "send_videos_in_chat" | "send_voice_notes" | "voice_call" | "video_call" | "view_contact" | "request_contact" | "direct_contact_access" | "view_phone_number" | "view_email_address" | "upload_photos" | "upload_videos" | "view_profile_photos" | "view_private_photos" | "request_photos" | "view_profile_videos" | "request_private_videos" | "photo_approval" | "video_approval" | "ai_photo_verification" | "blurred_photo_mode" | "basic_search" | "advanced_search" | "basic_filters" | "advanced_filters" | "unlimited_search" | "search_by_religion" | "search_by_caste" | "search_by_location" | "search_by_income" | "search_by_education" | "search_by_profession" | "search_by_height" | "location_based_search" | "global_search" | "international_matches" | "nri_matching" | "saved_searches" | "recent_searches" | "daily_profile_views" | "unlimited_profile_views" | "profile_views" | "who_viewed_me" | "profile_analytics" | "top_in_search" | "show_on_home" | "priority_search_ranking" | "featured_in_search" | "basic_matching" | "advanced_matching" | "smart_matches" | "ai_recommendations" | "ai_profile_summary" | "ai_photo_selection" | "ai_compatibility_analysis" | "ai_conversation_starter" | "ai_interest_prediction" | "ai_fake_profile_detection" | "compatibility_score" | "personality_matching" | "interest_matching" | "location_matching" | "strict_preferences" | "smart_preferences" | "religion_preferences" | "caste_preferences" | "subcaste_preferences" | "manglik_matching" | "community_based_matching" | "marriage_timeline_preference" | "children_preference" | "eating_preferences" | "lifestyle_preferences" | "family_managed_profile" | "family_contact_visibility" | "parent_login" | "guardian_access" | "family_details" | "family_preferences" | "interest_analytics" | "chat_analytics" | "engagement_score" | "match_success_rate" | "daily_activity_stats" | "weekly_reports" | "push_notifications" | "email_notifications" | "sms_notifications" | "instant_match_alerts" | "daily_match_digest" | "marketing_notifications" | "location_based_matching" | "nearby_profiles" | "travel_mode" | "ad_free_experience" | "priority_support" | "vip_badge" | "premium_badge" | "relationship_manager" | "dedicated_relationship_manager" | "concierge_matchmaking" | "personal_matchmaker" | "daily_boosts" | "weekly_boosts" | "monthly_boosts" | "unlimited_boosts" | "spotlight_profile" | "monthly_subscription" | "quarterly_subscription" | "yearly_subscription" | "one_time_boost_purchase" | "wallet_system" | "promo_codes" | "referral_rewards" | "referral_bonus" | "earn_credits" | "auto_renewal" | "grace_period" | "report_user" | "block_users" | "safe_mode" | "restricted_profiles" | "fraud_detection" | "spam_detection" | "manual_profile_review" | "shortlist_limit" | "contact_view_limit" | "message_limit" | "match_limit" | "streak_rewards" | "daily_login_rewards" | "match_quiz" | "compatibility_games" | "customer_support_chat" | "support_tickets" | "account_export" | "account_deletion" | "gdpr_compliance" | "data_export" | "consent_management" | "privacy_controls" | "enterprise_sso" | "admin_dashboard" | "api_access" | "custom_branding" | "bulk_seat_management" | "sla_support" | "data_residency" | "dedicated_account_manager";
         };
         readonly CreateNotificationDto: {
             readonly action?: {
@@ -3257,19 +3257,20 @@ export interface components {
         readonly CreatePlanDto: {
             readonly autoRenewDefault?: boolean;
             /** @enum {string} */
-            readonly billingCycle: "daily" | "weekly" | "monthly" | "quarterly" | "half_yearly" | "yearly";
+            readonly billingCycle: "daily" | "weekly" | "monthly" | "quarterly" | "half_yearly" | "yearly" | "custom";
             readonly currency?: string;
             readonly description?: string;
             readonly durationDays: number;
+            readonly isCustom?: boolean;
             readonly isPopular?: boolean;
             readonly name: string;
             /** @enum {string} */
-            readonly planType?: "self_service" | "assisted" | "profile_boost";
+            readonly planType?: "self_service" | "assisted" | "enterprise" | "profile_boost";
             readonly price: number;
             readonly slug: string;
             readonly sortOrder?: number;
             /** @enum {string} */
-            readonly tier: "free" | "silver" | "gold" | "platinum";
+            readonly tier: "free" | "silver" | "gold" | "platinum" | "enterprise";
             readonly trialDays?: number;
         };
         readonly CreateProfileDto: {
@@ -7386,23 +7387,6 @@ export interface operations {
         };
     };
     readonly SettingsController_getAccount_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly SettingsController_updateAccount_v1: {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;

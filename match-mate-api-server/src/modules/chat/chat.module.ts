@@ -24,6 +24,10 @@ import {
 } from '../settings/schemas/communication-setting.schema';
 import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
 import { ChatRealtimeModule } from './chat-realtime.module';
+import {
+  Verification,
+  VerificationSchema,
+} from '../safety/schemas/verification.schema';
 
 @Module({
   imports: [
@@ -40,6 +44,7 @@ import { ChatRealtimeModule } from './chat-realtime.module';
       { name: Media.name, schema: MediaSchema },
       { name: CommunicationSetting.name, schema: CommunicationSettingSchema },
       { name: Match.name, schema: MatchSchema },
+      { name: Verification.name, schema: VerificationSchema },
     ]),
   ],
   providers: [

@@ -42,22 +42,16 @@ export class AppService {
   }
 
   getAccountDeletionInstructionsPage(
-    optionsOrTheme?: StaticPageRenderOptions | string,
-    legacyLanguage?: string,
+    options: StaticPageRenderOptions = {},
   ): string {
-    return getStaticPageHtml(
-      'account-deletion',
-      optionsOrTheme,
-      legacyLanguage,
-    );
+    return getStaticPageHtml('account-deletion', options);
   }
 
   getStaticHelpPage(
     slug: StaticPageSlug,
-    optionsOrTheme?: StaticPageRenderOptions | string,
-    legacyLanguage?: string,
+    options: StaticPageRenderOptions = {},
   ): string {
-    return getStaticPageHtml(slug, optionsOrTheme, legacyLanguage);
+    return getStaticPageHtml(slug, options);
   }
 
   markShuttingDown(): void {

@@ -32,6 +32,10 @@ import { SettingsModule } from '../settings/settings.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { DailyMatchDigestTask } from './tasks/daily-match-digest.task';
 import { MatchExpiryTask } from './tasks/match-expiry.task';
+import {
+  Verification,
+  VerificationSchema,
+} from '../safety/schemas/verification.schema';
 
 @Module({
   imports: [
@@ -47,6 +51,7 @@ import { MatchExpiryTask } from './tasks/match-expiry.task';
       { name: Preference.name, schema: PreferenceSchema },
       { name: Media.name, schema: MediaSchema },
       { name: Interaction.name, schema: InteractionSchema },
+      { name: Verification.name, schema: VerificationSchema },
     ]),
   ],
   controllers: [MatchesController],

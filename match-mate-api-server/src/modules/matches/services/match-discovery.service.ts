@@ -41,6 +41,10 @@ export class MatchDiscoveryService {
       myProfile,
     );
     this.applyQueryFilters(filter, query);
+    await this.applyVerificationConstraint(
+      filter,
+      this.requiresVerifiedProfiles(preference, query),
+    );
 
     const { profiles, total } = await this.discoveryRepo.findProfiles(
       filter,
@@ -88,6 +92,10 @@ export class MatchDiscoveryService {
       createdAt: { $gte: thirtyDaysAgo },
     };
     this.applyQueryFilters(filter, query);
+    await this.applyVerificationConstraint(
+      filter,
+      this.requiresVerifiedProfiles(preference, query),
+    );
 
     let { profiles, total } = await this.discoveryRepo.findProfiles(
       filter,
@@ -98,6 +106,10 @@ export class MatchDiscoveryService {
 
     if (total === 0) {
       this.applyQueryFilters(baseFilter, query);
+      await this.applyVerificationConstraint(
+        baseFilter,
+        this.requiresVerifiedProfiles(preference, query),
+      );
       const fallback = await this.discoveryRepo.findProfiles(
         baseFilter,
         skip,
@@ -121,13 +133,8 @@ export class MatchDiscoveryService {
   //  Nearby matches  geo-based
 
   async getNearbyMatches(userId: string, query: NearbyQueryDto) {
-    const {
-      myProfile,
-      // preference,
-      interactedIds,
-      skip,
-      limit,
-    } = await this.resolveContext(userId, query);
+    const { myProfile, preference, interactedIds, skip, limit } =
+      await this.resolveContext(userId, query);
 
     const location = myProfile.location as
       | { type: string; coordinates: [number, number] }
@@ -150,6 +157,10 @@ export class MatchDiscoveryService {
       interactedIds,
     );
     this.applyQueryFilters(baseFilter, query);
+    await this.applyVerificationConstraint(
+      baseFilter,
+      this.requiresVerifiedProfiles(preference, query),
+    );
 
     const { profiles, total } = await this.discoveryRepo.findNearbyProfiles(
       baseFilter,
@@ -190,6 +201,10 @@ export class MatchDiscoveryService {
       lastActiveAt: { $gte: onlineSince },
     };
     this.applyQueryFilters(filter, query);
+    await this.applyVerificationConstraint(
+      filter,
+      this.requiresVerifiedProfiles(preference, query),
+    );
 
     const { profiles, total } = await this.discoveryRepo.findProfiles(
       filter,
@@ -359,12 +374,6 @@ export class MatchDiscoveryService {
       filter['personal.eating'] = { $in: eatingFilter };
     }
 
-    //  Strict mode  only verified profiles
-
-    if (settings?.isStrict || settings?.profileVerificationRequired) {
-      filter.isVerified = true;
-    }
-
     //  Minimum match score
 
     const minScore = settings?.minimumMatchScore as number | undefined;
@@ -397,10 +406,6 @@ export class MatchDiscoveryService {
     }
 
     const filter = this.buildBaseFilter(userId, oppositeGender, interactedIds);
-
-    if (settings?.profileVerificationRequired) {
-      filter.isVerified = true;
-    }
 
     return filter;
   }
@@ -526,13 +531,37 @@ export class MatchDiscoveryService {
       filter['education.occupationType'] = query.occupationType;
     }
 
-    if (query.verifiedOnly) {
-      filter.isVerified = true;
-    }
-
     if (andConditions.length > 0) {
       filter.$and = andConditions;
     }
+  }
+
+  private requiresVerifiedProfiles(
+    preference: Record<string, unknown> | null,
+    query: MatchQueryDto | NearbyQueryDto,
+  ): boolean {
+    const settings = preference?.settings as
+      | Record<string, unknown>
+      | undefined;
+    return Boolean(
+      query.verifiedOnly ||
+      settings?.isStrict ||
+      settings?.profileVerificationRequired,
+    );
+  }
+
+  private async applyVerificationConstraint(
+    filter: FilterQuery<ProfileDocument>,
+    required: boolean,
+  ): Promise<void> {
+    if (!required) return;
+
+    const verifiedUserIds = await this.discoveryRepo.getVerifiedUserIds();
+    const currentUserFilter =
+      filter.userId && typeof filter.userId === 'object'
+        ? (filter.userId as Record<string, unknown>)
+        : {};
+    filter.userId = { ...currentUserFilter, $in: verifiedUserIds };
   }
 
   private async withImages<T extends LeanProfile>(
