@@ -245,6 +245,12 @@
         "lines": 100,
         "statements": 100
       },
+      "./src/modules/chat/services/chat.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
       "./src/modules/chat/controllers/chat.controller.ts": {
         "branches": 100,
         "functions": 100,
@@ -293,7 +299,25 @@
         "lines": 100,
         "statements": 100
       },
+      "./src/modules/matches/services/match-discovery.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
       "./src/modules/matches/services/match-notification.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/matches/services/premium-match-curator.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/matches/services/matches.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
@@ -306,6 +330,12 @@
         "statements": 100
       },
       "./src/modules/payments/controllers/payments.controller.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/payments/services/payments.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
