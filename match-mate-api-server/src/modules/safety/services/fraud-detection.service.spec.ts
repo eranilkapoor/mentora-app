@@ -103,4 +103,33 @@ describe('FraudDetectionService', () => {
     expect(result.candidates).toHaveLength(1);
     expect(result.candidates[0]?.userId).toBe(userHigh.toString());
   });
+
+  it('uses default scan options and zero IP count when session data is absent', async () => {
+    userReportModel.aggregate.mockReturnValue({
+      exec: jest.fn().mockResolvedValue([{ _id: userMedium, count: 3 }]),
+    });
+    paymentModel.aggregate.mockReturnValue({
+      exec: jest.fn().mockResolvedValue([]),
+    });
+    activityLogModel.aggregate.mockReturnValue({
+      exec: jest.fn().mockResolvedValue([]),
+    });
+    userSessionModel.aggregate.mockReturnValue({
+      exec: jest.fn().mockResolvedValue([]),
+    });
+    const service = new FraudDetectionService(
+      userReportModel as never,
+      paymentModel as never,
+      activityLogModel as never,
+      userSessionModel as never,
+      logger as never,
+    );
+
+    const result = await service.runBatchScan();
+
+    expect(result.candidates).toHaveLength(1);
+    expect(result.candidates[0]?.signals).toEqual([
+      expect.objectContaining({ key: 'high_report_volume' }),
+    ]);
+  });
 });

@@ -63,4 +63,38 @@ describe('MediaModerationService', () => {
     expect(result.status).toBe(MediaModerationStatus.FLAGGED);
     expect(result.reasons).toContain('file_too_large');
   });
+
+  it('accepts boolean AI configuration and valid video limits', () => {
+    configService.get.mockImplementation((key: string) => {
+      if (key === 'media.aiModerationEnabled') return false;
+      if (key === 'media.maxVideoBytes') return 500;
+      return undefined;
+    });
+    const service = new MediaModerationService(configService as never);
+
+    const result = service.moderate(file('video/mp4', 500), MediaType.VIDEO);
+
+    expect(result.status).toBe(MediaModerationStatus.APPROVED);
+    expect(result.metadata).toMatchObject({
+      provider: 'basic_rules',
+      aiEnabled: false,
+    });
+  });
+
+  it('uses boolean fallback and default size when configuration is absent or zero', () => {
+    configService.get.mockImplementation((key: string) =>
+      key === 'media.maxImageBytes' ? 0 : undefined,
+    );
+    const service = new MediaModerationService(configService as never);
+    const upload = file('', 1);
+    Object.assign(upload, { mimetype: undefined });
+
+    const result = service.moderate(upload, MediaType.IMAGE);
+
+    expect(result.reasons).toEqual(['unsupported_mime_type']);
+    expect(result.metadata).toMatchObject({
+      provider: 'basic_rules',
+      aiEnabled: false,
+    });
+  });
 });

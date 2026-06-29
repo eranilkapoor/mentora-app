@@ -13,9 +13,6 @@ export class SocialLoginDto {
   provider!: AuthProvider;
 
   @IsNotEmpty()
-  provider_id!: string;
-
-  @IsNotEmpty()
   @IsString()
   accessToken!: string;
 

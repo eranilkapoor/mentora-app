@@ -15,6 +15,7 @@
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "i18n:check": "node scripts/check-i18n-keys.js",
     "test": "jest --runInBand",
+    "test:cov": "jest --coverage --runInBand",
     "test:watch": "jest --watch",
     "typecheck": "tsc --noEmit",
     "format": "prettier --write '**/*.{ts,tsx,json,md}'",
@@ -108,6 +109,35 @@
     "testMatch": [
       "<rootDir>/src/**/*.test.ts",
       "<rootDir>/src/**/*.test.tsx"
-    ]
+    ],
+    "collectCoverageFrom": [
+      "src/**/*.{ts,tsx}",
+      "!src/**/*.d.ts",
+      "!src/**/*.types.ts",
+      "!src/**/*.styles.ts",
+      "!src/**/*.constants.ts",
+      "!src/**/index.ts",
+      "!src/**/index.tsx"
+    ],
+    "coverageDirectory": "coverage",
+    "coverageReporters": [
+      "text-summary",
+      "json-summary",
+      "lcov"
+    ],
+    "coverageThreshold": {
+      "global": {
+        "branches": 1,
+        "functions": 1,
+        "lines": 2,
+        "statements": 2
+      },
+      "./src/features/Membership/hooks/useUpgradePrompt.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      }
+    }
   }
 }

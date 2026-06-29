@@ -39,3 +39,14 @@ jobs:
 
       - name: Run verification and tests
         run: npm run ci
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-reports
+          path: |
+            match-mate-api-server/coverage
+            match-mate-mobile-app/coverage
+          retention-days: 14
+          if-no-files-found: warn

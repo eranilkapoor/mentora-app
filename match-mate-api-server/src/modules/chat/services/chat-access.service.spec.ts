@@ -15,6 +15,34 @@ const createRepository = () => ({
 });
 
 describe('ChatAccessService', () => {
+  it('validates object IDs with default and explicit reasons', () => {
+    const service = new ChatAccessService(
+      createRepository() as unknown as ChatRepository,
+    );
+    expect(() =>
+      service.ensureValidObjectId(new Types.ObjectId().toString()),
+    ).not.toThrow();
+    expect(() => service.ensureValidObjectId('invalid')).toThrow();
+    expect(() =>
+      service.ensureValidObjectId('invalid', 'custom_reason'),
+    ).toThrow();
+  });
+
+  it('rejects invalid and missing rooms', async () => {
+    const repo = createRepository();
+    const service = new ChatAccessService(repo as unknown as ChatRepository);
+
+    await expect(
+      service.getAuthorizedRoom('user', 'invalid'),
+    ).rejects.toMatchObject({
+      code: ErrorCode.INVALID_ID,
+    });
+    repo.findRoomById.mockResolvedValue(null);
+    await expect(
+      service.getAuthorizedRoom('user', new Types.ObjectId().toString()),
+    ).rejects.toMatchObject({ code: ErrorCode.CHAT_NOT_FOUND });
+  });
+
   it('rejects users who are not room participants', async () => {
     const repo = createRepository();
     repo.findRoomById.mockResolvedValue({
@@ -29,6 +57,75 @@ describe('ChatAccessService', () => {
         new Types.ObjectId().toString(),
       ),
     ).rejects.toMatchObject({ code: ErrorCode.CHAT_ACCESS_DENIED });
+  });
+
+  it('rejects disallowed room status and malformed participants', async () => {
+    const repo = createRepository();
+    const userId = new Types.ObjectId();
+    repo.findRoomById
+      .mockResolvedValueOnce({
+        participants: [userId, new Types.ObjectId()],
+        status: ChatRoomStatus.BLOCKED,
+      })
+      .mockResolvedValueOnce({
+        participants: [userId],
+        status: ChatRoomStatus.ACTIVE,
+      });
+    const service = new ChatAccessService(repo as unknown as ChatRepository);
+    const roomId = new Types.ObjectId().toString();
+
+    await expect(
+      service.getAuthorizedRoom(userId.toString(), roomId),
+    ).rejects.toMatchObject({ code: ErrorCode.CHAT_ACCESS_DENIED });
+    await expect(
+      service.getAuthorizedRoom(userId.toString(), roomId),
+    ).rejects.toMatchObject({ code: ErrorCode.CHAT_ACCESS_DENIED });
+  });
+
+  it('authorizes valid room members and enforces block relationships', async () => {
+    const repo = createRepository();
+    const userId = new Types.ObjectId();
+    const otherId = new Types.ObjectId();
+    const room = {
+      participants: [userId, otherId],
+      status: ChatRoomStatus.ACTIVE,
+    };
+    repo.findRoomById.mockResolvedValue(room);
+    repo.findBlockedRelation.mockResolvedValueOnce(null);
+    const service = new ChatAccessService(repo as unknown as ChatRepository);
+
+    await expect(
+      service.getAuthorizedRoom(
+        userId.toString(),
+        new Types.ObjectId().toString(),
+      ),
+    ).resolves.toBe(room);
+
+    repo.findBlockedRelation.mockResolvedValueOnce({
+      _id: new Types.ObjectId(),
+    });
+    await expect(
+      service.getAuthorizedRoom(
+        userId.toString(),
+        new Types.ObjectId().toString(),
+      ),
+    ).rejects.toMatchObject({ code: ErrorCode.CHAT_ACCESS_DENIED });
+  });
+
+  it('verifies that every requested user exists', async () => {
+    const repo = createRepository();
+    const service = new ChatAccessService(repo as unknown as ChatRepository);
+    repo.findUsersByIds.mockResolvedValueOnce([{ id: 'one' }, { id: 'two' }]);
+    await expect(
+      service.ensureUsersExist(['one', 'two']),
+    ).resolves.toBeUndefined();
+
+    repo.findUsersByIds.mockResolvedValueOnce([{ id: 'one' }]);
+    await expect(
+      service.ensureUsersExist(['one', 'two']),
+    ).rejects.toMatchObject({
+      code: ErrorCode.USER_NOT_FOUND,
+    });
   });
 
   it('rejects messaging when either user has blocked the other', async () => {
@@ -55,6 +152,17 @@ describe('ChatAccessService', () => {
     expect(repo.findActiveMatchBetween).not.toHaveBeenCalled();
   });
 
+  it('defaults missing communication settings to unrestricted', async () => {
+    const repo = createRepository();
+    repo.findBlockedRelation.mockResolvedValue(null);
+    repo.findCommunicationSettingsByUserIds.mockResolvedValue([]);
+    const service = new ChatAccessService(repo as unknown as ChatRepository);
+
+    await expect(
+      service.ensureMessagingAllowed('sender', 'recipient'),
+    ).resolves.toBeUndefined();
+  });
+
   it('requires an existing match or room for restricted recipients', async () => {
     const repo = createRepository();
     repo.findBlockedRelation.mockResolvedValue(null);
@@ -69,4 +177,25 @@ describe('ChatAccessService', () => {
       service.ensureMessagingAllowed('sender', 'recipient'),
     ).rejects.toMatchObject({ code: ErrorCode.CHAT_ACCESS_DENIED });
   });
+
+  it.each([
+    [{ _id: 'match' }, null],
+    [null, { _id: 'room' }],
+  ])(
+    'allows restricted messaging with a match or direct room',
+    async (match, room) => {
+      const repo = createRepository();
+      repo.findBlockedRelation.mockResolvedValue(null);
+      repo.findCommunicationSettingsByUserIds.mockResolvedValue([
+        { whoCanMessage: CommunicationAccess.MATCHES_ONLY },
+      ]);
+      repo.findActiveMatchBetween.mockResolvedValue(match);
+      repo.findDirectRoomByUsers.mockResolvedValue(room);
+      const service = new ChatAccessService(repo as unknown as ChatRepository);
+
+      await expect(
+        service.ensureMessagingAllowed('sender', 'recipient'),
+      ).resolves.toBeUndefined();
+    },
+  );
 });

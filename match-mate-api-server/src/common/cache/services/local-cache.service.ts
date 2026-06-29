@@ -99,7 +99,7 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
 
   async expire(key: string, ttlSeconds: number): Promise<void> {
     const value = await this.get<string>(key);
-    const expiresAt = ttlSeconds;
+    const expiresAt = Date.now() + ttlSeconds * 1000;
 
     if (value) {
       this.store.set(key, { value, expiresAt });

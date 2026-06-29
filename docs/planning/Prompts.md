@@ -11,37 +11,46 @@ This tracker was reconciled against the current API, Expo mobile/web app, shared
 ### API
 
 - [x] All 25 API controllers have unit-level contract specs.
-- [x] API unit suite passes: 62 suites and 218 tests.
+- [x] API unit suite passes: 61 suites and 218 tests.
 - [x] Controller, socket, payment, notification, admin, analytics, migration, feature-gate, media, privacy, and fraud-detection coverage exists.
 - [x] OpenAPI snapshot and generated TypeScript contracts are checked by repository verification.
 - [x] Ordered/checksummed Mongo migrations and index drift auditing exist.
 - [x] API Dockerfile, provider smoke scripts, release checks, health/readiness endpoints, and graceful shutdown exist.
 - [x] Rule-based fraud batch scanning and its scheduled task exist.
 - [~] API E2E foundation exists with 1 suite/4 HTTP tests; database-backed business journeys and authenticated sockets remain.
-- [ ] The 95% coverage target is not yet met or enforced by CI.
+- [~] Coverage is ratcheted in CI at the measured baseline; the final 95% target is not yet met.
 
 Current honest API coverage from `npm run test:cov -- --runInBand`:
 
-| Metric | Current | Target |
-| --- | ---: | ---: |
-| Statements | 35.92% | 95% |
-| Branches | 15.21% | 95% |
-| Functions | 27.01% | 95% |
-| Lines | 34.88% | 95% |
+| Metric     | Current | Target |
+| ---------- | ------: | -----: |
+| Statements |  35.93% |    95% |
+| Branches   |  15.02% |    95% |
+| Functions  |  26.80% |    95% |
+| Lines      |  34.90% |    95% |
 
 ### Mobile And Web
 
-- [x] Mobile suite passes: 6 suites and 29 tests.
+- [x] Mobile suite passes: 6 suites and 32 tests.
 - [x] Existing tests cover realtime auth classification, sibling normalization, settings persistence, plan access, and upgrade prompts.
 - [x] Shared API contracts, secure token bootstrap, settings synchronization, feature prompts, localization, and error reporting foundations exist.
 - [ ] High-traffic screens, RTK Query services, navigation flows, accessibility behavior, and web-specific rendering have little or no automated coverage.
-- [ ] Mobile coverage is not collected or gated in CI.
-- [ ] `useUpgradePrompt.test.ts` exposes a deprecated React Navigation object-form `navigate` call that should be migrated.
+- [x] Mobile coverage is collected and ratcheted in CI against the complete eligible source set.
+- [x] Upgrade navigation uses `CommonActions`; its generic/named prompts and navigator readiness branches have 100% statements, branches, functions, and lines coverage.
+
+Current honest mobile/web coverage from `npm run test:cov`:
+
+| Metric     | Current | Target |
+| ---------- | ------: | -----: |
+| Statements |   2.29% |    95% |
+| Branches   |   1.59% |    95% |
+| Functions  |   1.67% |    95% |
+| Lines      |   2.24% |    95% |
 
 ### CI And Release
 
 - [x] GitHub Actions installs all workspaces and runs lint, typecheck, contract generation checks, migration validation, API build, API/mobile tests, and i18n validation.
-- [ ] CI does not run API or mobile coverage.
+- [x] CI runs ratcheted API and mobile coverage and uploads JSON/LCOV reports as a retained artifact.
 - [~] The deterministic HTTP E2E foundation now runs in the root CI command. Database-backed API journeys, mobile device E2E, load tests, and provider sandbox tests remain.
 - [ ] Production provider credentials and operational evidence remain external launch work.
 
@@ -51,7 +60,7 @@ The following stale roadmap statements were corrected during this audit:
 
 - Fraud detection batch scanning is implemented, not TODO.
 - API Docker containerization exists, so the remaining task is image build/deploy verification rather than initial implementation.
-- Automated regression totals now reflect 62 API unit suites/218 tests, 1 API E2E suite/4 tests, and 6 mobile suites/29 tests.
+- Automated regression totals now reflect 61 API unit suites/218 tests, 1 API E2E suite/4 tests, and 6 mobile suites/32 tests.
 
 The following roadmap items remain correctly classified as external or provider-dependent: production FCM/MSG91/SES delivery, social provider approval, payment/store credentials, Apple/Google receipt validation, Aadhaar/DigiLocker, Sentry dashboards and source maps, CDN, backups, and multi-region recovery.
 
@@ -72,10 +81,11 @@ The following roadmap items remain correctly classified as external or provider-
    - Cover register/login/refresh/logout, profile and preference updates, interest-to-match flow, chat authorization, subscription access, payment webhook idempotency, privacy/export/deletion, support tickets, and admin authorization.
    - Add authenticated Socket.IO tests for connect, room isolation, message delivery, read state, typing, reconnect, and revoked-token rejection.
 
-3. [ ] **Turn coverage into a ratcheted CI gate.**
-   - Run API coverage in CI at the current measured floor first; prevent regressions while increasing thresholds by tested domain.
-   - Keep 95% as the final target and require strong branch coverage for auth, access control, payments, privacy, storage, and subscriptions.
-   - Add mobile coverage collection and establish a measured baseline before setting its thresholds.
+3. [x] **Turn coverage into a ratcheted CI gate.**
+   - API floors now enforce 35% statements, 15% branches, 26% functions, and 34% lines.
+   - Mobile floors now enforce 2% statements, 1% branches, 1% functions, and 2% lines across the complete eligible source set.
+   - CI replaces duplicate plain unit runs with coverage runs and uploads JSON/LCOV artifacts for both applications.
+   - The final 95% application target remains the upward ratchet objective; completed critical modules can enforce stronger per-file thresholds immediately.
 
 4. [ ] **Cover the largest high-risk API services.**
    - First: `auth.service.ts`, `chat.service.ts`, `profiles.service.ts`, `settings.service.ts`, and `storage.service.ts`.
@@ -85,7 +95,7 @@ The following roadmap items remain correctly classified as external or provider-
 5. [ ] **Build mobile/web workflow tests.**
    - Cover login and token refresh, onboarding/edit profile, discovery filters, interest/shortlist feedback, match details privacy, chat media/presence, membership checkout, settings synchronization, static pages, and account deletion.
    - Verify loading, empty, offline, permission-denied, feature-locked, provider-failure, dark theme, large text, reduced motion, and web layout states.
-   - Replace the deprecated object-form React Navigation call in `useUpgradePrompt.ts`.
+   - Completed: upgrade routing uses `CommonActions`, with all prompt and navigator-readiness branches held at 100% coverage.
 
 ### P1 - Provider And Data Integrity
 

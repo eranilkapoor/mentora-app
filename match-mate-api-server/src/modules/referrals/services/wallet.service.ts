@@ -18,6 +18,11 @@ import {
 
 const REDEMPTION_THRESHOLD = 1000;
 
+const normalizePoints = (value: unknown): number => {
+  const numericValue = Number(value ?? 0);
+  return Number.isFinite(numericValue) ? Math.round(numericValue) : 0;
+};
+
 @Injectable()
 export class WalletService {
   constructor(
@@ -32,7 +37,7 @@ export class WalletService {
     referenceId?: string;
     metadata?: Record<string, unknown>;
   }) {
-    const points = Math.max(0, Math.round(Number(params.points ?? 0)));
+    const points = Math.max(0, normalizePoints(params.points));
     if (points <= 0) {
       return null;
     }
@@ -63,7 +68,7 @@ export class WalletService {
   }
 
   async redeem(userId: string, points: number) {
-    const requestedPoints = Math.round(Number(points ?? 0));
+    const requestedPoints = normalizePoints(points);
     if (requestedPoints < REDEMPTION_THRESHOLD) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'minimum_redemption_threshold_not_met',
@@ -112,7 +117,7 @@ export class WalletService {
     reason?: string;
     metadata?: Record<string, unknown>;
   }) {
-    const requestedCoins = Math.round(Number(params.coins ?? 0));
+    const requestedCoins = normalizePoints(params.coins);
     if (requestedCoins <= 0) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'invalid_wallet_spend_amount',
