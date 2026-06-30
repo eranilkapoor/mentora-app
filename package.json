@@ -4,7 +4,7 @@
   "private": true,
   "description": "Repository-level tooling for Match Mate API and mobile applications.",
   "scripts": {
-    "prepare": "husky",
+    "prepare": "node -e \"const {existsSync}=require('fs'); if(!process.env.CI && !process.env.EAS_BUILD && existsSync('.git')) require('child_process').execSync('npx husky',{stdio:'inherit'})\"",
     "lint": "npm run lint:api && npm run lint:mobile",
     "lint:api": "npm --prefix match-mate-api-server run lint:check",
     "lint:mobile": "npm --prefix match-mate-mobile-app run lint",

@@ -29,11 +29,7 @@ type Props = {
 
 type UploadFile = { uri: string; name: string; type: string };
 type KycDocumentType =
-  | 'aadhaar'
-  | 'pan'
-  | 'passport'
-  | 'driving_licence'
-  | 'voter_id';
+  'aadhaar' | 'pan' | 'passport' | 'driving_licence' | 'voter_id';
 
 export default function KycVerificationScreen({
   navigation,

@@ -8,9 +8,7 @@ export const isStoreBillingEnabled = (): boolean =>
   getPublicEnv('EXPO_PUBLIC_STORE_BILLING_ENABLED') === 'true';
 
 export const getStoreBillingProvider = ():
-  | 'apple_iap'
-  | 'google_play'
-  | 'razorpay' => {
+  'apple_iap' | 'google_play' | 'razorpay' => {
   if (Platform.OS === 'ios') return 'apple_iap';
   if (Platform.OS === 'android') return 'google_play';
   return 'razorpay';

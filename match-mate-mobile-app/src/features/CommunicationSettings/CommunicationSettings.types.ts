@@ -5,10 +5,7 @@ export interface CommunicationSettingsScreenProps {
 }
 
 export type CommunicationPermission =
-  | 'all'
-  | 'matches_only'
-  | 'contacts_only'
-  | 'no_one';
+  'all' | 'matches_only' | 'contacts_only' | 'no_one';
 
 export interface CommunicationSettings {
   whoCanMessage: CommunicationPermission;

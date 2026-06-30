@@ -69,8 +69,7 @@ export function useSocialAuth(): {
   });
 
   const getGoogleClientIdForCurrentPlatform = useCallback(():
-    | string
-    | undefined => {
+    string | undefined => {
     if (Platform.OS === 'ios') {
       return googleIosClientId;
     }

@@ -5,10 +5,7 @@ export interface AccessibilitySettingsScreenProps {
 }
 
 export type AccessibilityFontSize =
-  | 'small'
-  | 'medium'
-  | 'large'
-  | 'extra_large';
+  'small' | 'medium' | 'large' | 'extra_large';
 
 export interface AccessibilitySettings {
   fontSize: AccessibilityFontSize;

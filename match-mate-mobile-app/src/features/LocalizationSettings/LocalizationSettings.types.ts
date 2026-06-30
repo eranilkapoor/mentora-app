@@ -5,11 +5,7 @@ export interface LocalizationSettingsScreenProps {
 }
 
 export type SelectKey =
-  | 'language'
-  | 'region'
-  | 'timezone'
-  | 'dateFormat'
-  | 'currency';
+  'language' | 'region' | 'timezone' | 'dateFormat' | 'currency';
 
 export interface LocalizationSettings {
   appLanguage: string;

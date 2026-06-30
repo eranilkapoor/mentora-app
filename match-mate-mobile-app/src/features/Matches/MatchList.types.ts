@@ -9,22 +9,13 @@ export type CasteFilterKey = 'any' | Caste;
 export type HeightFilterKey = 'any' | 'short' | 'medium' | 'tall';
 
 export type MaritalStatusFilterKey =
-  | 'any'
-  | 'never_married'
-  | 'divorced'
-  | 'widowed';
+  'any' | 'never_married' | 'divorced' | 'widowed';
 
 export type EducationFilterKey =
-  | 'any'
-  | 'graduate'
-  | 'post_graduate'
-  | 'doctorate';
+  'any' | 'graduate' | 'post_graduate' | 'doctorate';
 
 export type ActivityFilterKey =
-  | 'any'
-  | 'online'
-  | 'recently_active'
-  | 'new_profiles';
+  'any' | 'online' | 'recently_active' | 'new_profiles';
 
 export interface MatchItem {
   id: string;

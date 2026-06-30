@@ -5,22 +5,13 @@ export interface PrivacySettingsScreenProps {
 }
 
 export type VisibilityLevel =
-  | 'everyone'
-  | 'accepted_matches'
-  | 'contacts_only'
-  | 'no_one';
+  'everyone' | 'accepted_matches' | 'contacts_only' | 'no_one';
 
 export type ProfileVisibility =
-  | 'public'
-  | 'private'
-  | 'contacts_only'
-  | 'premium_only';
+  'public' | 'private' | 'contacts_only' | 'premium_only';
 
 export type MessagePermission =
-  | 'all'
-  | 'matches_only'
-  | 'contacts_only'
-  | 'no_one';
+  'all' | 'matches_only' | 'contacts_only' | 'no_one';
 
 export interface PrivacySettings {
   profileVisibility: ProfileVisibility;

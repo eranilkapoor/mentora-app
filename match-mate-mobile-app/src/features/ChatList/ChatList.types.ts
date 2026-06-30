@@ -37,12 +37,7 @@ export type ChatMatch = {
 };
 
 export type ChatFilter =
-  | 'all'
-  | 'unread'
-  | 'online'
-  | 'pinned'
-  | 'muted'
-  | 'archived';
+  'all' | 'unread' | 'online' | 'pinned' | 'muted' | 'archived';
 
 export const formatTime = (iso: string): string => {
   const diff = Date.now() - new Date(iso).getTime();
