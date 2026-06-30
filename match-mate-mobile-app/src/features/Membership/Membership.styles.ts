@@ -62,9 +62,9 @@ export const membershipStyles = (
     heroStat: {
       flex: 1,
       minWidth: 0,
-      backgroundColor: theme.colors.backgroundLight,
+      backgroundColor: 'rgba(255, 255, 255, 0.14)',
       borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.border,
+      borderColor: 'rgba(255, 255, 255, 0.24)',
       borderRadius: 10,
       paddingHorizontal: 6,
       paddingVertical: 9,
