@@ -374,9 +374,7 @@ export class AuthController {
     try {
       const refreshToken = this.extractRefreshToken(req);
 
-      if (refreshToken) {
-        await this.authService.logout(req, refreshToken);
-      }
+      await this.authService.logout(req, refreshToken);
 
       res.clearCookie('refreshToken', {
         ...this.authService.getRefreshCookieOptions(),

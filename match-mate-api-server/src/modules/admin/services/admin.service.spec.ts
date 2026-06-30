@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Types } from 'mongoose';
 import { Status, SubscriptionStatus } from '@/common/enums';
 import { MediaModerationStatus } from '@/modules/profiles/enums/profile-media.enums';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
-import { BroadcastChannel } from '../enums/broadcast.enums';
+import { BroadcastChannel, BroadcastTarget } from '../enums/broadcast.enums';
 import { AdminService } from './admin.service';
 
 const createExecChain = (result: unknown) => {
@@ -255,5 +256,118 @@ describe('AdminService', () => {
       subscriptions: { active: 7 },
       moderation: { pendingMedia: 4, pendingKyc: 2, reports: 1 },
     });
+  });
+
+  it('escapes searches and covers blocked/default user filters', async () => {
+    repo.findUsers.mockResolvedValue([]);
+    repo.countUsers.mockResolvedValue(0);
+    await service.getUsers({ search: 'a.b', status: 'blocked' });
+    expect(repo.findUsers).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        status: Status.BLOCKED,
+        $or: expect.any(Array),
+      }),
+      0,
+      20,
+    );
+    await service.getUsers({});
+    expect(repo.findUsers).toHaveBeenLastCalledWith({}, 0, 20);
+  });
+
+  it('rejects missing users and updates active status without audit actor', async () => {
+    const userId = new Types.ObjectId().toString();
+    repo.findUserById.mockResolvedValue(null);
+    await expect(service.getUserById(userId)).rejects.toMatchObject({
+      code: expect.any(String),
+    });
+    await expect(
+      service.updateUserStatus({ userId, isBlocked: false }),
+    ).rejects.toMatchObject({ code: expect.any(String) });
+
+    repo.findUserById.mockResolvedValue({ status: Status.BLOCKED });
+    repo.updateUserStatus.mockResolvedValue({ status: Status.ACTIVE });
+    await service.updateUserStatus({ userId, isBlocked: false });
+    expect(repo.updateUserStatus).toHaveBeenCalledWith(userId, {
+      status: Status.ACTIVE,
+    });
+    expect(auditService.write).not.toHaveBeenCalled();
+  });
+
+  it('uses broadcast defaults and covers every target policy', async () => {
+    repo.findUsersForBroadcast.mockResolvedValue([]);
+    await expect(
+      service.broadcast({ title: 'Title', message: 'Body' }),
+    ).resolves.toMatchObject({
+      target: BroadcastTarget.ALL,
+      targetedUsers: 0,
+      message: expect.stringContaining('in_app'),
+    });
+    expect(auditService.write).not.toHaveBeenCalled();
+
+    const privateService = service as never as {
+      buildBroadcastFilter(target: BroadcastTarget): Record<string, unknown>;
+    };
+    expect(
+      privateService.buildBroadcastFilter(BroadcastTarget.PREMIUM),
+    ).toMatchObject({
+      status: Status.ACTIVE,
+    });
+    expect(
+      privateService.buildBroadcastFilter(BroadcastTarget.UNVERIFIED),
+    ).toHaveProperty('$and');
+    expect(
+      privateService.buildBroadcastFilter(BroadcastTarget.BLOCKED),
+    ).toEqual({
+      status: Status.BLOCKED,
+    });
+    expect(privateService.buildBroadcastFilter(BroadcastTarget.ACTIVE)).toEqual(
+      {
+        status: Status.ACTIVE,
+      },
+    );
+    expect(privateService.buildBroadcastFilter(BroadcastTarget.ALL)).toEqual(
+      {},
+    );
+  });
+
+  it('maps moderation fallbacks when reasons and timestamps are absent', async () => {
+    mediaModel.exec.mockResolvedValue([
+      {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(),
+        moderationStatus: MediaModerationStatus.PENDING,
+      },
+    ]);
+    verificationModel.exec.mockResolvedValue([
+      {
+        _id: new Types.ObjectId(),
+        userId: new Types.ObjectId(),
+        status: VerificationStatus.PENDING,
+        createdAt: new Date(),
+      },
+    ]);
+    reportModel.exec.mockResolvedValue([
+      {
+        _id: new Types.ObjectId(),
+        reportedUserId: new Types.ObjectId(),
+        reason: 'spam',
+      },
+    ]);
+    await expect(service.getModerationQueue()).resolves.toMatchObject({
+      items: expect.any(Array),
+    });
+  });
+
+  it('uses default dashboard ranges when dates are omitted', async () => {
+    analyticsService.getOverview.mockResolvedValue({});
+    repo.countUsers.mockResolvedValue(0);
+    paymentModel.exec.mockResolvedValue([]);
+    subscriptionModel.exec.mockResolvedValue(0);
+    mediaModel.exec.mockResolvedValue(0);
+    verificationModel.exec.mockResolvedValue(0);
+    reportModel.exec.mockResolvedValue(0);
+    const result = await service.getDashboard({});
+    expect(result.range.fromDate).toBeInstanceOf(Date);
+    expect(result.range.toDate).toBeInstanceOf(Date);
   });
 });

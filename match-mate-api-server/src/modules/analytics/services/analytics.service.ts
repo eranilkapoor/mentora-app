@@ -294,7 +294,7 @@ export class AnalyticsService {
       }),
     );
 
-    const base = userCounts[0]?.users ?? 0;
+    const base = userCounts[0].users;
 
     return {
       steps: userCounts.map((step, index) => {

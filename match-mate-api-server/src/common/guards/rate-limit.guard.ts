@@ -211,7 +211,8 @@ export class RateLimitGuard implements CanActivate {
     request: AuthenticatedRequest,
     config: RateLimitConfig,
   ): number {
-    const isPremium = request.user?.membership?.tier !== 'free';
+    const tier = request.user?.membership?.tier;
+    const isPremium = Boolean(tier && tier !== 'free');
     return isPremium && config.limitPremium !== undefined
       ? config.limitPremium
       : config.limit;

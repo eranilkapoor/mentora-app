@@ -35,8 +35,8 @@ export class HybridSocketIoAdapter extends IoAdapter {
 
     try {
       await Promise.all([
-        this.waitForReady(this.pubClient, 'PUB'),
-        this.waitForReady(this.subClient, 'SUB'),
+        this.waitForReady(this.pubClient),
+        this.waitForReady(this.subClient),
       ]);
 
       this.redisAdapter = createAdapter(this.pubClient, this.subClient);
@@ -68,12 +68,8 @@ export class HybridSocketIoAdapter extends IoAdapter {
     this.logger.log('Socket.IO Redis pub/sub clients closed');
   }
 
-  private waitForReady(client: Redis, label: string): Promise<void> {
-    if (
-      client.status === 'ready' ||
-      (label === 'PUB' && this.pubClient?.status === 'ready') ||
-      (label === 'SUB' && this.subClient?.status === 'ready')
-    ) {
+  private waitForReady(client: Redis): Promise<void> {
+    if (client.status === 'ready') {
       return Promise.resolve();
     }
     return new Promise<void>((resolve, reject) => {
