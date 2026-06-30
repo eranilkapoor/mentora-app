@@ -999,7 +999,7 @@ export class MasterSeederService {
     const addFeature = (
       planSlug: PlanSlug,
       featureKey: FeatureKey,
-      value: FeatureValue = 1,
+      value: FeatureValue,
     ) => {
       const mappingKey = `${planSlug}:${featureKey}`;
       const nextMapping = {
@@ -1455,11 +1455,6 @@ export class MasterSeederService {
       });
     }
 
-    if (!operations || operations.length <= 0) {
-      this.logger.log('Skipping plan feature seeding');
-      return;
-    }
-
     const result = await this.planFeatureModel.bulkWrite(operations, {
       ordered: false,
     });
@@ -1518,7 +1513,7 @@ export class MasterSeederService {
     // EXECUTE BULK WRITE
     // ============================================
 
-    if (!operations || operations.length <= 0) {
+    if (operations.length === 0) {
       this.logger.log('Skipping notification template seeding');
       return;
     }

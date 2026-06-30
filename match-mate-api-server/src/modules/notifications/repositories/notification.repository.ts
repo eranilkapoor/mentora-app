@@ -443,41 +443,29 @@ export class NotificationRepository {
       },
       byChannel: Array.from(byChannelMap.entries()).map(([channel, stats]) => ({
         channel,
-        total:
-          (stats.sent ?? 0) +
-          (stats.failed ?? 0) +
-          (stats.skipped ?? 0) +
-          (stats.pending ?? 0),
-        sent: stats.sent ?? 0,
-        failed: stats.failed ?? 0,
-        skipped: stats.skipped ?? 0,
-        pending: stats.pending ?? 0,
+        total: stats.sent + stats.failed + stats.skipped + stats.pending,
+        sent: stats.sent,
+        failed: stats.failed,
+        skipped: stats.skipped,
+        pending: stats.pending,
       })),
       byTemplate: Array.from(byTemplateMap.entries()).map(
         ([templateKey, stats]) => ({
           templateKey,
-          total:
-            (stats.sent ?? 0) +
-            (stats.failed ?? 0) +
-            (stats.skipped ?? 0) +
-            (stats.pending ?? 0),
-          sent: stats.sent ?? 0,
-          failed: stats.failed ?? 0,
-          skipped: stats.skipped ?? 0,
-          pending: stats.pending ?? 0,
+          total: stats.sent + stats.failed + stats.skipped + stats.pending,
+          sent: stats.sent,
+          failed: stats.failed,
+          skipped: stats.skipped,
+          pending: stats.pending,
         }),
       ),
       trend: Array.from(trendMap.entries()).map(([day, stats]) => ({
         day,
-        total:
-          (stats.sent ?? 0) +
-          (stats.failed ?? 0) +
-          (stats.skipped ?? 0) +
-          (stats.pending ?? 0),
-        sent: stats.sent ?? 0,
-        failed: stats.failed ?? 0,
-        skipped: stats.skipped ?? 0,
-        pending: stats.pending ?? 0,
+        total: stats.sent + stats.failed + stats.skipped + stats.pending,
+        sent: stats.sent,
+        failed: stats.failed,
+        skipped: stats.skipped,
+        pending: stats.pending,
       })),
     };
   }

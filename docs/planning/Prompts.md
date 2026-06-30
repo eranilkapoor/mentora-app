@@ -11,7 +11,7 @@ This tracker was reconciled against the current API, Expo mobile/web app, shared
 ### API
 
 - [x] All 25 API controllers have unit-level contract specs.
-- [x] API unit suite passes: 98 suites and 939 tests.
+- [x] API unit suite passes: 105 suites and 985 tests.
 - [x] Controller, socket, payment, notification, admin, analytics, migration, feature-gate, media, privacy, and fraud-detection coverage exists.
 - [x] OpenAPI snapshot and generated TypeScript contracts are checked by repository verification.
 - [x] Ordered/checksummed Mongo migrations and index drift auditing exist.
@@ -24,10 +24,10 @@ Current honest API coverage from `npm run test:cov -- --runInBand`:
 
 | Metric     | Current | Target |
 | ---------- | ------: | -----: |
-| Statements |  86.56% |    95% |
-| Branches   |  85.46% |    95% |
-| Functions  |  78.07% |    95% |
-| Lines      |  86.16% |    95% |
+| Statements |  96.23% |    95% |
+| Branches   |  94.86% |    95% |
+| Functions  |  95.68% |    95% |
+| Lines      |  96.15% |    95% |
 
 ### Mobile And Web
 
@@ -60,7 +60,7 @@ The following stale roadmap statements were corrected during this audit:
 
 - Fraud detection batch scanning is implemented, not TODO.
 - API Docker containerization exists, so the remaining task is image build/deploy verification rather than initial implementation.
-- Automated regression totals now reflect 98 API unit suites/939 tests, 1 API E2E suite/4 tests, and 6 mobile suites/32 tests.
+- Automated regression totals now reflect 105 API unit suites/985 tests, 1 API E2E suite/4 tests, and 6 mobile suites/32 tests.
 
 The following roadmap items remain correctly classified as external or provider-dependent: production FCM/MSG91/SES delivery, social provider approval, payment/store credentials, Apple/Google receipt validation, Aadhaar/DigiLocker, Sentry dashboards and source maps, CDN, backups, and multi-region recovery.
 
@@ -83,7 +83,7 @@ The following roadmap items remain correctly classified as external or provider-
 
 3. [x] **Turn coverage into a ratcheted CI gate.**
    - API global floors now enforce the uncovered-pool baseline after Jest subtracts explicitly gated files: 31% statements, 11% branches, 23% functions, and 30% lines.
-   - Eighty security, feature-gate, cache, controller, provider, worker, task, strategy, and focused domain files now carry explicit 100% statements/branches/functions/lines thresholds.
+   - Ninety-four security, feature-gate, cache, controller, provider, worker, task, strategy, repository, seeder, and focused domain files now carry explicit 100% statements/branches/functions/lines thresholds.
    - Mobile floors now enforce 2% statements, 1% branches, 1% functions, and 2% lines across the complete eligible source set.
    - CI replaces duplicate plain unit runs with coverage runs and uploads JSON/LCOV artifacts for both applications.
    - The final 95% application target remains the upward ratchet objective; completed critical modules can enforce stronger per-file thresholds immediately.
@@ -95,8 +95,9 @@ The following roadmap items remain correctly classified as external or provider-
    - Corrected anonymous rate limiting so requests without a membership tier use the standard limit instead of the premium allowance.
    - Completed next batch at 100%: eight injectable scheduled maintenance jobs; the complete auth controller; Google/access/refresh JWT strategies; JWT, refresh, role, and permission guards; correlation middleware/decorator behavior; and the generic Mongo repository.
    - Removed an unreachable logout condition after the refresh-token extractor's non-empty-or-throw invariant.
-   - Master seeder coverage is intentionally deferred for a dedicated data-invariant review.
-   - Remaining first: payment, notification, match, settings, chat, profile, analytics, support, auth, and admin repository contracts; then migration/index/fraud CLI bootstraps, error monitoring, static-page rendering, logger wrappers, and remaining migration/index-audit branches.
+   - Master seeder is now covered at 100%, including role/permission integrity, plans/features/mappings, templates, role test users, 500 dummy profiles, settings, media, verification writes, missing references, duplicate phone ownership, and invalid template variables.
+   - All repository implementations now enforce 100% coverage, including admin, users, analytics, preferences, profiles, media, support tickets, match discovery, payments, notifications, matches, settings, and chat.
+   - Remaining coverage is outside the repository layer: migration/index/seeder/fraud CLI bootstraps, error monitoring, app/static-page behavior, migration runner/index audit, and small logger/decorator/config/response/feature-guard branches.
    - Test denial, idempotency, concurrency, retry, rollback, malformed-provider-response, and not-found branches, not only happy paths.
 
 5. [ ] **Build mobile/web workflow tests.**
