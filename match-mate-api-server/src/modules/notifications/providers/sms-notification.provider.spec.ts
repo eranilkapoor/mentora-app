@@ -136,4 +136,146 @@ describe('SmsNotificationProvider MSG91', () => {
     });
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it('skips disabled and missing-recipient delivery', async () => {
+    const disabled = createProvider({
+      notification: { sms: { enabled: false } },
+    }).provider;
+    await expect(
+      disabled.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: '1',
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ provider: 'sms-disabled' });
+
+    const { provider } = createProvider();
+    await expect(
+      provider.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: '',
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ provider: 'sms-recipient-missing' });
+    await expect(
+      provider.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: [],
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ provider: 'sms-recipient-missing' });
+  });
+
+  it('supports log mode and rejects unknown providers', async () => {
+    const logged = createProvider({
+      notification: { sms: { enabled: true, provider: 'log' } },
+    }).provider;
+    await expect(
+      logged.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: '1',
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ status: 'sent', provider: 'log' });
+
+    const unknown = createProvider({
+      notification: { sms: { enabled: true, provider: 'custom' } },
+    }).provider;
+    await expect(
+      unknown.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: '1',
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ status: 'failed', provider: 'custom' });
+  });
+
+  it('rejects recipients without digits', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch');
+    const { provider } = createProvider();
+    await expect(
+      provider.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: ['---'],
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({
+      status: 'failed',
+      error: 'MSG91 requires a phone number including country code',
+    });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('uses HTTP fallback errors and accepted provider responses', async () => {
+    const fetchMock = jest.spyOn(global, 'fetch');
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ type: 'success' }), { status: 500 }),
+    );
+    const { provider } = createProvider({
+      notification: {
+        sms: {
+          enabled: true,
+          provider: 'msg91',
+          msg91: {
+            authKey: 'key',
+            templateId: 'template',
+            baseUrl: 'https://control.msg91.com/',
+          },
+        },
+      },
+    });
+    await expect(
+      provider.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: '91',
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ error: 'MSG91 returned HTTP 500' });
+
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ type: 'success' }), { status: 200 }),
+    );
+    await expect(
+      provider.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: ['91', '92'],
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ status: 'sent', providerResponse: 'accepted' });
+    fetchMock.mockResolvedValueOnce(
+      new Response(JSON.stringify({ type: 'success', message: 'queued' }), {
+        status: 200,
+      }),
+    );
+    await expect(
+      provider.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: '91',
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ providerResponse: 'queued' });
+  });
+
+  it('handles unknown fetch failures', async () => {
+    jest.spyOn(global, 'fetch').mockRejectedValue('network-down');
+    const { provider, loggerError } = createProvider();
+    await expect(
+      provider.send({
+        notificationId: 'n1',
+        userId: 'u1',
+        to: '91',
+        message: 'Body',
+      }),
+    ).resolves.toMatchObject({ error: 'MSG91 SMS send failed' });
+    expect(loggerError).toHaveBeenCalled();
+  });
 });

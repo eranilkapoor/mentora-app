@@ -657,22 +657,8 @@ export class NotificationsService {
         return true;
       }
 
-      switch (channel) {
-        case 'in_app':
-          return templateChannels.inApp !== false;
-
-        case 'push':
-          return templateChannels.push !== false;
-
-        case 'email':
-          return templateChannels.email !== false;
-
-        case 'sms':
-          return templateChannels.sms !== false;
-
-        default:
-          return true;
-      }
+      const channelKey = channel === 'in_app' ? 'inApp' : channel;
+      return templateChannels[channelKey] !== false;
     };
 
     const inDnd = this.isInDndWindow(settings);

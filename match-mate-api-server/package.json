@@ -209,6 +209,12 @@
         "lines": 100,
         "statements": 100
       },
+      "./src/modules/auth/services/auth-two-factor.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
       "./src/modules/settings/services/account-deletion.service.ts": {
         "branches": 100,
         "functions": 100,
@@ -288,6 +294,42 @@
         "statements": 100
       },
       "./src/modules/notifications/controllers/notifications.gateway.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/notifications/notification-dispatch.worker.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/notifications/providers/email-notification.provider.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/notifications/providers/push-notification.provider.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/notifications/providers/sms-notification.provider.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/notifications/services/notification-queue.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/notifications/services/notifications.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
@@ -389,6 +431,12 @@
         "lines": 100,
         "statements": 100
       },
+      "./src/modules/referrals/services/referrals.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
       "./src/modules/safety/services/kyc.service.ts": {
         "branches": 100,
         "functions": 100,
@@ -414,6 +462,12 @@
         "statements": 100
       },
       "./src/modules/subscriptions/services/profile-boost.service.ts": {
+        "branches": 100,
+        "functions": 100,
+        "lines": 100,
+        "statements": 100
+      },
+      "./src/modules/subscriptions/services/subscriptions.service.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,
