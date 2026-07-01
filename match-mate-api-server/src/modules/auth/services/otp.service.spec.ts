@@ -46,7 +46,7 @@ describe('OtpService', () => {
     expect(smsProvider.send).toHaveBeenCalledWith({
       userId: 'otp',
       to: '+919876543210',
-      message: 'MatchMate OTP: 123456. Valid for 5 minutes.',
+      message: 'Match Mate OTP: 123456. Valid for 5 minutes.',
       notificationId: 'otp-1000000',
       templateKey: 'auth.phone_otp',
       metadata: {

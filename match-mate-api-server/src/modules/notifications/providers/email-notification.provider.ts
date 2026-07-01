@@ -106,7 +106,7 @@ export class EmailNotificationProvider implements NotificationChannelProvider {
           Simple: {
             Subject: {
               Data:
-                payload.subject ?? payload.title ?? 'MatchMate Notification',
+                payload.subject ?? payload.title ?? 'Match Mate Notification',
             },
             Body: {
               Text: {

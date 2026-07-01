@@ -859,7 +859,7 @@ export const SAMPLE_COLLECTION_DOCUMENTS = [
       userId: USER_ID,
       title: 'From a thoughtful match to a shared future',
       story:
-        'We connected through MatchMate, involved our families at the right pace, and discovered shared values that grew into a lasting partnership.',
+        'We connected through Match Mate, involved our families at the right pace, and discovered shared values that grew into a lasting partnership.',
       partnerName: 'Sample Partner',
       marriageDate: '2026-02-14T00:00:00.000Z',
       location: 'Mumbai, Maharashtra',

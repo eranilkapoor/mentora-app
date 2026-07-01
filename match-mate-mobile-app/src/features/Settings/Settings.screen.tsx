@@ -351,7 +351,7 @@ export default function SettingsScreen({
         {/* Footer */}
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>MatchMate v{appVersion}</Text>
+          <Text style={styles.footerText}>Match Mate v{appVersion}</Text>
 
           <Text style={styles.footerSubtext}>
             {t('settings.footer_credit')}

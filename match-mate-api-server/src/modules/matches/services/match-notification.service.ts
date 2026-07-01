@@ -193,6 +193,6 @@ export class MatchNotificationService {
       .filter(Boolean)
       .join(' ')
       .trim();
-    return name || 'A MatchMate member';
+    return name || 'A Match Mate member';
   }
 }

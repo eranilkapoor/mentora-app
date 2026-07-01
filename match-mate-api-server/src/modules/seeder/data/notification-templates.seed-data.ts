@@ -12,9 +12,9 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: '{{name}} has sent you an interest.',
     pushTitle: 'You received a new interest',
     pushBody: '{{name}} sent you an interest.',
-    emailSubject: 'You got a new interest on MatchMate',
+    emailSubject: 'You got a new interest on Match Mate',
     emailBody: 'Hi {{userName}}, you received a new interest from {{name}}.',
-    smsBody: 'New interest from {{name}} on MatchMate.',
+    smsBody: 'New interest from {{name}} on Match Mate.',
     variables: ['name', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -42,7 +42,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     emailSubject: 'Your interest was accepted',
     emailBody:
       'Hi {{userName}}, {{name}} accepted your interest. Start chatting now.',
-    smsBody: '{{name}} accepted your interest on MatchMate.',
+    smsBody: '{{name}} accepted your interest on Match Mate.',
     variables: ['name', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -70,7 +70,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushBody: '{{pendingCount}} interests are waiting for your response.',
     emailSubject: 'Respond to your pending interests',
     emailBody: 'Hi {{userName}}, you have {{pendingCount}} pending interests.',
-    smsBody: 'You have {{pendingCount}} pending interests on MatchMate.',
+    smsBody: 'You have {{pendingCount}} pending interests on Match Mate.',
     variables: ['pendingCount', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -96,8 +96,8 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushTitle: "It's a match",
     pushBody: 'You matched with {{name}}.',
     emailSubject: 'You have a new match',
-    emailBody: 'You matched with {{name}}. Open MatchMate to connect.',
-    smsBody: 'You matched with {{name}} on MatchMate.',
+    emailBody: 'You matched with {{name}}. Open Match Mate to connect.',
+    smsBody: 'You matched with {{name}} on Match Mate.',
     variables: ['name'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -125,7 +125,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     emailSubject: 'Reconnect with your match',
     emailBody:
       'Hi {{userName}}, your match {{name}} is waiting for your reply.',
-    smsBody: '{{name}} is waiting for your message on MatchMate.',
+    smsBody: '{{name}} is waiting for your message on Match Mate.',
     variables: ['name', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -153,7 +153,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     emailSubject: 'Your weekly match digest',
     emailBody:
       'Hi {{userName}}, you have {{matchCount}} new compatible matches.',
-    smsBody: '{{matchCount}} new matches are waiting on MatchMate.',
+    smsBody: '{{matchCount}} new matches are waiting on Match Mate.',
     variables: ['matchCount', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -180,7 +180,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushBody: '{{name}} sent you a message.',
     emailSubject: 'You received a new message',
     emailBody: 'You have a new message from {{name}}.',
-    smsBody: 'New message from {{name}} on MatchMate.',
+    smsBody: 'New message from {{name}} on Match Mate.',
     variables: ['name', 'messagePreview'],
     channels: { inApp: true, push: true, email: false, sms: false },
     deliveryRules: {
@@ -202,12 +202,12 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     category: 'message_received',
     priority: 'normal',
     title: 'You have {{unreadCount}} unread messages',
-    message: 'Open MatchMate to respond to your pending conversations.',
+    message: 'Open Match Mate to respond to your pending conversations.',
     pushTitle: 'Unread messages waiting',
     pushBody: '{{unreadCount}} unread messages are waiting for you.',
     emailSubject: 'You have unread messages',
     emailBody: 'Hi {{userName}}, you have {{unreadCount}} unread messages.',
-    smsBody: 'You have unread messages on MatchMate.',
+    smsBody: 'You have unread messages on Match Mate.',
     variables: ['unreadCount', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -235,7 +235,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushBody: 'Say hello to {{name}}.',
     emailSubject: 'Continue your conversation',
     emailBody: 'Hi {{userName}}, continue your conversation with {{name}}.',
-    smsBody: 'Continue your chat with {{name}} on MatchMate.',
+    smsBody: 'Continue your chat with {{name}} on Match Mate.',
     variables: ['name', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -287,10 +287,10 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'Your profile is {{completionPercent}}% complete. Add details to improve match quality.',
     pushTitle: 'Complete your profile',
     pushBody: 'Profile is {{completionPercent}}% complete.',
-    emailSubject: 'Complete your MatchMate profile',
+    emailSubject: 'Complete your Match Mate profile',
     emailBody:
       'Hi {{userName}}, complete your profile to improve visibility and matches.',
-    smsBody: 'Complete your MatchMate profile for better matches.',
+    smsBody: 'Complete your Match Mate profile for better matches.',
     variables: ['completionPercent', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -316,9 +316,9 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'Your identity verification is complete. Your trust badge is now visible.',
     pushTitle: 'Verification approved',
     pushBody: 'Your verified badge is now active.',
-    emailSubject: 'Verification approved on MatchMate',
+    emailSubject: 'Verification approved on Match Mate',
     emailBody: 'Hi {{userName}}, your profile verification has been approved.',
-    smsBody: 'Your MatchMate profile verification is approved.',
+    smsBody: 'Your Match Mate profile verification is approved.',
     variables: ['userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -346,7 +346,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     emailSubject: 'Action needed: verification failed',
     emailBody:
       'Hi {{userName}}, verification was not approved. Reason: {{reason}}.',
-    smsBody: 'Verification failed on MatchMate. Please re-submit documents.',
+    smsBody: 'Verification failed on Match Mate. Please re-submit documents.',
     variables: ['userName', 'reason'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -373,7 +373,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushBody: 'Your profile photo is now live.',
     emailSubject: 'Profile photo approved',
     emailBody: 'Hi {{userName}}, your new profile photo has been approved.',
-    smsBody: 'Your MatchMate profile photo was approved.',
+    smsBody: 'Your Match Mate profile photo was approved.',
     variables: ['userName'],
     channels: { inApp: true, push: true, email: false, sms: false },
     deliveryRules: {
@@ -400,7 +400,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushBody: 'Please upload a new profile photo.',
     emailSubject: 'Photo update needed',
     emailBody: 'Hi {{userName}}, your uploaded photo could not be approved.',
-    smsBody: 'Your MatchMate photo was rejected. Upload a new one.',
+    smsBody: 'Your Match Mate photo was rejected. Upload a new one.',
     variables: ['userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -454,7 +454,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushBody: 'Renew your {{planName}} plan now.',
     emailSubject: 'Your subscription has expired',
     emailBody: 'Hi {{userName}}, your {{planName}} subscription has expired.',
-    smsBody: 'Your {{planName}} subscription expired. Renew on MatchMate.',
+    smsBody: 'Your {{planName}} subscription expired. Renew on Match Mate.',
     variables: ['planName', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -480,10 +480,10 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'Your payment of {{amount}} was successful. Transaction: {{transactionId}}.',
     pushTitle: 'Payment successful',
     pushBody: '{{amount}} payment received for {{planName}}.',
-    emailSubject: 'Payment receipt - MatchMate',
+    emailSubject: 'Payment receipt - Match Mate',
     emailBody:
       'Hi {{userName}}, payment {{transactionId}} for {{planName}} was successful.',
-    smsBody: 'Payment successful: {{amount}} for {{planName}} on MatchMate.',
+    smsBody: 'Payment successful: {{amount}} for {{planName}} on Match Mate.',
     variables: ['planName', 'amount', 'transactionId', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -512,7 +512,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     emailSubject: 'Payment failed - action needed',
     emailBody:
       'Hi {{userName}}, payment for {{planName}} failed. Please retry.',
-    smsBody: 'Payment failed for {{planName}} on MatchMate. Retry now.',
+    smsBody: 'Payment failed for {{planName}} on Match Mate. Retry now.',
     variables: ['planName', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -537,10 +537,11 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Limited period offer valid until {{validTill}}. Upgrade now.',
     pushTitle: 'Special offer for you',
     pushBody: '{{discount}}% off expires on {{validTill}}.',
-    emailSubject: 'Exclusive MatchMate offer inside',
+    emailSubject: 'Exclusive Match Mate offer inside',
     emailBody:
       'Hi {{userName}}, enjoy {{discount}}% off on {{planName}} till {{validTill}}.',
-    smsBody: '{{discount}}% off on {{planName}} till {{validTill}}. MatchMate.',
+    smsBody:
+      '{{discount}}% off on {{planName}} till {{validTill}}. Match Mate.',
     variables: ['discount', 'planName', 'validTill', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -567,7 +568,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushBody: 'Your account password was changed.',
     emailSubject: 'Security alert: password changed',
     emailBody: 'Hi {{userName}}, your password was changed on {{changedAt}}.',
-    smsBody: 'Security alert: your MatchMate password was changed.',
+    smsBody: 'Security alert: your Match Mate password was changed.',
     variables: ['userName', 'changedAt'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -595,7 +596,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     emailSubject: 'New login detected on your account',
     emailBody:
       'Hi {{userName}}, we noticed a login from {{device}} in {{location}}.',
-    smsBody: 'New login detected on MatchMate from {{device}}.',
+    smsBody: 'New login detected on Match Mate from {{device}}.',
     variables: ['userName', 'device', 'location', 'loginTime'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -623,7 +624,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     emailSubject: 'Account restriction notice',
     emailBody:
       'Hi {{userName}}, your account is restricted. Reason: {{reason}}.',
-    smsBody: 'Your MatchMate account is restricted. Check email for details.',
+    smsBody: 'Your Match Mate account is restricted. Check email for details.',
     variables: ['userName', 'reason'],
     channels: { inApp: true, push: true, email: true, sms: true },
     deliveryRules: {
@@ -648,7 +649,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: '{{alertMessage}}',
     pushTitle: 'Safety alert',
     pushBody: '{{alertMessage}}',
-    emailSubject: 'Important safety notice from MatchMate',
+    emailSubject: 'Important safety notice from Match Mate',
     emailBody: 'Hi {{userName}}, {{alertMessage}}',
     smsBody: '{{alertMessage}}',
     variables: ['userName', 'alertMessage'],

@@ -22,7 +22,7 @@ export const profileName = (profile: DiscoveryProfile): string =>
   [profile.personal?.firstName, profile.personal?.lastName]
     .filter(Boolean)
     .join(' ')
-    .trim() || 'MatchMate Member';
+    .trim() || 'Match Mate Member';
 
 export const mapProfile = (
   profile: DiscoveryProfile,

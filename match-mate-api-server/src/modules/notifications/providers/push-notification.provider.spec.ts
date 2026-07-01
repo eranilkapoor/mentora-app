@@ -133,7 +133,7 @@ describe('PushNotificationProvider', () => {
     });
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        notification: { title: 'MatchMate', body: 'Body' },
+        notification: { title: 'Match Mate', body: 'Body' },
         data: expect.objectContaining({
           templateKey: 'WELCOME',
           string: 'value',

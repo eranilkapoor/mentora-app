@@ -30,7 +30,7 @@ export class OtpService {
     const deliveryResult = await this.smsProvider.send({
       userId: 'otp',
       to: `+${country_code}${phone}`,
-      message: `MatchMate OTP: ${otp}. Valid for 5 minutes.`,
+      message: `Match Mate OTP: ${otp}. Valid for 5 minutes.`,
       notificationId: `otp-${Date.now()}`,
       templateKey: 'auth.phone_otp',
       metadata: {

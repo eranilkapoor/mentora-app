@@ -48,7 +48,7 @@
   "report_message": "Report {{name}} for review?",
   "report_confirm": "Report",
   "report_success_title": "Report Submitted",
-  "report_success_message": "Thank you for helping keep MatchMate safe.",
+  "report_success_message": "Thank you for helping keep Match Mate safe.",
   "report_failed_title": "Unable to Report",
   "block_title": "Block Profile?",
   "block_message": "You will no longer see {{name}}.",

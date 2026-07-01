@@ -654,7 +654,7 @@ export class AuthService {
 
       await this.notificationsService.notify({
         userId: String(user._id),
-        title: 'Sign in to MatchMate',
+        title: 'Sign in to Match Mate',
         message: `Use this secure link to sign in: ${link}`,
         type: 'system',
         category: 'system',
@@ -1139,7 +1139,7 @@ export class AuthService {
     jobs.push(
       this.notificationsService.notify({
         userId,
-        title: 'Welcome to MatchMate',
+        title: 'Welcome to Match Mate',
         message:
           'Your account was created successfully. Complete your profile to start receiving better matches.',
         type: 'system',

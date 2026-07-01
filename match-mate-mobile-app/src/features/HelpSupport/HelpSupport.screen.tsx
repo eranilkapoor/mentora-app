@@ -35,7 +35,7 @@ export default function HelpSupportScreen({
   const openWhatsApp = useCallback(
     () =>
       void Linking.openURL(
-        `https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I need help with MatchMate.`
+        `https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I need help with Match Mate.`
       ),
     []
   );

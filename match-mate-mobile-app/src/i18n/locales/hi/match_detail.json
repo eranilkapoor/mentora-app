@@ -47,7 +47,7 @@
   "report_message": "{{name}} की समीक्षा के लिए रिपोर्ट करें?",
   "report_confirm": "रिपोर्ट करें",
   "report_success_title": "रिपोर्ट भेज दी गई",
-  "report_success_message": "MatchMate को सुरक्षित रखने में मदद करने के लिए धन्यवाद।",
+  "report_success_message": "Match Mate को सुरक्षित रखने में मदद करने के लिए धन्यवाद।",
   "report_failed_title": "रिपोर्ट असफल",
   "block_title": "प्रोफ़ाइल ब्लॉक करें?",
   "block_message": "आप अब {{name}} को नहीं देखेंगे।",

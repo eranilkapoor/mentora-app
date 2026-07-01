@@ -237,7 +237,7 @@ export class SettingsService {
           [profile?.personal?.firstName, profile?.personal?.lastName]
             .filter(Boolean)
             .join(' ')
-            .trim() || 'MatchMate Member';
+            .trim() || 'Match Mate Member';
         const location =
           [profile?.personal?.city, profile?.personal?.state]
             .filter(Boolean)
@@ -379,7 +379,7 @@ export class SettingsService {
           [profile?.personal?.firstName, profile?.personal?.lastName]
             .filter(Boolean)
             .join(' ')
-            .trim() || 'MatchMate Member';
+            .trim() || 'Match Mate Member';
         const location =
           [profile?.personal?.city, profile?.personal?.state]
             .filter(Boolean)

@@ -86,7 +86,7 @@
   "trial_failed_message": "We could not start this trial. Please try another plan or contact support.",
   "store_billing_unavailable_title": "In-app billing unavailable",
   "store_billing_unavailable_message": "Store subscriptions are not enabled for this build yet. Please try again after the next release.",
-  "store_product_unmapped_message": "This store purchase does not match an available MatchMate plan. Please contact support.",
+  "store_product_unmapped_message": "This store purchase does not match an available Match Mate plan. Please contact support.",
   "store_offer_unavailable_message": "This plan is not available for your store account or region.",
   "checkout": {
     "title": "Choose payment method",

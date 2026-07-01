@@ -1,7 +1,7 @@
 [
   {
     "event": "USER_REGISTERED_WELCOME",
-    "title": "Welcome to MatchMate",
+    "title": "Welcome to Match Mate",
     "body": "Hi {{firstName}}, complete your profile and start connecting."
   },
   {

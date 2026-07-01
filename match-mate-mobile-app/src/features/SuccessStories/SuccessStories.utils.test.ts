@@ -1,11 +1,12 @@
 import {
+  getSuccessStoryStatusMeta,
   isSuccessStoryDraftValid,
   normalizeSuccessStoryDraft,
   SuccessStoryDraft,
 } from './SuccessStories.utils';
 
 const validDraft: SuccessStoryDraft = {
-  title: 'Our MatchMate journey',
+  title: 'Our Match Mate journey',
   partnerName: 'Asha',
   marriageDate: '2026-02-14',
   story: 'A'.repeat(100),
@@ -31,16 +32,39 @@ describe('success story submission', () => {
     expect(
       normalizeSuccessStoryDraft({
         ...validDraft,
-        title: '  Our MatchMate journey ',
+        title: '  Our Match Mate journey ',
         partnerName: ' Asha ',
         location: ' ',
       })
     ).toEqual({
-      title: 'Our MatchMate journey',
+      title: 'Our Match Mate journey',
       partnerName: 'Asha',
       marriageDate: '2026-02-14',
       story: 'A'.repeat(100),
       publicationConsent: true,
+    });
+  });
+
+  it('maps moderation states to consistent labels, notes, and tones', () => {
+    expect(getSuccessStoryStatusMeta('submitted')).toEqual({
+      labelKey: 'settings.success_stories.status_submitted',
+      noteKey: 'settings.success_stories.note_submitted',
+      tone: 'primary',
+    });
+    expect(getSuccessStoryStatusMeta('published')).toEqual({
+      labelKey: 'settings.success_stories.status_published',
+      noteKey: 'settings.success_stories.note_published',
+      tone: 'success',
+    });
+    expect(getSuccessStoryStatusMeta('rejected')).toEqual({
+      labelKey: 'settings.success_stories.status_rejected',
+      noteKey: 'settings.success_stories.note_rejected',
+      tone: 'warning',
+    });
+    expect(getSuccessStoryStatusMeta('archived')).toEqual({
+      labelKey: 'settings.success_stories.status_archived',
+      noteKey: 'settings.success_stories.note_archived',
+      tone: 'muted',
     });
   });
 });

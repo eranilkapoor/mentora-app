@@ -94,7 +94,7 @@ export class PushNotificationProvider implements NotificationChannelProvider {
         const messageId = await messaging.send({
           token: tokens[0],
           notification: {
-            title: payload.title ?? 'MatchMate',
+            title: payload.title ?? 'Match Mate',
             body: payload.message,
           },
           data,
@@ -114,7 +114,7 @@ export class PushNotificationProvider implements NotificationChannelProvider {
       const result = await messaging.sendEachForMulticast({
         tokens,
         notification: {
-          title: payload.title ?? 'MatchMate',
+          title: payload.title ?? 'Match Mate',
           body: payload.message,
         },
         data,

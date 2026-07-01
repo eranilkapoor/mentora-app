@@ -107,7 +107,7 @@ describe('MatchNotificationService', () => {
     expect(notificationsService.notify).toHaveBeenCalledWith(
       expect.objectContaining({
         title: 'Interest updated',
-        message: 'A MatchMate member responded to your interest.',
+        message: 'A Match Mate member responded to your interest.',
         type: 'info',
         category: 'system',
         priority: 'normal',

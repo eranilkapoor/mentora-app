@@ -30,7 +30,7 @@ type TwoFactorChallenge = {
 
 @Injectable()
 export class AuthTwoFactorService {
-  private readonly issuer = 'MatchMate';
+  private readonly issuer = 'Match Mate';
   private readonly challengeTtlSeconds = 5 * 60;
 
   constructor(

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import {
+  RefreshControl,
   ScrollView,
   Text,
   TextInput,
@@ -11,6 +12,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import Header from '@/core/components/Header';
 import Loader from '@/core/components/Loader';
+import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { showError, showSuccess } from '@/core/utils/toast';
@@ -21,6 +23,7 @@ import {
 } from '@/store/services/successStoryApi.service';
 import { successStoriesStyles } from './SuccessStories.styles';
 import {
+  getSuccessStoryStatusMeta,
   isSuccessStoryDraftValid,
   normalizeSuccessStoryDraft,
   SuccessStoryDraft,
@@ -35,6 +38,19 @@ const EMPTY_DRAFT: SuccessStoryDraft = {
   publicationConsent: false,
 };
 
+const formatDate = (value?: string): string =>
+  value ? new Date(value).toLocaleDateString() : 'Recently';
+
+const storyFields: Array<{
+  key: 'title' | 'partnerName' | 'marriageDate' | 'location';
+  labelKey: string;
+}> = [
+  { key: 'title', labelKey: 'settings.success_stories.story_title' },
+  { key: 'partnerName', labelKey: 'settings.success_stories.partnerName' },
+  { key: 'marriageDate', labelKey: 'settings.success_stories.marriageDate' },
+  { key: 'location', labelKey: 'settings.success_stories.location' },
+];
+
 export default function SuccessStoriesScreen({
   navigation,
 }: {
@@ -44,7 +60,7 @@ export default function SuccessStoriesScreen({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const [draft, setDraft] = useState<SuccessStoryDraft>(EMPTY_DRAFT);
-  const { data, isLoading } = useGetMySuccessStoriesQuery({
+  const { data, isLoading, isFetching, refetch } = useGetMySuccessStoriesQuery({
     page: 1,
     limit: 20,
   });
@@ -88,36 +104,41 @@ export default function SuccessStoriesScreen({
       />
       <ScrollView
         contentContainerStyle={styles.content}
+        refreshControl={
+          <RefreshControl
+            refreshing={isFetching}
+            onRefresh={() => {
+              void refetch();
+            }}
+            tintColor={theme.colors.primary}
+          />
+        }
         showsVerticalScrollIndicator={false}
       >
-        <View style={styles.intro}>
-          <Text style={styles.title}>
+        <View style={styles.headerCard}>
+          <Text style={styles.headerTitle}>
             {t('settings.success_stories.share_title')}
           </Text>
-          <Text style={styles.subtitle}>
+          <Text style={styles.headerSubtitle}>
             {t('settings.success_stories.share_subtitle')}
           </Text>
         </View>
 
-        <View style={styles.form}>
-          {(['title', 'partnerName', 'marriageDate', 'location'] as const).map(
-            (field) => (
-              <View key={field}>
-                <Text style={styles.label}>
-                  {t(`settings.success_stories.${field}`)}
-                </Text>
-                <TextInput
-                  style={styles.input}
-                  value={draft[field] ?? ''}
-                  onChangeText={(value) => update(field, value)}
-                  placeholder={t(
-                    `settings.success_stories.${field}_placeholder`
-                  )}
-                  placeholderTextColor={theme.colors.inputPlaceholder}
-                />
-              </View>
-            )
-          )}
+        <View style={styles.formCard}>
+          {storyFields.map((field) => (
+            <View key={field.key}>
+              <Text style={styles.label}>{t(field.labelKey)}</Text>
+              <TextInput
+                style={styles.input}
+                value={draft[field.key] ?? ''}
+                onChangeText={(value) => update(field.key, value)}
+                placeholder={t(
+                  `settings.success_stories.${field.key}_placeholder`
+                )}
+                placeholderTextColor={theme.colors.textMuted}
+              />
+            </View>
+          ))}
           <Text style={styles.label}>
             {t('settings.success_stories.story')}
           </Text>
@@ -126,7 +147,7 @@ export default function SuccessStoriesScreen({
             value={draft.story}
             onChangeText={(value) => update('story', value)}
             placeholder={t('settings.success_stories.story_placeholder')}
-            placeholderTextColor={theme.colors.inputPlaceholder}
+            placeholderTextColor={theme.colors.textMuted}
             multiline
           />
           <TouchableOpacity
@@ -137,23 +158,37 @@ export default function SuccessStoriesScreen({
             accessibilityRole="checkbox"
             accessibilityState={{ checked: draft.publicationConsent }}
           >
-            <Feather
-              name={draft.publicationConsent ? 'check-square' : 'square'}
-              size={20}
-              color={theme.colors.primary}
-            />
+            <View
+              style={[
+                styles.consentCheckbox,
+                draft.publicationConsent && styles.consentCheckboxActive,
+              ]}
+            >
+              <Feather
+                name={draft.publicationConsent ? 'check' : 'square'}
+                size={14}
+                color={
+                  draft.publicationConsent
+                    ? theme.colors.primary
+                    : theme.colors.textMuted
+                }
+              />
+            </View>
             <Text style={styles.consentText}>
               {t('settings.success_stories.consent')}
             </Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={[styles.button, !canSubmit && styles.buttonDisabled]}
+            style={[
+              styles.primaryButton,
+              !canSubmit && styles.primaryButtonDisabled,
+            ]}
             disabled={!canSubmit}
             onPress={() => void handleSubmit()}
             accessibilityRole="button"
           >
             <Feather name="send" size={16} color={theme.colors.white} />
-            <Text style={styles.buttonText}>
+            <Text style={styles.primaryButtonText}>
               {isSubmitting
                 ? t('settings.success_stories.submitting')
                 : t('settings.success_stories.submit')}
@@ -161,31 +196,87 @@ export default function SuccessStoriesScreen({
           </TouchableOpacity>
         </View>
 
-        <Text style={styles.historyTitle}>
-          {t('settings.success_stories.history')}
-        </Text>
-        {stories.length ? (
-          stories.map((item) => (
-            <View key={item._id} style={styles.storyCard}>
-              <View style={styles.storyHeader}>
-                <Text style={styles.storyTitle}>{item.title}</Text>
-                <Text style={styles.status}>
-                  {item.status.replace('_', ' ')}
-                </Text>
+        <SettingsCard
+          title={t('settings.success_stories.history')}
+          subtitle={t('settings.success_stories.entry_sub')}
+          icon="heart"
+        >
+          {stories.length ? (
+            stories.map((item, index) =>
+              (() => {
+                const statusMeta = getSuccessStoryStatusMeta(item.status);
+
+                return (
+                  <View
+                    key={item._id}
+                    style={[
+                      styles.storyRow,
+                      index === stories.length - 1 && styles.storyRowLast,
+                    ]}
+                  >
+                    <View style={styles.rowTop}>
+                      <Text style={styles.rowTitle} numberOfLines={1}>
+                        {item.title}
+                      </Text>
+                      <View
+                        style={[
+                          styles.badge,
+                          statusMeta.tone === 'success' && styles.badgeSuccess,
+                          statusMeta.tone === 'warning' && styles.badgeWarning,
+                          statusMeta.tone === 'muted' && styles.badgeMuted,
+                        ]}
+                      >
+                        <Text
+                          style={[
+                            styles.badgeText,
+                            statusMeta.tone === 'success' &&
+                              styles.badgeTextSuccess,
+                            statusMeta.tone === 'warning' &&
+                              styles.badgeTextWarning,
+                            statusMeta.tone === 'muted' &&
+                              styles.badgeTextMuted,
+                          ]}
+                        >
+                          {t(statusMeta.labelKey)}
+                        </Text>
+                      </View>
+                    </View>
+                    <Text style={styles.rowMeta}>
+                      {item.partnerName} · {formatDate(item.marriageDate)}
+                    </Text>
+                    {item.location ? (
+                      <Text style={styles.rowMeta}>{item.location}</Text>
+                    ) : null}
+                    <Text
+                      style={[
+                        styles.statusNoteText,
+                        item.rejectionReason &&
+                          item.status === 'rejected' &&
+                          styles.rejectionNoteText,
+                      ]}
+                    >
+                      {item.rejectionReason && item.status === 'rejected'
+                        ? item.rejectionReason
+                        : t(statusMeta.noteKey)}
+                    </Text>
+                  </View>
+                );
+              })()
+            )
+          ) : (
+            <View style={styles.emptyState}>
+              <View style={styles.emptyIconWrap}>
+                <Feather name="heart" size={18} color={theme.colors.primary} />
               </View>
-              <Text style={styles.storyMeta}>
-                {item.partnerName} · {item.marriageDate.slice(0, 10)}
+              <Text style={styles.emptyTitleText}>
+                {t('settings.success_stories.empty_title')}
               </Text>
-              {item.rejectionReason ? (
-                <Text style={styles.reason}>{item.rejectionReason}</Text>
-              ) : null}
+              <Text style={styles.emptyText}>
+                {t('settings.success_stories.empty_message')}
+              </Text>
             </View>
-          ))
-        ) : (
-          <Text style={styles.empty}>
-            {t('settings.success_stories.empty')}
-          </Text>
-        )}
+          )}
+        </SettingsCard>
       </ScrollView>
     </SafeAreaView>
   );

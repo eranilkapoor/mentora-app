@@ -36,17 +36,18 @@ interface StaticPageContent {
 }
 
 const SUPPORT_EMAIL = 'support@webnza.com';
-const COMPANY_NAME = 'Webnza Infotech / MatchMate';
+const COMPANY_NAME = 'Webnza Infotech / Match Mate';
 
 const pages: Record<StaticPageSlug, StaticPageContent> = {
   'privacy-policy': {
     slug: 'privacy-policy',
     title: 'Privacy Policy',
-    eyebrow: 'MatchMate legal',
-    subtitle: 'How MatchMate collects, uses, protects, and shares member data.',
+    eyebrow: 'Match Mate legal',
+    subtitle:
+      'How Match Mate collects, uses, protects, and shares member data.',
     lastUpdated: 'Last updated: 1 January 2026',
     intro:
-      'MatchMate is committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use the MatchMate mobile application, website, and related services.',
+      'Match Mate is committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use the Match Mate mobile application, website, and related services.',
     sections: [
       {
         title: 'Information we collect',
@@ -99,7 +100,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         title: 'Sharing your information',
         bullets: [
           'With other members only as needed to show your profile, preferences, match activity, and permitted contact details.',
-          'With infrastructure, analytics, communication, payment, verification, and support providers that help us operate MatchMate.',
+          'With infrastructure, analytics, communication, payment, verification, and support providers that help us operate Match Mate.',
           'With legal authorities when required by law, court order, safety investigation, or fraud prevention need.',
         ],
       },
@@ -129,7 +130,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       },
       {
         title: 'Children and eligibility',
-        body: 'MatchMate is intended for adults who are legally eligible to use matrimonial services. We do not knowingly allow minors to create matrimonial profiles.',
+        body: 'Match Mate is intended for adults who are legally eligible to use matrimonial services. We do not knowingly allow minors to create matrimonial profiles.',
       },
       {
         title: 'Contact us',
@@ -140,11 +141,11 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
   'terms-conditions': {
     slug: 'terms-conditions',
     title: 'Terms and Conditions',
-    eyebrow: 'MatchMate legal',
-    subtitle: 'The rules for using MatchMate safely and responsibly.',
+    eyebrow: 'Match Mate legal',
+    subtitle: 'The rules for using Match Mate safely and responsibly.',
     lastUpdated: 'Last updated: 1 January 2026',
     intro:
-      'These terms describe the rules for using MatchMate. By creating an account or using the service, you agree to follow these terms, our privacy policy, and our community safety standards.',
+      'These terms describe the rules for using Match Mate. By creating an account or using the service, you agree to follow these terms, our privacy policy, and our community safety standards.',
     sections: [
       {
         title: 'Eligibility and account responsibility',
@@ -166,14 +167,14 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         title: 'Subscriptions and payments',
         bullets: [
           'Paid features are governed by the plan terms shown at purchase, including feature limits, trial period, renewal date, and price.',
-          'Taxes, renewals, cancellations, refunds, checkout status, and payment verification follow the applicable app store, payment provider, and MatchMate billing rules.',
+          'Taxes, renewals, cancellations, refunds, checkout status, and payment verification follow the applicable app store, payment provider, and Match Mate billing rules.',
           'Some benefits such as boosts, coins, premium visibility, who-liked-me, video intro, or assisted services may depend on your active plan and feature availability.',
         ],
       },
       {
         title: 'Acceptable use',
         bullets: [
-          'Do not impersonate others, create fake profiles, scrape data, send spam, harass members, or use MatchMate for commercial lead generation.',
+          'Do not impersonate others, create fake profiles, scrape data, send spam, harass members, or use Match Mate for commercial lead generation.',
           'Do not request money, gifts, bank details, OTPs, passwords, or sensitive documents from other members.',
           'Do not upload unlawful, explicit, hateful, violent, misleading, copyrighted, or privacy-violating content.',
         ],
@@ -226,7 +227,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         title: 'Protect privacy',
         bullets: [
           'Do not share another member phone number, email, photos, address, documents, profile data, or chat screenshots without permission.',
-          'Do not pressure members to move conversations outside MatchMate before they are comfortable.',
+          'Do not pressure members to move conversations outside Match Mate before they are comfortable.',
           'Do not collect member data for marketing, recruitment, scraping, or external databases.',
         ],
       },
@@ -264,8 +265,8 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         body: 'Verification helps improve trust and may unlock a verified badge after review. You can start verification from Settings > Account Settings > Profile KYC verification.',
       },
       {
-        title: 'How does MatchMate find matches?',
-        body: 'MatchMate recommends matches based on your preferences such as age, location, education, interests, lifestyle, and other profile parameters.',
+        title: 'How does Match Mate find matches?',
+        body: 'Match Mate recommends matches based on your preferences such as age, location, education, interests, lifestyle, and other profile parameters.',
       },
       {
         title: 'Why are some features hidden or locked?',
@@ -302,15 +303,15 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
     title: 'Account and Data Deletion',
     eyebrow: 'User data request',
     subtitle:
-      'How MatchMate members can delete their account and associated personal data.',
+      'How Match Mate members can delete their account and associated personal data.',
     lastUpdated: 'Last updated: 1 January 2026',
     intro:
-      'This page explains how to request deletion of your MatchMate account and personal data. It is provided for members, app store reviewers, and platform compliance checks.',
+      'This page explains how to request deletion of your Match Mate account and personal data. It is provided for members, app store reviewers, and platform compliance checks.',
     sections: [
       {
         title: 'Delete your account from the app',
         bullets: [
-          'Open the MatchMate app and sign in to your account.',
+          'Open the Match Mate app and sign in to your account.',
           'Go to Settings > Account Settings > Delete Account.',
           'Review the confirmation message and submit the deletion request.',
           'Your profile becomes unavailable after the request is accepted, subject to safety, fraud, payment, and legal checks.',
@@ -343,8 +344,8 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       {
         title: 'Permissions and device access',
         bullets: [
-          'MatchMate may request permissions such as camera, photos/media, notifications, location, microphone, or contacts only for app features you choose to use.',
-          'Deleting your account stops MatchMate from using your account data for member-facing features.',
+          'Match Mate may request permissions such as camera, photos/media, notifications, location, microphone, or contacts only for app features you choose to use.',
+          'Deleting your account stops Match Mate from using your account data for member-facing features.',
           'You can revoke device permissions anytime from your iOS or Android system settings. Uninstalling the app also removes app access from that device.',
         ],
       },
@@ -364,12 +365,12 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
   'privacy-policy': {
     slug: 'privacy-policy',
     title: 'गोपनीयता नीति',
-    eyebrow: 'MatchMate कानूनी',
+    eyebrow: 'Match Mate कानूनी',
     subtitle:
-      'MatchMate सदस्य डेटा कैसे एकत्र, उपयोग, सुरक्षित और साझा करता है।',
+      'Match Mate सदस्य डेटा कैसे एकत्र, उपयोग, सुरक्षित और साझा करता है।',
     lastUpdated: 'अंतिम अपडेट: 1 जनवरी 2026',
     intro:
-      'MatchMate आपकी व्यक्तिगत जानकारी और गोपनीयता की रक्षा के लिए प्रतिबद्ध है। यह गोपनीयता नीति बताती है कि MatchMate मोबाइल ऐप, वेबसाइट और संबंधित सेवाओं का उपयोग करते समय हम आपकी जानकारी कैसे एकत्र, उपयोग, साझा और सुरक्षित करते हैं।',
+      'Match Mate आपकी व्यक्तिगत जानकारी और गोपनीयता की रक्षा के लिए प्रतिबद्ध है। यह गोपनीयता नीति बताती है कि Match Mate मोबाइल ऐप, वेबसाइट और संबंधित सेवाओं का उपयोग करते समय हम आपकी जानकारी कैसे एकत्र, उपयोग, साझा और सुरक्षित करते हैं।',
     sections: [
       {
         title: 'हम कौन सी जानकारी एकत्र करते हैं',
@@ -413,7 +414,7 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
         title: 'आपकी जानकारी साझा करना',
         bullets: [
           'अन्य सदस्यों के साथ केवल उतनी जानकारी साझा की जाती है जितनी प्रोफाइल, प्राथमिकताओं, मैच गतिविधि और अनुमत संपर्क विवरण दिखाने के लिए आवश्यक हो।',
-          'इंफ्रास्ट्रक्चर, एनालिटिक्स, कम्युनिकेशन, भुगतान, सत्यापन और सपोर्ट प्रदाताओं के साथ, जो MatchMate संचालन में सहायता करते हैं।',
+          'इंफ्रास्ट्रक्चर, एनालिटिक्स, कम्युनिकेशन, भुगतान, सत्यापन और सपोर्ट प्रदाताओं के साथ, जो Match Mate संचालन में सहायता करते हैं।',
           'कानून, कोर्ट आदेश, सुरक्षा जांच या धोखाधड़ी रोकथाम की आवश्यकता होने पर कानूनी अधिकारियों के साथ।',
         ],
       },
@@ -439,14 +440,14 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
   'terms-conditions': {
     slug: 'terms-conditions',
     title: 'नियम और शर्तें',
-    eyebrow: 'MatchMate कानूनी',
-    subtitle: 'MatchMate को सुरक्षित और जिम्मेदारी से उपयोग करने के नियम।',
+    eyebrow: 'Match Mate कानूनी',
+    subtitle: 'Match Mate को सुरक्षित और जिम्मेदारी से उपयोग करने के नियम।',
     lastUpdated: 'अंतिम अपडेट: 1 जनवरी 2026',
     intro:
-      'ये शर्तें MatchMate उपयोग करने के नियम बताती हैं। खाता बनाकर या सेवा का उपयोग करके, आप इन शर्तों, हमारी गोपनीयता नीति और सामुदायिक सुरक्षा मानकों का पालन करने के लिए सहमत होते हैं।',
+      'ये शर्तें Match Mate उपयोग करने के नियम बताती हैं। खाता बनाकर या सेवा का उपयोग करके, आप इन शर्तों, हमारी गोपनीयता नीति और सामुदायिक सुरक्षा मानकों का पालन करने के लिए सहमत होते हैं।',
     sections: [
       {
-        title: 'MatchMate का उपयोग',
+        title: 'Match Mate का उपयोग',
         body: 'आप सही प्रोफाइल जानकारी देने, सेवा का सम्मानपूर्वक उपयोग करने और प्रतिरूपण, उत्पीड़न, स्पैम, स्क्रैपिंग, व्यावसायिक आग्रह या गैरकानूनी गतिविधि से बचने के लिए सहमत हैं।',
       },
       {
@@ -455,7 +456,7 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
       },
       {
         title: 'सदस्यता और भुगतान',
-        body: 'पेड फीचर खरीद के समय दिखाए गए प्लान नियमों के अनुसार नियंत्रित होते हैं। टैक्स, रिन्यूअल, कैंसलेशन, ट्रायल, रिफंड और भुगतान सत्यापन संबंधित ऐप स्टोर, भुगतान प्रदाता और MatchMate बिलिंग नियमों के अनुसार होंगे।',
+        body: 'पेड फीचर खरीद के समय दिखाए गए प्लान नियमों के अनुसार नियंत्रित होते हैं। टैक्स, रिन्यूअल, कैंसलेशन, ट्रायल, रिफंड और भुगतान सत्यापन संबंधित ऐप स्टोर, भुगतान प्रदाता और Match Mate बिलिंग नियमों के अनुसार होंगे।',
       },
       {
         title: 'खाता कार्रवाई',
@@ -487,7 +488,7 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
       },
       {
         title: 'धोखाधड़ी और आग्रह से बचें',
-        body: 'पैसे न मांगें, बाहरी सेवाओं का प्रचार न करें, किसी और का रूप न धरें और MatchMate का उपयोग व्यावसायिक लीड जनरेशन के लिए न करें।',
+        body: 'पैसे न मांगें, बाहरी सेवाओं का प्रचार न करें, किसी और का रूप न धरें और Match Mate का उपयोग व्यावसायिक लीड जनरेशन के लिए न करें।',
       },
       {
         title: 'असुरक्षित व्यवहार रिपोर्ट करें',
@@ -506,8 +507,8 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
         body: 'Profile > Edit Profile पर जाएं। बेहतर मैच सिफारिशों के लिए साफ फोटो जोड़ें और सभी सेक्शन पूरे करें।',
       },
       {
-        title: 'MatchMate मैच कैसे ढूंढता है?',
-        body: 'MatchMate आपकी आयु, स्थान, शिक्षा, रुचियों, जीवनशैली और अन्य प्रोफाइल प्राथमिकताओं के आधार पर मैच सुझाता है।',
+        title: 'Match Mate मैच कैसे ढूंढता है?',
+        body: 'Match Mate आपकी आयु, स्थान, शिक्षा, रुचियों, जीवनशैली और अन्य प्रोफाइल प्राथमिकताओं के आधार पर मैच सुझाता है।',
       },
       {
         title: 'क्या मेरी जानकारी सुरक्षित है?',
@@ -524,15 +525,15 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
     title: 'खाता और डेटा हटाना',
     eyebrow: 'यूजर डेटा अनुरोध',
     subtitle:
-      'MatchMate सदस्य अपना खाता और संबंधित व्यक्तिगत डेटा कैसे हटा सकते हैं।',
+      'Match Mate सदस्य अपना खाता और संबंधित व्यक्तिगत डेटा कैसे हटा सकते हैं।',
     lastUpdated: 'अंतिम अपडेट: 1 जनवरी 2026',
     intro:
-      'यह पेज बताता है कि आप अपना MatchMate खाता और व्यक्तिगत डेटा हटाने का अनुरोध कैसे कर सकते हैं। यह सदस्यों, ऐप स्टोर समीक्षकों और प्लेटफॉर्म अनुपालन जांच के लिए उपलब्ध है।',
+      'यह पेज बताता है कि आप अपना Match Mate खाता और व्यक्तिगत डेटा हटाने का अनुरोध कैसे कर सकते हैं। यह सदस्यों, ऐप स्टोर समीक्षकों और प्लेटफॉर्म अनुपालन जांच के लिए उपलब्ध है।',
     sections: [
       {
         title: 'ऐप से अपना खाता हटाएं',
         bullets: [
-          'MatchMate ऐप खोलें और अपने खाते में साइन इन करें।',
+          'Match Mate ऐप खोलें और अपने खाते में साइन इन करें।',
           'Settings > Account Settings > Delete Account पर जाएं।',
           'पुष्टि संदेश पढ़ें और डिलीशन अनुरोध सबमिट करें।',
           'अनुरोध स्वीकार होने के बाद आपका प्रोफाइल उपलब्ध नहीं रहेगा, सुरक्षा, धोखाधड़ी, भुगतान और कानूनी जांच के अधीन।',
@@ -561,8 +562,8 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
       {
         title: 'अनुमतियां और डिवाइस एक्सेस',
         bullets: [
-          'MatchMate कैमरा, फोटो/मीडिया, नोटिफिकेशन, लोकेशन, माइक्रोफोन या कॉन्टैक्ट जैसी अनुमतियां केवल उन फीचर्स के लिए मांग सकता है जिन्हें आप उपयोग करना चुनते हैं।',
-          'खाता हटाने के बाद MatchMate आपके खाता डेटा का सदस्य-संबंधित फीचर्स में उपयोग बंद कर देता है।',
+          'Match Mate कैमरा, फोटो/मीडिया, नोटिफिकेशन, लोकेशन, माइक्रोफोन या कॉन्टैक्ट जैसी अनुमतियां केवल उन फीचर्स के लिए मांग सकता है जिन्हें आप उपयोग करना चुनते हैं।',
+          'खाता हटाने के बाद Match Mate आपके खाता डेटा का सदस्य-संबंधित फीचर्स में उपयोग बंद कर देता है।',
           'आप iOS या Android सिस्टम सेटिंग से कभी भी डिवाइस अनुमतियां वापस ले सकते हैं। ऐप अनइंस्टॉल करने से उस डिवाइस से ऐप एक्सेस भी हट जाता है।',
         ],
       },
@@ -666,7 +667,7 @@ export const getStaticPageHtml = (
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
-    <title>${escapeHtml(page.title)} - MatchMate</title>
+    <title>${escapeHtml(page.title)} - Match Mate</title>
     <style>
       :root {
         --font-scale: ${fontScaleBySize[selectedFontSize]};
@@ -987,7 +988,7 @@ export const getStaticPageHtml = (
         </div>
       </article>
       <footer>
-        MatchMate by Webnza Infotech. For support, email <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.
+        Match Mate by Webnza Infotech. For support, email <a href="mailto:${SUPPORT_EMAIL}">${SUPPORT_EMAIL}</a>.
       </footer>
     </main>
   </body>

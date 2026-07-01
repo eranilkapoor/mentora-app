@@ -523,7 +523,7 @@ export default function AppInitializer({ children }: Props) {
         }
 
         const result = await LocalAuthentication.authenticateAsync({
-          promptMessage: 'Unlock MatchMate',
+          promptMessage: 'Unlock Match Mate',
           cancelLabel: 'Sign out',
           disableDeviceFallback: false,
         });

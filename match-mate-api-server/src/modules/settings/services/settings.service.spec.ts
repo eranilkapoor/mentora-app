@@ -358,13 +358,13 @@ describe('SettingsService', () => {
       },
       {
         userId: SECOND_TARGET_ID,
-        name: 'MatchMate Member',
+        name: 'Match Mate Member',
         avatarUrl: 'fallback.jpg',
         verificationStatus: VerificationStatus.NOT_STARTED,
       },
       {
         userId: THIRD_TARGET_ID,
-        name: 'MatchMate Member',
+        name: 'Match Mate Member',
         verificationStatus: VerificationStatus.NOT_STARTED,
       },
     ]);
@@ -412,7 +412,7 @@ describe('SettingsService', () => {
     });
     expect(result.hiddenProfiles[1]).toEqual({
       userId: SECOND_TARGET_ID,
-      name: 'MatchMate Member',
+      name: 'Match Mate Member',
       verificationStatus: VerificationStatus.NOT_STARTED,
     });
   });
