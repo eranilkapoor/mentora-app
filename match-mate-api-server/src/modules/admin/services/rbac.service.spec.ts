@@ -373,4 +373,65 @@ describe('RbacService', () => {
       name: 'renamed',
     });
   });
+
+  it('rejects updateRole when provided permissions contain inactive ids', async () => {
+    const invalidPermissionId = new Types.ObjectId().toString();
+    roleModel.findById.mockReturnValueOnce(
+      createQueryChain({ name: 'member' }),
+    );
+    permissionModel.find.mockReturnValue(createQueryChain([]));
+
+    await expect(
+      service.updateRole('r1', { permissions: [invalidPermissionId] }),
+    ).rejects.toMatchObject({
+      code: ErrorCode.ADMIN_OPERATION_FAILED,
+    });
+    expect(permissionModel.find).toHaveBeenCalledWith({
+      _id: { $in: [invalidPermissionId] },
+      isActive: true,
+    });
+  });
+
+  it('updates role with same name without checking conflict and clears permissions with empty array', async () => {
+    roleModel.findById
+      .mockReturnValueOnce(createQueryChain({ name: 'member' }))
+      .mockReturnValueOnce(
+        createQueryChain({ name: 'member', permissions: [] }),
+      );
+    roleModel.findByIdAndUpdate.mockReturnValue(createQueryChain({}));
+
+    await expect(
+      service.updateRole('r1', { name: 'member', permissions: [] }),
+    ).resolves.toMatchObject({
+      name: 'member',
+    });
+    expect(roleModel.findOne).not.toHaveBeenCalledWith({ name: 'member' });
+    expect(roleModel.findByIdAndUpdate).toHaveBeenCalledWith(
+      'r1',
+      expect.objectContaining({
+        $set: expect.objectContaining({ permissions: [] }),
+      }),
+      { new: true, runValidators: true },
+    );
+  });
+
+  it('queries only active roles when assigning roles', async () => {
+    const roleId = new Types.ObjectId().toString();
+    userModel.findById.mockReturnValue(createQueryChain({ _id: 'u1' }));
+    roleModel.find.mockReturnValue(
+      createQueryChain([
+        { _id: roleId, permissions: [{ name: 'ADMIN_VIEW' }] },
+      ]),
+    );
+    userModel.findByIdAndUpdate.mockReturnValue(
+      createQueryChain({ _id: 'u1' }),
+    );
+
+    await service.assignRoles('u1', [roleId]);
+
+    expect(roleModel.find).toHaveBeenCalledWith({
+      _id: { $in: [roleId] },
+      isActive: true,
+    });
+  });
 });

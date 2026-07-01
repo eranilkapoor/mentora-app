@@ -61,6 +61,11 @@ import {
   REALTIME_USER_BLOCKED_EVENT,
   UserBlockedPayload,
 } from '@/core/realtime/realtime.service';
+import {
+  buildReadReceiptPayload,
+  buildSendMessagePayload,
+  getLatestUnreadMessageId,
+} from './utils/chatWorkflow.utils';
 
 const FEATURE_READ_RECEIPTS = 'read_receipts';
 const FEATURE_TYPING_INDICATOR = 'typing_indicator';
@@ -293,22 +298,19 @@ export default function ChatScreen({
     if (!activeRoomId || !currentUserId || !data?.success) return;
     if (!readReceiptsEnabled) return;
 
-    const incomingUnreadMessages = data.data.items.filter(
-      (message) => message.senderId !== currentUserId && !message.readAt
+    const latestUnreadMessageId = getLatestUnreadMessageId(
+      data.data.items,
+      currentUserId
     );
-    const latestUnreadMessage =
-      incomingUnreadMessages[incomingUnreadMessages.length - 1];
+    const readRequest = buildReadReceiptPayload(
+      activeRoomId,
+      latestUnreadMessageId,
+      lastReadRequestRef.current
+    );
+    if (!readRequest) return;
 
-    if (!latestUnreadMessage) return;
-
-    const requestKey = `${activeRoomId}:${latestUnreadMessage.id}`;
-    if (lastReadRequestRef.current === requestKey) return;
-
-    lastReadRequestRef.current = requestKey;
-    void markRoomRead({
-      roomId: activeRoomId,
-      upToMessageId: latestUnreadMessage.id,
-    })
+    lastReadRequestRef.current = readRequest.requestKey;
+    void markRoomRead(readRequest.payload)
       .unwrap()
       .catch(() => {
         lastReadRequestRef.current = null;
@@ -316,15 +318,11 @@ export default function ChatScreen({
   }, [activeRoomId, currentUserId, data, markRoomRead, readReceiptsEnabled]);
 
   const handleSend = useCallback(async (): Promise<void> => {
-    const content = inputText.trim();
-    if (!content || !activeRoomId || isSending) return;
+    const payload = buildSendMessagePayload(activeRoomId, inputText, isSending);
+    if (!payload) return;
 
     try {
-      await sendMessage({
-        roomId: activeRoomId,
-        content,
-        clientMessageId: `${Date.now()}`,
-      }).unwrap();
+      await sendMessage(payload).unwrap();
       setInputText('');
       setShowEmojiPicker(false);
       listRef.current?.scrollToOffset({ offset: 0, animated: true });

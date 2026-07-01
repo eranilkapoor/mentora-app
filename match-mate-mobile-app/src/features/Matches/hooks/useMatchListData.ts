@@ -71,24 +71,27 @@ export function useMatchListData(
 
   // ─── Queries ──────────────────────────────────────────────────────────
 
-  const { data, isLoading, isFetching, refetch } = useGetDiscoveryProfilesQuery(
-    {
-      type: activeTab as never,
-      page,
-      limit: FEED_PAGE_SIZE,
-      radiusKm: 100,
-      ...discoveryFilters,
-    },
-    {
-      skip: !isDiscoveryTab || (activeTab === 'nearby' && !nearbyLocationReady),
-    }
-  );
+  const { data, isLoading, isFetching, refetch, error } =
+    useGetDiscoveryProfilesQuery(
+      {
+        type: activeTab as never,
+        page,
+        limit: FEED_PAGE_SIZE,
+        radiusKm: 100,
+        ...discoveryFilters,
+      },
+      {
+        skip:
+          !isDiscoveryTab || (activeTab === 'nearby' && !nearbyLocationReady),
+      }
+    );
 
   const {
     data: myMatches,
     isFetching: isFetchingMyMatches,
     isLoading: isLoadingMyMatches,
     refetch: refetchMyMatches,
+    error: myMatchesError,
   } = useGetMyMatchesQuery(
     { page, limit: FEED_PAGE_SIZE },
     { skip: activeTab !== 'matched' }
@@ -99,6 +102,7 @@ export function useMatchListData(
     isLoading: isLoadingShortlisted,
     isFetching: isFetchingShortlisted,
     refetch: refetchShortlisted,
+    error: shortlistedError,
   } = useGetShortlistedProfilesQuery(
     { page, limit: FEED_PAGE_SIZE },
     { skip: activeTab !== 'shortlisted' }
@@ -118,6 +122,7 @@ export function useMatchListData(
     isLoading: isLoadingRequests,
     isFetching: isFetchingRequests,
     refetch: refetchReceivedInterests,
+    error: receivedInterestsError,
   } = useGetReceivedInterestsQuery(
     { page, limit: FEED_PAGE_SIZE },
     { skip: activeTab !== 'requests' }
@@ -293,6 +298,15 @@ export function useMatchListData(
           ? isFetchingMyMatches
           : isFetching;
 
+  const activeError =
+    activeTab === 'requests'
+      ? receivedInterestsError
+      : activeTab === 'shortlisted'
+        ? shortlistedError
+        : activeTab === 'matched'
+          ? myMatchesError
+          : error;
+
   return {
     visibleMatches,
     matches,
@@ -302,6 +316,7 @@ export function useMatchListData(
     activeMeta,
     activeLoading,
     activeFetching,
+    activeError,
     refetch,
     refetchMyMatches,
     refetchShortlisted,

@@ -4,6 +4,7 @@ import { JwtService } from '@nestjs/jwt';
 import { Test } from '@nestjs/testing';
 import { io, Socket as ClientSocket } from 'socket.io-client';
 import { AddressInfo } from 'node:net';
+import { Types } from 'mongoose';
 import { ChatGateway } from '@/modules/chat/controllers/chat.gateway';
 import { AppLogger } from '@/common/logger/logger.service';
 import { ChatPresenceService } from '@/modules/chat/services/chat-presence.service';
@@ -12,6 +13,10 @@ import { ChatService } from '@/modules/chat/services/chat.service';
 
 describe('P0 chat socket flows (e2e)', () => {
   jest.setTimeout(20000);
+
+  const roomA = new Types.ObjectId().toString();
+  const roomB = new Types.ObjectId().toString();
+  const messageId = new Types.ObjectId().toString();
 
   let app: INestApplication;
   let baseUrl: string;
@@ -92,9 +97,9 @@ describe('P0 chat socket flows (e2e)', () => {
   beforeEach(() => {
     jest.clearAllMocks();
 
-    chatService.getConversationDetail.mockResolvedValue({ roomId: 'room-a' });
+    chatService.getConversationDetail.mockResolvedValue({ roomId: roomA });
     chatService.getMessages.mockResolvedValue([]);
-    chatService.sendMessage.mockResolvedValue({ id: 'message-1' });
+    chatService.sendMessage.mockResolvedValue({ id: messageId });
     chatService.markRoomRead.mockResolvedValue({ read: true });
 
     jwtService.verifyAsync.mockImplementation(
@@ -173,6 +178,99 @@ describe('P0 chat socket flows (e2e)', () => {
         socket.connect();
       });
 
+  const emitAndWaitEvent = <TEvent>(
+    socket: ClientSocket,
+    emitEvent: string,
+    payload: unknown,
+    expectedEvent: string,
+  ): Promise<TEvent> =>
+    new Promise((resolve, reject) => {
+      const timeout = setTimeout(() => {
+        socket.off(expectedEvent, handler);
+        reject(
+          new Error(
+            `Timeout waiting for ${expectedEvent} after ${emitEvent} emit`,
+          ),
+        );
+      }, 2500);
+
+      const handler = (eventPayload: TEvent) => {
+        clearTimeout(timeout);
+        socket.off(expectedEvent, handler);
+        resolve(eventPayload);
+      };
+
+      socket.on(expectedEvent, handler);
+      socket.emit(emitEvent, payload);
+    });
+
+  const waitForTypedEvents = (
+    socket: ClientSocket,
+    expectedCount: number,
+  ): Promise<
+    Array<{ roomId: string; userId: string; isTyping: boolean }>
+  > =>
+    new Promise((resolve, reject) => {
+      const events: Array<{ roomId: string; userId: string; isTyping: boolean }> =
+        [];
+
+      const timeout = setTimeout(() => {
+        socket.off('typing', handler);
+        reject(new Error('Timed out waiting for typing events'));
+      }, 2500);
+
+      const handler = (event: {
+        roomId: string;
+        userId: string;
+        isTyping: boolean;
+      }) => {
+        events.push(event);
+
+        if (events.length === expectedCount) {
+          clearTimeout(timeout);
+          socket.off('typing', handler);
+          resolve(events);
+        }
+      };
+
+      socket.on('typing', handler);
+    });
+
+  const expectNoTypingEvent =
+    (
+      socket: ClientSocket,
+      waitMs = 300,
+    ): Promise<{ roomId: string; userId: string; isTyping: boolean } | null> =>
+      new Promise((resolve) => {
+        let settled = false;
+
+        const handler = (event: {
+          roomId: string;
+          userId: string;
+          isTyping: boolean;
+        }) => {
+          if (settled) {
+            return;
+          }
+
+          settled = true;
+          socket.off('typing', handler);
+          resolve(event);
+        };
+
+        socket.on('typing', handler);
+
+        setTimeout(() => {
+          if (settled) {
+            return;
+          }
+
+          settled = true;
+          socket.off('typing', handler);
+          resolve(null);
+        }, waitMs);
+      });
+
   it('authenticates connection and emits connection ready payload', async () => {
     const { ready } = await connectAndWaitReady('token-user-1');
 
@@ -188,31 +286,31 @@ describe('P0 chat socket flows (e2e)', () => {
     } as unknown as GatewaySocket;
 
     const typingAck = await chatGateway.handleTyping(client, {
-      roomId: 'room-a',
+      roomId: roomA,
       isTyping: true,
     });
 
     const readAck = await chatGateway.handleReadReceipt(client, {
-      roomId: 'room-a',
-      upToMessageId: 'message-1',
+      roomId: roomA,
+      upToMessageId: messageId,
     });
 
     expect(chatService.getConversationDetail).toHaveBeenCalledWith(
       'user-1',
-      'room-a',
+      roomA,
     );
     expect(roomEmitter.emit).toHaveBeenCalledWith('typing', {
-      roomId: 'room-a',
+      roomId: roomA,
       userId: 'user-1',
       isTyping: true,
     });
     expect(typingAck).toEqual({
       event: 'typing:ack',
-      data: { roomId: 'room-a', isTyping: true },
+      data: { roomId: roomA, isTyping: true },
     });
-    expect(chatService.markRoomRead).toHaveBeenCalledWith('user-1', 'room-a', {
-      roomId: 'room-a',
-      upToMessageId: 'message-1',
+    expect(chatService.markRoomRead).toHaveBeenCalledWith('user-1', roomA, {
+      roomId: roomA,
+      upToMessageId: messageId,
     });
     expect(readAck).toEqual({
       event: 'message:read:ack',
@@ -240,5 +338,111 @@ describe('P0 chat socket flows (e2e)', () => {
 
     expect(authError).toEqual({ message: 'Unauthorized' });
     expect(socket.connected).toBe(false);
+  });
+
+  it('enforces room isolation and preserves typing event order inside a room', async () => {
+    chatService.getConversationDetail.mockImplementation(
+      async (_userId: string, roomId: string) => ({ roomId }),
+    );
+
+    const { socket: sender } = await connectAndWaitReady('token-user-1');
+    const { socket: sameRoomPeer } = await connectAndWaitReady('token-user-2');
+    const { socket: otherRoomPeer } = await connectAndWaitReady('token-user-3');
+
+    await emitAndWaitEvent<{ roomId: string }>(sender, 'room:join', {
+      roomId: roomA,
+    }, 'room:joined');
+    await emitAndWaitEvent<{ roomId: string }>(
+      sameRoomPeer,
+      'room:join',
+      { roomId: roomA },
+      'room:joined',
+    );
+    await emitAndWaitEvent<{ roomId: string }>(
+      otherRoomPeer,
+      'room:join',
+      { roomId: roomB },
+      'room:joined',
+    );
+
+    const inRoomEventsPromise = waitForTypedEvents(sameRoomPeer, 2);
+    const outRoomEventPromise = expectNoTypingEvent(otherRoomPeer);
+
+    const typingAckOne = await emitAndWaitEvent<{
+      roomId: string;
+      isTyping: boolean;
+    }>(sender, 'typing', { roomId: roomA, isTyping: true }, 'typing:ack');
+
+    const typingAckTwo = await emitAndWaitEvent<{
+      roomId: string;
+      isTyping: boolean;
+    }>(sender, 'typing', { roomId: roomA, isTyping: false }, 'typing:ack');
+
+    const inRoomEvents = await inRoomEventsPromise;
+    const outRoomEvent = await outRoomEventPromise;
+
+    expect(typingAckOne).toEqual({ roomId: roomA, isTyping: true });
+    expect(typingAckTwo).toEqual({ roomId: roomA, isTyping: false });
+    expect(inRoomEvents).toEqual([
+      {
+        roomId: roomA,
+        userId: 'user-1',
+        isTyping: true,
+      },
+      {
+        roomId: roomA,
+        userId: 'user-1',
+        isTyping: false,
+      },
+    ]);
+    expect(outRoomEvent).toBeNull();
+  });
+
+  it('replays room join message fetch deterministically across leave and rejoin', async () => {
+    chatService.getConversationDetail.mockImplementation(
+      async (_userId: string, roomId: string) => ({ roomId }),
+    );
+    chatService.getMessages
+      .mockResolvedValueOnce([{ id: 'snapshot-1' }])
+      .mockResolvedValueOnce([{ id: 'snapshot-2' }]);
+
+    const { socket } = await connectAndWaitReady('token-user-1');
+
+    const firstJoinAck = await emitAndWaitEvent<{ roomId: string }>(
+      socket,
+      'room:join',
+      { roomId: roomA },
+      'room:joined',
+    );
+
+    const leaveAck = await emitAndWaitEvent<{ roomId: string }>(
+      socket,
+      'room:leave',
+      { roomId: roomA },
+      'room:left',
+    );
+
+    const secondJoinAck = await emitAndWaitEvent<{ roomId: string }>(
+      socket,
+      'room:join',
+      { roomId: roomA },
+      'room:joined',
+    );
+
+    expect(firstJoinAck).toEqual({ roomId: roomA });
+    expect(leaveAck).toEqual({ roomId: roomA });
+    expect(secondJoinAck).toEqual({ roomId: roomA });
+    expect(chatService.getMessages).toHaveBeenNthCalledWith(
+      1,
+      'user-1',
+      roomA,
+      { limit: 20 },
+    );
+    expect(chatService.getMessages).toHaveBeenNthCalledWith(
+      2,
+      'user-1',
+      roomA,
+      { limit: 20 },
+    );
   });
 });

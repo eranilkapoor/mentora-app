@@ -44,6 +44,7 @@ import { getDeviceId } from '@/core/utils/device';
 import { Storage } from '@/core/utils/storage';
 import { showError } from '@/core/utils/toast';
 import { showConfirm } from '@/core/utils/confirm';
+import { deriveMatchListViewState } from './hooks/matchListViewState.utils';
 
 interface LocationSyncSnapshot {
   latitude: number;
@@ -136,6 +137,7 @@ export default function MatchListScreen({
     activeMeta,
     activeLoading,
     activeFetching,
+    activeError,
     refetch,
     refetchMyMatches,
     refetchShortlisted,
@@ -448,6 +450,17 @@ export default function MatchListScreen({
     setPage((p) => p + 1);
   }, [activeFetching, activeMeta?.hasNextPage]);
 
+  const listViewState = useMemo(
+    () =>
+      deriveMatchListViewState({
+        isOffline: false,
+        hasError: Boolean(activeError),
+        isLoading: activeLoading,
+        itemCount: filtered.length,
+      }),
+    [activeError, activeLoading, filtered.length]
+  );
+
   // ─── Render ───────────────────────────────────────────────────────────
 
   const renderItem: ListRenderItem<MatchItem> = useCallback(
@@ -523,7 +536,7 @@ export default function MatchListScreen({
         onTabChange={handleTabChange}
       />
 
-      {activeLoading ? (
+      {listViewState === 'loading' ? (
         <>
           <ListHeader />
           {[1, 2, 3].map((i) => (

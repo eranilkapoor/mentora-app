@@ -74,9 +74,17 @@ import { MultiSelectPill } from '@/core/components/MultiSelectPill';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 import { NumberStepper } from '@/core/components/NumberStepper';
 import { ToggleRow } from '@/core/components/ToggleRow';
-
-const isFiniteNumber = (value: unknown): value is number =>
-  typeof value === 'number' && Number.isFinite(value);
+import {
+  formatRangeInputValue,
+  getIncompleteRangeLabel,
+  getRangeFieldLabelKey,
+  hasCompleteRange,
+  normalizeFilterRanges,
+  normalizeRange,
+  RangeBound,
+  RangeFilterKey,
+  parseRangeInputValue,
+} from './utils/preferenceRanges.utils';
 
 const DEFAULT_AGE_RANGE = { min: AGE_RANGE.min, max: 25 } as const;
 const DEFAULT_HEIGHT_RANGE = { min: HEIGHT_RANGE.min, max: 170 } as const;
@@ -84,105 +92,6 @@ const DEFAULT_INCOME_RANGE = {
   min: INCOME_RANGE.min,
   max: 1000000,
 } as const;
-
-const normalizeRange = (
-  range: PartnerFilters['age'],
-  fallback: { min: number; max: number }
-): Required<NonNullable<PartnerFilters['age']>> => {
-  const rawMin = range?.min;
-  const rawMax = range?.max;
-  const min =
-    typeof rawMin === 'number' && Number.isFinite(rawMin)
-      ? rawMin
-      : fallback.min;
-  const max =
-    typeof rawMax === 'number' && Number.isFinite(rawMax)
-      ? rawMax
-      : fallback.max;
-
-  if (typeof min !== 'number' || typeof max !== 'number') {
-    return fallback;
-  }
-
-  return {
-    min: Math.min(min, max),
-    max: Math.max(min, max),
-  };
-};
-
-const normalizeFilterRanges = (filters: PartnerFilters): PartnerFilters => {
-  const rest: PartnerFilters = { ...filters };
-  delete rest.age;
-  delete rest.height;
-  delete rest.annualIncome;
-
-  return {
-    ...rest,
-    ...(hasCompleteRange(filters.age)
-      ? { age: normalizeRange(filters.age, AGE_RANGE) }
-      : {}),
-    ...(hasCompleteRange(filters.height)
-      ? { height: normalizeRange(filters.height, HEIGHT_RANGE) }
-      : {}),
-    ...(hasCompleteRange(filters.annualIncome)
-      ? { annualIncome: normalizeRange(filters.annualIncome, INCOME_RANGE) }
-      : {}),
-  };
-};
-
-const hasAnyRangeBound = (range: PartnerFilters['age']): boolean =>
-  isFiniteNumber(range?.min) || isFiniteNumber(range?.max);
-
-const hasCompleteRange = (range: PartnerFilters['age']): boolean =>
-  isFiniteNumber(range?.min) && isFiniteNumber(range?.max);
-
-const getIncompleteRangeLabel = (
-  filters: PartnerFilters
-): 'age' | 'height' | 'annualIncome' | null => {
-  if (hasAnyRangeBound(filters.age) && !hasCompleteRange(filters.age)) {
-    return 'age';
-  }
-
-  if (hasAnyRangeBound(filters.height) && !hasCompleteRange(filters.height)) {
-    return 'height';
-  }
-
-  if (
-    hasAnyRangeBound(filters.annualIncome) &&
-    !hasCompleteRange(filters.annualIncome)
-  ) {
-    return 'annualIncome';
-  }
-
-  return null;
-};
-
-const getRangeFieldLabelKey = (
-  field: 'age' | 'height' | 'annualIncome'
-): string => {
-  if (field === 'annualIncome') {
-    return 'preference.fields.annual_income';
-  }
-
-  return `preference.fields.${field}`;
-};
-
-type RangeFilterKey = 'age' | 'height' | 'annualIncome';
-type RangeBound = 'min' | 'max';
-
-const formatRangeInputValue = (value: number | null | undefined): string =>
-  isFiniteNumber(value) ? String(value) : '';
-
-const parseRangeInputValue = (text: string): number | null => {
-  const trimmed = text.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
-};
 
 const INITIAL_PREFERENCE: PreferenceData = {
   filters: {

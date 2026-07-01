@@ -8,6 +8,7 @@ import AppStack from './AppStack';
 import { RootStackParamList } from './types';
 import { getSharedScreenOptions } from './sharedScreenOptions';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { getRootEntryRoute } from './rootRoute.utils';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
@@ -17,17 +18,15 @@ export default function RootNavigator(): React.ReactElement {
   const isOnboardingCompleted = useAppSelector(
     (s) => s.auth.user?.isOnboardingCompleted
   );
-
-  const isLoggedIn = Boolean(accessToken);
-  const hasOnboarded = Boolean(isOnboardingCompleted);
+  const entryRoute = getRootEntryRoute(accessToken, isOnboardingCompleted);
 
   return (
     <Stack.Navigator
       screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
     >
-      {!isLoggedIn ? (
+      {entryRoute === 'Auth' ? (
         <Stack.Screen name="Auth" component={AuthStack} />
-      ) : !hasOnboarded ? (
+      ) : entryRoute === 'Onboarding' ? (
         <Stack.Screen name="Onboarding" component={OnboardingStack} />
       ) : (
         <Stack.Screen name="App" component={AppStack} />
