@@ -37,6 +37,12 @@ jobs:
       - name: Install mobile dependencies
         run: npm ci --prefix match-mate-mobile-app
 
+      - name: Cache MongoDB E2E binary
+        uses: actions/cache@v4
+        with:
+          path: match-mate-api-server/.cache/mongodb-binaries
+          key: mongodb-memory-server-${{ runner.os }}-${{ hashFiles('match-mate-api-server/package-lock.json') }}
+
       - name: Run verification and tests
         run: npm run ci
 

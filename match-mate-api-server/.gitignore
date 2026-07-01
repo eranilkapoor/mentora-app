@@ -21,6 +21,7 @@ tsconfig.build.tsbuildinfo
 
 # Tests
 /coverage
+/.cache
 /.nyc_output
 
 # IDEs and editors

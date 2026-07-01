@@ -134,12 +134,12 @@ describe('Profile journey DB-backed (e2e)', () => {
   afterEach(async () => {
     jest.clearAllMocks();
     cacheStore.clear();
-    await connection.db?.dropDatabase();
+    await connection?.db?.dropDatabase();
   });
 
   afterAll(async () => {
-    await app.close();
-    await mongoServer.stop();
+    await app?.close();
+    await mongoServer?.stop();
   });
 
   it('persists create, update, and get profile journey', async () => {

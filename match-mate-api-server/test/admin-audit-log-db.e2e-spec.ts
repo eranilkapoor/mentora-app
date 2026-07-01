@@ -78,12 +78,12 @@ describe('Admin audit log DB-backed (e2e)', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await connection.db?.dropDatabase();
+    await connection?.db?.dropDatabase();
   });
 
   afterAll(async () => {
-    await app.close();
-    await mongoServer.stop();
+    await app?.close();
+    await mongoServer?.stop();
   });
 
   it('persists and filters audit logs through the admin endpoint', async () => {

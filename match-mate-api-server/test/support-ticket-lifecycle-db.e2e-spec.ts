@@ -77,12 +77,12 @@ describe('Support ticket lifecycle DB-backed (e2e)', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await connection.db?.dropDatabase();
+    await connection?.db?.dropDatabase();
   });
 
   afterAll(async () => {
-    await app.close();
-    await mongoServer.stop();
+    await app?.close();
+    await mongoServer?.stop();
   });
 
   it('persists create, list, get, reply, and close ticket lifecycle', async () => {

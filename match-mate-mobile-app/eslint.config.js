@@ -14,6 +14,7 @@ module.exports = [
       '.expo/**',
       'dist/**',
       'build/**',
+      'coverage/**',
       'android/**',
       'ios/**',
       '*.lock',
@@ -44,7 +45,10 @@ module.exports = [
 
       // TypeScript
       '@typescript-eslint/no-explicit-any': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { argsIgnorePattern: '^_' }],
+      '@typescript-eslint/no-unused-vars': [
+        'error',
+        { argsIgnorePattern: '^_' },
+      ],
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/prefer-nullish-coalescing': 'error',
       '@typescript-eslint/prefer-optional-chain': 'error',
@@ -55,9 +59,12 @@ module.exports = [
 
       // React
       'react/react-in-jsx-scope': 'off', // Not needed in React 17+
-      'react/prop-types': 'off',         // Using TypeScript instead
+      'react/prop-types': 'off', // Using TypeScript instead
       'react/self-closing-comp': 'error',
-      'react/jsx-curly-brace-presence': ['error', { props: 'never', children: 'never' }],
+      'react/jsx-curly-brace-presence': [
+        'error',
+        { props: 'never', children: 'never' },
+      ],
 
       // React Hooks
       'react-hooks/rules-of-hooks': 'error',

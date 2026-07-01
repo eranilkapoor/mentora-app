@@ -25,6 +25,10 @@ import {
 } from '@/store/services/supportApi.service';
 import { useTranslation } from 'react-i18next';
 import { supportTicketsStyles } from './SupportTickets.styles';
+import {
+  buildSupportTicketRequest,
+  isSupportTicketDraftValid,
+} from './SupportTickets.utils';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -120,8 +124,8 @@ export default function SupportTicketsScreen({
   const [priority, setPriority] = useState<SupportTicketPriority>('normal');
 
   const tickets = data?.success ? data.data.items : [];
-  const canSubmit =
-    subject.trim().length >= 4 && message.trim().length >= 10 && !isSubmitting;
+  const draft = { subject, message, category, priority };
+  const canSubmit = isSupportTicketDraftValid(draft) && !isSubmitting;
 
   const handleSubmit = async () => {
     if (!canSubmit) {
@@ -133,12 +137,9 @@ export default function SupportTicketsScreen({
     }
 
     try {
-      const result = await createTicket({
-        subject: subject.trim(),
-        message: message.trim(),
-        category,
-        priority,
-      }).unwrap();
+      const result = await createTicket(
+        buildSupportTicketRequest(draft)
+      ).unwrap();
 
       if (result.success) {
         setSubject('');

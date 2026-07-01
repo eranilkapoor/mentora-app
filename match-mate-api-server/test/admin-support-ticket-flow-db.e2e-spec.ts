@@ -86,12 +86,12 @@ describe('Admin support ticket flow DB-backed (e2e)', () => {
 
   afterEach(async () => {
     jest.clearAllMocks();
-    await connection.db?.dropDatabase();
+    await connection?.db?.dropDatabase();
   });
 
   afterAll(async () => {
-    await app.close();
-    await mongoServer.stop();
+    await app?.close();
+    await mongoServer?.stop();
   });
 
   it('persists admin list, reply, and status update over a user-created ticket', async () => {
