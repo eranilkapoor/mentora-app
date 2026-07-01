@@ -5,6 +5,7 @@ import type { MatchItem } from '../MatchList.types';
 
 const mockShowSuccess = jest.fn();
 const mockShowError = jest.fn();
+const mockShowConfirm = jest.fn();
 const mockT = jest.fn((key: string) => key);
 
 const mockSendInterest = jest.fn();
@@ -24,6 +25,10 @@ jest.mock('react-i18next', () => ({
 jest.mock('@/core/utils/toast', () => ({
   showSuccess: (payload: unknown) => mockShowSuccess(payload),
   showError: (payload: unknown) => mockShowError(payload),
+}));
+
+jest.mock('@/core/utils/confirm', () => ({
+  showConfirm: (payload: unknown) => mockShowConfirm(payload),
 }));
 
 jest.mock('@/store/services/matchApi.service', () => ({
@@ -130,8 +135,9 @@ describe('useMatchListActions', () => {
   });
 
   it('opens chat for matched profiles and accepts incoming requests', async () => {
+    const onInterestAccepted = jest.fn();
     const { result } = await renderHook(() =>
-      useMatchListActions(navigation as never)
+      useMatchListActions(navigation as never, { onInterestAccepted })
     );
 
     await act(async () => {
@@ -151,10 +157,75 @@ describe('useMatchListActions', () => {
         item({ requestStatus: 'pending', interestId: 'interest-2' })
       );
     });
+
+    expect(mockShowConfirm).toHaveBeenCalled();
+    expect(mockRespondToInterest).not.toHaveBeenCalled();
+
+    type ConfirmPayload = {
+      onConfirm?: () => Promise<void>;
+    };
+
+    const getLastConfirmPayload = (
+      mockFn: jest.Mock<void, [ConfirmPayload]>
+    ): ConfirmPayload | undefined => {
+      const calls = mockFn.mock.calls;
+      const lastCall = calls[calls.length - 1];
+
+      return lastCall?.[0];
+    };
+
+    const confirmPayload = getLastConfirmPayload(mockShowConfirm);
+
+    await act(async () => {
+      await confirmPayload?.onConfirm?.();
+    });
+
     expect(mockRespondToInterest).toHaveBeenCalledWith({
       interestId: 'interest-2',
       action: 'ACCEPT',
     });
-    expect(Alert.alert).toHaveBeenCalled();
+    expect(onInterestAccepted).toHaveBeenCalled();
+  });
+
+  it('confirms before rejecting incoming requests', async () => {
+    const { result } = await renderHook(() =>
+      useMatchListActions(navigation as never)
+    );
+
+    await act(async () => {
+      await result.current.handleRejectRequest(
+        item({ requestStatus: 'pending', interestId: 'interest-9' })
+      );
+    });
+
+    expect(mockShowConfirm).toHaveBeenCalled();
+    expect(mockRespondToInterest).not.toHaveBeenCalledWith({
+      interestId: 'interest-9',
+      action: 'REJECT',
+    });
+
+    type ConfirmPayload = {
+      onConfirm?: () => Promise<void>;
+    };
+
+    const getLastConfirmPayload = (
+      mockFn: jest.Mock<void, [ConfirmPayload]>
+    ): ConfirmPayload | undefined => {
+      const calls = mockFn.mock.calls;
+      const lastCall = calls[calls.length - 1];
+
+      return lastCall?.[0];
+    };
+
+    const confirmPayload = getLastConfirmPayload(mockShowConfirm);
+
+    await act(async () => {
+      await confirmPayload?.onConfirm?.();
+    });
+
+    expect(mockRespondToInterest).toHaveBeenCalledWith({
+      interestId: 'interest-9',
+      action: 'REJECT',
+    });
   });
 });

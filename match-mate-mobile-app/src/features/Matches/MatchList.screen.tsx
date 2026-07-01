@@ -34,9 +34,13 @@ import { MatchCard } from './components/MatchCard';
 import { MatchTabs } from './components/MatchTabs';
 import { MatchEmpty } from './components/MatchEmpty';
 import { MatchFilterModal } from './components/MatchFilterModal';
+import { MatchSuccessModal } from './components/MatchSuccessModal';
 import { MatchListToolbar } from './components/MatchListToolbar';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { useUpdateProfileLocationMutation } from '@/store/services/profileApi.service';
+import {
+  useGetMyProfileMediaImagesQuery,
+  useUpdateProfileLocationMutation,
+} from '@/store/services/profileApi.service';
 import { useUpdateLocalizationSettingsMutation } from '@/store/services/localizationSettingsApi.service';
 import { useGetDiscoveryProfilesQuery } from '@/store/services/matchApi.service';
 import { setLocationSharing } from '@/store/slices/settings.slice';
@@ -113,12 +117,16 @@ export default function MatchListScreen({
   const [filters, setFilters] = useState<FilterState>(DEFAULT_FILTERS);
   const [page, setPage] = useState(1);
   const [refreshing, setRefreshing] = useState(false);
+  const [matchedSuccessItem, setMatchedSuccessItem] =
+    useState<MatchItem | null>(null);
   const [nearbyLocationReady, setNearbyLocationReady] = useState(true);
   const nearbyLocationInFlight = useRef(false);
   const nearbyPermissionPromptInFlight = useRef(false);
   const userSelectedTab = useRef(false);
   const [updateProfileLocation] = useUpdateProfileLocationMutation();
   const [updateLocalizationSettings] = useUpdateLocalizationSettingsMutation();
+  const { data: profileMediaImagesResponse } =
+    useGetMyProfileMediaImagesQuery();
   const { data: curatedPreview } = useGetDiscoveryProfilesQuery({
     type: 'curated',
     page: 1,
@@ -153,12 +161,25 @@ export default function MatchListScreen({
     nearbyLocationReady
   );
 
+  const currentUserPhotoUrl = useMemo(() => {
+    const images = profileMediaImagesResponse?.data ?? [];
+    const primaryPhoto = images.find((image) => image.isPrimary && image.url);
+    if (primaryPhoto?.url) {
+      return primaryPhoto.url;
+    }
+
+    return images.find((image) => Boolean(image.url))?.url ?? '';
+  }, [profileMediaImagesResponse?.data]);
+
   const {
     handlePrimaryAction,
+    handleOpenChat,
     handleRejectRequest,
     handleDismissCurated,
     handleShortlist,
-  } = useMatchListActions(navigation);
+  } = useMatchListActions(navigation, {
+    onInterestAccepted: setMatchedSuccessItem,
+  });
 
   // ─── Derived ──────────────────────────────────────────────────────────
 
@@ -450,6 +471,20 @@ export default function MatchListScreen({
     setPage((p) => p + 1);
   }, [activeFetching, activeMeta?.hasNextPage]);
 
+  const handleCloseMatchSuccessModal = useCallback(() => {
+    setMatchedSuccessItem(null);
+  }, []);
+
+  const handleStartChatFromMatchSuccess = useCallback(async () => {
+    if (!matchedSuccessItem) {
+      return;
+    }
+
+    const item = matchedSuccessItem;
+    setMatchedSuccessItem(null);
+    await handleOpenChat(item);
+  }, [handleOpenChat, matchedSuccessItem]);
+
   const listViewState = useMemo(
     () =>
       deriveMatchListViewState({
@@ -495,23 +530,11 @@ export default function MatchListScreen({
 
   const ListHeader = useCallback(
     () => (
-      <>
-        <MatchListToolbar
-          resultCount={filtered.length}
-          activeFilterCount={activeFilterCount}
-          onClearFilters={handleClearFilters}
-        />
-        {/* <MatchFilterModal
-          visible={showFilters}
-          onClose={() => setShowFilters(false)}
-          query={query}
-          onQueryChange={setQuery}
-          filters={filters}
-          onFiltersChange={handleFiltersChange}
-          onApply={() => setShowFilters(false)}
-          onClear={handleClearFilters}
-        /> */}
-      </>
+      <MatchListToolbar
+        resultCount={filtered.length}
+        activeFilterCount={activeFilterCount}
+        onClearFilters={handleClearFilters}
+      />
     ),
     [activeFilterCount, filtered.length, handleClearFilters]
   );
@@ -590,6 +613,18 @@ export default function MatchListScreen({
           handleClearFilters();
           setShowFilters(false);
         }}
+      />
+
+      <MatchSuccessModal
+        visible={Boolean(matchedSuccessItem)}
+        matchName={matchedSuccessItem?.name ?? ''}
+        matchPhotoUrl={matchedSuccessItem?.avatarUrl ?? ''}
+        myPhotoUrl={currentUserPhotoUrl ?? matchedSuccessItem?.avatarUrl ?? ''}
+        onStartChat={() => {
+          void handleStartChatFromMatchSuccess();
+        }}
+        onContinueBrowsing={handleCloseMatchSuccessModal}
+        onClose={handleCloseMatchSuccessModal}
       />
     </SafeAreaView>
   );

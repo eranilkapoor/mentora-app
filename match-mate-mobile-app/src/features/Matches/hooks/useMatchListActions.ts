@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { Alert } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { showError, showSuccess } from '@/core/utils/toast';
+import { showConfirm } from '@/core/utils/confirm';
 import { useCreateDirectRoomMutation } from '@/store/services/chatApi.service';
 import {
   useRemoveShortlistedProfileMutation,
@@ -15,7 +16,10 @@ import { MatchItem, MatchListScreenProps } from '../MatchList.types';
 import { FALLBACK_PHOTO } from '../MatchList.constants';
 
 export function useMatchListActions(
-  navigation: MatchListScreenProps['navigation']
+  navigation: MatchListScreenProps['navigation'],
+  options?: {
+    onInterestAccepted?: (item: MatchItem) => void;
+  }
 ) {
   const { t } = useTranslation();
   const [sendInterest] = useSendInterestMutation();
@@ -26,43 +30,55 @@ export function useMatchListActions(
   const [createDirectRoom] = useCreateDirectRoomMutation();
   const [dismissCuratedMatch] = useDismissCuratedMatchMutation();
 
+  const handleOpenChat = useCallback(
+    async (item: MatchItem): Promise<void> => {
+      try {
+        await createDirectRoom({ targetUserId: item.id }).unwrap();
+        navigation.navigate('ChatDetails', {
+          userId: item.id,
+          partnerName: item.name,
+          partnerPhoto: item.avatarUrl ?? (FALLBACK_PHOTO as string),
+        });
+      } catch {
+        Alert.alert(
+          t('matches.chat_unavailable_title'),
+          t('matches.chat_unavailable_message')
+        );
+      }
+    },
+    [createDirectRoom, navigation, t]
+  );
+
   const handlePrimaryAction = useCallback(
     async (item: MatchItem): Promise<void> => {
       // Accept a received interest request
       if (item.requestStatus && item.interestId) {
-        try {
-          await respondToInterest({
-            interestId: item.interestId,
-            action: 'ACCEPT',
-          }).unwrap();
-          Alert.alert(
-            t('matches.interest_accepted_title'),
-            t('matches.interest_accepted_message', { name: item.name })
-          );
-        } catch {
-          Alert.alert(
-            t('matches.action_failed_title'),
-            t('matches.try_again_message')
-          );
-        }
+        showConfirm({
+          title: t('matches.accept_confirm_title'),
+          message: t('matches.accept_confirm_message', { name: item.name }),
+          confirmText: t('matches.accept_confirm_action'),
+          cancelText: t('common.cancel'),
+          onConfirm: async () => {
+            try {
+              await respondToInterest({
+                interestId: item.interestId as string,
+                action: 'ACCEPT',
+              }).unwrap();
+              options?.onInterestAccepted?.(item);
+            } catch {
+              Alert.alert(
+                t('matches.action_failed_title'),
+                t('matches.try_again_message')
+              );
+            }
+          },
+        });
         return;
       }
 
       // Open chat for mutual match
       if (item.isMatched) {
-        try {
-          await createDirectRoom({ targetUserId: item.id }).unwrap();
-          navigation.navigate('ChatDetails', {
-            userId: item.id,
-            partnerName: item.name,
-            partnerPhoto: item.avatarUrl ?? (FALLBACK_PHOTO as string),
-          });
-        } catch {
-          Alert.alert(
-            t('matches.chat_unavailable_title'),
-            t('matches.chat_unavailable_message')
-          );
-        }
+        await handleOpenChat(item);
         return;
       }
 
@@ -102,8 +118,8 @@ export function useMatchListActions(
       }
     },
     [
-      createDirectRoom,
-      navigation,
+      handleOpenChat,
+      options,
       respondToInterest,
       sendInterest,
       withdrawInterest,
@@ -153,18 +169,30 @@ export function useMatchListActions(
         return;
       }
 
-      try {
-        await respondToInterest({
-          interestId: item.interestId,
-          action: 'REJECT',
-        }).unwrap();
-        Alert.alert(t('matches.rejected'));
-      } catch {
-        Alert.alert(
-          t('matches.action_failed_title'),
-          t('matches.try_again_message')
-        );
-      }
+      showConfirm({
+        title: t('matches.reject_confirm_title'),
+        message: t('matches.reject_confirm_message', { name: item.name }),
+        confirmText: t('matches.reject_confirm_action'),
+        cancelText: t('common.cancel'),
+        destructive: true,
+        onConfirm: async () => {
+          try {
+            await respondToInterest({
+              interestId: item.interestId as string,
+              action: 'REJECT',
+            }).unwrap();
+            showSuccess({
+              title: t('matches.rejected_title'),
+              message: t('matches.rejected_message', { name: item.name }),
+            });
+          } catch {
+            Alert.alert(
+              t('matches.action_failed_title'),
+              t('matches.try_again_message')
+            );
+          }
+        },
+      });
     },
     [respondToInterest, t]
   );
@@ -189,6 +217,7 @@ export function useMatchListActions(
 
   return {
     handlePrimaryAction,
+    handleOpenChat,
     handleRejectRequest,
     handleDismissCurated,
     handleShortlist,
