@@ -37,6 +37,7 @@ import AccessibilitySettingsScreen from '@/features/AccessibilitySettings/Access
 import AiSettingsScreen from '@/features/AiSettings/AiSettings.screen';
 import SubscriptionBillingScreen from '@/features/SubscriptionBilling/SubscriptionBilling.screen';
 import ReferRewardsScreen from '@/features/ReferRewards/ReferRewards.screen';
+import SuccessStoriesScreen from '@/features/SuccessStories/SuccessStories.screen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -155,6 +156,11 @@ export default function SettingsStack(): React.ReactElement {
         name="SupportTicketDetail"
         component={SupportTicketDetailScreen}
         options={{ title: t('settings.support_tickets.detail_title') }}
+      />
+      <Stack.Screen
+        name="SuccessStories"
+        component={SuccessStoriesScreen}
+        options={{ title: t('settings.success_stories.title') }}
       />
       <Stack.Screen
         name="Faqs"

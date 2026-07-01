@@ -15,7 +15,7 @@ Completed items were intentionally removed from this file to keep it execution-f
 
 ## Already Implemented (Kept Out Of Queue)
 
-- Core API domain modules are implemented: auth, profiles, preferences, media, matches, chat, notifications, payments, subscriptions, referrals, settings, support, admin, analytics, safety.
+- Core API domain modules are implemented: auth, profiles, preferences, media, matches, chat, notifications, payments, subscriptions, referrals, settings, support, success stories, admin, analytics, safety.
 - Admin APIs and services have broad unit coverage and currently pass lint/typecheck/tests.
 - P0-3 branch-heavy RBAC/admin hardening tests are complete (RBAC inactive/conflict/not-found paths and admin repository filter/pagination/status edge coverage).
 - Socket.IO E2E now covers authenticated room isolation and deterministic join/rejoin message-fetch ordering paths.
@@ -23,6 +23,10 @@ Completed items were intentionally removed from this file to keep it execution-f
 - CI caches the MongoDB E2E binary and executes the full E2E suite through the repository `ci` script.
 - Notification orchestration and queue paths have dedicated unit tests.
 - Membership upgrade prompting and support-ticket draft validation/normalization have dedicated mobile tests.
+- Onboarding required-field validation, media permission denial, global large-text/high-contrast/reduced-motion behavior, and accessibility optimistic rollback are tested.
+- Profile media saves use an ordered, retryable transaction; failed uploads preserve staged changes and primary assignment waits for successful upload.
+- Success stories now include consent-backed submission/history UI, published-only public API, admin moderation, audit logging, shared contracts, seed examples, and lifecycle tests.
+- Store verification preserves active/grace and auto-renew state; terminal payment webhook replays are suppressed before subscription, boost, wallet, referral, and invoice side effects.
 - Dockerfile and dockerignore exist for API containerization.
 - CI quality checks exist for lint, typecheck, tests, and coverage reporting.
 
@@ -31,36 +35,32 @@ Completed items were intentionally removed from this file to keep it execution-f
 ### In Progress
 
 1. P0 mobile automated coverage expansion.
-   - Completed: auth bootstrap/login-refresh/logout, root-entry routing, discovery range validation, interest/shortlist actions, chat send/read utilities, list loading/empty/error/offline states, membership prompts, and support-ticket validation/normalization.
-   - Next focus: onboarding/profile-edit submission, settings mutation failure/retry, and accessibility variants (large text/reduced motion).
+   - Completed: auth bootstrap/login-refresh/logout, root-entry routing, onboarding validation, media permission denial, discovery range validation, interest/shortlist actions, chat send/read utilities, list states, membership prompts, support tickets, accessibility variants, and accessibility rollback.
+   - Next focus: remaining settings-service mutation integration tests.
 
 ### P0 - Highest Priority
 
 1. Raise mobile automated coverage for critical product journeys.
-   - Add workflow tests for onboarding/profile edit and settings mutation failure/retry paths.
-   - Add state tests for permission-denied and accessibility variants (large text/reduced motion).
+   - Add remaining settings mutation integration tests across notification, privacy, communication, security, localization, and media services.
 
 ### P1 - Important
 
 3. Harden storage/media contract behavior with tests.
    - Add tests for MIME spoofing rejection, object-missing fallback, upload rollback, signed URL/proxy access expectations, and cleanup idempotency.
 
-4. Normalize list API pagination contracts and client cache updates.
-   - Standardize page/limit/meta shape across matches, chat, notifications, support, admin, wallet, analytics.
-   - Validate RTK Query cache invalidation and optimistic update behavior across these list endpoints.
+4. Finish list/cache normalization after the shared pagination foundation.
+   - Matches, chat, notifications, support, admin, and success stories use the shared page metadata contract; align wallet/analytics where applicable.
+   - Add RTK Query invalidation and optimistic-update integration tests for paginated mutations.
 
-5. Complete payment and subscription sandbox evidence in code/tests.
-   - Add stricter tests for store verification transitions (renewal, grace, expiry, cancellation) and payment notification replay/idempotency.
+5. Make OpenAPI snapshots independent of a running database-backed API.
+   - `contracts:snapshot` currently requires a live server on port 3000; generate Swagger from an application context or a dedicated contract bootstrap so CI can detect newly added routes deterministically.
 
 ### P2 - Product Depth
 
 6. Expand analytics taxonomy coverage and dashboards.
    - Add end-to-end event assertions for high-traffic flows and complete dashboard aggregates for conversion, retention, revenue, churn, and referral attribution.
 
-7. Implement the success-story workflow.
-   - Repository review found no success-story API or mobile feature. Add submission, moderation, and publish/reject lifecycle.
-
-8. Add component-level UI quality infrastructure.
+7. Add component-level UI quality infrastructure.
    - Introduce Storybook (or equivalent) and accessibility checks for shared components.
 
 ## Remaining Work (External / Blocked But Required For Launch)
@@ -76,7 +76,7 @@ Completed items were intentionally removed from this file to keep it execution-f
 
 ## Next Task To Execute First
 
-1. Execute P0 mobile journey/state test expansion for onboarding/profile edit, settings mutation failure/retry, permission-denied behavior, and large-text/reduced-motion variants.
+1. Complete RTK Query settings rollback and paginated-cache integration coverage.
 
 ## Definition Of Done For This Queue
 

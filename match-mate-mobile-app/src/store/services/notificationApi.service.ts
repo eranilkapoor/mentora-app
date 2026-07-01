@@ -1,5 +1,6 @@
 import { ApiResponse } from '@/core/types';
 import { baseApi } from './baseApi.service';
+import type { PaginatedItems } from '@matchmate/api-contract';
 
 export type NotificationType =
   | 'info'
@@ -42,15 +43,7 @@ export interface AppNotification {
   updatedAt?: string;
 }
 
-export interface NotificationsResponse {
-  items: AppNotification[];
-  page: number;
-  limit: number;
-  total: number;
-  totalPages: number;
-  hasNextPage: boolean;
-  hasPrevPage: boolean;
-}
+export type NotificationsResponse = PaginatedItems<AppNotification>;
 
 export interface UnreadNotificationCountResponse {
   unreadCount: number;

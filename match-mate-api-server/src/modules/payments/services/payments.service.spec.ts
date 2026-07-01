@@ -407,6 +407,26 @@ describe('PaymentsService', () => {
     ).resolves.toEqual({ processed: true, status: PaymentStatus.FAILED });
   });
 
+  it.each([
+    PaymentStatus.SUCCESS,
+    PaymentStatus.FAILED,
+    PaymentStatus.REFUNDED,
+  ])('ignores replayed %s webhooks before side effects', async (status) => {
+    paymentRepo.findByOrderId.mockResolvedValue({
+      gatewayPaymentId: 'PAY',
+      status,
+    });
+
+    await expect(
+      service.processWebhook({ eventId: 'duplicate', orderId: 'ORD', status }),
+    ).resolves.toEqual({ processed: false, duplicate: true, status });
+    expect(paymentRepo.markSuccess).not.toHaveBeenCalled();
+    expect(paymentRepo.markFailed).not.toHaveBeenCalled();
+    expect(paymentRepo.markRefunded).not.toHaveBeenCalled();
+    expect(subscriptionsService.purchasePlan).not.toHaveBeenCalled();
+    expect(walletService.creditCoinPurchase).not.toHaveBeenCalled();
+  });
+
   it('validates coupons and all coupon restrictions', async () => {
     const userId = new Types.ObjectId().toString();
     const plan = {

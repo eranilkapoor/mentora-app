@@ -1,4 +1,5 @@
 import { baseApi } from './baseApi.service';
+import type { PaginationMeta } from '@matchmate/api-contract';
 import {
   ApiResponse,
   Caste,
@@ -135,15 +136,6 @@ export interface MatchStats {
   acceptedInterests: number;
   shortlisted: number;
   profileViews: number;
-}
-
-export interface PaginationMeta {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages?: number;
-  hasNextPage?: boolean;
-  hasPrevPage?: boolean;
 }
 
 type PaginatedResponse<T> = ApiResponse<T[]> & {

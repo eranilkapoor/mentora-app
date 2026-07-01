@@ -136,6 +136,8 @@ describe('AdminAuditService', () => {
       limit: 25,
       total: 0,
       totalPages: 0,
+      hasNextPage: false,
+      hasPrevPage: false,
     });
   });
 

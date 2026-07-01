@@ -2,6 +2,7 @@ import { HttpStatus, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Types } from 'mongoose';
 import { AppLogger } from '@/common/logger/logger.service';
+import { buildPaginationMeta } from '@/common/utils/pagination';
 import { NotificationsService } from '../../notifications/services/notifications.service';
 import { StorageService } from '../../storage/services/storage.service';
 import { ChatPresenceService } from './chat-presence.service';
@@ -353,9 +354,7 @@ export class ChatService {
     const pagedItems = items.slice(start, start + limit);
 
     return {
-      page,
-      limit,
-      total: items.length,
+      ...buildPaginationMeta(items.length, page, limit),
       hasMore: start + pagedItems.length < items.length,
       unreadTotal: items.reduce((sum, item) => sum + item.unreadCount, 0),
       items: pagedItems,
@@ -450,9 +449,7 @@ export class ChatService {
     const start = (page - 1) * limit;
 
     return {
-      page,
-      limit,
-      total: items.length,
+      ...buildPaginationMeta(items.length, page, limit),
       hasMore: start + limit < items.length,
       items: items.slice(start, start + limit),
     };

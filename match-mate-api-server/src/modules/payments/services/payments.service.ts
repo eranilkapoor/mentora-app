@@ -33,6 +33,7 @@ import { SubscriptionsService } from '@/modules/subscriptions/services/subscript
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 import { WalletService } from '@/modules/referrals/services/wallet.service';
 import { ProfileBoostService } from '@/modules/subscriptions/services/profile-boost.service';
+import { SubscriptionStatus } from '@/common/enums';
 import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
@@ -291,6 +292,10 @@ export class PaymentsService {
       });
     }
 
+    if (payment.status === dto.status) {
+      return { processed: false, duplicate: true, status: payment.status };
+    }
+
     if (dto.status === PaymentStatus.SUCCESS) {
       const updated = await this.paymentRepo.markSuccess({
         orderId: dto.orderId,
@@ -460,6 +465,8 @@ export class PaymentsService {
         storeEnvironment: verifiedStoreSubscription?.environment,
         storeLastVerifiedAt: new Date(),
         storeExpiresAt: verifiedStoreSubscription?.expiresAt,
+        autoRenew: verifiedStoreSubscription?.autoRenew,
+        status: verifiedStoreSubscription?.status,
       });
 
       return existingPayment;
@@ -529,6 +536,7 @@ export class PaymentsService {
       storeEnvironment: verifiedStoreSubscription?.environment,
       storeLastVerifiedAt: new Date(),
       storeExpiresAt: verifiedStoreSubscription?.expiresAt,
+      status: verifiedStoreSubscription?.status,
     });
     await this.createInvoiceIfRequired(payment);
 
@@ -1108,6 +1116,7 @@ export class PaymentsService {
       storeEnvironment?: string;
       storeLastVerifiedAt?: Date;
       storeExpiresAt?: Date;
+      status?: SubscriptionStatus.ACTIVE | SubscriptionStatus.GRACE_PERIOD;
     },
   ) {
     if (payment.purpose !== PaymentPurpose.SUBSCRIPTION || !payment.planId) {
@@ -1133,6 +1142,7 @@ export class PaymentsService {
         storeEnvironment: options?.storeEnvironment,
         storeLastVerifiedAt: options?.storeLastVerifiedAt,
         storeExpiresAt: options?.storeExpiresAt,
+        status: options?.status,
       },
     );
     await this.referralsService.awardSubscriptionReward(userId, {

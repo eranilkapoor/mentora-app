@@ -14,6 +14,7 @@ import {
 import { MatchNotificationService } from './match-notification.service';
 import { FeatureService } from '@/modules/subscriptions/services/feature.service';
 import { MatchCompatibilityService } from './match-compatibility.service';
+import { buildPaginationMeta } from '@/common/utils/pagination';
 
 @Injectable()
 export class MatchesService {
@@ -196,7 +197,7 @@ export class MatchesService {
     return {
       success: true,
       data: await this.withMatchProfiles(matches, userId),
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      meta: buildPaginationMeta(total, page, limit),
     };
   }
 
@@ -211,7 +212,7 @@ export class MatchesService {
     return {
       success: true,
       data: await this.withProfileSummaries(interests, 'sender'),
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      meta: buildPaginationMeta(total, page, limit),
     };
   }
 
@@ -226,7 +227,7 @@ export class MatchesService {
     return {
       success: true,
       data: await this.withProfileSummaries(interests, 'receiver'),
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      meta: buildPaginationMeta(total, page, limit),
     };
   }
 
@@ -303,7 +304,7 @@ export class MatchesService {
           isShortlisted: shortlistedSet.has(profileUserId),
         };
       }),
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      meta: buildPaginationMeta(total, page, limit),
     };
   }
 
@@ -351,7 +352,7 @@ export class MatchesService {
           };
         })
         .filter(Boolean),
-      meta: { total, page, limit, totalPages: Math.ceil(total / limit) },
+      meta: buildPaginationMeta(total, page, limit),
     };
   }
 

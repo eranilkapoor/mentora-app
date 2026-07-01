@@ -1,6 +1,7 @@
 import { generateKeyPairSync } from 'crypto';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { StoreReceiptVerifierService } from './store-receipt-verifier.service';
+import { SubscriptionStatus } from '@/common/enums';
 
 describe('StoreReceiptVerifierService', () => {
   const config = new Map<string, string>();
@@ -67,6 +68,49 @@ describe('StoreReceiptVerifierService', () => {
       productId: 'matchmate_gold',
       basePlanId: 'monthly',
       autoRenew: true,
+      status: SubscriptionStatus.ACTIVE,
+    });
+  });
+
+  it('preserves Google grace period and cancelled auto-renew state', async () => {
+    const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    config.set('payments.googlePlay.packageName', 'com.matchmate.app');
+    config.set(
+      'payments.googlePlay.serviceAccountJson',
+      JSON.stringify({
+        client_email: 'billing@project.iam.gserviceaccount.com',
+        private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }),
+      }),
+    );
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce(response({ access_token: 'access-token' }))
+      .mockResolvedValueOnce(
+        response({
+          subscriptionState: 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD',
+          latestOrderId: 'GPA.GRACE',
+          lineItems: [
+            {
+              productId: 'matchmate_gold',
+              expiryTime: new Date(Date.now() + 86_400_000).toISOString(),
+              offerDetails: { basePlanId: 'monthly' },
+              autoRenewingPlan: { autoRenewEnabled: false },
+            },
+          ],
+        }),
+      );
+
+    await expect(
+      service.verify({
+        gateway: PaymentGateway.GOOGLE_PLAY,
+        planId: '507f1f77bcf86cd799439011',
+        productId: 'matchmate_gold',
+        basePlanId: 'monthly',
+        transactionId: 'client-order',
+        purchaseToken: 'purchase-token',
+      }),
+    ).resolves.toMatchObject({
+      status: SubscriptionStatus.GRACE_PERIOD,
+      autoRenew: false,
     });
   });
 
@@ -140,6 +184,7 @@ describe('StoreReceiptVerifierService', () => {
       productId: transaction.productId,
       originalTransactionId: 'original-1',
       environment: 'Sandbox',
+      status: SubscriptionStatus.ACTIVE,
     });
     expect(global.fetch).toHaveBeenCalledWith(
       expect.stringContaining('api.storekit-sandbox.itunes.apple.com'),

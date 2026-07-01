@@ -3,6 +3,7 @@ import { ConfigService } from '@nestjs/config';
 import { createSign } from 'crypto';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { VerifyStoreSubscriptionDto } from '../dto/verify-store-subscription.dto';
+import { SubscriptionStatus } from '@/common/enums';
 
 export interface VerifiedStoreSubscription {
   productId: string;
@@ -14,6 +15,7 @@ export interface VerifiedStoreSubscription {
   autoRenew: boolean;
   environment: string;
   providerPayload: Record<string, unknown>;
+  status: SubscriptionStatus.ACTIVE | SubscriptionStatus.GRACE_PERIOD;
 }
 
 @Injectable()
@@ -82,6 +84,10 @@ export class StoreReceiptVerifierService {
       expiresAt,
       autoRenew: Boolean(lineItem.autoRenewingPlan?.autoRenewEnabled),
       environment: 'production',
+      status:
+        body.subscriptionState === 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD'
+          ? SubscriptionStatus.GRACE_PERIOD
+          : SubscriptionStatus.ACTIVE,
       providerPayload: {
         subscriptionState: body.subscriptionState,
         acknowledgementState: body.acknowledgementState,
@@ -149,6 +155,7 @@ export class StoreReceiptVerifierService {
       expiresAt,
       autoRenew: true,
       environment: transaction.environment ?? environment,
+      status: SubscriptionStatus.ACTIVE,
       providerPayload: { type: transaction.type },
     };
   }

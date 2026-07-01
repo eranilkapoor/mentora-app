@@ -27,6 +27,7 @@ import { ReferralsModule } from './modules/referrals/referrals.module';
 import { SeederModule } from './modules/seeder/seeder.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { SupportModule } from './modules/support/support.module';
+import { SuccessStoriesModule } from './modules/success-stories/success-stories.module';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 
@@ -73,6 +74,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     ReferralsModule,
     SettingsModule,
     SupportModule,
+    SuccessStoriesModule,
     ScheduleModule.forRoot(),
   ],
   controllers: [AppController],

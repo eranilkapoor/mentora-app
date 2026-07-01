@@ -112,7 +112,15 @@ describe('SubscriptionsService', () => {
       storeTransactionId: 'tx',
       storeOriginalTransactionId: 'original',
     };
-    const existing = { _id: subscriptionId };
+    const existing = {
+      _id: subscriptionId,
+      autoRenew: true,
+      status: SubscriptionStatus.ACTIVE,
+      startDate: new Date(),
+      endDate: new Date(),
+      storeLastVerifiedAt: new Date(),
+      save: jest.fn(),
+    };
     subModel.findOne.mockReturnValue({
       exec: jest.fn().mockResolvedValue(existing),
     });
@@ -123,6 +131,11 @@ describe('SubscriptionsService', () => {
       subscription: existing,
       reconciled: true,
     });
+    expect(existing.save).toHaveBeenCalled();
+    expect(userRepo.updateMembership).toHaveBeenCalledWith(
+      userId,
+      expect.objectContaining({ status: SubscriptionStatus.ACTIVE }),
+    );
 
     subModel.findOne.mockReturnValue({
       exec: jest.fn().mockResolvedValue(null),

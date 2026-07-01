@@ -6,6 +6,7 @@ import { BroadcastDto } from '../dto/broadcast.dto';
 import { BroadcastTarget } from '../enums/broadcast.enums';
 import { AdminQueryDto } from '../dto/admin-query.dto';
 import { FilterQuery, Model, Types } from 'mongoose';
+import { buildPaginationMeta } from '@/common/utils/pagination';
 import { UserDocument } from '@/modules/auth/schemas/user.schema';
 import {
   Profile,
@@ -93,12 +94,7 @@ export class AdminService {
 
     return {
       data: users,
-      meta: {
-        total,
-        page,
-        limit,
-        totalPages: Math.ceil(total / limit),
-      },
+      meta: buildPaginationMeta(total, page, limit),
     };
   }
 

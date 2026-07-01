@@ -1,5 +1,6 @@
 import { ApiResponse } from '@/core/types';
 import { baseApi } from './baseApi.service';
+import type { PaginationMeta } from '@matchmate/api-contract';
 
 export interface DirectRoomResponse {
   roomId?: string;
@@ -50,12 +51,9 @@ export interface ChatConversation {
   };
 }
 
-export interface ChatConversationsResponse {
+export interface ChatConversationsResponse extends PaginationMeta {
   items: ChatConversation[];
   unreadTotal: number;
-  total: number;
-  page: number;
-  limit: number;
   hasMore?: boolean;
 }
 

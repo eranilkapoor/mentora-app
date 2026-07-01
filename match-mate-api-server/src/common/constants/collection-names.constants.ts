@@ -43,6 +43,7 @@ export const COLLECTION_NAMES = {
   NOTIFICATION_DEVICE_TOKEN: 'notification_device_tokens',
 
   SUPPORT_TICKET: 'support_tickets',
+  SUCCESS_STORY: 'success_stories',
 
   ACCOUNT_SETTING: 'account_settings',
   PRIVACY_SETTING: 'privacy_settings',

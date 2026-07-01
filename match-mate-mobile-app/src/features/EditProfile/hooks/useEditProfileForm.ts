@@ -31,6 +31,8 @@ import { INITIAL_PROFILE } from '../EditProfile.constants';
 import { showError, showSuccess } from '@/core/utils/toast';
 import { showConfirm } from '@/core/utils/confirm';
 import { generateVideoThumbnail } from '@/core/utils/videoThumbnail';
+import { hasMediaLibraryPermission } from '@/core/utils/mediaPermission';
+import { executeProfileMediaSave } from './profileMediaSave.utils';
 
 interface PendingMediaAsset {
   tempId: string;
@@ -315,7 +317,7 @@ export function useEditProfileForm() {
 
   const pickImage = useCallback(async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
+    if (!hasMediaLibraryPermission(status)) {
       showError({
         title: t('edit_profile.photos.permission_title'),
         message: t('edit_profile.photos.permission_message'),
@@ -352,7 +354,7 @@ export function useEditProfileForm() {
 
   const pickVideoIntro = useCallback(async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
+    if (!hasMediaLibraryPermission(status)) {
       showError({
         title: t('edit_profile.photos.permission_title'),
         message: t('edit_profile.photos.permission_message'),
@@ -461,36 +463,38 @@ export function useEditProfileForm() {
       (image) => image._id && !removedImageIds.includes(image._id)
     );
 
-    for (const mediaId of removedImageIds) {
-      await removeMediaImage({ mediaId }).unwrap();
-    }
-
-    let firstUploadedImageId: string | undefined;
-    if (pendingImageAssets.length > 0) {
-      const formData = new FormData();
-      for (const { asset } of pendingImageAssets) {
-        await appendAssetToFormData(
-          formData,
-          'images',
-          asset,
-          `photo-${Date.now()}.jpg`,
-          'image/jpeg'
-        );
-      }
-
-      const response = await addMediaImages(formData).unwrap();
-      if (!response.success) {
-        throw new Error(t('edit_profile.photos.upload_failed'));
-      }
-
-      firstUploadedImageId = response.data?.find((image) => image._id)?._id;
-    }
-
-    if (pendingPrimaryImageId) {
-      await setPrimaryImage({ mediaId: pendingPrimaryImageId }).unwrap();
-    } else if (!hadExistingVisibleImage && firstUploadedImageId) {
-      await setPrimaryImage({ mediaId: firstUploadedImageId }).unwrap();
-    }
+    await executeProfileMediaSave({
+      removedIds: removedImageIds,
+      remove: async (mediaId) => {
+        await removeMediaImage({ mediaId }).unwrap();
+      },
+      ...(pendingImageAssets.length > 0
+        ? {
+            upload: async () => {
+              const formData = new FormData();
+              for (const { asset } of pendingImageAssets) {
+                await appendAssetToFormData(
+                  formData,
+                  'images',
+                  asset,
+                  `photo-${Date.now()}.jpg`,
+                  'image/jpeg'
+                );
+              }
+              const response = await addMediaImages(formData).unwrap();
+              if (!response.success) {
+                throw new Error(t('edit_profile.photos.upload_failed'));
+              }
+              return response.data?.find((image) => image._id)?._id;
+            },
+          }
+        : {}),
+      preferredPrimaryId: pendingPrimaryImageId,
+      hadExistingVisibleMedia: hadExistingVisibleImage,
+      setPrimary: async (mediaId) => {
+        await setPrimaryImage({ mediaId }).unwrap();
+      },
+    });
 
     setPendingImageAssets([]);
     setRemovedImageIds([]);

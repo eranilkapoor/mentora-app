@@ -49,6 +49,7 @@ export class SubscriptionsService {
       storeEnvironment?: string;
       storeLastVerifiedAt?: Date;
       storeExpiresAt?: Date;
+      status?: SubscriptionStatus.ACTIVE | SubscriptionStatus.GRACE_PERIOD;
     },
   ) {
     const plan = await this.planModel.findById(planId).lean().exec();
@@ -83,7 +84,7 @@ export class SubscriptionsService {
       planId: new Types.ObjectId(planId),
       startDate,
       endDate,
-      status: SubscriptionStatus.ACTIVE,
+      status: options?.status ?? SubscriptionStatus.ACTIVE,
       paymentId: options?.paymentId,
       paymentProvider: options?.paymentProvider,
       autoRenew: options?.autoRenew ?? Boolean(plan.autoRenewDefault),
@@ -101,7 +102,7 @@ export class SubscriptionsService {
     // Sync user membership tier for fast reads
     await this.userRepo.updateMembership(userId, {
       tier: plan.tier ?? PlanTier.FREE,
-      status: SubscriptionStatus.ACTIVE,
+      status: options?.status ?? SubscriptionStatus.ACTIVE,
       startDate,
       expiresAt: endDate,
       autoRenew: options?.autoRenew ?? Boolean(plan.autoRenewDefault),
@@ -126,6 +127,8 @@ export class SubscriptionsService {
       storeEnvironment?: string;
       storeLastVerifiedAt?: Date;
       storeExpiresAt?: Date;
+      autoRenew?: boolean;
+      status?: SubscriptionStatus.ACTIVE | SubscriptionStatus.GRACE_PERIOD;
     },
   ) {
     const existing = await this.subModel
@@ -136,13 +139,29 @@ export class SubscriptionsService {
       .exec();
 
     if (existing) {
+      existing.autoRenew = options.autoRenew ?? existing.autoRenew;
+      existing.status = options.status ?? SubscriptionStatus.ACTIVE;
+      existing.endDate = options.storeExpiresAt ?? existing.endDate;
+      existing.storeLastVerifiedAt = options.storeLastVerifiedAt ?? new Date();
+      await existing.save();
+
+      const plan = await this.planModel.findById(options.planId).lean().exec();
+      await this.userRepo.updateMembership(userId, {
+        tier: plan?.tier ?? PlanTier.FREE,
+        status: existing.status,
+        startDate: existing.startDate,
+        expiresAt: existing.endDate,
+        autoRenew: existing.autoRenew,
+        planId: options.planId,
+      });
+
       return { success: true, subscription: existing, reconciled: true };
     }
 
     return this.purchasePlan(userId, options.planId, {
       paymentId: options.paymentId,
       paymentProvider: options.paymentProvider,
-      autoRenew: true,
+      autoRenew: options.autoRenew ?? true,
       storeProductId: options.storeProductId,
       storeBasePlanId: options.storeBasePlanId,
       storeOfferId: options.storeOfferId,
@@ -152,6 +171,7 @@ export class SubscriptionsService {
       storeEnvironment: options.storeEnvironment,
       storeLastVerifiedAt: options.storeLastVerifiedAt,
       storeExpiresAt: options.storeExpiresAt,
+      status: options.status,
     });
   }
 

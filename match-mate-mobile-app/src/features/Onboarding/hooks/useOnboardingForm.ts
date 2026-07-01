@@ -19,10 +19,15 @@ import {
 import { useOnboardingProfileMutation } from '@/store/services/profileApi.service';
 import { baseApi } from '@/store/services/baseApi.service';
 import { showError } from '@/core/utils/toast';
+import { hasMediaLibraryPermission } from '@/core/utils/mediaPermission';
 import {
   getApiErrorMessage,
   getApiResponseMessage,
 } from '@/core/utils/apiMessage';
+import {
+  validateOnboardingBasic,
+  validateOnboardingPreferences,
+} from './onboardingForm.utils';
 
 // ─── Initial state ────────────────────────────────────────────────────────────
 
@@ -98,7 +103,7 @@ export function useOnboardingForm() {
 
   const pickImage = useCallback(async (): Promise<void> => {
     const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-    if (status !== 'granted') {
+    if (!hasMediaLibraryPermission(status)) {
       showError({
         title: t('onboarding.photos.permission_title'),
         message: t('onboarding.photos.permission_message'),
@@ -153,48 +158,14 @@ export function useOnboardingForm() {
   // ─── Validators ──────────────────────────────────────────────────────────
 
   const validateBasic = useCallback((): boolean => {
-    const e: Record<string, string> = {};
-
-    if (!basic.profileFor.trim())
-      e.profileFor = t('onboarding.errors.required');
-    if (!basic.firstName.trim())
-      e.firstName = t('onboarding.errors.first_name_required');
-    if (!basic.dateOfBirth)
-      e.dateOfBirth = t('onboarding.errors.date_of_birth_required');
-    if (!basic.gender) e.gender = t('onboarding.errors.gender_required');
-    if (!basic.maritalStatus)
-      e.maritalStatus = t('onboarding.errors.marital_status_required');
-    if (!basic.religion) e.religion = t('onboarding.errors.religion_required');
-    if (!basic.country) e.country = t('onboarding.errors.country_required');
-    if (!basic.height.trim()) e.height = t('onboarding.errors.height_required');
-    if (!basic.qualification)
-      e.qualification = t('onboarding.errors.qualification_required');
-    if (!basic.occupation.trim())
-      e.occupation = t('onboarding.errors.occupation_required');
+    const e = validateOnboardingBasic(basic, t);
 
     setErrors(e);
     return Object.keys(e).length === 0;
   }, [basic, t]);
 
   const validatePreferences = useCallback((): boolean => {
-    const e: Record<string, string> = {};
-
-    if (!preferences.ageRange?.min)
-      e.minAgeRange = t('onboarding.errors.min_age_required');
-    if (!preferences.ageRange?.max)
-      e.maxAgeRange = t('onboarding.errors.max_age_required');
-    if (!preferences.maritalStatus?.length)
-      e.maritalStatusPreference = t(
-        'onboarding.errors.marital_status_preference_required'
-      );
-    if (!preferences.religion?.length)
-      e.religionPreference = t(
-        'onboarding.errors.religion_preference_required'
-      );
-    if (!preferences.country?.length)
-      e.locationPreference = t(
-        'onboarding.errors.location_preference_required'
-      );
+    const e = validateOnboardingPreferences(preferences, t);
 
     setErrors(e);
     return Object.keys(e).length === 0;

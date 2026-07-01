@@ -96,6 +96,7 @@ export type SettingsStackParamList = {
   HelpSupport: undefined;
   SupportTickets: undefined;
   SupportTicketDetail: { ticketId: string };
+  SuccessStories: undefined;
   Faqs: undefined;
   CommunityGuidelines: undefined;
   AccountDeletion: undefined;

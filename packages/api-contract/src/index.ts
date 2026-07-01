@@ -265,14 +265,56 @@ export interface SupportTicket {
   updatedAt?: string;
 }
 
-export interface SupportTicketsResponse {
-  items: SupportTicket[];
+export interface PaginationMeta {
   page: number;
   limit: number;
   total: number;
   totalPages: number;
   hasNextPage: boolean;
   hasPrevPage: boolean;
+}
+
+export interface PaginatedItems<T> extends PaginationMeta {
+  items: T[];
+}
+
+export type SuccessStoryStatus =
+  | 'submitted'
+  | 'published'
+  | 'rejected'
+  | 'archived';
+
+export interface SuccessStory {
+  _id: string;
+  userId?: string;
+  title: string;
+  story: string;
+  partnerName: string;
+  marriageDate: string;
+  location?: string;
+  photoUrls: string[];
+  publicationConsent: boolean;
+  status: SuccessStoryStatus;
+  rejectionReason?: string;
+  publishedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface SubmitSuccessStoryRequest {
+  title: string;
+  story: string;
+  partnerName: string;
+  marriageDate: string;
+  location?: string;
+  photoUrls?: string[];
+  publicationConsent: boolean;
+}
+
+export type SuccessStoriesResponse = PaginatedItems<SuccessStory>;
+
+export interface SupportTicketsResponse extends PaginationMeta {
+  items: SupportTicket[];
 }
 
 export interface CreateSupportTicketRequest {

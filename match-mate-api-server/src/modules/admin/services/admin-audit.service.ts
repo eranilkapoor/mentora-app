@@ -7,6 +7,7 @@ import {
 } from '../schemas/admin-audit-log.schema';
 import { AdminAuditQueryDto } from '../dto/admin-audit-query.dto';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
+import { buildPaginationMeta } from '@/common/utils/pagination';
 
 interface WriteAuditLogInput {
   req?: AuthenticatedRequest;
@@ -82,12 +83,7 @@ export class AdminAuditService {
 
     return {
       items,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
-      },
+      pagination: buildPaginationMeta(total, page, limit),
     };
   }
 }

@@ -5,7 +5,10 @@ import {
 } from '@/features/AccessibilitySettings/AccessibilitySettings.types';
 import { baseApi } from './baseApi.service';
 import { unwrapApiResponse, wrapSettingsResponse } from './settingsApi.helpers';
-import { updateAccessibilitySettings } from '../slices/settings.slice';
+import {
+  setAccessibilitySettings,
+  updateAccessibilitySettings,
+} from '../slices/settings.slice';
 
 export const accessibilitySettingsApi = baseApi.injectEndpoints({
   endpoints: (builder) => ({
@@ -40,7 +43,12 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
       }),
       transformResponse: (response: AccessibilitySettings) =>
         unwrapApiResponse(response),
-      async onQueryStarted(patch, { dispatch, queryFulfilled }) {
+      async onQueryStarted(patch, { dispatch, getState, queryFulfilled }) {
+        const previousAccessibility = (
+          getState() as {
+            settings?: { accessibility?: AccessibilitySettings };
+          }
+        ).settings?.accessibility;
         dispatch(updateAccessibilitySettings(patch));
 
         const optimistic = dispatch(
@@ -66,6 +74,9 @@ export const accessibilitySettingsApi = baseApi.injectEndpoints({
           );
         } catch {
           optimistic.undo();
+          if (previousAccessibility) {
+            dispatch(setAccessibilitySettings(previousAccessibility));
+          }
         }
       },
     }),

@@ -2,7 +2,9 @@ import settingsReducer, {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_PRIVACY_SETTINGS,
   setLocalizationSettings,
+  setAccessibilitySettings,
   setNotificationSettings,
+  updateAccessibilitySettings,
   updatePrivacySettings,
 } from './settings.slice';
 
@@ -56,5 +58,19 @@ describe('settings reducer', () => {
       ...DEFAULT_PRIVACY_SETTINGS,
       incognitoMode: true,
     });
+  });
+
+  it('can restore accessibility settings after an optimistic failure', () => {
+    const previous = settingsReducer(undefined, { type: 'init' }).accessibility;
+    const optimistic = settingsReducer(
+      undefined,
+      updateAccessibilitySettings({ fontSize: 'extra_large', boldText: true })
+    );
+
+    expect(optimistic.accessibility.fontSize).toBe('extra_large');
+    expect(optimistic.accessibility.boldText).toBe(true);
+    expect(
+      settingsReducer(optimistic, setAccessibilitySettings(previous))
+    ).toEqual(expect.objectContaining({ accessibility: previous }));
   });
 });

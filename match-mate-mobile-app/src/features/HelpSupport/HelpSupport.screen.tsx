@@ -98,6 +98,12 @@ export default function HelpSupportScreen({
             onPress={() => navigation.navigate('SupportTickets')}
           />
           <SettingsSelectItem
+            icon="heart"
+            label={t('settings.success_stories.title')}
+            sublabel={t('settings.success_stories.entry_sub')}
+            onPress={() => navigation.navigate('SuccessStories')}
+          />
+          <SettingsSelectItem
             icon="help-circle"
             label={t('settings.support_center.faqs')}
             sublabel={t('settings.support_center.faqs_sub')}
