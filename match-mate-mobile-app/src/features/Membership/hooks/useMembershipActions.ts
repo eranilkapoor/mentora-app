@@ -1,8 +1,12 @@
-import { useCallback } from 'react';
+import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
+import { Platform } from 'react-native';
+import { useIAP, type ProductSubscription, type Purchase } from 'expo-iap';
 import {
   useCreateMembershipOrderMutation,
+  useGetMembershipPlansQuery,
   useStartFreeTrialMutation,
+  useVerifyStoreSubscriptionMutation,
 } from '@/store/services/membershipApi.service';
 import { showError, showSuccess } from '@/core/utils/toast';
 import type { PaymentGateway } from '@matchmate/api-contract';
@@ -13,12 +17,254 @@ import {
 } from '@/core/utils/billingConfig';
 import { DisplayPlan } from '../Membership.types';
 
+const processingStoreTransactions = new Set<string>();
+const selectedStoreOfferIds = new Map<string, string | undefined>();
+
 export function useMembershipActions() {
   const { t } = useTranslation();
+  const { data: plans = [] } = useGetMembershipPlansQuery();
   const [createOrder, { isLoading: isCreatingOrder }] =
     useCreateMembershipOrderMutation();
+  const [verifyStoreSubscription, { isLoading: isVerifyingStore }] =
+    useVerifyStoreSubscriptionMutation();
   const [startTrial, { isLoading: isStartingTrial }] =
     useStartFreeTrialMutation();
+  const finishTransactionRef = useRef<
+    | ((input: { purchase: Purchase; isConsumable?: boolean }) => Promise<void>)
+    | null
+  >(null);
+
+  const processStorePurchase = useCallback(
+    async (purchase: Purchase): Promise<void> => {
+      if (purchase.purchaseState !== 'purchased') return;
+
+      const transactionId = purchase.transactionId ?? purchase.id;
+      if (!transactionId || processingStoreTransactions.has(transactionId)) {
+        return;
+      }
+
+      const plan = plans.find((candidate) => {
+        const mapping =
+          Platform.OS === 'android'
+            ? candidate.storeProducts?.android
+            : candidate.storeProducts?.ios;
+        return (
+          mapping?.productId === purchase.productId &&
+          (Platform.OS !== 'android' ||
+            mapping.basePlanId === purchase.currentPlanId)
+        );
+      });
+
+      if (!plan) {
+        showError({
+          title: t('membership.payment_failed_title'),
+          message: t('membership.store_product_unmapped_message'),
+        });
+        return;
+      }
+
+      const mapping =
+        Platform.OS === 'android'
+          ? plan.storeProducts?.android
+          : plan.storeProducts?.ios;
+      const purchaseToken = purchase.purchaseToken ?? undefined;
+      if (!mapping || !purchaseToken) return;
+      const offerKey = `${mapping.productId}:${mapping.basePlanId ?? ''}`;
+
+      processingStoreTransactions.add(transactionId);
+      try {
+        await verifyStoreSubscription({
+          gateway: Platform.OS === 'ios' ? 'apple_iap' : 'google_play',
+          planId: plan._id,
+          productId: mapping.productId,
+          basePlanId: mapping.basePlanId,
+          offerId: selectedStoreOfferIds.get(offerKey),
+          transactionId,
+          originalTransactionId:
+            'originalTransactionIdentifierIOS' in purchase
+              ? (purchase.originalTransactionIdentifierIOS ?? undefined)
+              : undefined,
+          receiptData: Platform.OS === 'ios' ? purchaseToken : undefined,
+          purchaseToken: Platform.OS === 'android' ? purchaseToken : undefined,
+          payload: {
+            currentPlanId: purchase.currentPlanId,
+            isAutoRenewing: purchase.isAutoRenewing,
+            store: purchase.store,
+            transactionDate: purchase.transactionDate,
+          },
+        }).unwrap();
+
+        if (!finishTransactionRef.current) return;
+        await finishTransactionRef.current({ purchase, isConsumable: false });
+        selectedStoreOfferIds.delete(offerKey);
+        showSuccess({
+          title: t('membership.payment_success_title'),
+          message: t('membership.payment_success_message', {
+            name: plan.name.replace(/_/g, ' '),
+          }),
+        });
+      } catch {
+        showError({
+          title: t('membership.payment_failed_title'),
+          message: t('membership.payment_failed_message'),
+        });
+      } finally {
+        processingStoreTransactions.delete(transactionId);
+      }
+    },
+    [plans, t, verifyStoreSubscription]
+  );
+
+  const {
+    connected,
+    subscriptions,
+    availablePurchases,
+    fetchProducts,
+    requestPurchase,
+    finishTransaction,
+    restorePurchases,
+  } = useIAP({
+    onPurchaseSuccess: (purchase) => {
+      void processStorePurchase(purchase);
+    },
+    onPurchaseError: (error) => {
+      if (error.code === 'user-cancelled') return;
+      showError({
+        title: t('membership.payment_failed_title'),
+        message: t('membership.payment_failed_message'),
+      });
+    },
+  });
+
+  useEffect(() => {
+    finishTransactionRef.current = finishTransaction;
+  }, [finishTransaction]);
+
+  useEffect(() => {
+    availablePurchases.forEach((purchase) => {
+      void processStorePurchase(purchase);
+    });
+  }, [availablePurchases, processStorePurchase]);
+
+  const storeSkus = useMemo(
+    () =>
+      Array.from(
+        new Set(
+          plans
+            .map((plan) =>
+              Platform.OS === 'android'
+                ? plan.storeProducts?.android?.productId
+                : plan.storeProducts?.ios?.productId
+            )
+            .filter((sku): sku is string => Boolean(sku))
+        )
+      ),
+    [plans]
+  );
+
+  useEffect(() => {
+    if (
+      !connected ||
+      !isNativeStoreBillingPlatform() ||
+      !isStoreBillingEnabled() ||
+      !storeSkus.length
+    ) {
+      return;
+    }
+
+    void fetchProducts({ skus: storeSkus, type: 'subs' });
+  }, [connected, fetchProducts, storeSkus]);
+
+  const storePrices = useMemo(() => {
+    const prices: Record<string, string> = {};
+    plans.forEach((plan) => {
+      const mapping =
+        Platform.OS === 'android'
+          ? plan.storeProducts?.android
+          : plan.storeProducts?.ios;
+      const product = subscriptions.find(
+        (item) => item.id === mapping?.productId
+      );
+      if (product?.platform === 'android') {
+        const offers = product.subscriptionOfferDetailsAndroid.filter(
+          (item) => item.basePlanId === mapping?.basePlanId
+        );
+        const offer =
+          offers.find((item) => item.offerId === mapping?.offerId) ??
+          offers.find((item) => !item.offerId) ??
+          offers[0];
+        const phases = offer?.pricingPhases.pricingPhaseList;
+        const recurringPrice = phases?.[phases.length - 1]?.formattedPrice;
+        if (recurringPrice) prices[plan._id] = recurringPrice;
+      } else if (product?.displayPrice) {
+        prices[plan._id] = product.displayPrice;
+      }
+    });
+    return prices;
+  }, [plans, subscriptions]);
+
+  const purchaseNativeSubscription = useCallback(
+    async (selectedPlanItem: DisplayPlan): Promise<void> => {
+      const plan = selectedPlanItem.source;
+      const mapping =
+        Platform.OS === 'android'
+          ? plan?.storeProducts?.android
+          : plan?.storeProducts?.ios;
+
+      if (!connected || mapping?.productType !== 'subscription') {
+        showError({
+          title: t('membership.store_billing_unavailable_title'),
+          message: t('membership.store_billing_unavailable_message'),
+        });
+        return;
+      }
+
+      if (Platform.OS === 'android') {
+        const product = subscriptions.find(
+          (
+            item
+          ): item is Extract<ProductSubscription, { platform: 'android' }> =>
+            item.platform === 'android' && item.id === mapping.productId
+        );
+        const offers =
+          product?.subscriptionOfferDetailsAndroid.filter(
+            (item) => item.basePlanId === mapping.basePlanId
+          ) ?? [];
+        const offer =
+          offers.find((item) => item.offerId === mapping.offerId) ??
+          offers.find((item) => !item.offerId);
+        if (!offer) {
+          showError({
+            title: t('membership.store_billing_unavailable_title'),
+            message: t('membership.store_offer_unavailable_message'),
+          });
+          return;
+        }
+        selectedStoreOfferIds.set(
+          `${mapping.productId}:${mapping.basePlanId ?? ''}`,
+          offer.offerId ?? undefined
+        );
+        await requestPurchase({
+          request: {
+            google: {
+              skus: [mapping.productId],
+              subscriptionOffers: [
+                { sku: mapping.productId, offerToken: offer.offerToken },
+              ],
+            },
+          },
+          type: 'subs',
+        });
+        return;
+      }
+
+      await requestPurchase({
+        request: { apple: { sku: mapping.productId } },
+        type: 'subs',
+      });
+    },
+    [connected, requestPurchase, subscriptions, t]
+  );
 
   const handleCreateOrder = useCallback(
     async (
@@ -38,6 +284,14 @@ export function useMembershipActions() {
           title: t('membership.store_billing_unavailable_title'),
           message: t('membership.store_billing_unavailable_message'),
         });
+        return;
+      }
+
+      if (
+        isNativeStoreBillingPlatform() &&
+        (gateway === 'apple_iap' || gateway === 'google_play')
+      ) {
+        await purchaseNativeSubscription(selectedPlanItem);
         return;
       }
 
@@ -66,7 +320,7 @@ export function useMembershipActions() {
         });
       }
     },
-    [createOrder, t]
+    [createOrder, purchaseNativeSubscription, t]
   );
 
   const handleCreateBoostOrder = useCallback(
@@ -150,6 +404,8 @@ export function useMembershipActions() {
     handleCreateOrder,
     handleCreateBoostOrder,
     handleStartTrial,
-    isCreatingOrder: isCreatingOrder || isStartingTrial,
+    restoreStorePurchases: restorePurchases,
+    storePrices,
+    isCreatingOrder: isCreatingOrder || isStartingTrial || isVerifyingStore,
   };
 }

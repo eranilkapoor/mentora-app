@@ -62,7 +62,7 @@ The following stale roadmap statements were corrected during this audit:
 - API Docker containerization exists, so the remaining task is image build/deploy verification rather than initial implementation.
 - Automated regression totals now reflect 105 API unit suites/985 tests, 1 API E2E suite/4 tests, and 6 mobile suites/32 tests.
 
-The following roadmap items remain correctly classified as external or provider-dependent: production FCM/MSG91/SES delivery, social provider approval, payment/store credentials, Apple/Google receipt validation, Aadhaar/DigiLocker, Sentry dashboards and source maps, CDN, backups, and multi-region recovery.
+The following roadmap items remain correctly classified as external or provider-dependent: production FCM/MSG91/SES delivery, social provider approval, payment/store credentials and console products, store sandbox evidence, Aadhaar/DigiLocker, Sentry dashboards and source maps, CDN, backups, and multi-region recovery.
 
 ## Next Code Work
 
@@ -111,7 +111,8 @@ The following roadmap items remain correctly classified as external or provider-
    - Test IAM-role S3 access, private/public object policies, signed URLs or proxy reads, missing objects, range requests for video, thumbnail cleanup, upload rollback, MIME spoofing, size limits, and orphan cleanup.
 
 7. [ ] **Complete payment and subscription integration evidence.**
-   - Add Razorpay/store sandbox flows, webhook replay tests, signature failures, duplicate transactions, refund reconciliation, trial cancellation, renewal/grace/expiry transitions, invoice generation, and current-plan refresh on success/failure.
+   - Implemented typed DB-to-store product/base-plan mapping, `expo-iap` native checkout/live prices/restore, server-side plan mapping enforcement, and strict Google Play/App Store Server API verification.
+   - Next: register Google RTDN and App Store Server Notifications V2; add Razorpay/store sandbox flows, notification replay tests, signature failures, refund reconciliation, renewal/grace/expiry transitions, and recorded console evidence.
 
 8. [ ] **Complete notification delivery testing.**
    - Add queue-worker integration tests for FCM, SES, and MSG91 substitutes; verify retries, deduplication, DLQ replay, opt-outs, quiet hours, invalid token cleanup, and daily-match digest eligibility.

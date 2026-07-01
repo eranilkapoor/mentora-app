@@ -52,6 +52,10 @@ describe('PaymentsService', () => {
     activateBoost: jest.fn(),
   };
 
+  const storeReceiptVerifier = {
+    verify: jest.fn(),
+  };
+
   const planModel = {
     findById: jest.fn(),
   };
@@ -98,6 +102,7 @@ describe('PaymentsService', () => {
       planModel as never,
       couponModel as never,
       invoiceModel as never,
+      storeReceiptVerifier as never,
     );
   });
 
@@ -593,6 +598,20 @@ describe('PaymentsService', () => {
       transactionId: 'tx-1',
       receiptData: 'receipt',
     } as const;
+    planModel.findById.mockReturnValue({
+      lean: () => ({
+        exec: jest.fn().mockResolvedValue({
+          _id: new Types.ObjectId(planId),
+          isActive: true,
+          isCustom: false,
+          price: 100,
+          currency: 'INR',
+          storeProducts: {
+            ios: { productId: 'gold.monthly', productType: 'subscription' },
+          },
+        }),
+      }),
+    });
     paymentRepo.findSuccessfulStoreTransaction.mockResolvedValue({
       _id: new Types.ObjectId(),
       userId: new Types.ObjectId(userId),
@@ -619,6 +638,9 @@ describe('PaymentsService', () => {
           isCustom: false,
           price: 100,
           currency: 'INR',
+          storeProducts: {
+            ios: { productId: 'gold.monthly', productType: 'subscription' },
+          },
         }),
       }),
     });
@@ -648,6 +670,10 @@ describe('PaymentsService', () => {
       _id: new Types.ObjectId(),
       tier: 'gold',
       planType: 'self_service',
+      storeProducts: {
+        ios: { productId: 'gold.monthly', productType: 'subscription' },
+        android: { productId: 'gold.monthly', productType: 'subscription' },
+      },
     };
     const baseCoupon = {
       title: 'Offer',
@@ -852,6 +878,10 @@ describe('PaymentsService', () => {
       price: 100,
       tier: 'gold',
       planType: 'self_service',
+      storeProducts: {
+        ios: { productId: 'gold.monthly', productType: 'subscription' },
+        android: { productId: 'gold.monthly', productType: 'subscription' },
+      },
     };
 
     configService.get.mockImplementation(

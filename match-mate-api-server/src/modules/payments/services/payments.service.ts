@@ -41,6 +41,11 @@ import {
   throwUnauthorized,
 } from '@/common/exceptions/throw-app-exception';
 import { verifyPaymentSignature } from '../utils/payment-signature.util';
+import {
+  StoreReceiptVerifierService,
+  VerifiedStoreSubscription,
+} from './store-receipt-verifier.service';
+import { StoreProductType } from '@/modules/subscriptions/enums/store-product-type.enum';
 
 @Injectable()
 export class PaymentsService {
@@ -57,6 +62,7 @@ export class PaymentsService {
     private readonly couponModel: Model<PromotionCouponDocument>,
     @InjectModel(PaymentInvoice.name)
     private readonly invoiceModel: Model<PaymentInvoiceDocument>,
+    private readonly storeReceiptVerifier: StoreReceiptVerifierService,
   ) {}
 
   async createOrder(userId: string, dto: CreateOrderDto) {
@@ -405,31 +411,6 @@ export class PaymentsService {
     this.ensureUserId(userId);
     this.ensureMobileStoreReceiptAllowed(dto);
 
-    const existingPayment =
-      await this.paymentRepo.findSuccessfulStoreTransaction({
-        gateway: dto.gateway,
-        transactionId: dto.transactionId,
-      });
-
-    if (existingPayment) {
-      if (existingPayment.userId.toString() !== userId) {
-        return throwConflict(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
-          reason: 'store_transaction_already_claimed',
-        });
-      }
-
-      await this.subscriptionsService.reconcileStoreSubscription(userId, {
-        planId: existingPayment.planId?.toString() ?? dto.planId,
-        paymentId: existingPayment._id?.toString(),
-        paymentProvider: dto.gateway,
-        storeProductId: dto.productId,
-        storeTransactionId: dto.transactionId,
-        storeOriginalTransactionId: dto.originalTransactionId,
-      });
-
-      return existingPayment;
-    }
-
     const plan = await this.planModel.findById(dto.planId).lean().exec();
 
     if (!plan || !plan.isActive) {
@@ -444,32 +425,62 @@ export class PaymentsService {
       });
     }
 
+    this.ensureStoreProductMatchesPlan(plan, dto);
+    const verifiedStoreSubscription =
+      await this.verifyStoreReceiptWhenRequired(dto);
+    const transactionId =
+      verifiedStoreSubscription?.transactionId ?? dto.transactionId;
+
+    const existingPayment =
+      await this.paymentRepo.findSuccessfulStoreTransaction({
+        gateway: dto.gateway,
+        transactionId,
+      });
+
+    if (existingPayment) {
+      if (existingPayment.userId.toString() !== userId) {
+        return throwConflict(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+          reason: 'store_transaction_already_claimed',
+        });
+      }
+
+      await this.subscriptionsService.reconcileStoreSubscription(userId, {
+        planId: existingPayment.planId?.toString() ?? dto.planId,
+        paymentId: existingPayment._id?.toString(),
+        paymentProvider: dto.gateway,
+        storeProductId: dto.productId,
+        storeBasePlanId:
+          verifiedStoreSubscription?.basePlanId ?? dto.basePlanId,
+        storeOfferId: verifiedStoreSubscription?.offerId ?? dto.offerId,
+        storePurchaseToken: dto.purchaseToken ?? dto.receiptData,
+        storeTransactionId: transactionId,
+        storeOriginalTransactionId:
+          verifiedStoreSubscription?.originalTransactionId ??
+          dto.originalTransactionId,
+        storeEnvironment: verifiedStoreSubscription?.environment,
+        storeLastVerifiedAt: new Date(),
+        storeExpiresAt: verifiedStoreSubscription?.expiresAt,
+      });
+
+      return existingPayment;
+    }
+
+    // Store prices, tax, and offers are provider-owned. This is the catalog
+    // reference amount until settlement reconciliation records provider totals.
     const amount = Number(plan.price);
-    const discount = await this.calculateCouponDiscount({
-      userId,
-      plan,
-      couponCode: dto.couponCode,
-      amount,
-    });
-    const taxPercentage = Number(
-      this.configService.get<string>('payments.gstPercentage') ?? '0',
-    );
-    const taxAmount = Number(((amount * taxPercentage) / 100).toFixed(2));
-    const netAmount = Number(
-      (amount + taxAmount - discount.discountAmount).toFixed(2),
-    );
+    const taxAmount = 0;
+    const netAmount = amount;
     const orderId = this.generateOrderId();
 
     const payment = await this.paymentRepo.create({
       userId: new Types.ObjectId(userId),
       planId: new Types.ObjectId(dto.planId),
       orderId,
-      gatewayOrderId: dto.transactionId,
-      gatewayPaymentId: dto.transactionId,
+      gatewayOrderId: transactionId,
+      gatewayPaymentId: transactionId,
       amount,
       taxAmount,
-      discountAmount: discount.discountAmount,
-      couponCode: discount.couponCode,
+      discountAmount: 0,
       netAmount,
       currency: plan.currency ?? 'INR',
       gateway: dto.gateway,
@@ -483,26 +494,41 @@ export class PaymentsService {
       initiatedAt: new Date(),
       paidAt: new Date(),
       storeProductId: dto.productId,
-      storeTransactionId: dto.transactionId,
-      storeOriginalTransactionId: dto.originalTransactionId,
+      storeBasePlanId: verifiedStoreSubscription?.basePlanId ?? dto.basePlanId,
+      storeOfferId: verifiedStoreSubscription?.offerId ?? dto.offerId,
+      storeTransactionId: transactionId,
+      storeOriginalTransactionId:
+        verifiedStoreSubscription?.originalTransactionId ??
+        dto.originalTransactionId,
       gatewayPayload: {
         provider: dto.gateway,
         productId: dto.productId,
-        transactionId: dto.transactionId,
+        basePlanId: dto.basePlanId,
+        offerId: dto.offerId,
+        transactionId,
         originalTransactionId: dto.originalTransactionId,
+        verification: verifiedStoreSubscription?.providerPayload,
         payload: dto.payload,
       },
       metadata: {
-        coupon: discount.couponSummary,
+        pricingSource: 'internal_catalog_reference',
       },
     });
 
     await this.activateSubscriptionIfRequired(userId, payment, {
       paymentProvider: dto.gateway,
-      autoRenew: true,
+      autoRenew: verifiedStoreSubscription?.autoRenew ?? true,
       storeProductId: dto.productId,
-      storeTransactionId: dto.transactionId,
-      storeOriginalTransactionId: dto.originalTransactionId,
+      storeBasePlanId: verifiedStoreSubscription?.basePlanId ?? dto.basePlanId,
+      storeOfferId: verifiedStoreSubscription?.offerId ?? dto.offerId,
+      storePurchaseToken: dto.purchaseToken ?? dto.receiptData,
+      storeTransactionId: transactionId,
+      storeOriginalTransactionId:
+        verifiedStoreSubscription?.originalTransactionId ??
+        dto.originalTransactionId,
+      storeEnvironment: verifiedStoreSubscription?.environment,
+      storeLastVerifiedAt: new Date(),
+      storeExpiresAt: verifiedStoreSubscription?.expiresAt,
     });
     await this.createInvoiceIfRequired(payment);
 
@@ -891,6 +917,60 @@ export class PaymentsService {
     }
   }
 
+  private ensureStoreProductMatchesPlan(
+    plan: Plan,
+    dto: VerifyStoreSubscriptionDto,
+  ) {
+    const mapping =
+      dto.gateway === PaymentGateway.GOOGLE_PLAY
+        ? plan.storeProducts?.android
+        : plan.storeProducts?.ios;
+
+    if (!mapping || mapping.productType !== StoreProductType.SUBSCRIPTION) {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'plan_not_available_on_store',
+      });
+    }
+
+    if (mapping.productId !== dto.productId) {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'store_product_plan_mismatch',
+      });
+    }
+
+    if (
+      dto.gateway === PaymentGateway.GOOGLE_PLAY &&
+      plan.storeProducts?.android?.basePlanId !== dto.basePlanId
+    ) {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'store_base_plan_mismatch',
+      });
+    }
+
+    if (dto.offerId && mapping.offerId !== dto.offerId) {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'store_offer_mismatch',
+      });
+    }
+  }
+
+  private async verifyStoreReceiptWhenRequired(
+    dto: VerifyStoreSubscriptionDto,
+  ): Promise<VerifiedStoreSubscription | undefined> {
+    const mode =
+      this.configService.get<string>('payments.mobileStoreVerificationMode') ??
+      'sandbox';
+    if (mode !== 'strict') return undefined;
+
+    try {
+      return await this.storeReceiptVerifier.verify(dto);
+    } catch {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'store_receipt_verification_failed',
+      });
+    }
+  }
+
   private async createInvoiceIfRequired(payment: {
     _id?: { toString(): string };
     orderId: string;
@@ -1007,15 +1087,27 @@ export class PaymentsService {
       netAmount?: number;
       gateway?: PaymentGateway;
       storeProductId?: string;
+      storeBasePlanId?: string;
+      storeOfferId?: string;
+      storePurchaseToken?: string;
       storeTransactionId?: string;
       storeOriginalTransactionId?: string;
+      storeEnvironment?: string;
+      storeLastVerifiedAt?: Date;
+      storeExpiresAt?: Date;
     },
     options?: {
       paymentProvider?: PaymentGateway;
       autoRenew?: boolean;
       storeProductId?: string;
+      storeBasePlanId?: string;
+      storeOfferId?: string;
+      storePurchaseToken?: string;
       storeTransactionId?: string;
       storeOriginalTransactionId?: string;
+      storeEnvironment?: string;
+      storeLastVerifiedAt?: Date;
+      storeExpiresAt?: Date;
     },
   ) {
     if (payment.purpose !== PaymentPurpose.SUBSCRIPTION || !payment.planId) {
@@ -1030,11 +1122,17 @@ export class PaymentsService {
         paymentProvider: options?.paymentProvider ?? payment.gateway,
         autoRenew: options?.autoRenew,
         storeProductId: options?.storeProductId ?? payment.storeProductId,
+        storeBasePlanId: options?.storeBasePlanId,
+        storeOfferId: options?.storeOfferId,
+        storePurchaseToken: options?.storePurchaseToken,
         storeTransactionId:
           options?.storeTransactionId ?? payment.storeTransactionId,
         storeOriginalTransactionId:
           options?.storeOriginalTransactionId ??
           payment.storeOriginalTransactionId,
+        storeEnvironment: options?.storeEnvironment,
+        storeLastVerifiedAt: options?.storeLastVerifiedAt,
+        storeExpiresAt: options?.storeExpiresAt,
       },
     );
     await this.referralsService.awardSubscriptionReward(userId, {

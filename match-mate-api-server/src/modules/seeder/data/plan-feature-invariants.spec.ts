@@ -18,6 +18,7 @@ import {
   ROLE_PERMISSION_POLICIES,
   resolveRolePermissions,
 } from './role-permissions.seed-data';
+import { StoreProductType } from '@/modules/subscriptions/enums/store-product-type.enum';
 
 describe('plan and feature seed invariants', () => {
   it('defines every feature key exactly once', () => {
@@ -159,6 +160,33 @@ describe('plan and feature seed invariants', () => {
       expect(plan.autoRenewDefault).toBe(true);
       expect(plan.price).toBeGreaterThan(0);
       expect(plan.durationDays).toBeGreaterThan(0);
+    });
+  });
+
+  it('maps every paid recurring plan to unique store catalog entries', () => {
+    const paidPlans = PLAN_SEEDS.filter(
+      ({ planType, price, isCustom }) =>
+        price > 0 && planType !== PlanType.PROFILE_BOOST && !isCustom,
+    );
+    const androidBasePlans = paidPlans.map(
+      (plan) =>
+        `${plan.storeProducts?.android?.productId}:${plan.storeProducts?.android?.basePlanId}`,
+    );
+    const appleProducts = paidPlans.map(
+      (plan) => plan.storeProducts?.ios?.productId,
+    );
+
+    expect(new Set(androidBasePlans).size).toBe(paidPlans.length);
+    expect(new Set(appleProducts).size).toBe(paidPlans.length);
+    paidPlans.forEach((plan) => {
+      expect(plan.storeProducts?.android).toMatchObject({
+        productType: StoreProductType.SUBSCRIPTION,
+        offerId: 'trial-7-days',
+      });
+      expect(plan.storeProducts?.ios).toMatchObject({
+        productType: StoreProductType.SUBSCRIPTION,
+        subscriptionGroupId: 'matchmate_membership',
+      });
     });
   });
 });

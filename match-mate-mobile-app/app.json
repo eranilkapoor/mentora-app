@@ -108,7 +108,8 @@
           "faceIDPermission": "Allow MatchMate to use Face ID to unlock your account quickly."
         }
       ],
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-iap"
     ],
     "runtimeVersion": {
       "policy": "appVersion"

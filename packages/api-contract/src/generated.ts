@@ -3269,6 +3269,22 @@ export interface components {
             readonly price: number;
             readonly slug: string;
             readonly sortOrder?: number;
+            readonly storeProducts?: {
+                readonly android?: {
+                    readonly basePlanId?: string;
+                    readonly offerId?: string;
+                    readonly productId: string;
+                    /** @enum {string} */
+                    readonly productType: "subscription" | "consumable";
+                };
+                readonly ios?: {
+                    readonly offerId?: string;
+                    readonly productId: string;
+                    /** @enum {string} */
+                    readonly productType: "subscription" | "consumable";
+                    readonly subscriptionGroupId?: string;
+                };
+            };
             /** @enum {string} */
             readonly tier: "free" | "silver" | "gold" | "platinum" | "enterprise";
             readonly trialDays?: number;
@@ -3899,9 +3915,10 @@ export interface components {
             readonly signature: string;
         };
         readonly VerifyStoreSubscriptionDto: {
-            readonly couponCode?: string;
+            readonly basePlanId?: string;
             /** @enum {string} */
             readonly gateway: "apple_iap" | "google_play";
+            readonly offerId?: string;
             readonly originalTransactionId?: string;
             readonly payload?: Record<string, never>;
             readonly planId: string;

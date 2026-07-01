@@ -39,10 +39,25 @@ export class Subscription {
   storeProductId?: string;
 
   @Prop()
+  storeBasePlanId?: string;
+
+  @Prop()
+  storeOfferId?: string;
+
+  @Prop()
+  storePurchaseToken?: string;
+
+  @Prop()
   storeTransactionId?: string;
 
   @Prop()
   storeOriginalTransactionId?: string;
+
+  @Prop()
+  storeEnvironment?: string;
+
+  @Prop()
+  storeLastVerifiedAt?: Date;
 
   @Prop({ type: [Number], default: [] })
   reminderOffsetsSent?: number[];

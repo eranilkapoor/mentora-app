@@ -71,8 +71,8 @@ Status legend:
 | Subscription & billing screen | Done | `SubscriptionBilling` feature exists and is API-driven. |
 | Purchase history | Done | Billing details/history APIs and UI exist. |
 | Razorpay/Stripe/web gateway | Partly Done | Payment module and gateway enum exist; production credentials/webhook verification required. |
-| Google Play Billing support | Partly Done | `google_play` gateway/receipt DTO paths exist; native billing is now guarded by `EXPO_PUBLIC_STORE_BILLING_ENABLED` until a real purchase SDK/product mapping is added. |
-| Apple IAP support | Partly Done | `apple_iap` gateway/receipt DTO paths exist; native billing is now guarded by `EXPO_PUBLIC_STORE_BILLING_ENABLED` until a real purchase SDK/product mapping is added. |
+| Google Play Billing support | Partly Done | `expo-iap`, seeded product/base-plan mapping, live store prices, purchase/restore, API mapping enforcement, and strict Play API verification are implemented. Console setup, RTDN, and sandbox release evidence remain. |
+| Apple IAP support | Partly Done | `expo-iap`, seeded product/group mapping, live store prices, purchase/restore, API mapping enforcement, and strict App Store Server API verification are implemented. Console setup, Notifications V2, and sandbox release evidence remain. |
 | Webhook signature verification | Done | Payment webhook signature handling exists. |
 | Refund system | Done | Admin refund API/service exists. |
 | Plan expiry reminders | Done | Subscription expiry task/reminder logic exists. |
@@ -142,7 +142,7 @@ These are code/config tasks that can be completed immediately without waiting fo
 5. Partly Done - Add a reviewer test account: private template exists; real credentials must be created outside git.
 6. Done - Add a Play Store release QA checklist file with required screenshots/device matrix.
 7. Done - Verify/document EAS production build profile, Android `versionCode`, and signing setup.
-8. Partly Done - Add app store / Play billing client integration: backend verification exists and mobile is guarded; purchase SDK/product mapping still required.
+8. Partly Done - App Store/Play client purchase, restore, catalog mapping, and strict server verification are implemented; console products, provider notifications, and sandbox evidence remain.
 9. Done - Add a public web page or route for account deletion instructions: `GET /api/v1/account-deletion`.
 10. Partly Done - Add monitoring/APM for backend errors, latency, and uptime: adapter/checklist exist; external APM project and alert rules still required.
 11. Done - Add final dark-theme screenshot audit for auth, home, matches, profile, chat, settings, billing.

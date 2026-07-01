@@ -4,8 +4,55 @@ import {
   IsNumber,
   IsOptional,
   IsString,
+  ValidateNested,
 } from 'class-validator';
+import { Type } from 'class-transformer';
 import { BillingCycle, PlanTier, PlanType } from '@/common/enums';
+import { StoreProductType } from '../enums/store-product-type.enum';
+
+class AndroidStoreProductDto {
+  @IsString()
+  productId!: string;
+
+  @IsOptional()
+  @IsString()
+  basePlanId?: string;
+
+  @IsOptional()
+  @IsString()
+  offerId?: string;
+
+  @IsEnum(StoreProductType)
+  productType!: StoreProductType;
+}
+
+class IosStoreProductDto {
+  @IsString()
+  productId!: string;
+
+  @IsOptional()
+  @IsString()
+  subscriptionGroupId?: string;
+
+  @IsOptional()
+  @IsString()
+  offerId?: string;
+
+  @IsEnum(StoreProductType)
+  productType!: StoreProductType;
+}
+
+class PlanStoreProductsDto {
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AndroidStoreProductDto)
+  android?: AndroidStoreProductDto;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => IosStoreProductDto)
+  ios?: IosStoreProductDto;
+}
 
 export class CreatePlanDto {
   @IsString()
@@ -57,4 +104,9 @@ export class CreatePlanDto {
   @IsOptional()
   @IsString()
   description?: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PlanStoreProductsDto)
+  storeProducts?: PlanStoreProductsDto;
 }

@@ -49,6 +49,14 @@ export interface MembershipPlanFeature {
   };
 }
 
+export interface StoreProductMapping {
+  productId: string;
+  productType: "subscription" | "consumable";
+  basePlanId?: string;
+  subscriptionGroupId?: string;
+  offerId?: string;
+}
+
 export interface MembershipPlan {
   _id: string;
   name: string;
@@ -66,6 +74,10 @@ export interface MembershipPlan {
   sortOrder?: number;
   description?: string;
   features?: MembershipPlanFeature[];
+  storeProducts?: {
+    android?: StoreProductMapping;
+    ios?: StoreProductMapping;
+  };
 }
 
 export interface ActiveSubscription {
@@ -80,6 +92,8 @@ export interface ActiveSubscription {
   cancelledReason?: string;
   paymentProvider?: PaymentGateway;
   storeProductId?: string;
+  storeBasePlanId?: string;
+  storeOfferId?: string;
   storeTransactionId?: string;
   storeOriginalTransactionId?: string;
 }
@@ -185,11 +199,12 @@ export interface VerifyStoreSubscriptionRequest {
   gateway: Extract<PaymentGateway, "apple_iap" | "google_play">;
   planId: string;
   productId: string;
+  basePlanId?: string;
+  offerId?: string;
   transactionId: string;
   originalTransactionId?: string;
   receiptData?: string;
   purchaseToken?: string;
-  couponCode?: string;
   payload?: Record<string, unknown>;
 }
 

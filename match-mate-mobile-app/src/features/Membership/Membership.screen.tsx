@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { CommonActions } from '@react-navigation/native';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
@@ -47,9 +47,30 @@ export default function MembershipScreen(): React.ReactElement {
   const {
     handleCreateOrder,
     handleCreateBoostOrder,
-    handleStartTrial,
+    storePrices,
     isCreatingOrder,
   } = useMembershipActions();
+
+  const pricedDisplayPlans = useMemo(
+    () =>
+      displayPlans.map((plan) => ({
+        ...plan,
+        price: plan.id ? (storePrices[plan.id] ?? plan.price) : plan.price,
+      })),
+    [displayPlans, storePrices]
+  );
+  const pricedSelectedPlanItem = useMemo(
+    () =>
+      selectedPlanItem
+        ? {
+            ...selectedPlanItem,
+            price: selectedPlanItem.id
+              ? (storePrices[selectedPlanItem.id] ?? selectedPlanItem.price)
+              : selectedPlanItem.price,
+          }
+        : null,
+    [selectedPlanItem, storePrices]
+  );
 
   const onCreateOrder = useCallback(() => {
     if (selectedPlanItem?.isFree) return;
@@ -63,19 +84,15 @@ export default function MembershipScreen(): React.ReactElement {
       );
       return;
     }
-    if ((selectedPlanItem?.source?.trialDays ?? 0) > 0) {
-      void handleStartTrial(selectedPlanItem);
-      return;
-    }
     setIsCheckoutOpen(true);
-  }, [handleStartTrial, selectedPlanItem]);
+  }, [selectedPlanItem]);
 
   const onConfirmCheckout = useCallback(
     async (gateway: PaymentGateway) => {
-      await handleCreateOrder(selectedPlanItem, gateway);
+      await handleCreateOrder(pricedSelectedPlanItem, gateway);
       setIsCheckoutOpen(false);
     },
-    [handleCreateOrder, selectedPlanItem]
+    [handleCreateOrder, pricedSelectedPlanItem]
   );
 
   const onCreateBoostOrder = useCallback(() => {
@@ -139,7 +156,7 @@ export default function MembershipScreen(): React.ReactElement {
         {/* ── Tab content ────────────────────────────────────────── */}
         {activeTab === 'self' ? (
           <SelfServiceTab
-            displayPlans={displayPlans}
+            displayPlans={pricedDisplayPlans}
             featureRows={featureRows}
             selectedPlan={selectedPlan}
             selectedIndex={selectedIndex}
@@ -147,7 +164,7 @@ export default function MembershipScreen(): React.ReactElement {
           />
         ) : activeTab === 'assisted' ? (
           <AssistedTab
-            displayPlans={displayPlans}
+            displayPlans={pricedDisplayPlans}
             featureRows={featureRows}
             selectedPlan={selectedPlan}
             selectedIndex={selectedIndex}
@@ -155,7 +172,7 @@ export default function MembershipScreen(): React.ReactElement {
           />
         ) : (
           <EnterpriseTab
-            displayPlans={displayPlans}
+            displayPlans={pricedDisplayPlans}
             featureRows={featureRows}
             selectedIndex={selectedIndex}
           />
@@ -206,7 +223,7 @@ export default function MembershipScreen(): React.ReactElement {
       {/* ── Sticky CTA ─────────────────────────────────────────────── */}
       <MembershipCta
         tab={activeTab}
-        selectedPlanItem={selectedPlanItem}
+        selectedPlanItem={pricedSelectedPlanItem}
         isCreatingOrder={isCreatingOrder}
         isFetchingPlans={isFetchingPlans}
         onCreateOrder={onCreateOrder}
@@ -214,7 +231,7 @@ export default function MembershipScreen(): React.ReactElement {
 
       <PaymentOptionSheet
         visible={isCheckoutOpen}
-        selectedPlanItem={selectedPlanItem}
+        selectedPlanItem={pricedSelectedPlanItem}
         isCreatingOrder={isCreatingOrder}
         onClose={() => setIsCheckoutOpen(false)}
         onContinue={(gateway) => {

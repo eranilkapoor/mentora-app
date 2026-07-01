@@ -2,6 +2,26 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
 import { BillingCycle, PlanTier, PlanType } from '@/common/enums';
+import { StoreProductType } from '../enums/store-product-type.enum';
+
+export class AndroidStoreProduct {
+  productId!: string;
+  basePlanId?: string;
+  offerId?: string;
+  productType!: StoreProductType;
+}
+
+export class IosStoreProduct {
+  productId!: string;
+  subscriptionGroupId?: string;
+  offerId?: string;
+  productType!: StoreProductType;
+}
+
+export class PlanStoreProducts {
+  android?: AndroidStoreProduct;
+  ios?: IosStoreProduct;
+}
 
 @Schema({ collection: COLLECTION_NAMES.PLAN, timestamps: true })
 export class Plan {
@@ -52,6 +72,25 @@ export class Plan {
 
   @Prop({ default: 1 })
   version!: number;
+
+  @Prop({
+    type: {
+      android: {
+        productId: String,
+        basePlanId: String,
+        offerId: String,
+        productType: { type: String, enum: StoreProductType },
+      },
+      ios: {
+        productId: String,
+        subscriptionGroupId: String,
+        offerId: String,
+        productType: { type: String, enum: StoreProductType },
+      },
+    },
+    _id: false,
+  })
+  storeProducts?: PlanStoreProducts;
 }
 
 export type PlanDocument = Plan & Document;
@@ -62,3 +101,5 @@ PlanSchema.index({ planType: 1, sortOrder: 1 });
 PlanSchema.index({ price: 1 });
 PlanSchema.index({ isActive: 1 });
 PlanSchema.index({ sortOrder: 1 });
+PlanSchema.index({ 'storeProducts.android.productId': 1 });
+PlanSchema.index({ 'storeProducts.ios.productId': 1 });

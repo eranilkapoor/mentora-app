@@ -1,5 +1,20 @@
 import { BillingCycle, PlanTier, PlanType } from '@/common/enums';
 import { Plan } from '@/modules/subscriptions/schemas/plan.schema';
+import { StoreProductType } from '@/modules/subscriptions/enums/store-product-type.enum';
+
+const recurringStoreProducts = (tier: string, cycle: string) => ({
+  android: {
+    productId: `matchmate_${tier}`,
+    basePlanId: cycle,
+    offerId: 'trial-7-days',
+    productType: StoreProductType.SUBSCRIPTION,
+  },
+  ios: {
+    productId: `matchmate_${tier}_${cycle.replace('-', '_')}`,
+    subscriptionGroupId: 'matchmate_membership',
+    productType: StoreProductType.SUBSCRIPTION,
+  },
+});
 
 export const PLAN_SEEDS: Plan[] = [
   // ==========================================
@@ -45,6 +60,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Silver monthly subscription with extended profile visibility and communication limits.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('silver', 'monthly'),
   },
 
   // ==========================================
@@ -68,6 +84,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Silver quarterly subscription with balanced premium access and savings.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('silver', 'quarterly'),
   },
 
   // ==========================================
@@ -91,6 +108,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Silver yearly subscription with long-term value and core premium feature access.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('silver', 'yearly'),
   },
 
   // ==========================================
@@ -114,6 +132,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Gold monthly subscription with unlimited interests, chat, and advanced filters.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('gold', 'monthly'),
   },
 
   // ==========================================
@@ -137,6 +156,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Gold quarterly subscription with premium matchmaking benefits.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('gold', 'quarterly'),
   },
 
   // ==========================================
@@ -160,6 +180,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Gold yearly subscription with maximum savings and premium access.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('gold', 'yearly'),
   },
 
   // ==========================================
@@ -183,6 +204,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Platinum monthly subscription with AI matchmaking and priority ranking.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('platinum', 'monthly'),
   },
 
   // ==========================================
@@ -206,6 +228,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Platinum quarterly plan with concierge matchmaking and premium visibility.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('platinum', 'quarterly'),
   },
 
   // ==========================================
@@ -229,6 +252,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Ultimate yearly platinum experience with all premium features unlocked.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('platinum', 'yearly'),
   },
   // ==========================================
   //  ASSISTED HALF YEARLY
@@ -251,6 +275,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Assisted matchmaking for 6 months with concierge profile curation.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('assisted', 'half-yearly'),
   },
   // ==========================================
   //  ASSISTED YEARLY
@@ -273,6 +298,7 @@ export const PLAN_SEEDS: Plan[] = [
       'Premium assisted matchmaking for 12 months with personal matchmaker.',
     isActive: true,
     version: 1,
+    storeProducts: recurringStoreProducts('assisted', 'yearly'),
   },
   // ==========================================
   //  ENTERPRISE CUSTOM
@@ -317,5 +343,15 @@ export const PLAN_SEEDS: Plan[] = [
       'One-time 24 hour visibility boost for priority discovery ranking.',
     isActive: true,
     version: 1,
+    storeProducts: {
+      android: {
+        productId: 'matchmate_profile_boost_24h',
+        productType: StoreProductType.CONSUMABLE,
+      },
+      ios: {
+        productId: 'matchmate_profile_boost_24h',
+        productType: StoreProductType.CONSUMABLE,
+      },
+    },
   },
 ];

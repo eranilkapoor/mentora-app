@@ -41,8 +41,14 @@ export class SubscriptionsService {
       autoRenew?: boolean;
       trialEndsAt?: Date;
       storeProductId?: string;
+      storeBasePlanId?: string;
+      storeOfferId?: string;
+      storePurchaseToken?: string;
       storeTransactionId?: string;
       storeOriginalTransactionId?: string;
+      storeEnvironment?: string;
+      storeLastVerifiedAt?: Date;
+      storeExpiresAt?: Date;
     },
   ) {
     const plan = await this.planModel.findById(planId).lean().exec();
@@ -68,9 +74,9 @@ export class SubscriptionsService {
     );
 
     const startDate = new Date();
-    const endDate = new Date(
-      startDate.getTime() + plan.durationDays * 86_400_000,
-    );
+    const endDate =
+      options?.storeExpiresAt ??
+      new Date(startDate.getTime() + plan.durationDays * 86_400_000);
 
     const subscription = await this.subModel.create({
       userId: new Types.ObjectId(userId),
@@ -83,8 +89,13 @@ export class SubscriptionsService {
       autoRenew: options?.autoRenew ?? Boolean(plan.autoRenewDefault),
       trialEndsAt: options?.trialEndsAt,
       storeProductId: options?.storeProductId,
+      storeBasePlanId: options?.storeBasePlanId,
+      storeOfferId: options?.storeOfferId,
+      storePurchaseToken: options?.storePurchaseToken,
       storeTransactionId: options?.storeTransactionId,
       storeOriginalTransactionId: options?.storeOriginalTransactionId,
+      storeEnvironment: options?.storeEnvironment,
+      storeLastVerifiedAt: options?.storeLastVerifiedAt,
     });
 
     // Sync user membership tier for fast reads
@@ -107,8 +118,14 @@ export class SubscriptionsService {
       paymentId?: string;
       paymentProvider: PaymentGateway;
       storeProductId: string;
+      storeBasePlanId?: string;
+      storeOfferId?: string;
+      storePurchaseToken?: string;
       storeTransactionId: string;
       storeOriginalTransactionId?: string;
+      storeEnvironment?: string;
+      storeLastVerifiedAt?: Date;
+      storeExpiresAt?: Date;
     },
   ) {
     const existing = await this.subModel
@@ -127,8 +144,14 @@ export class SubscriptionsService {
       paymentProvider: options.paymentProvider,
       autoRenew: true,
       storeProductId: options.storeProductId,
+      storeBasePlanId: options.storeBasePlanId,
+      storeOfferId: options.storeOfferId,
+      storePurchaseToken: options.storePurchaseToken,
       storeTransactionId: options.storeTransactionId,
       storeOriginalTransactionId: options.storeOriginalTransactionId,
+      storeEnvironment: options.storeEnvironment,
+      storeLastVerifiedAt: options.storeLastVerifiedAt,
+      storeExpiresAt: options.storeExpiresAt,
     });
   }
 

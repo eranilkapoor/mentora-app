@@ -10,5 +10,16 @@ export default () => ({
     allowUnsignedVerification:
       process.env.PAYMENT_ALLOW_UNSIGNED_VERIFICATION !== 'false' &&
       process.env.NODE_ENV !== 'production',
+    googlePlay: {
+      packageName: process.env.GOOGLE_PLAY_PACKAGE_NAME || '',
+      serviceAccountJson: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON || '',
+    },
+    apple: {
+      issuerId: process.env.APPLE_STORE_ISSUER_ID || '',
+      keyId: process.env.APPLE_STORE_KEY_ID || '',
+      bundleId: process.env.APPLE_STORE_BUNDLE_ID || '',
+      privateKey: process.env.APPLE_STORE_PRIVATE_KEY || '',
+      environment: process.env.APPLE_STORE_ENVIRONMENT || 'production',
+    },
   },
 });

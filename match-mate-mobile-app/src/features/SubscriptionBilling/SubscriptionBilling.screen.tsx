@@ -27,6 +27,11 @@ import {
   formatPlanCycleLabel,
   formatPlanName,
 } from '@/features/Membership/Membership.utils';
+import { useMembershipActions } from '@/features/Membership/hooks/useMembershipActions';
+import {
+  isNativeStoreBillingPlatform,
+  isStoreBillingEnabled,
+} from '@/core/utils/billingConfig';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -283,6 +288,10 @@ export default function SubscriptionBillingScreen({
   const { data: plans = [] } = useGetMembershipPlansQuery();
   const [cancelSubscription, { isLoading: isCancellingRenewal }] =
     useCancelSubscriptionMutation();
+  const { restoreStorePurchases, isCreatingOrder: isRestoringPurchases } =
+    useMembershipActions();
+  const canRestoreStorePurchases =
+    isNativeStoreBillingPlatform() && isStoreBillingEnabled();
   const resolvedCurrentPlan = useMemo(
     () => resolvePlan(data?.currentPlan?.planId, plans),
     [data?.currentPlan?.planId, plans]
@@ -332,6 +341,21 @@ export default function SubscriptionBillingScreen({
       },
     });
   }, [cancelSubscription, refetch, t]);
+
+  const handleRestorePurchases = useCallback(async () => {
+    try {
+      await restoreStorePurchases();
+      showSuccess({
+        title: t('membership.billing.restore_started_title'),
+        message: t('membership.billing.restore_started_message'),
+      });
+    } catch {
+      showError({
+        title: t('membership.billing.restore_failed_title'),
+        message: t('membership.billing.restore_failed_message'),
+      });
+    }
+  }, [restoreStorePurchases, t]);
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
@@ -490,8 +514,18 @@ export default function SubscriptionBillingScreen({
             onPress={() =>
               appNavigation.navigate('Tabs', { screen: 'Membership' })
             }
-            isLast={!data.billing.autoRenew}
+            isLast={!canRestoreStorePurchases && !data.billing.autoRenew}
           />
+          {canRestoreStorePurchases ? (
+            <SettingsSelectItem
+              icon="refresh-cw"
+              label={t('membership.billing.restore_purchases')}
+              sublabel={t('membership.billing.restore_purchases_sub')}
+              disabled={isRestoringPurchases}
+              onPress={() => void handleRestorePurchases()}
+              isLast={!data.billing.autoRenew}
+            />
+          ) : null}
           {data.currentPlan && data.billing.autoRenew ? (
             <SettingsSelectItem
               icon="x-circle"

@@ -16,6 +16,7 @@ import {
   PaymentInvoiceSchema,
 } from './schemas/payment-invoice.schema';
 import { PaymentMaintenanceTask } from './tasks/payment-maintenance.task';
+import { StoreReceiptVerifierService } from './services/store-receipt-verifier.service';
 
 @Module({
   imports: [
@@ -28,7 +29,12 @@ import { PaymentMaintenanceTask } from './tasks/payment-maintenance.task';
     SubscriptionsModule,
     ReferralsModule,
   ],
-  providers: [PaymentsService, PaymentRepository, PaymentMaintenanceTask],
+  providers: [
+    PaymentsService,
+    PaymentRepository,
+    PaymentMaintenanceTask,
+    StoreReceiptVerifierService,
+  ],
   controllers: [PaymentsController],
   exports: [PaymentsService],
 })

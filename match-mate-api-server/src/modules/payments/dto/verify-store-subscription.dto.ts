@@ -20,6 +20,16 @@ export class VerifyStoreSubscriptionDto {
   @MaxLength(160)
   productId!: string;
 
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  basePlanId?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(160)
+  offerId?: string;
+
   @IsString()
   @MaxLength(255)
   transactionId!: string;
@@ -42,11 +52,6 @@ export class VerifyStoreSubscriptionDto {
   )
   @IsString()
   purchaseToken?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(40)
-  couponCode?: string;
 
   @IsOptional()
   @IsObject()

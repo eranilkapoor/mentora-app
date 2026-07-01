@@ -105,6 +105,12 @@ export class Payment {
   storeProductId?: string;
 
   @Prop({ index: true, sparse: true })
+  storeBasePlanId?: string;
+
+  @Prop({ sparse: true })
+  storeOfferId?: string;
+
+  @Prop({ index: true, sparse: true })
   storeTransactionId?: string;
 
   @Prop({ index: true, sparse: true })

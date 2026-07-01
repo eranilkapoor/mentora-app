@@ -10862,6 +10862,37 @@
           },
           "description": {
             "type": "string"
+          },
+          "storeProducts": {
+            "type": "object",
+            "properties": {
+              "android": {
+                "type": "object",
+                "properties": {
+                  "productId": { "type": "string" },
+                  "basePlanId": { "type": "string" },
+                  "offerId": { "type": "string" },
+                  "productType": {
+                    "type": "string",
+                    "enum": ["subscription", "consumable"]
+                  }
+                },
+                "required": ["productId", "productType"]
+              },
+              "ios": {
+                "type": "object",
+                "properties": {
+                  "productId": { "type": "string" },
+                  "subscriptionGroupId": { "type": "string" },
+                  "offerId": { "type": "string" },
+                  "productType": {
+                    "type": "string",
+                    "enum": ["subscription", "consumable"]
+                  }
+                },
+                "required": ["productId", "productType"]
+              }
+            }
           }
         },
         "required": [
@@ -11691,6 +11722,14 @@
             "type": "string",
             "maxLength": 160
           },
+          "basePlanId": {
+            "type": "string",
+            "maxLength": 160
+          },
+          "offerId": {
+            "type": "string",
+            "maxLength": 160
+          },
           "transactionId": {
             "type": "string",
             "maxLength": 255
@@ -11704,10 +11743,6 @@
           },
           "purchaseToken": {
             "type": "string"
-          },
-          "couponCode": {
-            "type": "string",
-            "maxLength": 40
           },
           "payload": {
             "type": "object"
