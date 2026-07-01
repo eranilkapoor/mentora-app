@@ -43,6 +43,327 @@
 
 ---
 
+## Native IAP Console Payload (Google + Apple)
+
+This payload is aligned with current source-of-truth mapping in `plans.seed-data.ts`, payment verification DTOs, and mobile IAP purchase flow.
+
+Use this as the exact setup blueprint for Google Play Console and App Store Connect.
+
+```json
+{
+   "catalogVersion": "2026-07-01",
+   "currency": "INR",
+   "notes": {
+      "excludedFromStore": ["FREE", "ASSISTED_CUSTOM"],
+      "trialOfferId": "trial-7-days",
+      "appleSubscriptionGroupId": "matchmate_membership"
+   },
+   "googlePlay": {
+      "subscriptions": [
+         {
+            "productId": "matchmate_silver",
+            "title": "MatchMate Silver",
+            "basePlans": [
+               {
+                  "basePlanId": "monthly",
+                  "linkedPlan": "SILVER_MONTHLY",
+                  "priceInr": 699,
+                  "durationDays": 30,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               },
+               {
+                  "basePlanId": "quarterly",
+                  "linkedPlan": "SILVER_QUARTERLY",
+                  "priceInr": 1799,
+                  "durationDays": 90,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               },
+               {
+                  "basePlanId": "yearly",
+                  "linkedPlan": "SILVER_YEARLY",
+                  "priceInr": 5999,
+                  "durationDays": 365,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               }
+            ]
+         },
+         {
+            "productId": "matchmate_gold",
+            "title": "MatchMate Gold",
+            "basePlans": [
+               {
+                  "basePlanId": "monthly",
+                  "linkedPlan": "GOLD_MONTHLY",
+                  "priceInr": 999,
+                  "durationDays": 30,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               },
+               {
+                  "basePlanId": "quarterly",
+                  "linkedPlan": "GOLD_QUARTERLY",
+                  "priceInr": 2499,
+                  "durationDays": 90,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               },
+               {
+                  "basePlanId": "yearly",
+                  "linkedPlan": "GOLD_YEARLY",
+                  "priceInr": 7999,
+                  "durationDays": 365,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               }
+            ]
+         },
+         {
+            "productId": "matchmate_platinum",
+            "title": "MatchMate Platinum",
+            "basePlans": [
+               {
+                  "basePlanId": "monthly",
+                  "linkedPlan": "PLATINUM_MONTHLY",
+                  "priceInr": 2499,
+                  "durationDays": 30,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               },
+               {
+                  "basePlanId": "quarterly",
+                  "linkedPlan": "PLATINUM_QUARTERLY",
+                  "priceInr": 6499,
+                  "durationDays": 90,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               },
+               {
+                  "basePlanId": "yearly",
+                  "linkedPlan": "PLATINUM_YEARLY",
+                  "priceInr": 19999,
+                  "durationDays": 365,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               }
+            ]
+         },
+         {
+            "productId": "matchmate_assisted",
+            "title": "MatchMate Assisted",
+            "basePlans": [
+               {
+                  "basePlanId": "half-yearly",
+                  "linkedPlan": "ASSISTED_HALF_YEARLY",
+                  "priceInr": 26186,
+                  "durationDays": 180,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               },
+               {
+                  "basePlanId": "yearly",
+                  "linkedPlan": "ASSISTED_YEARLY",
+                  "priceInr": 42373,
+                  "durationDays": 365,
+                  "offerId": "trial-7-days",
+                  "trialDays": 7
+               }
+            ]
+         }
+      ],
+      "consumables": [
+         {
+            "productId": "matchmate_profile_boost_24h",
+            "linkedPlan": "PROFILE_BOOST_24H",
+            "priceInr": 199,
+            "type": "consumable"
+         }
+      ]
+   },
+   "appStore": {
+      "subscriptionGroupId": "matchmate_membership",
+      "autoRenewableSubscriptions": [
+         {
+            "productId": "matchmate_silver_monthly",
+            "linkedPlan": "SILVER_MONTHLY",
+            "priceInr": 699,
+            "durationDays": 30,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_silver_quarterly",
+            "linkedPlan": "SILVER_QUARTERLY",
+            "priceInr": 1799,
+            "durationDays": 90,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_silver_yearly",
+            "linkedPlan": "SILVER_YEARLY",
+            "priceInr": 5999,
+            "durationDays": 365,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_gold_monthly",
+            "linkedPlan": "GOLD_MONTHLY",
+            "priceInr": 999,
+            "durationDays": 30,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_gold_quarterly",
+            "linkedPlan": "GOLD_QUARTERLY",
+            "priceInr": 2499,
+            "durationDays": 90,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_gold_yearly",
+            "linkedPlan": "GOLD_YEARLY",
+            "priceInr": 7999,
+            "durationDays": 365,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_platinum_monthly",
+            "linkedPlan": "PLATINUM_MONTHLY",
+            "priceInr": 2499,
+            "durationDays": 30,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_platinum_quarterly",
+            "linkedPlan": "PLATINUM_QUARTERLY",
+            "priceInr": 6499,
+            "durationDays": 90,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_platinum_yearly",
+            "linkedPlan": "PLATINUM_YEARLY",
+            "priceInr": 19999,
+            "durationDays": 365,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_assisted_half_yearly",
+            "linkedPlan": "ASSISTED_HALF_YEARLY",
+            "priceInr": 26186,
+            "durationDays": 180,
+            "introductoryTrialDays": 7
+         },
+         {
+            "productId": "matchmate_assisted_yearly",
+            "linkedPlan": "ASSISTED_YEARLY",
+            "priceInr": 42373,
+            "durationDays": 365,
+            "introductoryTrialDays": 7
+         }
+      ],
+      "consumables": [
+         {
+            "productId": "matchmate_profile_boost_24h",
+            "linkedPlan": "PROFILE_BOOST_24H",
+            "priceInr": 199,
+            "type": "consumable"
+         }
+      ]
+   }
+}
+```
+
+### Seed-Mapped Entitlement Keys (for backend verification)
+
+```json
+{
+   "SILVER_MONTHLY": {
+      "android": { "productId": "matchmate_silver", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_silver_monthly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "SILVER_QUARTERLY": {
+      "android": { "productId": "matchmate_silver", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_silver_quarterly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "SILVER_YEARLY": {
+      "android": { "productId": "matchmate_silver", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_silver_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "GOLD_MONTHLY": {
+      "android": { "productId": "matchmate_gold", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_gold_monthly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "GOLD_QUARTERLY": {
+      "android": { "productId": "matchmate_gold", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_gold_quarterly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "GOLD_YEARLY": {
+      "android": { "productId": "matchmate_gold", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_gold_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "PLATINUM_MONTHLY": {
+      "android": { "productId": "matchmate_platinum", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_platinum_monthly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "PLATINUM_QUARTERLY": {
+      "android": { "productId": "matchmate_platinum", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_platinum_quarterly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "PLATINUM_YEARLY": {
+      "android": { "productId": "matchmate_platinum", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_platinum_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "ASSISTED_HALF_YEARLY": {
+      "android": { "productId": "matchmate_assisted", "basePlanId": "half-yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_assisted_half_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "ASSISTED_YEARLY": {
+      "android": { "productId": "matchmate_assisted", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "matchmate_assisted_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+   },
+   "PROFILE_BOOST_24H": {
+      "android": { "productId": "matchmate_profile_boost_24h", "productType": "consumable" },
+      "ios": { "productId": "matchmate_profile_boost_24h", "productType": "consumable" }
+   }
+}
+```
+
+### Store Setup Checklist (Execution Order)
+
+1. Google Play Console:
+    - Create subscription products: `matchmate_silver`, `matchmate_gold`, `matchmate_platinum`, `matchmate_assisted`.
+    - Under each product, create base plans exactly as above (`monthly`, `quarterly`, `yearly`, `half-yearly`).
+    - Under each base plan, create an offer `trial-7-days` with 7-day free trial.
+    - Create in-app product `matchmate_profile_boost_24h` as consumable.
+    - Activate products in all launch countries and set regional pricing.
+
+2. App Store Connect:
+    - Create subscription group `matchmate_membership`.
+    - Create all 11 auto-renewable product IDs listed above inside the same group.
+    - Configure 7-day introductory trial for each subscription product.
+    - Create non-consumable in-app purchase `matchmate_profile_boost_24h` as consumable.
+    - Set pricing and availability for target storefronts.
+
+3. Backend strict verification requirements:
+    - Set store credentials and keep strict mode enabled in production:
+       - `PAYMENT_MOBILE_STORE_VERIFICATION_MODE=strict`
+       - `PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED=true`
+    - Configure Google and Apple server verification secrets from `docs/launch/STORE-BILLING-INTEGRATION.md`.
+
+4. Mobile runtime verification:
+    - Ensure `EXPO_PUBLIC_STORE_BILLING_ENABLED=true` for release channels using native IAP.
+    - Confirm each plan from API has expected `storeProducts` mapping.
+    - Confirm purchase verify payload sends matching `productId`, `basePlanId`, and `offerId` (Google) and matching `productId` (Apple).
+
+5. Sandbox QA before production:
+    - Test new purchase, trial-eligible purchase, trial-ineligible fallback, renewal, grace period, cancellation, refund, reinstall + restore.
+    - Test duplicate transaction replay and verify idempotent backend behavior.
+    - Validate consumable boost purchase replay and entitlement application.
+
+---
+
 ## Tier Strategy
 
 ### Free — Activation and trust only
