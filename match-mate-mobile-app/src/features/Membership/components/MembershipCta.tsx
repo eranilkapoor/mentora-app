@@ -40,9 +40,7 @@ export function MembershipCta({
             selectedPlanItem?.renewalLabel ??
             (tab === 'assisted'
               ? t('membership.tab_assisted')
-              : tab === 'enterprise'
-                ? t('membership.custom_terms')
-                : t('membership.tab_self'))}
+              : t('membership.tab_self'))}
         </Text>
       </View>
       <TouchableOpacity

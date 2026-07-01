@@ -3265,7 +3265,7 @@ export interface components {
             readonly isPopular?: boolean;
             readonly name: string;
             /** @enum {string} */
-            readonly planType?: "self_service" | "assisted" | "enterprise" | "profile_boost";
+            readonly planType?: "self_service" | "assisted" | "profile_boost";
             readonly price: number;
             readonly slug: string;
             readonly sortOrder?: number;

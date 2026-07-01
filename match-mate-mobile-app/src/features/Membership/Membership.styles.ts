@@ -47,7 +47,6 @@ export const membershipStyles = (
       color: theme.colors.white,
       marginBottom: 4,
     },
-    // Fixed: accentLight → rgba on primary background
     heroSubtitle: {
       fontSize: 13,
       color: theme.colors.white,
@@ -62,9 +61,9 @@ export const membershipStyles = (
     heroStat: {
       flex: 1,
       minWidth: 0,
-      backgroundColor: 'rgba(255, 255, 255, 0.14)',
+      backgroundColor: theme.colors.membershipHeroStatBackground,
       borderWidth: StyleSheet.hairlineWidth,
-      borderColor: 'rgba(255, 255, 255, 0.24)',
+      borderColor: theme.colors.membershipHeroStatBorder,
       borderRadius: 10,
       paddingHorizontal: 6,
       paddingVertical: 9,
@@ -152,6 +151,77 @@ export const membershipStyles = (
       marginTop: 1,
     },
 
+    cycleSection: {
+      marginBottom: 18,
+    },
+    cycleHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      gap: 12,
+      marginBottom: 10,
+    },
+    cycleTitle: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: theme.colors.textPrimary,
+    },
+    cycleSubtitle: {
+      marginTop: 2,
+      fontSize: 11,
+      lineHeight: 16,
+      color: theme.colors.textMuted,
+    },
+    cycleSelector: {
+      flexDirection: 'row',
+      padding: 3,
+      gap: 3,
+      borderRadius: 10,
+      backgroundColor: theme.colors.backgroundLight,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
+    },
+    cycleOption: {
+      flex: 1,
+      minWidth: 0,
+      minHeight: 38,
+      paddingHorizontal: 4,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: 7,
+    },
+    cycleOptionActive: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
+    },
+    cycleOptionText: {
+      fontSize: 11,
+      fontWeight: '700',
+      color: theme.colors.textSecondary,
+      textAlign: 'center',
+    },
+    cycleOptionTextActive: {
+      color: theme.colors.primary,
+      fontWeight: '800',
+    },
+    planSectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'flex-end',
+      justifyContent: 'space-between',
+      gap: 12,
+      marginBottom: 12,
+    },
+    planSectionTitle: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: theme.colors.textPrimary,
+    },
+    planSectionMeta: {
+      fontSize: 11,
+      color: theme.colors.textMuted,
+    },
+
     // ─── Plan Cards ───────────────────────────────────────────────────────
     planRow: {
       flexDirection: 'row',
@@ -164,6 +234,12 @@ export const membershipStyles = (
       alignItems: 'stretch',
       marginBottom: 20,
       gap: 12,
+    },
+    planRowThree: {
+      flexDirection: 'row',
+      alignItems: 'stretch',
+      marginBottom: 20,
+      gap: 8,
     },
     planCard: {
       width: 132,
@@ -190,6 +266,12 @@ export const membershipStyles = (
       flex: 1,
       width: 'auto',
       minWidth: 0,
+    },
+    planCardCompact: {
+      flex: 1,
+      width: 'auto',
+      minWidth: 0,
+      paddingHorizontal: 8,
     },
     planCardActive: {
       borderColor: theme.colors.primary,
@@ -683,46 +765,16 @@ export const membershipStyles = (
       height: 1,
       backgroundColor: theme.colors.divider,
     },
-    card: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 16,
-      borderWidth: StyleSheet.hairlineWidth,
-      borderColor: theme.colors.divider,
-      overflow: 'hidden',
-      marginBottom: 20,
-      ...Platform.select({
-        android: { elevation: 2 },
-        ios: {
-          shadowColor: theme.colors.black,
-          shadowOffset: { width: 0, height: 2 },
-          shadowOpacity: 0.06,
-          shadowRadius: 6,
-        },
-        web: {},
-      }),
-    },
-    cardTopAccent: {
-      height: 4,
-      backgroundColor: theme.colors.accent,
-    },
-    enterpriseCard: {
-      backgroundColor: theme.colors.surface,
-      borderRadius: 12,
-      borderWidth: 1,
-      borderColor: theme.colors.primaryBorder,
-      overflow: 'hidden',
-      marginBottom: 20,
-    },
-    enterpriseHeader: {
+    assistedSummary: {
       flexDirection: 'row',
-      alignItems: 'center',
+      alignItems: 'flex-start',
       gap: 12,
-      paddingHorizontal: 16,
-      paddingTop: 16,
+      marginBottom: 18,
+      paddingHorizontal: 2,
     },
-    enterpriseIcon: {
-      width: 40,
-      height: 40,
+    assistedSummaryIcon: {
+      width: 38,
+      height: 38,
       borderRadius: 8,
       alignItems: 'center',
       justifyContent: 'center',
@@ -730,64 +782,21 @@ export const membershipStyles = (
       borderWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.primaryBorder,
     },
-    enterpriseHeaderCopy: {
+    assistedSummaryCopy: {
       flex: 1,
       minWidth: 0,
     },
-    enterpriseEyebrow: {
-      fontSize: 10,
-      lineHeight: 14,
-      fontWeight: '800',
-      color: theme.colors.primary,
-    },
-    enterpriseTitle: {
-      fontSize: 18,
-      lineHeight: 24,
-      fontWeight: '800',
-      color: theme.colors.textPrimary,
-    },
-    enterpriseDescription: {
-      paddingHorizontal: 16,
-      paddingTop: 14,
-      paddingBottom: 16,
-      fontSize: 13,
+    assistedSummaryTitle: {
+      fontSize: 15,
       lineHeight: 20,
-      color: theme.colors.textSecondary,
-    },
-    enterpriseFooter: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      gap: 12,
-      paddingHorizontal: 16,
-      paddingVertical: 12,
-      backgroundColor: theme.colors.backgroundLight,
-      borderTopWidth: StyleSheet.hairlineWidth,
-      borderTopColor: theme.colors.divider,
-    },
-    enterprisePrice: {
-      flex: 1,
-      fontSize: 16,
-      lineHeight: 22,
       fontWeight: '800',
       color: theme.colors.textPrimary,
     },
-    enterpriseTerms: {
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: 12,
-      fontSize: 11,
-      fontWeight: '700',
-      color: theme.colors.primary,
-      backgroundColor: theme.colors.primaryLight,
-    },
-    assistedDescriptionText: {
-      paddingHorizontal: 16,
-      paddingVertical: 14,
-      fontSize: 14,
-      fontWeight: '700',
-      color: theme.colors.textPrimary,
-      lineHeight: 21,
+    assistedSummaryDescription: {
+      marginTop: 3,
+      fontSize: 12,
+      lineHeight: 18,
+      color: theme.colors.textSecondary,
     },
     benefitRow: {
       flexDirection: 'row',

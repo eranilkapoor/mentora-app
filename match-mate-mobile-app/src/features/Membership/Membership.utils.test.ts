@@ -2,15 +2,17 @@ import type { MembershipPlan } from '@matchmate/api-contract';
 import {
   buildDisplayPlans,
   formatMembershipPlanDisplayName,
+  getAvailableBillingCycles,
   getPlanTypeForTab,
+  selectSelfServicePlans,
 } from './Membership.utils';
 
-const enterprisePlan: MembershipPlan = {
-  _id: 'enterprise-plan',
-  name: 'ENTERPRISE_CUSTOM',
-  slug: 'enterprise-custom',
+const customAssistedPlan: MembershipPlan = {
+  _id: 'assisted-custom',
+  name: 'ASSISTED_CUSTOM',
+  slug: 'assisted-custom',
   tier: 'enterprise',
-  planType: 'enterprise',
+  planType: 'assisted',
   billingCycle: 'custom',
   price: 0,
   durationDays: 0,
@@ -26,16 +28,18 @@ const enterprisePlan: MembershipPlan = {
   ],
 };
 
-describe('enterprise membership presentation', () => {
-  it('uses a dedicated plan type and enterprise name', () => {
-    expect(getPlanTypeForTab('enterprise')).toBe('enterprise');
-    expect(formatMembershipPlanDisplayName(enterprisePlan)).toBe('Enterprise');
+describe('custom assisted membership presentation', () => {
+  it('uses the assisted plan group and a clear custom name', () => {
+    expect(getPlanTypeForTab('assisted')).toBe('assisted');
+    expect(formatMembershipPlanDisplayName(customAssistedPlan)).toBe(
+      'Custom Assisted Matchmaking'
+    );
   });
 
-  it('renders quote-based terms without treating the plan as free', () => {
-    expect(buildDisplayPlans([enterprisePlan], 'enterprise')).toEqual([
+  it('renders custom terms inside the assisted plan collection', () => {
+    expect(buildDisplayPlans([customAssistedPlan], 'assisted')).toEqual([
       expect.objectContaining({
-        name: 'Enterprise',
+        name: 'Custom Assisted Matchmaking',
         price: 'Custom pricing',
         durationLabel: 'Custom term',
         isCustom: true,
@@ -46,11 +50,23 @@ describe('enterprise membership presentation', () => {
   });
 });
 
-describe('membership recommendations', () => {
-  it('renders only one recommendation when the API flags multiple plans', () => {
+describe('self-service membership choices', () => {
+  it('excludes Free and keeps one recommendation when API flags multiple plans', () => {
     const plans: MembershipPlan[] = [
       {
-        ...enterprisePlan,
+        ...customAssistedPlan,
+        _id: 'free',
+        name: 'FREE',
+        slug: 'free',
+        tier: 'free',
+        planType: 'self_service',
+        billingCycle: 'yearly',
+        durationDays: 365,
+        price: 0,
+        isCustom: false,
+      },
+      {
+        ...customAssistedPlan,
         _id: 'gold-monthly',
         name: 'GOLD_MONTHLY',
         slug: 'gold-monthly',
@@ -64,7 +80,7 @@ describe('membership recommendations', () => {
         sortOrder: 5,
       },
       {
-        ...enterprisePlan,
+        ...customAssistedPlan,
         _id: 'platinum-quarterly',
         name: 'PLATINUM_QUARTERLY',
         slug: 'platinum-quarterly',
@@ -81,9 +97,47 @@ describe('membership recommendations', () => {
 
     const displayPlans = buildDisplayPlans(plans, 'self');
 
+    expect(displayPlans.some(({ isFree }) => isFree)).toBe(false);
     expect(displayPlans.filter(({ best }) => best)).toHaveLength(1);
     expect(displayPlans.find(({ best }) => best)?.id).toBe(
       'platinum-quarterly'
     );
+  });
+
+  it('returns exactly Silver, Gold, and Platinum for the selected cycle', () => {
+    const tierPlan = (
+      tier: 'silver' | 'gold' | 'platinum',
+      cycle: 'monthly' | 'quarterly'
+    ): MembershipPlan => ({
+      ...customAssistedPlan,
+      _id: `${tier}-${cycle}`,
+      name: `${tier}_${cycle}`.toUpperCase(),
+      slug: `${tier}-${cycle}`,
+      tier,
+      planType: 'self_service',
+      billingCycle: cycle,
+      durationDays: cycle === 'monthly' ? 30 : 90,
+      price: 100,
+      isCustom: false,
+    });
+    const displayPlans = buildDisplayPlans(
+      [
+        tierPlan('silver', 'monthly'),
+        tierPlan('gold', 'monthly'),
+        tierPlan('platinum', 'monthly'),
+        tierPlan('silver', 'quarterly'),
+        tierPlan('gold', 'quarterly'),
+        tierPlan('platinum', 'quarterly'),
+      ],
+      'self'
+    );
+
+    expect(getAvailableBillingCycles(displayPlans)).toEqual([
+      'monthly',
+      'quarterly',
+    ]);
+    expect(
+      selectSelfServicePlans(displayPlans, 'quarterly').map(({ tier }) => tier)
+    ).toEqual(['silver', 'gold', 'platinum']);
   });
 });

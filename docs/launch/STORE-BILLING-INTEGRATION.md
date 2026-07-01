@@ -18,7 +18,7 @@ Create these exact IDs. They are seeded in `plans.seed-data.ts`.
 | Platinum | `matchmate_platinum` | `monthly`, `quarterly`, `yearly` | `matchmate_platinum_monthly`, `matchmate_platinum_quarterly`, `matchmate_platinum_yearly` |
 | Assisted | `matchmate_assisted` | `half-yearly`, `yearly` | `matchmate_assisted_half_yearly`, `matchmate_assisted_yearly` |
 
-Put all Apple subscription products in subscription group `matchmate_membership`. Configure the seven-day trial as Apple introductory offers and as Google offers named `trial-7-days` under every base plan. The app falls back to the regular Google base-plan offer when an account is not eligible. Free and Enterprise Custom are not store products. `matchmate_profile_boost_24h` is a separate consumable product.
+Put all Apple subscription products in subscription group `matchmate_membership`. Configure the seven-day trial as Apple introductory offers and as Google offers named `trial-7-days` under every base plan. The app falls back to the regular Google base-plan offer when an account is not eligible. Free and Custom Assisted are not store products. `matchmate_profile_boost_24h` is a separate consumable product.
 
 ## Runtime Flow
 

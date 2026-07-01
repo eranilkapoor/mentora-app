@@ -15,7 +15,6 @@ import { useMembershipActions } from './hooks/useMembershipActions';
 import { MembershipHeroCard } from './components/MembershipHeroCard';
 import { SelfServiceTab } from './components/SelfServiceTab';
 import { AssistedTab } from './components/AssistedTab';
-import { EnterpriseTab } from './components/EnterpriseTab';
 import { MembershipCta } from './components/MembershipCta';
 import { PaymentOptionSheet } from './components/PaymentOptionSheet';
 import { MEMBERSHIP_TABS } from './Membership.constants';
@@ -42,6 +41,9 @@ export default function MembershipScreen(): React.ReactElement {
     selectedIndex,
     activePlanName = 'Free',
     isFetchingPlans,
+    billingCycles,
+    selectedBillingCycle,
+    setSelectedBillingCycle,
   } = useMembershipData(activeTab);
 
   const {
@@ -161,20 +163,17 @@ export default function MembershipScreen(): React.ReactElement {
             selectedPlan={selectedPlan}
             selectedIndex={selectedIndex}
             onSelectPlan={setSelectedPlan}
+            billingCycles={billingCycles}
+            selectedBillingCycle={selectedBillingCycle}
+            onSelectBillingCycle={setSelectedBillingCycle}
           />
-        ) : activeTab === 'assisted' ? (
+        ) : (
           <AssistedTab
             displayPlans={pricedDisplayPlans}
             featureRows={featureRows}
             selectedPlan={selectedPlan}
             selectedIndex={selectedIndex}
             onSelectPlan={setSelectedPlan}
-          />
-        ) : (
-          <EnterpriseTab
-            displayPlans={pricedDisplayPlans}
-            featureRows={featureRows}
-            selectedIndex={selectedIndex}
           />
         )}
 

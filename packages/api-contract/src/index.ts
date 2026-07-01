@@ -35,7 +35,6 @@ export type PaymentStatus =
 export type MembershipPlanType =
   | "self_service"
   | "assisted"
-  | "enterprise"
   | "profile_boost";
 
 export interface MembershipPlanFeature {

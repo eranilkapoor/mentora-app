@@ -7,7 +7,11 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { membershipStyles } from '../Membership.styles';
 import { FeatureRow } from './FeatureRow';
 import { DisplayFeatureRow, DisplayPlan } from '../Membership.types';
-import { ASSISTED_TRUST_BADGES } from '../Membership.constants';
+import {
+  ASSISTED_TRUST_BADGES,
+  CUSTOM_ASSISTED_TRUST_BADGES,
+} from '../Membership.constants';
+import { CustomAssistedPlanDetails } from './CustomAssistedPlanDetails';
 
 interface Props {
   displayPlans: DisplayPlan[];
@@ -28,6 +32,9 @@ export function AssistedTab({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const selected = displayPlans[selectedIndex] ?? displayPlans[0];
+  const trustBadges = selected?.isCustom
+    ? CUSTOM_ASSISTED_TRUST_BADGES
+    : ASSISTED_TRUST_BADGES;
 
   return (
     <>
@@ -40,14 +47,7 @@ export function AssistedTab({
         <View style={styles.dividerLine} />
       </View>
 
-      <View style={styles.card}>
-        <View style={styles.cardTopAccent} />
-        <Text style={styles.assistedDescriptionText}>
-          {selected?.description ?? t('membership.screen_subtitle')}
-        </Text>
-      </View>
-
-      <View style={styles.planRowTwo}>
+      <View style={styles.planRowThree}>
         {displayPlans.map((plan) => {
           const active = selectedPlan === plan.id;
 
@@ -56,7 +56,7 @@ export function AssistedTab({
               key={plan.id}
               style={[
                 styles.planCard,
-                styles.planCardExpanded,
+                styles.planCardCompact,
                 active && styles.planCardActive,
               ]}
               onPress={() => {
@@ -102,34 +102,59 @@ export function AssistedTab({
         })}
       </View>
 
-      <View style={styles.featureTableCard}>
-        <View style={styles.featureTableHeader}>
-          <Text style={styles.featureHeaderLabel}>
-            {t('membership.features_header')}
-          </Text>
-          <View style={styles.featureValues}>
-            <Text
-              style={[styles.featureHeaderCol, styles.featureHeaderColActive]}
-              numberOfLines={1}
-            >
-              {selected?.name ?? ''}
-            </Text>
-          </View>
-        </View>
-
-        {featureRows.map((feature, index) => (
-          <FeatureRow
-            key={feature.key}
-            label={feature.label}
-            values={[feature.values[selectedIndex] ?? '0']}
-            selectedIndex={0}
-            isLast={index === featureRows.length - 1}
+      <View style={styles.assistedSummary}>
+        <View style={styles.assistedSummaryIcon}>
+          <Feather
+            name={selected?.isCustom ? 'sliders' : 'award'}
+            size={18}
+            color={theme.colors.primary}
           />
-        ))}
+        </View>
+        <View style={styles.assistedSummaryCopy}>
+          <Text style={styles.assistedSummaryTitle}>
+            {selected?.name ?? t('membership.tab_assisted')}
+          </Text>
+          <Text style={styles.assistedSummaryDescription}>
+            {selected?.description ?? t('membership.screen_subtitle')}
+          </Text>
+        </View>
       </View>
 
+      {selected?.isCustom ? (
+        <CustomAssistedPlanDetails
+          featureRows={featureRows}
+          selectedIndex={selectedIndex}
+        />
+      ) : (
+        <View style={styles.featureTableCard}>
+          <View style={styles.featureTableHeader}>
+            <Text style={styles.featureHeaderLabel}>
+              {t('membership.features_header')}
+            </Text>
+            <View style={styles.featureValues}>
+              <Text
+                style={[styles.featureHeaderCol, styles.featureHeaderColActive]}
+                numberOfLines={1}
+              >
+                {selected?.name ?? ''}
+              </Text>
+            </View>
+          </View>
+
+          {featureRows.map((feature, index) => (
+            <FeatureRow
+              key={feature.key}
+              label={feature.label}
+              values={[feature.values[selectedIndex] ?? '0']}
+              selectedIndex={0}
+              isLast={index === featureRows.length - 1}
+            />
+          ))}
+        </View>
+      )}
+
       <View style={styles.trustRow}>
-        {ASSISTED_TRUST_BADGES.map((badge) => (
+        {trustBadges.map((badge) => (
           <View key={badge.labelKey} style={styles.trustBadge}>
             <Feather name={badge.icon} size={13} color={theme.colors.primary} />
             <Text style={styles.trustText}>{t(badge.labelKey)}</Text>

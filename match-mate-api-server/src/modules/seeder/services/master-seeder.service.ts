@@ -116,7 +116,7 @@ import {
 } from '@/modules/notifications/schemas/notification-templates.schema';
 import {
   FEATURE_SEEDS,
-  ENTERPRISE_FEATURE_MAPPINGS,
+  CUSTOM_ASSISTED_FEATURE_MAPPINGS,
   FIXED_PLAN_LIMITS,
   INDIAN_DUMMY_PROFILE_SEED_DATA,
   NOTIFICATION_TEMPLATE_SEEDS,
@@ -978,7 +978,7 @@ export class MasterSeederService {
       | 'PLATINUM_YEARLY'
       | 'ASSISTED_HALF_YEARLY'
       | 'ASSISTED_YEARLY'
-      | 'ENTERPRISE_CUSTOM'
+      | 'ASSISTED_CUSTOM'
       | 'PROFILE_BOOST_24H';
 
     type FeatureValue = number | boolean | string;
@@ -1174,8 +1174,8 @@ export class MasterSeederService {
       );
     });
 
-    ENTERPRISE_FEATURE_MAPPINGS.forEach(({ featureKey, value }) =>
-      addFeature('ENTERPRISE_CUSTOM', featureKey, value),
+    CUSTOM_ASSISTED_FEATURE_MAPPINGS.forEach(({ featureKey, value }) =>
+      addFeature('ASSISTED_CUSTOM', featureKey, value),
     );
 
     // ==========================================
@@ -1426,7 +1426,7 @@ export class MasterSeederService {
       }
 
       const persistedValue =
-        mapping.planSlug !== 'ENTERPRISE_CUSTOM' && feature.type === 'boolean'
+        mapping.planSlug !== 'ASSISTED_CUSTOM' && feature.type === 'boolean'
           ? Boolean(mapping.value)
           : mapping.value;
 

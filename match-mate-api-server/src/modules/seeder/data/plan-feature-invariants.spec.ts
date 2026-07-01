@@ -8,9 +8,9 @@ import {
   Role,
 } from '@/common/enums';
 import {
-  ENTERPRISE_FEATURE_MAPPINGS,
-  ENTERPRISE_FEATURE_VALUE,
-} from './enterprise-features.seed-data';
+  CUSTOM_ASSISTED_FEATURE_MAPPINGS,
+  CUSTOM_ASSISTED_FEATURE_VALUE,
+} from './custom-assisted-features.seed-data';
 import { FEATURE_SEEDS } from './features.seed-data';
 import { PLAN_SEEDS } from './plans.seed-data';
 import { FIXED_PLAN_LIMITS } from './fixed-plan-limits.seed-data';
@@ -28,15 +28,15 @@ describe('plan and feature seed invariants', () => {
     expect(new Set(seededKeys)).toEqual(new Set(Object.values(FeatureKey)));
   });
 
-  it('defines one quote-based enterprise plan', () => {
-    const enterprisePlans = PLAN_SEEDS.filter(
-      ({ tier }) => tier === PlanTier.ENTERPRISE,
+  it('defines one quote-based custom assisted plan', () => {
+    const customAssistedPlans = PLAN_SEEDS.filter(
+      ({ planType, isCustom }) => planType === PlanType.ASSISTED && isCustom,
     );
 
-    expect(enterprisePlans).toHaveLength(1);
-    expect(enterprisePlans[0]).toMatchObject({
-      name: 'ENTERPRISE_CUSTOM',
-      planType: PlanType.ENTERPRISE,
+    expect(customAssistedPlans).toHaveLength(1);
+    expect(customAssistedPlans[0]).toMatchObject({
+      name: 'ASSISTED_CUSTOM',
+      planType: PlanType.ASSISTED,
       billingCycle: BillingCycle.CUSTOM,
       price: 0,
       durationDays: 0,
@@ -46,22 +46,22 @@ describe('plan and feature seed invariants', () => {
     });
   });
 
-  it('maps every capability to a custom enterprise value', () => {
-    const mappedKeys = ENTERPRISE_FEATURE_MAPPINGS.map(
+  it('maps every capability to a custom assisted value', () => {
+    const mappedKeys = CUSTOM_ASSISTED_FEATURE_MAPPINGS.map(
       ({ featureKey }) => featureKey,
     );
 
     expect(new Set(mappedKeys)).toEqual(new Set(Object.values(FeatureKey)));
     expect(
-      ENTERPRISE_FEATURE_MAPPINGS.every(
-        ({ value }) => value === ENTERPRISE_FEATURE_VALUE,
+      CUSTOM_ASSISTED_FEATURE_MAPPINGS.every(
+        ({ value }) => value === CUSTOM_ASSISTED_FEATURE_VALUE,
       ),
     ).toBe(true);
   });
 
   it('marks fixed plans as non-custom', () => {
     expect(
-      PLAN_SEEDS.filter(({ tier }) => tier !== PlanTier.ENTERPRISE).every(
+      PLAN_SEEDS.filter(({ isCustom }) => !isCustom).every(
         ({ isCustom }) => isCustom === false,
       ),
     ).toBe(true);
@@ -129,12 +129,12 @@ describe('plan and feature seed invariants', () => {
     });
   });
 
-  it('uses numeric defaults for fixed limits and custom only for enterprise', () => {
+  it('uses numeric defaults for fixed limits and custom for custom scope', () => {
     FEATURE_SEEDS.forEach((feature) => {
       if (!['limit', 'quota', 'duration'].includes(feature.type)) return;
 
       if (feature.category === FeatureCategory.ENTERPRISE) {
-        expect(feature.defaultValue).toBe(ENTERPRISE_FEATURE_VALUE);
+        expect(feature.defaultValue).toBe(CUSTOM_ASSISTED_FEATURE_VALUE);
       } else {
         expect(typeof feature.defaultValue).toBe('number');
       }

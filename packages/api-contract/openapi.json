@@ -10820,7 +10820,6 @@
             "enum": [
               "self_service",
               "assisted",
-              "enterprise",
               "profile_boost"
             ]
           },

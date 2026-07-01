@@ -163,7 +163,6 @@ export class SubscriptionsService {
       !requestedPlan.isActive ||
       requestedPlan.price <= 0 ||
       requestedPlan.planType === PlanType.PROFILE_BOOST ||
-      requestedPlan.planType === PlanType.ENTERPRISE ||
       requestedPlan.isCustom
     ) {
       return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND, {

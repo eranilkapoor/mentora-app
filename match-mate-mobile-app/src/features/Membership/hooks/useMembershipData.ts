@@ -6,11 +6,14 @@ import {
 import {
   buildDisplayPlans,
   buildFeatureRows,
-  formatPlanName,
+  formatMembershipPlanDisplayName,
+  getAvailableBillingCycles,
+  selectSelfServicePlans,
 } from '../Membership.utils';
 import {
   DisplayFeatureRow,
   DisplayPlan,
+  MembershipBillingCycle,
   MembershipTab,
 } from '../Membership.types';
 
@@ -35,49 +38,57 @@ export function useMembershipData(activeTab: MembershipTab) {
   >({
     self: '',
     assisted: '',
-    enterprise: '',
   });
+  const [selectedBillingCycle, setSelectedBillingCycle] =
+    useState<MembershipBillingCycle>('quarterly');
 
-  const selfPlans = useMemo<DisplayPlan[]>(
+  const allSelfPlans = useMemo<DisplayPlan[]>(
     () => buildDisplayPlans(backendPlans, 'self'),
     [backendPlans]
+  );
+  const billingCycles = useMemo(
+    () => getAvailableBillingCycles(allSelfPlans),
+    [allSelfPlans]
+  );
+  const selfPlans = useMemo<DisplayPlan[]>(
+    () => selectSelfServicePlans(allSelfPlans, selectedBillingCycle),
+    [allSelfPlans, selectedBillingCycle]
   );
   const assistedPlans = useMemo<DisplayPlan[]>(
     () => buildDisplayPlans(backendPlans, 'assisted'),
     [backendPlans]
   );
-  const enterprisePlans = useMemo<DisplayPlan[]>(
-    () => buildDisplayPlans(backendPlans, 'enterprise'),
-    [backendPlans]
-  );
-
-  const displayPlans =
-    activeTab === 'assisted'
-      ? assistedPlans
-      : activeTab === 'enterprise'
-        ? enterprisePlans
-        : selfPlans;
+  const displayPlans = activeTab === 'assisted' ? assistedPlans : selfPlans;
   const selectedPlan = selectedPlans[activeTab];
 
   useEffect(() => {
-    if (selectedPlans.self || !selfPlans.length) {
-      return;
+    const firstAvailableCycle = billingCycles[0];
+    if (firstAvailableCycle && !billingCycles.includes(selectedBillingCycle)) {
+      setSelectedBillingCycle(firstAvailableCycle);
     }
+  }, [billingCycles, selectedBillingCycle]);
+
+  useEffect(() => {
+    if (!selfPlans.length) return;
 
     const activePlanId =
       typeof activeSubscription?.planId === 'object'
         ? activeSubscription.planId._id
         : activeSubscription?.planId;
 
+    const previousTier = allSelfPlans.find(
+      (plan) => plan.id === selectedPlans.self
+    )?.tier;
     const defaultPlan =
       selfPlans.find((plan) => plan.id === activePlanId)?.id ??
+      selfPlans.find((plan) => plan.tier === previousTier)?.id ??
       selfPlans.find((plan) => plan.best)?.id ??
       selfPlans[0]?.id;
 
-    if (defaultPlan) {
+    if (defaultPlan && defaultPlan !== selectedPlans.self) {
       setSelectedPlans((prev) => ({ ...prev, self: defaultPlan }));
     }
-  }, [activeSubscription?.planId, selfPlans, selectedPlans.self]);
+  }, [activeSubscription?.planId, allSelfPlans, selfPlans, selectedPlans.self]);
 
   useEffect(() => {
     if (selectedPlans.assisted || !assistedPlans.length) {
@@ -99,22 +110,6 @@ export function useMembershipData(activeTab: MembershipTab) {
     }
   }, [activeSubscription?.planId, assistedPlans, selectedPlans.assisted]);
 
-  useEffect(() => {
-    if (selectedPlans.enterprise || !enterprisePlans.length) return;
-
-    const activePlanId =
-      typeof activeSubscription?.planId === 'object'
-        ? activeSubscription.planId._id
-        : activeSubscription?.planId;
-    const defaultPlan =
-      enterprisePlans.find((plan) => plan.id === activePlanId)?.id ??
-      enterprisePlans[0]?.id;
-
-    if (defaultPlan) {
-      setSelectedPlans((prev) => ({ ...prev, enterprise: defaultPlan }));
-    }
-  }, [activeSubscription?.planId, enterprisePlans, selectedPlans.enterprise]);
-
   const setSelectedPlan = (planId: string) => {
     setSelectedPlans((prev) => ({ ...prev, [activeTab]: planId }));
   };
@@ -127,13 +122,19 @@ export function useMembershipData(activeTab: MembershipTab) {
     displayPlans.findIndex((p) => p.id === selectedPlan)
   );
   const featureRows = useMemo<DisplayFeatureRow[]>(
-    () => buildFeatureRows(displayPlans, 12, activeTab),
-    [activeTab, displayPlans]
+    () =>
+      buildFeatureRows(
+        displayPlans,
+        12,
+        activeTab,
+        Boolean(selectedPlanItem?.isCustom)
+      ),
+    [activeTab, displayPlans, selectedPlanItem?.isCustom]
   );
 
   const activePlanName =
     typeof activeSubscription?.planId === 'object'
-      ? formatPlanName(activeSubscription.planId.name)
+      ? formatMembershipPlanDisplayName(activeSubscription.planId)
       : undefined;
   const boostPlan = backendPlans.find(
     (plan) => plan.planType === 'profile_boost'
@@ -153,7 +154,9 @@ export function useMembershipData(activeTab: MembershipTab) {
     displayPlans,
     selfPlans,
     assistedPlans,
-    enterprisePlans,
+    billingCycles,
+    selectedBillingCycle,
+    setSelectedBillingCycle,
     featureRows,
     selectedPlan,
     setSelectedPlan,

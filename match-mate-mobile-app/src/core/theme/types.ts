@@ -133,6 +133,10 @@ export type ColorPalette = {
 
   platinum: string;
 
+  membershipHeroStatBackground: string;
+
+  membershipHeroStatBorder: string;
+
   // ─────────────────────────────────────────────
   // Static
   // ─────────────────────────────────────────────

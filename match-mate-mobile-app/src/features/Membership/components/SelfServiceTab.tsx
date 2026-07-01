@@ -1,13 +1,18 @@
 import React from 'react';
-import { ScrollView, View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { membershipStyles } from '../Membership.styles';
 import { FeatureRow } from './FeatureRow';
-import { DisplayFeatureRow, DisplayPlan } from '../Membership.types';
+import {
+  DisplayFeatureRow,
+  DisplayPlan,
+  MembershipBillingCycle,
+} from '../Membership.types';
 import { SELF_TRUST_BADGES } from '../Membership.constants';
+import { formatPlanName } from '../Membership.utils';
 
 interface Props {
   displayPlans: DisplayPlan[];
@@ -15,6 +20,9 @@ interface Props {
   selectedPlan: string;
   selectedIndex: number;
   onSelectPlan: (planId: string) => void;
+  billingCycles: MembershipBillingCycle[];
+  selectedBillingCycle: MembershipBillingCycle;
+  onSelectBillingCycle: (cycle: MembershipBillingCycle) => void;
 }
 
 export function SelfServiceTab({
@@ -23,6 +31,9 @@ export function SelfServiceTab({
   selectedPlan,
   selectedIndex,
   onSelectPlan,
+  billingCycles,
+  selectedBillingCycle,
+  onSelectBillingCycle,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
   const { theme } = useTheme();
@@ -42,18 +53,65 @@ export function SelfServiceTab({
         </View>
       </View>
 
-      {/* Plan selector cards */}
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.planRow}
-      >
+      <View style={styles.cycleSection}>
+        <View style={styles.cycleHeader}>
+          <View>
+            <Text style={styles.cycleTitle}>
+              {t('membership.billing_cycle_title')}
+            </Text>
+            <Text style={styles.cycleSubtitle}>
+              {t('membership.billing_cycle_subtitle')}
+            </Text>
+          </View>
+          <Feather name="calendar" size={17} color={theme.colors.primary} />
+        </View>
+        <View style={styles.cycleSelector} accessibilityRole="tablist">
+          {billingCycles.map((cycle) => {
+            const active = selectedBillingCycle === cycle;
+            return (
+              <TouchableOpacity
+                key={cycle}
+                style={[styles.cycleOption, active && styles.cycleOptionActive]}
+                activeOpacity={0.8}
+                onPress={() => onSelectBillingCycle(cycle)}
+                accessibilityRole="tab"
+                accessibilityState={{ selected: active }}
+              >
+                <Text
+                  style={[
+                    styles.cycleOptionText,
+                    active && styles.cycleOptionTextActive,
+                  ]}
+                >
+                  {t(`membership.billing_cycle.${cycle}`)}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={styles.planSectionHeader}>
+        <Text style={styles.planSectionTitle}>
+          {t('membership.choose_tier_title')}
+        </Text>
+        <Text style={styles.planSectionMeta}>
+          {t('membership.three_tiers_available')}
+        </Text>
+      </View>
+
+      {/* Exactly one Silver, Gold, and Platinum plan for the selected cycle. */}
+      <View style={styles.planRowThree}>
         {displayPlans.map((plan) => {
           const active = selectedPlan === plan.id;
           return (
             <TouchableOpacity
               key={plan.id}
-              style={[styles.planCard, active && styles.planCardActive]}
+              style={[
+                styles.planCard,
+                styles.planCardCompact,
+                active && styles.planCardActive,
+              ]}
               onPress={() => {
                 if (plan.id) onSelectPlan(plan.id);
               }}
@@ -73,7 +131,7 @@ export function SelfServiceTab({
                 </View>
               )}
               <Text style={[styles.planName, active && styles.planNameActive]}>
-                {plan.name}
+                {plan.tier ? formatPlanName(plan.tier) : plan.name}
               </Text>
               <Text
                 style={[styles.planPrice, active && styles.planPriceActive]}
@@ -95,7 +153,7 @@ export function SelfServiceTab({
             </TouchableOpacity>
           );
         })}
-      </ScrollView>
+      </View>
 
       {/* Feature comparison table */}
       <View style={styles.featureTableCard}>

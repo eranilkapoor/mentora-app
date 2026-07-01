@@ -70,7 +70,7 @@ The following roadmap items remain correctly classified as external or provider-
 
 1. [x] **Make plan and feature packaging machine-verifiable.**
    - Added seed invariants for complete/unique `FeatureKey` coverage and Enterprise feature mappings.
-   - Added `ENTERPRISE_CUSTOM` with custom price, term, limits, integrations, governance, and support; payment/trial/coupon/store flows reject it.
+   - Added `ASSISTED_CUSTOM` with custom price, term, limits, integrations, governance, and support; payment/trial/coupon/store flows reject it.
    - Added API-driven Enterprise Membership UI and Contact Sales routing.
    - Consolidated profile identity verification to canonical `Verification.status`; removed profile/settings/KYC mirror booleans and overlapping verification feature keys.
    - Added exported role-permission policies, privileged-boundary tests, fixed-plan numeric limit policies, and lifecycle invariants.

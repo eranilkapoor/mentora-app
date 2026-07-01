@@ -7,7 +7,10 @@ export interface MembershipScreenProps {
   navigation: BottomNavigationProp;
 }
 
-export type MembershipTab = 'self' | 'assisted' | 'enterprise';
+export type MembershipTab = 'self' | 'assisted';
+
+export type MembershipBillingCycle =
+  'monthly' | 'quarterly' | 'half_yearly' | 'yearly';
 
 export interface FeatureRowProps {
   label: string;

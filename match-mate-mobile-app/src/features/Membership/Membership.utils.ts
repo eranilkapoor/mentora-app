@@ -2,8 +2,18 @@ import { MembershipPlan } from '@/store/services/membershipApi.service';
 import {
   DisplayFeatureRow,
   DisplayPlan,
+  MembershipBillingCycle,
   MembershipTab,
 } from './Membership.types';
+
+export const MEMBERSHIP_BILLING_CYCLE_ORDER: MembershipBillingCycle[] = [
+  'monthly',
+  'quarterly',
+  'half_yearly',
+  'yearly',
+];
+
+const SELF_SERVICE_TIERS = ['silver', 'gold', 'platinum'];
 
 export const formatPlanName = (name: string): string =>
   name
@@ -51,7 +61,13 @@ export const formatMembershipPlanDisplayName = (
   planOrName:
     | Pick<
         MembershipPlan,
-        'name' | 'slug' | 'tier' | 'planType' | 'billingCycle' | 'durationDays'
+        | 'name'
+        | 'slug'
+        | 'tier'
+        | 'planType'
+        | 'billingCycle'
+        | 'durationDays'
+        | 'isCustom'
       >
     | string,
   fallback = 'Membership plan'
@@ -60,6 +76,10 @@ export const formatMembershipPlanDisplayName = (
     const value = planOrName.trim();
     if (!value || isObjectIdLike(value)) return fallback;
     const normalizedValue = value.toLowerCase().replace(/-/g, '_');
+
+    if (normalizedValue.startsWith('assisted_custom')) {
+      return 'Custom Assisted Matchmaking';
+    }
 
     if (normalizedValue.startsWith('assisted')) {
       const assistedCycle = normalizedValue.includes('half_yearly')
@@ -73,8 +93,6 @@ export const formatMembershipPlanDisplayName = (
       return ['Assisted Matchmaking', assistedCycle].filter(Boolean).join(' ');
     }
 
-    if (normalizedValue.startsWith('enterprise')) return 'Enterprise';
-
     return formatPlanName(value);
   }
 
@@ -84,10 +102,9 @@ export const formatMembershipPlanDisplayName = (
   );
 
   if (planOrName.planType === 'assisted') {
+    if (planOrName.isCustom) return 'Custom Assisted Matchmaking';
     return ['Assisted Matchmaking', cycleLabel].filter(Boolean).join(' ');
   }
-
-  if (planOrName.planType === 'enterprise') return 'Enterprise';
 
   const tierLabel =
     planOrName.tier && planOrName.tier !== 'free'
@@ -127,11 +144,7 @@ export const getDurationLabel = (
 export const getPlanTypeForTab = (
   tab: MembershipTab
 ): MembershipPlan['planType'] =>
-  tab === 'assisted'
-    ? 'assisted'
-    : tab === 'enterprise'
-      ? 'enterprise'
-      : 'self_service';
+  tab === 'assisted' ? 'assisted' : 'self_service';
 
 const formatFeatureValue = (value: unknown): string => {
   if (value === true || value === 1) return 'Yes';
@@ -175,7 +188,7 @@ const ASSISTED_FEATURE_PRIORITY = [
   'support_tickets',
 ];
 
-const ENTERPRISE_FEATURE_PRIORITY = [
+const CUSTOM_ASSISTED_FEATURE_PRIORITY = [
   'enterprise_sso',
   'admin_dashboard',
   'api_access',
@@ -198,7 +211,8 @@ export const buildDisplayPlans = (
     .filter(
       (plan) =>
         (plan.planType ?? 'self_service') === planType &&
-        plan.planType !== 'profile_boost'
+        plan.planType !== 'profile_boost' &&
+        (tab !== 'self' || plan.price > 0)
     )
     .sort(
       (a, b) =>
@@ -236,10 +250,28 @@ export const buildDisplayPlans = (
   }));
 };
 
+export const getAvailableBillingCycles = (
+  plans: DisplayPlan[]
+): MembershipBillingCycle[] =>
+  MEMBERSHIP_BILLING_CYCLE_ORDER.filter((cycle) =>
+    plans.some((plan) => plan.source?.billingCycle === cycle)
+  );
+
+export const selectSelfServicePlans = (
+  plans: DisplayPlan[],
+  cycle: MembershipBillingCycle
+): DisplayPlan[] =>
+  SELF_SERVICE_TIERS.map((tier) =>
+    plans.find(
+      (plan) => plan.tier === tier && plan.source?.billingCycle === cycle
+    )
+  ).filter((plan): plan is DisplayPlan => Boolean(plan));
+
 export const buildFeatureRows = (
   plans: DisplayPlan[],
   maxRows = 12,
-  tab: MembershipTab = 'self'
+  tab: MembershipTab = 'self',
+  customSelected = false
 ): DisplayFeatureRow[] => {
   const features = new Map<string, string>();
 
@@ -254,14 +286,16 @@ export const buildFeatureRows = (
   const priority =
     tab === 'assisted'
       ? ASSISTED_FEATURE_PRIORITY
-      : tab === 'enterprise'
-        ? ENTERPRISE_FEATURE_PRIORITY
-        : SELF_SERVICE_FEATURE_PRIORITY;
+      : SELF_SERVICE_FEATURE_PRIORITY;
+
+  const effectivePriority = customSelected
+    ? [...CUSTOM_ASSISTED_FEATURE_PRIORITY, ...priority]
+    : priority;
 
   return Array.from(features.entries())
     .sort(([a], [b]) => {
-      const aIndex = priority.indexOf(a);
-      const bIndex = priority.indexOf(b);
+      const aIndex = effectivePriority.indexOf(a);
+      const bIndex = effectivePriority.indexOf(b);
 
       if (aIndex !== -1 || bIndex !== -1) {
         return (

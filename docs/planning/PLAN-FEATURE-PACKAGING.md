@@ -38,7 +38,7 @@
 | 10  | PLATINUM_YEARLY      | Platinum         | Yearly        | 19,999      | 365 days | —       |
 | 11  | ASSISTED_HALF_YEARLY | Assisted         | Half-Yearly   | 26,186      | 180 days | ✓       |
 | 12  | ASSISTED_YEARLY      | Assisted         | Yearly        | 42,373      | 365 days | —       |
-| 13  | ENTERPRISE_CUSTOM    | Enterprise       | Custom        | Custom      | Custom   | —       |
+| 13  | ASSISTED_CUSTOM     | Enterprise       | Custom        | Custom      | Custom   | —       |
 | 14  | PROFILE_BOOST_24H    | Gold (boost SKU) | Daily         | 199         | 1 day    | —       |
 
 ---
@@ -263,7 +263,7 @@ platformFeatures          → applied to every recurring plan (auth, safety, bas
    + silverFeatures        → All SILVER_* plans
    + goldFeatures          → All GOLD_* plans
    + platinumFeatures      → All PLATINUM_* and ASSISTED_* plans
-   + ENTERPRISE_CUSTOM     → Every feature mapped to `custom`
+   + ASSISTED_CUSTOM      → Every feature mapped to `custom`
    + PROFILE_BOOST_24H     → Boost-only SKU
 ```
 
@@ -278,7 +278,7 @@ Later additions in the same plan override earlier platform defaults via the `add
 | Gold mapping         | GOLD_MONTHLY, GOLD_QUARTERLY, GOLD_YEARLY                  |
 | Platinum mapping     | PLATINUM_MONTHLY, PLATINUM_QUARTERLY, PLATINUM_YEARLY      |
 | Assisted mapping     | ASSISTED_HALF_YEARLY, ASSISTED_YEARLY                      |
-| Enterprise mapping   | ENTERPRISE_CUSTOM (all feature keys, value `custom`)       |
+| Custom assisted mapping | ASSISTED_CUSTOM (all feature keys, value `custom`)      |
 | Boost SKU            | PROFILE_BOOST_24H                                          |
 
 ---

@@ -118,6 +118,8 @@ export const LIGHTCOLORS: ColorPalette = {
   // ─────────────────────────────────────────────
   gold: '#D9A441',
   platinum: '#E5E7EB',
+  membershipHeroStatBackground: 'rgba(255,255,255,0.14)',
+  membershipHeroStatBorder: 'rgba(255,255,255,0.28)',
 
   // ─────────────────────────────────────────────
   // Static
@@ -248,6 +250,9 @@ export const DARKCOLORS: Partial<ColorPalette> = {
   gold: '#E7B64C',
 
   platinum: '#D4D4D8',
+
+  membershipHeroStatBackground: 'rgba(255,255,255,0.08)',
+  membershipHeroStatBorder: 'rgba(255,255,255,0.18)',
 
   // ─────────────────────────────────────────────
   // Gradients

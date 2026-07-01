@@ -147,7 +147,6 @@ describe('SubscriptionsService', () => {
     [basePlan({ isActive: false }), 'inactive'],
     [basePlan({ price: 0 }), 'free'],
     [basePlan({ planType: PlanType.PROFILE_BOOST }), 'boost'],
-    [basePlan({ planType: PlanType.ENTERPRISE }), 'enterprise'],
     [basePlan({ isCustom: true }), 'custom'],
   ])('rejects unavailable trial plan: %s (%s)', async (plan, label) => {
     expect(label).toEqual(expect.any(String));

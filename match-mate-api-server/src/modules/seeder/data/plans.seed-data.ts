@@ -301,13 +301,13 @@ export const PLAN_SEEDS: Plan[] = [
     storeProducts: recurringStoreProducts('assisted', 'yearly'),
   },
   // ==========================================
-  //  ENTERPRISE CUSTOM
+  //  CUSTOM ASSISTED
   // ==========================================
   {
-    name: 'ENTERPRISE_CUSTOM',
-    slug: 'enterprise-custom',
+    name: 'ASSISTED_CUSTOM',
+    slug: 'assisted-custom',
     tier: PlanTier.ENTERPRISE,
-    planType: PlanType.ENTERPRISE,
+    planType: PlanType.ASSISTED,
     billingCycle: BillingCycle.CUSTOM,
     price: 0,
     durationDays: 0,
@@ -318,7 +318,7 @@ export const PLAN_SEEDS: Plan[] = [
     isPopular: false,
     sortOrder: 13,
     description:
-      'Custom enterprise package with configurable features, limits, integrations, governance, support, and commercial terms.',
+      'Bespoke assisted matchmaking with configurable service scope, governance, integrations, support, and commercial terms.',
     isActive: true,
     version: 1,
   },
