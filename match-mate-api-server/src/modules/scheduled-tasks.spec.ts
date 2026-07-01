@@ -10,6 +10,7 @@ import { SubscriptionExpiryTask } from './subscriptions/tasks/subscription-expir
 describe('scheduled maintenance tasks', () => {
   const logger = { log: jest.fn(), warn: jest.fn(), error: jest.fn() };
   const config = { get: jest.fn() };
+  const mongoConnection = { readyState: 1 };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -254,11 +255,44 @@ describe('scheduled maintenance tasks', () => {
   describe('PaymentMaintenanceTask', () => {
     const service = { expireStalePendingPayments: jest.fn() };
     const build = () =>
-      new PaymentMaintenanceTask(service as never, logger as never);
+      new PaymentMaintenanceTask(
+        service as never,
+        config as never,
+        mongoConnection as never,
+        logger as never,
+      );
+
+    it.each([
+      [
+        'local',
+        1,
+        'Payment maintenance skipped: MongoDB disabled in local driver mode',
+      ],
+      [
+        'mongo',
+        0,
+        'Payment maintenance skipped: MongoDB not connected (readyState=0)',
+      ],
+    ])(
+      'skips when mongo is unavailable',
+      async (driver, readyState, message) => {
+        config.get.mockImplementation((key: string, fallback?: unknown) =>
+          key === 'mongo.driver' ? driver : fallback,
+        );
+        mongoConnection.readyState = readyState;
+
+        await build().expireStalePendingPayments();
+
+        expect(service.expireStalePendingPayments).not.toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalledWith(message);
+        mongoConnection.readyState = 1;
+      },
+    );
 
     it.each([2, 0])(
       'processes stale payment count %s',
       async (expiredCount) => {
+        mongoConnection.readyState = 1;
         service.expireStalePendingPayments.mockResolvedValue({ expiredCount });
         await build().expireStalePendingPayments();
         expect(logger.log).toHaveBeenCalledTimes(expiredCount > 0 ? 1 : 0);
@@ -308,9 +342,42 @@ describe('scheduled maintenance tasks', () => {
   describe('ProfileBoostExpiryTask', () => {
     const service = { expireOverdueBoosts: jest.fn() };
     const build = () =>
-      new ProfileBoostExpiryTask(service as never, logger as never);
+      new ProfileBoostExpiryTask(
+        service as never,
+        config as never,
+        mongoConnection as never,
+        logger as never,
+      );
+
+    it.each([
+      [
+        'local',
+        1,
+        'Profile boost expiry skipped: MongoDB disabled in local driver mode',
+      ],
+      [
+        'mongo',
+        0,
+        'Profile boost expiry skipped: MongoDB not connected (readyState=0)',
+      ],
+    ])(
+      'skips when mongo is unavailable',
+      async (driver, readyState, message) => {
+        config.get.mockImplementation((key: string, fallback?: unknown) =>
+          key === 'mongo.driver' ? driver : fallback,
+        );
+        mongoConnection.readyState = readyState;
+
+        await build().expireOverdueBoosts();
+
+        expect(service.expireOverdueBoosts).not.toHaveBeenCalled();
+        expect(logger.warn).toHaveBeenCalledWith(message);
+        mongoConnection.readyState = 1;
+      },
+    );
 
     it('expires overdue boosts', async () => {
+      mongoConnection.readyState = 1;
       service.expireOverdueBoosts.mockResolvedValue({ expiredCount: 4 });
       await build().expireOverdueBoosts();
       expect(logger.log).toHaveBeenCalledWith(

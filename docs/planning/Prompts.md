@@ -22,6 +22,40 @@ Completed items were intentionally removed from this file to keep it execution-f
 
 ## Remaining Work (Code)
 
+### In Progress
+
+1. P0 business-flow E2E expansion has started.
+   - Added `test/business-journeys.e2e-spec.ts` covering auth register/login/refresh/logout, profile personal update, interest send/respond, and support ticket create/reply/close.
+   - Added `test/chat-socket-auth-flows.e2e-spec.ts` covering authenticated socket connect readiness, typing/read handling for authenticated sockets, reconnect, and revoked-token rejection.
+   - Added `test/admin-rbac-authorization.e2e-spec.ts` covering admin permission boundary behavior (403 when denied, success path when authorized).
+   - Added `test/payments-webhook-idempotency.e2e-spec.ts` covering webhook replay handling and idempotency response semantics.
+   - Added `test/admin-role-access-boundaries.e2e-spec.ts` covering role-based access denials and approvals for admin dashboard and audit routes.
+   - Added `test/support-ticket-feature-access.e2e-spec.ts` covering support ticket feature-guard denial and allow paths.
+   - Added `test/payments-verify-access-and-failure.e2e-spec.ts` covering JWT access denial and invalid-signature failure/success handling for payment verification.
+   - Added `test/payments-store-subscription-access.e2e-spec.ts` covering JWT access denial, DTO validation failure, and authorized success for native store subscription verification.
+   - Added `test/chat-feature-and-access-boundaries.e2e-spec.ts` covering JWT/feature guard denials, validation failure, and authorized success for chat routes.
+   - Added `test/notifications-access-and-validation.e2e-spec.ts` covering JWT denial, DTO validation failure, and authorized success for notification endpoints.
+   - Added `test/profiles-access-boundaries.e2e-spec.ts` covering JWT denial, personal-profile DTO validation failure, and authorized success for profiles endpoints.
+   - Added `test/matches-access-and-validation.e2e-spec.ts` covering JWT denial, interest DTO validation failure, and authorized success for matches endpoints.
+   - Added `test/support-ticket-lifecycle-db.e2e-spec.ts` covering the real support ticket create/list/get/reply/close lifecycle against in-memory Mongo with the actual schema, repository, and service.
+   - Added `test/profile-journey-db.e2e-spec.ts` covering real profile create/update/get flow against in-memory Mongo with the actual profile repository and service.
+   - Added `test/matches-interest-lifecycle-db.e2e-spec.ts` covering real interest send/accept and match listing flow against in-memory Mongo with the actual match repository and service.
+   - Added `test/admin-support-ticket-flow-db.e2e-spec.ts` covering real admin support list/reply/status-update flow against in-memory Mongo with the actual repository and service.
+   - Verified with: targeted `npm run test:e2e -- test/business-journeys.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/chat-socket-auth-flows.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/admin-rbac-authorization.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/payments-webhook-idempotency.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/admin-role-access-boundaries.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/support-ticket-feature-access.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/payments-verify-access-and-failure.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/payments-store-subscription-access.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/chat-feature-and-access-boundaries.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/notifications-access-and-validation.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: consolidated run of all current boundary suites (12 suites / 34 tests), then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/support-ticket-lifecycle-db.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Verified with: targeted `npm run test:e2e -- test/profile-journey-db.e2e-spec.ts test/matches-interest-lifecycle-db.e2e-spec.ts test/admin-support-ticket-flow-db.e2e-spec.ts`, then `npm run lint:check`, and `npm run typecheck`.
+   - Remaining in this stream: move from controller-level flow verification to DB-backed journeys and extend to chat/payment/admin boundaries.
+
 ### P0 - Highest Priority
 
 1. Expand API E2E coverage from infrastructure checks to business journeys.
