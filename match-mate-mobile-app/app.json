@@ -34,7 +34,11 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "android.permission.READ_MEDIA_IMAGES",
+        "android.permission.READ_MEDIA_VIDEO",
+        "com.android.vending.BILLING"
       ],
       "intentFilters": [
         {
@@ -93,6 +97,20 @@
           "locationWhenInUsePermission": "Allow Match Mate to use your location to show nearby matrimonial matches. / नजदीकी वैवाहिक मैच दिखाने के लिए Match Mate को आपका स्थान उपयोग करने दें।"
         }
       ],
+      [
+        "expo-camera",
+        {
+          "cameraPermission": "Allow Match Mate to use your camera to capture profile photos."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Match Mate to access your photos for profile photo upload.",
+          "cameraPermission": "Allow Match Mate to capture profile photos."
+        }
+      ],
+      "expo-document-picker",
       "expo-font",
       [
         "expo-av",
