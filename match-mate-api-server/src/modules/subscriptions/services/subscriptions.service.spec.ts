@@ -137,6 +137,13 @@ describe('SubscriptionsService', () => {
       expect.objectContaining({ status: SubscriptionStatus.ACTIVE }),
     );
 
+    planModel.findById.mockReturnValue(leanExec(null));
+    await service.reconcileStoreSubscription(userId, options);
+    expect(userRepo.updateMembership).toHaveBeenLastCalledWith(
+      userId,
+      expect.objectContaining({ tier: PlanTier.FREE }),
+    );
+
     subModel.findOne.mockReturnValue({
       exec: jest.fn().mockResolvedValue(null),
     });

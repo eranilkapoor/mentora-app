@@ -608,6 +608,72 @@ describe('PaymentsService', () => {
     expect(privateService.canAllowUnsignedPaymentVerification()).toBe(true);
   });
 
+  it('validates store product mappings and strict receipt verification', async () => {
+    const privateService = service as any;
+    const iosPlan = {
+      storeProducts: {
+        ios: { productId: 'gold.monthly', productType: 'subscription' },
+      },
+    };
+
+    for (const [plan, dto] of [
+      [{ storeProducts: {} }, { gateway: PaymentGateway.APPLE_IAP }],
+      [
+        {
+          storeProducts: {
+            ios: { productId: 'coins', productType: 'consumable' },
+          },
+        },
+        { gateway: PaymentGateway.APPLE_IAP, productId: 'coins' },
+      ],
+      [iosPlan, { gateway: PaymentGateway.APPLE_IAP, productId: 'wrong' }],
+      [
+        {
+          storeProducts: {
+            android: {
+              productId: 'gold.monthly',
+              productType: 'subscription',
+              basePlanId: 'monthly',
+            },
+          },
+        },
+        {
+          gateway: PaymentGateway.GOOGLE_PLAY,
+          productId: 'gold.monthly',
+          basePlanId: 'annual',
+        },
+      ],
+      [
+        iosPlan,
+        {
+          gateway: PaymentGateway.APPLE_IAP,
+          productId: 'gold.monthly',
+          offerId: 'intro',
+        },
+      ],
+    ] as const) {
+      expect(() =>
+        privateService.ensureStoreProductMatchesPlan(plan, dto),
+      ).toThrow();
+    }
+
+    configService.get.mockReturnValue('sandbox');
+    await expect(
+      privateService.verifyStoreReceiptWhenRequired({}),
+    ).resolves.toBeUndefined();
+
+    configService.get.mockReturnValue('strict');
+    storeReceiptVerifier.verify.mockResolvedValue({ transactionId: 'tx' });
+    await expect(
+      privateService.verifyStoreReceiptWhenRequired({}),
+    ).resolves.toEqual({ transactionId: 'tx' });
+
+    storeReceiptVerifier.verify.mockRejectedValue(new Error('invalid'));
+    await expect(
+      privateService.verifyStoreReceiptWhenRequired({}),
+    ).rejects.toMatchObject({ code: ErrorCode.PAYMENT_VERIFICATION_FAILED });
+  });
+
   it('verifies existing and new mobile-store subscriptions', async () => {
     const userId = new Types.ObjectId().toString();
     const planId = new Types.ObjectId().toString();

@@ -98,19 +98,12 @@
         }
       ],
       [
-        "expo-camera",
-        {
-          "cameraPermission": "Allow Match Mate to use your camera to capture profile photos."
-        }
-      ],
-      [
         "expo-image-picker",
         {
           "photosPermission": "Allow Match Mate to access your photos for profile photo upload.",
           "cameraPermission": "Allow Match Mate to capture profile photos."
         }
       ],
-      "expo-document-picker",
       "expo-font",
       [
         "expo-av",
