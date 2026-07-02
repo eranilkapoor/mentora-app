@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -64,6 +65,7 @@ export function PaymentOptionSheet({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
   const { theme, reduceAnimations, screenReaderOptimized } = useTheme();
+  const insets = useSafeAreaInsets();
   const { t } = useTranslation();
 
   const paymentOptions = useMemo(
@@ -83,6 +85,7 @@ export function PaymentOptionSheet({
       animationType={reduceAnimations ? 'none' : 'slide'}
       transparent
       statusBarTranslucent
+      navigationBarTranslucent
       hardwareAccelerated
       onRequestClose={onClose}
     >
@@ -90,7 +93,12 @@ export function PaymentOptionSheet({
         style={styles.checkoutOverlay}
         accessibilityViewIsModal={screenReaderOptimized}
       >
-        <View style={styles.checkoutSheet}>
+        <View
+          style={[
+            styles.checkoutSheet,
+            { paddingBottom: Math.max(28, insets.bottom + 16) },
+          ]}
+        >
           <View style={styles.checkoutHandle} />
           <View style={styles.checkoutHeader}>
             <View style={styles.checkoutHeaderCopy}>

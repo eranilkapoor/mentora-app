@@ -62,7 +62,7 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
       "subscriptions": [
          {
             "productId": "matchmate_silver",
-            "title": "MatchMate Silver",
+            "title": "Match Mate Silver",
             "basePlans": [
                {
                   "basePlanId": "monthly",
@@ -92,7 +92,7 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
          },
          {
             "productId": "matchmate_gold",
-            "title": "MatchMate Gold",
+            "title": "Match Mate Gold",
             "basePlans": [
                {
                   "basePlanId": "monthly",
@@ -122,7 +122,7 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
          },
          {
             "productId": "matchmate_platinum",
-            "title": "MatchMate Platinum",
+            "title": "Match Mate Platinum",
             "basePlans": [
                {
                   "basePlanId": "monthly",
@@ -152,7 +152,7 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
          },
          {
             "productId": "matchmate_assisted",
-            "title": "MatchMate Assisted",
+            "title": "Match Mate Assisted",
             "basePlans": [
                {
                   "basePlanId": "half-yearly",

@@ -194,6 +194,17 @@ function validateProductionProviders(
     });
   }
 
+  if (
+    env.PAYMENT_MOBILE_STORE_VERIFICATION_MODE === 'strict' &&
+    env.PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED === true &&
+    (!env.GOOGLE_PLAY_PACKAGE_NAME || !env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON)
+  ) {
+    return helpers.error('any.custom', {
+      customMessage:
+        'GOOGLE_PLAY_PACKAGE_NAME and GOOGLE_PLAY_SERVICE_ACCOUNT_JSON are required when strict mobile-store verification is enabled in production',
+    });
+  }
+
   return env;
 }
 
@@ -508,6 +519,10 @@ export const envValidationSchema = Joi.object({
     .truthy('true')
     .falsy('false')
     .default(false),
+
+  GOOGLE_PLAY_PACKAGE_NAME: optionalString,
+
+  GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: optionalString,
 
   THROTTLE_TTL: Joi.number().integer().min(1).max(86400).default(60),
 

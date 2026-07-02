@@ -1,17 +1,17 @@
 # Store Billing Integration
 
-MatchMate uses one internal plan catalog and separate commerce providers:
+Match Mate uses one internal plan catalog and separate commerce providers:
 
 - MongoDB owns plan identity, feature entitlements, display ordering, and the mapping to store products.
 - Google Play and Apple own localized prices, introductory offers, renewals, cancellations, refunds, and billing UI.
 - Razorpay/Stripe remain web-only providers.
-- The API is authoritative for MatchMate entitlement activation after provider verification.
+- The API is authoritative for Match Mate entitlement activation after provider verification.
 
 ## Console Product Catalog
 
 Create these exact IDs. They are seeded in `plans.seed-data.ts`.
 
-| MatchMate plans | Google product | Google base plans | Apple products |
+| Match Mate plans | Google product | Google base plans | Apple products |
 |---|---|---|---|
 | Silver | `matchmate_silver` | `monthly`, `quarterly`, `yearly` | `matchmate_silver_monthly`, `matchmate_silver_quarterly`, `matchmate_silver_yearly` |
 | Gold | `matchmate_gold` | `monthly`, `quarterly`, `yearly` | `matchmate_gold_monthly`, `matchmate_gold_quarterly`, `matchmate_gold_yearly` |
