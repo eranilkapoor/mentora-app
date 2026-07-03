@@ -3,8 +3,10 @@ import {
   ActivityIndicator,
   Modal,
   Platform,
+  ScrollView,
   Text,
   TouchableOpacity,
+  useWindowDimensions,
   View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
@@ -66,6 +68,7 @@ export function PaymentOptionSheet({
   const styles = useThemedStyles(membershipStyles);
   const { theme, reduceAnimations, screenReaderOptimized } = useTheme();
   const insets = useSafeAreaInsets();
+  const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const { t } = useTranslation();
 
   const paymentOptions = useMemo(
@@ -85,125 +88,141 @@ export function PaymentOptionSheet({
       animationType={reduceAnimations ? 'none' : 'slide'}
       transparent
       statusBarTranslucent
-      navigationBarTranslucent
       hardwareAccelerated
       onRequestClose={onClose}
     >
       <View
-        style={styles.checkoutOverlay}
+        style={[
+          styles.checkoutOverlay,
+          Platform.OS === 'web' && styles.checkoutOverlayWeb,
+        ]}
         accessibilityViewIsModal={screenReaderOptimized}
       >
         <View
           style={[
             styles.checkoutSheet,
-            { paddingBottom: Math.max(28, insets.bottom + 16) },
+            {
+              maxHeight: Math.max(320, windowHeight - 32),
+              paddingBottom: Math.max(28, insets.bottom + 20),
+            },
+            Platform.OS === 'web' && {
+              width: Math.max(288, Math.min(560, windowWidth - 32)),
+            },
           ]}
         >
-          <View style={styles.checkoutHandle} />
-          <View style={styles.checkoutHeader}>
-            <View style={styles.checkoutHeaderCopy}>
-              <Text style={styles.checkoutTitle}>
-                {t('membership.checkout.title')}
-              </Text>
-              <Text style={styles.checkoutSubtitle}>
-                {t('membership.checkout.subtitle')}
-              </Text>
-            </View>
-            <TouchableOpacity
-              style={styles.checkoutClose}
-              activeOpacity={0.85}
-              disabled={isCreatingOrder}
-              onPress={onClose}
-              accessibilityRole="button"
-              accessibilityLabel={t('common.close')}
-            >
-              <Feather name="x" size={20} color={theme.colors.textPrimary} />
-            </TouchableOpacity>
-          </View>
-
-          {selectedPlanItem ? (
-            <View style={styles.checkoutPlanBox}>
-              <View>
-                <Text style={styles.checkoutPlanLabel}>
-                  {t('membership.checkout.selected_plan')}
+          <ScrollView
+            bounces={false}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.checkoutScrollContent}
+          >
+            <View style={styles.checkoutHandle} />
+            <View style={styles.checkoutHeader}>
+              <View style={styles.checkoutHeaderCopy}>
+                <Text style={styles.checkoutTitle}>
+                  {t('membership.checkout.title')}
                 </Text>
-                <Text style={styles.checkoutPlanName}>
-                  {selectedPlanItem.name}
+                <Text style={styles.checkoutSubtitle}>
+                  {t('membership.checkout.subtitle')}
                 </Text>
               </View>
-              <Text style={styles.checkoutPlanPrice}>
-                {selectedPlanItem.price}
-              </Text>
+              <TouchableOpacity
+                style={styles.checkoutClose}
+                activeOpacity={0.85}
+                disabled={isCreatingOrder}
+                onPress={onClose}
+                accessibilityRole="button"
+                accessibilityLabel={t('common.close')}
+              >
+                <Feather name="x" size={20} color={theme.colors.textPrimary} />
+              </TouchableOpacity>
             </View>
-          ) : null}
 
-          <View style={styles.checkoutOptionList}>
-            {paymentOptions.map((option) => {
-              const isSelected = option.gateway === selectedGateway;
-              return (
-                <TouchableOpacity
-                  key={option.gateway}
-                  style={[
-                    styles.checkoutOption,
-                    isSelected && styles.checkoutOptionActive,
-                  ]}
-                  activeOpacity={0.85}
-                  disabled={isCreatingOrder}
-                  onPress={() => setSelectedGateway(option.gateway)}
-                  accessibilityRole="radio"
-                  accessibilityState={{ checked: isSelected }}
-                  accessibilityLabel={t(option.labelKey)}
-                >
-                  <View style={styles.checkoutOptionIcon}>
+            {selectedPlanItem ? (
+              <View style={styles.checkoutPlanBox}>
+                <View>
+                  <Text style={styles.checkoutPlanLabel}>
+                    {t('membership.checkout.selected_plan')}
+                  </Text>
+                  <Text style={styles.checkoutPlanName}>
+                    {selectedPlanItem.name}
+                  </Text>
+                </View>
+                <Text style={styles.checkoutPlanPrice}>
+                  {selectedPlanItem.price}
+                </Text>
+              </View>
+            ) : null}
+
+            <View style={styles.checkoutOptionList}>
+              {paymentOptions.map((option) => {
+                const isSelected = option.gateway === selectedGateway;
+                return (
+                  <TouchableOpacity
+                    key={option.gateway}
+                    style={[
+                      styles.checkoutOption,
+                      isSelected && styles.checkoutOptionActive,
+                    ]}
+                    activeOpacity={0.85}
+                    disabled={isCreatingOrder}
+                    onPress={() => setSelectedGateway(option.gateway)}
+                    accessibilityRole="radio"
+                    accessibilityState={{ checked: isSelected }}
+                    accessibilityLabel={t(option.labelKey)}
+                  >
+                    <View style={styles.checkoutOptionIcon}>
+                      <Feather
+                        name={option.icon as never}
+                        size={18}
+                        color={
+                          isSelected
+                            ? theme.colors.primary
+                            : theme.colors.textMuted
+                        }
+                      />
+                    </View>
+                    <View style={styles.checkoutOptionCopy}>
+                      <Text style={styles.checkoutOptionTitle}>
+                        {t(option.labelKey)}
+                      </Text>
+                      <Text style={styles.checkoutOptionSub}>
+                        {t(option.descriptionKey)}
+                      </Text>
+                    </View>
                     <Feather
-                      name={option.icon as never}
-                      size={18}
+                      name={isSelected ? 'check-circle' : 'circle'}
+                      size={20}
                       color={
                         isSelected
                           ? theme.colors.primary
                           : theme.colors.textMuted
                       }
                     />
-                  </View>
-                  <View style={styles.checkoutOptionCopy}>
-                    <Text style={styles.checkoutOptionTitle}>
-                      {t(option.labelKey)}
-                    </Text>
-                    <Text style={styles.checkoutOptionSub}>
-                      {t(option.descriptionKey)}
-                    </Text>
-                  </View>
-                  <Feather
-                    name={isSelected ? 'check-circle' : 'circle'}
-                    size={20}
-                    color={
-                      isSelected ? theme.colors.primary : theme.colors.textMuted
-                    }
-                  />
-                </TouchableOpacity>
-              );
-            })}
-          </View>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
 
-          <TouchableOpacity
-            style={[
-              styles.checkoutContinueButton,
-              isCreatingOrder && styles.ctaButtonDisabled,
-            ]}
-            activeOpacity={0.85}
-            disabled={isCreatingOrder || !selectedPlanItem?.source?._id}
-            onPress={() => onContinue(selectedGateway)}
-            accessibilityRole="button"
-            accessibilityLabel={t('membership.checkout.continue')}
-          >
-            {isCreatingOrder ? (
-              <ActivityIndicator size="small" color={theme.colors.white} />
-            ) : (
-              <Text style={styles.checkoutContinueText}>
-                {t('membership.checkout.continue')}
-              </Text>
-            )}
-          </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.checkoutContinueButton,
+                isCreatingOrder && styles.ctaButtonDisabled,
+              ]}
+              activeOpacity={0.85}
+              disabled={isCreatingOrder || !selectedPlanItem?.source?._id}
+              onPress={() => onContinue(selectedGateway)}
+              accessibilityRole="button"
+              accessibilityLabel={t('membership.checkout.continue')}
+            >
+              {isCreatingOrder ? (
+                <ActivityIndicator size="small" color={theme.colors.white} />
+              ) : (
+                <Text style={styles.checkoutContinueText}>
+                  {t('membership.checkout.continue')}
+                </Text>
+              )}
+            </TouchableOpacity>
+          </ScrollView>
         </View>
       </View>
     </Modal>

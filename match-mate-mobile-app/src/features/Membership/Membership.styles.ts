@@ -575,6 +575,11 @@ export const membershipStyles = (
       justifyContent: 'flex-end',
       backgroundColor: theme.colors.modalOverlay,
     },
+    checkoutOverlayWeb: {
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 16,
+    },
     checkoutSheet: {
       backgroundColor: theme.colors.surfaceElevated,
       borderTopLeftRadius: 8,
@@ -584,6 +589,7 @@ export const membershipStyles = (
       paddingBottom: 28,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
+      overflow: 'hidden',
       ...Platform.select({
         android: { elevation: 12 },
         ios: {
@@ -592,8 +598,13 @@ export const membershipStyles = (
           shadowOpacity: 0.14,
           shadowRadius: 12,
         },
-        web: {},
+        web: {
+          borderRadius: 16,
+        },
       }),
+    },
+    checkoutScrollContent: {
+      flexGrow: 1,
     },
     checkoutHandle: {
       width: 44,

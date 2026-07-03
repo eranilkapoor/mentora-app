@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { createSign } from 'crypto';
+import { existsSync, readFileSync } from 'fs';
+import { isAbsolute, resolve } from 'path';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { VerifyStoreSubscriptionDto } from '../dto/verify-store-subscription.dto';
 import { SubscriptionStatus } from '@/common/enums';
@@ -170,9 +172,15 @@ export class StoreReceiptVerifierService {
     client_email: string;
     private_key: string;
   } {
-    const json = value.trim().startsWith('{')
-      ? value
-      : Buffer.from(value, 'base64').toString('utf8');
+    const trimmed = value.trim();
+    const credentialPath = isAbsolute(trimmed)
+      ? trimmed
+      : resolve(process.cwd(), trimmed);
+    const json = trimmed.startsWith('{')
+      ? trimmed
+      : existsSync(credentialPath)
+        ? readFileSync(credentialPath, 'utf8')
+        : Buffer.from(trimmed, 'base64').toString('utf8');
     const account = JSON.parse(json) as {
       client_email?: string;
       private_key?: string;

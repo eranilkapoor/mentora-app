@@ -1,4 +1,7 @@
 import { generateKeyPairSync } from 'crypto';
+import { mkdtempSync, rmSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { PaymentGateway } from '../enums/payment-gateway.enum';
 import { StoreReceiptVerifierService } from './store-receipt-verifier.service';
 import { SubscriptionStatus } from '@/common/enums';
@@ -142,6 +145,52 @@ describe('StoreReceiptVerifierService', () => {
         purchaseToken: 'purchase-token',
       }),
     ).rejects.toThrow('google_subscription_not_entitled');
+  });
+
+  it('loads Google Play service-account credentials from a file path', async () => {
+    const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    const directory = mkdtempSync(join(tmpdir(), 'matchmate-google-play-'));
+    const credentialPath = join(directory, 'service-account.json');
+    writeFileSync(
+      credentialPath,
+      JSON.stringify({
+        client_email: 'billing@project.iam.gserviceaccount.com',
+        private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }),
+      }),
+    );
+    config.set('payments.googlePlay.packageName', 'com.webnza.matchmate');
+    config.set('payments.googlePlay.serviceAccountJson', credentialPath);
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce(response({ access_token: 'access-token' }))
+      .mockResolvedValueOnce(
+        response({
+          subscriptionState: 'SUBSCRIPTION_STATE_ACTIVE',
+          latestOrderId: 'GPA.FILE',
+          lineItems: [
+            {
+              productId: 'matchmate_gold',
+              expiryTime: new Date(Date.now() + 86_400_000).toISOString(),
+              offerDetails: { basePlanId: 'monthly' },
+              autoRenewingPlan: { autoRenewEnabled: true },
+            },
+          ],
+        }),
+      );
+
+    try {
+      await expect(
+        service.verify({
+          gateway: PaymentGateway.GOOGLE_PLAY,
+          planId: '507f1f77bcf86cd799439011',
+          productId: 'matchmate_gold',
+          basePlanId: 'monthly',
+          transactionId: 'client-order',
+          purchaseToken: 'purchase-token',
+        }),
+      ).resolves.toMatchObject({ transactionId: 'GPA.FILE' });
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
   });
 
   it('verifies an Apple App Store transaction in sandbox', async () => {
