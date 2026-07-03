@@ -4,6 +4,7 @@ import { NavigatorScreenParams, RouteProp } from '@react-navigation/native';
 
 // ─── Auth Stack ───────────────────────────────────────────────────────────────
 export type AuthStackParamList = {
+  AppSplash: undefined;
   Welcome: undefined;
   Login: undefined;
   Register: undefined;

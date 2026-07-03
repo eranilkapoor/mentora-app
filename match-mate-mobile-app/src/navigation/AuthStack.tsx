@@ -3,6 +3,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { getSharedScreenOptions } from './sharedScreenOptions';
 
+import AppSplashScreen from '@/features/Welcome/AppSplash.screen';
 import WelcomeScreen from '@/features/Welcome/Welcome.screen';
 import LoginScreen from '@/features/Login/Login.screen';
 import RegisterScreen from '@/features/Register/Register.screen';
@@ -23,9 +24,10 @@ export default function AuthStack(): React.ReactElement {
 
   return (
     <Stack.Navigator
-      initialRouteName="Welcome"
+      initialRouteName="AppSplash"
       screenOptions={getSharedScreenOptions(theme, reduceAnimations)}
     >
+      <Stack.Screen name="AppSplash" component={AppSplashScreen} />
       <Stack.Screen name="Welcome" component={WelcomeScreen} />
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="Register" component={RegisterScreen} />
