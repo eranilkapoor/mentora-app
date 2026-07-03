@@ -198,11 +198,7 @@ export class RateLimitGuard implements CanActivate {
 
   private getIdentifier(request: AuthenticatedRequest): string {
     const userId = request.user?.sub;
-    const ip =
-      (request.headers['x-forwarded-for'] as string)?.split(',')[0]?.trim() ??
-      request.socket?.remoteAddress ??
-      request.ip ??
-      'unknown';
+    const ip = request.ip ?? request.socket?.remoteAddress ?? 'unknown';
 
     return userId ?? ip;
   }

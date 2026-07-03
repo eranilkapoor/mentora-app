@@ -1,7 +1,7 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ConfigModule } from '@nestjs/config';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
@@ -46,13 +46,17 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     // ==========================================
     //  THROTTLER (GLOBAL BASE RATE LIMIT)
     // ==========================================
-    ThrottlerModule.forRoot({
-      throttlers: [
-        {
-          ttl: 60,
-          limit: 100,
-        },
-      ],
+    ThrottlerModule.forRootAsync({
+      inject: [ConfigService],
+      useFactory: (configService: ConfigService) => ({
+        throttlers: [
+          {
+            // Nest Throttler uses milliseconds; environment TTL is seconds.
+            ttl: configService.get<number>('THROTTLE_TTL', 60) * 1_000,
+            limit: configService.get<number>('THROTTLE_LIMIT', 100),
+          },
+        ],
+      }),
     }),
     // ==========================================
     // OTHER MODULES

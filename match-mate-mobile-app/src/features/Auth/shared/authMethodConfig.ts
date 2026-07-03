@@ -1,16 +1,6 @@
 import { Platform } from 'react-native';
 import { SocialProvider } from './auth.types';
-
-const getEnv = (key: string): string | undefined => {
-  const value = (process.env as Record<string, string | undefined>)[key];
-  const trimmed = value?.trim();
-
-  if (!trimmed) {
-    return undefined;
-  }
-
-  return trimmed;
-};
+import { getPublicEnv as getEnv } from '@/core/utils/config';
 
 const parseBooleanFlag = (key: string, defaultValue: boolean): boolean => {
   const value = getEnv(key);

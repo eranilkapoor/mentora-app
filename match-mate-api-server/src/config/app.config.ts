@@ -14,6 +14,7 @@ export default () => ({
       'http://localhost:3000',
     cookieDomain: process.env.COOKIE_DOMAIN || '',
     shutdownDrainMs: parseInt(process.env.SHUTDOWN_DRAIN_MS || '5000', 10),
+    trustedProxyHops: parseInt(process.env.TRUST_PROXY_HOPS || '0', 10),
   },
   oauth: {
     google: {

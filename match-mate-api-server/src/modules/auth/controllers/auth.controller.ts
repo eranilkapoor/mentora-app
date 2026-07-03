@@ -36,6 +36,7 @@ import { AppLogger } from '@/common/logger/logger.service';
 import { successResponse } from '@/common/utils/response.util';
 import { AppException } from '@/common/exceptions/app.exception';
 import { throwUnauthorized } from '@/common/exceptions/throw-app-exception';
+import { RateLimit } from '@/common/decorators/rate-limit.decorator';
 
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
@@ -46,6 +47,12 @@ export class AuthController {
   ) {}
 
   @Public()
+  @RateLimit({
+    name: 'auth-register',
+    ttl: 3600,
+    limit: 5,
+    message: 'Too many registration attempts. Try again later.',
+  })
   @Post('register')
   async register(
     @Req() req: AppRequest,
@@ -61,6 +68,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-login',
+    ttl: 900,
+    limit: 10,
+    message: 'Too many login attempts. Try again later.',
+  })
   @Post('login')
   async login(
     @Req() req: AppRequest,
@@ -77,6 +90,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-send-otp',
+    ttl: 600,
+    limit: 5,
+    message: 'Too many OTP requests. Try again later.',
+  })
   @Post('send-otp')
   async sendOtp(@Body() dto: PhoneSendOtpDto) {
     const data = await this.authService.sendOtp(dto.country_code, dto.phone);
@@ -88,6 +107,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-verify-otp',
+    ttl: 600,
+    limit: 10,
+    message: 'Too many OTP verification attempts. Try again later.',
+  })
   @Post('verify-otp')
   async verifyOtp(
     @Req() req: AppRequest,
@@ -110,6 +135,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-social-login',
+    ttl: 900,
+    limit: 20,
+    message: 'Too many social login attempts. Try again later.',
+  })
   @Post('social-login')
   async socialLogin(
     @Req() req: AppRequest,
@@ -125,6 +156,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-forgot-password',
+    ttl: 3600,
+    limit: 5,
+    message: 'Too many password reset requests. Try again later.',
+  })
   @Post('forgot-password')
   async forgotPassword(@Req() req: AppRequest, @Body() dto: ForgotPasswordDto) {
     const data = await this.authService.forgotPassword(req, dto.email);
@@ -136,6 +173,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-reset-exchange',
+    ttl: 900,
+    limit: 10,
+    message: 'Too many reset-code attempts. Try again later.',
+  })
   @Post('reset-password/exchange-code')
   async exchangeResetPasswordCode(
     @Req() req: AppRequest,
@@ -153,6 +196,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-reset-password',
+    ttl: 900,
+    limit: 10,
+    message: 'Too many password reset attempts. Try again later.',
+  })
   @Post('reset-password')
   async resetPassword(@Req() req: AppRequest, @Body() dto: ResetPasswordDto) {
     const data = await this.authService.resetPassword(req, dto);
@@ -164,6 +213,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-magic-link-request',
+    ttl: 900,
+    limit: 5,
+    message: 'Too many magic-link requests. Try again later.',
+  })
   @Post('magic-link/request')
   async requestMagicLink(
     @Req() req: AppRequest,
@@ -178,6 +233,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-magic-link-verify',
+    ttl: 900,
+    limit: 10,
+    message: 'Too many magic-link verification attempts. Try again later.',
+  })
   @Post('magic-link/verify')
   async verifyMagicLink(
     @Req() req: AppRequest,
@@ -280,6 +341,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-two-factor-verify',
+    ttl: 900,
+    limit: 10,
+    message: 'Too many two-factor verification attempts. Try again later.',
+  })
   @Post('2fa/verify')
   async verifyTwoFactor(
     @Req() req: AppRequest,
@@ -340,6 +407,12 @@ export class AuthController {
   }
 
   @Public()
+  @RateLimit({
+    name: 'auth-refresh',
+    ttl: 300,
+    limit: 30,
+    message: 'Too many token refresh attempts. Try again later.',
+  })
   @Post('refresh')
   async refresh(
     @Req() req: AppRequest,

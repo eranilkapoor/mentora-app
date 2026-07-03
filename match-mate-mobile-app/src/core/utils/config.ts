@@ -37,8 +37,52 @@ const getEnvValue = (value: string | undefined): string | undefined => {
   return trimmedValue;
 };
 
+// Expo replaces EXPO_PUBLIC_* variables only when referenced statically.
+// Keep every public build variable here; dynamic process.env[key] access is
+// left unresolved in production bundles.
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+const PUBLIC_ENV: Record<string, string | undefined> = {
+  EXPO_PUBLIC_ENV: process.env.EXPO_PUBLIC_ENV,
+  EXPO_PUBLIC_API_BASE_URL: process.env.EXPO_PUBLIC_API_BASE_URL,
+  EXPO_PUBLIC_API_PORT: process.env.EXPO_PUBLIC_API_PORT,
+  EXPO_PUBLIC_API_PATH: process.env.EXPO_PUBLIC_API_PATH,
+  EXPO_PUBLIC_CLIENT_VERSION: process.env.EXPO_PUBLIC_CLIENT_VERSION,
+  EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED:
+    process.env.EXPO_PUBLIC_AUTH_PHONE_OTP_ENABLED,
+  EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED:
+    process.env.EXPO_PUBLIC_AUTH_SOCIAL_GOOGLE_ENABLED,
+  EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED:
+    process.env.EXPO_PUBLIC_AUTH_SOCIAL_FACEBOOK_ENABLED,
+  EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED:
+    process.env.EXPO_PUBLIC_AUTH_SOCIAL_APPLE_ENABLED,
+  EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED:
+    process.env.EXPO_PUBLIC_AUTH_MAGIC_LINK_ENABLED,
+  EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED:
+    process.env.EXPO_PUBLIC_AUTH_BIOMETRIC_ENABLED,
+  EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED:
+    process.env.EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED,
+  EXPO_PUBLIC_STORE_BILLING_ENABLED:
+    process.env.EXPO_PUBLIC_STORE_BILLING_ENABLED,
+  EXPO_PUBLIC_ERROR_REPORTING_ENABLED:
+    process.env.EXPO_PUBLIC_ERROR_REPORTING_ENABLED,
+  EXPO_PUBLIC_ERROR_REPORTING_PROVIDER:
+    process.env.EXPO_PUBLIC_ERROR_REPORTING_PROVIDER,
+  EXPO_PUBLIC_SENTRY_DSN: process.env.EXPO_PUBLIC_SENTRY_DSN,
+  EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE:
+    process.env.EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE,
+  EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID:
+    process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID:
+    process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+  EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID:
+    process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
+  EXPO_PUBLIC_GOOGLE_REDIRECT_URI: process.env.EXPO_PUBLIC_GOOGLE_REDIRECT_URI,
+  EXPO_PUBLIC_FACEBOOK_CLIENT_ID: process.env.EXPO_PUBLIC_FACEBOOK_CLIENT_ID,
+};
+/* eslint-enable @typescript-eslint/no-unsafe-assignment */
+
 export const getPublicEnv = (key: string): string | undefined => {
-  return getEnvValue((process.env as Record<string, string | undefined>)[key]);
+  return getEnvValue(PUBLIC_ENV[key]);
 };
 
 const getExpoConstants = (): ExpoConstantsWithHosts =>

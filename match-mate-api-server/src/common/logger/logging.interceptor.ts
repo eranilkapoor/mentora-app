@@ -34,6 +34,12 @@ interface RequestLog {
   platform: string;
   deviceId: string;
   userAgent: string;
+  clientIp: string;
+  remoteIp: string;
+  forwardedFor: string;
+  origin: string;
+  referer: string;
+  userId: string;
   timestamp: string;
   body: Record<string, unknown>;
 }
@@ -91,6 +97,8 @@ export class LoggingInterceptor implements NestInterceptor {
     const clientVersion = headers['x-client-version'] ?? UNKNOWN;
     const platform = headers['x-platform'] ?? UNKNOWN;
     const deviceId = headers['x-device-id'] ?? UNKNOWN;
+    const forwardedFor = request.headers['x-forwarded-for'];
+    const userId = this.getUserId(request.user);
 
     const startTime = Date.now();
 
@@ -104,6 +112,14 @@ export class LoggingInterceptor implements NestInterceptor {
       platform,
       deviceId,
       userAgent,
+      clientIp: request.ip || UNKNOWN,
+      remoteIp: request.socket?.remoteAddress || UNKNOWN,
+      forwardedFor: Array.isArray(forwardedFor)
+        ? forwardedFor.join(',')
+        : forwardedFor || UNKNOWN,
+      origin: request.headers.origin || UNKNOWN,
+      referer: request.headers.referer || UNKNOWN,
+      userId,
       timestamp: new Date().toISOString(),
       body: this.sanitizeBody(body as Record<string, unknown>),
     };
@@ -163,5 +179,11 @@ export class LoggingInterceptor implements NestInterceptor {
     }
 
     return sanitized;
+  }
+
+  private getUserId(user: Express.User | undefined): string {
+    if (!user || !('sub' in user)) return UNKNOWN;
+    const sub = user.sub;
+    return typeof sub === 'string' && sub ? sub : UNKNOWN;
   }
 }

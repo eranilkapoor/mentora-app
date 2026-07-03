@@ -94,6 +94,9 @@ async function bootstrap(): Promise<void> {
   app.useLogger(logger);
   monitoring.initialize();
 
+  const trustedProxyHops = configService.get<number>('app.trustedProxyHops', 0);
+  app.set('trust proxy', trustedProxyHops);
+
   app.disable('x-powered-by');
 
   app.use(compression({ level: 6 }));

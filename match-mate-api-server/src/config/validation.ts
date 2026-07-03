@@ -247,6 +247,8 @@ export const envValidationSchema = Joi.object({
 
   SHUTDOWN_DRAIN_MS: Joi.number().integer().min(0).max(30000).default(5000),
 
+  TRUST_PROXY_HOPS: Joi.number().integer().min(0).max(10).default(0),
+
   ALLOWED_ORIGINS: Joi.string()
     .trim()
     .default('*')

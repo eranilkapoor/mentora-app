@@ -74,7 +74,7 @@ describe('RateLimitGuard', () => {
     );
   });
 
-  it('creates an anonymous entry with the standard limit and route path', async () => {
+  it('uses the trusted Express IP and ignores spoofable forwarded headers', async () => {
     jest.spyOn(Date, 'now').mockReturnValue(1_000);
     const { context } = createContext({
       route: { path: '/auth/login' },
@@ -84,7 +84,7 @@ describe('RateLimitGuard', () => {
     await expect(guard.canActivate(context)).resolves.toBe(true);
 
     expect(cache.set).toHaveBeenCalledWith(
-      'rate-limit:login:POST:/auth/login:203.0.113.10',
+      'rate-limit:login:POST:/auth/login:127.0.0.1',
       { count: 1, expiresAt: 61_000 },
       60,
     );

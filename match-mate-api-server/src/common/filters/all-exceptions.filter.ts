@@ -37,6 +37,8 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const correlationId =
       (request.headers['x-correlation-id'] as string) || 'unknown';
     const requestId = (request.headers['x-request-id'] as string) || 'unknown';
+    const requestUserId = this.getUserId(request.user);
+    const forwardedFor = request.headers['x-forwarded-for'];
 
     let status: HttpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
     let code: string = ErrorCode.INTERNAL_ERROR;
@@ -77,6 +79,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
         method: request.method,
         correlationId,
         requestId,
+        clientIp: request.ip || 'unknown',
+        remoteIp: request.socket?.remoteAddress || 'unknown',
+        forwardedFor: Array.isArray(forwardedFor)
+          ? forwardedFor.join(',')
+          : forwardedFor || 'unknown',
+        userAgent: request.headers['user-agent'] || 'unknown',
+        origin: request.headers.origin || 'unknown',
+        referer: request.headers.referer || 'unknown',
+        userId: requestUserId,
         statusCode: status,
         message,
         stack: exception instanceof Error ? exception.stack : undefined,
@@ -88,6 +99,15 @@ export class AllExceptionsFilter implements ExceptionFilter {
         method: request.method,
         correlationId,
         requestId,
+        clientIp: request.ip || 'unknown',
+        remoteIp: request.socket?.remoteAddress || 'unknown',
+        forwardedFor: Array.isArray(forwardedFor)
+          ? forwardedFor.join(',')
+          : forwardedFor || 'unknown',
+        userAgent: request.headers['user-agent'] || 'unknown',
+        origin: request.headers.origin || 'unknown',
+        referer: request.headers.referer || 'unknown',
+        userId: requestUserId,
         statusCode: status,
         message,
         stack: exception instanceof Error ? exception.stack : undefined,
@@ -158,5 +178,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
       default:
         return ErrorCode.INTERNAL_ERROR;
     }
+  }
+
+  private getUserId(user: Express.User | undefined): string {
+    if (!user || !('sub' in user)) return 'anonymous';
+    const sub = user.sub;
+    return typeof sub === 'string' && sub ? sub : 'anonymous';
   }
 }

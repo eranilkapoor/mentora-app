@@ -7,6 +7,7 @@ import * as Google from 'expo-auth-session/providers/google';
 import * as WebBrowser from 'expo-web-browser';
 import { SocialProvider } from './auth.types';
 import { SocialLoginRequest } from '@/core/types';
+import { getPublicEnv as getEnv } from '@/core/utils/config';
 
 WebBrowser.maybeCompleteAuthSession();
 
@@ -15,13 +16,6 @@ type SocialProfile = SocialLoginRequest;
 const DISABLED_GOOGLE_CLIENT_ID =
   'disabled-google-auth.apps.googleusercontent.com';
 const DISABLED_FACEBOOK_CLIENT_ID = '0';
-
-const getEnv = (key: string): string | undefined => {
-  const value = (process.env as Record<string, string | undefined>)[key];
-  const trimmed = value?.trim();
-  if (!trimmed) return undefined;
-  return trimmed;
-};
 
 const getWebOrigin = (): string | undefined => {
   if (Platform.OS !== 'web') {
@@ -50,9 +44,11 @@ export function useSocialAuth(): {
   const googleIosClientId = getEnv('EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID');
   const googleAndroidClientId = getEnv('EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID');
   const googleRedirectUri =
-    getEnv('EXPO_PUBLIC_GOOGLE_REDIRECT_URI') ??
-    getWebOrigin() ??
-    AuthSession.makeRedirectUri({ scheme: 'matchmate' });
+    Platform.OS === 'web'
+      ? (getEnv('EXPO_PUBLIC_GOOGLE_REDIRECT_URI') ??
+        getWebOrigin() ??
+        AuthSession.makeRedirectUri())
+      : AuthSession.makeRedirectUri({ scheme: 'matchmate' });
   const facebookClientId = getEnv('EXPO_PUBLIC_FACEBOOK_CLIENT_ID');
 
   const [, , promptGoogle] = Google.useAuthRequest({
