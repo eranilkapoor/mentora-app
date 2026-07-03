@@ -52,7 +52,17 @@ export class HybridSocketIoAdapter extends IoAdapter {
   }
 
   createIOServer(port: number, options?: ServerOptions): Server {
-    const server = super.createIOServer(port, options) as Server;
+    const allowedOrigins =
+      this.configService.get<string[]>('cors.origins') ?? [];
+    const allowAnyOrigin = allowedOrigins.includes('*');
+    const server = super.createIOServer(port, {
+      ...options,
+      cors: {
+        ...options?.cors,
+        origin: allowAnyOrigin ? true : allowedOrigins,
+        credentials: !allowAnyOrigin,
+      },
+    }) as Server;
     if (!server || typeof server !== 'object') {
       throw new Error('Failed to create Socket.IO server');
     }

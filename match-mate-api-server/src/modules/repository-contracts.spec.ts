@@ -67,6 +67,7 @@ describe('remaining repository contracts', () => {
       findOne: jest.fn(() => query),
       findById: jest.fn(() => query),
       findByIdAndUpdate: jest.fn().mockResolvedValue({ id: objectId }),
+      updateMany: jest.fn().mockResolvedValue({ modifiedCount: 1 }),
     };
     const repository = new UserRepository(model as never);
 
@@ -79,8 +80,11 @@ describe('remaining repository contracts', () => {
       await repository.findByIdWithRoles(objectId);
       await repository.update(objectId, { email: 'updated@example.com' });
       await repository.updateMembership(objectId, { tier: 'gold' } as never);
+      await repository.expireMemberships([objectId], new Date());
+      await repository.expireMemberships([], new Date());
       expect(query.populate).toHaveBeenCalled();
       expect(model.findByIdAndUpdate).toHaveBeenCalledTimes(2);
+      expect(model.updateMany).toHaveBeenCalledTimes(1);
     });
   });
 

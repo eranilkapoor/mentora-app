@@ -195,10 +195,16 @@ function validateProductionProviders(
   }
 
   if (
-    env.PAYMENT_MOBILE_STORE_VERIFICATION_MODE === 'strict' &&
-    env.PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED === true &&
-    (!env.GOOGLE_PLAY_PACKAGE_NAME || !env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON)
+    env.PAYMENT_MOBILE_STORE_VERIFICATION_MODE !== 'strict' ||
+    env.PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED !== true
   ) {
+    return helpers.error('any.custom', {
+      customMessage:
+        'Production requires strict mobile-store receipt verification',
+    });
+  }
+
+  if (!env.GOOGLE_PLAY_PACKAGE_NAME || !env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON) {
     return helpers.error('any.custom', {
       customMessage:
         'GOOGLE_PLAY_PACKAGE_NAME and GOOGLE_PLAY_SERVICE_ACCOUNT_JSON are required when strict mobile-store verification is enabled in production',

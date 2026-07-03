@@ -64,7 +64,13 @@ export class SubscriptionsService {
     await this.subModel.updateMany(
       {
         userId: new Types.ObjectId(userId),
-        status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
+        status: {
+          $in: [
+            SubscriptionStatus.ACTIVE,
+            SubscriptionStatus.TRIAL,
+            SubscriptionStatus.GRACE_PERIOD,
+          ],
+        },
       },
       {
         $set: {
@@ -249,7 +255,13 @@ export class SubscriptionsService {
     return this.subModel
       .findOne({
         userId: new Types.ObjectId(userId),
-        status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
+        status: {
+          $in: [
+            SubscriptionStatus.ACTIVE,
+            SubscriptionStatus.TRIAL,
+            SubscriptionStatus.GRACE_PERIOD,
+          ],
+        },
         endDate: { $gt: new Date() },
       })
       .populate('planId')
@@ -335,7 +347,13 @@ export class SubscriptionsService {
   async cancelSubscription(userId: string, reason?: string) {
     const sub = await this.subModel.findOne({
       userId: new Types.ObjectId(userId),
-      status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
+      status: {
+        $in: [
+          SubscriptionStatus.ACTIVE,
+          SubscriptionStatus.TRIAL,
+          SubscriptionStatus.GRACE_PERIOD,
+        ],
+      },
     });
 
     if (!sub) return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND);
@@ -370,12 +388,24 @@ export class SubscriptionsService {
 
   // Called by cron to expire subscriptions past their endDate
   async expireOverdueSubscriptions() {
-    const result = await this.subModel.updateMany(
-      {
-        status: { $in: [SubscriptionStatus.ACTIVE, SubscriptionStatus.TRIAL] },
-        endDate: { $lt: new Date() },
+    const expiredAt = new Date();
+    const filter = {
+      status: {
+        $in: [
+          SubscriptionStatus.ACTIVE,
+          SubscriptionStatus.TRIAL,
+          SubscriptionStatus.GRACE_PERIOD,
+        ],
       },
-      { $set: { status: SubscriptionStatus.EXPIRED } },
+      endDate: { $lt: expiredAt },
+    };
+    const userIds = await this.subModel.distinct('userId', filter).exec();
+    const result = await this.subModel.updateMany(filter, {
+      $set: { status: SubscriptionStatus.EXPIRED },
+    });
+    await this.userRepo.expireMemberships(
+      userIds.map((id) => id.toString()),
+      expiredAt,
     );
     return { expiredCount: result.modifiedCount };
   }

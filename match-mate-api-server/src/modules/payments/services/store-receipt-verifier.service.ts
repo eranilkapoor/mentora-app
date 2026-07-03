@@ -18,6 +18,7 @@ export interface VerifiedStoreSubscription {
   environment: string;
   providerPayload: Record<string, unknown>;
   status: SubscriptionStatus.ACTIVE | SubscriptionStatus.GRACE_PERIOD;
+  acknowledgementState?: string;
 }
 
 @Injectable()
@@ -90,12 +91,41 @@ export class StoreReceiptVerifierService {
         body.subscriptionState === 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD'
           ? SubscriptionStatus.GRACE_PERIOD
           : SubscriptionStatus.ACTIVE,
+      acknowledgementState: body.acknowledgementState,
       providerPayload: {
         subscriptionState: body.subscriptionState,
         acknowledgementState: body.acknowledgementState,
         regionCode: body.regionCode,
       },
     };
+  }
+
+  async acknowledgeGooglePlay(dto: VerifyStoreSubscriptionDto): Promise<void> {
+    if (dto.gateway !== PaymentGateway.GOOGLE_PLAY || !dto.purchaseToken) {
+      return;
+    }
+
+    const packageName = this.required('payments.googlePlay.packageName');
+    const serviceAccount = this.parseServiceAccount(
+      this.required('payments.googlePlay.serviceAccountJson'),
+    );
+    const accessToken = await this.getGoogleAccessToken(serviceAccount);
+    const response = await fetch(
+      `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${encodeURIComponent(packageName)}/purchases/subscriptions/${encodeURIComponent(dto.productId)}/tokens/${encodeURIComponent(dto.purchaseToken)}:acknowledge`,
+      {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({}),
+      },
+    );
+
+    // Google returns 409 when another retry/client acknowledged concurrently.
+    if (!response.ok && response.status !== 409) {
+      throw new Error(`google_acknowledgement_${response.status}`);
+    }
   }
 
   private async verifyApple(

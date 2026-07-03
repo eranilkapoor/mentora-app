@@ -117,6 +117,38 @@ describe('StoreReceiptVerifierService', () => {
     });
   });
 
+  it('acknowledges a verified Google Play subscription purchase', async () => {
+    const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    config.set('payments.googlePlay.packageName', 'com.webnza.matchmate');
+    config.set(
+      'payments.googlePlay.serviceAccountJson',
+      JSON.stringify({
+        client_email: 'billing@project.iam.gserviceaccount.com',
+        private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }),
+      }),
+    );
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce(response({ access_token: 'access-token' }))
+      .mockResolvedValueOnce(response({}));
+
+    await expect(
+      service.acknowledgeGooglePlay({
+        gateway: PaymentGateway.GOOGLE_PLAY,
+        planId: '507f1f77bcf86cd799439011',
+        productId: 'matchmate_gold',
+        basePlanId: 'monthly',
+        transactionId: 'GPA.1',
+        purchaseToken: 'purchase-token',
+      }),
+    ).resolves.toBeUndefined();
+    expect(global.fetch).toHaveBeenLastCalledWith(
+      expect.stringContaining(
+        '/purchases/subscriptions/matchmate_gold/tokens/purchase-token:acknowledge',
+      ),
+      expect.objectContaining({ method: 'POST' }),
+    );
+  });
+
   it('rejects a non-entitled Google Play subscription', async () => {
     const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
     config.set('payments.googlePlay.packageName', 'com.matchmate.app');

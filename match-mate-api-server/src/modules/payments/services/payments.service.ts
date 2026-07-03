@@ -468,6 +468,10 @@ export class PaymentsService {
         autoRenew: verifiedStoreSubscription?.autoRenew,
         status: verifiedStoreSubscription?.status,
       });
+      await this.acknowledgeStorePurchaseWhenRequired(
+        dto,
+        verifiedStoreSubscription,
+      );
 
       return existingPayment;
     }
@@ -538,6 +542,10 @@ export class PaymentsService {
       storeExpiresAt: verifiedStoreSubscription?.expiresAt,
       status: verifiedStoreSubscription?.status,
     });
+    await this.acknowledgeStorePurchaseWhenRequired(
+      dto,
+      verifiedStoreSubscription,
+    );
     await this.createInvoiceIfRequired(payment);
 
     return payment;
@@ -975,6 +983,27 @@ export class PaymentsService {
     } catch (error) {
       return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
         reason: 'store_receipt_verification_failed',
+        providerError: String(error),
+      });
+    }
+  }
+
+  private async acknowledgeStorePurchaseWhenRequired(
+    dto: VerifyStoreSubscriptionDto,
+    verified?: VerifiedStoreSubscription,
+  ): Promise<void> {
+    if (
+      dto.gateway !== PaymentGateway.GOOGLE_PLAY ||
+      verified?.acknowledgementState !== 'ACKNOWLEDGEMENT_STATE_PENDING'
+    ) {
+      return;
+    }
+
+    try {
+      await this.storeReceiptVerifier.acknowledgeGooglePlay(dto);
+    } catch (error) {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'store_purchase_acknowledgement_failed',
         providerError: String(error),
       });
     }

@@ -13,6 +13,7 @@ describe('SubscriptionsService', () => {
     exists: jest.fn(),
     findByIdAndUpdate: jest.fn(),
     find: jest.fn(),
+    distinct: jest.fn(),
   };
   const planModel = { findById: jest.fn(), find: jest.fn() };
   const paymentModel = {
@@ -20,7 +21,10 @@ describe('SubscriptionsService', () => {
     find: jest.fn(),
     aggregate: jest.fn(),
   };
-  const userRepo = { updateMembership: jest.fn() };
+  const userRepo = {
+    updateMembership: jest.fn(),
+    expireMemberships: jest.fn(),
+  };
 
   let service: SubscriptionsService;
   let userId: string;
@@ -54,6 +58,10 @@ describe('SubscriptionsService', () => {
       startDate: new Date(),
     });
     userRepo.updateMembership.mockResolvedValue(undefined);
+    userRepo.expireMemberships.mockResolvedValue({ modifiedCount: 0 });
+    subModel.distinct.mockReturnValue({
+      exec: jest.fn().mockResolvedValue([]),
+    });
     service = new SubscriptionsService(
       subModel as never,
       planModel as never,
@@ -344,6 +352,10 @@ describe('SubscriptionsService', () => {
   });
 
   it('expires overdue subscriptions and marks reminder windows', async () => {
+    const expiredUserId = new Types.ObjectId();
+    subModel.distinct.mockReturnValue({
+      exec: jest.fn().mockResolvedValue([expiredUserId]),
+    });
     subModel.updateMany
       .mockResolvedValueOnce({ modifiedCount: 3 })
       .mockResolvedValueOnce({ modifiedCount: 2 })
@@ -351,6 +363,10 @@ describe('SubscriptionsService', () => {
     await expect(service.expireOverdueSubscriptions()).resolves.toEqual({
       expiredCount: 3,
     });
+    expect(userRepo.expireMemberships).toHaveBeenCalledWith(
+      [expiredUserId.toString()],
+      expect.any(Date),
+    );
     await expect(service.markExpiryRemindersDue([7, 1])).resolves.toEqual({
       reminders: [
         { offsetDays: 7, markedCount: 2 },

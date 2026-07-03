@@ -63,4 +63,24 @@ export class UserRepository {
       { new: true },
     );
   }
+
+  async expireMemberships(userIds: string[], expiredAt: Date) {
+    if (userIds.length === 0) return { modifiedCount: 0 };
+
+    return this.userModel.updateMany(
+      {
+        _id: { $in: userIds },
+        'membership.expiresAt': { $lte: expiredAt },
+      },
+      {
+        $set: {
+          'membership.tier': 'free',
+          'membership.status': 'expired',
+          'membership.autoRenew': false,
+          'membership.expiresAt': expiredAt,
+        },
+        $unset: { 'membership.planId': '' },
+      },
+    );
+  }
 }

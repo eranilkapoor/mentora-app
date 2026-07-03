@@ -61,3 +61,111 @@ Keep all private keys in the deployment secret manager, never EAS public variabl
 - Test purchase, eligible/ineligible trial, renewal, grace period, cancellation, refund, expiry, duplicate delivery, app reinstall, and restore with licensed sandbox accounts.
 - Register Google RTDN and App Store Server Notifications V2 for provider-driven lifecycle reconciliation.
 - Record successful sandbox evidence before enabling production rollout.
+
+
+
+To complete automatic Google subscription synchronization, we need these pieces.
+
+## 1. Google Cloud setup
+
+- Enable Cloud Pub/Sub API.
+- Create a topic, for example `matchmate-google-play-rtdn`.
+- Grant this account Pub/Sub Publisher permission:
+
+`google-play-developer-notifications@system.gserviceaccount.com`
+
+- Create an authenticated push subscription pointing to:
+
+`POST https://your-api-domain.com/api/v1/payments/google-play/rtdn`
+
+Google’s setup instructions are here: [Configure Google Play RTDN](https://developer.android.com/google/play/billing/getting-ready).
+
+## 2. Play Console setup
+
+In Play Console:
+
+`MatchMate → Monetize → Monetization setup → Real-time developer notifications`
+
+Configure:
+
+- Topic: `projects/{project-id}/topics/{topic-name}`
+- Notification type: subscriptions and voided purchases
+- Send a test notification
+- Save the configuration
+
+## 3. Secure the webhook
+
+Pub/Sub should send an authenticated OIDC JWT.
+
+The API must validate:
+
+- JWT signature
+- Expected audience
+- Expected service-account email
+- `email_verified`
+- Token expiration
+
+Required environment values would be similar to:
+
+```env
+GOOGLE_PLAY_RTDN_ENABLED=true
+GOOGLE_PLAY_RTDN_AUDIENCE=https://api.example.com/api/v1/payments/google-play/rtdn
+GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL=matchmate-rtdn@project.iam.gserviceaccount.com
+```
+
+Google recommends authenticated push subscriptions and validation of the audience and service-account identity: [Pub/Sub push authentication](https://docs.cloud.google.com/pubsub/docs/authenticate-push-subscriptions).
+
+## 4. Backend RTDN endpoint
+
+We need to implement:
+
+```text
+POST /api/v1/payments/google-play/rtdn
+```
+
+The endpoint must:
+
+1. Authenticate the Pub/Sub JWT.
+2. Decode `message.data` from Base64.
+3. Validate `packageName === com.webnza.matchmate`.
+4. Extract `subscriptionNotification.purchaseToken`.
+5. Call Google `subscriptionsv2.get` using that token.
+6. Treat Google’s API response as authoritative.
+7. Find the local subscription using `storePurchaseToken`.
+8. Update:
+   - status
+   - expiry date
+   - auto-renew flag
+   - product/base plan
+   - latest order ID
+   - last verification time
+9. Return `2xx` only after durable processing.
+
+RTDN only indicates that something changed; Google explicitly requires calling the Developer API for the complete current state: [RTDN reference](https://developer.android.com/google/play/billing/rtdn-reference).
+
+## 5. Lifecycle handling
+
+The reconciliation must correctly handle:
+
+- Renewed → extend `endDate`, create renewal payment
+- Canceled → set `autoRenew=false`, retain access until expiry
+- Grace period → set `GRACE_PERIOD`
+- Account hold → suspend paid entitlement
+- Restarted/recovered → restore `ACTIVE`
+- Expired → set `EXPIRED`, downgrade membership
+- Revoked/refunded → terminate entitlement immediately
+- Replaced/upgraded/downgraded → follow linked purchase token and switch plan
+
+## 6. Reliability
+
+We should also add:
+
+- Idempotency using Pub/Sub `messageId` and Google order ID
+- Processed-notification collection
+- Dead-letter topic
+- Retry-safe database operations
+- Storage for notifications arriving before the mobile app claims the purchase
+- Scheduled reconciliation fallback for active Google subscriptions
+- Sentry logging without exposing purchase tokens
+
+Your initial purchase/verification/acknowledgement path is implemented. The remaining work is the authenticated RTDN endpoint, Google Console/Pub/Sub setup, and lifecycle reconciliation logic.

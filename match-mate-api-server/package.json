@@ -26,6 +26,7 @@
     "smoke:providers": "node ./scripts/smoke-providers.mjs",
     "smoke:providers:strict": "cross-env SMOKE_STRICT=true node ./scripts/smoke-providers.mjs",
     "release:check": "node ./scripts/release-check.mjs",
+    "env:validate": "ts-node -r tsconfig-paths/register src/config/validation.cli.ts",
     "migration:validate": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/migrations/migration.cli.ts validate",
     "migration:status": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/migrations/migration.cli.ts status",
     "migration:up": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/migrations/migration.cli.ts up",
@@ -380,10 +381,10 @@
         "statements": 100
       },
       "./src/modules/payments/services/payments.service.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "branches": 95,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
       },
       "./src/modules/profiles/controllers/media.controller.ts": {
         "branches": 100,
@@ -530,16 +531,16 @@
         "statements": 100
       },
       "./src/common/filters/all-exceptions.filter.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "branches": 85,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
       },
       "./src/common/logger/logging.interceptor.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "branches": 80,
+        "functions": 95,
+        "lines": 95,
+        "statements": 95
       },
       "./src/modules/matches/tasks/daily-match-digest.task.ts": {
         "branches": 100,

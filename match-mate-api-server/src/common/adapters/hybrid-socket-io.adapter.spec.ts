@@ -130,12 +130,38 @@ describe('HybridSocketIoAdapter', () => {
   });
 
   it('creates a local server when no Redis adapter is active', () => {
+    configService.get.mockReturnValue(['*']);
     const adapter = build(null, null);
     const server = { adapter: jest.fn() };
     jest.spyOn(IoAdapter.prototype, 'createIOServer').mockReturnValue(server);
 
     expect(adapter.createIOServer(3000)).toBe(server);
     expect(server.adapter).not.toHaveBeenCalled();
+  });
+
+  it('enforces configured origins while preserving gateway CORS options', () => {
+    configService.get.mockImplementation((key: string, fallback: unknown) =>
+      key === 'cors.origins' ? ['https://matchmate.example'] : fallback,
+    );
+    const adapter = build(null, null);
+    const server = { adapter: jest.fn() };
+    const createServer = jest
+      .spyOn(IoAdapter.prototype, 'createIOServer')
+      .mockReturnValue(server);
+
+    adapter.createIOServer(3000, {
+      cors: { methods: ['GET'] },
+    } as never);
+
+    const passedOptions: unknown = createServer.mock.calls[0]?.[1];
+    expect(createServer).toHaveBeenCalledWith(3000, expect.any(Object));
+    expect(passedOptions).toMatchObject({
+      cors: {
+        methods: ['GET'],
+        origin: ['https://matchmate.example'],
+        credentials: true,
+      },
+    });
   });
 
   it.each([null, 'invalid'])(

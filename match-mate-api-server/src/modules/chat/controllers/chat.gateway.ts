@@ -39,7 +39,6 @@ interface SocketAuth {
 
 @WebSocketGateway({
   namespace: '/chats',
-  cors: { origin: '*' },
 })
 @UsePipes(
   new ValidationPipe({
