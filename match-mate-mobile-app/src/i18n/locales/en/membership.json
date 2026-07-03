@@ -86,6 +86,7 @@
   "trial_failed_message": "We could not start this trial. Please try another plan or contact support.",
   "store_billing_unavailable_title": "In-app billing unavailable",
   "store_billing_unavailable_message": "Store subscriptions are not enabled for this build yet. Please try again after the next release.",
+  "store_connection_unavailable_message": "Google Play Billing could not connect. Install the latest app from your Play testing or production track and confirm the signed-in Google account is eligible.",
   "store_product_unmapped_message": "This store purchase does not match an available Match Mate plan. Please contact support.",
   "store_offer_unavailable_message": "This plan is not available for your store account or region.",
   "checkout": {

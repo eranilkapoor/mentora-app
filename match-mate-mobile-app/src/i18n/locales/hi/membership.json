@@ -86,6 +86,7 @@
   "trial_failed_message": "हम यह ट्रायल शुरू नहीं कर सके। कृपया दूसरा प्लान आज़माएं या सपोर्ट से संपर्क करें।",
   "store_billing_unavailable_title": "इन-ऐप बिलिंग उपलब्ध नहीं है",
   "store_billing_unavailable_message": "इस बिल्ड में स्टोर सब्सक्रिप्शन अभी सक्षम नहीं हैं। कृपया अगले रिलीज के बाद फिर प्रयास करें।",
+  "store_connection_unavailable_message": "Google Play Billing से कनेक्ट नहीं हो सका। Play testing या production track से नवीनतम ऐप इंस्टॉल करें और पुष्टि करें कि साइन-इन Google खाता योग्य है।",
   "store_product_unmapped_message": "यह स्टोर खरीद किसी उपलब्ध Match Mate प्लान से मेल नहीं खाती। कृपया सपोर्ट से संपर्क करें।",
   "store_offer_unavailable_message": "यह प्लान आपके स्टोर खाते या क्षेत्र के लिए उपलब्ध नहीं है।",
   "checkout": {

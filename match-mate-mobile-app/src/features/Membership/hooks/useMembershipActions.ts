@@ -186,14 +186,14 @@ export function useMembershipActions() {
         (item) => item.id === mapping?.productId
       );
       if (product?.platform === 'android') {
-        const offers = product.subscriptionOfferDetailsAndroid.filter(
-          (item) => item.basePlanId === mapping?.basePlanId
+        const offers = (product.subscriptionOffers ?? []).filter(
+          (item) => item.basePlanIdAndroid === mapping?.basePlanId
         );
         const offer =
-          offers.find((item) => item.offerId === mapping?.offerId) ??
-          offers.find((item) => !item.offerId) ??
+          offers.find((item) => item.id === mapping?.offerId) ??
+          offers.find((item) => !item.id) ??
           offers[0];
-        const phases = offer?.pricingPhases.pricingPhaseList;
+        const phases = offer?.pricingPhasesAndroid?.pricingPhaseList;
         const recurringPrice = phases?.[phases.length - 1]?.formattedPrice;
         if (recurringPrice) prices[plan._id] = recurringPrice;
       } else if (product?.displayPrice) {
@@ -211,10 +211,18 @@ export function useMembershipActions() {
           ? plan?.storeProducts?.android
           : plan?.storeProducts?.ios;
 
-      if (!connected || mapping?.productType !== 'subscription') {
+      if (!connected) {
         showError({
           title: t('membership.store_billing_unavailable_title'),
-          message: t('membership.store_billing_unavailable_message'),
+          message: t('membership.store_connection_unavailable_message'),
+        });
+        return;
+      }
+
+      if (mapping?.productType !== 'subscription') {
+        showError({
+          title: t('membership.store_billing_unavailable_title'),
+          message: t('membership.store_product_unmapped_message'),
         });
         return;
       }
@@ -227,13 +235,14 @@ export function useMembershipActions() {
             item.platform === 'android' && item.id === mapping.productId
         );
         const offers =
-          product?.subscriptionOfferDetailsAndroid.filter(
-            (item) => item.basePlanId === mapping.basePlanId
+          product?.subscriptionOffers?.filter(
+            (item) => item.basePlanIdAndroid === mapping.basePlanId
           ) ?? [];
         const offer =
-          offers.find((item) => item.offerId === mapping.offerId) ??
-          offers.find((item) => !item.offerId);
-        if (!offer) {
+          offers.find((item) => item.id === mapping.offerId) ??
+          offers.find((item) => !item.id) ??
+          offers[0];
+        if (!offer?.offerTokenAndroid) {
           showError({
             title: t('membership.store_billing_unavailable_title'),
             message: t('membership.store_offer_unavailable_message'),
@@ -242,14 +251,17 @@ export function useMembershipActions() {
         }
         selectedStoreOfferIds.set(
           `${mapping.productId}:${mapping.basePlanId ?? ''}`,
-          offer.offerId ?? undefined
+          offer.id === mapping.offerId ? offer.id : undefined
         );
         await requestPurchase({
           request: {
             google: {
               skus: [mapping.productId],
               subscriptionOffers: [
-                { sku: mapping.productId, offerToken: offer.offerToken },
+                {
+                  sku: mapping.productId,
+                  offerToken: offer.offerTokenAndroid,
+                },
               ],
             },
           },
