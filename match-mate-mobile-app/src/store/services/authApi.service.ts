@@ -147,14 +147,14 @@ export const authApi = baseApi.injectEndpoints({
       providesTags: ['Auth'],
     }),
     refresh: builder.mutation<
-      ApiResponse<{ accessToken: string; refreshToken?: string }>,
+      { accessToken: string; refreshToken?: string },
       void
     >({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
         try {
           const refreshToken = await getRefreshToken();
 
-          if (!refreshToken) {
+          if (!refreshToken && Platform.OS !== 'web') {
             return {
               error: {
                 status: 'CUSTOM_ERROR',
@@ -167,22 +167,24 @@ export const authApi = baseApi.injectEndpoints({
             url: '/auth/refresh',
             method: 'POST',
             credentials: 'include',
-            headers: {
-              'X-Refresh-Token': refreshToken,
-            },
+            headers: refreshToken
+              ? {
+                  'X-Refresh-Token': refreshToken,
+                }
+              : undefined,
           });
 
           if (result.error) {
             return { error: result.error };
           }
 
-          const response = result.data as ApiResponse<{
+          const response = result.data as {
             accessToken: string;
             refreshToken?: string;
-          }>;
+          };
 
-          if (response?.data?.refreshToken) {
-            await setRefreshToken(response.data.refreshToken);
+          if (response.refreshToken) {
+            await setRefreshToken(response.refreshToken);
           }
 
           return {

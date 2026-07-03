@@ -972,9 +972,10 @@ export class PaymentsService {
 
     try {
       return await this.storeReceiptVerifier.verify(dto);
-    } catch {
+    } catch (error) {
       return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
         reason: 'store_receipt_verification_failed',
+        providerError: String(error),
       });
     }
   }

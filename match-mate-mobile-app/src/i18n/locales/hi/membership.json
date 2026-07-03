@@ -87,6 +87,7 @@
   "store_billing_unavailable_title": "इन-ऐप बिलिंग उपलब्ध नहीं है",
   "store_billing_unavailable_message": "इस बिल्ड में स्टोर सब्सक्रिप्शन अभी सक्षम नहीं हैं। कृपया अगले रिलीज के बाद फिर प्रयास करें।",
   "store_connection_unavailable_message": "Google Play Billing से कनेक्ट नहीं हो सका। Play testing या production track से नवीनतम ऐप इंस्टॉल करें और पुष्टि करें कि साइन-इन Google खाता योग्य है।",
+  "store_purchase_token_missing_message": "Google Play ने खरीद पूरी कर दी, लेकिन सत्यापन टोकन नहीं मिला। खरीद पुनर्स्थापित करने के लिए ऐप फिर शुरू करें या समस्या जारी रहने पर सपोर्ट से संपर्क करें।",
   "store_product_unmapped_message": "यह स्टोर खरीद किसी उपलब्ध Match Mate प्लान से मेल नहीं खाती। कृपया सपोर्ट से संपर्क करें।",
   "store_offer_unavailable_message": "यह प्लान आपके स्टोर खाते या क्षेत्र के लिए उपलब्ध नहीं है।",
   "checkout": {

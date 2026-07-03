@@ -158,12 +158,11 @@ export default function AppInitializer({ children }: Props) {
       if (accessToken) return;
 
       const refreshToken = await getRefreshToken();
-      if (!refreshToken) return;
+      if (!refreshToken && Platform.OS !== 'web') return;
 
       try {
         const response = await refreshAuth().unwrap();
-        const responseData = response?.data;
-        const nextAccessToken = responseData?.accessToken;
+        const nextAccessToken = response?.accessToken;
 
         if (!nextAccessToken || !isMounted) {
           return;
@@ -171,8 +170,8 @@ export default function AppInitializer({ children }: Props) {
 
         dispatch(setAccessToken(nextAccessToken));
 
-        if (responseData?.refreshToken) {
-          await setRefreshToken(responseData.refreshToken);
+        if (response.refreshToken) {
+          await setRefreshToken(response.refreshToken);
         }
       } catch {
         await clearRefreshToken();

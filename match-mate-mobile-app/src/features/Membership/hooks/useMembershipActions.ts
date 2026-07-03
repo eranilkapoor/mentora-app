@@ -16,6 +16,8 @@ import {
   isStoreBillingEnabled,
 } from '@/core/utils/billingConfig';
 import { DisplayPlan } from '../Membership.types';
+import { getApiErrorMessage } from '@/core/utils/apiMessage';
+import { reportError } from '@/core/utils/errorReporter';
 
 const processingStoreTransactions = new Set<string>();
 const selectedStoreOfferIds = new Map<string, string | undefined>();
@@ -68,7 +70,13 @@ export function useMembershipActions() {
           ? plan.storeProducts?.android
           : plan.storeProducts?.ios;
       const purchaseToken = purchase.purchaseToken ?? undefined;
-      if (!mapping || !purchaseToken) return;
+      if (!mapping || !purchaseToken) {
+        showError({
+          title: t('membership.payment_failed_title'),
+          message: t('membership.store_purchase_token_missing_message'),
+        });
+        return;
+      }
       const offerKey = `${mapping.productId}:${mapping.basePlanId ?? ''}`;
 
       processingStoreTransactions.add(transactionId);
@@ -103,10 +111,21 @@ export function useMembershipActions() {
             name: plan.name.replace(/_/g, ' '),
           }),
         });
-      } catch {
+      } catch (error) {
+        reportError(error, {
+          source: 'membership.verifyStoreSubscription',
+          gateway: Platform.OS === 'android' ? 'google_play' : 'apple_iap',
+          productId: mapping.productId,
+          basePlanId: mapping.basePlanId,
+          transactionId,
+        });
         showError({
           title: t('membership.payment_failed_title'),
-          message: t('membership.payment_failed_message'),
+          message: getApiErrorMessage(
+            t,
+            error,
+            'membership.payment_failed_message'
+          ),
         });
       } finally {
         processingStoreTransactions.delete(transactionId);
@@ -123,15 +142,23 @@ export function useMembershipActions() {
     requestPurchase,
     finishTransaction,
     restorePurchases,
+    reconnect,
   } = useIAP({
     onPurchaseSuccess: (purchase) => {
       void processStorePurchase(purchase);
     },
     onPurchaseError: (error) => {
       if (error.code === 'user-cancelled') return;
+      const isConnectionError = [
+        'not-prepared',
+        'service-disconnected',
+        'init-connection',
+      ].includes(error.code ?? '');
       showError({
         title: t('membership.payment_failed_title'),
-        message: t('membership.payment_failed_message'),
+        message: isConnectionError
+          ? t('membership.store_connection_unavailable_message')
+          : t('membership.payment_failed_message'),
       });
     },
   });
@@ -211,18 +238,19 @@ export function useMembershipActions() {
           ? plan?.storeProducts?.android
           : plan?.storeProducts?.ios;
 
-      if (!connected) {
-        showError({
-          title: t('membership.store_billing_unavailable_title'),
-          message: t('membership.store_connection_unavailable_message'),
-        });
-        return;
-      }
-
       if (mapping?.productType !== 'subscription') {
         showError({
           title: t('membership.store_billing_unavailable_title'),
           message: t('membership.store_product_unmapped_message'),
+        });
+        return;
+      }
+
+      const billingReady = await reconnect();
+      if (!billingReady) {
+        showError({
+          title: t('membership.store_billing_unavailable_title'),
+          message: t('membership.store_connection_unavailable_message'),
         });
         return;
       }
@@ -275,7 +303,7 @@ export function useMembershipActions() {
         type: 'subs',
       });
     },
-    [connected, requestPurchase, subscriptions, t]
+    [reconnect, requestPurchase, subscriptions, t]
   );
 
   const handleCreateOrder = useCallback(

@@ -122,6 +122,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       requestId,
       statusCode: status,
       code,
+      meta,
     });
 
     // Custom 404 response
