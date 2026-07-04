@@ -5,6 +5,13 @@ Keep the real values in the deployment secret store, EAS secrets, CI/CD secrets,
 ## Mobile EAS Secrets
 
 - `EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED=true` only after backend FCM is ready.
+- Add the Firebase Android app for package `com.webnza.matchmate`, download its
+  client `google-services.json`, save it as
+  `match-mate-mobile-app/google-services.json` (the configured
+  `expo.android.googleServicesFile` path), and upload the FCM V1 credential to
+  EAS before enabling push. The
+  Firebase Admin service-account JSON is a server secret and cannot replace
+  this Android client file.
 - `EXPO_PUBLIC_ERROR_REPORTING_ENABLED=true` after Sentry or Crashlytics is configured.
 - `EXPO_PUBLIC_ERROR_REPORTING_PROVIDER=sentry` if using Sentry.
 - `EXPO_PUBLIC_SENTRY_DSN`
@@ -19,6 +26,8 @@ Keep the real values in the deployment secret store, EAS secrets, CI/CD secrets,
 - `NOTIFICATION_PUSH_FCM_CLIENT_EMAIL`
 - `NOTIFICATION_PUSH_FCM_PRIVATE_KEY`
 - `NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON` if using full service-account JSON instead of split fields.
+- `NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_PATH` if the deployment mounts the
+  Firebase Admin JSON as a protected file (preferred over an inline secret).
 - `MONITORING_ENABLED=true`
 - `MONITORING_PROVIDER=sentry`
 - `SENTRY_DSN`

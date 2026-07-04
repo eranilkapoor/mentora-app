@@ -177,6 +177,44 @@
     "no_membership_history": "No membership history yet.",
     "billing_details": "Billing Details",
     "billing_details_sub": "Recent orders, invoices, and payment status",
-    "no_billing_records": "No billing records yet."
+    "no_billing_records": "No billing records yet.",
+    "values": {
+      "status": {
+        "active": "Active",
+        "trial": "Free trial",
+        "cancelled": "Cancelled",
+        "expired": "Expired",
+        "pending": "Pending",
+        "success": "Paid",
+        "failed": "Failed",
+        "refunded": "Refunded",
+        "free": "Free"
+      },
+      "gateway": {
+        "google_play": "Google Play",
+        "apple_iap": "Apple App Store",
+        "razorpay": "Razorpay",
+        "stripe": "Stripe",
+        "manual": "Manual payment"
+      },
+      "method": {
+        "subscription": "Store subscription",
+        "card": "Card",
+        "upi": "UPI",
+        "netbanking": "Net banking",
+        "wallet": "Wallet"
+      },
+      "purpose": {
+        "membership": "Membership",
+        "subscription": "Membership subscription",
+        "profile_boost": "Profile boost"
+      },
+      "reason": {
+        "user_requested_from_billing_screen": "Cancelled by you",
+        "store_subscription_cancelled": "Cancelled in the app store",
+        "store_subscription_expired": "Store subscription expired",
+        "payment_failed": "Payment could not be completed"
+      }
+    }
   }
 }

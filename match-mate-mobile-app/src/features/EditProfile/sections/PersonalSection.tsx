@@ -80,12 +80,15 @@ export function PersonalSection({
         value={personal.gender}
         onChange={(v) => onSet('gender', v as PersonalSectionType['gender'])}
         i18nPrefix="options.gender"
+        disabled
+        helperText={t('edit_profile.fields.identity_locked_helper')}
       />
 
       <DatePicker
         label={t('edit_profile.fields.dob')}
         value={personal.dateOfBirth}
         onChange={(v) => onSet('dateOfBirth', v)}
+        disabled
       />
 
       <TimeOfBirthPicker

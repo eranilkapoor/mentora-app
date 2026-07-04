@@ -110,6 +110,44 @@
     "duration": "24 घंटे"
   },
   "billing": {
+    "values": {
+      "status": {
+        "active": "सक्रिय",
+        "trial": "निःशुल्क ट्रायल",
+        "cancelled": "रद्द",
+        "expired": "समाप्त",
+        "pending": "लंबित",
+        "success": "भुगतान किया",
+        "failed": "विफल",
+        "refunded": "धनवापसी",
+        "free": "निःशुल्क"
+      },
+      "gateway": {
+        "google_play": "Google Play",
+        "apple_iap": "Apple App Store",
+        "razorpay": "Razorpay",
+        "stripe": "Stripe",
+        "manual": "मैन्युअल भुगतान"
+      },
+      "method": {
+        "subscription": "स्टोर सदस्यता",
+        "card": "कार्ड",
+        "upi": "UPI",
+        "netbanking": "नेट बैंकिंग",
+        "wallet": "वॉलेट"
+      },
+      "purpose": {
+        "membership": "सदस्यता",
+        "subscription": "सदस्यता योजना",
+        "profile_boost": "प्रोफ़ाइल बूस्ट"
+      },
+      "reason": {
+        "user_requested_from_billing_screen": "आपके द्वारा रद्द",
+        "store_subscription_cancelled": "ऐप स्टोर में रद्द",
+        "store_subscription_expired": "स्टोर सदस्यता समाप्त",
+        "payment_failed": "भुगतान पूरा नहीं हो सका"
+      }
+    },
     "title": "सदस्यता और बिलिंग",
     "free_plan": "फ्री प्लान",
     "membership_plan": "सदस्यता प्लान",

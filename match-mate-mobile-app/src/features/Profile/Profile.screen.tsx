@@ -349,10 +349,6 @@ const getPdfSections = (
   const showIncome = privacy?.showIncome ?? false;
   const showPhone = privacy?.showPhone ?? false;
   const showEmail = privacy?.showEmail ?? false;
-  const age =
-    toDisplayText(profile.age) !== EMPTY_VALUE
-      ? `${profile.age} yrs`
-      : getFormattedAge(profile.personal.dateOfBirth ?? '');
   const phone = getProfilePhone(profile);
   const email = getProfileEmail(profile);
   const income = annualIncomeFormat(profile.education.annualIncomeAmount ?? '');
@@ -371,7 +367,6 @@ const getPdfSections = (
             EMPTY_VALUE
           ),
         ],
-        ['Age', showExactAge ? age : MASKED_VALUE, !showExactAge],
         [
           'Date of Birth',
           showExactAge
@@ -388,7 +383,6 @@ const getPdfSections = (
             EMPTY_VALUE
           ),
         ],
-        ['Height', getFormattedHeight(profile.physical.height)],
         ['Location', getLocation(profile)],
         [
           'Marital Status',
@@ -396,15 +390,6 @@ const getPdfSections = (
             t,
             'options.marital_status',
             profile.personal.maritalStatus,
-            EMPTY_VALUE
-          ),
-        ],
-        [
-          'Religion',
-          formatEnumLabel(
-            t,
-            'options.religion',
-            profile.personal.religion,
             EMPTY_VALUE
           ),
         ],

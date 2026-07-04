@@ -232,6 +232,8 @@ export class ProfilesService {
       const existing = await this.profileRepo.findByUserId(userId);
       if (!existing) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
 
+      this.assertImmutableIdentityFields(dto, existing);
+
       const normalized = this.normalizeUpdate(dto, existing);
       const changedFields = this.getChangedProfileFields(existing, normalized);
 
@@ -368,6 +370,43 @@ export class ProfilesService {
     normalized.lastActiveAt = new Date();
 
     return normalized;
+  }
+
+  private assertImmutableIdentityFields(
+    dto: Partial<UpdateProfileDto> & Record<string, unknown>,
+    existing: Record<string, unknown>,
+  ): void {
+    if (!dto.personal) return;
+
+    const incoming = dto.personal;
+    const current = (existing.personal ?? {}) as Record<string, unknown>;
+    const lockedFields: Array<keyof PersonalDto> = [
+      'profileFor',
+      'gender',
+      'dateOfBirth',
+    ];
+    const changed = lockedFields.filter((field) => {
+      if (incoming[field] === undefined) return false;
+      const incomingValue = incoming[field];
+      const currentValue = current[field];
+      const next =
+        typeof incomingValue === 'string'
+          ? incomingValue.slice(0, 10).toLowerCase()
+          : '';
+      const previous =
+        typeof currentValue === 'string'
+          ? currentValue.slice(0, 10).toLowerCase()
+          : '';
+      return Boolean(previous) && next !== previous;
+    });
+
+    if (changed.length) {
+      throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'immutable_identity_fields',
+        fields: changed,
+        supportRequired: true,
+      });
+    }
   }
 
   private enrichProfile(profile: Record<string, unknown>) {

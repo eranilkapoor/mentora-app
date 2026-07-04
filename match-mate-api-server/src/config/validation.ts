@@ -157,15 +157,22 @@ function validateNotificationProviders(
     const hasServiceAccountJson = Boolean(
       env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON,
     );
+    const hasServiceAccountPath = Boolean(
+      env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_PATH,
+    );
     const hasDiscreteCredentials =
       Boolean(env.NOTIFICATION_PUSH_FCM_PROJECT_ID) &&
       Boolean(env.NOTIFICATION_PUSH_FCM_CLIENT_EMAIL) &&
       Boolean(env.NOTIFICATION_PUSH_FCM_PRIVATE_KEY);
 
-    if (!hasServiceAccountJson && !hasDiscreteCredentials) {
+    if (
+      !hasServiceAccountJson &&
+      !hasServiceAccountPath &&
+      !hasDiscreteCredentials
+    ) {
       return helpers.error('any.custom', {
         customMessage:
-          'FCM push delivery requires NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON or the project/client/private key trio',
+          'FCM push delivery requires NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_PATH, NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON, or the project/client/private key trio',
       });
     }
   }
@@ -628,6 +635,8 @@ export const envValidationSchema = Joi.object({
   NOTIFICATION_PUSH_SERVER_KEY: optionalString,
 
   NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON: optionalString,
+
+  NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_PATH: optionalString,
 
   NOTIFICATION_PUSH_FCM_PROJECT_ID: optionalString,
 

@@ -45,17 +45,27 @@ export function useMembershipActions() {
         return;
       }
 
-      const plan = plans.find((candidate) => {
+      // Store callbacks may arrive before the API catalogue. Wait for the
+      // catalogue effect to retry instead of showing a false mapping error.
+      if (!plans.length) return;
+
+      const productCandidates = plans.filter((candidate) => {
         const mapping =
           Platform.OS === 'android'
             ? candidate.storeProducts?.android
             : candidate.storeProducts?.ios;
-        return (
-          mapping?.productId === purchase.productId &&
-          (Platform.OS !== 'android' ||
-            mapping.basePlanId === purchase.currentPlanId)
-        );
+        return mapping?.productId === purchase.productId;
       });
+      const plan =
+        Platform.OS === 'android' && purchase.currentPlanId
+          ? productCandidates.find(
+              (candidate) =>
+                candidate.storeProducts?.android?.basePlanId ===
+                purchase.currentPlanId
+            )
+          : productCandidates.length === 1
+            ? productCandidates[0]
+            : undefined;
 
       if (!plan) {
         showError({
@@ -162,6 +172,16 @@ export function useMembershipActions() {
       });
     },
   });
+
+  const restoreStorePurchases = useCallback(async (): Promise<void> => {
+    if (!connected) await reconnect();
+    // Refreshes availablePurchases; the effect verifies every active restored
+    // subscription against our backend idempotently.
+    await restorePurchases({
+      includeSuspendedAndroid: false,
+      onlyIncludeActiveItemsIOS: true,
+    });
+  }, [connected, reconnect, restorePurchases]);
 
   useEffect(() => {
     finishTransactionRef.current = finishTransaction;
@@ -444,7 +464,7 @@ export function useMembershipActions() {
     handleCreateOrder,
     handleCreateBoostOrder,
     handleStartTrial,
-    restoreStorePurchases: restorePurchases,
+    restoreStorePurchases,
     storePrices,
     isCreatingOrder: isCreatingOrder || isStartingTrial || isVerifyingStore,
   };

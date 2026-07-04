@@ -108,6 +108,17 @@ const formatFeatureValue = (
   return String(value);
 };
 
+const formatBillingValue = (
+  value: string | null | undefined,
+  category: 'status' | 'gateway' | 'method' | 'purpose' | 'reason',
+  t: ReturnType<typeof useTranslation>['t']
+): string => {
+  if (!value) return t('common.not_available');
+  return t(`membership.billing.values.${category}.${value}`, {
+    defaultValue: formatPlanName(value),
+  });
+};
+
 function StatusBadge({
   status,
   success,
@@ -116,11 +127,12 @@ function StatusBadge({
   success?: boolean;
 }): React.ReactElement {
   const styles = useThemedStyles(subscriptionBillingStyles);
+  const { t } = useTranslation();
 
   return (
     <View style={[styles.badge, success && styles.successBadge]}>
       <Text style={[styles.badgeText, success && styles.successBadgeText]}>
-        {status.replace(/_/g, ' ')}
+        {formatBillingValue(status, 'status', t)}
       </Text>
     </View>
   );
@@ -174,7 +186,9 @@ function SubscriptionRow({
         </View>
         {item.cancelledReason ? (
           <Text style={styles.rowMeta}>
-            {t('membership.billing.reason', { reason: item.cancelledReason })}
+            {t('membership.billing.reason', {
+              reason: formatBillingValue(item.cancelledReason, 'reason', t),
+            })}
           </Text>
         ) : null}
       </View>
@@ -217,9 +231,11 @@ function PaymentRow({
               t('membership.billing.free_plan'),
               t('membership.billing.membership_plan')
             ),
-            gateway: item.gateway,
+            gateway: formatBillingValue(item.gateway, 'gateway', t),
           })}
-          {item.method ? ` (${item.method})` : ''}
+          {item.method
+            ? ` (${formatBillingValue(item.method, 'method', t)})`
+            : ''}
         </Text>
         <Text style={styles.rowMeta}>
           {formatDate(
@@ -234,11 +250,15 @@ function PaymentRow({
             </Text>
           </View>
           <View style={styles.smallPill}>
-            <Text style={styles.smallPillText}>{item.purpose}</Text>
+            <Text style={styles.smallPillText}>
+              {formatBillingValue(item.purpose, 'purpose', t)}
+            </Text>
           </View>
         </View>
         {item.failureReason ? (
-          <Text style={styles.rowMeta}>{item.failureReason}</Text>
+          <Text style={styles.rowMeta}>
+            {formatBillingValue(item.failureReason, 'reason', t)}
+          </Text>
         ) : null}
       </View>
     </View>
@@ -438,7 +458,7 @@ export default function SubscriptionBillingScreen({
             <View style={styles.summaryTile}>
               <Text style={styles.label}>{t('membership.billing.status')}</Text>
               <Text style={styles.value}>
-                {data.currentPlan?.status ?? 'free'}
+                {formatBillingValue(currentStatus, 'status', t)}
               </Text>
             </View>
             <View style={styles.summaryTile}>
@@ -492,7 +512,7 @@ export default function SubscriptionBillingScreen({
               </Text>
               <Text style={styles.value}>
                 {paymentProvider
-                  ? String(paymentProvider).replace(/_/g, ' ')
+                  ? formatBillingValue(String(paymentProvider), 'gateway', t)
                   : t('membership.billing.not_connected')}
               </Text>
             </View>

@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { App, cert, getApps, initializeApp } from 'firebase-admin/app';
 import { getMessaging } from 'firebase-admin/messaging';
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { AppLogger } from '@/common/logger/logger.service';
 import {
   NotificationChannelPayload,
@@ -167,10 +169,17 @@ export class PushNotificationProvider implements NotificationChannelProvider {
       return this.firebaseApp;
     }
 
-    const rawJson = this.configService.get<string>(
+    let rawJson = this.configService.get<string>(
       'notification.push.fcm.serviceAccountJson',
       '',
     );
+    const serviceAccountPath = this.configService.get<string>(
+      'notification.push.fcm.serviceAccountPath',
+      '',
+    );
+    if (!rawJson && serviceAccountPath) {
+      rawJson = readFileSync(resolve(serviceAccountPath), 'utf8');
+    }
 
     let projectId = this.configService.get<string>(
       'notification.push.fcm.projectId',

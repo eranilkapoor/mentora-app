@@ -60,6 +60,7 @@
     "dob": "Date of Birth *",
     "time_of_birth": "Time of Birth",
     "gender": "Gender",
+    "identity_locked_helper": "Gender and date of birth are locked after profile creation. Contact support with identity proof to request a correction.",
     "marital_status": "Marital Status",
     "religion": "Religion",
     "caste": "Caste",

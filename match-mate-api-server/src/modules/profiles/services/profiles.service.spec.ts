@@ -451,6 +451,32 @@ describe('ProfilesService', () => {
     expect(fixture.notificationsService.notify).not.toHaveBeenCalled();
   });
 
+  it('rejects changes to identity fields after profile creation', async () => {
+    const fixture = createFixture();
+    fixture.profileRepo.findByUserId.mockResolvedValue({
+      personal: {
+        profileFor: 'self',
+        gender: 'female',
+        dateOfBirth: '1995-05-10T00:00:00.000Z',
+      },
+    });
+
+    await expect(
+      fixture.service.updatePersonalInfo(request(), USER_ID, {
+        profileFor: 'self',
+        gender: 'male',
+        dateOfBirth: '1995-05-10',
+      } as never),
+    ).rejects.toMatchObject({
+      code: ErrorCode.INVALID_REQUEST,
+      meta: expect.objectContaining({
+        reason: 'immutable_identity_fields',
+        fields: ['gender'],
+      }),
+    });
+    expect(fixture.profileRepo.update).not.toHaveBeenCalled();
+  });
+
   it('normalizes every profile section and recalculates derived values', () => {
     const { service } = createFixture();
     const result = testable(service).normalizeUpdate(

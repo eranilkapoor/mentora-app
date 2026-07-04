@@ -56,6 +56,8 @@ export default () => ({
       provider: process.env.NOTIFICATION_PUSH_PROVIDER || 'log',
       serverKey: process.env.NOTIFICATION_PUSH_SERVER_KEY || '',
       fcm: {
+        serviceAccountPath:
+          process.env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_PATH || '',
         serviceAccountJson:
           process.env.NOTIFICATION_PUSH_FCM_SERVICE_ACCOUNT_JSON || '',
         projectId: process.env.NOTIFICATION_PUSH_FCM_PROJECT_ID || '',
