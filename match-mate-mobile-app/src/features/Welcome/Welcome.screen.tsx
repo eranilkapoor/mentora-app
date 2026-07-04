@@ -2,6 +2,7 @@ import React from 'react';
 import {
   Image,
   ImageSourcePropType,
+  ScrollView,
   Text,
   TouchableOpacity,
   View,
@@ -41,7 +42,11 @@ export default function WelcomeScreen({
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.content}>
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
         <View style={[styles.panel, height < 720 ? styles.compactPanel : null]}>
           <View style={styles.logoWrap}>
             <Image source={appIcon} style={styles.logo} resizeMode="contain" />
@@ -156,7 +161,7 @@ export default function WelcomeScreen({
             .
           </Text>
         </View>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }

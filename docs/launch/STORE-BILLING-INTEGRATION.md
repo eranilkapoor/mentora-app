@@ -169,3 +169,31 @@ We should also add:
 - Sentry logging without exposing purchase tokens
 
 Your initial purchase/verification/acknowledgement path is implemented. The remaining work is the authenticated RTDN endpoint, Google Console/Pub/Sub setup, and lifecycle reconciliation logic.
+
+## Match Mate Google RTDN Values
+
+Use these names consistently:
+
+- Topic ID: `matchmate-google-play-rtdn`
+- Full topic name: `projects/YOUR_GCP_PROJECT_ID/topics/matchmate-google-play-rtdn`
+- Push subscription ID: `matchmate-google-play-rtdn-push`
+- Push endpoint: `https://matchmate.webnza.com/api/v1/payments/google-play/rtdn`
+- OIDC audience: `https://matchmate.webnza.com/api/v1/payments/google-play/rtdn`
+- Push identity service account: `matchmate-rtdn-push@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com`
+
+The API validates the Pub/Sub OIDC signature, audience, verified email, package
+name, and notification payload. It then queries `subscriptionsv2.get` and
+updates the existing subscription by purchase token. A notification arriving
+before the mobile claim receives a non-2xx response so Pub/Sub retries it.
+
+Cloud Pub/Sub is the broker. RabbitMQ is not required. BullMQ is optional only
+if RTDN processing later becomes heavy; the current handler is idempotent and
+synchronous so Pub/Sub retry delivery is sufficient.
+
+Production configuration:
+
+```env
+GOOGLE_PLAY_RTDN_ENABLED=true
+GOOGLE_PLAY_RTDN_AUDIENCE=https://matchmate.webnza.com/api/v1/payments/google-play/rtdn
+GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL=matchmate-rtdn-push@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com
+```

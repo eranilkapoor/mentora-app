@@ -17,6 +17,7 @@ import {
 } from './schemas/payment-invoice.schema';
 import { PaymentMaintenanceTask } from './tasks/payment-maintenance.task';
 import { StoreReceiptVerifierService } from './services/store-receipt-verifier.service';
+import { GooglePlayRtdnService } from './services/google-play-rtdn.service';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { StoreReceiptVerifierService } from './services/store-receipt-verifier.s
     PaymentRepository,
     PaymentMaintenanceTask,
     StoreReceiptVerifierService,
+    GooglePlayRtdnService,
   ],
   controllers: [PaymentsController],
   exports: [PaymentsService],

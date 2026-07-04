@@ -16,6 +16,7 @@ import { PaymentGateway } from '@/modules/payments/enums/payment-gateway.enum';
 import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
 import { ErrorCode } from '@/common/constants';
 import { throwNotFound } from '@/common/exceptions/throw-app-exception';
+import type { GooglePlaySubscriptionLifecycle } from '@/modules/payments/services/store-receipt-verifier.service';
 
 @Injectable()
 export class SubscriptionsService {
@@ -179,6 +180,86 @@ export class SubscriptionsService {
       storeExpiresAt: options.storeExpiresAt,
       status: options.status,
     });
+  }
+
+  async reconcileGooglePlayLifecycle(
+    purchaseToken: string,
+    lifecycle: GooglePlaySubscriptionLifecycle,
+  ) {
+    const subscription = await this.subModel
+      .findOne({
+        paymentProvider: PaymentGateway.GOOGLE_PLAY,
+        storePurchaseToken: purchaseToken,
+      })
+      .exec();
+
+    if (!subscription) return null;
+
+    subscription.status = lifecycle.status;
+    subscription.endDate = lifecycle.expiresAt;
+    subscription.autoRenew = lifecycle.autoRenew;
+    subscription.storeProductId = lifecycle.productId;
+    subscription.storeBasePlanId = lifecycle.basePlanId;
+    subscription.storeOfferId = lifecycle.offerId;
+    subscription.storeLastVerifiedAt = new Date();
+    if (lifecycle.transactionId) {
+      subscription.storeTransactionId = lifecycle.transactionId;
+    }
+    if (
+      lifecycle.status === SubscriptionStatus.EXPIRED ||
+      lifecycle.status === SubscriptionStatus.CANCELLED
+    ) {
+      subscription.cancelledAt ??= new Date();
+      subscription.cancelledReason = lifecycle.subscriptionState;
+    }
+    await subscription.save();
+
+    const plan = await this.planModel
+      .findById(subscription.planId)
+      .lean()
+      .exec();
+    const entitled = [
+      SubscriptionStatus.ACTIVE,
+      SubscriptionStatus.GRACE_PERIOD,
+    ].includes(lifecycle.status);
+    await this.userRepo.updateMembership(subscription.userId.toString(), {
+      tier: entitled ? (plan?.tier ?? PlanTier.FREE) : PlanTier.FREE,
+      status: lifecycle.status,
+      startDate: subscription.startDate,
+      expiresAt: lifecycle.expiresAt,
+      autoRenew: lifecycle.autoRenew,
+      planId: subscription.planId.toString(),
+    });
+
+    return subscription;
+  }
+
+  async revokeGooglePlayEntitlement(purchaseToken: string, reason: string) {
+    const subscription = await this.subModel
+      .findOne({
+        paymentProvider: PaymentGateway.GOOGLE_PLAY,
+        storePurchaseToken: purchaseToken,
+      })
+      .exec();
+    if (!subscription) return null;
+
+    const revokedAt = new Date();
+    subscription.status = SubscriptionStatus.CANCELLED;
+    subscription.endDate = revokedAt;
+    subscription.autoRenew = false;
+    subscription.cancelledAt = revokedAt;
+    subscription.cancelledReason = reason;
+    subscription.storeLastVerifiedAt = revokedAt;
+    await subscription.save();
+    await this.userRepo.updateMembership(subscription.userId.toString(), {
+      tier: PlanTier.FREE,
+      status: SubscriptionStatus.CANCELLED,
+      startDate: subscription.startDate,
+      expiresAt: revokedAt,
+      autoRenew: false,
+      planId: subscription.planId.toString(),
+    });
+    return subscription;
   }
 
   async startFreeTrial(userId: string, planId: string, trialDays?: number) {

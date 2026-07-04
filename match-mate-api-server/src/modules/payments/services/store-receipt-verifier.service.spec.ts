@@ -179,6 +179,32 @@ describe('StoreReceiptVerifierService', () => {
     ).rejects.toThrow('google_subscription_not_entitled');
   });
 
+  it('reports missing Google Play Console purchase permissions clearly', async () => {
+    const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
+    config.set('payments.googlePlay.packageName', 'com.webnza.matchmate');
+    config.set(
+      'payments.googlePlay.serviceAccountJson',
+      JSON.stringify({
+        client_email: 'billing@project.iam.gserviceaccount.com',
+        private_key: privateKey.export({ type: 'pkcs8', format: 'pem' }),
+      }),
+    );
+    (global.fetch as jest.Mock)
+      .mockResolvedValueOnce(response({ access_token: 'access-token' }))
+      .mockResolvedValueOnce(response({}, false, 401));
+
+    await expect(
+      service.verify({
+        gateway: PaymentGateway.GOOGLE_PLAY,
+        planId: '507f1f77bcf86cd799439011',
+        productId: 'matchmate_gold',
+        basePlanId: 'monthly',
+        transactionId: 'GPA.1',
+        purchaseToken: 'purchase-token',
+      }),
+    ).rejects.toThrow('google_play_permission_denied_401');
+  });
+
   it('loads Google Play service-account credentials from a file path', async () => {
     const { privateKey } = generateKeyPairSync('rsa', { modulusLength: 2048 });
     const directory = mkdtempSync(join(tmpdir(), 'matchmate-google-play-'));

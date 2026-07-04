@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Headers,
+  HttpCode,
   Param,
   Post,
   Query,
@@ -22,11 +23,30 @@ import { Public } from '@/common/decorators/public.decorator';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
+import { GooglePlayRtdnEnvelopeDto } from '../dto/google-play-rtdn-envelope.dto';
+import { GooglePlayRtdnService } from '../services/google-play-rtdn.service';
+import { SkipThrottle } from '@nestjs/throttler';
+import { SkipRateLimit } from '@/common/decorators/skip-rate-limit.decorator';
 
 @Controller('payments')
 @UseGuards(JwtAuthGuard)
 export class PaymentsController {
-  constructor(private readonly paymentsService: PaymentsService) {}
+  constructor(
+    private readonly paymentsService: PaymentsService,
+    private readonly googlePlayRtdnService: GooglePlayRtdnService,
+  ) {}
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Post('google-play/rtdn')
+  @HttpCode(204)
+  async googlePlayRtdn(
+    @Headers('authorization') authorization: string | undefined,
+    @Body() dto: GooglePlayRtdnEnvelopeDto,
+  ): Promise<void> {
+    await this.googlePlayRtdnService.process(authorization, dto);
+  }
 
   @Post('order')
   async createOrder(

@@ -19,12 +19,23 @@ describe('PaymentsController', () => {
     getUserPaymentDetail: jest.fn(),
     getInvoice: jest.fn(),
   };
+  const rtdnService = { process: jest.fn() };
 
   let controller: PaymentsController;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    controller = new PaymentsController(service as never);
+    controller = new PaymentsController(service as never, rtdnService as never);
+  });
+
+  it('accepts authenticated Google Play RTDN pushes', async () => {
+    const dto = { message: { data: 'encoded' } };
+    rtdnService.process.mockResolvedValue(undefined);
+
+    await expect(
+      controller.googlePlayRtdn('Bearer token', dto),
+    ).resolves.toBeUndefined();
+    expect(rtdnService.process).toHaveBeenCalledWith('Bearer token', dto);
   });
 
   it('creates an order for the authenticated user', async () => {

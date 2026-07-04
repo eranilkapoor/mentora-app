@@ -8,11 +8,6 @@
     "icon": "./src/assets/icon.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
-    "splash": {
-      "image": "./src/assets/splash-icon.png",
-      "resizeMode": "contain",
-      "backgroundColor": "#fff7fb"
-    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.webnza.matchmate",
@@ -89,6 +84,15 @@
       }
     },
     "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#fff7fb",
+          "image": "./src/assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain"
+        }
+      ],
       "expo-localization",
       "expo-secure-store",
       [

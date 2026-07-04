@@ -9,7 +9,7 @@ export const welcomeStyles = (
   StyleSheet.create({
     safe: StyleSheet.flatten(base.safe),
     content: {
-      flex: 1,
+      flexGrow: 1,
       justifyContent: 'center',
       paddingHorizontal: 20,
       paddingVertical: 28,

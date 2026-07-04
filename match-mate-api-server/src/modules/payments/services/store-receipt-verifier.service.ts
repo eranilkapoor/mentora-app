@@ -21,6 +21,19 @@ export interface VerifiedStoreSubscription {
   acknowledgementState?: string;
 }
 
+export interface GooglePlaySubscriptionLifecycle {
+  productId: string;
+  basePlanId?: string;
+  offerId?: string;
+  transactionId?: string;
+  expiresAt: Date;
+  autoRenew: boolean;
+  status: SubscriptionStatus;
+  subscriptionState?: string;
+  acknowledgementState?: string;
+  providerPayload: Record<string, unknown>;
+}
+
 @Injectable()
 export class StoreReceiptVerifierService {
   constructor(private readonly configService: ConfigService) {}
@@ -36,17 +49,51 @@ export class StoreReceiptVerifierService {
   private async verifyGooglePlay(
     dto: VerifyStoreSubscriptionDto,
   ): Promise<VerifiedStoreSubscription> {
+    const lifecycle = await this.getGooglePlayLifecycle(
+      dto.purchaseToken!,
+      dto.productId,
+      dto.basePlanId,
+    );
+    if (
+      ![SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD].includes(
+        lifecycle.status,
+      ) ||
+      lifecycle.expiresAt <= new Date()
+    ) {
+      throw new Error('google_subscription_not_entitled');
+    }
+
+    return {
+      ...lifecycle,
+      transactionId: lifecycle.transactionId ?? dto.transactionId,
+      environment: 'production',
+      status: lifecycle.status as
+        | SubscriptionStatus.ACTIVE
+        | SubscriptionStatus.GRACE_PERIOD,
+    };
+  }
+
+  async getGooglePlayLifecycle(
+    purchaseToken: string,
+    expectedProductId?: string,
+    expectedBasePlanId?: string,
+  ): Promise<GooglePlaySubscriptionLifecycle> {
     const packageName = this.required('payments.googlePlay.packageName');
     const serviceAccount = this.parseServiceAccount(
       this.required('payments.googlePlay.serviceAccountJson'),
     );
     const accessToken = await this.getGoogleAccessToken(serviceAccount);
-    const token = encodeURIComponent(dto.purchaseToken!);
+    const token = encodeURIComponent(purchaseToken);
     const response = await fetch(
       `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${encodeURIComponent(packageName)}/purchases/subscriptionsv2/tokens/${token}`,
       { headers: { Authorization: `Bearer ${accessToken}` } },
     );
-    if (!response.ok) throw new Error(`google_verification_${response.status}`);
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error(`google_play_permission_denied_${response.status}`);
+      }
+      throw new Error(`google_verification_${response.status}`);
+    }
 
     const body = (await response.json()) as {
       subscriptionState?: string;
@@ -60,37 +107,50 @@ export class StoreReceiptVerifierService {
         autoRenewingPlan?: { autoRenewEnabled?: boolean };
       }>;
     };
-    const allowedStates = new Set([
-      'SUBSCRIPTION_STATE_ACTIVE',
-      'SUBSCRIPTION_STATE_IN_GRACE_PERIOD',
-    ]);
-    const lineItem = body.lineItems?.find(
-      (item) =>
-        item.productId === dto.productId &&
-        item.offerDetails?.basePlanId === dto.basePlanId,
-    );
+    const lineItem =
+      body.lineItems?.find(
+        (item) =>
+          (!expectedProductId || item.productId === expectedProductId) &&
+          (!expectedBasePlanId ||
+            item.offerDetails?.basePlanId === expectedBasePlanId),
+      ) ?? body.lineItems?.[0];
     const expiresAt = new Date(lineItem?.expiryTime ?? 0);
-    if (
-      !allowedStates.has(body.subscriptionState ?? '') ||
-      !lineItem ||
-      Number.isNaN(expiresAt.getTime()) ||
-      expiresAt <= new Date()
-    ) {
+    if (!lineItem?.productId || Number.isNaN(expiresAt.getTime())) {
       throw new Error('google_subscription_not_entitled');
     }
 
+    if (
+      (expectedProductId && lineItem.productId !== expectedProductId) ||
+      (expectedBasePlanId &&
+        lineItem.offerDetails?.basePlanId !== expectedBasePlanId)
+    ) {
+      throw new Error('google_subscription_product_mismatch');
+    }
+
+    const subscriptionState = body.subscriptionState ?? '';
+    const futureEntitlement = expiresAt > new Date();
+    const status =
+      subscriptionState === 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD'
+        ? SubscriptionStatus.GRACE_PERIOD
+        : subscriptionState === 'SUBSCRIPTION_STATE_ACTIVE' ||
+            (subscriptionState === 'SUBSCRIPTION_STATE_CANCELED' &&
+              futureEntitlement)
+          ? SubscriptionStatus.ACTIVE
+          : subscriptionState === 'SUBSCRIPTION_STATE_EXPIRED' ||
+              subscriptionState ===
+                'SUBSCRIPTION_STATE_PENDING_PURCHASE_CANCELED'
+            ? SubscriptionStatus.EXPIRED
+            : SubscriptionStatus.PENDING;
+
     return {
-      productId: lineItem.productId!,
+      productId: lineItem.productId,
       basePlanId: lineItem.offerDetails?.basePlanId,
       offerId: lineItem.offerDetails?.offerId,
-      transactionId: body.latestOrderId ?? dto.transactionId,
+      transactionId: body.latestOrderId,
       expiresAt,
       autoRenew: Boolean(lineItem.autoRenewingPlan?.autoRenewEnabled),
-      environment: 'production',
-      status:
-        body.subscriptionState === 'SUBSCRIPTION_STATE_IN_GRACE_PERIOD'
-          ? SubscriptionStatus.GRACE_PERIOD
-          : SubscriptionStatus.ACTIVE,
+      status,
+      subscriptionState,
       acknowledgementState: body.acknowledgementState,
       providerPayload: {
         subscriptionState: body.subscriptionState,

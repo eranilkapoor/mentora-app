@@ -13,6 +13,12 @@ export default () => ({
     googlePlay: {
       packageName: process.env.GOOGLE_PLAY_PACKAGE_NAME || '',
       serviceAccountJson: process.env.GOOGLE_PLAY_SERVICE_ACCOUNT_JSON || '',
+      rtdn: {
+        enabled: process.env.GOOGLE_PLAY_RTDN_ENABLED === 'true',
+        audience: process.env.GOOGLE_PLAY_RTDN_AUDIENCE || '',
+        serviceAccountEmail:
+          process.env.GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL || '',
+      },
     },
     apple: {
       issuerId: process.env.APPLE_STORE_ISSUER_ID || '',

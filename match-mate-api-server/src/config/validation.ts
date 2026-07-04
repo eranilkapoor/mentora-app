@@ -532,6 +532,26 @@ export const envValidationSchema = Joi.object({
 
   GOOGLE_PLAY_SERVICE_ACCOUNT_JSON: optionalString,
 
+  GOOGLE_PLAY_RTDN_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  GOOGLE_PLAY_RTDN_AUDIENCE: Joi.when('GOOGLE_PLAY_RTDN_ENABLED', {
+    is: true,
+    then: Joi.string()
+      .trim()
+      .uri({ scheme: ['https'] })
+      .required(),
+    otherwise: optionalString,
+  }),
+
+  GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL: Joi.when('GOOGLE_PLAY_RTDN_ENABLED', {
+    is: true,
+    then: optionalEmail.required(),
+    otherwise: optionalEmail,
+  }),
+
   THROTTLE_TTL: Joi.number().integer().min(1).max(86400).default(60),
 
   THROTTLE_LIMIT: Joi.number().integer().min(1).max(10000).default(100),

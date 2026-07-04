@@ -1,6 +1,6 @@
 # MatchMate Pending Execution Queue
 
-Last reviewed: 2026-07-01
+Last reviewed: 2026-07-04
 
 ## Review Basis
 
@@ -40,7 +40,12 @@ Completed items were intentionally removed from this file to keep it execution-f
 
 ### P0 - Highest Priority
 
-1. Raise mobile automated coverage for critical product journeys.
+1. Complete Google Play production authorization and purchase evidence.
+   - Grant the backend service account app access plus View financial data and Manage orders and subscriptions.
+   - Verify purchase, backend entitlement, acknowledgement, restore, and billing-screen refresh from a licensed Play testing track.
+   - Configure Google RTDN/Pub/Sub before relying on renewals, cancellations, grace periods, or refunds.
+
+2. Raise mobile automated coverage for critical product journeys.
    - Add remaining settings mutation integration tests across notification, privacy, communication, security, localization, and media services.
 
 ### P1 - Important
@@ -76,7 +81,7 @@ Completed items were intentionally removed from this file to keep it execution-f
 
 ## Next Task To Execute First
 
-1. Complete RTK Query settings rollback and paginated-cache integration coverage.
+1. Fix Google Play service-account Purchases API authorization and capture one successful end-to-end production-track verification.
 
 ## Definition Of Done For This Queue
 

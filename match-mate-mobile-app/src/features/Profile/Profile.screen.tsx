@@ -69,7 +69,6 @@ import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeature
 import { useUpgradePrompt } from '@/features/Membership/hooks/useUpgradePrompt';
 
 const UPLOAD_VIDEOS_FEATURE = 'upload_videos';
-const DATA_EXPORT_FEATURE = 'data_export';
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -602,6 +601,20 @@ const createProfilePdfHtml = (
   privacy: PrivacySettings | undefined,
   t: (key: string, options: { defaultValue: string }) => string
 ): string => {
+  const age =
+    toDisplayText(profile.age) !== EMPTY_VALUE
+      ? `${profile.age} years`
+      : getFormattedAge(profile.personal.dateOfBirth ?? '');
+  const highlights = [
+    age,
+    getFormattedHeight(profile.physical.height),
+    formatEnumLabel(
+      t,
+      'options.religion',
+      profile.personal.religion,
+      EMPTY_VALUE
+    ),
+  ].filter((value) => value !== EMPTY_VALUE);
   const sections = getPdfSections(profile, privacy, t)
     .map((section) => {
       const rows = section.rows
@@ -631,41 +644,59 @@ const createProfilePdfHtml = (
       <head>
         <meta charset="utf-8" />
         <style>
+          @page { size:A4; margin:14mm; }
           * { box-sizing: border-box; }
-          body { margin:0; padding:32px; color:#1f2933; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; background:#f6f8fb; }
-          .page { position:relative; background:#fff; border:1px solid #e5e9f0; border-radius:18px; overflow:hidden; }
-          .document-watermark { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:.045; transform:rotate(-28deg); font-size:72px; font-weight:800; letter-spacing:8px; color:#e94e77; text-transform:uppercase; }
-          .hero { display:flex; gap:24px; padding:28px; background:#fff7f1; border-bottom:1px solid #efe3d7; }
-          .photo-wrap { position:relative; width:150px; height:188px; border-radius:14px; overflow:hidden; background:#e5e7eb; flex:0 0 auto; }
+          body { margin:0; color:#332522; font-family:Georgia,"Times New Roman",serif; background:#fff; }
+          .page { position:relative; background:#fffdf9; border:2px solid #8f2437; outline:1px solid #d7b46a; outline-offset:-7px; overflow:hidden; min-height:260mm; }
+          .page:before,.page:after { content:"◆"; position:absolute; z-index:2; color:#c79a45; font-size:17px; }
+          .page:before { top:11px; left:15px; } .page:after { right:15px; bottom:11px; }
+          .document-watermark { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; opacity:.025; transform:rotate(-28deg); font-size:68px; font-weight:800; letter-spacing:8px; color:#8f2437; text-transform:uppercase; }
+          .document-title { padding:18px 24px 10px; text-align:center; color:#8f2437; font-size:13px; font-weight:700; letter-spacing:3px; text-transform:uppercase; }
+          .title-rule { width:120px; height:2px; margin:0 auto 14px; background:linear-gradient(90deg,transparent,#c79a45,transparent); }
+          .hero { display:flex; gap:24px; margin:0 18px; padding:22px; background:#fff8ed; border:1px solid #ead6af; }
+          .photo-wrap { position:relative; width:148px; height:188px; border:5px solid #fff; outline:1px solid #c79a45; overflow:hidden; background:#eee7df; flex:0 0 auto; }
           .photo { width:150px; height:188px; object-fit:cover; background:#e5e7eb; display:block; }
-          .photo-watermark { position:absolute; left:-18px; right:-18px; bottom:18px; transform:rotate(-22deg); background:rgba(17,24,39,.62); color:#fff; text-align:center; font-size:13px; font-weight:800; letter-spacing:2px; padding:6px 0; text-transform:uppercase; }
-          h1 { margin:0 0 8px; font-size:30px; line-height:1.2; }
-          .summary,.location { margin:0 0 8px; color:#667085; font-size:14px; }
-          .privacy-note { margin-top:14px; padding:10px 12px; border-radius:10px; background:#fff; border:1px solid #ead9cc; color:#8a5a44; font-size:12px; line-height:1.45; }
-          .section { padding:24px 28px; }
-          .section-block { break-inside:avoid; margin-bottom:22px; }
-          h2 { margin:0 0 12px; color:#344054; font-size:15px; text-transform:uppercase; letter-spacing:.5px; }
-          .about { margin:0 0 20px; color:#344054; font-size:14px; line-height:1.65; }
+          .photo-watermark { position:absolute; left:-18px; right:-18px; bottom:18px; transform:rotate(-22deg); background:rgba(76,28,37,.68); color:#fff; text-align:center; font:700 11px Arial,sans-serif; letter-spacing:2px; padding:6px 0; text-transform:uppercase; }
+          .identity { flex:1; padding-top:5px; }
+          h1 { margin:0 0 7px; color:#6f1d2c; font-size:29px; line-height:1.2; }
+          .summary,.location { margin:0 0 8px; color:#6b554f; font-size:13px; }
+          .highlights { display:flex; flex-wrap:wrap; gap:7px; margin:13px 0 4px; }
+          .highlight { border:1px solid #d8ba7a; background:#fff; color:#6f1d2c; padding:5px 9px; font:700 11px Arial,sans-serif; }
+          .privacy-note { margin-top:13px; padding:8px 10px; background:#fffdf9; border-left:3px solid #c79a45; color:#755f56; font:11px/1.45 Arial,sans-serif; }
+          .section { padding:20px 22px 14px; }
+          .section-grid { columns:2; column-gap:22px; }
+          .section-block { break-inside:avoid; margin:0 0 18px; display:inline-block; width:100%; }
+          h2 { margin:0 0 8px; padding-bottom:5px; border-bottom:1px solid #d7b46a; color:#8f2437; font-size:13px; text-transform:uppercase; letter-spacing:.8px; }
+          .about-card { break-inside:avoid; margin-bottom:18px; padding:12px 14px; background:#fffaf2; border-left:3px solid #8f2437; }
+          .about { margin:0; color:#4b3a35; font-size:12px; line-height:1.65; }
           table { width:100%; border-collapse:collapse; }
-          th,td { padding:10px 0; border-bottom:1px solid #edf1f5; vertical-align:top; font-size:13px; }
-          th { width:34%; color:#667085; font-weight:600; text-align:left; }
-          td { color:#111827; text-align:right; font-weight:500; }
-          td.masked { color:#98a2b3; letter-spacing:1px; }
-          .footer { padding:16px 28px; color:#98a2b3; font-size:11px; text-align:center; background:#fbfcfd; }
+          th,td { padding:6px 0; border-bottom:1px dotted #ded0c5; vertical-align:top; font:11px/1.35 Arial,sans-serif; }
+          th { width:42%; color:#806d65; font-weight:600; text-align:left; }
+          td { color:#332522; text-align:right; font-weight:600; }
+          td.masked { color:#a1938d; letter-spacing:1px; }
+          .footer { margin:0 18px 12px; padding:12px 18px; border-top:1px solid #ead6af; color:#8c7c74; font:10px/1.4 Arial,sans-serif; text-align:center; }
         </style>
       </head>
       <body>
         <main class="page">
           <div class="document-watermark">Match Mate</div>
+          <div class="document-title">Matrimonial Biodata</div>
+          <div class="title-rule"></div>
           <section class="hero">
             <div class="photo-wrap">
               ${photoUrl ? `<img class="photo" src="${escapeHtml(photoUrl)}" />` : '<div class="photo"></div>'}
               <div class="photo-watermark">Match Mate</div>
             </div>
-            <div>
+            <div class="identity">
               <h1>${escapeHtml(getDisplayName(profile))}</h1>
               <p class="summary">${escapeHtml(profileSummary)}</p>
               <p class="location">${escapeHtml(getLocation(profile))}</p>
+              <div class="highlights">${highlights
+                .map(
+                  (value) =>
+                    `<span class="highlight">${escapeHtml(value)}</span>`
+                )
+                .join('')}</div>
               <div class="privacy-note">${escapeHtml(
                 t('profile.pdf_privacy_note', {
                   defaultValue:
@@ -675,9 +706,11 @@ const createProfilePdfHtml = (
             </div>
           </section>
           <section class="section">
-            <h2>About</h2>
-            <p class="about">${escapeHtml(formatAboutMe(profile.personal.aboutMe))}</p>
-            ${sections}
+            <div class="about-card">
+              <h2>About</h2>
+              <p class="about">${escapeHtml(formatAboutMe(profile.personal.aboutMe))}</p>
+            </div>
+            <div class="section-grid">${sections}</div>
           </section>
           <div class="footer">${escapeHtml(
             t('profile.pdf_footer', {
@@ -807,8 +840,6 @@ export default function ProfileScreen({
   const { hasFeature: canUploadVideos } = usePlanFeatureAccess(
     UPLOAD_VIDEOS_FEATURE
   );
-  const { hasFeature: canExportProfile, isLoading: isExportFeatureLoading } =
-    usePlanFeatureAccess(DATA_EXPORT_FEATURE);
 
   const [activePhotoIndex, setActivePhotoIndex] = useState(0);
   const [pdfAction, setPdfAction] = useState<PdfAction | null>(null);
@@ -923,14 +954,6 @@ export default function ProfileScreen({
   const handleProfilePdf = useCallback(
     async (action: PdfAction): Promise<void> => {
       if (pdfAction !== null) return;
-      if (!canExportProfile) {
-        showUpgradePrompt(
-          t(
-            action === 'download' ? 'profile.download_pdf' : 'profile.share_pdf'
-          )
-        );
-        return;
-      }
 
       setPdfAction(action);
 
@@ -996,12 +1019,10 @@ export default function ProfileScreen({
     },
     [
       pdfAction,
-      canExportProfile,
       printablePhoto,
       privacyResponse?.privacy,
       profileData,
       profileSummary,
-      showUpgradePrompt,
       t,
     ]
   );
@@ -1546,17 +1567,14 @@ export default function ProfileScreen({
           activeOpacity={0.85}
           accessibilityRole="button"
           accessibilityLabel={t('profile.download_pdf_label')}
-          disabled={pdfAction !== null || isExportFeatureLoading}
+          disabled={pdfAction !== null}
           onPress={() => {
             void handleProfilePdf('download');
           }}
           style={[
             styles.pdfActionButton,
             styles.pdfDownloadButton,
-            (pdfAction !== null ||
-              isExportFeatureLoading ||
-              !canExportProfile) &&
-              styles.pdfActionButtonDisabled,
+            pdfAction !== null && styles.pdfActionButtonDisabled,
           ]}
         >
           {pdfAction === 'download' ? (
@@ -1575,17 +1593,14 @@ export default function ProfileScreen({
           activeOpacity={0.85}
           accessibilityRole="button"
           accessibilityLabel={t('profile.share_pdf_label')}
-          disabled={pdfAction !== null || isExportFeatureLoading}
+          disabled={pdfAction !== null}
           onPress={() => {
             void handleProfilePdf('share');
           }}
           style={[
             styles.pdfActionButton,
             styles.pdfShareButton,
-            (pdfAction !== null ||
-              isExportFeatureLoading ||
-              !canExportProfile) &&
-              styles.pdfActionButtonDisabled,
+            pdfAction !== null && styles.pdfActionButtonDisabled,
           ]}
         >
           {pdfAction === 'share' ? (

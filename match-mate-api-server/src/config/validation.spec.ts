@@ -49,4 +49,24 @@ describe('production environment validation', () => {
       'GOOGLE_PLAY_PACKAGE_NAME and GOOGLE_PLAY_SERVICE_ACCOUNT_JSON',
     );
   });
+
+  it('requires authenticated RTDN settings when Google push is enabled', () => {
+    const { error } = envValidationSchema.validate({
+      ...productionEnv(),
+      GOOGLE_PLAY_RTDN_ENABLED: true,
+    });
+    expect(error?.message).toContain('GOOGLE_PLAY_RTDN_AUDIENCE');
+    expect(error?.message).toContain('GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL');
+
+    expect(
+      envValidationSchema.validate({
+        ...productionEnv(),
+        GOOGLE_PLAY_RTDN_ENABLED: true,
+        GOOGLE_PLAY_RTDN_AUDIENCE:
+          'https://matchmate.webnza.com/api/v1/payments/google-play/rtdn',
+        GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL:
+          'matchmate-rtdn-push@project.iam.gserviceaccount.com',
+      }).error,
+    ).toBeUndefined();
+  });
 });

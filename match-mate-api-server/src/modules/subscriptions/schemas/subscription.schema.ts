@@ -44,7 +44,7 @@ export class Subscription {
   @Prop()
   storeOfferId?: string;
 
-  @Prop()
+  @Prop({ index: true, sparse: true, unique: true })
   storePurchaseToken?: string;
 
   @Prop()

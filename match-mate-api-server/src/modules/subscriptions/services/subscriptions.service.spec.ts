@@ -170,6 +170,115 @@ describe('SubscriptionsService', () => {
     );
   });
 
+  it('reconciles Google Play lifecycle changes by purchase token', async () => {
+    subModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    });
+    await expect(
+      service.reconcileGooglePlayLifecycle('token', {
+        productId: 'matchmate_gold',
+        expiresAt: new Date(),
+        autoRenew: false,
+        status: SubscriptionStatus.EXPIRED,
+        providerPayload: {},
+      }),
+    ).resolves.toBeNull();
+
+    const subscription = {
+      userId: new Types.ObjectId(userId),
+      planId: new Types.ObjectId(planId),
+      startDate: new Date(),
+      endDate: new Date(),
+      status: SubscriptionStatus.ACTIVE,
+      autoRenew: true,
+      storeProductId: 'matchmate_gold',
+      storeBasePlanId: 'monthly',
+      storeOfferId: 'trial',
+      storeLastVerifiedAt: new Date(),
+      storeTransactionId: 'old-order',
+      cancelledAt: undefined as Date | undefined,
+      cancelledReason: undefined as string | undefined,
+      save: jest.fn(),
+    };
+    subModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(subscription),
+    });
+    const expiresAt = new Date(Date.now() + 86_400_000);
+    await service.reconcileGooglePlayLifecycle('token', {
+      productId: 'matchmate_gold',
+      basePlanId: 'monthly',
+      offerId: 'trial-7-days',
+      transactionId: 'new-order',
+      expiresAt,
+      autoRenew: true,
+      status: SubscriptionStatus.ACTIVE,
+      providerPayload: {},
+    });
+    expect(subscription).toMatchObject({
+      endDate: expiresAt,
+      storeTransactionId: 'new-order',
+      status: SubscriptionStatus.ACTIVE,
+    });
+    expect(userRepo.updateMembership).toHaveBeenLastCalledWith(
+      userId,
+      expect.objectContaining({ tier: PlanTier.GOLD }),
+    );
+
+    await service.reconcileGooglePlayLifecycle('token', {
+      productId: 'matchmate_gold',
+      expiresAt,
+      autoRenew: false,
+      status: SubscriptionStatus.EXPIRED,
+      subscriptionState: 'SUBSCRIPTION_STATE_EXPIRED',
+      providerPayload: {},
+    });
+    expect(subscription.cancelledAt).toEqual(expect.any(Date));
+    expect(userRepo.updateMembership).toHaveBeenLastCalledWith(
+      userId,
+      expect.objectContaining({ tier: PlanTier.FREE }),
+    );
+  });
+
+  it('revokes Google Play entitlements after refunds or chargebacks', async () => {
+    subModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    });
+    await expect(
+      service.revokeGooglePlayEntitlement('token', 'voided'),
+    ).resolves.toBeNull();
+
+    const subscription = {
+      userId: new Types.ObjectId(userId),
+      planId: new Types.ObjectId(planId),
+      startDate: new Date(),
+      endDate: new Date(Date.now() + 86_400_000),
+      status: SubscriptionStatus.ACTIVE,
+      autoRenew: true,
+      cancelledAt: undefined as Date | undefined,
+      cancelledReason: undefined as string | undefined,
+      storeLastVerifiedAt: new Date(),
+      save: jest.fn(),
+    };
+    subModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(subscription),
+    });
+    await service.revokeGooglePlayEntitlement('token', 'voided');
+
+    expect(subscription).toMatchObject({
+      status: SubscriptionStatus.CANCELLED,
+      autoRenew: false,
+      cancelledReason: 'voided',
+    });
+    expect(subscription.save).toHaveBeenCalled();
+    expect(userRepo.updateMembership).toHaveBeenCalledWith(
+      userId,
+      expect.objectContaining({
+        tier: PlanTier.FREE,
+        status: SubscriptionStatus.CANCELLED,
+      }),
+    );
+  });
+
   it.each([
     [null, 'missing'],
     [basePlan({ isActive: false }), 'inactive'],
