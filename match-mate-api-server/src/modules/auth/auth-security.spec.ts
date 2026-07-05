@@ -173,6 +173,9 @@ describe('auth strategies and guards', () => {
     it('allows admins or a matching role and rejects other roles', () => {
       reflector.getAllAndOverride.mockReturnValue([Role.MODERATOR]);
       expect(guard.canActivate(context({ roles: [Role.ADMIN] }))).toBe(true);
+      expect(guard.canActivate(context({ roles: [Role.SUPER_ADMIN] }))).toBe(
+        true,
+      );
       expect(guard.canActivate(context({ roles: [Role.MODERATOR] }))).toBe(
         true,
       );
@@ -207,6 +210,11 @@ describe('auth strategies and guards', () => {
       expect(
         guard.canActivate(context({ permissions: [Permission.PROFILE_VIEW] })),
       ).toBe(false);
+      expect(
+        guard.canActivate(
+          context({ roles: [Role.SUPER_ADMIN], permissions: [] }),
+        ),
+      ).toBe(true);
     });
   });
 

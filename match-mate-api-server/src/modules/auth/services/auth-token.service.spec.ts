@@ -1,6 +1,6 @@
 import type { ConfigService } from '@nestjs/config';
 import type { JwtService } from '@nestjs/jwt';
-import { PlanTier } from '@/common/enums';
+import { Permission, PlanTier, Role } from '@/common/enums';
 import { AuthTokenService } from './auth-token.service';
 
 describe('AuthTokenService', () => {
@@ -53,6 +53,31 @@ describe('AuthTokenService', () => {
     });
 
     expect(payload.membership.tier).toBe(PlanTier.FREE);
+  });
+
+  it('materializes permissions for seeded built-in admin roles', () => {
+    const superAdmin = service.generatePayload({
+      _id: { toString: () => 'super-id' },
+      roles: [Role.SUPER_ADMIN],
+      permissions: [],
+    });
+    const finance = service.generatePayload({
+      _id: { toString: () => 'finance-id' },
+      roles: [Role.FINANCE],
+      permissions: [],
+    });
+
+    expect(superAdmin.permissions).toEqual(
+      expect.arrayContaining(Object.values(Permission)),
+    );
+    expect(finance.permissions).toEqual(
+      expect.arrayContaining([
+        Permission.PAYMENT_VIEW,
+        Permission.PAYMENT_REFUND,
+        Permission.ANALYTICS_VIEW,
+      ]),
+    );
+    expect(finance.permissions).not.toContain(Permission.USER_DELETE);
   });
 
   it('creates access and refresh tokens with distinct expirations', () => {

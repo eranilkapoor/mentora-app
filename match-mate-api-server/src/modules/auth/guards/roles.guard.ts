@@ -32,6 +32,7 @@ export class RolesGuard implements CanActivate {
     }
 
     return (
+      user.roles.includes(Role.SUPER_ADMIN) ||
       user.roles.includes(Role.ADMIN) ||
       requiredRoles.some((role) => user.roles.includes(role))
     );

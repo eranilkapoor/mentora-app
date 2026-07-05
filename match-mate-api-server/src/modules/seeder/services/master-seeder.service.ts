@@ -798,6 +798,10 @@ export class MasterSeederService {
     const passwordHash = await bcrypt.hash('Test@125#', 10);
     const roles = Object.values(AppRole);
 
+    const permissionPolicyByRole = new Map(
+      ROLE_PERMISSION_POLICIES.map((policy) => [policy.name, policy]),
+    );
+
     const result = await this.userModel.bulkWrite(
       roles.map((role) => {
         const email = `${role}@webnza.com`;
@@ -813,7 +817,13 @@ export class MasterSeederService {
                 isPhoneVerified: false,
                 isOnboardingCompleted: role === AppRole.USER,
                 roles: [role],
-                permissions: [],
+                permissions: resolveRolePermissions(
+                  permissionPolicyByRole.get(role) ?? {
+                    name: role,
+                    description: role,
+                    permissionPrefixes: [],
+                  },
+                ),
                 authAccounts: [
                   {
                     provider: AuthProvider.EMAIL,

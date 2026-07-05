@@ -3,6 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { getJwtConfig } from '@/config/jwt.config';
 import { PlanTier } from '@/common/enums';
+import { permissionsForBuiltInRoles } from '@/common/rbac/role-permissions';
 
 interface TokenPermission {
   name: string;
@@ -50,7 +51,11 @@ export class AuthTokenService {
     );
 
     const permissions = [
-      ...new Set([...(user.permissions ?? []), ...rolePermissions]),
+      ...new Set([
+        ...(user.permissions ?? []),
+        ...rolePermissions,
+        ...permissionsForBuiltInRoles(roleNames),
+      ]),
     ];
 
     return {
