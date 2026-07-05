@@ -214,10 +214,24 @@ export class SubscriptionsService {
     }
     await subscription.save();
 
-    const plan = await this.planModel
-      .findById(subscription.planId)
+    const storeProductQuery: Record<string, unknown> = {
+      isActive: true,
+      'storeProducts.android.productId': lifecycle.productId,
+    };
+    if (lifecycle.basePlanId) {
+      storeProductQuery['storeProducts.android.basePlanId'] =
+        lifecycle.basePlanId;
+    }
+    const mappedPlan = await this.planModel
+      .findOne(storeProductQuery)
       .lean()
       .exec();
+    const plan =
+      mappedPlan ??
+      (await this.planModel.findById(subscription.planId).lean().exec());
+    if (mappedPlan?._id) {
+      subscription.planId = mappedPlan._id;
+    }
     const entitled = [
       SubscriptionStatus.ACTIVE,
       SubscriptionStatus.GRACE_PERIOD,
@@ -228,7 +242,7 @@ export class SubscriptionsService {
       startDate: subscription.startDate,
       expiresAt: lifecycle.expiresAt,
       autoRenew: lifecycle.autoRenew,
-      planId: subscription.planId.toString(),
+      planId: (mappedPlan?._id ?? subscription.planId).toString(),
     });
 
     return subscription;

@@ -15,7 +15,11 @@ describe('SubscriptionsService', () => {
     find: jest.fn(),
     distinct: jest.fn(),
   };
-  const planModel = { findById: jest.fn(), find: jest.fn() };
+  const planModel = {
+    findById: jest.fn(),
+    findOne: jest.fn(),
+    find: jest.fn(),
+  };
   const paymentModel = {
     exists: jest.fn(),
     find: jest.fn(),
@@ -52,6 +56,7 @@ describe('SubscriptionsService', () => {
     planId = new Types.ObjectId().toString();
     subscriptionId = new Types.ObjectId();
     planModel.findById.mockReturnValue(leanExec(basePlan()));
+    planModel.findOne.mockReturnValue(leanExec(null));
     subModel.updateMany.mockResolvedValue({ modifiedCount: 1 });
     subModel.create.mockResolvedValue({
       _id: subscriptionId,
@@ -224,6 +229,38 @@ describe('SubscriptionsService', () => {
       expect.objectContaining({ tier: PlanTier.GOLD }),
     );
 
+    const upgradedPlanId = new Types.ObjectId();
+    planModel.findOne.mockReturnValue(
+      leanExec(
+        basePlan({
+          _id: upgradedPlanId,
+          tier: PlanTier.PLATINUM,
+        }),
+      ),
+    );
+    await service.reconcileGooglePlayLifecycle('token', {
+      productId: 'matchmate_platinum',
+      basePlanId: 'monthly',
+      expiresAt,
+      autoRenew: true,
+      status: SubscriptionStatus.ACTIVE,
+      providerPayload: {},
+    });
+    expect(planModel.findOne).toHaveBeenLastCalledWith({
+      isActive: true,
+      'storeProducts.android.productId': 'matchmate_platinum',
+      'storeProducts.android.basePlanId': 'monthly',
+    });
+    expect(subscription.planId).toEqual(upgradedPlanId);
+    expect(userRepo.updateMembership).toHaveBeenLastCalledWith(
+      userId,
+      expect.objectContaining({
+        tier: PlanTier.PLATINUM,
+        planId: upgradedPlanId.toString(),
+      }),
+    );
+
+    planModel.findOne.mockReturnValue(leanExec(null));
     await service.reconcileGooglePlayLifecycle('token', {
       productId: 'matchmate_gold',
       expiresAt,

@@ -11,12 +11,12 @@ Match Mate uses one internal plan catalog and separate commerce providers:
 
 Create these exact IDs. They are seeded in `plans.seed-data.ts`.
 
-| Match Mate plans | Google product | Google base plans | Apple products |
-|---|---|---|---|
-| Silver | `matchmate_silver` | `monthly`, `quarterly`, `yearly` | `matchmate_silver_monthly`, `matchmate_silver_quarterly`, `matchmate_silver_yearly` |
-| Gold | `matchmate_gold` | `monthly`, `quarterly`, `yearly` | `matchmate_gold_monthly`, `matchmate_gold_quarterly`, `matchmate_gold_yearly` |
-| Platinum | `matchmate_platinum` | `monthly`, `quarterly`, `yearly` | `matchmate_platinum_monthly`, `matchmate_platinum_quarterly`, `matchmate_platinum_yearly` |
-| Assisted | `matchmate_assisted` | `half-yearly`, `yearly` | `matchmate_assisted_half_yearly`, `matchmate_assisted_yearly` |
+| Match Mate plans | Google product       | Google base plans                | Apple products                                                                            |
+| ---------------- | -------------------- | -------------------------------- | ----------------------------------------------------------------------------------------- |
+| Silver           | `matchmate_silver`   | `monthly`, `quarterly`, `yearly` | `matchmate_silver_monthly`, `matchmate_silver_quarterly`, `matchmate_silver_yearly`       |
+| Gold             | `matchmate_gold`     | `monthly`, `quarterly`, `yearly` | `matchmate_gold_monthly`, `matchmate_gold_quarterly`, `matchmate_gold_yearly`             |
+| Platinum         | `matchmate_platinum` | `monthly`, `quarterly`, `yearly` | `matchmate_platinum_monthly`, `matchmate_platinum_quarterly`, `matchmate_platinum_yearly` |
+| Assisted         | `matchmate_assisted` | `half-yearly`, `yearly`          | `matchmate_assisted_half_yearly`, `matchmate_assisted_yearly`                             |
 
 Put all Apple subscription products in subscription group `matchmate_membership`. Configure the seven-day trial as Apple introductory offers and as Google offers named `trial-7-days` under every base plan. The app falls back to the regular Google base-plan offer when an account is not eligible. Free and Custom Assisted are not store products. `matchmate_profile_boost_24h` is a separate consumable product.
 
@@ -59,24 +59,23 @@ Keep all private keys in the deployment secret manager, never EAS public variabl
 
 - Create and activate every console product/base plan and its regional pricing.
 - Test purchase, eligible/ineligible trial, renewal, grace period, cancellation, refund, expiry, duplicate delivery, app reinstall, and restore with licensed sandbox accounts.
-- Register Google RTDN and App Store Server Notifications V2 for provider-driven lifecycle reconciliation.
+- Verify Google RTDN delivery in production and register App Store Server Notifications V2 before launching iOS billing.
 - Record successful sandbox evidence before enabling production rollout.
 
-
-
-To complete automatic Google subscription synchronization, we need these pieces.
+Google subscription synchronization is implemented in the API. The following
+console and deployment settings must match the production configuration.
 
 ## 1. Google Cloud setup
 
 - Enable Cloud Pub/Sub API.
-- Create a topic, for example `matchmate-google-play-rtdn`.
+- Topic: `projects/match-mate-app/topics/matchmate-google-play-rtdn`.
 - Grant this account Pub/Sub Publisher permission:
 
 `google-play-developer-notifications@system.gserviceaccount.com`
 
 - Create an authenticated push subscription pointing to:
 
-`POST https://your-api-domain.com/api/v1/payments/google-play/rtdn`
+`POST https://matchmate.webnza.com/api/v1/payments/google-play/rtdn`
 
 Google’s setup instructions are here: [Configure Google Play RTDN](https://developer.android.com/google/play/billing/getting-ready).
 
@@ -88,7 +87,7 @@ In Play Console:
 
 Configure:
 
-- Topic: `projects/{project-id}/topics/{topic-name}`
+- Topic: `projects/match-mate-app/topics/matchmate-google-play-rtdn`
 - Notification type: subscriptions and voided purchases
 - Send a test notification
 - Save the configuration
@@ -109,21 +108,21 @@ Required environment values would be similar to:
 
 ```env
 GOOGLE_PLAY_RTDN_ENABLED=true
-GOOGLE_PLAY_RTDN_AUDIENCE=https://api.example.com/api/v1/payments/google-play/rtdn
-GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL=matchmate-rtdn@project.iam.gserviceaccount.com
+GOOGLE_PLAY_RTDN_AUDIENCE=https://matchmate.webnza.com/api/v1/payments/google-play/rtdn
+GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL=matchmate-rtdn-push@match-mate-app.iam.gserviceaccount.com
 ```
 
 Google recommends authenticated push subscriptions and validation of the audience and service-account identity: [Pub/Sub push authentication](https://docs.cloud.google.com/pubsub/docs/authenticate-push-subscriptions).
 
 ## 4. Backend RTDN endpoint
 
-We need to implement:
+Implemented endpoint:
 
 ```text
 POST /api/v1/payments/google-play/rtdn
 ```
 
-The endpoint must:
+The endpoint currently:
 
 1. Authenticate the Pub/Sub JWT.
 2. Decode `message.data` from Base64.
@@ -147,39 +146,42 @@ RTDN only indicates that something changed; Google explicitly requires calling t
 
 The reconciliation must correctly handle:
 
-- Renewed → extend `endDate`, create renewal payment
+- Renewed → extend `endDate` and refresh entitlement
 - Canceled → set `autoRenew=false`, retain access until expiry
 - Grace period → set `GRACE_PERIOD`
 - Account hold → suspend paid entitlement
 - Restarted/recovered → restore `ACTIVE`
 - Expired → set `EXPIRED`, downgrade membership
 - Revoked/refunded → terminate entitlement immediately
-- Replaced/upgraded/downgraded → follow linked purchase token and switch plan
+- Replaced/upgraded/downgraded → map the authoritative product/base plan to the local plan and switch entitlement
 
 ## 6. Reliability
 
-We should also add:
+Implemented reliability behavior:
 
-- Idempotency using Pub/Sub `messageId` and Google order ID
-- Processed-notification collection
-- Dead-letter topic
-- Retry-safe database operations
-- Storage for notifications arriving before the mobile app claims the purchase
-- Scheduled reconciliation fallback for active Google subscriptions
-- Sentry logging without exposing purchase tokens
+- Retry-safe lifecycle updates based on the latest authoritative Play state
+- Non-2xx retry when RTDN arrives before the mobile purchase claim
+- Indexed purchase-token lookup
+- Scheduled subscription-expiry fallback
+- Request correlation and redacted application logging
 
-Your initial purchase/verification/acknowledgement path is implemented. The remaining work is the authenticated RTDN endpoint, Google Console/Pub/Sub setup, and lifecycle reconciliation logic.
+Remaining reliability enhancements:
+
+- Configure and test a Pub/Sub dead-letter topic
+- Persist Pub/Sub `messageId`/order-level processing history for operational audit
+- Record each renewal/refund as a detailed local payment-ledger event
+- Add alerts for repeated RTDN authentication, permission, and reconciliation failures
 
 ## Match Mate Google RTDN Values
 
 Use these names consistently:
 
 - Topic ID: `matchmate-google-play-rtdn`
-- Full topic name: `projects/YOUR_GCP_PROJECT_ID/topics/matchmate-google-play-rtdn`
+- Full topic name: `projects/match-mate-app/topics/matchmate-google-play-rtdn`
 - Push subscription ID: `matchmate-google-play-rtdn-push`
 - Push endpoint: `https://matchmate.webnza.com/api/v1/payments/google-play/rtdn`
 - OIDC audience: `https://matchmate.webnza.com/api/v1/payments/google-play/rtdn`
-- Push identity service account: `matchmate-rtdn-push@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com`
+- Push identity service account: `matchmate-rtdn-push@match-mate-app.iam.gserviceaccount.com`
 
 The API validates the Pub/Sub OIDC signature, audience, verified email, package
 name, and notification payload. It then queries `subscriptionsv2.get` and
@@ -195,5 +197,5 @@ Production configuration:
 ```env
 GOOGLE_PLAY_RTDN_ENABLED=true
 GOOGLE_PLAY_RTDN_AUDIENCE=https://matchmate.webnza.com/api/v1/payments/google-play/rtdn
-GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL=matchmate-rtdn-push@YOUR_GCP_PROJECT_ID.iam.gserviceaccount.com
+GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL=matchmate-rtdn-push@match-mate-app.iam.gserviceaccount.com
 ```
