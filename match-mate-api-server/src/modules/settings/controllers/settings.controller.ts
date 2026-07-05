@@ -194,6 +194,17 @@ export class SettingsController {
     );
   }
 
+  @Put('account/linked/:provider/primary')
+  setPrimaryLinkedAccount(
+    @Req() req: AuthenticatedRequest,
+    @Param('provider') provider: string,
+  ) {
+    return this.respond(
+      this.settingsService.setPrimaryLinkedAccount(req.user.sub, provider),
+      SuccessCode.SETTINGS_UPDATED,
+    );
+  }
+
   @Post('account/email')
   @HttpCode(HttpStatus.ACCEPTED)
   requestEmailChange(

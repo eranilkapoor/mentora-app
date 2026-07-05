@@ -15,7 +15,6 @@ import {
   SettingsOption,
   SettingsOptionSheet,
 } from '@/core/components/settings/SettingsOptionSheet';
-import { showConfirm } from '@/core/utils/confirm';
 import {
   useGetNotificationSettingsQuery,
   useUpdateNotificationSettingsMutation,
@@ -28,6 +27,7 @@ import {
   QuietHours,
 } from './NotificationSettings.types';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
+import { showError } from '@/core/utils/toast';
 
 // ─── Per-event notification config ───────────────────────────────────────────
 
@@ -100,7 +100,8 @@ export default function NotificationSettingsScreen({
   const { t } = useTranslation();
 
   const { data, isLoading } = useGetNotificationSettingsQuery();
-  const [update] = useUpdateNotificationSettingsMutation();
+  const [update, { isLoading: isUpdating }] =
+    useUpdateNotificationSettingsMutation();
   const [updateChannel] = useUpdateNotificationChannelMutation();
   const [activeQuietField, setActiveQuietField] =
     useState<QuietHoursKey | null>(null);
@@ -130,9 +131,42 @@ export default function NotificationSettingsScreen({
 
   const handleGlobalToggle = useCallback(
     (key: keyof NotificationSettings, value: boolean) => {
-      void update({ [key]: value });
+      const resumesNotifications =
+        value &&
+        [
+          'inAppEnabled',
+          'pushEnabled',
+          'emailEnabled',
+          'smsEnabled',
+          'marketingEnabled',
+        ].includes(key);
+      void update({
+        [key]: value,
+        ...(resumesNotifications ? { doNotDisturb: false } : {}),
+      });
     },
     [update]
+  );
+
+  const handleMasterToggle = useCallback(
+    async (value: boolean) => {
+      try {
+        await update({
+          inAppEnabled: value,
+          pushEnabled: value,
+          emailEnabled: value,
+          smsEnabled: value,
+          marketingEnabled: value,
+          doNotDisturb: !value,
+        }).unwrap();
+      } catch {
+        showError({
+          title: t('common.error_title'),
+          message: t('common.try_again'),
+        });
+      }
+    },
+    [t, update]
   );
 
   // ─── Per-event per-channel toggle ────────────────────────────────────────
@@ -161,31 +195,16 @@ export default function NotificationSettingsScreen({
 
   // ─── Disable all ─────────────────────────────────────────────────────────
 
-  const handleDisableAll = useCallback(() => {
-    showConfirm({
-      title: t('settings.notifications.disable_all_title'),
-      message: t('settings.notifications.disable_all_message'),
-      confirmText: t('settings.notifications.disable_all_confirm'),
-      destructive: true,
-      onConfirm: () => {
-        void update({
-          inAppEnabled: false,
-          pushEnabled: false,
-          emailEnabled: false,
-          smsEnabled: false,
-          marketingEnabled: false,
-          doNotDisturb: true,
-        });
-      },
-    });
-  }, [update, t]);
-
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
   }
 
   const globalEnabled =
-    settings?.inAppEnabled || settings?.pushEnabled || settings?.emailEnabled;
+    settings?.inAppEnabled ||
+    settings?.pushEnabled ||
+    settings?.emailEnabled ||
+    settings?.smsEnabled ||
+    settings?.marketingEnabled;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -238,8 +257,9 @@ export default function NotificationSettingsScreen({
             </View>
           </View>
           <Switch
-            value={!settings?.doNotDisturb}
-            onValueChange={(v) => handleGlobalToggle('doNotDisturb', !v)}
+            value={!settings?.doNotDisturb && Boolean(globalEnabled)}
+            disabled={isUpdating}
+            onValueChange={(value) => void handleMasterToggle(value)}
             trackColor={{
               false: theme.colors.switchTrackOff,
               true: theme.colors.primary,
@@ -247,49 +267,13 @@ export default function NotificationSettingsScreen({
             thumbColor={theme.colors.white}
             accessibilityLabel={t('settings.notifications.all_notifications')}
             accessibilityRole="switch"
-            accessibilityState={{ checked: !settings?.doNotDisturb }}
+            accessibilityState={{
+              checked: !settings?.doNotDisturb && Boolean(globalEnabled),
+            }}
           />
         </View>
 
         {/* ── Quick actions ─────────────────────────────────────────── */}
-        <View
-          style={[
-            masterStyles.quickActions,
-            {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.divider,
-            },
-          ]}
-        >
-          <SettingsSelectItem
-            icon="bell"
-            label={t('settings.notifications.enable_all')}
-            sublabel={t('settings.notifications.enable_all_sub', {
-              defaultValue:
-                'Turn on key in-app and push notifications immediately.',
-            })}
-            isLast={false}
-            onPress={() => {
-              void update({
-                inAppEnabled: true,
-                pushEnabled: true,
-                doNotDisturb: false,
-              });
-            }}
-          />
-          <SettingsSelectItem
-            icon="bell-off"
-            label={t('settings.notifications.disable_all')}
-            sublabel={t('settings.notifications.disable_all_sub', {
-              defaultValue:
-                'Pause all notification channels until you turn them on again.',
-            })}
-            destructive
-            isLast
-            onPress={handleDisableAll}
-          />
-        </View>
-
         {/* ── Global channel toggles ────────────────────────────────── */}
         <SettingsCard
           icon="sliders"
@@ -491,11 +475,5 @@ const masterStyles = StyleSheet.create({
   sublabel: {
     fontSize: 12,
     marginTop: 2,
-  },
-  quickActions: {
-    borderRadius: 12,
-    marginBottom: 16,
-    overflow: 'hidden',
-    borderWidth: StyleSheet.hairlineWidth,
   },
 });

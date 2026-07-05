@@ -38,15 +38,6 @@ export function AssistedTab({
 
   return (
     <>
-      <View style={styles.sectionLabelRow}>
-        <View style={styles.exclusivePill}>
-          <Text style={styles.exclusivePillText}>
-            {t('membership.exclusive_label').toUpperCase()}
-          </Text>
-        </View>
-        <View style={styles.dividerLine} />
-      </View>
-
       <View style={styles.planRowThree}>
         {displayPlans.map((plan) => {
           const active = selectedPlan === plan.id;
@@ -100,6 +91,15 @@ export function AssistedTab({
             </TouchableOpacity>
           );
         })}
+      </View>
+
+      <View style={styles.sectionLabelRow}>
+        <View style={styles.exclusivePill}>
+          <Text style={styles.exclusivePillText}>
+            {t('membership.exclusive_label').toUpperCase()}
+          </Text>
+        </View>
+        <View style={styles.dividerLine} />
       </View>
 
       <View style={styles.assistedSummary}>

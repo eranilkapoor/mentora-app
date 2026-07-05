@@ -131,8 +131,8 @@ export default function SecuritySettingsScreen({
               settings?.twoFactorEnabled
                 ? settings.twoFactorMethod
                   ? t(`settings.options.${settings.twoFactorMethod}`)
-                  : t('common.enabled')
-                : t('common.disabled')
+                  : t('settings.security.status_enabled')
+                : t('settings.security.status_disabled')
             }
             onPress={() => navigation.navigate('TwoFactorSetup')}
           />

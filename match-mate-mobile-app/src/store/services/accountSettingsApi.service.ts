@@ -89,6 +89,13 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['AccountSettings'],
     }),
+    setPrimaryLinkedAccount: builder.mutation<void, { provider: string }>({
+      query: ({ provider }) => ({
+        url: `/settings/account/linked/${provider}/primary`,
+        method: 'PUT',
+      }),
+      invalidatesTags: ['AccountSettings'],
+    }),
     requestEmailChange: builder.mutation<void, RequestEmailChangePayload>({
       query: (body) => ({
         url: '/settings/account/email',
@@ -146,6 +153,7 @@ export const {
   useDisconnectProviderMutation,
   useDeleteAccountRequestMutation,
   useDisconnectLinkedAccountMutation,
+  useSetPrimaryLinkedAccountMutation,
   useRequestEmailChangeMutation,
   useRequestPhoneChangeMutation,
   useGetDataExportQuery,

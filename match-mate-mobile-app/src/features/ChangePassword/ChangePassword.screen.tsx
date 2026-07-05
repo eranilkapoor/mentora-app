@@ -52,6 +52,7 @@ export default function ChangePasswordScreen({
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
         >
           <InfoBanner infoText={t('change_password.info')} />
 

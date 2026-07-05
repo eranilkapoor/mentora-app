@@ -173,14 +173,21 @@ export default function KycVerificationScreen({
         onBackPress={navigation.goBack}
         title={t('settings.kyc.title')}
       />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <SettingsCard
           icon="check-circle"
           title={t('settings.kyc.status_title')}
           subtitle={t('settings.kyc.status_subtitle')}
         >
           <View style={local.statusBox}>
-            <Text style={local.status}>{status.replace(/_/g, ' ')}</Text>
+            <Text style={local.status}>
+              {t(`settings.kyc.statuses.${status}`, {
+                defaultValue: status.replace(/_/g, ' '),
+              })}
+            </Text>
             {data.data?.rejectionReason ? (
               <Text style={local.help}>{data.data.rejectionReason}</Text>
             ) : null}

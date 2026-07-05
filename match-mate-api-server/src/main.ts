@@ -117,6 +117,27 @@ async function bootstrap(): Promise<void> {
     86400,
   );
 
+  const embeddableStaticPagePaths = new Set([
+    '/account-deletion',
+    '/privacy-policy',
+    '/terms-conditions',
+    '/community-guidelines',
+    '/faqs',
+  ]);
+  app.use(
+    (
+      request: express.Request,
+      response: express.Response,
+      next: express.NextFunction,
+    ) => {
+      if (embeddableStaticPagePaths.has(request.path)) {
+        response.removeHeader('X-Frame-Options');
+        response.setHeader('Content-Security-Policy', 'frame-ancestors *');
+      }
+      next();
+    },
+  );
+
   app.enableCors({
     origin: (origin, callback) => {
       if (!origin) return callback(null, true);

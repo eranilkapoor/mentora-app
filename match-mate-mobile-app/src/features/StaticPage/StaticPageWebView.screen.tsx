@@ -50,7 +50,7 @@ export default function StaticPageWebViewScreen({
   );
   const [isLoading, setIsLoading] = useState(true);
   const [hasError, setHasError] = useState(false);
-  const [webHtml, setWebHtml] = useState<string | null>(null);
+  const [reloadAttempt, setReloadAttempt] = useState(0);
 
   const pageUrl = useMemo(() => {
     const themeName = isDark ? 'dark' : 'light';
@@ -71,8 +71,11 @@ export default function StaticPageWebViewScreen({
   const handleRetry = (): void => {
     setHasError(false);
     setIsLoading(true);
-    setWebHtml(null);
-    webViewRef.current?.reload();
+    if (Platform.OS === 'web') {
+      setReloadAttempt((attempt) => attempt + 1);
+    } else {
+      webViewRef.current?.reload();
+    }
   };
 
   const handleBack = (): void => {
@@ -90,34 +93,8 @@ export default function StaticPageWebViewScreen({
   };
 
   useEffect(() => {
-    if (Platform.OS !== 'web') return;
-
-    let isActive = true;
-    setIsLoading(true);
     setHasError(false);
-    setWebHtml(null);
-
-    fetch(pageUrl)
-      .then(async (response) => {
-        if (!response.ok) {
-          throw new Error(`Static page failed with ${response.status}`);
-        }
-        return response.text();
-      })
-      .then((html) => {
-        if (!isActive) return;
-        setWebHtml(html);
-        setIsLoading(false);
-      })
-      .catch(() => {
-        if (!isActive) return;
-        setIsLoading(false);
-        setHasError(true);
-      });
-
-    return () => {
-      isActive = false;
-    };
+    setIsLoading(true);
   }, [pageUrl]);
 
   return (
@@ -143,11 +120,12 @@ export default function StaticPageWebViewScreen({
         <View style={styles.webView}>
           {Platform.OS === 'web'
             ? React.createElement('iframe', {
-                key: pageUrl,
-                srcDoc: webHtml ?? '',
+                key: `${pageUrl}-${reloadAttempt}`,
+                src: pageUrl,
                 title: t(titleKey),
                 sandbox: '',
                 referrerPolicy: 'no-referrer',
+                onLoad: () => setIsLoading(false),
                 style: {
                   border: 0,
                   flex: 1,

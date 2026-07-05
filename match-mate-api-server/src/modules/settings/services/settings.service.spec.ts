@@ -178,10 +178,11 @@ describe('SettingsService', () => {
       phoneVerified: false,
       profileVerification: { status: VerificationStatus.APPROVED },
     });
-    expect(result.account.linkedAccounts[0]).toMatchObject({
+    expect(result.account.linkedAccounts[2]).toMatchObject({
       provider: AuthProvider.GOOGLE,
       connected: true,
-      canDisconnect: true,
+      canDisconnect: false,
+      isPrimary: true,
     });
   });
 
@@ -462,6 +463,8 @@ describe('SettingsService', () => {
       },
     });
     expect(result.linkedAccounts).toEqual([
+      expect.objectContaining({ provider: 'email', connected: false }),
+      expect.objectContaining({ provider: 'phone', connected: false }),
       expect.objectContaining({ provider: 'google', connected: false }),
       expect.objectContaining({ provider: 'facebook', connected: false }),
       expect.objectContaining({ provider: 'apple', connected: false }),
@@ -488,10 +491,12 @@ describe('SettingsService', () => {
     const result = await fixture.service.getAccount(USER_ID);
 
     expect((result as Record<string, unknown>).isDeactivated).toBe(true);
-    expect(result.linkedAccounts[2]).toMatchObject({
+    expect(result.linkedAccounts[4]).toMatchObject({
       provider: AuthProvider.APPLE,
       connected: true,
-      canDisconnect: true,
+      canDisconnect: false,
+      isPrimary: true,
+      disconnectReason: 'primary_login_method',
     });
   });
 
@@ -506,10 +511,10 @@ describe('SettingsService', () => {
 
     const result = await fixture.service.getAccount(USER_ID);
 
-    expect(result.linkedAccounts[1]).toMatchObject({
+    expect(result.linkedAccounts[3]).toMatchObject({
       connected: true,
       canDisconnect: false,
-      disconnectReason: 'last_login_method',
+      disconnectReason: 'primary_login_method',
     });
   });
 
@@ -578,7 +583,7 @@ describe('SettingsService', () => {
       AuthProvider.GOOGLE,
     );
 
-    expect(result.linkedAccounts[0].connected).toBe(false);
+    expect(result.linkedAccounts[2].connected).toBe(false);
   });
 
   it('prevents disconnecting the final usable login method', async () => {
@@ -592,7 +597,7 @@ describe('SettingsService', () => {
     ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
   });
 
-  it('removes duplicate provider entries and promotes a remaining login', async () => {
+  it('prevents disconnecting the primary login method', async () => {
     const fixture = createFixture();
     const user = {
       authAccounts: [
@@ -603,17 +608,10 @@ describe('SettingsService', () => {
       save: jest.fn().mockResolvedValue(undefined),
     };
     fixture.userModel.findById.mockResolvedValueOnce(user);
-    configureAccountQueries(fixture, {}, user, null);
-
-    await fixture.service.disconnectLinkedAccount(USER_ID, AuthProvider.GOOGLE);
-
-    expect(user.authAccounts).toEqual([
-      expect.objectContaining({
-        provider: AuthProvider.EMAIL,
-        isPrimary: true,
-      }),
-    ]);
-    expect(user.save).toHaveBeenCalled();
+    await expect(
+      fixture.service.disconnectLinkedAccount(USER_ID, AuthProvider.GOOGLE),
+    ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
+    expect(user.save).not.toHaveBeenCalled();
   });
 
   it('keeps an existing primary account when removing a non-primary login', async () => {
@@ -641,6 +639,44 @@ describe('SettingsService', () => {
       provider: AuthProvider.EMAIL,
       isPrimary: true,
     });
+  });
+
+  it('changes the primary login method to a connected usable account', async () => {
+    const fixture = createFixture();
+    const user = {
+      authAccounts: [
+        { provider: AuthProvider.GOOGLE, isPrimary: true },
+        { provider: AuthProvider.EMAIL, passwordHash: 'hash' },
+      ],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    fixture.userModel.findById.mockResolvedValueOnce(user);
+    configureAccountQueries(fixture, {}, user, null);
+
+    await fixture.service.setPrimaryLinkedAccount(USER_ID, AuthProvider.EMAIL);
+
+    expect(user.authAccounts).toEqual([
+      expect.objectContaining({
+        provider: AuthProvider.GOOGLE,
+        isPrimary: false,
+      }),
+      expect.objectContaining({
+        provider: AuthProvider.EMAIL,
+        isPrimary: true,
+      }),
+    ]);
+    expect(user.save).toHaveBeenCalled();
+  });
+
+  it('rejects making an unavailable login method primary', async () => {
+    const fixture = createFixture();
+    fixture.userModel.findById.mockResolvedValue({
+      authAccounts: [{ provider: AuthProvider.EMAIL }],
+    });
+
+    await expect(
+      fixture.service.setPrimaryLinkedAccount(USER_ID, AuthProvider.EMAIL),
+    ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
   });
 
   it('returns email and phone verification-change contracts', () => {

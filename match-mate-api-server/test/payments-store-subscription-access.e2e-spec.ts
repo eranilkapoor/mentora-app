@@ -8,6 +8,7 @@ import { Test } from '@nestjs/testing';
 import request from 'supertest';
 import { PaymentsController } from '@/modules/payments/controllers/payments.controller';
 import { PaymentsService } from '@/modules/payments/services/payments.service';
+import { GooglePlayRtdnService } from '@/modules/payments/services/google-play-rtdn.service';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 
 class ToggleJwtGuardStub implements CanActivate {
@@ -43,7 +44,13 @@ describe('Payments store subscription access (e2e)', () => {
   beforeAll(async () => {
     const moduleRef = await Test.createTestingModule({
       controllers: [PaymentsController],
-      providers: [{ provide: PaymentsService, useValue: paymentsService }],
+      providers: [
+        { provide: PaymentsService, useValue: paymentsService },
+        {
+          provide: GooglePlayRtdnService,
+          useValue: { handleMessage: jest.fn() },
+        },
+      ],
     })
       .overrideGuard(JwtAuthGuard)
       .useClass(ToggleJwtGuardStub)
@@ -61,7 +68,7 @@ describe('Payments store subscription access (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   beforeEach(() => {

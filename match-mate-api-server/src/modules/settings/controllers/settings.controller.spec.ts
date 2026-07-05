@@ -20,6 +20,7 @@ describe('SettingsController', () => {
     deactivateAccount: jest.fn(),
     scheduleAccountDeletion: jest.fn(),
     disconnectLinkedAccount: jest.fn(),
+    setPrimaryLinkedAccount: jest.fn(),
     requestEmailChange: jest.fn(),
     requestPhoneChange: jest.fn(),
     getNotification: jest.fn(),
@@ -192,6 +193,12 @@ describe('SettingsController', () => {
       'disconnectLinkedAccount',
       ['facebook'],
       SuccessCode.SETTINGS_ACCOUNT_UNLINKED,
+    ],
+    [
+      'setPrimaryLinkedAccount',
+      'setPrimaryLinkedAccount',
+      ['email'],
+      SuccessCode.SETTINGS_UPDATED,
     ],
     [
       'requestEmailChange',

@@ -149,16 +149,25 @@ export default function TwoFactorSetupScreen({
         onBackPress={navigation.goBack}
         title={t('settings.two_factor.title')}
       />
-      <ScrollView contentContainerStyle={styles.scrollContent}>
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
         <SettingsCard
           icon="shield"
           title={t('settings.two_factor.current_status')}
           subtitle={t('settings.two_factor.status_subtitle', {
-            status: data.enabled ? t('common.enabled') : t('common.disabled'),
+            status: data.enabled
+              ? t('settings.security.status_enabled')
+              : t('settings.security.status_disabled'),
           })}
         >
           <View style={local.statusBox}>
-            <Text style={local.statusTitle}>{data.method}</Text>
+            <Text style={local.statusTitle}>
+              {t(`settings.options.${data.method}`, {
+                defaultValue: data.method.replace(/_/g, ' '),
+              })}
+            </Text>
             <Text style={local.statusText}>
               {t('settings.two_factor.recovery_remaining', {
                 count: data.recoveryCodesRemaining,

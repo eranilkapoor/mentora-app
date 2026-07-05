@@ -204,7 +204,7 @@ export default function RegisterScreen({
                     void handleSocialRegister('google');
                   }}
                   disabled={loading}
-                  icon="search"
+                  icon="chrome"
                   iconColor="#EA4335"
                 />
               ) : null}
@@ -215,7 +215,7 @@ export default function RegisterScreen({
                     void handleSocialRegister('apple');
                   }}
                   disabled={loading}
-                  icon="smartphone"
+                  icon="command"
                 />
               ) : null}
               {authMethodConfig.social.facebook ? (

@@ -479,8 +479,8 @@ export class SettingsService {
   }
 
   async disconnectLinkedAccount(userId: string, provider: string) {
-    const socialProvider = this.toSocialProvider(provider);
-    if (!socialProvider) {
+    const authProvider = this.toAuthProvider(provider);
+    if (!authProvider) {
       return throwBadRequest(ErrorCode.INVALID_REQUEST, {
         reason: 'unsupported_linked_account_provider',
         provider,
@@ -499,17 +499,26 @@ export class SettingsService {
         index,
         provider: String(account.provider),
       }))
-      .filter((account) => account.provider === String(socialProvider))
+      .filter((account) => account.provider === String(authProvider))
       .map((account) => account.index);
     const targetIndexSet = new Set(targetIndexes);
-    const targetIndex = targetIndexes[0] ?? -1;
 
     const hasProvider = user.authAccounts.some(
-      (account) => String(account.provider) === String(socialProvider),
+      (account) => String(account.provider) === String(authProvider),
     );
 
     if (!hasProvider) {
       return this.getAccount(userId);
+    }
+
+    const targetIsPrimary = targetIndexes.some(
+      (index) => user.authAccounts[index]?.isPrimary,
+    );
+    if (targetIsPrimary) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'primary_login_method',
+        provider: authProvider,
+      });
     }
 
     const remainingUsableAccounts = this.getUsableAuthAccounts(
@@ -519,24 +528,46 @@ export class SettingsService {
     if (remainingUsableAccounts.length === 0) {
       return throwBadRequest(ErrorCode.INVALID_REQUEST, {
         reason: 'last_login_method',
-        provider: socialProvider,
+        provider: authProvider,
       });
     }
 
-    const removedAccount = user.authAccounts[targetIndex];
     user.authAccounts = user.authAccounts.filter(
       (_, index) => !targetIndexSet.has(index),
     );
 
-    if (
-      removedAccount?.isPrimary &&
-      !user.authAccounts.some((account) => account.isPrimary)
-    ) {
-      user.authAccounts[0].isPrimary = true;
-    }
-
     await user.save();
 
+    return this.getAccount(userId);
+  }
+
+  async setPrimaryLinkedAccount(userId: string, provider: string) {
+    const authProvider = this.toAuthProvider(provider);
+    if (!authProvider) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'unsupported_linked_account_provider',
+        provider,
+      });
+    }
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'user_not_found',
+      });
+    }
+    const target = user.authAccounts.find(
+      (account) => String(account.provider) === String(authProvider),
+    );
+    if (!target || !this.isUsableAuthAccount(target)) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'login_method_not_connected',
+        provider: authProvider,
+      });
+    }
+    user.authAccounts.forEach((account) => {
+      account.isPrimary = account === target;
+    });
+    await user.save();
     return this.getAccount(userId);
   }
 
@@ -814,7 +845,9 @@ export class SettingsService {
       lastUsedAt?: Date;
     }>;
   }) {
-    const socialProviders = [
+    const providers = [
+      AuthProvider.EMAIL,
+      AuthProvider.PHONE,
       AuthProvider.GOOGLE,
       AuthProvider.FACEBOOK,
       AuthProvider.APPLE,
@@ -822,7 +855,11 @@ export class SettingsService {
     const authAccounts = user?.authAccounts ?? [];
     const usableAuthAccounts = this.getUsableAuthAccounts(authAccounts);
 
-    return socialProviders.map((provider) => {
+    const effectivePrimary =
+      usableAuthAccounts.find((item) => item.isPrimary) ??
+      usableAuthAccounts[0];
+
+    return providers.map((provider) => {
       const account = authAccounts.find(
         (item) => String(item.provider) === provider,
       );
@@ -830,7 +867,11 @@ export class SettingsService {
       const remainingUsableAccounts = usableAuthAccounts.filter(
         (item) => String(item.provider) !== provider,
       );
-      const canDisconnect = connected && remainingUsableAccounts.length > 0;
+      const isPrimary =
+        connected &&
+        String(effectivePrimary?.provider ?? '') === String(provider);
+      const canDisconnect =
+        connected && !isPrimary && remainingUsableAccounts.length > 0;
 
       return {
         provider,
@@ -838,24 +879,30 @@ export class SettingsService {
         connected,
         connectedAt: account?.lastUsedAt,
         isVerified: Boolean(account?.isVerified),
-        isPrimary: Boolean(account?.isPrimary),
+        isPrimary,
         canDisconnect,
         ...(!canDisconnect && connected
-          ? { disconnectReason: 'last_login_method' }
+          ? {
+              disconnectReason: isPrimary
+                ? 'primary_login_method'
+                : 'last_login_method',
+            }
           : {}),
       };
     });
   }
 
-  private toSocialProvider(provider: string): AuthProvider | undefined {
+  private toAuthProvider(provider: string): AuthProvider | undefined {
     const normalizedProvider = provider.toLowerCase();
-    const socialProviders = [
+    const providers = [
+      AuthProvider.EMAIL,
+      AuthProvider.PHONE,
       AuthProvider.GOOGLE,
       AuthProvider.FACEBOOK,
       AuthProvider.APPLE,
     ].map(String);
 
-    return socialProviders.find((item) => item === normalizedProvider) as
+    return providers.find((item) => item === normalizedProvider) as
       | AuthProvider
       | undefined;
   }
