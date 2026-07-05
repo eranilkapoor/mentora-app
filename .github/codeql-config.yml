@@ -1,0 +1,16 @@
+name: MatchMate CodeQL configuration
+
+paths:
+  - match-mate-api-server/src
+  - match-mate-api-server/test
+  - match-mate-mobile-app/src
+  - packages
+  - scripts
+
+paths-ignore:
+  - "**/node_modules/**"
+  - "**/dist/**"
+  - "**/build/**"
+  - "**/coverage/**"
+  - "**/.expo/**"
+  - packages/api-contract/src/generated.ts
