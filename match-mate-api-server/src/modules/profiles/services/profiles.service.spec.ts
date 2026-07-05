@@ -226,6 +226,27 @@ describe('ProfilesService', () => {
     );
   });
 
+  it('rejects profile creation for users under 18', async () => {
+    const { profileRepo, service } = createFixture();
+    const dto = baseProfileDto() as unknown as {
+      personal: { dateOfBirth: string };
+    };
+    const underageDate = new Date();
+    underageDate.setFullYear(underageDate.getFullYear() - 17);
+    dto.personal.dateOfBirth = underageDate.toISOString().slice(0, 10);
+
+    await expect(
+      service.createProfile(USER_ID, dto as never),
+    ).rejects.toMatchObject({
+      code: ErrorCode.INVALID_REQUEST,
+      meta: expect.objectContaining({
+        reason: 'minimum_age_required',
+        minimumAge: 18,
+      }),
+    });
+    expect(profileRepo.create).not.toHaveBeenCalled();
+  });
+
   it('maps unexpected profile creation failures', async () => {
     const { profileRepo, service } = createFixture();
     profileRepo.exists.mockRejectedValue(new Error('database unavailable'));

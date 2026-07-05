@@ -2,6 +2,8 @@
 
 Use this checklist for every closed-testing and production candidate.
 
+Complete `PLAY-CONSOLE-SUBMISSION-GUIDE.md` before starting this QA run.
+
 ## Build Identity
 
 - Android package: `com.webnza.matchmate`

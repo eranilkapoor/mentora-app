@@ -276,7 +276,7 @@ export class ProfilesService {
 
   private buildCreatePayload(dto: CreateProfileDto): Record<string, unknown> {
     const birthDate = new Date(dto.personal.dateOfBirth);
-    const age = this.calculateAge(birthDate);
+    const age = this.requireAdultAge(birthDate);
     const family = normalizeFamilySiblings(dto.family);
     const { missingFields: _missingFields, ...derived } =
       this.profileScoringService.calculate({
@@ -324,7 +324,9 @@ export class ProfilesService {
       );
       normalized.personal = merged;
       if (dto.personal.dateOfBirth) {
-        normalized.age = this.calculateAge(new Date(dto.personal.dateOfBirth));
+        normalized.age = this.requireAdultAge(
+          new Date(dto.personal.dateOfBirth),
+        );
       }
     }
 
@@ -477,6 +479,17 @@ export class ProfilesService {
     const m = today.getMonth() - dateOfBirth.getMonth();
     if (m < 0 || (m === 0 && today.getDate() < dateOfBirth.getDate())) {
       age -= 1;
+    }
+    return age;
+  }
+
+  private requireAdultAge(dateOfBirth: Date): number {
+    const age = this.calculateAge(dateOfBirth);
+    if (!Number.isFinite(age) || age < 18) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'minimum_age_required',
+        minimumAge: 18,
+      });
     }
     return age;
   }
