@@ -84,6 +84,38 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/admin/analytics/summary/daily": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["AdminAnalyticsController_getDailySummaries_v1"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/admin/analytics/taxonomy": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["AdminAnalyticsController_getTaxonomy_v1"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/admin/analytics/track": {
         readonly parameters: {
             readonly query?: never;
@@ -740,6 +772,38 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/admin/success-stories": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["AdminSuccessStoryController_list_v1"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/admin/success-stories/{storyId}/review": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch: operations["AdminSuccessStoryController_review_v1"];
+        readonly trace?: never;
+    };
     readonly "/api/v1/admin/support/tickets": {
         readonly parameters: {
             readonly query?: never;
@@ -834,6 +898,22 @@ export interface paths {
         readonly options?: never;
         readonly head?: never;
         readonly patch: operations["AdminController_updateUserStatus_v1"];
+        readonly trace?: never;
+    };
+    readonly "/api/v1/analytics/track": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["AnalyticsController_track_v1"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
         readonly trace?: never;
     };
     readonly "/api/v1/auth/2fa/disable": {
@@ -1118,6 +1198,22 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         readonly post: operations["AuthController_resetPassword_v1"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/auth/reset-password/exchange-code": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["AuthController_exchangeResetPasswordCode_v1"];
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -1876,6 +1972,22 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/payments/google-play/rtdn": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put?: never;
+        readonly post: operations["PaymentsController_googlePlayRtdn_v1"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/payments/my-payments": {
         readonly parameters: {
             readonly query?: never;
@@ -2500,6 +2612,22 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/settings/account/linked/{provider}/primary": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get?: never;
+        readonly put: operations["SettingsController_setPrimaryLinkedAccount_v1"];
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/settings/account/phone": {
         readonly parameters: {
             readonly query?: never;
@@ -2932,6 +3060,38 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
+    readonly "/api/v1/success-stories": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["SuccessStoryController_listPublished_v1"];
+        readonly put?: never;
+        readonly post: operations["SuccessStoryController_submit_v1"];
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
+    readonly "/api/v1/success-stories/mine": {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly get: operations["SuccessStoryController_listMine_v1"];
+        readonly put?: never;
+        readonly post?: never;
+        readonly delete?: never;
+        readonly options?: never;
+        readonly head?: never;
+        readonly patch?: never;
+        readonly trace?: never;
+    };
     readonly "/api/v1/support/tickets": {
         readonly parameters: {
             readonly query?: never;
@@ -3151,6 +3311,13 @@ export interface components {
         readonly AdminReplySupportTicketDto: {
             readonly message: string;
         };
+        readonly AndroidStoreProductDto: {
+            readonly basePlanId?: string;
+            readonly offerId?: string;
+            readonly productId: string;
+            /** @enum {string} */
+            readonly productType: "subscription" | "consumable";
+        };
         readonly AssignFeatureDto: {
             readonly featureId: string;
             readonly planId: string;
@@ -3206,7 +3373,7 @@ export interface components {
         readonly CreateFeatureDto: {
             readonly description?: string;
             /** @enum {string} */
-            readonly key: "email_registration" | "phone_registration" | "social_login_google" | "social_login_apple" | "social_login_facebook" | "email_verification" | "phone_verification" | "otp_login" | "two_factor_auth" | "device_management" | "multi_device_login" | "session_history" | "create_profile" | "edit_profile" | "delete_profile" | "advanced_profile_completion" | "profile_completion_score" | "multiple_profile_photos" | "video_profile" | "audio_intro" | "profile_boost" | "profile_highlight" | "featured_profile" | "hide_profile_photo" | "private_photos" | "private_album" | "hide_last_seen" | "hide_online_status" | "incognito_mode" | "identity_verification" | "horoscope_upload" | "kundli_matching" | "astrology_report" | "send_interest" | "view_interests" | "accept_interest" | "reject_interest" | "priority_interest" | "shortlist_profiles" | "favorite_profiles" | "chat_access" | "unlimited_chat" | "chat_with_matches_only" | "chat_without_match" | "priority_chat" | "read_receipts" | "typing_indicator" | "message_translation" | "send_images_in_chat" | "send_videos_in_chat" | "send_voice_notes" | "voice_call" | "video_call" | "view_contact" | "request_contact" | "direct_contact_access" | "view_phone_number" | "view_email_address" | "upload_photos" | "upload_videos" | "view_profile_photos" | "view_private_photos" | "request_photos" | "view_profile_videos" | "request_private_videos" | "photo_approval" | "video_approval" | "ai_photo_verification" | "blurred_photo_mode" | "basic_search" | "advanced_search" | "basic_filters" | "advanced_filters" | "unlimited_search" | "search_by_religion" | "search_by_caste" | "search_by_location" | "search_by_income" | "search_by_education" | "search_by_profession" | "search_by_height" | "location_based_search" | "global_search" | "international_matches" | "nri_matching" | "saved_searches" | "recent_searches" | "daily_profile_views" | "unlimited_profile_views" | "profile_views" | "who_viewed_me" | "profile_analytics" | "top_in_search" | "show_on_home" | "priority_search_ranking" | "featured_in_search" | "basic_matching" | "advanced_matching" | "smart_matches" | "ai_recommendations" | "ai_profile_summary" | "ai_photo_selection" | "ai_compatibility_analysis" | "ai_conversation_starter" | "ai_interest_prediction" | "ai_fake_profile_detection" | "compatibility_score" | "personality_matching" | "interest_matching" | "location_matching" | "strict_preferences" | "smart_preferences" | "religion_preferences" | "caste_preferences" | "subcaste_preferences" | "manglik_matching" | "community_based_matching" | "marriage_timeline_preference" | "children_preference" | "eating_preferences" | "lifestyle_preferences" | "family_managed_profile" | "family_contact_visibility" | "parent_login" | "guardian_access" | "family_details" | "family_preferences" | "interest_analytics" | "chat_analytics" | "engagement_score" | "match_success_rate" | "daily_activity_stats" | "weekly_reports" | "push_notifications" | "email_notifications" | "sms_notifications" | "instant_match_alerts" | "daily_match_digest" | "marketing_notifications" | "location_based_matching" | "nearby_profiles" | "travel_mode" | "ad_free_experience" | "priority_support" | "vip_badge" | "premium_badge" | "relationship_manager" | "dedicated_relationship_manager" | "concierge_matchmaking" | "personal_matchmaker" | "daily_boosts" | "weekly_boosts" | "monthly_boosts" | "unlimited_boosts" | "spotlight_profile" | "monthly_subscription" | "quarterly_subscription" | "yearly_subscription" | "one_time_boost_purchase" | "wallet_system" | "promo_codes" | "referral_rewards" | "referral_bonus" | "earn_credits" | "auto_renewal" | "grace_period" | "report_user" | "block_users" | "safe_mode" | "restricted_profiles" | "fraud_detection" | "spam_detection" | "manual_profile_review" | "shortlist_limit" | "contact_view_limit" | "message_limit" | "match_limit" | "streak_rewards" | "daily_login_rewards" | "match_quiz" | "compatibility_games" | "customer_support_chat" | "support_tickets" | "account_export" | "account_deletion" | "gdpr_compliance" | "data_export" | "consent_management" | "privacy_controls" | "enterprise_sso" | "admin_dashboard" | "api_access" | "custom_branding" | "bulk_seat_management" | "sla_support" | "data_residency" | "dedicated_account_manager";
+            readonly key: "email_registration" | "phone_registration" | "social_login_google" | "social_login_apple" | "social_login_facebook" | "email_verification" | "phone_verification" | "otp_login" | "two_factor_auth" | "device_management" | "multi_device_login" | "session_history" | "create_profile" | "edit_profile" | "delete_profile" | "advanced_profile_completion" | "profile_completion_score" | "multiple_profile_photos" | "video_profile" | "audio_intro" | "profile_boost" | "profile_highlight" | "featured_profile" | "hide_profile_photo" | "private_photos" | "private_album" | "hide_last_seen" | "hide_online_status" | "incognito_mode" | "identity_verification" | "horoscope_upload" | "astrology_report" | "send_interest" | "view_interests" | "accept_interest" | "reject_interest" | "priority_interest" | "shortlist_profiles" | "favorite_profiles" | "chat_access" | "unlimited_chat" | "chat_with_matches_only" | "chat_without_match" | "priority_chat" | "read_receipts" | "typing_indicator" | "message_translation" | "send_images_in_chat" | "send_videos_in_chat" | "send_voice_notes" | "voice_call" | "video_call" | "view_contact" | "request_contact" | "direct_contact_access" | "view_phone_number" | "view_email_address" | "upload_photos" | "upload_videos" | "view_profile_photos" | "view_private_photos" | "request_photos" | "view_profile_videos" | "request_private_videos" | "photo_approval" | "video_approval" | "ai_photo_verification" | "blurred_photo_mode" | "basic_search" | "advanced_search" | "basic_filters" | "advanced_filters" | "unlimited_search" | "search_by_religion" | "search_by_caste" | "search_by_location" | "search_by_income" | "search_by_education" | "search_by_profession" | "search_by_height" | "location_based_search" | "global_search" | "international_matches" | "nri_matching" | "saved_searches" | "recent_searches" | "daily_profile_views" | "unlimited_profile_views" | "profile_views" | "who_viewed_me" | "profile_analytics" | "top_in_search" | "show_on_home" | "priority_search_ranking" | "featured_in_search" | "basic_matching" | "advanced_matching" | "smart_matches" | "ai_recommendations" | "ai_profile_summary" | "ai_photo_selection" | "ai_compatibility_analysis" | "ai_conversation_starter" | "ai_interest_prediction" | "ai_fake_profile_detection" | "compatibility_score" | "personality_matching" | "interest_matching" | "location_matching" | "strict_preferences" | "smart_preferences" | "kundli_matching" | "religion_preferences" | "caste_preferences" | "subcaste_preferences" | "manglik_matching" | "community_based_matching" | "marriage_timeline_preference" | "children_preference" | "eating_preferences" | "lifestyle_preferences" | "family_managed_profile" | "family_contact_visibility" | "parent_login" | "guardian_access" | "family_details" | "family_preferences" | "interest_analytics" | "chat_analytics" | "engagement_score" | "match_success_rate" | "daily_activity_stats" | "weekly_reports" | "push_notifications" | "email_notifications" | "sms_notifications" | "instant_match_alerts" | "daily_match_digest" | "marketing_notifications" | "location_based_matching" | "nearby_profiles" | "travel_mode" | "ad_free_experience" | "priority_support" | "vip_badge" | "premium_badge" | "relationship_manager" | "dedicated_relationship_manager" | "concierge_matchmaking" | "personal_matchmaker" | "daily_boosts" | "weekly_boosts" | "monthly_boosts" | "unlimited_boosts" | "spotlight_profile" | "monthly_subscription" | "quarterly_subscription" | "yearly_subscription" | "one_time_boost_purchase" | "wallet_system" | "promo_codes" | "referral_rewards" | "referral_bonus" | "earn_credits" | "auto_renewal" | "grace_period" | "report_user" | "block_users" | "safe_mode" | "restricted_profiles" | "fraud_detection" | "spam_detection" | "manual_profile_review" | "shortlist_limit" | "contact_view_limit" | "message_limit" | "match_limit" | "streak_rewards" | "daily_login_rewards" | "match_quiz" | "compatibility_games" | "customer_support_chat" | "support_tickets" | "account_export" | "account_deletion" | "gdpr_compliance" | "data_export" | "consent_management" | "privacy_controls" | "enterprise_sso" | "admin_dashboard" | "api_access" | "custom_branding" | "bulk_seat_management" | "sla_support" | "data_residency" | "dedicated_account_manager";
         };
         readonly CreateNotificationDto: {
             readonly action?: {
@@ -3218,8 +3385,7 @@ export interface components {
             readonly actorName?: string;
             /** @enum {string} */
             readonly category?: "interest_received" | "interest_accepted" | "profile_view" | "match_found" | "message_received" | "subscription" | "system";
-            /** @enum {string} */
-            readonly channels?: "in_app" | "push" | "email" | "sms";
+            readonly channels?: readonly ("in_app" | "push" | "email" | "sms")[];
             readonly dedupeKey?: string;
             readonly message: string;
             readonly metadata?: Record<string, never>;
@@ -3269,22 +3435,7 @@ export interface components {
             readonly price: number;
             readonly slug: string;
             readonly sortOrder?: number;
-            readonly storeProducts?: {
-                readonly android?: {
-                    readonly basePlanId?: string;
-                    readonly offerId?: string;
-                    readonly productId: string;
-                    /** @enum {string} */
-                    readonly productType: "subscription" | "consumable";
-                };
-                readonly ios?: {
-                    readonly offerId?: string;
-                    readonly productId: string;
-                    /** @enum {string} */
-                    readonly productType: "subscription" | "consumable";
-                    readonly subscriptionGroupId?: string;
-                };
-            };
+            readonly storeProducts?: components["schemas"]["PlanStoreProductsDto"];
             /** @enum {string} */
             readonly tier: "free" | "silver" | "gold" | "platinum" | "enterprise";
             readonly trialDays?: number;
@@ -3356,6 +3507,14 @@ export interface components {
             /** Format: email */
             readonly email: string;
         };
+        readonly GooglePlayRtdnEnvelopeDto: {
+            readonly message: {
+                readonly data?: string;
+                readonly messageId?: string;
+                readonly publishTime?: string;
+            };
+            readonly subscription?: string;
+        };
         readonly HideProfileDto: {
             readonly reason?: string;
             readonly targetUserId: string;
@@ -3364,6 +3523,13 @@ export interface components {
             readonly consentReference?: string;
             /** @enum {string} */
             readonly provider: "aadhaar" | "digilocker";
+        };
+        readonly IosStoreProductDto: {
+            readonly offerId?: string;
+            readonly productId: string;
+            /** @enum {string} */
+            readonly productType: "subscription" | "consumable";
+            readonly subscriptionGroupId?: string;
         };
         readonly LoginDto: {
             /** Format: email */
@@ -3420,7 +3586,6 @@ export interface components {
             /** @enum {string} */
             readonly state?: "waiting" | "active" | "completed" | "failed" | "delayed" | "paused";
         };
-        readonly Object: Record<string, never>;
         readonly OnboardingProfileDto: {
             readonly basic: components["schemas"]["BasicDto"];
             readonly preferences?: components["schemas"]["PreferencesDto"];
@@ -3541,6 +3706,10 @@ export interface components {
             readonly country?: "united_states" | "india" | "china" | "united_kingdom" | "canada" | "australia" | "germany" | "france" | "brazil" | "japan" | "russia" | "south_africa" | "italy" | "spain" | "mexico" | "netherlands" | "sweden" | "switzerland" | "new_zealand" | "singapore" | "united_arab_emirates";
             readonly state?: string;
         };
+        readonly PlanStoreProductsDto: {
+            readonly android?: components["schemas"]["AndroidStoreProductDto"];
+            readonly ios?: components["schemas"]["IosStoreProductDto"];
+        };
         readonly PreferencesDto: {
             readonly aboutPartner?: string;
             readonly ageRange?: components["schemas"]["RangeDto"];
@@ -3614,6 +3783,9 @@ export interface components {
             readonly countryCode: string;
             readonly phone: string;
         };
+        readonly ResetPasswordCodeExchangeDto: {
+            readonly code: string;
+        };
         readonly ResetPasswordDto: {
             readonly confirmPassword: string;
             readonly newPassword: string;
@@ -3624,7 +3796,8 @@ export interface components {
             readonly action: "ACCEPT" | "REJECT";
         };
         readonly RespondInterestDto: {
-            readonly action: Record<string, never>;
+            /** @enum {string} */
+            readonly action: "ACCEPT" | "REJECT";
             readonly interestId: string;
         };
         readonly ReviewChatMessageDto: {
@@ -3639,6 +3812,11 @@ export interface components {
         readonly ReviewMediaDto: {
             readonly approve: boolean;
             readonly note?: string;
+        };
+        readonly ReviewSuccessStoryDto: {
+            readonly reason?: string;
+            /** @enum {string} */
+            readonly status: "rejected" | "archived" | "published";
         };
         readonly RevokeDeviceTokenDto: {
             readonly deviceId?: string;
@@ -3657,8 +3835,7 @@ export interface components {
         };
         readonly SendTemplateNotificationDto: {
             readonly actorId?: string;
-            /** @enum {string} */
-            readonly channels?: "in_app" | "push" | "email" | "sms";
+            readonly channels?: readonly ("in_app" | "push" | "email" | "sms")[];
             readonly metadata?: Record<string, never>;
             readonly templateKey: string;
             readonly userId: string;
@@ -3690,7 +3867,6 @@ export interface components {
             readonly profile_photo?: string;
             /** @enum {string} */
             readonly provider: "email" | "phone" | "google" | "facebook" | "apple";
-            readonly provider_id: string;
             readonly referralCode?: string;
         };
         readonly SpendWalletDto: {
@@ -3705,6 +3881,15 @@ export interface components {
         };
         readonly SubmitKycDto: {
             readonly documentType?: string;
+        };
+        readonly SubmitSuccessStoryDto: {
+            readonly location?: string;
+            readonly marriageDate: string;
+            readonly partnerName: string;
+            readonly photoUrls?: readonly string[];
+            readonly publicationConsent: boolean;
+            readonly story: string;
+            readonly title: string;
         };
         readonly TimeOfBirthDto: {
             /** @enum {string} */
@@ -3874,8 +4059,7 @@ export interface components {
             readonly status: "open" | "pending" | "resolved" | "closed";
         };
         readonly UpdateUserStatusDto: {
-            readonly isBlocked?: boolean;
-            readonly isVerified?: boolean;
+            readonly isBlocked: boolean;
             readonly reason?: string;
             readonly userId: string;
         };
@@ -3938,13 +4122,13 @@ export type $defs = Record<string, never>;
 export interface operations {
     readonly AppController_accountDeletionInstructions: {
         readonly parameters: {
-            readonly query: {
-                readonly boldText: string;
-                readonly fontSize: string;
-                readonly highContrast: string;
-                readonly lang: string;
-                readonly reduceMotion: string;
-                readonly theme: string;
+            readonly query?: {
+                readonly boldText?: string;
+                readonly fontSize?: string;
+                readonly highContrast?: string;
+                readonly lang?: string;
+                readonly reduceMotion?: string;
+                readonly theme?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -4075,6 +4259,45 @@ export interface operations {
             };
         };
     };
+    readonly AdminAnalyticsController_getDailySummaries_v1: {
+        readonly parameters: {
+            readonly query?: {
+                readonly day?: string;
+                readonly from?: string;
+                readonly limit?: number;
+                readonly to?: string;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly AdminAnalyticsController_getTaxonomy_v1: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     readonly AdminAnalyticsController_track_v1: {
         readonly parameters: {
             readonly query?: never;
@@ -4145,9 +4368,9 @@ export interface operations {
     };
     readonly AdminCuratedMatchesController_listCuratedMatches_v1: {
         readonly parameters: {
-            readonly query: {
-                readonly limit: string;
-                readonly userId: string;
+            readonly query?: {
+                readonly limit?: string;
+                readonly userId?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -4237,9 +4460,9 @@ export interface operations {
     };
     readonly AdminModerationController_getChatModerationQueue_v1: {
         readonly parameters: {
-            readonly query: {
-                readonly limit: string;
-                readonly status: string;
+            readonly query?: {
+                readonly limit?: string;
+                readonly status?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -4280,8 +4503,8 @@ export interface operations {
     };
     readonly AdminModerationController_getKycQueue_v1: {
         readonly parameters: {
-            readonly query: {
-                readonly status: string;
+            readonly query?: {
+                readonly status?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -4322,8 +4545,8 @@ export interface operations {
     };
     readonly AdminModerationController_getMediaQueue_v1: {
         readonly parameters: {
-            readonly query: {
-                readonly limit: string;
+            readonly query?: {
+                readonly limit?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -4545,8 +4768,8 @@ export interface operations {
     };
     readonly AdminNotificationsController_listTemplates_v1: {
         readonly parameters: {
-            readonly query: {
-                readonly includeInactive: string;
+            readonly query?: {
+                readonly includeInactive?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -4893,8 +5116,8 @@ export interface operations {
     };
     readonly RbacController_getPermissions_v1: {
         readonly parameters: {
-            readonly query: {
-                readonly module: string;
+            readonly query?: {
+                readonly module?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -5129,6 +5352,50 @@ export interface operations {
             };
         };
     };
+    readonly AdminSuccessStoryController_list_v1: {
+        readonly parameters: {
+            readonly query?: {
+                readonly limit?: number;
+                readonly page?: number;
+                readonly status?: "rejected" | "archived" | "published" | "submitted";
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly AdminSuccessStoryController_review_v1: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly storyId: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ReviewSuccessStoryDto"];
+            };
+        };
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     readonly AdminSupportTicketController_listTickets_v1: {
         readonly parameters: {
             readonly query?: {
@@ -5203,7 +5470,7 @@ export interface operations {
                 readonly limit?: number;
                 readonly page?: number;
                 readonly search?: string;
-                readonly status?: components["schemas"]["Object"];
+                readonly status?: "active" | "blocked" | "all";
             };
             readonly header?: never;
             readonly path?: never;
@@ -5252,6 +5519,27 @@ export interface operations {
         };
         readonly responses: {
             readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly AnalyticsController_track_v1: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["TrackEventDto"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
                 headers: {
                     readonly [name: string]: unknown;
                 };
@@ -5598,6 +5886,27 @@ export interface operations {
         readonly requestBody: {
             readonly content: {
                 readonly "application/json": components["schemas"]["ResetPasswordDto"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly AuthController_exchangeResetPasswordCode_v1: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["ResetPasswordCodeExchangeDto"];
             };
         };
         readonly responses: {
@@ -6718,6 +7027,27 @@ export interface operations {
             };
         };
     };
+    readonly PaymentsController_googlePlayRtdn_v1: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["GooglePlayRtdnEnvelopeDto"];
+            };
+        };
+        readonly responses: {
+            readonly 204: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     readonly PaymentsController_getMyPayments_v1: {
         readonly parameters: {
             readonly query?: {
@@ -7276,8 +7606,8 @@ export interface operations {
     };
     readonly ReferralsController_getLeaderboard_v1: {
         readonly parameters: {
-            readonly query: {
-                readonly limit: string;
+            readonly query?: {
+                readonly limit?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -7535,6 +7865,25 @@ export interface operations {
         };
     };
     readonly SettingsController_disconnectLinkedAccount_v1: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path: {
+                readonly provider: string;
+            };
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly SettingsController_setPrimaryLinkedAccount_v1: {
         readonly parameters: {
             readonly query?: never;
             readonly header?: never;
@@ -8219,6 +8568,67 @@ export interface operations {
             };
         };
     };
+    readonly SuccessStoryController_listPublished_v1: {
+        readonly parameters: {
+            readonly query?: {
+                readonly limit?: number;
+                readonly page?: number;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly SuccessStoryController_submit_v1: {
+        readonly parameters: {
+            readonly query?: never;
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody: {
+            readonly content: {
+                readonly "application/json": components["schemas"]["SubmitSuccessStoryDto"];
+            };
+        };
+        readonly responses: {
+            readonly 201: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
+    readonly SuccessStoryController_listMine_v1: {
+        readonly parameters: {
+            readonly query?: {
+                readonly limit?: number;
+                readonly page?: number;
+            };
+            readonly header?: never;
+            readonly path?: never;
+            readonly cookie?: never;
+        };
+        readonly requestBody?: never;
+        readonly responses: {
+            readonly 200: {
+                headers: {
+                    readonly [name: string]: unknown;
+                };
+                content?: never;
+            };
+        };
+    };
     readonly SupportTicketController_listTickets_v1: {
         readonly parameters: {
             readonly query?: {
@@ -8421,13 +8831,13 @@ export interface operations {
     };
     readonly AppController_communityGuidelines: {
         readonly parameters: {
-            readonly query: {
-                readonly boldText: string;
-                readonly fontSize: string;
-                readonly highContrast: string;
-                readonly lang: string;
-                readonly reduceMotion: string;
-                readonly theme: string;
+            readonly query?: {
+                readonly boldText?: string;
+                readonly fontSize?: string;
+                readonly highContrast?: string;
+                readonly lang?: string;
+                readonly reduceMotion?: string;
+                readonly theme?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -8447,13 +8857,13 @@ export interface operations {
     };
     readonly AppController_faqs: {
         readonly parameters: {
-            readonly query: {
-                readonly boldText: string;
-                readonly fontSize: string;
-                readonly highContrast: string;
-                readonly lang: string;
-                readonly reduceMotion: string;
-                readonly theme: string;
+            readonly query?: {
+                readonly boldText?: string;
+                readonly fontSize?: string;
+                readonly highContrast?: string;
+                readonly lang?: string;
+                readonly reduceMotion?: string;
+                readonly theme?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -8473,13 +8883,13 @@ export interface operations {
     };
     readonly AppController_privacyPolicy: {
         readonly parameters: {
-            readonly query: {
-                readonly boldText: string;
-                readonly fontSize: string;
-                readonly highContrast: string;
-                readonly lang: string;
-                readonly reduceMotion: string;
-                readonly theme: string;
+            readonly query?: {
+                readonly boldText?: string;
+                readonly fontSize?: string;
+                readonly highContrast?: string;
+                readonly lang?: string;
+                readonly reduceMotion?: string;
+                readonly theme?: string;
             };
             readonly header?: never;
             readonly path?: never;
@@ -8499,13 +8909,13 @@ export interface operations {
     };
     readonly AppController_termsConditions: {
         readonly parameters: {
-            readonly query: {
-                readonly boldText: string;
-                readonly fontSize: string;
-                readonly highContrast: string;
-                readonly lang: string;
-                readonly reduceMotion: string;
-                readonly theme: string;
+            readonly query?: {
+                readonly boldText?: string;
+                readonly fontSize?: string;
+                readonly highContrast?: string;
+                readonly lang?: string;
+                readonly reduceMotion?: string;
+                readonly theme?: string;
             };
             readonly header?: never;
             readonly path?: never;

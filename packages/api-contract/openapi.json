@@ -49,7 +49,7 @@
         "parameters": [
           {
             "name": "theme",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -57,7 +57,7 @@
           },
           {
             "name": "lang",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -65,7 +65,7 @@
           },
           {
             "name": "fontSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -73,7 +73,7 @@
           },
           {
             "name": "boldText",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -81,7 +81,7 @@
           },
           {
             "name": "highContrast",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -89,7 +89,7 @@
           },
           {
             "name": "reduceMotion",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -119,7 +119,7 @@
         "parameters": [
           {
             "name": "theme",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -127,7 +127,7 @@
           },
           {
             "name": "lang",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -135,7 +135,7 @@
           },
           {
             "name": "fontSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -143,7 +143,7 @@
           },
           {
             "name": "boldText",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -151,7 +151,7 @@
           },
           {
             "name": "highContrast",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -159,7 +159,7 @@
           },
           {
             "name": "reduceMotion",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -189,7 +189,7 @@
         "parameters": [
           {
             "name": "theme",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -197,7 +197,7 @@
           },
           {
             "name": "lang",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -205,7 +205,7 @@
           },
           {
             "name": "fontSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -213,7 +213,7 @@
           },
           {
             "name": "boldText",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -221,7 +221,7 @@
           },
           {
             "name": "highContrast",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -229,7 +229,7 @@
           },
           {
             "name": "reduceMotion",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -259,7 +259,7 @@
         "parameters": [
           {
             "name": "theme",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -267,7 +267,7 @@
           },
           {
             "name": "lang",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -275,7 +275,7 @@
           },
           {
             "name": "fontSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -283,7 +283,7 @@
           },
           {
             "name": "boldText",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -291,7 +291,7 @@
           },
           {
             "name": "highContrast",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -299,7 +299,7 @@
           },
           {
             "name": "reduceMotion",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -329,7 +329,7 @@
         "parameters": [
           {
             "name": "theme",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -337,7 +337,7 @@
           },
           {
             "name": "lang",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -345,7 +345,7 @@
           },
           {
             "name": "fontSize",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -353,7 +353,7 @@
           },
           {
             "name": "boldText",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -361,7 +361,7 @@
           },
           {
             "name": "highContrast",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -369,7 +369,7 @@
           },
           {
             "name": "reduceMotion",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -585,6 +585,30 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/ForgotPasswordDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/api/v1/auth/reset-password/exchange-code": {
+      "post": {
+        "operationId": "AuthController_exchangeResetPasswordCode_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordCodeExchangeDto"
               }
             }
           }
@@ -1392,6 +1416,29 @@
         ]
       }
     },
+    "/api/v1/settings/account/linked/{provider}/primary": {
+      "put": {
+        "operationId": "SettingsController_setPrimaryLinkedAccount_v1",
+        "parameters": [
+          {
+            "name": "provider",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Settings"
+        ]
+      }
+    },
     "/api/v1/settings/account/email": {
       "post": {
         "operationId": "SettingsController_requestEmailChange_v1",
@@ -1909,6 +1956,30 @@
         ]
       }
     },
+    "/api/v1/analytics/track": {
+      "post": {
+        "operationId": "AnalyticsController_track_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TrackEventDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Analytics"
+        ]
+      }
+    },
     "/api/v1/referrals/me": {
       "get": {
         "operationId": "ReferralsController_getMyReferrals_v1",
@@ -1967,7 +2038,7 @@
         "parameters": [
           {
             "name": "limit",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -2922,7 +2993,12 @@
             "required": false,
             "in": "query",
             "schema": {
-              "$ref": "#/components/schemas/Object"
+              "type": "string",
+              "enum": [
+                "active",
+                "blocked",
+                "all"
+              ]
             }
           }
         ],
@@ -3035,7 +3111,7 @@
         "parameters": [
           {
             "name": "module",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -3302,7 +3378,7 @@
         "parameters": [
           {
             "name": "limit",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -3358,7 +3434,7 @@
         "parameters": [
           {
             "name": "status",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -3366,7 +3442,7 @@
           },
           {
             "name": "limit",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -3422,7 +3498,7 @@
         "parameters": [
           {
             "name": "status",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -3556,7 +3632,7 @@
             "schema": {
               "minLength": 3,
               "maxLength": 3,
-              "pattern": "/^[A-Z]{3}$/",
+              "pattern": "^[A-Z]{3}$",
               "type": "string"
             }
           }
@@ -4024,7 +4100,7 @@
         "parameters": [
           {
             "name": "includeInactive",
-            "required": true,
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -4519,6 +4595,20 @@
         ]
       }
     },
+    "/api/v1/admin/analytics/taxonomy": {
+      "get": {
+        "operationId": "AdminAnalyticsController_getTaxonomy_v1",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminAnalytics"
+        ]
+      }
+    },
     "/api/v1/admin/analytics/overview": {
       "get": {
         "operationId": "AdminAnalyticsController_getOverview_v1",
@@ -4975,13 +5065,29 @@
         ]
       }
     },
-    "/api/v1/admin/curated-matches": {
+    "/api/v1/admin/analytics/summary/daily": {
       "get": {
-        "operationId": "AdminCuratedMatchesController_listCuratedMatches_v1",
+        "operationId": "AdminAnalyticsController_getDailySummaries_v1",
         "parameters": [
           {
-            "name": "userId",
-            "required": true,
+            "name": "day",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "to",
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -4989,7 +5095,40 @@
           },
           {
             "name": "limit",
-            "required": true,
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 90,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminAnalytics"
+        ]
+      }
+    },
+    "/api/v1/admin/curated-matches": {
+      "get": {
+        "operationId": "AdminCuratedMatchesController_listCuratedMatches_v1",
+        "parameters": [
+          {
+            "name": "userId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
             "in": "query",
             "schema": {
               "type": "string"
@@ -5048,6 +5187,30 @@
         },
         "tags": [
           "AdminCuratedMatches"
+        ]
+      }
+    },
+    "/api/v1/payments/google-play/rtdn": {
+      "post": {
+        "operationId": "PaymentsController_googlePlayRtdn_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GooglePlayRtdnEnvelopeDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "204": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "Payments"
         ]
       }
     },
@@ -8375,6 +8538,177 @@
           "AdminSupportTicket"
         ]
       }
+    },
+    "/api/v1/success-stories": {
+      "get": {
+        "operationId": "SuccessStoryController_listPublished_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SuccessStory"
+        ]
+      },
+      "post": {
+        "operationId": "SuccessStoryController_submit_v1",
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitSuccessStoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SuccessStory"
+        ]
+      }
+    },
+    "/api/v1/success-stories/mine": {
+      "get": {
+        "operationId": "SuccessStoryController_listMine_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "type": "number"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "SuccessStory"
+        ]
+      }
+    },
+    "/api/v1/admin/success-stories": {
+      "get": {
+        "operationId": "AdminSuccessStoryController_list_v1",
+        "parameters": [
+          {
+            "name": "page",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "type": "number"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 50,
+              "type": "number"
+            }
+          },
+          {
+            "name": "status",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rejected",
+                "archived",
+                "published",
+                "submitted"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminSuccessStory"
+        ]
+      }
+    },
+    "/api/v1/admin/success-stories/{storyId}/review": {
+      "patch": {
+        "operationId": "AdminSuccessStoryController_review_v1",
+        "parameters": [
+          {
+            "name": "storyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReviewSuccessStoryDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "AdminSuccessStory"
+        ]
+      }
     }
   },
   "info": {
@@ -8436,19 +8770,18 @@
           },
           "password": {
             "type": "string",
-            "minLength": 6,
-            "pattern": "PASSWORD_POLICY_REGEX"
+            "minLength": 6
           },
           "country_code": {
             "type": "string"
           },
           "phone": {
             "type": "string",
-            "pattern": "/^[0-9]{8,15}$/"
+            "pattern": "^[0-9]{8,15}$"
           },
           "referralCode": {
             "type": "string",
-            "pattern": "/^[a-zA-Z0-9]{6,10}$/"
+            "pattern": "^[a-zA-Z0-9]{6,10}$"
           }
         },
         "required": [
@@ -8480,7 +8813,7 @@
           },
           "phone": {
             "type": "string",
-            "pattern": "/^[0-9]{8,15}$/"
+            "pattern": "^[0-9]{8,15}$"
           }
         },
         "required": [
@@ -8496,7 +8829,7 @@
           },
           "phone": {
             "type": "string",
-            "pattern": "/^[0-9]{8,15}$/"
+            "pattern": "^[0-9]{8,15}$"
           },
           "otp": {
             "type": "string",
@@ -8504,7 +8837,7 @@
           },
           "referralCode": {
             "type": "string",
-            "pattern": "/^[a-zA-Z0-9]{6,10}$/"
+            "pattern": "^[a-zA-Z0-9]{6,10}$"
           }
         },
         "required": [
@@ -8526,9 +8859,6 @@
               "apple"
             ]
           },
-          "provider_id": {
-            "type": "string"
-          },
           "accessToken": {
             "type": "string"
           },
@@ -8547,12 +8877,11 @@
           },
           "referralCode": {
             "type": "string",
-            "pattern": "/^[a-zA-Z0-9]{6,10}$/"
+            "pattern": "^[a-zA-Z0-9]{6,10}$"
           }
         },
         "required": [
           "provider",
-          "provider_id",
           "accessToken"
         ]
       },
@@ -8568,6 +8897,17 @@
           "email"
         ]
       },
+      "ResetPasswordCodeExchangeDto": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code"
+        ]
+      },
       "ResetPasswordDto": {
         "type": "object",
         "properties": {
@@ -8576,13 +8916,11 @@
           },
           "newPassword": {
             "type": "string",
-            "minLength": 6,
-            "pattern": "PASSWORD_POLICY_REGEX"
+            "minLength": 6
           },
           "confirmPassword": {
             "type": "string",
-            "minLength": 6,
-            "pattern": "PASSWORD_POLICY_REGEX"
+            "minLength": 6
           }
         },
         "required": [
@@ -8656,13 +8994,11 @@
           },
           "newPassword": {
             "type": "string",
-            "minLength": 6,
-            "pattern": "PASSWORD_POLICY_REGEX"
+            "minLength": 6
           },
           "confirmPassword": {
             "type": "string",
-            "minLength": 6,
-            "pattern": "PASSWORD_POLICY_REGEX"
+            "minLength": 6
           }
         },
         "required": [
@@ -8840,7 +9176,7 @@
           },
           "phone": {
             "type": "string",
-            "pattern": "/^\\d{6,15}$/"
+            "pattern": "^\\d{6,15}$"
           }
         },
         "required": [
@@ -8903,11 +9239,11 @@
           },
           "start": {
             "type": "string",
-            "pattern": "/^\\d{2}:\\d{2}$/"
+            "pattern": "^\\d{2}:\\d{2}$"
           },
           "end": {
             "type": "string",
-            "pattern": "/^\\d{2}:\\d{2}$/"
+            "pattern": "^\\d{2}:\\d{2}$"
           },
           "timezone": {
             "type": "string"
@@ -9172,6 +9508,158 @@
           }
         }
       },
+      "TrackEventDto": {
+        "type": "object",
+        "properties": {
+          "userId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "eventType": {
+            "enum": [
+              "APP_OPENED",
+              "APP_BACKGROUND",
+              "ONBOARDING_STARTED",
+              "ONBOARDING_COMPLETED",
+              "USER_REGISTERED",
+              "USER_LOGGED_IN",
+              "USER_LOGGED_OUT",
+              "PROFILE_CREATED",
+              "PROFILE_UPDATED",
+              "PROFILE_COMPLETED",
+              "PROFILE_VERIFIED",
+              "SEARCH_PERFORMED",
+              "FILTER_APPLIED",
+              "PROFILE_IMPRESSION",
+              "PROFILE_VIEWED",
+              "SHORTLIST_ADDED",
+              "SHORTLIST_REMOVED",
+              "MATCH_CREATED",
+              "MATCH_REQUEST_SENT",
+              "MATCH_ACCEPTED",
+              "CHAT_OPENED",
+              "CHAT_STARTED",
+              "CHAT_MESSAGE_SENT",
+              "CALL_INITIATED",
+              "SUBSCRIPTION_VIEWED",
+              "SUBSCRIPTION_PURCHASED",
+              "BOOST_PURCHASED",
+              "PAYMENT_INITIATED",
+              "PAYMENT_SUCCESS",
+              "PAYMENT_FAILED",
+              "REPORT_SUBMITTED",
+              "USER_BLOCKED",
+              "NOTIFICATION_RECEIVED",
+              "NOTIFICATION_OPENED"
+            ],
+            "type": "string"
+          },
+          "sessionId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "deviceId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "profileId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "targetUserId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "matchId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "chatId": {
+            "type": "string",
+            "maxLength": 100
+          },
+          "funnelStage": {
+            "enum": [
+              "AWARENESS",
+              "DISCOVERY",
+              "INTEREST",
+              "MATCHING",
+              "CONVERSATION",
+              "MONETIZATION",
+              "RETENTION"
+            ],
+            "type": "string"
+          },
+          "source": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "medium": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "campaign": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "screen": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "country": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "state": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "city": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "isPremium": {
+            "type": "boolean"
+          },
+          "success": {
+            "type": "boolean"
+          },
+          "durationMs": {
+            "type": "number",
+            "minimum": 0
+          },
+          "value": {
+            "type": "number"
+          },
+          "appVersion": {
+            "type": "string",
+            "maxLength": 200
+          },
+          "ipAddress": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "userAgent": {
+            "type": "string",
+            "maxLength": 512
+          },
+          "metadata": {
+            "type": "object"
+          },
+          "platform": {
+            "enum": [
+              "web",
+              "android",
+              "ios",
+              "api"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "eventType"
+        ]
+      },
       "RedeemWalletDto": {
         "type": "object",
         "properties": {
@@ -9240,7 +9728,7 @@
           },
           "dateOfBirth": {
             "type": "string",
-            "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/"
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
           "religion": {
             "type": "string",
@@ -9692,7 +10180,7 @@
           },
           "dateOfBirth": {
             "type": "string",
-            "pattern": "/^\\d{4}-\\d{2}-\\d{2}$/"
+            "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
           },
           "timeOfBirth": {
             "$ref": "#/components/schemas/TimeOfBirthDto"
@@ -10610,10 +11098,6 @@
           "planId"
         ]
       },
-      "Object": {
-        "type": "object",
-        "properties": {}
-      },
       "UpdateUserStatusDto": {
         "type": "object",
         "properties": {
@@ -10623,16 +11107,14 @@
           "isBlocked": {
             "type": "boolean"
           },
-          "isVerified": {
-            "type": "boolean"
-          },
           "reason": {
             "type": "string",
             "maxLength": 500
           }
         },
         "required": [
-          "userId"
+          "userId",
+          "isBlocked"
         ]
       },
       "BroadcastDto": {
@@ -10676,7 +11158,7 @@
         "properties": {
           "name": {
             "type": "string",
-            "pattern": "/^[a-z_]+:[a-z_]+$/"
+            "pattern": "^[a-z_]+:[a-z_]+$"
           },
           "description": {
             "type": "string"
@@ -10796,6 +11278,67 @@
           }
         }
       },
+      "AndroidStoreProductDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "basePlanId": {
+            "type": "string"
+          },
+          "offerId": {
+            "type": "string"
+          },
+          "productType": {
+            "type": "string",
+            "enum": [
+              "subscription",
+              "consumable"
+            ]
+          }
+        },
+        "required": [
+          "productId",
+          "productType"
+        ]
+      },
+      "IosStoreProductDto": {
+        "type": "object",
+        "properties": {
+          "productId": {
+            "type": "string"
+          },
+          "subscriptionGroupId": {
+            "type": "string"
+          },
+          "offerId": {
+            "type": "string"
+          },
+          "productType": {
+            "type": "string",
+            "enum": [
+              "subscription",
+              "consumable"
+            ]
+          }
+        },
+        "required": [
+          "productId",
+          "productType"
+        ]
+      },
+      "PlanStoreProductsDto": {
+        "type": "object",
+        "properties": {
+          "android": {
+            "$ref": "#/components/schemas/AndroidStoreProductDto"
+          },
+          "ios": {
+            "$ref": "#/components/schemas/IosStoreProductDto"
+          }
+        }
+      },
       "CreatePlanDto": {
         "type": "object",
         "properties": {
@@ -10863,35 +11406,7 @@
             "type": "string"
           },
           "storeProducts": {
-            "type": "object",
-            "properties": {
-              "android": {
-                "type": "object",
-                "properties": {
-                  "productId": { "type": "string" },
-                  "basePlanId": { "type": "string" },
-                  "offerId": { "type": "string" },
-                  "productType": {
-                    "type": "string",
-                    "enum": ["subscription", "consumable"]
-                  }
-                },
-                "required": ["productId", "productType"]
-              },
-              "ios": {
-                "type": "object",
-                "properties": {
-                  "productId": { "type": "string" },
-                  "subscriptionGroupId": { "type": "string" },
-                  "offerId": { "type": "string" },
-                  "productType": {
-                    "type": "string",
-                    "enum": ["subscription", "consumable"]
-                  }
-                },
-                "required": ["productId", "productType"]
-              }
-            }
+            "$ref": "#/components/schemas/PlanStoreProductsDto"
           }
         },
         "required": [
@@ -10944,7 +11459,6 @@
               "incognito_mode",
               "identity_verification",
               "horoscope_upload",
-              "kundli_matching",
               "astrology_report",
               "send_interest",
               "view_interests",
@@ -11025,6 +11539,7 @@
               "location_matching",
               "strict_preferences",
               "smart_preferences",
+              "kundli_matching",
               "religion_preferences",
               "caste_preferences",
               "subcaste_preferences",
@@ -11123,18 +11638,24 @@
       "AssignFeatureDto": {
         "type": "object",
         "properties": {
+          "value": {
+            "oneOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          },
           "planId": {
             "type": "string"
           },
           "featureId": {
             "type": "string"
-          },
-          "value": {
-            "oneOf": [
-              { "type": "boolean" },
-              { "type": "number" },
-              { "type": "string" }
-            ]
           }
         },
         "required": [
@@ -11214,13 +11735,16 @@
             ]
           },
           "channels": {
-            "type": "string",
-            "enum": [
-              "in_app",
-              "push",
-              "email",
-              "sms"
-            ]
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "in_app",
+                "push",
+                "email",
+                "sms"
+              ]
+            }
           },
           "variables": {
             "type": "object"
@@ -11259,13 +11783,16 @@
             "type": "string"
           },
           "channels": {
-            "type": "string",
-            "enum": [
-              "in_app",
-              "push",
-              "email",
-              "sms"
-            ]
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "in_app",
+                "push",
+                "email",
+                "sms"
+              ]
+            }
           },
           "variables": {
             "type": "object"
@@ -11428,158 +11955,6 @@
           }
         }
       },
-      "TrackEventDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "eventType": {
-            "type": "string",
-            "enum": [
-              "APP_OPENED",
-              "APP_BACKGROUND",
-              "ONBOARDING_STARTED",
-              "ONBOARDING_COMPLETED",
-              "USER_REGISTERED",
-              "USER_LOGGED_IN",
-              "USER_LOGGED_OUT",
-              "PROFILE_CREATED",
-              "PROFILE_UPDATED",
-              "PROFILE_COMPLETED",
-              "PROFILE_VERIFIED",
-              "SEARCH_PERFORMED",
-              "FILTER_APPLIED",
-              "PROFILE_IMPRESSION",
-              "PROFILE_VIEWED",
-              "SHORTLIST_ADDED",
-              "SHORTLIST_REMOVED",
-              "MATCH_CREATED",
-              "MATCH_REQUEST_SENT",
-              "MATCH_ACCEPTED",
-              "CHAT_OPENED",
-              "CHAT_STARTED",
-              "CHAT_MESSAGE_SENT",
-              "CALL_INITIATED",
-              "SUBSCRIPTION_VIEWED",
-              "SUBSCRIPTION_PURCHASED",
-              "BOOST_PURCHASED",
-              "PAYMENT_INITIATED",
-              "PAYMENT_SUCCESS",
-              "PAYMENT_FAILED",
-              "REPORT_SUBMITTED",
-              "USER_BLOCKED",
-              "NOTIFICATION_RECEIVED",
-              "NOTIFICATION_OPENED"
-            ]
-          },
-          "sessionId": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "deviceId": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "profileId": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "targetUserId": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "matchId": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "chatId": {
-            "type": "string",
-            "maxLength": 100
-          },
-          "funnelStage": {
-            "type": "string",
-            "enum": [
-              "AWARENESS",
-              "DISCOVERY",
-              "INTEREST",
-              "MATCHING",
-              "CONVERSATION",
-              "MONETIZATION",
-              "RETENTION"
-            ]
-          },
-          "source": {
-            "type": "string",
-            "maxLength": 80
-          },
-          "medium": {
-            "type": "string",
-            "maxLength": 80
-          },
-          "campaign": {
-            "type": "string",
-            "maxLength": 120
-          },
-          "screen": {
-            "type": "string",
-            "maxLength": 80
-          },
-          "country": {
-            "type": "string",
-            "maxLength": 80
-          },
-          "state": {
-            "type": "string",
-            "maxLength": 80
-          },
-          "city": {
-            "type": "string",
-            "maxLength": 80
-          },
-          "isPremium": {
-            "type": "boolean"
-          },
-          "success": {
-            "type": "boolean"
-          },
-          "durationMs": {
-            "type": "number",
-            "minimum": 0
-          },
-          "value": {
-            "type": "number"
-          },
-          "appVersion": {
-            "type": "string",
-            "maxLength": 200
-          },
-          "ipAddress": {
-            "type": "string",
-            "maxLength": 120
-          },
-          "userAgent": {
-            "type": "string",
-            "maxLength": 512
-          },
-          "metadata": {
-            "type": "object"
-          },
-          "platform": {
-            "type": "string",
-            "enum": [
-              "web",
-              "android",
-              "ios",
-              "api"
-            ]
-          }
-        },
-        "required": [
-          "eventType"
-        ]
-      },
       "CurateMatchDto": {
         "type": "object",
         "properties": {
@@ -11606,6 +11981,32 @@
         "required": [
           "userId",
           "profileUserId"
+        ]
+      },
+      "GooglePlayRtdnEnvelopeDto": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "object",
+            "properties": {
+              "data": {
+                "type": "string"
+              },
+              "messageId": {
+                "type": "string"
+              },
+              "publishTime": {
+                "type": "string"
+              }
+            },
+            "required": []
+          },
+          "subscription": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "message"
         ]
       },
       "CreateOrderDto": {
@@ -11643,7 +12044,7 @@
             "type": "string",
             "minLength": 3,
             "maxLength": 3,
-            "pattern": "/^[A-Z]{3}$/"
+            "pattern": "^[A-Z]{3}$"
           },
           "idempotencyKey": {
             "type": "string",
@@ -11943,7 +12344,7 @@
           "emoji": {
             "type": "string",
             "maxLength": 16,
-            "pattern": "/\\S/"
+            "pattern": "\\S"
           }
         }
       },
@@ -11997,7 +12398,11 @@
             "type": "string"
           },
           "action": {
-            "type": "object"
+            "type": "string",
+            "enum": [
+              "ACCEPT",
+              "REJECT"
+            ]
           }
         },
         "required": [
@@ -12083,6 +12488,71 @@
               "resolved",
               "closed"
             ]
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "SubmitSuccessStoryDto": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string",
+            "minLength": 4,
+            "maxLength": 120
+          },
+          "story": {
+            "type": "string",
+            "minLength": 100,
+            "maxLength": 5000
+          },
+          "partnerName": {
+            "type": "string",
+            "minLength": 2,
+            "maxLength": 100
+          },
+          "marriageDate": {
+            "type": "string"
+          },
+          "location": {
+            "type": "string",
+            "maxLength": 120
+          },
+          "photoUrls": {
+            "maxItems": 5,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "format": "uri"
+            }
+          },
+          "publicationConsent": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "title",
+          "story",
+          "partnerName",
+          "marriageDate",
+          "publicationConsent"
+        ]
+      },
+      "ReviewSuccessStoryDto": {
+        "type": "object",
+        "properties": {
+          "status": {
+            "type": "string",
+            "enum": [
+              "rejected",
+              "archived",
+              "published"
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "maxLength": 500
           }
         },
         "required": [
