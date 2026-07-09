@@ -1,10 +1,10 @@
 import { config } from 'dotenv';
-import { envValidationSchema } from './validation';
+import { ENV_VALIDATION_SCHEMA } from './validation';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 config({ path: [`.env.${nodeEnv}`, '.env'], quiet: true });
 
-const { error } = envValidationSchema.validate(process.env, {
+const { error } = ENV_VALIDATION_SCHEMA.validate(process.env, {
   abortEarly: false,
   allowUnknown: true,
   convert: true,

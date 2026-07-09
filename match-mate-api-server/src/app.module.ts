@@ -6,7 +6,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { ScheduleModule } from '@nestjs/schedule';
 import configArray from '@/config';
-import { envValidationSchema } from '@/config/validation';
+import { ENV_VALIDATION_SCHEMA } from '@/config/validation';
 import { MongoModule } from '@/infrastructure/databases/mongo/mongo.module';
 import { StorageModule } from './modules/storage/storage.module';
 import { AuthModule } from './modules/auth/auth.module';
@@ -41,7 +41,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
       //  KEY PART
       envFilePath: [`.env.${nodeEnv}`, '.env'],
       load: configArray,
-      validationSchema: envValidationSchema,
+      validationSchema: ENV_VALIDATION_SCHEMA,
     }),
     // ==========================================
     //  THROTTLER (GLOBAL BASE RATE LIMIT)

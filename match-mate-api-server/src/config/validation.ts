@@ -249,7 +249,7 @@ function validateAuthProviderConfig(
   return env;
 }
 
-export const envValidationSchema = Joi.object({
+export const ENV_VALIDATION_SCHEMA = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'staging', 'production')
     .default('development'),

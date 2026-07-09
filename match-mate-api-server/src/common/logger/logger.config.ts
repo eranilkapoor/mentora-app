@@ -1,6 +1,6 @@
 import * as winston from 'winston';
 
-const isProd = process.env.NODE_ENV === 'production';
+const isProduction = process.env.NODE_ENV === 'production';
 
 const customFormat = winston.format.printf(
   ({ level, message, timestamp, ...meta }) => {
@@ -10,8 +10,8 @@ const customFormat = winston.format.printf(
   },
 );
 
-export const winstonConfig = {
-  level: isProd ? 'info' : 'debug',
+export const WINSTON_CONFIG = {
+  level: isProduction ? 'info' : 'debug',
 
   format: winston.format.combine(
     winston.format.timestamp(),
@@ -21,7 +21,7 @@ export const winstonConfig = {
 
   transports: [
     new winston.transports.Console({
-      format: isProd
+      format: isProduction
         ? winston.format.json()
         : winston.format.combine(
             winston.format.colorize({ all: true }),
@@ -30,7 +30,7 @@ export const winstonConfig = {
     }),
 
     //  File logging (production)
-    ...(isProd
+    ...(isProduction
       ? [
           new winston.transports.File({
             filename: 'logs/error.log',

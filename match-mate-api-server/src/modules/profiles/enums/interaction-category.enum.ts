@@ -6,7 +6,7 @@ export enum InteractionCategory {
   SAFETY = 'safety',
 }
 
-export const InteractionCategoryMap = {
+export const INTERACTION_CATEGORY_MAP = {
   send_interest: 'matching',
   shortlist: 'engagement',
   block: 'safety',

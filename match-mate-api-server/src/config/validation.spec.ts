@@ -1,4 +1,4 @@
-import { envValidationSchema } from './validation';
+import { ENV_VALIDATION_SCHEMA } from './validation';
 
 const productionEnv = () => ({
   NODE_ENV: 'production',
@@ -18,7 +18,9 @@ const productionEnv = () => ({
 
 describe('production environment validation', () => {
   it('accepts fail-closed mobile-store verification', () => {
-    expect(envValidationSchema.validate(productionEnv()).error).toBeUndefined();
+    expect(
+      ENV_VALIDATION_SCHEMA.validate(productionEnv()).error,
+    ).toBeUndefined();
   });
 
   it.each([
@@ -29,7 +31,7 @@ describe('production environment validation', () => {
       PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED: false,
     },
   ])('rejects non-strict production store verification: %o', (override) => {
-    const { error } = envValidationSchema.validate({
+    const { error } = ENV_VALIDATION_SCHEMA.validate({
       ...productionEnv(),
       ...override,
     });
@@ -43,7 +45,7 @@ describe('production environment validation', () => {
     const env = productionEnv();
     delete (env as Partial<typeof env>).GOOGLE_PLAY_SERVICE_ACCOUNT_JSON;
 
-    const { error } = envValidationSchema.validate(env);
+    const { error } = ENV_VALIDATION_SCHEMA.validate(env);
 
     expect(error?.message).toContain(
       'GOOGLE_PLAY_PACKAGE_NAME and GOOGLE_PLAY_SERVICE_ACCOUNT_JSON',
@@ -51,7 +53,7 @@ describe('production environment validation', () => {
   });
 
   it('requires authenticated RTDN settings when Google push is enabled', () => {
-    const { error } = envValidationSchema.validate({
+    const { error } = ENV_VALIDATION_SCHEMA.validate({
       ...productionEnv(),
       GOOGLE_PLAY_RTDN_ENABLED: true,
     });
@@ -59,7 +61,7 @@ describe('production environment validation', () => {
     expect(error?.message).toContain('GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL');
 
     expect(
-      envValidationSchema.validate({
+      ENV_VALIDATION_SCHEMA.validate({
         ...productionEnv(),
         GOOGLE_PLAY_RTDN_ENABLED: true,
         GOOGLE_PLAY_RTDN_AUDIENCE:

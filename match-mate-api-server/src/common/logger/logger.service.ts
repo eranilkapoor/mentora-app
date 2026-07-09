@@ -1,13 +1,13 @@
 import { Injectable, LoggerService } from '@nestjs/common';
 import * as winston from 'winston';
-import { winstonConfig } from './logger.config';
+import { WINSTON_CONFIG } from './logger.config';
 
 @Injectable()
 export class AppLogger implements LoggerService {
   private logger: winston.Logger;
 
   constructor() {
-    this.logger = winston.createLogger(winstonConfig);
+    this.logger = winston.createLogger(WINSTON_CONFIG);
   }
 
   log(message: string, meta?: any) {

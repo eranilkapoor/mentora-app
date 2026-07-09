@@ -1,6 +1,6 @@
 import { PlanTier } from '@/common/enums';
 
-export const MembershipFeatures = {
+export const MEMBERSHIP_FEATURES = {
   [PlanTier.FREE]: {
     dailyLikes: 10,
     canChat: false,
