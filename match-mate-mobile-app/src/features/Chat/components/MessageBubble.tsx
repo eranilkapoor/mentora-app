@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Image, Pressable, Text, TouchableOpacity, View } from 'react-native';
 import { Audio } from 'expo-av';
 import Feather from 'react-native-vector-icons/Feather';
+import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -15,6 +16,7 @@ function MessageStatusTicks({
 }): React.ReactElement {
   const styles = useThemedStyles(chatStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const isRead = status === 'read';
   const isDelivered = status === 'delivered' || isRead;
   const tickColor = isRead ? theme.colors.success : theme.colors.accentLight;
@@ -22,7 +24,13 @@ function MessageStatusTicks({
   return (
     <View
       style={styles.tickWrap}
-      accessibilityLabel={isRead ? 'Read' : isDelivered ? 'Delivered' : 'Sent'}
+      accessibilityLabel={
+        isRead
+          ? t('chat.status_read')
+          : isDelivered
+            ? t('chat.status_delivered')
+            : t('chat.status_sent')
+      }
     >
       <Feather name="check" size={13} color={tickColor} />
       {isDelivered ? (
@@ -49,6 +57,7 @@ export function MessageBubble({
   const isMe = item.senderId === 'me';
   const styles = useThemedStyles(chatStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
   const [showQuickReactions, setShowQuickReactions] = useState(false);
@@ -116,7 +125,7 @@ export function MessageBubble({
             }}
             activeOpacity={0.8}
             accessibilityRole="button"
-            accessibilityLabel="Play voice message"
+            accessibilityLabel={t('chat.play_voice_message')}
           >
             <View style={[styles.audioPlayBtn, isMe && styles.audioPlayBtnMe]}>
               <Feather
@@ -138,7 +147,7 @@ export function MessageBubble({
               ))}
             </View>
             <Text style={[styles.audioLabel, isMe && styles.audioLabelMe]}>
-              Voice message
+              {t('chat.voice_message')}
             </Text>
           </TouchableOpacity>
         ) : (
@@ -177,7 +186,7 @@ export function MessageBubble({
                 setShowQuickReactions(false);
               }}
               accessibilityRole="button"
-              accessibilityLabel={`React with ${emoji}`}
+              accessibilityLabel={t('chat.react_with_emoji', { emoji })}
             >
               <Text style={styles.reactionButtonText}>{emoji}</Text>
             </TouchableOpacity>

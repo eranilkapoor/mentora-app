@@ -34,7 +34,15 @@ Using a physical Android device and production-like build:
 - confirm the notification master switch disables/enables all channel settings;
 - verify individual channel settings and quiet hours after re-login.
 
-APNs, SMS, and email delivery remain separate provider acceptance tests.
+Also run provider-specific delivery checks:
+
+- send one SMTP email through Hostinger or the selected production sender;
+- send one template email through the admin template dispatch flow;
+- send one MSG91 OTP SMS and one template/Flow SMS using approved DLT IDs;
+- capture provider message IDs, API correlation IDs, and masked recipient
+  evidence.
+
+APNs remains a separate provider acceptance test.
 
 ### 3. Release regression matrix
 
@@ -101,6 +109,40 @@ Decide whether Match Mate CRM pages should be hidden by legacy Juaaree admin
 module permissions or only by Match Mate API RBAC. If legacy visibility is
 required, add module-permission records and gate sidebar links, row actions, and
 global actions accordingly.
+
+### 10. Scheduled notification campaign builder
+
+Build the missing campaign/rules layer on top of the existing notification
+queue, templates, DLQ, and digest foundations:
+
+- campaign CRUD with draft/approved/paused/archived states;
+- audience rules for onboarding status, subscription tier, location,
+  inactivity, profile completion, and notification preferences;
+- schedule windows, quiet-hours enforcement, throttling, and dedupe keys;
+- preview counts, test-send, approval audit trail, and delivery analytics;
+- Juaaree CRM forms/lists for campaign management.
+
+### 11. Apple subscription server notifications
+
+Add App Store Server Notifications V2 handling to match the Google RTDN path:
+
+- endpoint that accepts and verifies signed notification payloads;
+- transaction renewal, cancellation, grace, billing retry, refund, and revoke
+  reconciliation;
+- idempotency/replay protection and audit logging;
+- unit/e2e coverage with Apple sandbox fixtures;
+- launch evidence from sandbox/live subscription renewal and cancellation.
+
+### 12. Mobile user insights dashboard
+
+Create the dedicated user-facing insights dashboard that consumes existing match
+stats and viewer APIs, then extend analytics where trend data is missing:
+
+- cards for matches, sent/received/accepted interests, shortlist count, profile
+  views, and viewer list entry points;
+- weekly/monthly trend API if the current aggregate endpoint is not enough;
+- empty/loading/error states and English/Hindi translations;
+- mobile component tests and API cache invalidation coverage.
 
 ## P2 - Product and Operations
 

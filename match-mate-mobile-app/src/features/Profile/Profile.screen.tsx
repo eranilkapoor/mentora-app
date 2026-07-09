@@ -665,7 +665,11 @@ const createProfilePdfHtml = (
       <body>
         <main class="page">
           <div class="document-watermark">Match Mate</div>
-          <div class="document-title">Matrimonial Biodata</div>
+          <div class="document-title">${escapeHtml(
+            t('profile.pdf_document_title', {
+              defaultValue: 'Matrimonial Biodata',
+            })
+          )}</div>
           <div class="title-rule"></div>
           <section class="hero">
             <div class="photo-wrap">
@@ -692,7 +696,11 @@ const createProfilePdfHtml = (
           </section>
           <section class="section">
             <div class="about-card">
-              <h2>About</h2>
+              <h2>${escapeHtml(
+                t('profile.pdf_about_title', {
+                  defaultValue: 'About',
+                })
+              )}</h2>
               <p class="about">${escapeHtml(formatAboutMe(profile.personal.aboutMe))}</p>
             </div>
             <div class="section-grid">${sections}</div>

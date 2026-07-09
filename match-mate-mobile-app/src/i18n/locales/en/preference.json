@@ -57,6 +57,7 @@
   },
   "placeholders": {
     "about_partner": "e.g. Looking for a kind, educated partner who values family...",
+    "caste": "Select preferred castes",
     "sub_caste": "e.g. Agarwal, Khatri...",
     "country": "e.g. India, USA...",
     "state": "e.g. Maharashtra, Punjab...",

@@ -235,7 +235,12 @@ describe('AdminService', () => {
       {
         title: 'Maintenance',
         message: 'Tonight',
-        channels: [BroadcastChannel.IN_APP],
+        target: BroadcastTarget.ACTIVE,
+        channels: [
+          BroadcastChannel.IN_APP,
+          BroadcastChannel.PUSH,
+          BroadcastChannel.EMAIL,
+        ],
       },
       'admin-1',
       { ip: '127.0.0.1' } as never,
@@ -246,6 +251,22 @@ describe('AdminService', () => {
       failed: 1,
       success: true,
     });
+    expect(repo.findUsersForBroadcast).toHaveBeenCalledWith({
+      status: Status.ACTIVE,
+    });
+    expect(notificationsService.notify).toHaveBeenCalledWith(
+      expect.objectContaining({
+        channels: [
+          BroadcastChannel.IN_APP,
+          BroadcastChannel.PUSH,
+          BroadcastChannel.EMAIL,
+        ],
+        metadata: expect.objectContaining({
+          source: 'admin_broadcast',
+          target: BroadcastTarget.ACTIVE,
+        }),
+      }),
+    );
     expect(auditService.write).toHaveBeenCalled();
   });
 

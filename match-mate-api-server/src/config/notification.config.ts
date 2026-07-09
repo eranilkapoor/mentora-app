@@ -32,6 +32,20 @@ export default () => ({
         configurationSet:
           process.env.NOTIFICATION_EMAIL_SES_CONFIGURATION_SET || '',
       },
+      smtp: {
+        dsn: process.env.NOTIFICATION_EMAIL_SMTP_DSN || '',
+        host: process.env.NOTIFICATION_EMAIL_SMTP_HOST || '',
+        port: Number(process.env.NOTIFICATION_EMAIL_SMTP_PORT || '587'),
+        username: process.env.NOTIFICATION_EMAIL_SMTP_USERNAME || '',
+        password: process.env.NOTIFICATION_EMAIL_SMTP_PASSWORD || '',
+        secure: process.env.NOTIFICATION_EMAIL_SMTP_SECURE === 'true',
+        requireTls: process.env.NOTIFICATION_EMAIL_SMTP_REQUIRE_TLS !== 'false',
+        rejectUnauthorized:
+          process.env.NOTIFICATION_EMAIL_SMTP_REJECT_UNAUTHORIZED !== 'false',
+        timeoutMs: Number(
+          process.env.NOTIFICATION_EMAIL_SMTP_TIMEOUT_MS || '15000',
+        ),
+      },
     },
     sms: {
       enabled: process.env.NOTIFICATION_SMS_ENABLED === 'true',

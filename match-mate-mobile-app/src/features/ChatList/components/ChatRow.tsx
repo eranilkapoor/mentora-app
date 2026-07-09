@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { useTranslation } from 'react-i18next';
 
 const FALLBACK_AVATAR =
   require('@/assets/images/avatar-placeholder.png') as ImageSourcePropType;
@@ -40,6 +41,7 @@ export function ChatRow({
 }): React.ReactElement {
   const styles = useThemedStyles(chatListStyles);
   const { theme } = useTheme();
+  const { t } = useTranslation();
   const statusColor =
     item.lastMessageStatus === 'read'
       ? theme.colors.success
@@ -61,7 +63,7 @@ export function ChatRow({
       ]}
       onPress={onPress}
       accessibilityRole={Platform.OS === 'web' ? undefined : 'button'}
-      accessibilityLabel={`Chat with ${item.name}`}
+      accessibilityLabel={t('chat.chat_with_user', { name: item.name })}
     >
       {/* Avatar */}
       <View style={styles.avatarWrap}>
@@ -123,8 +125,8 @@ export function ChatRow({
             numberOfLines={1}
           >
             {isTyping
-              ? 'Typing...'
-              : item.lastMessage || 'Start a conversation...'}
+              ? t('chat.typing')
+              : item.lastMessage || t('chat.start_conversation')}
           </Text>
           {item.unreadCount > 0 && (
             <View style={styles.badge}>
@@ -138,25 +140,27 @@ export function ChatRow({
               style={styles.requestAcceptBtn}
               onPress={(event) => stopRowPress(event, onAcceptRequest)}
               accessibilityRole="button"
-              accessibilityLabel="Accept chat request"
+              accessibilityLabel={t('chat.accept_chat_request')}
             >
               <Feather name="check" size={13} color={theme.colors.white} />
-              <Text style={styles.requestAcceptText}>Accept</Text>
+              <Text style={styles.requestAcceptText}>{t('chat.accept')}</Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.requestRejectBtn}
               onPress={(event) => stopRowPress(event, onRejectRequest)}
               accessibilityRole="button"
-              accessibilityLabel="Reject chat request"
+              accessibilityLabel={t('chat.reject_chat_request')}
             >
               <Feather name="x" size={13} color={theme.colors.error} />
-              <Text style={styles.requestRejectText}>Reject</Text>
+              <Text style={styles.requestRejectText}>{t('chat.reject')}</Text>
             </TouchableOpacity>
           </View>
         ) : item.isRequestOutgoing ? (
           <View style={styles.requestPendingPill}>
             <Feather name="clock" size={12} color={theme.colors.textMuted} />
-            <Text style={styles.requestPendingText}>Request pending</Text>
+            <Text style={styles.requestPendingText}>
+              {t('chat.request_pending')}
+            </Text>
           </View>
         ) : (
           <View style={styles.quickActions}>
@@ -167,7 +171,9 @@ export function ChatRow({
               ]}
               onPress={(event) => stopRowPress(event, onTogglePin)}
               accessibilityRole="button"
-              accessibilityLabel={item.isPinned ? 'Unpin chat' : 'Pin chat'}
+              accessibilityLabel={
+                item.isPinned ? t('chat.unpin_chat') : t('chat.pin_chat')
+              }
             >
               <Feather
                 name="star"
@@ -184,7 +190,9 @@ export function ChatRow({
               ]}
               onPress={(event) => stopRowPress(event, onToggleMute)}
               accessibilityRole="button"
-              accessibilityLabel={item.isMuted ? 'Unmute chat' : 'Mute chat'}
+              accessibilityLabel={
+                item.isMuted ? t('chat.unmute_chat') : t('chat.mute_chat')
+              }
             >
               <Feather
                 name={item.isMuted ? 'bell-off' : 'bell'}
@@ -202,7 +210,9 @@ export function ChatRow({
               onPress={(event) => stopRowPress(event, onToggleArchive)}
               accessibilityRole="button"
               accessibilityLabel={
-                item.isArchived ? 'Unarchive chat' : 'Archive chat'
+                item.isArchived
+                  ? t('chat.unarchive_chat')
+                  : t('chat.archive_chat')
               }
             >
               <Feather

@@ -103,6 +103,8 @@
   "pdf_preparing": "Preparing...",
   "pdf_save_dialog": "Save profile PDF",
   "pdf_share_dialog": "Share profile PDF",
+  "pdf_document_title": "Matrimonial Biodata",
+  "pdf_about_title": "About",
   "pdf_failed_title": "PDF Failed",
   "pdf_failed_message": "We could not create your profile PDF. Please try again.",
   "sharing_unavailable_title": "Sharing Unavailable",

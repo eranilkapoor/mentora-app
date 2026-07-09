@@ -39,6 +39,10 @@ const optionalUri = Joi.string()
   .trim()
   .uri({ scheme: ['http', 'https'] })
   .empty('');
+const optionalSmtpUri = Joi.string()
+  .trim()
+  .uri({ scheme: ['smtp', 'smtps'] })
+  .empty('');
 const mongoUriSchema = Joi.string()
   .trim()
   .uri({ scheme: [/mongodb(\+srv)?/] })
@@ -127,6 +131,32 @@ function validateNotificationProviders(
       return helpers.error('any.custom', {
         customMessage:
           'SES email delivery requires NOTIFICATION_EMAIL_SES_ACCESS_KEY_ID and NOTIFICATION_EMAIL_SES_SECRET_ACCESS_KEY, or fallback AWS credentials',
+      });
+    }
+  }
+
+  if (
+    env.NOTIFICATION_EMAIL_ENABLED &&
+    env.NOTIFICATION_EMAIL_PROVIDER === 'smtp'
+  ) {
+    if (!env.NOTIFICATION_EMAIL_FROM) {
+      return helpers.error('any.custom', {
+        customMessage:
+          'NOTIFICATION_EMAIL_FROM is required when NOTIFICATION_EMAIL_PROVIDER=smtp',
+      });
+    }
+
+    const hasDsn = Boolean(env.NOTIFICATION_EMAIL_SMTP_DSN);
+    const hasHostCredentials =
+      Boolean(env.NOTIFICATION_EMAIL_SMTP_HOST) &&
+      Boolean(env.NOTIFICATION_EMAIL_SMTP_PORT) &&
+      Boolean(env.NOTIFICATION_EMAIL_SMTP_USERNAME) &&
+      Boolean(env.NOTIFICATION_EMAIL_SMTP_PASSWORD);
+
+    if (!hasDsn && !hasHostCredentials) {
+      return helpers.error('any.custom', {
+        customMessage:
+          'SMTP email delivery requires NOTIFICATION_EMAIL_SMTP_DSN, or NOTIFICATION_EMAIL_SMTP_HOST, NOTIFICATION_EMAIL_SMTP_PORT, NOTIFICATION_EMAIL_SMTP_USERNAME, and NOTIFICATION_EMAIL_SMTP_PASSWORD',
       });
     }
   }
@@ -587,7 +617,7 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
 
   NOTIFICATION_EMAIL_PROVIDER: Joi.string()
     .trim()
-    .valid('log', 'ses')
+    .valid('log', 'ses', 'smtp')
     .default('log'),
 
   NOTIFICATION_EMAIL_FROM: optionalEmail,
@@ -601,6 +631,32 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
   NOTIFICATION_EMAIL_SES_SECRET_ACCESS_KEY: optionalString,
 
   NOTIFICATION_EMAIL_SES_CONFIGURATION_SET: optionalString,
+
+  NOTIFICATION_EMAIL_SMTP_DSN: optionalSmtpUri,
+
+  NOTIFICATION_EMAIL_SMTP_HOST: optionalHost,
+
+  NOTIFICATION_EMAIL_SMTP_PORT: Joi.number()
+    .integer()
+    .min(1)
+    .max(65535)
+    .default(587),
+
+  NOTIFICATION_EMAIL_SMTP_USERNAME: optionalString,
+
+  NOTIFICATION_EMAIL_SMTP_PASSWORD: optionalString,
+
+  NOTIFICATION_EMAIL_SMTP_SECURE: Joi.boolean().default(false),
+
+  NOTIFICATION_EMAIL_SMTP_REQUIRE_TLS: Joi.boolean().default(true),
+
+  NOTIFICATION_EMAIL_SMTP_REJECT_UNAUTHORIZED: Joi.boolean().default(true),
+
+  NOTIFICATION_EMAIL_SMTP_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(1000)
+    .max(60000)
+    .default(15000),
 
   NOTIFICATION_SMS_ENABLED: Joi.boolean().default(false),
 

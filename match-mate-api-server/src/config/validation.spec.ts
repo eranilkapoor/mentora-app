@@ -71,4 +71,43 @@ describe('production environment validation', () => {
       }).error,
     ).toBeUndefined();
   });
+
+  it('requires complete SMTP settings when SMTP email delivery is enabled', () => {
+    const { error } = ENV_VALIDATION_SCHEMA.validate({
+      ...productionEnv(),
+      NOTIFICATION_EMAIL_ENABLED: true,
+      NOTIFICATION_EMAIL_PROVIDER: 'smtp',
+      NOTIFICATION_EMAIL_FROM: 'noreply@matchmate.example',
+    });
+
+    expect(error?.message).toContain('SMTP email delivery requires');
+  });
+
+  it('accepts SMTP email delivery from DSN or discrete Hostinger settings', () => {
+    expect(
+      ENV_VALIDATION_SCHEMA.validate({
+        ...productionEnv(),
+        NOTIFICATION_EMAIL_ENABLED: true,
+        NOTIFICATION_EMAIL_PROVIDER: 'smtp',
+        NOTIFICATION_EMAIL_FROM: 'noreply@matchmate.example',
+        NOTIFICATION_EMAIL_SMTP_DSN:
+          'smtps://noreply%40matchmate.example:secret@smtp.hostinger.com:465',
+      }).error,
+    ).toBeUndefined();
+
+    expect(
+      ENV_VALIDATION_SCHEMA.validate({
+        ...productionEnv(),
+        NOTIFICATION_EMAIL_ENABLED: true,
+        NOTIFICATION_EMAIL_PROVIDER: 'smtp',
+        NOTIFICATION_EMAIL_FROM: 'noreply@matchmate.example',
+        NOTIFICATION_EMAIL_SMTP_HOST: 'smtp.hostinger.com',
+        NOTIFICATION_EMAIL_SMTP_PORT: 465,
+        NOTIFICATION_EMAIL_SMTP_USERNAME: 'noreply@matchmate.example',
+        NOTIFICATION_EMAIL_SMTP_PASSWORD: 'secret',
+        NOTIFICATION_EMAIL_SMTP_SECURE: true,
+        NOTIFICATION_EMAIL_SMTP_REQUIRE_TLS: false,
+      }).error,
+    ).toBeUndefined();
+  });
 });
