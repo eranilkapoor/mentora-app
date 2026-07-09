@@ -59,6 +59,7 @@ import { PaymentsModule } from '../payments/payments.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { ChatModule } from '../chat/chat.module';
 import { MatchesModule } from '../matches/matches.module';
+import { SettingsModule } from '../settings/settings.module';
 
 @Module({
   imports: [
@@ -81,6 +82,7 @@ import { MatchesModule } from '../matches/matches.module';
     NotificationsModule,
     PaymentsModule,
     SubscriptionsModule,
+    SettingsModule,
     ChatModule,
     MatchesModule,
   ],

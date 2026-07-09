@@ -12,6 +12,7 @@
     "build:android:preview": "eas build --platform android --profile preview",
     "build:android:production": "eas build --platform android --profile production",
     "lint": "eslint . --ext .ts,.tsx",
+    "lint:check": "eslint . --ext .ts,.tsx",
     "lint:fix": "eslint . --ext .ts,.tsx --fix",
     "i18n:check": "node scripts/check-i18n-keys.js",
     "test": "jest --runInBand",

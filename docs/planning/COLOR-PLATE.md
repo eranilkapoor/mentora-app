@@ -1,145 +1,121 @@
-## Match Mate — Complete Design System Color Palette
+# Match Mate Color Palette
 
-### 🌸 Light Theme Palette
+## Recommendation
 
-| Usage           | Color          | Hex       |
-| --------------- | -------------- | --------- |
-| Primary Brand   | Rose Pink      | `#E94E77` |
-| Primary Dark    | Deep Rose      | `#C7375F` |
-| Secondary       | Warm Gold      | `#D9A441` |
-| Accent          | Soft Peach     | `#F7C6B6` |
-| Background      | Ivory White    | `#FFF9F7` |
-| Surface         | Soft White     | `#FFFFFF` |
-| Card Background | Light Blush    | `#FFF1F3` |
-| Border          | Soft Gray Pink | `#E8DADF` |
-| Text Primary    | Rich Charcoal  | `#2B2B2B` |
-| Text Secondary  | Muted Gray     | `#6F6F6F` |
-| Success         | Elegant Green  | `#34A853` |
-| Error           | Soft Red       | `#D64545` |
-| Warning         | Amber Gold     | `#E6A23C` |
+Use the **Heritage Rose** palette for Match Mate.
 
----
+It is better for a matrimonial product than the older bright rose palette because
+it feels more premium, trustworthy, family-friendly, and marriage-oriented while
+still keeping enough warmth for profiles, invitations, and match actions.
 
-## 🌙 Dark Theme Palette
+The system uses three brand roles:
 
-| Usage           | Color               | Hex       |
-| --------------- | ------------------- | --------- |
-| Primary Brand   | Bright Rose         | `#FF5C8A` |
-| Primary Dark    | Dark Rose           | `#D93C68` |
-| Secondary       | Matte Gold          | `#C89B3C` |
-| Accent          | Warm Peach          | `#FFB9A5` |
-| Background      | Deep Charcoal       | `#121212` |
-| Surface         | Dark Slate          | `#1E1E1E` |
-| Card Background | Soft Dark Rose Tint | `#2A1F24` |
-| Border          | Dark Gray           | `#3A3A3A` |
-| Text Primary    | Pure White          | `#F8F8F8` |
-| Text Secondary  | Soft Gray           | `#B0B0B0` |
-| Success         | Soft Emerald        | `#42C777` |
-| Error           | Coral Red           | `#FF6B6B` |
-| Warning         | Warm Amber          | `#F5B041` |
+- **Heritage Rose** for primary actions and emotional brand moments.
+- **Trust Teal** for verification, safety, support, and information states.
+- **Antique Gold** for premium membership, plan value, and celebratory accents.
 
----
+Avoid making every screen pink. Rose should lead CTAs, teal should add trust and
+operational clarity, and gold should stay selective so the app feels premium
+rather than decorative.
 
-# 🎨 Recommended Gradient Combinations
+## Light Theme
 
-### Primary Brand Gradient
+| Usage          | Name            | Hex       | Token                                      |
+| -------------- | --------------- | --------- | ------------------------------------------ |
+| Primary Brand  | Heritage Rose   | `#C7365F` | `primary`, `chatBtn`                       |
+| Primary Soft   | Bridal Blush    | `#FCE8EE` | `primaryLight`, `backgroundLight`          |
+| Primary Border | Rose Veil       | `#E6A9BB` | `primaryBorder`                            |
+| Secondary      | Trust Teal      | `#1F7A74` | `secondary`, `info`, `verified`            |
+| Secondary Soft | Teal Mist       | `#E7F4F2` | `secondaryLight`, `infoLight`              |
+| Accent         | Antique Gold    | `#B8872E` | `accent`, `gold`                           |
+| Accent Soft    | Champagne Wash  | `#FFF2D4` | `accentLight`, `shortlistBg`               |
+| App Background | Warm Ivory      | `#FFF8F3` | `backgroundPage`                           |
+| Surface        | Pure White      | `#FFFFFF` | `background`, `surface`, `surfaceElevated` |
+| Text Primary   | Ink Plum        | `#252126` | `textPrimary`                              |
+| Text Body      | Soft Plum       | `#4B4147` | `textBody`                                 |
+| Text Secondary | Muted Mauve     | `#61545A` | `textSecondary`                            |
+| Text Muted     | Dusty Mauve     | `#8F8188` | `textMuted`                                |
+| Border         | Blush Gray      | `#E8D7DC` | `border`                                   |
+| Divider        | Pale Blush Gray | `#EDDFE3` | `divider`                                  |
+| Strong Border  | Rose Gray       | `#D7B8C2` | `borderStrong`, `inputBorder`              |
+| Success        | Ceremony Green  | `#2E7D57` | `success`                                  |
+| Warning        | Saffron Amber   | `#B7791F` | `warning`                                  |
+| Error / Danger | Sindoor Red     | `#B4233C` | `error`, `danger`                          |
+| Link           | Deep Rose Link  | `#B02E55` | `link`                                     |
+
+## Dark Theme
+
+| Usage            | Name             | Hex / Value              | Token                           |
+| ---------------- | ---------------- | ------------------------ | ------------------------------- |
+| Primary Brand    | Rose Glow        | `#FF7A9E`                | `primary`, `chatBtn`            |
+| Primary Soft     | Rose Glow Wash   | `rgba(255,122,158,0.16)` | `primaryLight`                  |
+| Primary Border   | Rose Glow Border | `rgba(255,122,158,0.38)` | `primaryBorder`                 |
+| Secondary        | Teal Glow        | `#5FC4BD`                | `secondary`, `info`, `verified` |
+| Secondary Soft   | Deep Teal Mist   | `#183331`                | `secondaryLight`                |
+| Accent           | Soft Gold        | `#E0B45A`                | `accent`, `gold`                |
+| Accent Soft      | Soft Gold Wash   | `rgba(224,180,90,0.14)`  | `accentLight`                   |
+| App Background   | Night Plum       | `#100D0F`                | `backgroundPage`                |
+| Base Background  | Charcoal Plum    | `#171214`                | `background`                    |
+| Surface          | Deep Plum        | `#1E171A`                | `surface`, `inputBackground`    |
+| Elevated Surface | Raised Plum      | `#2A2024`                | `surfaceElevated`               |
+| Text Primary     | Pearl White      | `#FFF7FA`                | `textPrimary`                   |
+| Text Body        | Pearl Mauve      | `#F0E6EA`                | `textBody`                      |
+| Text Secondary   | Soft Pearl Mauve | `#E6D8DE`                | `textSecondary`                 |
+| Text Muted       | Muted Pearl      | `#BAA8B1`                | `textMuted`                     |
+| Border           | Plum Border      | `#42323A`                | `border`                        |
+| Strong Border    | Strong Plum      | `#5E4852`                | `borderStrong`, `inputBorder`   |
+| Success          | Fresh Green      | `#5AD18A`                | `success`                       |
+| Warning          | Gold Warning     | `#F0C15A`                | `warning`                       |
+| Error / Danger   | Soft Coral Red   | `#FF7A7A`                | `error`, `danger`               |
+| Link             | Rose Link Glow   | `#FF9AB7`                | `link`                          |
+
+## Gradients
+
+Use gradients sparingly, mostly for membership headers, onboarding moments, and
+premium CTAs. Standard screens should rely on solid surfaces and tokenized
+states.
 
 ```css
-linear-gradient(135deg, #E94E77 0%, #D9A441 100%)
+/* Primary brand */
+linear-gradient(135deg, #C7365F 0%, #B8872E 100%)
+
+/* Romantic highlight */
+linear-gradient(135deg, #F5B8C7 0%, #C7365F 100%)
+
+/* Light soft background */
+linear-gradient(135deg, #FFF8F3 0%, #FCE8EE 100%)
+
+/* Dark premium */
+linear-gradient(135deg, #FF7A9E 0%, #E0B45A 100%)
 ```
 
-### Romantic Soft Gradient
+## Component Guidance
 
-```css
-linear-gradient(135deg, #F7C6B6 0%, #E94E77 100%)
-```
+| Component / State       | Light Theme                          | Dark Theme                           |
+| ----------------------- | ------------------------------------ | ------------------------------------ |
+| Primary button          | `#C7365F` background, white text     | `#FF7A9E` background                 |
+| Secondary button        | `#FCE8EE` background, `#C7365F` text | Rose wash background, `#FF9AB7` text |
+| Verification badge      | `#1F7A74`                            | `#5FC4BD`                            |
+| Premium/membership cue  | `#B8872E`                            | `#E0B45A`                            |
+| Page background         | `#FFF8F3`                            | `#100D0F`                            |
+| Card/surface background | `#FFFFFF`                            | `#1E171A` / `#2A2024`                |
 
-### Dark Theme Premium Gradient
+## Usage Rules
 
-```css
-linear-gradient(135deg, #FF5C8A 0%, #C89B3C 100%)
-```
+- Use rose for one clear primary action per screen.
+- Use teal for trust signals: verified, safe, support, info, privacy, security.
+- Use gold for paid plans, premium status, rewards, and celebration only.
+- Keep form-heavy and admin-like screens calm: more ivory/surface, less gradient.
+- Avoid neon pink, aggressive red, Tinder-style swipe-only cues, and heavy gold
+  fills across entire screens.
+- Avoid one-color screens. A matrimonial app should feel warm, credible, and
+  guided, not loud.
 
----
+## Implementation
 
-# 📱 UI Component Theming
+The palette is implemented in:
 
-## Buttons
+- `match-mate-mobile-app/src/core/theme/colors.ts`
+- `match-mate-api-server/src/common/static-pages/static-page-renderer.ts`
 
-### Primary Button
-
-- Background: `#E94E77`
-- Text: `#FFFFFF`
-
-### Secondary Button
-
-- Background: `#FFF1F3`
-- Text: `#E94E77`
-
-### Dark Theme Primary Button
-
-- Background: `#FF5C8A`
-- Text: `#FFFFFF`
-
----
-
-# 🧩 Recommended Typography
-
-| Usage            | Font             |
-| ---------------- | ---------------- |
-| Headings         | Poppins SemiBold |
-| Body Text        | Inter Regular    |
-| Elegant Branding | Playfair Display |
-
----
-
-# 📐 Spacing System
-
-| Type   | Value  |
-| ------ | ------ |
-| Small  | `8px`  |
-| Medium | `16px` |
-| Large  | `24px` |
-| XL     | `32px` |
-
----
-
-# 💎 UI Feel Recommendation
-
-Your app should feel:
-
-- Trustworthy
-- Premium
-- Family-friendly
-- Modern
-- Emotional but elegant
-- Marriage-oriented (not dating-app casual)
-
-Avoid:
-
-- Neon colors
-- Very dark reds
-- Overly playful gradients
-- Tinder-style aggressive UI
-
----
-
-# 🔥 Recommended Theme Style
-
-### Best Match Mate Style
-
-- Soft gradients
-- Rounded cards (`20px`)
-- Floating shadows
-- Minimal icons
-- Large profile photos
-- Warm emotional UI
-
-This palette will work extremely well for:
-
-- Android
-- iOS
-- Flutter
-- React Native
-- Jetpack Compose
-- Figma Design System
+When adding new screens, use theme tokens rather than hardcoded hex values.
