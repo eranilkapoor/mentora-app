@@ -519,9 +519,13 @@ export class MasterSeederService {
             '0',
           )}-${String((index % 27) + 1).padStart(2, '0')}`,
           religion: Religion.HINDU,
-          caste,
-          manglikStatus:
-            index % 7 === 0 ? ManglikStatus.MANGLIK : ManglikStatus.NON_MANGLIK,
+          religiousDetails: {
+            caste,
+            manglikStatus:
+              index % 7 === 0
+                ? ManglikStatus.MANGLIK
+                : ManglikStatus.NON_MANGLIK,
+          },
           country: Country.INDIA,
           state,
           city,

@@ -305,12 +305,12 @@ export class MatchDiscoveryService {
 
     const casteFilter = filters?.caste as string[] | undefined;
     if (casteFilter?.length) {
-      filter['personal.caste'] = { $in: casteFilter };
+      filter['personal.religiousDetails.caste'] = { $in: casteFilter };
     }
 
     const subCasteFilter = filters?.subCaste as string[] | undefined;
     if (subCasteFilter?.length) {
-      filter['personal.subCaste'] = { $in: subCasteFilter };
+      filter['personal.religiousDetails.subCaste'] = { $in: subCasteFilter };
     }
 
     //  Marital status
@@ -520,7 +520,7 @@ export class MatchDiscoveryService {
     }
 
     if (query.caste) {
-      filter['personal.caste'] = query.caste;
+      filter['personal.religiousDetails.caste'] = query.caste;
     }
 
     if (query.qualification) {

@@ -4,6 +4,7 @@ import {
   EatingHabit,
   Gender,
   MaritalStatus,
+  ManglikStatus,
   ProfileFor,
   Qualification,
   Religion,
@@ -25,6 +26,47 @@ export interface BasicData {
   occupation: string;
   height: string;
 }
+
+export interface ReligiousDetails {
+  caste?: Caste;
+  subCaste?: string;
+  gotra?: string;
+  manglikStatus?: ManglikStatus;
+  rashi?: string;
+  nakshatra?: string;
+  kundliFileUrl?: string;
+  sect?: string;
+  subSect?: string;
+  community?: string;
+  maslak?: string;
+  namaazPracticing?: string;
+  hijabPreference?: string;
+  halalLifestyle?: boolean;
+  denomination?: string;
+  churchName?: string;
+  churchAttendance?: string;
+  baptismStatus?: string;
+  confirmationStatus?: string;
+  bornAgain?: boolean;
+  sikhCommunity?: string;
+  amritdhariStatus?: string;
+  wearsTurban?: boolean;
+  nativeVillage?: string;
+  gurudwaraName?: string;
+  jainSect?: string;
+  jainCommunity?: string;
+  foodStrictness?: string;
+  buddhistTradition?: string;
+  buddhistCommunity?: string;
+  jewishDenomination?: string;
+  jewishCommunity?: string;
+  kosherPractice?: string;
+  parsiCommunity?: string;
+  navjoteDone?: boolean;
+  fireTempleAssociation?: string;
+  otherReligionDetails?: string;
+}
+
 export interface PersonalData {
   profileFor: ProfileFor;
   firstName: string;
@@ -32,7 +74,7 @@ export interface PersonalData {
   gender: Gender;
   dateOfBirth: string;
   religion: Religion;
-  caste?: Caste;
+  religiousDetails?: ReligiousDetails;
   country?: Country;
   state?: string;
   city?: string;

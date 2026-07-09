@@ -21,6 +21,7 @@ import {
   FamilyStatus,
   FamilyType,
   FamilyValue,
+  ManglikStatus,
   MaritalStatus,
   ProfileFor,
   Qualification,
@@ -252,6 +253,16 @@ export class PreferencesDto {
   @IsArray()
   @IsEnum(Caste, { each: true })
   caste?: Caste[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  subCaste?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsEnum(ManglikStatus, { each: true })
+  manglikStatus?: ManglikStatus[];
 
   @IsOptional()
   @IsArray()

@@ -8,14 +8,19 @@ import { ErrorText } from '../components/ErrorText';
 import { SearchMultiSelect } from '@/core/components/SearchMultiSelect';
 import {
   PreferencesData,
+  Caste,
   MaritalStatus,
+  ManglikStatus,
   Religion,
   Country,
+  Castes,
   MaritalStatuses,
+  ManglikStatuses,
   Religions,
   Countries,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
+import { TagInput } from '@/core/components/TagInput';
 
 interface Props {
   preferences: PreferencesData;
@@ -41,7 +46,14 @@ export function PreferencesStep({
     'options.marital_status'
   );
   const ReligionOptions = useEnumOptions(Religions, 'options.religion');
+  const CasteOptions = useEnumOptions(Castes, 'options.caste');
+  const ManglikStatusOptions = useEnumOptions(
+    ManglikStatuses,
+    'options.manglik_status'
+  );
   const CountryOptions = useEnumOptions(Countries, 'options.countries');
+  const showHinduPreferences =
+    preferences.religion?.includes(Religions.HINDU) ?? false;
 
   const inputStyle = (field: string) =>
     errors[field] ? [styles.input, styles.inputError] : [styles.input];
@@ -159,13 +171,52 @@ export function PreferencesStep({
         options={ReligionOptions}
         selected={preferences.religion ?? []}
         onChange={(values) => {
-          onSetField('religion', values as Religion[]);
+          const nextReligions = values as Religion[];
+          onSetField('religion', nextReligions);
+          if (!nextReligions.includes(Religions.HINDU)) {
+            onSetField('caste', []);
+            onSetField('subCaste', []);
+            onSetField('manglikStatus', []);
+          }
           onClearError('religionPreference');
         }}
         placeholder={t('onboarding.placeholders.religion_preference')}
         field="religionPreference"
         errors={errors}
       />
+
+      {showHinduPreferences ? (
+        <>
+          <SearchMultiSelect
+            label={t('preference.fields.caste')}
+            options={CasteOptions}
+            selected={preferences.caste ?? []}
+            onChange={(values) => onSetField('caste', values as Caste[])}
+            placeholder={t('preference.placeholders.caste', {
+              defaultValue: t('preference.fields.caste'),
+            })}
+            field="castePreference"
+          />
+
+          <TagInput
+            label={t('preference.fields.sub_caste')}
+            value={preferences.subCaste ?? []}
+            onChange={(values) => onSetField('subCaste', values)}
+            placeholder={t('preference.placeholders.sub_caste')}
+          />
+
+          <SearchMultiSelect
+            label={t('preference.fields.manglik_status')}
+            options={ManglikStatusOptions}
+            selected={preferences.manglikStatus ?? []}
+            onChange={(values) =>
+              onSetField('manglikStatus', values as ManglikStatus[])
+            }
+            placeholder={t('preference.fields.manglik_status')}
+            field="manglikStatusPreference"
+          />
+        </>
+      ) : null}
 
       {/* Location Preference */}
       <SearchMultiSelect

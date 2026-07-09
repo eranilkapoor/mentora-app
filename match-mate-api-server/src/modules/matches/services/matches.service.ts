@@ -513,7 +513,9 @@ export class MatchesService {
         religion: canViewPersonalDetails
           ? profile.personal?.religion
           : undefined,
-        caste: canViewPersonalDetails ? profile.personal?.caste : undefined,
+        religiousDetails: canViewPersonalDetails
+          ? profile.personal?.religiousDetails
+          : undefined,
         aboutMe: canViewPersonalDetails ? profile.personal?.aboutMe : undefined,
         motherTongue: canViewPersonalDetails
           ? profile.personal?.motherTongue

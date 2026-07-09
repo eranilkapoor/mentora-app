@@ -52,7 +52,12 @@ export const mapToMatchItem = (
       profile.personal?.religion,
       '-'
     ),
-    caste: formatEnumLabel(t, 'options.caste', profile.personal?.caste, '-'),
+    caste: formatEnumLabel(
+      t,
+      'options.caste',
+      profile.personal?.religiousDetails?.caste,
+      '-'
+    ),
     education: formatEnumLabel(
       t,
       'options.qualifications',

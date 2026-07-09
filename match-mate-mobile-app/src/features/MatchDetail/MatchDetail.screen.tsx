@@ -155,7 +155,7 @@ export default function MatchDetailScreen({
         label: formatEnumLabel(
           t,
           'options.caste',
-          profile?.personal?.caste,
+          profile?.personal?.religiousDetails?.caste,
           hidden
         ),
       },
@@ -356,7 +356,7 @@ export default function MatchDetailScreen({
             value={formatEnumLabel(
               t,
               'options.caste',
-              profile.personal?.caste,
+              profile.personal?.religiousDetails?.caste,
               hidden
             )}
             icon="users"

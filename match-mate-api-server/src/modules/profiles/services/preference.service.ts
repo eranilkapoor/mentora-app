@@ -8,7 +8,7 @@ import {
 } from '../dto/preference.dto';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from '@/common/cache/cache.constants';
-import { ChildPreference, ResidencyPreference } from '@/common/enums';
+import { ChildPreference, Religion, ResidencyPreference } from '@/common/enums';
 import {
   PartnerFilters,
   Preference,
@@ -39,14 +39,14 @@ export class PreferenceService {
         });
       }
 
-      const mergedFilters: PartnerFilters = {
+      const mergedFilters: PartnerFilters = this.sanitizeReligiousFilters({
         childPreference:
           dto?.filters?.childPreference ?? ChildPreference.DOES_NOT_MATTER,
         residencyPreference:
           dto?.filters?.residencyPreference ??
           ResidencyPreference.DOES_NOT_MATTER,
         ...(dto?.filters ?? {}),
-      };
+      });
 
       const mergedWeights = {
         age: 10,
@@ -150,7 +150,10 @@ export class PreferenceService {
 
   async updateFilters(userId: string, dto: PartnerFiltersDto) {
     try {
-      const result = await this.preferenceRepo.updateFilters(userId, dto);
+      const result = await this.preferenceRepo.updateFilters(
+        userId,
+        this.sanitizeReligiousFilters(dto),
+      );
       await this.invalidateCache(userId);
       return result;
     } catch (error) {
@@ -226,5 +229,20 @@ export class PreferenceService {
 
   private async invalidateCache(userId: string): Promise<void> {
     await this.cache.del(`preference:${userId}`);
+  }
+
+  private sanitizeReligiousFilters<
+    T extends PartnerFiltersDto | PartnerFilters,
+  >(filters: T): T {
+    const next = { ...filters };
+    const religions = Array.isArray(next.religion) ? next.religion : [];
+
+    if (religions.length > 0 && !religions.includes(Religion.HINDU)) {
+      next.caste = [];
+      next.subCaste = [];
+      next.manglikStatus = [];
+    }
+
+    return next;
   }
 }

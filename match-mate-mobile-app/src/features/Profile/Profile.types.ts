@@ -6,11 +6,11 @@ import {
   Gender,
   Hour,
   MaritalStatus,
-  ManglikStatus,
   Minute,
   Period,
   ProfileFor,
   ProfileImage,
+  ReligiousDetails,
   SmokingHabit,
 } from '@/core/types';
 
@@ -51,13 +51,7 @@ export interface SchemaProfile {
     timeOfBirth?: { hour?: Hour; minute?: Minute; period?: Period };
     placeOfBirth?: { city?: string; state?: string; country?: Country };
     religion?: string;
-    caste?: string;
-    subCast?: string;
-    gotra?: string;
-    manglikStatus?: ManglikStatus;
-    rashi?: string;
-    nakshatra?: string;
-    kundliFileUrl?: string;
+    religiousDetails?: ReligiousDetails;
     country?: Country;
     state?: string;
     city?: string;

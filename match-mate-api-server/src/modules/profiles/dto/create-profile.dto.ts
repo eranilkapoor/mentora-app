@@ -76,6 +76,156 @@ export class PlaceOfBirthDto {
   country?: Country;
 }
 
+export class ReligiousDetailsDto {
+  @IsOptional()
+  @IsEnum(Caste)
+  caste?: Caste;
+
+  @IsOptional()
+  @IsString()
+  subCaste?: string;
+
+  @IsOptional()
+  @IsString()
+  gotra?: string;
+
+  @IsOptional()
+  @IsEnum(ManglikStatus)
+  manglikStatus?: ManglikStatus;
+
+  @IsOptional()
+  @IsString()
+  rashi?: string;
+
+  @IsOptional()
+  @IsString()
+  nakshatra?: string;
+
+  @IsOptional()
+  @IsString()
+  kundliFileUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  sect?: string;
+
+  @IsOptional()
+  @IsString()
+  subSect?: string;
+
+  @IsOptional()
+  @IsString()
+  community?: string;
+
+  @IsOptional()
+  @IsString()
+  maslak?: string;
+
+  @IsOptional()
+  @IsString()
+  namaazPracticing?: string;
+
+  @IsOptional()
+  @IsString()
+  hijabPreference?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  halalLifestyle?: boolean;
+
+  @IsOptional()
+  @IsString()
+  denomination?: string;
+
+  @IsOptional()
+  @IsString()
+  churchName?: string;
+
+  @IsOptional()
+  @IsString()
+  churchAttendance?: string;
+
+  @IsOptional()
+  @IsString()
+  baptismStatus?: string;
+
+  @IsOptional()
+  @IsString()
+  confirmationStatus?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  bornAgain?: boolean;
+
+  @IsOptional()
+  @IsString()
+  sikhCommunity?: string;
+
+  @IsOptional()
+  @IsString()
+  amritdhariStatus?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  wearsTurban?: boolean;
+
+  @IsOptional()
+  @IsString()
+  nativeVillage?: string;
+
+  @IsOptional()
+  @IsString()
+  gurudwaraName?: string;
+
+  @IsOptional()
+  @IsString()
+  jainSect?: string;
+
+  @IsOptional()
+  @IsString()
+  jainCommunity?: string;
+
+  @IsOptional()
+  @IsString()
+  foodStrictness?: string;
+
+  @IsOptional()
+  @IsString()
+  buddhistTradition?: string;
+
+  @IsOptional()
+  @IsString()
+  buddhistCommunity?: string;
+
+  @IsOptional()
+  @IsString()
+  jewishDenomination?: string;
+
+  @IsOptional()
+  @IsString()
+  jewishCommunity?: string;
+
+  @IsOptional()
+  @IsString()
+  kosherPractice?: string;
+
+  @IsOptional()
+  @IsString()
+  parsiCommunity?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  navjoteDone?: boolean;
+
+  @IsOptional()
+  @IsString()
+  fireTempleAssociation?: string;
+
+  @IsOptional()
+  @IsString()
+  otherReligionDetails?: string;
+}
+
 export class PersonalDto {
   @IsString()
   @IsNotEmpty()
@@ -113,35 +263,12 @@ export class PersonalDto {
   placeOfBirth?: PlaceOfBirthDto;
 
   @IsOptional()
-  @IsString()
-  subCast?: string;
-
-  @IsOptional()
-  @IsString()
-  gotra?: string;
-
-  @IsOptional()
-  @IsEnum(ManglikStatus)
-  manglikStatus?: ManglikStatus;
-
-  @IsOptional()
-  @IsString()
-  rashi?: string;
-
-  @IsOptional()
-  @IsString()
-  nakshatra?: string;
-
-  @IsOptional()
-  @IsString()
-  kundliFileUrl?: string;
+  @ValidateNested()
+  @Type(() => ReligiousDetailsDto)
+  religiousDetails?: ReligiousDetailsDto;
 
   @IsEnum(Religion)
   religion!: Religion;
-
-  @IsOptional()
-  @IsString()
-  caste?: Caste;
 
   @IsOptional()
   @IsEnum(Country)

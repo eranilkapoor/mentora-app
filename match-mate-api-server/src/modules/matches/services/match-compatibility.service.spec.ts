@@ -32,14 +32,16 @@ describe('MatchCompatibilityService', () => {
         physical: { height: 170 },
         personal: {
           religion: 'Hindu',
-          caste: 'Sharma',
+          religiousDetails: {
+            caste: 'Sharma',
+            manglikStatus: 'non_manglik',
+          },
           city: 'Pune',
           state: 'MH',
           country: 'IN',
           smoking: 'never',
           drinking: 'socially',
           eating: 'vegetarian',
-          manglikStatus: 'non_manglik',
         },
         education: { occupationType: 'Engineer' },
       },

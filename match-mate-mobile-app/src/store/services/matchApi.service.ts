@@ -8,6 +8,7 @@ import {
   OccupationType,
   Qualification,
   Religion,
+  ReligiousDetails,
 } from '@/core/types';
 
 export interface MatchImage {
@@ -30,7 +31,7 @@ export interface DiscoveryProfile {
     country?: Country;
     maritalStatus?: MaritalStatus;
     religion?: Religion;
-    caste?: Caste;
+    religiousDetails?: ReligiousDetails;
     aboutMe?: string;
     motherTongue?: string;
     hobbies?: string[];

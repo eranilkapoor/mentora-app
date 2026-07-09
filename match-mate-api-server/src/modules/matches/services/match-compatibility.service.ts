@@ -104,7 +104,10 @@ export class MatchCompatibilityService {
       signals,
       'caste',
       weights.caste,
-      this.inList(this.get(profile, 'personal.caste'), filters?.caste),
+      this.inList(
+        this.get(profile, 'personal.religiousDetails.caste'),
+        filters?.caste,
+      ),
     );
     this.addSignal(
       signals,
@@ -141,7 +144,7 @@ export class MatchCompatibilityService {
       'horoscope',
       weights.horoscope,
       this.inList(
-        this.get(profile, 'personal.manglikStatus'),
+        this.get(profile, 'personal.religiousDetails.manglikStatus'),
         filters?.manglikStatus,
       ),
     );

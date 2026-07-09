@@ -555,7 +555,7 @@ export class ProfilesService {
     const raw = [
       dto.personal.profileFor,
       dto.personal.religion,
-      dto.personal.caste,
+      dto.personal.religiousDetails?.caste,
       dto.personal.city,
       dto.personal.state,
       dto.personal.country,
@@ -576,11 +576,13 @@ export class ProfilesService {
     profile: Record<string, unknown>,
   ): string[] {
     const personal = (profile.personal ?? {}) as Record<string, unknown>;
+    const religiousDetails =
+      (personal.religiousDetails as Record<string, unknown> | undefined) ?? {};
     const education = (profile.education ?? {}) as Record<string, unknown>;
     const raw = [
       personal.profileFor,
       personal.religion,
-      personal.caste,
+      religiousDetails.caste,
       personal.city,
       personal.state,
       personal.country,
@@ -820,6 +822,9 @@ export class ProfilesService {
           height: dto.preferences?.heightRange,
           maritalStatus: dto.preferences?.maritalStatus,
           religion: dto.preferences?.religion,
+          caste: dto.preferences?.caste,
+          subCaste: dto.preferences?.subCaste,
+          manglikStatus: dto.preferences?.manglikStatus,
           country: dto.preferences?.country,
         },
       });

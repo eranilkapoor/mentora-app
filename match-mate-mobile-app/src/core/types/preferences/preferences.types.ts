@@ -3,6 +3,7 @@ import {
   Caste,
   Complexion,
   Country,
+  ManglikStatus,
   MaritalStatus,
   Qualification,
   Religion,
@@ -18,6 +19,8 @@ export interface PreferencesData {
   maritalStatus?: MaritalStatus[];
   religion?: Religion[];
   caste?: Caste[];
+  subCaste?: string[];
+  manglikStatus?: ManglikStatus[];
   country?: Country[];
   state?: string[];
   city?: string[];

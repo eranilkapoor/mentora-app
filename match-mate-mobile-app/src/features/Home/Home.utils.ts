@@ -56,7 +56,12 @@ export const mapProfile = (
         .join(', ') || '-',
     religion: [
       formatEnumLabel(t, 'options.religion', profile.personal?.religion, '-'),
-      formatEnumLabel(t, 'options.caste', profile.personal?.caste, '-'),
+      formatEnumLabel(
+        t,
+        'options.caste',
+        profile.personal?.religiousDetails?.caste,
+        '-'
+      ),
     ]
       .filter((v) => v !== '-')
       .join(' · '),

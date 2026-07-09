@@ -10,7 +10,6 @@ import {
   FamilyValue,
   Gender,
   Hour,
-  ManglikStatus,
   MaritalStatus,
   Minute,
   OccupationType,
@@ -21,9 +20,11 @@ import {
   ProfileFor,
   Qualification,
   Religion,
-  Caste,
   PersonalityBadge,
+  ReligiousDetails,
 } from '@/core/types';
+
+export type { ReligiousDetails };
 
 export interface TimeOfBirth {
   hour?: Hour;
@@ -61,13 +62,7 @@ export interface PersonalSection {
   timeOfBirth?: TimeOfBirth;
   placeOfBirth?: PlaceOfBirth;
   religion: Religion;
-  caste: Caste;
-  subCast?: string;
-  gotra?: string;
-  manglikStatus?: ManglikStatus;
-  rashi?: string;
-  nakshatra?: string;
-  kundliFileUrl?: string;
+  religiousDetails?: ReligiousDetails;
   country: Country;
   state?: string;
   city?: string;

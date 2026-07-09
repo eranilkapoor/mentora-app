@@ -33,7 +33,7 @@ const baseProfileDto = () =>
       dateOfBirth: '1995-05-10',
       religion: 'hindu',
       maritalStatus: 'never_married',
-      caste: 'Any',
+      religiousDetails: { caste: 'Any' },
       city: 'Mumbai',
       state: 'MH',
       country: 'India',

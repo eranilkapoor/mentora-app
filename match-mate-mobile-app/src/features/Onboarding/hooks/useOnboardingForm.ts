@@ -50,6 +50,9 @@ const INITIAL_PREFERENCES: PreferencesData = {
   heightRange: { min: 155, max: 170 },
   maritalStatus: [],
   religion: [],
+  caste: [],
+  subCaste: [],
+  manglikStatus: [],
   country: [],
 };
 

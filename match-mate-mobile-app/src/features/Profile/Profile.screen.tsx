@@ -85,7 +85,7 @@ const DEFAULT_PROFILE: SchemaProfile = {
     gender: Genders.MALE,
     dateOfBirth: '',
     religion: Religions.HINDU,
-    caste: '',
+    religiousDetails: {},
     country: Countries.INDIA,
     state: '',
     city: '',
@@ -398,7 +398,7 @@ const getPdfSections = (
           formatEnumLabel(
             t,
             'options.caste',
-            profile.personal.caste,
+            profile.personal.religiousDetails?.caste,
             EMPTY_VALUE
           ),
         ],
@@ -518,7 +518,7 @@ const getPdfSections = (
           formatEnumLabel(
             t,
             'options.manglik_status',
-            profile.personal.manglikStatus,
+            profile.personal.religiousDetails?.manglikStatus,
             EMPTY_VALUE
           ),
         ],
@@ -1264,15 +1264,22 @@ export default function ProfileScreen({
           />
           <Row
             labelKey="profile.row_caste"
-            value={enumLabel('options.caste', profileData.personal.caste)}
+            value={enumLabel(
+              'options.caste',
+              profileData.personal.religiousDetails?.caste
+            )}
           />
           <Row
             labelKey="profile.row_sub_caste"
-            value={formatProfileText(profileData.personal.subCast)}
+            value={formatProfileText(
+              profileData.personal.religiousDetails?.subCaste
+            )}
           />
           <Row
             labelKey="profile.row_gotra"
-            value={formatProfileText(profileData.personal.gotra)}
+            value={formatProfileText(
+              profileData.personal.religiousDetails?.gotra
+            )}
           />
           <Row
             labelKey="profile.row_mother_tongue"
@@ -1282,20 +1289,26 @@ export default function ProfileScreen({
             labelKey="profile.row_manglik"
             value={enumLabel(
               'options.manglik_status',
-              profileData.personal.manglikStatus
+              profileData.personal.religiousDetails?.manglikStatus
             )}
           />
           <Row
             labelKey="profile.row_rashi"
-            value={formatProfileText(profileData.personal.rashi)}
+            value={formatProfileText(
+              profileData.personal.religiousDetails?.rashi
+            )}
           />
           <Row
             labelKey="profile.row_nakshatra"
-            value={formatProfileText(profileData.personal.nakshatra)}
+            value={formatProfileText(
+              profileData.personal.religiousDetails?.nakshatra
+            )}
           />
           <Row
             labelKey="profile.row_kundli"
-            value={toDisplayText(profileData.personal.kundliFileUrl)}
+            value={toDisplayText(
+              profileData.personal.religiousDetails?.kundliFileUrl
+            )}
           />
         </Section>
 

@@ -65,6 +65,7 @@ import {
   DrinkingHabit,
   EatingHabit,
   OccupationType,
+  Religion,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { showError, showSuccess } from '@/core/utils/toast';
@@ -305,9 +306,17 @@ export default function EditPreferenceScreen({
                 return;
               }
             }
-            await updateFilters(
-              normalizeFilterRanges(preference.filters)
-            ).unwrap();
+            {
+              const filters = normalizeFilterRanges(
+                preference.filters
+              ) as PartnerFilters;
+              if (!filters.religion?.includes(Religions.HINDU)) {
+                filters.caste = [];
+                filters.subCaste = [];
+                filters.manglikStatus = [];
+              }
+              await updateFilters(filters).unwrap();
+            }
             break;
           case 'settings':
             await updateSettings(preference.settings as MatchSettings).unwrap();
@@ -375,6 +384,22 @@ export default function EditPreferenceScreen({
     },
     []
   );
+
+  const setReligionFilters = useCallback((value: Religion[]) => {
+    setPreference((p) => ({
+      ...p,
+      filters: {
+        ...p.filters,
+        religion: value,
+        ...(!value.includes(Religions.HINDU)
+          ? { caste: [], subCaste: [], manglikStatus: [] }
+          : {}),
+      },
+    }));
+  }, []);
+
+  const showHinduPreferenceFilters =
+    preference.filters.religion?.includes(Religions.HINDU) ?? false;
 
   const setSettings = useCallback(
     (key: keyof MatchSettings, value: MatchSettings[keyof MatchSettings]) => {
@@ -611,32 +636,36 @@ export default function EditPreferenceScreen({
               label={t('preference.fields.religion')}
               options={ReligionOptions}
               value={preference.filters.religion ?? []}
-              onChange={(v) => setFilters('religion', v)}
+              onChange={(v) => setReligionFilters(v as Religion[])}
               i18nPrefix="options.religion"
             />
 
-            <MultiSelectPill
-              label={t('preference.fields.caste')}
-              options={CasteOptions}
-              value={preference.filters.caste ?? []}
-              onChange={(v) => setFilters('caste', v)}
-              i18nPrefix="options.caste"
-            />
+            {showHinduPreferenceFilters ? (
+              <>
+                <MultiSelectPill
+                  label={t('preference.fields.caste')}
+                  options={CasteOptions}
+                  value={preference.filters.caste ?? []}
+                  onChange={(v) => setFilters('caste', v)}
+                  i18nPrefix="options.caste"
+                />
 
-            <TagInput
-              label={t('preference.fields.sub_caste')}
-              value={preference.filters.subCaste as string[]}
-              onChange={(v) => setFilters('subCaste', v)}
-              placeholder={t('preference.placeholders.sub_caste')}
-            />
+                <TagInput
+                  label={t('preference.fields.sub_caste')}
+                  value={preference.filters.subCaste as string[]}
+                  onChange={(v) => setFilters('subCaste', v)}
+                  placeholder={t('preference.placeholders.sub_caste')}
+                />
 
-            <MultiSelectPill
-              label={t('preference.fields.manglik_status')}
-              options={ManglikStatusOptions}
-              value={preference.filters.manglikStatus as ManglikStatus[]}
-              onChange={(v) => setFilters('manglikStatus', v)}
-              i18nPrefix="options.manglik_status"
-            />
+                <MultiSelectPill
+                  label={t('preference.fields.manglik_status')}
+                  options={ManglikStatusOptions}
+                  value={preference.filters.manglikStatus as ManglikStatus[]}
+                  onChange={(v) => setFilters('manglikStatus', v)}
+                  i18nPrefix="options.manglik_status"
+                />
+              </>
+            ) : null}
           </PreferenceSectionCard>
 
           {/* ── Location ────────────────────────────────────────────────── */}

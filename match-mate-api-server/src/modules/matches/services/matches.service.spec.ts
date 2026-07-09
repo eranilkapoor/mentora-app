@@ -77,7 +77,7 @@ describe('MatchesService', () => {
       gender: 'female',
       maritalStatus: 'never_married',
       religion: 'hindu',
-      caste: 'caste',
+      religiousDetails: { caste: 'caste' },
       aboutMe: 'About',
       motherTongue: 'marathi',
       hobbies: ['reading'],
