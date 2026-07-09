@@ -25,6 +25,13 @@ const REGISTRATION_BONUS_POINTS = 100;
 const SUBSCRIPTION_REWARD_RATE = 0.05;
 const REDEMPTION_THRESHOLD = 1000;
 
+export interface ReferralAttribution {
+  source?: string;
+  medium?: string;
+  campaign?: string;
+  metadata?: Record<string, unknown>;
+}
+
 @Injectable()
 export class ReferralsService {
   constructor(
@@ -92,6 +99,9 @@ export class ReferralsService {
         subscriptionPoints: reward.subscriptionPoints,
         totalPoints: reward.totalPoints,
         subscribedAt: reward.subscribedAt,
+        source: reward.source,
+        medium: reward.medium,
+        campaign: reward.campaign,
       };
     });
 
@@ -182,6 +192,7 @@ export class ReferralsService {
   async applyRegistrationReferral(
     referredUserId: string,
     referralCode?: string,
+    attribution?: ReferralAttribution,
   ): Promise<void> {
     const normalizedCode = this.normalizeReferralCode(referralCode);
     const referredUser = await this.ensureReferralCode(referredUserId);
@@ -216,6 +227,10 @@ export class ReferralsService {
           referrerId: referrer._id,
           referredUserId: referredUser._id,
           referralCode: normalizedCode,
+          source: this.normalizeAttributionValue(attribution?.source),
+          medium: this.normalizeAttributionValue(attribution?.medium),
+          campaign: this.normalizeAttributionValue(attribution?.campaign),
+          attribution: attribution?.metadata,
           status: ReferralRewardStatus.REGISTERED,
           registrationPoints: REGISTRATION_BONUS_POINTS,
           subscriptionPoints: 0,
@@ -236,6 +251,10 @@ export class ReferralsService {
       metadata: {
         referredUserId: referredUser._id.toString(),
         referralCode: normalizedCode,
+        source: this.normalizeAttributionValue(attribution?.source),
+        medium: this.normalizeAttributionValue(attribution?.medium),
+        campaign: this.normalizeAttributionValue(attribution?.campaign),
+        attribution: attribution?.metadata,
       },
     });
 
@@ -306,6 +325,11 @@ export class ReferralsService {
 
   private normalizeReferralCode(code?: string): string | undefined {
     const normalized = code?.trim().toUpperCase();
+    return normalized || undefined;
+  }
+
+  private normalizeAttributionValue(value?: string): string | undefined {
+    const normalized = value?.trim();
     return normalized || undefined;
   }
 

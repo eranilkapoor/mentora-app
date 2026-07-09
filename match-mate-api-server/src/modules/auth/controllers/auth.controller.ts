@@ -125,7 +125,7 @@ export class AuthController {
       dto.country_code,
       dto.phone,
       dto.otp,
-      dto.referralCode,
+      dto,
     );
     return successResponse(
       data,

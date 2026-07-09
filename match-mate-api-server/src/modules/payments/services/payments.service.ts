@@ -575,6 +575,11 @@ export class PaymentsService {
     return invoice;
   }
 
+  async getInvoicePdf(userId: string, orderId: string) {
+    const invoice = await this.getInvoice(userId, orderId);
+    return this.buildInvoicePdfPayload(invoice);
+  }
+
   async adminGstReport(query: { fromDate?: string; toDate?: string }) {
     const fromDate = query.fromDate
       ? new Date(query.fromDate)
@@ -639,6 +644,28 @@ export class PaymentsService {
     }
 
     return payment;
+  }
+
+  async adminGetInvoicePdf(orderId: string) {
+    const payment = await this.paymentRepo.findPaymentByOrderId(orderId);
+
+    if (!payment) {
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND);
+    }
+
+    const paymentId = (payment as { _id?: Types.ObjectId })._id;
+    const invoice = await this.invoiceModel
+      .findOne({ paymentId })
+      .lean()
+      .exec();
+
+    if (!invoice) {
+      return throwNotFound(ErrorCode.PAYMENT_NOT_FOUND, {
+        reason: 'invoice_not_generated',
+      });
+    }
+
+    return this.buildInvoicePdfPayload(invoice);
   }
 
   async adminInitiateRefund(orderId: string, dto: AdminRefundPaymentDto) {
@@ -1061,6 +1088,79 @@ export class PaymentsService {
     );
 
     return invoice;
+  }
+
+  private buildInvoicePdfPayload(invoice: {
+    invoiceNumber?: string;
+    orderId?: string;
+    currency?: string;
+    taxableAmount?: number;
+    discountAmount?: number;
+    gstPercentage?: number;
+    gstAmount?: number;
+    totalAmount?: number;
+    customerGstin?: string;
+    sacCode?: string;
+    issuedAt?: Date;
+  }) {
+    const invoiceNumber = invoice.invoiceNumber ?? 'invoice';
+    const issuedAt = invoice.issuedAt
+      ? new Date(invoice.issuedAt).toISOString()
+      : new Date().toISOString();
+    const lines = [
+      'Match Mate Receipt',
+      `Invoice: ${invoiceNumber}`,
+      `Order: ${invoice.orderId ?? '-'}`,
+      `Issued: ${issuedAt}`,
+      `Currency: ${invoice.currency ?? 'INR'}`,
+      `Taxable Amount: ${Number(invoice.taxableAmount ?? 0).toFixed(2)}`,
+      `Discount: ${Number(invoice.discountAmount ?? 0).toFixed(2)}`,
+      `GST (${Number(invoice.gstPercentage ?? 0).toFixed(2)}%): ${Number(invoice.gstAmount ?? 0).toFixed(2)}`,
+      `Total: ${Number(invoice.totalAmount ?? 0).toFixed(2)}`,
+      `SAC: ${invoice.sacCode ?? '998439'}`,
+      `Customer GSTIN: ${invoice.customerGstin ?? '-'}`,
+    ];
+
+    return {
+      fileName: `${invoiceNumber}.pdf`,
+      mimeType: 'application/pdf',
+      contentBase64: this.buildSimplePdf(lines).toString('base64'),
+    };
+  }
+
+  private buildSimplePdf(lines: string[]): Buffer {
+    const escapedLines = lines.map((line) =>
+      String(line)
+        .replace(/\\/g, '\\\\')
+        .replace(/\(/g, '\\(')
+        .replace(/\)/g, '\\)'),
+    );
+    const text = escapedLines
+      .map(
+        (line, index) =>
+          `BT /F1 11 Tf 50 ${760 - index * 22} Td (${line}) Tj ET`,
+      )
+      .join('\n');
+    const objects = [
+      '1 0 obj << /Type /Catalog /Pages 2 0 R >> endobj',
+      '2 0 obj << /Type /Pages /Kids [3 0 R] /Count 1 >> endobj',
+      '3 0 obj << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >> endobj',
+      '4 0 obj << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> endobj',
+      `5 0 obj << /Length ${Buffer.byteLength(text)} >> stream\n${text}\nendstream endobj`,
+    ];
+    let pdf = '%PDF-1.4\n';
+    const offsets = [0];
+    for (const object of objects) {
+      offsets.push(Buffer.byteLength(pdf));
+      pdf += `${object}\n`;
+    }
+    const xrefOffset = Buffer.byteLength(pdf);
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`;
+    for (const offset of offsets.slice(1)) {
+      pdf += `${offset.toString().padStart(10, '0')} 00000 n \n`;
+    }
+    pdf += `trailer << /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`;
+    return Buffer.from(pdf, 'utf8');
   }
 
   private ensureUserId(userId: string) {

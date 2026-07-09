@@ -20,6 +20,7 @@ import * as bcrypt from 'bcryptjs';
 import {
   RegisterDto,
   LoginDto,
+  PhoneVerifyDto,
   SocialLoginDto,
   ResetPasswordDto,
   ChangePasswordDto,
@@ -61,7 +62,10 @@ import {
   throwUnauthorized,
 } from '@/common/exceptions/throw-app-exception';
 import { AppException } from '@/common/exceptions/app.exception';
-import { ReferralsService } from '@/modules/referrals/services/referrals.service';
+import {
+  ReferralAttribution,
+  ReferralsService,
+} from '@/modules/referrals/services/referrals.service';
 import { SocialAuthVerifierService } from './social-auth-verifier.service';
 import { AuthTwoFactorService } from './auth-two-factor.service';
 import {
@@ -95,6 +99,13 @@ interface RegisterRequestContext {
   platform: ActivityPlatform;
   ip?: string;
   device?: string;
+}
+
+interface ReferralAttributionInput {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+  campaign?: string;
 }
 
 @Injectable()
@@ -556,6 +567,7 @@ export class AuthService {
 
       const email = dto.email.toLowerCase();
       const requestContext = this.getRegisterRequestContext(req);
+      const referralAttribution = this.buildReferralAttribution(dto, req);
       await this.referralsService.validateReferralCodeForRegistration(
         dto.referralCode,
       );
@@ -608,10 +620,12 @@ export class AuthService {
             : undefined,
         sendOtp: Boolean(dto.country_code && dto.phone),
         context: requestContext,
+        referralAttribution,
       });
       await this.referralsService.applyRegistrationReferral(
         user._id.toString(),
         dto.referralCode,
+        referralAttribution,
       );
       const tokens = await this.attachToken(req, res, user);
 
@@ -830,6 +844,7 @@ export class AuthService {
       context: RegisterRequestContext;
       phone?: { countryCode: string; phone: string };
       sendOtp?: boolean;
+      referralAttribution?: ReferralAttribution;
     },
   ) {
     await this.createOrUpdateFreeSubscription(userId);
@@ -847,6 +862,7 @@ export class AuthService {
       platform: options.context.platform,
       phone: options.phone,
       sendOtp: options.sendOtp,
+      referralAttribution: options.referralAttribution,
     });
   }
 
@@ -1129,6 +1145,7 @@ export class AuthService {
       platform: ActivityPlatform;
       phone?: { countryCode: string; phone: string };
       sendOtp?: boolean;
+      referralAttribution?: ReferralAttribution;
     },
   ): Promise<void> {
     const jobs: Array<Promise<unknown>> = [];
@@ -1147,6 +1164,7 @@ export class AuthService {
         channels,
         metadata: {
           source: options.source,
+          campaign: options.referralAttribution?.campaign,
         },
       }),
     );
@@ -1169,9 +1187,13 @@ export class AuthService {
         ipAddress: req.ip || this.getHeaderString(req, 'x-forwarded-for'),
         userAgent: this.getHeaderString(req, 'user-agent'),
         platform: this.toAnalyticsPlatform(options.platform),
+        source: options.referralAttribution?.source,
+        medium: options.referralAttribution?.medium,
+        campaign: options.referralAttribution?.campaign,
         metadata: {
           provider: options.provider,
           source: options.source,
+          referralAttribution: options.referralAttribution,
           requestId: req.requestId,
           correlationId: req.correlationId,
         },
@@ -1231,6 +1253,44 @@ export class AuthService {
         this.getHeaderString(req, 'x-device-id') ||
         this.getHeaderString(req, 'user-agent'),
     };
+  }
+
+  private buildReferralAttribution(
+    dto: ReferralAttributionInput,
+    req: AppRequest,
+  ): ReferralAttribution | undefined {
+    const source =
+      this.normalizeAttributionValue(dto.utmSource) ??
+      this.normalizeAttributionValue(this.getHeaderString(req, 'x-utm-source'));
+    const medium =
+      this.normalizeAttributionValue(dto.utmMedium) ??
+      this.normalizeAttributionValue(this.getHeaderString(req, 'x-utm-medium'));
+    const campaign =
+      this.normalizeAttributionValue(dto.utmCampaign) ??
+      this.normalizeAttributionValue(dto.campaign) ??
+      this.normalizeAttributionValue(
+        this.getHeaderString(req, 'x-utm-campaign'),
+      );
+
+    if (!source && !medium && !campaign) {
+      return undefined;
+    }
+
+    return {
+      source,
+      medium,
+      campaign,
+      metadata: {
+        source,
+        medium,
+        campaign,
+      },
+    };
+  }
+
+  private normalizeAttributionValue(value?: string): string | undefined {
+    const normalized = value?.trim();
+    return normalized || undefined;
   }
 
   async login(req: AppRequest, res: Response, dto: LoginDto) {
@@ -1301,10 +1361,14 @@ export class AuthService {
     country_code: string,
     phone: string,
     otp: string,
-    referralCode?: string,
+    dtoOrReferralCode?: PhoneVerifyDto | string,
   ) {
     try {
       this.assertAuthMethodEnabled('authMethods.phoneOtpEnabled', 'phone_otp');
+      const dto =
+        typeof dtoOrReferralCode === 'string'
+          ? { country_code, phone, otp, referralCode: dtoOrReferralCode }
+          : (dtoOrReferralCode ?? { country_code, phone, otp });
 
       const isValid = this.otpService.verify(country_code, phone, otp);
       if (!isValid) return throwUnauthorized(ErrorCode.AUTH_INVALID_OTP);
@@ -1337,8 +1401,9 @@ export class AuthService {
       }
 
       await this.referralsService.validateReferralCodeForRegistration(
-        referralCode,
+        dto.referralCode,
       );
+      const referralAttribution = this.buildReferralAttribution(dto, req);
 
       const user = await this.userRepo.create({
         status: Status.ACTIVE,
@@ -1375,10 +1440,12 @@ export class AuthService {
         phone: { countryCode: country_code, phone },
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
+        referralAttribution,
       });
       await this.referralsService.applyRegistrationReferral(
         user._id.toString(),
-        referralCode,
+        dto.referralCode,
+        referralAttribution,
       );
       const tokens = await this.attachToken(req, res, user);
 
@@ -1472,6 +1539,7 @@ export class AuthService {
       await this.referralsService.validateReferralCodeForRegistration(
         dto.referralCode,
       );
+      const referralAttribution = this.buildReferralAttribution(dto, req);
 
       const user = await this.userRepo.create({
         email: verifiedEmail,
@@ -1507,10 +1575,12 @@ export class AuthService {
         hasEmail: Boolean(verifiedProfile.email ?? dto.email),
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
+        referralAttribution,
       });
       await this.referralsService.applyRegistrationReferral(
         user._id.toString(),
         dto.referralCode,
+        referralAttribution,
       );
       await this.syncSocialProfilePhoto(
         user._id.toString(),

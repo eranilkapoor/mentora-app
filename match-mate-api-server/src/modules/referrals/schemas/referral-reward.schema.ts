@@ -18,6 +18,18 @@ export class ReferralReward {
   @Prop({ required: true, uppercase: true, trim: true, index: true })
   referralCode!: string;
 
+  @Prop({ trim: true, index: true })
+  source?: string;
+
+  @Prop({ trim: true })
+  medium?: string;
+
+  @Prop({ trim: true, index: true })
+  campaign?: string;
+
+  @Prop({ type: Object })
+  attribution?: Record<string, unknown>;
+
   @Prop({
     enum: ReferralRewardStatus,
     default: ReferralRewardStatus.REGISTERED,
@@ -56,3 +68,4 @@ export const ReferralRewardSchema =
 
 ReferralRewardSchema.index({ referrerId: 1, createdAt: -1 });
 ReferralRewardSchema.index({ referredUserId: 1 }, { unique: true });
+ReferralRewardSchema.index({ campaign: 1, createdAt: -1 });

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Types } from 'mongoose';
-import { Status, SubscriptionStatus } from '@/common/enums';
+import { Role, Status, SubscriptionStatus } from '@/common/enums';
 import { MediaModerationStatus } from '@/modules/profiles/enums/profile-media.enums';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
@@ -36,6 +36,9 @@ describe('AdminService', () => {
     findUsers: jest.fn(),
     countUsers: jest.fn(),
     findUserById: jest.fn(),
+    findUserByEmail: jest.fn(),
+    findUserByPhone: jest.fn(),
+    createUser: jest.fn(),
     updateUserStatus: jest.fn(),
     findUsersForBroadcast: jest.fn(),
   };
@@ -47,6 +50,36 @@ describe('AdminService', () => {
   };
   const notificationsService = {
     notify: jest.fn(),
+  };
+  const profilesService = {
+    createProfile: jest.fn(),
+    updatePersonalInfo: jest.fn(),
+    updatePhysicalInfo: jest.fn(),
+    updateEducationInfo: jest.fn(),
+    updateFamilyInfo: jest.fn(),
+  };
+  const preferenceService = {
+    getMyPreference: jest.fn(),
+    createPreference: jest.fn(),
+    updateFilters: jest.fn(),
+    updateSettings: jest.fn(),
+    updateWeights: jest.fn(),
+    updateAboutPartner: jest.fn(),
+  };
+  const subscriptionsService = {
+    purchasePlan: jest.fn(),
+    cancelSubscription: jest.fn(),
+  };
+  const settingsService = {
+    getAllSettings: jest.fn(),
+    updatePrivacy: jest.fn(),
+    updateNotification: jest.fn(),
+    updateCommunication: jest.fn(),
+    updateSecurity: jest.fn(),
+    updateLocalization: jest.fn(),
+    updateAccessibility: jest.fn(),
+    updateMedia: jest.fn(),
+    updateAi: jest.fn(),
   };
 
   const profileModel = createExecChain(null);
@@ -74,6 +107,10 @@ describe('AdminService', () => {
       auditService as never,
       analyticsService as never,
       notificationsService as never,
+      profilesService as never,
+      preferenceService as never,
+      subscriptionsService as never,
+      settingsService as never,
       profileModel as never,
       mediaModel as never,
       verificationModel as never,
@@ -140,6 +177,49 @@ describe('AdminService', () => {
     });
     expect(auditService.write).toHaveBeenCalled();
     expect(result).toMatchObject({ status: Status.BLOCKED });
+  });
+
+  it('creates an admin-managed user and writes audit', async () => {
+    const userId = new Types.ObjectId();
+    repo.findUserByEmail.mockResolvedValue(null);
+    repo.findUserByPhone.mockResolvedValue(null);
+    repo.createUser.mockResolvedValue({
+      _id: userId,
+      email: 'new@example.com',
+      status: Status.ACTIVE,
+      roles: [Role.USER],
+    });
+    repo.findUserById.mockResolvedValue({
+      _id: userId,
+      email: 'new@example.com',
+      status: Status.ACTIVE,
+      roles: [Role.USER],
+    });
+
+    const result = await service.createUser(
+      {
+        email: 'NEW@example.com',
+        password: 'Password@123',
+        status: Status.ACTIVE,
+      },
+      'admin-1',
+    );
+
+    expect(repo.createUser).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'new@example.com',
+        status: Status.ACTIVE,
+        roles: [Role.USER],
+      }),
+    );
+    expect(result).toMatchObject({ email: 'new@example.com' });
+    expect(auditService.write).toHaveBeenCalledWith(
+      expect.objectContaining({
+        actorId: 'admin-1',
+        action: 'user.created',
+        resource: 'user',
+      }),
+    );
   });
 
   it('broadcasts to matching users and reports failures', async () => {

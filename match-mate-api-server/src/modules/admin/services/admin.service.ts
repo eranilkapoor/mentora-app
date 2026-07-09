@@ -1,17 +1,32 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
+import * as bcrypt from 'bcryptjs';
 import { AdminRepository } from '../repositories/admin.repository';
 import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
 import { BroadcastDto } from '../dto/broadcast.dto';
 import { BroadcastTarget } from '../enums/broadcast.enums';
 import { AdminQueryDto } from '../dto/admin-query.dto';
+import {
+  AdminAssignUserPlanDto,
+  AdminCancelUserPlanDto,
+  AdminCompleteUserSetupDto,
+  AdminCreateUserDto,
+  AdminProfileSection,
+  AdminSettingsCategory,
+  AdminUpdateUserPreferencesDto,
+  AdminUpdateUserProfileSectionDto,
+  AdminUpdateUserSettingsDto,
+} from '../dto/admin-user-operation.dto';
 import { FilterQuery, Model, Types } from 'mongoose';
 import { buildPaginationMeta } from '@/common/utils/pagination';
 import { UserDocument } from '@/modules/auth/schemas/user.schema';
+import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import {
   Profile,
   ProfileDocument,
 } from '@/modules/profiles/schemas/profile/profile.schema';
+import { ProfilesService } from '@/modules/profiles/services/profiles.service';
+import { PreferenceService } from '@/modules/profiles/services/preference.service';
 import {
   Media,
   MediaDocument,
@@ -35,15 +50,20 @@ import {
   SubscriptionDocument,
 } from '@/modules/subscriptions/schemas/subscription.schema';
 import { PaymentStatus } from '@/modules/payments/enums/payment-status.enum';
-import { SubscriptionStatus } from '@/common/enums';
-import { Status } from '@/common/enums';
+import { Role, Status, SubscriptionStatus } from '@/common/enums';
 import { AnalyticsService } from '@/modules/analytics/services/analytics.service';
 import { AnalyticsQueryDto } from '@/modules/analytics/dto/analytics-query.dto';
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { AdminAuditService } from './admin-audit.service';
 import { ErrorCode } from '@/common/constants';
-import { throwNotFound } from '@/common/exceptions/throw-app-exception';
+import {
+  throwBadRequest,
+  throwConflict,
+  throwNotFound,
+} from '@/common/exceptions/throw-app-exception';
+import { SubscriptionsService } from '@/modules/subscriptions/services/subscriptions.service';
+import { SettingsService } from '@/modules/settings/services/settings.service';
 
 @Injectable()
 export class AdminService {
@@ -52,6 +72,10 @@ export class AdminService {
     private readonly auditService: AdminAuditService,
     private readonly analyticsService: AnalyticsService,
     private readonly notificationsService: NotificationsService,
+    private readonly profilesService: ProfilesService,
+    private readonly preferenceService: PreferenceService,
+    private readonly subscriptionsService: SubscriptionsService,
+    private readonly settingsService: SettingsService,
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
     @InjectModel(Media.name)
@@ -144,6 +168,403 @@ export class AdminService {
     };
   }
 
+  async createUser(
+    dto: AdminCreateUserDto,
+    actorId?: string,
+    req?: AuthenticatedRequest,
+  ) {
+    if (!dto.email && !dto.phone) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'email_or_phone_required',
+      });
+    }
+
+    if (dto.email && (await this.repo.findUserByEmail(dto.email))) {
+      return throwConflict(ErrorCode.AUTH_EMAIL_ALREADY_EXISTS);
+    }
+
+    if (
+      dto.phone &&
+      (await this.repo.findUserByPhone(dto.countryCode, dto.phone))
+    ) {
+      return throwConflict(ErrorCode.AUTH_PHONE_ALREADY_EXISTS);
+    }
+
+    const authAccounts = [];
+    if (dto.email) {
+      authAccounts.push({
+        provider: AuthProvider.EMAIL,
+        providerId: dto.email.toLowerCase(),
+        passwordHash: dto.password
+          ? await bcrypt.hash(dto.password, 10)
+          : undefined,
+        isVerified: dto.isEmailVerified ?? false,
+        isPrimary: true,
+      });
+    }
+    if (dto.phone) {
+      authAccounts.push({
+        provider: AuthProvider.PHONE,
+        providerId: dto.phone,
+        isVerified: dto.isPhoneVerified ?? false,
+        isPrimary: !dto.email,
+      });
+    }
+
+    const user = await this.repo.createUser({
+      email: dto.email?.toLowerCase(),
+      phone: dto.phone
+        ? {
+            countryCode: dto.countryCode ?? '+91',
+            phone: dto.phone,
+          }
+        : undefined,
+      status: dto.status ?? Status.ACTIVE,
+      isEmailVerified: dto.isEmailVerified ?? false,
+      isPhoneVerified: dto.isPhoneVerified ?? false,
+      roles: dto.roles?.length ? dto.roles : [Role.USER],
+      authAccounts,
+      createdBy: actorId,
+      updatedBy: actorId,
+    });
+
+    if (actorId) {
+      await this.auditService.write({
+        req,
+        actorId,
+        action: 'user.created',
+        resource: 'user',
+        targetId: String(user._id),
+        reason: dto.reason,
+        after: {
+          email: user.email,
+          phone: user.phone,
+          status: user.status,
+          roles: user.roles,
+        },
+      });
+    }
+
+    return this.repo.findUserById(String(user._id));
+  }
+
+  async completeUserSetup(
+    userId: string,
+    dto: AdminCompleteUserSetupDto,
+    actorId?: string,
+    req?: AuthenticatedRequest,
+  ) {
+    await this.ensureUserExists(userId);
+    const result: Record<string, unknown> = {};
+
+    if (dto.profile) {
+      result.profile = await this.createUserProfile(
+        userId,
+        dto.profile,
+        actorId,
+        req,
+      );
+    }
+
+    if (dto.preferences) {
+      result.preferences = await this.updateUserPreferences(
+        userId,
+        dto.preferences,
+        actorId,
+        req,
+      );
+    }
+
+    if (dto.subscription) {
+      result.subscription = await this.assignUserPlan(
+        userId,
+        dto.subscription,
+        actorId,
+        req,
+      );
+    }
+
+    return result;
+  }
+
+  async createUserProfile(
+    userId: string,
+    dto: Parameters<ProfilesService['createProfile']>[1],
+    actorId?: string,
+    req?: AuthenticatedRequest,
+  ) {
+    await this.ensureUserExists(userId);
+    const profile = await this.profilesService.createProfile(userId, dto);
+    await this.writeUserOperationAudit(
+      req,
+      actorId,
+      'user.profile_created',
+      userId,
+      {
+        sections: Object.keys(dto),
+      },
+    );
+    return profile;
+  }
+
+  async updateUserProfileSection(
+    userId: string,
+    dto: AdminUpdateUserProfileSectionDto,
+    actorId?: string,
+    req?: AuthenticatedRequest,
+  ) {
+    await this.ensureUserExists(userId);
+    const before = await this.profileModel
+      .findOne({ userId: new Types.ObjectId(userId) })
+      .lean()
+      .exec();
+    const appReq = req as Parameters<ProfilesService['updatePersonalInfo']>[0];
+    let profile;
+
+    switch (dto.section) {
+      case AdminProfileSection.PERSONAL:
+        profile = await this.profilesService.updatePersonalInfo(
+          appReq,
+          userId,
+          dto.data as never,
+        );
+        break;
+      case AdminProfileSection.PHYSICAL:
+        profile = await this.profilesService.updatePhysicalInfo(
+          appReq,
+          userId,
+          dto.data as never,
+        );
+        break;
+      case AdminProfileSection.EDUCATION:
+        profile = await this.profilesService.updateEducationInfo(
+          appReq,
+          userId,
+          dto.data as never,
+        );
+        break;
+      case AdminProfileSection.FAMILY:
+        profile = await this.profilesService.updateFamilyInfo(
+          appReq,
+          userId,
+          dto.data,
+        );
+        break;
+      default:
+        return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+          reason: 'unsupported_profile_section',
+        });
+    }
+
+    await this.writeUserOperationAudit(
+      req,
+      actorId,
+      'user.profile_updated',
+      userId,
+      {
+        section: dto.section,
+        reason: dto.reason,
+        before: before
+          ? { [dto.section]: (before as Record<string, unknown>)[dto.section] }
+          : null,
+        after: { [dto.section]: dto.data },
+      },
+    );
+
+    return profile;
+  }
+
+  async updateUserPreferences(
+    userId: string,
+    dto: AdminUpdateUserPreferencesDto,
+    actorId?: string,
+    req?: AuthenticatedRequest,
+  ) {
+    await this.ensureUserExists(userId);
+    const before = await this.preferenceService.getMyPreference(userId);
+    let preferences = before;
+
+    try {
+      await this.preferenceService.createPreference(userId, dto);
+    } catch {
+      // Existing preference records are updated section-by-section below.
+    }
+
+    if (dto.filters) {
+      preferences = await this.preferenceService.updateFilters(
+        userId,
+        dto.filters,
+      );
+    }
+    if (dto.settings) {
+      preferences = await this.preferenceService.updateSettings(
+        userId,
+        dto.settings,
+      );
+    }
+    if (dto.weights) {
+      preferences = await this.preferenceService.updateWeights(
+        userId,
+        dto.weights,
+      );
+    }
+    if (dto.aboutPartner !== undefined) {
+      preferences = await this.preferenceService.updateAboutPartner(
+        userId,
+        dto.aboutPartner,
+      );
+    }
+
+    await this.writeUserOperationAudit(
+      req,
+      actorId,
+      'user.preferences_updated',
+      userId,
+      {
+        reason: dto.reason,
+        before,
+        after: dto,
+      },
+    );
+
+    return preferences;
+  }
+
+  async assignUserPlan(
+    userId: string,
+    dto: AdminAssignUserPlanDto,
+    actorId?: string,
+    req?: AuthenticatedRequest,
+  ) {
+    const user = await this.ensureUserExists(userId);
+    const before = user.membership;
+    const result = await this.subscriptionsService.purchasePlan(
+      userId,
+      dto.planId,
+      {
+        autoRenew: dto.autoRenew,
+      },
+    );
+
+    await this.writeUserOperationAudit(
+      req,
+      actorId,
+      'user.subscription_assigned',
+      userId,
+      {
+        reason: dto.reason,
+        before,
+        after: {
+          planId: dto.planId,
+          autoRenew: dto.autoRenew,
+        },
+      },
+    );
+
+    return result;
+  }
+
+  async cancelUserPlan(
+    userId: string,
+    dto: AdminCancelUserPlanDto,
+    actorId?: string,
+    req?: AuthenticatedRequest,
+  ) {
+    const user = await this.ensureUserExists(userId);
+    const result = await this.subscriptionsService.cancelSubscription(
+      userId,
+      dto.reason ?? 'Cancelled by admin',
+    );
+
+    await this.writeUserOperationAudit(
+      req,
+      actorId,
+      'user.subscription_cancelled',
+      userId,
+      {
+        reason: dto.reason,
+        before: user.membership,
+      },
+    );
+
+    return result;
+  }
+
+  async updateUserSettings(
+    userId: string,
+    dto: AdminUpdateUserSettingsDto,
+    actorId?: string,
+    req?: AuthenticatedRequest,
+  ) {
+    await this.ensureUserExists(userId);
+    const before = await this.settingsService.getAllSettings(userId);
+    let settings;
+
+    switch (dto.category) {
+      case AdminSettingsCategory.PRIVACY:
+        settings = await this.settingsService.updatePrivacy(
+          userId,
+          dto.settings,
+        );
+        break;
+      case AdminSettingsCategory.NOTIFICATIONS:
+        settings = await this.settingsService.updateNotification(
+          userId,
+          dto.settings,
+        );
+        break;
+      case AdminSettingsCategory.COMMUNICATION:
+        settings = await this.settingsService.updateCommunication(
+          userId,
+          dto.settings,
+        );
+        break;
+      case AdminSettingsCategory.SECURITY:
+        settings = await this.settingsService.updateSecurity(
+          userId,
+          dto.settings,
+        );
+        break;
+      case AdminSettingsCategory.LOCALIZATION:
+        settings = await this.settingsService.updateLocalization(
+          userId,
+          dto.settings,
+        );
+        break;
+      case AdminSettingsCategory.ACCESSIBILITY:
+        settings = await this.settingsService.updateAccessibility(
+          userId,
+          dto.settings,
+        );
+        break;
+      case AdminSettingsCategory.MEDIA:
+        settings = await this.settingsService.updateMedia(userId, dto.settings);
+        break;
+      case AdminSettingsCategory.AI:
+        settings = await this.settingsService.updateAi(userId, dto.settings);
+        break;
+      default:
+        return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+          reason: 'unsupported_settings_category',
+        });
+    }
+
+    await this.writeUserOperationAudit(
+      req,
+      actorId,
+      'user.settings_updated',
+      userId,
+      {
+        reason: dto.reason,
+        category: dto.category,
+        before,
+        after: dto.settings,
+      },
+    );
+
+    return settings;
+  }
+
   async updateUserStatus(
     dto: UpdateUserStatusDto,
     actorId?: string,
@@ -153,7 +574,15 @@ export class AdminService {
     if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
 
     const update: { status?: Status } = {};
-    update.status = dto.isBlocked ? Status.BLOCKED : Status.ACTIVE;
+    if (dto.status) {
+      update.status = dto.status;
+    } else if (dto.isBlocked !== undefined) {
+      update.status = dto.isBlocked ? Status.BLOCKED : Status.ACTIVE;
+    } else {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'status_or_isBlocked_required',
+      });
+    }
 
     const updated = await this.repo.updateUserStatus(dto.userId, update);
 
@@ -175,6 +604,45 @@ export class AdminService {
     }
 
     return updated;
+  }
+
+  private async ensureUserExists(userId: string) {
+    const user = await this.repo.findUserById(userId);
+    if (!user) return throwNotFound(ErrorCode.USER_NOT_FOUND);
+    return user;
+  }
+
+  private async writeUserOperationAudit(
+    req: AuthenticatedRequest | undefined,
+    actorId: string | undefined,
+    action: string,
+    targetId: string,
+    data: {
+      reason?: string;
+      before?: unknown;
+      after?: unknown;
+      [key: string]: unknown;
+    },
+  ) {
+    if (!actorId) return;
+    const { reason, before, after, ...metadata } = data;
+    await this.auditService.write({
+      req,
+      actorId,
+      action,
+      resource: 'user',
+      targetId,
+      reason,
+      before: this.toAuditRecord(before),
+      after: this.toAuditRecord(after),
+      metadata,
+    });
+  }
+
+  private toAuditRecord(value: unknown): Record<string, unknown> | undefined {
+    if (value === undefined || value === null) return undefined;
+    if (typeof value === 'object') return value as Record<string, unknown>;
+    return { value };
   }
 
   async broadcast(
@@ -312,9 +780,12 @@ export class AdminService {
       users,
       revenue,
       activeSubscriptions,
+      cancelledSubscriptions,
       pendingMedia,
       pendingKyc,
       reports,
+      profileQualityRows,
+      revenueKpiRows,
     ] = await Promise.all([
       this.analyticsService.getOverview({
         ...query,
@@ -349,6 +820,12 @@ export class AdminService {
           endDate: { $gt: now },
         })
         .exec(),
+      this.subscriptionModel
+        .countDocuments({
+          status: SubscriptionStatus.CANCELLED,
+          cancelledAt: { $gte: fromDate, $lte: toDate },
+        })
+        .exec(),
       this.mediaModel
         .countDocuments({
           moderationStatus: {
@@ -360,23 +837,136 @@ export class AdminService {
         .countDocuments({ status: VerificationStatus.PENDING })
         .exec(),
       this.reportModel.countDocuments().exec(),
+      this.profileModel
+        .aggregate<{
+          _id: string;
+          count: number;
+          averageProfileScore: number;
+          averageCompletion: number;
+          averageVisibility: number;
+        }>([
+          {
+            $bucket: {
+              groupBy: '$profileScore',
+              boundaries: [0, 40, 70, 90, 101],
+              default: 'unknown',
+              output: {
+                count: { $sum: 1 },
+                averageProfileScore: { $avg: '$profileScore' },
+                averageCompletion: { $avg: '$profileCompletionPercentage' },
+                averageVisibility: { $avg: '$visibilityScore' },
+              },
+            },
+          },
+        ])
+        .exec(),
+      this.paymentModel
+        .aggregate<{
+          _id: string;
+          grossAmount: number;
+          netAmount: number;
+          taxAmount: number;
+          discountAmount: number;
+          transactionCount: number;
+        }>([
+          {
+            $match: {
+              status: PaymentStatus.SUCCESS,
+              paidAt: { $gte: fromDate, $lte: toDate },
+            },
+          },
+          {
+            $group: {
+              _id: '$currency',
+              grossAmount: { $sum: '$amount' },
+              netAmount: { $sum: '$netAmount' },
+              taxAmount: { $sum: '$taxAmount' },
+              discountAmount: { $sum: '$discountAmount' },
+              transactionCount: { $sum: 1 },
+            },
+          },
+        ])
+        .exec(),
     ]);
+
+    const safeProfileQualityRows = Array.isArray(profileQualityRows)
+      ? profileQualityRows
+      : [];
+    const safeRevenueKpiRows = Array.isArray(revenueKpiRows)
+      ? revenueKpiRows
+      : [];
+    const conversion = analyticsOverview?.conversion ?? {};
+    const rangeDays = Math.max(
+      1,
+      Math.ceil((toDate.getTime() - fromDate.getTime()) / 86_400_000),
+    );
+    const subscriptionChurnRate =
+      activeSubscriptions + cancelledSubscriptions > 0
+        ? Number(
+            (
+              (cancelledSubscriptions /
+                (activeSubscriptions + cancelledSubscriptions)) *
+              100
+            ).toFixed(2),
+          )
+        : 0;
+    const profileQuality = {
+      buckets: safeProfileQualityRows.map((row) => ({
+        bucket: String(row._id),
+        count: row.count,
+        averageProfileScore: Number(
+          Number(row.averageProfileScore ?? 0).toFixed(2),
+        ),
+        averageCompletion: Number(
+          Number(row.averageCompletion ?? 0).toFixed(2),
+        ),
+        averageVisibility: Number(
+          Number(row.averageVisibility ?? 0).toFixed(2),
+        ),
+      })),
+    };
 
     return {
       range: { fromDate, toDate },
       analytics: analyticsOverview,
+      matchSuccess: {
+        impressionToViewRate: conversion.impressionToViewRate ?? 0,
+        viewToInterestRate: conversion.viewToInterestRate ?? 0,
+        interestToMatchRate: conversion.interestToMatchRate ?? 0,
+        matchToChatRate: conversion.matchToChatRate ?? 0,
+      },
       users: {
         registeredInRange: users,
       },
       subscriptions: {
         active: activeSubscriptions,
+        cancelledInRange: cancelledSubscriptions,
+        churnRate: subscriptionChurnRate,
       },
       revenue,
+      revenueKpis: {
+        byCurrency: safeRevenueKpiRows,
+        mrrEstimate: safeRevenueKpiRows.map((row) => ({
+          currency: row._id,
+          amount: Number(((row.netAmount / rangeDays) * 30).toFixed(2)),
+        })),
+        arrEstimate: safeRevenueKpiRows.map((row) => ({
+          currency: row._id,
+          amount: Number(((row.netAmount / rangeDays) * 365).toFixed(2)),
+        })),
+      },
       moderation: {
         pendingMedia,
         pendingKyc,
         reports,
       },
+      fakeProfileDetection: {
+        pendingMedia,
+        pendingKyc,
+        reports,
+        ruleBasedRiskSignals: pendingMedia + pendingKyc + reports,
+      },
+      profileQuality,
     };
   }
 

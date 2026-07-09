@@ -78,6 +78,15 @@ export class AdminPaymentsController {
     );
   }
 
+  @Permissions(Permission.PAYMENT_VIEW)
+  @Get(':orderId/invoice/pdf')
+  async getInvoicePdf(@Param('orderId') orderId: string) {
+    return successResponse(
+      await this.paymentsService.adminGetInvoicePdf(orderId),
+      SuccessCode.PAYMENT_INVOICE_FETCHED,
+    );
+  }
+
   @Permissions(Permission.PAYMENT_REFUND)
   @Post(':orderId/refund')
   async refundPayment(

@@ -2,12 +2,13 @@
 
 Current home: `docs/planning/TASK-ROADMAP.md`
 
-Last audited: 2026-07-05
+Last audited: 2026-07-09
 
 This audit compares the roadmap against the current repository:
 
 - Backend: `match-mate-api-server/src`
 - Mobile: `match-mate-mobile-app/src`
+- Admin CRM: `../juaaree-main-app/admin`
 - Launch docs: `docs/launch`
 
 ## Status Legend
@@ -22,7 +23,7 @@ This audit compares the roadmap against the current repository:
 
 ## Executive Audit Summary
 
-The product is much further along than an early roadmap: the repo contains real modules for auth, sessions, profiles, preferences, media, KYC, matches, chat, notifications, payments, subscriptions, referrals, settings, analytics, admin, Redis caching, Socket.IO, Swagger, rate limiting, and launch-readiness documentation.
+The product is much further along than an early roadmap: the repo contains real modules for auth, sessions, profiles, preferences, media, KYC, matches, chat, notifications, payments, subscriptions, referrals, settings, analytics, admin, Redis caching, Socket.IO, Swagger, rate limiting, and launch-readiness documentation. The separate Juaaree admin CRM also contains a Match Mate adapter and screens for API-backed operations.
 
 The previous roadmap overstated completion for several enterprise items. Real provider-dependent or production-ops items such as Aadhaar/DigiLocker, external AI moderation, production notification delivery, Sentry/APM, CDN, Kubernetes, cloud backups, and Play/App Store acceptance evidence should be treated as `PARTIAL`, `TODO`, or `BLOCKED` until production evidence exists.
 
@@ -39,6 +40,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | P1       | Tighten production CORS/env secrets review                                                                     |    DONE | Production CORS is restricted and a production secrets checklist exists.                                                                                                                                        |
 | P2       | Implement OpenAPI-generated TS client or shared API contract                                                   |    DONE | `@matchmate/api-contract` now includes the complete generated Swagger route/schema contract plus curated domain types.                                                                                          |
 | P2       | Add background job coverage for OTP cleanup, orphaned media cleanup, analytics aggregation                     |    DONE | OTP cleanup, deleted-media cleanup, and daily analytics aggregation jobs are implemented.                                                                                                                       |
+| P2       | Audit Juaaree Match Mate admin CRM interface against backend admin APIs                                        |    DONE | `juaaree-main-app` includes a Match Mate API client, login/session refresh, shared list/form/action views, sidebar links, admin pages, and adapter tests for the CRM bridge.                                    |
 
 ## 1. Core Platform
 
@@ -272,56 +274,76 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### 7.2 Payments
 
-| Status  | Task                               | Evidence / Next Action                                                                                |
-| ------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| PARTIAL | Razorpay/Stripe/web gateway        | Payment gateway abstraction/schema exists; real gateway SDK/credentials need production verification. |
-| DONE    | Payment webhook handling/signature | Webhook endpoint and HMAC verification exist.                                                         |
-| DONE    | Refund system                      | Admin refund endpoint/service exists.                                                                 |
-| PARTIAL | UPI support                        | UPI payment method enum exists; real UPI gateway flow needs verification.                             |
-| PARTIAL | Invoice/receipt generation         | Invoice model/API exists; PDF generation/export should be verified.                                   |
-| DONE    | GST report/export                  | Admin GST report endpoint exists.                                                                     |
-| DONE    | Failed payment retry/maintenance   | Payment maintenance task exists.                                                                      |
-| PARTIAL | Payment analytics dashboard        | Admin payment reports exist; full dashboard UI not visible.                                           |
+| Status  | Task                               | Evidence / Next Action                                                                                                                                                    |
+| ------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PARTIAL | Razorpay/Stripe/web gateway        | Payment gateway abstraction/schema exists; real gateway SDK/credentials need production verification.                                                                     |
+| DONE    | Payment webhook handling/signature | Webhook endpoint and HMAC verification exist.                                                                                                                             |
+| DONE    | Refund system                      | Admin refund endpoint/service exists.                                                                                                                                     |
+| PARTIAL | UPI support                        | UPI payment method enum exists; real UPI gateway flow needs verification.                                                                                                 |
+| DONE    | Invoice/receipt generation         | Invoice model/API exists, invoices are generated on successful payments, user/admin PDF export payload endpoints exist, and CRM exposes an invoice PDF payment action.    |
+| DONE    | GST report/export                  | Admin GST report endpoint exists.                                                                                                                                         |
+| DONE    | Failed payment retry/maintenance   | Payment maintenance task exists.                                                                                                                                          |
+| DONE    | Payment analytics dashboard        | Admin dashboard returns revenue KPIs, MRR/ARR estimates, churn rate, payment totals, reconciliation, settlement, and GST reports; CRM exposes the payment report screens. |
 
 ### 7.3 Referral And Growth
 
-| Status  | Task                           | Evidence / Next Action                                    |
-| ------- | ------------------------------ | --------------------------------------------------------- |
-| DONE    | Referral code generation       | Referral service generates unique codes.                  |
-| DONE    | Referral earnings/wallet       | Referral wallet schema/API/mobile screen exist.           |
-| PARTIAL | Referral campaign tracking/UTM | Referral module exists; UTM analytics should be expanded. |
-| DONE    | Referral leaderboard           | API exists.                                               |
+| Status | Task                           | Evidence / Next Action                                                                                                                                                                                 |
+| ------ | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| DONE   | Referral code generation       | Referral service generates unique codes.                                                                                                                                                               |
+| DONE   | Referral earnings/wallet       | Referral wallet schema/API/mobile screen exist.                                                                                                                                                        |
+| DONE   | Referral campaign tracking/UTM | Registration accepts UTM/campaign fields for email, phone OTP, and social signup; referral rewards store source/medium/campaign attribution and analytics events include the same campaign dimensions. |
+| DONE   | Referral leaderboard           | API exists.                                                                                                                                                                                            |
 
 ## 8. Admin Panel And Moderation
 
-| Status  | Task                             | Evidence / Next Action                                                                                                                                          |
-| ------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DONE    | Admin APIs                       | Admin controllers cover dashboard, users, plans, payments, notifications, moderation, RBAC.                                                                     |
-| DONE    | Role-based admin access          | Roles/permissions guards and RBAC controller exist.                                                                                                             |
-| DONE    | User management                  | Admin user list/detail/status routes exist.                                                                                                                     |
-| DONE    | KYC/media moderation queue       | Admin moderation controller exists.                                                                                                                             |
-| DONE    | Bulk communication               | Admin broadcast/notification dispatch routes exist.                                                                                                             |
-| DONE    | Admin audit logs                 | Admin audit schema/service/controller exist.                                                                                                                    |
-| DONE    | Dashboard metrics                | Admin dashboard/analytics endpoints exist.                                                                                                                      |
-| DONE    | Success story/CMS                | Consent-backed schema/API, public published feed, user history, role-guarded moderation, reviewer audit logs, shared contract, and seed sample are implemented. |
-| DONE    | Support ticket/helpdesk          | Full support module now exists with user ticket CRUD/replies, support-staff admin endpoints, notifications, and mobile Help & Support integration.              |
-| PARTIAL | Fake profile detection dashboard | Moderation/analytics foundations exist; no ML fake-profile dashboard found.                                                                                     |
+| Status | Task                             | Evidence / Next Action                                                                                                                                                                                      |
+| ------ | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE   | Admin APIs                       | Admin controllers cover dashboard, users, plans, payments, notifications, moderation, analytics, curated matches, success stories, support, audit logs, and RBAC.                                           |
+| DONE   | Role-based admin access          | Roles/permissions guards and RBAC controller exist.                                                                                                                                                         |
+| DONE   | User management                  | Admin user list/detail/status routes exist.                                                                                                                                                                 |
+| DONE   | KYC/media moderation queue       | Admin moderation controller exists.                                                                                                                                                                         |
+| DONE   | Bulk communication               | Admin broadcast/notification dispatch routes exist.                                                                                                                                                         |
+| DONE   | Admin audit logs                 | Admin audit schema/service/controller exist.                                                                                                                                                                |
+| DONE   | Dashboard metrics                | Admin dashboard/analytics endpoints exist.                                                                                                                                                                  |
+| DONE   | Success story/CMS                | Consent-backed schema/API, public published feed, user history, role-guarded moderation, reviewer audit logs, shared contract, and seed sample are implemented.                                             |
+| DONE   | Support ticket/helpdesk          | Full support module now exists with user ticket CRUD/replies, support-staff admin endpoints, notifications, and mobile Help & Support integration.                                                          |
+| DONE   | Fake profile detection dashboard | Admin dashboard exposes rule-based fake-profile risk signals from pending media, KYC, and report queues; fraud scan tasks/services cover batch detection. External ML scoring remains optional future work. |
+
+### 8.1 Juaaree Admin CRM Interface
+
+| Status  | Task                                    | Evidence / Next Action                                                                                                                                                                                                     |
+| ------- | --------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Match Mate API configuration bridge     | `include/configuration.php` exposes `MATCH_MATE_API_BASE_URL`, API key, timeout, login endpoint, and refresh endpoint settings.                                                                                            |
+| DONE    | CRM login and token refresh             | `MatchMateApiClient` stores Match Mate access/refresh/session data in the admin session and refreshes expired JWTs before protected calls.                                                                                 |
+| DONE    | Match Mate CRM navigation               | `admin/include/template.php` lists Match Mate dashboard, members, audit logs, RBAC, plans, moderation, payments, notifications, analytics, curated matches, support, and stories.                                          |
+| DONE    | Shared admin list/form/action interface | `admin/view/match-mate/*` renders reusable dashboard, list, form, action, and login views for Match Mate resources.                                                                                                        |
+| DONE    | User/profile operations                 | CRM pages exist for members and profiles; admin API/CRM actions now support admin-created users, profile creation/section updates, status changes, detail, role view, role assignment/removal, and broadcast entry points. |
+| DONE    | Admin on-behalf preference/settings     | Admin user routes and CRM row actions support preference updates and settings updates by category with admin audit logs.                                                                                                   |
+| DONE    | Admin subscription attach/change/cancel | Admin user routes and CRM row actions can assign, upgrade/downgrade by replacing the active plan, and cancel subscriptions while syncing user membership and writing audit logs.                                           |
+| DONE    | Moderation operations                   | CRM pages exist for moderation queue, media moderation, chat moderation, KYC review, reports, and success-story review.                                                                                                    |
+| DONE    | Plan and entitlement management         | CRM pages exist for plans, plan features, full plan entitlements, feature assignment/removal, subscriptions alias, and curated matches.                                                                                    |
+| DONE    | Payment operations and reports          | CRM pages exist for payments, refund action, reconciliation, settlement, and GST reports.                                                                                                                                  |
+| DONE    | Notification operations                 | CRM pages exist for notification analytics, direct send, template dispatch/upsert, failed-job DLQ, replay-all, replay-job, and purge actions.                                                                              |
+| DONE    | Analytics operations                    | CRM pages exist for overview, stats, funnel, daily summary, taxonomy, and manual event tracking.                                                                                                                           |
+| DONE    | Adapter smoke coverage                  | `tools/test-matchmate-admin-module.php` covers query filtering, analytics row rendering, selectable aggregate rows, and operator-friendly API error messages.                                                              |
+| PARTIAL | End-to-end CRM acceptance evidence      | Needs a running Match Mate API and seeded admin account to record login, list, action, pagination, and error-state screenshots for all high-risk admin pages.                                                              |
+| PARTIAL | Legacy CRM permission mapping           | Match Mate pages currently depend on Match Mate API RBAC and the adapter's local permission defaults; map them to Juaaree module-level permissions if legacy admin roles must hide links/actions.                          |
 
 ## 9. Analytics And Tracking
 
 ### Backend
 
-| Status  | Task                           | Evidence / Next Action                                                                                              |
-| ------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------- |
-| DONE    | Activity/interaction logs      | Analytics and activity log schemas/services exist.                                                                  |
-| DONE    | Profile analytics              | Match/profile analytics endpoints exist.                                                                            |
-| PARTIAL | Funnel tracking                | Analytics module exists; end-to-end event taxonomy needs expansion.                                                 |
-| DONE    | Admin dashboard metrics        | Admin analytics/dashboard endpoints exist.                                                                          |
-| PARTIAL | Event tracking system          | Backend event tracking exists; no Mixpanel/Amplitude integration found.                                             |
-| TODO    | A/B testing infrastructure     | Env flags exist, but no experiment platform.                                                                        |
-| PARTIAL | Match success rate tracking    | Feature enum/analytics exist; KPI dashboard needs proof.                                                            |
-| PARTIAL | Revenue analytics              | Payment/admin reports exist; MRR/ARR/churn dashboard not complete.                                                  |
-| PARTIAL | Profile quality score tracking | Profile/match scoring and daily analytics aggregation exist; dedicated quality trend dashboard remains future work. |
+| Status | Task                           | Evidence / Next Action                                                                                                                                                                        |
+| ------ | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE   | Activity/interaction logs      | Analytics and activity log schemas/services exist.                                                                                                                                            |
+| DONE   | Profile analytics              | Match/profile analytics endpoints exist.                                                                                                                                                      |
+| DONE   | Funnel tracking                | Analytics taxonomy, event tracking, funnel endpoint, daily aggregation, admin APIs, and CRM funnel screen exist.                                                                              |
+| DONE   | Admin dashboard metrics        | Admin analytics/dashboard endpoints exist.                                                                                                                                                    |
+| DONE   | Event tracking system          | First-party analytics event schema, track endpoint, admin track action, taxonomy, stats, overview, funnel, and daily summary are implemented. External Mixpanel/Amplitude export is optional. |
+| TODO   | A/B testing infrastructure     | Env flags exist, but no experiment platform.                                                                                                                                                  |
+| DONE   | Match success rate tracking    | Admin dashboard exposes match-success conversion KPIs from first-party analytics: impression-to-view, view-to-interest, interest-to-match, and match-to-chat.                                 |
+| DONE   | Revenue analytics              | Admin dashboard exposes revenue by currency, MRR/ARR estimates, active/cancelled subscription counts, churn rate, and CRM payment report screens.                                             |
+| DONE   | Profile quality score tracking | Profile scores, completion, visibility scores, discovery sorting, and admin dashboard quality buckets are implemented.                                                                        |
 
 ### Frontend
 

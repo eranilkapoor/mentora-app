@@ -2,6 +2,7 @@ import {
   IsEmail,
   IsNotEmpty,
   IsOptional,
+  IsString,
   Matches,
   MinLength,
   ValidateIf,
@@ -37,4 +38,20 @@ export class RegisterDto {
     message: 'Invalid referral code',
   })
   referralCode?: string;
+
+  @IsOptional()
+  @IsString()
+  utmSource?: string;
+
+  @IsOptional()
+  @IsString()
+  utmMedium?: string;
+
+  @IsOptional()
+  @IsString()
+  utmCampaign?: string;
+
+  @IsOptional()
+  @IsString()
+  campaign?: string;
 }

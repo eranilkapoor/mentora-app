@@ -147,4 +147,15 @@ export class PaymentsController {
       SuccessCode.PAYMENT_INVOICE_FETCHED,
     );
   }
+
+  @Get(':orderId/invoice/pdf')
+  async getInvoicePdf(
+    @Req() req: AuthenticatedRequest,
+    @Param('orderId') orderId: string,
+  ) {
+    return successResponse(
+      await this.paymentsService.getInvoicePdf(req.user.sub, orderId),
+      SuccessCode.PAYMENT_INVOICE_FETCHED,
+    );
+  }
 }

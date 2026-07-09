@@ -1,12 +1,12 @@
 # MatchMate Execution Prompts
 
-Last reviewed: 2026-07-05
+Last reviewed: 2026-07-09
 
 This file contains only the next executable work. Completed capabilities and
 long-term status belong in `TASK-ROADMAP.md`; launch-console instructions belong
 under `docs/launch`.
 
-## P0 — Launch Evidence
+## P0 - Launch Evidence
 
 ### 1. Google Play licensed-track acceptance test
 
@@ -46,7 +46,7 @@ Run and retain evidence for:
 - Google login, chat reconnect, purchase/restore, push tap, profile PDF export;
 - light/dark theme and large-text checks on launch-critical screens.
 
-## P1 — Code Work
+## P1 - Code Work
 
 ### 4. Settings mutation integration coverage
 
@@ -72,7 +72,37 @@ Add invalidation and optimistic-update tests for paginated matches, chat,
 notifications, support, admin, and success-story mutations. Align wallet and
 analytics only where pagination applies.
 
-## P2 — Product and Operations
+### 8. Juaaree Match Mate CRM acceptance pass
+
+No inline `TODO` or `FIXME` markers were found in the scoped admin/application
+source audit. The next executable TODO from the code is to run the existing
+Juaaree CRM adapter against a live seeded Match Mate API and capture evidence
+for:
+
+- Match Mate CRM login, expired access-token refresh, and logout;
+- dashboard, members, profiles, roles, permissions, audit logs, and pagination;
+- admin-created user flow, profile creation, profile section edit, preference
+  edit, settings category edit, plan assign/upgrade/downgrade, and plan cancel;
+- status changes, role assignment/removal, KYC review, media review, chat review,
+  support-ticket reply/status, success-story review, and curated-match create;
+- plan create/update, plan feature assignment/removal, plan entitlement listing,
+  payment detail/refund, reconciliation, settlement, and GST report screens;
+- notification send, template dispatch/upsert, DLQ detail, replay, replay-all,
+  purge, and disabled-queue error messaging;
+- analytics overview, stats, funnel, daily summary, taxonomy, and manual event
+  tracking screens.
+
+Keep failed or blocked cases in the evidence notes with the API correlation ID
+and the CRM URL that produced the result.
+
+### 9. Juaaree CRM permission mapping
+
+Decide whether Match Mate CRM pages should be hidden by legacy Juaaree admin
+module permissions or only by Match Mate API RBAC. If legacy visibility is
+required, add module-permission records and gate sidebar links, row actions, and
+global actions accordingly.
+
+## P2 - Product and Operations
 
 - Expand conversion, retention, revenue, churn, and referral analytics.
 - Add shared-component visual/accessibility infrastructure such as Storybook.

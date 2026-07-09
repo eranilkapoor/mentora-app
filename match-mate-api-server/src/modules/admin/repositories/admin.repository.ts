@@ -37,6 +37,20 @@ export class AdminRepository {
     return this.userModel.countDocuments(filter);
   }
 
+  createUser(data: Partial<User>) {
+    return this.userModel.create(data);
+  }
+
+  findUserByEmail(email: string) {
+    return this.userModel.findOne({ email: email.toLowerCase() }).exec();
+  }
+
+  findUserByPhone(countryCode: string | undefined, phone: string) {
+    const filter: FilterQuery<UserDocument> = { 'phone.phone': phone };
+    if (countryCode) filter['phone.countryCode'] = countryCode;
+    return this.userModel.findOne(filter).exec();
+  }
+
   findUserById(userId: string) {
     return this.userModel
       .findById(userId)

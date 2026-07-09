@@ -15,6 +15,16 @@ import { AdminService } from '../services/admin.service';
 import { UpdateUserStatusDto } from '../dto/update-user-status.dto';
 import { AdminQueryDto } from '../dto/admin-query.dto';
 import { BroadcastDto } from '../dto/broadcast.dto';
+import {
+  AdminAssignUserPlanDto,
+  AdminCancelUserPlanDto,
+  AdminCompleteUserSetupDto,
+  AdminCreateUserDto,
+  AdminCreateUserProfileDto,
+  AdminUpdateUserPreferencesDto,
+  AdminUpdateUserProfileSectionDto,
+  AdminUpdateUserSettingsDto,
+} from '../dto/admin-user-operation.dto';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
 import { Roles } from '@/common/decorators/roles.decorator';
@@ -67,6 +77,132 @@ export class AdminController {
     return successResponse(
       await this.adminService.getUserById(userId),
       SuccessCode.ADMIN_USER_FETCHED,
+    );
+  }
+
+  @Post('users')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN)
+  @HttpCode(HttpStatus.CREATED)
+  async createUser(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: AdminCreateUserDto,
+  ) {
+    return successResponse(
+      await this.adminService.createUser(dto, req.user.sub, req),
+      SuccessCode.ADMIN_USER_UPDATED,
+    );
+  }
+
+  @Post('users/:userId/setup')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+  @HttpCode(HttpStatus.OK)
+  async completeUserSetup(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() dto: AdminCompleteUserSetupDto,
+  ) {
+    return successResponse(
+      await this.adminService.completeUserSetup(userId, dto, req.user.sub, req),
+      SuccessCode.ADMIN_USER_UPDATED,
+    );
+  }
+
+  @Post('users/:userId/profile')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+  @HttpCode(HttpStatus.CREATED)
+  async createUserProfile(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() dto: AdminCreateUserProfileDto,
+  ) {
+    return successResponse(
+      await this.adminService.createUserProfile(userId, dto, req.user.sub, req),
+      SuccessCode.PROFILE_CREATED,
+    );
+  }
+
+  @Patch('users/:userId/profile')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+  @HttpCode(HttpStatus.OK)
+  async updateUserProfileSection(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() dto: AdminUpdateUserProfileSectionDto,
+  ) {
+    return successResponse(
+      await this.adminService.updateUserProfileSection(
+        userId,
+        dto,
+        req.user.sub,
+        req,
+      ),
+      SuccessCode.PROFILE_UPDATED,
+    );
+  }
+
+  @Patch('users/:userId/preferences')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+  @HttpCode(HttpStatus.OK)
+  async updateUserPreferences(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() dto: AdminUpdateUserPreferencesDto,
+  ) {
+    return successResponse(
+      await this.adminService.updateUserPreferences(
+        userId,
+        dto,
+        req.user.sub,
+        req,
+      ),
+      SuccessCode.PREFERENCES_UPDATED,
+    );
+  }
+
+  @Post('users/:userId/subscription')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FINANCE)
+  @HttpCode(HttpStatus.OK)
+  async assignUserPlan(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() dto: AdminAssignUserPlanDto,
+  ) {
+    return successResponse(
+      await this.adminService.assignUserPlan(userId, dto, req.user.sub, req),
+      SuccessCode.SUBSCRIPTION_CREATED,
+    );
+  }
+
+  @Post('users/:userId/subscription/cancel')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.FINANCE)
+  @HttpCode(HttpStatus.OK)
+  async cancelUserPlan(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() dto: AdminCancelUserPlanDto,
+  ) {
+    return successResponse(
+      await this.adminService.cancelUserPlan(userId, dto, req.user.sub, req),
+      SuccessCode.SUBSCRIPTION_CANCELLED,
+    );
+  }
+
+  @Patch('users/:userId/settings')
+  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
+  @HttpCode(HttpStatus.OK)
+  async updateUserSettings(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+    @Body() dto: AdminUpdateUserSettingsDto,
+  ) {
+    return successResponse(
+      await this.adminService.updateUserSettings(
+        userId,
+        dto,
+        req.user.sub,
+        req,
+      ),
+      SuccessCode.SETTINGS_UPDATED,
     );
   }
 
