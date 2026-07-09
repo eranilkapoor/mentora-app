@@ -511,13 +511,14 @@ export const membershipStyles = (
       flexDirection: 'row',
       alignItems: 'center',
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingTop: 12,
+      paddingBottom: 16,
       backgroundColor: theme.colors.surface,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
       gap: 12,
       ...Platform.select({
-        android: { elevation: 16 },
+        android: { elevation: 12 },
         ios: {
           shadowColor: theme.colors.black,
           shadowOffset: { width: 0, height: -2 },
@@ -825,7 +826,7 @@ export const membershipStyles = (
       lineHeight: 21,
     },
     divider: {
-      height: StyleSheet.hairlineWidth,
+      height: 1,
       backgroundColor: theme.colors.divider,
       marginHorizontal: 16,
       marginTop: 14,

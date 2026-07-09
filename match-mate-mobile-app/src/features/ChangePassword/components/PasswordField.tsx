@@ -53,13 +53,12 @@ export function PasswordField({
           backgroundColor: theme.colors.inputBackground,
           borderRadius: 12,
           borderWidth: 1,
-          borderColor: theme.colors.border,
+          borderColor: theme.colors.inputBorder,
           paddingHorizontal: 12,
           minHeight: 52,
         },
         inputFocused: {
-          borderColor: theme.colors.primary,
-          borderWidth: 1.5,
+          borderColor: theme.colors.inputBorder,
         },
         inputIcon: {
           marginRight: 10,
@@ -98,7 +97,7 @@ export function PasswordField({
   const iconColor = error
     ? theme.colors.error
     : focused
-      ? theme.colors.primary
+      ? theme.colors.inputBorder
       : theme.colors.textMuted;
 
   return (

@@ -256,7 +256,7 @@ export const editProfileStyles = (
 
     // ── Save Button ───────────────────────────────────────────────────────────
     footer: {
-      height: 10,
+      height: StyleSheet.flatten(base.footer).height,
     },
     subSectionLabel: {
       fontSize: 12,

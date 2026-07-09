@@ -191,7 +191,7 @@ function DropdownPickerComponent<T extends string = string>({
             minHeight: 52,
 
             borderWidth: 1,
-            borderColor: error ? theme.colors.error : theme.colors.border,
+            borderColor: error ? theme.colors.error : theme.colors.inputBorder,
 
             borderRadius: 12,
 
@@ -239,7 +239,7 @@ function DropdownPickerComponent<T extends string = string>({
 
           dropdown: {
             borderWidth: 1,
-            borderColor: theme.colors.border,
+            borderColor: theme.colors.inputBorder,
 
             borderRadius: 12,
 
@@ -317,7 +317,7 @@ function DropdownPickerComponent<T extends string = string>({
           },
 
           divider: {
-            height: StyleSheet.hairlineWidth,
+            height: 1,
             backgroundColor: theme.colors.divider,
           },
 

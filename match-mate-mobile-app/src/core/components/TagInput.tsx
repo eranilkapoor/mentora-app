@@ -102,7 +102,7 @@ const createStyles = (theme: Theme, hasError: boolean, isDisabled: boolean) =>
     input: {
       flex: 1,
       borderWidth: 1,
-      borderColor: hasError ? theme.colors.error : theme.colors.border,
+      borderColor: hasError ? theme.colors.error : theme.colors.inputBorder,
       borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 11,
@@ -206,7 +206,6 @@ function TagInputComponent({
 
   // Both disabled and editable=false lock the component
   const isDisabled = disabled || !editable;
-
   const styles = useMemo(
     () =>
       applyAccessibilityToStyles(
@@ -379,4 +378,5 @@ function TagInputComponent({
 }
 
 export const TagInput = React.memo(TagInputComponent);
+
 TagInput.displayName = 'TagInput';

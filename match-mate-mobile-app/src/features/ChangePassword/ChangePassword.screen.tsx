@@ -12,6 +12,7 @@ import {
 import Feather from 'react-native-vector-icons/Feather';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useTheme } from '@/core/theme/ThemeProvider';
 import { changePasswordStyles } from './ChangePassword.styles';
 import { InfoBanner } from './components/InfoBanner';
 import { PasswordField } from './components/PasswordField';
@@ -25,6 +26,7 @@ export default function ChangePasswordScreen({
   navigation,
 }: ChangePasswordScreenProps): React.ReactElement {
   const styles = useThemedStyles(changePasswordStyles);
+  const { theme } = useTheme();
   const { t } = useTranslation();
 
   const {
@@ -110,10 +112,14 @@ export default function ChangePasswordScreen({
                 disabled={loading}
               >
                 {loading ? (
-                  <ActivityIndicator color="#fff" />
+                  <ActivityIndicator color={theme.colors.white} />
                 ) : (
                   <>
-                    <Feather name="check" size={18} color="#fff" />
+                    <Feather
+                      name="check"
+                      size={18}
+                      color={theme.colors.white}
+                    />
                     <Text style={styles.primaryButtonText}>
                       {t('change_password.update')}
                     </Text>

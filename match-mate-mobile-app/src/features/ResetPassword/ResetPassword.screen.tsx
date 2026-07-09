@@ -51,13 +51,6 @@ function getPasswordStrength(password: string): StrengthLevel {
 
 // ─── Password Strength Bar ────────────────────────────────────────────────────
 
-const STRENGTH_COLORS: Record<StrengthLevel, string> = {
-  weak: '#EF4444',
-  fair: '#F59E0B',
-  strong: '#3B82F6',
-  very_strong: '#16A34A',
-};
-
 const STRENGTH_FILL: Record<StrengthLevel, number> = {
   weak: 1,
   fair: 2,
@@ -72,7 +65,13 @@ function StrengthBar({ password }: { password: string }) {
   const { t } = useTranslation();
   const strength = getPasswordStrength(password);
   const fill = STRENGTH_FILL[strength];
-  const color = STRENGTH_COLORS[strength];
+  const strengthColors: Record<StrengthLevel, string> = {
+    weak: theme.colors.error,
+    fair: theme.colors.warning,
+    strong: theme.colors.info,
+    very_strong: theme.colors.success,
+  };
+  const color = strengthColors[strength];
 
   if (!password) return null;
 

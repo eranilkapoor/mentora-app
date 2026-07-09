@@ -59,12 +59,10 @@ export const resetPasswordStyles = (
     },
     labelSpacing: { marginTop: 16 },
     inputWrapper: {
+      ...StyleSheet.flatten(base.input),
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.inputBackground,
       borderRadius: 10,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
       paddingHorizontal: 12,
       marginBottom: 4,
     },
@@ -77,8 +75,7 @@ export const resetPasswordStyles = (
     },
     eyeButton: { padding: 6 },
     inputError: {
-      borderColor: theme.colors.error,
-      backgroundColor: theme.colors.errorLight,
+      ...StyleSheet.flatten(base.inputError),
     },
     errorText: {
       color: theme.colors.error,

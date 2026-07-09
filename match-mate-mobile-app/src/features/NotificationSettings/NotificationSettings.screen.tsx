@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, Switch, ScrollView, StyleSheet } from 'react-native';
+import { View, Text, Switch, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Feather from 'react-native-vector-icons/Feather';
@@ -199,12 +199,20 @@ export default function NotificationSettingsScreen({
     return <Loader fullScreen size="large" />;
   }
 
-  const globalEnabled =
+  const globalEnabled = Boolean(
     settings?.inAppEnabled ||
     settings?.pushEnabled ||
     settings?.emailEnabled ||
     settings?.smsEnabled ||
-    settings?.marketingEnabled;
+    settings?.marketingEnabled
+  );
+
+  const defaultChannelPreference: ChannelPreference = {
+    inApp: false,
+    push: false,
+    email: false,
+    sms: false,
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -219,39 +227,16 @@ export default function NotificationSettingsScreen({
         showsVerticalScrollIndicator={false}
       >
         {/* ── Master card ───────────────────────────────────────────── */}
-        <View
-          style={[
-            masterStyles.card,
-            {
-              backgroundColor: theme.colors.surface,
-              borderColor: theme.colors.divider,
-            },
-          ]}
-        >
-          <View style={masterStyles.left}>
-            <View
-              style={[
-                masterStyles.iconWrapper,
-                { backgroundColor: theme.colors.surface },
-              ]}
-            >
+        <View style={styles.masterCard}>
+          <View style={styles.masterLeft}>
+            <View style={styles.masterIconWrapper}>
               <Feather name="bell" size={22} color={theme.colors.primary} />
             </View>
-            <View>
-              <Text
-                style={[
-                  masterStyles.label,
-                  { color: theme.colors.textPrimary },
-                ]}
-              >
+            <View style={styles.masterTextWrapper}>
+              <Text style={styles.masterLabel}>
                 {t('settings.notifications.all_notifications')}
               </Text>
-              <Text
-                style={[
-                  masterStyles.sublabel,
-                  { color: theme.colors.textSecondary },
-                ]}
-              >
+              <Text style={styles.masterSublabel}>
                 {t('settings.notifications.master_sublabel')}
               </Text>
             </View>
@@ -329,7 +314,9 @@ export default function NotificationSettingsScreen({
               key={event.key}
               label={t(event.label)}
               sublabel={t(event.sublabel)}
-              value={settings?.preferences?.[event.key] as ChannelPreference}
+              value={
+                settings?.preferences?.[event.key] ?? defaultChannelPreference
+              }
               globalEnabled={globalEnabled}
               isLast={index === NOTIFICATION_EVENTS.length - 1}
               onChange={(channel, value) =>
@@ -385,7 +372,7 @@ export default function NotificationSettingsScreen({
             sublabel={t('settings.notifications.quiet_start_sub', {
               defaultValue: 'Notifications are silenced from this time.',
             })}
-            value={settings?.quietHours?.start as string}
+            value={settings?.quietHours?.start ?? '22:00'}
             disabled={!settings?.quietHours?.enabled}
             onPress={() => setActiveQuietField('start')}
           />
@@ -395,7 +382,7 @@ export default function NotificationSettingsScreen({
             sublabel={t('settings.notifications.quiet_end_sub', {
               defaultValue: 'Notifications resume after this time.',
             })}
-            value={settings?.quietHours?.end as string}
+            value={settings?.quietHours?.end ?? '07:00'}
             disabled={!settings?.quietHours?.enabled}
             onPress={() => setActiveQuietField('end')}
           />
@@ -406,7 +393,7 @@ export default function NotificationSettingsScreen({
               defaultValue:
                 'Quiet hours follow this timezone even when you travel.',
             })}
-            value={settings?.quietHours?.timezone as string}
+            value={settings?.quietHours?.timezone ?? 'UTC'}
             disabled={!settings?.quietHours?.enabled}
             isLast
             onPress={() => setActiveQuietField('timezone')}
@@ -420,7 +407,7 @@ export default function NotificationSettingsScreen({
         visible={activeQuietField === 'start'}
         title={t('settings.notifications.quiet_start')}
         options={timeOptions}
-        selectedValue={settings?.quietHours?.start as string}
+        selectedValue={settings?.quietHours?.start ?? '22:00'}
         onSelect={(value) => handleQuietHoursChange('start', value)}
         onClose={() => setActiveQuietField(null)}
       />
@@ -428,7 +415,7 @@ export default function NotificationSettingsScreen({
         visible={activeQuietField === 'end'}
         title={t('settings.notifications.quiet_end')}
         options={timeOptions}
-        selectedValue={settings?.quietHours?.end as string}
+        selectedValue={settings?.quietHours?.end ?? '07:00'}
         onSelect={(value) => handleQuietHoursChange('end', value)}
         onClose={() => setActiveQuietField(null)}
       />
@@ -436,44 +423,10 @@ export default function NotificationSettingsScreen({
         visible={activeQuietField === 'timezone'}
         title={t('settings.notifications.timezone')}
         options={timezoneOptions}
-        selectedValue={settings?.quietHours?.timezone as string}
+        selectedValue={settings?.quietHours?.timezone ?? 'UTC'}
         onSelect={(value) => handleQuietHoursChange('timezone', value)}
         onClose={() => setActiveQuietField(null)}
       />
     </SafeAreaView>
   );
 }
-
-// ─── Local styles (master card only) ─────────────────────────────────────────
-
-const masterStyles = StyleSheet.create({
-  card: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderRadius: 12,
-    borderWidth: StyleSheet.hairlineWidth,
-    padding: 16,
-    marginBottom: 12,
-  },
-  left: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-  },
-  iconWrapper: {
-    width: 44,
-    height: 44,
-    borderRadius: 22,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: '700',
-  },
-  sublabel: {
-    fontSize: 12,
-    marginTop: 2,
-  },
-});

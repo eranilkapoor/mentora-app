@@ -63,9 +63,9 @@ export const LIGHTCOLORS: ColorPalette = {
   // ─────────────────────────────────────────────
   // Borders
   // ─────────────────────────────────────────────
-  border: '#F1D5DC',
+  border: '#EAC8D1',
 
-  divider: '#F8E7EB',
+  divider: '#E6C2CB',
 
   borderStrong: '#E5B7C2',
 
@@ -198,9 +198,9 @@ export const DARKCOLORS: Partial<ColorPalette> = {
   // ─────────────────────────────────────────────
   // Borders
   // ─────────────────────────────────────────────
-  border: '#2D2D2D',
+  border: '#3A3A3A',
 
-  divider: '#3A3A3A',
+  divider: '#4B4B4B',
 
   borderStrong: '#4B4B4B',
 

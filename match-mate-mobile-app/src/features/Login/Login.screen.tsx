@@ -184,7 +184,9 @@ export default function LoginScreen({
           {hasSocialMethods ? (
             <View style={styles.dividerRow}>
               <View style={styles.divider} />
-              <Text style={styles.dividerText}>{t('common.or')}</Text>
+              <Text style={styles.dividerText}>
+                {t('auth.welcome.or_continue')}
+              </Text>
               <View style={styles.divider} />
             </View>
           ) : null}

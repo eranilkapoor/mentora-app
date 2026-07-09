@@ -58,7 +58,7 @@ export function AuthTextField({
   const iconColor = error
     ? theme.colors.error
     : focused
-      ? theme.colors.primary
+      ? theme.colors.inputBorder
       : theme.colors.textMuted;
 
   return (

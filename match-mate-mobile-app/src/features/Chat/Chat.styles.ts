@@ -119,7 +119,7 @@ export const chatStyles = (
     },
     dateLine: {
       flex: 1,
-      height: StyleSheet.hairlineWidth,
+      height: 1,
       backgroundColor: theme.colors.divider,
     },
     dateText: {

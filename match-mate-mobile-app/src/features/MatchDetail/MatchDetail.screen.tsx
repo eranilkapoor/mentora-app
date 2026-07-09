@@ -255,7 +255,7 @@ export default function MatchDetailScreen({
   // ─── Render ───────────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={styles.container} edges={['bottom']}>
+    <SafeAreaView style={styles.container} edges={['top', 'left', 'right']}>
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ── Photo carousel ───────────────────────────────────── */}
         <View style={styles.carouselWrapper}>

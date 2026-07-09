@@ -82,7 +82,7 @@ const createStyles = (theme: Theme) =>
     },
     input: {
       borderWidth: 1,
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.inputBorder,
       borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 13,
@@ -91,6 +91,10 @@ const createStyles = (theme: Theme) =>
       color: theme.colors.textPrimary,
       backgroundColor: theme.colors.inputBackground,
       minHeight: 52,
+    },
+    inputFocused: {
+      borderColor: theme.colors.inputBorder,
+      backgroundColor: theme.colors.inputBackground,
     },
     inputError: {
       borderColor: theme.colors.error,
@@ -104,7 +108,7 @@ const createStyles = (theme: Theme) =>
     },
     dropdown: {
       borderWidth: 1,
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.inputBorder,
       borderRadius: 10,
       marginBottom: 8,
       backgroundColor: theme.colors.surface,
@@ -230,6 +234,7 @@ function SearchMultiSelectComponent(
 
   const [query, setQuery] = useState('');
   const [expanded, setExpanded] = useState(false);
+  const [focused, setFocused] = useState(false);
 
   // ─── Derived ───────────────────────────────────────────────────────────────
 
@@ -299,7 +304,11 @@ function SearchMultiSelectComponent(
         onChangeText={setQuery}
         placeholder={placeholder}
         placeholderTextColor={theme.colors.textMuted}
-        style={[styles.input, errorMessage ? styles.inputError : null]}
+        style={[
+          styles.input,
+          focused ? styles.inputFocused : null,
+          errorMessage ? styles.inputError : null,
+        ]}
         accessibilityLabel={label}
         returnKeyType="done"
         onSubmitEditing={() => {
@@ -309,6 +318,14 @@ function SearchMultiSelectComponent(
           }
         }}
         {...inputProps}
+        onFocus={(event) => {
+          setFocused(true);
+          inputProps?.onFocus?.(event);
+        }}
+        onBlur={(event) => {
+          setFocused(false);
+          inputProps?.onBlur?.(event);
+        }}
       />
 
       {/* Inline error */}

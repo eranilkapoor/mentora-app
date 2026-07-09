@@ -123,7 +123,7 @@ export const welcomeStyles = (
     },
     dividerLine: {
       flex: 1,
-      height: StyleSheet.hairlineWidth,
+      height: 1,
       backgroundColor: theme.colors.divider,
     },
     dividerText: {

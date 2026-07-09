@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
 import {
   TextInput,
   View,
@@ -71,8 +71,6 @@ export function FormInput({
 }: FormInputProps): React.ReactElement {
   const { theme, fontScale, accessibility } = useTheme();
 
-  const [focused, setFocused] = useState(false);
-
   const styles = useMemo(
     () =>
       applyAccessibilityToStyles(
@@ -104,11 +102,7 @@ export function FormInput({
             borderWidth: 1,
             borderRadius: 12,
 
-            borderColor: error
-              ? theme.colors.error
-              : focused
-                ? theme.colors.primary
-                : theme.colors.border,
+            borderColor: error ? theme.colors.error : theme.colors.inputBorder,
 
             backgroundColor: editable
               ? theme.colors.inputBackground
@@ -123,10 +117,6 @@ export function FormInput({
                   boxSizing: 'border-box',
                 } as never)
               : {}),
-          },
-
-          inputWrapperFocused: {
-            borderWidth: 1.5,
           },
 
           inputWrapperDisabled: {
@@ -184,15 +174,7 @@ export function FormInput({
         fontScale,
         accessibility.boldText
       ),
-    [
-      accessibility.boldText,
-      editable,
-      error,
-      focused,
-      fontScale,
-      multiline,
-      theme,
-    ]
+    [accessibility.boldText, editable, error, fontScale, multiline, theme]
   );
 
   return (
@@ -206,11 +188,7 @@ export function FormInput({
       ) : null}
 
       <View
-        style={[
-          styles.inputWrapper,
-          focused && styles.inputWrapperFocused,
-          !editable && styles.inputWrapperDisabled,
-        ]}
+        style={[styles.inputWrapper, !editable && styles.inputWrapperDisabled]}
       >
         {leftElement ? (
           <View style={styles.sideElement}>{leftElement}</View>
@@ -234,8 +212,6 @@ export function FormInput({
           accessibilityState={{
             disabled: !editable,
           }}
-          onFocus={() => setFocused(true)}
-          onBlur={() => setFocused(false)}
           {...rest}
         />
 

@@ -186,7 +186,7 @@ function SingleSelectPillComponent<T extends string = string>({
 
           selectedPill: {
             backgroundColor: theme.colors.primaryLight,
-            borderColor: theme.colors.primary,
+            borderColor: theme.colors.inputBorder,
           },
 
           disabledPill: {

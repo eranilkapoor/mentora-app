@@ -304,11 +304,12 @@ export const matchDetailStyles = (
     cta: {
       flexDirection: 'row',
       paddingHorizontal: 16,
-      paddingVertical: 12,
+      paddingTop: 12,
+      paddingBottom: 16,
       backgroundColor: theme.colors.surface,
       borderTopWidth: StyleSheet.hairlineWidth,
       borderColor: theme.colors.divider,
-      gap: 10,
+      gap: 12,
       ...Platform.select({
         ios: {
           shadowColor: theme.colors.black,
@@ -368,7 +369,9 @@ export const matchDetailStyles = (
     },
 
     // ─── Empty ────────────────────────────────────────────────────────────
-    footerSpacer: { height: 132 },
+    footerSpacer: {
+      height: StyleSheet.flatten(base.footer).height,
+    },
     emptyContainer: {
       flex: 1,
       minHeight: 360,

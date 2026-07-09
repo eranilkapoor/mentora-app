@@ -63,19 +63,16 @@ export const forgotPasswordStyles = (
       marginBottom: 6,
     },
     inputWrapper: {
+      ...StyleSheet.flatten(base.input),
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.inputBackground,
       borderRadius: 10,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
       paddingHorizontal: 12,
       marginBottom: 4,
       minHeight: 50,
     },
     inputFocused: {
-      borderColor: theme.colors.primary,
-      backgroundColor: theme.colors.inputBackground,
+      ...StyleSheet.flatten(base.inputFocused),
     },
     inputIcon: { marginRight: 10 },
     input: {
@@ -85,8 +82,7 @@ export const forgotPasswordStyles = (
       color: theme.colors.textPrimary,
     },
     inputError: {
-      borderColor: theme.colors.error,
-      backgroundColor: theme.colors.errorLight,
+      ...StyleSheet.flatten(base.inputError),
     },
     errorText: {
       color: theme.colors.error,

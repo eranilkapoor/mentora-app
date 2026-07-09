@@ -115,20 +115,17 @@ export const onboardingStyles = (
 
     // ── Inputs ────────────────────────────────────────────────────────────────
     input: {
-      borderWidth: 1,
-      borderColor: theme.colors.border,
+      ...StyleSheet.flatten(base.input),
       borderRadius: 12,
       paddingHorizontal: 12,
       paddingVertical: 13,
       marginBottom: 12,
       fontSize: 15,
       color: theme.colors.textPrimary,
-      backgroundColor: theme.colors.inputBackground,
       minHeight: 52,
     },
     inputError: {
-      borderColor: theme.colors.error,
-      backgroundColor: theme.colors.errorLight,
+      ...StyleSheet.flatten(base.inputError),
     },
 
     // ── Dropdown ──────────────────────────────────────────────────────────────

@@ -223,7 +223,7 @@ export const homeStyles = (
       color: theme.colors.textSecondary,
     },
     divider: {
-      height: StyleSheet.hairlineWidth,
+      height: 1,
       backgroundColor: theme.colors.divider,
       marginBottom: 14,
     },

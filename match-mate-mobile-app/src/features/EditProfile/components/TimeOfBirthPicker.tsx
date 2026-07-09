@@ -176,7 +176,7 @@ function TimeOfBirthPickerComponent({
             borderWidth: 1,
             borderRadius: 12,
 
-            borderColor: theme.colors.border,
+            borderColor: theme.colors.inputBorder,
 
             backgroundColor: theme.colors.inputBackground,
 
@@ -186,7 +186,7 @@ function TimeOfBirthPickerComponent({
           },
 
           triggerActive: {
-            borderColor: theme.colors.primary,
+            borderColor: theme.colors.inputBorder,
           },
 
           triggerDisabled: {
@@ -246,7 +246,7 @@ function TimeOfBirthPickerComponent({
 
             paddingHorizontal: 16,
 
-            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomWidth: 1,
             borderBottomColor: theme.colors.divider,
 
             flexDirection: 'row',
@@ -302,7 +302,7 @@ function TimeOfBirthPickerComponent({
           },
 
           divider: {
-            height: StyleSheet.hairlineWidth,
+            height: 1,
             backgroundColor: theme.colors.divider,
           },
 

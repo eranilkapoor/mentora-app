@@ -41,12 +41,10 @@ export const changePasswordStyles = (
       marginBottom: 8,
     },
     inputContainer: {
+      ...StyleSheet.flatten(base.input),
       flexDirection: 'row',
       alignItems: 'center',
-      backgroundColor: theme.colors.inputBackground,
       borderRadius: 10,
-      borderWidth: 1,
-      borderColor: theme.colors.border,
       paddingHorizontal: 12,
     },
     inputIcon: {
@@ -62,8 +60,7 @@ export const changePasswordStyles = (
       padding: 6,
     },
     inputError: {
-      borderColor: theme.colors.error,
-      backgroundColor: theme.colors.errorLight,
+      ...StyleSheet.flatten(base.inputError),
     },
     inputDisabled: {
       opacity: 0.5,
@@ -74,7 +71,7 @@ export const changePasswordStyles = (
       marginTop: 5,
     },
     separator: {
-      height: StyleSheet.hairlineWidth,
+      height: 1,
       backgroundColor: theme.colors.divider,
       marginVertical: 16,
     },

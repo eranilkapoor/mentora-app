@@ -197,7 +197,7 @@ const DropdownList = memo(function DropdownList({
           listWrapper: {
             borderWidth: 1,
             borderRadius: 12,
-            borderColor: theme.colors.border,
+            borderColor: theme.colors.inputBorder,
 
             backgroundColor: theme.colors.surface,
 
@@ -220,7 +220,7 @@ const DropdownList = memo(function DropdownList({
             paddingHorizontal: 12,
             paddingVertical: 10,
 
-            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomWidth: 1,
             borderBottomColor: theme.colors.divider,
           },
 
@@ -377,7 +377,7 @@ export const DatePicker = memo(function DatePicker({
 
             paddingHorizontal: 14,
 
-            borderColor: error ? theme.colors.error : theme.colors.border,
+            borderColor: error ? theme.colors.error : theme.colors.inputBorder,
 
             backgroundColor: disabled
               ? theme.colors.backgroundLight

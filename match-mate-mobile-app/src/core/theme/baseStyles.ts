@@ -220,16 +220,28 @@ export const createBaseStyles = (theme: Theme) =>
       height: theme.components.input.height,
       borderRadius: theme.components.input.borderRadius,
       borderWidth: theme.components.input.borderWidth,
-      borderColor: theme.colors.border,
+      borderColor: theme.colors.inputBorder,
       backgroundColor: theme.colors.inputBackground,
       paddingHorizontal: theme.spacing.md,
       color: theme.colors.textPrimary,
       fontFamily: theme.typography.fontFamily.regular,
     },
+    inputFocused: {
+      borderColor: theme.colors.inputBorder,
+      backgroundColor: theme.colors.inputBackground,
+    },
+    inputError: {
+      borderColor: theme.colors.error,
+      backgroundColor: theme.colors.errorLight,
+    },
+    inputSuccess: {
+      borderColor: theme.colors.success,
+      backgroundColor: theme.colors.successLight,
+    },
 
     // ─── Divider ──────────────────────────────────────────────────────────
     divider: {
-      height: StyleSheet.hairlineWidth,
+      height: 1,
       backgroundColor: theme.colors.divider,
       marginVertical: theme.spacing.sm,
     },
