@@ -40,6 +40,21 @@ function isValidDateString(date: string): boolean {
   );
 }
 
+const normalizeCountryValue = (value: unknown): unknown =>
+  typeof value === 'string'
+    ? value.trim().toLowerCase().replace(/\s+/g, '_')
+    : value;
+
+const normalizeCountryTransform = ({ value }: { value: unknown }): unknown =>
+  normalizeCountryValue(value);
+
+const normalizeCountryArrayTransform = ({
+  value,
+}: {
+  value: unknown;
+}): unknown =>
+  Array.isArray(value) ? value.map(normalizeCountryValue) : value;
+
 export class BasicDto {
   @IsString()
   @IsNotEmpty()
@@ -70,6 +85,7 @@ export class BasicDto {
   religion!: Religion;
 
   @IsOptional()
+  @Transform(normalizeCountryTransform)
   @IsEnum(Country)
   country?: Country;
 
@@ -265,6 +281,7 @@ export class PreferencesDto {
   manglikStatus?: ManglikStatus[];
 
   @IsOptional()
+  @Transform(normalizeCountryArrayTransform)
   @IsArray()
   @IsEnum(Country, { each: true })
   country?: Country[];

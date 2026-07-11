@@ -48,6 +48,8 @@ export interface UserBlockedPayload {
 
 export const REALTIME_USER_BLOCKED_EVENT = 'realtime:user-blocked';
 export const REALTIME_TYPING_EVENT = 'realtime:typing';
+export const REALTIME_CONVERSATION_UPDATED_EVENT =
+  'realtime:conversation-updated';
 
 export interface RealtimeTypingPayload {
   roomId: string;
@@ -59,6 +61,7 @@ let chatSocket: Socket | null = null;
 let notificationSocket: Socket | null = null;
 let activeToken: string | null = null;
 let authRecoveryInFlight: Promise<unknown> | null = null;
+const joinedRoomIds = new Set<string>();
 
 const buildNamespaceUrl = (namespace: RealtimeNamespace): string =>
   `${getApiOrigin()}/${namespace}`;
@@ -105,6 +108,14 @@ const attachAuthenticationRecovery = (
     if (isRealtimeAuthError(error)) {
       recoverRealtimeAuthentication(dispatch);
     }
+  });
+};
+
+const replayJoinedRooms = (): void => {
+  if (!chatSocket?.connected) return;
+
+  joinedRoomIds.forEach((roomId) => {
+    chatSocket?.emit('room:join', { roomId });
   });
 };
 
@@ -247,6 +258,7 @@ const shouldShowRealtimeToast = (notification: AppNotification): boolean => {
 
 export const connectRealtime = (token: string, dispatch: AppDispatch): void => {
   if (activeToken === token && chatSocket?.connected) {
+    replayJoinedRooms();
     return;
   }
 
@@ -258,12 +270,15 @@ export const connectRealtime = (token: string, dispatch: AppDispatch): void => {
   attachAuthenticationRecovery(chatSocket, dispatch);
   attachAuthenticationRecovery(notificationSocket, dispatch);
 
+  chatSocket.on('connect', replayJoinedRooms);
+
   chatSocket.on('message:new', (message: ChatMessage) => {
     appendMessageToRoomCache(dispatch, message);
     dispatch(chatApi.util.invalidateTags(['Chat']));
   });
 
-  chatSocket.on('conversation:updated', (_conversation: ChatConversation) => {
+  chatSocket.on('conversation:updated', (conversation: ChatConversation) => {
+    DeviceEventEmitter.emit(REALTIME_CONVERSATION_UPDATED_EVENT, conversation);
     dispatch(chatApi.util.invalidateTags(['Chat']));
   });
 
@@ -329,10 +344,14 @@ export const disconnectRealtime = (): void => {
 };
 
 export const joinChatRoom = (roomId: string): void => {
-  chatSocket?.emit('room:join', { roomId });
+  joinedRoomIds.add(roomId);
+  if (chatSocket?.connected) {
+    chatSocket.emit('room:join', { roomId });
+  }
 };
 
 export const leaveChatRoom = (roomId: string): void => {
+  joinedRoomIds.delete(roomId);
   chatSocket?.emit('room:leave', { roomId });
 };
 

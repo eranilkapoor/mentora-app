@@ -48,6 +48,11 @@ function isValidDateString(date: string): boolean {
   );
 }
 
+const normalizeCountryValue = ({ value }: { value: unknown }): unknown =>
+  typeof value === 'string'
+    ? value.trim().toLowerCase().replace(/\s+/g, '_')
+    : value;
+
 export class TimeOfBirthDto {
   @IsOptional()
   @IsString()
@@ -72,6 +77,7 @@ export class PlaceOfBirthDto {
   state?: string;
 
   @IsOptional()
+  @Transform(normalizeCountryValue)
   @IsString()
   country?: Country;
 }
@@ -271,6 +277,7 @@ export class PersonalDto {
   religion!: Religion;
 
   @IsOptional()
+  @Transform(normalizeCountryValue)
   @IsEnum(Country)
   country?: Country;
 
@@ -291,6 +298,7 @@ export class PersonalDto {
   isNri?: boolean;
 
   @IsOptional()
+  @Transform(normalizeCountryValue)
   @IsEnum(Country)
   residencyCountry?: Country;
 

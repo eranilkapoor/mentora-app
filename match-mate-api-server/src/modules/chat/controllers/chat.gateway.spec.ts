@@ -51,6 +51,10 @@ describe('ChatGateway', () => {
     warn: jest.fn(),
   };
 
+  const featureService = {
+    checkAccess: jest.fn(),
+  };
+
   const serverRoomEmitter = {
     emit: jest.fn(),
   };
@@ -87,9 +91,11 @@ describe('ChatGateway', () => {
       jwtService as any,
       configService as any,
       logger as any,
+      featureService as any,
     );
     gateway.server = server as any;
     jwtService.verifyAsync.mockResolvedValue({ sub: userId });
+    featureService.checkAccess.mockResolvedValue({ allowed: true });
   });
 
   it('binds the realtime server after initialization', () => {
@@ -107,6 +113,10 @@ describe('ChatGateway', () => {
       secret: 'secret',
       audience: 'audience',
       issuer: 'issuer',
+    });
+    expect(featureService.checkAccess).toHaveBeenCalledWith('chat_access', {
+      userId,
+      timestamp: expect.any(Date),
     });
     expect(presence.connect).toHaveBeenCalledWith(userId, 'socket-1');
     expect(client.join).toHaveBeenCalledWith(`chat:user:${userId}`);
@@ -142,6 +152,19 @@ describe('ChatGateway', () => {
     expect(logger.warn).toHaveBeenCalledWith(
       'Socket authentication failed: Unauthorized',
     );
+  });
+
+  it('rejects sockets without chat plan access', async () => {
+    featureService.checkAccess.mockRejectedValue(new Error('plan denied'));
+    const client = socket();
+
+    await gateway.handleConnection(client);
+
+    expect(logger.warn).toHaveBeenCalledWith(
+      'Socket authentication failed: plan denied',
+    );
+    expect(client.disconnect).toHaveBeenCalledWith(true);
+    expect(presence.connect).not.toHaveBeenCalled();
   });
 
   it('updates presence when a connected socket disconnects', () => {
@@ -211,6 +234,10 @@ describe('ChatGateway', () => {
     expect(chatService.sendMessage).toHaveBeenCalledWith(userId, {
       roomId,
       content: 'Hello',
+    });
+    expect(featureService.checkAccess).toHaveBeenCalledWith('message_limit', {
+      userId,
+      timestamp: expect.any(Date),
     });
     expect(chatService.markRoomRead).toHaveBeenCalledWith(userId, roomId, {
       roomId,

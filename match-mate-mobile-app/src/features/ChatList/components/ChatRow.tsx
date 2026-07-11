@@ -130,7 +130,9 @@ export function ChatRow({
           </Text>
           {item.unreadCount > 0 && (
             <View style={styles.badge}>
-              <Text style={styles.badgeText}>{item.unreadCount}</Text>
+              <Text style={styles.badgeText}>
+                {item.unreadCount > 99 ? '99+' : item.unreadCount}
+              </Text>
             </View>
           )}
         </View>

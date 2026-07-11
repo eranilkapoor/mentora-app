@@ -17,7 +17,6 @@ describe('ChatController', () => {
     sendMessage: jest.fn(),
     uploadAttachments: jest.fn(),
     deleteOwnMessage: jest.fn(),
-    reactToMessage: jest.fn(),
     markRoomRead: jest.fn(),
     updateRoomSettings: jest.fn(),
   };
@@ -101,19 +100,15 @@ describe('ChatController', () => {
     expect(read.code).toBe(SuccessCode.CHAT_MESSAGE_READ);
   });
 
-  it('handles attachment, reaction, delete, request response, and room settings APIs', async () => {
+  it('handles attachment, delete, request response, and room settings APIs', async () => {
     const files = [{ originalname: 'photo.jpg' }] as Express.Multer.File[];
     service.uploadAttachments.mockResolvedValue([{ id: 'file-1' }]);
     service.deleteOwnMessage.mockResolvedValue({ deleted: true });
-    service.reactToMessage.mockResolvedValue({ emoji: 'like' });
     service.respondToChatRequest.mockResolvedValue({ status: 'accepted' });
     service.updateRoomSettings.mockResolvedValue({ pinned: true });
 
     const upload = await controller.uploadAttachments(req, files);
     const deleted = await controller.deleteMessage(req, roomId, 'message-1');
-    const reaction = await controller.reactToMessage(req, roomId, 'message-1', {
-      emoji: 'like',
-    });
     const request = await controller.respondToChatRequest(req, roomId, {
       action: 'ACCEPT',
     });
@@ -127,12 +122,6 @@ describe('ChatController', () => {
       roomId,
       'message-1',
     );
-    expect(service.reactToMessage).toHaveBeenCalledWith(
-      userId,
-      roomId,
-      'message-1',
-      'like',
-    );
     expect(service.respondToChatRequest).toHaveBeenCalledWith(
       userId,
       roomId,
@@ -143,7 +132,6 @@ describe('ChatController', () => {
     });
     expect(upload.code).toBe(SuccessCode.FILE_UPLOADED);
     expect(deleted.code).toBe(SuccessCode.CHAT_MESSAGE_DELETED);
-    expect(reaction.code).toBe(SuccessCode.CHAT_MESSAGE_SENT);
     expect(request.code).toBe(SuccessCode.CHAT_FETCHED);
     expect(settings.code).toBe(SuccessCode.CHAT_FETCHED);
   });

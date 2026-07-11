@@ -73,7 +73,10 @@ const createFixture = () => {
     getVideos: jest.fn(),
     addImages: jest.fn(),
   };
-  const preferenceService = { createPreference: jest.fn() };
+  const preferenceService = {
+    createPreference: jest.fn(),
+    upsertPreference: jest.fn(),
+  };
   const profileScoringService = { calculate: jest.fn() };
   const settingsService = { getOrCreateAllUserSettings: jest.fn() };
   const logger = { error: jest.fn() };
@@ -110,6 +113,7 @@ const createFixture = () => {
   mediaService.getVideos.mockResolvedValue([]);
   mediaService.addImages.mockResolvedValue([]);
   preferenceService.createPreference.mockResolvedValue({});
+  preferenceService.upsertPreference.mockResolvedValue({});
   settingsService.getOrCreateAllUserSettings.mockResolvedValue({});
   profileScoringService.calculate.mockReturnValue({
     missingFields: [],
@@ -877,6 +881,7 @@ describe('ProfilesService', () => {
     fixture.userRepo.findById.mockResolvedValue(user);
     fixture.mediaService.addImages.mockResolvedValue([{}, {}]);
     fixture.profileRepo.create.mockResolvedValue({});
+    const profileImages = [{ originalname: 'photo.jpg' }] as never;
     const dto = {
       primaryImageIndex: '1',
       basic: {
@@ -913,7 +918,7 @@ describe('ProfilesService', () => {
         }),
         USER_ID,
         dto,
-        [],
+        profileImages,
       ),
     ).resolves.toEqual({
       userId: user._id,
@@ -923,10 +928,10 @@ describe('ProfilesService', () => {
     expect(fixture.mediaService.addImages).toHaveBeenCalledWith(
       expect.any(Object),
       USER_ID,
-      [],
+      profileImages,
       1,
     );
-    expect(fixture.preferenceService.createPreference).toHaveBeenCalled();
+    expect(fixture.preferenceService.upsertPreference).toHaveBeenCalled();
     expect(
       fixture.settingsService.getOrCreateAllUserSettings,
     ).toHaveBeenCalled();
@@ -964,15 +969,62 @@ describe('ProfilesService', () => {
 
     await fixture.service.onboardingProfile(request(), USER_ID, dto, []);
 
-    expect(fixture.mediaService.addImages).toHaveBeenCalledWith(
-      expect.any(Object),
-      USER_ID,
-      [],
-      0,
-    );
+    expect(fixture.mediaService.addImages).not.toHaveBeenCalled();
     expect(fixture.notificationsService.notify).toHaveBeenCalledWith(
       expect.objectContaining({ channels: ['in_app', 'push'] }),
     );
+  });
+
+  it('updates existing profiles when retrying onboarding after a partial failure', async () => {
+    const fixture = createFixture();
+    const user = {
+      _id: new Types.ObjectId(USER_ID),
+      isOnboardingCompleted: false,
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    fixture.userRepo.findById.mockResolvedValue(user);
+    fixture.profileRepo.exists.mockResolvedValue(true);
+    fixture.profileRepo.update.mockResolvedValue({});
+    fixture.mediaService.getImages.mockResolvedValue([{ _id: 'image-1' }]);
+    const dto = {
+      basic: {
+        profileFor: 'self',
+        firstName: 'Asha',
+        gender: 'female',
+        dateOfBirth: '1995-05-10',
+        religion: 'hindu',
+        maritalStatus: 'never_married',
+        country: 'india',
+        height: 165,
+        qualification: 'btech',
+        occupation: 'Engineer',
+      },
+      preferences: {
+        ageRange: { min: 25, max: 35 },
+        heightRange: { min: 150, max: 190 },
+        maritalStatus: ['never_married'],
+        religion: ['hindu'],
+        country: ['india'],
+      },
+    } as never;
+
+    await expect(
+      fixture.service.onboardingProfile(request(), USER_ID, dto, [
+        { originalname: 'photo.jpg' },
+      ] as never),
+    ).resolves.toEqual({
+      userId: user._id,
+      isOnboardingCompleted: true,
+    });
+
+    expect(fixture.profileRepo.create).not.toHaveBeenCalled();
+    expect(fixture.mediaService.addImages).not.toHaveBeenCalled();
+    expect(fixture.profileRepo.update).toHaveBeenCalledWith(
+      USER_ID,
+      expect.objectContaining({ status: ProfileStatus.ACTIVE }),
+    );
+    expect(fixture.cache.del).toHaveBeenCalledWith(`profile:${USER_ID}`);
+    expect(fixture.preferenceService.upsertPreference).toHaveBeenCalled();
   });
 
   it('rejects onboarding for missing users and maps unexpected failures', async () => {

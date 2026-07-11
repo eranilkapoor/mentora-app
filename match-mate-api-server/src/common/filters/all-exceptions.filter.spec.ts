@@ -116,6 +116,11 @@ describe('AllExceptionsFilter', () => {
         meta: { source: 'validation' },
       }),
     );
+    expect(logger.error).toHaveBeenCalledWith(
+      'ERROR LOG :',
+      expect.stringContaining('"errors":[{"field":"email"}]'),
+      expect.objectContaining({ errors: [{ field: 'email' }] }),
+    );
   });
 
   it('uses defaults for a structured response with no optional fields', () => {

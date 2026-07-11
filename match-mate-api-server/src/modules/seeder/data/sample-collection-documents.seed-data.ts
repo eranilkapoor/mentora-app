@@ -700,8 +700,7 @@ export const SAMPLE_COLLECTION_DOCUMENTS = [
   {
     collection: COLLECTION_NAMES.CHAT_MESSAGE,
     module: 'chat',
-    description:
-      'Message with attachments, reactions, moderation, and delivery state.',
+    description: 'Message with attachments, moderation, and delivery state.',
     document: {
       roomId: ROOM_ID,
       senderId: USER_ID,
@@ -715,13 +714,6 @@ export const SAMPLE_COLLECTION_DOCUMENTS = [
           name: 'family-event.jpg',
           mimeType: 'image/jpeg',
           size: 242000,
-        },
-      ],
-      reactions: [
-        {
-          userId: TARGET_USER_ID,
-          emoji: 'heart',
-          reactedAt: '2026-06-15T00:17:00.000Z',
         },
       ],
       moderationStatus: 'approved',

@@ -39,57 +39,10 @@ export class PreferenceService {
         });
       }
 
-      const mergedFilters: PartnerFilters = this.sanitizeReligiousFilters({
-        childPreference:
-          dto?.filters?.childPreference ?? ChildPreference.DOES_NOT_MATTER,
-        residencyPreference:
-          dto?.filters?.residencyPreference ??
-          ResidencyPreference.DOES_NOT_MATTER,
-        ...(dto?.filters ?? {}),
-      });
-
-      const mergedWeights = {
-        age: 10,
-        height: 10,
-        religion: 15,
-        caste: 10,
-        location: 10,
-        education: 10,
-        occupation: 10,
-        lifestyle: 10,
-        horoscope: 15,
-        ...(dto?.weights ?? {}),
-      };
-
-      if (dto?.weights) {
-        const total = Object.values(mergedWeights).reduce<number>(
-          (sum, val) => sum + (typeof val === 'number' ? val : 0),
-          0,
-        );
-        if (total !== WEIGHTS_TOTAL) {
-          return throwBadRequest(ErrorCode.PREFERENCES_INVALID_RANGE, {
-            reason: 'invalid_weights_total',
-            expected: WEIGHTS_TOTAL,
-            received: total,
-          });
-        }
-      }
-
-      const payload: Partial<Preference> = {
-        filters: mergedFilters,
-        settings: {
-          isStrict: false,
-          allowPartialMatches: true,
-          horoscopeRequired: false,
-          profileVerificationRequired: false,
-          minimumMatchScore: 50,
-          ...(dto?.settings ?? {}),
-        },
-        weights: mergedWeights,
-        aboutPartner: dto?.aboutPartner ?? '',
-      };
-
-      const result = await this.preferenceRepo.upsert(userId, payload);
+      const result = await this.preferenceRepo.upsert(
+        userId,
+        this.buildPreferencePayload(dto),
+      );
       await this.invalidateCache(userId);
 
       return result;
@@ -97,6 +50,23 @@ export class PreferenceService {
       if (error instanceof AppException) throw error;
       return throwBadRequest(ErrorCode.INVALID_REQUEST, {
         reason: 'failed_to_create_preferences',
+      });
+    }
+  }
+
+  async upsertPreference(userId: string, dto?: UpdatePreferenceDto) {
+    try {
+      const result = await this.preferenceRepo.upsert(
+        userId,
+        this.buildPreferencePayload(dto),
+      );
+      await this.invalidateCache(userId);
+
+      return result;
+    } catch (error) {
+      if (error instanceof AppException) throw error;
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'failed_to_upsert_preferences',
       });
     }
   }
@@ -244,5 +214,59 @@ export class PreferenceService {
     }
 
     return next;
+  }
+
+  private buildPreferencePayload(
+    dto?: UpdatePreferenceDto,
+  ): Partial<Preference> {
+    const mergedFilters: PartnerFilters = this.sanitizeReligiousFilters({
+      childPreference:
+        dto?.filters?.childPreference ?? ChildPreference.DOES_NOT_MATTER,
+      residencyPreference:
+        dto?.filters?.residencyPreference ??
+        ResidencyPreference.DOES_NOT_MATTER,
+      ...(dto?.filters ?? {}),
+    });
+
+    const mergedWeights = {
+      age: 10,
+      height: 10,
+      religion: 15,
+      caste: 10,
+      location: 10,
+      education: 10,
+      occupation: 10,
+      lifestyle: 10,
+      horoscope: 15,
+      ...(dto?.weights ?? {}),
+    };
+
+    if (dto?.weights) {
+      const total = Object.values(mergedWeights).reduce<number>(
+        (sum, val) => sum + (typeof val === 'number' ? val : 0),
+        0,
+      );
+      if (total !== WEIGHTS_TOTAL) {
+        throwBadRequest(ErrorCode.PREFERENCES_INVALID_RANGE, {
+          reason: 'invalid_weights_total',
+          expected: WEIGHTS_TOTAL,
+          received: total,
+        });
+      }
+    }
+
+    return {
+      filters: mergedFilters,
+      settings: {
+        isStrict: false,
+        allowPartialMatches: true,
+        horoscopeRequired: false,
+        profileVerificationRequired: false,
+        minimumMatchScore: 50,
+        ...(dto?.settings ?? {}),
+      },
+      weights: mergedWeights,
+      aboutPartner: dto?.aboutPartner ?? '',
+    };
   }
 }

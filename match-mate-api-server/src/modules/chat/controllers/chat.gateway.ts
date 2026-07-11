@@ -22,6 +22,8 @@ import { TypingEventDto } from '../dto/typing-event.dto';
 import { ChatPresenceService } from '../services/chat-presence.service';
 import { getJwtConfig } from '@/config/jwt.config';
 import { AppLogger } from '@/common/logger/logger.service';
+import { FeatureKey } from '@/common/enums';
+import { FeatureService } from '@/modules/subscriptions/services/feature.service';
 
 interface SocketJwtPayload {
   sub: string;
@@ -60,6 +62,7 @@ export class ChatGateway
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly logger: AppLogger,
+    private readonly featureService: FeatureService,
   ) {}
 
   afterInit(server: Server): void {
@@ -72,6 +75,7 @@ export class ChatGateway
     try {
       const payload = await this.verifyClient(socket);
       const userId = payload.sub;
+      await this.ensureFeatureAccess(userId, FeatureKey.CHAT_ACCESS);
 
       this.presence.connect(userId, socket.id);
       socket.data.userId = userId;
@@ -150,6 +154,7 @@ export class ChatGateway
   ): Promise<{ event: string; data: unknown }> {
     const socket = client as AuthenticatedSocket;
     const userId = this.getClientUserId(socket);
+    await this.ensureFeatureAccess(userId, FeatureKey.MESSAGE_LIMIT);
 
     const message = await this.chatService.sendMessage(userId, payload);
 
@@ -274,5 +279,15 @@ export class ChatGateway
 
   private userRoom(userId: string): string {
     return this.realtime.getUserRoom(userId);
+  }
+
+  private async ensureFeatureAccess(
+    userId: string,
+    feature: FeatureKey,
+  ): Promise<void> {
+    await this.featureService.checkAccess(feature, {
+      userId,
+      timestamp: new Date(),
+    });
   }
 }

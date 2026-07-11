@@ -37,6 +37,22 @@ const providerChecks = [
     ],
   },
   {
+    provider: 'email-smtp',
+    enabled: () =>
+      process.env.NOTIFICATION_EMAIL_ENABLED === 'true' &&
+      process.env.NOTIFICATION_EMAIL_PROVIDER === 'smtp',
+    vars: ['NOTIFICATION_EMAIL_FROM'],
+    anyOf: [
+      ['NOTIFICATION_EMAIL_SMTP_DSN'],
+      [
+        'NOTIFICATION_EMAIL_SMTP_HOST',
+        'NOTIFICATION_EMAIL_SMTP_PORT',
+        'NOTIFICATION_EMAIL_SMTP_USERNAME',
+        'NOTIFICATION_EMAIL_SMTP_PASSWORD',
+      ],
+    ],
+  },
+  {
     provider: 'sms-msg91',
     enabled: () =>
       process.env.NOTIFICATION_SMS_ENABLED === 'true' &&

@@ -48,11 +48,9 @@ function MessageStatusTicks({
 export function MessageBubble({
   item,
   onLongPress,
-  onReact,
 }: {
   item: Message;
   onLongPress?: (message: Message) => void;
-  onReact?: (message: Message, emoji: string) => void;
 }): React.ReactElement {
   const isMe = item.senderId === 'me';
   const styles = useThemedStyles(chatStyles);
@@ -60,8 +58,6 @@ export function MessageBubble({
   const { t } = useTranslation();
   const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const [showQuickReactions, setShowQuickReactions] = useState(false);
-  const quickReactions = ['\u{1F44D}', '\u2764\uFE0F', '\u{1F602}'];
 
   useEffect(
     () => () => {
@@ -103,15 +99,10 @@ export function MessageBubble({
   return (
     <Pressable
       style={[styles.messageRow, isMe ? styles.rightAlign : styles.leftAlign]}
-      onHoverIn={() => setShowQuickReactions(true)}
-      onHoverOut={() => setShowQuickReactions(false)}
-      onFocus={() => setShowQuickReactions(true)}
-      onBlur={() => setShowQuickReactions(false)}
     >
       <TouchableOpacity
         style={[styles.bubble, isMe ? styles.myBubble : styles.otherBubble]}
         activeOpacity={0.9}
-        onPressIn={() => setShowQuickReactions(true)}
         onLongPress={() => onLongPress?.(item)}
         accessibilityRole="text"
       >
@@ -162,37 +153,7 @@ export function MessageBubble({
           </Text>
           {isMe ? <MessageStatusTicks status={item.status} /> : null}
         </View>
-        {item.reactions?.length ? (
-          <View style={styles.reactionSummary}>
-            {item.reactions.map((reaction) => (
-              <Text
-                key={`${reaction.userId}-${reaction.emoji}`}
-                style={styles.reactionSummaryText}
-              >
-                {reaction.emoji}
-              </Text>
-            ))}
-          </View>
-        ) : null}
       </TouchableOpacity>
-      {showQuickReactions ? (
-        <View style={[styles.reactionBar, isMe && styles.reactionBarMe]}>
-          {quickReactions.map((emoji) => (
-            <TouchableOpacity
-              key={emoji}
-              style={styles.reactionButton}
-              onPress={() => {
-                onReact?.(item, emoji);
-                setShowQuickReactions(false);
-              }}
-              accessibilityRole="button"
-              accessibilityLabel={t('chat.react_with_emoji', { emoji })}
-            >
-              <Text style={styles.reactionButtonText}>{emoji}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      ) : null}
     </Pressable>
   );
 }

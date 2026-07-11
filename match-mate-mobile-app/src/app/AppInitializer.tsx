@@ -291,12 +291,19 @@ export default function AppInitializer({ children }: Props) {
           reportError(error, { source: 'AppInitializer.trackAppBackground' });
         });
       }
+
+      if (
+        previousState.match(/inactive|background/) &&
+        nextState === 'active'
+      ) {
+        connectRealtime(accessToken, dispatch);
+      }
     });
 
     return () => {
       subscription.remove();
     };
-  }, [accessToken, trackAnalyticsEvent, userId]);
+  }, [accessToken, dispatch, trackAnalyticsEvent, userId]);
 
   useEffect(() => {
     setErrorReporterUser(userId ? { id: userId } : null);

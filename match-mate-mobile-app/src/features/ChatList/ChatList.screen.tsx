@@ -31,6 +31,7 @@ import {
 } from '@/store/services/chatApi.service';
 import { useAppSelector } from '@/store/hooks';
 import {
+  REALTIME_CONVERSATION_UPDATED_EVENT,
   REALTIME_TYPING_EVENT,
   RealtimeTypingPayload,
 } from '@/core/realtime/realtime.service';
@@ -81,6 +82,7 @@ export default function ChatListScreen({
   const [conversationPages, setConversationPages] = useState<
     ChatConversation[]
   >([]);
+  const [totalUnread, setTotalUnread] = useState(0);
   const [typingByRoom, setTypingByRoom] = useState<Record<string, boolean>>({});
   const hasFocusedOnceRef = useRef(false);
   const typingTimersRef = useRef<Record<string, ReturnType<typeof setTimeout>>>(
@@ -115,6 +117,7 @@ export default function ChatListScreen({
 
   useEffect(() => {
     if (!data?.success) return;
+    setTotalUnread(data.data.unreadTotal);
 
     setConversationPages((prev) => {
       const next = page === 1 ? [] : [...prev];
@@ -134,7 +137,7 @@ export default function ChatListScreen({
 
   useEffect(() => {
     const typingTimers = typingTimersRef.current;
-    const subscription = DeviceEventEmitter.addListener(
+    const typingSubscription = DeviceEventEmitter.addListener(
       REALTIME_TYPING_EVENT,
       (payload: RealtimeTypingPayload) => {
         if (payload.userId === currentUserId) return;
@@ -158,12 +161,41 @@ export default function ChatListScreen({
         }
       }
     );
+    const conversationSubscription = DeviceEventEmitter.addListener(
+      REALTIME_CONVERSATION_UPDATED_EVENT,
+      (conversation: ChatConversation) => {
+        setConversationPages((prev) => {
+          const existingIndex = prev.findIndex(
+            (item) => item.roomId === conversation.roomId
+          );
+
+          if (existingIndex < 0) {
+            return prev;
+          }
+
+          const previousUnreadCount = prev[existingIndex]?.unreadCount ?? 0;
+          const unreadDelta = conversation.unreadCount - previousUnreadCount;
+          if (unreadDelta !== 0) {
+            setTotalUnread((value) => Math.max(0, value + unreadDelta));
+          }
+
+          if (activeFilter === 'unread' && conversation.unreadCount === 0) {
+            return prev.filter((item) => item.roomId !== conversation.roomId);
+          }
+
+          const next = [...prev];
+          next[existingIndex] = conversation;
+          return next;
+        });
+      }
+    );
 
     return () => {
-      subscription.remove();
+      typingSubscription.remove();
+      conversationSubscription.remove();
       Object.values(typingTimers).forEach(clearTimeout);
     };
-  }, [currentUserId]);
+  }, [activeFilter, currentUserId]);
 
   const matches = useMemo<ChatMatch[]>(
     () =>
@@ -228,7 +260,6 @@ export default function ChatListScreen({
 
   const visibleMatches = matches;
 
-  const totalUnread = data?.success ? data.data.unreadTotal : 0;
   const hasMore = Boolean(data?.success && data.data.hasMore);
 
   const handleLoadMore = useCallback(() => {

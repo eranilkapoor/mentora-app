@@ -173,26 +173,48 @@ export const notificationStyles = (
       color: theme.colors.primary,
       textTransform: 'uppercase',
       letterSpacing: 0,
-      flex: 1,
-    },
-    detailCategoryRow: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
       marginBottom: 6,
     },
-    detailStatusPill: {
-      paddingHorizontal: 7,
-      paddingVertical: 3,
+    detailStateBanner: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      padding: 12,
       borderRadius: 8,
       backgroundColor: theme.colors.backgroundLight,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.divider,
     },
-    detailStatusPillUnread: {
+    detailStateBannerUnread: {
       backgroundColor: theme.colors.primaryLight,
+      borderColor: theme.colors.primaryBorder,
     },
-    detailStatusText: {
-      fontSize: 10,
-      fontWeight: '700',
+    detailStateIcon: {
+      width: 32,
+      height: 32,
+      borderRadius: 8,
+      backgroundColor: theme.colors.successLight,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    detailStateIconUnread: {
+      backgroundColor: theme.colors.surface,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
+    },
+    detailStateText: {
+      flex: 1,
+      minWidth: 0,
+    },
+    detailStateTitle: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: theme.colors.textPrimary,
+      marginBottom: 2,
+    },
+    detailStateDescription: {
+      fontSize: 12,
+      lineHeight: 17,
       color: theme.colors.textSecondary,
     },
     detailTitle: {

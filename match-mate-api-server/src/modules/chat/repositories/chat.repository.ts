@@ -277,33 +277,6 @@ export class ChatRepository {
     return this.messageModel.findById(messageId).lean();
   }
 
-  async setMessageReaction(messageId: string, userId: string, emoji?: string) {
-    const messageObjectId = new Types.ObjectId(messageId);
-    const userObjectId = new Types.ObjectId(userId);
-
-    await this.messageModel.updateOne(
-      { _id: messageObjectId },
-      { $pull: { reactions: { userId: userObjectId } } },
-    );
-
-    if (emoji) {
-      await this.messageModel.updateOne(
-        { _id: messageObjectId },
-        {
-          $push: {
-            reactions: {
-              userId: userObjectId,
-              emoji,
-              reactedAt: new Date(),
-            },
-          },
-        },
-      );
-    }
-
-    return this.messageModel.findById(messageObjectId).lean().exec();
-  }
-
   softDeleteMessageForEveryone(messageId: string) {
     return this.messageModel.findByIdAndUpdate(
       messageId,

@@ -110,6 +110,18 @@ export class ProfilesService {
     }
   }
 
+  private async saveOnboardingProfile(userId: string, dto: CreateProfileDto) {
+    const payload = this.buildCreatePayload(dto);
+
+    if (await this.profileRepo.exists(userId)) {
+      const profile = await this.profileRepo.update(userId, payload);
+      await this.cache.del(`profile:${userId}`);
+      return profile;
+    }
+
+    return this.profileRepo.create(userId, payload);
+  }
+
   //  Read
 
   async getMyProfile(userId: string) {
@@ -786,12 +798,16 @@ export class ProfilesService {
           ? parseInt(String(dto.primaryImageIndex), 10)
           : 0;
 
-      const uploadedImages = await this.mediaService.addImages(
-        req,
-        userId,
-        profileImages,
-        primaryIndex,
-      );
+      const existingImages = await this.mediaService.getImages(userId);
+      const uploadedImages =
+        existingImages.length === 0 && profileImages.length > 0
+          ? await this.mediaService.addImages(
+              req,
+              userId,
+              profileImages,
+              primaryIndex,
+            )
+          : [];
 
       const profilePayload = {
         personal: {
@@ -814,9 +830,9 @@ export class ProfilesService {
         },
       } as CreateProfileDto & Record<string, unknown>;
 
-      await this.createProfile(userId, profilePayload);
+      await this.saveOnboardingProfile(userId, profilePayload);
 
-      await this.preferenceService.createPreference(userId, {
+      await this.preferenceService.upsertPreference(userId, {
         filters: {
           age: dto.preferences?.ageRange,
           height: dto.preferences?.heightRange,

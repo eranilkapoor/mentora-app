@@ -242,6 +242,7 @@ export function AstroSection({
 
   const handleReligionChange = (religion: PersonalSection['religion']) => {
     onSet('religion', religion);
+    onSet('religiousDetails', {});
   };
 
   const renderTextField = ({ key, label, placeholder }: ReligiousTextField) => (

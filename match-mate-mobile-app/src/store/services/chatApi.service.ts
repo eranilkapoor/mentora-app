@@ -65,11 +65,6 @@ export interface ChatMessage {
   type?: 'text' | 'image' | 'audio' | 'TEXT' | 'IMAGE' | 'AUDIO';
   content?: string;
   attachments: unknown[];
-  reactions?: Array<{
-    userId: string;
-    emoji: string;
-    reactedAt?: string;
-  }>;
   status?: string;
   deliveredAt?: string | null;
   readAt?: string | null;
@@ -197,18 +192,6 @@ export const chatApi = baseApi.injectEndpoints({
       invalidatesTags: ['Chat'],
     }),
 
-    reactToMessage: builder.mutation<
-      ApiResponse<ChatMessage>,
-      { roomId: string; messageId: string; emoji?: string }
-    >({
-      query: ({ roomId, messageId, emoji }) => ({
-        url: `/chats/rooms/${roomId}/messages/${messageId}/reaction`,
-        method: 'PATCH',
-        body: emoji ? { emoji } : {},
-      }),
-      invalidatesTags: ['Chat'],
-    }),
-
     updateRoomSettings: builder.mutation<
       ApiResponse<ChatConversation>,
       {
@@ -251,6 +234,5 @@ export const {
   useSendMessageMutation,
   useUploadChatAttachmentsMutation,
   useDeleteChatMessageMutation,
-  useReactToMessageMutation,
   useUpdateRoomSettingsMutation,
 } = chatApi;

@@ -60,6 +60,12 @@ export default function NotificationDetailScreen({
           'notifications.detail.open_related'
       )
     : undefined;
+  const readStateLabel = notification.unread
+    ? t('notifications.detail.unread_title')
+    : t('notifications.detail.read_title');
+  const readStateDescription = notification.unread
+    ? t('notifications.detail.unread_description')
+    : t('notifications.detail.read_description');
 
   const handleAction = (): void => {
     const didNavigate = navigateFromNotificationAction(notification.action, {
@@ -104,26 +110,42 @@ export default function NotificationDetailScreen({
             </View>
 
             <View style={styles.detailHeaderText}>
-              <View style={styles.detailCategoryRow}>
-                <Text style={styles.detailCategory}>
-                  {t(`notifications.categories.${notification.category}`, {
-                    defaultValue: notification.category.replace(/_/g, ' '),
-                  })}
-                </Text>
-                <View
-                  style={[
-                    styles.detailStatusPill,
-                    notification.unread && styles.detailStatusPillUnread,
-                  ]}
-                >
-                  <Text style={styles.detailStatusText}>
-                    {notification.unread
-                      ? t('notifications.detail.unread')
-                      : t('notifications.detail.read')}
-                  </Text>
-                </View>
-              </View>
+              <Text style={styles.detailCategory}>
+                {t(`notifications.categories.${notification.category}`, {
+                  defaultValue: notification.category.replace(/_/g, ' '),
+                })}
+              </Text>
               <Text style={styles.detailTitle}>{notification.title}</Text>
+            </View>
+          </View>
+
+          <View
+            style={[
+              styles.detailStateBanner,
+              notification.unread && styles.detailStateBannerUnread,
+            ]}
+          >
+            <View
+              style={[
+                styles.detailStateIcon,
+                notification.unread && styles.detailStateIconUnread,
+              ]}
+            >
+              <Feather
+                name={notification.unread ? 'circle' : 'check-circle'}
+                size={16}
+                color={
+                  notification.unread
+                    ? theme.colors.primary
+                    : theme.colors.success
+                }
+              />
+            </View>
+            <View style={styles.detailStateText}>
+              <Text style={styles.detailStateTitle}>{readStateLabel}</Text>
+              <Text style={styles.detailStateDescription}>
+                {readStateDescription}
+              </Text>
             </View>
           </View>
 
@@ -150,16 +172,18 @@ export default function NotificationDetailScreen({
               </View>
             ) : null}
 
-            <View style={styles.detailMetaRow}>
-              <Text style={styles.detailMetaLabel}>
-                {t('notifications.detail.status')}
-              </Text>
-              <Text style={styles.detailMetaValue}>
-                {notification.unread
-                  ? t('notifications.detail.unread')
-                  : t('notifications.detail.read')}
-              </Text>
-            </View>
+            {notification.type ? (
+              <View style={styles.detailMetaRow}>
+                <Text style={styles.detailMetaLabel}>
+                  {t('notifications.detail.kind')}
+                </Text>
+                <Text style={styles.detailMetaValue}>
+                  {t(`notifications.detail.kinds.${notification.type}`, {
+                    defaultValue: notification.type.replace(/_/g, ' '),
+                  })}
+                </Text>
+              </View>
+            ) : null}
           </View>
 
           {actionLabel ? (

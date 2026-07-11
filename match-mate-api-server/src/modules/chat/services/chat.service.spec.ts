@@ -33,7 +33,6 @@ describe('ChatService', () => {
     respondToChatRequest: jest.fn(),
     reviewMessage: jest.fn(),
     saveRoom: jest.fn(),
-    setMessageReaction: jest.fn(),
     setRoomRequestMessage: jest.fn(),
     softDeleteMessageForEveryone: jest.fn(),
   };
@@ -84,7 +83,6 @@ describe('ChatService', () => {
     type: ChatMessageType.TEXT,
     content: 'Hello',
     attachments: [],
-    reactions: [],
     status: ChatMessageStatus.SENT,
     createdAt: new Date('2026-01-01T00:00:00.000Z'),
     ...overrides,
@@ -617,7 +615,7 @@ describe('ChatService', () => {
     ]);
   });
 
-  it('moderates, deletes, and reacts to messages', async () => {
+  it('moderates and deletes messages', async () => {
     void service.getModerationQueue();
     void service.getModerationQueue(undefined, 0);
     void service.getModerationQueue(ChatModerationStatus.APPROVED, 1000);
@@ -656,31 +654,6 @@ describe('ChatService', () => {
     ).resolves.toMatchObject({ messageId });
     repo.softDeleteMessageForEveryone.mockResolvedValue(null);
     await service.deleteOwnMessage(userId, roomId, messageId);
-
-    repo.findMessageById.mockResolvedValue({
-      ...message,
-      isDeletedForEveryone: true,
-    });
-    await expect(
-      service.reactToMessage(userId, roomId, messageId, '👍'),
-    ).rejects.toMatchObject({ code: ErrorCode.CHAT_MESSAGE_NOT_FOUND });
-    repo.findMessageById.mockResolvedValue(message);
-
-    await expect(
-      service.reactToMessage(userId, roomId, messageId, 'x'.repeat(17)),
-    ).rejects.toMatchObject({ code: ErrorCode.INVALID_INPUT });
-    repo.setMessageReaction.mockResolvedValue(null);
-    await expect(
-      service.reactToMessage(userId, roomId, messageId, '👍'),
-    ).rejects.toMatchObject({ code: ErrorCode.CHAT_MESSAGE_NOT_FOUND });
-    repo.setMessageReaction.mockResolvedValue({
-      ...message,
-      reactions: [{ userId, emoji: '👍' }],
-    });
-    await expect(
-      service.reactToMessage(userId, roomId, messageId, ' 👍 '),
-    ).resolves.toMatchObject({ reactions: [{ userId, emoji: '👍' }] });
-    await service.reactToMessage(userId, roomId, messageId);
   });
 
   it('marks rooms read and updates participant settings', async () => {
@@ -726,7 +699,7 @@ describe('ChatService', () => {
     await service.updateRoomSettings(userId, roomId, {});
   });
 
-  it('maps safe values, reactions, media, summaries, and previews', () => {
+  it('maps safe values, media, summaries, and previews', () => {
     const privateService = service as any;
     expect(privateService.toSafeString('value')).toBe('value');
     expect(privateService.toSafeString(2)).toBe('2');
@@ -736,13 +709,6 @@ describe('ChatService', () => {
     );
     expect(privateService.toSafeString(new Types.ObjectId())).toHaveLength(24);
     expect(() => privateService.toSafeString({})).toThrow();
-    expect(privateService.mapReactions(undefined)).toEqual([]);
-    expect(
-      privateService.mapReactions([
-        {},
-        { userId, emoji: '❤', reactedAt: new Date() },
-      ]),
-    ).toHaveLength(1);
     expect(
       privateService.mapMessage(
         createMessage({

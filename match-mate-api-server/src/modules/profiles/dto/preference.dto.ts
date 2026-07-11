@@ -9,7 +9,7 @@ import {
   Min,
   Max,
 } from 'class-validator';
-import { Type } from 'class-transformer';
+import { Transform, Type } from 'class-transformer';
 import {
   BodyType,
   Caste,
@@ -26,6 +26,18 @@ import {
   ChildPreference,
   ResidencyPreference,
 } from '@/common/enums';
+
+const normalizeCountryValue = (value: unknown): unknown =>
+  typeof value === 'string'
+    ? value.trim().toLowerCase().replace(/\s+/g, '_')
+    : value;
+
+const normalizeCountryArrayTransform = ({
+  value,
+}: {
+  value: unknown;
+}): unknown =>
+  Array.isArray(value) ? value.map(normalizeCountryValue) : value;
 
 export class RangeDto {
   @Type(() => Number)
@@ -87,6 +99,7 @@ export class PartnerFiltersDto {
   residencyPreference?: ResidencyPreference;
 
   @IsOptional()
+  @Transform(normalizeCountryArrayTransform)
   @IsArray()
   @IsEnum(Country, { each: true })
   country?: Country[];

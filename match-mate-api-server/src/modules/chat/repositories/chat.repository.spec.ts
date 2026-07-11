@@ -139,7 +139,7 @@ describe('ChatRepository', () => {
     );
   });
 
-  it('covers message creation, pagination, reactions, deletion, and moderation', async () => {
+  it('covers message creation, pagination, deletion, and moderation', async () => {
     await repository.createMessage({
       roomId,
       senderId: userId,
@@ -160,8 +160,6 @@ describe('ChatRepository', () => {
     await repository.listMessages(roomId, 20);
     await repository.listMessages(roomId, 20, messageId);
     await repository.findMessageById(messageId);
-    await repository.setMessageReaction(messageId, userId);
-    await repository.setMessageReaction(messageId, userId, 'heart');
     repository.softDeleteMessageForEveryone(messageId);
     await repository.listModerationQueue(ChatModerationStatus.FLAGGED, 10);
     await repository.reviewMessage(
@@ -175,7 +173,6 @@ describe('ChatRepository', () => {
       ChatModerationStatus.REJECTED,
       'unsafe',
     );
-    expect(messageModel.updateOne).toHaveBeenCalledTimes(3);
   });
 
   it('handles empty and populated message batches, unread counts, and receipts', async () => {

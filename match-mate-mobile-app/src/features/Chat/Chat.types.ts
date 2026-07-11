@@ -24,11 +24,6 @@ export type Message = {
   timestamp: number;
   type: 'text' | 'image' | 'audio';
   status: 'sent' | 'delivered' | 'read';
-  reactions?: Array<{
-    userId: string;
-    emoji: string;
-    reactedAt?: string;
-  }>;
 };
 
 export const formatTime = (ts: number): string =>

@@ -36,8 +36,6 @@
   "chat_unavailable_message": "दोनों उपयोगकर्ताओं द्वारा मैच स्वीकार करने के बाद आप चैट कर सकते हैं।",
   "message_not_sent_title": "संदेश नहीं भेजा गया",
   "message_not_sent_message": "कृपया पुनः प्रयास करें।",
-  "reaction_failed_title": "प्रतिक्रिया नहीं जुड़ पाई",
-  "reaction_failed_message": "कृपया फिर से प्रतिक्रिया दें।",
   "permission_needed_title": "अनुमति आवश्यक है",
   "permission_needed_message": "चैट में छवियां भेजने के लिए फ़ोटो एक्सेस की अनुमति दें।",
   "microphone_permission_title": "Microphone needed",
@@ -97,6 +95,5 @@
   "archive_chat": "चैट आर्काइव करें",
   "unarchive_chat": "चैट अनआर्काइव करें",
   "voice_message": "वॉइस संदेश",
-  "play_voice_message": "वॉइस संदेश चलाएं",
-  "react_with_emoji": "{{emoji}} से प्रतिक्रिया दें"
+  "play_voice_message": "वॉइस संदेश चलाएं"
 }
