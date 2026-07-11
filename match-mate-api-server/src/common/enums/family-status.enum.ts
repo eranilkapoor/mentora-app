@@ -1,4 +1,5 @@
 export enum FamilyStatus {
+  AFFLUENT = 'affluent',
   MIDDLE_CLASS = 'middle_class',
   RICH = 'rich',
   LOWER_CLASS = 'lower_class',
