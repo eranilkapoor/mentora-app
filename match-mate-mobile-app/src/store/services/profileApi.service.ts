@@ -25,7 +25,6 @@ export const profileApi = baseApi.injectEndpoints({
         formData: true,
       }),
       invalidatesTags: [
-        'Auth',
         'Profile',
         'ProfileMedia',
         'ProfileMediaImages',

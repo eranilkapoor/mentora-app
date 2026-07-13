@@ -17,6 +17,7 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
 import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { RemoveChipButton } from './RemoveChipButton';
+import { RequiredAsterisk } from './RequiredAsterisk';
 
 // ─── Enable LayoutAnimation on Android ───────────────────────────────────────
 
@@ -50,6 +51,8 @@ export interface SearchMultiSelectProps {
   errors?: Record<string, string>;
   /** Placeholder shown in the search input */
   placeholder?: string;
+  /** Shows a required marker beside the label */
+  required?: boolean;
   /** How many chips to show before collapsing. Default: 2 */
   maxVisible?: number;
   /** Max suggestions shown in dropdown while typing. Default: 20 */
@@ -78,6 +81,10 @@ const createStyles = (theme: Theme) =>
       fontSize: 13,
       fontWeight: '600',
       color: theme.colors.textSecondary,
+    },
+    labelRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
       marginBottom: 6,
     },
     input: {
@@ -212,6 +219,7 @@ function SearchMultiSelectComponent(
     field,
     errors,
     placeholder,
+    required = false,
     maxVisible = 2,
     maxSuggestions = 20,
     inputProps,
@@ -295,7 +303,10 @@ function SearchMultiSelectComponent(
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
+      <View style={styles.labelRow}>
+        <Text style={styles.label}>{label}</Text>
+        {required ? <RequiredAsterisk /> : null}
+      </View>
 
       {/* Search input */}
       <TextInput

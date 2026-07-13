@@ -104,6 +104,7 @@ describe('preference range utilities', () => {
     expect(formatRangeInputValue(null)).toBe('');
 
     expect(parseRangeInputValue(' 42 ')).toBe(42);
+    expect(parseRangeInputValue('42cm')).toBe(42);
     expect(parseRangeInputValue('')).toBeNull();
     expect(parseRangeInputValue('abc')).toBeNull();
   });

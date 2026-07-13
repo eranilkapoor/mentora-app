@@ -2,7 +2,7 @@ import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useAppDispatch } from '@/store/hooks';
-import { setProfileCompleted } from '@/store/slices/auth.slice';
+import { setOnboardingCompletionPending } from '@/store/slices/auth.slice';
 import { MAX_PHOTOS } from '@/core/constants';
 import * as ImagePicker from 'expo-image-picker';
 import {
@@ -69,7 +69,6 @@ export function useOnboardingForm() {
   const [photos, setPhotos] = useState<ProfileImage[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
-  const [completionReady, setCompletionReady] = useState(false);
 
   // ─── Error helpers ──────────────────────────────────────────────────────
 
@@ -224,9 +223,12 @@ export function useOnboardingForm() {
         return false;
       }
 
+      const isOnboardingCompleted =
+        response.data?.isOnboardingCompleted ?? true;
+
+      dispatch(setOnboardingCompletionPending(isOnboardingCompleted));
       dispatch(baseApi.util.invalidateTags(['Profile', 'Preference']));
-      setCompletionReady(Boolean(response.data.isOnboardingCompleted));
-      return true;
+      return isOnboardingCompleted;
     } catch (err: unknown) {
       showError({
         title: t('common.error'),
@@ -238,11 +240,6 @@ export function useOnboardingForm() {
     }
   }, [basic, preferences, photos, dispatch, onboardingProfile, t]);
 
-  const finalizeOnboarding = useCallback((): void => {
-    dispatch(setProfileCompleted(true));
-    dispatch(baseApi.util.invalidateTags(['Auth', 'Profile', 'Preference']));
-  }, [dispatch]);
-
   return {
     // State
     basic,
@@ -250,7 +247,6 @@ export function useOnboardingForm() {
     photos,
     errors,
     loading,
-    completionReady,
     // Setters
     setBasicField,
     setPreferenceField,
@@ -263,7 +259,6 @@ export function useOnboardingForm() {
     validatePreferences,
     // Submit
     handleSubmit,
-    finalizeOnboarding,
     // Error helpers
     clearError,
     clearAllErrors,

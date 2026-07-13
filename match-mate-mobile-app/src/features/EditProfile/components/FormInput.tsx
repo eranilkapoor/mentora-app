@@ -15,6 +15,7 @@ import {
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
 import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
+import { sanitizeDigits } from '@/core/utils/inputSanitizers';
 
 export interface FormInputProps extends Omit<
   TextInputProps,
@@ -70,6 +71,13 @@ export function FormInput({
   ...rest
 }: FormInputProps): React.ReactElement {
   const { theme, fontScale, accessibility } = useTheme();
+  const isNumericInput =
+    keyboardType === 'numeric' ||
+    keyboardType === 'number-pad' ||
+    keyboardType === 'phone-pad';
+  const handleChangeText = (text: string): void => {
+    onChange(isNumericInput ? sanitizeDigits(text) : text);
+  };
 
   const styles = useMemo(
     () =>
@@ -196,7 +204,7 @@ export function FormInput({
 
         <TextInput
           value={value ?? ''}
-          onChangeText={onChange}
+          onChangeText={handleChangeText}
           editable={editable}
           multiline={multiline}
           keyboardType={keyboardType}

@@ -5,6 +5,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 interface AuthState {
   accessToken: string | null;
   user: User | null;
+  onboardingCompletionPending: boolean;
 }
 
 // ─── PAYLOADS ──────────────────────────────────────────
@@ -20,6 +21,7 @@ export interface SetCredentialsPayload {
 const initialState: AuthState = {
   accessToken: null,
   user: null,
+  onboardingCompletionPending: false,
 };
 
 // ─── SLICE ─────────────────────────────────────────────
@@ -45,10 +47,14 @@ const authSlice = createSlice({
         state.user.isOnboardingCompleted = action.payload;
       }
     },
+    setOnboardingCompletionPending: (state, action: PayloadAction<boolean>) => {
+      state.onboardingCompletionPending = action.payload;
+    },
     // 🔹 Logout
     logout: (state) => {
       state.accessToken = null;
       state.user = null;
+      state.onboardingCompletionPending = false;
     },
   },
 });
@@ -58,6 +64,7 @@ export const {
   setCredentials,
   setUser,
   setProfileCompleted,
+  setOnboardingCompletionPending,
   logout,
   setAccessToken,
 } = authSlice.actions;

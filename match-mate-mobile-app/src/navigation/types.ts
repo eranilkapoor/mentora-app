@@ -21,6 +21,7 @@ export type AuthStackParamList = {
 // ─── Onboarding Stack ─────────────────────────────────────────────────────────
 export type OnboardingStackParamList = {
   OnboardingScreen: undefined;
+  OnboardingSuccess: undefined;
 };
 
 // ─── Home Stack ───────────────────────────────────────────────────────────────

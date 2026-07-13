@@ -11,6 +11,10 @@ describe('RootNavigator entry route selection', () => {
     expect(getRootEntryRoute('token-1', undefined)).toBe('Onboarding');
   });
 
+  it('keeps the user in Onboarding while completion success is pending', () => {
+    expect(getRootEntryRoute('token-1', true, true)).toBe('Onboarding');
+  });
+
   it('routes to App when logged in and onboarding is complete', () => {
     expect(getRootEntryRoute('token-1', true)).toBe('App');
   });

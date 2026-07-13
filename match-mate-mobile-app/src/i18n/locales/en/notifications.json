@@ -16,6 +16,7 @@
   "detail": {
     "title": "Notification details",
     "received": "Received",
+    "at": "at",
     "from": "From",
     "kind": "Type",
     "status": "Status",

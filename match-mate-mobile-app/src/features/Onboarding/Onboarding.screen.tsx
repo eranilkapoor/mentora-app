@@ -7,7 +7,6 @@ import {
   KeyboardAvoidingView,
   Platform,
   ActivityIndicator,
-  Modal,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -23,13 +22,13 @@ import { PreferencesStep } from './steps/PreferencesStep';
 import { PhotosStep } from './steps/PhotosStep';
 import { useOnboardingForm } from './hooks/useOnboardingForm';
 import { useNavigation } from '@react-navigation/native';
-import { RootNavigationProp } from '@/navigation/types';
+import { OnboardingNavigationProp } from '@/navigation/types';
 
 export default function OnboardingScreen(): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const styles = useThemedStyles(onboardingStyles);
-  const navigation = useNavigation<RootNavigationProp>();
+  const navigation = useNavigation<OnboardingNavigationProp>();
 
   const [currentStep, setCurrentStep] = useState<OnboardingSteps>('basic');
 
@@ -39,7 +38,6 @@ export default function OnboardingScreen(): React.ReactElement {
     photos,
     errors,
     loading,
-    completionReady,
     setBasicField,
     setPreferenceField,
     pickImage,
@@ -48,28 +46,9 @@ export default function OnboardingScreen(): React.ReactElement {
     validateBasic,
     validatePreferences,
     handleSubmit,
-    finalizeOnboarding,
     clearError,
     clearAllErrors,
   } = useOnboardingForm();
-
-  const onboardingGuide = [
-    {
-      icon: 'user-check' as const,
-      title: t('onboarding.success.guide.complete_profile.title'),
-      description: t('onboarding.success.guide.complete_profile.description'),
-    },
-    {
-      icon: 'heart' as const,
-      title: t('onboarding.success.guide.matches.title'),
-      description: t('onboarding.success.guide.matches.description'),
-    },
-    {
-      icon: 'shield' as const,
-      title: t('onboarding.success.guide.safe_connect.title'),
-      description: t('onboarding.success.guide.safe_connect.description'),
-    },
-  ];
 
   // ─── Navigation ───────────────────────────────────────────────────────────
 
@@ -112,27 +91,6 @@ export default function OnboardingScreen(): React.ReactElement {
   const isFirstStep = currentStep === ONBOARDING_STEPS[0];
   const isLastStep =
     currentStep === ONBOARDING_STEPS[ONBOARDING_STEPS.length - 1];
-
-  const navigateAfterOnboarding = useCallback(
-    (targetTab: 'Profile' | 'Matches'): void => {
-      finalizeOnboarding();
-      navigation.reset({
-        index: 0,
-        routes: [
-          {
-            name: 'App',
-            params: {
-              screen: 'Tabs',
-              params: {
-                screen: targetTab,
-              },
-            },
-          },
-        ],
-      });
-    },
-    [finalizeOnboarding, navigation]
-  );
 
   // ─── Step renderer ────────────────────────────────────────────────────────
 
@@ -222,7 +180,7 @@ export default function OnboardingScreen(): React.ReactElement {
                   ? () => {
                       void handleSubmit().then((completed) => {
                         if (completed) {
-                          // The completion modal below now owns the next step.
+                          navigation.navigate('OnboardingSuccess');
                         }
                       });
                     }
@@ -255,86 +213,6 @@ export default function OnboardingScreen(): React.ReactElement {
             </TouchableOpacity>
           </View>
         </ScrollView>
-
-        <Modal
-          visible={completionReady}
-          animationType="fade"
-          transparent
-          statusBarTranslucent
-          onRequestClose={() => navigateAfterOnboarding('Matches')}
-        >
-          <View style={styles.successOverlay}>
-            <View style={styles.successCard}>
-              <View style={styles.successIconCircle}>
-                <Feather name="check" size={30} color={theme.colors.white} />
-              </View>
-
-              <Text style={styles.successEyebrow}>
-                {t('onboarding.success.eyebrow')}
-              </Text>
-              <Text style={styles.successTitle}>
-                {t('onboarding.success.title')}
-              </Text>
-              <Text style={styles.successSubtitle}>
-                {t('onboarding.success.subtitle')}
-              </Text>
-
-              <View style={styles.successGuideCard}>
-                <Text style={styles.successGuideTitle}>
-                  {t('onboarding.success.guide_title')}
-                </Text>
-                {onboardingGuide.map((item) => (
-                  <View key={item.title} style={styles.successGuideItem}>
-                    <View style={styles.successGuideIcon}>
-                      <Feather
-                        name={item.icon}
-                        size={17}
-                        color={theme.colors.primary}
-                      />
-                    </View>
-                    <View style={styles.successGuideText}>
-                      <Text style={styles.successGuideItemTitle}>
-                        {item.title}
-                      </Text>
-                      <Text style={styles.successGuideItemDescription}>
-                        {item.description}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
-
-              <TouchableOpacity
-                style={styles.successPrimaryButton}
-                onPress={() => navigateAfterOnboarding('Profile')}
-                accessibilityRole="button"
-                accessibilityLabel={t(
-                  'onboarding.success.cta_complete_profile'
-                )}
-              >
-                <Text style={styles.successPrimaryButtonText}>
-                  {t('onboarding.success.cta_complete_profile')}
-                </Text>
-                <Feather
-                  name="arrow-right"
-                  size={16}
-                  color={theme.colors.white}
-                />
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.successSecondaryButton}
-                onPress={() => navigateAfterOnboarding('Matches')}
-                accessibilityRole="button"
-                accessibilityLabel={t('onboarding.success.cta_matches')}
-              >
-                <Text style={styles.successSecondaryButtonText}>
-                  {t('onboarding.success.cta_matches')}
-                </Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </Modal>
       </KeyboardAvoidingView>
     </SafeAreaView>
   );

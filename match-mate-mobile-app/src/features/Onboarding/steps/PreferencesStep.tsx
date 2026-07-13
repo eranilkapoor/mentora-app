@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput } from 'react-native';
+import { StyleSheet, View, Text, TextInput } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
@@ -21,6 +21,8 @@ import {
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { TagInput } from '@/core/components/TagInput';
+import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
+import { parseDigitsOrNull } from '@/core/utils/inputSanitizers';
 
 interface Props {
   preferences: PreferencesData;
@@ -58,6 +60,13 @@ export function PreferencesStep({
   const inputStyle = (field: string) =>
     errors[field] ? [styles.input, styles.inputError] : [styles.input];
 
+  const RequiredLabel = ({ children }: { children: string }) => (
+    <View style={preferencesStepStyles.requiredLabelRow}>
+      <Text style={styles.label}>{children}</Text>
+      <RequiredAsterisk />
+    </View>
+  );
+
   return (
     <View>
       <Text style={styles.stepTitle}>{t('onboarding.preferences.title')}</Text>
@@ -68,16 +77,16 @@ export function PreferencesStep({
       {/* Age Range */}
       <View style={styles.row}>
         <View style={styles.halfField}>
-          <Text style={styles.label}>{t('onboarding.fields.min_age')} *</Text>
+          <RequiredLabel>{t('onboarding.fields.min_age')}</RequiredLabel>
           <TextInput
             placeholder="18"
             placeholderTextColor={theme.colors.textMuted}
             value={String(preferences.ageRange?.min ?? '')}
             onChangeText={(text) => {
-              const parsed = parseInt(text, 10);
+              const parsed = parseDigitsOrNull(text);
               onSetField('ageRange', {
                 max: preferences.ageRange?.max ?? 35,
-                min: isNaN(parsed) ? 0 : parsed,
+                min: parsed ?? 0,
               });
               onClearError('minAgeRange');
             }}
@@ -89,16 +98,16 @@ export function PreferencesStep({
         </View>
 
         <View style={styles.halfField}>
-          <Text style={styles.label}>{t('onboarding.fields.max_age')} *</Text>
+          <RequiredLabel>{t('onboarding.fields.max_age')}</RequiredLabel>
           <TextInput
             placeholder="35"
             placeholderTextColor={theme.colors.textMuted}
             value={String(preferences.ageRange?.max ?? '')}
             onChangeText={(text) => {
-              const parsed = parseInt(text, 10);
+              const parsed = parseDigitsOrNull(text);
               onSetField('ageRange', {
                 min: preferences.ageRange?.min ?? 18,
-                max: isNaN(parsed) ? 0 : parsed,
+                max: parsed ?? 0,
               });
               onClearError('maxAgeRange');
             }}
@@ -119,10 +128,10 @@ export function PreferencesStep({
             placeholderTextColor={theme.colors.textMuted}
             value={String(preferences.heightRange?.min ?? '')}
             onChangeText={(text) => {
-              const parsed = parseInt(text, 10);
+              const parsed = parseDigitsOrNull(text);
               onSetField('heightRange', {
                 max: preferences.heightRange?.max ?? 0,
-                min: isNaN(parsed) ? 0 : parsed,
+                min: parsed ?? 0,
               });
             }}
             style={styles.input}
@@ -138,10 +147,10 @@ export function PreferencesStep({
             placeholderTextColor={theme.colors.textMuted}
             value={String(preferences.heightRange?.max ?? '')}
             onChangeText={(text) => {
-              const parsed = parseInt(text, 10);
+              const parsed = parseDigitsOrNull(text);
               onSetField('heightRange', {
                 min: preferences.heightRange?.min ?? 0,
-                max: isNaN(parsed) ? 0 : parsed,
+                max: parsed ?? 0,
               });
             }}
             style={styles.input}
@@ -163,6 +172,7 @@ export function PreferencesStep({
         placeholder={t('onboarding.placeholders.marital_status_preference')}
         field="maritalStatusPreference"
         errors={errors}
+        required
       />
 
       {/* Religion Preference */}
@@ -183,6 +193,7 @@ export function PreferencesStep({
         placeholder={t('onboarding.placeholders.religion_preference')}
         field="religionPreference"
         errors={errors}
+        required
       />
 
       {showHinduPreferences ? (
@@ -230,7 +241,15 @@ export function PreferencesStep({
         placeholder={t('onboarding.placeholders.location_preference')}
         field="locationPreference"
         errors={errors}
+        required
       />
     </View>
   );
 }
+
+const preferencesStepStyles = StyleSheet.create({
+  requiredLabelRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+});

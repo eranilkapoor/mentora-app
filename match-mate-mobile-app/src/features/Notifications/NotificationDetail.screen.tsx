@@ -18,16 +18,48 @@ type Props = {
   route: RouteProp<HomeStackParamList, 'NotificationDetail'>;
 };
 
-const formatDateTime = (value?: string): string => {
+const isSameDate = (left: Date, right: Date): boolean =>
+  left.getFullYear() === right.getFullYear() &&
+  left.getMonth() === right.getMonth() &&
+  left.getDate() === right.getDate();
+
+const formatDateTime = (
+  value: string | undefined,
+  locale: string,
+  translate: ReturnType<typeof useTranslation>['t']
+): string => {
   if (!value) return '';
 
-  return new Date(value).toLocaleString([], {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+
+  const time = date.toLocaleTimeString(locale, {
     hour: 'numeric',
     minute: '2-digit',
   });
+  const today = new Date();
+  const yesterday = new Date(today);
+  yesterday.setDate(today.getDate() - 1);
+
+  if (isSameDate(date, today)) {
+    return `${translate('notifications.sections.today')} ${translate(
+      'notifications.detail.at'
+    )} ${time}`;
+  }
+
+  if (isSameDate(date, yesterday)) {
+    return `${translate('notifications.sections.yesterday')} ${translate(
+      'notifications.detail.at'
+    )} ${time}`;
+  }
+
+  const fullDate = date.toLocaleDateString(locale, {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
+  return `${fullDate} ${translate('notifications.detail.at')} ${time}`;
 };
 
 const actionLabelKeyByScreen: Record<string, string> = {
@@ -43,15 +75,15 @@ export default function NotificationDetailScreen({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(notificationStyles);
   const { theme } = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const notification = route.params;
   const actorImage = notification.actorImage
     ? resolveApiUrl(notification.actorImage)
     : undefined;
 
   const formattedDate = useMemo(
-    () => formatDateTime(notification.createdAt),
-    [notification.createdAt]
+    () => formatDateTime(notification.createdAt, i18n.language, t),
+    [i18n.language, notification.createdAt, t]
   );
 
   const actionLabel = notification.action?.screen
@@ -168,19 +200,6 @@ export default function NotificationDetailScreen({
                 </Text>
                 <Text style={styles.detailMetaValue}>
                   {notification.actorName}
-                </Text>
-              </View>
-            ) : null}
-
-            {notification.type ? (
-              <View style={styles.detailMetaRow}>
-                <Text style={styles.detailMetaLabel}>
-                  {t('notifications.detail.kind')}
-                </Text>
-                <Text style={styles.detailMetaValue}>
-                  {t(`notifications.detail.kinds.${notification.type}`, {
-                    defaultValue: notification.type.replace(/_/g, ' '),
-                  })}
                 </Text>
               </View>
             ) : null}

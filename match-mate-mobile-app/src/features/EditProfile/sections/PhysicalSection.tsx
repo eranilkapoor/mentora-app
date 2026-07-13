@@ -50,6 +50,7 @@ export function PhysicalSection({
             label={t('edit_profile.fields.height')}
             value={physical.height}
             onChange={(v) => onSet('height', v)}
+            keyboardType="numeric"
             placeholder={t('edit_profile.placeholders.height')}
           />
         </View>

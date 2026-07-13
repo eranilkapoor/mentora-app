@@ -1,4 +1,5 @@
 import { AGE_RANGE, HEIGHT_RANGE, INCOME_RANGE } from '@/core/constants';
+import { parseDigitsOrNull } from '@/core/utils/inputSanitizers';
 import type { PartnerFilters } from '../EditPreference.types';
 
 const isFiniteNumber = (value: unknown): value is number =>
@@ -94,12 +95,5 @@ export const formatRangeInputValue = (
 ): string => (isFiniteNumber(value) ? String(value) : '');
 
 export const parseRangeInputValue = (text: string): number | null => {
-  const trimmed = text.trim();
-
-  if (!trimmed) {
-    return null;
-  }
-
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
+  return parseDigitsOrNull(text);
 };

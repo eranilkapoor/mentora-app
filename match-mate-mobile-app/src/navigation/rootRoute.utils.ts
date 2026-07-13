@@ -2,7 +2,8 @@ export type RootEntryRoute = 'Auth' | 'Onboarding' | 'App';
 
 export const getRootEntryRoute = (
   accessToken: string | null,
-  isOnboardingCompleted?: boolean
+  isOnboardingCompleted?: boolean,
+  onboardingCompletionPending = false
 ): RootEntryRoute => {
   const isLoggedIn = Boolean(accessToken);
   const hasOnboarded = Boolean(isOnboardingCompleted);
@@ -11,7 +12,7 @@ export const getRootEntryRoute = (
     return 'Auth';
   }
 
-  if (!hasOnboarded) {
+  if (onboardingCompletionPending || !hasOnboarded) {
     return 'Onboarding';
   }
 

@@ -303,8 +303,8 @@ export const onboardingStyles = (
 
     // ── Photos ────────────────────────────────────────────────────────────────
     successOverlay: {
-      flex: 1,
-      backgroundColor: 'rgba(15, 23, 42, 0.56)',
+      flexGrow: 1,
+      backgroundColor: theme.colors.background,
       alignItems: 'center',
       justifyContent: 'center',
       padding: 20,

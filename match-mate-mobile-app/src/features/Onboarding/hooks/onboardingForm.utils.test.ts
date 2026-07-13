@@ -47,6 +47,12 @@ describe('onboarding form validation', () => {
         t
       )
     ).toEqual({});
+
+    expect(
+      validateOnboardingBasic({ ...basic, firstName: 'Asha', height: 'abc' }, t)
+    ).toMatchObject({
+      height: 'onboarding.errors.height_invalid',
+    });
   });
 
   it('validates preference ranges and required selections', () => {

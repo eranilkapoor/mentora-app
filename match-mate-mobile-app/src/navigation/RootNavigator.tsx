@@ -18,7 +18,14 @@ export default function RootNavigator(): React.ReactElement {
   const isOnboardingCompleted = useAppSelector(
     (s) => s.auth.user?.isOnboardingCompleted
   );
-  const entryRoute = getRootEntryRoute(accessToken, isOnboardingCompleted);
+  const onboardingCompletionPending = useAppSelector(
+    (s) => s.auth.onboardingCompletionPending
+  );
+  const entryRoute = getRootEntryRoute(
+    accessToken,
+    isOnboardingCompleted,
+    onboardingCompletionPending
+  );
 
   return (
     <Stack.Navigator

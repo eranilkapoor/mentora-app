@@ -115,6 +115,7 @@
     "gender_required": "लिंग आवश्यक है",
     "religion_required": "धर्म आवश्यक है",
     "height_required": "लंबाई आवश्यक है",
+    "height_invalid": "लंबाई में केवल अंक होने चाहिए",
     "qualification_required": "योग्यता आवश्यक है",
     "occupation_required": "पेशा आवश्यक है",
     "min_age_required": "न्यूनतम आयु आवश्यक है",

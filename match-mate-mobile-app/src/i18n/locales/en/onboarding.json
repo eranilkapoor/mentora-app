@@ -115,6 +115,7 @@
     "gender_required": "Gender is required",
     "religion_required": "Religion is required",
     "height_required": "Height is required",
+    "height_invalid": "Height must contain numbers only",
     "qualification_required": "Qualification is required",
     "occupation_required": "Occupation is required",
     "min_age_required": "Min age is required",

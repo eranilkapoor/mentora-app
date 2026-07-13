@@ -2,6 +2,7 @@ import reducer, {
   logout,
   setAccessToken,
   setCredentials,
+  setOnboardingCompletionPending,
   setProfileCompleted,
   setUser,
 } from './auth.slice';
@@ -28,6 +29,7 @@ describe('auth.slice workflow state transitions', () => {
     expect(bootstrappedTokenState).toMatchObject({
       accessToken: 'access-token-1',
       user: null,
+      onboardingCompletionPending: false,
     });
     expect(hydratedProfileState).toMatchObject({
       accessToken: 'access-token-1',
@@ -73,6 +75,14 @@ describe('auth.slice workflow state transitions', () => {
     expect(withoutUser.user).toBeNull();
   });
 
+  it('tracks onboarding completion success before entering the app', () => {
+    const pending = reducer(undefined, setOnboardingCompletionPending(true));
+    const cleared = reducer(pending, setOnboardingCompletionPending(false));
+
+    expect(pending.onboardingCompletionPending).toBe(true);
+    expect(cleared.onboardingCompletionPending).toBe(false);
+  });
+
   it('clears auth state on logout', () => {
     const loggedIn = reducer(
       undefined,
@@ -87,6 +97,7 @@ describe('auth.slice workflow state transitions', () => {
     expect(loggedOut).toEqual({
       accessToken: null,
       user: null,
+      onboardingCompletionPending: false,
     });
   });
 });

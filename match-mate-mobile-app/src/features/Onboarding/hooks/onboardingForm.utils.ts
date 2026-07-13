@@ -21,6 +21,8 @@ export const validateOnboardingBasic = (
   if (!basic.country) errors.country = t('onboarding.errors.country_required');
   if (!basic.height.trim())
     errors.height = t('onboarding.errors.height_required');
+  else if (!/^\d+$/.test(basic.height.trim()))
+    errors.height = t('onboarding.errors.height_invalid');
   if (!basic.qualification)
     errors.qualification = t('onboarding.errors.qualification_required');
   if (!basic.occupation.trim())

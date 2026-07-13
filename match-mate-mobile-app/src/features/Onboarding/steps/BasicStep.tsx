@@ -25,6 +25,7 @@ import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 import { DatePicker } from '@/features/EditProfile/components/DateOfBirthPicker';
 import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
+import { sanitizeDigits } from '@/core/utils/inputSanitizers';
 
 interface Props {
   basic: BasicData;
@@ -128,6 +129,7 @@ export function BasicStep({
         value={basic.gender}
         onChange={(v) => onSetField('gender', v as Gender)}
         i18nPrefix="options.gender"
+        required
       />
       <ErrorText field="gender" errors={errors} />
 
@@ -147,6 +149,7 @@ export function BasicStep({
         value={basic.maritalStatus}
         onChange={(v) => onSetField('maritalStatus', v as MaritalStatus)}
         i18nPrefix="options.marital_status"
+        required
       />
       <ErrorText field="maritalStatus" errors={errors} />
 
@@ -199,7 +202,7 @@ export function BasicStep({
         placeholder={t('onboarding.placeholders.height')}
         placeholderTextColor={theme.colors.textMuted}
         value={basic.height}
-        onChangeText={(v) => onSetField('height', v)}
+        onChangeText={(v) => onSetField('height', sanitizeDigits(v))}
         style={inputStyle('height')}
         keyboardType="numeric"
         accessibilityLabel={t('onboarding.fields.height')}

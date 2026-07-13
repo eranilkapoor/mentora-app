@@ -14,6 +14,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
+import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 
 export interface SelectOption<T extends string = string> {
   label: string;
@@ -147,10 +148,6 @@ function SingleSelectPillComponent<T extends string = string>({
             color: theme.colors.textSecondary,
           },
 
-          required: {
-            color: theme.colors.error,
-          },
-
           helperText: {
             marginBottom: 8,
             fontSize: 11,
@@ -258,7 +255,7 @@ function SingleSelectPillComponent<T extends string = string>({
           <Text style={[styles.label, labelStyle]}>
             {label}
 
-            {required ? <Text style={styles.required}> *</Text> : null}
+            {required ? <RequiredAsterisk /> : null}
           </Text>
         ) : null}
 
@@ -273,7 +270,7 @@ function SingleSelectPillComponent<T extends string = string>({
         <Text style={[styles.label, labelStyle]}>
           {label}
 
-          {required ? <Text style={styles.required}> *</Text> : null}
+          {required ? <RequiredAsterisk /> : null}
         </Text>
       ) : null}
 
