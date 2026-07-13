@@ -882,8 +882,12 @@ export class ProfilesService {
         title: 'Profile onboarding completed',
         message:
           'Your profile is now live. We will use your onboarding details to improve discovery and matching.',
+        emailBody: this.buildOnboardingCompletedEmail({
+          userName: this.getProfileDisplayName(dto.basic.firstName, user.email),
+        }),
         type: 'system',
         category: 'system',
+        priority: 'critical',
         channels,
         dedupeKey: `profile-onboarding-completed:${String(user._id)}`,
         metadata: {
@@ -994,6 +998,60 @@ export class ProfilesService {
       ...profile,
       personal: personalWithDefaults,
     };
+  }
+
+  private buildOnboardingCompletedEmail(params: { userName: string }): string {
+    const safeName = this.escapeHtml(params.userName);
+
+    return `
+      <div style="margin:0;padding:0;background:#fff5f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+        <div style="max-width:640px;margin:0 auto;padding:32px 18px;">
+          <div style="background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f7d5df;box-shadow:0 16px 40px rgba(124,45,70,0.10);">
+            <div style="padding:28px 30px;background:linear-gradient(135deg,#ff7a9e,#b83280);color:#ffffff;">
+              <div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Profile live</div>
+              <h1 style="margin:10px 0 0;font-size:28px;line-height:1.25;">Your Match Mate profile is ready</h1>
+            </div>
+            <div style="padding:30px;">
+              <p style="margin:0 0 16px;font-size:16px;line-height:1.65;">Namaste ${safeName},</p>
+              <p style="margin:0 0 18px;font-size:15px;line-height:1.65;">Your onboarding is complete and your matrimonial profile is now live. We will use your profile and partner preferences to improve discovery and recommendations.</p>
+              <div style="padding:18px;border-radius:18px;background:#fff5f8;border:1px solid #f7d5df;margin:22px 0;">
+                <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#9d174d;">What to do next</div>
+                <ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#374151;">
+                  <li>Complete family, career, lifestyle and about-me sections.</li>
+                  <li>Add verification details to improve trust with families.</li>
+                  <li>Open recommended matches and shortlist profiles you like.</li>
+                </ol>
+              </div>
+              <p style="margin:0 0 18px;font-size:14px;line-height:1.65;color:#4b5563;">You can update privacy, notifications and account security anytime from Settings.</p>
+              <p style="margin:0;font-size:14px;line-height:1.65;color:#6b7280;">Best wishes,<br/>Team Match Mate</p>
+            </div>
+          </div>
+          <p style="margin:18px 8px 0;text-align:center;font-size:12px;line-height:1.5;color:#9ca3af;">This message confirms that onboarding for your Match Mate account was completed.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  private getProfileDisplayName(firstName?: string, email?: string): string {
+    const trimmedName = firstName?.trim();
+    if (trimmedName) {
+      return trimmedName;
+    }
+
+    const emailName = email
+      ?.split('@')[0]
+      ?.replace(/[._-]+/g, ' ')
+      .trim();
+    return emailName || 'there';
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   private getHeaderString(req: AppRequest, key: string): string | undefined {

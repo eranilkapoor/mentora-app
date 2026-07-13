@@ -614,6 +614,7 @@ export class AuthService {
         provider: AuthProvider.EMAIL,
         source: 'register-email-password',
         hasEmail: true,
+        email,
         phone:
           dto.country_code && dto.phone
             ? { countryCode: dto.country_code, phone: dto.phone }
@@ -841,6 +842,8 @@ export class AuthService {
       provider: AuthProvider;
       source: string;
       hasEmail: boolean;
+      email?: string;
+      displayName?: string;
       context: RegisterRequestContext;
       phone?: { countryCode: string; phone: string };
       sendOtp?: boolean;
@@ -859,6 +862,8 @@ export class AuthService {
       provider: options.provider,
       source: options.source,
       hasEmail: options.hasEmail,
+      email: options.email,
+      displayName: options.displayName,
       platform: options.context.platform,
       phone: options.phone,
       sendOtp: options.sendOtp,
@@ -1142,6 +1147,8 @@ export class AuthService {
       provider: AuthProvider;
       source: string;
       hasEmail: boolean;
+      email?: string;
+      displayName?: string;
       platform: ActivityPlatform;
       phone?: { countryCode: string; phone: string };
       sendOtp?: boolean;
@@ -1159,8 +1166,16 @@ export class AuthService {
         title: 'Welcome to Match Mate',
         message:
           'Your account was created successfully. Complete your profile to start receiving better matches.',
+        emailBody: this.buildRegistrationWelcomeEmail({
+          userName: this.getEmailDisplayName(
+            options.email,
+            options.displayName,
+          ),
+          provider: options.provider,
+        }),
         type: 'system',
         category: 'system',
+        priority: 'critical',
         channels,
         metadata: {
           source: options.source,
@@ -1573,6 +1588,10 @@ export class AuthService {
         provider,
         source: `register-social-${dto.provider}`,
         hasEmail: Boolean(verifiedProfile.email ?? dto.email),
+        email: verifiedProfile.email ?? dto.email,
+        displayName: [verifiedProfile.firstName, verifiedProfile.lastName]
+          .filter(Boolean)
+          .join(' '),
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
         referralAttribution,
@@ -1901,6 +1920,67 @@ export class AuthService {
       isActive: true,
       uploadedAt: new Date(),
     });
+  }
+
+  private buildRegistrationWelcomeEmail(params: {
+    userName: string;
+    provider: AuthProvider;
+  }): string {
+    const providerLabel =
+      params.provider === AuthProvider.EMAIL
+        ? 'email and password'
+        : params.provider;
+    const safeName = this.escapeHtml(params.userName);
+
+    return `
+      <div style="margin:0;padding:0;background:#fff5f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;">
+        <div style="max-width:640px;margin:0 auto;padding:32px 18px;">
+          <div style="background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f7d5df;box-shadow:0 16px 40px rgba(124,45,70,0.10);">
+            <div style="padding:28px 30px;background:linear-gradient(135deg,#ff7a9e,#b83280);color:#ffffff;">
+              <div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Welcome to Match Mate</div>
+              <h1 style="margin:10px 0 0;font-size:28px;line-height:1.25;">Your account is ready, ${safeName}</h1>
+            </div>
+            <div style="padding:30px;">
+              <p style="margin:0 0 16px;font-size:16px;line-height:1.65;">Namaste ${safeName},</p>
+              <p style="margin:0 0 18px;font-size:15px;line-height:1.65;">Thank you for joining Match Mate. Your account has been created successfully using ${this.escapeHtml(providerLabel)}.</p>
+              <div style="padding:18px;border-radius:18px;background:#fff5f8;border:1px solid #f7d5df;margin:22px 0;">
+                <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#9d174d;">Recommended next steps</div>
+                <ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#374151;">
+                  <li>Complete your matrimonial profile with family, education and lifestyle details.</li>
+                  <li>Add clear photos and verification details to improve trust.</li>
+                  <li>Review recommended matches after onboarding is complete.</li>
+                </ul>
+              </div>
+              <p style="margin:0 0 18px;font-size:14px;line-height:1.65;color:#4b5563;">Match Mate is designed for serious matrimonial search, with privacy controls, shortlist tools and safer communication built into the experience.</p>
+              <p style="margin:0;font-size:14px;line-height:1.65;color:#6b7280;">Warm regards,<br/>Team Match Mate</p>
+            </div>
+          </div>
+          <p style="margin:18px 8px 0;text-align:center;font-size:12px;line-height:1.5;color:#9ca3af;">You are receiving this email because a Match Mate account was created with your details.</p>
+        </div>
+      </div>
+    `;
+  }
+
+  private getEmailDisplayName(email?: string, displayName?: string): string {
+    const trimmedDisplayName = displayName?.trim();
+    if (trimmedDisplayName) {
+      return trimmedDisplayName;
+    }
+
+    const emailName = email
+      ?.split('@')[0]
+      ?.replace(/[._-]+/g, ' ')
+      .trim();
+    return emailName || 'there';
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
   }
 
   getRefreshCookieOptions(): CookieOptions {

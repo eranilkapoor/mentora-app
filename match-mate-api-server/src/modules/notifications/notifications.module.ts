@@ -19,6 +19,19 @@ import {
   NotificationDeviceTokenSchema,
 } from './schemas/notification-device-token.schema';
 import { User, UserSchema } from '../auth/schemas/user.schema';
+import {
+  Subscription,
+  SubscriptionSchema,
+} from '../subscriptions/schemas/subscription.schema';
+import { Plan, PlanSchema } from '../subscriptions/schemas/plan.schema';
+import {
+  Feature,
+  FeatureSchema,
+} from '../subscriptions/schemas/feature.schema';
+import {
+  PlanFeature,
+  PlanFeatureSchema,
+} from '../subscriptions/schemas/plan-feature.schema';
 import { NotificationsService } from './services/notifications.service';
 import { NotificationRepository } from './repositories/notification.repository';
 import { NotificationsController } from './controllers/notifications.controller';
@@ -48,6 +61,10 @@ import { NotificationsGateway } from './controllers/notifications.gateway';
         schema: NotificationDeviceTokenSchema,
       },
       { name: User.name, schema: UserSchema },
+      { name: Subscription.name, schema: SubscriptionSchema },
+      { name: Plan.name, schema: PlanSchema },
+      { name: Feature.name, schema: FeatureSchema },
+      { name: PlanFeature.name, schema: PlanFeatureSchema },
     ]),
   ],
   controllers: [NotificationsController],

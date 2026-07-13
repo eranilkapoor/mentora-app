@@ -141,7 +141,7 @@ export type AppStackParamList = {
 export type RootStackParamList = {
   Auth: NavigatorScreenParams<AuthStackParamList> | undefined;
   Onboarding: undefined;
-  App: undefined;
+  App: NavigatorScreenParams<AppStackParamList> | undefined;
 };
 
 // ─── Global declaration — enables typed useNavigation() with no generics ──────

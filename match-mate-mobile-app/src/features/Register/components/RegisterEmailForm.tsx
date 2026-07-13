@@ -10,6 +10,7 @@ import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 import { FormErrors } from '@/features/Auth/shared/auth.types';
 import { authSharedStyles } from '@/features/Auth/shared/auth.styles';
 import { AuthTextField } from '@/features/Auth/shared/components/AuthTextField';
+import { PasswordStrengthHint } from '@/features/Auth/shared/components/PasswordStrengthHint';
 
 interface Props {
   errors: FormErrors;
@@ -87,6 +88,8 @@ export function RegisterEmailForm({
         showSecureLabel={t('auth.actions.show_password') as string}
         hideSecureLabel={t('auth.actions.hide_password') as string}
       />
+
+      <PasswordStrengthHint password={password} />
 
       <TouchableOpacity
         style={styles.inlineLinkRow}

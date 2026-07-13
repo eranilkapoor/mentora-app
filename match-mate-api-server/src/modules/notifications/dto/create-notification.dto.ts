@@ -35,6 +35,11 @@ export class CreateNotificationDto {
   message!: string;
 
   @IsOptional()
+  @IsString()
+  @MaxLength(20000)
+  emailBody?: string;
+
+  @IsOptional()
   @IsIn(NOTIFICATION_TYPES)
   type?: (typeof NOTIFICATION_TYPES)[number];
 

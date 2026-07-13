@@ -1083,7 +1083,6 @@ export class MasterSeederService {
       [FeatureKey.FAMILY_MANAGED_PROFILE, 1],
       [FeatureKey.FAMILY_DETAILS, 1],
       [FeatureKey.PUSH_NOTIFICATIONS, 1],
-      [FeatureKey.EMAIL_NOTIFICATIONS, 1],
       [FeatureKey.PHOTO_APPROVAL, 1],
       [FeatureKey.VIDEO_APPROVAL, 1],
       [FeatureKey.IDENTITY_VERIFICATION, 1],

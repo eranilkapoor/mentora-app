@@ -1,19 +1,20 @@
 name: CodeQL
 
 on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main, develop]
-  schedule:
-    - cron: "23 3 * * 1"
+  # Manual-only for now.
+  # Private repositories need GitHub Code Security/GHAS entitlement for CodeQL
+  # result upload. Keeping this off push/PR prevents normal CI from failing
+  # when code scanning is not enabled for the repository/account.
   workflow_dispatch:
 
 permissions:
   actions: read
+  checks: read
   contents: read
   packages: read
+  pull-requests: read
   security-events: write
+  statuses: read
 
 concurrency:
   group: codeql-${{ github.ref }}
@@ -34,6 +35,13 @@ jobs:
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
+
+      - name: Show CodeQL run context
+        run: |
+          echo "event_name=${{ github.event_name }}"
+          echo "repository=${{ github.repository }}"
+          echo "ref=${{ github.ref }}"
+          echo "sha=${{ github.sha }}"
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v4

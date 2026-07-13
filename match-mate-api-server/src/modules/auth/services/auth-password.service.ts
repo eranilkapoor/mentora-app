@@ -102,6 +102,7 @@ export class AuthPasswordService {
         userId: String(user._id),
         title: 'Reset your password',
         message: `Use this secure link to reset your password: ${resetUrl}`,
+        emailBody: this.buildPasswordResetEmail(user, resetUrl),
         type: 'system',
         category: 'system',
         channels: ['email'],
@@ -172,6 +173,7 @@ export class AuthPasswordService {
         title: 'Password changed successfully',
         message:
           'Your password has been reset successfully. If this was not you, contact support immediately.',
+        emailBody: this.buildPasswordChangedEmail(user, 'reset'),
         type: 'system',
         category: 'system',
         channels: ['in_app', 'email'],
@@ -284,6 +286,7 @@ export class AuthPasswordService {
         title: 'Password changed',
         message:
           'Your password was changed successfully. If this was not you, contact support immediately.',
+        emailBody: this.buildPasswordChangedEmail(user, 'change'),
         type: 'system',
         category: 'system',
         channels: ['in_app', 'email'],
@@ -330,6 +333,151 @@ export class AuthPasswordService {
   private buildResetPasswordLink(code: string): string {
     const baseUrl = this.configService.getOrThrow<string>('app.webUrl');
     return `${baseUrl}/reset-password?code=${encodeURIComponent(code)}`;
+  }
+
+  private buildPasswordResetEmail(user: UserDocument, resetUrl: string) {
+    const name = this.getUserDisplayName(user);
+    return this.buildSecurityEmail({
+      greeting: `Hello ${this.escapeHtml(name)},`,
+      eyebrow: 'Secure password reset',
+      heading: 'Reset your Match Mate password',
+      intro:
+        'We received a request to reset the password for your Match Mate account. Use the secure button below to create a new password.',
+      ctaLabel: 'Reset password',
+      ctaUrl: resetUrl,
+      details: [
+        'This link expires in 15 minutes.',
+        'For your security, this link can be used only once.',
+        'If you did not request this reset, you can safely ignore this email.',
+      ],
+      footerNote:
+        'Match Mate helps you build meaningful matrimonial connections with privacy-first account protection.',
+    });
+  }
+
+  private buildPasswordChangedEmail(
+    user: UserDocument,
+    source: 'reset' | 'change',
+  ) {
+    const name = this.getUserDisplayName(user);
+    const changedAt = new Intl.DateTimeFormat('en-IN', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+      timeZone: 'Asia/Kolkata',
+    }).format(new Date());
+
+    return this.buildSecurityEmail({
+      greeting: `Hello ${this.escapeHtml(name)},`,
+      eyebrow: 'Account security update',
+      heading:
+        source === 'reset'
+          ? 'Your password has been reset'
+          : 'Your password has been changed',
+      intro:
+        source === 'reset'
+          ? 'Your Match Mate password was reset successfully. You can now sign in with your new password.'
+          : 'Your Match Mate password was changed successfully from your account security settings.',
+      details: [
+        `Changed at: ${this.escapeHtml(changedAt)} IST`,
+        'All existing sessions may be reviewed from Security Settings.',
+        'If this was not you, contact Match Mate support immediately and secure your email account.',
+      ],
+      footerNote:
+        'We send security alerts to help keep your matrimonial profile and conversations protected.',
+    });
+  }
+
+  private buildSecurityEmail({
+    greeting,
+    eyebrow,
+    heading,
+    intro,
+    ctaLabel,
+    ctaUrl,
+    details,
+    footerNote,
+  }: {
+    greeting: string;
+    eyebrow: string;
+    heading: string;
+    intro: string;
+    ctaLabel?: string;
+    ctaUrl?: string;
+    details: string[];
+    footerNote: string;
+  }) {
+    const detailItems = details
+      .map((detail) => `<li>${this.escapeHtml(detail)}</li>`)
+      .join('');
+    const cta =
+      ctaLabel && ctaUrl
+        ? `<a href="${this.escapeHtml(
+            ctaUrl,
+          )}" style="display:inline-block;background:#8b1e3f;color:#ffffff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:12px;margin:10px 0 6px;">${this.escapeHtml(
+            ctaLabel,
+          )}</a>`
+        : '';
+
+    return `<!doctype html>
+<html>
+  <body style="margin:0;background:#f8f3f5;font-family:Arial,Helvetica,sans-serif;color:#2f2530;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f8f3f5;padding:28px 12px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #eadde2;border-radius:20px;overflow:hidden;">
+            <tr>
+              <td style="background:#8b1e3f;padding:26px 30px;color:#ffffff;">
+                <div style="font-size:12px;letter-spacing:1.6px;text-transform:uppercase;opacity:.86;">${this.escapeHtml(
+                  eyebrow,
+                )}</div>
+                <div style="font-size:28px;font-weight:800;margin-top:8px;">Match Mate</div>
+                <div style="font-size:14px;opacity:.9;margin-top:6px;">Private, trusted matrimonial connections</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:30px;">
+                <p style="font-size:16px;line-height:24px;margin:0 0 14px;">${greeting}</p>
+                <h1 style="font-size:24px;line-height:31px;margin:0 0 12px;color:#251b25;">${this.escapeHtml(
+                  heading,
+                )}</h1>
+                <p style="font-size:15px;line-height:24px;margin:0 0 18px;color:#594b55;">${this.escapeHtml(
+                  intro,
+                )}</p>
+                ${cta}
+                <div style="background:#fff8fa;border:1px solid #eadde2;border-radius:14px;padding:16px 18px;margin-top:18px;">
+                  <div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#251b25;">Security details</div>
+                  <ul style="margin:0;padding-left:18px;color:#594b55;font-size:14px;line-height:22px;">${detailItems}</ul>
+                </div>
+                <p style="font-size:13px;line-height:20px;color:#746873;margin:18px 0 0;">${this.escapeHtml(
+                  footerNote,
+                )}</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#fbf8f9;border-top:1px solid #eadde2;padding:18px 30px;color:#7a6d76;font-size:12px;line-height:18px;">
+                This is an automated security email from Match Mate. Please do not share password reset links with anyone.
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`;
+  }
+
+  private getUserDisplayName(user: UserDocument) {
+    const emailPrefix = user.email?.split('@')[0]?.trim();
+    return emailPrefix || 'there';
+  }
+
+  private escapeHtml(value: string) {
+    return value
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
   }
 
   private generateResetPasswordCode(): string {

@@ -3,6 +3,7 @@ import { Types } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
 import { NotificationsService } from './notifications.service';
 import { CreateNotificationDto } from '../dto/create-notification.dto';
+import { FeatureKey, PlanTier } from '@/common/enums';
 
 describe('NotificationsService', () => {
   const userId = new Types.ObjectId().toString();
@@ -57,6 +58,37 @@ describe('NotificationsService', () => {
   const realtime = {
     emitToUser: jest.fn(),
   };
+  const freePlanId = new Types.ObjectId();
+  const emailFeatureId = new Types.ObjectId();
+  const smsFeatureId = new Types.ObjectId();
+  const subscriptionModel = {
+    findOne: jest.fn(),
+  };
+  const planModel = {
+    findOne: jest.fn(),
+  };
+  const featureModel = {
+    findOne: jest.fn(),
+  };
+  const planFeatureModel = {
+    findOne: jest.fn(),
+  };
+
+  type QueryMock<T> = {
+    sort: jest.Mock<QueryMock<T>, unknown[]>;
+    select: jest.Mock<QueryMock<T>, unknown[]>;
+    lean: jest.Mock<QueryMock<T>, unknown[]>;
+    exec: jest.Mock<Promise<T>, []>;
+  };
+
+  const query = <T>(value: T): QueryMock<T> => {
+    const chain = {} as QueryMock<T>;
+    chain.sort = jest.fn(() => chain);
+    chain.select = jest.fn(() => chain);
+    chain.lean = jest.fn(() => chain);
+    chain.exec = jest.fn().mockResolvedValue(value);
+    return chain;
+  };
 
   let service: NotificationsService;
 
@@ -100,6 +132,18 @@ describe('NotificationsService', () => {
     queueService.replayDeadLetter.mockResolvedValue({ replayQueued: true });
     queueService.replayDeadLettersBulk.mockResolvedValue({ scheduled: 1 });
     queueService.purgeDeadLetters.mockResolvedValue({ deleted: 1 });
+    subscriptionModel.findOne.mockReturnValue(query(null));
+    planModel.findOne.mockReturnValue(
+      query({ _id: freePlanId, tier: PlanTier.FREE }),
+    );
+    featureModel.findOne.mockImplementation(({ key }: { key: FeatureKey }) =>
+      query({
+        _id:
+          key === FeatureKey.SMS_NOTIFICATIONS ? smsFeatureId : emailFeatureId,
+        key,
+      }),
+    );
+    planFeatureModel.findOne.mockReturnValue(query(null));
     pushProvider.send.mockResolvedValue({ status: 'sent', provider: 'fcm' });
     emailProvider.send.mockResolvedValue({ status: 'sent', provider: 'ses' });
     smsProvider.send.mockResolvedValue({
@@ -115,6 +159,10 @@ describe('NotificationsService', () => {
       queueService as never,
       settingsService as never,
       realtime as never,
+      subscriptionModel as never,
+      planModel as never,
+      featureModel as never,
+      planFeatureModel as never,
     );
   });
 
@@ -164,6 +212,127 @@ describe('NotificationsService', () => {
     expect(queueService.enqueueDispatch).toHaveBeenCalled();
     expect(pushProvider.send).not.toHaveBeenCalled();
     expect(emailProvider.send).not.toHaveBeenCalled();
+    expect(smsProvider.send).not.toHaveBeenCalled();
+  });
+
+  it('keeps system and subscription emails default-on but gates engagement email and SMS by plan feature', async () => {
+    settingsService.getOrCreateUserSettings.mockResolvedValue({
+      inAppEnabled: true,
+      pushEnabled: true,
+      emailEnabled: true,
+      smsEnabled: true,
+      preferences: {
+        system: { inApp: true, push: true, email: true, sms: false },
+        subscription: { inApp: true, push: true, email: true, sms: false },
+        interestReceived: { inApp: true, push: true, email: true, sms: true },
+      },
+    });
+
+    await service.notify({
+      userId,
+      title: 'System alert',
+      message: 'System alert',
+      category: 'system',
+      channels: ['email'],
+    });
+    await service.notify({
+      userId,
+      title: 'Subscription update',
+      message: 'Subscription update',
+      category: 'subscription',
+      channels: ['email'],
+    });
+    await service.notify({
+      userId,
+      title: 'Interest received',
+      message: 'Interest received',
+      category: 'interest_received',
+      channels: ['email', 'sms'],
+    });
+
+    expect(emailProvider.send).toHaveBeenCalledTimes(2);
+    expect(planFeatureModel.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        planId: freePlanId,
+        featureId: emailFeatureId,
+        isActive: true,
+      }),
+    );
+    expect(planFeatureModel.findOne).toHaveBeenCalledWith(
+      expect.objectContaining({
+        planId: freePlanId,
+        featureId: smsFeatureId,
+        isActive: true,
+      }),
+    );
+    expect(smsProvider.send).not.toHaveBeenCalled();
+
+    emailProvider.send.mockClear();
+    smsProvider.send.mockClear();
+    planFeatureModel.findOne.mockReturnValue(query({ value: true }));
+    smsProvider.send.mockResolvedValue({ status: 'sent', provider: 'msg91' });
+
+    await service.notify({
+      userId,
+      title: 'Interest received',
+      message: 'Interest received',
+      category: 'interest_received',
+      channels: ['email', 'sms'],
+    });
+
+    expect(emailProvider.send).toHaveBeenCalledTimes(1);
+    expect(smsProvider.send).toHaveBeenCalledTimes(1);
+  });
+
+  it('routes transactional notifications to the verified contact channel available to free users', async () => {
+    settingsService.getOrCreateUserSettings.mockResolvedValue({
+      inAppEnabled: true,
+      pushEnabled: true,
+      emailEnabled: true,
+      smsEnabled: false,
+      preferences: {
+        system: { inApp: true, push: true, email: true, sms: false },
+        subscription: { inApp: true, push: true, email: true, sms: false },
+      },
+    });
+    smsProvider.send.mockResolvedValue({ status: 'sent', provider: 'msg91' });
+
+    notificationRepo.findUserById.mockResolvedValue({
+      email: undefined,
+      isEmailVerified: false,
+      isPhoneVerified: true,
+      phone: { countryCode: '+91', phone: '9999999999' },
+    });
+
+    await service.notify({
+      userId,
+      title: 'Security alert',
+      message: 'Security alert',
+      category: 'system',
+      channels: ['email'],
+    });
+
+    expect(emailProvider.send).not.toHaveBeenCalled();
+    expect(smsProvider.send).toHaveBeenCalledTimes(1);
+
+    emailProvider.send.mockClear();
+    smsProvider.send.mockClear();
+    notificationRepo.findUserById.mockResolvedValue({
+      email: 'user@test.com',
+      isEmailVerified: true,
+      isPhoneVerified: false,
+      phone: undefined,
+    });
+
+    await service.notify({
+      userId,
+      title: 'Subscription update',
+      message: 'Subscription update',
+      category: 'subscription',
+      channels: ['sms'],
+    });
+
+    expect(emailProvider.send).toHaveBeenCalledTimes(1);
     expect(smsProvider.send).not.toHaveBeenCalled();
   });
 

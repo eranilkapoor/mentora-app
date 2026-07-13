@@ -43,6 +43,34 @@ class ChannelPreference {
   @Prop({ default: false }) sms!: boolean;
 }
 
+const engagementPreferenceDefault = () => ({
+  inApp: true,
+  push: true,
+  email: false,
+  sms: false,
+});
+
+const profileViewPreferenceDefault = () => ({
+  inApp: true,
+  push: true,
+  email: false,
+  sms: false,
+});
+
+const transactionalPreferenceDefault = () => ({
+  inApp: true,
+  push: true,
+  email: true,
+  sms: false,
+});
+
+const marketingPreferenceDefault = () => ({
+  inApp: false,
+  push: false,
+  email: true,
+  sms: false,
+});
+
 @Schema({ _id: false })
 class QuietHours {
   @Prop({ default: false }) enabled!: boolean;
@@ -59,28 +87,28 @@ class QuietHours {
 
 @Schema({ _id: false })
 class NotificationPreferences {
-  @Prop({ type: ChannelPreference, default: () => ({}) })
+  @Prop({ type: ChannelPreference, default: engagementPreferenceDefault })
   interestReceived!: ChannelPreference;
 
-  @Prop({ type: ChannelPreference, default: () => ({}) })
+  @Prop({ type: ChannelPreference, default: engagementPreferenceDefault })
   interestAccepted!: ChannelPreference;
 
-  @Prop({ type: ChannelPreference, default: () => ({}) })
+  @Prop({ type: ChannelPreference, default: profileViewPreferenceDefault })
   profileView!: ChannelPreference;
 
-  @Prop({ type: ChannelPreference, default: () => ({}) })
+  @Prop({ type: ChannelPreference, default: engagementPreferenceDefault })
   matchFound!: ChannelPreference;
 
-  @Prop({ type: ChannelPreference, default: () => ({}) })
+  @Prop({ type: ChannelPreference, default: engagementPreferenceDefault })
   messageReceived!: ChannelPreference;
 
-  @Prop({ type: ChannelPreference, default: () => ({}) })
+  @Prop({ type: ChannelPreference, default: transactionalPreferenceDefault })
   subscription!: ChannelPreference;
 
-  @Prop({ type: ChannelPreference, default: () => ({}) })
+  @Prop({ type: ChannelPreference, default: transactionalPreferenceDefault })
   system!: ChannelPreference;
 
-  @Prop({ type: ChannelPreference, default: () => ({}) })
+  @Prop({ type: ChannelPreference, default: marketingPreferenceDefault })
   marketing!: ChannelPreference;
 }
 

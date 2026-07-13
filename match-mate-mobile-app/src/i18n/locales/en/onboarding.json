@@ -86,6 +86,28 @@
     "next": "Next",
     "submit": "Create Profile"
   },
+  "success": {
+    "eyebrow": "Profile live",
+    "title": "Your matrimonial profile is ready",
+    "subtitle": "We have saved your essentials and started preparing compatible recommendations. Add more details when you are ready to improve trust and match quality.",
+    "guide_title": "How Match Mate works",
+    "cta_complete_profile": "Complete full profile",
+    "cta_matches": "View recommended matches",
+    "guide": {
+      "complete_profile": {
+        "title": "Strengthen your profile",
+        "description": "Add family, education, lifestyle and verification details so families can evaluate your profile confidently."
+      },
+      "matches": {
+        "title": "Review recommended matches",
+        "description": "Explore profiles curated from your preferences and update filters as your search becomes clearer."
+      },
+      "safe_connect": {
+        "title": "Connect safely",
+        "description": "Shortlist, send interest and chat only when you are comfortable. Use verification and privacy settings for safer conversations."
+      }
+    }
+  },
   "errors": {
     "required": "This field is required",
     "first_name_required": "First name is required",

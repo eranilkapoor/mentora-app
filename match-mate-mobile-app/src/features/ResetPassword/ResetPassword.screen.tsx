@@ -30,72 +30,8 @@ import { resetPasswordStyles } from './ResetPassword.styles';
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 import { FormErrors, ResetPasswordScreenProps } from './ResetPassword.types';
 import { AuthTextField } from '@/features/Auth/shared/components/AuthTextField';
-
-// ─── Password strength check ──────────────────────────────────────────────────
-
-type StrengthLevel = 'weak' | 'fair' | 'strong' | 'very_strong';
-
-function getPasswordStrength(password: string): StrengthLevel {
-  if (password.length === 0) return 'weak';
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (password.length >= 12) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
-  if (score <= 1) return 'weak';
-  if (score === 2) return 'fair';
-  if (score === 3) return 'strong';
-  return 'very_strong';
-}
-
-// ─── Password Strength Bar ────────────────────────────────────────────────────
-
-const STRENGTH_FILL: Record<StrengthLevel, number> = {
-  weak: 1,
-  fair: 2,
-  strong: 3,
-  very_strong: 4,
-};
-
-function StrengthBar({ password }: { password: string }) {
-  const styles = useThemedStyles(resetPasswordStyles);
-
-  const { theme } = useTheme();
-  const { t } = useTranslation();
-  const strength = getPasswordStrength(password);
-  const fill = STRENGTH_FILL[strength];
-  const strengthColors: Record<StrengthLevel, string> = {
-    weak: theme.colors.error,
-    fair: theme.colors.warning,
-    strong: theme.colors.info,
-    very_strong: theme.colors.success,
-  };
-  const color = strengthColors[strength];
-
-  if (!password) return null;
-
-  return (
-    <View style={styles.strengthBarView}>
-      <View style={styles.strengthHeader}>
-        {[1, 2, 3, 4].map((i) => (
-          <View
-            key={i}
-            style={[
-              styles.strengthBody,
-              {
-                backgroundColor: i <= fill ? color : theme.colors.border,
-              },
-            ]}
-          />
-        ))}
-      </View>
-      <Text style={[styles.strengthBarBottom, { color }]}>
-        {t(`auth.password_strength.${strength}`)}
-      </Text>
-    </View>
-  );
-}
+import { PasswordStrengthHint } from '@/features/Auth/shared/components/PasswordStrengthHint';
+import { isPasswordStrongEnough } from '@/features/Auth/shared/passwordStrength';
 
 // ─── Main Screen ──────────────────────────────────────────────────────────────
 
@@ -177,7 +113,7 @@ export default function ResetPasswordScreen({
       newErrors.password = t('auth.errors.password_min', {
         min: PASSWORD_MIN_LENGTH,
       });
-    } else if (getPasswordStrength(password) === 'weak') {
+    } else if (!isPasswordStrongEnough(password)) {
       newErrors.password = t('auth.errors.password_too_weak');
     }
 
@@ -249,7 +185,7 @@ export default function ResetPasswordScreen({
           </Text>
 
           <TouchableOpacity
-            style={styles.primaryButton}
+            style={styles.successPrimaryButton}
             onPress={() => navigation.navigate('Login')}
             accessibilityRole="button"
             accessibilityLabel={t('auth.actions.sign_in')}
@@ -300,11 +236,12 @@ export default function ResetPasswordScreen({
             {t('auth.reset.invalid_link_subtitle')}
           </Text>
           <TouchableOpacity
-            style={styles.primaryButton}
+            style={styles.successPrimaryButton}
             onPress={() => navigation.navigate('ForgotPassword')}
             accessibilityRole="button"
             accessibilityLabel={t('auth.actions.request_new_link')}
           >
+            <Feather name="mail" size={16} color={theme.colors.white} />
             <Text style={styles.primaryButtonText}>
               {t('auth.actions.request_new_link')}
             </Text>
@@ -356,7 +293,9 @@ export default function ResetPasswordScreen({
                 clearError('password');
               }}
               error={errors.password}
-              placeholder={t('auth.placeholders.new_password')}
+              placeholder={t('auth.placeholders.new_password', {
+                min: PASSWORD_MIN_LENGTH,
+              })}
               secure
               secureVisible={showPassword}
               textContentType="newPassword"
@@ -367,48 +306,7 @@ export default function ResetPasswordScreen({
               hideSecureLabel={t('auth.actions.hide_password')}
             />
 
-            {/* Strength indicator */}
-            <StrengthBar password={password} />
-
-            {/* Password rules hint */}
-            <View style={styles.rulesCard}>
-              {[
-                {
-                  rule: t('auth.reset.rule_length', {
-                    min: PASSWORD_MIN_LENGTH,
-                  }),
-                  met: password.length >= PASSWORD_MIN_LENGTH,
-                },
-                {
-                  rule: t('auth.reset.rule_uppercase'),
-                  met: /[A-Z]/.test(password),
-                },
-                {
-                  rule: t('auth.reset.rule_number'),
-                  met: /[0-9]/.test(password),
-                },
-                {
-                  rule: t('auth.reset.rule_special'),
-                  met: /[^A-Za-z0-9]/.test(password),
-                },
-              ].map(({ rule, met }) => (
-                <View key={rule} style={styles.ruleRow}>
-                  <Feather
-                    name={met ? 'check-circle' : 'circle'}
-                    size={13}
-                    color={met ? theme.colors.success : theme.colors.textMuted}
-                  />
-                  <Text
-                    style={[
-                      styles.ruleText,
-                      met && { color: theme.colors.success },
-                    ]}
-                  >
-                    {rule}
-                  </Text>
-                </View>
-              ))}
-            </View>
+            <PasswordStrengthHint password={password} />
 
             <AuthTextField
               label={t('auth.fields.confirm_password')}

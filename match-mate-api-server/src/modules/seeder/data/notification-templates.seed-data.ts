@@ -2,6 +2,62 @@ import { NotificationTemplate } from '@/modules/notifications/schemas/notificati
 
 export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
   {
+    key: 'USER_REGISTERED_WELCOME',
+    eventKey: 'user.registered.welcome',
+    locale: 'en',
+    name: 'User Registration Welcome',
+    category: 'system',
+    priority: 'normal',
+    title: 'Welcome to Match Mate',
+    message:
+      'Your account was created successfully. Complete your profile to start receiving better matches.',
+    pushTitle: 'Welcome to Match Mate',
+    pushBody: 'Complete your profile to start receiving better matches.',
+    emailSubject: 'Welcome to Match Mate — your account is ready',
+    emailBody:
+      '<div style="margin:0;padding:0;background:#fff5f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;"><div style="max-width:640px;margin:0 auto;padding:32px 18px;"><div style="background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f7d5df;box-shadow:0 16px 40px rgba(124,45,70,0.10);"><div style="padding:28px 30px;background:linear-gradient(135deg,#ff7a9e,#b83280);color:#ffffff;"><div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Welcome to Match Mate</div><h1 style="margin:10px 0 0;font-size:28px;line-height:1.25;">Your account is ready, {{userName}}</h1></div><div style="padding:30px;"><p style="margin:0 0 16px;font-size:16px;line-height:1.65;">Namaste {{userName}},</p><p style="margin:0 0 18px;font-size:15px;line-height:1.65;">Thank you for joining Match Mate. Your account has been created successfully.</p><div style="padding:18px;border-radius:18px;background:#fff5f8;border:1px solid #f7d5df;margin:22px 0;"><div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#9d174d;">Recommended next steps</div><ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#374151;"><li>Complete your matrimonial profile with family, education and lifestyle details.</li><li>Add clear photos and verification details to improve trust.</li><li>Review recommended matches after onboarding is complete.</li></ul></div><p style="margin:0;font-size:14px;line-height:1.65;color:#6b7280;">Warm regards,<br/>Team Match Mate</p></div></div></div></div>',
+    variables: ['userName'],
+    channels: { inApp: true, push: true, email: true, sms: false },
+    deliveryRules: {
+      cooldownMinutes: 60,
+      maxPerDay: 1,
+    },
+    deepLink: 'matchmate://onboarding',
+    tags: ['lifecycle', 'welcome', 'registration'],
+    mandatory: true,
+    status: 'active',
+    isActive: true,
+    createdBy: 'system',
+  },
+  {
+    key: 'ONBOARDING_COMPLETED_WELCOME',
+    eventKey: 'onboarding.completed.welcome',
+    locale: 'en',
+    name: 'Onboarding Completed Welcome',
+    category: 'system',
+    priority: 'normal',
+    title: 'Your profile is now live',
+    message:
+      'Your profile is now live. Complete your full profile and review recommended matches.',
+    pushTitle: 'Your profile is live',
+    pushBody: 'Complete your full profile or review recommended matches.',
+    emailSubject: 'Your Match Mate profile is live',
+    emailBody:
+      '<div style="margin:0;padding:0;background:#fff5f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;"><div style="max-width:640px;margin:0 auto;padding:32px 18px;"><div style="background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f7d5df;box-shadow:0 16px 40px rgba(124,45,70,0.10);"><div style="padding:28px 30px;background:linear-gradient(135deg,#ff7a9e,#b83280);color:#ffffff;"><div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Profile live</div><h1 style="margin:10px 0 0;font-size:28px;line-height:1.25;">Your Match Mate profile is ready</h1></div><div style="padding:30px;"><p style="margin:0 0 16px;font-size:16px;line-height:1.65;">Namaste {{userName}},</p><p style="margin:0 0 18px;font-size:15px;line-height:1.65;">Your onboarding is complete and your matrimonial profile is now live. We will use your profile and partner preferences to improve discovery and recommendations.</p><div style="padding:18px;border-radius:18px;background:#fff5f8;border:1px solid #f7d5df;margin:22px 0;"><div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#9d174d;">What to do next</div><ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#374151;"><li>Complete family, career, lifestyle and about-me sections.</li><li>Add verification details to improve trust with families.</li><li>Open recommended matches and shortlist profiles you like.</li></ol></div><p style="margin:0;font-size:14px;line-height:1.65;color:#6b7280;">Best wishes,<br/>Team Match Mate</p></div></div></div></div>',
+    variables: ['userName'],
+    channels: { inApp: true, push: true, email: true, sms: false },
+    deliveryRules: {
+      cooldownMinutes: 60,
+      maxPerDay: 1,
+    },
+    deepLink: 'matchmate://matches',
+    tags: ['lifecycle', 'onboarding', 'profile'],
+    mandatory: false,
+    status: 'active',
+    isActive: true,
+    createdBy: 'system',
+  },
+  {
     key: 'INTEREST_RECEIVED',
     eventKey: 'interest.received',
     locale: 'en',
@@ -567,7 +623,8 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushTitle: 'Security alert',
     pushBody: 'Your account password was changed.',
     emailSubject: 'Security alert: password changed',
-    emailBody: 'Hi {{userName}}, your password was changed on {{changedAt}}.',
+    emailBody:
+      '<!doctype html><html><body style="margin:0;background:#f8f3f5;font-family:Arial,Helvetica,sans-serif;color:#2f2530;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f8f3f5;padding:28px 12px;"><tr><td align="center"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #eadde2;border-radius:20px;overflow:hidden;"><tr><td style="background:#8b1e3f;padding:26px 30px;color:#ffffff;"><div style="font-size:12px;letter-spacing:1.6px;text-transform:uppercase;opacity:.86;">Account security update</div><div style="font-size:28px;font-weight:800;margin-top:8px;">Match Mate</div><div style="font-size:14px;opacity:.9;margin-top:6px;">Private, trusted matrimonial connections</div></td></tr><tr><td style="padding:30px;"><p style="font-size:16px;line-height:24px;margin:0 0 14px;">Hello {{userName}},</p><h1 style="font-size:24px;line-height:31px;margin:0 0 12px;color:#251b25;">Your password was changed</h1><p style="font-size:15px;line-height:24px;margin:0 0 18px;color:#594b55;">Your Match Mate account password was changed on {{changedAt}}. We send this security alert to help protect your matrimonial profile, private conversations, and account access.</p><div style="background:#fff8fa;border:1px solid #eadde2;border-radius:14px;padding:16px 18px;margin-top:18px;"><div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#251b25;">What to do next</div><ul style="margin:0;padding-left:18px;color:#594b55;font-size:14px;line-height:22px;"><li>If this was you, no action is needed.</li><li>If this was not you, reset your password immediately.</li><li>Review your login sessions and secure your email account.</li></ul></div><p style="font-size:13px;line-height:20px;color:#746873;margin:18px 0 0;">Match Mate helps you build meaningful matrimonial connections with privacy-first account protection.</p></td></tr><tr><td style="background:#fbf8f9;border-top:1px solid #eadde2;padding:18px 30px;color:#7a6d76;font-size:12px;line-height:18px;">This is an automated security email from Match Mate. Please do not share passwords or reset links with anyone.</td></tr></table></td></tr></table></body></html>',
     smsBody: 'Security alert: your Match Mate password was changed.',
     variables: ['userName', 'changedAt'],
     channels: { inApp: true, push: true, email: true, sms: true },

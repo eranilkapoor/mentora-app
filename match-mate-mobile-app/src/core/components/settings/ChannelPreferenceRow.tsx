@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { View, Text, StyleSheet, Switch } from 'react-native';
+import { View, Text, StyleSheet, Switch, Pressable } from 'react-native';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
 import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
@@ -22,8 +22,10 @@ interface Props {
   sublabel?: string;
   value: ChannelPreference;
   globalEnabled?: boolean;
+  disabledChannels?: Partial<Record<keyof ChannelPreference, boolean>>;
   isLast?: boolean;
   onChange: (channel: keyof ChannelPreference, value: boolean) => void;
+  onDisabledChannelPress?: (channel: keyof ChannelPreference) => void;
 }
 
 const createStyles = (theme: Theme) =>
@@ -73,8 +75,10 @@ export function ChannelPreferenceRow({
   sublabel,
   value,
   globalEnabled = true,
+  disabledChannels,
   isLast = false,
   onChange,
+  onDisabledChannelPress,
 }: Props): React.ReactElement {
   const { theme, fontScale, accessibility } = useTheme();
   const styles = useMemo(
@@ -103,19 +107,15 @@ export function ChannelPreferenceRow({
       </View>
 
       <View style={styles.channelRow}>
-        {CHANNELS.map((ch) => (
-          <View key={ch.key} style={styles.channelItem}>
-            <Text
-              style={[
-                styles.channelLabel,
-                !globalEnabled && styles.disabledText,
-              ]}
-            >
-              {ch.label}
-            </Text>
+        {CHANNELS.map((ch) => {
+          const channelDisabled = Boolean(disabledChannels?.[ch.key]);
+          const disabled = !globalEnabled || channelDisabled;
+          const channelTestId = `${label}-${ch.key}-notification-channel`;
+          const switchNode = (
             <Switch
-              value={value?.[ch.key] && globalEnabled}
-              disabled={!globalEnabled}
+              testID={channelTestId}
+              value={Boolean(value?.[ch.key]) && !disabled}
+              disabled={disabled}
               onValueChange={(v) => onChange(ch.key, v)}
               trackColor={{
                 false: theme.colors.switchTrackOff,
@@ -125,12 +125,34 @@ export function ChannelPreferenceRow({
               accessibilityLabel={`${label} ${ch.label}`}
               accessibilityRole="switch"
               accessibilityState={{
-                checked: value?.[ch.key],
-                disabled: !globalEnabled,
+                checked: Boolean(value?.[ch.key]) && !disabled,
+                disabled,
               }}
             />
-          </View>
-        ))}
+          );
+
+          return (
+            <View key={ch.key} style={styles.channelItem}>
+              <Text
+                style={[styles.channelLabel, disabled && styles.disabledText]}
+              >
+                {ch.label}
+              </Text>
+              {channelDisabled ? (
+                <Pressable
+                  accessibilityLabel={`${label} ${ch.label} locked`}
+                  accessibilityRole="button"
+                  testID={`${channelTestId}-locked`}
+                  onPress={() => onDisabledChannelPress?.(ch.key)}
+                >
+                  {switchNode}
+                </Pressable>
+              ) : (
+                switchNode
+              )}
+            </View>
+          );
+        })}
       </View>
     </View>
   );

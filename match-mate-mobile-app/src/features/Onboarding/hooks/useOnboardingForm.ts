@@ -69,6 +69,7 @@ export function useOnboardingForm() {
   const [photos, setPhotos] = useState<ProfileImage[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
+  const [completionReady, setCompletionReady] = useState(false);
 
   // ─── Error helpers ──────────────────────────────────────────────────────
 
@@ -223,8 +224,8 @@ export function useOnboardingForm() {
         return false;
       }
 
-      dispatch(setProfileCompleted(response.data.isOnboardingCompleted));
-      dispatch(baseApi.util.invalidateTags(['Auth', 'Profile', 'Preference']));
+      dispatch(baseApi.util.invalidateTags(['Profile', 'Preference']));
+      setCompletionReady(Boolean(response.data.isOnboardingCompleted));
       return true;
     } catch (err: unknown) {
       showError({
@@ -237,6 +238,11 @@ export function useOnboardingForm() {
     }
   }, [basic, preferences, photos, dispatch, onboardingProfile, t]);
 
+  const finalizeOnboarding = useCallback((): void => {
+    dispatch(setProfileCompleted(true));
+    dispatch(baseApi.util.invalidateTags(['Auth', 'Profile', 'Preference']));
+  }, [dispatch]);
+
   return {
     // State
     basic,
@@ -244,6 +250,7 @@ export function useOnboardingForm() {
     photos,
     errors,
     loading,
+    completionReady,
     // Setters
     setBasicField,
     setPreferenceField,
@@ -256,6 +263,7 @@ export function useOnboardingForm() {
     validatePreferences,
     // Submit
     handleSubmit,
+    finalizeOnboarding,
     // Error helpers
     clearError,
     clearAllErrors,

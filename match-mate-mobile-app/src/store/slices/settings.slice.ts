@@ -60,14 +60,13 @@ export const DEFAULT_NOTIFICATION_SETTINGS: NotificationSettings = {
     timezone: 'Asia/Kolkata',
   },
   preferences: {
-    interestReceived: { ...DEFAULT_CHANNEL_PREFERENCE, email: true },
-    interestAccepted: { ...DEFAULT_CHANNEL_PREFERENCE, email: true },
+    interestReceived: { ...DEFAULT_CHANNEL_PREFERENCE, email: false },
+    interestAccepted: { ...DEFAULT_CHANNEL_PREFERENCE, email: false },
     profileView: {
       ...DEFAULT_CHANNEL_PREFERENCE,
-      push: false,
       email: false,
     },
-    matchFound: { ...DEFAULT_CHANNEL_PREFERENCE, email: true },
+    matchFound: { ...DEFAULT_CHANNEL_PREFERENCE, email: false },
     messageReceived: { ...DEFAULT_CHANNEL_PREFERENCE, email: false },
     subscription: { ...DEFAULT_CHANNEL_PREFERENCE, email: true },
     system: { ...DEFAULT_CHANNEL_PREFERENCE, email: true },

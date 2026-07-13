@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import { NotificationRepository } from '../repositories/notification.repository';
 import { CreateNotificationDto } from '../dto/create-notification.dto';
 import {
@@ -39,6 +40,23 @@ import {
   throwNotFound,
 } from '@/common/exceptions/throw-app-exception';
 import { NotificationRealtimeService } from './notification-realtime.service';
+import { FeatureKey, PlanTier, SubscriptionStatus } from '@/common/enums';
+import {
+  Feature,
+  FeatureDocument,
+} from '@/modules/subscriptions/schemas/feature.schema';
+import {
+  Plan,
+  PlanDocument,
+} from '@/modules/subscriptions/schemas/plan.schema';
+import {
+  PlanFeature,
+  PlanFeatureDocument,
+} from '@/modules/subscriptions/schemas/plan-feature.schema';
+import {
+  Subscription,
+  SubscriptionDocument,
+} from '@/modules/subscriptions/schemas/subscription.schema';
 
 interface DeliveryDecision {
   inApp: boolean;
@@ -52,6 +70,24 @@ interface DispatchAcrossChannelsResult {
   failedChannels: DeliveryLogChannel[];
 }
 
+interface NotificationRecipientContact {
+  hasUsableEmail: boolean;
+  hasUsablePhone: boolean;
+}
+
+const PAID_ENGAGEMENT_NOTIFICATION_CATEGORIES = new Set<NotificationCategory>([
+  'interest_received',
+  'interest_accepted',
+  'match_found',
+  'profile_view',
+  'message_received',
+]);
+
+const CONTACT_FALLBACK_NOTIFICATION_CATEGORIES = new Set<NotificationCategory>([
+  'system',
+  'subscription',
+]);
+
 @Injectable()
 export class NotificationsService {
   private readonly channelProviders: NotificationChannelProvider[];
@@ -64,6 +100,14 @@ export class NotificationsService {
     private readonly queueService: NotificationQueueService,
     private readonly settingsService: SettingsService,
     private readonly realtime: NotificationRealtimeService,
+    @InjectModel(Subscription.name)
+    private readonly subscriptionModel: Model<SubscriptionDocument>,
+    @InjectModel(Plan.name)
+    private readonly planModel: Model<PlanDocument>,
+    @InjectModel(Feature.name)
+    private readonly featureModel: Model<FeatureDocument>,
+    @InjectModel(PlanFeature.name)
+    private readonly planFeatureModel: Model<PlanFeatureDocument>,
   ) {
     this.channelProviders = [
       this.pushProvider,
@@ -110,6 +154,13 @@ export class NotificationsService {
       settings,
       dto.channels,
       dto.priority,
+      undefined,
+      this.getRecipientContact(user),
+    );
+    await this.applyFeatureBasedDeliveryRules(
+      dto.userId,
+      dto.category,
+      decision,
     );
 
     const notification = await this.notificationRepo.create({
@@ -140,6 +191,7 @@ export class NotificationsService {
       title: dto.title,
       message: dto.message,
       subject: dto.title,
+      emailBody: dto.emailBody,
       templateKey: undefined,
       metadata: {
         ...(dto.metadata ?? {}),
@@ -349,6 +401,12 @@ export class NotificationsService {
       dto.channels,
       template.priority,
       template.channels,
+      this.getRecipientContact(user),
+    );
+    await this.applyFeatureBasedDeliveryRules(
+      dto.userId,
+      template.category,
+      decision,
     );
 
     const notification = await this.notificationRepo.create({
@@ -614,6 +672,106 @@ export class NotificationsService {
     };
   }
 
+  private async applyFeatureBasedDeliveryRules(
+    userId: string,
+    category: NotificationCategory,
+    decision: DeliveryDecision,
+  ): Promise<void> {
+    if (!PAID_ENGAGEMENT_NOTIFICATION_CATEGORIES.has(category)) {
+      return;
+    }
+
+    if (decision.email) {
+      const hasEmailNotifications = await this.userHasFeature(
+        userId,
+        FeatureKey.EMAIL_NOTIFICATIONS,
+      );
+
+      if (!hasEmailNotifications) {
+        decision.email = false;
+      }
+    }
+
+    if (decision.sms) {
+      const hasSmsNotifications = await this.userHasFeature(
+        userId,
+        FeatureKey.SMS_NOTIFICATIONS,
+      );
+
+      if (!hasSmsNotifications) {
+        decision.sms = false;
+      }
+    }
+  }
+
+  private async userHasFeature(
+    userId: string,
+    featureKey: FeatureKey,
+  ): Promise<boolean> {
+    if (!Types.ObjectId.isValid(userId)) {
+      return false;
+    }
+
+    const planId = await this.resolvePlanIdForUser(userId);
+    if (!planId) {
+      return false;
+    }
+
+    const feature = await this.featureModel
+      .findOne({ key: featureKey, isActive: true })
+      .select('_id')
+      .lean()
+      .exec();
+
+    if (!feature?._id) {
+      return false;
+    }
+
+    const planFeature = await this.planFeatureModel
+      .findOne({
+        planId: new Types.ObjectId(planId),
+        featureId: feature._id,
+        isActive: true,
+      })
+      .select('value')
+      .lean()
+      .exec();
+
+    return Boolean(planFeature && planFeature.value !== false);
+  }
+
+  private async resolvePlanIdForUser(userId: string): Promise<string | null> {
+    const now = new Date();
+    const subscription = await this.subscriptionModel
+      .findOne({
+        userId: new Types.ObjectId(userId),
+        status: {
+          $in: [
+            SubscriptionStatus.ACTIVE,
+            SubscriptionStatus.TRIAL,
+            SubscriptionStatus.GRACE_PERIOD,
+          ],
+        },
+        endDate: { $gt: now },
+      })
+      .sort({ endDate: -1 })
+      .select('planId')
+      .lean()
+      .exec();
+
+    if (subscription?.planId) {
+      return subscription.planId.toString();
+    }
+
+    const freePlan = await this.planModel
+      .findOne({ tier: PlanTier.FREE, isActive: true })
+      .select('_id')
+      .lean()
+      .exec();
+
+    return freePlan?._id.toString() ?? null;
+  }
+
   private resolveDeliveryDecision(
     category: NotificationCategory,
 
@@ -644,6 +802,8 @@ export class NotificationsService {
       email?: boolean;
       sms?: boolean;
     },
+
+    recipient?: NotificationRecipientContact,
   ): DeliveryDecision {
     const preferenceKey = this.preferenceKeyFromCategory(category);
 
@@ -664,34 +824,70 @@ export class NotificationsService {
     const inDnd = this.isInDndWindow(settings);
 
     const canBypassDnd = priority === 'critical';
+    const canBypassUserOptOut = priority === 'critical';
+    const shouldUseSmsFallback =
+      CONTACT_FALLBACK_NOTIFICATION_CATEGORIES.has(category) &&
+      recipient?.hasUsablePhone === true &&
+      recipient.hasUsableEmail !== true;
+    const shouldUseEmailFallback =
+      CONTACT_FALLBACK_NOTIFICATION_CATEGORIES.has(category) &&
+      recipient?.hasUsableEmail === true &&
+      recipient.hasUsablePhone !== true;
+    const smsRequested =
+      inRequested('sms') || (shouldUseSmsFallback && inRequested('email'));
+    const smsInTemplate =
+      inTemplate('sms') || (shouldUseSmsFallback && inTemplate('email'));
+    const emailRequested =
+      inRequested('email') || (shouldUseEmailFallback && inRequested('sms'));
+    const emailInTemplate =
+      inTemplate('email') || (shouldUseEmailFallback && inTemplate('sms'));
 
     return {
       inApp:
         inRequested('in_app') &&
         inTemplate('in_app') &&
-        settings.inAppEnabled !== false &&
-        preference?.inApp !== false,
+        (canBypassUserOptOut ||
+          (settings.inAppEnabled !== false && preference?.inApp !== false)),
 
       push:
         inRequested('push') &&
         inTemplate('push') &&
-        settings.pushEnabled !== false &&
-        preference?.push !== false &&
+        (canBypassUserOptOut ||
+          (settings.pushEnabled !== false && preference?.push !== false)) &&
         (!inDnd || canBypassDnd),
 
       email:
-        inRequested('email') &&
-        inTemplate('email') &&
-        settings.emailEnabled !== false &&
-        preference?.email !== false &&
+        emailRequested &&
+        emailInTemplate &&
+        recipient?.hasUsableEmail !== false &&
+        (canBypassUserOptOut ||
+          (settings.emailEnabled !== false && preference?.email !== false)) &&
         (!inDnd || canBypassDnd),
 
       sms:
-        inRequested('sms') &&
-        inTemplate('sms') &&
-        settings.smsEnabled === true &&
-        preference?.sms === true &&
+        smsRequested &&
+        smsInTemplate &&
+        recipient?.hasUsablePhone !== false &&
+        (canBypassUserOptOut ||
+          shouldUseSmsFallback ||
+          (settings.smsEnabled === true && preference?.sms === true)) &&
         (!inDnd || canBypassDnd),
+    };
+  }
+
+  private getRecipientContact(user: {
+    email?: string | null;
+    isEmailVerified?: boolean;
+    phone?: { countryCode?: string | null; phone?: string | null } | null;
+    isPhoneVerified?: boolean;
+  }): NotificationRecipientContact {
+    return {
+      hasUsableEmail: Boolean(user.email && user.isEmailVerified !== false),
+      hasUsablePhone: Boolean(
+        user.phone?.countryCode &&
+        user.phone.phone &&
+        user.isPhoneVerified !== false,
+      ),
     };
   }
 

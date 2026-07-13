@@ -33,6 +33,7 @@ import {
   authMethodConfig,
   isSocialProviderEnabled,
 } from '@/features/Auth/shared/authMethodConfig';
+import { isPasswordStrongEnough } from '@/features/Auth/shared/passwordStrength';
 
 export function useRegisterForm() {
   const dispatch = useAppDispatch();
@@ -140,6 +141,8 @@ export function useRegisterForm() {
       newErrors.password = t('auth.errors.password_min', {
         min: PASSWORD_MIN_LENGTH,
       });
+    } else if (!isPasswordStrongEnough(password)) {
+      newErrors.password = t('auth.errors.password_too_weak');
     }
 
     if (

@@ -1,4 +1,5 @@
 import { PASSWORD_MIN_LENGTH } from '@/core/constants';
+import { isPasswordStrongEnough } from '@/features/Auth/shared/passwordStrength';
 import { type SettingsNavigationProp } from '../../navigation/types';
 import { TFunction } from 'i18next';
 
@@ -34,6 +35,8 @@ export const validatePasswords = (
     errors.newPassword = t('change_password.errors.min_length', {
       count: PASSWORD_MIN_LENGTH,
     });
+  } else if (!isPasswordStrongEnough(values.newPassword)) {
+    errors.newPassword = t('auth.errors.password_too_weak');
   } else if (values.newPassword === values.oldPassword) {
     errors.newPassword = t('change_password.errors.must_differ');
   }

@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { View, Text, Switch, ScrollView } from 'react-native';
+import { Alert, View, Text, Switch, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import Feather from 'react-native-vector-icons/Feather';
@@ -28,11 +28,21 @@ import {
 } from './NotificationSettings.types';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { showError } from '@/core/utils/toast';
+import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
 
 // ─── Per-event notification config ───────────────────────────────────────────
 
 type EventKey = keyof NotificationSettings['preferences'];
 type QuietHoursKey = 'start' | 'end' | 'timezone';
+const PAID_ENGAGEMENT_EVENT_KEYS = new Set<EventKey>([
+  'interestReceived',
+  'interestAccepted',
+  'matchFound',
+  'profileView',
+  'messageReceived',
+]);
+const EMAIL_NOTIFICATIONS_FEATURE = 'email_notifications';
+const SMS_NOTIFICATIONS_FEATURE = 'sms_notifications';
 
 interface EventConfig {
   key: EventKey;
@@ -105,6 +115,14 @@ export default function NotificationSettingsScreen({
   const [updateChannel] = useUpdateNotificationChannelMutation();
   const [activeQuietField, setActiveQuietField] =
     useState<QuietHoursKey | null>(null);
+  const {
+    hasFeature: hasPaidEmailNotifications,
+    isLoading: paidEmailNotificationsLoading,
+  } = usePlanFeatureAccess(EMAIL_NOTIFICATIONS_FEATURE);
+  const {
+    hasFeature: hasPaidSmsNotifications,
+    isLoading: paidSmsNotificationsLoading,
+  } = usePlanFeatureAccess(SMS_NOTIFICATIONS_FEATURE);
 
   const settings = data?.notification as NotificationSettings;
 
@@ -171,11 +189,62 @@ export default function NotificationSettingsScreen({
 
   // ─── Per-event per-channel toggle ────────────────────────────────────────
 
+  const showPaidChannelPrompt = useCallback(
+    (channel: 'email' | 'sms') => {
+      Alert.alert(
+        t('settings.notifications.paid_channel_title'),
+        t(
+          channel === 'email'
+            ? 'settings.notifications.paid_email_message'
+            : 'settings.notifications.paid_sms_message'
+        ),
+        [
+          { text: t('settings.notifications.not_now'), style: 'cancel' },
+          {
+            text: t('settings.notifications.view_plans'),
+            onPress: () => {
+              const parentNavigation = navigation.getParent() as
+                | { navigate: (screen: string, params?: unknown) => void }
+                | undefined;
+              parentNavigation?.navigate('Tabs', { screen: 'Membership' });
+            },
+          },
+        ]
+      );
+    },
+    [navigation, t]
+  );
+
   const handleChannelToggle = useCallback(
     (event: EventKey, channel: keyof ChannelPreference, value: boolean) => {
+      if (
+        channel === 'email' &&
+        PAID_ENGAGEMENT_EVENT_KEYS.has(event) &&
+        (!hasPaidEmailNotifications || paidEmailNotificationsLoading)
+      ) {
+        showPaidChannelPrompt('email');
+        return;
+      }
+
+      if (
+        channel === 'sms' &&
+        PAID_ENGAGEMENT_EVENT_KEYS.has(event) &&
+        (!hasPaidSmsNotifications || paidSmsNotificationsLoading)
+      ) {
+        showPaidChannelPrompt('sms');
+        return;
+      }
+
       void updateChannel({ event, channel, value });
     },
-    [updateChannel]
+    [
+      hasPaidEmailNotifications,
+      hasPaidSmsNotifications,
+      paidEmailNotificationsLoading,
+      paidSmsNotificationsLoading,
+      showPaidChannelPrompt,
+      updateChannel,
+    ]
   );
 
   const handleQuietHoursChange = useCallback(
@@ -318,10 +387,26 @@ export default function NotificationSettingsScreen({
                 settings?.preferences?.[event.key] ?? defaultChannelPreference
               }
               globalEnabled={globalEnabled}
+              disabledChannels={
+                PAID_ENGAGEMENT_EVENT_KEYS.has(event.key)
+                  ? {
+                      email:
+                        !hasPaidEmailNotifications ||
+                        paidEmailNotificationsLoading,
+                      sms:
+                        !hasPaidSmsNotifications || paidSmsNotificationsLoading,
+                    }
+                  : undefined
+              }
               isLast={index === NOTIFICATION_EVENTS.length - 1}
               onChange={(channel, value) =>
                 handleChannelToggle(event.key, channel, value)
               }
+              onDisabledChannelPress={(channel) => {
+                if (channel === 'email' || channel === 'sms') {
+                  showPaidChannelPrompt(channel);
+                }
+              }}
             />
           ))}
         </SettingsCard>

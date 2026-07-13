@@ -34,9 +34,17 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
       },
       App: {
         screens: {
+          Tabs: {
+            screens: {
+              Home: 'home',
+              Matches: 'matches',
+              Chats: 'chats',
+              Membership: 'membership',
+              Profile: 'profile',
+            },
+          },
           Settings: {
             path: 'settings',
-            initialRouteName: 'SettingsScreen',
             screens: {
               SettingsScreen: '',
               EditProfile: 'edit-profile',
