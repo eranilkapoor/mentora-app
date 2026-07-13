@@ -10,6 +10,7 @@ import { AppLogger } from '@/common/logger/logger.service';
 import { ChatPresenceService } from '@/modules/chat/services/chat-presence.service';
 import { ChatRealtimeService } from '@/modules/chat/services/chat-realtime.service';
 import { ChatService } from '@/modules/chat/services/chat.service';
+import { FeatureService } from '@/modules/subscriptions/services/feature.service';
 
 describe('P0 chat socket flows (e2e)', () => {
   jest.setTimeout(20000);
@@ -59,6 +60,10 @@ describe('P0 chat socket flows (e2e)', () => {
     verbose: jest.fn(),
   };
 
+  const featureService = {
+    checkAccess: jest.fn(),
+  };
+
   const openSockets: ClientSocket[] = [];
 
   beforeAll(async () => {
@@ -71,6 +76,7 @@ describe('P0 chat socket flows (e2e)', () => {
         { provide: JwtService, useValue: jwtService },
         { provide: ConfigService, useValue: configService },
         { provide: AppLogger, useValue: logger },
+        { provide: FeatureService, useValue: featureService },
       ],
     }).compile();
 
@@ -91,7 +97,7 @@ describe('P0 chat socket flows (e2e)', () => {
   });
 
   afterAll(async () => {
-    await app.close();
+    await app?.close();
   });
 
   beforeEach(() => {
@@ -101,6 +107,7 @@ describe('P0 chat socket flows (e2e)', () => {
     chatService.getMessages.mockResolvedValue([]);
     chatService.sendMessage.mockResolvedValue({ id: messageId });
     chatService.markRoomRead.mockResolvedValue({ read: true });
+    featureService.checkAccess.mockResolvedValue({ allowed: true });
 
     jwtService.verifyAsync.mockImplementation(
       async (token: string): Promise<{ sub: string }> => {
@@ -130,53 +137,51 @@ describe('P0 chat socket flows (e2e)', () => {
     return socket;
   };
 
-  const connectAndWaitReady =
-    (
-      token: string,
-    ): Promise<{ socket: ClientSocket; ready: { userId: string } }> =>
-      new Promise((resolve, reject) => {
-        const socket = createClient(token);
+  const connectAndWaitReady = (
+    token: string,
+  ): Promise<{ socket: ClientSocket; ready: { userId: string } }> =>
+    new Promise((resolve, reject) => {
+      const socket = createClient(token);
 
-        const timeout = setTimeout(() => {
-          reject(new Error(`Socket ready timeout for token: ${token}`));
-        }, 2500);
+      const timeout = setTimeout(() => {
+        reject(new Error(`Socket ready timeout for token: ${token}`));
+      }, 2500);
 
-        socket.once('connect_error', (error: Error) => {
-          clearTimeout(timeout);
-          reject(error);
-        });
-
-        socket.once('connection:ready', (ready: { userId: string }) => {
-          clearTimeout(timeout);
-          resolve({ socket, ready });
-        });
-
-        socket.connect();
+      socket.once('connect_error', (error: Error) => {
+        clearTimeout(timeout);
+        reject(error);
       });
 
-  const connectAndWaitAuthError =
-    (
-      token: string,
-    ): Promise<{ socket: ClientSocket; error: { message: string } }> =>
-      new Promise((resolve, reject) => {
-        const socket = createClient(token);
-
-        const timeout = setTimeout(() => {
-          reject(new Error(`Socket auth error timeout for token: ${token}`));
-        }, 2500);
-
-        socket.once('connect_error', (error: Error) => {
-          clearTimeout(timeout);
-          reject(error);
-        });
-
-        socket.once('connection:error', (error: { message: string }) => {
-          clearTimeout(timeout);
-          resolve({ socket, error });
-        });
-
-        socket.connect();
+      socket.once('connection:ready', (ready: { userId: string }) => {
+        clearTimeout(timeout);
+        resolve({ socket, ready });
       });
+
+      socket.connect();
+    });
+
+  const connectAndWaitAuthError = (
+    token: string,
+  ): Promise<{ socket: ClientSocket; error: { message: string } }> =>
+    new Promise((resolve, reject) => {
+      const socket = createClient(token);
+
+      const timeout = setTimeout(() => {
+        reject(new Error(`Socket auth error timeout for token: ${token}`));
+      }, 2500);
+
+      socket.once('connect_error', (error: Error) => {
+        clearTimeout(timeout);
+        reject(error);
+      });
+
+      socket.once('connection:error', (error: { message: string }) => {
+        clearTimeout(timeout);
+        resolve({ socket, error });
+      });
+
+      socket.connect();
+    });
 
   const emitAndWaitEvent = <TEvent>(
     socket: ClientSocket,
@@ -207,12 +212,13 @@ describe('P0 chat socket flows (e2e)', () => {
   const waitForTypedEvents = (
     socket: ClientSocket,
     expectedCount: number,
-  ): Promise<
-    Array<{ roomId: string; userId: string; isTyping: boolean }>
-  > =>
+  ): Promise<Array<{ roomId: string; userId: string; isTyping: boolean }>> =>
     new Promise((resolve, reject) => {
-      const events: Array<{ roomId: string; userId: string; isTyping: boolean }> =
-        [];
+      const events: Array<{
+        roomId: string;
+        userId: string;
+        isTyping: boolean;
+      }> = [];
 
       const timeout = setTimeout(() => {
         socket.off('typing', handler);
@@ -236,40 +242,39 @@ describe('P0 chat socket flows (e2e)', () => {
       socket.on('typing', handler);
     });
 
-  const expectNoTypingEvent =
-    (
-      socket: ClientSocket,
-      waitMs = 300,
-    ): Promise<{ roomId: string; userId: string; isTyping: boolean } | null> =>
-      new Promise((resolve) => {
-        let settled = false;
+  const expectNoTypingEvent = (
+    socket: ClientSocket,
+    waitMs = 300,
+  ): Promise<{ roomId: string; userId: string; isTyping: boolean } | null> =>
+    new Promise((resolve) => {
+      let settled = false;
 
-        const handler = (event: {
-          roomId: string;
-          userId: string;
-          isTyping: boolean;
-        }) => {
-          if (settled) {
-            return;
-          }
+      const handler = (event: {
+        roomId: string;
+        userId: string;
+        isTyping: boolean;
+      }) => {
+        if (settled) {
+          return;
+        }
 
-          settled = true;
-          socket.off('typing', handler);
-          resolve(event);
-        };
+        settled = true;
+        socket.off('typing', handler);
+        resolve(event);
+      };
 
-        socket.on('typing', handler);
+      socket.on('typing', handler);
 
-        setTimeout(() => {
-          if (settled) {
-            return;
-          }
+      setTimeout(() => {
+        if (settled) {
+          return;
+        }
 
-          settled = true;
-          socket.off('typing', handler);
-          resolve(null);
-        }, waitMs);
-      });
+        settled = true;
+        socket.off('typing', handler);
+        resolve(null);
+      }, waitMs);
+    });
 
   it('authenticates connection and emits connection ready payload', async () => {
     const { ready } = await connectAndWaitReady('token-user-1');
@@ -319,9 +324,8 @@ describe('P0 chat socket flows (e2e)', () => {
   });
 
   it('supports reconnect for authenticated users', async () => {
-    const { socket: first, ready: firstReady } = await connectAndWaitReady(
-      'token-user-1',
-    );
+    const { socket: first, ready: firstReady } =
+      await connectAndWaitReady('token-user-1');
 
     first.disconnect();
 
@@ -332,9 +336,8 @@ describe('P0 chat socket flows (e2e)', () => {
   });
 
   it('rejects revoked tokens and disconnects the socket', async () => {
-    const { socket, error: authError } = await connectAndWaitAuthError(
-      'revoked-token',
-    );
+    const { socket, error: authError } =
+      await connectAndWaitAuthError('revoked-token');
 
     expect(authError).toEqual({ message: 'Unauthorized' });
     expect(socket.connected).toBe(false);
@@ -349,9 +352,14 @@ describe('P0 chat socket flows (e2e)', () => {
     const { socket: sameRoomPeer } = await connectAndWaitReady('token-user-2');
     const { socket: otherRoomPeer } = await connectAndWaitReady('token-user-3');
 
-    await emitAndWaitEvent<{ roomId: string }>(sender, 'room:join', {
-      roomId: roomA,
-    }, 'room:joined');
+    await emitAndWaitEvent<{ roomId: string }>(
+      sender,
+      'room:join',
+      {
+        roomId: roomA,
+      },
+      'room:joined',
+    );
     await emitAndWaitEvent<{ roomId: string }>(
       sameRoomPeer,
       'room:join',

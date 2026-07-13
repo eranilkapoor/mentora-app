@@ -109,13 +109,14 @@ describe('AuthController', () => {
     const req = { headers: {} } as never;
     const res = {} as never;
     const dto = { country_code: '+91', phone: '9999999999', otp: '123456' };
+    const verifyOtpDto = {
+      ...dto,
+      referralCode: 'REF',
+    };
 
     await controller.login(req, res, {} as never);
     await controller.sendOtp(dto);
-    await controller.verifyOtp(req, res, {
-      ...dto,
-      referralCode: 'REF',
-    });
+    await controller.verifyOtp(req, res, verifyOtpDto);
     await controller.socialLogin(req, res, {} as never);
     await controller.forgotPassword(req, { email: 'a@example.com' });
     await controller.resetPassword(req, {
@@ -133,7 +134,7 @@ describe('AuthController', () => {
       '+91',
       '9999999999',
       '123456',
-      'REF',
+      verifyOtpDto,
     );
     expect(authService.forgotPassword).toHaveBeenCalledWith(
       req,

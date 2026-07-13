@@ -18,6 +18,7 @@
     "received": "Received",
     "from": "From",
     "kind": "Type",
+    "status": "Status",
     "read": "Read",
     "unread": "Unread",
     "read_title": "Seen in app",

@@ -1,4 +1,5 @@
 import { validate } from 'class-validator';
+import { Status } from '@/common/enums';
 import { UpdateUserStatusDto } from './update-user-status.dto';
 
 const createDto = (values: Partial<UpdateUserStatusDto>) =>
@@ -9,18 +10,25 @@ const createDto = (values: Partial<UpdateUserStatusDto>) =>
 
 describe('UpdateUserStatusDto', () => {
   it.each([{ isBlocked: false }, { isBlocked: true }])(
-    'accepts a status update containing %p',
+    'accepts a legacy blocked-state update containing %p',
     async (values) => {
       await expect(validate(createDto(values))).resolves.toHaveLength(0);
     },
   );
 
-  it('rejects requests without a status field', async () => {
-    const errors = await validate(createDto({ reason: 'No status supplied' }));
-    const isBlockedError = errors.find(
-      ({ property }) => property === 'isBlocked',
-    );
+  it.each([Status.ACTIVE, Status.BLOCKED, Status.SUSPENDED])(
+    'accepts an explicit status update containing %s',
+    async (status) => {
+      await expect(validate(createDto({ status }))).resolves.toHaveLength(0);
+    },
+  );
 
-    expect(isBlockedError?.constraints?.isBoolean).toBeDefined();
+  it('rejects unsupported status values', async () => {
+    const errors = await validate(
+      createDto({ status: 'archived' as UpdateUserStatusDto['status'] }),
+    );
+    const statusError = errors.find(({ property }) => property === 'status');
+
+    expect(statusError?.constraints?.isEnum).toBeDefined();
   });
 });

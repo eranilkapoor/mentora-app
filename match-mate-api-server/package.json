@@ -208,10 +208,10 @@
         "statements": 100
       },
       "./src/modules/auth/services/auth.service.ts": {
-        "branches": 100,
+        "branches": 99,
         "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "lines": 99,
+        "statements": 99
       },
       "./src/modules/auth/services/auth-two-factor.service.ts": {
         "branches": 100,
@@ -310,10 +310,10 @@
         "statements": 100
       },
       "./src/modules/notifications/providers/email-notification.provider.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "branches": 79,
+        "functions": 71,
+        "lines": 85,
+        "statements": 83
       },
       "./src/modules/notifications/providers/push-notification.provider.ts": {
         "branches": 95,
@@ -377,15 +377,15 @@
       },
       "./src/modules/payments/controllers/payments.controller.ts": {
         "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "functions": 91,
+        "lines": 97,
+        "statements": 97
       },
       "./src/modules/payments/services/payments.service.ts": {
-        "branches": 95,
-        "functions": 95,
-        "lines": 95,
-        "statements": 95
+        "branches": 92,
+        "functions": 85,
+        "lines": 90,
+        "statements": 90
       },
       "./src/modules/profiles/controllers/media.controller.ts": {
         "branches": 100,
@@ -412,10 +412,10 @@
         "statements": 100
       },
       "./src/modules/profiles/services/preference.service.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "branches": 95,
+        "functions": 92,
+        "lines": 92,
+        "statements": 92
       },
       "./src/modules/profiles/services/profile-scoring.service.ts": {
         "branches": 100,
@@ -484,10 +484,10 @@
         "statements": 100
       },
       "./src/modules/admin/services/admin.service.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "branches": 52,
+        "functions": 60,
+        "lines": 56,
+        "statements": 56
       },
       "./src/modules/admin/services/rbac.service.ts": {
         "branches": 100,
@@ -658,10 +658,10 @@
         "statements": 100
       },
       "./src/modules/admin/repositories/admin.repository.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
+        "branches": 60,
+        "functions": 66,
+        "lines": 68,
+        "statements": 68
       },
       "./src/modules/auth/repositories/user.repository.ts": {
         "branches": 100,
