@@ -391,6 +391,8 @@
     "resources_sub": "Support articles, safety guidance, and legal information",
     "faqs": "FAQs",
     "faqs_sub": "Common questions about profiles, matches, and payments",
+    "tutorial": "App Tutorial",
+    "tutorial_sub": "Replay the quick guide for profiles, matches, and safe connection",
     "community_guidelines": "Community Guidelines",
     "community_guidelines_sub": "Safety, respect, and profile authenticity rules",
     "account_deletion": "Account & Data Deletion",
@@ -404,6 +406,42 @@
     "call_us": "Call Us",
     "whatsapp": "WhatsApp",
     "whatsapp_sub": "Chat with us on WhatsApp"
+  },
+  "tutorial": {
+    "close": "Close tutorial",
+    "eyebrow": "Step {{current}} of {{total}}",
+    "back": "Back",
+    "next": "Next",
+    "done": "Done",
+    "where_to_go": "Where to go",
+    "open": "Open",
+    "steps": {
+      "profile": {
+        "title": "Complete your matrimonial biodata",
+        "description": "Add family, education, lifestyle, photos, verification and partner preference details so families can understand your profile with confidence.",
+        "route": "Settings > Edit Profile"
+      },
+      "preferences": {
+        "title": "Set precise partner preferences",
+        "description": "Use religion, caste, state, city, education and lifestyle filters to keep recommendations aligned with your family’s expectations.",
+        "route": "Settings > Partner Preferences"
+      },
+      "matches": {
+        "title": "Review recommended matches",
+        "description": "Browse compatible profiles, open details, shortlist promising profiles and refine filters whenever your search criteria changes.",
+        "route": "Matches tab"
+      },
+      "connect": {
+        "title": "Connect when both sides are comfortable",
+        "description": "Send interest, respond to accepted connections and use chat only when there is mutual intent to continue the conversation.",
+        "route": "Chats tab"
+      },
+      "safety": {
+        "title": "Stay safe and in control",
+        "description": "Use verification, privacy, notification and blocked-user settings to control visibility and keep interactions respectful.",
+        "route": "Settings > Privacy Settings"
+      }
+    }
   },
   "support_tickets": {
     "title": "Support Tickets",

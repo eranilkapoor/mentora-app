@@ -21,6 +21,8 @@ export interface BasicData {
   dateOfBirth: string;
   religion: Religion;
   country: Country;
+  state?: string;
+  city?: string;
   maritalStatus: MaritalStatus;
   qualification: Qualification;
   occupation: string;

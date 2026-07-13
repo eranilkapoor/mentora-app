@@ -146,9 +146,22 @@ export const SiblingsEditor = memo(function SiblingsEditor({
 
   return (
     <View>
-      <Text style={styles.sectionLabel}>
-        {t('edit_profile.family.siblings_title')}
-      </Text>
+      <View style={styles.sectionHeaderCard}>
+        <View style={styles.sectionHeaderIcon}>
+          <Feather color={theme.colors.primary} name="users" size={18} />
+        </View>
+        <View style={styles.sectionHeaderTextBlock}>
+          <Text style={styles.sectionLabel}>
+            {t('edit_profile.family.siblings_title')}
+          </Text>
+          <Text style={styles.sectionDescription}>
+            {t('edit_profile.family.siblings_description', {
+              defaultValue:
+                'Add sibling count and a short status for each brother or sister.',
+            })}
+          </Text>
+        </View>
+      </View>
 
       <NumberStepper
         label={t('edit_profile.family.brothers')}
@@ -362,13 +375,45 @@ const SiblingCard = memo(function SiblingCard({
 
 function createStyles(theme: Theme) {
   return StyleSheet.create({
+    sectionHeaderCard: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginBottom: 16,
+      padding: 14,
+      borderRadius: 14,
+      borderWidth: 1,
+      borderColor: theme.colors.primaryBorder,
+      backgroundColor: theme.colors.primaryLight,
+    },
+
+    sectionHeaderIcon: {
+      width: 38,
+      height: 38,
+      borderRadius: 12,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surface,
+    },
+
+    sectionHeaderTextBlock: {
+      flex: 1,
+      minWidth: 0,
+    },
+
     sectionLabel: {
-      fontSize: 12,
-      fontWeight: '700',
+      fontSize: 14,
+      fontWeight: '800',
       textTransform: 'uppercase',
       letterSpacing: 0.5,
-      marginBottom: 12,
-      color: theme.colors.textMuted,
+      marginBottom: 4,
+      color: theme.colors.textPrimary,
+    },
+
+    sectionDescription: {
+      fontSize: 12,
+      lineHeight: 17,
+      color: theme.colors.textSecondary,
     },
 
     detailsSection: {

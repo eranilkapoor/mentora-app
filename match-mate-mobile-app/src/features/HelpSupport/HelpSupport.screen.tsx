@@ -1,6 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Linking, ScrollView, Text, View } from 'react-native';
+import { CommonActions } from '@react-navigation/native';
 import Feather from 'react-native-vector-icons/Feather';
 import {
   SUPPORT_EMAIL,
@@ -16,6 +17,10 @@ import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectIte
 import Header from '@/core/components/Header';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import {
+  AppTutorialOverlay,
+  TutorialTarget,
+} from '@/core/components/AppTutorialOverlay';
 
 export default function HelpSupportScreen({
   navigation,
@@ -23,6 +28,7 @@ export default function HelpSupportScreen({
   const styles = useThemedStyles(helpSupportStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
+  const [tutorialVisible, setTutorialVisible] = useState(false);
 
   const openEmail = useCallback(
     () => void Linking.openURL(`mailto:${SUPPORT_EMAIL}`),
@@ -38,6 +44,37 @@ export default function HelpSupportScreen({
         `https://wa.me/${WHATSAPP_NUMBER}?text=Hi, I need help with Match Mate.`
       ),
     []
+  );
+
+  const openTutorialTarget = useCallback(
+    (target: TutorialTarget): void => {
+      setTutorialVisible(false);
+
+      if (target === 'EditProfile') {
+        navigation.navigate('EditProfile');
+        return;
+      }
+
+      if (target === 'EditPreference') {
+        navigation.navigate('EditPreference');
+        return;
+      }
+
+      if (target === 'PrivacySettings') {
+        navigation.navigate('PrivacySettings');
+        return;
+      }
+
+      navigation.getParent()?.dispatch(
+        CommonActions.navigate({
+          name: 'Tabs',
+          params: {
+            screen: target,
+          },
+        })
+      );
+    },
+    [navigation]
   );
 
   const CONTACT_ITEMS: ContactItem[] = [
@@ -104,6 +141,12 @@ export default function HelpSupportScreen({
             onPress={() => navigation.navigate('SuccessStories')}
           />
           <SettingsSelectItem
+            icon="navigation"
+            label={t('settings.support_center.tutorial')}
+            sublabel={t('settings.support_center.tutorial_sub')}
+            onPress={() => setTutorialVisible(true)}
+          />
+          <SettingsSelectItem
             icon="help-circle"
             label={t('settings.support_center.faqs')}
             sublabel={t('settings.support_center.faqs_sub')}
@@ -147,6 +190,11 @@ export default function HelpSupportScreen({
 
         <View style={styles.footer} />
       </ScrollView>
+      <AppTutorialOverlay
+        visible={tutorialVisible}
+        onClose={() => setTutorialVisible(false)}
+        onNavigate={openTutorialTarget}
+      />
     </SafeAreaView>
   );
 }

@@ -17,12 +17,15 @@ import {
   MaritalStatuses,
   ManglikStatuses,
   Religions,
-  Countries,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { TagInput } from '@/core/components/TagInput';
 import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 import { parseDigitsOrNull } from '@/core/utils/inputSanitizers';
+import {
+  INDIA_COUNTRY_OPTIONS,
+  INDIA_STATE_OPTIONS,
+} from '@/core/constants/locationOptions';
 
 interface Props {
   preferences: PreferencesData;
@@ -53,7 +56,6 @@ export function PreferencesStep({
     ManglikStatuses,
     'options.manglik_status'
   );
-  const CountryOptions = useEnumOptions(Countries, 'options.countries');
   const showHinduPreferences =
     preferences.religion?.includes(Religions.HINDU) ?? false;
 
@@ -232,7 +234,7 @@ export function PreferencesStep({
       {/* Location Preference */}
       <SearchMultiSelect
         label={t('onboarding.fields.location_preference')}
-        options={CountryOptions}
+        options={INDIA_COUNTRY_OPTIONS}
         selected={preferences.country ?? []}
         onChange={(values) => {
           onSetField('country', values as Country[]);
@@ -242,6 +244,24 @@ export function PreferencesStep({
         field="locationPreference"
         errors={errors}
         required
+      />
+
+      <SearchMultiSelect
+        label={t('preference.fields.state')}
+        options={INDIA_STATE_OPTIONS}
+        selected={preferences.state ?? []}
+        onChange={(values) => {
+          onSetField('state', values);
+        }}
+        placeholder={t('preference.placeholders.state')}
+        field="statePreference"
+      />
+
+      <TagInput
+        label={t('preference.fields.city')}
+        value={preferences.city ?? []}
+        onChange={(values) => onSetField('city', values)}
+        placeholder={t('preference.placeholders.city')}
       />
     </View>
   );

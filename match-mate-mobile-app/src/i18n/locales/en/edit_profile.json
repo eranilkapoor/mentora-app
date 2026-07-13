@@ -153,6 +153,7 @@
   },
   "date_picker": {
     "title": "Select Date of Birth",
+    "helper": "Choose the date carefully. It is used for eligibility, age display and profile trust.",
     "day": "Day",
     "month": "Month",
     "year": "Year"
@@ -174,6 +175,7 @@
   },
   "family": {
     "siblings_title": "Siblings",
+    "siblings_description": "Add sibling count and a short status for each brother or sister.",
     "brothers": "Brothers",
     "sisters": "Sisters",
     "married_brothers": "Married Brothers",

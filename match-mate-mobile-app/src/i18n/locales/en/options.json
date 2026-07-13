@@ -197,7 +197,8 @@
     "switzerland": "Switzerland",
     "new_zealand": "New Zealand",
     "singapore": "Singapore",
-    "united_arab_emirates": "United Arab Emirates"
+    "united_arab_emirates": "United Arab Emirates",
+    "other": "Other"
   },
   "days": {
     "01": "01",

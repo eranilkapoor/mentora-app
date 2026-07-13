@@ -93,6 +93,7 @@
     "guide_title": "Match Mate कैसे काम करता है",
     "cta_complete_profile": "पूरी प्रोफ़ाइल पूरा करें",
     "cta_matches": "सुझाए गए मैच देखें",
+    "cta_tutorial": "क्विक टूर देखें",
     "guide": {
       "complete_profile": {
         "title": "अपनी प्रोफ़ाइल मजबूत बनाएं",
@@ -121,6 +122,8 @@
     "min_age_required": "न्यूनतम आयु आवश्यक है",
     "max_age_required": "अधिकतम आयु आवश्यक है",
     "country_required": "देश आवश्यक है",
+    "state_required": "राज्य आवश्यक है",
+    "city_required": "शहर आवश्यक है",
     "marital_status_required": "वैवाहिक स्थिति आवश्यक है",
     "submit_failed": "प्रोफ़ाइल बनाना विफल रहा। कृपया पुनः प्रयास करें।",
     "date_incomplete": "कृपया पूरी तिथि चुनें (दिन, महीना और वर्ष)।",

@@ -55,7 +55,6 @@ import {
   OccupationTypes,
   ManglikStatuses,
   Qualifications,
-  Countries,
   ChildPreference,
   ResidencyPreference,
   ManglikStatus,
@@ -86,6 +85,10 @@ import {
   RangeFilterKey,
   parseRangeInputValue,
 } from './utils/preferenceRanges.utils';
+import {
+  INDIA_COUNTRY_OPTIONS,
+  INDIA_STATE_OPTIONS,
+} from '@/core/constants/locationOptions';
 
 const DEFAULT_AGE_RANGE = { min: AGE_RANGE.min, max: 25 } as const;
 const DEFAULT_HEIGHT_RANGE = { min: HEIGHT_RANGE.min, max: 170 } as const;
@@ -188,8 +191,6 @@ export default function EditPreferenceScreen({
     Qualifications,
     'options.qualifications'
   );
-  const CountryOptions = useEnumOptions(Countries, 'options.countries');
-
   const [preference, setPreference] =
     useState<PreferenceData>(INITIAL_PREFERENCE);
   const [sectionLoading, setSectionLoading] =
@@ -677,7 +678,7 @@ export default function EditPreferenceScreen({
           >
             <SearchMultiSelect
               label={t('preference.fields.country')}
-              options={CountryOptions}
+              options={INDIA_COUNTRY_OPTIONS}
               selected={preference.filters.country ?? []}
               onChange={(values) => {
                 setFilters('country', values);
@@ -686,11 +687,13 @@ export default function EditPreferenceScreen({
               field="country"
             />
 
-            <TagInput
+            <SearchMultiSelect
               label={t('preference.fields.state')}
-              value={preference.filters.state as string[]}
+              options={INDIA_STATE_OPTIONS}
+              selected={preference.filters.state as string[]}
               onChange={(v) => setFilters('state', v)}
               placeholder={t('preference.placeholders.state')}
+              field="state"
             />
 
             <TagInput

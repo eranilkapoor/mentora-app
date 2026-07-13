@@ -6,6 +6,14 @@ interface AuthState {
   accessToken: string | null;
   user: User | null;
   onboardingCompletionPending: boolean;
+  postOnboardingTarget:
+    | 'EditProfile'
+    | 'EditPreference'
+    | 'Matches'
+    | 'Chats'
+    | 'Profile'
+    | 'PrivacySettings'
+    | null;
 }
 
 // ─── PAYLOADS ──────────────────────────────────────────
@@ -22,6 +30,7 @@ const initialState: AuthState = {
   accessToken: null,
   user: null,
   onboardingCompletionPending: false,
+  postOnboardingTarget: null,
 };
 
 // ─── SLICE ─────────────────────────────────────────────
@@ -50,11 +59,21 @@ const authSlice = createSlice({
     setOnboardingCompletionPending: (state, action: PayloadAction<boolean>) => {
       state.onboardingCompletionPending = action.payload;
     },
+    setPostOnboardingTarget: (
+      state,
+      action: PayloadAction<AuthState['postOnboardingTarget']>
+    ) => {
+      state.postOnboardingTarget = action.payload;
+    },
+    clearPostOnboardingTarget: (state) => {
+      state.postOnboardingTarget = null;
+    },
     // 🔹 Logout
     logout: (state) => {
       state.accessToken = null;
       state.user = null;
       state.onboardingCompletionPending = false;
+      state.postOnboardingTarget = null;
     },
   },
 });
@@ -65,6 +84,8 @@ export const {
   setUser,
   setProfileCompleted,
   setOnboardingCompletionPending,
+  setPostOnboardingTarget,
+  clearPostOnboardingTarget,
   logout,
   setAccessToken,
 } = authSlice.actions;

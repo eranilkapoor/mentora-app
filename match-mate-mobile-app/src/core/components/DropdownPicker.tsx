@@ -95,11 +95,22 @@ const normalizeSearchText = (value: unknown): string =>
     .toLocaleLowerCase();
 
 const getOptionSearchText = <T extends string>(
-  option: DropdownOption<T>
+  option: DropdownOption<T>,
+  displayLabel = option.label
 ): string =>
   normalizeSearchText(
-    [option.label, option.value, option.searchText].join(' ')
+    [displayLabel, option.label, option.value, option.searchText].join(' ')
   );
+
+const getSearchTokens = (value: string): string[] =>
+  normalizeSearchText(value).trim().split(/\s+/).filter(Boolean);
+
+const matchesSearch = (haystack: string, search: string): boolean => {
+  const tokens = getSearchTokens(search);
+  if (tokens.length === 0) return true;
+
+  return tokens.every((token) => haystack.includes(token));
+};
 
 function DropdownPickerComponent<T extends string = string>({
   options,
@@ -273,16 +284,20 @@ function DropdownPickerComponent<T extends string = string>({
           },
 
           searchInput: {
+            flex: 1,
             height: 48,
-
-            borderBottomWidth: StyleSheet.hairlineWidth,
-
-            borderBottomColor: theme.colors.divider,
-
-            paddingHorizontal: 14,
-
             fontSize: 15,
             color: theme.colors.textPrimary,
+          },
+          searchRow: {
+            minHeight: 50,
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 10,
+            borderBottomWidth: StyleSheet.hairlineWidth,
+            borderBottomColor: theme.colors.divider,
+            paddingHorizontal: 14,
+            backgroundColor: theme.colors.inputBackground,
           },
 
           option: {
@@ -384,12 +399,11 @@ function DropdownPickerComponent<T extends string = string>({
       return options;
     }
 
-    const normalizedSearch = normalizeSearchText(search);
-
-    return options.filter((item) =>
-      getOptionSearchText(item).includes(normalizedSearch)
-    );
-  }, [options, search, searchable]);
+    return options.filter((item) => {
+      const displayLabel = translateLabel ? t(item.label) : item.label;
+      return matchesSearch(getOptionSearchText(item, displayLabel), search);
+    });
+  }, [options, search, searchable, t, translateLabel]);
 
   // ───────────────────────────────────────────────────────────
   // Handlers
@@ -496,15 +510,18 @@ function DropdownPickerComponent<T extends string = string>({
       ]}
     >
       {searchable && (
-        <TextInput
-          value={search}
-          onChangeText={setSearch}
-          placeholder={t('common.search')}
-          placeholderTextColor={theme.colors.textMuted}
-          style={styles.searchInput}
-          autoCorrect={false}
-          autoCapitalize="none"
-        />
+        <View style={styles.searchRow}>
+          <Feather name="search" size={16} color={theme.colors.textMuted} />
+          <TextInput
+            value={search}
+            onChangeText={setSearch}
+            placeholder={t('common.search')}
+            placeholderTextColor={theme.colors.textMuted}
+            style={styles.searchInput}
+            autoCorrect={false}
+            autoCapitalize="none"
+          />
+        </View>
       )}
 
       <FlatList
@@ -602,9 +619,13 @@ function DropdownPickerComponent<T extends string = string>({
             animationType="none"
             onRequestClose={handleClose}
           >
-            <Pressable style={styles.portalBackdrop} onPress={handleClose}>
+            <View style={styles.portalBackdrop}>
+              <Pressable
+                style={StyleSheet.absoluteFill}
+                onPress={handleClose}
+              />
               {dropdownFrame ? dropdownContent : null}
-            </Pressable>
+            </View>
           </Modal>
         </View>
 

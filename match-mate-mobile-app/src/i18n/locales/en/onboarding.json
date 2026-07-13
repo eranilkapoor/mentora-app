@@ -93,6 +93,7 @@
     "guide_title": "How Match Mate works",
     "cta_complete_profile": "Complete full profile",
     "cta_matches": "View recommended matches",
+    "cta_tutorial": "Take quick tour",
     "guide": {
       "complete_profile": {
         "title": "Strengthen your profile",
@@ -121,6 +122,8 @@
     "min_age_required": "Min age is required",
     "max_age_required": "Max age is required",
     "country_required": "Country is required",
+    "state_required": "State is required",
+    "city_required": "City is required",
     "marital_status_required": "Marital status is required",
     "submit_failed": "Profile creation failed. Please try again.",
     "date_incomplete": "Please select a complete date (day, month and year).",

@@ -210,6 +210,16 @@ const getOptionSearchText = (option: OptionType): string =>
     [option.label, option.value, option.searchText].join(' ')
   );
 
+const getSearchTokens = (value: string): string[] =>
+  normalizeSearchText(value).trim().split(/\s+/).filter(Boolean);
+
+const matchesSearch = (haystack: string, search: string): boolean => {
+  const tokens = getSearchTokens(search);
+  if (tokens.length === 0) return true;
+
+  return tokens.every((token) => haystack.includes(token));
+};
+
 function SearchMultiSelectComponent(
   {
     label,
@@ -251,7 +261,7 @@ function SearchMultiSelectComponent(
     if (!trimmed) return options.slice(0, maxSuggestions);
 
     return options
-      .filter((opt) => getOptionSearchText(opt).includes(trimmed))
+      .filter((opt) => matchesSearch(getOptionSearchText(opt), trimmed))
       .slice(0, maxSuggestions);
   }, [query, options, maxSuggestions]);
 
@@ -299,7 +309,7 @@ function SearchMultiSelectComponent(
   // ─── Render ────────────────────────────────────────────────────────────────
 
   const errorMessage = errors?.[field];
-  const showDropdown = query.trim().length > 0;
+  const showDropdown = focused || query.trim().length > 0;
 
   return (
     <View style={styles.container}>

@@ -23,6 +23,8 @@ import {
   FilterState,
   HeightFilterKey,
   MaritalStatusFilterKey,
+  OccupationTypeFilterKey,
+  ReligionFilterKey,
 } from '../MatchList.types';
 import {
   ACTIVITY_FILTERS,
@@ -31,9 +33,12 @@ import {
   EDUCATION_FILTERS,
   HEIGHT_FILTERS,
   MARITAL_STATUS_FILTERS,
+  OCCUPATION_TYPE_FILTERS,
   QUICK_TOGGLES,
+  RELIGION_FILTERS,
 } from '../MatchList.constants';
 import { FilterSection } from './FilterSection';
+import { Religions } from '@/core/types';
 
 interface Props {
   visible: boolean;
@@ -69,6 +74,15 @@ export function MatchFilterModal({
   ): void => {
     onFiltersChange({ [key]: value } as Partial<FilterState>);
   };
+
+  const updateReligionFilter = (value: ReligionFilterKey): void => {
+    onFiltersChange({
+      religionFilter: value,
+      ...(value === Religions.HINDU ? {} : { casteFilter: 'any' }),
+    });
+  };
+
+  const shouldShowCasteFilter = filters.religionFilter === Religions.HINDU;
 
   return (
     <Modal
@@ -176,17 +190,38 @@ export function MatchFilterModal({
               }
             />
             <FilterSection
-              titleKey="matches.filter_section_caste"
-              items={CASTE_FILTERS}
-              value={filters.casteFilter}
-              onChange={(v) => updateFilter('casteFilter', v as CasteFilterKey)}
+              titleKey="matches.filter_section_religion"
+              items={RELIGION_FILTERS}
+              value={filters.religionFilter}
+              onChange={(v) => updateReligionFilter(v as ReligionFilterKey)}
             />
+            {shouldShowCasteFilter ? (
+              <FilterSection
+                titleKey="matches.filter_section_caste"
+                items={CASTE_FILTERS}
+                value={filters.casteFilter}
+                onChange={(v) =>
+                  updateFilter('casteFilter', v as CasteFilterKey)
+                }
+              />
+            ) : null}
             <FilterSection
               titleKey="matches.filter_section_education"
               items={EDUCATION_FILTERS}
               value={filters.educationFilter}
               onChange={(v) =>
                 updateFilter('educationFilter', v as EducationFilterKey)
+              }
+            />
+            <FilterSection
+              titleKey="matches.filter_section_occupation_type"
+              items={OCCUPATION_TYPE_FILTERS}
+              value={filters.occupationTypeFilter}
+              onChange={(v) =>
+                updateFilter(
+                  'occupationTypeFilter',
+                  v as OccupationTypeFilterKey
+                )
               }
             />
             <FilterSection

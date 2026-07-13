@@ -430,7 +430,7 @@ export const DatePicker = memo(function DatePicker({
 
             backgroundColor: theme.colors.surface,
 
-            padding: 18,
+            padding: 20,
 
             overflow: 'hidden',
 
@@ -445,15 +445,46 @@ export const DatePicker = memo(function DatePicker({
             elevation: 10,
           },
 
-          modalTitle: {
-            marginBottom: 18,
+          modalHeader: {
+            flexDirection: 'row',
+            alignItems: 'center',
 
-            textAlign: 'center',
+            gap: 12,
+
+            marginBottom: 18,
+          },
+
+          modalIcon: {
+            width: 44,
+            height: 44,
+
+            borderRadius: 14,
+
+            alignItems: 'center',
+            justifyContent: 'center',
+
+            backgroundColor: theme.colors.primaryLight,
+          },
+
+          modalTitleBlock: {
+            flex: 1,
+            minWidth: 0,
+          },
+
+          modalTitle: {
+            marginBottom: 4,
 
             fontSize: 17,
-            fontWeight: '700',
+            fontWeight: '800',
 
             color: theme.colors.textPrimary,
+          },
+
+          modalSubtitle: {
+            fontSize: 12,
+            lineHeight: 17,
+
+            color: theme.colors.textMuted,
           },
 
           pickerRow: {
@@ -468,12 +499,17 @@ export const DatePicker = memo(function DatePicker({
           preview: {
             marginTop: 18,
 
+            flexDirection: 'row',
             alignItems: 'center',
+            justifyContent: 'center',
+            gap: 8,
 
             paddingHorizontal: 12,
-            paddingVertical: 10,
+            paddingVertical: 12,
 
-            borderRadius: 12,
+            borderRadius: 14,
+            borderWidth: 1,
+            borderColor: theme.colors.primaryBorder,
 
             backgroundColor: theme.colors.primaryLight,
           },
@@ -506,6 +542,10 @@ export const DatePicker = memo(function DatePicker({
             borderRadius: 10,
 
             backgroundColor: theme.colors.primary,
+          },
+
+          confirmButtonDisabled: {
+            opacity: 0.55,
           },
 
           cancelText: {
@@ -604,6 +644,13 @@ export const DatePicker = memo(function DatePicker({
     return formatDate(`${tempYear}-${tempMonth}-${tempDay}`, 'DD MMM YYYY');
   }, [tempDay, tempMonth, tempYear]);
 
+  const canConfirm = useMemo(
+    () =>
+      Boolean(tempDay && tempMonth && tempYear) &&
+      isValidDate(tempYear, tempMonth, tempDay),
+    [tempDay, tempMonth, tempYear]
+  );
+
   /* ────────────────────────────────────────────────────────── */
 
   return (
@@ -651,9 +698,23 @@ export const DatePicker = memo(function DatePicker({
       >
         <Pressable style={styles.overlay} onPress={closePicker}>
           <Pressable style={styles.modalCard} onPress={() => {}}>
-            <Text style={styles.modalTitle}>
-              {modalTitle ?? t('edit_profile.date_picker.title')}
-            </Text>
+            <View style={styles.modalHeader}>
+              <View style={styles.modalIcon}>
+                <Feather
+                  name="calendar"
+                  size={20}
+                  color={theme.colors.primary}
+                />
+              </View>
+              <View style={styles.modalTitleBlock}>
+                <Text style={styles.modalTitle}>
+                  {modalTitle ?? t('edit_profile.date_picker.title')}
+                </Text>
+                <Text style={styles.modalSubtitle}>
+                  {t('edit_profile.date_picker.helper')}
+                </Text>
+              </View>
+            </View>
 
             <View style={styles.pickerRow}>
               <DropdownList
@@ -680,6 +741,11 @@ export const DatePicker = memo(function DatePicker({
 
             {previewText ? (
               <View style={styles.preview}>
+                <Feather
+                  name="check-circle"
+                  size={16}
+                  color={theme.colors.primary}
+                />
                 <Text style={styles.previewText}>{previewText}</Text>
               </View>
             ) : null}
@@ -695,7 +761,12 @@ export const DatePicker = memo(function DatePicker({
 
               <TouchableOpacity
                 accessibilityRole="button"
-                style={styles.confirmButton}
+                disabled={!canConfirm}
+                accessibilityState={{ disabled: !canConfirm }}
+                style={[
+                  styles.confirmButton,
+                  !canConfirm && styles.confirmButtonDisabled,
+                ]}
                 onPress={handleConfirm}
               >
                 <Text style={styles.confirmText}>{t('common.confirm')}</Text>

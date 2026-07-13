@@ -89,6 +89,14 @@ export class BasicDto {
   @IsEnum(Country)
   country?: Country;
 
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
   @IsEnum(MaritalStatus)
   maritalStatus!: MaritalStatus;
 

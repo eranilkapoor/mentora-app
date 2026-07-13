@@ -1,8 +1,7 @@
-import React, { useCallback } from 'react';
+import React, { useCallback, useState } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
-import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useTranslation } from 'react-i18next';
 
 import { useTheme } from '@/core/theme/ThemeProvider';
@@ -10,13 +9,14 @@ import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useAppDispatch } from '@/store/hooks';
 import { baseApi } from '@/store/services/baseApi.service';
 import {
+  setPostOnboardingTarget,
   setOnboardingCompletionPending,
   setProfileCompleted,
 } from '@/store/slices/auth.slice';
 import {
-  OnboardingNavigationProp,
-  RootNavigationProp,
-} from '@/navigation/types';
+  AppTutorialOverlay,
+  TutorialTarget,
+} from '@/core/components/AppTutorialOverlay';
 import { onboardingStyles } from './Onboarding.styles';
 
 export default function OnboardingSuccessScreen(): React.ReactElement {
@@ -24,7 +24,7 @@ export default function OnboardingSuccessScreen(): React.ReactElement {
   const { t } = useTranslation();
   const styles = useThemedStyles(onboardingStyles);
   const dispatch = useAppDispatch();
-  const navigation = useNavigation<OnboardingNavigationProp>();
+  const [tutorialVisible, setTutorialVisible] = useState(false);
 
   const onboardingGuide = [
     {
@@ -50,49 +50,29 @@ export default function OnboardingSuccessScreen(): React.ReactElement {
     dispatch(baseApi.util.invalidateTags(['Auth', 'Profile', 'Preference']));
   }, [dispatch]);
 
+  const enterTarget = useCallback(
+    (target: TutorialTarget): void => {
+      dispatch(setPostOnboardingTarget(target));
+      finishOnboarding();
+    },
+    [dispatch, finishOnboarding]
+  );
+
   const enterMatches = useCallback((): void => {
-    finishOnboarding();
-
-    const resetAction = CommonActions.reset({
-      index: 0,
-      routes: [
-        {
-          name: 'App',
-          params: {
-            screen: 'Tabs',
-            params: {
-              screen: 'Matches',
-            },
-          },
-        },
-      ],
-    });
-
-    const rootNavigation = navigation.getParent<RootNavigationProp>();
-    (rootNavigation ?? navigation).dispatch(resetAction);
-  }, [finishOnboarding, navigation]);
+    enterTarget('Matches');
+  }, [enterTarget]);
 
   const enterEditProfile = useCallback((): void => {
-    finishOnboarding();
+    enterTarget('EditProfile');
+  }, [enterTarget]);
 
-    const resetAction = CommonActions.reset({
-      index: 0,
-      routes: [
-        {
-          name: 'App',
-          params: {
-            screen: 'Settings',
-            params: {
-              screen: 'EditProfile',
-            },
-          },
-        },
-      ],
-    });
-
-    const rootNavigation = navigation.getParent<RootNavigationProp>();
-    (rootNavigation ?? navigation).dispatch(resetAction);
-  }, [finishOnboarding, navigation]);
+  const openTutorialTarget = useCallback(
+    (target: TutorialTarget): void => {
+      setTutorialVisible(false);
+      enterTarget(target);
+    },
+    [enterTarget]
+  );
 
   const enterApp = useCallback(
     (target: 'EditProfile' | 'Matches'): void => {
@@ -174,8 +154,26 @@ export default function OnboardingSuccessScreen(): React.ReactElement {
               {t('onboarding.success.cta_matches')}
             </Text>
           </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.successTertiaryButton}
+            onPress={() => setTutorialVisible(true)}
+            accessibilityRole="button"
+            accessibilityLabel={t('onboarding.success.cta_tutorial')}
+            activeOpacity={0.86}
+          >
+            <Feather name="navigation" size={16} color={theme.colors.primary} />
+            <Text style={styles.successTertiaryButtonText}>
+              {t('onboarding.success.cta_tutorial')}
+            </Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
+      <AppTutorialOverlay
+        visible={tutorialVisible}
+        onClose={() => setTutorialVisible(false)}
+        onNavigate={openTutorialTarget}
+      />
     </SafeAreaView>
   );
 }

@@ -20,4 +20,5 @@ export enum Country {
   NEW_ZEALAND = 'new_zealand',
   SINGAPORE = 'singapore',
   UNITED_ARAB_EMIRATES = 'united_arab_emirates',
+  OTHER = 'other',
 }

@@ -20,6 +20,11 @@ import { DropdownPicker } from '@/core/components/DropdownPicker';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 import { MultiSelectPill } from '@/core/components/MultiSelectPill';
 import { getPersonalityBadgeOptions } from '@/core/utils/personalityBadges';
+import {
+  INDIA_COUNTRY_OPTIONS,
+  INDIA_STATE_OPTIONS,
+  NRI_COUNTRY_OPTIONS,
+} from '@/core/constants/locationOptions';
 
 interface Props {
   personal: PersonalSectionType;
@@ -44,7 +49,6 @@ export function PersonalSection({
     MaritalStatuses,
     'options.marital_status'
   );
-  const CountryOptions = useEnumOptions(Countries, 'options.countries');
   const PersonalityBadgeOptions = getPersonalityBadgeOptions(t);
 
   return (
@@ -87,7 +91,7 @@ export function PersonalSection({
       <DatePicker
         label={t('edit_profile.fields.dob')}
         value={personal.dateOfBirth}
-        onChange={(v) => onSet('dateOfBirth', v)}
+        onChange={() => undefined}
         disabled
       />
 
@@ -147,21 +151,23 @@ export function PersonalSection({
       />
       <DropdownPicker
         label={t('onboarding.fields.country')}
-        options={CountryOptions}
+        options={INDIA_COUNTRY_OPTIONS}
         value={personal.country}
-        onChange={(val) => onSet('country', val as Country)}
-        searchable
+        onChange={() => onSet('country', Countries.INDIA)}
         maxHeight={320}
         required
       />
 
       <View style={styles.row}>
         <View style={styles.halfField}>
-          <FormInput
+          <DropdownPicker
             label={t('edit_profile.fields.state')}
+            options={INDIA_STATE_OPTIONS}
             value={personal.state ?? ''}
             onChange={(v) => onSet('state', v)}
             placeholder={t('edit_profile.placeholders.state')}
+            searchable
+            maxHeight={320}
           />
         </View>
         <View style={styles.halfField}>
@@ -191,7 +197,7 @@ export function PersonalSection({
         <>
           <DropdownPicker
             label={t('edit_profile.fields.residency_country')}
-            options={CountryOptions}
+            options={NRI_COUNTRY_OPTIONS}
             value={personal.residencyCountry ?? personal.country}
             onChange={(val) => onSet('residencyCountry', val as Country)}
             searchable

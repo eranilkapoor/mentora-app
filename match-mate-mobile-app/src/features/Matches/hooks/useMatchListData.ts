@@ -13,6 +13,7 @@ import {
 import { FEED_PAGE_SIZE } from '../MatchList.constants';
 import { mergeByKey, mapToMatchItem } from '../MatchList.utils';
 import { FilterState, MatchItem, TabKey } from '../MatchList.types';
+import { Religions } from '@/core/types';
 
 export function useMatchListData(
   activeTab: TabKey,
@@ -57,7 +58,16 @@ export function useMatchListData(
     () => ({
       ...(query.trim() ? { search: query.trim() } : {}),
       ...(filters.cityFilter.trim() ? { city: filters.cityFilter.trim() } : {}),
-      ...(filters.casteFilter === 'any' ? {} : { caste: filters.casteFilter }),
+      ...(filters.religionFilter === 'any'
+        ? {}
+        : { religion: filters.religionFilter }),
+      ...(filters.religionFilter === Religions.HINDU &&
+      filters.casteFilter !== 'any'
+        ? { caste: filters.casteFilter }
+        : {}),
+      ...(filters.occupationTypeFilter === 'any'
+        ? {}
+        : { occupationType: filters.occupationTypeFilter }),
       ...(selectedAgeFilter && 'minAge' in selectedAgeFilter
         ? { minAge: selectedAgeFilter.minAge }
         : {}),

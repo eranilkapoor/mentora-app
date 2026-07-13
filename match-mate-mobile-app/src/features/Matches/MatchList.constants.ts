@@ -1,4 +1,10 @@
-import { Caste } from '@/core/types';
+import {
+  Caste,
+  OccupationType,
+  OccupationTypes,
+  Religion,
+  Religions,
+} from '@/core/types';
 import {
   ActivityFilterKey,
   AgeRangeKey,
@@ -7,6 +13,8 @@ import {
   FilterState,
   HeightFilterKey,
   MaritalStatusFilterKey,
+  OccupationTypeFilterKey,
+  ReligionFilterKey,
 } from './MatchList.types';
 
 export const FEED_PAGE_SIZE = 10;
@@ -18,11 +26,13 @@ export const FALLBACK_PHOTO = '../../assets/images/avatar-placeholder.png';
 export const DEFAULT_FILTERS: FilterState = {
   cityFilter: '',
   ageFilter: 'any',
+  religionFilter: 'any',
   casteFilter: 'any',
   verifiedOnly: false,
   heightFilter: 'any',
   maritalStatusFilter: 'any',
   educationFilter: 'any',
+  occupationTypeFilter: 'any',
   activityFilter: 'any',
   premiumOnly: false,
   withPhotoOnly: false,
@@ -77,6 +87,35 @@ export const CASTE_FILTERS: Array<{ key: CasteFilterKey; labelKey: string }> = [
   { key: 'sc' as Caste, labelKey: 'matches.filter_caste_sc' },
 ];
 
+export const RELIGION_FILTERS: Array<{
+  key: ReligionFilterKey;
+  labelKey: string;
+}> = [
+  { key: 'any', labelKey: 'matches.filter_religion_any' },
+  {
+    key: Religions.HINDU as Religion,
+    labelKey: 'matches.filter_religion_hindu',
+  },
+  {
+    key: Religions.MUSLIM as Religion,
+    labelKey: 'matches.filter_religion_muslim',
+  },
+  {
+    key: Religions.CHRISTIAN as Religion,
+    labelKey: 'matches.filter_religion_christian',
+  },
+  { key: Religions.SIKH as Religion, labelKey: 'matches.filter_religion_sikh' },
+  { key: Religions.JAIN as Religion, labelKey: 'matches.filter_religion_jain' },
+  {
+    key: Religions.BUDDHIST as Religion,
+    labelKey: 'matches.filter_religion_buddhist',
+  },
+  {
+    key: Religions.OTHER as Religion,
+    labelKey: 'matches.filter_religion_other',
+  },
+];
+
 export const HEIGHT_FILTERS: Array<{ key: HeightFilterKey; labelKey: string }> =
   [
     { key: 'any', labelKey: 'matches.filter_height_any' },
@@ -103,6 +142,41 @@ export const EDUCATION_FILTERS: Array<{
   { key: 'graduate', labelKey: 'matches.filter_education_graduate' },
   { key: 'post_graduate', labelKey: 'matches.filter_education_post_graduate' },
   { key: 'doctorate', labelKey: 'matches.filter_education_doctorate' },
+];
+
+export const OCCUPATION_TYPE_FILTERS: Array<{
+  key: OccupationTypeFilterKey;
+  labelKey: string;
+}> = [
+  { key: 'any', labelKey: 'matches.filter_occupation_type_any' },
+  {
+    key: OccupationTypes.GOVERNMENT_JOB as OccupationType,
+    labelKey: 'options.occupation_types.government_job',
+  },
+  {
+    key: OccupationTypes.PRIVATE_JOB as OccupationType,
+    labelKey: 'options.occupation_types.private_job',
+  },
+  {
+    key: OccupationTypes.BUSINESS as OccupationType,
+    labelKey: 'options.occupation_types.business',
+  },
+  {
+    key: OccupationTypes.SELF_EMPLOYED as OccupationType,
+    labelKey: 'options.occupation_types.self_employed',
+  },
+  {
+    key: OccupationTypes.PROFESSIONAL as OccupationType,
+    labelKey: 'options.occupation_types.professional',
+  },
+  {
+    key: OccupationTypes.HOMEMAKER as OccupationType,
+    labelKey: 'options.occupation_types.homemaker',
+  },
+  {
+    key: OccupationTypes.OTHER as OccupationType,
+    labelKey: 'options.occupation_types.other',
+  },
 ];
 
 export const ACTIVITY_FILTERS: Array<{

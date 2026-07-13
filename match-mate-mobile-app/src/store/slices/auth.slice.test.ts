@@ -1,8 +1,10 @@
 import reducer, {
+  clearPostOnboardingTarget,
   logout,
   setAccessToken,
   setCredentials,
   setOnboardingCompletionPending,
+  setPostOnboardingTarget,
   setProfileCompleted,
   setUser,
 } from './auth.slice';
@@ -30,6 +32,7 @@ describe('auth.slice workflow state transitions', () => {
       accessToken: 'access-token-1',
       user: null,
       onboardingCompletionPending: false,
+      postOnboardingTarget: null,
     });
     expect(hydratedProfileState).toMatchObject({
       accessToken: 'access-token-1',
@@ -83,6 +86,14 @@ describe('auth.slice workflow state transitions', () => {
     expect(cleared.onboardingCompletionPending).toBe(false);
   });
 
+  it('stores and clears the post-onboarding entry target', () => {
+    const targeted = reducer(undefined, setPostOnboardingTarget('EditProfile'));
+    const cleared = reducer(targeted, clearPostOnboardingTarget());
+
+    expect(targeted.postOnboardingTarget).toBe('EditProfile');
+    expect(cleared.postOnboardingTarget).toBeNull();
+  });
+
   it('clears auth state on logout', () => {
     const loggedIn = reducer(
       undefined,
@@ -98,6 +109,7 @@ describe('auth.slice workflow state transitions', () => {
       accessToken: null,
       user: null,
       onboardingCompletionPending: false,
+      postOnboardingTarget: null,
     });
   });
 });

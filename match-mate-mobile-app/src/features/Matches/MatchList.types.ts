@@ -1,10 +1,11 @@
-import { Caste } from '@/core/types';
+import { Caste, OccupationType, Religion } from '@/core/types';
 import { MatchesStackParamList } from '@/navigation/types';
 import { MatchTab } from '@/store/services/matchApi.service';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 export type TabKey = MatchTab | 'matched' | 'requests' | 'shortlisted';
 export type AgeRangeKey = 'any' | '18-25' | '26-32' | '33-40';
+export type ReligionFilterKey = 'any' | Religion;
 export type CasteFilterKey = 'any' | Caste;
 export type HeightFilterKey = 'any' | 'short' | 'medium' | 'tall';
 
@@ -13,6 +14,8 @@ export type MaritalStatusFilterKey =
 
 export type EducationFilterKey =
   'any' | 'graduate' | 'post_graduate' | 'doctorate';
+
+export type OccupationTypeFilterKey = 'any' | OccupationType;
 
 export type ActivityFilterKey =
   'any' | 'online' | 'recently_active' | 'new_profiles';
@@ -49,11 +52,13 @@ export interface TabConfig {
 export interface FilterState {
   cityFilter: string;
   ageFilter: AgeRangeKey;
+  religionFilter: ReligionFilterKey;
   casteFilter: CasteFilterKey;
   verifiedOnly: boolean;
   heightFilter: HeightFilterKey;
   maritalStatusFilter: MaritalStatusFilterKey;
   educationFilter: EducationFilterKey;
+  occupationTypeFilter: OccupationTypeFilterKey;
   activityFilter: ActivityFilterKey;
   premiumOnly: boolean;
   withPhotoOnly: boolean;

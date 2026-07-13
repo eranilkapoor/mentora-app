@@ -246,6 +246,7 @@ export const Countries = {
   NEW_ZEALAND: 'new_zealand',
   SINGAPORE: 'singapore',
   UNITED_ARAB_EMIRATES: 'united_arab_emirates',
+  OTHER: 'other',
 } as const;
 
 export type Country = (typeof Countries)[keyof typeof Countries];

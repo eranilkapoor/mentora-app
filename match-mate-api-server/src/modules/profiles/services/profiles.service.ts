@@ -819,6 +819,8 @@ export class ProfilesService {
           religion: dto.basic.religion,
           maritalStatus: dto.basic.maritalStatus,
           country: dto.basic.country,
+          state: dto.basic.state,
+          city: dto.basic.city,
           personalityBadges: this.defaultPersonalityBadges,
         },
         physical: {
@@ -842,6 +844,8 @@ export class ProfilesService {
           subCaste: dto.preferences?.subCaste,
           manglikStatus: dto.preferences?.manglikStatus,
           country: dto.preferences?.country,
+          state: dto.preferences?.state,
+          city: dto.preferences?.city,
         },
       });
       await this.settingsService.getOrCreateAllUserSettings(userId);

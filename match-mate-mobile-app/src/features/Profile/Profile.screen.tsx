@@ -307,6 +307,82 @@ const toStringList = (items: unknown): string[] =>
 const formatList = (items: unknown): string =>
   toStringList(items).filter(Boolean).join(', ') || EMPTY_VALUE;
 
+const formatEnumList = (
+  t: (key: string, options: { defaultValue: string }) => string,
+  namespace: string,
+  items: unknown
+): string => {
+  const values = toStringList(items);
+  if (!values.length) return EMPTY_VALUE;
+
+  return values
+    .map((value) =>
+      formatEnumLabel(t, namespace, value, formatProfileText(value))
+    )
+    .filter((value) => value !== EMPTY_VALUE)
+    .join(', ');
+};
+
+const formatNumberRange = (
+  range: { min?: number | null; max?: number | null } | undefined,
+  suffix = ''
+): string => {
+  if (!range) return EMPTY_VALUE;
+  const min = typeof range.min === 'number' ? range.min : null;
+  const max = typeof range.max === 'number' ? range.max : null;
+  if (min === null && max === null) return EMPTY_VALUE;
+  if (min !== null && max !== null) return `${min}${suffix} - ${max}${suffix}`;
+  if (min !== null) return `${min}${suffix}+`;
+  return `Up to ${max}${suffix}`;
+};
+
+const formatHeightPreference = (
+  range: { min?: number | null; max?: number | null } | undefined
+): string => {
+  if (!range) return EMPTY_VALUE;
+  const min = typeof range.min === 'number' ? cmToFeetInches(range.min) : '';
+  const max = typeof range.max === 'number' ? cmToFeetInches(range.max) : '';
+  if (min && max) return `${min} - ${max}`;
+  if (min) return `${min}+`;
+  if (max) return `Up to ${max}`;
+  return EMPTY_VALUE;
+};
+
+const formatIncomePreference = (
+  range: { min?: number | null; max?: number | null } | undefined
+): string => {
+  if (!range) return EMPTY_VALUE;
+  const min =
+    typeof range.min === 'number' ? annualIncomeFormat(range.min) : '';
+  const max =
+    typeof range.max === 'number' ? annualIncomeFormat(range.max) : '';
+  if (min && max) return `${min} - ${max}`;
+  if (min) return `${min}+`;
+  if (max) return `Up to ${max}`;
+  return EMPTY_VALUE;
+};
+
+type PdfPreferenceFields = NonNullable<SchemaProfile['preferences']> &
+  NonNullable<SchemaProfile['preferences']>['filters'];
+
+const getPreferenceFilters = (
+  profile: SchemaProfile
+): PdfPreferenceFields | undefined =>
+  (profile.preferences?.filters ?? profile.preferences) as PdfPreferenceFields;
+
+const getSiblingDetailsSummary = (profile: SchemaProfile): string => {
+  const details = getSiblingDetails(profile);
+  if (!details.length) return EMPTY_VALUE;
+
+  return details
+    .map((sibling) =>
+      [sibling.type, sibling.maritalStatus, sibling.occupation]
+        .filter((value) => value && value !== EMPTY_VALUE)
+        .join(' - ')
+    )
+    .join('; ');
+};
+
 const escapeHtml = (value: string): string =>
   value
     .replace(/&/g, '&amp;')
@@ -352,6 +428,7 @@ const getPdfSections = (
   const phone = getProfilePhone(profile);
   const email = getProfileEmail(profile);
   const income = annualIncomeFormat(profile.education.annualIncomeAmount ?? '');
+  const preferenceFilters = getPreferenceFilters(profile);
 
   return [
     {
@@ -403,6 +480,35 @@ const getPdfSections = (
           ),
         ],
         ['Mother Tongue', formatProfileText(profile.personal.motherTongue)],
+        ['Children', getChildrenSummary(profile)],
+        ['Citizenship', formatProfileText(profile.personal.citizenship)],
+        [
+          'NRI Profile',
+          profile.personal.isNri
+            ? 'Yes'
+            : profile.personal.isNri === false
+              ? 'No'
+              : EMPTY_VALUE,
+        ],
+        [
+          'Residency Country',
+          formatEnumLabel(
+            t,
+            'options.countries',
+            profile.personal.residencyCountry,
+            EMPTY_VALUE
+          ),
+        ],
+        ['Visa Status', formatProfileText(profile.personal.visaStatus)],
+        ['Abroad Since', formatProfileText(profile.personal.abroadSince)],
+        [
+          'Willing to Relocate',
+          profile.personal.willingToRelocate === undefined
+            ? EMPTY_VALUE
+            : profile.personal.willingToRelocate
+              ? 'Yes'
+              : 'No',
+        ],
       ],
     },
     {
@@ -508,6 +614,19 @@ const getPdfSections = (
             EMPTY_VALUE
           ),
         ],
+        [
+          'Personality',
+          formatList(
+            profile.personal.personalityBadges?.map((badge) =>
+              formatEnumLabel(
+                t,
+                'options.personality_badges',
+                badge,
+                formatCamelCase(badge)
+              )
+            )
+          ),
+        ],
       ],
     },
     {
@@ -562,6 +681,115 @@ const getPdfSections = (
           ),
         ],
         ['Siblings', getSiblingCounts(profile)],
+        ['Sibling Details', getSiblingDetailsSummary(profile)],
+        ['Family Notes', formatProfileText(profile.family?.siblings?.note)],
+      ],
+    },
+    {
+      title: 'Partner Preferences',
+      rows: [
+        [
+          'Preferred Age',
+          formatNumberRange(
+            preferenceFilters?.ageRange ?? preferenceFilters?.age,
+            ' yrs'
+          ),
+        ],
+        [
+          'Preferred Height',
+          formatHeightPreference(
+            preferenceFilters?.heightRange ?? preferenceFilters?.height
+          ),
+        ],
+        [
+          'Marital Status',
+          formatEnumList(
+            t,
+            'options.marital_status',
+            preferenceFilters?.maritalStatus
+          ),
+        ],
+        [
+          'Religion',
+          formatEnumList(t, 'options.religion', preferenceFilters?.religion),
+        ],
+        ['Caste', formatEnumList(t, 'options.caste', preferenceFilters?.caste)],
+        [
+          'Manglik Status',
+          formatEnumList(
+            t,
+            'options.manglik_status',
+            preferenceFilters?.manglikStatus
+          ),
+        ],
+        [
+          'Preferred Location',
+          [
+            formatEnumList(t, 'options.countries', preferenceFilters?.country),
+            formatList(preferenceFilters?.state),
+            formatList(preferenceFilters?.city),
+          ]
+            .filter((value) => value !== EMPTY_VALUE)
+            .join(', ') || EMPTY_VALUE,
+        ],
+        [
+          'Education',
+          formatEnumList(
+            t,
+            'options.qualifications',
+            preferenceFilters?.qualification
+          ),
+        ],
+        [
+          'Occupation Type',
+          formatEnumList(
+            t,
+            'options.occupation_types',
+            preferenceFilters?.occupationType
+          ),
+        ],
+        ['Occupation', formatList(preferenceFilters?.occupation)],
+        [
+          'Annual Income',
+          formatIncomePreference(
+            preferenceFilters?.annualIncomeRange ??
+              preferenceFilters?.annualIncome
+          ),
+        ],
+        [
+          'Lifestyle',
+          [
+            formatEnumList(t, 'options.smoking', preferenceFilters?.smoking),
+            formatEnumList(t, 'options.drinking', preferenceFilters?.drinking),
+            formatEnumList(t, 'options.eating', preferenceFilters?.eating),
+          ]
+            .filter((value) => value !== EMPTY_VALUE)
+            .join(', ') || EMPTY_VALUE,
+        ],
+        [
+          'Languages',
+          formatList(
+            preferenceFilters?.languages ?? profile.preferences?.languagesKnown
+          ),
+        ],
+        [
+          'Child Preference',
+          formatEnumLabel(
+            t,
+            'options.child_preferences',
+            preferenceFilters?.childPreference,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Residency Preference',
+          formatEnumLabel(
+            t,
+            'options.residency_preferences',
+            preferenceFilters?.residencyPreference,
+            EMPTY_VALUE
+          ),
+        ],
       ],
     },
     {
@@ -573,6 +801,10 @@ const getPdfSections = (
           formatList(
             profile.personal.languages ?? profile.personal.languagesKnown
           ),
+        ],
+        [
+          'About Partner',
+          formatAboutMe(profile.preferences?.aboutPartner ?? ''),
         ],
       ],
     },

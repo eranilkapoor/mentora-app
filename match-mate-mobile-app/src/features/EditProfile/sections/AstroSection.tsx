@@ -20,6 +20,10 @@ import {
 } from '@/core/types';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
+import {
+  INDIA_COUNTRY_OPTIONS,
+  INDIA_STATE_OPTIONS,
+} from '@/core/constants/locationOptions';
 
 type ReligiousTextField = {
   key: Extract<keyof ReligiousDetails, string>;
@@ -219,7 +223,6 @@ export function AstroSection({
     ManglikStatuses,
     'options.manglik_status'
   );
-  const CountryOptions = useEnumOptions(Countries, 'options.countries');
   const ReligionOptions = useEnumOptions(Religions, 'options.religion');
   const CasteOptions = useEnumOptions(Castes, 'options.caste');
   const religiousDetails = personal.religiousDetails ?? {};
@@ -362,7 +365,7 @@ export function AstroSection({
       </Text>
       <DropdownPicker
         label={t('edit_profile.fields.birth_country')}
-        options={CountryOptions}
+        options={INDIA_COUNTRY_OPTIONS}
         value={personal.placeOfBirth?.country ?? Countries.INDIA}
         onChange={(val) =>
           onSet('placeOfBirth', {
@@ -375,13 +378,16 @@ export function AstroSection({
       />
       <View style={styles.row}>
         <View style={styles.halfField}>
-          <FormInput
+          <DropdownPicker
             label={t('edit_profile.fields.birth_state')}
+            options={INDIA_STATE_OPTIONS}
             value={personal.placeOfBirth?.state ?? ''}
             onChange={(v) =>
               onSet('placeOfBirth', { ...personal.placeOfBirth, state: v })
             }
             placeholder={t('edit_profile.placeholders.state')}
+            searchable
+            maxHeight={320}
           />
         </View>
         <View style={styles.halfField}>

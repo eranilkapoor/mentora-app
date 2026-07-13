@@ -39,6 +39,8 @@ const INITIAL_BASIC: BasicData = {
   gender: Genders.MALE,
   religion: Religions.HINDU,
   country: Countries.INDIA,
+  state: '',
+  city: '',
   maritalStatus: MaritalStatuses.NEVER_MARRIED,
   qualification: Qualifications.BTECH,
   occupation: '',
@@ -53,7 +55,9 @@ const INITIAL_PREFERENCES: PreferencesData = {
   caste: [],
   subCaste: [],
   manglikStatus: [],
-  country: [],
+  country: [Countries.INDIA],
+  state: [],
+  city: [],
 };
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────

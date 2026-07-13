@@ -11,21 +11,24 @@ import {
   Gender,
   MaritalStatus,
   Religion,
-  Country,
   Qualification,
   ProfileFor,
   Genders,
+  Countries,
   ProfileFors,
   MaritalStatuses,
   Religions,
   Qualifications,
-  Countries,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 import { DatePicker } from '@/features/EditProfile/components/DateOfBirthPicker';
 import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
 import { sanitizeDigits } from '@/core/utils/inputSanitizers';
+import {
+  INDIA_COUNTRY_OPTIONS,
+  INDIA_STATE_OPTIONS,
+} from '@/core/constants/locationOptions';
 
 interface Props {
   basic: BasicData;
@@ -70,8 +73,6 @@ export function BasicStep({
     Qualifications,
     'options.qualifications'
   );
-  const CountryOptions = useEnumOptions(Countries, 'options.countries');
-
   const inputStyle = useCallback(
     (field: string) =>
       errors[field] ? [styles.input, styles.inputError] : [styles.input],
@@ -166,14 +167,37 @@ export function BasicStep({
 
       <DropdownPicker
         label={t('onboarding.fields.country')}
-        options={CountryOptions}
+        options={INDIA_COUNTRY_OPTIONS}
         value={basic.country}
-        onChange={(val) => onSetField('country', val as Country)}
-        searchable
+        onChange={() => onSetField('country', Countries.INDIA)}
         maxHeight={320}
         required
       />
       <ErrorText field="country" errors={errors} />
+
+      <DropdownPicker
+        label={t('onboarding.fields.state')}
+        options={INDIA_STATE_OPTIONS}
+        value={basic.state ?? ''}
+        onChange={(val) => onSetField('state', val)}
+        placeholder={t('onboarding.placeholders.state')}
+        searchable
+        maxHeight={320}
+        required
+      />
+      <ErrorText field="state" errors={errors} />
+
+      <RequiredTextLabel>{t('onboarding.fields.city')}</RequiredTextLabel>
+      <TextInput
+        placeholder={t('onboarding.placeholders.city')}
+        placeholderTextColor={theme.colors.textMuted}
+        value={basic.city ?? ''}
+        onChangeText={(v) => onSetField('city', v)}
+        style={inputStyle('city')}
+        autoCapitalize="words"
+        accessibilityLabel={t('onboarding.fields.city')}
+      />
+      <ErrorText field="city" errors={errors} />
 
       <DropdownPicker
         label={t('onboarding.fields.qualification')}

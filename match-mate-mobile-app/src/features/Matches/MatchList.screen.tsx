@@ -43,6 +43,7 @@ import {
 } from '@/store/services/profileApi.service';
 import { useUpdateLocalizationSettingsMutation } from '@/store/services/localizationSettingsApi.service';
 import { useGetDiscoveryProfilesQuery } from '@/store/services/matchApi.service';
+import { Religions } from '@/core/types';
 import { setLocationSharing } from '@/store/slices/settings.slice';
 import { getDeviceId } from '@/core/utils/device';
 import { Storage } from '@/core/utils/storage';
@@ -187,11 +188,14 @@ export default function MatchListScreen({
     () =>
       [
         filters.ageFilter !== 'any',
-        filters.casteFilter !== 'any',
+        filters.religionFilter !== 'any',
+        filters.religionFilter === Religions.HINDU &&
+          filters.casteFilter !== 'any',
         filters.verifiedOnly,
         filters.heightFilter !== 'any',
         filters.maritalStatusFilter !== 'any',
         filters.educationFilter !== 'any',
+        filters.occupationTypeFilter !== 'any',
         filters.activityFilter !== 'any',
         filters.premiumOnly,
         filters.withPhotoOnly,
