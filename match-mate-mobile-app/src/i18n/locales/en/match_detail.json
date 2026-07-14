@@ -56,5 +56,8 @@
   "block_success_title": "Profile Blocked",
   "block_success_message": "{{name}} has been blocked.",
   "block_failed_title": "Unable to Block",
-  "photo_unlocks_after_match": "Photo unlocks after match"
+  "photo_unlocks_after_match": "Photo unlocks after match",
+  "section_compatibility": "Match Compatibility",
+  "you": "You",
+  "exact_score": "Exact Score"
 }

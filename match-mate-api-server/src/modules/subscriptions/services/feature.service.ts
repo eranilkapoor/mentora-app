@@ -32,6 +32,9 @@ type LeanPlanFeature = FlattenMaps<PlanFeature> & {
 
 const PLAN_FEATURES_CACHE_TTL = 300; // 5 minutes  plan features rarely change
 const USAGE_CACHE_TTL = 86_400; // 24 hours  daily limit window
+const MONTHLY_USAGE_CACHE_TTL = 32 * 86_400;
+
+type UsageWindow = 'day' | 'month';
 
 @Injectable()
 export class FeatureService {
@@ -72,11 +75,17 @@ export class FeatureService {
       });
     }
 
-    const usageLimitedTypes = new Set(['limit', 'quota', 'duration']);
+    const autoTrackedUsageFeatures = new Set<FeatureKey>([
+      FeatureKey.SEND_INTEREST,
+      FeatureKey.MESSAGE_LIMIT,
+      FeatureKey.DAILY_PROFILE_VIEWS,
+      FeatureKey.PROFILE_BOOST,
+    ]);
 
-    // Only typed limit/quota/duration features consume usage; -1 is unlimited.
+    // Only action-style limits consume usage here; capacity limits are enforced
+    // by their owning services.
     if (
-      usageLimitedTypes.has(feature.featureId.type ?? 'boolean') &&
+      autoTrackedUsageFeatures.has(featureKey) &&
       typeof feature.value === 'number' &&
       feature.value !== -1
     ) {
@@ -92,8 +101,9 @@ export class FeatureService {
     userId: string,
     featureKey: FeatureKey,
     limit: number,
+    window: UsageWindow = 'day',
   ): Promise<void> {
-    const key = `usage:${userId}:${featureKey}:${this.getTodayKey()}`;
+    const key = `usage:${userId}:${featureKey}:${this.getWindowKey(window)}`;
     const current = await this.cache.get<number>(key);
 
     if (current !== null && current !== undefined && current >= limit) {
@@ -104,7 +114,23 @@ export class FeatureService {
     }
 
     await this.cache.incr(key);
-    await this.cache.expire(key, USAGE_CACHE_TTL);
+    await this.cache.expire(key, this.getUsageTtl(window));
+  }
+
+  async checkUniqueUsageLimit(
+    userId: string,
+    featureKey: FeatureKey,
+    limit: number,
+    uniqueId: string,
+    window: UsageWindow = 'month',
+  ): Promise<void> {
+    const windowKey = this.getWindowKey(window);
+    const markerKey = `usage:${userId}:${featureKey}:${windowKey}:item:${uniqueId}`;
+
+    if (await this.cache.has(markerKey)) return;
+
+    await this.checkUsageLimit(userId, featureKey, limit, window);
+    await this.cache.set(markerKey, true, this.getUsageTtl(window));
   }
 
   async getRemainingUsage(
@@ -176,6 +202,18 @@ export class FeatureService {
 
   private getTodayKey(): string {
     return new Date().toISOString().slice(0, 10); // YYYY-MM-DD
+  }
+
+  private getMonthKey(): string {
+    return new Date().toISOString().slice(0, 7); // YYYY-MM
+  }
+
+  private getWindowKey(window: UsageWindow): string {
+    return window === 'month' ? this.getMonthKey() : this.getTodayKey();
+  }
+
+  private getUsageTtl(window: UsageWindow): number {
+    return window === 'month' ? MONTHLY_USAGE_CACHE_TTL : USAGE_CACHE_TTL;
   }
 
   private async resolvePlanIdForUser(userId: string): Promise<string | null> {

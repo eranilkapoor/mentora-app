@@ -101,10 +101,9 @@ const data = [
   { cat: 'Profile' },
   { name: 'Create / edit / delete profile', tiers: [P,P,P,P,P,P] },
   { name: 'Profile completion score', tiers: [P,P,P,P,P,P] },
-  { name: 'Multiple profile photos (up to 3)', tiers: [null,'limited',S,G,PL,E] },
-  { name: 'Multiple profile photos (unlimited)', tiers: [null,null,null,null,PL,E] },
+  { name: 'Upload photos (Free 3 / Silver 5 / Gold 10 / Platinum & Assisted 20)', tiers: [null,'3','5','10','20','20'] },
   { name: 'Profile verification (basic)', tiers: [P,P,P,P,P,P] },
-  { name: 'Video profile', tiers: [null,null,null,G,PL,E] },
+  { name: 'Video intro upload (paid plans: 1)', tiers: [null,null,'1','1','1','1'] },
   { name: 'Audio intro', tiers: [null,null,null,G,PL,E] },
   { name: 'Advanced profile completion', tiers: [null,null,S,G,PL,E] },
   { name: 'Profile boost', tiers: [null,null,null,G,PL,E] },
@@ -116,16 +115,18 @@ const data = [
   { name: 'Horoscope upload / astrology report', tiers: [null,null,null,G,PL,E] },
 
   { cat: 'Engagement' },
-  { name: 'Send & view interests (limited)', tiers: [null,'limited','limited',null,null,E] },
-  { name: 'Send & view interests (unlimited)', tiers: [null,null,null,G,PL,E] },
-  { name: 'Accept / reject interest', tiers: [null,F,S,G,PL,E] },
+  { name: 'Send interests (Free 10/day, 25/month)', tiers: [null,'limited',null,null,null,null] },
+  { name: 'Send interests (unlimited)', tiers: [null,null,S,G,PL,E] },
+  { name: 'Accept interests (unlimited)', tiers: [null,F,S,G,PL,E] },
+  { name: 'Reject interests', tiers: [null,F,S,G,PL,E] },
   { name: 'Priority interest', tiers: [null,null,null,G,PL,E] },
   { name: 'Shortlist profiles', tiers: [null,'limited',S,G,PL,E] },
   { name: 'Favorite profiles', tiers: [null,null,null,G,PL,E] },
 
   { cat: 'Chat & Communication' },
-  { name: 'Basic chat access', tiers: [null,'limited',S,G,PL,E] },
-  { name: 'Unlimited chat', tiers: [null,null,null,G,PL,E] },
+  { name: 'View messages', tiers: [null,null,S,G,PL,E] },
+  { name: 'Send messages (Silver 100)', tiers: [null,null,'100',null,null,null] },
+  { name: 'Send messages (unlimited)', tiers: [null,null,null,G,PL,E] },
   { name: 'Chat with matches only', tiers: [null,null,S,G,PL,E] },
   { name: 'Read receipts & typing indicator', tiers: [null,null,null,G,PL,E] },
   { name: 'Send images/videos in chat', tiers: [null,null,null,G,PL,E] },
@@ -135,14 +136,16 @@ const data = [
   { name: 'Message translation', tiers: [null,null,null,G,PL,E] },
 
   { cat: 'Contact Access' },
-  { name: 'View contact (limited)', tiers: [null,'limited',S,null,null,E] },
+  { name: 'View contact details (Silver 10/month)', tiers: [null,null,'10',null,null,null] },
+  { name: 'View contact details (Gold 50/month)', tiers: [null,null,null,'50',null,null] },
+  { name: 'View contact details (unlimited)', tiers: [null,null,null,null,PL,E] },
   { name: 'Request contact', tiers: [null,null,S,G,PL,E] },
   { name: 'Direct contact access', tiers: [null,null,null,null,PL,E] },
   { name: 'View phone number / email', tiers: [null,null,null,G,PL,E] },
 
   { cat: 'Media' },
-  { name: 'Upload photos', tiers: [null,F,S,G,PL,E] },
-  { name: 'Upload videos', tiers: [null,null,null,G,PL,E] },
+  { name: 'Upload photos', tiers: [null,'3','5','10','20','20'] },
+  { name: 'Upload video intro', tiers: [null,null,'1','1','1','1'] },
   { name: 'View profile photos', tiers: [null,F,S,G,PL,E] },
   { name: 'View private photos', tiers: [null,null,null,G,PL,E] },
   { name: 'AI photo verification', tiers: [null,null,S,G,PL,E] },
@@ -154,9 +157,9 @@ const data = [
   { name: 'Search by religion / caste / location', tiers: [null,F,S,G,PL,E] },
   { name: 'Search by education / profession / height', tiers: [null,F,S,G,PL,E] },
   { name: 'Location-based search', tiers: [null,F,S,G,PL,E] },
-  { name: 'Advanced search & filters', tiers: [null,null,null,G,PL,E] },
   { name: 'Search by income', tiers: [null,null,S,G,PL,E] },
-  { name: 'Unlimited search & profile views', tiers: [null,null,null,G,PL,E] },
+  { name: 'Daily profile views (Free 25/day)', tiers: [null,'25',null,null,null,null] },
+  { name: 'Daily profile views (unlimited)', tiers: [null,null,S,G,PL,E] },
   { name: 'Global / international search', tiers: [null,null,null,null,PL,E] },
   { name: 'NRI matching', tiers: [null,null,null,null,PL,E] },
   { name: 'Saved & recent searches', tiers: [null,null,S,G,PL,E] },
@@ -214,8 +217,8 @@ const data = [
   { name: 'Concierge / personal matchmaker', tiers: [null,null,null,null,PL,E] },
 
   { cat: 'Boost / Monetization' },
-  { name: 'Weekly boosts', tiers: [null,null,S,G,PL,E] },
-  { name: 'Monthly boosts', tiers: [null,null,null,G,PL,E] },
+  { name: 'Profile boosts (Gold 5)', tiers: [null,null,null,'5',null,null] },
+  { name: 'Profile boosts (Platinum & Assisted unlimited)', tiers: [null,null,null,null,PL,E] },
   { name: 'Unlimited boosts', tiers: [null,null,null,null,PL,E] },
   { name: 'Spotlight profile', tiers: [null,null,null,null,PL,E] },
   { name: 'One-time boost purchase', tiers: [null,F,S,G,PL,E] },
@@ -234,8 +237,8 @@ const data = [
 
   { cat: 'Limit Based Features' },
   { name: 'Shortlist limit', tiers: [null,'limited',S,G,PL,E] },
-  { name: 'Contact view limit', tiers: [null,'limited',S,G,PL,E] },
-  { name: 'Message limit', tiers: [null,'limited',S,G,PL,E] },
+  { name: 'Contact view limit', tiers: [null,null,'10','50',PL,E] },
+  { name: 'Message limit', tiers: [null,null,'100',G,PL,E] },
   { name: 'Match limit', tiers: [null,'limited',S,G,PL,E] },
 
   { cat: 'Gamification' },
@@ -261,6 +264,7 @@ function renderTier(val) {
   if (val === G) return '<td class="center">' + TICK.yes + '</td>';
   if (val === PL) return '<td class="center">' + TICK.yes + '</td>';
   if (val === E) return '<td class="center">' + TICK[E] + '</td>';
+  if (typeof val === 'string' || typeof val === 'number') return '<td class="center"><span class="limit-badge">' + val + '</span></td>';
   return '<td class="center">—</td>';
 }
 

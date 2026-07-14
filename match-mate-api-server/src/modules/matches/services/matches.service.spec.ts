@@ -48,7 +48,12 @@ describe('MatchesService', () => {
     notifyInterestResponded: jest.fn(),
     notifyUnmatched: jest.fn(),
   };
-  const featureService = { checkAccess: jest.fn() };
+  const featureService = {
+    checkAccess: jest.fn(),
+    getFeaturesForUser: jest.fn(),
+    checkUsageLimit: jest.fn(),
+    checkUniqueUsageLimit: jest.fn(),
+  };
   const compatibilityService = {
     calculateMutualCompatibility: jest.fn(),
   };
@@ -113,6 +118,11 @@ describe('MatchesService', () => {
     repo.getActiveMediaByUserId.mockResolvedValue([]);
     repo.getExistingInterest.mockResolvedValue(null);
     featureService.checkAccess.mockResolvedValue({ allowed: true });
+    featureService.getFeaturesForUser.mockResolvedValue({
+      contact_view_limit: -1,
+    });
+    featureService.checkUsageLimit.mockResolvedValue(undefined);
+    featureService.checkUniqueUsageLimit.mockResolvedValue(undefined);
     configService.get.mockImplementation(
       (_key: string, fallback?: unknown) => fallback,
     );

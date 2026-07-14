@@ -118,13 +118,15 @@ export class MatchesService {
     }
 
     await this.ensureUsersCanInteract(senderId, receiverId);
-    await this.checkFeature(senderId, FeatureKey.SEND_INTEREST);
 
     // Prevent duplicate
     const existing = await this.repo.getExistingInterest(senderId, receiverId);
     if (existing) {
       throwBadRequest(ErrorCode.INTEREST_ALREADY_SENT);
     }
+
+    await this.checkFeature(senderId, FeatureKey.SEND_INTEREST);
+    await this.checkMonthlyInterestLimit(senderId);
 
     const interest = await this.repo.sendInterest(senderId, receiverId);
     await this.matchNotificationService.notifyInterestSent(
@@ -479,6 +481,11 @@ export class MatchesService {
       photoVisibilityAllowed &&
       Boolean(privacy?.blurPhotosForUnmatched && !isMatched);
     const canViewPhotos = photoVisibilityAllowed && !shouldBlurPhotos;
+    const canViewContact = await this.canViewContactDetails(
+      viewerId,
+      targetUserId,
+      Boolean(isMatched && (privacy?.showPhone || privacy?.showEmail)),
+    );
     const canViewLastSeen =
       Boolean(privacy?.showOnlineStatus) &&
       this.canViewVisibility(privacy?.showLastSeen, isMatched);
@@ -536,8 +543,8 @@ export class MatchesService {
         canViewPersonalDetails,
         canViewPhotos,
         photosBlurred: shouldBlurPhotos,
-        showPhone: Boolean(privacy?.showPhone && isMatched),
-        showEmail: Boolean(privacy?.showEmail && isMatched),
+        showPhone: Boolean(privacy?.showPhone && isMatched && canViewContact),
+        showEmail: Boolean(privacy?.showEmail && isMatched && canViewContact),
         showIncome: Boolean(privacy?.showIncome && canViewPersonalDetails),
       },
       relationship: {
@@ -576,6 +583,44 @@ export class MatchesService {
       userId,
       timestamp: new Date(),
     });
+  }
+
+  private async checkMonthlyInterestLimit(userId: string) {
+    const features = await this.featureService.getFeaturesForUser(userId);
+    const monthlyLimit = features[FeatureKey.SEND_INTEREST_MONTHLY_LIMIT];
+
+    if (typeof monthlyLimit !== 'number' || monthlyLimit === -1) return;
+
+    await this.featureService.checkUsageLimit(
+      userId,
+      FeatureKey.SEND_INTEREST_MONTHLY_LIMIT,
+      monthlyLimit,
+      'month',
+    );
+  }
+
+  private async canViewContactDetails(
+    viewerId: string,
+    targetUserId: string,
+    privacyAllowsContact: boolean,
+  ): Promise<boolean> {
+    if (!privacyAllowsContact) return false;
+
+    const features = await this.featureService.getFeaturesForUser(viewerId);
+    const contactLimit = features[FeatureKey.CONTACT_VIEW_LIMIT];
+
+    if (contactLimit === -1) return true;
+    if (typeof contactLimit !== 'number' || contactLimit <= 0) return false;
+
+    await this.featureService.checkUniqueUsageLimit(
+      viewerId,
+      FeatureKey.CONTACT_VIEW_LIMIT,
+      contactLimit,
+      targetUserId,
+      'month',
+    );
+
+    return true;
   }
 
   expireOverdueMatches(limit?: number) {

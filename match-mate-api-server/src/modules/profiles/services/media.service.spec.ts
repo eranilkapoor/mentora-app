@@ -41,6 +41,10 @@ describe('MediaService', () => {
     generateThumbnail: jest.fn(),
   };
 
+  const featureService = {
+    getFeaturesForUser: jest.fn(),
+  };
+
   const profileModel = {
     findOne: jest.fn(),
     updateOne: jest.fn(),
@@ -78,6 +82,10 @@ describe('MediaService', () => {
 
     mediaRepo.countByUser.mockResolvedValue(0);
     mediaRepo.hasPrimary.mockResolvedValue(false);
+    featureService.getFeaturesForUser.mockResolvedValue({
+      upload_photos: 10,
+      upload_videos: 1,
+    });
     moderationService.moderate.mockReturnValue({
       status: 'APPROVED',
       reasons: [],
@@ -90,6 +98,7 @@ describe('MediaService', () => {
       profileScoringService as never,
       moderationService as never,
       videoThumbnailService as never,
+      featureService as never,
       profileModel as never,
       cache as never,
     );

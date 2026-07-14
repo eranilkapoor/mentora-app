@@ -66,8 +66,6 @@ import {
   getLatestUnreadMessageId,
 } from './utils/chatWorkflow.utils';
 
-const FEATURE_READ_RECEIPTS = 'read_receipts';
-const FEATURE_TYPING_INDICATOR = 'typing_indicator';
 const FEATURE_SEND_IMAGES_IN_CHAT = 'send_images_in_chat';
 const FEATURE_SEND_VOICE_NOTES = 'send_voice_notes';
 
@@ -150,14 +148,6 @@ export default function ChatScreen({
   const [blockUser] = useBlockUserMutation();
   const [reportUser] = useReportUserMutation();
   const {
-    hasFeature: hasReadReceiptsFeature,
-    isLoading: isReadReceiptsFeatureLoading,
-  } = usePlanFeatureAccess(FEATURE_READ_RECEIPTS);
-  const {
-    hasFeature: hasTypingIndicatorFeature,
-    isLoading: isTypingIndicatorFeatureLoading,
-  } = usePlanFeatureAccess(FEATURE_TYPING_INDICATOR);
-  const {
     hasFeature: hasImageChatFeature,
     isLoading: isImageChatFeatureLoading,
   } = usePlanFeatureAccess(FEATURE_SEND_IMAGES_IN_CHAT);
@@ -165,14 +155,7 @@ export default function ChatScreen({
     hasFeature: hasVoiceNotesFeature,
     isLoading: isVoiceNotesFeatureLoading,
   } = usePlanFeatureAccess(FEATURE_SEND_VOICE_NOTES);
-  const readReceiptsEnabled =
-    !isReadReceiptsFeatureLoading &&
-    hasReadReceiptsFeature &&
-    communicationSettings.showReadReceipts;
-  const typingIndicatorEnabled =
-    !isTypingIndicatorFeatureLoading &&
-    hasTypingIndicatorFeature &&
-    communicationSettings.showTypingIndicator;
+  const typingIndicatorEnabled = communicationSettings.showTypingIndicator;
   const canSendChatImages = !isImageChatFeatureLoading && hasImageChatFeature;
   const canSendVoiceNotes = !isVoiceNotesFeatureLoading && hasVoiceNotesFeature;
   const lastReadRequestRef = useRef<string | null>(null);
@@ -293,7 +276,6 @@ export default function ChatScreen({
 
   useEffect(() => {
     if (!activeRoomId || !currentUserId || !data?.success) return;
-    if (!readReceiptsEnabled) return;
 
     const latestUnreadMessageId = getLatestUnreadMessageId(
       data.data.items,
@@ -312,7 +294,7 @@ export default function ChatScreen({
       .catch(() => {
         lastReadRequestRef.current = null;
       });
-  }, [activeRoomId, currentUserId, data, markRoomRead, readReceiptsEnabled]);
+  }, [activeRoomId, currentUserId, data, markRoomRead]);
 
   const handleSend = useCallback(async (): Promise<void> => {
     const payload = buildSendMessagePayload(activeRoomId, inputText, isSending);

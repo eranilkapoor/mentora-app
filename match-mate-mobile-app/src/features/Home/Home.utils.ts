@@ -80,6 +80,7 @@ export const mapProfile = (
       profile.relationship?.isMatched === true ||
       profile.privacy?.isMatched === true ||
       matchedIds.has(profile.userId),
+    shouldBlurPhotos: profile.privacy?.photosBlurred === true,
     isShortlisted:
       profile.isShortlisted === true || shortlistedIds.has(profile.userId),
     isInterestPending: pendingInterestByUserId.has(profile.userId),

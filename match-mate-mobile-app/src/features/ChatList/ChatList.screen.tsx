@@ -29,7 +29,8 @@ import {
   useRespondChatRequestMutation,
   useUpdateRoomSettingsMutation,
 } from '@/store/services/chatApi.service';
-import { useAppSelector } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
+import { setUnreadCount } from '@/store/slices/chats.slice';
 import {
   REALTIME_CONVERSATION_UPDATED_EVENT,
   REALTIME_TYPING_EVENT,
@@ -76,6 +77,7 @@ export default function ChatListScreen({
   const { theme } = useTheme();
   const { t } = useTranslation();
   const currentUserId = useAppSelector((state) => state.auth.user?.userId);
+  const dispatch = useAppDispatch();
   const [query, setQuery] = useState('');
   const [activeFilter, setActiveFilter] = useState<ChatFilter>('all');
   const [page, setPage] = useState(1);
@@ -118,6 +120,7 @@ export default function ChatListScreen({
   useEffect(() => {
     if (!data?.success) return;
     setTotalUnread(data.data.unreadTotal);
+    dispatch(setUnreadCount(data.data.unreadTotal));
 
     setConversationPages((prev) => {
       const next = page === 1 ? [] : [...prev];
@@ -133,7 +136,7 @@ export default function ChatListScreen({
       });
       return next;
     });
-  }, [data, page]);
+  }, [data, dispatch, page]);
 
   useEffect(() => {
     const typingTimers = typingTimersRef.current;
@@ -176,7 +179,11 @@ export default function ChatListScreen({
           const previousUnreadCount = prev[existingIndex]?.unreadCount ?? 0;
           const unreadDelta = conversation.unreadCount - previousUnreadCount;
           if (unreadDelta !== 0) {
-            setTotalUnread((value) => Math.max(0, value + unreadDelta));
+            setTotalUnread((value) => {
+              const nextUnread = Math.max(0, value + unreadDelta);
+              dispatch(setUnreadCount(nextUnread));
+              return nextUnread;
+            });
           }
 
           if (activeFilter === 'unread' && conversation.unreadCount === 0) {
@@ -195,7 +202,7 @@ export default function ChatListScreen({
       conversationSubscription.remove();
       Object.values(typingTimers).forEach(clearTimeout);
     };
-  }, [activeFilter, currentUserId]);
+  }, [activeFilter, currentUserId, dispatch]);
 
   const matches = useMemo<ChatMatch[]>(
     () =>

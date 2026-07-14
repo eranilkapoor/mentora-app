@@ -6,6 +6,7 @@ export interface HomeMatchProfile extends MatchProfile {
   isMatched: boolean;
   isShortlisted: boolean;
   isInterestPending: boolean;
+  shouldBlurPhotos: boolean;
   interestId?: string;
 }
 

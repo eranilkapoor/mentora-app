@@ -97,7 +97,7 @@ describe('FeatureService', () => {
     ['quota', 3, true],
     ['duration', 3, true],
     ['boolean', true, false],
-    [undefined, 3, false],
+    [undefined, 3, true],
     ['limit', -1, false],
     ['limit', '3', false],
   ] as const)(

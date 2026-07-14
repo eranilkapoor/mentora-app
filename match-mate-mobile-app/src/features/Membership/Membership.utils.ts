@@ -146,13 +146,36 @@ export const getPlanTypeForTab = (
 ): MembershipPlan['planType'] =>
   tab === 'assisted' ? 'assisted' : 'self_service';
 
-const formatFeatureValue = (value: unknown): string => {
-  if (value === true || value === 1) return 'Yes';
+const formatFeatureValue = (key: string, value: unknown): string => {
   if (value === false || value === 0 || value === null || value === undefined) {
     return '0';
   }
   if (value === -1) return 'Unlimited';
-  return String(value);
+
+  if (typeof value !== 'number') return String(value);
+
+  switch (key) {
+    case 'upload_photos':
+    case 'multiple_profile_photos':
+      return `${value} photos`;
+    case 'upload_videos':
+      return `${value} video`;
+    case 'send_interest':
+      return `${value}/day`;
+    case 'send_interest_monthly_limit':
+      return `${value}/month`;
+    case 'message_limit':
+      return `${value} messages`;
+    case 'view_contact':
+    case 'contact_view_limit':
+      return `${value}/month`;
+    case 'daily_profile_views':
+      return `${value}/day`;
+    case 'profile_boost':
+      return `${value} boosts`;
+    default:
+      return value === 1 ? 'Yes' : String(value);
+  }
 };
 
 const getFeatureLabel = (key: string, name?: string): string =>
@@ -162,10 +185,10 @@ const SELF_SERVICE_FEATURE_PRIORITY = [
   'upload_photos',
   'upload_videos',
   'send_interest',
+  'send_interest_monthly_limit',
   'message_limit',
-  'view_contact',
+  'contact_view_limit',
   'who_viewed_me',
-  'advanced_search',
   'daily_profile_views',
   'profile_views',
   'profile_boost',
@@ -243,7 +266,7 @@ export const buildDisplayPlans = (
       plan.features?.reduce<Record<string, string>>((acc, item) => {
         const key = item.featureId?.key;
         if (!key) return acc;
-        acc[key] = formatFeatureValue(item.value);
+        acc[key] = formatFeatureValue(key, item.value);
         return acc;
       }, {}) ?? {},
     source: plan,

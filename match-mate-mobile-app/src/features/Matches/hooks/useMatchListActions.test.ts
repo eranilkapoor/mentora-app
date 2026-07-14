@@ -65,6 +65,7 @@ describe('useMatchListActions', () => {
     isMatched: false,
     isShortlisted: false,
     isInterestPending: false,
+    shouldBlurPhoto: false,
     ...overrides,
   });
 

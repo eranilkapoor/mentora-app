@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback } from 'react';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
@@ -13,18 +13,15 @@ import {
   setOnboardingCompletionPending,
   setProfileCompleted,
 } from '@/store/slices/auth.slice';
-import {
-  AppTutorialOverlay,
-  TutorialTarget,
-} from '@/core/components/AppTutorialOverlay';
 import { onboardingStyles } from './Onboarding.styles';
+
+type PostOnboardingTarget = 'EditProfile' | 'Matches';
 
 export default function OnboardingSuccessScreen(): React.ReactElement {
   const { theme } = useTheme();
   const { t } = useTranslation();
   const styles = useThemedStyles(onboardingStyles);
   const dispatch = useAppDispatch();
-  const [tutorialVisible, setTutorialVisible] = useState(false);
 
   const onboardingGuide = [
     {
@@ -51,7 +48,7 @@ export default function OnboardingSuccessScreen(): React.ReactElement {
   }, [dispatch]);
 
   const enterTarget = useCallback(
-    (target: TutorialTarget): void => {
+    (target: PostOnboardingTarget): void => {
       dispatch(setPostOnboardingTarget(target));
       finishOnboarding();
     },
@@ -66,16 +63,8 @@ export default function OnboardingSuccessScreen(): React.ReactElement {
     enterTarget('EditProfile');
   }, [enterTarget]);
 
-  const openTutorialTarget = useCallback(
-    (target: TutorialTarget): void => {
-      setTutorialVisible(false);
-      enterTarget(target);
-    },
-    [enterTarget]
-  );
-
   const enterApp = useCallback(
-    (target: 'EditProfile' | 'Matches'): void => {
+    (target: PostOnboardingTarget): void => {
       if (target === 'EditProfile') {
         enterEditProfile();
         return;
@@ -154,26 +143,8 @@ export default function OnboardingSuccessScreen(): React.ReactElement {
               {t('onboarding.success.cta_matches')}
             </Text>
           </TouchableOpacity>
-
-          <TouchableOpacity
-            style={styles.successTertiaryButton}
-            onPress={() => setTutorialVisible(true)}
-            accessibilityRole="button"
-            accessibilityLabel={t('onboarding.success.cta_tutorial')}
-            activeOpacity={0.86}
-          >
-            <Feather name="navigation" size={16} color={theme.colors.primary} />
-            <Text style={styles.successTertiaryButtonText}>
-              {t('onboarding.success.cta_tutorial')}
-            </Text>
-          </TouchableOpacity>
         </View>
       </ScrollView>
-      <AppTutorialOverlay
-        visible={tutorialVisible}
-        onClose={() => setTutorialVisible(false)}
-        onNavigate={openTutorialTarget}
-      />
     </SafeAreaView>
   );
 }

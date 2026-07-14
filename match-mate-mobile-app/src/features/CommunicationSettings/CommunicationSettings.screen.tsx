@@ -28,8 +28,7 @@ import { useUpgradePrompt } from '../Membership/hooks/useUpgradePrompt';
 
 type SelectKey = 'whoCanMessage' | 'whoCanCall';
 
-const FEATURE_READ_RECEIPTS = 'read_receipts';
-const FEATURE_TYPING_INDICATOR = 'typing_indicator';
+const FEATURE_AUTO_REPLY = 'auto_reply';
 const FEATURE_VOICE_CALL = 'voice_call';
 const FEATURE_VIDEO_CALL = 'video_call';
 
@@ -47,14 +46,8 @@ export default function CommunicationSettingsScreen({
 
   const { data, isLoading } = useGetCommunicationSettingsQuery();
   const [updateSettings] = useUpdateCommunicationSettingsMutation();
-  const {
-    hasFeature: canUseReadReceipts,
-    isLoading: readReceiptsFeatureLoading,
-  } = usePlanFeatureAccess(FEATURE_READ_RECEIPTS);
-  const {
-    hasFeature: canUseTypingIndicator,
-    isLoading: typingIndicatorFeatureLoading,
-  } = usePlanFeatureAccess(FEATURE_TYPING_INDICATOR);
+  const { hasFeature: canUseAutoReply, isLoading: autoReplyFeatureLoading } =
+    usePlanFeatureAccess(FEATURE_AUTO_REPLY);
   const { hasFeature: canUseVoiceCalls, isLoading: voiceCallFeatureLoading } =
     usePlanFeatureAccess(FEATURE_VOICE_CALL);
   const { hasFeature: canUseVideoCalls, isLoading: videoCallFeatureLoading } =
@@ -63,8 +56,7 @@ export default function CommunicationSettingsScreen({
   const settings = data?.communication;
   const [activeSelect, setActiveSelect] = useState<SelectKey | null>(null);
   const featureLoading =
-    readReceiptsFeatureLoading ||
-    typingIndicatorFeatureLoading ||
+    autoReplyFeatureLoading ||
     voiceCallFeatureLoading ||
     videoCallFeatureLoading;
   const restrictedHint = t('settings.communication.plan_restricted', {
@@ -159,40 +151,20 @@ export default function CommunicationSettingsScreen({
           <SettingsToggleItem
             icon="check-circle"
             label={t('settings.communication.read_receipts')}
-            sublabel={
-              canUseReadReceipts
-                ? t('settings.communication.read_receipts_sub')
-                : restrictedHint
-            }
-            value={canUseReadReceipts && (settings?.showReadReceipts ?? false)}
-            disabled={!canUseReadReceipts}
-            onDisabledPress={() =>
-              showUpgradePrompt(t('settings.communication.read_receipts'))
-            }
+            sublabel={t('settings.communication.read_receipts_sub')}
+            value={settings?.showReadReceipts ?? false}
             onChange={(v) => {
-              if (canUseReadReceipts) void handleToggle('showReadReceipts', v);
+              void handleToggle('showReadReceipts', v);
             }}
           />
           <SettingsToggleItem
             icon="edit-2"
             label={t('settings.communication.typing_indicator')}
-            sublabel={
-              canUseTypingIndicator
-                ? t('settings.communication.typing_indicator_sub')
-                : restrictedHint
-            }
-            value={
-              canUseTypingIndicator && (settings?.showTypingIndicator ?? true)
-            }
-            disabled={!canUseTypingIndicator}
-            onDisabledPress={() =>
-              showUpgradePrompt(t('settings.communication.typing_indicator'))
-            }
+            sublabel={t('settings.communication.typing_indicator_sub')}
+            value={settings?.showTypingIndicator ?? true}
             isLast
             onChange={(v) => {
-              if (canUseTypingIndicator) {
-                void handleToggle('showTypingIndicator', v);
-              }
+              void handleToggle('showTypingIndicator', v);
             }}
           />
         </SettingsCard>
@@ -206,13 +178,23 @@ export default function CommunicationSettingsScreen({
           <SettingsToggleItem
             icon="zap"
             label={t('settings.communication.auto_reply_enabled')}
-            sublabel={t('settings.communication.auto_reply_enabled_sub')}
-            value={settings?.autoReplyEnabled ?? false}
+            sublabel={
+              canUseAutoReply
+                ? t('settings.communication.auto_reply_enabled_sub')
+                : restrictedHint
+            }
+            value={canUseAutoReply && (settings?.autoReplyEnabled ?? false)}
+            disabled={!canUseAutoReply}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.communication.auto_reply'))
+            }
             isLast
-            onChange={(v) => handleToggle('autoReplyEnabled', v)}
+            onChange={(v) => {
+              if (canUseAutoReply) void handleToggle('autoReplyEnabled', v);
+            }}
           />
 
-          {settings.autoReplyEnabled ? (
+          {canUseAutoReply && settings.autoReplyEnabled ? (
             <>
               <AutoReplyInput
                 value={autoReplyMessage}

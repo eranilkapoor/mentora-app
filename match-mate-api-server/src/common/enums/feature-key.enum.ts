@@ -41,8 +41,9 @@ export enum FeatureKey {
   PRIVATE_PHOTOS = 'private_photos', // Paid
   PRIVATE_ALBUM = 'private_album', // Paid
 
-  HIDE_LAST_SEEN = 'hide_last_seen', // Paid
-  HIDE_ONLINE_STATUS = 'hide_online_status', // Paid
+  HIDE_LAST_SEEN = 'hide_last_seen', // Free privacy control
+  HIDE_ONLINE_STATUS = 'hide_online_status', // Free privacy control
+  SHOW_ONLY_TO_PREMIUM = 'show_only_to_premium', // Paid
   INCOGNITO_MODE = 'incognito_mode', // Paid
 
   IDENTITY_VERIFICATION = 'identity_verification', // Free trust capability
@@ -55,6 +56,7 @@ export enum FeatureKey {
   // ==========================================
 
   SEND_INTEREST = 'send_interest', // Free, Paid
+  SEND_INTEREST_MONTHLY_LIMIT = 'send_interest_monthly_limit', // Free monthly cap
   VIEW_INTERESTS = 'view_interests', // Free, Paid
 
   ACCEPT_INTEREST = 'accept_interest', // Free, Paid
@@ -77,8 +79,9 @@ export enum FeatureKey {
 
   PRIORITY_CHAT = 'priority_chat', // Paid
 
-  READ_RECEIPTS = 'read_receipts', // Paid
-  TYPING_INDICATOR = 'typing_indicator', // Paid
+  READ_RECEIPTS = 'read_receipts', // Free
+  TYPING_INDICATOR = 'typing_indicator', // Free
+  AUTO_REPLY = 'auto_reply', // Paid
   MESSAGE_TRANSLATION = 'message_translation', // Paid
 
   SEND_IMAGES_IN_CHAT = 'send_images_in_chat', // Paid

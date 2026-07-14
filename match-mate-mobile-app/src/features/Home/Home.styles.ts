@@ -107,8 +107,9 @@ export const homeStyles = (
       bottom: 0,
       left: 0,
       right: 0,
-      height: 160,
+      height: 96,
       backgroundColor: theme.colors.overlayDark,
+      opacity: 0.48,
     },
     photoBadge: {
       position: 'absolute',
@@ -177,6 +178,9 @@ export const homeStyles = (
       fontWeight: '800',
       color: theme.colors.white,
       marginBottom: 3,
+      textShadowColor: theme.colors.overlayDark,
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 3,
     },
     heroLocationRow: {
       flexDirection: 'row',
@@ -186,6 +190,9 @@ export const homeStyles = (
     heroLocation: {
       fontSize: 13,
       color: theme.colors.white,
+      textShadowColor: theme.colors.overlayDark,
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
 
     // ─── Card Content ─────────────────────────────────────────────────────

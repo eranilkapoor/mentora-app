@@ -160,13 +160,12 @@ const canEmbedPhotoInPdf = (privacy: PrivacySettings | undefined): boolean => {
 const toDisplayText = (value: Primitive): string => {
   if (value === undefined || value === null) return EMPTY_VALUE;
   if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-  const text = String(value).trim();
+  const text = String(value).replace(/\s+/g, ' ').trim();
   return text.length > 0 ? text : EMPTY_VALUE;
 };
 
 const formatProfileText = (value: Primitive): string => {
-  const text = toDisplayText(value);
-  return text === EMPTY_VALUE ? EMPTY_VALUE : formatCamelCase(text);
+  return toDisplayText(value);
 };
 
 const formatDateTime = (value: string | Date | undefined): string => {
@@ -276,6 +275,12 @@ const getChildrenSummary = (profile: SchemaProfile): string => {
   ].filter(Boolean);
   return parts.length > 0 ? parts.join(', ') : 'Yes';
 };
+
+const hasChildren = (profile: SchemaProfile): boolean =>
+  profile.personal.hasChildren === true;
+
+const hasDisability = (profile: SchemaProfile): boolean =>
+  profile.physical.disabilityStatus === true;
 
 const getSiblingCounts = (profile: SchemaProfile): string => {
   const s = profile.family?.siblings;
@@ -411,9 +416,11 @@ const copyPdfToDocumentDirectory = async (
   return dest;
 };
 
+type PdfRow = [string, string, boolean?];
+
 interface PdfSection {
   title: string;
-  rows: Array<[string, string, boolean?]>;
+  rows: PdfRow[];
 }
 
 const getPdfSections = (
@@ -429,6 +436,15 @@ const getPdfSections = (
   const email = getProfileEmail(profile);
   const income = annualIncomeFormat(profile.education.annualIncomeAmount ?? '');
   const preferenceFilters = getPreferenceFilters(profile);
+  const childrenRows: PdfRow[] = hasChildren(profile)
+    ? [['Children', getChildrenSummary(profile)]]
+    : [];
+  const disabilityRows: PdfRow[] = hasDisability(profile)
+    ? [
+        ['Disability', 'Yes'],
+        ['Disability Note', toDisplayText(profile.physical.disabilityNote)],
+      ]
+    : [];
 
   return [
     {
@@ -480,7 +496,7 @@ const getPdfSections = (
           ),
         ],
         ['Mother Tongue', formatProfileText(profile.personal.motherTongue)],
-        ['Children', getChildrenSummary(profile)],
+        ...childrenRows,
         ['Citizenship', formatProfileText(profile.personal.citizenship)],
         [
           'NRI Profile',
@@ -586,7 +602,7 @@ const getPdfSections = (
             EMPTY_VALUE
           ),
         ],
-        ['Disability', toDisplayText(profile.physical.disabilityStatus)],
+        ...disabilityRows,
         [
           'Smoking',
           formatEnumLabel(
@@ -1402,7 +1418,12 @@ export default function ProfileScreen({
             </View>
             <View style={styles.profileMetaItem}>
               <Text style={styles.profileMetaValue}>
-                {formatProfileText(profileData.status)}
+                {formatEnumLabel(
+                  t,
+                  'options.profile_status',
+                  profileData.status,
+                  formatCamelCase(profileData.status ?? '')
+                )}
               </Text>
               <Text style={styles.profileMetaLabel}>
                 {t('profile.meta_status')}
@@ -1460,10 +1481,12 @@ export default function ProfileScreen({
               profileData.personal.maritalStatus
             )}
           />
-          <Row
-            labelKey="profile.row_children"
-            value={getChildrenSummary(profileData)}
-          />
+          {hasChildren(profileData) && (
+            <Row
+              labelKey="profile.row_children"
+              value={getChildrenSummary(profileData)}
+            />
+          )}
           <Row
             labelKey="profile.row_relocate"
             value={toDisplayText(profileData.personal.willingToRelocate)}
@@ -1625,14 +1648,15 @@ export default function ProfileScreen({
               profileData.physical.complexion
             )}
           />
-          <Row
-            labelKey="profile.row_disability"
-            value={toDisplayText(profileData.physical.disabilityStatus)}
-          />
-          <Row
-            labelKey="profile.row_disability_note"
-            value={toDisplayText(profileData.physical.disabilityNote)}
-          />
+          {hasDisability(profileData) && (
+            <>
+              <Row labelKey="profile.row_disability" value="Yes" />
+              <Row
+                labelKey="profile.row_disability_note"
+                value={toDisplayText(profileData.physical.disabilityNote)}
+              />
+            </>
+          )}
         </Section>
 
         <Section titleKey="profile.section_lifestyle" icon="coffee">

@@ -63,11 +63,12 @@ export const MatchCard = React.memo(function MatchCard({
         <Image
           source={{ uri: item.avatarUrl }}
           style={styles.photo}
+          blurRadius={item.shouldBlurPhoto ? 18 : 0}
           resizeMode="cover"
           resizeMethod={imageResizeMethod}
           accessibilityLabel={t('matches.photo_label', { name: item.name })}
         />
-        <View style={styles.photoScrim} />
+        <View style={styles.photoScrim} pointerEvents="none" />
 
         <View style={styles.badgeRow}>
           {item.curationId && (
@@ -164,6 +165,7 @@ export const MatchCard = React.memo(function MatchCard({
           <TouchableOpacity
             style={[
               styles.primaryBtn,
+              item.requestStatus && styles.primaryBtnRequest,
               primaryState === 'pending' && styles.primaryBtnPending,
               primaryState === 'success' && styles.primaryBtnSuccess,
               primaryState === 'accept' && styles.primaryBtnAccept,
@@ -178,16 +180,13 @@ export const MatchCard = React.memo(function MatchCard({
 
           {item.requestStatus ? (
             <TouchableOpacity
-              style={styles.rejectBtn}
+              style={styles.rejectIconBtn}
               onPress={onRejectRequest}
               activeOpacity={0.8}
               accessibilityRole="button"
               accessibilityLabel={t('matches.reject_request')}
             >
-              <Feather name="x" size={14} color={theme.colors.error} />
-              <Text style={styles.rejectText}>
-                {t('matches.reject_request')}
-              </Text>
+              <Feather name="user-x" size={18} color={theme.colors.error} />
             </TouchableOpacity>
           ) : item.curationId ? (
             <TouchableOpacity

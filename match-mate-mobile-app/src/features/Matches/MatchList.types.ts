@@ -36,6 +36,7 @@ export interface MatchItem {
   isMatched: boolean;
   isShortlisted: boolean;
   isInterestPending: boolean;
+  shouldBlurPhoto: boolean;
   interestId?: string;
   requestStatus?: string;
   curationId?: string;

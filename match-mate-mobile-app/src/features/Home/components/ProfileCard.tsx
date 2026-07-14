@@ -41,8 +41,12 @@ export const ProfileCard = React.memo(function ProfileCard({
   return (
     <View style={styles.card}>
       <View style={styles.photoWrapper}>
-        <PhotoCarousel photos={item.photos} name={item.name} />
-        <View style={styles.photoScrim} />
+        <PhotoCarousel
+          photos={item.photos}
+          name={item.name}
+          shouldBlurPhotos={item.shouldBlurPhotos}
+        />
+        <View style={styles.photoScrim} pointerEvents="none" />
 
         {item.isOnline && (
           <View style={styles.onlineBadge}>

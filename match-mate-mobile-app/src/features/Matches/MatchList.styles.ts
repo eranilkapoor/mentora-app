@@ -152,8 +152,9 @@ export const matchListStyles = (
       bottom: 0,
       left: 0,
       right: 0,
-      height: 140,
+      height: 90,
       backgroundColor: theme.colors.overlayDark,
+      opacity: 0.48,
     },
     badgeRow: {
       position: 'absolute',
@@ -219,6 +220,9 @@ export const matchListStyles = (
       fontSize: 22,
       fontWeight: '800',
       marginBottom: 3,
+      textShadowColor: theme.colors.overlayDark,
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 3,
     },
     locationOverlayRow: {
       flexDirection: 'row',
@@ -228,6 +232,9 @@ export const matchListStyles = (
     locationOverlayText: {
       color: theme.colors.white,
       fontSize: 13,
+      textShadowColor: theme.colors.overlayDark,
+      textShadowOffset: { width: 0, height: 1 },
+      textShadowRadius: 2,
     },
     info: { padding: 14 },
     tagsRow: {
@@ -293,10 +300,27 @@ export const matchListStyles = (
       borderRadius: 12,
       paddingVertical: 12,
     },
+    primaryBtnRequest: {
+      flex: 1.25,
+      shadowColor: theme.colors.success,
+      shadowOpacity: 0.18,
+      shadowRadius: 8,
+      shadowOffset: { width: 0, height: 3 },
+      elevation: 2,
+    },
     primaryBtnPending: { backgroundColor: theme.colors.error },
     primaryBtnSuccess: { backgroundColor: theme.colors.success },
     primaryBtnAccept: { backgroundColor: theme.colors.success },
     primaryText: { color: theme.colors.white, fontWeight: '700', fontSize: 13 },
+    rejectIconBtn: {
+      width: 44,
+      borderRadius: 12,
+      borderWidth: 1.5,
+      borderColor: theme.colors.error,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.surface,
+    },
     rejectBtn: {
       flex: 1,
       flexDirection: 'row',

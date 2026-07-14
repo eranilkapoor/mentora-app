@@ -124,11 +124,11 @@ export type SettingsStackParamList = {
 
 // ─── Bottom Tabs ──────────────────────────────────────────────────────────────
 export type BottomTabParamList = {
-  Home: undefined;
-  Matches: undefined;
-  Chats: undefined;
+  Home: NavigatorScreenParams<HomeStackParamList> | undefined;
+  Matches: NavigatorScreenParams<MatchesStackParamList> | undefined;
+  Chats: NavigatorScreenParams<ChatsStackParamList> | undefined;
   Membership: undefined;
-  Profile: undefined;
+  Profile: NavigatorScreenParams<ProfileStackParamList> | undefined;
 };
 
 // ─── App Stack ────────────────────────────────────────────────────────────────

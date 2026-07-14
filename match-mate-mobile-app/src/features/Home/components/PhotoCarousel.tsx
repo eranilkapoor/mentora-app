@@ -14,11 +14,13 @@ import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 interface Props {
   photos: string[];
   name: string;
+  shouldBlurPhotos?: boolean;
 }
 
 export const PhotoCarousel = React.memo(function PhotoCarousel({
   photos,
   name,
+  shouldBlurPhotos = false,
 }: Props): React.ReactElement {
   const styles = useThemedStyles(homeStyles);
   const { width } = useWindowDimensions();
@@ -36,6 +38,7 @@ export const PhotoCarousel = React.memo(function PhotoCarousel({
         <Image
           source={typeof uri === 'string' ? { uri } : uri}
           style={[styles.photo, { width: photoWidth }]}
+          blurRadius={shouldBlurPhotos ? 18 : 0}
           resizeMode="cover"
           resizeMethod={imageResizeMethod}
           accessibilityLabel={`Photo of ${name}`}
@@ -45,7 +48,7 @@ export const PhotoCarousel = React.memo(function PhotoCarousel({
         />
       );
     },
-    [imageResizeMethod, name, photoWidth, styles]
+    [imageResizeMethod, name, photoWidth, shouldBlurPhotos, styles]
   );
 
   useEffect(() => {

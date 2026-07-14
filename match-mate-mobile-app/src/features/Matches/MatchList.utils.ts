@@ -77,6 +77,7 @@ export const mapToMatchItem = (
       profile.relationship?.isMatched === true ||
       profile.privacy?.isMatched === true ||
       matchedIds.has(profile.userId),
+    shouldBlurPhoto: profile.privacy?.photosBlurred === true,
     isShortlisted:
       profile.isShortlisted === true || shortlistedIds.has(profile.userId),
     isInterestPending: pendingInterestByUserId.has(profile.userId),

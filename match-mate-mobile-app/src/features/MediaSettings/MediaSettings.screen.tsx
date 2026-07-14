@@ -21,7 +21,6 @@ import { MediaSettings, MediaSettingsScreenProps } from './MediaSettings.types';
 import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
 import { useUpgradePrompt } from '../Membership/hooks/useUpgradePrompt';
 
-const FEATURE_UPLOAD_VIDEOS = 'upload_videos';
 const FEATURE_VIEW_PROFILE_PHOTOS = 'view_profile_photos';
 const FEATURE_PRIVATE_PHOTOS = 'private_photos';
 
@@ -40,16 +39,13 @@ export default function MediaSettingsScreen({
   const { data, isLoading } = useGetMediaSettingsQuery();
   const [updateMediaSettings] = useUpdateMediaSettingsMutation();
   const [qualityOpen, setQualityOpen] = useState(false);
-  const { hasFeature: canUseVideo, isLoading: videoFeatureLoading } =
-    usePlanFeatureAccess(FEATURE_UPLOAD_VIDEOS);
   const { hasFeature: canViewProfilePhotos, isLoading: photoFeatureLoading } =
     usePlanFeatureAccess(FEATURE_VIEW_PROFILE_PHOTOS);
   const { hasFeature: canUsePrivatePhotos, isLoading: privateFeatureLoading } =
     usePlanFeatureAccess(FEATURE_PRIVATE_PHOTOS);
 
   const settings = data?.media;
-  const featureLoading =
-    videoFeatureLoading || photoFeatureLoading || privateFeatureLoading;
+  const featureLoading = photoFeatureLoading || privateFeatureLoading;
   const restrictedHint = t('settings.media.plan_restricted', {
     defaultValue: 'Upgrade your plan to use this media option.',
   });
@@ -104,18 +100,10 @@ export default function MediaSettingsScreen({
           <SettingsToggleItem
             icon="play"
             label={t('settings.media.video_autoplay')}
-            sublabel={
-              canUseVideo
-                ? t('settings.media.video_autoplay_sub')
-                : restrictedHint
-            }
-            value={canUseVideo && (settings?.videoAutoplay ?? false)}
-            disabled={!canUseVideo}
-            onDisabledPress={() =>
-              showUpgradePrompt(t('settings.media.video_autoplay'))
-            }
+            sublabel={t('settings.media.video_autoplay_sub')}
+            value={settings?.videoAutoplay ?? false}
             onChange={(v) => {
-              if (canUseVideo) handleToggle('videoAutoplay', v);
+              handleToggle('videoAutoplay', v);
             }}
           />
           <SettingsSelectItem

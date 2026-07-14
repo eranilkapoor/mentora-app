@@ -7,7 +7,7 @@ import { StorageService } from '../../storage/services/storage.service';
 import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
 import { CACHE_SERVICE } from '@/common/cache/cache.constants';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
-import { MediaType } from '@/common/enums';
+import { FeatureKey, MediaType } from '@/common/enums';
 import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
@@ -18,9 +18,8 @@ import { AppException } from '@/common/exceptions/app.exception';
 import { ProfileScoringService } from './profile-scoring.service';
 import { MediaModerationService } from './media-moderation.service';
 import { VideoThumbnailService } from './video-thumbnail.service';
+import { FeatureService } from '@/modules/subscriptions/services/feature.service';
 
-const MAX_IMAGES = 10;
-const MAX_VIDEOS = 1;
 const IMAGE_STORAGE_FOLDER = 'profiles/images';
 const VIDEO_STORAGE_FOLDER = 'profiles/videos';
 const VIDEO_THUMBNAIL_STORAGE_FOLDER = 'profiles/video-thumbnails';
@@ -33,6 +32,7 @@ export class MediaService {
     private readonly profileScoringService: ProfileScoringService,
     private readonly moderationService: MediaModerationService,
     private readonly videoThumbnailService: VideoThumbnailService,
+    private readonly featureService: FeatureService,
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
@@ -51,10 +51,15 @@ export class MediaService {
         userId,
         MediaType.IMAGE,
       );
+      const imageLimit = await this.getMediaLimit(
+        userId,
+        FeatureKey.UPLOAD_PHOTOS,
+        3,
+      );
 
-      if (currentCount + files.length > MAX_IMAGES) {
+      if (currentCount + files.length > imageLimit) {
         throwBadRequest(ErrorCode.PROFILE_IMAGE_LIMIT_EXCEEDED, {
-          limit: MAX_IMAGES,
+          limit: imageLimit,
           currentCount,
         });
       }
@@ -174,9 +179,15 @@ export class MediaService {
         userId,
         MediaType.VIDEO,
       );
-      if (currentCount + files.length > MAX_VIDEOS) {
+      const videoLimit = await this.getMediaLimit(
+        userId,
+        FeatureKey.UPLOAD_VIDEOS,
+        0,
+      );
+
+      if (currentCount + files.length > videoLimit) {
         throwBadRequest(ErrorCode.FILE_TOO_LARGE, {
-          limit: MAX_VIDEOS,
+          limit: videoLimit,
           currentCount,
         });
       }
@@ -433,6 +444,19 @@ export class MediaService {
     return type === MediaType.VIDEO
       ? VIDEO_STORAGE_FOLDER
       : IMAGE_STORAGE_FOLDER;
+  }
+
+  private async getMediaLimit(
+    userId: string,
+    featureKey: FeatureKey,
+    fallback: number,
+  ): Promise<number> {
+    const features = await this.featureService.getFeaturesForUser(userId);
+    const value = features[featureKey];
+
+    if (value === -1) return Number.MAX_SAFE_INTEGER;
+    if (typeof value === 'number') return Math.max(0, value);
+    return fallback;
   }
 
   private extractFilename(url: string) {

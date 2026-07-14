@@ -30,8 +30,7 @@ type SelectKey = 'profileVisibility' | 'showPhotosTo' | 'showLastSeen';
 
 const FEATURE_INCOGNITO_MODE = 'incognito_mode';
 const FEATURE_PRIVATE_PHOTOS = 'private_photos';
-const FEATURE_HIDE_ONLINE_STATUS = 'hide_online_status';
-const FEATURE_HIDE_LAST_SEEN = 'hide_last_seen';
+const FEATURE_SHOW_ONLY_TO_PREMIUM = 'show_only_to_premium';
 
 const formatValue = <T extends string>(
   options: SettingsOption<T>[],
@@ -54,19 +53,16 @@ export default function PrivacySettingsScreen({
     isLoading: privatePhotoFeatureLoading,
   } = usePlanFeatureAccess(FEATURE_PRIVATE_PHOTOS);
   const {
-    hasFeature: canHideOnlineStatus,
-    isLoading: onlineStatusFeatureLoading,
-  } = usePlanFeatureAccess(FEATURE_HIDE_ONLINE_STATUS);
-  const { hasFeature: canHideLastSeen, isLoading: lastSeenFeatureLoading } =
-    usePlanFeatureAccess(FEATURE_HIDE_LAST_SEEN);
+    hasFeature: canShowOnlyToPremium,
+    isLoading: showOnlyToPremiumFeatureLoading,
+  } = usePlanFeatureAccess(FEATURE_SHOW_ONLY_TO_PREMIUM);
   const [activeSelect, setActiveSelect] = useState<SelectKey | null>(null);
 
   const settings = data?.privacy;
   const featureLoading =
     incognitoFeatureLoading ||
     privatePhotoFeatureLoading ||
-    onlineStatusFeatureLoading ||
-    lastSeenFeatureLoading;
+    showOnlyToPremiumFeatureLoading;
   const restrictedHint = t('settings.privacy.plan_restricted', {
     defaultValue: 'Upgrade your plan to use this privacy option.',
   });
@@ -176,10 +172,24 @@ export default function PrivacySettingsScreen({
           <SettingsToggleItem
             icon="star"
             label={t('settings.privacy.premium_only')}
-            sublabel={t('settings.privacy.premium_only_sub')}
-            value={settings.showOnlyToPremium ?? false}
+            sublabel={
+              canShowOnlyToPremium
+                ? t('settings.privacy.premium_only_sub')
+                : restrictedHint
+            }
+            value={
+              canShowOnlyToPremium && (settings.showOnlyToPremium ?? false)
+            }
+            disabled={!canShowOnlyToPremium}
+            onDisabledPress={() =>
+              showUpgradePrompt(t('settings.privacy.premium_only'))
+            }
             isLast
-            onChange={(v) => handleToggle('showOnlyToPremium', v)}
+            onChange={(v) => {
+              if (canShowOnlyToPremium) {
+                void handleToggle('showOnlyToPremium', v);
+              }
+            }}
           />
         </SettingsCard>
 
@@ -292,47 +302,26 @@ export default function PrivacySettingsScreen({
           <SettingsToggleItem
             icon="circle"
             label={t('settings.privacy.show_online_status')}
-            sublabel={
-              canHideOnlineStatus
-                ? t('settings.privacy.show_online_status_sub', {
-                    defaultValue:
-                      'Let others see when you are currently active in the app.',
-                  })
-                : restrictedHint
-            }
-            value={
-              canHideOnlineStatus ? (settings.showOnlineStatus ?? true) : true
-            }
-            disabled={!canHideOnlineStatus}
-            onDisabledPress={() =>
-              showUpgradePrompt(t('settings.privacy.show_online_status'))
-            }
+            sublabel={t('settings.privacy.show_online_status_sub', {
+              defaultValue:
+                'Let others see when you are currently active in the app.',
+            })}
+            value={settings.showOnlineStatus ?? true}
             onChange={(v) => {
-              if (canHideOnlineStatus) void handleToggle('showOnlineStatus', v);
+              void handleToggle('showOnlineStatus', v);
             }}
           />
           <SettingsSelectItem
             icon="clock"
             label={t('settings.privacy.show_last_seen')}
-            sublabel={
-              canHideLastSeen
-                ? t('settings.privacy.show_last_seen_sub', {
-                    defaultValue:
-                      'Control who can see the last time you were active.',
-                  })
-                : restrictedHint
-            }
-            value={formatValue(
-              visibilityOptions,
-              canHideLastSeen ? settings.showLastSeen : 'everyone'
-            )}
-            disabled={!canHideLastSeen}
-            onDisabledPress={() =>
-              showUpgradePrompt(t('settings.privacy.show_last_seen'))
-            }
+            sublabel={t('settings.privacy.show_last_seen_sub', {
+              defaultValue:
+                'Control who can see the last time you were active.',
+            })}
+            value={formatValue(visibilityOptions, settings.showLastSeen)}
             isLast
             onPress={() => {
-              if (canHideLastSeen) setActiveSelect('showLastSeen');
+              setActiveSelect('showLastSeen');
             }}
           />
         </SettingsCard>

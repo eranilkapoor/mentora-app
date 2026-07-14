@@ -25,6 +25,13 @@ import ProfileStack from './ProfileStack';
 
 const Tab = createBottomTabNavigator<BottomTabParamList>();
 
+const INITIAL_TAB_ROUTES = {
+  Home: { screen: 'HomeScreen' },
+  Matches: { screen: 'MatchList' },
+  Chats: { screen: 'ChatList' },
+  Profile: { screen: 'ProfileScreen' },
+} as const;
+
 // ─── Tab Icon ─────────────────────────────────────────────────────────────────
 
 type TabIconProps = {
@@ -116,6 +123,12 @@ export default function BottomTabs(): React.ReactElement {
       <Tab.Screen
         name="Home"
         component={HomeStack}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            navigation.navigate('Home', INITIAL_TAB_ROUTES.Home);
+          },
+        })}
         options={{
           popToTopOnBlur: true,
           tabBarLabel: t('tabs.home'),
@@ -133,6 +146,12 @@ export default function BottomTabs(): React.ReactElement {
       <Tab.Screen
         name="Matches"
         component={MatchesStack}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            navigation.navigate('Matches', INITIAL_TAB_ROUTES.Matches);
+          },
+        })}
         options={{
           popToTopOnBlur: true,
           tabBarLabel: t('tabs.matches'),
@@ -150,6 +169,12 @@ export default function BottomTabs(): React.ReactElement {
       <Tab.Screen
         name="Chats"
         component={ChatsStack}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            navigation.navigate('Chats', INITIAL_TAB_ROUTES.Chats);
+          },
+        })}
         options={{
           popToTopOnBlur: true,
           tabBarLabel: t('tabs.chats'),
@@ -168,6 +193,12 @@ export default function BottomTabs(): React.ReactElement {
       <Tab.Screen
         name="Membership"
         component={MembershipScreen}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            navigation.navigate('Membership');
+          },
+        })}
         options={{
           popToTopOnBlur: true,
           tabBarLabel: t('tabs.premium'),
@@ -185,6 +216,12 @@ export default function BottomTabs(): React.ReactElement {
       <Tab.Screen
         name="Profile"
         component={ProfileStack}
+        listeners={({ navigation }) => ({
+          tabPress: (event) => {
+            event.preventDefault();
+            navigation.navigate('Profile', INITIAL_TAB_ROUTES.Profile);
+          },
+        })}
         options={{
           popToTopOnBlur: true,
           tabBarLabel: t('tabs.profile'),
