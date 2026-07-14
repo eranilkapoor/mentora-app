@@ -51,6 +51,15 @@ export interface ConnectProviderPayload {
   provider: string;
 }
 
+export interface ConnectSocialProviderPayload {
+  provider: 'google' | 'facebook' | 'apple';
+  accessToken: string;
+  email?: string;
+  first_name?: string;
+  last_name?: string;
+  profile_photo?: string;
+}
+
 /**
  * Update Account Settings
  */

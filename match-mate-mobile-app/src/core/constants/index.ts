@@ -13,6 +13,14 @@ export const EMOJIS = ['😀', '😂', '❤️', '👍', '😍', '🙏', '🎉',
 export const MAX_PHOTOS = 6;
 
 export const ABOUT_PARTNER_MAX = 500;
+
+export {
+  EMPTY_DISPLAY_VALUE,
+  FALLBACK_PROFILE_PHOTO,
+  NEW_PROFILE_THRESHOLD_MS,
+  ONLINE_THRESHOLD_MS,
+  PROFILE_FEED_PAGE_SIZE,
+} from './profileDisplay';
 // ─── Range Bounds ─────────────────────────────────────────────────────────────
 export const AGE_RANGE = { min: 18, max: 70 } as const;
 export const HEIGHT_RANGE = { min: 140, max: 220 } as const;

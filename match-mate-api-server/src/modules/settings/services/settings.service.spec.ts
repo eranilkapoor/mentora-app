@@ -68,6 +68,7 @@ const createFixture = () => {
   const userModel = {
     findById: jest.fn(),
     findByIdAndUpdate: jest.fn(),
+    findOne: jest.fn(),
   };
   const userSessionModel = {
     updateMany: jest.fn(),
@@ -83,6 +84,7 @@ const createFixture = () => {
   const mediaModel = { find: jest.fn() };
   const activityLogModel = { find: jest.fn() };
   const chatRealtimeService = { emitToUser: jest.fn() };
+  const socialAuthVerifierService = { verify: jest.fn() };
 
   const service = new SettingsService(
     repo as never,
@@ -94,6 +96,7 @@ const createFixture = () => {
     mediaModel as never,
     activityLogModel as never,
     chatRealtimeService as never,
+    socialAuthVerifierService as never,
   );
 
   return {
@@ -103,6 +106,7 @@ const createFixture = () => {
     profileModel,
     repo,
     service,
+    socialAuthVerifierService,
     userModel,
     userReportModel,
     userSessionModel,
@@ -632,6 +636,68 @@ describe('SettingsService', () => {
     );
 
     expect(result.linkedAccounts[2].connected).toBe(false);
+  });
+
+  it('links a provider only after server-side social-token verification', async () => {
+    const fixture = createFixture();
+    const user = {
+      authAccounts: [
+        {
+          provider: AuthProvider.EMAIL,
+          providerId: 'member@example.com',
+          passwordHash: 'hash',
+          isPrimary: true,
+        },
+      ],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    fixture.socialAuthVerifierService.verify.mockResolvedValue({
+      provider: AuthProvider.GOOGLE,
+      providerId: 'google-user-1',
+      email: 'member@example.com',
+    });
+    fixture.userModel.findOne.mockReturnValue(queryChain(null));
+    fixture.userModel.findById.mockReturnValueOnce(queryChain(user));
+    configureAccountQueries(fixture, {}, user, null);
+
+    const result = await fixture.service.connectSocialLinkedAccount(USER_ID, {
+      provider: AuthProvider.GOOGLE,
+      accessToken: 'provider-token',
+    });
+
+    expect(fixture.socialAuthVerifierService.verify).toHaveBeenCalledWith(
+      expect.objectContaining({ accessToken: 'provider-token' }),
+    );
+    expect(user.authAccounts[1]).toMatchObject({
+      provider: AuthProvider.GOOGLE,
+      providerId: 'google-user-1',
+      isPrimary: false,
+      isVerified: true,
+    });
+    expect(user.save).toHaveBeenCalledTimes(1);
+    expect(result.linkedAccounts[2]).toMatchObject({
+      provider: AuthProvider.GOOGLE,
+      connected: true,
+    });
+  });
+
+  it('rejects a social identity already owned by another user', async () => {
+    const fixture = createFixture();
+    fixture.socialAuthVerifierService.verify.mockResolvedValue({
+      provider: AuthProvider.GOOGLE,
+      providerId: 'google-user-1',
+    });
+    fixture.userModel.findOne.mockReturnValue(
+      queryChain({ _id: new Types.ObjectId() }),
+    );
+
+    await expect(
+      fixture.service.connectSocialLinkedAccount(USER_ID, {
+        provider: AuthProvider.GOOGLE,
+        accessToken: 'provider-token',
+      }),
+    ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
+    expect(fixture.userModel.findById).not.toHaveBeenCalled();
   });
 
   it('prevents disconnecting the final usable login method', async () => {

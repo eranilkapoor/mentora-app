@@ -2,10 +2,10 @@ import { DiscoveryProfile } from '@/store/services/matchApi.service';
 import { resolveApiUrl } from '@/core/utils/config';
 import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
 import {
-  FALLBACK_PHOTO,
-  ONLINE_THRESHOLD_MS,
+  FALLBACK_PROFILE_PHOTO,
   NEW_PROFILE_THRESHOLD_MS,
-} from './MatchList.constants';
+  ONLINE_THRESHOLD_MS,
+} from '@/core/constants';
 import { MatchItem } from './MatchList.types';
 
 export const isOnline = (lastActiveAt?: string): boolean =>
@@ -70,7 +70,7 @@ export const mapToMatchItem = (
       [profile.personal?.city, profile.personal?.state]
         .filter(Boolean)
         .join(', ') || '-',
-    avatarUrl: photo ?? (FALLBACK_PHOTO as string),
+    avatarUrl: photo ?? (FALLBACK_PROFILE_PHOTO as string),
     isOnline: isOnline(profile.lastActiveAt),
     isNew: isNew(profile.createdAt),
     isMatched:

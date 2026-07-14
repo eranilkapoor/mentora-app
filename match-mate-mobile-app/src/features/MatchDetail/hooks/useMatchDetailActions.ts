@@ -14,7 +14,7 @@ import {
 } from '@/store/services/privacySettingsApi.service';
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showSuccess } from '@/core/utils/toast';
-import { FALLBACK_PHOTO } from '../MatchDetail.constants';
+import { FALLBACK_PROFILE_PHOTO } from '@/core/constants';
 
 export function useMatchDetailActions(
   userId: string,
@@ -88,7 +88,7 @@ export function useMatchDetailActions(
       navigation.navigate('ChatDetails', {
         userId,
         partnerName: name,
-        partnerPhoto: photos[0] ?? (FALLBACK_PHOTO as string),
+        partnerPhoto: photos[0] ?? (FALLBACK_PROFILE_PHOTO as string),
       });
     } catch {
       showError({

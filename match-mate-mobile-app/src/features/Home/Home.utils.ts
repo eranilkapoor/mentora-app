@@ -2,10 +2,10 @@ import { DiscoveryProfile } from '@/store/services/matchApi.service';
 import { resolveApiUrl } from '@/core/utils/config';
 import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
 import {
-  FALLBACK_PHOTO,
-  ONLINE_THRESHOLD_MS,
+  FALLBACK_PROFILE_PHOTO,
   NEW_PROFILE_THRESHOLD_MS,
-} from './Home.constants';
+  ONLINE_THRESHOLD_MS,
+} from '@/core/constants';
 import { HomeMatchProfile } from './Home.types';
 
 export const isRecentlyActive = (lastActiveAt?: string): boolean =>
@@ -75,7 +75,7 @@ export const mapProfile = (
       profile.education?.jobRole ?? profile.education?.occupation ?? '-',
     isOnline: isRecentlyActive(profile.lastActiveAt),
     isNew: isNewProfile(profile.createdAt),
-    photos: photos.length > 0 ? photos : [FALLBACK_PHOTO as string],
+    photos: photos.length > 0 ? photos : [FALLBACK_PROFILE_PHOTO as string],
     isMatched:
       profile.relationship?.isMatched === true ||
       profile.privacy?.isMatched === true ||

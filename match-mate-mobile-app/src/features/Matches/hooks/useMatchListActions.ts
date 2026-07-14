@@ -13,7 +13,7 @@ import {
   useWithdrawInterestMutation,
 } from '@/store/services/matchApi.service';
 import { MatchItem, MatchListScreenProps } from '../MatchList.types';
-import { FALLBACK_PHOTO } from '../MatchList.constants';
+import { FALLBACK_PROFILE_PHOTO } from '@/core/constants';
 
 export function useMatchListActions(
   navigation: MatchListScreenProps['navigation'],
@@ -37,7 +37,7 @@ export function useMatchListActions(
         navigation.navigate('ChatDetails', {
           userId: item.id,
           partnerName: item.name,
-          partnerPhoto: item.avatarUrl ?? (FALLBACK_PHOTO as string),
+          partnerPhoto: item.avatarUrl ?? (FALLBACK_PROFILE_PHOTO as string),
         });
       } catch {
         Alert.alert(

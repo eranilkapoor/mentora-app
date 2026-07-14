@@ -62,6 +62,7 @@ import {
   ActivityLog,
   ActivityLogSchema,
 } from '../profiles/schemas/settings/activity-logs.schema';
+import { SocialAuthVerifierService } from '../auth/services/social-auth-verifier.service';
 
 @Module({
   imports: [
@@ -95,6 +96,7 @@ import {
     AccountDeletionTask,
     DataExportService,
     ConsentService,
+    SocialAuthVerifierService,
   ],
   exports: [SettingsService, AccountDeletionService],
 })

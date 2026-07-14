@@ -64,6 +64,8 @@ import {
 import { ErrorCode } from '@/common/constants';
 import { throwBadRequest } from '@/common/exceptions/throw-app-exception';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
+import { SocialLoginDto } from '@/modules/auth/dto/auth.dto';
+import { SocialAuthVerifierService } from '@/modules/auth/services/social-auth-verifier.service';
 
 @Injectable()
 export class SettingsService {
@@ -84,6 +86,7 @@ export class SettingsService {
     @InjectModel(ActivityLog.name)
     private readonly activityLogModel: Model<ActivityLogDocument>,
     private readonly chatRealtimeService: ChatRealtimeService,
+    private readonly socialAuthVerifierService: SocialAuthVerifierService,
   ) {}
 
   //  All settings in one call
@@ -543,6 +546,66 @@ export class SettingsService {
       (_, index) => !targetIndexSet.has(index),
     );
 
+    await user.save();
+
+    return this.getAccount(userId);
+  }
+
+  async connectSocialLinkedAccount(userId: string, dto: SocialLoginDto) {
+    const verifiedProfile = await this.socialAuthVerifierService.verify(dto);
+    const provider = verifiedProfile.provider;
+    const providerId = verifiedProfile.providerId;
+    const objectUserId = new Types.ObjectId(userId);
+
+    const existingOwner = await this.userModel
+      .findOne({
+        _id: { $ne: objectUserId },
+        authAccounts: {
+          $elemMatch: { provider, providerId },
+        },
+      })
+      .select('_id')
+      .lean()
+      .exec();
+
+    if (existingOwner) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'login_method_already_linked',
+        provider,
+      });
+    }
+
+    const user = await this.userModel
+      .findById(objectUserId)
+      .select('+authAccounts.passwordHash')
+      .exec();
+    if (!user) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'user_not_found',
+      });
+    }
+
+    const existingProvider = user.authAccounts.find(
+      (account) => String(account.provider) === String(provider),
+    );
+    if (existingProvider) {
+      if (existingProvider.providerId === providerId) {
+        return this.getAccount(userId);
+      }
+
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'provider_already_connected',
+        provider,
+      });
+    }
+
+    user.authAccounts.push({
+      provider,
+      providerId,
+      isVerified: true,
+      isPrimary: false,
+      lastUsedAt: new Date(),
+    });
     await user.save();
 
     return this.getAccount(userId);

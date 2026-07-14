@@ -10,7 +10,7 @@ import {
   useWithdrawInterestMutation,
 } from '@/store/services/matchApi.service';
 import { HomeMatchProfile } from '../Home.types';
-import { FALLBACK_PHOTO } from '../Home.constants';
+import { FALLBACK_PROFILE_PHOTO } from '@/core/constants';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '@/navigation/types';
 
@@ -33,7 +33,7 @@ export function useHomeActions(
           navigation.navigate('ChatDetails', {
             userId: item.userId,
             partnerName: item.name,
-            partnerPhoto: item.photos[0] ?? (FALLBACK_PHOTO as string),
+            partnerPhoto: item.photos[0] ?? (FALLBACK_PROFILE_PHOTO as string),
           });
         } catch {
           Alert.alert(

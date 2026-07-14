@@ -1,10 +1,10 @@
 import { DiscoveryProfile } from '@/store/services/matchApi.service';
 import { resolveApiUrl } from '@/core/utils/config';
 import {
-  FALLBACK_PHOTO,
+  EMPTY_DISPLAY_VALUE,
+  FALLBACK_PROFILE_PHOTO,
   ONLINE_THRESHOLD_MS,
-  EMPTY,
-} from './MatchDetail.constants';
+} from '@/core/constants';
 
 export const getProfileName = (profile?: DiscoveryProfile): string =>
   [profile?.personal?.firstName, profile?.personal?.lastName]
@@ -41,7 +41,7 @@ export const getPhotoItems = (
     .filter((photo): photo is DetailPhotoItem => Boolean(photo));
   return photos?.length
     ? photos
-    : [{ url: FALLBACK_PHOTO as string, isBlurred: false }];
+    : [{ url: FALLBACK_PROFILE_PHOTO as string, isBlurred: false }];
 };
 
 export const isRecentlyActive = (lastActiveAt?: string): boolean =>
@@ -51,4 +51,4 @@ export const isRecentlyActive = (lastActiveAt?: string): boolean =>
 
 export const compact = (
   values: Array<string | number | undefined | null>
-): string => values.filter(Boolean).join(', ') || EMPTY;
+): string => values.filter(Boolean).join(', ') || EMPTY_DISPLAY_VALUE;

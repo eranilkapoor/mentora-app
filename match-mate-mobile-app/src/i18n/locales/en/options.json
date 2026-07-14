@@ -14,6 +14,15 @@
     "client": "Client",
     "other": "Other"
   },
+  "profile_status": {
+    "draft": "Draft",
+    "active": "Active",
+    "inactive": "Inactive",
+    "under_review": "Under Review",
+    "rejected": "Rejected",
+    "blocked": "Blocked",
+    "deleted": "Deleted"
+  },
   "marital_status": {
     "never_married": "Never Married",
     "divorced": "Divorced",

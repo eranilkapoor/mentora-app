@@ -5,6 +5,7 @@ import {
   AccountSettings,
   AccountSettingsResponse,
   ConnectProviderPayload,
+  ConnectSocialProviderPayload,
   DataExportResponse,
   DeactivateAccountPayload,
   RecordConsentPayload,
@@ -89,6 +90,17 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ['AccountSettings'],
     }),
+    connectSocialLinkedAccount: builder.mutation<
+      void,
+      ConnectSocialProviderPayload
+    >({
+      query: (body) => ({
+        url: '/settings/account/linked/social',
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['AccountSettings'],
+    }),
     setPrimaryLinkedAccount: builder.mutation<void, { provider: string }>({
       query: ({ provider }) => ({
         url: `/settings/account/linked/${provider}/primary`,
@@ -153,6 +165,7 @@ export const {
   useDisconnectProviderMutation,
   useDeleteAccountRequestMutation,
   useDisconnectLinkedAccountMutation,
+  useConnectSocialLinkedAccountMutation,
   useSetPrimaryLinkedAccountMutation,
   useRequestEmailChangeMutation,
   useRequestPhoneChangeMutation,

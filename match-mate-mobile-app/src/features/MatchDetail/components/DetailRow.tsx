@@ -4,7 +4,7 @@ import Feather from 'react-native-vector-icons/Feather';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { matchDetailStyles } from '../MatchDetail.styles';
-import { EMPTY } from '../MatchDetail.constants';
+import { EMPTY_DISPLAY_VALUE } from '@/core/constants';
 
 interface Props {
   label: string;
@@ -31,7 +31,7 @@ export function DetailRow({
         <Text style={styles.label}>{label}</Text>
       </View>
       <Text style={styles.value} numberOfLines={2}>
-        {value ?? EMPTY}
+        {value ?? EMPTY_DISPLAY_VALUE}
       </Text>
     </View>
   );

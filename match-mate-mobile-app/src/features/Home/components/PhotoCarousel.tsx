@@ -8,7 +8,7 @@ import {
 import { getResponsiveMediaWidth } from '@/core/utils/device';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { homeStyles } from '../Home.styles';
-import { FALLBACK_PHOTO } from '../Home.constants';
+import { FALLBACK_PROFILE_PHOTO } from '@/core/constants';
 import { useMediaSettings } from '@/features/MediaSettings/useMediaSettings';
 
 interface Props {
@@ -32,7 +32,7 @@ export const PhotoCarousel = React.memo(function PhotoCarousel({
   const renderPhoto: ListRenderItem<string> = useCallback(
     ({ item }) => {
       const uri = failedPhotos.current.has(item)
-        ? (FALLBACK_PHOTO as string)
+        ? (FALLBACK_PROFILE_PHOTO as string)
         : item;
       return (
         <Image

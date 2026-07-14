@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Platform } from 'react-native';
-import { useIAP, type ProductSubscription, type Purchase } from 'expo-iap';
+import type { ProductSubscription, Purchase } from 'expo-iap';
 import {
   useCreateMembershipOrderMutation,
   useGetMembershipPlansQuery,
@@ -18,6 +18,7 @@ import {
 import { DisplayPlan } from '../Membership.types';
 import { getApiErrorMessage } from '@/core/utils/apiMessage';
 import { reportError } from '@/core/utils/errorReporter';
+import { useStoreBilling } from '@/core/hooks/useStoreBilling';
 
 const processingStoreTransactions = new Set<string>();
 const selectedStoreOfferIds = new Map<string, string | undefined>();
@@ -153,7 +154,7 @@ export function useMembershipActions() {
     finishTransaction,
     restorePurchases,
     reconnect,
-  } = useIAP({
+  } = useStoreBilling({
     onPurchaseSuccess: (purchase) => {
       void processStorePurchase(purchase);
     },

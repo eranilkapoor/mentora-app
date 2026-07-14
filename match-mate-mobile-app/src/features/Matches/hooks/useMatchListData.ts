@@ -10,7 +10,7 @@ import {
   useGetSentInterestsQuery,
   useGetShortlistedProfilesQuery,
 } from '@/store/services/matchApi.service';
-import { FEED_PAGE_SIZE } from '../MatchList.constants';
+import { PROFILE_FEED_PAGE_SIZE } from '@/core/constants';
 import { mergeByKey, mapToMatchItem } from '../MatchList.utils';
 import { FilterState, MatchItem, TabKey } from '../MatchList.types';
 import { Religions } from '@/core/types';
@@ -86,7 +86,7 @@ export function useMatchListData(
       {
         type: activeTab as never,
         page,
-        limit: FEED_PAGE_SIZE,
+        limit: PROFILE_FEED_PAGE_SIZE,
         radiusKm: 100,
         ...discoveryFilters,
       },
@@ -103,7 +103,7 @@ export function useMatchListData(
     refetch: refetchMyMatches,
     error: myMatchesError,
   } = useGetMyMatchesQuery(
-    { page, limit: FEED_PAGE_SIZE },
+    { page, limit: PROFILE_FEED_PAGE_SIZE },
     { skip: activeTab !== 'matched' }
   );
 
@@ -114,7 +114,7 @@ export function useMatchListData(
     refetch: refetchShortlisted,
     error: shortlistedError,
   } = useGetShortlistedProfilesQuery(
-    { page, limit: FEED_PAGE_SIZE },
+    { page, limit: PROFILE_FEED_PAGE_SIZE },
     { skip: activeTab !== 'shortlisted' }
   );
 
@@ -134,7 +134,7 @@ export function useMatchListData(
     refetch: refetchReceivedInterests,
     error: receivedInterestsError,
   } = useGetReceivedInterestsQuery(
-    { page, limit: FEED_PAGE_SIZE },
+    { page, limit: PROFILE_FEED_PAGE_SIZE },
     { skip: activeTab !== 'requests' }
   );
 

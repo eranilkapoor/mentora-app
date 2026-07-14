@@ -6,6 +6,15 @@ const srcDir = path.join(root, 'src');
 const localesDir = path.join(srcDir, 'i18n', 'locales');
 const localeNames = ['en', 'hi'];
 const supportedExtensions = new Set(['.ts', '.tsx']);
+const requiredRuntimeTranslationKeys = [
+  'options.profile_status.draft',
+  'options.profile_status.active',
+  'options.profile_status.inactive',
+  'options.profile_status.under_review',
+  'options.profile_status.rejected',
+  'options.profile_status.blocked',
+  'options.profile_status.deleted',
+];
 
 const readJson = (filePath) => JSON.parse(fs.readFileSync(filePath, 'utf8'));
 
@@ -85,16 +94,59 @@ const extractStaticTranslationKeys = () => {
   return keys;
 };
 
+const extractDynamicTranslationPrefixes = () => {
+  const prefixes = new Map();
+  const matchers = [
+    /\bformatEnumLabel\(\s*[^,]+,\s*(['"`])([^'"`$]+)\1/g,
+    /\benumLabel\(\s*(['"`])([^'"`$]+)\1/g,
+  ];
+
+  for (const filePath of walk(srcDir)) {
+    const source = fs.readFileSync(filePath, 'utf8');
+
+    for (const matcher of matchers) {
+      let match;
+      while ((match = matcher.exec(source))) {
+        const prefix = match[2].trim();
+        if (!prefix || prefix.includes('${')) continue;
+
+        const relativePath = path.relative(root, filePath).replace(/\\/g, '/');
+        const line = source.slice(0, match.index).split('\n').length;
+        const locations = prefixes.get(prefix) ?? [];
+        locations.push(`${relativePath}:${line}`);
+        prefixes.set(prefix, locations);
+      }
+    }
+  }
+
+  return prefixes;
+};
+
 const localeKeys = Object.fromEntries(
   localeNames.map((localeName) => [localeName, loadLocaleKeys(localeName)])
 );
 const translationKeys = extractStaticTranslationKeys();
+for (const key of requiredRuntimeTranslationKeys) {
+  translationKeys.set(key, ['scripts/check-i18n-keys.js:runtime-catalog']);
+}
+const dynamicPrefixes = extractDynamicTranslationPrefixes();
 const missing = [];
 
 for (const [key, locations] of translationKeys) {
   for (const localeName of localeNames) {
     if (!localeKeys[localeName].has(key)) {
       missing.push({ key, localeName, locations });
+    }
+  }
+}
+
+for (const [prefix, locations] of dynamicPrefixes) {
+  for (const localeName of localeNames) {
+    const hasPrefix = [...localeKeys[localeName]].some((key) =>
+      key.startsWith(`${prefix}.`)
+    );
+    if (!hasPrefix) {
+      missing.push({ key: `${prefix}.*`, localeName, locations });
     }
   }
 }

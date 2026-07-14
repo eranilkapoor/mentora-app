@@ -14,6 +14,15 @@
     "client": "क्लाइंट",
     "other": "अन्य"
   },
+  "profile_status": {
+    "draft": "मसौदा",
+    "active": "सक्रिय",
+    "inactive": "निष्क्रिय",
+    "under_review": "समीक्षा में",
+    "rejected": "अस्वीकृत",
+    "blocked": "अवरुद्ध",
+    "deleted": "हटाया गया"
+  },
   "marital_status": {
     "never_married": "कभी विवाह नहीं हुआ",
     "divorced": "तलाकशुदा",

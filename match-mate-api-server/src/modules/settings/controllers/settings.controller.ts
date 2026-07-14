@@ -45,6 +45,7 @@ import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
 import { DataExportService } from '../services/data-export.service';
 import { ConsentService } from '../services/consent.service';
+import { SocialLoginDto } from '@/modules/auth/dto/auth.dto';
 
 @Controller('settings')
 @UseGuards(JwtAuthGuard)
@@ -191,6 +192,18 @@ export class SettingsController {
     return this.respond(
       this.settingsService.disconnectLinkedAccount(req.user.sub, provider),
       SuccessCode.SETTINGS_ACCOUNT_UNLINKED,
+    );
+  }
+
+  @Post('account/linked/social')
+  @HttpCode(HttpStatus.OK)
+  connectSocialLinkedAccount(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: SocialLoginDto,
+  ) {
+    return this.respond(
+      this.settingsService.connectSocialLinkedAccount(req.user.sub, dto),
+      SuccessCode.SETTINGS_UPDATED,
     );
   }
 

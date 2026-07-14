@@ -21,7 +21,8 @@ import { useGetMyPreferenceQuery } from '@/store/services/preferenceApi.service'
 import { useGetMyProfileQuery } from '@/store/services/profileApi.service';
 import { matchDetailStyles } from './MatchDetail.styles';
 import { MatchDetailScreenProps, PrimaryAction } from './MatchDetail.types';
-import { EMPTY, HIDDEN_KEY } from './MatchDetail.constants';
+import { HIDDEN_KEY } from './MatchDetail.constants';
+import { EMPTY_DISPLAY_VALUE } from '@/core/constants';
 import {
   compact,
   getPhotos,
@@ -421,7 +422,7 @@ export default function MatchDetailScreen({
           t,
           'options.marital_status',
           profile?.personal?.maritalStatus,
-          EMPTY
+          EMPTY_DISPLAY_VALUE
         ),
       },
     ],

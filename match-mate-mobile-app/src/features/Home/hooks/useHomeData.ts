@@ -7,7 +7,7 @@ import {
   useGetSentInterestsQuery,
   useGetShortlistedProfilesQuery,
 } from '@/store/services/matchApi.service';
-import { FEED_PAGE_SIZE } from '../Home.constants';
+import { PROFILE_FEED_PAGE_SIZE } from '@/core/constants';
 import { mapProfile } from '../Home.utils';
 import { HomeMatchProfile } from '../Home.types';
 
@@ -20,7 +20,7 @@ export function useHomeData(query: string) {
     () => ({
       type: 'recommended' as const,
       page,
-      limit: FEED_PAGE_SIZE,
+      limit: PROFILE_FEED_PAGE_SIZE,
       ...(query.trim() ? { search: query.trim() } : {}),
     }),
     [page, query]

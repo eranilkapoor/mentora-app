@@ -7,15 +7,18 @@ import Loader from '@/core/components/Loader';
 import { SettingsCard } from '@/core/components/settings/SettingsCard';
 import { SettingsSelectItem } from '@/core/components/settings/SettingsSelectItem';
 import { showConfirm } from '@/core/utils/confirm';
-import { showWarning } from '@/core/utils/toast';
+import { showError, showSuccess, showWarning } from '@/core/utils/toast';
 import { SettingsNavigationProp } from '@/navigation/types';
 import {
   useDisconnectLinkedAccountMutation,
+  useConnectSocialLinkedAccountMutation,
   useGetAccountSettingsQuery,
   useSetPrimaryLinkedAccountMutation,
 } from '@/store/services/accountSettingsApi.service';
 import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
+import { useSocialAuth } from '@/features/Auth/shared/useSocialAuth';
+import { SocialProvider } from '@/features/Auth/shared/auth.types';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -40,7 +43,7 @@ const PROVIDERS = [
   },
   {
     provider: 'facebook',
-    label: 'Facebook',
+    labelKey: 'settings.account.provider_facebook',
     icon: 'facebook',
     iconFamily: 'fontAwesome',
   },
@@ -59,7 +62,46 @@ export default function LinkedAccountsScreen({
   const styles = useThemedStyles(sharedSettingsStyles);
   const { data, isLoading } = useGetAccountSettingsQuery();
   const [disconnectProvider] = useDisconnectLinkedAccountMutation();
+  const [connectSocialProvider, { isLoading: isConnecting }] =
+    useConnectSocialLinkedAccountMutation();
   const [setPrimary] = useSetPrimaryLinkedAccountMutation();
+  const { signInWithProvider } = useSocialAuth();
+
+  const handleConnect = useCallback(
+    async (provider: string, label: string) => {
+      if (provider === 'email' || provider === 'phone') {
+        navigation.navigate('ChangeEmailPhone', { mode: provider });
+        return;
+      }
+
+      try {
+        const profile = await signInWithProvider(provider as SocialProvider);
+        await connectSocialProvider({
+          provider: provider as SocialProvider,
+          accessToken: profile.accessToken,
+          ...(profile.email ? { email: profile.email } : {}),
+          ...(profile.first_name ? { first_name: profile.first_name } : {}),
+          ...(profile.last_name ? { last_name: profile.last_name } : {}),
+          ...(profile.profile_photo
+            ? { profile_photo: profile.profile_photo }
+            : {}),
+        }).unwrap();
+        showSuccess({
+          title: t('settings.account.provider_connected_title', {
+            provider: label,
+          }),
+          message: t('settings.account.provider_connected_message'),
+        });
+      } catch (error) {
+        console.error('Linked account connection failed:', error);
+        showError({
+          title: t('settings.account.provider_connect_failed'),
+          message: t('common.try_again_message'),
+        });
+      }
+    },
+    [connectSocialProvider, navigation, signInWithProvider, t]
+  );
 
   const handleMakePrimary = useCallback(
     (provider: string, label: string) => {
@@ -126,24 +168,24 @@ export default function LinkedAccountsScreen({
           title={t('settings.account.linked_accounts')}
           subtitle={t('settings.account.linked_accounts_subtitle')}
         >
-          {PROVIDERS.filter((item) =>
-            data.account.linkedAccounts?.some(
-              (account) =>
-                account.provider === item.provider && account.connected
-            )
-          ).map((item, index, connectedProviders) => {
-            const label = 'labelKey' in item ? t(item.labelKey) : item.label;
+          {PROVIDERS.map((item, index) => {
+            const label = t(item.labelKey);
             const linked = data.account.linkedAccounts?.find(
               (account) => account.provider === item.provider
             );
             const canDisconnect = Boolean(linked?.canDisconnect);
+            const connected = Boolean(linked?.connected);
             const isPrimary = Boolean(linked?.isPrimary);
-            const sublabel = isPrimary
-              ? t('settings.account.primary_cannot_disconnect')
-              : t('settings.account.linked_connected');
-            const value = isPrimary
-              ? t('settings.account.primary', { defaultValue: 'Primary' })
-              : t('settings.account.make_primary');
+            const sublabel = connected
+              ? isPrimary
+                ? t('settings.account.primary_cannot_disconnect')
+                : t('settings.account.linked_connected')
+              : t('settings.account.linked_not_connected_sub');
+            const value = connected
+              ? isPrimary
+                ? t('settings.account.primary', { defaultValue: 'Primary' })
+                : t('settings.account.make_primary')
+              : t('settings.account.connect');
 
             return (
               <SettingsSelectItem
@@ -153,17 +195,21 @@ export default function LinkedAccountsScreen({
                 label={label}
                 sublabel={sublabel}
                 value={value}
-                isLast={index === connectedProviders.length - 1}
-                disabled={isPrimary}
-                onPress={() => handleMakePrimary(item.provider, label)}
-                actionIcon={!isPrimary ? 'unlink' : undefined}
+                isLast={index === PROVIDERS.length - 1}
+                disabled={isPrimary || (!connected && isConnecting)}
+                onPress={() =>
+                  connected
+                    ? handleMakePrimary(item.provider, label)
+                    : void handleConnect(item.provider, label)
+                }
+                actionIcon={connected && !isPrimary ? 'unlink' : undefined}
                 actionAccessibilityLabel={t(
                   'settings.account.disconnect_title',
                   { provider: label }
                 )}
                 actionDestructive
                 onActionPress={
-                  !isPrimary
+                  connected && !isPrimary
                     ? () =>
                         handleDisconnect(item.provider, label, canDisconnect)
                     : undefined
