@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
-import { FeatureKey, Gender, Permission } from '@/common/enums';
+import { FeatureKey, Gender, Permission, PlanTier } from '@/common/enums';
 import {
   FEATURE_SEEDS,
   NOTIFICATION_TEMPLATE_SEEDS,
@@ -22,7 +22,9 @@ const query = (value: unknown) => {
 
 const model = () => ({
   bulkWrite: jest.fn().mockResolvedValue(result),
+  updateMany: jest.fn().mockResolvedValue(result),
   find: jest.fn(() => query([])),
+  findOne: jest.fn(() => query(null)),
 });
 
 describe('MasterSeederService', () => {
@@ -32,6 +34,7 @@ describe('MasterSeederService', () => {
   const planModel = model();
   const featureModel = model();
   const planFeatureModel = model();
+  const subscriptionModel = model();
   const templateModel = model();
   const userModel = model();
   const profileModel = model();
@@ -58,6 +61,7 @@ describe('MasterSeederService', () => {
       planModel,
       featureModel,
       planFeatureModel,
+      subscriptionModel,
       templateModel,
       userModel,
       profileModel,
@@ -75,7 +79,9 @@ describe('MasterSeederService', () => {
       verificationModel,
     ]) {
       item.bulkWrite.mockResolvedValue(result);
+      item.updateMany.mockResolvedValue(result);
       item.find.mockReturnValue(query([]));
+      item.findOne.mockReturnValue(query(null));
     }
 
     service = new MasterSeederService(
@@ -85,6 +91,7 @@ describe('MasterSeederService', () => {
       planModel as never,
       featureModel as never,
       planFeatureModel as never,
+      subscriptionModel as never,
       templateModel as never,
       userModel as never,
       profileModel as never,
@@ -115,6 +122,18 @@ describe('MasterSeederService', () => {
     planModel.find.mockReturnValue(
       query(PLAN_SEEDS.map((plan) => ({ ...plan, _id: new Types.ObjectId() }))),
     );
+    const freePlan = {
+      ...PLAN_SEEDS.find(({ tier }) => tier === PlanTier.FREE),
+      _id: new Types.ObjectId(),
+    };
+    const reviewerPlan = {
+      ...PLAN_SEEDS.find(({ slug }) => slug === 'platinum-yearly'),
+      _id: new Types.ObjectId(),
+    };
+    planModel.findOne.mockImplementation((filter?: unknown) => {
+      const slug = (filter as { slug?: string } | undefined)?.slug;
+      return query(slug === 'platinum-yearly' ? reviewerPlan : freePlan);
+    });
     featureModel.find.mockReturnValue(
       query(
         FEATURE_SEEDS.map((feature) => ({
@@ -140,6 +159,33 @@ describe('MasterSeederService', () => {
         query([
           { _id: new Types.ObjectId(), email: profiles[0].email },
           { _id: new Types.ObjectId(), email: profiles[1].email },
+          {
+            _id: new Types.ObjectId(),
+            email: 'reviewer@webnza.com',
+          },
+          {
+            _id: new Types.ObjectId(),
+            email: 'phone-reviewer@webnza.com',
+          },
+        ]),
+      )
+      .mockReturnValueOnce(
+        query([
+          {
+            _id: new Types.ObjectId(),
+            email: profiles[0].email,
+            membership: { tier: 'free' },
+          },
+          {
+            _id: new Types.ObjectId(),
+            email: 'reviewer@webnza.com',
+            membership: { tier: 'platinum' },
+          },
+          {
+            _id: new Types.ObjectId(),
+            email: 'phone-reviewer@webnza.com',
+            membership: { tier: 'platinum' },
+          },
         ]),
       );
 
@@ -150,9 +196,25 @@ describe('MasterSeederService', () => {
     expect(planModel.bulkWrite).toHaveBeenCalled();
     expect(featureModel.bulkWrite).toHaveBeenCalled();
     expect(planFeatureModel.bulkWrite).toHaveBeenCalled();
+    expect(subscriptionModel.bulkWrite).toHaveBeenCalledWith(
+      expect.any(Array),
+      { ordered: false },
+    );
     expect(templateModel.bulkWrite).toHaveBeenCalled();
     expect(profileModel.bulkWrite).toHaveBeenCalled();
     expect(bcrypt.hash).toHaveBeenCalledWith('Test@125#', 10);
+    expect(bcrypt.hash).toHaveBeenCalledWith('Test@123456#', 10);
+    expect(subscriptionModel.updateMany).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId: { $in: expect.any(Array) },
+        planId: { $ne: reviewerPlan._id },
+      }),
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          cancelledReason: 'reviewer_plan_sync',
+        }),
+      }),
+    );
     expect(logger.log).toHaveBeenCalledWith('Master seeder completed');
   });
 
@@ -163,15 +225,32 @@ describe('MasterSeederService', () => {
         gender: Gender;
         location: { coordinates: number[] };
       }>;
+      buildPlayReviewerProfile(): { email: string; personal: object };
+      buildPlayPhoneReviewerProfile(): {
+        email: string;
+        phone: string;
+        personal: object;
+      };
       buildSettingsUpsert(userId: Types.ObjectId, data?: object): unknown;
       getSeedProfileImageUrl(gender: Gender, index: number): string;
       extractModule(permission: string): string;
       generateDescription(permission: string): string;
     };
     const profiles = internals.buildIndianDummyProfiles();
+    const reviewer = internals.buildPlayReviewerProfile();
+    const phoneReviewer = internals.buildPlayPhoneReviewerProfile();
 
     expect(profiles).toHaveLength(500);
     expect(new Set(profiles.map(({ email }) => email)).size).toBe(500);
+    expect(reviewer).toMatchObject({
+      email: 'reviewer@webnza.com',
+      personal: { firstName: 'Play', lastName: 'Reviewer' },
+    });
+    expect(phoneReviewer).toMatchObject({
+      email: 'phone-reviewer@webnza.com',
+      phone: '9876543210',
+      personal: { firstName: 'Phone', lastName: 'Reviewer' },
+    });
     expect(
       profiles.filter(({ gender }) => gender === Gender.FEMALE),
     ).toHaveLength(250);

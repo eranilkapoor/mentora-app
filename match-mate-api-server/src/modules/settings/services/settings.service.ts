@@ -421,8 +421,12 @@ export class SettingsService {
   async getAccount(userId: string) {
     const [account, user] = await Promise.all([
       this.repo.getAccount(userId),
-      this.userModel.findById(userId).lean().exec(),
+      this.userModel
+        .findById(userId)
+        .select('+authAccounts.passwordHash')
+        .exec(),
     ]);
+    await this.ensurePrimaryAuthAccount(user ?? undefined);
     const verification = await this.verificationModel
       .findOne({ userId: new Types.ObjectId(userId) })
       .lean()
@@ -487,7 +491,10 @@ export class SettingsService {
       });
     }
 
-    const user = await this.userModel.findById(userId);
+    const user = await this.userModel
+      .findById(userId)
+      .select('+authAccounts.passwordHash')
+      .exec();
     if (!user) {
       return throwBadRequest(ErrorCode.INVALID_REQUEST, {
         reason: 'user_not_found',
@@ -549,7 +556,10 @@ export class SettingsService {
         provider,
       });
     }
-    const user = await this.userModel.findById(userId);
+    const user = await this.userModel
+      .findById(userId)
+      .select('+authAccounts.passwordHash')
+      .exec();
     if (!user) {
       return throwBadRequest(ErrorCode.INVALID_REQUEST, {
         reason: 'user_not_found',
@@ -860,7 +870,7 @@ export class SettingsService {
       usableAuthAccounts[0];
 
     return providers.map((provider) => {
-      const account = authAccounts.find(
+      const account = usableAuthAccounts.find(
         (item) => String(item.provider) === provider,
       );
       const connected = Boolean(account);
@@ -935,5 +945,36 @@ export class SettingsService {
     T extends { provider?: AuthProvider | string; passwordHash?: string },
   >(authAccounts: T[]): T[] {
     return authAccounts.filter((account) => this.isUsableAuthAccount(account));
+  }
+
+  private async ensurePrimaryAuthAccount(user?: {
+    authAccounts?: Array<{
+      provider?: AuthProvider | string;
+      passwordHash?: string;
+      isPrimary?: boolean;
+    }>;
+    save?: () => Promise<unknown>;
+  }): Promise<void> {
+    const authAccounts = user?.authAccounts ?? [];
+    const usableAccounts = this.getUsableAuthAccounts(authAccounts);
+    const primary =
+      usableAccounts.find((account) => account.isPrimary) ?? usableAccounts[0];
+
+    if (!primary) {
+      return;
+    }
+
+    let changed = false;
+    authAccounts.forEach((account) => {
+      const shouldBePrimary = account === primary;
+      if (Boolean(account.isPrimary) !== shouldBePrimary) {
+        account.isPrimary = shouldBePrimary;
+        changed = true;
+      }
+    });
+
+    if (changed && user?.save) {
+      await user.save();
+    }
   }
 }

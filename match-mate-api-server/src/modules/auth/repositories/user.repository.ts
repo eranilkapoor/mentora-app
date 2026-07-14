@@ -28,6 +28,7 @@ export class UserRepository {
   ): Promise<UserDocument | null> {
     return this.userModel
       .findOne({ authAccounts: { $elemMatch: { provider, providerId } } })
+      .select('+authAccounts.passwordHash')
       .exec();
   }
 

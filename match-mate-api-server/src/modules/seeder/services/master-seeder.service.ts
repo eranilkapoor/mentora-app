@@ -111,6 +111,10 @@ import {
   PlanFeatureDocument,
 } from '@/modules/subscriptions/schemas/plan-feature.schema';
 import {
+  Subscription,
+  SubscriptionDocument,
+} from '@/modules/subscriptions/schemas/subscription.schema';
+import {
   NotificationTemplate,
   NotificationTemplateDocument,
 } from '@/modules/notifications/schemas/notification-templates.schema';
@@ -124,6 +128,12 @@ import {
   ROLE_PERMISSION_POLICIES,
   resolveRolePermissions,
 } from '../data';
+
+const PLAY_REVIEWER_EMAIL = 'reviewer@webnza.com';
+const PLAY_REVIEWER_PASSWORD = 'Test@123456#';
+const PLAY_PHONE_REVIEWER_EMAIL = 'phone-reviewer@webnza.com';
+const PLAY_PHONE_REVIEWER_COUNTRY_CODE = '91';
+const PLAY_PHONE_REVIEWER_PHONE = '9876543210';
 
 @Injectable()
 export class MasterSeederService {
@@ -144,6 +154,9 @@ export class MasterSeederService {
 
     @InjectModel(PlanFeature.name)
     private readonly planFeatureModel: Model<PlanFeatureDocument>,
+
+    @InjectModel(Subscription.name)
+    private readonly subscriptionModel: Model<SubscriptionDocument>,
 
     @InjectModel(NotificationTemplate.name)
     private readonly notificationTemplateModel: Model<NotificationTemplateDocument>,
@@ -205,6 +218,7 @@ export class MasterSeederService {
     await this.seedPlanFeatures();
     await this.seedDefaultTemplates();
     await this.seedIndianDummyProfiles();
+    await this.seedUserSubscriptions();
 
     this.logger.log('Master seeder completed');
   }
@@ -214,9 +228,31 @@ export class MasterSeederService {
   // =========================================================
 
   private async seedIndianDummyProfiles() {
-    const profiles = this.buildIndianDummyProfiles();
+    const profiles = [
+      ...this.buildIndianDummyProfiles(),
+      this.buildPlayReviewerProfile(),
+      this.buildPlayPhoneReviewerProfile(),
+    ];
     const passwordHash = await bcrypt.hash('Test@125#', 10);
+    const reviewerPasswordHash = await bcrypt.hash(PLAY_REVIEWER_PASSWORD, 10);
     const now = new Date();
+
+    await this.userModel.updateMany(
+      {
+        'phone.phone': PLAY_PHONE_REVIEWER_PHONE,
+        email: { $ne: PLAY_PHONE_REVIEWER_EMAIL },
+      },
+      {
+        $unset: { phone: '' },
+        $set: { isPhoneVerified: false },
+        $pull: {
+          authAccounts: {
+            provider: AuthProvider.PHONE,
+            providerId: `${PLAY_PHONE_REVIEWER_COUNTRY_CODE}|${PLAY_PHONE_REVIEWER_PHONE}`,
+          },
+        },
+      },
+    );
 
     const existingPhoneOwners = await this.userModel
       .find({
@@ -231,6 +267,8 @@ export class MasterSeederService {
 
     await this.userModel.bulkWrite(
       profiles.map((profile) => {
+        const isPhoneReviewer = profile.email === PLAY_PHONE_REVIEWER_EMAIL;
+        const isPlatinumReviewer = this.isPlayReviewerEmail(profile.email);
         const phoneOwner = phoneOwnerByNumber.get(profile.phone);
         const canUsePhone = !phoneOwner || phoneOwner === profile.email;
 
@@ -244,31 +282,58 @@ export class MasterSeederService {
                   ? { phone: { countryCode: '91', phone: profile.phone } }
                   : {}),
                 status: Status.ACTIVE,
-                isEmailVerified: true,
+                isEmailVerified: !isPhoneReviewer,
                 isPhoneVerified: canUsePhone,
                 isOnboardingCompleted: true,
                 roles: [AppRole.USER],
                 permissions: [],
-                authAccounts: [
-                  {
-                    provider: AuthProvider.EMAIL,
-                    providerId: profile.email,
-                    passwordHash,
-                    isVerified: true,
-                    isPrimary: true,
-                    lastUsedAt: now,
-                  },
-                ],
+                authAccounts: isPhoneReviewer
+                  ? [
+                      {
+                        provider: AuthProvider.PHONE,
+                        providerId: `${PLAY_PHONE_REVIEWER_COUNTRY_CODE}|${PLAY_PHONE_REVIEWER_PHONE}`,
+                        isVerified: true,
+                        isPrimary: true,
+                        lastUsedAt: now,
+                      },
+                    ]
+                  : [
+                      {
+                        provider: AuthProvider.EMAIL,
+                        providerId: profile.email,
+                        passwordHash:
+                          profile.email === PLAY_REVIEWER_EMAIL
+                            ? reviewerPasswordHash
+                            : passwordHash,
+                        isVerified: true,
+                        isPrimary: true,
+                        lastUsedAt: now,
+                      },
+                    ],
                 lastLoginAt: now,
                 updatedAt: now,
+                ...(isPlatinumReviewer
+                  ? {
+                      membership: {
+                        tier: PlanTier.PLATINUM,
+                        status: SubscriptionStatus.ACTIVE,
+                        startDate: now,
+                        autoRenew: false,
+                      },
+                    }
+                  : {}),
               },
               $setOnInsert: {
-                membership: {
-                  tier: PlanTier.FREE,
-                  status: SubscriptionStatus.ACTIVE,
-                  startDate: now,
-                  autoRenew: false,
-                },
+                ...(!isPlatinumReviewer
+                  ? {
+                      membership: {
+                        tier: PlanTier.FREE,
+                        status: SubscriptionStatus.ACTIVE,
+                        startDate: now,
+                        autoRenew: false,
+                      },
+                    }
+                  : {}),
                 createdAt: now,
               },
             },
@@ -467,7 +532,6 @@ export class MasterSeederService {
         .length,
       male: profiles.filter((profile) => profile.gender === Gender.MALE).length,
       total: profiles.length,
-      password: 'Test@125#',
     });
   }
 
@@ -496,7 +560,7 @@ export class MasterSeederService {
         occupations[index % occupations.length];
       const qualification = qualifications[index % qualifications.length];
       const email = `${firstName}.${lastName}@yopmail.com`.toLowerCase();
-      const phone = String(9876543210 + index);
+      const phone = String(9876543211 + index);
       const height =
         gender === Gender.FEMALE ? 152 + (index % 20) : 165 + (index % 20);
 
@@ -665,6 +729,188 @@ export class MasterSeederService {
         ],
         aiTags: ['seeded', 'indian', 'hindu', caste],
       };
+    });
+  }
+
+  private buildPlayReviewerProfile() {
+    const base = this.buildIndianDummyProfiles()[0];
+
+    return {
+      ...base,
+      index: 1020,
+      email: PLAY_REVIEWER_EMAIL,
+      phone: '9899999001',
+      personal: {
+        ...base.personal,
+        firstName: 'Play',
+        lastName: 'Reviewer',
+        aboutMe:
+          'A complete reviewer profile for validating Match Mate discovery, communication, safety, and membership features.',
+      },
+      aiTags: [...base.aiTags, 'play-reviewer'],
+    };
+  }
+
+  private buildPlayPhoneReviewerProfile() {
+    const base =
+      this.buildIndianDummyProfiles().find(
+        (profile) => profile.gender === Gender.MALE,
+      ) ?? this.buildIndianDummyProfiles()[1];
+
+    return {
+      ...base,
+      index: 1050,
+      email: PLAY_PHONE_REVIEWER_EMAIL,
+      phone: PLAY_PHONE_REVIEWER_PHONE,
+      personal: {
+        ...base.personal,
+        firstName: 'Phone',
+        lastName: 'Reviewer',
+        aboutMe:
+          'A complete phone reviewer profile for validating Match Mate authentication, matching, safety, and Platinum membership features.',
+      },
+      aiTags: [...base.aiTags, 'play-phone-reviewer'],
+    };
+  }
+
+  private isPlayReviewerEmail(email?: string): boolean {
+    return email === PLAY_REVIEWER_EMAIL || email === PLAY_PHONE_REVIEWER_EMAIL;
+  }
+
+  private async seedUserSubscriptions(): Promise<void> {
+    const [freePlan, reviewerPlan] = await Promise.all([
+      this.planModel
+        .findOne({ slug: 'free', tier: PlanTier.FREE, isActive: true })
+        .lean(),
+      this.planModel
+        .findOne({
+          slug: 'platinum-yearly',
+          tier: PlanTier.PLATINUM,
+          isActive: true,
+        })
+        .lean(),
+    ]);
+
+    if (!freePlan || !reviewerPlan) {
+      this.logger.warn(
+        'Free or Platinum Yearly plan missing; seeded subscriptions were skipped',
+      );
+      return;
+    }
+
+    const seededEmails = [
+      ...Object.values(AppRole).map((role) => `${role}@webnza.com`),
+      ...this.buildIndianDummyProfiles().map((profile) => profile.email),
+      PLAY_REVIEWER_EMAIL,
+      PLAY_PHONE_REVIEWER_EMAIL,
+    ];
+    const users = await this.userModel
+      .find({ email: { $in: seededEmails } })
+      .select('_id email membership.tier')
+      .lean();
+    const eligibleUsers = users.filter((user) => {
+      const expectedTier = this.isPlayReviewerEmail(user.email)
+        ? PlanTier.PLATINUM
+        : PlanTier.FREE;
+      return !user.membership?.tier || user.membership.tier === expectedTier;
+    });
+
+    if (eligibleUsers.length === 0) {
+      return;
+    }
+
+    const startDate = new Date();
+    const activeStatuses = [
+      SubscriptionStatus.ACTIVE,
+      SubscriptionStatus.TRIAL,
+      SubscriptionStatus.GRACE_PERIOD,
+    ];
+    const reviewers = eligibleUsers.filter((user) =>
+      this.isPlayReviewerEmail(user.email),
+    );
+
+    if (reviewers.length > 0) {
+      await this.subscriptionModel.updateMany(
+        {
+          userId: { $in: reviewers.map((reviewer) => reviewer._id) },
+          planId: { $ne: reviewerPlan._id },
+          status: { $in: activeStatuses },
+        },
+        {
+          $set: {
+            status: SubscriptionStatus.EXPIRED,
+            cancelledAt: startDate,
+            cancelledReason: 'reviewer_plan_sync',
+          },
+        },
+      );
+    }
+
+    await this.subscriptionModel.bulkWrite(
+      eligibleUsers.map((user) => {
+        const plan = this.isPlayReviewerEmail(user.email)
+          ? reviewerPlan
+          : freePlan;
+        const endDate = new Date(
+          startDate.getTime() + plan.durationDays * 86_400_000,
+        );
+
+        return {
+          updateOne: {
+            filter: {
+              userId: user._id,
+              planId: plan._id,
+              status: { $in: activeStatuses },
+              endDate: { $gt: startDate },
+            },
+            update: {
+              $setOnInsert: {
+                userId: user._id,
+                planId: plan._id,
+                startDate,
+                endDate,
+                autoRenew: false,
+                status: SubscriptionStatus.ACTIVE,
+                createdAt: startDate,
+              },
+            },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false },
+    );
+
+    await this.userModel.bulkWrite(
+      eligibleUsers.map((user) => {
+        const plan = this.isPlayReviewerEmail(user.email)
+          ? reviewerPlan
+          : freePlan;
+        const endDate = new Date(
+          startDate.getTime() + plan.durationDays * 86_400_000,
+        );
+
+        return {
+          updateOne: {
+            filter: { _id: user._id, 'membership.tier': plan.tier },
+            update: {
+              $set: {
+                'membership.status': SubscriptionStatus.ACTIVE,
+                'membership.planId': String(plan._id),
+                'membership.startDate': startDate,
+                'membership.expiresAt': endDate,
+                'membership.autoRenew': false,
+              },
+            },
+          },
+        };
+      }),
+      { ordered: false },
+    );
+
+    this.logger.log('Seeded user subscriptions synchronized', {
+      total: eligibleUsers.length,
+      reviewerPlan: reviewerPlan.slug,
     });
   }
 

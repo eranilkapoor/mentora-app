@@ -35,13 +35,20 @@ const PROVIDERS = [
   {
     provider: 'google',
     labelKey: 'settings.account.provider_google',
-    icon: 'chrome',
+    icon: 'google',
+    iconFamily: 'fontAwesome',
   },
-  { provider: 'facebook', label: 'Facebook', icon: 'facebook' },
+  {
+    provider: 'facebook',
+    label: 'Facebook',
+    icon: 'facebook',
+    iconFamily: 'fontAwesome',
+  },
   {
     provider: 'apple',
     labelKey: 'settings.account.provider_apple',
-    icon: 'command',
+    icon: 'apple',
+    iconFamily: 'fontAwesome',
   },
 ] as const;
 
@@ -119,63 +126,49 @@ export default function LinkedAccountsScreen({
           title={t('settings.account.linked_accounts')}
           subtitle={t('settings.account.linked_accounts_subtitle')}
         >
-          {PROVIDERS.map((item, index) => {
+          {PROVIDERS.filter((item) =>
+            data.account.linkedAccounts?.some(
+              (account) =>
+                account.provider === item.provider && account.connected
+            )
+          ).map((item, index, connectedProviders) => {
             const label = 'labelKey' in item ? t(item.labelKey) : item.label;
             const linked = data.account.linkedAccounts?.find(
               (account) => account.provider === item.provider
             );
-            const connected = linked?.connected ?? false;
             const canDisconnect = Boolean(linked?.canDisconnect);
             const isPrimary = Boolean(linked?.isPrimary);
-            const sublabel = connected
-              ? isPrimary
-                ? t('settings.account.primary_cannot_disconnect')
-                : t('settings.account.linked_connected')
-              : t('settings.account.linked_not_connected_sub', {
-                  defaultValue:
-                    'Sign in with this provider to link it to your account',
-                });
-            const value = connected
-              ? isPrimary
-                ? t('settings.account.primary', { defaultValue: 'Primary' })
-                : t('settings.account.make_primary')
-              : t('settings.account.not_available', {
-                  defaultValue: 'Not connected',
-                });
+            const sublabel = isPrimary
+              ? t('settings.account.primary_cannot_disconnect')
+              : t('settings.account.linked_connected');
+            const value = isPrimary
+              ? t('settings.account.primary', { defaultValue: 'Primary' })
+              : t('settings.account.make_primary');
 
             return (
-              <React.Fragment key={item.provider}>
-                <SettingsSelectItem
-                  icon={item.icon}
-                  label={label}
-                  sublabel={sublabel}
-                  value={value}
-                  isLast={
-                    !connected || isPrimary
-                      ? index === PROVIDERS.length - 1
-                      : false
-                  }
-                  disabled={!connected || isPrimary}
-                  onPress={() => handleMakePrimary(item.provider, label)}
-                />
-                {connected && !isPrimary ? (
-                  <SettingsSelectItem
-                    icon="unlink"
-                    label={t('settings.account.disconnect_title', {
-                      provider: label,
-                    })}
-                    sublabel={t('settings.account.disconnect_message', {
-                      provider: label,
-                    })}
-                    destructive
-                    isLast={index === PROVIDERS.length - 1}
-                    disabled={!canDisconnect}
-                    onPress={() =>
-                      handleDisconnect(item.provider, label, canDisconnect)
-                    }
-                  />
-                ) : null}
-              </React.Fragment>
+              <SettingsSelectItem
+                key={item.provider}
+                icon={item.icon}
+                iconFamily={'iconFamily' in item ? item.iconFamily : 'feather'}
+                label={label}
+                sublabel={sublabel}
+                value={value}
+                isLast={index === connectedProviders.length - 1}
+                disabled={isPrimary}
+                onPress={() => handleMakePrimary(item.provider, label)}
+                actionIcon={!isPrimary ? 'unlink' : undefined}
+                actionAccessibilityLabel={t(
+                  'settings.account.disconnect_title',
+                  { provider: label }
+                )}
+                actionDestructive
+                onActionPress={
+                  !isPrimary
+                    ? () =>
+                        handleDisconnect(item.provider, label, canDisconnect)
+                    : undefined
+                }
+              />
             );
           })}
         </SettingsCard>

@@ -283,7 +283,7 @@ describe('AuthTwoFactorService', () => {
       service.consumeChallenge('challenge', undefined, 'recovery'),
     ).resolves.toMatchObject({ userId });
     expect(securityModel.updateOne).toHaveBeenCalledWith(
-      { _id: settings._id },
+      { _id: settings._id, recoveryCodeHashes: 'hash:RECOVERY' },
       { $pull: { recoveryCodeHashes: 'hash:RECOVERY' } },
     );
 
@@ -403,6 +403,15 @@ describe('AuthTwoFactorService', () => {
     expect(privateService.generateBase32Secret()).toHaveLength(32);
     expect(privateService.generateRecoveryCodes()).toHaveLength(10);
     expect(privateService.verifyTotp('JBSWY3DPEHPK3PXP', 'bad')).toBe(false);
+    settings.recoveryCodeHashes = ['hash:RECOVERY'];
+    securityModel.updateOne.mockResolvedValueOnce({ modifiedCount: 0 });
+    await expect(
+      privateService.consumeRecoveryCode(settings, 'recovery'),
+    ).resolves.toBe(false);
+    expect(securityModel.updateOne).toHaveBeenCalledWith(
+      { _id: settings._id, recoveryCodeHashes: 'hash:RECOVERY' },
+      { $pull: { recoveryCodeHashes: 'hash:RECOVERY' } },
+    );
     settings.recoveryCodeHashes = undefined;
     await expect(
       privateService.consumeRecoveryCode(settings, 'none'),

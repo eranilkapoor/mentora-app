@@ -46,7 +46,13 @@ export class OtpService {
       );
     }
 
-    const otp = randomInt(100000, 1000000).toString();
+    const reviewOtp = this.getReviewOtp(
+      countryCode,
+      phone,
+      purpose,
+      challengeId,
+    );
+    const otp = reviewOtp ?? randomInt(100000, 1000000).toString();
     await this.cache.set(
       keys.otp,
       this.hashOtp(keys.otp, otp),
@@ -54,23 +60,25 @@ export class OtpService {
     );
     await this.cache.del(keys.attempts);
 
-    const deliveryResult = await this.smsProvider.send({
-      userId: 'otp',
-      to: `+${countryCode}${phone}`,
-      message: `Match Mate OTP: ${otp}. Valid for 5 minutes.`,
-      notificationId: `otp-${Date.now()}`,
-      templateKey: 'auth.phone_otp',
-      metadata: {
-        msg91TemplateId: this.configService.get<string>(
-          'notification.sms.msg91.otpTemplateId',
-          '',
-        ),
-        msg91Variables: {
-          OTP: otp,
-          EXPIRY: '5',
-        },
-      },
-    });
+    const deliveryResult = reviewOtp
+      ? { status: 'sent' as const, provider: 'review-access' }
+      : await this.smsProvider.send({
+          userId: 'otp',
+          to: `+${countryCode}${phone}`,
+          message: `Match Mate OTP: ${otp}. Valid for 5 minutes.`,
+          notificationId: `otp-${Date.now()}`,
+          templateKey: 'auth.phone_otp',
+          metadata: {
+            msg91TemplateId: this.configService.get<string>(
+              'notification.sms.msg91.otpTemplateId',
+              '',
+            ),
+            msg91Variables: {
+              OTP: otp,
+              EXPIRY: '5',
+            },
+          },
+        });
 
     if (
       !this.shouldExposeOtpForEnvironment() &&
@@ -161,5 +169,44 @@ export class OtpService {
       'local-otp-pepper-not-for-production',
     );
     return createHmac('sha256', pepper).update(`${key}:${otp}`).digest('hex');
+  }
+
+  private getReviewOtp(
+    countryCode: string,
+    phone: string,
+    purpose: OtpPurpose,
+    challengeId: string,
+  ): string | undefined {
+    if (
+      purpose !== 'phone-login' ||
+      challengeId !== 'direct' ||
+      !this.configService.get<boolean>('authSecurity.reviewPhoneOtp.enabled')
+    ) {
+      return undefined;
+    }
+
+    const digitsOnly = (value: string): string => value.replace(/\D/g, '');
+    const configuredCountryCode = digitsOnly(
+      this.configService.get<string>(
+        'authSecurity.reviewPhoneOtp.countryCode',
+        '',
+      ),
+    );
+    const configuredPhone = digitsOnly(
+      this.configService.get<string>('authSecurity.reviewPhoneOtp.phone', ''),
+    );
+
+    if (
+      digitsOnly(countryCode) !== configuredCountryCode ||
+      digitsOnly(phone) !== configuredPhone
+    ) {
+      return undefined;
+    }
+
+    const otp = this.configService.get<string>(
+      'authSecurity.reviewPhoneOtp.otp',
+      '',
+    );
+    return /^\d{6}$/.test(otp) ? otp : undefined;
   }
 }

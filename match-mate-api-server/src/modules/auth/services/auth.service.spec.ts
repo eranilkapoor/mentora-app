@@ -8,6 +8,7 @@ import {
 } from '@/modules/profiles/enums/activity-log.enums';
 import { AnalyticsPlatform } from '@/modules/analytics/enums/analytics-event.enum';
 import { AuthProvider } from '../enums/auth-provider.enum';
+import { DUMMY_PASSWORD_HASH } from './auth-security.constants';
 import { Status } from '@/common/enums';
 import { AuthService } from './auth.service';
 
@@ -707,6 +708,23 @@ describe('AuthService', () => {
     expect(bcrypt.compare).toHaveBeenCalledWith('Password@123', 'email-hash');
   });
 
+  it('performs dummy password work for unknown email accounts', async () => {
+    const f = createFixture();
+    f.userRepo.findByProvider.mockResolvedValue(null);
+
+    await expect(
+      f.service.login(request(), response() as never, {
+        email: 'missing@example.com',
+        password: 'legacy-password',
+      }),
+    ).rejects.toMatchObject({ code: ErrorCode.AUTH_INVALID_CREDENTIALS });
+
+    expect(bcrypt.compare).toHaveBeenCalledWith(
+      'legacy-password',
+      DUMMY_PASSWORD_HASH,
+    );
+  });
+
   it('rejects missing users/passwords and invalid password logins', async () => {
     for (const user of [
       null,
@@ -769,6 +787,10 @@ describe('AuthService', () => {
     expect(existing.userRepo.update).toHaveBeenCalledWith(USER_ID, {
       isPhoneVerified: true,
     });
+    expect(existing.userRepo.findByProvider).toHaveBeenCalledWith(
+      AuthProvider.PHONE,
+      '91|999',
+    );
 
     const fresh = createFixture();
     fresh.otpService.verify.mockReturnValue(true);
@@ -787,6 +809,12 @@ describe('AuthService', () => {
       'REF',
     );
     expect(fresh.userRepo.create).toHaveBeenCalled();
+    expect(fresh.userRepo.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        phone: { countryCode: '91', phone: '999' },
+        authAccounts: [expect.objectContaining({ providerId: '91|999' })],
+      }),
+    );
   });
 
   it('rejects invalid OTP and maps unexpected OTP failures', async () => {

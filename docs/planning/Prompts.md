@@ -68,11 +68,11 @@ marked complete from configuration or focused tests alone.
 | 5 | PARTIAL | Made nested password hashes non-selectable, excluded auth credentials in admin queries, and added route-level permissions to moderation endpoints. | Add purpose-specific admin DTOs, role/action denial matrix, step-up MFA, case-based masking, and tamper-evident minimized audits. |
 | 6 | PARTIAL | Removed request body/query logging, made unknown 500 responses generic, recursively scrubbed API/mobile Sentry context, and routed reset/magic links directly to email without notification persistence, queues, DLQ, or realtime. | Share one tested redactor across every audit/provider surface and add canary, retention, access, deletion, and alerting evidence. |
 | 7 | PARTIAL | Added typed access/refresh tokens, issuer/audience enforcement, separate refresh key/audience, hashed session tokens, session/family binding, atomic rotation, reuse revocation, web response suppression, Origin checks, and a migration invalidating plaintext sessions. Access validation now requires the bound live session and resolves current user status, roles, permissions, and membership on every request. | Add key rotation/token versioning, dedicated CSRF tokens, admin-session invalidation events, replay alerts, and the complete revocation matrix. |
-| 8 | PARTIAL | Equalized forgot-password responses with dummy bcrypt work, made reset and magic links atomically single-use, enforced 12-64 character new passwords, and aligned mobile validation. OTPs are now purpose/challenge-bound HMAC records in Redis with hashed destination keys, resend cooldown, five-attempt invalidation, TTL expiry, and atomic consume; 2FA challenges also have atomic consume and attempt lockout. | Envelope-encrypt TOTP secrets, add TOTP timestep replay prevention, breached-password checks, device/IP dimensions, provider-failure telemetry, and atomic recovery-code consumption. |
+| 8 | PARTIAL | Equalized forgot-password responses with dummy bcrypt work, made reset and magic links atomically single-use, enforced 12-64 character new passwords while preserving legacy login compatibility, and aligned mobile validation. Email login now explicitly retrieves the hidden credential hash and performs dummy bcrypt work for unknown/malformed accounts. OTPs are purpose/challenge-bound HMAC records in Redis with hashed destination keys, resend cooldown, five-attempt invalidation, TTL expiry, and atomic consume; 2FA challenges have atomic consume and attempt lockout, and recovery-code removal is conditional and single-use under concurrency. | Envelope-encrypt TOTP secrets, add TOTP timestep replay prevention, breached-password checks, device/IP dimensions, and provider-failure telemetry. |
 | 9 | PARTIAL | Replaced process-local/read-write counters with Redis Lua-backed atomic increment-and-expiry for rate limits and quotas; production requires Redis and focused concurrency/cache tests pass. | Reserve/commit/release quota around successful business actions, add exact boundary semantics, multi-dimension limits, degraded-mode tests, and three-replica load evidence. |
 | 10 | PARTIAL | Removed client amount/coin/benefit metadata, derives plan price/currency/duration from active server plans, and closes coin packs until a trusted SKU catalog exists. | Implement immutable SKUs and real Razorpay/Stripe order/checkout/status verification, or remove those gateways from production. |
 | 11 | PARTIAL | Added an explicit webhook transition matrix and conditional Mongo status updates: terminal/unsupported transitions are rejected, failures cannot overwrite success, refunds require success, and concurrent stale transitions lose atomically. | Implement the durable provider-event ledger, fulfillment/outbox state machine, Mongo transactions, atomic wallet/subscription invariants, per-benefit reconciliation, and refund compensation before accepting money. |
-| 12 | PARTIAL | Corrected Gold chat, plan boost limits, zero-limit denial, Silver monthly messages, and chat attachment entitlement/ownership checks in API and seed data. | Replace duplicated policy with one versioned catalog consumed by backend/mobile/CRM and generate the complete plan acceptance matrix. |
+| 12 | PARTIAL | Corrected Gold chat, plan boost limits, zero-limit denial, Silver monthly messages, and chat attachment entitlement/ownership checks in API and seed data. The idempotent master seeder now creates canonical active free-plan subscription records and synchronizes embedded membership plan IDs for seeded users without downgrading paid users. | Replace duplicated policy with one versioned catalog consumed by backend/mobile/CRM and generate the complete plan acceptance matrix. |
 | 13 | OPEN | Existing recursive export secret removal was retained; no full erasure workflow was claimed. | Build the inventory, resumable per-resource erasure, protected report export, recent-auth encrypted async export, provider deletion, retention, and backup handling. |
 | 14 | PARTIAL | API onboarding/profile DTOs now reject invalid DOBs and ages outside 18-100. | Add immutable versioned required consent, optional processing consent/withdrawal, DOB-change policy, re-consent, and analytics gating. |
 | 15 | PARTIAL | Split EAS development/preview API hosts, added app environment headers and API mismatch rejection, and made production require Mongo, Redis, S3, monitoring, queues, strict store config, and separate refresh credentials. | Provision isolated provider/cloud resources, require TLS/replica set/private-bucket/distributed-socket proofs, tune Redis outage behavior, and use separate Sentry/OAuth projects. |
@@ -90,6 +90,10 @@ Focused verification completed in this pass:
   access-session authorization tests, 73 payment/auth tests, and 38 OTP/2FA
   lockout tests passed.
 - Atomic cache/rate/quota suites: 50 tests passed.
+- Linked-account primary repair and atomic recovery-code focused suites: 45
+  tests passed; API and mobile type checks passed.
+- Legacy email-login, unknown-account timing, repository credential projection,
+  and seeded free-subscription focused suites passed.
 - Auth, session, chat, media, KYC, match, payment, and notification focused
   suites passed in their latest targeted runs; the security-email run passed
   87 tests.
@@ -308,6 +312,10 @@ Implement:
 
 Done when multi-replica, concurrent replay, enumeration, brute-force, restart,
 and provider-failure tests pass.
+
+Latest code-side update: recovery-code deletion now includes the matched hash in
+the database predicate and succeeds only when one record is modified, preventing
+two concurrent requests from accepting the same code.
 
 ### 9. Make throttles and feature usage counters distributed and atomic
 

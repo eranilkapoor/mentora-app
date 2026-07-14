@@ -51,6 +51,12 @@ export default () => ({
     ),
     suspiciousLoginDetectionEnabled:
       process.env.AUTH_SUSPICIOUS_LOGIN_DETECTION_ENABLED !== 'false',
+    reviewPhoneOtp: {
+      enabled: process.env.AUTH_REVIEW_PHONE_OTP_ENABLED === 'true',
+      countryCode: process.env.AUTH_REVIEW_PHONE_COUNTRY_CODE || '',
+      phone: process.env.AUTH_REVIEW_PHONE || '',
+      otp: process.env.AUTH_REVIEW_PHONE_OTP || '',
+    },
   },
   cors: {
     origins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],

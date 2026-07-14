@@ -82,6 +82,7 @@ import {
   MediaModerationStatus,
   MediaStatus,
 } from '@/modules/profiles/enums/profile-media.enums';
+import { DUMMY_PASSWORD_HASH } from './auth-security.constants';
 
 interface TokenAttachUser {
   _id: { toString(): string };
@@ -1358,21 +1359,19 @@ export class AuthService {
         email,
       );
 
-      if (!existingUser) {
+      const emailAccount = existingUser?.authAccounts.find(
+        (account) => account.provider === AuthProvider.EMAIL,
+      );
+      const passwordMatches = await bcrypt.compare(
+        dto.password,
+        emailAccount?.passwordHash ?? DUMMY_PASSWORD_HASH,
+      );
+
+      if (!existingUser || !emailAccount?.passwordHash || !passwordMatches) {
         return throwUnauthorized(ErrorCode.AUTH_INVALID_CREDENTIALS);
       }
 
       this.assertUserCanAuthenticate(existingUser);
-      const emailAccount = existingUser.authAccounts.find(
-        (account) => account.provider === AuthProvider.EMAIL,
-      );
-
-      if (
-        !emailAccount?.passwordHash ||
-        !(await bcrypt.compare(dto.password, emailAccount.passwordHash))
-      ) {
-        return throwUnauthorized(ErrorCode.AUTH_INVALID_CREDENTIALS);
-      }
 
       const userPayload = {
         user: {
@@ -1419,6 +1418,8 @@ export class AuthService {
   ) {
     try {
       this.assertAuthMethodEnabled('authMethods.phoneOtpEnabled', 'phone_otp');
+      const normalizedCountryCode = country_code.replace(/\D/g, '');
+      const normalizedPhone = phone.replace(/\D/g, '');
       const dto =
         typeof dtoOrReferralCode === 'string'
           ? { country_code, phone, otp, referralCode: dtoOrReferralCode }
@@ -1434,7 +1435,7 @@ export class AuthService {
 
       const existingUser = await this.userRepo.findByProvider(
         AuthProvider.PHONE,
-        `${country_code}|${phone}`,
+        `${normalizedCountryCode}|${normalizedPhone}`,
       );
 
       if (existingUser) {
@@ -1470,7 +1471,7 @@ export class AuthService {
         isEmailVerified: false,
         isPhoneVerified: true,
         isOnboardingCompleted: false,
-        phone: { countryCode: country_code, phone },
+        phone: { countryCode: normalizedCountryCode, phone: normalizedPhone },
         membership: {
           tier: PlanTier.FREE,
           status: SubscriptionStatus.ACTIVE,
@@ -1485,7 +1486,7 @@ export class AuthService {
         authAccounts: [
           {
             provider: AuthProvider.PHONE,
-            providerId: `${country_code}|${phone}`,
+            providerId: `${normalizedCountryCode}|${normalizedPhone}`,
             isVerified: true,
             isPrimary: true,
           },
@@ -1496,7 +1497,7 @@ export class AuthService {
         provider: AuthProvider.PHONE,
         source: 'register-phone-otp',
         hasEmail: false,
-        phone: { countryCode: country_code, phone },
+        phone: { countryCode: normalizedCountryCode, phone: normalizedPhone },
         sendOtp: false,
         context: this.getRegisterRequestContext(req),
         referralAttribution,

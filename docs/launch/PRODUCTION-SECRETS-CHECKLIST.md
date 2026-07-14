@@ -34,6 +34,20 @@ Keep the real values in the deployment secret store, EAS secrets, CI/CD secrets,
 - Payment webhook secrets and gateway keys.
 - JWT secrets, database credentials, Redis credentials.
 
+## Play Reviewer Phone Access
+
+Enable only while the Play reviewer account must remain available:
+
+- `AUTH_REVIEW_PHONE_OTP_ENABLED=true`
+- `AUTH_REVIEW_PHONE_COUNTRY_CODE=91`
+- `AUTH_REVIEW_PHONE=9876543210`
+- `AUTH_REVIEW_PHONE_OTP` stored as a deployment secret
+
+The implementation skips SMS only for the exact configured phone-login
+destination. Redis TTL, cooldown, attempt limits, and atomic consumption remain
+active. Disable and remove these variables after the review account is no
+longer required; never reuse this phone number or OTP for a real member.
+
 ## Release Rule
 
 Enable mobile push only after backend push is enabled and a real Android device successfully registers a token and receives a test notification.

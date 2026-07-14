@@ -518,6 +518,54 @@ describe('SettingsService', () => {
     });
   });
 
+  it('repairs a missing primary account using the first registration method', async () => {
+    const fixture = createFixture();
+    const user: {
+      authAccounts: Array<{
+        provider: AuthProvider;
+        passwordHash?: string;
+        isPrimary?: boolean;
+      }>;
+      save: jest.Mock;
+    } = {
+      authAccounts: [
+        { provider: AuthProvider.EMAIL, passwordHash: 'hash' },
+        { provider: AuthProvider.GOOGLE },
+      ],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    configureAccountQueries(fixture, {}, user, null);
+
+    const result = await fixture.service.getAccount(USER_ID);
+
+    expect(user.authAccounts[0].isPrimary).toBe(true);
+    expect(user.authAccounts[1].isPrimary).toBeFalsy();
+    expect(user.save).toHaveBeenCalledTimes(1);
+    expect(result.linkedAccounts[0]).toMatchObject({
+      provider: AuthProvider.EMAIL,
+      connected: true,
+      isPrimary: true,
+    });
+  });
+
+  it('does not expose malformed credential rows as linked accounts', async () => {
+    const fixture = createFixture();
+    configureAccountQueries(
+      fixture,
+      {},
+      { authAccounts: [{ provider: AuthProvider.EMAIL }] },
+      null,
+    );
+
+    const result = await fixture.service.getAccount(USER_ID);
+
+    expect(result.linkedAccounts[0]).toMatchObject({
+      provider: AuthProvider.EMAIL,
+      connected: false,
+      isPrimary: false,
+    });
+  });
+
   it('deactivates an account and revokes active sessions', async () => {
     const fixture = createFixture();
     fixture.repo.updateAccount.mockResolvedValue({ isDeactivated: true });
@@ -564,7 +612,7 @@ describe('SettingsService', () => {
       fixture.service.disconnectLinkedAccount(USER_ID, 'twitter'),
     ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
 
-    fixture.userModel.findById.mockResolvedValue(null);
+    fixture.userModel.findById.mockReturnValue(queryChain(null));
     await expect(
       fixture.service.disconnectLinkedAccount(USER_ID, 'GOOGLE'),
     ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
@@ -575,7 +623,7 @@ describe('SettingsService', () => {
     const user = {
       authAccounts: [{ provider: AuthProvider.EMAIL, passwordHash: 'hash' }],
     };
-    fixture.userModel.findById.mockResolvedValueOnce(user);
+    fixture.userModel.findById.mockReturnValueOnce(queryChain(user));
     configureAccountQueries(fixture, {}, user, null);
 
     const result = await fixture.service.disconnectLinkedAccount(
@@ -588,9 +636,11 @@ describe('SettingsService', () => {
 
   it('prevents disconnecting the final usable login method', async () => {
     const fixture = createFixture();
-    fixture.userModel.findById.mockResolvedValue({
-      authAccounts: [{ provider: AuthProvider.GOOGLE }],
-    });
+    fixture.userModel.findById.mockReturnValue(
+      queryChain({
+        authAccounts: [{ provider: AuthProvider.GOOGLE }],
+      }),
+    );
 
     await expect(
       fixture.service.disconnectLinkedAccount(USER_ID, AuthProvider.GOOGLE),
@@ -607,7 +657,7 @@ describe('SettingsService', () => {
       ],
       save: jest.fn().mockResolvedValue(undefined),
     };
-    fixture.userModel.findById.mockResolvedValueOnce(user);
+    fixture.userModel.findById.mockReturnValueOnce(queryChain(user));
     await expect(
       fixture.service.disconnectLinkedAccount(USER_ID, AuthProvider.GOOGLE),
     ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
@@ -627,7 +677,7 @@ describe('SettingsService', () => {
       ],
       save: jest.fn().mockResolvedValue(undefined),
     };
-    fixture.userModel.findById.mockResolvedValueOnce(user);
+    fixture.userModel.findById.mockReturnValueOnce(queryChain(user));
     configureAccountQueries(fixture, {}, user, null);
 
     await fixture.service.disconnectLinkedAccount(
@@ -650,7 +700,7 @@ describe('SettingsService', () => {
       ],
       save: jest.fn().mockResolvedValue(undefined),
     };
-    fixture.userModel.findById.mockResolvedValueOnce(user);
+    fixture.userModel.findById.mockReturnValueOnce(queryChain(user));
     configureAccountQueries(fixture, {}, user, null);
 
     await fixture.service.setPrimaryLinkedAccount(USER_ID, AuthProvider.EMAIL);
@@ -670,9 +720,11 @@ describe('SettingsService', () => {
 
   it('rejects making an unavailable login method primary', async () => {
     const fixture = createFixture();
-    fixture.userModel.findById.mockResolvedValue({
-      authAccounts: [{ provider: AuthProvider.EMAIL }],
-    });
+    fixture.userModel.findById.mockReturnValue(
+      queryChain({
+        authAccounts: [{ provider: AuthProvider.EMAIL }],
+      }),
+    );
 
     await expect(
       fixture.service.setPrimaryLinkedAccount(USER_ID, AuthProvider.EMAIL),

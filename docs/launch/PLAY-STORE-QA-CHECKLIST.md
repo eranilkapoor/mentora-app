@@ -13,6 +13,20 @@ Complete `PLAY-CONSOLE-SUBMISSION-GUIDE.md` before starting this QA run.
 - API base URL: `https://matchmate.webnza.com/api/v1`
 - Push enabled only when production FCM is configured and tested.
 
+## Submission Gate
+
+- Production API health returns HTTP 200 over HTTPS from an external network.
+- Privacy policy, terms, community guidelines, and account-deletion pages each
+  return HTTP 200 without authentication.
+- `reviewer@webnza.com` logs in without OTP and shows Platinum Yearly in the
+  exact release AAB.
+- Play Console accepts the AAB's target API level and reports no 16 KB
+  page-size compatibility issue.
+- Pre-launch report has no unresolved crash, ANR, security, or accessibility
+  blocker.
+- Store listing has a 512 x 512 opaque icon, 1024 x 500 feature graphic, and
+  at least two current phone screenshots.
+
 ## Required Store Screenshots
 
 Capture light and dark theme screenshots where applicable.
@@ -64,6 +78,7 @@ Capture light and dark theme screenshots where applicable.
 - Block user removes chat access
 - Notification tap opens detail or action target
 - Plan purchase test path
+- Restore purchase test path with a Play license tester
 - Logout and login with another user on same device
 
 ## Release Blockers

@@ -93,4 +93,10 @@ export type ChatRoomDocument = ChatRoom & Document;
 export const ChatRoomSchema = SchemaFactory.createForClass(ChatRoom);
 
 ChatRoomSchema.index({ participants: 1, status: 1, lastActivityAt: -1 });
+ChatRoomSchema.index({
+  participants: 1,
+  lastActivityAt: -1,
+  updatedAt: -1,
+  createdAt: -1,
+});
 ChatRoomSchema.index({ 'participantStates.userId': 1, lastActivityAt: -1 });

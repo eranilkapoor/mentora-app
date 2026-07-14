@@ -36,7 +36,6 @@ export default function AccountSettingsScreen({
   const linkedCount =
     settings?.linkedAccounts?.filter((account) => account.connected).length ??
     0;
-  const availableLinkedAccountCount = settings?.linkedAccounts?.length ?? 0;
 
   const handleDeactivate = useCallback(() => {
     showConfirm({
@@ -164,7 +163,7 @@ export default function AccountSettingsScreen({
             icon="link"
             label={t('settings.account.manage_linked_accounts')}
             sublabel={t('settings.account.manage_linked_accounts_sub')}
-            value={`${linkedCount}/${availableLinkedAccountCount}`}
+            value={String(linkedCount)}
             isLast
             onPress={() => navigation.navigate('LinkedAccounts')}
           />

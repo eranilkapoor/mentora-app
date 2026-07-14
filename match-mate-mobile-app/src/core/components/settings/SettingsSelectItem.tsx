@@ -1,13 +1,23 @@
 import React from 'react';
-import { View, Text, Pressable, StyleSheet } from 'react-native';
+import {
+  View,
+  Text,
+  Pressable,
+  StyleSheet,
+  GestureResponderEvent,
+} from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { createBaseStyles } from '@/core/theme/baseStyles';
 import { Theme } from '@/core/theme/types';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 
 interface Props {
-  icon?: React.ComponentProps<typeof Feather>['name'];
+  icon?:
+    | React.ComponentProps<typeof Feather>['name']
+    | React.ComponentProps<typeof FontAwesome>['name'];
+  iconFamily?: 'feather' | 'fontAwesome';
   label: string;
   value?: string;
   sublabel?: string;
@@ -16,6 +26,10 @@ interface Props {
   disabled?: boolean;
   onDisabledPress?: () => void;
   onPress: () => void;
+  actionIcon?: React.ComponentProps<typeof Feather>['name'];
+  actionAccessibilityLabel?: string;
+  actionDestructive?: boolean;
+  onActionPress?: () => void;
 }
 
 const createStyles = (
@@ -55,10 +69,18 @@ const createStyles = (
       fontSize: 13,
       color: theme.colors.textMuted,
     },
+    actionButton: {
+      width: 32,
+      height: 32,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginLeft: 4,
+    },
   });
 
 export function SettingsSelectItem({
   icon,
+  iconFamily = 'feather',
   label,
   value,
   sublabel,
@@ -67,6 +89,10 @@ export function SettingsSelectItem({
   disabled = false,
   onDisabledPress,
   onPress,
+  actionIcon,
+  actionAccessibilityLabel,
+  actionDestructive = false,
+  onActionPress,
 }: Props): React.ReactElement {
   const { theme } = useTheme();
   const styles = useThemedStyles(createStyles);
@@ -90,11 +116,19 @@ export function SettingsSelectItem({
             destructive && styles.iconWrapperDestructive,
           ]}
         >
-          <Feather
-            name={icon}
-            size={16}
-            color={destructive ? theme.colors.error : theme.colors.primary}
-          />
+          {iconFamily === 'fontAwesome' ? (
+            <FontAwesome
+              name={icon as React.ComponentProps<typeof FontAwesome>['name']}
+              size={16}
+              color={destructive ? theme.colors.error : theme.colors.primary}
+            />
+          ) : (
+            <Feather
+              name={icon as React.ComponentProps<typeof Feather>['name']}
+              size={16}
+              color={destructive ? theme.colors.error : theme.colors.primary}
+            />
+          )}
         </View>
       ) : null}
 
@@ -107,7 +141,29 @@ export function SettingsSelectItem({
 
       <View style={styles.right}>
         {value ? <Text style={styles.value}>{value}</Text> : null}
-        {!destructive ? (
+        {actionIcon && onActionPress ? (
+          <Pressable
+            style={({ pressed }) => [
+              styles.actionButton,
+              pressed && { opacity: 0.6 },
+            ]}
+            accessibilityRole="button"
+            accessibilityLabel={actionAccessibilityLabel}
+            hitSlop={8}
+            onPress={(event: GestureResponderEvent) => {
+              event.stopPropagation();
+              onActionPress();
+            }}
+          >
+            <Feather
+              name={actionIcon}
+              size={17}
+              color={
+                actionDestructive ? theme.colors.error : theme.colors.textMuted
+              }
+            />
+          </Pressable>
+        ) : !destructive ? (
           <Feather
             name="chevron-right"
             size={16}

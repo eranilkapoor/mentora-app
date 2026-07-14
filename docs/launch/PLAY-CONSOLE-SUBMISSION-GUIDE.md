@@ -1,6 +1,6 @@
 # Google Play Console Submission Guide — Match Mate
 
-Last reviewed: 2026-07-05
+Last reviewed against repository and current Google guidance: 2026-07-14
 
 Use this worksheet for closed testing and the first production submission. It
 is based on the current package `com.webnza.matchmate` and repository behavior.
@@ -57,17 +57,30 @@ reviewer account. Copy
 `docs/launch/REVIEWER-CREDENTIALS.template.md` to the ignored private file and
 complete it.
 
+Repository reviewer account:
+
+- Email: `reviewer@webnza.com`
+- Password: stored in ignored `docs/launch/REVIEWER-CREDENTIALS.private.md`
+- Entitlement: active Platinum Yearly subscription
+- Access: normal user only; no administrator or employee permissions
+- MFA/OTP: disabled/not required for email-password review
+- Phone reviewer: `+91 9876543210`, reusable OTP stored in the ignored private
+  credentials file, with a separate Platinum Yearly standard-user account
+
 Recommended Play reviewer instructions:
 
 ```text
 1. Open Match Mate and tap Log in.
 2. Choose Email and Password.
 3. Enter the reviewer credentials supplied below.
-4. This account has completed onboarding and has profile photos, sample
-   matches, one chat, notifications, and access to Membership & Billing.
+4. This account has completed onboarding, has an active profile photo and
+   matching preferences, and has Platinum Yearly access to Membership.
 5. No OTP, invitation, payment, or external device is required for review.
 6. To test account deletion: Settings > Account Settings > Delete Account.
 7. To test report/block: open a match profile and use the safety actions.
+8. Optional phone login: choose Phone, request an OTP for the supplied reviewer
+   number, and enter the reusable OTP from the access credentials. No SMS is
+   sent for this one reviewer destination.
 ```
 
 Never give Google an employee/admin account. Test the reviewer credentials in
@@ -189,6 +202,15 @@ the app later qualifies for and passes Play’s Photo and Video permission revie
 After producing the AAB, verify the final merged manifest in Play Console. SDKs
 can add permissions that are not obvious from `app.json`.
 
+### Android compatibility gates
+
+- Expo SDK 54 targets Android API 36, above Play's current API 35 minimum.
+- Upload the AAB to an internal track first and confirm Play reports no 16 KB
+  native-library/page-size compatibility issue. This is mandatory for new apps
+  targeting Android 15 or later.
+- Review the Pre-launch report for crashes, ANRs, accessibility, security, and
+  device compatibility before promoting the same artifact to closed testing.
+
 ## 4. Store Listing Copy
 
 ### App name
@@ -243,8 +265,13 @@ Prepare and review separately from runtime assets:
   description is ready.
 
 Repository status: runtime icon, adaptive icon, splash icon, and favicon exist.
-A dedicated Play feature graphic and final store screenshot set are not proven
-by the repository and must be supplied.
+The current runtime icon files are only 500 x 500; prepare a source-quality app
+icon (preferably 1024 x 1024 for the build) and a separate 512 x 512 opaque Play
+listing icon. The current icon's outer rounded corners contain black pixels, so
+do not use a simple resize as the Play listing asset; export the logo on a clean
+full-square background with Play-safe margins. A dedicated Play feature graphic
+and final store screenshot set are not present and must be supplied before
+submission.
 
 ## 6. Closed Testing and Production Access
 
@@ -266,6 +293,29 @@ Use `PLAY-STORE-QA-CHECKLIST.md` for the release run.
 
 ## 7. Current Readiness Verdict
 
+### Submission gate: external verification required as of 2026-07-14
+
+The deployment owner reports that `matchmate.webnza.com` is now working. A
+repeat probe from the current development runner still resolves the hostname to
+`13.232.104.246` but receives a connection refusal on port 443 for every URL
+below. This can be caused by deployment firewall or source-network rules, so it
+does not by itself prove that the public deployment is down. Do not promote the
+AAB until the URLs and both reviewer logins pass from an unrelated mobile or
+incognito network.
+
+Unblock only after all of these pass from a network outside the deployment:
+
+```text
+https://matchmate.webnza.com/api/v1/health
+https://matchmate.webnza.com/privacy-policy
+https://matchmate.webnza.com/terms-conditions
+https://matchmate.webnza.com/community-guidelines
+https://matchmate.webnza.com/account-deletion
+```
+
+Each public policy URL must return HTTP 200 without authentication. The health
+endpoint must show the production API is available without exposing secrets.
+
 ### Present in the application
 
 - Public privacy, terms, community-guideline and deletion pages
@@ -282,6 +332,11 @@ Use `PLAY-STORE-QA-CHECKLIST.md` for the release run.
 
 - Public URLs return HTTP 200 from an incognito browser
 - Dedicated reviewer credentials and reviewer notes
+- Both reviewer records and their Platinum Yearly subscriptions were
+  synchronized in the configured database on 2026-07-14; verify both logins
+  from the exact release AAB
+- Deploy the destination-bound phone-review OTP variables to the API secret
+  store and verify `+91 9876543210` with the reusable OTP
 - Final Data safety declaration reconciled with production SDK/provider use
 - Terms/privacy acceptance occurs before profile/media UGC creation
 - Report user, report content/media/message, and block user are clearly reachable
@@ -289,14 +344,31 @@ Use `PLAY-STORE-QA-CHECKLIST.md` for the release run.
 - Support phone and verified developer identity/contact details
 - Store icon, feature graphic, screenshots and localized listing assets
 - Final merged-manifest permission review
+- Play Console must report API-level and 16 KB page-size compatibility
 - Licensed-track purchase/restore and RTDN evidence
 - Closed-test duration/tester requirement if applicable
+
+### Performance baseline
+
+- Expo Doctor passes all 18 checks.
+- A production Android export measured 8.05 MiB: a 6.94 MiB Hermes bundle plus
+  approximately 1.11 MiB of assets. This is a JavaScript/export baseline, not
+  the final AAB or Play download size.
+- Unused direct `react-native-paper` and `@expo/vector-icons` dependencies were
+  removed. Record the final AAB size and Play-reported compressed download size
+  before promotion, then fail future releases on a meaningful regression.
+- Conversation-list and active-media compound indexes now match their hot read
+  filters and sort order. Validate them with production-like `explain()` plans,
+  slow-query monitoring, and load tests before raising traffic.
 
 ## 8. Official References
 
 - [Prepare your app for review](https://support.google.com/googleplay/android-developer/answer/9859455)
 - [Data safety form guidance](https://support.google.com/googleplay/android-developer/answer/10787469)
 - [Target audience and content](https://support.google.com/googleplay/android-developer/answer/9867159)
+- [Target API requirements](https://support.google.com/googleplay/android-developer/answer/11926878)
+- [16 KB page-size compatibility](https://developer.android.com/guide/practices/page-sizes)
+- [Reviewer sign-in requirements](https://support.google.com/googleplay/android-developer/answer/15748846)
 - [User Data policy](https://support.google.com/googleplay/android-developer/answer/10144311)
 - [Account-deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111)
 - [User-generated-content policy](https://support.google.com/googleplay/android-developer/answer/9876937)

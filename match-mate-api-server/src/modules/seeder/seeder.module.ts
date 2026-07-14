@@ -17,6 +17,10 @@ import {
   PlanFeatureSchema,
 } from '../subscriptions/schemas/plan-feature.schema';
 import {
+  Subscription,
+  SubscriptionSchema,
+} from '../subscriptions/schemas/subscription.schema';
+import {
   NotificationTemplate,
   NotificationTemplateSchema,
 } from '@/modules/notifications/schemas/notification-templates.schema';
@@ -95,6 +99,10 @@ import { SafetyModule } from '../safety/safety.module';
       {
         name: PlanFeature.name,
         schema: PlanFeatureSchema,
+      },
+      {
+        name: Subscription.name,
+        schema: SubscriptionSchema,
       },
       {
         name: NotificationTemplate.name,

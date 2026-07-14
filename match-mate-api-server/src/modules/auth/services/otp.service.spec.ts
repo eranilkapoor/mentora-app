@@ -127,6 +127,34 @@ describe('OtpService', () => {
     expect(smsProvider.send).not.toHaveBeenCalled();
   });
 
+  it('uses the configured reusable OTP only for the exact phone reviewer', async () => {
+    configService.get.mockImplementation((key: string, fallback?: string) => {
+      const values: Record<string, string | boolean> = {
+        env: 'production',
+        'jwt.secret': 'test-otp-pepper',
+        'authSecurity.reviewPhoneOtp.enabled': true,
+        'authSecurity.reviewPhoneOtp.countryCode': '91',
+        'authSecurity.reviewPhoneOtp.phone': '9876543210',
+        'authSecurity.reviewPhoneOtp.otp': '123456',
+      };
+      return values[key] ?? fallback;
+    });
+    randomInt.mockReturnValue(654321);
+
+    await expect(service.generate('+91', '9876543210')).resolves.toBe('123456');
+    expect(smsProvider.send).not.toHaveBeenCalled();
+    expect(cache.set).toHaveBeenCalledWith(
+      expect.any(String),
+      expect.not.stringContaining('123456'),
+      300,
+    );
+
+    await service.generate('91', '9999999999');
+    expect(smsProvider.send).toHaveBeenCalledWith(
+      expect.objectContaining({ to: '+919999999999' }),
+    );
+  });
+
   it('removes OTP state when production delivery fails', async () => {
     configService.get.mockImplementation((key: string, fallback?: string) => {
       if (key === 'env') return 'production';

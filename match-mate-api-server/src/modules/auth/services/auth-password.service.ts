@@ -35,6 +35,7 @@ import {
 } from '../schemas/user-session.schema';
 import { AuthProvider } from '../enums/auth-provider.enum';
 import { ChangePasswordDto, ResetPasswordDto } from '../dto/auth.dto';
+import { DUMMY_PASSWORD_HASH } from './auth-security.constants';
 
 type EmailAuthAccount = {
   provider: AuthProvider;
@@ -46,9 +47,6 @@ type ResetTokenPayload = {
   type: 'password-reset';
   jti: string;
 };
-
-const DUMMY_PASSWORD_HASH =
-  '$2a$10$7EqJtq98hPqEX7fNZaFWoO5x5G6Y4fN2GxF6O8mP7nQW3R5S1T9uK';
 
 @Injectable()
 export class AuthPasswordService {

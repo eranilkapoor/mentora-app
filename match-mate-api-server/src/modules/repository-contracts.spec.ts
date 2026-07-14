@@ -83,6 +83,7 @@ describe('remaining repository contracts', () => {
       await repository.expireMemberships([objectId], new Date());
       await repository.expireMemberships([], new Date());
       expect(query.populate).toHaveBeenCalled();
+      expect(query.select).toHaveBeenCalledWith('+authAccounts.passwordHash');
       expect(model.findByIdAndUpdate).toHaveBeenCalledTimes(2);
       expect(model.updateMany).toHaveBeenCalledTimes(1);
     });

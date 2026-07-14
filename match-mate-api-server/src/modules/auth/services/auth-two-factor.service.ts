@@ -406,11 +406,11 @@ export class AuthTwoFactorService {
 
     for (const hash of hashes) {
       if (await bcrypt.compare(recoveryCode.toUpperCase(), hash)) {
-        await this.securitySettingModel.updateOne(
-          { _id: settings._id },
+        const result = await this.securitySettingModel.updateOne(
+          { _id: settings._id, recoveryCodeHashes: hash },
           { $pull: { recoveryCodeHashes: hash } },
         );
-        return true;
+        return result.modifiedCount === 1;
       }
     }
 

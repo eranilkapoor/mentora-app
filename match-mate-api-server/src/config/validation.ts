@@ -390,6 +390,35 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
     .falsy('false')
     .default(false),
 
+  AUTH_REVIEW_PHONE_OTP_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(false),
+
+  AUTH_REVIEW_PHONE_COUNTRY_CODE: Joi.string()
+    .pattern(/^\d{1,4}$/)
+    .when('AUTH_REVIEW_PHONE_OTP_ENABLED', {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(''),
+    }),
+
+  AUTH_REVIEW_PHONE: Joi.string()
+    .pattern(/^\d{8,15}$/)
+    .when('AUTH_REVIEW_PHONE_OTP_ENABLED', {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(''),
+    }),
+
+  AUTH_REVIEW_PHONE_OTP: Joi.string()
+    .pattern(/^\d{6}$/)
+    .when('AUTH_REVIEW_PHONE_OTP_ENABLED', {
+      is: true,
+      then: Joi.required(),
+      otherwise: Joi.optional().allow(''),
+    }),
+
   AUTH_SOCIAL_GOOGLE_ENABLED: Joi.boolean()
     .truthy('true')
     .falsy('false')
