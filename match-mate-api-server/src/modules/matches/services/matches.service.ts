@@ -15,6 +15,10 @@ import { MatchNotificationService } from './match-notification.service';
 import { FeatureService } from '@/modules/subscriptions/services/feature.service';
 import { MatchCompatibilityService } from './match-compatibility.service';
 import { buildPaginationMeta } from '@/common/utils/pagination';
+import {
+  presentProfileDetail,
+  presentProfileSummary,
+} from '../presenters/profile-response.presenter';
 
 @Injectable()
 export class MatchesService {
@@ -61,10 +65,10 @@ export class MatchesService {
       );
       return {
         ...interest,
-        profile: {
+        profile: presentProfileSummary({
           ...profileByUser.get(userId),
           images: mediaByUser.get(userId) ?? [],
-        },
+        }),
       };
     });
   }
@@ -103,10 +107,10 @@ export class MatchesService {
         ...match,
         matchedUserId,
         profile: profile
-          ? {
+          ? presentProfileSummary({
               ...profile,
               images: mediaByUser.get(matchedUserId) ?? [],
-            }
+            })
           : undefined,
       };
     });
@@ -498,46 +502,13 @@ export class MatchesService {
       : [];
 
     return {
-      ...profile,
+      ...presentProfileDetail(profile, {
+        showPersonalDetails: canViewPersonalDetails,
+        showExactAge: Boolean(privacy?.showExactAge || canViewPersonalDetails),
+        showIncome: Boolean(privacy?.showIncome && canViewPersonalDetails),
+        showLastSeen: canViewLastSeen,
+      }),
       images: displayMedia,
-      personal: {
-        firstName: profile.personal?.firstName,
-        lastName: canViewPersonalDetails
-          ? profile.personal?.lastName
-          : undefined,
-        city: profile.personal?.city,
-        state: profile.personal?.state,
-        country: profile.personal?.country,
-        isNri: profile.personal?.isNri,
-        residencyCountry: canViewPersonalDetails
-          ? profile.personal?.residencyCountry
-          : undefined,
-        visaStatus: canViewPersonalDetails
-          ? profile.personal?.visaStatus
-          : undefined,
-        gender: profile.personal?.gender,
-        maritalStatus: profile.personal?.maritalStatus,
-        religion: canViewPersonalDetails
-          ? profile.personal?.religion
-          : undefined,
-        religiousDetails: canViewPersonalDetails
-          ? profile.personal?.religiousDetails
-          : undefined,
-        aboutMe: canViewPersonalDetails ? profile.personal?.aboutMe : undefined,
-        motherTongue: canViewPersonalDetails
-          ? profile.personal?.motherTongue
-          : undefined,
-        hobbies: canViewPersonalDetails ? profile.personal?.hobbies : [],
-        languages: canViewPersonalDetails ? profile.personal?.languages : [],
-      },
-      physical: canViewPersonalDetails ? profile.physical : undefined,
-      education: canViewPersonalDetails ? profile.education : undefined,
-      family: canViewPersonalDetails ? profile.family : undefined,
-      age:
-        privacy?.showExactAge || canViewPersonalDetails
-          ? profile.age
-          : undefined,
-      lastActiveAt: canViewLastSeen ? profile.lastActiveAt : undefined,
       privacy: {
         isMatched,
         canViewPersonalDetails,

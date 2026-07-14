@@ -44,7 +44,11 @@ export class MediaController {
 
   @Post('images')
   @FeatureRequired(FeatureKey.UPLOAD_PHOTOS)
-  @UseInterceptors(FilesInterceptor('images', 10))
+  @UseInterceptors(
+    FilesInterceptor('images', 10, {
+      limits: { fileSize: 5 * 1024 * 1024, files: 10, fields: 5 },
+    }),
+  )
   @HttpCode(HttpStatus.CREATED)
   async uploadImages(
     @Req() req: AuthenticatedRequest,
@@ -108,10 +112,15 @@ export class MediaController {
   @Post('videos')
   @FeatureRequired(FeatureKey.UPLOAD_VIDEOS)
   @UseInterceptors(
-    FileFieldsInterceptor([
-      { name: 'videos', maxCount: 1 },
-      { name: 'thumbnails', maxCount: 1 },
-    ]),
+    FileFieldsInterceptor(
+      [
+        { name: 'videos', maxCount: 1 },
+        { name: 'thumbnails', maxCount: 1 },
+      ],
+      {
+        limits: { fileSize: 50 * 1024 * 1024, files: 2, fields: 5 },
+      },
+    ),
   )
   @HttpCode(HttpStatus.CREATED)
   async uploadVideos(

@@ -26,7 +26,11 @@ describe('KycService', () => {
   let service: KycService;
 
   const file = (name: string) =>
-    ({ originalname: name, buffer: Buffer.from(name) }) as Express.Multer.File;
+    ({
+      originalname: name,
+      mimetype: 'image/jpeg',
+      buffer: Buffer.from([0xff, 0xd8, 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0]),
+    }) as Express.Multer.File;
 
   beforeEach(() => {
     jest.clearAllMocks();

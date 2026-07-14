@@ -23,6 +23,8 @@ describe('onboarding form validation', () => {
       gender: Genders.MALE,
       religion: Religions.HINDU,
       country: Countries.INDIA,
+      state: '',
+      city: '',
       maritalStatus: MaritalStatuses.NEVER_MARRIED,
       qualification: Qualifications.BTECH,
       occupation: '',
@@ -34,6 +36,8 @@ describe('onboarding form validation', () => {
       dateOfBirth: 'onboarding.errors.date_of_birth_required',
       height: 'onboarding.errors.height_required',
       occupation: 'onboarding.errors.occupation_required',
+      state: 'onboarding.errors.state_required',
+      city: 'onboarding.errors.city_required',
     });
     expect(
       validateOnboardingBasic(
@@ -43,6 +47,8 @@ describe('onboarding form validation', () => {
           dateOfBirth: '1995-04-12',
           height: '165',
           occupation: 'Engineer',
+          state: 'Maharashtra',
+          city: 'Mumbai',
         },
         t
       )

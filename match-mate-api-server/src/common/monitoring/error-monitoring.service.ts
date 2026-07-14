@@ -5,6 +5,35 @@ import { AppLogger } from '../logger/logger.service';
 
 type MonitoringContext = Record<string, unknown>;
 
+const SENSITIVE_KEY =
+  /(?:authorization|cookie|password|secret|token|otp|code|credential|message|content|kyc|payment|email|phone|address|birth|device|ip)/i;
+
+const scrubMonitoringValue = (value: unknown, depth = 0): unknown => {
+  if (depth > 8) return '[TRUNCATED]';
+  if (Array.isArray(value)) {
+    return value.map((item) => scrubMonitoringValue(item, depth + 1));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nested]) => [
+        key,
+        SENSITIVE_KEY.test(key)
+          ? '[REDACTED]'
+          : scrubMonitoringValue(nested, depth + 1),
+      ]),
+    );
+  }
+  if (typeof value !== 'string') return value;
+
+  return value
+    .replace(/bearer\s+[^\s]+/gi, 'Bearer [REDACTED]')
+    .replace(
+      /([?&](?:token|code|otp|key|secret|password)=)[^&#\s]*/gi,
+      '$1[REDACTED]',
+    )
+    .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[REDACTED_EMAIL]');
+};
+
 @Injectable()
 export class ErrorMonitoringService {
   private sentryInitialized = false;
@@ -47,6 +76,7 @@ export class ErrorMonitoringService {
         'monitoring.tracesSampleRate',
         0,
       ),
+      beforeSend: (event) => scrubMonitoringValue(event) as typeof event,
     });
 
     this.sentryInitialized = true;
@@ -65,7 +95,9 @@ export class ErrorMonitoringService {
 
     if (provider === 'sentry') {
       if (this.sentryInitialized) {
-        Sentry.captureException(exception, { extra: context });
+        Sentry.captureException(exception, {
+          extra: scrubMonitoringValue(context) as MonitoringContext,
+        });
       } else if (!this.sentryWarningLogged) {
         this.logger.warn(
           'Monitoring provider is set to sentry, but Sentry is not initialized.',
@@ -81,11 +113,9 @@ export class ErrorMonitoringService {
         exception instanceof Error
           ? {
               name: exception.name,
-              message: exception.message,
-              stack: exception.stack,
             }
-          : exception,
-      ...context,
+          : { type: typeof exception },
+      ...(scrubMonitoringValue(context) as MonitoringContext),
     });
   }
 }

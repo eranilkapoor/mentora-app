@@ -18,6 +18,7 @@ import {
 } from '../repositories/match-discovery.repository';
 import { MatchQueryDto } from '../dto/match-query.dto';
 import { MatchCompatibilityService } from './match-compatibility.service';
+import { presentProfileSummary } from '../presenters/profile-response.presenter';
 
 type LeanCuratedMatch = FlattenMaps<CuratedMatch> & {
   _id: Types.ObjectId;
@@ -260,12 +261,12 @@ export class PremiumMatchCuratorService {
           preferenceByUserId.get(String(profile.userId)) ?? null,
         );
 
-      return {
+      return presentProfileSummary({
         ...profile,
         images: mediaByUserId.get(String(profile.userId)) ?? [],
         matchScore: compatibility.score,
         compatibility,
-      };
+      });
     });
   }
 

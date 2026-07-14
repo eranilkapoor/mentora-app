@@ -16,7 +16,10 @@ import { RootState } from '../index';
 import { logout, setAccessToken } from '../slices/auth.slice';
 
 import { generateUUID, getDeviceId } from '../../core/utils/device';
-import { getApiBaseUrl, getClientVersion } from '../../core/utils/config';
+import config, {
+  getApiBaseUrl,
+  getClientVersion,
+} from '../../core/utils/config';
 import { reportError } from '@/core/utils/errorReporter';
 
 const mutex = new Mutex();
@@ -75,6 +78,8 @@ const rawBaseQuery = fetchBaseQuery({
     headers.set('X-Platform', Platform.OS);
 
     headers.set('X-Client-Version', getClientVersion());
+
+    headers.set('X-Environment', config.env);
 
     headers.set('X-Correlation-Id', generateUUID());
 

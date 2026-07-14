@@ -12,6 +12,7 @@ import {
   VerificationProvider,
   VerificationStatus,
 } from '../enums/verification.enums';
+import { detectFileCategory } from '@/common/utils/file-signature.util';
 
 @Injectable()
 export class KycService {
@@ -45,6 +46,27 @@ export class KycService {
         {
           reason: 'id_proof_and_selfie_required',
         },
+      );
+    }
+
+    const idProofCategory = detectFileCategory(idProof.buffer);
+    const selfieCategory = detectFileCategory(selfie.buffer);
+    if (
+      !['image', 'document'].includes(idProofCategory ?? '') ||
+      selfieCategory !== 'image' ||
+      !['image/jpeg', 'image/png', 'image/webp', 'application/pdf'].includes(
+        idProof.mimetype.toLowerCase(),
+      ) ||
+      !['image/jpeg', 'image/png', 'image/webp'].includes(
+        selfie.mimetype.toLowerCase(),
+      )
+    ) {
+      throw new AppException(
+        ErrorCode.FILE_UPLOAD_FAILED,
+        HttpStatus.BAD_REQUEST,
+        null,
+        undefined,
+        { reason: 'kyc_file_signature_or_type_invalid' },
       );
     }
 

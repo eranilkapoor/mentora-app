@@ -15,7 +15,11 @@ describe('AuthTokenService', () => {
       return values[key] ?? fallback;
     }),
     getOrThrow: jest.fn((key: string) =>
-      key === 'jwt.audience' ? 'matchmate-user' : 'matchmate-api',
+      key === 'jwt.audience'
+        ? 'matchmate-user'
+        : key === 'jwt.refreshAudience'
+          ? 'matchmate-refresh'
+          : 'matchmate-api',
     ),
   };
   const service = new AuthTokenService(
@@ -95,13 +99,16 @@ describe('AuthTokenService', () => {
     });
     expect(jwtService.sign).toHaveBeenNthCalledWith(
       1,
-      payload,
+      { ...payload, type: 'access' },
       expect.objectContaining({ expiresIn: '15m' }),
     );
     expect(jwtService.sign).toHaveBeenNthCalledWith(
       2,
-      payload,
-      expect.objectContaining({ expiresIn: '7d' }),
+      { ...payload, type: 'refresh' },
+      expect.objectContaining({
+        expiresIn: '7d',
+        audience: 'matchmate-refresh',
+      }),
     );
   });
 });

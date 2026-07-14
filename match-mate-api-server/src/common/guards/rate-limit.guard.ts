@@ -40,18 +40,10 @@ interface RateLimitErrorResponse {
   resetAt: number;
 }
 
-// Store count + expiry together so we don't need raw Redis TTL command
-interface RateLimitEntry {
-  count: number;
-  expiresAt: number; // unix ms
-}
-
 //  Guard
 
 @Injectable()
 export class RateLimitGuard implements CanActivate {
-  private locks = new Map<string, Promise<void>>();
-
   constructor(
     private readonly logger: AppLogger,
     private readonly reflector: Reflector,
@@ -93,108 +85,49 @@ export class RateLimitGuard implements CanActivate {
     const limit = this.getLimit(request, rateLimitConfig);
     const { ttl } = rateLimitConfig;
 
-    const now = Date.now();
-    const release = await this.acquireLock(key);
+    const blocked = await this.cache.get(`blocked:${identifier}`);
+    if (blocked) {
+      throw new HttpException('Too many requests. Try later.', 429);
+    }
 
-    try {
-      const blocked = await this.cache.get(`blocked:${identifier}`);
-      if (blocked) {
-        throw new HttpException('Too many requests. Try later.', 429);
-      }
+    const counter = await this.cache.incrementWithExpiry(key, ttl);
+    const remainingTtlSeconds = Math.max(0, counter.ttlSeconds);
+    const resetAt = Date.now() + remainingTtlSeconds * 1000;
 
-      //  Get or init entry
-      let entry = await this.cache.get<RateLimitEntry>(key);
+    //  Set response headers
+    response.setHeader('X-RateLimit-Limit', limit);
+    response.setHeader(
+      'X-RateLimit-Remaining',
+      Math.max(0, limit - counter.value),
+    );
+    response.setHeader('X-RateLimit-Reset', Math.floor(resetAt / 1000));
 
-      let isNew = false;
+    if (counter.value > limit * 2) {
+      await this.cache.set(`blocked:${identifier}`, true, 3600);
+    }
 
-      if (!entry) {
-        isNew = true;
-        entry = {
-          count: 0,
-          expiresAt: now + ttl * 1000,
-        };
-      }
+    //  Check limit
+    if (counter.value > limit) {
+      response.setHeader('Retry-After', remainingTtlSeconds);
 
-      const remainingTtlSeconds = Math.max(
-        0,
-        Math.ceil((entry.expiresAt - now) / 1000),
+      this.logger.warn(
+        `Rate limit exceeded identifier: ${identifier}, key: ${key}, count: ${counter.value}/${limit}`,
       );
 
-      //  Set response headers
-      response.setHeader('X-RateLimit-Limit', limit);
-      response.setHeader(
-        'X-RateLimit-Remaining',
-        Math.max(0, limit - entry.count - 1),
-      );
-      response.setHeader(
-        'X-RateLimit-Reset',
-        Math.floor(entry.expiresAt / 1000),
-      );
-
-      if (entry.count > limit * 2) {
-        await this.cache.set(`blocked:${identifier}`, true, 3600);
-      }
-
-      //  Check limit
-      if (entry.count >= limit) {
-        response.setHeader('Retry-After', remainingTtlSeconds);
-
-        this.logger.warn(
-          `Rate limit exceeded  identifier: ${identifier}, key: ${key}, count: ${entry.count}/${limit}`,
-        );
-
-        const errorResponse: RateLimitErrorResponse = {
-          statusCode: HttpStatus.TOO_MANY_REQUESTS,
-          message: rateLimitConfig.message,
-          retryAfter: remainingTtlSeconds,
-          resetAt: entry.expiresAt,
-        };
-
-        throw new HttpException(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
-      }
-
-      //  Increment
-      const updatedEntry: RateLimitEntry = {
-        count: entry.count + 1,
-        expiresAt: entry.expiresAt,
+      const errorResponse: RateLimitErrorResponse = {
+        statusCode: HttpStatus.TOO_MANY_REQUESTS,
+        message: rateLimitConfig.message,
+        retryAfter: remainingTtlSeconds,
+        resetAt,
       };
 
-      //  Save
-      const safeTtl = remainingTtlSeconds > 0 ? remainingTtlSeconds : ttl;
-      if (isNew) {
-        await this.cache.set<RateLimitEntry>(key, updatedEntry, ttl);
-      } else {
-        await this.cache.set<RateLimitEntry>(key, updatedEntry, safeTtl);
-      }
-    } finally {
-      release();
+      throw new HttpException(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
     }
 
     return true;
   }
 
   //  Helpers
-
-  private async acquireLock(key: string) {
-    while (this.locks.get(key)) {
-      await this.locks.get(key);
-    }
-
-    let release: () => void;
-    const lock = new Promise<void>((res) => (release = res));
-    this.locks.set(key, lock);
-
-    return () => {
-      this.locks.delete(key);
-
-      // cleanup safety
-      if (this.locks.size > 10000) {
-        this.locks.clear();
-      }
-
-      release();
-    };
-  }
 
   private getIdentifier(request: AuthenticatedRequest): string {
     const userId = request.user?.sub;

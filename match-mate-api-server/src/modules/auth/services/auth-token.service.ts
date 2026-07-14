@@ -4,6 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { getJwtConfig } from '@/config/jwt.config';
 import { PlanTier } from '@/common/enums';
 import { permissionsForBuiltInRoles } from '@/common/rbac/role-permissions';
+import { randomUUID } from 'crypto';
 
 interface TokenPermission {
   name: string;
@@ -68,20 +69,39 @@ export class AuthTokenService {
     };
   }
 
-  generateTokens(payload: TokenPayload) {
+  generateTokens(
+    payload: TokenPayload,
+    context?: { sessionId: string; tokenFamilyId: string },
+  ) {
     const jwtConfig = getJwtConfig(this.configService);
+    const boundPayload = context
+      ? {
+          ...payload,
+          sid: context.sessionId,
+          family: context.tokenFamilyId,
+        }
+      : payload;
 
-    const accessToken = this.jwtService.sign(payload, {
-      expiresIn: jwtConfig.accessExpiresIn,
-      audience: jwtConfig.audience,
-      issuer: jwtConfig.issuer,
-    });
+    const accessToken = this.jwtService.sign(
+      { ...boundPayload, type: 'access' },
+      {
+        jwtid: randomUUID(),
+        expiresIn: jwtConfig.accessExpiresIn,
+        audience: jwtConfig.audience,
+        issuer: jwtConfig.issuer,
+      },
+    );
 
-    const refreshToken = this.jwtService.sign(payload, {
-      expiresIn: jwtConfig.refreshExpiresIn,
-      audience: jwtConfig.audience,
-      issuer: jwtConfig.issuer,
-    });
+    const refreshToken = this.jwtService.sign(
+      { ...boundPayload, type: 'refresh' },
+      {
+        secret: jwtConfig.refreshSecret,
+        jwtid: randomUUID(),
+        expiresIn: jwtConfig.refreshExpiresIn,
+        audience: jwtConfig.refreshAudience,
+        issuer: jwtConfig.issuer,
+      },
+    );
 
     return { accessToken, refreshToken };
   }

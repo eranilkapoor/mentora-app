@@ -44,7 +44,11 @@ type EmailAuthAccount = {
 type ResetTokenPayload = {
   userId: string;
   type: 'password-reset';
+  jti: string;
 };
+
+const DUMMY_PASSWORD_HASH =
+  '$2a$10$7EqJtq98hPqEX7fNZaFWoO5x5G6Y4fN2GxF6O8mP7nQW3R5S1T9uK';
 
 @Injectable()
 export class AuthPasswordService {
@@ -75,18 +79,14 @@ export class AuthPasswordService {
       const emailAccount = this.findEmailAuthAccount(user);
 
       if (!user || !emailAccount?.passwordHash) {
-        throw new AppException(
-          ErrorCode.AUTH_USER_NOT_FOUND,
-          HttpStatus.UNAUTHORIZED,
-          null,
-          undefined,
-          { reason: 'email_password_account_not_found' },
-        );
+        await bcrypt.compare('not-a-real-password', DUMMY_PASSWORD_HASH);
+        return { sent: true };
       }
 
+      const jti = randomUUID();
       const resetToken = this.jwtService.sign(
         { userId: user._id, type: 'password-reset' },
-        { expiresIn: '15m' },
+        { expiresIn: '15m', jwtid: jti },
       );
       const resetCode = this.generateResetPasswordCode();
       await this.cache.set(
@@ -98,17 +98,12 @@ export class AuthPasswordService {
       );
       const resetUrl = this.buildResetPasswordLink(resetCode);
 
-      await this.notificationsService.notify({
+      await this.notificationsService.sendSecurityEmail({
         userId: String(user._id),
-        title: 'Reset your password',
+        subject: 'Reset your password',
         message: `Use this secure link to reset your password: ${resetUrl}`,
-        emailBody: this.buildPasswordResetEmail(user, resetUrl),
-        type: 'system',
-        category: 'system',
-        channels: ['email'],
-        metadata: {
-          source: 'forgot-password',
-        },
+        html: this.buildPasswordResetEmail(user, resetUrl),
+        templateKey: 'auth.password_reset',
       });
 
       await this.writePasswordActivity(
@@ -145,7 +140,21 @@ export class AuthPasswordService {
 
       const payload = this.jwtService.verify<ResetTokenPayload>(dto.token);
 
-      if (!payload?.userId || payload.type !== 'password-reset') {
+      if (
+        !payload?.userId ||
+        payload.type !== 'password-reset' ||
+        !payload.jti
+      ) {
+        throw new AppException(
+          ErrorCode.AUTH_INVALID_TOKEN,
+          HttpStatus.UNAUTHORIZED,
+        );
+      }
+
+      const consumeKey = `auth:password-reset:consumed:${payload.jti}`;
+      const consumeCount = await this.cache.incr(consumeKey);
+      await this.cache.expire(consumeKey, 900);
+      if (consumeCount !== 1) {
         throw new AppException(
           ErrorCode.AUTH_INVALID_TOKEN,
           HttpStatus.UNAUTHORIZED,

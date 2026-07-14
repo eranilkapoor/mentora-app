@@ -41,11 +41,21 @@ function isValidDateString(date: string): boolean {
   const [year, month, day] = date.split('-').map(Number);
   const d = new Date(year, month - 1, day);
 
-  return (
+  const isCalendarDate =
     d.getFullYear() === year &&
     d.getMonth() === month - 1 &&
-    d.getDate() === day
-  );
+    d.getDate() === day;
+  if (!isCalendarDate) return false;
+
+  const now = new Date();
+  let age = now.getFullYear() - year;
+  if (
+    now.getMonth() < month - 1 ||
+    (now.getMonth() === month - 1 && now.getDate() < day)
+  ) {
+    age -= 1;
+  }
+  return age >= 18 && age <= 100;
 }
 
 const normalizeCountryValue = ({ value }: { value: unknown }): unknown =>
@@ -251,7 +261,7 @@ export class PersonalDto {
   @IsString()
   @Matches(/^\d{4}-\d{2}-\d{2}$/, { message: 'dateOfBirth must be YYYY-MM-DD' })
   @ValidateBy({
-    name: 'isValidDate',
+    name: 'isEligibleDateOfBirth',
     validator: {
       validate: (value: string) => isValidDateString(value),
     },

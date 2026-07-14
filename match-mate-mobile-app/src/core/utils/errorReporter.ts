@@ -7,6 +7,33 @@ type ErrorReporterUser = { id?: string; email?: string; phone?: string };
 
 let initialized = false;
 
+const SENSITIVE_KEY =
+  /(?:authorization|cookie|password|secret|token|otp|code|credential|message|content|kyc|payment|email|phone|address|birth|device|ip)/i;
+
+const scrubValue = (value: unknown, depth = 0): unknown => {
+  if (depth > 8) return '[TRUNCATED]';
+  if (Array.isArray(value)) {
+    return value.map((item) => scrubValue(item, depth + 1));
+  }
+  if (value && typeof value === 'object') {
+    return Object.fromEntries(
+      Object.entries(value).map(([key, nested]) => [
+        key,
+        SENSITIVE_KEY.test(key) ? '[REDACTED]' : scrubValue(nested, depth + 1),
+      ])
+    );
+  }
+  if (typeof value !== 'string') return value;
+
+  return value
+    .replace(/bearer\s+[^\s]+/gi, 'Bearer [REDACTED]')
+    .replace(
+      /([?&](?:token|code|otp|key|secret|password)=)[^&#\s]*/gi,
+      '$1[REDACTED]'
+    )
+    .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, '[REDACTED_EMAIL]');
+};
+
 const isEnabled = (): boolean =>
   getPublicEnv('EXPO_PUBLIC_ERROR_REPORTING_ENABLED') === 'true';
 
@@ -43,6 +70,7 @@ export const initErrorReporting = (): void => {
     ),
     enableNative: true,
     debug: __DEV__,
+    beforeSend: (event) => scrubValue(event) as typeof event,
   });
 
   initialized = true;
@@ -68,7 +96,11 @@ export const reportError = (
 
   if (!isEnabled()) {
     if (__DEV__) {
-      console.error('[ErrorReporter]', normalizedError, context);
+      console.error(
+        '[ErrorReporter]',
+        normalizedError.name,
+        scrubValue(context)
+      );
     }
     return;
   }
@@ -77,19 +109,21 @@ export const reportError = (
 
   if (provider === 'sentry') {
     if (initialized) {
-      Sentry.captureException(normalizedError, { extra: context });
+      Sentry.captureException(normalizedError, {
+        extra: scrubValue(context) as ErrorContext,
+      });
     } else if (__DEV__) {
       console.warn(
         '[ErrorReporter] Sentry provider selected, but Sentry is not initialized.',
-        normalizedError,
-        context
+        normalizedError.name,
+        scrubValue(context)
       );
     }
     return;
   }
 
   if (__DEV__) {
-    console.error('[ErrorReporter]', normalizedError, context);
+    console.error('[ErrorReporter]', normalizedError.name, scrubValue(context));
   }
 };
 
@@ -97,7 +131,7 @@ export const setErrorReporterUser = (user: ErrorReporterUser | null): void => {
   if (!isEnabled() || getProvider() !== 'sentry') return;
 
   if (initialized) {
-    Sentry.setUser(user);
+    Sentry.setUser(user?.id ? { id: user.id } : null);
   } else if (__DEV__) {
     console.warn(
       '[ErrorReporter] Sentry user context skipped before initialization',

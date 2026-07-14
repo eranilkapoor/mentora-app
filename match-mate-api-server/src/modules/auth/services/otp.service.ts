@@ -1,35 +1,62 @@
-import { HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Inject, Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { randomInt } from 'crypto';
+import { createHash, createHmac, randomInt } from 'crypto';
 import { ErrorCode } from '@/common/constants';
 import { AppException } from '@/common/exceptions/app.exception';
+import { CACHE_SERVICE } from '@/common/cache/cache.constants';
+import type { ICacheService } from '@/common/cache/interfaces/cache.interface';
 import { SmsNotificationProvider } from '@/modules/notifications/providers/sms-notification.provider';
 
-type StoredOtp = {
-  code: string;
-  expiresAt: number;
-};
+export type OtpPurpose =
+  | 'phone-login'
+  | 'two-factor-enable'
+  | 'two-factor-login';
 
 @Injectable()
 export class OtpService {
-  private readonly otpStore = new Map<string, StoredOtp>();
-  private readonly otpTtlMs = 5 * 60 * 1000;
+  private readonly otpTtlSeconds = 5 * 60;
+  private readonly resendCooldownSeconds = 60;
+  private readonly maxAttempts = 5;
 
   constructor(
     private readonly configService: ConfigService,
     private readonly smsProvider: SmsNotificationProvider,
+    @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
   ) {}
 
-  async generate(country_code: string, phone: string) {
+  async generate(
+    countryCode: string,
+    phone: string,
+    purpose: OtpPurpose = 'phone-login',
+    challengeId = 'direct',
+  ) {
+    const keys = this.getKeys(countryCode, phone, purpose, challengeId);
+    const cooldownAcquired = await this.cache.setIfAbsent(
+      keys.cooldown,
+      true,
+      this.resendCooldownSeconds,
+    );
+    if (!cooldownAcquired) {
+      throw new AppException(
+        ErrorCode.AUTH_OTP_LIMIT_EXCEEDED,
+        HttpStatus.TOO_MANY_REQUESTS,
+        null,
+        undefined,
+        { reason: 'otp_resend_cooldown' },
+      );
+    }
+
     const otp = randomInt(100000, 1000000).toString();
-    this.otpStore.set(this.getKey(country_code, phone), {
-      code: otp,
-      expiresAt: Date.now() + this.otpTtlMs,
-    });
+    await this.cache.set(
+      keys.otp,
+      this.hashOtp(keys.otp, otp),
+      this.otpTtlSeconds,
+    );
+    await this.cache.del(keys.attempts);
 
     const deliveryResult = await this.smsProvider.send({
       userId: 'otp',
-      to: `+${country_code}${phone}`,
+      to: `+${countryCode}${phone}`,
       message: `Match Mate OTP: ${otp}. Valid for 5 minutes.`,
       notificationId: `otp-${Date.now()}`,
       templateKey: 'auth.phone_otp',
@@ -49,7 +76,11 @@ export class OtpService {
       !this.shouldExposeOtpForEnvironment() &&
       deliveryResult.status !== 'sent'
     ) {
-      this.otpStore.delete(this.getKey(country_code, phone));
+      await Promise.all([
+        this.cache.del(keys.otp),
+        this.cache.del(keys.attempts),
+        this.cache.del(keys.cooldown),
+      ]);
       throw new AppException(
         ErrorCode.SMS_SERVICE_FAILED,
         HttpStatus.SERVICE_UNAVAILABLE,
@@ -65,46 +96,70 @@ export class OtpService {
     return otp;
   }
 
-  verify(country_code: string, phone: string, otp: string) {
-    const key = this.getKey(country_code, phone);
-    const storedOtp = this.otpStore.get(key);
+  async verify(
+    countryCode: string,
+    phone: string,
+    otp: string,
+    purpose: OtpPurpose = 'phone-login',
+    challengeId = 'direct',
+  ): Promise<boolean> {
+    const keys = this.getKeys(countryCode, phone, purpose, challengeId);
+    const expectedHash = await this.cache.get<string>(keys.otp);
+    if (!expectedHash) return false;
 
-    if (!storedOtp) {
+    const submittedHash = this.hashOtp(keys.otp, otp);
+    if (submittedHash !== expectedHash) {
+      const attempts = await this.cache.incrementWithExpiry(
+        keys.attempts,
+        this.otpTtlSeconds,
+      );
+      if (attempts.value >= this.maxAttempts) {
+        await this.cache.del(keys.otp);
+      }
       return false;
     }
 
-    if (Date.now() > storedOtp.expiresAt) {
-      this.otpStore.delete(key);
-      return false;
+    const consumed = await this.cache.consumeIfValueMatches(
+      keys.otp,
+      expectedHash,
+    );
+    if (consumed) {
+      await this.cache.del(keys.attempts);
     }
-
-    const isValid = storedOtp.code === otp;
-
-    if (isValid) {
-      this.otpStore.delete(key);
-    }
-
-    return isValid;
+    return consumed;
   }
 
-  cleanupExpiredOtps(now = Date.now()) {
-    let removedCount = 0;
-
-    for (const [key, storedOtp] of this.otpStore.entries()) {
-      if (now > storedOtp.expiresAt) {
-        this.otpStore.delete(key);
-        removedCount += 1;
-      }
-    }
-
-    return { removedCount, remainingCount: this.otpStore.size };
+  cleanupExpiredOtps() {
+    return { removedCount: 0, remainingCount: 0 };
   }
 
   shouldExposeOtpForEnvironment(): boolean {
     return this.configService.get<string>('env') !== 'production';
   }
 
-  private getKey(country_code: string, phone: string): string {
-    return `${country_code}|${phone}`;
+  private getKeys(
+    countryCode: string,
+    phone: string,
+    purpose: OtpPurpose,
+    challengeId: string,
+  ) {
+    const destination = `${countryCode.replace(/\D/g, '')}|${phone.replace(/\D/g, '')}`;
+    const destinationHash = createHash('sha256')
+      .update(destination)
+      .digest('hex');
+    const base = `auth:otp:${purpose}:${challengeId}:${destinationHash}`;
+    return {
+      otp: base,
+      attempts: `${base}:attempts`,
+      cooldown: `${base}:cooldown`,
+    };
+  }
+
+  private hashOtp(key: string, otp: string): string {
+    const pepper = this.configService.get<string>(
+      'jwt.secret',
+      'local-otp-pepper-not-for-production',
+    );
+    return createHmac('sha256', pepper).update(`${key}:${otp}`).digest('hex');
   }
 }

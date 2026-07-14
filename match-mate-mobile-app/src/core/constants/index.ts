@@ -5,7 +5,7 @@ export const WHATSAPP_NUMBER = '919654698878';
 export const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 export const PHONE_REGEX = /^\d{6,15}$/;
 export const DEFAULT_COUNTRY_CODE = '91';
-export const PASSWORD_MIN_LENGTH = 6;
+export const PASSWORD_MIN_LENGTH = 12;
 export const PHONE_MAX_LENGTH = 10;
 export const OTP_LENGTH = 6;
 

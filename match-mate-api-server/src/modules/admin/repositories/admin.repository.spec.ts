@@ -42,7 +42,9 @@ describe('AdminRepository', () => {
     repository.findUsers(filter);
 
     expect(userModel.find).toHaveBeenCalledWith(filter);
-    expect(findChain.select).toHaveBeenCalledWith('-password -refreshToken');
+    expect(findChain.select).toHaveBeenCalledWith(
+      '-password -refreshToken -authAccounts.passwordHash',
+    );
     expect(findChain.skip).toHaveBeenCalledWith(0);
     expect(findChain.limit).toHaveBeenCalledWith(20);
     expect(findChain.sort).toHaveBeenCalledWith({ createdAt: -1 });
@@ -125,7 +127,7 @@ describe('AdminRepository', () => {
 
     expect(userModel.findById).toHaveBeenCalledWith('user-123');
     expect(findByIdChain.select).toHaveBeenCalledWith(
-      '-password -refreshToken',
+      '-password -refreshToken -authAccounts.passwordHash',
     );
     expect(findByIdChain.lean).toHaveBeenCalledTimes(1);
   });

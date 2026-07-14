@@ -1,6 +1,7 @@
 import { ExecutionContext } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { Reflector } from '@nestjs/core';
+import { Types } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
 import { Permission, Role } from '@/common/enums';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
@@ -95,42 +96,96 @@ describe('auth strategies and guards', () => {
       ),
       getOrThrow: jest.fn((key: string) => key),
     } as unknown as ConfigService;
+    const query = (value: unknown) => ({
+      select: jest.fn().mockReturnThis(),
+      lean: jest.fn().mockReturnThis(),
+      exec: jest.fn().mockResolvedValue(value),
+    });
+    const userModel = { findOne: jest.fn() };
+    const sessionModel = { findOne: jest.fn() };
 
     it('rejects a missing JWT secret', () => {
       const missing = {
         get: jest.fn(),
         getOrThrow: jest.fn(),
       } as unknown as ConfigService;
-      expect(() => new JwtStrategy(missing)).toThrow('JWT_SECRET missing');
+      expect(
+        () =>
+          new JwtStrategy(missing, userModel as never, sessionModel as never),
+      ).toThrow('JWT_SECRET missing');
     });
 
-    it('validates access payloads with and without optional claims', () => {
-      const strategy = new JwtStrategy(config);
-      expect(
-        strategy.validate({
-          sub: 'u1',
+    it('validates bound sessions and resolves current authorization state', async () => {
+      const userId = new Types.ObjectId().toString();
+      const sessionId = new Types.ObjectId().toString();
+      userModel.findOne.mockReturnValue(
+        query({
           roles: [Role.USER],
           permissions: [Permission.PROFILE_VIEW],
           membership: { tier: 'gold' },
         }),
-      ).toEqual({
-        sub: 'u1',
+      );
+      sessionModel.findOne.mockReturnValue(query({ _id: sessionId }));
+      const strategy = new JwtStrategy(
+        config,
+        userModel as never,
+        sessionModel as never,
+      );
+
+      const validated = await strategy.validate({
+        sub: userId,
+        roles: [Role.ADMIN],
+        permissions: [],
+        membership: { tier: 'free' },
+        type: 'access',
+        sid: sessionId,
+        family: 'family-1',
+      });
+      expect(validated).toMatchObject({
+        sub: userId,
         roles: [Role.USER],
-        permissions: [Permission.PROFILE_VIEW],
         membership: { tier: 'gold' },
       });
-      expect(
+      expect(validated.permissions).toContain(Permission.PROFILE_VIEW);
+    });
+
+    it('rejects malformed, revoked, and blocked access sessions', async () => {
+      const userId = new Types.ObjectId().toString();
+      const sessionId = new Types.ObjectId().toString();
+      const strategy = new JwtStrategy(
+        config,
+        userModel as never,
+        sessionModel as never,
+      );
+
+      await expect(
         strategy.validate({
-          sub: 'u2',
-          roles: undefined,
-          permissions: undefined,
-        } as never),
-      ).toEqual({
-        sub: 'u2',
-        roles: [],
-        permissions: [],
-        membership: undefined,
-      });
+          sub: 'invalid',
+          type: 'access',
+        }),
+      ).rejects.toThrow('Invalid access token');
+
+      userModel.findOne.mockReturnValue(query(null));
+      sessionModel.findOne.mockReturnValue(query({ _id: sessionId }));
+      await expect(
+        strategy.validate({
+          sub: userId,
+          type: 'access',
+          sid: sessionId,
+          family: 'family-1',
+        }),
+      ).rejects.toThrow('Session is no longer active');
+
+      userModel.findOne.mockReturnValue(query({ roles: [], permissions: [] }));
+      sessionModel.findOne.mockReturnValue(query(null));
+      await expect(
+        strategy.validate({
+          sub: userId,
+          type: 'access',
+          sid: sessionId,
+          family: 'family-1',
+        }),
+      ).rejects.toThrow('Session is no longer active');
     });
 
     it('validates refresh payloads and extracts an optional refresh token', () => {
@@ -140,14 +195,20 @@ describe('auth strategies and guards', () => {
         roles: [Role.USER],
         permissions: [Permission.PROFILE_VIEW],
         membership: { tier: 'gold' },
+        type: 'refresh' as const,
       };
       expect(
         strategy.validate({ body: { refreshToken: 'refresh' } }, payload),
       ).toEqual({
-        ...payload,
+        sub: 'u1',
+        roles: [Role.USER],
+        permissions: [Permission.PROFILE_VIEW],
+        membership: { tier: 'gold' },
         refreshToken: 'refresh',
       });
-      expect(strategy.validate({}, { sub: 'u2' } as never)).toEqual({
+      expect(
+        strategy.validate({}, { sub: 'u2', type: 'refresh' } as never),
+      ).toEqual({
         sub: 'u2',
         roles: [],
         permissions: [],

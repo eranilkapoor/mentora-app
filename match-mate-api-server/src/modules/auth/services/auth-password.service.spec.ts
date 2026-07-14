@@ -47,9 +47,12 @@ describe('AuthPasswordService', () => {
     get: jest.fn(),
     set: jest.fn(),
     del: jest.fn(),
+    incr: jest.fn(),
+    expire: jest.fn(),
   };
   const notificationsService = {
     notify: jest.fn(),
+    sendSecurityEmail: jest.fn(),
   };
 
   let service: AuthPasswordService;
@@ -62,7 +65,12 @@ describe('AuthPasswordService', () => {
     activityLogModel.create.mockResolvedValue({ _id: 'activity-1' });
     cache.set.mockResolvedValue(undefined);
     cache.del.mockResolvedValue(undefined);
+    cache.incr.mockResolvedValue(1);
+    cache.expire.mockResolvedValue(undefined);
     notificationsService.notify.mockResolvedValue({ _id: 'notification-1' });
+    notificationsService.sendSecurityEmail.mockResolvedValue({
+      status: 'sent',
+    });
 
     service = new AuthPasswordService(
       userRepo as never,
@@ -104,15 +112,16 @@ describe('AuthPasswordService', () => {
       { token: 'signed-reset-token' },
       900,
     );
-    expect(notificationsService.notify).toHaveBeenCalledWith(
+    expect(notificationsService.sendSecurityEmail).toHaveBeenCalledWith(
       expect.objectContaining({
         userId: 'user-1',
-        channels: ['email'],
+        templateKey: 'auth.password_reset',
         message: expect.stringContaining(
           'https://app.matchmate.test/reset-password?code=',
         ),
       }),
     );
+    expect(notificationsService.notify).not.toHaveBeenCalled();
     expect(activityLogModel.create).toHaveBeenCalledWith(
       expect.objectContaining({
         ip: '10.0.0.1',
@@ -134,13 +143,16 @@ describe('AuthPasswordService', () => {
         authAccounts: [{ provider: AuthProvider.EMAIL }],
       },
     ],
-  ])('rejects forgot-password for a missing email account', async (user) => {
-    userRepo.findByProvider.mockResolvedValue(user);
+  ])(
+    'returns the same forgot-password result for a missing email account',
+    async (user) => {
+      userRepo.findByProvider.mockResolvedValue(user);
 
-    await expect(
-      service.forgotPassword(request(), 'user@example.com'),
-    ).rejects.toMatchObject({ code: ErrorCode.AUTH_USER_NOT_FOUND });
-  });
+      await expect(
+        service.forgotPassword(request(), 'user@example.com'),
+      ).resolves.toEqual({ sent: true });
+    },
+  );
 
   it('maps unexpected forgot-password failures to email service failure', async () => {
     userRepo.findByProvider.mockRejectedValue(
@@ -222,6 +234,7 @@ describe('AuthPasswordService', () => {
     jwtService.verify.mockReturnValue({
       userId: 'user-1',
       type: 'password-reset',
+      jti: 'reset-jti',
     });
     userRepo.findById.mockResolvedValue(user);
 
@@ -239,6 +252,7 @@ describe('AuthPasswordService', () => {
     jwtService.verify.mockReturnValue({
       userId: 'user-1',
       type: 'password-reset',
+      jti: 'reset-jti',
     });
     userRepo.findById.mockResolvedValue(user);
 

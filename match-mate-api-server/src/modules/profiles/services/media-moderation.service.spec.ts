@@ -7,13 +7,21 @@ describe('MediaModerationService', () => {
     get: jest.fn(),
   };
 
-  const file = (mimetype: string, size: number): Express.Multer.File =>
-    ({
+  const file = (mimetype: string, size: number): Express.Multer.File => {
+    const buffer = mimetype.startsWith('video/')
+      ? Buffer.from([0, 0, 0, 0, 0x66, 0x74, 0x79, 0x70, 0, 0, 0, 0])
+      : mimetype === 'image/png'
+        ? Buffer.from([
+            0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0,
+          ])
+        : Buffer.from([0xff, 0xd8, 0xff, 0, 0, 0, 0, 0, 0, 0, 0, 0]);
+    return {
       mimetype,
       size,
       originalname: 'upload.bin',
-      buffer: Buffer.from('file'),
-    }) as Express.Multer.File;
+      buffer,
+    } as Express.Multer.File;
+  };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -48,7 +56,11 @@ describe('MediaModerationService', () => {
     const result = service.moderate(file('image/gif', 250), MediaType.VIDEO);
 
     expect(result.status).toBe(MediaModerationStatus.FLAGGED);
-    expect(result.reasons).toEqual(['unsupported_mime_type', 'file_too_large']);
+    expect(result.reasons).toEqual([
+      'unsupported_mime_type',
+      'file_signature_mismatch',
+      'file_too_large',
+    ]);
   });
 
   it('falls back to default limits when config values are invalid', () => {

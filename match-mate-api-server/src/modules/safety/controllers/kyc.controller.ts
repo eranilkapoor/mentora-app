@@ -43,7 +43,7 @@ export class KycController {
       ],
       {
         storage: memoryStorage(),
-        limits: { fileSize: 8 * 1024 * 1024 },
+        limits: { fileSize: 8 * 1024 * 1024, files: 2, fields: 5 },
       },
     ),
   )

@@ -14,6 +14,7 @@ describe('RedisCacheService', () => {
     incr: jest.fn(),
     expire: jest.fn(),
     scan: jest.fn(),
+    eval: jest.fn(),
   };
   const logger = { log: jest.fn() } as unknown as AppLogger;
   let service: RedisCacheService;
@@ -99,5 +100,36 @@ describe('RedisCacheService', () => {
 
     expect(client.expire).toHaveBeenCalledWith('counter', 10);
     expect(client.flushdb).toHaveBeenCalledTimes(1);
+  });
+
+  it('supports atomic set-if-absent and compare-and-delete operations', async () => {
+    client.set.mockResolvedValueOnce('OK').mockResolvedValueOnce(null);
+    await expect(service.setIfAbsent('lock', { id: 1 }, 30)).resolves.toBe(
+      true,
+    );
+    await expect(service.setIfAbsent('lock', { id: 1 }, 30)).resolves.toBe(
+      false,
+    );
+    expect(client.set).toHaveBeenCalledWith(
+      'lock',
+      JSON.stringify({ id: 1 }),
+      'EX',
+      30,
+      'NX',
+    );
+
+    client.eval.mockResolvedValueOnce(1).mockResolvedValueOnce(0);
+    await expect(
+      service.consumeIfValueMatches('challenge', 'value'),
+    ).resolves.toBe(true);
+    await expect(
+      service.consumeIfValueMatches('challenge', 'value'),
+    ).resolves.toBe(false);
+    expect(client.eval).toHaveBeenCalledWith(
+      expect.stringContaining("redis.call('GET', KEYS[1])"),
+      1,
+      'challenge',
+      JSON.stringify('value'),
+    );
   });
 });

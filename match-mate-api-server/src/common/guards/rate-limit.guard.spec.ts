@@ -14,7 +14,11 @@ describe('RateLimitGuard', () => {
   };
   const logger = { warn: jest.fn() };
   const reflector = { getAllAndOverride: jest.fn() };
-  const cache = { get: jest.fn(), set: jest.fn() };
+  const cache = {
+    get: jest.fn(),
+    set: jest.fn(),
+    incrementWithExpiry: jest.fn(),
+  };
   const response = { setHeader: jest.fn() };
 
   const createContext = (requestOverrides: Record<string, unknown> = {}) => {
@@ -48,11 +52,19 @@ describe('RateLimitGuard', () => {
     );
     cache.get.mockResolvedValue(null);
     cache.set.mockResolvedValue(undefined);
+    cache.incrementWithExpiry.mockResolvedValue({
+      value: 1,
+      ttlSeconds: 60,
+    });
     guard = new RateLimitGuard(
       logger as never,
       reflector as unknown as Reflector,
       cache as never,
     );
+  });
+
+  afterEach(() => {
+    jest.restoreAllMocks();
   });
 
   it('allows explicitly skipped routes', async () => {
@@ -83,9 +95,8 @@ describe('RateLimitGuard', () => {
 
     await expect(guard.canActivate(context)).resolves.toBe(true);
 
-    expect(cache.set).toHaveBeenCalledWith(
+    expect(cache.incrementWithExpiry).toHaveBeenCalledWith(
       'rate-limit:login:POST:/auth/login:127.0.0.1',
-      { count: 1, expiresAt: 61_000 },
       60,
     );
     expect(response.setHeader).toHaveBeenCalledWith('X-RateLimit-Limit', 2);
@@ -118,34 +129,32 @@ describe('RateLimitGuard', () => {
     expect(response.setHeader).toHaveBeenCalledWith('X-RateLimit-Limit', 2);
   });
 
-  it('increments an existing entry with its remaining TTL', async () => {
+  it('uses the TTL returned by the atomic counter', async () => {
     jest.spyOn(Date, 'now').mockReturnValue(1_000);
-    cache.get
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ count: 1, expiresAt: 31_000 });
+    cache.incrementWithExpiry.mockResolvedValue({
+      value: 2,
+      ttlSeconds: 30,
+    });
 
     await guard.canActivate(createContext({ route: { path: 42 } }).context);
 
-    expect(cache.set).toHaveBeenCalledWith(
+    expect(cache.incrementWithExpiry).toHaveBeenCalledWith(
       expect.stringContaining(':loginHandler:'),
-      { count: 2, expiresAt: 31_000 },
-      30,
+      60,
     );
+    expect(response.setHeader).toHaveBeenCalledWith('X-RateLimit-Reset', 31);
   });
 
-  it('falls back to configured TTL when an existing entry has expired', async () => {
-    jest.spyOn(Date, 'now').mockReturnValue(10_000);
-    cache.get
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ count: 0, expiresAt: 9_000 });
+  it('clamps an unavailable counter TTL to zero', async () => {
+    jest.spyOn(Date, 'now').mockReturnValue(1_000);
+    cache.incrementWithExpiry.mockResolvedValue({
+      value: 1,
+      ttlSeconds: -1,
+    });
 
     await guard.canActivate(createContext({ route: 'invalid' }).context);
 
-    expect(cache.set).toHaveBeenCalledWith(
-      expect.any(String),
-      { count: 1, expiresAt: 9_000 },
-      60,
-    );
+    expect(response.setHeader).toHaveBeenCalledWith('X-RateLimit-Reset', 1);
   });
 
   it('rejects identifiers already under a temporary block', async () => {
@@ -158,9 +167,10 @@ describe('RateLimitGuard', () => {
 
   it('blocks abusive identifiers and returns retry metadata at the limit', async () => {
     jest.spyOn(Date, 'now').mockReturnValue(1_000);
-    cache.get
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ count: 5, expiresAt: 11_000 });
+    cache.incrementWithExpiry.mockResolvedValue({
+      value: 5,
+      ttlSeconds: 10,
+    });
 
     await expect(
       guard.canActivate(createContext().context),
@@ -185,47 +195,21 @@ describe('RateLimitGuard', () => {
   ])('uses the available network identifier', async (overrides, identifier) => {
     await guard.canActivate(createContext(overrides).context);
 
-    expect(cache.set).toHaveBeenCalledWith(
+    expect(cache.incrementWithExpiry).toHaveBeenCalledWith(
       expect.stringMatching(`${identifier}$`),
-      expect.any(Object),
-      expect.any(Number),
+      60,
     );
   });
 
-  it('serializes concurrent requests for the same key', async () => {
-    let releaseFirst!: (value: null) => void;
-    const firstRead = new Promise<null>((resolve) => {
-      releaseFirst = resolve;
-    });
-    cache.get
-      .mockImplementationOnce(() => firstRead)
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce(null);
+  it('delegates concurrent requests to the atomic cache primitive', async () => {
+    cache.incrementWithExpiry
+      .mockResolvedValueOnce({ value: 1, ttlSeconds: 60 })
+      .mockResolvedValueOnce({ value: 2, ttlSeconds: 60 });
     const context = createContext({ user: { sub: 'user-1' } }).context;
 
-    const first = guard.canActivate(context);
-    const second = guard.canActivate(context);
-    await Promise.resolve();
-    expect(cache.set).not.toHaveBeenCalled();
-
-    releaseFirst(null);
-    await expect(Promise.all([first, second])).resolves.toEqual([true, true]);
-    expect(cache.set).toHaveBeenCalledTimes(2);
-  });
-
-  it('clears an unexpectedly oversized lock map during release', async () => {
-    const internals = guard as unknown as {
-      locks: Map<string, Promise<void>>;
-      acquireLock(key: string): Promise<() => void>;
-    };
-    const release = await internals.acquireLock('active');
-    for (let index = 0; index <= 10_000; index += 1) {
-      internals.locks.set(`stale-${index}`, Promise.resolve());
-    }
-
-    release();
-
-    expect(internals.locks.size).toBe(0);
+    await expect(
+      Promise.all([guard.canActivate(context), guard.canActivate(context)]),
+    ).resolves.toEqual([true, true]);
+    expect(cache.incrementWithExpiry).toHaveBeenCalledTimes(2);
   });
 });

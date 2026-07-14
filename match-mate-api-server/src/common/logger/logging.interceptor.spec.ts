@@ -24,10 +24,11 @@ describe('LoggingInterceptor', () => {
 
   afterEach(() => jest.restoreAllMocks());
 
-  it('redacts every sensitive field and logs a successful response', async () => {
+  it('logs request metadata without request bodies or query strings', async () => {
     const request = {
       method: 'POST',
-      url: '/auth/login',
+      url: '/auth/login?token=query-secret',
+      path: '/auth/login',
       headers: {
         'x-correlation-id': 'corr-1',
         'x-request-id': 'req-1',
@@ -58,17 +59,12 @@ describe('LoggingInterceptor', () => {
       'REQUEST',
       expect.objectContaining({
         correlationId: 'corr-1',
-        body: {
-          email: 'user@example.com',
-          password: '***REDACTED***',
-          token: '***REDACTED***',
-          creditCard: '***REDACTED***',
-          cvv: '***REDACTED***',
-          ssn: '***REDACTED***',
-          secret: '***REDACTED***',
-          authorization: '***REDACTED***',
-        },
+        url: '/auth/login',
       }),
+    );
+    expect(JSON.stringify(logger.log.mock.calls[0])).not.toContain('"body"');
+    expect(JSON.stringify(logger.log.mock.calls[0])).not.toContain(
+      'query-secret',
     );
     expect(logger.log).toHaveBeenNthCalledWith(
       2,
@@ -81,6 +77,7 @@ describe('LoggingInterceptor', () => {
     const request = {
       method: 'GET',
       url: '/health',
+      path: '/health',
       headers: {},
       body: undefined,
     };
@@ -98,7 +95,6 @@ describe('LoggingInterceptor', () => {
         clientVersion: 'unknown',
         platform: 'unknown',
         deviceId: 'unknown',
-        body: {},
       }),
     );
   });
@@ -109,6 +105,7 @@ describe('LoggingInterceptor', () => {
       const request = {
         method: 'GET',
         url: '/failure',
+        path: '/failure',
         headers: {},
         body: {},
       };
@@ -125,7 +122,7 @@ describe('LoggingInterceptor', () => {
         'ERROR',
         expect.any(String),
         expect.objectContaining({
-          error: failure instanceof Error ? 'failed' : 'provider failed',
+          errorType: 'Error',
           duration: '25ms',
         }),
       );

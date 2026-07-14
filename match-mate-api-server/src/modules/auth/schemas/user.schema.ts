@@ -27,7 +27,7 @@ export class AuthAccount {
   @Prop({ required: true })
   providerId!: string;
 
-  @Prop()
+  @Prop({ select: false })
   passwordHash?: string;
 
   @Prop({ default: false })

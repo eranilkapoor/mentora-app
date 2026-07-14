@@ -25,7 +25,10 @@ describe('PaymentRepository', () => {
     create: jest.fn(),
     findOne: jest.fn(() => query),
     countDocuments: jest.fn(() => countQuery),
-    findOneAndUpdate: jest.fn(() => query),
+    findOneAndUpdate: jest.fn((...args: unknown[]) => {
+      void args;
+      return query;
+    }),
     find: jest.fn(() => query),
     aggregate: jest.fn(() => aggregateQuery),
     updateMany: jest.fn(() => query),
@@ -89,6 +92,22 @@ describe('PaymentRepository', () => {
     await repository.expireStalePending(new Date());
     await repository.attachInvoice('order-1', new Types.ObjectId());
     expect(model.findOneAndUpdate).toHaveBeenCalledTimes(4);
+    const successFilter = model.findOneAndUpdate.mock.calls[0]?.[0] as {
+      orderId: string;
+      status: { $in: PaymentStatus[] };
+    };
+    const failureFilter = model.findOneAndUpdate.mock.calls[1]?.[0] as {
+      status: { $in: PaymentStatus[] };
+    };
+    expect(successFilter.orderId).toBe('order-1');
+    expect(successFilter.status.$in).toContain(PaymentStatus.PENDING);
+    expect(failureFilter.status.$in).not.toContain(PaymentStatus.SUCCESS);
+    expect(model.findOneAndUpdate).toHaveBeenNthCalledWith(
+      3,
+      { orderId: 'order-1', status: PaymentStatus.SUCCESS },
+      expect.any(Object),
+      { new: true },
+    );
     expect(model.updateMany).toHaveBeenCalled();
   });
 

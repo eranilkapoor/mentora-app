@@ -91,7 +91,17 @@ export class PaymentRepository {
   }) {
     return this.model
       .findOneAndUpdate(
-        { orderId: params.orderId },
+        {
+          orderId: params.orderId,
+          status: {
+            $in: [
+              PaymentStatus.INITIATED,
+              PaymentStatus.PENDING,
+              PaymentStatus.PROCESSING,
+              PaymentStatus.FAILED,
+            ],
+          },
+        },
         {
           $set: {
             status: PaymentStatus.SUCCESS,
@@ -123,7 +133,16 @@ export class PaymentRepository {
   }) {
     return this.model
       .findOneAndUpdate(
-        { orderId: params.orderId },
+        {
+          orderId: params.orderId,
+          status: {
+            $in: [
+              PaymentStatus.INITIATED,
+              PaymentStatus.PENDING,
+              PaymentStatus.PROCESSING,
+            ],
+          },
+        },
         {
           $set: {
             status: PaymentStatus.FAILED,
@@ -144,7 +163,7 @@ export class PaymentRepository {
   markRefunded(orderId: string, gatewayPayload?: Record<string, unknown>) {
     return this.model
       .findOneAndUpdate(
-        { orderId },
+        { orderId, status: PaymentStatus.SUCCESS },
         {
           $set: {
             status: PaymentStatus.REFUNDED,

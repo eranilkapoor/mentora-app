@@ -568,13 +568,13 @@ describe('MatchesService', () => {
     expect(privateResult).toMatchObject({
       images: [],
       personal: expect.objectContaining({
-        lastName: undefined,
         hobbies: [],
         languages: [],
       }),
-      physical: undefined,
       relationship: { interestDirection: undefined },
     });
+    expect((privateResult as any).personal).not.toHaveProperty('lastName');
+    expect(privateResult).not.toHaveProperty('physical');
   });
 
   it('covers visibility and match-expiry policy branches', () => {

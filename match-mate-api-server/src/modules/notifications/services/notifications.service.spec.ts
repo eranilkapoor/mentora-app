@@ -178,6 +178,30 @@ describe('NotificationsService', () => {
     });
   });
 
+  it('sends security email without persistence, queue, or realtime delivery', async () => {
+    await expect(
+      service.sendSecurityEmail({
+        userId,
+        subject: 'Reset password',
+        message: 'Secret link',
+        html: '<p>Secret link</p>',
+        templateKey: 'auth.password_reset',
+      }),
+    ).resolves.toEqual({ status: 'sent', provider: 'ses' });
+
+    expect(emailProvider.send).toHaveBeenCalledWith(
+      expect.objectContaining({
+        userId,
+        to: 'user@test.com',
+        message: '<p>Secret link</p>',
+        templateKey: 'auth.password_reset',
+      }),
+    );
+    expect(notificationRepo.create).not.toHaveBeenCalled();
+    expect(queueService.enqueueDispatch).not.toHaveBeenCalled();
+    expect(realtime.emitToUser).not.toHaveBeenCalled();
+  });
+
   it('returns recent duplicate notification for matching dedupe key', async () => {
     const duplicate = { _id: 'duplicate-1' };
     notificationRepo.findRecentByDedupeKey.mockResolvedValue(duplicate);

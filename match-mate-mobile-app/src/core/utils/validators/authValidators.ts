@@ -25,8 +25,8 @@ export const validateLogin = (data: { email: string; password: string }) => {
     errors.email = 'Invalid email';
   }
 
-  if (!validatePassword(data.password)) {
-    errors.password = 'Password too short';
+  if (isEmpty(data.password)) {
+    errors.password = 'Password is required';
   }
 
   return errors;

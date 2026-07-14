@@ -12,7 +12,13 @@ import { AuthProvider } from '../enums/auth-provider.enum';
 import { AuthTwoFactorService } from './auth-two-factor.service';
 
 describe('AuthTwoFactorService', () => {
-  const cache = { get: jest.fn(), set: jest.fn(), del: jest.fn() };
+  const cache = {
+    get: jest.fn(),
+    set: jest.fn(),
+    del: jest.fn(),
+    consumeIfValueMatches: jest.fn(),
+    incrementWithExpiry: jest.fn(),
+  };
   const userModel = { findById: jest.fn() };
   const securityModel = {
     findOneAndUpdate: jest.fn(),
@@ -46,6 +52,11 @@ describe('AuthTwoFactorService', () => {
     cache.get.mockResolvedValue(null);
     cache.set.mockResolvedValue(undefined);
     cache.del.mockResolvedValue(undefined);
+    cache.consumeIfValueMatches.mockResolvedValue(true);
+    cache.incrementWithExpiry.mockResolvedValue({
+      value: 1,
+      ttlSeconds: 300,
+    });
     userModel.findById.mockReturnValue(userQuery(verifiedUser()));
     securityModel.findOneAndUpdate.mockResolvedValue(settings);
     securityModel.updateOne.mockResolvedValue({ modifiedCount: 1 });
@@ -292,7 +303,14 @@ describe('AuthTwoFactorService', () => {
     ).resolves.toMatchObject({
       method: TwoFactorMethod.AUTHENTICATOR,
     });
-    expect(cache.del).toHaveBeenCalled();
+    expect(cache.consumeIfValueMatches).toHaveBeenCalledWith(
+      'auth:2fa:challenge',
+      JSON.stringify(authenticatorChallenge),
+    );
+    cache.consumeIfValueMatches.mockResolvedValue(false);
+    await expect(
+      service.consumeChallenge('challenge', code),
+    ).rejects.toMatchObject({ code: ErrorCode.AUTH_SESSION_EXPIRED });
   });
 
   it('consumes SMS challenges and rejects malformed/invalid/unknown methods', async () => {
@@ -329,6 +347,30 @@ describe('AuthTwoFactorService', () => {
     ).rejects.toMatchObject({
       code: ErrorCode.AUTH_INVALID_OTP,
     });
+  });
+
+  it('invalidates a challenge after five failed verification attempts', async () => {
+    const challenge = {
+      userId,
+      provider: AuthProvider.EMAIL,
+      source: 'login',
+      method: TwoFactorMethod.AUTHENTICATOR,
+      createdAt: new Date().toISOString(),
+    };
+    cache.get.mockResolvedValue(JSON.stringify(challenge));
+    cache.incrementWithExpiry.mockResolvedValue({
+      value: 5,
+      ttlSeconds: 120,
+    });
+
+    await expect(
+      service.consumeChallenge('locked-challenge', 'invalid'),
+    ).rejects.toMatchObject({ code: ErrorCode.AUTH_INVALID_OTP });
+    expect(cache.incrementWithExpiry).toHaveBeenCalledWith(
+      'auth:2fa:locked-challenge:attempts',
+      300,
+    );
+    expect(cache.del).toHaveBeenCalledWith('auth:2fa:locked-challenge');
   });
 
   it('covers identity, phone, Base32, recovery, and challenge helper boundaries', async () => {

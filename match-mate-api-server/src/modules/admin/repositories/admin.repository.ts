@@ -18,7 +18,7 @@ export class AdminRepository {
   findUsers(filter: FilterQuery<UserDocument>, skip = 0, limit = 20) {
     return this.userModel
       .find(filter)
-      .select('-password -refreshToken')
+      .select('-password -refreshToken -authAccounts.passwordHash')
       .skip(skip)
       .limit(limit)
       .sort({ createdAt: -1 })
@@ -54,7 +54,7 @@ export class AdminRepository {
   findUserById(userId: string) {
     return this.userModel
       .findById(userId)
-      .select('-password -refreshToken')
+      .select('-password -refreshToken -authAccounts.passwordHash')
       .lean();
   }
 

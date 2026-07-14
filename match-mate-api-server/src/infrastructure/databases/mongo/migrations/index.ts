@@ -2,6 +2,7 @@ import addPaymentStoreTransactionIndex from './202606220001-add-payment-store-tr
 import addSubscriptionPurchaseTokenIndex from './202607040001-add-subscription-purchase-token-index.migration';
 import movePersonalAstroToReligiousDetails from './202607090001-move-personal-astro-to-religious-details.migration';
 import alignNotificationEmailDefaults from './202607130001-align-notification-email-defaults.migration';
+import hashRefreshSessions from './202607140001-hash-refresh-sessions.migration';
 import type { MongoMigration } from './migration.interface';
 
 export const MONGO_MIGRATIONS: readonly MongoMigration[] = [
@@ -9,4 +10,5 @@ export const MONGO_MIGRATIONS: readonly MongoMigration[] = [
   addSubscriptionPurchaseTokenIndex,
   movePersonalAstroToReligiousDetails,
   alignNotificationEmailDefaults,
+  hashRefreshSessions,
 ];

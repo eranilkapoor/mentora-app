@@ -5,6 +5,7 @@ import { AppException } from '@/common/exceptions/app.exception';
 import { HttpStatus } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { MediaService } from './media.service';
+import { MediaModerationStatus } from '../enums/profile-media.enums';
 
 describe('MediaService', () => {
   const userId = new Types.ObjectId().toString();
@@ -87,7 +88,7 @@ describe('MediaService', () => {
       upload_videos: 1,
     });
     moderationService.moderate.mockReturnValue({
-      status: 'APPROVED',
+      status: MediaModerationStatus.APPROVED,
       reasons: [],
       metadata: { source: 'test' },
     });
@@ -120,7 +121,7 @@ describe('MediaService', () => {
       expect.objectContaining({
         type: MediaType.IMAGE,
         isPrimary: true,
-        moderationStatus: 'APPROVED',
+        moderationStatus: MediaModerationStatus.APPROVED,
       }),
     ]);
     expect(cache.del).toHaveBeenCalledTimes(3);

@@ -27,6 +27,7 @@ import {
 } from '@/common/cache/cache.constants';
 import { AppService } from './app.service';
 import { StorageService } from './modules/storage/services/storage.service';
+import { ErrorCode } from './common/constants';
 
 const SHUTDOWN_TIMEOUT_MS = 10_000;
 
@@ -156,6 +157,7 @@ async function bootstrap(): Promise<void> {
       'X-Correlation-ID',
       'X-Request-ID',
       'X-Client-Version',
+      'X-Environment',
       'X-Platform',
       'X-Device-ID',
       'X-Refresh-Token',
@@ -202,6 +204,34 @@ async function bootstrap(): Promise<void> {
   const apiVersion = configService.getOrThrow<string>('api.version');
   const env = configService.get<string>('env', 'development');
 
+  const acceptedClientEnvironments = new Set(
+    env === 'staging' ? ['staging', 'preview'] : [env],
+  );
+  app.use(
+    (
+      request: express.Request,
+      response: express.Response,
+      next: express.NextFunction,
+    ) => {
+      const platform = request.header('X-Platform');
+      if (!platform) return next();
+
+      const clientEnvironment = request.header('X-Environment');
+      if (
+        clientEnvironment &&
+        acceptedClientEnvironments.has(clientEnvironment.toLowerCase())
+      ) {
+        return next();
+      }
+
+      response.status(403).json({
+        statusCode: 403,
+        message: 'Client environment is not authorized for this API.',
+        error: 'Forbidden',
+      });
+    },
+  );
+
   app.enableVersioning({
     type: VersioningType.URI,
     defaultVersion: apiVersion,
@@ -240,6 +270,15 @@ async function bootstrap(): Promise<void> {
     .get<string>('storage.awsS3BaseUrl', '')
     .replace(/\/+$/, '');
   const uploadsPath = path.join(process.cwd(), 'uploads');
+
+  app.use('/uploads/kyc', (_req: express.Request, res: express.Response) => {
+    res.setHeader('Cache-Control', 'no-store');
+    res.status(404).json({
+      success: false,
+      code: ErrorCode.FILE_NOT_FOUND,
+      message: 'File not found',
+    });
+  });
 
   if (storageDriver === 's3' && s3BaseUrl) {
     const storageService = app.get(StorageService);

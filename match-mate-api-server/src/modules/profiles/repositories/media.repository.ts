@@ -119,8 +119,14 @@ export class MediaRepository {
       { $set: { isPrimary: false } },
     );
 
-    return this.mediaModel.findByIdAndUpdate(
-      mediaId,
+    return this.mediaModel.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(mediaId),
+        userId: new Types.ObjectId(userId),
+        type,
+        status: MediaStatus.ACTIVE,
+        isActive: true,
+      },
       { $set: { isPrimary: true } },
       { new: true },
     );

@@ -89,7 +89,12 @@ export class FeatureService {
       typeof feature.value === 'number' &&
       feature.value !== -1
     ) {
-      await this.checkUsageLimit(userId, featureKey, feature.value);
+      await this.checkUsageLimit(
+        userId,
+        featureKey,
+        feature.value,
+        featureKey === FeatureKey.MESSAGE_LIMIT ? 'month' : 'day',
+      );
     }
 
     return { allowed: true };
@@ -103,18 +108,25 @@ export class FeatureService {
     limit: number,
     window: UsageWindow = 'day',
   ): Promise<void> {
-    const key = `usage:${userId}:${featureKey}:${this.getWindowKey(window)}`;
-    const current = await this.cache.get<number>(key);
+    if (!Number.isFinite(limit) || limit <= 0) {
+      return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
+        reason: 'feature_limit_reached',
+        limit,
+      });
+    }
 
-    if (current !== null && current !== undefined && current >= limit) {
+    const key = `usage:${userId}:${featureKey}:${this.getWindowKey(window)}`;
+    const counter = await this.cache.incrementWithExpiry(
+      key,
+      this.getUsageTtl(window),
+    );
+
+    if (counter.value > limit) {
       return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
         reason: 'daily_feature_limit_reached',
         limit,
       });
     }
-
-    await this.cache.incr(key);
-    await this.cache.expire(key, this.getUsageTtl(window));
   }
 
   async checkUniqueUsageLimit(

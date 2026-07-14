@@ -13,6 +13,7 @@ import { ProfileBoostService } from '@/modules/subscriptions/services/profile-bo
 import { ErrorCode } from '@/common/constants';
 import { throwBadRequest } from '@/common/exceptions/throw-app-exception';
 import { MatchCompatibilityService } from './match-compatibility.service';
+import { presentProfileSummary } from '../presenters/profile-response.presenter';
 
 @Injectable()
 export class MatchDiscoveryService {
@@ -666,7 +667,7 @@ export class MatchDiscoveryService {
   ) {
     return {
       success: true,
-      data,
+      data: data.map((item) => presentProfileSummary(item)),
       meta: {
         total,
         page,

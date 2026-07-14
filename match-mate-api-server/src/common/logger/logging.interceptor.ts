@@ -11,8 +11,7 @@ import { AppLogger } from './logger.service';
 
 type ApiRequest = {
   method: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  url: string;
-  body?: Record<string, unknown>;
+  path: string;
 };
 
 interface RequestHeaders {
@@ -41,7 +40,6 @@ interface RequestLog {
   referer: string;
   userId: string;
   timestamp: string;
-  body: Record<string, unknown>;
 }
 
 interface ResponseLog {
@@ -61,25 +59,12 @@ interface ErrorLog {
   requestId: string;
   method: string;
   url: string;
-  error: string;
+  errorType: string;
   stack?: string;
   duration: string;
   timestamp: string;
 }
 
-type SanitizedBody = Record<string, unknown>;
-
-const SENSITIVE_FIELDS = [
-  'password',
-  'token',
-  'creditCard',
-  'cvv',
-  'ssn',
-  'secret',
-  'authorization',
-] as const;
-
-const REDACTED = '***REDACTED***';
 const UNKNOWN = 'unknown';
 
 @Injectable()
@@ -88,7 +73,8 @@ export class LoggingInterceptor implements NestInterceptor {
 
   intercept(context: ExecutionContext, next: CallHandler): Observable<unknown> {
     const request = context.switchToHttp().getRequest<Request>();
-    const { method, url, body } = request as ApiRequest;
+    const { method, path } = request as ApiRequest;
+    const url = path || '/';
     const headers = request.headers as RequestHeaders;
 
     const correlationId = headers['x-correlation-id'] ?? UNKNOWN;
@@ -121,7 +107,6 @@ export class LoggingInterceptor implements NestInterceptor {
       referer: request.headers.referer || UNKNOWN,
       userId,
       timestamp: new Date().toISOString(),
-      body: this.sanitizeBody(body as Record<string, unknown>),
     };
 
     this.logger.log('REQUEST', requestLog);
@@ -147,7 +132,8 @@ export class LoggingInterceptor implements NestInterceptor {
         },
         error: (error: unknown) => {
           const duration = Date.now() - startTime;
-          const err = error instanceof Error ? error : new Error(String(error));
+          const err =
+            error instanceof Error ? error : new Error('Unknown error');
 
           const errorLog: ErrorLog = {
             type: 'ERROR',
@@ -155,7 +141,7 @@ export class LoggingInterceptor implements NestInterceptor {
             requestId,
             method,
             url,
-            error: err.message,
+            errorType: err.name || 'Error',
             stack: err.stack,
             duration: `${duration}ms`,
             timestamp: new Date().toISOString(),
@@ -165,20 +151,6 @@ export class LoggingInterceptor implements NestInterceptor {
         },
       }),
     );
-  }
-
-  private sanitizeBody(body: Record<string, unknown>): SanitizedBody {
-    if (!body || typeof body !== 'object') return {};
-
-    const sanitized: SanitizedBody = { ...body };
-
-    for (const field of SENSITIVE_FIELDS) {
-      if (field in sanitized) {
-        sanitized[field] = REDACTED;
-      }
-    }
-
-    return sanitized;
   }
 
   private getUserId(user: Express.User | undefined): string {

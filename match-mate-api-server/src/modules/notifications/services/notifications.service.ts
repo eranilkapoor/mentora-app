@@ -208,6 +208,31 @@ export class NotificationsService {
     return notification;
   }
 
+  async sendSecurityEmail(input: {
+    userId: string;
+    subject: string;
+    message: string;
+    html?: string;
+    templateKey: string;
+  }) {
+    const user = await this.notificationRepo.findUserById(input.userId);
+    if (!user?.email) {
+      return throwNotFound(ErrorCode.USER_NOT_FOUND, {
+        reason: 'security_email_recipient_not_found',
+      });
+    }
+
+    return this.emailProvider.send({
+      notificationId: `security-${input.templateKey}-${Date.now()}`,
+      userId: input.userId,
+      to: user.email,
+      subject: input.subject,
+      title: input.subject,
+      message: input.html ?? input.message,
+      templateKey: input.templateKey,
+    });
+  }
+
   getUserNotifications(userId: string, query: ListNotificationsDto) {
     return this.notificationRepo.findByUser(userId, {
       page: query.page ?? 1,

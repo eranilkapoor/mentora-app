@@ -145,16 +145,6 @@ export default function SecuritySettingsScreen({
               void handleToggle('biometricEnabled', v);
             }}
           />
-          <SettingsToggleItem
-            icon="hash"
-            label={t('settings.security.app_pin')}
-            sublabel={t('settings.security.app_pin_sub')}
-            value={settings?.appPinEnabled ?? false}
-            isLast
-            onChange={(v) => {
-              void handleToggle('appPinEnabled', v);
-            }}
-          />
         </SettingsCard>
 
         {/* Login Alerts */}

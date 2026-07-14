@@ -400,10 +400,6 @@ export function useMembershipActions() {
           purpose: 'profile_boost',
           idempotencyKey: `boost-${selectedPlanItem.source._id}-${Date.now()}`,
           description: t('membership.boost.title'),
-          metadata: {
-            durationHours: 24,
-            multiplier: 1.25,
-          },
         }).unwrap();
 
         showSuccess({

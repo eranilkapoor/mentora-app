@@ -11,8 +11,10 @@ import {
 } from '@nestjs/common';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
+import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
+import { Permissions } from '@/common/decorators/permissions.decorator';
 import { Roles } from '@/common/decorators/roles.decorator';
-import { Role } from '@/common/enums';
+import { Permission, Role } from '@/common/enums';
 import { SuccessCode } from '@/common/constants';
 import { successResponse } from '@/common/utils/response.util';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
@@ -36,7 +38,7 @@ const MODERATION_ROLES = [
 ];
 
 @Controller('admin/moderation')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard, RolesGuard, PermissionsGuard)
 @Roles(...MODERATION_ROLES)
 export class AdminModerationController {
   constructor(
@@ -48,6 +50,11 @@ export class AdminModerationController {
   ) {}
 
   @Get('queue')
+  @Permissions(
+    Permission.MEDIA_VIEW,
+    Permission.CHAT_VIEW,
+    Permission.PROFILE_VIEW,
+  )
   async getUnifiedQueue() {
     return successResponse(
       await this.adminService.getModerationQueue(),
@@ -56,6 +63,7 @@ export class AdminModerationController {
   }
 
   @Get('media')
+  @Permissions(Permission.MEDIA_VIEW)
   async getMediaQueue(@Query('limit') limit?: string) {
     return successResponse(
       await this.mediaService.getReviewQueue(limit ? Number(limit) : undefined),
@@ -64,6 +72,7 @@ export class AdminModerationController {
   }
 
   @Patch('media/:mediaId/review')
+  @Permissions(Permission.MEDIA_APPROVE, Permission.MEDIA_REJECT)
   async reviewMedia(
     @Req() req: AuthenticatedRequest,
     @Param('mediaId') mediaId: string,
@@ -88,6 +97,7 @@ export class AdminModerationController {
   }
 
   @Get('chat')
+  @Permissions(Permission.CHAT_VIEW)
   async getChatModerationQueue(
     @Query('status')
     status: ChatModerationStatus = ChatModerationStatus.FLAGGED,
@@ -103,6 +113,7 @@ export class AdminModerationController {
   }
 
   @Patch('chat/:messageId/review')
+  @Permissions(Permission.CHAT_MODERATE)
   async reviewChatMessage(
     @Req() req: AuthenticatedRequest,
     @Param('messageId') messageId: string,
@@ -127,6 +138,7 @@ export class AdminModerationController {
   }
 
   @Get('kyc')
+  @Permissions(Permission.PROFILE_VIEW, Permission.PROFILE_VERIFY)
   async getKycQueue(
     @Query('status') status: VerificationStatus = VerificationStatus.PENDING,
   ) {
@@ -137,6 +149,7 @@ export class AdminModerationController {
   }
 
   @Post('kyc/:userId/review')
+  @Permissions(Permission.PROFILE_VERIFY)
   async reviewKyc(
     @Req() req: AuthenticatedRequest,
     @Param('userId') userId: string,

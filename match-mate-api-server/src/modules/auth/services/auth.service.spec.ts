@@ -18,6 +18,12 @@ jest.mock('bcryptjs', () => ({
 
 const USER_ID = new Types.ObjectId().toString();
 const SESSION_ID = new Types.ObjectId().toString();
+const refreshPayload = (sub = USER_ID) => ({
+  sub,
+  type: 'refresh',
+  sid: SESSION_ID,
+  family: 'family-1',
+});
 
 const request = (overrides: Record<string, unknown> = {}) =>
   ({ headers: {}, ...overrides }) as never;
@@ -84,6 +90,7 @@ const createFixture = () => {
     get: jest.fn(),
     has: jest.fn(),
     del: jest.fn(),
+    consumeIfValueMatches: jest.fn(),
   };
   const userSessionModel = {
     find: jest.fn(),
@@ -98,7 +105,10 @@ const createFixture = () => {
   const activityLogModel = { create: jest.fn() };
   const securitySettingModel = { findOne: jest.fn() };
   const mediaModel = { findOne: jest.fn(), create: jest.fn() };
-  const notificationsService = { notify: jest.fn() };
+  const notificationsService = {
+    notify: jest.fn(),
+    sendSecurityEmail: jest.fn(),
+  };
   const analyticsService = { trackEvent: jest.fn() };
   const authPasswordService = {
     forgotPassword: jest.fn(),
@@ -128,6 +138,11 @@ const createFixture = () => {
     'authSecurity.maxConcurrentSessions': 5,
     'authSecurity.suspiciousLoginDetectionEnabled': true,
     'app.webUrl': 'https://app.matchmate.test',
+    'jwt.secret': 'access-secret-access-secret-access-secret',
+    'jwt.refreshSecret': 'refresh-secret-refresh-secret-refresh',
+    'jwt.audience': 'user',
+    'jwt.refreshAudience': 'user-refresh',
+    'jwt.issuer': 'matchmate-api',
     env: 'development',
   };
   const configService = {
@@ -174,9 +189,14 @@ const createFixture = () => {
   cache.set.mockResolvedValue(undefined);
   cache.has.mockResolvedValue(true);
   cache.del.mockResolvedValue(undefined);
+  cache.consumeIfValueMatches.mockResolvedValue(true);
   userSessionModel.find.mockReturnValue(queryChain([]));
   userSessionModel.create.mockResolvedValue({
     _id: new Types.ObjectId(SESSION_ID),
+  });
+  userSessionModel.findOneAndUpdate.mockResolvedValue({
+    _id: new Types.ObjectId(SESSION_ID),
+    tokenFamilyId: 'family-1',
   });
   planModel.findOneAndUpdate.mockResolvedValue({
     _id: new Types.ObjectId(),
@@ -186,6 +206,7 @@ const createFixture = () => {
   securitySettingModel.findOne.mockReturnValue(queryChain(null));
   mediaModel.findOne.mockReturnValue(queryChain(null));
   notificationsService.notify.mockResolvedValue({});
+  notificationsService.sendSecurityEmail.mockResolvedValue({ status: 'sent' });
   analyticsService.trackEvent.mockResolvedValue({});
   authTwoFactorService.beginChallenge.mockResolvedValue(null);
 
@@ -440,10 +461,9 @@ describe('AuthService', () => {
     const f = createFixture();
     const session = {
       _id: new Types.ObjectId(SESSION_ID),
-      refreshToken: 'old',
-      save: jest.fn(),
+      tokenFamilyId: 'family-1',
     };
-    f.jwtService.verify.mockReturnValue({ sub: USER_ID });
+    f.jwtService.verify.mockReturnValue(refreshPayload());
     f.userSessionModel.findOne.mockResolvedValue(session);
     const res = response();
     const result = await f.service.refresh(
@@ -451,15 +471,15 @@ describe('AuthService', () => {
       res as never,
       'old',
     );
-    expect(session.refreshToken).toBe('refresh-token');
+    expect(f.userSessionModel.findOneAndUpdate).toHaveBeenCalled();
     expect(res.cookie).toHaveBeenCalled();
     expect(result.sessionId).toBe(SESSION_ID);
 
     const mobile = createFixture();
-    mobile.jwtService.verify.mockReturnValue({ sub: USER_ID });
+    mobile.jwtService.verify.mockReturnValue(refreshPayload());
     mobile.userSessionModel.findOne.mockResolvedValue({
       ...session,
-      save: jest.fn(),
+      tokenFamilyId: 'family-1',
     });
     await mobile.service.refresh(
       request({ headers: { 'x-platform': 'android' } }),
@@ -474,7 +494,7 @@ describe('AuthService', () => {
     ['invalid user', request(), 'token'],
   ])('rejects refresh with %s', async (_label, req, token) => {
     const f = createFixture();
-    if (token) f.jwtService.verify.mockReturnValue({ sub: 'invalid' });
+    if (token) f.jwtService.verify.mockReturnValue(refreshPayload('invalid'));
     await expect(
       f.service.refresh(req, response() as never, token),
     ).rejects.toMatchObject({ code: ErrorCode.AUTH_INVALID_REFRESH_TOKEN });
@@ -482,14 +502,14 @@ describe('AuthService', () => {
 
   it('rejects missing sessions/users and malformed refresh providers', async () => {
     const noSession = createFixture();
-    noSession.jwtService.verify.mockReturnValue({ sub: USER_ID });
+    noSession.jwtService.verify.mockReturnValue(refreshPayload());
     noSession.userSessionModel.findOne.mockResolvedValue(null);
     await expect(
       noSession.service.refresh(request(), response() as never, 'token'),
     ).rejects.toMatchObject({ code: ErrorCode.AUTH_INVALID_REFRESH_TOKEN });
 
     const noUser = createFixture();
-    noUser.jwtService.verify.mockReturnValue({ sub: USER_ID });
+    noUser.jwtService.verify.mockReturnValue(refreshPayload());
     noUser.userSessionModel.findOne.mockResolvedValue({ save: jest.fn() });
     noUser.userRepo.findByIdWithRoles.mockResolvedValue(null);
     await expect(
@@ -507,16 +527,19 @@ describe('AuthService', () => {
 
   it('reads refresh tokens from cookies', async () => {
     const f = createFixture();
-    f.jwtService.verify.mockReturnValue({ sub: USER_ID });
+    f.jwtService.verify.mockReturnValue(refreshPayload());
     f.userSessionModel.findOne.mockResolvedValue({
       _id: new Types.ObjectId(SESSION_ID),
-      save: jest.fn(),
+      tokenFamilyId: 'family-1',
     });
     await f.service.refresh(
       request({ cookies: { refreshToken: 'cookie-token' } }),
       response() as never,
     );
-    expect(f.jwtService.verify).toHaveBeenCalledWith('cookie-token');
+    expect(f.jwtService.verify).toHaveBeenCalledWith(
+      'cookie-token',
+      expect.objectContaining({ audience: 'user-refresh' }),
+    );
   });
 
   it('registers email users with optional phone context', async () => {
@@ -586,7 +609,9 @@ describe('AuthService', () => {
     await expect(
       absent.service.requestMagicLink(request(), ' NONE@EXAMPLE.COM '),
     ).resolves.toEqual({ sent: true });
-    expect(absent.notificationsService.notify).not.toHaveBeenCalled();
+    expect(
+      absent.notificationsService.sendSecurityEmail,
+    ).not.toHaveBeenCalled();
 
     const found = createFixture();
     found.userRepo.findByProvider.mockResolvedValue(createUser());
@@ -600,11 +625,13 @@ describe('AuthService', () => {
       true,
       600,
     );
-    expect(found.notificationsService.notify).toHaveBeenCalledWith(
+    expect(found.notificationsService.sendSecurityEmail).toHaveBeenCalledWith(
       expect.objectContaining({
+        templateKey: 'auth.magic_link',
         message: expect.stringContaining('magic-login?token=magic%20token'),
       }),
     );
+    expect(found.notificationsService.notify).not.toHaveBeenCalled();
   });
 
   it('verifies magic links and rejects invalid/reused tokens', async () => {
@@ -620,7 +647,10 @@ describe('AuthService', () => {
     await expect(
       success.service.verifyMagicLink(request(), response() as never, 'token'),
     ).resolves.toEqual({ accessToken: 'access' });
-    expect(success.cache.del).toHaveBeenCalledWith('auth:magic-link:jti-1');
+    expect(success.cache.consumeIfValueMatches).toHaveBeenCalledWith(
+      'auth:magic-link:jti-1',
+      true,
+    );
 
     for (const payload of [undefined, {}, { userId: USER_ID, type: 'wrong' }]) {
       const invalid = createFixture();
@@ -640,7 +670,7 @@ describe('AuthService', () => {
       type: 'magic-login',
       jti: 'used',
     });
-    reused.cache.has.mockResolvedValue(false);
+    reused.cache.consumeIfValueMatches.mockResolvedValue(false);
     await expect(
       reused.service.verifyMagicLink(request(), response() as never, 'token'),
     ).rejects.toMatchObject({ code: ErrorCode.AUTH_INVALID_TOKEN });

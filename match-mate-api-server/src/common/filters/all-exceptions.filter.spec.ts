@@ -50,7 +50,7 @@ describe('AllExceptionsFilter', () => {
       expect.objectContaining({
         success: false,
         code: ErrorCode.INTERNAL_ERROR,
-        message: 'database failed',
+        message: 'Internal server error',
         correlationId: 'unknown',
         requestId: 'unknown',
       }),

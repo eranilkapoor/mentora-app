@@ -25,6 +25,7 @@ const FREE_LIMITS: NumericFeaturePolicy = {
   [FeatureKey.PROFILE_VIEWS]: 25,
   [FeatureKey.DAILY_PROFILE_VIEWS]: 25,
   [FeatureKey.MATCH_LIMIT]: 20,
+  [FeatureKey.PROFILE_BOOST]: 5,
 };
 
 const SILVER_LIMITS: NumericFeaturePolicy = {
@@ -40,7 +41,7 @@ const SILVER_LIMITS: NumericFeaturePolicy = {
   [FeatureKey.UNLIMITED_PROFILE_VIEWS]: -1,
   [FeatureKey.PROFILE_VIEWS]: -1,
   [FeatureKey.SAVED_SEARCHES]: 10,
-  [FeatureKey.PROFILE_BOOST]: 0,
+  [FeatureKey.PROFILE_BOOST]: 5,
   [FeatureKey.GRACE_PERIOD]: 3,
 };
 
@@ -50,6 +51,7 @@ const GOLD_LIMITS: NumericFeaturePolicy = {
   [FeatureKey.UPLOAD_VIDEOS]: 1,
   [FeatureKey.SEND_INTEREST]: -1,
   [FeatureKey.UNLIMITED_CHAT]: -1,
+  [FeatureKey.MESSAGE_LIMIT]: -1,
   [FeatureKey.UNLIMITED_SEARCH]: -1,
   [FeatureKey.UNLIMITED_PROFILE_VIEWS]: -1,
   [FeatureKey.PROFILE_VIEWS]: -1,
@@ -72,6 +74,7 @@ const PLATINUM_LIMITS: NumericFeaturePolicy = {
   [FeatureKey.WEEKLY_BOOSTS]: 7,
   [FeatureKey.MONTHLY_BOOSTS]: 30,
   [FeatureKey.UNLIMITED_BOOSTS]: -1,
+  [FeatureKey.PROFILE_BOOST]: -1,
   [FeatureKey.SHORTLIST_LIMIT]: -1,
   [FeatureKey.CONTACT_VIEW_LIMIT]: -1,
   [FeatureKey.MESSAGE_LIMIT]: -1,

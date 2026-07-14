@@ -364,6 +364,14 @@ export class ChatRepository {
     ]);
   }
 
+  async countUnreadForUser(userId: string): Promise<number> {
+    return this.messageModel.countDocuments({
+      receiverId: new Types.ObjectId(userId),
+      status: { $ne: ChatMessageStatus.READ },
+      isDeletedForEveryone: false,
+    });
+  }
+
   async markRoomRead(userId: string, roomId: string, upToMessageId?: string) {
     const filter: FilterQuery<ChatMessageDocument> = {
       roomId: new Types.ObjectId(roomId),

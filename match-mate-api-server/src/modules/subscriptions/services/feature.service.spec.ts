@@ -14,6 +14,10 @@ const createCache = (): jest.Mocked<ICacheService> =>
     del: jest.fn(),
     incr: jest.fn(),
     expire: jest.fn(),
+    incrementWithExpiry: jest.fn().mockResolvedValue({
+      value: 1,
+      ttlSeconds: 86_400,
+    }),
   }) as unknown as jest.Mocked<ICacheService>;
 
 const createFindChain = (result: unknown) => {
@@ -109,13 +113,13 @@ describe('FeatureService', () => {
       planFeaturesChain.exec.mockResolvedValue([
         feature(FeatureKey.SEND_INTEREST, value, type),
       ]);
-      cache.get.mockResolvedValue(null);
-
       await expect(
         service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
       ).resolves.toEqual({ allowed: true });
 
-      expect(cache.incr).toHaveBeenCalledTimes(shouldCheckUsage ? 1 : 0);
+      expect(cache.incrementWithExpiry).toHaveBeenCalledTimes(
+        shouldCheckUsage ? 1 : 0,
+      );
     },
   );
 
@@ -123,12 +127,14 @@ describe('FeatureService', () => {
     'increments available usage when the current value is %s',
     async (current) => {
       const { cache, service } = createFixture();
-      cache.get.mockResolvedValue(current);
+      cache.incrementWithExpiry.mockResolvedValue({
+        value: (current ?? 0) + 1,
+        ttlSeconds: 86_400,
+      });
 
       await service.checkUsageLimit(USER_ID, FeatureKey.SEND_INTEREST, 3);
 
-      expect(cache.incr).toHaveBeenCalledTimes(1);
-      expect(cache.expire).toHaveBeenCalledWith(
+      expect(cache.incrementWithExpiry).toHaveBeenCalledWith(
         expect.stringContaining(`usage:${USER_ID}:`),
         86_400,
       );
@@ -137,14 +143,17 @@ describe('FeatureService', () => {
 
   it('rejects usage once the plan limit is reached', async () => {
     const { cache, service } = createFixture();
-    cache.get.mockResolvedValue(3);
+    cache.incrementWithExpiry.mockResolvedValue({
+      value: 4,
+      ttlSeconds: 86_400,
+    });
 
     await expect(
       service.checkUsageLimit(USER_ID, FeatureKey.SEND_INTEREST, 3),
     ).rejects.toMatchObject({
       code: ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE,
     });
-    expect(cache.incr).not.toHaveBeenCalled();
+    expect(cache.incrementWithExpiry).toHaveBeenCalledTimes(1);
   });
 
   it.each([

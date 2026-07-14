@@ -110,7 +110,6 @@ describe('PaymentsService', () => {
     const dto: CreateOrderDto = {
       planId: 'plan-1',
       purpose: PaymentPurpose.SUBSCRIPTION,
-      amount: 0,
       currency: 'INR',
     };
 
@@ -187,7 +186,10 @@ describe('PaymentsService', () => {
       return values[key] ?? fallback;
     });
 
-    paymentRepo.findByOrderId.mockResolvedValue({ orderId: 'ORD_1' });
+    paymentRepo.findByOrderId.mockResolvedValue({
+      orderId: 'ORD_1',
+      status: PaymentStatus.SUCCESS,
+    });
     paymentRepo.markRefunded.mockResolvedValue({
       status: PaymentStatus.REFUNDED,
     });
@@ -218,7 +220,7 @@ describe('PaymentsService', () => {
     ).rejects.toMatchObject({ code: ErrorCode.PAYMENT_REFUND_FAILED });
   });
 
-  it('creates plan, coin-pack, and idempotent orders', async () => {
+  it('creates catalog-backed and idempotent orders and rejects uncatalogued coin packs', async () => {
     const userId = new Types.ObjectId().toString();
     const planId = new Types.ObjectId().toString();
     planModel.findById.mockReturnValue({
@@ -227,8 +229,11 @@ describe('PaymentsService', () => {
           _id: new Types.ObjectId(planId),
           isActive: true,
           isCustom: false,
+          planType: 'self_service',
           price: 100,
           currency: 'INR',
+          durationDays: 30,
+          slug: 'silver-monthly',
         }),
       }),
     });
@@ -241,17 +246,20 @@ describe('PaymentsService', () => {
       purpose: PaymentPurpose.SUBSCRIPTION,
       currency: 'inr',
       customerGstin: 'GSTIN',
-      metadata: { source: 'test' },
     });
     expect(planOrder).toMatchObject({ amount: 100, taxAmount: 18 });
 
-    const coinOrder = await service.createOrder(userId, {
-      purpose: PaymentPurpose.COIN_PACK,
-      amount: 50,
-      coinAmount: 75,
-      currency: 'INR',
+    await expect(
+      service.createOrder(userId, {
+        purpose: PaymentPurpose.COIN_PACK,
+        currency: 'INR',
+      }),
+    ).rejects.toMatchObject({
+      code: ErrorCode.PAYMENT_FAILED,
+      meta: expect.objectContaining({
+        reason: 'coin_pack_catalog_not_configured',
+      }),
     });
-    expect(coinOrder).toMatchObject({ amount: 50 });
 
     paymentRepo.findByIdempotencyKey.mockResolvedValue({ orderId: 'existing' });
     await expect(
@@ -366,7 +374,10 @@ describe('PaymentsService', () => {
       }),
     ).rejects.toMatchObject({ code: ErrorCode.PAYMENT_NOT_FOUND });
 
-    paymentRepo.findByOrderId.mockResolvedValue({ gatewayPaymentId: 'PAY' });
+    paymentRepo.findByOrderId.mockResolvedValue({
+      gatewayPaymentId: 'PAY',
+      status: PaymentStatus.PENDING,
+    });
     paymentRepo.markSuccess.mockResolvedValue(null);
     await expect(
       service.processWebhook({
@@ -426,6 +437,37 @@ describe('PaymentsService', () => {
     expect(subscriptionsService.purchasePlan).not.toHaveBeenCalled();
     expect(walletService.creditCoinPurchase).not.toHaveBeenCalled();
   });
+
+  it.each([
+    [PaymentStatus.REFUNDED, PaymentStatus.SUCCESS],
+    [PaymentStatus.SUCCESS, PaymentStatus.FAILED],
+    [PaymentStatus.CANCELLED, PaymentStatus.SUCCESS],
+    [PaymentStatus.PENDING, PaymentStatus.CANCELLED],
+  ])(
+    'rejects illegal webhook transition from %s to %s',
+    async (currentStatus, requestedStatus) => {
+      paymentRepo.findByOrderId.mockResolvedValue({
+        orderId: 'ORD',
+        status: currentStatus,
+      });
+
+      await expect(
+        service.processWebhook({
+          eventId: 'event-transition',
+          orderId: 'ORD',
+          status: requestedStatus,
+        }),
+      ).rejects.toMatchObject({
+        code: ErrorCode.PAYMENT_FAILED,
+        meta: expect.objectContaining({
+          reason: 'invalid_payment_status_transition',
+        }),
+      });
+      expect(paymentRepo.markSuccess).not.toHaveBeenCalled();
+      expect(paymentRepo.markFailed).not.toHaveBeenCalled();
+      expect(paymentRepo.markRefunded).not.toHaveBeenCalled();
+    },
+  );
 
   it('validates coupons and all coupon restrictions', async () => {
     const userId = new Types.ObjectId().toString();
@@ -881,7 +923,11 @@ describe('PaymentsService', () => {
   it('covers detail, plan restriction, invoice reuse, and signed webhook paths', async () => {
     const userId = new Types.ObjectId().toString();
     const planId = new Types.ObjectId().toString();
-    const payment = { _id: new Types.ObjectId(), orderId: 'ORD' };
+    const payment = {
+      _id: new Types.ObjectId(),
+      orderId: 'ORD',
+      status: PaymentStatus.SUCCESS,
+    };
 
     paymentRepo.findByOrderIdAndUser.mockResolvedValue(payment);
     await expect(service.getUserPaymentDetail(userId, 'ORD')).resolves.toBe(

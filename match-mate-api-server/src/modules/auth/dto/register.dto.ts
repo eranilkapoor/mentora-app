@@ -4,6 +4,7 @@ import {
   IsOptional,
   IsString,
   Matches,
+  MaxLength,
   MinLength,
   ValidateIf,
 } from 'class-validator';
@@ -18,7 +19,8 @@ export class RegisterDto {
   email!: string;
 
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(12)
+  @MaxLength(64)
   @Matches(PASSWORD_POLICY_REGEX, {
     message: PASSWORD_POLICY_MESSAGE,
   })

@@ -107,6 +107,57 @@ export class LocalCacheService implements ICacheService, OnModuleDestroy {
     }
   }
 
+  incrementWithExpiry(
+    key: string,
+    ttlSeconds: number,
+  ): Promise<{ value: number; ttlSeconds: number }> {
+    const now = Date.now();
+    const existing = this.store.get(key) as CacheEntry<number> | undefined;
+    const active =
+      existing && (existing.expiresAt === null || existing.expiresAt > now)
+        ? existing
+        : undefined;
+    const value = Number(active?.value ?? 0) + 1;
+    const expiresAt = active?.expiresAt ?? now + ttlSeconds * 1000;
+    this.store.set(key, { value, expiresAt });
+    this.saveToDisk();
+    return Promise.resolve({
+      value,
+      ttlSeconds: Math.max(0, Math.ceil((expiresAt - now) / 1000)),
+    });
+  }
+
+  setIfAbsent<T>(key: string, value: T, ttlSeconds: number): Promise<boolean> {
+    const now = Date.now();
+    const existing = this.store.get(key);
+    if (existing && (existing.expiresAt === null || existing.expiresAt > now)) {
+      return Promise.resolve(false);
+    }
+
+    this.store.set(key, {
+      value,
+      expiresAt: now + ttlSeconds * 1000,
+    });
+    this.saveToDisk();
+    return Promise.resolve(true);
+  }
+
+  consumeIfValueMatches<T>(key: string, expected: T): Promise<boolean> {
+    const now = Date.now();
+    const existing = this.store.get(key) as CacheEntry<T> | undefined;
+    if (
+      !existing ||
+      (existing.expiresAt !== null && existing.expiresAt <= now) ||
+      JSON.stringify(existing.value) !== JSON.stringify(expected)
+    ) {
+      return Promise.resolve(false);
+    }
+
+    this.store.delete(key);
+    this.saveToDisk();
+    return Promise.resolve(true);
+  }
+
   //  Disk Persistence
   private saveToDisk(): void {
     try {

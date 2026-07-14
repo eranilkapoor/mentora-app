@@ -168,7 +168,11 @@ export class ChatController {
 
   @Post('attachments')
   @FeatureRequired(FeatureKey.SEND_IMAGES_IN_CHAT)
-  @UseInterceptors(FilesInterceptor('files', 5))
+  @UseInterceptors(
+    FilesInterceptor('files', 5, {
+      limits: { fileSize: 10 * 1024 * 1024, files: 5, fields: 5 },
+    }),
+  )
   @HttpCode(HttpStatus.CREATED)
   async uploadAttachments(
     @Req() req: AppRequest,

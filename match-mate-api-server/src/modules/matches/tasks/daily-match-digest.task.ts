@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { Cron } from '@nestjs/schedule';
 import { ConfigService } from '@nestjs/config';
+import { Types } from 'mongoose';
 import { MatchDiscoveryRepository } from '../repositories/match-discovery.repository';
 import { MatchDiscoveryService } from '../services/match-discovery.service';
 import { MatchNotificationService } from '../services/match-notification.service';
@@ -53,10 +54,17 @@ export class DailyMatchDigestTask {
         eligibleCount += 1;
 
         if (!dryRun) {
+          const rawTargetUserId = matches[0]?.userId;
+          const targetUserId =
+            typeof rawTargetUserId === 'string'
+              ? rawTargetUserId
+              : rawTargetUserId instanceof Types.ObjectId
+                ? rawTargetUserId.toHexString()
+                : '';
           await this.notificationService.notifyDailyMatches(
             userId,
             matches.length,
-            String(matches[0]?.userId ?? ''),
+            targetUserId,
           );
           sentCount += 1;
         }

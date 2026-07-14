@@ -33,7 +33,6 @@ import { NotificationsModule } from '../notifications/notifications.module';
 import { AnalyticsModule } from '../analytics/analytics.module';
 import { SafetyModule } from '../safety/safety.module';
 import { ReferralsModule } from '../referrals/referrals.module';
-import { OtpCleanupTask } from './tasks/otp-cleanup.task';
 
 @Module({
   imports: [
@@ -82,7 +81,6 @@ import { OtpCleanupTask } from './tasks/otp-cleanup.task';
     AuthTokenService,
     AuthTwoFactorService,
     SocialAuthVerifierService,
-    OtpCleanupTask,
   ],
   exports: [AuthService, UserRepository, JwtModule, PassportModule],
 })

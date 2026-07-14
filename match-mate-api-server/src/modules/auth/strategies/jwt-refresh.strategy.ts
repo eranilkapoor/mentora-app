@@ -12,6 +12,7 @@ interface JwtPayload {
   membership?: {
     tier: string;
   };
+  type?: string;
 }
 
 interface RefreshRequest {
@@ -31,11 +32,16 @@ export class JwtRefreshStrategy extends PassportStrategy(
     super({
       jwtFromRequest: ExtractJwt.fromBodyField('refreshToken'),
       passReqToCallback: true,
-      secretOrKey: jwtConfig.secret,
+      secretOrKey: jwtConfig.refreshSecret,
+      audience: jwtConfig.refreshAudience,
+      issuer: jwtConfig.issuer,
     });
   }
 
   validate(req: RefreshRequest, payload: JwtPayload) {
+    if (payload.type !== 'refresh') {
+      throw new Error('Invalid refresh token type');
+    }
     return {
       sub: payload.sub,
       roles: payload.roles || [],

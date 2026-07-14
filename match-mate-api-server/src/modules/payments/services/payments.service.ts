@@ -33,7 +33,7 @@ import { SubscriptionsService } from '@/modules/subscriptions/services/subscript
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 import { WalletService } from '@/modules/referrals/services/wallet.service';
 import { ProfileBoostService } from '@/modules/subscriptions/services/profile-boost.service';
-import { SubscriptionStatus } from '@/common/enums';
+import { PlanType, SubscriptionStatus } from '@/common/enums';
 import { ErrorCode } from '@/common/constants';
 import {
   throwBadRequest,
@@ -75,21 +75,38 @@ export class PaymentsService {
       ? await this.planModel.findById(dto.planId).lean().exec()
       : null;
 
-    if (!isCoinPack && (!plan || !plan.isActive)) {
+    if (isCoinPack) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'coin_pack_catalog_not_configured',
+      });
+    }
+
+    if (!plan || !plan.isActive) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'invalid_or_inactive_plan',
       });
     }
 
-    if (!isCoinPack && plan?.isCustom) {
+    if (plan.isCustom) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'custom_plan_requires_sales_contract',
       });
     }
 
-    if (isCoinPack && (!dto.amount || !dto.coinAmount)) {
+    const isBoostPlan = plan.planType === PlanType.PROFILE_BOOST;
+    if (
+      (purpose === PaymentPurpose.PROFILE_BOOST && !isBoostPlan) ||
+      (purpose === PaymentPurpose.SUBSCRIPTION && isBoostPlan)
+    ) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
-        reason: 'coin_pack_amount_and_coins_required',
+        reason: 'payment_purpose_does_not_match_catalog_product',
+      });
+    }
+
+    const catalogCurrency = (plan.currency ?? 'INR').toUpperCase();
+    if (dto.currency && dto.currency.toUpperCase() !== catalogCurrency) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'currency_does_not_match_catalog_product',
       });
     }
 
@@ -111,15 +128,13 @@ export class PaymentsService {
       this.configService.get<string>('payments.gstPercentage') ?? '0',
     );
 
-    const amount = Number(isCoinPack ? dto.amount : plan?.price);
-    const discount = isCoinPack
-      ? { discountAmount: 0, couponCode: undefined, couponSummary: undefined }
-      : await this.calculateCouponDiscount({
-          userId,
-          plan: plan!,
-          couponCode: dto.couponCode,
-          amount,
-        });
+    const amount = Number(plan.price);
+    const discount = await this.calculateCouponDiscount({
+      userId,
+      plan,
+      couponCode: dto.couponCode,
+      amount,
+    });
     const taxAmount = Number(((amount * taxPercentage) / 100).toFixed(2));
     const discountAmount = discount.discountAmount;
     const netAmount = Number((amount + taxAmount - discountAmount).toFixed(2));
@@ -137,7 +152,7 @@ export class PaymentsService {
       discountAmount,
       couponCode: discount.couponCode,
       netAmount,
-      currency: (dto.currency ?? 'INR').toUpperCase(),
+      currency: catalogCurrency,
       status: PaymentStatus.PENDING,
       gateway: dto.gateway ?? PaymentGateway.RAZORPAY,
       purpose,
@@ -145,12 +160,12 @@ export class PaymentsService {
       initiatedAt: new Date(),
       expiresAt: new Date(Date.now() + 15 * 60 * 1000),
       metadata: {
-        ...(dto.metadata ?? {}),
         description: dto.description,
-        ...(isCoinPack
+        ...(isBoostPlan
           ? {
-              coinAmount: Math.round(Number(dto.coinAmount)),
-              walletProduct: 'coin_pack',
+              durationHours: plan.durationDays * 24,
+              multiplier: 1.25,
+              catalogProduct: plan.slug,
             }
           : {}),
         coupon: discount.couponSummary,
@@ -294,6 +309,14 @@ export class PaymentsService {
 
     if (payment.status === dto.status) {
       return { processed: false, duplicate: true, status: payment.status };
+    }
+
+    if (!this.isAllowedPaymentTransition(payment.status, dto.status)) {
+      return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
+        reason: 'invalid_payment_status_transition',
+        currentStatus: payment.status,
+        requestedStatus: dto.status,
+      });
     }
 
     if (dto.status === PaymentStatus.SUCCESS) {
@@ -1339,5 +1362,31 @@ export class PaymentsService {
         currency: payment.currency,
       },
     });
+  }
+
+  private isAllowedPaymentTransition(
+    current: PaymentStatus,
+    requested: PaymentStatus,
+  ): boolean {
+    if (requested === PaymentStatus.SUCCESS) {
+      return [
+        PaymentStatus.INITIATED,
+        PaymentStatus.PENDING,
+        PaymentStatus.PROCESSING,
+        PaymentStatus.FAILED,
+      ].includes(current);
+    }
+
+    if (requested === PaymentStatus.FAILED) {
+      return [
+        PaymentStatus.INITIATED,
+        PaymentStatus.PENDING,
+        PaymentStatus.PROCESSING,
+      ].includes(current);
+    }
+
+    return (
+      requested === PaymentStatus.REFUNDED && current === PaymentStatus.SUCCESS
+    );
   }
 }

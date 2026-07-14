@@ -136,7 +136,11 @@ export class AuthTwoFactorService {
     const user = await this.getUserOrThrow(userId);
     const phone = this.getVerifiedPhoneOrThrow(user);
 
-    await this.otpService.generate(phone.countryCode, phone.phone);
+    await this.otpService.generate(
+      phone.countryCode,
+      phone.phone,
+      'two-factor-enable',
+    );
     return { sent: true };
   }
 
@@ -144,7 +148,12 @@ export class AuthTwoFactorService {
     const user = await this.getUserOrThrow(userId);
     const phone = this.getVerifiedPhoneOrThrow(user);
 
-    const valid = this.otpService.verify(phone.countryCode, phone.phone, code);
+    const valid = await this.otpService.verify(
+      phone.countryCode,
+      phone.phone,
+      code,
+      'two-factor-enable',
+    );
     if (!valid) {
       throw new AppException(
         ErrorCode.AUTH_INVALID_OTP,
@@ -255,7 +264,12 @@ export class AuthTwoFactorService {
         await this.disableInvalidTwoFactor(userId);
         return null;
       }
-      await this.otpService.generate(user.phone.countryCode, user.phone.phone);
+      await this.otpService.generate(
+        user.phone.countryCode,
+        user.phone.phone,
+        'two-factor-login',
+        challengeId,
+      );
     }
 
     const challenge: TwoFactorChallenge = {
@@ -296,56 +310,92 @@ export class AuthTwoFactorService {
     const challenge = JSON.parse(raw) as TwoFactorChallenge;
     const settings = await this.getOrCreateSecurity(challenge.userId);
 
-    if (recoveryCode) {
-      const ok = await this.consumeRecoveryCode(settings, recoveryCode);
-      if (!ok) {
+    try {
+      if (recoveryCode) {
+        const ok = await this.consumeRecoveryCode(settings, recoveryCode);
+        if (!ok) {
+          throw new AppException(
+            ErrorCode.AUTH_INVALID_OTP,
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+      } else if (challenge.method === TwoFactorMethod.AUTHENTICATOR) {
+        if (
+          !code ||
+          !settings.totpSecret ||
+          !this.verifyTotp(settings.totpSecret, code)
+        ) {
+          throw new AppException(
+            ErrorCode.AUTH_INVALID_OTP,
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+      } else if (challenge.method === TwoFactorMethod.SMS) {
+        const user = await this.userModel
+          .findById(challenge.userId)
+          .lean()
+          .exec();
+        if (!code || !user?.phone?.countryCode || !user.phone.phone) {
+          throw new AppException(
+            ErrorCode.AUTH_INVALID_OTP,
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+        const ok = await this.otpService.verify(
+          user.phone.countryCode,
+          user.phone.phone,
+          code,
+          'two-factor-login',
+          challengeId,
+        );
+        if (!ok) {
+          throw new AppException(
+            ErrorCode.AUTH_INVALID_OTP,
+            HttpStatus.UNAUTHORIZED,
+          );
+        }
+      } else {
         throw new AppException(
           ErrorCode.AUTH_INVALID_OTP,
           HttpStatus.UNAUTHORIZED,
         );
       }
-    } else if (challenge.method === TwoFactorMethod.AUTHENTICATOR) {
+    } catch (error) {
       if (
-        !code ||
-        !settings.totpSecret ||
-        !this.verifyTotp(settings.totpSecret, code)
+        error instanceof AppException &&
+        error.code === String(ErrorCode.AUTH_INVALID_OTP)
       ) {
-        throw new AppException(
-          ErrorCode.AUTH_INVALID_OTP,
-          HttpStatus.UNAUTHORIZED,
-        );
+        await this.recordChallengeFailure(challengeId);
       }
-    } else if (challenge.method === TwoFactorMethod.SMS) {
-      const user = await this.userModel
-        .findById(challenge.userId)
-        .lean()
-        .exec();
-      if (!code || !user?.phone?.countryCode || !user.phone.phone) {
-        throw new AppException(
-          ErrorCode.AUTH_INVALID_OTP,
-          HttpStatus.UNAUTHORIZED,
-        );
-      }
-      const ok = this.otpService.verify(
-        user.phone.countryCode,
-        user.phone.phone,
-        code,
-      );
-      if (!ok) {
-        throw new AppException(
-          ErrorCode.AUTH_INVALID_OTP,
-          HttpStatus.UNAUTHORIZED,
-        );
-      }
-    } else {
+      throw error;
+    }
+
+    const consumed = await this.cache.consumeIfValueMatches(
+      this.challengeKey(challengeId),
+      raw,
+    );
+    if (!consumed) {
       throw new AppException(
-        ErrorCode.AUTH_INVALID_OTP,
+        ErrorCode.AUTH_SESSION_EXPIRED,
         HttpStatus.UNAUTHORIZED,
       );
     }
-
-    await this.cache.del(this.challengeKey(challengeId));
+    await this.cache.del(this.challengeAttemptsKey(challengeId));
     return challenge;
+  }
+
+  private async recordChallengeFailure(challengeId: string): Promise<void> {
+    const attempts = await this.cache.incrementWithExpiry(
+      this.challengeAttemptsKey(challengeId),
+      this.challengeTtlSeconds,
+    );
+    if (attempts.value >= 5) {
+      await this.cache.del(this.challengeKey(challengeId));
+    }
+  }
+
+  private challengeAttemptsKey(challengeId: string): string {
+    return `${this.challengeKey(challengeId)}:attempts`;
   }
 
   private async consumeRecoveryCode(

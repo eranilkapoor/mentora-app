@@ -4,7 +4,8 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CookieOptions, Response } from 'express';
 import { JwtService } from '@nestjs/jwt';
-import { randomUUID } from 'crypto';
+import { createHash, randomUUID } from 'crypto';
+import { getJwtConfig } from '@/config/jwt.config';
 import {
   BillingCycle,
   MediaType,
@@ -59,6 +60,7 @@ import { AuthPasswordService } from './auth-password.service';
 import { ErrorCode } from '@/common/constants';
 import {
   throwConflict,
+  throwForbidden,
   throwUnauthorized,
 } from '@/common/exceptions/throw-app-exception';
 import { AppException } from '@/common/exceptions/app.exception';
@@ -87,6 +89,9 @@ interface TokenAttachUser {
 
 interface RefreshTokenPayload {
   sub: string;
+  type: 'refresh';
+  sid: string;
+  family: string;
 }
 
 interface MagicLinkTokenPayload {
@@ -152,9 +157,12 @@ export class AuthService {
     }
 
     const payload = this.authTokenService.generatePayload(populatedUser);
-
-    const { accessToken, refreshToken } =
-      this.authTokenService.generateTokens(payload);
+    const sessionId = new Types.ObjectId();
+    const tokenFamilyId = randomUUID();
+    const { accessToken, refreshToken } = this.authTokenService.generateTokens(
+      payload,
+      { sessionId: sessionId.toString(), tokenFamilyId },
+    );
 
     const platform = String(req.headers['x-platform'] || 'web');
     const deviceId = this.getHeaderString(req, 'x-device-id') ?? '';
@@ -188,8 +196,10 @@ export class AuthService {
     );
 
     const session = await this.userSessionModel.create({
+      _id: sessionId,
       userId: user._id,
-      refreshToken,
+      refreshTokenHash: this.hashRefreshToken(refreshToken),
+      tokenFamilyId,
       device: deviceId,
       ip: ipAddress,
       userAgent,
@@ -212,7 +222,7 @@ export class AuthService {
         maxAge: 7 * 24 * 60 * 60 * 1000,
       });
 
-      return { accessToken, refreshToken, sessionId: session._id.toString() };
+      return { accessToken, sessionId: session._id.toString() };
     }
 
     //  MOBILE  return both
@@ -488,6 +498,7 @@ export class AuthService {
 
   async refresh(req: AppRequest, res: Response, oldRefreshToken?: string) {
     try {
+      this.assertTrustedCookieOrigin(req);
       const token =
         oldRefreshToken ?? this.getCookieString(req, 'refreshToken');
 
@@ -495,10 +506,25 @@ export class AuthService {
         return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
       }
 
-      const refreshPayload = this.jwtService.verify<RefreshTokenPayload>(token);
+      const jwtConfig = getJwtConfig(this.configService);
+      const refreshPayload = this.jwtService.verify<RefreshTokenPayload>(
+        token,
+        {
+          secret: jwtConfig.refreshSecret,
+          audience: jwtConfig.refreshAudience,
+          issuer: jwtConfig.issuer,
+        },
+      );
+      if (refreshPayload.type !== 'refresh') {
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
+      }
       const userId = refreshPayload.sub;
 
-      if (!Types.ObjectId.isValid(userId)) {
+      if (
+        !Types.ObjectId.isValid(userId) ||
+        !Types.ObjectId.isValid(refreshPayload.sid) ||
+        !refreshPayload.family
+      ) {
         return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN, {
           reason: 'invalid_refresh_user_id',
         });
@@ -506,12 +532,15 @@ export class AuthService {
 
       //  3. Validate session
       const session = await this.userSessionModel.findOne({
+        _id: new Types.ObjectId(refreshPayload.sid),
         userId: new Types.ObjectId(userId),
-        refreshToken: token,
+        refreshTokenHash: this.hashRefreshToken(token),
+        tokenFamilyId: refreshPayload.family,
         isActive: true,
       });
 
       if (!session) {
+        await this.revokeTokenFamily(userId, refreshPayload.family);
         return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
       }
 
@@ -528,11 +557,25 @@ export class AuthService {
 
       //  5. Generate new tokens
       const { accessToken, refreshToken } =
-        this.authTokenService.generateTokens(tokenPayload);
+        this.authTokenService.generateTokens(tokenPayload, {
+          sessionId: session._id.toString(),
+          tokenFamilyId: session.tokenFamilyId,
+        });
 
       //  6. ROTATE refresh token
-      session.refreshToken = refreshToken;
-      await session.save();
+      const rotatedSession = await this.userSessionModel.findOneAndUpdate(
+        {
+          _id: session._id,
+          refreshTokenHash: this.hashRefreshToken(token),
+          isActive: true,
+        },
+        { $set: { refreshTokenHash: this.hashRefreshToken(refreshToken) } },
+        { new: true },
+      );
+      if (!rotatedSession) {
+        await this.revokeTokenFamily(userId, session.tokenFamilyId);
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
+      }
 
       await this.completeRefreshFlow(req, userId, {
         provider: this.resolveProvider(user),
@@ -548,11 +591,15 @@ export class AuthService {
           maxAge: 7 * 24 * 60 * 60 * 1000,
         });
 
-        return { accessToken, refreshToken, sessionId: session._id.toString() };
+        return { accessToken, sessionId: rotatedSession._id.toString() };
       }
 
       //  MOBILE  return both
-      return { accessToken, refreshToken, sessionId: session._id.toString() };
+      return {
+        accessToken,
+        refreshToken,
+        sessionId: rotatedSession._id.toString(),
+      };
     } catch (error) {
       if (error instanceof AppException) {
         throw error;
@@ -667,16 +714,11 @@ export class AuthService {
       const link = this.buildMagicLoginLink(token);
       await this.cache.set(this.getMagicLinkCacheKey(jti), true, 600);
 
-      await this.notificationsService.notify({
+      await this.notificationsService.sendSecurityEmail({
         userId: String(user._id),
-        title: 'Sign in to Match Mate',
+        subject: 'Sign in to Match Mate',
         message: `Use this secure link to sign in: ${link}`,
-        type: 'system',
-        category: 'system',
-        channels: ['email'],
-        metadata: {
-          source: 'magic-link-login',
-        },
+        templateKey: 'auth.magic_link',
       });
 
       await this.activityLogModel.create({
@@ -712,12 +754,6 @@ export class AuthService {
       }
 
       const cacheKey = this.getMagicLinkCacheKey(payload.jti);
-      const isUnused = await this.cache.has(cacheKey);
-
-      if (!isUnused) {
-        return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN);
-      }
-
       const user = await this.userRepo.findById(payload.userId);
 
       if (!user) {
@@ -725,7 +761,10 @@ export class AuthService {
       }
 
       this.assertUserCanAuthenticate(user);
-      await this.cache.del(cacheKey);
+      const consumed = await this.cache.consumeIfValueMatches(cacheKey, true);
+      if (!consumed) {
+        return throwUnauthorized(ErrorCode.AUTH_INVALID_TOKEN);
+      }
       const provider = this.resolveProvider(user);
       const userPayload = {
         user: {
@@ -1385,7 +1424,12 @@ export class AuthService {
           ? { country_code, phone, otp, referralCode: dtoOrReferralCode }
           : (dtoOrReferralCode ?? { country_code, phone, otp });
 
-      const isValid = this.otpService.verify(country_code, phone, otp);
+      const isValid = await this.otpService.verify(
+        country_code,
+        phone,
+        otp,
+        'phone-login',
+      );
       if (!isValid) return throwUnauthorized(ErrorCode.AUTH_INVALID_OTP);
 
       const existingUser = await this.userRepo.findByProvider(
@@ -1679,12 +1723,13 @@ export class AuthService {
     req: AppRequest,
     refreshToken: string,
   ): Promise<{ success: true }> {
+    this.assertTrustedCookieOrigin(req);
     if (!refreshToken) {
       return throwUnauthorized(ErrorCode.AUTH_INVALID_REFRESH_TOKEN);
     }
 
     const session = await this.userSessionModel.findOne({
-      refreshToken,
+      refreshTokenHash: this.hashRefreshToken(refreshToken),
       isActive: true,
     });
 
@@ -1981,6 +2026,41 @@ export class AuthService {
       .replace(/>/g, '&gt;')
       .replace(/"/g, '&quot;')
       .replace(/'/g, '&#039;');
+  }
+
+  private hashRefreshToken(token: string): string {
+    return createHash('sha256').update(token, 'utf8').digest('hex');
+  }
+
+  private assertTrustedCookieOrigin(req: AppRequest): void {
+    if (
+      !this.getCookieString(req, 'refreshToken') ||
+      this.configService.get<string>('env') !== 'production'
+    ) {
+      return;
+    }
+
+    const origin = this.getHeaderString(req, 'origin');
+    const allowedOrigins = this.configService.get<string[]>('cors.origins', []);
+    if (!origin || !allowedOrigins.includes(origin)) {
+      throwForbidden(ErrorCode.AUTH_FORBIDDEN, {
+        reason: 'untrusted_cookie_request_origin',
+      });
+    }
+  }
+
+  private async revokeTokenFamily(
+    userId: string,
+    tokenFamilyId: string,
+  ): Promise<void> {
+    await this.userSessionModel.updateMany(
+      {
+        userId: new Types.ObjectId(userId),
+        tokenFamilyId,
+        isActive: true,
+      },
+      { $set: { isActive: false, loggedOutAt: new Date() } },
+    );
   }
 
   getRefreshCookieOptions(): CookieOptions {

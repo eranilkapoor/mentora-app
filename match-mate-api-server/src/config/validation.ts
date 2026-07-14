@@ -231,6 +231,41 @@ function validateProductionProviders(
     });
   }
 
+  const requiredInfrastructure: Array<[string, unknown, unknown]> = [
+    ['DB_DRIVER', env.DB_DRIVER, 'mongo'],
+    ['CACHE_DRIVER', env.CACHE_DRIVER, 'redis'],
+    ['STORAGE_DRIVER', env.STORAGE_DRIVER, 's3'],
+    ['MONITORING_ENABLED', env.MONITORING_ENABLED, true],
+    ['MONITORING_PROVIDER', env.MONITORING_PROVIDER, 'sentry'],
+    ['NOTIFICATION_QUEUE_ENABLED', env.NOTIFICATION_QUEUE_ENABLED, true],
+  ];
+  const invalidInfrastructure = requiredInfrastructure.find(
+    ([, actual, expected]) => actual !== expected,
+  );
+  if (invalidInfrastructure) {
+    const [name, , expected] = invalidInfrastructure;
+    return helpers.error('any.custom', {
+      customMessage: `Production requires ${name}=${String(expected)}`,
+    });
+  }
+
+  if (!env.SENTRY_DSN) {
+    return helpers.error('any.custom', {
+      customMessage: 'SENTRY_DSN is required in production',
+    });
+  }
+
+  if (
+    !env.JWT_REFRESH_SECRET ||
+    env.JWT_REFRESH_SECRET === env.JWT_SECRET ||
+    env.JWT_REFRESH_AUDIENCE === env.JWT_AUDIENCE
+  ) {
+    return helpers.error('any.custom', {
+      customMessage:
+        'Production requires distinct JWT refresh signing key and audience',
+    });
+  }
+
   if (
     env.PAYMENT_MOBILE_STORE_VERIFICATION_MODE !== 'strict' ||
     env.PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED !== true
@@ -536,11 +571,15 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
 
   JWT_SECRET: Joi.string().trim().min(32).max(512).required(),
 
+  JWT_REFRESH_SECRET: Joi.string().trim().min(32).max(512),
+
   JWT_ACCESS_EXPIRES_IN: optionalDuration.default('15m'),
 
   JWT_REFRESH_EXPIRES_IN: optionalDuration.default('7d'),
 
   JWT_AUDIENCE: optionalString.default('user'),
+
+  JWT_REFRESH_AUDIENCE: optionalString.default('user-refresh'),
 
   JWT_ISSUER: optionalString.default('matchmate-api'),
 

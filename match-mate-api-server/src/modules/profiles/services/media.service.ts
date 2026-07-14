@@ -19,6 +19,10 @@ import { ProfileScoringService } from './profile-scoring.service';
 import { MediaModerationService } from './media-moderation.service';
 import { VideoThumbnailService } from './video-thumbnail.service';
 import { FeatureService } from '@/modules/subscriptions/services/feature.service';
+import {
+  MediaModerationStatus,
+  MediaStatus,
+} from '../enums/profile-media.enums';
 
 const IMAGE_STORAGE_FOLDER = 'profiles/images';
 const VIDEO_STORAGE_FOLDER = 'profiles/videos';
@@ -67,6 +71,7 @@ export class MediaService {
       const moderation = files.map((file) =>
         this.moderationService.moderate(file, MediaType.IMAGE),
       );
+      this.assertModerationPassed(moderation);
       const uploaded = await this.storageService.uploadFiles(
         files,
         IMAGE_STORAGE_FOLDER,
@@ -112,7 +117,7 @@ export class MediaService {
 
   async setPrimaryImage(_req: AppRequest, userId: string, mediaId: string) {
     try {
-      await this.assertOwnership(userId, mediaId);
+      await this.assertOwnership(userId, mediaId, MediaType.IMAGE);
       const result = await this.mediaRepo.setPrimary(
         userId,
         mediaId,
@@ -129,7 +134,11 @@ export class MediaService {
 
   async removeImage(_req: AppRequest, userId: string, mediaId: string) {
     try {
-      const media = await this.assertOwnership(userId, mediaId);
+      const media = await this.assertOwnership(
+        userId,
+        mediaId,
+        MediaType.IMAGE,
+      );
       await this.mediaRepo.softDelete(mediaId);
 
       if (media.filename) {
@@ -195,6 +204,7 @@ export class MediaService {
       const moderation = files.map((file) =>
         this.moderationService.moderate(file, MediaType.VIDEO),
       );
+      this.assertModerationPassed(moderation);
       const generatedThumbnails =
         thumbnails.length > 0
           ? thumbnails
@@ -258,7 +268,7 @@ export class MediaService {
 
   async setPrimaryVideo(_req: AppRequest, userId: string, mediaId: string) {
     try {
-      await this.assertOwnership(userId, mediaId);
+      await this.assertOwnership(userId, mediaId, MediaType.VIDEO);
       const result = await this.mediaRepo.setPrimary(
         userId,
         mediaId,
@@ -352,7 +362,11 @@ export class MediaService {
 
   async removeVideo(_req: AppRequest, userId: string, mediaId: string) {
     try {
-      const media = await this.assertOwnership(userId, mediaId);
+      const media = await this.assertOwnership(
+        userId,
+        mediaId,
+        MediaType.VIDEO,
+      );
       await this.mediaRepo.softDelete(mediaId);
 
       if (media.filename) {
@@ -389,6 +403,7 @@ export class MediaService {
   private async assertOwnership(
     userId: string,
     mediaId: string,
+    expectedType: MediaType,
   ): Promise<NonNullable<Awaited<ReturnType<MediaRepository['findById']>>>> {
     const media = await this.mediaRepo.findById(mediaId);
 
@@ -402,6 +417,15 @@ export class MediaService {
       });
     }
 
+    if (
+      (media.type !== undefined && media.type !== expectedType) ||
+      (media.status !== undefined && media.status !== MediaStatus.ACTIVE)
+    ) {
+      return throwNotFound(ErrorCode.FILE_NOT_FOUND, {
+        reason: 'media_type_or_status_mismatch',
+      });
+    }
+
     return media;
   }
 
@@ -409,6 +433,20 @@ export class MediaService {
     await this.cache.del(`profile:${userId}`);
     await this.cache.del(`media:images:${userId}`);
     await this.cache.del(`media:videos:${userId}`);
+  }
+
+  private assertModerationPassed(
+    moderation: Array<{ status: MediaModerationStatus; reasons: string[] }>,
+  ): void {
+    const rejected = moderation.find(
+      (item) => item.status !== MediaModerationStatus.APPROVED,
+    );
+    if (rejected) {
+      throwBadRequest(ErrorCode.FILE_UPLOAD_FAILED, {
+        reason: 'media_validation_failed',
+        validationReasons: rejected.reasons,
+      });
+    }
   }
 
   private async refreshProfileScores(userId: string) {

@@ -64,6 +64,57 @@ export class RedisCacheService
     await this.client.expire(key, ttlSeconds);
   }
 
+  async incrementWithExpiry(
+    key: string,
+    ttlSeconds: number,
+  ): Promise<{ value: number; ttlSeconds: number }> {
+    const script = `
+      local value = redis.call('INCR', KEYS[1])
+      if value == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end
+      local ttl = redis.call('TTL', KEYS[1])
+      return {value, ttl}
+    `;
+    const result = (await this.client.eval(
+      script,
+      1,
+      key,
+      String(ttlSeconds),
+    )) as [number, number];
+    return { value: Number(result[0]), ttlSeconds: Number(result[1]) };
+  }
+
+  async setIfAbsent<T>(
+    key: string,
+    value: T,
+    ttlSeconds: number,
+  ): Promise<boolean> {
+    const result = await this.client.set(
+      key,
+      JSON.stringify(value),
+      'EX',
+      ttlSeconds,
+      'NX',
+    );
+    return result === 'OK';
+  }
+
+  async consumeIfValueMatches<T>(key: string, expected: T): Promise<boolean> {
+    const script = `
+      if redis.call('GET', KEYS[1]) == ARGV[1] then
+        redis.call('DEL', KEYS[1])
+        return 1
+      end
+      return 0
+    `;
+    const result = await this.client.eval(
+      script,
+      1,
+      key,
+      JSON.stringify(expected),
+    );
+    return Number(result) === 1;
+  }
+
   private async scanKeys(pattern: string): Promise<string[]> {
     const keys: string[] = [];
     let cursor = '0';

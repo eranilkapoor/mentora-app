@@ -20,12 +20,27 @@ import { FeatureService } from '@/modules/subscriptions/services/feature.service
 import { MatchCompatibilityService } from '@/modules/matches/services/match-compatibility.service';
 import { SettingsService } from '@/modules/settings/services/settings.service';
 import { ConfigService } from '@nestjs/config';
-import { Interest, InterestSchema } from '@/modules/matches/schemas/interest.schema';
+import {
+  Interest,
+  InterestSchema,
+} from '@/modules/matches/schemas/interest.schema';
 import { Match, MatchSchema } from '@/modules/matches/schemas/match.schema';
-import { Profile, ProfileSchema } from '@/modules/profiles/schemas/profile/profile.schema';
-import { Preference, PreferenceSchema } from '@/modules/profiles/schemas/preference/preference.schema';
-import { Media, MediaSchema } from '@/modules/profiles/schemas/media/media.schema';
-import { Interaction, InteractionSchema } from '@/modules/profiles/schemas/interaction/interaction.schema';
+import {
+  Profile,
+  ProfileSchema,
+} from '@/modules/profiles/schemas/profile/profile.schema';
+import {
+  Preference,
+  PreferenceSchema,
+} from '@/modules/profiles/schemas/preference/preference.schema';
+import {
+  Media,
+  MediaSchema,
+} from '@/modules/profiles/schemas/media/media.schema';
+import {
+  Interaction,
+  InteractionSchema,
+} from '@/modules/profiles/schemas/interaction/interaction.schema';
 
 class HeaderUserGuardStub implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
@@ -49,6 +64,7 @@ describe('Matches interest lifecycle DB-backed (e2e)', () => {
 
   const featureService = {
     checkAccess: jest.fn(async () => ({ allowed: true })),
+    getFeaturesForUser: jest.fn(async () => []),
   };
 
   const matchNotificationService = {
@@ -79,14 +95,21 @@ describe('Matches interest lifecycle DB-backed (e2e)', () => {
         MatchesService,
         MatchRepository,
         { provide: SettingsService, useValue: settingsService },
-        { provide: MatchNotificationService, useValue: matchNotificationService },
+        {
+          provide: MatchNotificationService,
+          useValue: matchNotificationService,
+        },
         { provide: FeatureService, useValue: featureService },
         { provide: MatchCompatibilityService, useValue: {} },
         { provide: MatchDiscoveryService, useValue: {} },
         { provide: PremiumMatchCuratorService, useValue: {} },
         {
           provide: ConfigService,
-          useValue: { get: jest.fn((key: string, fallback?: unknown) => (key === 'matches.expiryEnabled' ? false : fallback)) },
+          useValue: {
+            get: jest.fn((key: string, fallback?: unknown) =>
+              key === 'matches.expiryEnabled' ? false : fallback,
+            ),
+          },
         },
       ],
     })

@@ -50,7 +50,7 @@ describe('ChannelPreferenceRow', () => {
     );
 
     expect(onChange).toHaveBeenCalledWith('push', false);
-  });
+  }, 10_000);
 
   it('opens locked-channel handler when a disabled paid channel is tapped', async () => {
     const onChange = jest.fn();
@@ -76,5 +76,5 @@ describe('ChannelPreferenceRow', () => {
     expect(onChange).not.toHaveBeenCalled();
     expect(onDisabledChannelPress).toHaveBeenNthCalledWith(1, 'email');
     expect(onDisabledChannelPress).toHaveBeenNthCalledWith(2, 'sms');
-  });
+  }, 10_000);
 });

@@ -30,6 +30,9 @@ import {
   throwBadRequest,
 } from '@/common/exceptions/throw-app-exception';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
+import { FeatureKey } from '@/common/enums';
+import { FeatureService } from '@/modules/subscriptions/services/feature.service';
+import { detectFileCategory } from '@/common/utils/file-signature.util';
 
 interface UserSummary {
   userId: string;
@@ -129,6 +132,7 @@ export class ChatService {
     private readonly logger: AppLogger,
     private readonly storageService: StorageService,
     private readonly configService: ConfigService,
+    private readonly featureService: FeatureService,
   ) {}
 
   health() {
@@ -236,13 +240,15 @@ export class ChatService {
       : page * limit;
 
     const rooms = await this.repo.listRoomsForUser(userId, candidateLimit);
-    const blockedUserIds = new Set(
-      await this.repo.getBlockedRelationUserIds(userId),
-    );
-    const unreadRows = await this.repo.countUnreadByRoomIds(
-      userId,
-      rooms.map((room) => String(room._id)),
-    );
+    const [blockedRelations, unreadRows, unreadTotal] = await Promise.all([
+      this.repo.getBlockedRelationUserIds(userId),
+      this.repo.countUnreadByRoomIds(
+        userId,
+        rooms.map((room) => String(room._id)),
+      ),
+      this.repo.countUnreadForUser(userId),
+    ]);
+    const blockedUserIds = new Set(blockedRelations);
     const unreadMap = new Map(
       unreadRows.map((row) => [String(row._id), row.count]),
     );
@@ -351,7 +357,7 @@ export class ChatService {
     return {
       ...buildPaginationMeta(items.length, page, limit),
       hasMore: start + pagedItems.length < items.length,
-      unreadTotal: items.reduce((sum, item) => sum + item.unreadCount, 0),
+      unreadTotal,
       items: pagedItems,
     };
   }
@@ -587,7 +593,7 @@ export class ChatService {
     }
 
     this.ensureMessageIsSafe(content);
-    this.ensureAttachmentsAreValid(attachments);
+    this.ensureAttachmentsAreValid(userId, attachments);
 
     const messagePayload = await this.createRoomMessage(room, userId, {
       content,
@@ -712,14 +718,31 @@ export class ChatService {
 
     const allowedMimePattern = /^(image|video|audio)\//i;
     for (const file of files) {
-      if (!allowedMimePattern.test(file.mimetype)) {
+      const category = detectFileCategory(file.buffer);
+      if (
+        !allowedMimePattern.test(file.mimetype) ||
+        !category ||
+        !['image', 'video', 'audio'].includes(category) ||
+        !file.mimetype.toLowerCase().startsWith(`${category}/`)
+      ) {
         throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
-          reason: 'unsupported_chat_attachment_type',
+          reason: 'unsupported_or_mismatched_chat_attachment_type',
         });
       }
+
+      const featureKey =
+        category === 'video'
+          ? FeatureKey.SEND_VIDEOS_IN_CHAT
+          : category === 'audio'
+            ? FeatureKey.SEND_VOICE_NOTES
+            : FeatureKey.SEND_IMAGES_IN_CHAT;
+      await this.featureService.checkAccess(featureKey, { userId });
     }
 
-    const uploaded = await this.storageService.uploadFiles(files, 'chat');
+    const uploaded = await this.storageService.uploadFiles(
+      files,
+      `chat/${userId}`,
+    );
 
     return uploaded.map((file, index) => ({
       url: file.url,
@@ -1278,6 +1301,7 @@ export class ChatService {
   }
 
   private ensureAttachmentsAreValid(
+    userId: string,
     attachments: Array<{ url: string; mimeType?: string; size?: number }>,
   ) {
     if (attachments.length > 5) {
@@ -1290,6 +1314,18 @@ export class ChatService {
       if (!attachment.url || !/^https?:\/\//i.test(attachment.url)) {
         throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
           reason: 'chat_attachment_url_invalid',
+        });
+      }
+
+      let pathname = '';
+      try {
+        pathname = new URL(attachment.url).pathname;
+      } catch {
+        pathname = '';
+      }
+      if (!pathname.includes(`/uploads/chat/${userId}/`)) {
+        throwBadRequest(ErrorCode.CHAT_ATTACHMENT_INVALID, {
+          reason: 'chat_attachment_not_owned',
         });
       }
 

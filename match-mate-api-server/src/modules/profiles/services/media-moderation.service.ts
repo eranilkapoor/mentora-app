@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { MediaType } from '@/common/enums';
 import { MediaModerationStatus } from '../enums/profile-media.enums';
+import { detectFileCategory } from '@/common/utils/file-signature.util';
 
 export interface MediaModerationResult {
   status: MediaModerationStatus;
@@ -18,14 +19,22 @@ export class MediaModerationService {
 
   moderate(file: Express.Multer.File, type: MediaType): MediaModerationResult {
     const reasons: string[] = [];
-    const allowedMimePrefix = type === MediaType.IMAGE ? 'image/' : 'video/';
+    const expectedCategory = type === MediaType.IMAGE ? 'image' : 'video';
+    const allowedMimeTypes =
+      type === MediaType.IMAGE
+        ? new Set(['image/jpeg', 'image/png', 'image/webp'])
+        : new Set(['video/mp4', 'video/quicktime']);
     const maxBytes =
       type === MediaType.IMAGE
         ? this.getNumber('media.maxImageBytes', DEFAULT_MAX_IMAGE_BYTES)
         : this.getNumber('media.maxVideoBytes', DEFAULT_MAX_VIDEO_BYTES);
 
-    if (!file.mimetype?.startsWith(allowedMimePrefix)) {
+    if (!allowedMimeTypes.has(file.mimetype?.toLowerCase())) {
       reasons.push('unsupported_mime_type');
+    }
+
+    if (detectFileCategory(file.buffer) !== expectedCategory) {
+      reasons.push('file_signature_mismatch');
     }
 
     if (file.size > maxBytes) {

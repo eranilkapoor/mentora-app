@@ -13,7 +13,6 @@ import {
   DEFAULT_COUNTRY_CODE,
   EMAIL_REGEX,
   OTP_LENGTH,
-  PASSWORD_MIN_LENGTH,
   PHONE_MAX_LENGTH,
   PHONE_REGEX,
 } from '@/core/constants';
@@ -141,10 +140,6 @@ export function useLoginForm(
 
     if (!password) {
       newErrors.password = t('auth.errors.password_required');
-    } else if (password.length < PASSWORD_MIN_LENGTH) {
-      newErrors.password = t('auth.errors.password_min', {
-        min: PASSWORD_MIN_LENGTH,
-      });
     }
 
     if (Object.keys(newErrors).length > 0) {

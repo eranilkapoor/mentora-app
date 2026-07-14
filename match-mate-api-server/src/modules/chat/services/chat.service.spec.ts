@@ -14,6 +14,7 @@ import { ChatService } from './chat.service';
 describe('ChatService', () => {
   const repo = {
     countUnreadByRoomIds: jest.fn(),
+    countUnreadForUser: jest.fn(),
     createDirectRoom: jest.fn(),
     createMessage: jest.fn(),
     findActiveMatchBetween: jest.fn(),
@@ -54,6 +55,7 @@ describe('ChatService', () => {
   const logger = { warn: jest.fn() };
   const storageService = { uploadFiles: jest.fn() };
   const configService = { get: jest.fn() };
+  const featureService = { checkAccess: jest.fn() };
 
   let service: ChatService;
   let userId: string;
@@ -100,11 +102,13 @@ describe('ChatService', () => {
     presence.isOnline.mockReturnValue(false);
     presence.getLastSeen.mockReturnValue(null);
     notificationsService.notify.mockResolvedValue(undefined);
+    featureService.checkAccess.mockResolvedValue({ allowed: true });
     repo.findUsersByIds.mockResolvedValue([]);
     repo.findProfilesByUserIds.mockResolvedValue([]);
     repo.findPrimaryImageMediaByUserIds.mockResolvedValue([]);
     repo.findMessagesByIds.mockResolvedValue([]);
     repo.countUnreadByRoomIds.mockResolvedValue([]);
+    repo.countUnreadForUser.mockResolvedValue(0);
     repo.getBlockedRelationUserIds.mockResolvedValue([]);
     repo.saveRoom.mockResolvedValue(undefined);
 
@@ -117,6 +121,7 @@ describe('ChatService', () => {
       logger as never,
       storageService as never,
       configService as never,
+      featureService as never,
     );
   });
 
@@ -270,6 +275,7 @@ describe('ChatService', () => {
       { _id: first._id, count: 3 },
       { _id: second._id, count: 0 },
     ]);
+    repo.countUnreadForUser.mockResolvedValue(3);
     repo.findUsersByIds.mockResolvedValue([
       { _id: new Types.ObjectId(partnerId), membership: { tier: 'gold' } },
       {
@@ -540,7 +546,12 @@ describe('ChatService', () => {
     notificationsService.notify.mockRejectedValue('offline');
     await service.sendMessage(userId, {
       roomId,
-      attachments: [{ url: 'https://cdn/photo', mimeType: 'image/png' }],
+      attachments: [
+        {
+          url: `https://api.test/uploads/chat/${userId}/photo.png`,
+          mimeType: 'image/png',
+        },
+      ],
     });
     await new Promise((resolve) => setImmediate(resolve));
     expect(logger.warn).toHaveBeenCalledTimes(2);
@@ -603,7 +614,14 @@ describe('ChatService', () => {
       service.uploadAttachments(userId, tooManyFiles),
     ).rejects.toMatchObject({ code: ErrorCode.CHAT_ATTACHMENT_INVALID });
 
-    const image = { ...file, mimetype: 'image/png', originalname: 'photo.png' };
+    const image = {
+      ...file,
+      mimetype: 'image/png',
+      originalname: 'photo.png',
+      buffer: Buffer.from([
+        0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0, 0, 0, 0,
+      ]),
+    };
     storageService.uploadFiles.mockResolvedValue([
       { url: 'https://cdn/photo.png' },
     ]);
@@ -800,24 +818,28 @@ describe('ChatService', () => {
   it('enforces attachment, profanity, moderation, participant, and id helpers', () => {
     const privateService = service as any;
     expect(() =>
-      privateService.ensureAttachmentsAreValid(Array(6).fill({})),
+      privateService.ensureAttachmentsAreValid(userId, Array(6).fill({})),
     ).toThrow();
     expect(() =>
-      privateService.ensureAttachmentsAreValid([{ url: 'local' }]),
+      privateService.ensureAttachmentsAreValid(userId, [{ url: 'local' }]),
     ).toThrow();
     expect(() =>
-      privateService.ensureAttachmentsAreValid([
+      privateService.ensureAttachmentsAreValid(userId, [
         { url: 'https://cdn/file', mimeType: 'application/pdf' },
       ]),
     ).toThrow();
     expect(() =>
-      privateService.ensureAttachmentsAreValid([
+      privateService.ensureAttachmentsAreValid(userId, [
         { url: 'https://cdn/file', size: 26 * 1024 * 1024 },
       ]),
     ).toThrow();
     expect(() =>
-      privateService.ensureAttachmentsAreValid([
-        { url: 'https://cdn/file', mimeType: 'image/png', size: 10 },
+      privateService.ensureAttachmentsAreValid(userId, [
+        {
+          url: `https://api.test/uploads/chat/${userId}/file.png`,
+          mimeType: 'image/png',
+          size: 10,
+        },
       ]),
     ).not.toThrow();
 

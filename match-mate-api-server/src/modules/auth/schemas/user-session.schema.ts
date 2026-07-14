@@ -7,8 +7,14 @@ export class UserSession {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;
 
-  @Prop({ required: true })
-  refreshToken!: string;
+  @Prop({ select: false })
+  refreshToken?: string;
+
+  @Prop({ required: true, select: false })
+  refreshTokenHash!: string;
+
+  @Prop({ required: true, index: true })
+  tokenFamilyId!: string;
 
   @Prop()
   device!: string;
@@ -32,5 +38,5 @@ export class UserSession {
 export type UserSessionDocument = UserSession & Document;
 export const UserSessionSchema = SchemaFactory.createForClass(UserSession);
 
-UserSessionSchema.index({ refreshToken: 1 });
+UserSessionSchema.index({ refreshTokenHash: 1 }, { unique: true });
 UserSessionSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });

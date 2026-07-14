@@ -224,6 +224,7 @@ describe('remaining repository contracts', () => {
       find: jest.fn(() => query),
       findById: jest.fn(() => query),
       findByIdAndUpdate: jest.fn(() => query),
+      findOneAndUpdate: jest.fn(() => query),
       updateMany: jest.fn(),
       findByIdAndDelete: jest.fn(() => query),
       countDocuments: jest.fn(),

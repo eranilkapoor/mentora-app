@@ -51,6 +51,22 @@ describe('LocalCacheService', () => {
     expect(await service.get('counter')).toBeNull();
   });
 
+  it('supports atomic-style set-if-absent and compare-and-delete locally', async () => {
+    await expect(service.setIfAbsent('lock', { id: 1 }, 30)).resolves.toBe(
+      true,
+    );
+    await expect(service.setIfAbsent('lock', { id: 2 }, 30)).resolves.toBe(
+      false,
+    );
+    await expect(
+      service.consumeIfValueMatches('lock', { id: 2 }),
+    ).resolves.toBe(false);
+    await expect(
+      service.consumeIfValueMatches('lock', { id: 1 }),
+    ).resolves.toBe(true);
+    await expect(service.get('lock')).resolves.toBeNull();
+  });
+
   it('expires keys using a relative TTL and removes expired reads', async () => {
     await service.set('temporary', 'value', 2);
     now.mockReturnValue(1_001_000);

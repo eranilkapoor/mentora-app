@@ -1,4 +1,10 @@
-import { IsEmail, IsNotEmpty, Matches, MinLength } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  Matches,
+  MaxLength,
+  MinLength,
+} from 'class-validator';
 import {
   PASSWORD_POLICY_MESSAGE,
   PASSWORD_POLICY_REGEX,
@@ -15,14 +21,16 @@ export class ResetPasswordDto {
   token!: string;
 
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(12)
+  @MaxLength(64)
   @Matches(PASSWORD_POLICY_REGEX, {
     message: PASSWORD_POLICY_MESSAGE,
   })
   newPassword!: string;
 
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(12)
+  @MaxLength(64)
   @Matches(PASSWORD_POLICY_REGEX, {
     message: PASSWORD_POLICY_MESSAGE,
   })
@@ -39,14 +47,16 @@ export class ChangePasswordDto {
   oldPassword!: string;
 
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(12)
+  @MaxLength(64)
   @Matches(PASSWORD_POLICY_REGEX, {
     message: PASSWORD_POLICY_MESSAGE,
   })
   newPassword!: string;
 
   @IsNotEmpty()
-  @MinLength(6)
+  @MinLength(12)
+  @MaxLength(64)
   @Matches(PASSWORD_POLICY_REGEX, {
     message: PASSWORD_POLICY_MESSAGE,
   })

@@ -29,6 +29,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
+    const safePath = request.path || request.url?.split('?')[0] || '/';
 
     if (response.headersSent) {
       return;
@@ -66,8 +67,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
         data = res.data ?? null;
         meta = res.meta ?? null;
       }
-    } else if (exception instanceof Error) {
-      message = exception.message;
     }
 
     // Log error with correlation ID
@@ -75,7 +74,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       'ERROR LOG :',
       JSON.stringify({
         success: false,
-        path: request.url,
+        path: safePath,
         method: request.method,
         correlationId,
         requestId,
@@ -89,14 +88,18 @@ export class AllExceptionsFilter implements ExceptionFilter {
         referer: request.headers.referer || 'unknown',
         userId: requestUserId,
         statusCode: status,
-        message,
-        errors,
+        message:
+          status === HttpStatus.INTERNAL_SERVER_ERROR
+            ? 'Internal server error'
+            : message,
+        errors:
+          status === HttpStatus.INTERNAL_SERVER_ERROR ? undefined : errors,
         stack: exception instanceof Error ? exception.stack : undefined,
         timestamp: new Date().toISOString(),
       }),
       {
         success: false,
-        path: request.url,
+        path: safePath,
         method: request.method,
         correlationId,
         requestId,
@@ -110,15 +113,19 @@ export class AllExceptionsFilter implements ExceptionFilter {
         referer: request.headers.referer || 'unknown',
         userId: requestUserId,
         statusCode: status,
-        message,
-        errors,
+        message:
+          status === HttpStatus.INTERNAL_SERVER_ERROR
+            ? 'Internal server error'
+            : message,
+        errors:
+          status === HttpStatus.INTERNAL_SERVER_ERROR ? undefined : errors,
         stack: exception instanceof Error ? exception.stack : undefined,
         timestamp: new Date().toISOString(),
       },
     );
 
     this.monitoring?.captureException(exception, {
-      path: request.url,
+      path: safePath,
       method: request.method,
       correlationId,
       requestId,
@@ -139,7 +146,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         requestId,
         errors,
         meta,
-        path: request.url,
+        path: safePath,
         timestamp: new Date().toISOString(),
       });
 
@@ -158,7 +165,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       correlationId,
       requestId,
       timestamp: new Date().toISOString(),
-      path: request.url,
+      path: safePath,
     });
   }
 

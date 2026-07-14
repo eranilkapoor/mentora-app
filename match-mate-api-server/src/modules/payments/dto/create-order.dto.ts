@@ -1,8 +1,6 @@
 import {
   IsEnum,
   IsMongoId,
-  IsNumber,
-  IsObject,
   IsOptional,
   IsString,
   Length,
@@ -16,14 +14,6 @@ export class CreateOrderDto {
   @IsOptional()
   @IsMongoId()
   planId?: string;
-
-  @IsOptional()
-  @IsNumber()
-  amount?: number;
-
-  @IsOptional()
-  @IsNumber()
-  coinAmount?: number;
 
   @IsOptional()
   @IsEnum(PaymentGateway)
@@ -58,8 +48,4 @@ export class CreateOrderDto {
   @IsString()
   @MaxLength(15)
   customerGstin?: string;
-
-  @IsOptional()
-  @IsObject()
-  metadata?: Record<string, unknown>;
 }
