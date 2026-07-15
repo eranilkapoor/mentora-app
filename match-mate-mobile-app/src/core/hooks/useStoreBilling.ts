@@ -1,6 +1,6 @@
 import { useCallback } from 'react';
 import { Platform } from 'react-native';
-import { requireOptionalNativeModule } from 'expo-modules-core';
+import { requireOptionalNativeModule } from 'expo';
 import { useIAP } from 'expo-iap';
 
 type StoreBilling = Pick<
