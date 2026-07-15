@@ -89,6 +89,8 @@ def hasUploadSigningConfig =
     uploadStorePassword != null &&
     uploadKeyAlias != null &&
     uploadKeyPassword != null
+def androidVersionCode = (findProperty('ANDROID_VERSION_CODE') ?: System.getenv('ANDROID_VERSION_CODE') ?: '16') as Integer
+def androidVersionName = findProperty('ANDROID_VERSION_NAME') ?: System.getenv('ANDROID_VERSION_NAME') ?: '1.0.0'
 
 android {
     ndkVersion = rootProject.ext.ndkVersion
@@ -101,8 +103,8 @@ android {
         applicationId = 'com.webnza.matchmate'
         minSdkVersion = rootProject.ext.minSdkVersion
         targetSdkVersion = rootProject.ext.targetSdkVersion
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = androidVersionCode
+        versionName = androidVersionName
 
         buildConfigField "String", "REACT_NATIVE_RELEASE_LEVEL", "\"${findProperty('reactNativeReleaseLevel') ?: 'stable'}\""
     }
@@ -127,7 +129,9 @@ android {
             signingConfig = signingConfigs.debug
         }
         release {
-            signingConfig = hasUploadSigningConfig ? signingConfigs.upload : signingConfigs.debug
+            if (hasUploadSigningConfig) {
+                signingConfig = signingConfigs.upload
+            }
             def enableShrinkResources = findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: 'false'
             shrinkResources = enableShrinkResources.toBoolean()
             minifyEnabled = enableMinifyInReleaseBuilds
@@ -144,6 +148,18 @@ android {
     }
     androidResources {
         ignoreAssetsPattern = '!.svn:!.git:!.ds_store:!*.scc:!CVS:!thumbs.db:!picasa.ini:!*~'
+    }
+}
+
+gradle.taskGraph.whenReady { taskGraph ->
+    def isReleaseBuild = taskGraph.allTasks.any { task ->
+        task.path == ':app:bundleRelease' || task.path == ':app:assembleRelease'
+    }
+
+    if (isReleaseBuild && !hasUploadSigningConfig) {
+        throw new GradleException(
+            'Release builds require MATCH_MATE_UPLOAD_STORE_FILE, MATCH_MATE_UPLOAD_STORE_PASSWORD, MATCH_MATE_UPLOAD_KEY_ALIAS, and MATCH_MATE_UPLOAD_KEY_PASSWORD. Use npm run build:android:production:local or configure these values in CI.'
+        )
     }
 }
 
