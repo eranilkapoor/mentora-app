@@ -36,6 +36,32 @@ describe('production environment validation', () => {
     ).toBeUndefined();
   });
 
+  it('accepts local cache in production when the notification queue is disabled', () => {
+    const env = {
+      ...productionEnv(),
+      CACHE_DRIVER: 'local',
+      NOTIFICATION_QUEUE_ENABLED: false,
+    };
+    delete (env as Partial<typeof env>).REDIS_HOST;
+
+    expect(ENV_VALIDATION_SCHEMA.validate(env).error).toBeUndefined();
+  });
+
+  it('rejects notification queue without Redis', () => {
+    const env = {
+      ...productionEnv(),
+      CACHE_DRIVER: 'local',
+      NOTIFICATION_QUEUE_ENABLED: true,
+    };
+    delete (env as Partial<typeof env>).REDIS_HOST;
+
+    const { error } = ENV_VALIDATION_SCHEMA.validate(env);
+
+    expect(error?.message).toContain(
+      'Notification queue requires CACHE_DRIVER=redis',
+    );
+  });
+
   it.each([
     {
       PAYMENT_MOBILE_STORE_VERIFICATION_MODE: 'sandbox',

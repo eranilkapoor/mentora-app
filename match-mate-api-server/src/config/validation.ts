@@ -233,11 +233,9 @@ function validateProductionProviders(
 
   const requiredInfrastructure: Array<[string, unknown, unknown]> = [
     ['DB_DRIVER', env.DB_DRIVER, 'mongo'],
-    ['CACHE_DRIVER', env.CACHE_DRIVER, 'redis'],
     ['STORAGE_DRIVER', env.STORAGE_DRIVER, 's3'],
     ['MONITORING_ENABLED', env.MONITORING_ENABLED, true],
     ['MONITORING_PROVIDER', env.MONITORING_PROVIDER, 'sentry'],
-    ['NOTIFICATION_QUEUE_ENABLED', env.NOTIFICATION_QUEUE_ENABLED, true],
   ];
   const invalidInfrastructure = requiredInfrastructure.find(
     ([, actual, expected]) => actual !== expected,
@@ -252,6 +250,13 @@ function validateProductionProviders(
   if (!env.SENTRY_DSN) {
     return helpers.error('any.custom', {
       customMessage: 'SENTRY_DSN is required in production',
+    });
+  }
+
+  if (env.NOTIFICATION_QUEUE_ENABLED === true && env.CACHE_DRIVER !== 'redis') {
+    return helpers.error('any.custom', {
+      customMessage:
+        'Notification queue requires CACHE_DRIVER=redis because BullMQ uses Redis',
     });
   }
 
@@ -468,12 +473,10 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
 
   CACHE_DRIVER: Joi.string().trim().valid('redis', 'local').default('local'),
 
-  REDIS_HOST: optionalHost
-    .when('CACHE_DRIVER', { is: 'redis', then: hostSchema.required() })
-    .when('NOTIFICATION_QUEUE_ENABLED', {
-      is: true,
-      then: hostSchema.required(),
-    }),
+  REDIS_HOST: optionalHost.when('CACHE_DRIVER', {
+    is: 'redis',
+    then: hostSchema.required(),
+  }),
 
   REDIS_PORT: Joi.number().integer().min(1).max(65535).default(6379),
 
