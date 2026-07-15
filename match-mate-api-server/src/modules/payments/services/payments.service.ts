@@ -439,23 +439,38 @@ export class PaymentsService {
     this.ensureUserId(userId);
     this.ensureMobileStoreReceiptAllowed(dto);
 
-    const plan = await this.planModel.findById(dto.planId).lean().exec();
+    const requestedPlan = await this.planModel
+      .findById(dto.planId)
+      .lean()
+      .exec();
 
-    if (!plan || !plan.isActive) {
+    if (!requestedPlan || !requestedPlan.isActive) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'invalid_or_inactive_plan',
       });
     }
 
-    if (plan.isCustom) {
+    if (requestedPlan.isCustom) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
         reason: 'custom_plan_requires_sales_contract',
       });
     }
 
+    let plan = requestedPlan as Plan;
     this.ensureStoreProductMatchesPlan(plan, dto);
     const verifiedStoreSubscription =
       await this.verifyStoreReceiptWhenRequired(dto);
+    plan = await this.resolvePlanFromVerifiedStoreSubscription(
+      plan,
+      dto,
+      verifiedStoreSubscription,
+    );
+    const planId = this.getPlanId(plan, dto.planId);
+    const storeProductId =
+      verifiedStoreSubscription?.productId ?? dto.productId;
+    const storeBasePlanId =
+      verifiedStoreSubscription?.basePlanId ?? dto.basePlanId;
+    const storeOfferId = verifiedStoreSubscription?.offerId ?? dto.offerId;
     const transactionId =
       verifiedStoreSubscription?.transactionId ?? dto.transactionId;
 
@@ -473,13 +488,12 @@ export class PaymentsService {
       }
 
       await this.subscriptionsService.reconcileStoreSubscription(userId, {
-        planId: existingPayment.planId?.toString() ?? dto.planId,
+        planId: existingPayment.planId?.toString() ?? planId,
         paymentId: existingPayment._id?.toString(),
         paymentProvider: dto.gateway,
-        storeProductId: dto.productId,
-        storeBasePlanId:
-          verifiedStoreSubscription?.basePlanId ?? dto.basePlanId,
-        storeOfferId: verifiedStoreSubscription?.offerId ?? dto.offerId,
+        storeProductId,
+        storeBasePlanId,
+        storeOfferId,
         storePurchaseToken: dto.purchaseToken ?? dto.receiptData,
         storeTransactionId: transactionId,
         storeOriginalTransactionId:
@@ -508,7 +522,7 @@ export class PaymentsService {
 
     const payment = await this.paymentRepo.create({
       userId: new Types.ObjectId(userId),
-      planId: new Types.ObjectId(dto.planId),
+      planId: new Types.ObjectId(planId),
       orderId,
       gatewayOrderId: transactionId,
       gatewayPaymentId: transactionId,
@@ -527,9 +541,9 @@ export class PaymentsService {
       signatureVerified: true,
       initiatedAt: new Date(),
       paidAt: new Date(),
-      storeProductId: dto.productId,
-      storeBasePlanId: verifiedStoreSubscription?.basePlanId ?? dto.basePlanId,
-      storeOfferId: verifiedStoreSubscription?.offerId ?? dto.offerId,
+      storeProductId,
+      storeBasePlanId,
+      storeOfferId,
       storeTransactionId: transactionId,
       storeOriginalTransactionId:
         verifiedStoreSubscription?.originalTransactionId ??
@@ -539,6 +553,9 @@ export class PaymentsService {
         productId: dto.productId,
         basePlanId: dto.basePlanId,
         offerId: dto.offerId,
+        verifiedProductId: verifiedStoreSubscription?.productId,
+        verifiedBasePlanId: verifiedStoreSubscription?.basePlanId,
+        verifiedOfferId: verifiedStoreSubscription?.offerId,
         transactionId,
         originalTransactionId: dto.originalTransactionId,
         verification: verifiedStoreSubscription?.providerPayload,
@@ -552,9 +569,9 @@ export class PaymentsService {
     await this.activateSubscriptionIfRequired(userId, payment, {
       paymentProvider: dto.gateway,
       autoRenew: verifiedStoreSubscription?.autoRenew ?? true,
-      storeProductId: dto.productId,
-      storeBasePlanId: verifiedStoreSubscription?.basePlanId ?? dto.basePlanId,
-      storeOfferId: verifiedStoreSubscription?.offerId ?? dto.offerId,
+      storeProductId,
+      storeBasePlanId,
+      storeOfferId,
       storePurchaseToken: dto.purchaseToken ?? dto.receiptData,
       storeTransactionId: transactionId,
       storeOriginalTransactionId:
@@ -1018,6 +1035,71 @@ export class PaymentsService {
         reason: 'store_offer_mismatch',
       });
     }
+  }
+
+  private async resolvePlanFromVerifiedStoreSubscription(
+    requestedPlan: Plan,
+    dto: VerifyStoreSubscriptionDto,
+    verified?: VerifiedStoreSubscription,
+  ): Promise<Plan> {
+    if (!verified) return requestedPlan;
+
+    const mapping =
+      dto.gateway === PaymentGateway.GOOGLE_PLAY
+        ? requestedPlan.storeProducts?.android
+        : requestedPlan.storeProducts?.ios;
+
+    if (
+      mapping?.productId === verified.productId &&
+      (dto.gateway !== PaymentGateway.GOOGLE_PLAY ||
+        requestedPlan.storeProducts?.android?.basePlanId ===
+          verified.basePlanId)
+    ) {
+      return requestedPlan;
+    }
+
+    const storeProductQuery: Record<string, unknown> =
+      dto.gateway === PaymentGateway.GOOGLE_PLAY
+        ? {
+            'storeProducts.android.productId': verified.productId,
+            'storeProducts.android.productType': StoreProductType.SUBSCRIPTION,
+          }
+        : {
+            'storeProducts.ios.productId': verified.productId,
+            'storeProducts.ios.productType': StoreProductType.SUBSCRIPTION,
+          };
+
+    if (dto.gateway === PaymentGateway.GOOGLE_PLAY && verified.basePlanId) {
+      storeProductQuery['storeProducts.android.basePlanId'] =
+        verified.basePlanId;
+    }
+
+    const verifiedPlan = await this.planModel
+      .findOne({
+        ...storeProductQuery,
+        isActive: true,
+        isCustom: { $ne: true },
+      })
+      .lean()
+      .exec();
+
+    if (!verifiedPlan) {
+      return throwBadRequest(ErrorCode.PAYMENT_VERIFICATION_FAILED, {
+        reason: 'store_verified_product_unmapped',
+        gateway: dto.gateway,
+        requestedProductId: dto.productId,
+        requestedBasePlanId: dto.basePlanId,
+        verifiedProductId: verified.productId,
+        verifiedBasePlanId: verified.basePlanId,
+      });
+    }
+
+    return verifiedPlan;
+  }
+
+  private getPlanId(plan: Plan, fallbackPlanId: string): string {
+    const planWithId = plan as Plan & { _id?: Types.ObjectId | string };
+    return planWithId._id?.toString() ?? fallbackPlanId;
   }
 
   private async verifyStoreReceiptWhenRequired(

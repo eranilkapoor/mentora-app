@@ -49,11 +49,7 @@ export class StoreReceiptVerifierService {
   private async verifyGooglePlay(
     dto: VerifyStoreSubscriptionDto,
   ): Promise<VerifiedStoreSubscription> {
-    const lifecycle = await this.getGooglePlayLifecycle(
-      dto.purchaseToken!,
-      dto.productId,
-      dto.basePlanId,
-    );
+    const lifecycle = await this.getGooglePlayLifecycle(dto.purchaseToken!);
     if (
       ![SubscriptionStatus.ACTIVE, SubscriptionStatus.GRACE_PERIOD].includes(
         lifecycle.status,
