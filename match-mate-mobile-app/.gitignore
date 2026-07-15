@@ -42,10 +42,12 @@ yarn-error.log*
 *.mobileprovision
 
 # Environment Files
+.env
 .env*.local
 .env.*production
 .env.*development
-.env
+.env.*preview
+.env*
 
 # TypeScript
 *.tsbuildinfo
