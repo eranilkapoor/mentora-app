@@ -32,7 +32,6 @@ import { CurrentUser } from '../decorators/current-user.decorator';
 import { AppRequest } from '@/common/interfaces/app-request.interface';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { ErrorCode, SuccessCode } from '@/common/constants';
-import { AppLogger } from '@/common/logger/logger.service';
 import { successResponse } from '@/common/utils/response.util';
 import { AppException } from '@/common/exceptions/app.exception';
 import { throwUnauthorized } from '@/common/exceptions/throw-app-exception';
@@ -41,10 +40,7 @@ import { RateLimit } from '@/common/decorators/rate-limit.decorator';
 @Controller('auth')
 @UseGuards(JwtAuthGuard)
 export class AuthController {
-  constructor(
-    private readonly authService: AuthService,
-    private readonly logger: AppLogger,
-  ) {}
+  constructor(private readonly authService: AuthService) {}
 
   @Public()
   @RateLimit({
@@ -423,13 +419,6 @@ export class AuthController {
 
       return await this.authService.refresh(req, res, refreshToken);
     } catch (error) {
-      this.logger.error(
-        `Refresh token failed: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`,
-        error instanceof Error ? error.stack : undefined,
-      );
-
       if (error instanceof AppException) {
         throw error;
       }

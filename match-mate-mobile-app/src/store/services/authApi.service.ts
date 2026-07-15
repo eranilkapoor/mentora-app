@@ -203,10 +203,11 @@ export const authApi = baseApi.injectEndpoints({
     }),
     logout: builder.mutation<{ success: boolean }, void>({
       async queryFn(_arg, _api, _extraOptions, baseQuery) {
+        const state = _api.getState() as RootState;
+        const userId = state.auth.user?.userId;
+
         try {
           const refreshToken = await getRefreshToken();
-          const state = _api.getState() as RootState;
-          const userId = state.auth.user?.userId;
           const deviceId = await getDeviceId();
 
           await baseQuery({
@@ -215,7 +216,7 @@ export const authApi = baseApi.injectEndpoints({
             body: { deviceId },
           });
 
-          const result = await baseQuery({
+          await baseQuery({
             url: '/auth/logout',
             method: 'POST',
             credentials: 'include',
@@ -225,13 +226,6 @@ export const authApi = baseApi.injectEndpoints({
                 }
               : undefined,
           });
-
-          // API Error
-          if (result.error) {
-            return {
-              error: result.error,
-            };
-          }
 
           await baseQuery({
             url: '/analytics/track',
@@ -247,28 +241,21 @@ export const authApi = baseApi.injectEndpoints({
               funnelStage: 'RETENTION',
             },
           });
-
-          await clearRefreshToken();
-          if (userId) {
-            await Storage.removeItem(`notification-push-token:${userId}`);
-          }
-          _api.dispatch(logoutAction());
-
-          // Success
-          return {
-            data: {
-              success: true,
-            },
-          };
-        } catch (error) {
-          return {
-            error: {
-              status: 'CUSTOM_ERROR',
-              error:
-                error instanceof Error ? error.message : 'AUTH.LOGOUT_FAILED',
-            },
-          };
+        } catch {
+          // Remote logout is best-effort; local session cleanup must still win.
         }
+
+        await clearRefreshToken();
+        if (userId) {
+          await Storage.removeItem(`notification-push-token:${userId}`);
+        }
+        _api.dispatch(logoutAction());
+
+        return {
+          data: {
+            success: true,
+          },
+        };
       },
     }),
 

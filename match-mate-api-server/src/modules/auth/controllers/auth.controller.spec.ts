@@ -33,15 +33,11 @@ describe('AuthController', () => {
     getRefreshCookieOptions: jest.fn(),
   };
 
-  const logger = {
-    error: jest.fn(),
-  };
-
   let controller: AuthController;
 
   beforeEach(() => {
     jest.clearAllMocks();
-    controller = new AuthController(authService as never, logger as never);
+    controller = new AuthController(authService as never);
   });
 
   it('registers user and wraps response with auth success code', async () => {

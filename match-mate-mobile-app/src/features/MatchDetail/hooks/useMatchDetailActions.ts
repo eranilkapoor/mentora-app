@@ -15,6 +15,8 @@ import {
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showSuccess } from '@/core/utils/toast';
 import { FALLBACK_PROFILE_PHOTO } from '@/core/constants';
+import { isPlanAccessError } from '@/core/utils/apiMessage';
+import { useUpgradePrompt } from '@/features/Membership/hooks/useUpgradePrompt';
 
 export function useMatchDetailActions(
   userId: string,
@@ -23,6 +25,7 @@ export function useMatchDetailActions(
   navigation: NativeStackNavigationProp<MatchesStackParamList, 'MatchDetails'>
 ) {
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
   const { refetch } = useGetMatchProfileQuery(userId);
   const [optimisticPendingInterest, setOptimisticPendingInterest] =
     useState(false);
@@ -90,13 +93,26 @@ export function useMatchDetailActions(
         partnerName: name,
         partnerPhoto: photos[0] ?? (FALLBACK_PROFILE_PHOTO as string),
       });
-    } catch {
+    } catch (error) {
+      if (isPlanAccessError(error)) {
+        showUpgradePrompt(t('match_detail.action_chat'));
+        return;
+      }
+
       showError({
         title: t('match_detail.chat_unavailable_title'),
         message: t('common.try_again'),
       });
     }
-  }, [createDirectRoom, userId, name, photos, navigation, t]);
+  }, [
+    createDirectRoom,
+    userId,
+    name,
+    photos,
+    navigation,
+    showUpgradePrompt,
+    t,
+  ]);
 
   // ─── Report ────────────────────────────────────────────────────────────
 

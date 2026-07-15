@@ -91,7 +91,7 @@ export function PasswordStrengthHint({
     [theme]
   );
 
-  if (!visible || !password) return null;
+  if (!visible) return null;
 
   const strength = getPasswordStrength(password);
   const rules = getPasswordStrengthRules(password);

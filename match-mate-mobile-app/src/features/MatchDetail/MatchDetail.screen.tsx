@@ -13,7 +13,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { getApiErrorMessage } from '@/core/utils/apiMessage';
+import {
+  getApiErrorCode,
+  getApiErrorMessage,
+  isPlanAccessError,
+} from '@/core/utils/apiMessage';
 import { resolveApiUrl } from '@/core/utils/config';
 import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
 import { useGetMatchProfileQuery } from '@/store/services/matchApi.service';
@@ -38,20 +42,6 @@ import { MatchScoreBar } from './components/MatchScoreBar';
 import { MatchDetailCta } from './components/MatchDetailCta';
 import { MatchDetailEmpty } from './components/MatchDetailEmpty';
 import { useUpgradePrompt } from '../Membership/hooks/useUpgradePrompt';
-
-const getApiErrorCode = (error: unknown): string | undefined => {
-  if (!error || typeof error !== 'object' || !('data' in error)) {
-    return undefined;
-  }
-
-  const data = (error as { data?: unknown }).data;
-  if (data && typeof data === 'object' && 'code' in data) {
-    const code = (data as { code?: unknown }).code;
-    return typeof code === 'string' ? code : undefined;
-  }
-
-  return undefined;
-};
 
 const calculateAge = (dateOfBirth?: string | Date): number | undefined => {
   if (!dateOfBirth) return undefined;
@@ -177,9 +167,7 @@ export default function MatchDetailScreen({
   const myProfile = myProfileData?.data;
   const myPreference = myPreferenceData?.data;
   const errorCode = getApiErrorCode(error);
-  const isPlanRestricted =
-    errorCode === 'SUBSCRIPTION.FEATURE_NOT_AVAILABLE' ||
-    errorCode === 'SUBSCRIPTION.REQUIRED';
+  const isPlanRestricted = isPlanAccessError(error);
   const name = getProfileName(profile);
   const photos = useMemo(() => getPhotos(profile), [profile]);
   const photoItems = useMemo(() => getPhotoItems(profile), [profile]);
@@ -194,10 +182,7 @@ export default function MatchDetailScreen({
       };
     }
 
-    if (
-      code === 'SUBSCRIPTION.FEATURE_NOT_AVAILABLE' ||
-      code === 'SUBSCRIPTION.REQUIRED'
-    ) {
+    if (isPlanAccessError(error)) {
       return {
         title: t('match_detail.access_limited_title', {
           defaultValue: 'Profile Views Limited',

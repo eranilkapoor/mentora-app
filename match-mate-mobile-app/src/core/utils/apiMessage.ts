@@ -16,6 +16,25 @@ const hasApiCode = (value: unknown): value is ApiLike =>
   'code' in value &&
   typeof (value as { code?: unknown }).code === 'string';
 
+export const getApiErrorCode = (error: unknown): string | undefined => {
+  const data =
+    typeof error === 'object' && error !== null && 'data' in error
+      ? (error as FetchBaseQueryError).data
+      : error;
+
+  return hasApiCode(data) ? data.code : undefined;
+};
+
+export const isPlanAccessError = (error: unknown): boolean => {
+  const code = getApiErrorCode(error);
+
+  return (
+    code === 'SUBSCRIPTION.REQUIRED' ||
+    code === 'SUBSCRIPTION.FEATURE_NOT_AVAILABLE' ||
+    code === 'CHAT.ACCESS_DENIED'
+  );
+};
+
 export const getApiResponseMessage = <T>(
   t: TFunction,
   response: ApiResponse<T>,

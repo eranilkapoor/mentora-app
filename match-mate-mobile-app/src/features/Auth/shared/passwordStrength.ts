@@ -2,7 +2,8 @@ import { PASSWORD_MIN_LENGTH } from '@/core/constants';
 
 export type PasswordStrengthLevel = 'weak' | 'fair' | 'strong' | 'very_strong';
 
-export type PasswordRuleKey = 'length' | 'uppercase' | 'number' | 'special';
+export type PasswordRuleKey =
+  'length' | 'lowercase' | 'uppercase' | 'number' | 'special';
 
 export type PasswordStrengthRule = {
   key: PasswordRuleKey;
@@ -15,6 +16,10 @@ export const getPasswordStrengthRules = (
   {
     key: 'length',
     passed: password.length >= PASSWORD_MIN_LENGTH,
+  },
+  {
+    key: 'lowercase',
+    passed: /[a-z]/.test(password),
   },
   {
     key: 'uppercase',
@@ -48,4 +53,4 @@ export const getPasswordStrength = (
 };
 
 export const isPasswordStrongEnough = (password: string): boolean =>
-  getPasswordStrength(password) !== 'weak';
+  getPasswordStrengthRules(password).every((rule) => rule.passed);

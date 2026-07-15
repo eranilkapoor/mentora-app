@@ -41,6 +41,12 @@ const setUploadHeaders = (res: {
   res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
 };
 
+const browserAssetProbePaths = new Set([
+  '/favicon.ico',
+  '/apple-touch-icon.png',
+  '/apple-touch-icon-precomposed.png',
+]);
+
 async function shutdown(
   signal: string,
   app: NestExpressApplication,
@@ -110,6 +116,23 @@ async function bootstrap(): Promise<void> {
   app.use(express.json({ limit: '10mb' }));
   app.use(express.urlencoded({ limit: '10mb', extended: true }));
   app.use(cookieParser());
+  app.use(
+    (
+      request: express.Request,
+      response: express.Response,
+      next: express.NextFunction,
+    ) => {
+      if (
+        !browserAssetProbePaths.has(request.path) ||
+        (request.method !== 'GET' && request.method !== 'HEAD')
+      ) {
+        return next();
+      }
+
+      response.setHeader('Cache-Control', 'public, max-age=86400');
+      response.status(204).end();
+    },
+  );
 
   const allowedOrigins = configService.get<string[]>('cors.origins') ?? [];
   const allowAnyOrigin = allowedOrigins.includes('*');

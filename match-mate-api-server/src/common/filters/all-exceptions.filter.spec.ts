@@ -3,7 +3,7 @@ import { ErrorCode } from '../constants';
 import { AllExceptionsFilter } from './all-exceptions.filter';
 
 describe('AllExceptionsFilter', () => {
-  const logger = { error: jest.fn() };
+  const logger = { error: jest.fn(), warn: jest.fn() };
   const monitoring = { captureException: jest.fn() };
   const response = {
     headersSent: false,
@@ -116,11 +116,14 @@ describe('AllExceptionsFilter', () => {
         meta: { source: 'validation' },
       }),
     );
-    expect(logger.error).toHaveBeenCalledWith(
-      'ERROR LOG :',
-      expect.stringContaining('"errors":[{"field":"email"}]'),
-      expect.objectContaining({ errors: [{ field: 'email' }] }),
+    expect(logger.warn).toHaveBeenCalledWith(
+      'REQUEST REJECTED :',
+      expect.objectContaining({
+        errors: [{ field: 'email' }],
+        statusCode: 400,
+      }),
     );
+    expect(monitoring.captureException).not.toHaveBeenCalled();
   });
 
   it('uses defaults for a structured response with no optional fields', () => {

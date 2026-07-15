@@ -13,11 +13,14 @@ import { HomeMatchProfile } from '../Home.types';
 import { FALLBACK_PROFILE_PHOTO } from '@/core/constants';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { HomeStackParamList } from '@/navigation/types';
+import { isPlanAccessError } from '@/core/utils/apiMessage';
+import { useUpgradePrompt } from '@/features/Membership/hooks/useUpgradePrompt';
 
 export function useHomeActions(
   navigation: NativeStackNavigationProp<HomeStackParamList, 'HomeScreen'>
 ) {
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
 
   const [sendInterest] = useSendInterestMutation();
   const [withdrawInterest] = useWithdrawInterestMutation();
@@ -35,7 +38,12 @@ export function useHomeActions(
             partnerName: item.name,
             partnerPhoto: item.photos[0] ?? (FALLBACK_PROFILE_PHOTO as string),
           });
-        } catch {
+        } catch (error) {
+          if (isPlanAccessError(error)) {
+            showUpgradePrompt(t('home.action_chat'));
+            return;
+          }
+
           Alert.alert(
             t('home.chat_unavailable_title'),
             t('home.chat_unavailable_message')
@@ -77,7 +85,14 @@ export function useHomeActions(
         });
       }
     },
-    [createDirectRoom, navigation, sendInterest, withdrawInterest, t]
+    [
+      createDirectRoom,
+      navigation,
+      sendInterest,
+      showUpgradePrompt,
+      withdrawInterest,
+      t,
+    ]
   );
 
   const handleShortlist = useCallback(

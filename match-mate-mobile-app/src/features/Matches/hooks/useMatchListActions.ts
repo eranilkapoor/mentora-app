@@ -14,6 +14,8 @@ import {
 } from '@/store/services/matchApi.service';
 import { MatchItem, MatchListScreenProps } from '../MatchList.types';
 import { FALLBACK_PROFILE_PHOTO } from '@/core/constants';
+import { isPlanAccessError } from '@/core/utils/apiMessage';
+import { useUpgradePrompt } from '@/features/Membership/hooks/useUpgradePrompt';
 
 export function useMatchListActions(
   navigation: MatchListScreenProps['navigation'],
@@ -22,6 +24,7 @@ export function useMatchListActions(
   }
 ) {
   const { t } = useTranslation();
+  const showUpgradePrompt = useUpgradePrompt();
   const [sendInterest] = useSendInterestMutation();
   const [withdrawInterest] = useWithdrawInterestMutation();
   const [shortlistProfile] = useShortlistProfileMutation();
@@ -39,14 +42,19 @@ export function useMatchListActions(
           partnerName: item.name,
           partnerPhoto: item.avatarUrl ?? (FALLBACK_PROFILE_PHOTO as string),
         });
-      } catch {
+      } catch (error) {
+        if (isPlanAccessError(error)) {
+          showUpgradePrompt(t('matches.action_chat'));
+          return;
+        }
+
         Alert.alert(
           t('matches.chat_unavailable_title'),
           t('matches.chat_unavailable_message')
         );
       }
     },
-    [createDirectRoom, navigation, t]
+    [createDirectRoom, navigation, showUpgradePrompt, t]
   );
 
   const handlePrimaryAction = useCallback(

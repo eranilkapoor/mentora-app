@@ -49,6 +49,7 @@ import {
 import { showConfirm } from '@/core/utils/confirm';
 import { showError, showInfo, showSuccess } from '@/core/utils/toast';
 import { resolveApiUrl } from '@/core/utils/config';
+import { isPlanAccessError } from '@/core/utils/apiMessage';
 import { chatStyles } from './Chat.styles';
 import { formatDateLabel, Message, Props } from './Chat.types';
 import { DateSeparator } from './components/DateSeparator';
@@ -305,13 +306,18 @@ export default function ChatScreen({
       setInputText('');
       setShowEmojiPicker(false);
       listRef.current?.scrollToOffset({ offset: 0, animated: true });
-    } catch {
+    } catch (error) {
+      if (isPlanAccessError(error)) {
+        showUpgradePrompt(t('chat.messages'));
+        return;
+      }
+
       showError({
         title: t('chat.message_not_sent_title'),
         message: t('chat.message_not_sent_message'),
       });
     }
-  }, [activeRoomId, inputText, isSending, sendMessage, t]);
+  }, [activeRoomId, inputText, isSending, sendMessage, showUpgradePrompt, t]);
 
   const handlePickImage = useCallback(async (): Promise<void> => {
     if (!activeRoomId || isUploadingAttachment || isSending) return;
@@ -364,7 +370,12 @@ export default function ChatScreen({
         attachments: [attachment],
         clientMessageId: `${Date.now()}`,
       }).unwrap();
-    } catch {
+    } catch (error) {
+      if (isPlanAccessError(error)) {
+        showUpgradePrompt(t('chat.send_image'));
+        return;
+      }
+
       showError({
         title: t('chat.image_not_sent_title'),
         message: t('chat.image_not_sent_message'),
@@ -492,7 +503,12 @@ export default function ChatScreen({
           attachments: [attachment],
           clientMessageId: `${Date.now()}`,
         }).unwrap();
-      } catch {
+      } catch (error) {
+        if (isPlanAccessError(error)) {
+          showUpgradePrompt(t('chat.start_voice_recording'));
+          return;
+        }
+
         showError({
           title: t('chat.voice_not_sent_title'),
           message: t('chat.voice_not_sent_message'),
@@ -508,6 +524,7 @@ export default function ChatScreen({
       recording,
       recordingDurationMs,
       sendMessage,
+      showUpgradePrompt,
       t,
       uploadChatAttachments,
     ]

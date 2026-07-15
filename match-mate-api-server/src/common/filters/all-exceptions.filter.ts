@@ -69,70 +69,51 @@ export class AllExceptionsFilter implements ExceptionFilter {
       }
     }
 
-    // Log error with correlation ID
-    this.logger.error(
-      'ERROR LOG :',
-      JSON.stringify({
-        success: false,
-        path: safePath,
-        method: request.method,
-        correlationId,
-        requestId,
-        clientIp: request.ip || 'unknown',
-        remoteIp: request.socket?.remoteAddress || 'unknown',
-        forwardedFor: Array.isArray(forwardedFor)
-          ? forwardedFor.join(',')
-          : forwardedFor || 'unknown',
-        userAgent: request.headers['user-agent'] || 'unknown',
-        origin: request.headers.origin || 'unknown',
-        referer: request.headers.referer || 'unknown',
-        userId: requestUserId,
-        statusCode: status,
-        message:
-          status === HttpStatus.INTERNAL_SERVER_ERROR
-            ? 'Internal server error'
-            : message,
-        errors:
-          status === HttpStatus.INTERNAL_SERVER_ERROR ? undefined : errors,
-        stack: exception instanceof Error ? exception.stack : undefined,
-        timestamp: new Date().toISOString(),
-      }),
-      {
-        success: false,
-        path: safePath,
-        method: request.method,
-        correlationId,
-        requestId,
-        clientIp: request.ip || 'unknown',
-        remoteIp: request.socket?.remoteAddress || 'unknown',
-        forwardedFor: Array.isArray(forwardedFor)
-          ? forwardedFor.join(',')
-          : forwardedFor || 'unknown',
-        userAgent: request.headers['user-agent'] || 'unknown',
-        origin: request.headers.origin || 'unknown',
-        referer: request.headers.referer || 'unknown',
-        userId: requestUserId,
-        statusCode: status,
-        message:
-          status === HttpStatus.INTERNAL_SERVER_ERROR
-            ? 'Internal server error'
-            : message,
-        errors:
-          status === HttpStatus.INTERNAL_SERVER_ERROR ? undefined : errors,
-        stack: exception instanceof Error ? exception.stack : undefined,
-        timestamp: new Date().toISOString(),
-      },
-    );
-
-    this.monitoring?.captureException(exception, {
+    const logContext = {
+      success: false,
       path: safePath,
       method: request.method,
       correlationId,
       requestId,
+      clientIp: request.ip || 'unknown',
+      remoteIp: request.socket?.remoteAddress || 'unknown',
+      forwardedFor: Array.isArray(forwardedFor)
+        ? forwardedFor.join(',')
+        : forwardedFor || 'unknown',
+      userAgent: request.headers['user-agent'] || 'unknown',
+      origin: request.headers.origin || 'unknown',
+      referer: request.headers.referer || 'unknown',
+      userId: requestUserId,
       statusCode: status,
+      message:
+        status === HttpStatus.INTERNAL_SERVER_ERROR
+          ? 'Internal server error'
+          : message,
+      errors: status === HttpStatus.INTERNAL_SERVER_ERROR ? undefined : errors,
+      stack:
+        status >= HttpStatus.INTERNAL_SERVER_ERROR && exception instanceof Error
+          ? exception.stack
+          : undefined,
+      timestamp: new Date().toISOString(),
       code,
       meta,
-    });
+    };
+
+    if (status >= HttpStatus.INTERNAL_SERVER_ERROR) {
+      this.logger.error('ERROR LOG :', JSON.stringify(logContext), logContext);
+
+      this.monitoring?.captureException(exception, {
+        path: safePath,
+        method: request.method,
+        correlationId,
+        requestId,
+        statusCode: status,
+        code,
+        meta,
+      });
+    } else {
+      this.logger.warn('REQUEST REJECTED :', logContext);
+    }
 
     // Custom 404 response
     if (status === HttpStatus.NOT_FOUND) {
