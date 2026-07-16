@@ -42,6 +42,7 @@ export interface DiscoveryProfile {
   };
   education?: {
     qualification?: Qualification;
+    occupationType?: OccupationType;
     occupation?: string;
     jobRole?: string;
     annualIncomeAmount?: number;

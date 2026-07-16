@@ -46,6 +46,13 @@
   "feature_super_interest": "Super Interest",
   "top_badge": "⭐ Top",
   "popular_badge": "Popular",
+  "current_plan_badge": "Current plan",
+  "plan_state": {
+    "current": "Active now",
+    "upgrade": "Upgrade",
+    "downgrade": "Downgrade",
+    "switch": "Switch billing"
+  },
   "select_plan_label": "Select {{name}} plan at {{price}}",
   "plan_card_label": "{{months}}-month plan at {{price}}",
   "months_label_one": "{{count}} month",
@@ -69,6 +76,9 @@
   "savings_text": "Save more with longer plans — up to {{amount}} saved on 12 months",
   "cta_get_plan": "Get {{name}} →",
   "cta_current_plan": "Current plan",
+  "cta_upgrade_plan": "Upgrade to {{name}}",
+  "cta_downgrade_plan": "Downgrade to {{name}}",
+  "cta_switch_plan": "Switch to {{name}}",
   "cta_start_trial": "Start {{days}}-day trial",
   "cta_selected_plan": "Selected Plan",
   "cta_get_exclusive": "Get Exclusive Now →",
@@ -90,6 +100,8 @@
   "store_purchase_token_missing_message": "Google Play completed the purchase but did not return a verification token. Restart the app to restore the purchase, or contact support if it continues.",
   "store_product_unmapped_message": "This store purchase does not match an available Match Mate plan. Please contact support.",
   "store_offer_unavailable_message": "This plan is not available for your store account or region.",
+  "downgrade_confirm_title": "Downgrade plan?",
+  "downgrade_confirm_message": "Your current benefits stay active until the current period ends. {{name}} will apply after renewal based on your app store billing rules.",
   "checkout": {
     "title": "Choose payment method",
     "subtitle": "Select a secure provider to start checkout.",

@@ -24,6 +24,75 @@ export const getProfileName = (profile: DiscoveryProfile): string =>
     .join(' ')
     .trim() || 'Match Mate Member';
 
+const getFirstNonEmpty = (...values: unknown[]): string | undefined => {
+  for (const value of values) {
+    if (value === undefined || value === null) continue;
+    const normalized = String(value).trim();
+    if (normalized) return normalized;
+  }
+
+  return undefined;
+};
+
+const asRecord = (value: unknown): Record<string, unknown> =>
+  value && typeof value === 'object' ? (value as Record<string, unknown>) : {};
+
+const getDisplayValue = (value: unknown): string | undefined => {
+  if (Array.isArray(value)) {
+    return getFirstNonEmpty(...value.map(getDisplayValue));
+  }
+
+  if (value && typeof value === 'object') {
+    const record = asRecord(value);
+    return getFirstNonEmpty(
+      record.label,
+      record.name,
+      record.value,
+      record.key
+    );
+  }
+
+  if (typeof value === 'string' || typeof value === 'number') {
+    return getFirstNonEmpty(value);
+  }
+
+  return undefined;
+};
+
+export const formatMatchEducation = (
+  profile: DiscoveryProfile,
+  t: (key: string, options: { defaultValue: string }) => string
+): string => {
+  const profileRecord = asRecord(profile);
+  const personalRecord = asRecord(profile.personal);
+  const educationRecord = asRecord(profile.education);
+  const qualification = getDisplayValue(
+    profile.education?.qualification ??
+      educationRecord.qualification ??
+      profileRecord.qualification ??
+      personalRecord.qualification
+  );
+  if (qualification) {
+    return formatEnumLabel(t, 'options.qualifications', qualification, '-');
+  }
+
+  return (
+    getFirstNonEmpty(
+      getDisplayValue(profile.education?.field ?? educationRecord.field),
+      getDisplayValue(
+        profile.education?.university ?? educationRecord.university
+      ),
+      getDisplayValue(profile.education?.jobRole ?? educationRecord.jobRole),
+      getDisplayValue(
+        profile.education?.occupation ?? educationRecord.occupation
+      ),
+      getDisplayValue(
+        profile.education?.occupationType ?? educationRecord.occupationType
+      )
+    ) ?? '-'
+  );
+};
+
 export const mapToMatchItem = (
   profile: DiscoveryProfile,
   matchedIds: Set<string>,
@@ -46,24 +115,24 @@ export const mapToMatchItem = (
       ? cmToFeetInches(profile.physical.height) ||
         String(profile.physical.height)
       : '-',
-    religion: formatEnumLabel(
-      t,
-      'options.religion',
-      profile.personal?.religion,
-      '-'
-    ),
+    religion: [
+      formatEnumLabel(t, 'options.religion', profile.personal?.religion, '-'),
+      formatEnumLabel(
+        t,
+        'options.caste',
+        profile.personal?.religiousDetails?.caste,
+        '-'
+      ),
+    ]
+      .filter((value) => value !== '-')
+      .join(' · '),
     caste: formatEnumLabel(
       t,
       'options.caste',
       profile.personal?.religiousDetails?.caste,
       '-'
     ),
-    education: formatEnumLabel(
-      t,
-      'options.qualifications',
-      profile.education?.qualification,
-      '-'
-    ),
+    education: formatMatchEducation(profile, t),
     profession:
       profile.education?.jobRole ?? profile.education?.occupation ?? '-',
     location:

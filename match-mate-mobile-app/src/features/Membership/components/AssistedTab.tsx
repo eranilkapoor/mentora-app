@@ -49,6 +49,7 @@ export function AssistedTab({
                 styles.planCard,
                 styles.planCardCompact,
                 active && styles.planCardActive,
+                plan.purchaseState === 'current' && styles.planCardCurrent,
               ]}
               onPress={() => {
                 if (plan.id) onSelectPlan(plan.id);
@@ -61,10 +62,17 @@ export function AssistedTab({
                 price: plan.price,
               })}
             >
-              {plan.best ? (
+              {plan.best && plan.purchaseState !== 'current' ? (
                 <View style={styles.popularBadge}>
                   <Text style={styles.popularBadgeText}>
                     {t('membership.popular_badge')}
+                  </Text>
+                </View>
+              ) : null}
+              {plan.purchaseState === 'current' ? (
+                <View style={styles.currentPlanBadge}>
+                  <Text style={styles.currentPlanBadgeText}>
+                    {t('membership.current_plan_badge')}
                   </Text>
                 </View>
               ) : null}
@@ -82,6 +90,11 @@ export function AssistedTab({
               ) : null}
               {plan.renewalLabel ? (
                 <Text style={styles.planMetaMuted}>{plan.renewalLabel}</Text>
+              ) : null}
+              {plan.purchaseState && plan.purchaseState !== 'new' ? (
+                <Text style={styles.planStateText}>
+                  {t(`membership.plan_state.${plan.purchaseState}`)}
+                </Text>
               ) : null}
               <View
                 style={[styles.radioOuter, active && styles.radioOuterActive]}

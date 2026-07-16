@@ -20,6 +20,7 @@ import { PaymentOptionSheet } from './components/PaymentOptionSheet';
 import { MEMBERSHIP_TABS } from './Membership.constants';
 import { useUpgradePrompt } from './hooks/useUpgradePrompt';
 import { navigationRef } from '@/navigation/navigationRef';
+import { showConfirm } from '@/core/utils/confirm';
 
 export default function MembershipScreen(): React.ReactElement {
   const styles = useThemedStyles(membershipStyles);
@@ -76,6 +77,7 @@ export default function MembershipScreen(): React.ReactElement {
 
   const onCreateOrder = useCallback(() => {
     if (selectedPlanItem?.isFree) return;
+    if (selectedPlanItem?.purchaseState === 'current') return;
     if (selectedPlanItem?.isCustom) {
       if (!navigationRef.isReady()) return;
       navigationRef.dispatch(
@@ -86,8 +88,21 @@ export default function MembershipScreen(): React.ReactElement {
       );
       return;
     }
+    if (selectedPlanItem?.purchaseState === 'downgrade') {
+      showConfirm({
+        title: t('membership.downgrade_confirm_title'),
+        message: t('membership.downgrade_confirm_message', {
+          name: selectedPlanItem.name,
+        }),
+        confirmText: t('membership.cta_downgrade_plan', {
+          name: selectedPlanItem.name,
+        }),
+        onConfirm: () => setIsCheckoutOpen(true),
+      });
+      return;
+    }
     setIsCheckoutOpen(true);
-  }, [selectedPlanItem]);
+  }, [selectedPlanItem, t]);
 
   const onConfirmCheckout = useCallback(
     async (gateway: PaymentGateway) => {

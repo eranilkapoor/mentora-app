@@ -14,6 +14,12 @@ export const MEMBERSHIP_BILLING_CYCLE_ORDER: MembershipBillingCycle[] = [
 ];
 
 const SELF_SERVICE_TIERS = ['silver', 'gold', 'platinum'];
+const PLAN_TIER_RANK: Record<string, number> = {
+  free: 0,
+  silver: 1,
+  gold: 2,
+  platinum: 3,
+};
 
 export const formatPlanName = (name: string): string =>
   name
@@ -145,6 +151,9 @@ export const getPlanTypeForTab = (
   tab: MembershipTab
 ): MembershipPlan['planType'] =>
   tab === 'assisted' ? 'assisted' : 'self_service';
+
+export const getPlanTierRank = (tier?: string): number =>
+  tier ? (PLAN_TIER_RANK[tier] ?? 0) : 0;
 
 const formatFeatureValue = (key: string, value: unknown): string => {
   if (value === false || value === 0 || value === null || value === undefined) {

@@ -10,6 +10,7 @@ import {
   TouchableOpacity,
   FlatList,
   ListRenderItem,
+  Platform,
   useWindowDimensions,
 } from 'react-native';
 import * as Print from 'expo-print';
@@ -416,6 +417,10 @@ const copyPdfToDocumentDirectory = async (
   return dest;
 };
 
+const printProfilePdfOnWeb = async (html: string): Promise<void> => {
+  await Print.printAsync({ html });
+};
+
 type PdfRow = [string, string, boolean?];
 
 interface PdfSection {
@@ -450,7 +455,6 @@ const getPdfSections = (
     {
       title: 'Personal Details',
       rows: [
-        ['Name', getDisplayName(profile)],
         [
           'Profile For',
           formatEnumLabel(
@@ -476,13 +480,21 @@ const getPdfSections = (
             EMPTY_VALUE
           ),
         ],
-        ['Location', getLocation(profile)],
         [
           'Marital Status',
           formatEnumLabel(
             t,
             'options.marital_status',
             profile.personal.maritalStatus,
+            EMPTY_VALUE
+          ),
+        ],
+        [
+          'Religion',
+          formatEnumLabel(
+            t,
+            'options.religion',
+            profile.personal.religion,
             EMPTY_VALUE
           ),
         ],
@@ -718,7 +730,7 @@ const getPdfSections = (
           ),
         ],
         [
-          'Marital Status',
+          'Preferred Marital Status',
           formatEnumList(
             t,
             'options.marital_status',
@@ -726,12 +738,15 @@ const getPdfSections = (
           ),
         ],
         [
-          'Religion',
+          'Preferred Religion',
           formatEnumList(t, 'options.religion', preferenceFilters?.religion),
         ],
-        ['Caste', formatEnumList(t, 'options.caste', preferenceFilters?.caste)],
         [
-          'Manglik Status',
+          'Preferred Caste',
+          formatEnumList(t, 'options.caste', preferenceFilters?.caste),
+        ],
+        [
+          'Preferred Manglik Status',
           formatEnumList(
             t,
             'options.manglik_status',
@@ -749,7 +764,7 @@ const getPdfSections = (
             .join(', ') || EMPTY_VALUE,
         ],
         [
-          'Education',
+          'Preferred Education',
           formatEnumList(
             t,
             'options.qualifications',
@@ -757,23 +772,23 @@ const getPdfSections = (
           ),
         ],
         [
-          'Occupation Type',
+          'Preferred Occupation Type',
           formatEnumList(
             t,
             'options.occupation_types',
             preferenceFilters?.occupationType
           ),
         ],
-        ['Occupation', formatList(preferenceFilters?.occupation)],
+        ['Preferred Occupation', formatList(preferenceFilters?.occupation)],
         [
-          'Annual Income',
+          'Preferred Annual Income',
           formatIncomePreference(
             preferenceFilters?.annualIncomeRange ??
               preferenceFilters?.annualIncome
           ),
         ],
         [
-          'Lifestyle',
+          'Preferred Lifestyle',
           [
             formatEnumList(t, 'options.smoking', preferenceFilters?.smoking),
             formatEnumList(t, 'options.drinking', preferenceFilters?.drinking),
@@ -783,13 +798,13 @@ const getPdfSections = (
             .join(', ') || EMPTY_VALUE,
         ],
         [
-          'Languages',
+          'Preferred Languages',
           formatList(
             preferenceFilters?.languages ?? profile.preferences?.languagesKnown
           ),
         ],
         [
-          'Child Preference',
+          'Preferred Child Preference',
           formatEnumLabel(
             t,
             'options.child_preferences',
@@ -798,7 +813,7 @@ const getPdfSections = (
           ),
         ],
         [
-          'Residency Preference',
+          'Preferred Residency Preference',
           formatEnumLabel(
             t,
             'options.residency_preferences',
@@ -1217,6 +1232,29 @@ export default function ProfileScreen({
         const pdfPhoto = canEmbedPhotoInPdf(privacyResponse?.privacy)
           ? printablePhoto
           : undefined;
+        if (Platform.OS === 'web') {
+          try {
+            const webHtml = createProfilePdfHtml(
+              profileData,
+              pdfPhoto,
+              profileSummary,
+              privacyResponse?.privacy,
+              t
+            );
+            await printProfilePdfOnWeb(webHtml);
+          } catch {
+            const webHtml = createProfilePdfHtml(
+              profileData,
+              undefined,
+              profileSummary,
+              privacyResponse?.privacy,
+              t
+            );
+            await printProfilePdfOnWeb(webHtml);
+          }
+          return;
+        }
+
         try {
           uri = await buildPdf(pdfPhoto);
         } catch {

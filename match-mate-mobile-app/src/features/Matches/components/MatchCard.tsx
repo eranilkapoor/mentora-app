@@ -111,7 +111,7 @@ export const MatchCard = React.memo(function MatchCard({
       {/* ── Info ──────────────────────────────────────────────────── */}
       <View style={styles.info}>
         <View style={styles.tagsRow}>
-          {[item.height, item.religion, item.caste].map((tag, i) => (
+          {[item.height, item.religion || '-', item.education].map((tag, i) => (
             <View key={`${tag}-${i}`} style={styles.tag}>
               <Text style={styles.tagText}>{tag}</Text>
             </View>
@@ -119,12 +119,6 @@ export const MatchCard = React.memo(function MatchCard({
         </View>
 
         <View style={styles.metaRow}>
-          <View style={styles.metaItem}>
-            <Feather name="book" size={13} color={theme.colors.textMuted} />
-            <Text style={styles.metaText} numberOfLines={1}>
-              {item.education}
-            </Text>
-          </View>
           <View style={styles.metaItem}>
             <Feather
               name="briefcase"
@@ -136,6 +130,8 @@ export const MatchCard = React.memo(function MatchCard({
             </Text>
           </View>
         </View>
+
+        <View style={styles.divider} />
 
         {item.curationNote ? (
           <View style={styles.curatorNote}>

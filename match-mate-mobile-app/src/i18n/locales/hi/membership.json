@@ -46,6 +46,13 @@
   "feature_super_interest": "सुपर इंटरेस्ट",
   "top_badge": "⭐ शीर्ष",
   "popular_badge": "लोकप्रिय",
+  "current_plan_badge": "वर्तमान प्लान",
+  "plan_state": {
+    "current": "अभी सक्रिय",
+    "upgrade": "अपग्रेड",
+    "downgrade": "डाउनग्रेड",
+    "switch": "बिलिंग बदलें"
+  },
   "select_plan_label": "{{price}} में {{name}} प्लान चुनें",
   "plan_card_label": "{{price}} में {{months}} महीने का प्लान",
   "months_label_one": "{{count}} महीना",
@@ -69,6 +76,9 @@
   "savings_text": "लंबी अवधि के प्लान के साथ अधिक बचत करें — 12 महीने के प्लान पर {{amount}} तक की बचत",
   "cta_get_plan": "{{name}} प्राप्त करें →",
   "cta_current_plan": "वर्तमान प्लान",
+  "cta_upgrade_plan": "{{name}} में अपग्रेड करें",
+  "cta_downgrade_plan": "{{name}} में डाउनग्रेड करें",
+  "cta_switch_plan": "{{name}} पर स्विच करें",
   "cta_start_trial": "{{days}} दिन का ट्रायल शुरू करें",
   "cta_selected_plan": "चयनित प्लान",
   "cta_get_exclusive": "अभी विशेष सदस्यता लें →",
@@ -90,6 +100,8 @@
   "store_purchase_token_missing_message": "Google Play ने खरीद पूरी कर दी, लेकिन सत्यापन टोकन नहीं मिला। खरीद पुनर्स्थापित करने के लिए ऐप फिर शुरू करें या समस्या जारी रहने पर सपोर्ट से संपर्क करें।",
   "store_product_unmapped_message": "यह स्टोर खरीद किसी उपलब्ध Match Mate प्लान से मेल नहीं खाती। कृपया सपोर्ट से संपर्क करें।",
   "store_offer_unavailable_message": "यह प्लान आपके स्टोर खाते या क्षेत्र के लिए उपलब्ध नहीं है।",
+  "downgrade_confirm_title": "प्लान डाउनग्रेड करें?",
+  "downgrade_confirm_message": "आपके मौजूदा लाभ वर्तमान अवधि समाप्त होने तक सक्रिय रहेंगे। {{name}} आपके ऐप स्टोर बिलिंग नियमों के अनुसार अगले नवीनीकरण के बाद लागू होगा।",
   "checkout": {
     "title": "भुगतान तरीका चुनें",
     "subtitle": "चेकआउट शुरू करने के लिए सुरक्षित प्रदाता चुनें।",

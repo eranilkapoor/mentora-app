@@ -47,6 +47,7 @@ export interface DisplayPlan {
   description?: string;
   featureValues: Record<string, string>;
   source?: MembershipPlan;
+  purchaseState?: 'current' | 'upgrade' | 'downgrade' | 'switch' | 'new';
 }
 
 export interface DisplayFeatureRow {

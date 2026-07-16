@@ -287,6 +287,10 @@ export const membershipStyles = (
         web: {},
       }),
     },
+    planCardCurrent: {
+      borderColor: theme.colors.success,
+      backgroundColor: theme.colors.successLight,
+    },
     popularBadge: {
       position: 'absolute',
       top: -11,
@@ -299,6 +303,19 @@ export const membershipStyles = (
       color: theme.colors.white,
       fontSize: 10,
       fontWeight: '700',
+    },
+    currentPlanBadge: {
+      position: 'absolute',
+      top: -11,
+      backgroundColor: theme.colors.success,
+      paddingHorizontal: 9,
+      paddingVertical: 3,
+      borderRadius: 20,
+    },
+    currentPlanBadgeText: {
+      color: theme.colors.white,
+      fontSize: 10,
+      fontWeight: '800',
     },
     planName: {
       fontSize: 12,
@@ -334,6 +351,15 @@ export const membershipStyles = (
       color: theme.colors.textMuted,
       textAlign: 'center',
       marginBottom: 6,
+    },
+    planStateText: {
+      fontSize: 10,
+      lineHeight: 13,
+      fontWeight: '800',
+      color: theme.colors.primary,
+      textAlign: 'center',
+      marginTop: 2,
+      marginBottom: 2,
     },
     radioOuter: {
       width: 18,

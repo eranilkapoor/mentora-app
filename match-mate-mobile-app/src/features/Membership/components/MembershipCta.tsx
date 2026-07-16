@@ -29,6 +29,28 @@ export function MembershipCta({
   const isFreePlan = Boolean(selectedPlanItem?.isFree);
   const hasTrial = Boolean(selectedPlanItem?.source?.trialDays);
   const isCustomPlan = Boolean(selectedPlanItem?.isCustom);
+  const purchaseState = selectedPlanItem?.purchaseState ?? 'new';
+  const isCurrentPlan = purchaseState === 'current';
+  const isDisabled =
+    isLoading || isFreePlan || isCurrentPlan || !selectedPlanItem?.source?._id;
+
+  const buttonText = (() => {
+    if (isCustomPlan) return t('membership.contact_sales');
+    if (isCurrentPlan || isFreePlan) return t('membership.cta_current_plan');
+    if (
+      purchaseState === 'upgrade' ||
+      purchaseState === 'downgrade' ||
+      purchaseState === 'switch'
+    ) {
+      return t(`membership.plan_state.${purchaseState}`);
+    }
+    if (hasTrial) {
+      return t('membership.cta_start_trial', {
+        days: selectedPlanItem?.source?.trialDays,
+      });
+    }
+    return t('membership.cta_get_plan', { name: selectedPlanItem?.name });
+  })();
 
   return (
     <View style={styles.ctaContainer}>
@@ -44,12 +66,9 @@ export function MembershipCta({
         </Text>
       </View>
       <TouchableOpacity
-        style={[
-          styles.ctaButton,
-          (isLoading || isFreePlan) && styles.ctaButtonDisabled,
-        ]}
+        style={[styles.ctaButton, isDisabled && styles.ctaButtonDisabled]}
         activeOpacity={0.85}
-        disabled={isLoading || isFreePlan || !selectedPlanItem?.source?._id}
+        disabled={isDisabled}
         onPress={onCreateOrder}
         accessibilityRole="button"
         accessibilityLabel={t('membership.cta_get_plan', {
@@ -59,19 +78,7 @@ export function MembershipCta({
         {isLoading ? (
           <ActivityIndicator size="small" color={theme.colors.white} />
         ) : (
-          <Text style={styles.ctaButtonText}>
-            {isCustomPlan
-              ? t('membership.contact_sales')
-              : isFreePlan
-                ? t('membership.cta_current_plan')
-                : hasTrial
-                  ? t('membership.cta_start_trial', {
-                      days: selectedPlanItem?.source?.trialDays,
-                    })
-                  : t('membership.cta_get_plan', {
-                      name: selectedPlanItem?.name,
-                    })}
-          </Text>
+          <Text style={styles.ctaButtonText}>{buttonText}</Text>
         )}
       </TouchableOpacity>
     </View>

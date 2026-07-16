@@ -38,4 +38,23 @@ describe('plan feature access utilities', () => {
     expect(resolveMembershipPlan('gold-monthly', plans)).toBe(plans[0]);
     expect(resolveMembershipPlan('missing', plans)).toBeNull();
   });
+
+  it('prefers the full plan entry when active subscription has a populated plan without features', () => {
+    const fullPlan = plan({
+      features: [
+        {
+          featureId: {
+            key: 'upload_videos',
+            name: 'Upload videos',
+          },
+          value: 1,
+        },
+      ],
+    });
+    const populatedSubscriptionPlan = plan({ name: 'Gold Monthly Populated' });
+
+    expect(resolveMembershipPlan(populatedSubscriptionPlan, [fullPlan])).toBe(
+      fullPlan
+    );
+  });
 });

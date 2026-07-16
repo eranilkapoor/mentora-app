@@ -1,5 +1,8 @@
 import type { MembershipPlan } from '@/store/services/membershipApi.service';
 
+const getPlanIdentifier = (plan: MembershipPlan): string | undefined =>
+  plan._id ?? plan.slug;
+
 export const isPlanFeatureEnabled = (value: unknown): boolean => {
   if (value === true) return true;
   if (typeof value === 'number') return value === -1 || value > 0;
@@ -16,7 +19,12 @@ export const resolveMembershipPlan = (
   plans: MembershipPlan[]
 ): MembershipPlan | null => {
   if (!plan) return null;
+  const planId = typeof plan === 'string' ? plan : getPlanIdentifier(plan);
+  const matchedPlan =
+    plans.find((item) => item._id === planId || item.slug === planId) ?? null;
+
+  if (matchedPlan) return matchedPlan;
   if (typeof plan !== 'string') return plan;
 
-  return plans.find((item) => item._id === plan || item.slug === plan) ?? null;
+  return null;
 };

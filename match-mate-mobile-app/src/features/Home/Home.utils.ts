@@ -1,6 +1,7 @@
 import { DiscoveryProfile } from '@/store/services/matchApi.service';
 import { resolveApiUrl } from '@/core/utils/config';
 import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
+import { formatMatchEducation } from '@/features/Matches/MatchList.utils';
 import {
   FALLBACK_PROFILE_PHOTO,
   NEW_PROFILE_THRESHOLD_MS,
@@ -65,12 +66,7 @@ export const mapProfile = (
     ]
       .filter((v) => v !== '-')
       .join(' · '),
-    education: formatEnumLabel(
-      t,
-      'options.qualifications',
-      profile.education?.qualification,
-      '-'
-    ),
+    education: formatMatchEducation(profile, t),
     profession:
       profile.education?.jobRole ?? profile.education?.occupation ?? '-',
     isOnline: isRecentlyActive(profile.lastActiveAt),
