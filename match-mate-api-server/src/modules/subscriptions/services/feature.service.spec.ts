@@ -123,6 +123,21 @@ describe('FeatureService', () => {
     },
   );
 
+  it('allows daily profile views when the plan has unlimited profile views', async () => {
+    const { cache, freePlanChain, planFeaturesChain, service } =
+      createFixture();
+    freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
+    planFeaturesChain.exec.mockResolvedValue([
+      feature(FeatureKey.UNLIMITED_PROFILE_VIEWS, -1, 'limit'),
+    ]);
+
+    await expect(
+      service.checkAccess(FeatureKey.DAILY_PROFILE_VIEWS, { userId: USER_ID }),
+    ).resolves.toEqual({ allowed: true });
+
+    expect(cache.incrementWithExpiry).not.toHaveBeenCalled();
+  });
+
   it.each([null, undefined, 1])(
     'increments available usage when the current value is %s',
     async (current) => {

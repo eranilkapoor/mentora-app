@@ -28,6 +28,7 @@ export type ChatMatch = {
   avatarUrl?: string;
   matchedAt: string;
   isOnline: boolean;
+  lastSeen?: string | null;
   unreadCount: number;
   isArchived: boolean;
   isPinned: boolean;

@@ -92,7 +92,7 @@ export class SubscriptionsService {
       startDate,
       endDate,
       status: options?.status ?? SubscriptionStatus.ACTIVE,
-      paymentId: options?.paymentId,
+      paymentId: this.toObjectIdOrUndefined(options?.paymentId),
       paymentProvider: options?.paymentProvider,
       autoRenew: options?.autoRenew ?? Boolean(plan.autoRenewDefault),
       trialEndsAt: options?.trialEndsAt,
@@ -554,6 +554,12 @@ export class SubscriptionsService {
       expiredAt,
     );
     return { expiredCount: result.modifiedCount };
+  }
+
+  private toObjectIdOrUndefined(id?: string): Types.ObjectId | undefined {
+    return id && Types.ObjectId.isValid(id)
+      ? new Types.ObjectId(id)
+      : undefined;
   }
 
   async markExpiryRemindersDue(offsetDays: number[]) {

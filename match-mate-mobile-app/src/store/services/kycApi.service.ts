@@ -13,6 +13,14 @@ export interface KycVerification {
   rejectionReason?: string;
   submittedAt?: string;
   verifiedAt?: string;
+  deletedAt?: string | null;
+  anonymizedAt?: string | null;
+  retentionReason?: string;
+  legalHoldUntil?: string | null;
+  source?: string;
+  reason?: string;
+  metadata?: Record<string, unknown>;
+  version?: number;
 }
 
 export const kycApi = baseApi.injectEndpoints({

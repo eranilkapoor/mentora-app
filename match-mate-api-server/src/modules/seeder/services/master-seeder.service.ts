@@ -1477,6 +1477,7 @@ export class MasterSeederService {
       [FeatureKey.SEARCH_BY_INCOME, 1],
       [FeatureKey.UNLIMITED_SEARCH, -1],
       [FeatureKey.UNLIMITED_PROFILE_VIEWS, -1],
+      [FeatureKey.DAILY_PROFILE_VIEWS, -1],
       [FeatureKey.PROFILE_VIEWS, -1],
       [FeatureKey.WHO_VIEWED_ME, 1],
       [FeatureKey.PROFILE_ANALYTICS, 1],

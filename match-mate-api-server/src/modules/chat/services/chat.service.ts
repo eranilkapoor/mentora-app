@@ -275,28 +275,30 @@ export class ChatService {
     const mediaMap = this.buildPrimaryMediaMap(media);
     const lastMessageMap = await this.buildLastMessageMap(rooms);
 
-    let items = rooms
-      .filter((room) =>
-        this.shouldIncludeRoom(room, userId, query.includeArchived ?? false),
-      )
-      .filter((room) => {
-        const otherUserId = this.getOtherParticipantId(
-          room.participants,
-          userId,
-        );
-        return !blockedUserIds.has(otherUserId);
-      })
-      .map((room) =>
-        this.mapConversation(
-          room,
-          userId,
-          userMap,
-          profileMap,
-          mediaMap,
-          unreadMap.get(String(room._id)) ?? 0,
-          lastMessageMap,
+    let items = await Promise.all(
+      rooms
+        .filter((room) =>
+          this.shouldIncludeRoom(room, userId, query.includeArchived ?? false),
+        )
+        .filter((room) => {
+          const otherUserId = this.getOtherParticipantId(
+            room.participants,
+            userId,
+          );
+          return !blockedUserIds.has(otherUserId);
+        })
+        .map((room) =>
+          this.mapConversation(
+            room,
+            userId,
+            userMap,
+            profileMap,
+            mediaMap,
+            unreadMap.get(String(room._id)) ?? 0,
+            lastMessageMap,
+          ),
         ),
-      );
+    );
 
     if (query.onlyUnread) {
       items = items.filter((item) => item.unreadCount > 0);
@@ -421,11 +423,18 @@ export class ChatService {
       }
     });
 
-    let items = contactUserIds.map((contactUserId) => ({
-      roomId: roomMap.get(contactUserId) ?? null,
-      isMatched: matchedUserIds.includes(contactUserId),
-      ...this.buildUserSummary(contactUserId, userMap, profileMap, mediaMap),
-    }));
+    let items = await Promise.all(
+      contactUserIds.map(async (contactUserId) => ({
+        roomId: roomMap.get(contactUserId) ?? null,
+        isMatched: matchedUserIds.includes(contactUserId),
+        ...(await this.buildUserSummary(
+          contactUserId,
+          userMap,
+          profileMap,
+          mediaMap,
+        )),
+      })),
+    );
 
     if (query.search) {
       const search = query.search.toLowerCase();
@@ -911,7 +920,7 @@ export class ChatService {
       const unreadRows = await this.repo.countUnreadByRoomIds(participantId, [
         room.id as string,
       ]);
-      const conversation = this.mapConversation(
+      const conversation = await this.mapConversation(
         room,
         participantId,
         userMap,
@@ -1020,7 +1029,7 @@ export class ChatService {
     return state;
   }
 
-  private mapConversation(
+  private async mapConversation(
     room: {
       _id: unknown;
       roomType: ChatRoomType;
@@ -1049,7 +1058,7 @@ export class ChatService {
     mediaMap: Map<string, MediaLike>,
     unreadCount: number,
     lastMessageMap: Map<string, MessageLike> = new Map(),
-  ): ConversationResponse {
+  ): Promise<ConversationResponse> {
     const otherUserId = this.getOtherParticipantId(
       room.participants,
       currentUserId,
@@ -1067,7 +1076,7 @@ export class ChatService {
         ? String(room.requestedById)
         : undefined,
       requestedAt: room.requestedAt,
-      participant: this.buildUserSummary(
+      participant: await this.buildUserSummary(
         otherUserId,
         userMap,
         profileMap,
@@ -1194,12 +1203,12 @@ export class ChatService {
     };
   }
 
-  private buildUserSummary(
+  private async buildUserSummary(
     userId: string,
     userMap: Map<string, UserLike>,
     profileMap: Map<string, ProfileLike>,
     mediaMap: Map<string, MediaLike>,
-  ): UserSummary {
+  ): Promise<UserSummary> {
     const user = userMap.get(userId);
     const profile = profileMap.get(userId);
 
@@ -1257,8 +1266,8 @@ export class ChatService {
       country,
       verificationStatus,
       isPremium,
-      isOnline: this.presence.isOnline(userId),
-      lastSeen: this.presence.getLastSeen(userId),
+      isOnline: await this.presence.isOnline(userId),
+      lastSeen: await this.presence.getLastSeen(userId),
     };
   }
 

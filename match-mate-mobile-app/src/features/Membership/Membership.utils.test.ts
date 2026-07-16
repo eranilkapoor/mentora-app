@@ -140,4 +140,34 @@ describe('self-service membership choices', () => {
       selectSelfServicePlans(displayPlans, 'quarterly').map(({ tier }) => tier)
     ).toEqual(['silver', 'gold', 'platinum']);
   });
+
+  it('shows unlimited daily profile views when the API returns unlimited profile views', () => {
+    const plan: MembershipPlan = {
+      ...customAssistedPlan,
+      _id: 'platinum-yearly',
+      name: 'PLATINUM_YEARLY',
+      slug: 'platinum-yearly',
+      tier: 'platinum',
+      planType: 'self_service',
+      billingCycle: 'yearly',
+      durationDays: 365,
+      price: 14999,
+      isCustom: false,
+      features: [
+        {
+          value: -1,
+          featureId: {
+            key: 'unlimited_profile_views',
+            name: 'Unlimited profile views',
+          },
+        },
+      ],
+    };
+
+    const displayPlan = buildDisplayPlans([plan], 'self')[0];
+
+    if (!displayPlan) throw new Error('Expected plan to be displayed');
+    expect(displayPlan.featureValues.daily_profile_views).toBe('Unlimited');
+    expect(displayPlan.featureValues.profile_views).toBe('Unlimited');
+  });
 });

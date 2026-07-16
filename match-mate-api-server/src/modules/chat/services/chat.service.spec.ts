@@ -99,8 +99,8 @@ describe('ChatService', () => {
     configService.get.mockImplementation(
       (key: string, fallback?: unknown) => fallback,
     );
-    presence.isOnline.mockReturnValue(false);
-    presence.getLastSeen.mockReturnValue(null);
+    presence.isOnline.mockResolvedValue(false);
+    presence.getLastSeen.mockResolvedValue(null);
     notificationsService.notify.mockResolvedValue(undefined);
     featureService.checkAccess.mockResolvedValue({ allowed: true });
     repo.findUsersByIds.mockResolvedValue([]);
@@ -306,7 +306,9 @@ describe('ChatService', () => {
     repo.findMessagesByIds.mockResolvedValue([
       createMessage({ deliveredAt: new Date(), readAt: new Date() }),
     ]);
-    presence.isOnline.mockImplementation((id: string) => id === partnerId);
+    presence.isOnline.mockImplementation((id: string) =>
+      Promise.resolve(id === partnerId),
+    );
 
     await expect(
       service.getConversations(userId, {
@@ -717,7 +719,7 @@ describe('ChatService', () => {
     await service.updateRoomSettings(userId, roomId, {});
   });
 
-  it('maps safe values, media, summaries, and previews', () => {
+  it('maps safe values, media, summaries, and previews', async () => {
     const privateService = service as any;
     expect(privateService.toSafeString('value')).toBe('value');
     expect(privateService.toSafeString(2)).toBe('2');
@@ -742,9 +744,9 @@ describe('ChatService', () => {
       { userId: {}, url: 'ignored' },
     ]);
     expect(mediaMap.get(partnerId).url).toBe('first');
-    presence.isOnline.mockReturnValue(true);
-    presence.getLastSeen.mockReturnValue(new Date());
-    const summary = privateService.buildUserSummary(
+    presence.isOnline.mockResolvedValue(true);
+    presence.getLastSeen.mockResolvedValue(new Date());
+    const summary = await privateService.buildUserSummary(
       partnerId,
       new Map([[partnerId, { membership: { tier: 'gold' } }]]),
       new Map([
@@ -759,7 +761,7 @@ describe('ChatService', () => {
       mediaMap,
     );
     expect(summary).toMatchObject({ fullName: 'Asha Rao', isPremium: true });
-    const imageSummary = privateService.buildUserSummary(
+    const imageSummary = await privateService.buildUserSummary(
       partnerId,
       new Map(),
       new Map([
@@ -784,7 +786,7 @@ describe('ChatService', () => {
     minimalRoom.lastActivityAt = undefined;
     minimalRoom.updatedAt = new Date();
     expect(
-      privateService.mapConversation(
+      await privateService.mapConversation(
         minimalRoom,
         userId,
         new Map(),

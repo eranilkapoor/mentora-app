@@ -77,7 +77,7 @@ export class ChatGateway
       const userId = payload.sub;
       await this.ensureFeatureAccess(userId, FeatureKey.CHAT_ACCESS);
 
-      this.presence.connect(userId, socket.id);
+      await this.presence.connect(userId, socket.id);
       socket.data.userId = userId;
 
       await socket.join(this.realtime.getUserRoom(userId));
@@ -100,16 +100,16 @@ export class ChatGateway
     }
   }
 
-  handleDisconnect(client: Socket): void {
+  async handleDisconnect(client: Socket): Promise<void> {
     const socket = client as AuthenticatedSocket;
 
-    const userId = this.presence.disconnect(socket.id);
+    const userId = await this.presence.disconnect(socket.id);
     if (!userId) return;
 
     this.server.to(this.userRoom(userId)).emit('presence:update', {
       userId,
       isOnline: false,
-      lastSeen: this.presence.getLastSeen(userId),
+      lastSeen: await this.presence.getLastSeen(userId),
     });
   }
 
@@ -193,6 +193,7 @@ export class ChatGateway
     const userId = this.getClientUserId(socket);
 
     await this.chatService.getConversationDetail(userId, payload.roomId);
+    await this.presence.setTyping(payload.roomId, userId, payload.isTyping);
 
     socket
       .to(this.realtime.getConversationRoom(payload.roomId))

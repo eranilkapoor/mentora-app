@@ -13,8 +13,14 @@ export class AccountSetting {
   @Prop() deletionScheduledAt?: Date;
   @Prop() deletionCompletedAt?: Date;
   @Prop() deletionReason?: string;
+  @Prop({ index: true }) anonymizedAt?: Date;
+  @Prop() retentionReason?: string;
+  @Prop() legalHoldUntil?: Date;
 }
 
 export type AccountSettingDocument = AccountSetting & Document;
 export const AccountSettingSchema =
   SchemaFactory.createForClass(AccountSetting);
+
+AccountSettingSchema.index({ anonymizedAt: 1, retentionReason: 1 });
+AccountSettingSchema.index({ legalHoldUntil: 1 });

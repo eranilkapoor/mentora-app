@@ -17,6 +17,7 @@ describe('ChatGateway', () => {
     connect: jest.fn(),
     disconnect: jest.fn(),
     getLastSeen: jest.fn(),
+    setTyping: jest.fn(),
   };
 
   const realtime = {
@@ -84,6 +85,10 @@ describe('ChatGateway', () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
+    presence.connect.mockResolvedValue(undefined);
+    presence.disconnect.mockResolvedValue(undefined);
+    presence.getLastSeen.mockResolvedValue(null);
+    presence.setTyping.mockResolvedValue(undefined);
     gateway = new ChatGateway(
       chatService as any,
       presence as any,
@@ -167,12 +172,12 @@ describe('ChatGateway', () => {
     expect(presence.connect).not.toHaveBeenCalled();
   });
 
-  it('updates presence when a connected socket disconnects', () => {
+  it('updates presence when a connected socket disconnects', async () => {
     const lastSeen = new Date('2026-06-23T00:00:00.000Z');
-    presence.disconnect.mockReturnValue(userId);
-    presence.getLastSeen.mockReturnValue(lastSeen);
+    presence.disconnect.mockResolvedValue(userId);
+    presence.getLastSeen.mockResolvedValue(lastSeen);
 
-    gateway.handleDisconnect(socket());
+    await gateway.handleDisconnect(socket());
 
     expect(server.to).toHaveBeenCalledWith(`chat:user:${userId}`);
     expect(serverRoomEmitter.emit).toHaveBeenCalledWith('presence:update', {
@@ -182,10 +187,10 @@ describe('ChatGateway', () => {
     });
   });
 
-  it('does nothing when a disconnected socket has no active presence', () => {
-    presence.disconnect.mockReturnValue(undefined);
+  it('does nothing when a disconnected socket has no active presence', async () => {
+    presence.disconnect.mockResolvedValue(undefined);
 
-    gateway.handleDisconnect(socket());
+    await gateway.handleDisconnect(socket());
 
     expect(server.to).not.toHaveBeenCalled();
   });
@@ -243,6 +248,7 @@ describe('ChatGateway', () => {
       roomId,
       upToMessageId: 'message-1',
     });
+    expect(presence.setTyping).toHaveBeenCalledWith(roomId, userId, true);
     expect(roomEmitter.emit).toHaveBeenCalledWith('typing', {
       roomId,
       userId,

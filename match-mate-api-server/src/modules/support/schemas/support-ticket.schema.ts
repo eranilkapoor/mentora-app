@@ -75,4 +75,5 @@ export const SupportTicketSchema = SchemaFactory.createForClass(SupportTicket);
 
 SupportTicketSchema.index({ userId: 1, updatedAt: -1 });
 SupportTicketSchema.index({ status: 1, priority: 1, updatedAt: -1 });
+SupportTicketSchema.index({ status: 1, updatedAt: -1 });
 SupportTicketSchema.index({ category: 1, status: 1 });

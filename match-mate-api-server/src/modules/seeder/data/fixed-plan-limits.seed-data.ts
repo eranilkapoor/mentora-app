@@ -54,6 +54,7 @@ const GOLD_LIMITS: NumericFeaturePolicy = {
   [FeatureKey.MESSAGE_LIMIT]: -1,
   [FeatureKey.UNLIMITED_SEARCH]: -1,
   [FeatureKey.UNLIMITED_PROFILE_VIEWS]: -1,
+  [FeatureKey.DAILY_PROFILE_VIEWS]: -1,
   [FeatureKey.PROFILE_VIEWS]: -1,
   [FeatureKey.VIEW_CONTACT]: 50,
   [FeatureKey.CONTACT_VIEW_LIMIT]: 50,

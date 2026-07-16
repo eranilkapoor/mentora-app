@@ -119,6 +119,33 @@ export class Payment {
   @Prop({ type: Object })
   metadata?: Record<string, unknown>;
 
+  @Prop({ trim: true, index: true })
+  source?: string;
+
+  @Prop({ trim: true, maxlength: 250 })
+  reason?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy?: Types.ObjectId;
+
+  @Prop({ default: 1, min: 1 })
+  version!: number;
+
+  @Prop({ index: true })
+  deletedAt?: Date;
+
+  @Prop({ index: true })
+  anonymizedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  retentionReason?: string;
+
+  @Prop()
+  legalHoldUntil?: Date;
+
   @Prop({ type: Object })
   customer?: {
     name?: string;
@@ -137,6 +164,8 @@ export const PaymentSchema = SchemaFactory.createForClass(Payment);
 
 PaymentSchema.index({ userId: 1, createdAt: -1 });
 PaymentSchema.index({ status: 1, createdAt: -1 });
+PaymentSchema.index({ anonymizedAt: 1, retentionReason: 1 });
+PaymentSchema.index({ legalHoldUntil: 1 });
 PaymentSchema.index(
   { gateway: 1, storeTransactionId: 1 },
   {

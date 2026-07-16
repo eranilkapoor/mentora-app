@@ -52,6 +52,36 @@ export class PaymentInvoice {
 
   @Prop({ default: Date.now })
   issuedAt!: Date;
+
+  @Prop({ trim: true, index: true })
+  source?: string;
+
+  @Prop({ trim: true, maxlength: 250 })
+  reason?: string;
+
+  @Prop({ type: Object })
+  metadata?: Record<string, unknown>;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy?: Types.ObjectId;
+
+  @Prop({ default: 1, min: 1 })
+  version!: number;
+
+  @Prop({ index: true })
+  deletedAt?: Date;
+
+  @Prop({ index: true })
+  anonymizedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  retentionReason?: string;
+
+  @Prop()
+  legalHoldUntil?: Date;
 }
 
 export type PaymentInvoiceDocument = PaymentInvoice & Document;
@@ -60,3 +90,5 @@ export const PaymentInvoiceSchema =
 
 PaymentInvoiceSchema.index({ userId: 1, issuedAt: -1 });
 PaymentInvoiceSchema.index({ issuedAt: -1 });
+PaymentInvoiceSchema.index({ anonymizedAt: 1, retentionReason: 1 });
+PaymentInvoiceSchema.index({ legalHoldUntil: 1 });

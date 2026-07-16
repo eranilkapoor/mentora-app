@@ -3,7 +3,7 @@ export enum InteractionType {
   VIEW = 'view',
   PROFILE_VIEW = 'profile_view',
 
-  //  INTENT (optional if using Interest system)
+  // Audit/mirror only. Formal request state belongs in the interests collection.
   SEND_INTEREST = 'send_interest',
   WITHDRAW_INTEREST = 'withdraw_interest',
 
@@ -19,7 +19,7 @@ export enum InteractionType {
   PROFILE_BOOST = 'profile_boost',
   CONTACT_VIEW = 'contact_view',
 
-  //  SAFETY
+  // Audit/mirror only. Durable safety state belongs in safety collections.
   BLOCK = 'block',
   UNBLOCK = 'unblock',
   REPORT = 'report',

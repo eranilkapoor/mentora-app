@@ -242,6 +242,7 @@ export default function ChatListScreen({
           ...(avatarUrl ? { avatarUrl } : {}),
           matchedAt: conversation.updatedAt ?? new Date().toISOString(),
           isOnline: Boolean(participant.isOnline),
+          lastSeen: participant.lastSeen ?? null,
           unreadCount: conversation.unreadCount,
           isArchived: Boolean(conversation.settings?.archived),
           isPinned: Boolean(conversation.settings?.pinned),

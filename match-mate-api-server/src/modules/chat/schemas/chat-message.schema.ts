@@ -95,6 +95,7 @@ export type ChatMessageDocument = ChatMessage & Document;
 export const ChatMessageSchema = SchemaFactory.createForClass(ChatMessage);
 
 ChatMessageSchema.index({ roomId: 1, createdAt: -1 });
+ChatMessageSchema.index({ roomId: 1, deletedAt: 1, createdAt: -1 });
 ChatMessageSchema.index({ receiverId: 1, status: 1, roomId: 1 });
 ChatMessageSchema.index({ moderationStatus: 1, createdAt: -1 });
 ChatMessageSchema.index(

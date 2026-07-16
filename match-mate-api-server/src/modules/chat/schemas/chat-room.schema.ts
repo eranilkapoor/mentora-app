@@ -38,6 +38,7 @@ export class ChatRoom extends Document {
   @Prop({ type: [Types.ObjectId], ref: 'User', required: true })
   participants!: Types.ObjectId[];
 
+  // Per-user room state only. Canonical membership remains in participants.
   @Prop({ type: [ChatParticipantState], default: [] })
   participantStates!: ChatParticipantState[];
 

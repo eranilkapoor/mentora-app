@@ -81,6 +81,9 @@ const normalizeEnumKey = (value: string): string =>
     .toLowerCase()
     .replace(/[\s-]+/g, '_');
 
+const shouldUseExactEnumKeyFirst = (value: string): boolean =>
+  /^[A-Za-z]+[+-]$/.test(value);
+
 export const formatLifestyleChoice = (choice: string): string => {
   if (!choice) return '—';
 
@@ -117,13 +120,21 @@ export const formatEnumLabel = (
   const rawValue = String(value).trim();
   const defaultValue = formatCamelCase(rawValue);
   const normalizedValue = normalizeEnumKey(rawValue);
-  const translated = t(`${prefix}.${normalizedValue}`, { defaultValue });
+  const lookupKeys = shouldUseExactEnumKeyFirst(rawValue)
+    ? [rawValue, normalizedValue]
+    : [normalizedValue, rawValue];
+
+  const translated = t(`${prefix}.${lookupKeys[0]}`, { defaultValue });
 
   if (translated && translated !== defaultValue) {
     return translated;
   }
 
-  return t(`${prefix}.${rawValue}`, { defaultValue }) || defaultValue;
+  if (lookupKeys[1] === lookupKeys[0]) {
+    return translated || defaultValue;
+  }
+
+  return t(`${prefix}.${lookupKeys[1]}`, { defaultValue }) || defaultValue;
 };
 
 export const formatWeight = (weight: number | string): string => {

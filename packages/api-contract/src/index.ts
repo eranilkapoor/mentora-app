@@ -11,31 +11,27 @@ export interface ApiResponse<T> {
   data: T;
 }
 
+export interface ComplianceLifecycleFields {
+  deletedAt?: string | null;
+  anonymizedAt?: string | null;
+  retentionReason?: string;
+  legalHoldUntil?: string | null;
+  source?: string;
+  reason?: string;
+  metadata?: Record<string, unknown>;
+  version?: number;
+}
+
 export type PaymentGateway =
-  | "razorpay"
-  | "stripe"
-  | "apple_iap"
-  | "google_play"
-  | "manual";
+  "razorpay" | "stripe" | "apple_iap" | "google_play" | "manual";
 
 export type PaymentPurpose =
-  | "subscription"
-  | "profile_boost"
-  | "priority_support"
-  | "coin_pack";
+  "subscription" | "profile_boost" | "priority_support" | "coin_pack";
 
 export type PaymentStatus =
-  | "created"
-  | "pending"
-  | "success"
-  | "failed"
-  | "refunded"
-  | "cancelled";
+  "created" | "pending" | "success" | "failed" | "refunded" | "cancelled";
 
-export type MembershipPlanType =
-  | "self_service"
-  | "assisted"
-  | "profile_boost";
+export type MembershipPlanType = "self_service" | "assisted" | "profile_boost";
 
 export interface MembershipPlanFeature {
   value?: string | number | boolean;
@@ -79,7 +75,7 @@ export interface MembershipPlan {
   };
 }
 
-export interface ActiveSubscription {
+export interface ActiveSubscription extends ComplianceLifecycleFields {
   _id: string;
   planId: MembershipPlan | string;
   startDate: string;
@@ -97,7 +93,7 @@ export interface ActiveSubscription {
   storeOriginalTransactionId?: string;
 }
 
-export interface BillingPayment {
+export interface BillingPayment extends ComplianceLifecycleFields {
   _id: string;
   orderId: string;
   planId?: MembershipPlan | string;
@@ -216,7 +212,7 @@ export interface CancelSubscriptionRequest {
   reason?: string;
 }
 
-export interface PaymentInvoice {
+export interface PaymentInvoice extends ComplianceLifecycleFields {
   invoiceNumber: string;
   orderId: string;
   currency: string;
@@ -279,10 +275,7 @@ export interface PaginatedItems<T> extends PaginationMeta {
 }
 
 export type SuccessStoryStatus =
-  | 'submitted'
-  | 'published'
-  | 'rejected'
-  | 'archived';
+  "submitted" | "published" | "rejected" | "archived";
 
 export interface SuccessStory {
   _id: string;

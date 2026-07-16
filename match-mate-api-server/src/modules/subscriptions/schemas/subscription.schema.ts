@@ -23,11 +23,29 @@ export class Subscription {
   @Prop()
   cancelledReason?: string;
 
+  @Prop({ trim: true, index: true })
+  source?: string;
+
+  @Prop({ trim: true, maxlength: 250 })
+  reason?: string;
+
+  @Prop({ type: Object })
+  metadata?: Record<string, unknown>;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy?: Types.ObjectId;
+
+  @Prop({ default: 1, min: 1 })
+  version!: number;
+
   @Prop()
   trialEndsAt?: Date;
 
-  @Prop()
-  paymentId?: string;
+  @Prop({ type: Types.ObjectId, ref: 'Payment', index: true })
+  paymentId?: Types.ObjectId;
 
   @Prop({ type: String, enum: PaymentProvider })
   paymentProvider?: PaymentProvider;
@@ -67,7 +85,24 @@ export class Subscription {
     default: SubscriptionStatus.ACTIVE,
   })
   status!: SubscriptionStatus;
+
+  @Prop({ index: true })
+  deletedAt?: Date;
+
+  @Prop({ index: true })
+  anonymizedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  retentionReason?: string;
+
+  @Prop()
+  legalHoldUntil?: Date;
 }
 
 export type SubscriptionDocument = Subscription & Document;
 export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);
+
+SubscriptionSchema.index({ userId: 1, createdAt: -1 });
+SubscriptionSchema.index({ status: 1, endDate: -1 });
+SubscriptionSchema.index({ anonymizedAt: 1, retentionReason: 1 });
+SubscriptionSchema.index({ legalHoldUntil: 1 });

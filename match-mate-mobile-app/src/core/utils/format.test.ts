@@ -7,6 +7,7 @@ const translations: Record<string, string> = {
   'options.caste.sc': 'SC',
   'options.caste.st': 'ST',
   'options.caste.not_applicable': 'Not Applicable',
+  'options.blood_groups.A+': 'A Positive',
 };
 
 const t = (key: string, options: { defaultValue: string }): string =>
@@ -25,5 +26,17 @@ describe('enum formatting', () => {
     expect(formatEnumLabel(t, 'options.caste', 'not applicable')).toBe(
       'Not Applicable'
     );
+  });
+
+  it('uses exact translation keys first for blood group symbols', () => {
+    const mockT = jest.fn(t);
+
+    expect(formatEnumLabel(mockT, 'options.blood_groups', 'A+')).toBe(
+      'A Positive'
+    );
+    expect(mockT).toHaveBeenCalledTimes(1);
+    expect(mockT).toHaveBeenCalledWith('options.blood_groups.A+', {
+      defaultValue: 'A+',
+    });
   });
 });

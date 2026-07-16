@@ -82,6 +82,15 @@ export class Profile {
 
   @Prop()
   deletedAt?: Date;
+
+  @Prop({ index: true })
+  anonymizedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  retentionReason?: string;
+
+  @Prop()
+  legalHoldUntil?: Date;
 }
 
 export type ProfileDocument = Profile & Document;
@@ -97,4 +106,19 @@ ProfileSchema.index({
   visibilityScore: -1,
   profileScore: -1,
 });
+ProfileSchema.index({
+  status: 1,
+  deletedAt: 1,
+  lastActiveAt: -1,
+  createdAt: -1,
+});
+ProfileSchema.index({
+  status: 1,
+  'personal.gender': 1,
+  'personal.city': 1,
+  profileScore: -1,
+  updatedAt: -1,
+});
 ProfileSchema.index({ location: '2dsphere' });
+ProfileSchema.index({ anonymizedAt: 1, retentionReason: 1 });
+ProfileSchema.index({ legalHoldUntil: 1 });

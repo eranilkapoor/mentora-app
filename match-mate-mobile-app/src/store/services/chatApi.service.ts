@@ -24,6 +24,7 @@ export interface ChatParticipant {
   city?: string;
   country?: string;
   isOnline?: boolean;
+  lastSeen?: string | null;
 }
 
 export interface ChatConversation {

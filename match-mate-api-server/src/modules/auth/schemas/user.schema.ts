@@ -147,6 +147,18 @@ export class User {
 
   @Prop()
   updatedBy?: string;
+
+  @Prop({ index: true })
+  deletedAt?: Date;
+
+  @Prop({ index: true })
+  anonymizedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  retentionReason?: string;
+
+  @Prop()
+  legalHoldUntil?: Date;
 }
 
 export type UserDocument = User & Document;
@@ -162,3 +174,5 @@ UserSchema.index(
   { unique: true },
 );
 UserSchema.index({ referralCode: 1 }, { unique: true, sparse: true });
+UserSchema.index({ anonymizedAt: 1, retentionReason: 1 });
+UserSchema.index({ legalHoldUntil: 1 });

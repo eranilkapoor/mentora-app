@@ -36,6 +36,12 @@ const MONTHLY_USAGE_CACHE_TTL = 32 * 86_400;
 
 type UsageWindow = 'day' | 'month';
 
+const FEATURE_ACCESS_ALIASES: Readonly<
+  Partial<Record<FeatureKey, readonly FeatureKey[]>>
+> = {
+  [FeatureKey.DAILY_PROFILE_VIEWS]: [FeatureKey.UNLIMITED_PROFILE_VIEWS],
+};
+
 @Injectable()
 export class FeatureService {
   constructor(
@@ -67,7 +73,7 @@ export class FeatureService {
 
     const planFeatures = await this.getCachedPlanFeatures(planId);
 
-    const feature = planFeatures.find((pf) => pf.featureId.key === featureKey);
+    const feature = this.findPlanFeature(planFeatures, featureKey);
 
     if (!feature) {
       return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
@@ -205,6 +211,18 @@ export class FeatureService {
 
     await this.cache.set(cacheKey, activeFeatures, PLAN_FEATURES_CACHE_TTL);
     return activeFeatures;
+  }
+
+  private findPlanFeature(
+    planFeatures: LeanPlanFeature[],
+    featureKey: FeatureKey,
+  ): LeanPlanFeature | undefined {
+    const acceptedKeys = [
+      featureKey,
+      ...(FEATURE_ACCESS_ALIASES[featureKey] ?? []),
+    ];
+
+    return planFeatures.find((pf) => acceptedKeys.includes(pf.featureId.key));
   }
 
   // Invalidate cache when plan features change (call from PlanService)

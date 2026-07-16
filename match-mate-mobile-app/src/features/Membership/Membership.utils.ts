@@ -187,6 +187,17 @@ const formatFeatureValue = (key: string, value: unknown): string => {
   }
 };
 
+const normalizeUnlimitedFeatureValues = (
+  featureValues: Record<string, string>
+): Record<string, string> => {
+  if (featureValues.unlimited_profile_views === 'Unlimited') {
+    featureValues.daily_profile_views = 'Unlimited';
+    featureValues.profile_views = 'Unlimited';
+  }
+
+  return featureValues;
+};
+
 const getFeatureLabel = (key: string, name?: string): string =>
   name?.trim() ?? formatPlanName(key);
 
@@ -271,13 +282,14 @@ export const buildDisplayPlans = (
     isCustom: Boolean(plan.isCustom),
     best: plan === recommendedPlan,
     ...(plan.description ? { description: plan.description } : {}),
-    featureValues:
+    featureValues: normalizeUnlimitedFeatureValues(
       plan.features?.reduce<Record<string, string>>((acc, item) => {
         const key = item.featureId?.key;
         if (!key) return acc;
         acc[key] = formatFeatureValue(key, item.value);
         return acc;
-      }, {}) ?? {},
+      }, {}) ?? {}
+    ),
     source: plan,
   }));
 };

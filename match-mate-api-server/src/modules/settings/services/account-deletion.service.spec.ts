@@ -12,6 +12,12 @@ import type { ProfileDocument } from '@/modules/profiles/schemas/profile/profile
 import type { StorageService } from '@/modules/storage/services/storage.service';
 import type { AccountSettingDocument } from '../schemas/account-setting.schema';
 import { AccountDeletionService } from './account-deletion.service';
+import type { PaymentDocument } from '@/modules/payments/schemas/payment.schema';
+import type { PaymentInvoiceDocument } from '@/modules/payments/schemas/payment-invoice.schema';
+import type { SubscriptionDocument } from '@/modules/subscriptions/schemas/subscription.schema';
+import type { VerificationDocument } from '@/modules/safety/schemas/verification.schema';
+import type { UserReportDocument } from '@/modules/safety/schemas/user-report.schema';
+import type { AdminAuditLogDocument } from '@/modules/admin/schemas/admin-audit-log.schema';
 
 const executable = (result: unknown = undefined) => ({
   exec: jest.fn().mockResolvedValue(result),
@@ -62,6 +68,36 @@ describe('AccountDeletionService', () => {
     deleteMany: preferenceDeleteMany,
   } as unknown as Model<PreferenceDocument>;
 
+  const paymentUpdateMany = jest.fn(() => executable());
+  const paymentModel = {
+    updateMany: paymentUpdateMany,
+  } as unknown as Model<PaymentDocument>;
+
+  const invoiceUpdateMany = jest.fn(() => executable());
+  const invoiceModel = {
+    updateMany: invoiceUpdateMany,
+  } as unknown as Model<PaymentInvoiceDocument>;
+
+  const subscriptionUpdateMany = jest.fn(() => executable());
+  const subscriptionModel = {
+    updateMany: subscriptionUpdateMany,
+  } as unknown as Model<SubscriptionDocument>;
+
+  const verificationUpdateMany = jest.fn(() => executable());
+  const verificationModel = {
+    updateMany: verificationUpdateMany,
+  } as unknown as Model<VerificationDocument>;
+
+  const reportUpdateMany = jest.fn(() => executable());
+  const reportModel = {
+    updateMany: reportUpdateMany,
+  } as unknown as Model<UserReportDocument>;
+
+  const auditLogUpdateMany = jest.fn(() => executable());
+  const auditLogModel = {
+    updateMany: auditLogUpdateMany,
+  } as unknown as Model<AdminAuditLogDocument>;
+
   const storageService = { deleteFile: jest.fn() };
   const logger = { warn: jest.fn() } as unknown as AppLogger;
   let service: AccountDeletionService;
@@ -78,6 +114,12 @@ describe('AccountDeletionService', () => {
       profileModel,
       mediaModel,
       preferenceModel,
+      paymentModel,
+      invoiceModel,
+      subscriptionModel,
+      verificationModel,
+      reportModel,
+      auditLogModel,
       storageService as unknown as StorageService,
       logger,
     );
@@ -178,6 +220,8 @@ describe('AccountDeletionService', () => {
         $set: expect.objectContaining({
           status: Status.DELETED,
           email: `deleted.${userId}@deleted.matchmate.local`,
+          anonymizedAt: expect.any(Date),
+          retentionReason: 'user_requested_erasure',
         }),
       }),
     );
@@ -194,6 +238,9 @@ describe('AccountDeletionService', () => {
           status: MediaStatus.DELETED,
           isActive: false,
           isPrimary: false,
+          deletedAt: expect.any(Date),
+          anonymizedAt: expect.any(Date),
+          retentionReason: 'user_requested_erasure',
         },
       },
     );
@@ -209,8 +256,64 @@ describe('AccountDeletionService', () => {
           isDeactivated: true,
           deletionCompletedAt: expect.any(Date),
           deletionReason: 'user_requested_erasure',
+          anonymizedAt: expect.any(Date),
+          retentionReason: 'user_requested_erasure',
         },
       },
+    );
+    expect(paymentUpdateMany).toHaveBeenCalledWith(
+      { userId: objectId },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          anonymizedAt: expect.any(Date),
+          retentionReason: 'finance_tax_compliance',
+          source: 'account-erasure-job',
+        }),
+      }),
+    );
+    expect(invoiceUpdateMany).toHaveBeenCalledWith(
+      { userId: objectId },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          anonymizedAt: expect.any(Date),
+          retentionReason: 'finance_tax_compliance',
+        }),
+      }),
+    );
+    expect(subscriptionUpdateMany).toHaveBeenCalledWith(
+      { userId: objectId },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          anonymizedAt: expect.any(Date),
+          retentionReason: 'finance_tax_compliance',
+        }),
+        $unset: { storePurchaseToken: 1 },
+      }),
+    );
+    expect(verificationUpdateMany).toHaveBeenCalledWith(
+      { userId: objectId },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          retentionReason: 'trust_safety_compliance',
+        }),
+      }),
+    );
+    expect(reportUpdateMany).toHaveBeenCalledWith(
+      { $or: [{ reportedBy: objectId }, { reportedUserId: objectId }] },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          retentionReason: 'trust_safety_compliance',
+        }),
+      }),
+    );
+    expect(auditLogUpdateMany).toHaveBeenCalledWith(
+      { $or: [{ actorId: objectId }, { targetId: userId }] },
+      expect.objectContaining({
+        $set: expect.objectContaining({
+          retentionReason: 'security_audit_compliance',
+        }),
+        $unset: { ipAddress: 1, userAgent: 1 },
+      }),
     );
   });
 

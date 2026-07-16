@@ -36,6 +36,8 @@
     "index:audit": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/index-audit.cli.ts",
     "index:audit:strict": "npm run index:audit -- --strict",
     "index:audit:prod": "node dist/infrastructure/databases/mongo/index-audit.cli.js --strict",
+    "archive:policy": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/archive-policy.cli.ts",
+    "explain:audit": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/explain-audit.cli.ts",
     "fraud:scan": "ts-node -r tsconfig-paths/register src/modules/safety/fraud-scan.runner.ts",
     "deploy:prepare": "npm run build && npm run migration:up:prod && npm run index:audit:prod",
     "seed": "ts-node -r tsconfig-paths/register src/modules/seeder/seeder.runner.ts",

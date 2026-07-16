@@ -1,5 +1,8 @@
 import { Types } from 'mongoose';
-import { DataExportService } from './data-export.service';
+import {
+  DataExportService,
+  USER_DATA_EXPORT_COLLECTIONS,
+} from './data-export.service';
 import { COLLECTION_NAMES } from '@/common/constants';
 
 describe('DataExportService', () => {
@@ -60,6 +63,10 @@ describe('DataExportService', () => {
     expect(collection).toHaveBeenCalledWith(COLLECTION_NAMES.USER);
     expect(collection).toHaveBeenCalledWith(COLLECTION_NAMES.MEDIA);
     expect(collection).toHaveBeenCalledWith(COLLECTION_NAMES.PAYMENT);
+    expect(collection).toHaveBeenCalledWith(COLLECTION_NAMES.PAYMENT_INVOICE);
+    expect(collection).toHaveBeenCalledWith(COLLECTION_NAMES.CHAT_MESSAGE);
+    expect(collection).toHaveBeenCalledWith(COLLECTION_NAMES.VERIFICATION);
+    expect(collection).toHaveBeenCalledWith(COLLECTION_NAMES.SUPPORT_TICKET);
     expect(collection).toHaveBeenCalledWith(COLLECTION_NAMES.USER_CONSENT);
     expect(result.exportedAt).toEqual(expect.any(String));
     expect(result.user).toMatchObject({
@@ -85,5 +92,32 @@ describe('DataExportService', () => {
     expect(findCalls).toContainEqual({
       $or: [{ reportedBy: userObjectId }, { reportedUserId: userObjectId }],
     });
+    expect(findCalls).toContainEqual({
+      $or: [{ senderId: userObjectId }, { receiverId: userObjectId }],
+    });
+    expect(findCalls).toContainEqual({
+      $or: [{ userId: userObjectId }, { targetUserId: userObjectId }],
+    });
+    expect(findCalls).toContainEqual({ participants: userObjectId });
+    expect(findCalls).toContainEqual({ userId });
+  });
+
+  it('keeps export collection coverage explicit for privacy review', () => {
+    expect(Object.values(USER_DATA_EXPORT_COLLECTIONS)).toEqual(
+      expect.arrayContaining([
+        COLLECTION_NAMES.USER,
+        COLLECTION_NAMES.PAYMENT_INVOICE,
+        COLLECTION_NAMES.WALLET_TRANSACTION,
+        COLLECTION_NAMES.INTEREST,
+        COLLECTION_NAMES.MATCH,
+        COLLECTION_NAMES.CURATED_MATCH,
+        COLLECTION_NAMES.CHAT_ROOM,
+        COLLECTION_NAMES.CHAT_MESSAGE,
+        COLLECTION_NAMES.VERIFICATION,
+        COLLECTION_NAMES.ANALYTICS_EVENT,
+        COLLECTION_NAMES.SUPPORT_TICKET,
+        COLLECTION_NAMES.SUCCESS_STORY,
+      ]),
+    );
   });
 });

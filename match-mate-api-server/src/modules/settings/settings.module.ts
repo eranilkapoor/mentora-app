@@ -63,6 +63,27 @@ import {
   ActivityLogSchema,
 } from '../profiles/schemas/settings/activity-logs.schema';
 import { SocialAuthVerifierService } from '../auth/services/social-auth-verifier.service';
+import { Payment, PaymentSchema } from '../payments/schemas/payment.schema';
+import {
+  PaymentInvoice,
+  PaymentInvoiceSchema,
+} from '../payments/schemas/payment-invoice.schema';
+import {
+  Subscription,
+  SubscriptionSchema,
+} from '../subscriptions/schemas/subscription.schema';
+import {
+  Verification,
+  VerificationSchema,
+} from '../safety/schemas/verification.schema';
+import {
+  UserReport,
+  UserReportSchema,
+} from '../safety/schemas/user-report.schema';
+import {
+  AdminAuditLog,
+  AdminAuditLogSchema,
+} from '../admin/schemas/admin-audit-log.schema';
 
 @Module({
   imports: [
@@ -86,6 +107,12 @@ import { SocialAuthVerifierService } from '../auth/services/social-auth-verifier
       { name: Preference.name, schema: PreferenceSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
       { name: UserConsent.name, schema: UserConsentSchema },
+      { name: Payment.name, schema: PaymentSchema },
+      { name: PaymentInvoice.name, schema: PaymentInvoiceSchema },
+      { name: Subscription.name, schema: SubscriptionSchema },
+      { name: Verification.name, schema: VerificationSchema },
+      { name: UserReport.name, schema: UserReportSchema },
+      { name: AdminAuditLog.name, schema: AdminAuditLogSchema },
     ]),
   ],
   controllers: [SettingsController],

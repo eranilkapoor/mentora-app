@@ -32,6 +32,27 @@ export class AdminAuditLog {
   @Prop({ type: Object })
   metadata?: Record<string, unknown>;
 
+  @Prop({ trim: true, index: true })
+  source?: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy?: Types.ObjectId;
+
+  @Prop({ default: 1, min: 1 })
+  version!: number;
+
+  @Prop({ index: true })
+  anonymizedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  retentionReason?: string;
+
+  @Prop()
+  legalHoldUntil?: Date;
+
   @Prop({ trim: true })
   ipAddress?: string;
 
@@ -52,3 +73,5 @@ export const AdminAuditLogSchema = SchemaFactory.createForClass(AdminAuditLog);
 AdminAuditLogSchema.index({ createdAt: -1 });
 AdminAuditLogSchema.index({ actorId: 1, createdAt: -1 });
 AdminAuditLogSchema.index({ resource: 1, targetId: 1, createdAt: -1 });
+AdminAuditLogSchema.index({ anonymizedAt: 1, retentionReason: 1 });
+AdminAuditLogSchema.index({ legalHoldUntil: 1 });

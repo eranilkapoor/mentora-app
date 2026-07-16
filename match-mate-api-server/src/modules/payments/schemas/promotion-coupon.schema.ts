@@ -45,6 +45,33 @@ export class PromotionCoupon {
   @Prop({ default: 0, min: 0 })
   redeemedCount!: number;
 
+  @Prop({ trim: true, index: true })
+  source?: string;
+
+  @Prop()
+  reason?: string;
+
+  @Prop({ type: Object })
+  metadata?: Record<string, unknown>;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  createdBy?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  updatedBy?: Types.ObjectId;
+
+  @Prop({ default: 1, min: 1 })
+  version!: number;
+
+  @Prop({ index: true })
+  deletedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  retentionReason?: string;
+
+  @Prop()
+  legalHoldUntil?: Date;
+
   @Prop({ type: String, enum: CouponStatus, default: CouponStatus.ACTIVE })
   status!: CouponStatus;
 }
@@ -55,3 +82,5 @@ export const PromotionCouponSchema =
 
 PromotionCouponSchema.index({ code: 1, status: 1 });
 PromotionCouponSchema.index({ validTill: 1 });
+PromotionCouponSchema.index({ deletedAt: 1, status: 1 });
+PromotionCouponSchema.index({ legalHoldUntil: 1 });

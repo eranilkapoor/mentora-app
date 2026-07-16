@@ -33,9 +33,11 @@ export class Media {
   @Prop({ type: Boolean, default: false })
   isPrimary!: boolean;
 
+  // Lifecycle availability: processing, active, or deleted.
   @Prop({ type: String, enum: MediaStatus, default: MediaStatus.ACTIVE })
   status!: MediaStatus;
 
+  // Trust/safety review state, independent from lifecycle availability.
   @Prop({
     type: String,
     enum: MediaModerationStatus,
@@ -59,8 +61,21 @@ export class Media {
   @Prop()
   reviewNote?: string;
 
+  // Fast visibility flag for read queries; historical metadata can remain.
   @Prop({ type: Boolean, default: true })
   isActive!: boolean;
+
+  @Prop({ index: true })
+  deletedAt?: Date;
+
+  @Prop({ index: true })
+  anonymizedAt?: Date;
+
+  @Prop({ trim: true, maxlength: 250 })
+  retentionReason?: string;
+
+  @Prop()
+  legalHoldUntil?: Date;
 
   @Prop({ type: Date })
   uploadedAt!: Date;
@@ -72,6 +87,9 @@ export const MediaSchema = SchemaFactory.createForClass(Media);
 MediaSchema.index({ type: 1 });
 MediaSchema.index({ isPrimary: 1, isActive: 1 });
 MediaSchema.index({ moderationStatus: 1, status: 1, createdAt: -1 });
+MediaSchema.index({ moderationStatus: 1, isActive: 1, createdAt: 1 });
+MediaSchema.index({ anonymizedAt: 1, retentionReason: 1 });
+MediaSchema.index({ legalHoldUntil: 1 });
 MediaSchema.index({
   userId: 1,
   status: 1,

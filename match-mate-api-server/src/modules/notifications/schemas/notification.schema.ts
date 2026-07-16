@@ -90,6 +90,7 @@ export class Notification {
   @Prop({ default: false })
   hasDeliveryFailure!: boolean;
 
+  // Compact latest delivery snapshot for the feed. Provider attempts live in notification_logs.
   @Prop({
     type: {
       push: {
@@ -127,3 +128,4 @@ export const NotificationSchema = SchemaFactory.createForClass(Notification);
 NotificationSchema.index({ userId: 1, isRead: 1, createdAt: -1 });
 NotificationSchema.index({ userId: 1, category: 1, createdAt: -1 });
 NotificationSchema.index({ userId: 1, dedupeKey: 1, createdAt: -1 });
+NotificationSchema.index({ userId: 1, deletedAt: 1, createdAt: -1 });

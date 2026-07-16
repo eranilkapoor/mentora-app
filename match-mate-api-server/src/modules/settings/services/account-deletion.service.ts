@@ -26,10 +26,38 @@ import {
   AccountSetting,
   AccountSettingDocument,
 } from '../schemas/account-setting.schema';
+import {
+  Payment,
+  PaymentDocument,
+} from '@/modules/payments/schemas/payment.schema';
+import {
+  PaymentInvoice,
+  PaymentInvoiceDocument,
+} from '@/modules/payments/schemas/payment-invoice.schema';
+import {
+  Subscription,
+  SubscriptionDocument,
+} from '@/modules/subscriptions/schemas/subscription.schema';
+import {
+  Verification,
+  VerificationDocument,
+} from '@/modules/safety/schemas/verification.schema';
+import {
+  UserReport,
+  UserReportDocument,
+} from '@/modules/safety/schemas/user-report.schema';
+import {
+  AdminAuditLog,
+  AdminAuditLogDocument,
+} from '@/modules/admin/schemas/admin-audit-log.schema';
 
 const PROFILE_IMAGE_FOLDER = 'profiles/images';
 const PROFILE_VIDEO_FOLDER = 'profiles/videos';
 const PROFILE_VIDEO_THUMBNAIL_FOLDER = 'profiles/video-thumbnails';
+const ACCOUNT_ERASURE_SOURCE = 'account-erasure-job';
+const FINANCE_RETENTION_REASON = 'finance_tax_compliance';
+const AUDIT_RETENTION_REASON = 'security_audit_compliance';
+const SAFETY_RETENTION_REASON = 'trust_safety_compliance';
 
 @Injectable()
 export class AccountDeletionService {
@@ -46,6 +74,18 @@ export class AccountDeletionService {
     private readonly mediaModel: Model<MediaDocument>,
     @InjectModel(Preference.name)
     private readonly preferenceModel: Model<PreferenceDocument>,
+    @InjectModel(Payment.name)
+    private readonly paymentModel: Model<PaymentDocument>,
+    @InjectModel(PaymentInvoice.name)
+    private readonly invoiceModel: Model<PaymentInvoiceDocument>,
+    @InjectModel(Subscription.name)
+    private readonly subscriptionModel: Model<SubscriptionDocument>,
+    @InjectModel(Verification.name)
+    private readonly verificationModel: Model<VerificationDocument>,
+    @InjectModel(UserReport.name)
+    private readonly reportModel: Model<UserReportDocument>,
+    @InjectModel(AdminAuditLog.name)
+    private readonly auditLogModel: Model<AdminAuditLogDocument>,
     private readonly storageService: StorageService,
     private readonly logger: AppLogger,
   ) {}
@@ -84,6 +124,13 @@ export class AccountDeletionService {
       media.flatMap((item) => this.buildStorageDeleteTasks(item)),
     );
 
+    const retentionUpdate = (retentionReason: string) => ({
+      anonymizedAt: now,
+      retentionReason,
+      source: ACCOUNT_ERASURE_SOURCE,
+      reason,
+    });
+
     await Promise.all([
       this.userModel
         .findByIdAndUpdate(userObjectId, {
@@ -93,7 +140,10 @@ export class AccountDeletionService {
             isEmailVerified: false,
             isPhoneVerified: false,
             isOnboardingCompleted: false,
-            updatedBy: 'account-erasure-job',
+            updatedBy: ACCOUNT_ERASURE_SOURCE,
+            deletedAt: now,
+            anonymizedAt: now,
+            retentionReason: 'user_requested_erasure',
           },
           $unset: {
             phone: 1,
@@ -113,6 +163,8 @@ export class AccountDeletionService {
             $set: {
               status: ProfileStatus.DELETED,
               deletedAt: now,
+              anonymizedAt: now,
+              retentionReason: 'user_requested_erasure',
               personal: {
                 firstName: 'Deleted',
                 lastName: 'Member',
@@ -142,6 +194,9 @@ export class AccountDeletionService {
               status: MediaStatus.DELETED,
               isActive: false,
               isPrimary: false,
+              deletedAt: now,
+              anonymizedAt: now,
+              retentionReason: 'user_requested_erasure',
             },
           },
         )
@@ -161,6 +216,95 @@ export class AccountDeletionService {
               isDeactivated: true,
               deletionCompletedAt: now,
               deletionReason: reason,
+              anonymizedAt: now,
+              retentionReason: 'user_requested_erasure',
+            },
+          },
+        )
+        .exec(),
+      this.paymentModel
+        .updateMany(
+          { userId: userObjectId },
+          {
+            $set: {
+              ...retentionUpdate(FINANCE_RETENTION_REASON),
+              customer: {
+                name: 'Deleted Member',
+                email: anonymizedEmail,
+              },
+            },
+            $unset: {
+              'customer.phone': 1,
+              'customer.gstin': 1,
+            },
+          },
+        )
+        .exec(),
+      this.invoiceModel
+        .updateMany(
+          { userId: userObjectId },
+          {
+            $set: {
+              ...retentionUpdate(FINANCE_RETENTION_REASON),
+              customer: {
+                name: 'Deleted Member',
+                email: anonymizedEmail,
+              },
+            },
+            $unset: {
+              customerGstin: 1,
+              'customer.phone': 1,
+            },
+          },
+        )
+        .exec(),
+      this.subscriptionModel
+        .updateMany(
+          { userId: userObjectId },
+          {
+            $set: retentionUpdate(FINANCE_RETENTION_REASON),
+            $unset: {
+              storePurchaseToken: 1,
+            },
+          },
+        )
+        .exec(),
+      this.verificationModel
+        .updateMany(
+          { userId: userObjectId },
+          {
+            $set: retentionUpdate(SAFETY_RETENTION_REASON),
+            $unset: {
+              idProofUrl: 1,
+              selfieUrl: 1,
+              providerPayload: 1,
+            },
+          },
+        )
+        .exec(),
+      this.reportModel
+        .updateMany(
+          {
+            $or: [
+              { reportedBy: userObjectId },
+              { reportedUserId: userObjectId },
+            ],
+          },
+          {
+            $set: retentionUpdate(SAFETY_RETENTION_REASON),
+          },
+        )
+        .exec(),
+      this.auditLogModel
+        .updateMany(
+          {
+            $or: [{ actorId: userObjectId }, { targetId: userId }],
+          },
+          {
+            $set: retentionUpdate(AUDIT_RETENTION_REASON),
+            $unset: {
+              ipAddress: 1,
+              userAgent: 1,
             },
           },
         )
