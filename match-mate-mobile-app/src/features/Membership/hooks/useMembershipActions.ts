@@ -23,8 +23,13 @@ import { useStoreBilling } from '@/core/hooks/useStoreBilling';
 const processingStoreTransactions = new Set<string>();
 const selectedStoreOfferIds = new Map<string, string | undefined>();
 
-export function useMembershipActions() {
+interface MembershipActionsOptions {
+  onMembershipActivated?: () => void;
+}
+
+export function useMembershipActions(options: MembershipActionsOptions = {}) {
   const { t } = useTranslation();
+  const { onMembershipActivated } = options;
   const { data: plans = [] } = useGetMembershipPlansQuery();
   const [createOrder, { isLoading: isCreatingOrder }] =
     useCreateMembershipOrderMutation();
@@ -122,6 +127,7 @@ export function useMembershipActions() {
             name: plan.name.replace(/_/g, ' '),
           }),
         });
+        onMembershipActivated?.();
       } catch (error) {
         reportError(error, {
           source: 'membership.verifyStoreSubscription',
@@ -142,7 +148,7 @@ export function useMembershipActions() {
         processingStoreTransactions.delete(transactionId);
       }
     },
-    [plans, t, verifyStoreSubscription]
+    [onMembershipActivated, plans, t, verifyStoreSubscription]
   );
 
   const {
@@ -252,7 +258,7 @@ export function useMembershipActions() {
   }, [plans, subscriptions]);
 
   const purchaseNativeSubscription = useCallback(
-    async (selectedPlanItem: DisplayPlan): Promise<void> => {
+    async (selectedPlanItem: DisplayPlan): Promise<boolean> => {
       const plan = selectedPlanItem.source;
       const mapping =
         Platform.OS === 'android'
@@ -264,7 +270,7 @@ export function useMembershipActions() {
           title: t('membership.store_billing_unavailable_title'),
           message: t('membership.store_product_unmapped_message'),
         });
-        return;
+        return false;
       }
 
       const billingReady = await reconnect();
@@ -273,7 +279,7 @@ export function useMembershipActions() {
           title: t('membership.store_billing_unavailable_title'),
           message: t('membership.store_connection_unavailable_message'),
         });
-        return;
+        return false;
       }
 
       if (Platform.OS === 'android') {
@@ -296,7 +302,7 @@ export function useMembershipActions() {
             title: t('membership.store_billing_unavailable_title'),
             message: t('membership.store_offer_unavailable_message'),
           });
-          return;
+          return false;
         }
         selectedStoreOfferIds.set(
           `${mapping.productId}:${mapping.basePlanId ?? ''}`,
@@ -316,13 +322,14 @@ export function useMembershipActions() {
           },
           type: 'subs',
         });
-        return;
+        return true;
       }
 
       await requestPurchase({
         request: { apple: { sku: mapping.productId } },
         type: 'subs',
       });
+      return true;
     },
     [reconnect, requestPurchase, subscriptions, t]
   );
@@ -331,13 +338,13 @@ export function useMembershipActions() {
     async (
       selectedPlanItem: DisplayPlan | null,
       gateway: PaymentGateway = getStoreBillingProvider()
-    ): Promise<void> => {
+    ): Promise<boolean> => {
       if (!selectedPlanItem?.source?._id) {
         showError({
           title: t('membership.plans_unavailable_title'),
           message: t('membership.plans_unavailable_message'),
         });
-        return;
+        return false;
       }
 
       if (isNativeStoreBillingPlatform() && !isStoreBillingEnabled()) {
@@ -345,15 +352,14 @@ export function useMembershipActions() {
           title: t('membership.store_billing_unavailable_title'),
           message: t('membership.store_billing_unavailable_message'),
         });
-        return;
+        return false;
       }
 
       if (
         isNativeStoreBillingPlatform() &&
         (gateway === 'apple_iap' || gateway === 'google_play')
       ) {
-        await purchaseNativeSubscription(selectedPlanItem);
-        return;
+        return purchaseNativeSubscription(selectedPlanItem);
       }
 
       try {
@@ -374,11 +380,13 @@ export function useMembershipActions() {
             gateway: order.gateway,
           }),
         });
+        return true;
       } catch {
         showError({
           title: t('membership.payment_failed_title'),
           message: t('membership.payment_failed_message'),
         });
+        return false;
       }
     },
     [createOrder, purchaseNativeSubscription, t]

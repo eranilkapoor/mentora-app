@@ -30,6 +30,7 @@ export default function MembershipScreen(): React.ReactElement {
 
   const [activeTab, setActiveTab] = useState<MembershipTab>('self');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const closeCheckout = useCallback(() => setIsCheckoutOpen(false), []);
 
   const {
     displayPlans,
@@ -52,7 +53,7 @@ export default function MembershipScreen(): React.ReactElement {
     handleCreateBoostOrder,
     storePrices,
     isCreatingOrder,
-  } = useMembershipActions();
+  } = useMembershipActions({ onMembershipActivated: closeCheckout });
 
   const pricedDisplayPlans = useMemo(
     () =>
@@ -106,10 +107,12 @@ export default function MembershipScreen(): React.ReactElement {
 
   const onConfirmCheckout = useCallback(
     async (gateway: PaymentGateway) => {
-      await handleCreateOrder(pricedSelectedPlanItem, gateway);
-      setIsCheckoutOpen(false);
+      const started = await handleCreateOrder(pricedSelectedPlanItem, gateway);
+      if (started) {
+        closeCheckout();
+      }
     },
-    [handleCreateOrder, pricedSelectedPlanItem]
+    [closeCheckout, handleCreateOrder, pricedSelectedPlanItem]
   );
 
   const onCreateBoostOrder = useCallback(() => {
@@ -247,7 +250,7 @@ export default function MembershipScreen(): React.ReactElement {
         visible={isCheckoutOpen}
         selectedPlanItem={pricedSelectedPlanItem}
         isCreatingOrder={isCreatingOrder}
-        onClose={() => setIsCheckoutOpen(false)}
+        onClose={closeCheckout}
         onContinue={(gateway) => {
           void onConfirmCheckout(gateway);
         }}
