@@ -347,9 +347,36 @@ export class SubscriptionsService {
   }
 
   async getActiveSubscription(userId: string) {
-    return this.subModel
+    const now = new Date();
+    const userObjectId = new Types.ObjectId(userId);
+    const overdueFilter = {
+      userId: userObjectId,
+      status: {
+        $in: [
+          SubscriptionStatus.ACTIVE,
+          SubscriptionStatus.TRIAL,
+          SubscriptionStatus.GRACE_PERIOD,
+        ],
+      },
+      endDate: { $lte: now },
+    };
+
+    const overdueUserIds = await this.subModel
+      .distinct('userId', overdueFilter)
+      .exec();
+    if (overdueUserIds.length > 0) {
+      await this.subModel.updateMany(overdueFilter, {
+        $set: { status: SubscriptionStatus.EXPIRED },
+      });
+      await this.userRepo.expireMemberships(
+        overdueUserIds.map((id) => id.toString()),
+        now,
+      );
+    }
+
+    const activeSubscription = await this.subModel
       .findOne({
-        userId: new Types.ObjectId(userId),
+        userId: userObjectId,
         status: {
           $in: [
             SubscriptionStatus.ACTIVE,
@@ -357,11 +384,35 @@ export class SubscriptionsService {
             SubscriptionStatus.GRACE_PERIOD,
           ],
         },
-        endDate: { $gt: new Date() },
+        endDate: { $gt: now },
       })
       .populate('planId')
       .lean()
       .exec();
+
+    if (activeSubscription) return activeSubscription;
+
+    const freePlan = await this.planModel
+      .findOne({
+        tier: PlanTier.FREE,
+        isActive: true,
+        planType: { $ne: PlanType.PROFILE_BOOST },
+      })
+      .lean()
+      .exec();
+
+    if (!freePlan) return null;
+
+    return {
+      _id: null,
+      userId: userObjectId,
+      planId: freePlan,
+      startDate: null,
+      endDate: null,
+      status: SubscriptionStatus.ACTIVE,
+      autoRenew: false,
+      isFallback: true,
+    };
   }
 
   async getBillingSummary(userId: string) {

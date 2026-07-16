@@ -394,6 +394,25 @@ describe('SubscriptionsService', () => {
     await expect(service.getActiveSubscription(userId)).resolves.toBe(active);
   });
 
+  it('returns the canonical free plan fallback when no paid entitlement is active', async () => {
+    const freePlan = basePlan({
+      _id: new Types.ObjectId(),
+      price: 0,
+      tier: PlanTier.FREE,
+    });
+    subModel.findOne.mockReturnValue({
+      populate: () => leanExec(null),
+    });
+    planModel.findOne.mockReturnValue(leanExec(freePlan));
+
+    await expect(service.getActiveSubscription(userId)).resolves.toMatchObject({
+      planId: expect.objectContaining({ tier: PlanTier.FREE }),
+      status: SubscriptionStatus.ACTIVE,
+      autoRenew: false,
+      isFallback: true,
+    });
+  });
+
   it('builds billing summaries with totals, payment, and default fallbacks', async () => {
     jest.spyOn(service, 'getActiveSubscription').mockResolvedValue({
       autoRenew: true,

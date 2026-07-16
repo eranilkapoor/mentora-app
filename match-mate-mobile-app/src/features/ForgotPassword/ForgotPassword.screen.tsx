@@ -125,7 +125,7 @@ export default function ForgotPasswordScreen({
   );
 
   const keyboardBehavior = useMemo(
-    () => (Platform.OS === 'ios' ? 'padding' : undefined),
+    () => (Platform.OS === 'ios' ? 'padding' : 'height'),
     []
   );
 
@@ -151,6 +151,7 @@ export default function ForgotPasswordScreen({
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
           showsVerticalScrollIndicator={false}
         >
           <View style={styles.iconWrapper}>

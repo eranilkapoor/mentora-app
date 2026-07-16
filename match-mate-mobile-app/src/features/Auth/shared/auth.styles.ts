@@ -16,6 +16,7 @@ export const authSharedStyles = (
       ...StyleSheet.flatten(base.scrollContent),
       paddingHorizontal: 20,
       paddingTop: 80,
+      paddingBottom: 120,
       justifyContent: 'flex-start',
     },
     title: {

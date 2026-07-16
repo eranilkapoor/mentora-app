@@ -14,7 +14,8 @@ export const onboardingStyles = (
     container: StyleSheet.flatten(base.container),
     content: {
       flexGrow: 1,
-      paddingVertical: 24,
+      paddingTop: 24,
+      paddingBottom: 120,
       paddingHorizontal: 20,
     },
 

@@ -513,7 +513,7 @@ export default function EditPreferenceScreen({
     <SafeAreaView style={styles.safe}>
       <KeyboardAvoidingView
         style={styles.flex}
-        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         keyboardVerticalOffset={Platform.OS === 'ios' ? 80 : 0}
       >
         <Header
@@ -526,6 +526,7 @@ export default function EditPreferenceScreen({
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
+          keyboardDismissMode="interactive"
         >
           {/* ── Info Banner ─────────────────────────────────────────────── */}
           <View style={styles.infoBanner}>

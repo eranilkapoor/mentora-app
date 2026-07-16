@@ -58,6 +58,7 @@ export function useMembershipData(activeTab: MembershipTab) {
     () => resolveMembershipPlan(activeSubscription?.planId, backendPlans),
     [activeSubscription?.planId, backendPlans]
   );
+  const isActivePaidPlan = Boolean(activePlan && activePlan.tier !== 'free');
   const getPurchaseState = (
     plan: DisplayPlan
   ): DisplayPlan['purchaseState'] => {
@@ -99,6 +100,7 @@ export function useMembershipData(activeTab: MembershipTab) {
       MembershipBillingCycle | undefined;
     if (
       activePlanId &&
+      isActivePaidPlan &&
       activeCycleAppliedFor.current !== activePlanId &&
       activePlan?.planType === 'self_service' &&
       activeCycle &&
@@ -110,7 +112,11 @@ export function useMembershipData(activeTab: MembershipTab) {
       return;
     }
 
-    if (activePlanId && activeCycleAppliedFor.current !== activePlanId) {
+    if (
+      activePlanId &&
+      isActivePaidPlan &&
+      activeCycleAppliedFor.current !== activePlanId
+    ) {
       activeCycleAppliedFor.current = activePlanId;
     }
 
@@ -118,7 +124,7 @@ export function useMembershipData(activeTab: MembershipTab) {
     if (firstAvailableCycle && !billingCycles.includes(selectedBillingCycle)) {
       setSelectedBillingCycle(firstAvailableCycle);
     }
-  }, [activePlan, billingCycles, selectedBillingCycle]);
+  }, [activePlan, billingCycles, isActivePaidPlan, selectedBillingCycle]);
 
   useEffect(() => {
     if (!selfPlans.length) return;
@@ -130,11 +136,15 @@ export function useMembershipData(activeTab: MembershipTab) {
       (plan) => plan.id === activePlanId
     )?.id;
 
-    if (activePlanId && activeSelfPlanAppliedFor.current === activePlanId) {
+    if (
+      activePlanId &&
+      isActivePaidPlan &&
+      activeSelfPlanAppliedFor.current === activePlanId
+    ) {
       return;
     }
 
-    if (activePlanId && !activePlanInCurrentCycle) {
+    if (activePlanId && isActivePaidPlan && !activePlanInCurrentCycle) {
       const activeCycle = activePlan?.billingCycle as
         MembershipBillingCycle | undefined;
       if (
@@ -151,18 +161,20 @@ export function useMembershipData(activeTab: MembershipTab) {
       (plan) => plan.id === selectedPlans.self
     )?.tier;
     const defaultPlan =
-      activePlanInCurrentCycle ??
+      (isActivePaidPlan ? activePlanInCurrentCycle : undefined) ??
       selfPlans.find((plan) => plan.tier === previousTier)?.id ??
       selfPlans.find((plan) => plan.best)?.id ??
       selfPlans[0]?.id;
 
     if (defaultPlan && defaultPlan !== selectedPlans.self) {
-      if (activePlanId) activeSelfPlanAppliedFor.current = activePlanId;
+      if (activePlanId && isActivePaidPlan) {
+        activeSelfPlanAppliedFor.current = activePlanId;
+      }
       setSelectedPlans((prev) => ({ ...prev, self: defaultPlan }));
       return;
     }
 
-    if (activePlanId) {
+    if (activePlanId && isActivePaidPlan) {
       activeSelfPlanAppliedFor.current = activePlanId;
     }
   }, [
@@ -170,6 +182,7 @@ export function useMembershipData(activeTab: MembershipTab) {
     activeSubscription?.planId,
     allSelfPlans,
     billingCycles,
+    isActivePaidPlan,
     selectedBillingCycle,
     selfPlans,
     selectedPlans.self,
