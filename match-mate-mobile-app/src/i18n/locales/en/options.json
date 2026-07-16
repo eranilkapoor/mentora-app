@@ -142,6 +142,7 @@
     "no_religion": "No Religion"
   },
   "caste": {
+    "any": "Any",
     "general": "General",
     "obc": "OBC",
     "sc": "SC",

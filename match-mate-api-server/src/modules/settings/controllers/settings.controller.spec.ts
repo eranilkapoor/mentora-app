@@ -18,7 +18,9 @@ describe('SettingsController', () => {
     unhideProfile: jest.fn(),
     getAccount: jest.fn(),
     deactivateAccount: jest.fn(),
+    reactivateAccount: jest.fn(),
     scheduleAccountDeletion: jest.fn(),
+    cancelAccountDeletion: jest.fn(),
     disconnectLinkedAccount: jest.fn(),
     setPrimaryLinkedAccount: jest.fn(),
     requestEmailChange: jest.fn(),
@@ -183,10 +185,22 @@ describe('SettingsController', () => {
       SuccessCode.SETTINGS_ACCOUNT_DEACTIVATED,
     ],
     [
+      'reactivateAccount',
+      'reactivateAccount',
+      [],
+      SuccessCode.SETTINGS_ACCOUNT_REACTIVATED,
+    ],
+    [
       'scheduleAccountDeletion',
       'scheduleAccountDeletion',
       [],
       SuccessCode.SETTINGS_ACCOUNT_DELETION_SCHEDULED,
+    ],
+    [
+      'cancelAccountDeletion',
+      'cancelAccountDeletion',
+      [],
+      SuccessCode.SETTINGS_ACCOUNT_DELETION_CANCELLED,
     ],
     [
       'disconnectLinkedAccount',

@@ -324,7 +324,7 @@ export default function SettingsScreen({
           <SettingRow
             icon="life-buoy"
             label={t('settings.help_and_support')}
-            subLabel="Support, FAQs, community guidelines, and legal policies"
+            subLabel={t('settings.help_sub')}
             onPress={() => navigation.navigate('HelpSupport')}
             isLast
           />

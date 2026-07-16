@@ -55,6 +55,12 @@ export class ReferralReward {
   joinedAt?: Date;
 
   @Prop()
+  profileCompletedAt?: Date;
+
+  @Prop()
+  registrationRewardedAt?: Date;
+
+  @Prop()
   subscribedAt?: Date;
 
   @Prop()

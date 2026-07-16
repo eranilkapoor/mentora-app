@@ -283,7 +283,15 @@ const hasChildren = (profile: SchemaProfile): boolean =>
 const hasDisability = (profile: SchemaProfile): boolean =>
   profile.physical.disabilityStatus === true;
 
-const getSiblingCounts = (profile: SchemaProfile): string => {
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+const getSiblingCountLabel = (
+  t: Translate,
+  key: string,
+  count: number
+): string => t(`profile.siblings.${key}`, { count });
+
+const getSiblingCounts = (profile: SchemaProfile, t: Translate): string => {
   const s = profile.family?.siblings;
   if (!s) return EMPTY_VALUE;
   const brothers = s.brothersCount ?? 0;
@@ -291,17 +299,25 @@ const getSiblingCounts = (profile: SchemaProfile): string => {
   const mb = s.marriedBrothersCount ?? 0;
   const ms = s.marriedSistersCount ?? 0;
   return [
-    `${brothers} brother${brothers === 1 ? '' : 's'}`,
-    `${sisters} sister${sisters === 1 ? '' : 's'}`,
-    `${mb} married brother${mb === 1 ? '' : 's'}`,
-    `${ms} married sister${ms === 1 ? '' : 's'}`,
+    getSiblingCountLabel(t, 'brothers', brothers),
+    getSiblingCountLabel(t, 'sisters', sisters),
+    getSiblingCountLabel(t, 'married_brothers', mb),
+    getSiblingCountLabel(t, 'married_sisters', ms),
   ].join(', ');
 };
 
-const getSiblingDetails = (profile: SchemaProfile): SiblingDisplayItem[] =>
+const getSiblingDetails = (
+  profile: SchemaProfile,
+  t: Translate
+): SiblingDisplayItem[] =>
   profile.family?.siblings?.details?.map((s) => ({
-    type: formatProfileText(s.type),
-    maritalStatus: s.married ? 'Married' : 'Unmarried',
+    type:
+      s.type === 'brother'
+        ? t('profile.siblings.brother')
+        : t('profile.siblings.sister'),
+    maritalStatus: s.married
+      ? t('profile.siblings.married')
+      : t('profile.siblings.unmarried'),
     occupation: formatProfileText(s.occupation),
   })) ?? [];
 
@@ -314,7 +330,7 @@ const formatList = (items: unknown): string =>
   toStringList(items).filter(Boolean).join(', ') || EMPTY_VALUE;
 
 const formatEnumList = (
-  t: (key: string, options: { defaultValue: string }) => string,
+  t: Translate,
   namespace: string,
   items: unknown
 ): string => {
@@ -376,8 +392,11 @@ const getPreferenceFilters = (
 ): PdfPreferenceFields | undefined =>
   (profile.preferences?.filters ?? profile.preferences) as PdfPreferenceFields;
 
-const getSiblingDetailsSummary = (profile: SchemaProfile): string => {
-  const details = getSiblingDetails(profile);
+const getSiblingDetailsSummary = (
+  profile: SchemaProfile,
+  t: Translate
+): string => {
+  const details = getSiblingDetails(profile, t);
   if (!details.length) return EMPTY_VALUE;
 
   return details
@@ -431,7 +450,7 @@ interface PdfSection {
 const getPdfSections = (
   profile: SchemaProfile,
   privacy: PrivacySettings | undefined,
-  t: (key: string, options: { defaultValue: string }) => string
+  t: Translate
 ): PdfSection[] => {
   const showExactAge = privacy?.showExactAge ?? true;
   const showIncome = privacy?.showIncome ?? false;
@@ -708,8 +727,8 @@ const getPdfSections = (
             EMPTY_VALUE
           ),
         ],
-        ['Siblings', getSiblingCounts(profile)],
-        ['Sibling Details', getSiblingDetailsSummary(profile)],
+        ['Siblings', getSiblingCounts(profile, t)],
+        ['Sibling Details', getSiblingDetailsSummary(profile, t)],
         ['Family Notes', formatProfileText(profile.family?.siblings?.note)],
       ],
     },
@@ -847,7 +866,7 @@ const createProfilePdfHtml = (
   photoUrl: string | undefined,
   profileSummary: string,
   privacy: PrivacySettings | undefined,
-  t: (key: string, options: { defaultValue: string }) => string
+  t: Translate
 ): string => {
   const age =
     toDisplayText(profile.age) !== EMPTY_VALUE
@@ -1135,8 +1154,8 @@ export default function ProfileScreen({
   );
 
   const siblingDetails = useMemo(
-    () => getSiblingDetails(profileData),
-    [profileData]
+    () => getSiblingDetails(profileData, t),
+    [profileData, t]
   );
 
   const photos = useMemo(
@@ -1752,7 +1771,7 @@ export default function ProfileScreen({
           />
           <Row
             labelKey="profile.row_siblings"
-            value={getSiblingCounts(profileData)}
+            value={getSiblingCounts(profileData, t)}
           />
           <Row
             labelKey="profile.row_sibling_note"

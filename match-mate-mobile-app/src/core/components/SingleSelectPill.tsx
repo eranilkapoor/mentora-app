@@ -240,7 +240,9 @@ function SingleSelectPillComponent<T extends string = string>({
   const renderLabel = useCallback(
     (option: SelectOption<T>): string => {
       if (i18nPrefix) {
-        return t(`${i18nPrefix}.${option.value}`);
+        return t(`${i18nPrefix}.${option.value}`, {
+          defaultValue: option.label,
+        });
       }
 
       return option.label;

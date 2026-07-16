@@ -234,7 +234,7 @@ export class ReferralsService {
           status: ReferralRewardStatus.REGISTERED,
           registrationPoints: REGISTRATION_BONUS_POINTS,
           subscriptionPoints: 0,
-          totalPoints: REGISTRATION_BONUS_POINTS,
+          totalPoints: 0,
           joinedAt: new Date(),
           subscriptionRewardRate: SUBSCRIPTION_REWARD_RATE,
         },
@@ -242,25 +242,11 @@ export class ReferralsService {
       { new: true, upsert: true, setDefaultsOnInsert: true },
     );
 
-    await this.recalculateUserReferralPoints(String(referrer._id));
-    await this.walletService.credit({
-      userId: referrer._id,
-      points: REGISTRATION_BONUS_POINTS,
-      source: WalletTransactionSource.REFERRAL_REGISTRATION,
-      referenceId: reward._id.toString(),
-      metadata: {
-        referredUserId: referredUser._id.toString(),
-        referralCode: normalizedCode,
-        source: this.normalizeAttributionValue(attribution?.source),
-        medium: this.normalizeAttributionValue(attribution?.medium),
-        campaign: this.normalizeAttributionValue(attribution?.campaign),
-        attribution: attribution?.metadata,
-      },
-    });
-
     if (reward.referrerId.toString() !== referrer._id.toString()) {
       return throwConflict(ErrorCode.REFERRAL_ALREADY_APPLIED);
     }
+
+    await this.recalculateUserReferralPoints(String(referrer._id));
   }
 
   async validateReferralCodeForRegistration(
@@ -319,6 +305,34 @@ export class ReferralsService {
         referredUserId,
         subscriptionAmount: netAmount,
         subscriptionRewardRate: SUBSCRIPTION_REWARD_RATE,
+      },
+    });
+  }
+
+  async awardProfileCompletionReward(referredUserId: string): Promise<void> {
+    const reward = await this.rewardModel
+      .findOne({ referredUserId: new Types.ObjectId(referredUserId) })
+      .exec();
+
+    if (!reward || reward.registrationRewardedAt) {
+      return;
+    }
+
+    reward.profileCompletedAt = new Date();
+    reward.registrationRewardedAt = reward.profileCompletedAt;
+    reward.totalPoints = reward.registrationPoints + reward.subscriptionPoints;
+    await reward.save();
+
+    await this.recalculateUserReferralPoints(String(reward.referrerId));
+    await this.walletService.credit({
+      userId: reward.referrerId,
+      points: reward.registrationPoints,
+      source: WalletTransactionSource.REFERRAL_REGISTRATION,
+      referenceId: reward._id.toString(),
+      metadata: {
+        referredUserId,
+        referralCode: reward.referralCode,
+        profileCompletedAt: reward.profileCompletedAt,
       },
     });
   }

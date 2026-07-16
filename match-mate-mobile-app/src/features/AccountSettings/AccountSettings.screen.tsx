@@ -15,6 +15,8 @@ import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
 import { logout as logoutAction } from '@/store/slices/auth.slice';
 import {
   useDeactivateAccountMutation,
+  useReactivateAccountMutation,
+  useCancelDeleteAccountRequestMutation,
   useDeleteAccountRequestMutation,
   useGetAccountSettingsQuery,
 } from '@/store/services/accountSettingsApi.service';
@@ -30,13 +32,17 @@ export default function AccountSettingsScreen({
 
   const { data, isLoading } = useGetAccountSettingsQuery();
   const [deactivateAccount] = useDeactivateAccountMutation();
+  const [reactivateAccount] = useReactivateAccountMutation();
   const [deleteAccountRequest] = useDeleteAccountRequestMutation();
+  const [cancelDeleteAccountRequest] = useCancelDeleteAccountRequestMutation();
 
   const settings = data?.account;
   const linkedCount =
     settings?.linkedAccounts?.filter((account) => account.connected).length ??
     0;
   const availableLinkedAccountCount = settings?.linkedAccounts?.length ?? 5;
+  const isDeactivated = settings?.isDeactivated ?? false;
+  const deletionScheduledAt = settings?.deletionScheduledAt;
 
   const handleDeactivate = useCallback(() => {
     showConfirm({
@@ -58,6 +64,22 @@ export default function AccountSettingsScreen({
     });
   }, [deactivateAccount, dispatch, t]);
 
+  const handleReactivate = useCallback(() => {
+    showConfirm({
+      title: t('settings.account.reactivate_title'),
+      message: t('settings.account.reactivate_message'),
+      confirmText: t('settings.account.reactivate_confirm'),
+      onConfirm: () => {
+        void reactivateAccount().then(() => {
+          showSuccess({
+            title: t('common.success'),
+            message: t('settings.account.reactivate_success'),
+          });
+        });
+      },
+    });
+  }, [reactivateAccount, t]);
+
   const handleDeleteRequest = useCallback(() => {
     showConfirm({
       title: t('settings.account.delete_title'),
@@ -77,6 +99,22 @@ export default function AccountSettingsScreen({
       },
     });
   }, [deleteAccountRequest, dispatch, t]);
+
+  const handleCancelDeleteRequest = useCallback(() => {
+    showConfirm({
+      title: t('settings.account.cancel_delete_title'),
+      message: t('settings.account.cancel_delete_message'),
+      confirmText: t('settings.account.cancel_delete_confirm'),
+      onConfirm: () => {
+        void cancelDeleteAccountRequest().then(() => {
+          showSuccess({
+            title: t('common.success'),
+            message: t('settings.account.cancel_delete_success'),
+          });
+        });
+      },
+    });
+  }, [cancelDeleteAccountRequest, t]);
 
   if (isLoading || !data) {
     return <Loader fullScreen size="large" />;
@@ -176,11 +214,19 @@ export default function AccountSettingsScreen({
           subtitle={t('settings.account.danger_zone_subtitle')}
         >
           <SettingsSelectItem
-            icon="pause-circle"
-            label={t('settings.account.deactivate')}
-            sublabel={t('settings.account.deactivate_sub')}
-            destructive
-            onPress={handleDeactivate}
+            icon={isDeactivated ? 'play-circle' : 'pause-circle'}
+            label={
+              isDeactivated
+                ? t('settings.account.reactivate')
+                : t('settings.account.deactivate')
+            }
+            sublabel={
+              isDeactivated
+                ? t('settings.account.reactivate_sub')
+                : t('settings.account.deactivate_sub')
+            }
+            destructive={!isDeactivated}
+            onPress={isDeactivated ? handleReactivate : handleDeactivate}
           />
           <SettingsSelectItem
             icon="file-text"
@@ -189,20 +235,26 @@ export default function AccountSettingsScreen({
             onPress={() => navigation.navigate('AccountDeletion')}
           />
           <SettingsSelectItem
-            icon="trash-2"
-            label={t('settings.account.delete')}
+            icon={deletionScheduledAt ? 'rotate-ccw' : 'trash-2'}
+            label={
+              deletionScheduledAt
+                ? t('settings.account.cancel_delete')
+                : t('settings.account.delete')
+            }
             sublabel={
-              settings?.deletionScheduledAt
+              deletionScheduledAt
                 ? t('settings.account.delete_scheduled', {
-                    date: new Date(
-                      settings.deletionScheduledAt
-                    ).toLocaleDateString(),
+                    date: new Date(deletionScheduledAt).toLocaleDateString(),
                   })
                 : t('settings.account.delete_sub')
             }
-            destructive
+            destructive={!deletionScheduledAt}
             isLast
-            onPress={handleDeleteRequest}
+            onPress={
+              deletionScheduledAt
+                ? handleCancelDeleteRequest
+                : handleDeleteRequest
+            }
           />
         </SettingsCard>
 

@@ -43,6 +43,7 @@ const createRepository = () => ({
   getHiddenProfiles: jest.fn(),
   getAccount: jest.fn(),
   updateAccount: jest.fn(),
+  updateAccountLifecycle: jest.fn(),
   getOrCreateUserSettings: jest.fn(),
   getOrCreateAllUserSettings: jest.fn(),
   getNotification: jest.fn(),
@@ -594,6 +595,26 @@ describe('SettingsService', () => {
     );
   });
 
+  it('reactivates an account and clears deactivation metadata', async () => {
+    const fixture = createFixture();
+    fixture.repo.updateAccountLifecycle.mockResolvedValue({
+      isDeactivated: false,
+    });
+
+    await fixture.service.reactivateAccount(USER_ID);
+
+    expect(fixture.userModel.findByIdAndUpdate).toHaveBeenCalledWith(USER_ID, {
+      $set: { status: Status.ACTIVE },
+    });
+    expect(fixture.repo.updateAccountLifecycle).toHaveBeenCalledWith(USER_ID, {
+      $set: { isDeactivated: false },
+      $unset: {
+        deactivatedAt: '',
+        deactivationReason: '',
+      },
+    });
+  });
+
   it('schedules account deletion 30 days ahead and revokes sessions', async () => {
     const fixture = createFixture();
     const before = Date.now();
@@ -607,6 +628,23 @@ describe('SettingsService', () => {
       before + 29 * 24 * 60 * 60 * 1000,
     );
     expect(fixture.userSessionModel.updateMany).toHaveBeenCalled();
+  });
+
+  it('cancels scheduled account deletion and keeps the account active', async () => {
+    const fixture = createFixture();
+    fixture.repo.updateAccountLifecycle.mockResolvedValue({});
+
+    await fixture.service.cancelAccountDeletion(USER_ID);
+
+    expect(fixture.userModel.findByIdAndUpdate).toHaveBeenCalledWith(USER_ID, {
+      $set: { status: Status.ACTIVE },
+    });
+    expect(fixture.repo.updateAccountLifecycle).toHaveBeenCalledWith(USER_ID, {
+      $unset: {
+        deletionScheduledAt: '',
+        deletionReason: '',
+      },
+    });
   });
 
   it('rejects unsupported linked-account providers and missing users', async () => {

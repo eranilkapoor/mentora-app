@@ -51,6 +51,7 @@ import {
 import { AppException } from '@/common/exceptions/app.exception';
 import { normalizeFamilySiblings } from '../utils/family-normalization.util';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
+import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 
 interface RegisterRequestContext {
   platform: ActivityPlatform;
@@ -85,6 +86,7 @@ export class ProfilesService {
     private readonly preferenceService: PreferenceService,
     private readonly profileScoringService: ProfileScoringService,
     private readonly settingsService: SettingsService,
+    private readonly referralsService: ReferralsService,
     private readonly logger: AppLogger,
   ) {}
 
@@ -100,6 +102,7 @@ export class ProfilesService {
 
       const payload = this.buildCreatePayload(dto);
       const profile = await this.profileRepo.create(userId, payload);
+      await this.awardReferralCompletionRewardIfComplete(userId, payload);
 
       return profile;
     } catch (error) {
@@ -116,10 +119,13 @@ export class ProfilesService {
     if (await this.profileRepo.exists(userId)) {
       const profile = await this.profileRepo.update(userId, payload);
       await this.cache.del(`profile:${userId}`);
+      await this.awardReferralCompletionRewardIfComplete(userId, payload);
       return profile;
     }
 
-    return this.profileRepo.create(userId, payload);
+    const profile = await this.profileRepo.create(userId, payload);
+    await this.awardReferralCompletionRewardIfComplete(userId, payload);
+    return profile;
   }
 
   //  Read
@@ -258,6 +264,7 @@ export class ProfilesService {
 
       const result = await this.profileRepo.update(userId, normalized);
       await this.cache.del(`profile:${userId}`);
+      await this.awardReferralCompletionRewardIfComplete(userId, normalized);
 
       const enriched = await this.withVerificationStatus(
         userId,
@@ -384,6 +391,17 @@ export class ProfilesService {
     normalized.lastActiveAt = new Date();
 
     return normalized;
+  }
+
+  private async awardReferralCompletionRewardIfComplete(
+    userId: string,
+    profile: Record<string, unknown>,
+  ): Promise<void> {
+    if (Number(profile.profileCompletionPercentage ?? 0) < 100) {
+      return;
+    }
+
+    await this.referralsService.awardProfileCompletionReward(userId);
   }
 
   private assertImmutableIdentityFields(

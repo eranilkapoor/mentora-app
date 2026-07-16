@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -33,19 +33,44 @@ type Props = {
   route: RouteProp<SettingsStackParamList, 'SupportTicketDetail'>;
 };
 
-const formatDateTime = (value?: string): string =>
-  value ? new Date(value).toLocaleString() : 'Recently';
+type Translate = (key: string, options?: Record<string, unknown>) => string;
 
-function MessageCard({ item }: { item: SupportTicketMessage }) {
+const translateTicketValue = (
+  t: Translate,
+  group: 'categories' | 'priorities' | 'statuses',
+  value: string
+): string =>
+  t(`settings.support_tickets.${group}.${value}`, {
+    defaultValue: value.replace(/_/g, ' '),
+  });
+
+const formatDateTime = (value: string | undefined, t: Translate): string =>
+  value
+    ? new Date(value).toLocaleString()
+    : t('settings.support_tickets.recently');
+
+function MessageCard({
+  item,
+  t,
+}: {
+  item: SupportTicketMessage;
+  t: Translate;
+}) {
   const styles = useThemedStyles(supportTicketsStyles);
   const isUser = item.authorType === 'user';
   return (
     <View style={[styles.messageCard, isUser && styles.messageCardUser]}>
       <Text style={styles.messageAuthor}>
-        {isUser ? 'You' : item.authorType}
+        {isUser
+          ? t('settings.support_tickets.author_you')
+          : t(`settings.support_tickets.author_${item.authorType}`, {
+              defaultValue: item.authorType,
+            })}
       </Text>
       <Text style={styles.messageBody}>{item.message}</Text>
-      <Text style={styles.messageTime}>{formatDateTime(item.createdAt)}</Text>
+      <Text style={styles.messageTime}>
+        {formatDateTime(item.createdAt, t)}
+      </Text>
     </View>
   );
 }
@@ -133,12 +158,22 @@ export default function SupportTicketDetailScreen({
               <View style={styles.rowTop}>
                 <Text style={styles.headerTitle}>{ticket.subject}</Text>
                 <View style={styles.badge}>
-                  <Text style={styles.badgeText}>{ticket.status}</Text>
+                  <Text style={styles.badgeText}>
+                    {translateTicketValue(t, 'statuses', ticket.status)}
+                  </Text>
                 </View>
               </View>
               <Text style={styles.headerSubtitle}>
-                {ticket.category} · {ticket.priority} priority · Created{' '}
-                {formatDateTime(ticket.createdAt)}
+                {translateTicketValue(t, 'categories', ticket.category)} ·{' '}
+                {t('settings.support_tickets.priority_value', {
+                  priority: translateTicketValue(
+                    t,
+                    'priorities',
+                    ticket.priority
+                  ),
+                })}{' '}
+                · {t('settings.support_tickets.created_label')}{' '}
+                {formatDateTime(ticket.createdAt, t)}
               </Text>
               {!isClosed ? (
                 <TouchableOpacity
@@ -162,6 +197,7 @@ export default function SupportTicketDetailScreen({
               <MessageCard
                 key={`${message.createdAt ?? index}-${index}`}
                 item={message}
+                t={t}
               />
             ))}
 

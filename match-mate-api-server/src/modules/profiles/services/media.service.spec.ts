@@ -87,6 +87,7 @@ describe('MediaService', () => {
       upload_photos: 10,
       upload_videos: 1,
     });
+    const referralsService = { awardProfileCompletionReward: jest.fn() };
     moderationService.moderate.mockReturnValue({
       status: MediaModerationStatus.APPROVED,
       reasons: [],
@@ -100,6 +101,7 @@ describe('MediaService', () => {
       moderationService as never,
       videoThumbnailService as never,
       featureService as never,
+      referralsService as never,
       profileModel as never,
       cache as never,
     );

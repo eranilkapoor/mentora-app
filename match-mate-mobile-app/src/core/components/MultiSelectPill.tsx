@@ -417,7 +417,9 @@ function MultiSelectPillComponent<T extends string = string>({
             selectionLimitReached;
 
           const displayLabel = i18nPrefix
-            ? t(`${i18nPrefix}.${option.value}`)
+            ? t(`${i18nPrefix}.${option.value}`, {
+                defaultValue: option.label,
+              })
             : option.label;
 
           return (

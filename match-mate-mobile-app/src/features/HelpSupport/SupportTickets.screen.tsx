@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+﻿import React, { useState } from 'react';
 import {
   RefreshControl,
   ScrollView,
@@ -46,17 +46,32 @@ const categories: SupportTicketCategory[] = [
 
 const priorities: SupportTicketPriority[] = ['normal', 'high', 'urgent'];
 
-const formatDate = (value?: string): string =>
-  value ? new Date(value).toLocaleDateString() : 'Recently';
+type Translate = (key: string, options?: Record<string, unknown>) => string;
+
+const translateTicketValue = (
+  t: Translate,
+  group: 'categories' | 'priorities' | 'statuses',
+  value: string
+): string =>
+  t(`settings.support_tickets.${group}.${value}`, {
+    defaultValue: value.replace(/_/g, ' '),
+  });
+
+const formatDate = (value: string | undefined, t: Translate): string =>
+  value
+    ? new Date(value).toLocaleDateString()
+    : t('settings.support_tickets.recently');
 
 function ChoiceChip<T extends string>({
   value,
   selected,
   onPress,
+  label,
 }: {
   value: T;
   selected: boolean;
   onPress: (value: T) => void;
+  label: string;
 }) {
   const styles = useThemedStyles(supportTicketsStyles);
   return (
@@ -67,7 +82,7 @@ function ChoiceChip<T extends string>({
       accessibilityState={{ selected }}
     >
       <Text style={[styles.chipText, selected && styles.chipTextActive]}>
-        {value.replace(/_/g, ' ')}
+        {label}
       </Text>
     </TouchableOpacity>
   );
@@ -83,6 +98,7 @@ function TicketRow({
   onPress: () => void;
 }) {
   const styles = useThemedStyles(supportTicketsStyles);
+  const { t } = useTranslation();
   return (
     <TouchableOpacity
       style={[styles.ticketRow, isLast && styles.ticketRowLast]}
@@ -94,12 +110,18 @@ function TicketRow({
           {ticket.subject}
         </Text>
         <View style={styles.badge}>
-          <Text style={styles.badgeText}>{ticket.status}</Text>
+          <Text style={styles.badgeText}>
+            {translateTicketValue(t, 'statuses', ticket.status)}
+          </Text>
         </View>
       </View>
       <Text style={styles.rowMeta}>
-        {ticket.category} · {ticket.priority} priority · Updated{' '}
-        {formatDate(ticket.updatedAt)}
+        {translateTicketValue(t, 'categories', ticket.category)} ·{' '}
+        {t('settings.support_tickets.priority_value', {
+          priority: translateTicketValue(t, 'priorities', ticket.priority),
+        })}{' '}
+        · {t('settings.support_tickets.updated')}{' '}
+        {formatDate(ticket.updatedAt, t)}
       </Text>
     </TouchableOpacity>
   );
@@ -212,6 +234,7 @@ export default function SupportTicketsScreen({
               <ChoiceChip
                 key={item}
                 value={item}
+                label={translateTicketValue(t, 'categories', item)}
                 selected={category === item}
                 onPress={setCategory}
               />
@@ -226,6 +249,7 @@ export default function SupportTicketsScreen({
               <ChoiceChip
                 key={item}
                 value={item}
+                label={translateTicketValue(t, 'priorities', item)}
                 selected={priority === item}
                 onPress={setPriority}
               />

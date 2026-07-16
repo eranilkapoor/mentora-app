@@ -79,6 +79,7 @@ const createFixture = () => {
   };
   const profileScoringService = { calculate: jest.fn() };
   const settingsService = { getOrCreateAllUserSettings: jest.fn() };
+  const referralsService = { awardProfileCompletionReward: jest.fn() };
   const logger = { error: jest.fn() };
 
   const service = new ProfilesService(
@@ -93,6 +94,7 @@ const createFixture = () => {
     preferenceService as never,
     profileScoringService as never,
     settingsService as never,
+    referralsService as never,
     logger as never,
   );
 

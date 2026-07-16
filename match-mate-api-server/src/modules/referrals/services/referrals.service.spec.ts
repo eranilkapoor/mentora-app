@@ -269,12 +269,7 @@ describe('ReferralsService', () => {
     rewardModel.findOneAndUpdate.mockResolvedValue(reward);
     await service.applyRegistrationReferral(referredId, ' code ');
     expect(referred.referredBy).toBe(referrer._id);
-    expect(walletService.credit).toHaveBeenCalledWith(
-      expect.objectContaining({
-        points: 100,
-        source: WalletTransactionSource.REFERRAL_REGISTRATION,
-      }),
-    );
+    expect(walletService.credit).not.toHaveBeenCalled();
     expect(userModel.findByIdAndUpdate).toHaveBeenCalledWith(referrerId, {
       $set: { referralPoints: 100 },
     });
@@ -287,6 +282,51 @@ describe('ReferralsService', () => {
     await expect(
       service.applyRegistrationReferral(referredId, 'CODE'),
     ).rejects.toMatchObject({ code: ErrorCode.REFERRAL_ALREADY_APPLIED });
+  });
+
+  it('credits registration rewards once after referred profile completion', async () => {
+    rewardModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(null),
+    });
+    await expect(
+      service.awardProfileCompletionReward(referredId),
+    ).resolves.toBeUndefined();
+
+    const reward = {
+      _id: new Types.ObjectId(),
+      referrerId: new Types.ObjectId(referrerId),
+      referralCode: 'CODE',
+      registrationPoints: 100,
+      subscriptionPoints: 0,
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+    rewardModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue(reward),
+    });
+    rewardModel.aggregate.mockResolvedValue([{ totalPoints: 100 }]);
+
+    await service.awardProfileCompletionReward(referredId);
+
+    expect(reward).toMatchObject({
+      totalPoints: 100,
+      profileCompletedAt: expect.any(Date),
+      registrationRewardedAt: expect.any(Date),
+    });
+    expect(walletService.credit).toHaveBeenLastCalledWith(
+      expect.objectContaining({
+        points: 100,
+        source: WalletTransactionSource.REFERRAL_REGISTRATION,
+      }),
+    );
+
+    rewardModel.findOne.mockReturnValue({
+      exec: jest.fn().mockResolvedValue({
+        ...reward,
+        registrationRewardedAt: new Date(),
+      }),
+    });
+    await service.awardProfileCompletionReward(referredId);
+    expect(walletService.credit).toHaveBeenCalledTimes(1);
   });
 
   it('validates optional referral codes', async () => {

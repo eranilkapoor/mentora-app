@@ -25,23 +25,36 @@ describe('ProfileScoringService', () => {
   it('rewards complete, verified, premium, media-rich, recently active profiles', () => {
     const result = service.calculate(
       {
+        profileFor: 'self',
         personal: {
-          profileFor: 'self',
           firstName: 'Asha',
           gender: 'female',
           dateOfBirth: '1995-01-01',
           religion: 'hindu',
           maritalStatus: 'never_married',
-          aboutMe: 'A thoughtful profile',
+          motherTongue: 'Hindi',
+          country: 'IN',
+          state: 'Maharashtra',
+          city: 'Mumbai',
+          smoking: 'non_smoker',
+          drinking: 'non_drinker',
+          eating: 'vegetarian',
+          aboutMe:
+            'A thoughtful, family-oriented professional who values kindness, mutual respect, and a balanced modern lifestyle.',
           personalityBadges: ['kind', 'curious', 'family_oriented'],
         },
-        physical: { height: 165 },
+        physical: { height: 165, bodyType: 'average' },
         education: {
           qualification: 'masters',
+          occupationType: 'private_sector',
           occupation: 'engineer',
           annualIncomeAmount: 1500000,
         },
-        family: { familyType: 'nuclear' },
+        family: {
+          familyType: 'nuclear',
+          familyStatus: 'middle_class',
+          familyValues: 'moderate',
+        },
         verificationStatus: VerificationStatus.APPROVED,
         isPremium: true,
         lastActiveAt: new Date(),
@@ -59,7 +72,7 @@ describe('ProfileScoringService', () => {
     const result = service.calculate({});
 
     expect(result.profileCompletionPercentage).toBe(0);
-    expect(result.missingFields).toHaveLength(13);
+    expect(result.missingFields).toHaveLength(24);
   });
 
   it.each([

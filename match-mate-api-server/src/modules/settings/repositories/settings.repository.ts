@@ -334,6 +334,19 @@ export class SettingsRepository {
       .exec();
   }
 
+  updateAccountLifecycle(
+    userId: string,
+    update: {
+      $set?: Record<string, unknown>;
+      $unset?: Record<string, unknown>;
+    },
+  ) {
+    return this.accountModel
+      .findOneAndUpdate(this.uid(userId), update, upsertOptions)
+      .lean()
+      .exec();
+  }
+
   updatePrivacy(userId: string, data: Partial<PrivacySetting>) {
     return this.privacyModel
       .findOneAndUpdate(

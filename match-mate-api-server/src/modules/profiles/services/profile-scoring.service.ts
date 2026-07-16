@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 
 export interface ProfileScoreInput {
+  profileFor?: unknown;
   personal?: Record<string, unknown>;
   physical?: Record<string, unknown>;
   education?: Record<string, unknown>;
@@ -35,23 +36,40 @@ export class ProfileScoringService {
     const family = profile.family ?? {};
 
     const checks: Array<{ key: string; passed: boolean }> = [
-      { key: 'profileFor', passed: Boolean(personal.profileFor) },
-      { key: 'firstName', passed: Boolean(personal.firstName) },
-      { key: 'gender', passed: Boolean(personal.gender) },
-      { key: 'dateOfBirth', passed: Boolean(personal.dateOfBirth) },
-      { key: 'religion', passed: Boolean(personal.religion) },
-      { key: 'maritalStatus', passed: Boolean(personal.maritalStatus) },
-      { key: 'height', passed: Boolean(physical.height) },
-      { key: 'qualification', passed: Boolean(education.qualification) },
-      { key: 'occupation', passed: Boolean(education.occupation) },
-      { key: 'aboutMe', passed: Boolean(personal.aboutMe) },
+      {
+        key: 'profileFor',
+        passed: this.hasValue(profile.profileFor ?? personal.profileFor),
+      },
+      { key: 'firstName', passed: this.hasValue(personal.firstName) },
+      { key: 'gender', passed: this.hasValue(personal.gender) },
+      { key: 'dateOfBirth', passed: this.hasValue(personal.dateOfBirth) },
+      { key: 'religion', passed: this.hasValue(personal.religion) },
+      { key: 'maritalStatus', passed: this.hasValue(personal.maritalStatus) },
+      { key: 'motherTongue', passed: this.hasValue(personal.motherTongue) },
+      { key: 'country', passed: this.hasValue(personal.country) },
+      { key: 'state', passed: this.hasValue(personal.state) },
+      { key: 'city', passed: this.hasValue(personal.city) },
+      { key: 'height', passed: this.hasValue(physical.height) },
+      { key: 'bodyType', passed: this.hasValue(physical.bodyType) },
+      { key: 'qualification', passed: this.hasValue(education.qualification) },
+      {
+        key: 'occupationType',
+        passed: this.hasValue(education.occupationType),
+      },
+      { key: 'occupation', passed: this.hasValue(education.occupation) },
+      { key: 'aboutMe', passed: this.hasLongText(personal.aboutMe, 50) },
       {
         key: 'personalityBadges',
         passed:
           Array.isArray(personal.personalityBadges) &&
           personal.personalityBadges.length >= 3,
       },
-      { key: 'family', passed: Object.keys(family).length > 0 },
+      { key: 'smoking', passed: this.hasValue(personal.smoking) },
+      { key: 'drinking', passed: this.hasValue(personal.drinking) },
+      { key: 'eating', passed: this.hasValue(personal.eating) },
+      { key: 'familyType', passed: this.hasValue(family.familyType) },
+      { key: 'familyStatus', passed: this.hasValue(family.familyStatus) },
+      { key: 'familyValues', passed: this.hasValue(family.familyValues) },
       { key: 'profilePhoto', passed: Number(media.imageCount ?? 0) > 0 },
     ];
 
@@ -61,6 +79,7 @@ export class ProfileScoringService {
     let quality = 45;
     quality += completion * 0.35;
     if (personal.aboutMe) quality += 8;
+    if (this.hasLongText(personal.aboutMe, 120)) quality += 4;
     if (
       Array.isArray(personal.personalityBadges) &&
       personal.personalityBadges.length >= 3
@@ -119,5 +138,15 @@ export class ProfileScoringService {
 
   private clamp(value: number): number {
     return Math.max(0, Math.min(100, value));
+  }
+
+  private hasValue(value: unknown): boolean {
+    if (typeof value === 'string') return value.trim().length > 0;
+    if (Array.isArray(value)) return value.length > 0;
+    return value !== null && value !== undefined;
+  }
+
+  private hasLongText(value: unknown, minLength: number): boolean {
+    return typeof value === 'string' && value.trim().length >= minLength;
   }
 }

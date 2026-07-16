@@ -19,6 +19,7 @@ import { ProfileScoringService } from './profile-scoring.service';
 import { MediaModerationService } from './media-moderation.service';
 import { VideoThumbnailService } from './video-thumbnail.service';
 import { FeatureService } from '@/modules/subscriptions/services/feature.service';
+import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 import {
   MediaModerationStatus,
   MediaStatus,
@@ -37,6 +38,7 @@ export class MediaService {
     private readonly moderationService: MediaModerationService,
     private readonly videoThumbnailService: VideoThumbnailService,
     private readonly featureService: FeatureService,
+    private readonly referralsService: ReferralsService,
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
     @Inject(CACHE_SERVICE) private readonly cache: ICacheService,
@@ -475,6 +477,9 @@ export class MediaService {
         { runValidators: true },
       )
       .exec();
+    if (derived.profileCompletionPercentage >= 100) {
+      await this.referralsService.awardProfileCompletionReward(userId);
+    }
     await this.cache.del(`profile:${userId}`);
   }
 

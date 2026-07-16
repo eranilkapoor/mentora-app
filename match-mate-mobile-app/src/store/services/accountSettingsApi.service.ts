@@ -55,6 +55,15 @@ export const accountSettingsApi = baseApi.injectEndpoints({
       invalidatesTags: ['AccountSettings'],
     }),
 
+    reactivateAccount: builder.mutation<void, void>({
+      query: () => ({
+        url: '/settings/account/reactivate',
+        method: 'POST',
+      }),
+
+      invalidatesTags: ['AccountSettings'],
+    }),
+
     /**
      * Schedule Account Deletion
      */
@@ -81,6 +90,10 @@ export const accountSettingsApi = baseApi.injectEndpoints({
 
     deleteAccountRequest: builder.mutation<void, void>({
       query: () => ({ url: '/settings/account/delete', method: 'POST' }),
+      invalidatesTags: ['AccountSettings'],
+    }),
+    cancelDeleteAccountRequest: builder.mutation<void, void>({
+      query: () => ({ url: '/settings/account/delete/cancel', method: 'POST' }),
       invalidatesTags: ['AccountSettings'],
     }),
     disconnectLinkedAccount: builder.mutation<void, { provider: string }>({
@@ -161,9 +174,11 @@ export const accountSettingsApi = baseApi.injectEndpoints({
 export const {
   useGetAccountSettingsQuery,
   useDeactivateAccountMutation,
+  useReactivateAccountMutation,
   useScheduleDeletionMutation,
   useDisconnectProviderMutation,
   useDeleteAccountRequestMutation,
+  useCancelDeleteAccountRequestMutation,
   useDisconnectLinkedAccountMutation,
   useConnectSocialLinkedAccountMutation,
   useSetPrimaryLinkedAccountMutation,

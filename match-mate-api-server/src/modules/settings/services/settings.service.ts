@@ -470,6 +470,20 @@ export class SettingsService {
     });
   }
 
+  async reactivateAccount(userId: string) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      $set: { status: Status.ACTIVE },
+    });
+
+    return this.repo.updateAccountLifecycle(userId, {
+      $set: { isDeactivated: false },
+      $unset: {
+        deactivatedAt: '',
+        deactivationReason: '',
+      },
+    });
+  }
+
   async scheduleAccountDeletion(userId: string) {
     const deletionScheduledAt = new Date();
     deletionScheduledAt.setDate(deletionScheduledAt.getDate() + 30);
@@ -483,6 +497,19 @@ export class SettingsService {
     );
 
     return this.repo.updateAccount(userId, { deletionScheduledAt });
+  }
+
+  async cancelAccountDeletion(userId: string) {
+    await this.userModel.findByIdAndUpdate(userId, {
+      $set: { status: Status.ACTIVE },
+    });
+
+    return this.repo.updateAccountLifecycle(userId, {
+      $unset: {
+        deletionScheduledAt: '',
+        deletionReason: '',
+      },
+    });
   }
 
   async disconnectLinkedAccount(userId: string, provider: string) {

@@ -59,16 +59,27 @@ export const formatDate = (date: string | Date): string => {
   });
 };
 
+const titleizeEnumWord = (word: string): string => {
+  const upper = word.toUpperCase();
+  return upper.length <= 3 && /^[A-Z0-9]+$/.test(upper)
+    ? upper
+    : word.charAt(0).toUpperCase() + word.slice(1);
+};
+
 export const formatMaritalStatus = (status: string): string => {
   if (!status) return '';
 
   const formatted = status.replace(/_/g, ' ').toLowerCase();
   const words = formatted.split(' ');
 
-  return words
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return words.map(titleizeEnumWord).join(' ');
 };
+
+const normalizeEnumKey = (value: string): string =>
+  value
+    .trim()
+    .toLowerCase()
+    .replace(/[\s-]+/g, '_');
 
 export const formatLifestyleChoice = (choice: string): string => {
   if (!choice) return '—';
@@ -76,9 +87,7 @@ export const formatLifestyleChoice = (choice: string): string => {
   const formatted = choice.replace(/_/g, ' ').toLowerCase();
   const words = formatted.split(' ');
 
-  return words
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return words.map(titleizeEnumWord).join(' ');
 };
 
 export const formatCamelCase = (choice: string): string => {
@@ -87,9 +96,7 @@ export const formatCamelCase = (choice: string): string => {
   const formatted = choice.replace(/_/g, ' ').toLowerCase();
   const words = formatted.split(' ');
 
-  return words
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
+  return words.map(titleizeEnumWord).join(' ');
 };
 
 export type TranslationFn = (
@@ -107,8 +114,15 @@ export const formatEnumLabel = (
     return fallback;
   }
 
-  const rawValue = String(value);
+  const rawValue = String(value).trim();
   const defaultValue = formatCamelCase(rawValue);
+  const normalizedValue = normalizeEnumKey(rawValue);
+  const translated = t(`${prefix}.${normalizedValue}`, { defaultValue });
+
+  if (translated && translated !== defaultValue) {
+    return translated;
+  }
+
   return t(`${prefix}.${rawValue}`, { defaultValue }) || defaultValue;
 };
 

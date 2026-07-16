@@ -41,6 +41,7 @@ import { AnalyticsModule } from '../analytics/analytics.module';
 import { StorageModule } from '../storage/storage.module';
 import { SettingsModule } from '../settings/settings.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
+import { ReferralsModule } from '../referrals/referrals.module';
 
 @Module({
   imports: [
@@ -57,6 +58,7 @@ import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
     SettingsModule,
     SafetyModule,
     SubscriptionsModule,
+    ReferralsModule,
   ],
   controllers: [ProfilesController, MediaController, PreferenceController],
   providers: [

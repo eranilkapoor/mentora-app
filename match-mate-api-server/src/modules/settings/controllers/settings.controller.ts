@@ -174,12 +174,30 @@ export class SettingsController {
     );
   }
 
+  @Post('account/reactivate')
+  @HttpCode(HttpStatus.OK)
+  reactivateAccount(@Req() req: AuthenticatedRequest) {
+    return this.respond(
+      this.settingsService.reactivateAccount(req.user.sub),
+      SuccessCode.SETTINGS_ACCOUNT_REACTIVATED,
+    );
+  }
+
   @Post('account/delete')
   @HttpCode(HttpStatus.OK)
   scheduleAccountDeletion(@Req() req: AuthenticatedRequest) {
     return this.respond(
       this.settingsService.scheduleAccountDeletion(req.user.sub),
       SuccessCode.SETTINGS_ACCOUNT_DELETION_SCHEDULED,
+    );
+  }
+
+  @Post('account/delete/cancel')
+  @HttpCode(HttpStatus.OK)
+  cancelAccountDeletion(@Req() req: AuthenticatedRequest) {
+    return this.respond(
+      this.settingsService.cancelAccountDeletion(req.user.sub),
+      SuccessCode.SETTINGS_ACCOUNT_DELETION_CANCELLED,
     );
   }
 

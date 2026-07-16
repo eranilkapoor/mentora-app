@@ -142,10 +142,11 @@
     "no_religion": "कोई धर्म नहीं"
   },
   "caste": {
+    "any": "कोई भी",
     "general": "सामान्य",
-    "obc": "OBC",
-    "sc": "SC",
-    "st": "ST",
+    "obc": "ओबीसी",
+    "sc": "एससी",
+    "st": "एसटी",
     "other": "अन्य",
     "not_applicable": "लागू नहीं"
   },

@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { Theme } from '@/core/theme/types';
 import { applyAccessibilityToStyles } from '@/core/theme/accessibilityStyles';
@@ -65,6 +66,7 @@ export function VerificationStatusRow({
   isLast = false,
 }: Props): React.ReactElement {
   const { theme, fontScale, accessibility } = useTheme();
+  const { t } = useTranslation();
   const styles = useMemo(
     () =>
       applyAccessibilityToStyles(
@@ -120,7 +122,9 @@ export function VerificationStatusRow({
             { color: verified ? theme.colors.success : theme.colors.textMuted },
           ]}
         >
-          {verified ? 'Verified' : 'Unverified'}
+          {verified
+            ? t('settings.account.verified')
+            : t('settings.account.unverified')}
         </Text>
       </View>
     </View>
