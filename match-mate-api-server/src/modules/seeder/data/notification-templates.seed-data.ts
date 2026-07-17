@@ -1,5 +1,38 @@
 import { NotificationTemplate } from '@/modules/notifications/schemas/notification-templates.schema';
 
+interface EnterpriseEmailParams {
+  eyebrow: string;
+  heading: string;
+  greeting?: string;
+  intro: string;
+  panelTitle?: string;
+  bullets?: string[];
+  ctaLabel?: string;
+  ctaUrl?: string;
+  footerNote?: string;
+  signoff?: string;
+}
+
+const enterpriseEmail = ({
+  eyebrow,
+  heading,
+  greeting = 'Namaste {{userName}},',
+  intro,
+  panelTitle,
+  bullets = [],
+  ctaLabel = 'Open Match Mate',
+  ctaUrl = 'matchmate://',
+  footerNote = 'This email was sent because it relates to your Match Mate account.',
+  signoff = 'Warm regards,<br/>Team Match Mate',
+}: EnterpriseEmailParams): string => {
+  const panel =
+    bullets.length > 0
+      ? `<div style="padding:18px;border-radius:18px;background:#fff5f8;border:1px solid #f7d5df;margin:22px 0;"><div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#9d174d;">${panelTitle ?? 'Important details'}</div><ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#374151;">${bullets.map((item) => `<li>${item}</li>`).join('')}</ul></div>`
+      : '';
+
+  return `<div style="margin:0;padding:0;background:#fff5f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;"><div style="max-width:640px;margin:0 auto;padding:32px 18px;"><div style="background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f7d5df;box-shadow:0 16px 40px rgba(124,45,70,0.10);"><div style="padding:28px 30px;background:linear-gradient(135deg,#ff7a9e,#b83280);color:#ffffff;"><div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">${eyebrow}</div><h1 style="margin:10px 0 0;font-size:28px;line-height:1.25;">${heading}</h1></div><div style="padding:30px;"><p style="margin:0 0 16px;font-size:16px;line-height:1.65;">${greeting}</p><p style="margin:0 0 18px;font-size:15px;line-height:1.65;">${intro}</p>${panel}<div style="margin:24px 0;"><a href="${ctaUrl}" style="display:inline-block;background:#9d174d;color:#ffffff;text-decoration:none;border-radius:999px;padding:12px 20px;font-size:14px;font-weight:700;">${ctaLabel}</a></div><p style="margin:0 0 12px;font-size:14px;line-height:1.65;color:#6b7280;">${footerNote}</p><p style="margin:0;font-size:14px;line-height:1.65;color:#6b7280;">${signoff}</p></div></div></div></div>`;
+};
+
 export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
   {
     key: 'USER_REGISTERED_WELCOME',
@@ -13,9 +46,23 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'Your account was created successfully. Complete your profile to start receiving better matches.',
     pushTitle: 'Welcome to Match Mate',
     pushBody: 'Complete your profile to start receiving better matches.',
-    emailSubject: 'Welcome to Match Mate — your account is ready',
-    emailBody:
-      '<div style="margin:0;padding:0;background:#fff5f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;"><div style="max-width:640px;margin:0 auto;padding:32px 18px;"><div style="background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f7d5df;box-shadow:0 16px 40px rgba(124,45,70,0.10);"><div style="padding:28px 30px;background:linear-gradient(135deg,#ff7a9e,#b83280);color:#ffffff;"><div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Welcome to Match Mate</div><h1 style="margin:10px 0 0;font-size:28px;line-height:1.25;">Your account is ready, {{userName}}</h1></div><div style="padding:30px;"><p style="margin:0 0 16px;font-size:16px;line-height:1.65;">Namaste {{userName}},</p><p style="margin:0 0 18px;font-size:15px;line-height:1.65;">Thank you for joining Match Mate. Your account has been created successfully.</p><div style="padding:18px;border-radius:18px;background:#fff5f8;border:1px solid #f7d5df;margin:22px 0;"><div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#9d174d;">Recommended next steps</div><ul style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#374151;"><li>Complete your matrimonial profile with family, education and lifestyle details.</li><li>Add clear photos and verification details to improve trust.</li><li>Review recommended matches after onboarding is complete.</li></ul></div><p style="margin:0;font-size:14px;line-height:1.65;color:#6b7280;">Warm regards,<br/>Team Match Mate</p></div></div></div></div>',
+    emailSubject: 'Welcome to Match Mate - your account is ready',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Welcome to Match Mate',
+      heading: 'Your account is ready, {{userName}}',
+      intro:
+        'Thank you for joining Match Mate. Your account has been created successfully and your next step is to complete a trusted matrimonial profile.',
+      panelTitle: 'Recommended next steps',
+      bullets: [
+        'Complete your matrimonial profile with family, education and lifestyle details.',
+        'Add clear photos and verification details to improve trust.',
+        'Review recommended matches after onboarding is complete.',
+      ],
+      ctaLabel: 'Complete profile',
+      ctaUrl: 'matchmate://onboarding',
+      footerNote:
+        'A complete profile helps us show you more relevant matches and improves response quality.',
+    }),
     variables: ['userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -42,8 +89,23 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushTitle: 'Your profile is live',
     pushBody: 'Complete your full profile or review recommended matches.',
     emailSubject: 'Your Match Mate profile is live',
-    emailBody:
-      '<div style="margin:0;padding:0;background:#fff5f8;font-family:Arial,Helvetica,sans-serif;color:#1f2937;"><div style="max-width:640px;margin:0 auto;padding:32px 18px;"><div style="background:#ffffff;border-radius:24px;overflow:hidden;border:1px solid #f7d5df;box-shadow:0 16px 40px rgba(124,45,70,0.10);"><div style="padding:28px 30px;background:linear-gradient(135deg,#ff7a9e,#b83280);color:#ffffff;"><div style="font-size:13px;font-weight:700;letter-spacing:1px;text-transform:uppercase;">Profile live</div><h1 style="margin:10px 0 0;font-size:28px;line-height:1.25;">Your Match Mate profile is ready</h1></div><div style="padding:30px;"><p style="margin:0 0 16px;font-size:16px;line-height:1.65;">Namaste {{userName}},</p><p style="margin:0 0 18px;font-size:15px;line-height:1.65;">Your onboarding is complete and your matrimonial profile is now live. We will use your profile and partner preferences to improve discovery and recommendations.</p><div style="padding:18px;border-radius:18px;background:#fff5f8;border:1px solid #f7d5df;margin:22px 0;"><div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#9d174d;">What to do next</div><ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#374151;"><li>Complete family, career, lifestyle and about-me sections.</li><li>Add verification details to improve trust with families.</li><li>Open recommended matches and shortlist profiles you like.</li></ol></div><p style="margin:0;font-size:14px;line-height:1.65;color:#6b7280;">Best wishes,<br/>Team Match Mate</p></div></div></div></div>',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Profile live',
+      heading: 'Your Match Mate profile is ready',
+      intro:
+        'Your onboarding is complete and your matrimonial profile is now live. We will use your profile and partner preferences to improve discovery and recommendations.',
+      panelTitle: 'What to do next',
+      bullets: [
+        'Complete family, career, lifestyle and about-me sections.',
+        'Add verification details to improve trust with families.',
+        'Open recommended matches and shortlist profiles you like.',
+      ],
+      ctaLabel: 'View matches',
+      ctaUrl: 'matchmate://matches',
+      footerNote:
+        'You can update your profile and partner preferences anytime from the Match Mate app.',
+      signoff: 'Best wishes,<br/>Team Match Mate',
+    }),
     variables: ['userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -68,8 +130,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: '{{name}} has sent you an interest.',
     pushTitle: 'You received a new interest',
     pushBody: '{{name}} sent you an interest.',
-    emailSubject: 'You got a new interest on Match Mate',
-    emailBody: 'Hi {{userName}}, you received a new interest from {{name}}.',
+    emailSubject: 'A new interest is waiting for you',
+    emailBody: enterpriseEmail({
+      eyebrow: 'New interest',
+      heading: '{{name}} has sent you an interest',
+      intro:
+        'Someone compatible has taken the first step. Review the profile, family details, and preferences before you respond.',
+      panelTitle: 'Suggested next steps',
+      bullets: [
+        "Review {{name}}'s profile details carefully.",
+        'Respond only when you feel comfortable.',
+        'Keep early conversations inside Match Mate for privacy and safety.',
+      ],
+      ctaLabel: 'Review interest',
+      ctaUrl: 'matchmate://interests/received',
+    }),
     smsBody: 'New interest from {{name}} on Match Mate.',
     variables: ['name', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -95,9 +170,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Great news! {{name}} accepted your interest.',
     pushTitle: 'Interest accepted',
     pushBody: '{{name}} accepted your interest.',
-    emailSubject: 'Your interest was accepted',
-    emailBody:
-      'Hi {{userName}}, {{name}} accepted your interest. Start chatting now.',
+    emailSubject: '{{name}} accepted your interest',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Interest accepted',
+      heading: 'You can now connect with {{name}}',
+      intro:
+        'Great news. {{name}} accepted your interest, so you can now continue the conversation with more confidence.',
+      panelTitle: 'Before you chat',
+      bullets: [
+        'Start with a respectful introduction.',
+        'Discuss expectations at a pace that feels comfortable.',
+        'Use Match Mate safety tools if anything feels unusual.',
+      ],
+      ctaLabel: 'Start chatting',
+      ctaUrl: 'matchmate://interests/sent',
+    }),
     smsBody: '{{name}} accepted your interest on Match Mate.',
     variables: ['name', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -124,8 +211,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'You have {{pendingCount}} pending interests waiting for response.',
     pushTitle: 'Pending interests',
     pushBody: '{{pendingCount}} interests are waiting for your response.',
-    emailSubject: 'Respond to your pending interests',
-    emailBody: 'Hi {{userName}}, you have {{pendingCount}} pending interests.',
+    emailSubject: '{{pendingCount}} interests need your response',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Pending interests',
+      heading: 'You have {{pendingCount}} interests waiting',
+      intro:
+        'A few people are waiting for your response. Taking action helps keep recommendations fresh and respectful for everyone.',
+      panelTitle: 'Quick checklist',
+      bullets: [
+        'Open each pending profile and review compatibility.',
+        'Accept interests you want to explore further.',
+        'Politely decline profiles that are not the right fit.',
+      ],
+      ctaLabel: 'Review pending interests',
+      ctaUrl: 'matchmate://interests/pending',
+    }),
     smsBody: 'You have {{pendingCount}} pending interests on Match Mate.',
     variables: ['pendingCount', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -151,8 +251,22 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'You and {{name}} are now matched. Start a conversation now.',
     pushTitle: "It's a match",
     pushBody: 'You matched with {{name}}.',
-    emailSubject: 'You have a new match',
-    emailBody: 'You matched with {{name}}. Open Match Mate to connect.',
+    emailSubject: 'You have a new Match Mate connection',
+    emailBody: enterpriseEmail({
+      eyebrow: 'New match',
+      heading: 'You matched with {{name}}',
+      intro:
+        'Your profile and preferences aligned with {{name}}. Open the app to review the match and decide how you would like to proceed.',
+      panelTitle: 'Recommended actions',
+      bullets: [
+        'Review profile, photos, and preference details.',
+        'Shortlist the match if it feels relevant.',
+        'Send a thoughtful message when you are ready.',
+      ],
+      ctaLabel: 'View match',
+      ctaUrl: 'matchmate://matches',
+      greeting: 'Hello,',
+    }),
     smsBody: 'You matched with {{name}} on Match Mate.',
     variables: ['name'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -178,9 +292,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: '{{name}} is waiting to hear from you. Send a message now.',
     pushTitle: 'Your match is waiting',
     pushBody: 'Send a message to {{name}}.',
-    emailSubject: 'Reconnect with your match',
-    emailBody:
-      'Hi {{userName}}, your match {{name}} is waiting for your reply.',
+    emailSubject: '{{name}} is waiting to hear from you',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Match reminder',
+      heading: 'Reconnect with {{name}}',
+      intro:
+        'Your match is still waiting for your reply. A timely, respectful response can help the conversation move forward.',
+      panelTitle: 'Conversation tips',
+      bullets: [
+        'Refer to something meaningful from the profile.',
+        'Keep the first message simple and respectful.',
+        'Move slowly and protect your personal information.',
+      ],
+      ctaLabel: 'Open conversation',
+      ctaUrl: 'matchmate://matches',
+    }),
     smsBody: '{{name}} is waiting for your message on Match Mate.',
     variables: ['name', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -206,9 +332,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Your profile matched with {{matchCount}} new people this week.',
     pushTitle: 'New matches for you',
     pushBody: '{{matchCount}} new compatible matches found.',
-    emailSubject: 'Your weekly match digest',
-    emailBody:
-      'Hi {{userName}}, you have {{matchCount}} new compatible matches.',
+    emailSubject: 'Your latest compatible matches are ready',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Match digest',
+      heading: '{{matchCount}} new compatible matches this week',
+      intro:
+        'We found new profiles that align with your preferences. Review them while the recommendations are fresh.',
+      panelTitle: 'How to get better results',
+      bullets: [
+        'Shortlist profiles that feel relevant.',
+        'Update partner preferences if recommendations need tuning.',
+        'Complete missing profile sections to improve match quality.',
+      ],
+      ctaLabel: 'View new matches',
+      ctaUrl: 'matchmate://matches',
+    }),
     smsBody: '{{matchCount}} new matches are waiting on Match Mate.',
     variables: ['matchCount', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -234,8 +372,22 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: '{{name}}: {{messagePreview}}',
     pushTitle: 'New message',
     pushBody: '{{name}} sent you a message.',
-    emailSubject: 'You received a new message',
-    emailBody: 'You have a new message from {{name}}.',
+    emailSubject: '{{name}} sent you a message',
+    emailBody: enterpriseEmail({
+      eyebrow: 'New message',
+      heading: 'You have a new message from {{name}}',
+      intro:
+        '{{name}} sent you a message. For privacy, open Match Mate to read and reply inside your secure conversation.',
+      panelTitle: 'Safety reminder',
+      bullets: [
+        'Avoid sharing passwords, OTPs, or financial information.',
+        'Report any message that feels suspicious or inappropriate.',
+        'Keep early conversations on Match Mate until trust is established.',
+      ],
+      ctaLabel: 'Open messages',
+      ctaUrl: 'matchmate://messages',
+      greeting: 'Hello,',
+    }),
     smsBody: 'New message from {{name}} on Match Mate.',
     variables: ['name', 'messagePreview'],
     channels: { inApp: true, push: true, email: false, sms: false },
@@ -261,8 +413,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Open Match Mate to respond to your pending conversations.',
     pushTitle: 'Unread messages waiting',
     pushBody: '{{unreadCount}} unread messages are waiting for you.',
-    emailSubject: 'You have unread messages',
-    emailBody: 'Hi {{userName}}, you have {{unreadCount}} unread messages.',
+    emailSubject: '{{unreadCount}} unread messages are waiting',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Unread messages',
+      heading: 'You have {{unreadCount}} unread messages',
+      intro:
+        'Some conversations are waiting for your attention. Replying on time helps keep connections active and respectful.',
+      panelTitle: 'What you can do',
+      bullets: [
+        'Open pending conversations.',
+        'Reply to matches you want to continue with.',
+        'Archive or decline conversations that are no longer relevant.',
+      ],
+      ctaLabel: 'Read messages',
+      ctaUrl: 'matchmate://messages',
+    }),
     smsBody: 'You have unread messages on Match Mate.',
     variables: ['unreadCount', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -289,8 +454,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'Break the ice again and continue your conversation with {{name}}.',
     pushTitle: 'Continue your chat',
     pushBody: 'Say hello to {{name}}.',
-    emailSubject: 'Continue your conversation',
-    emailBody: 'Hi {{userName}}, continue your conversation with {{name}}.',
+    emailSubject: 'Continue your conversation with {{name}}',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Conversation reminder',
+      heading: 'Your conversation with {{name}} has been quiet',
+      intro:
+        'A simple follow-up can help restart the conversation and clarify whether the match is worth exploring.',
+      panelTitle: 'Try this approach',
+      bullets: [
+        'Ask a thoughtful question about profile interests or family expectations.',
+        'Share one relevant detail about yourself.',
+        "Respect the other person's pace and comfort.",
+      ],
+      ctaLabel: 'Continue chat',
+      ctaUrl: 'matchmate://messages',
+    }),
     smsBody: 'Continue your chat with {{name}} on Match Mate.',
     variables: ['name', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -316,8 +494,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Your profile is trending. Update details to improve responses.',
     pushTitle: 'Profile activity is up',
     pushBody: 'Your profile reached {{viewCount}} views.',
-    emailSubject: 'Your profile is getting attention',
-    emailBody: 'Hi {{userName}}, your profile crossed {{viewCount}} views.',
+    emailSubject: 'Your Match Mate profile is getting attention',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Profile activity',
+      heading: 'Your profile crossed {{viewCount}} views',
+      intro:
+        'Your profile is receiving more attention. This is a good time to polish details and improve response quality.',
+      panelTitle: 'Improve your profile',
+      bullets: [
+        'Add a clear primary photo if one is missing.',
+        'Update education, career, family, and lifestyle details.',
+        'Refresh your about-me section with specific, genuine information.',
+      ],
+      ctaLabel: 'Improve profile',
+      ctaUrl: 'matchmate://profile/edit',
+    }),
     variables: ['viewCount', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
     deliveryRules: {
@@ -343,9 +534,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'Your profile is {{completionPercent}}% complete. Add details to improve match quality.',
     pushTitle: 'Complete your profile',
     pushBody: 'Profile is {{completionPercent}}% complete.',
-    emailSubject: 'Complete your Match Mate profile',
-    emailBody:
-      'Hi {{userName}}, complete your profile to improve visibility and matches.',
+    emailSubject: 'Complete your Match Mate profile for better matches',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Profile completion',
+      heading: 'Your profile is {{completionPercent}}% complete',
+      intro:
+        'Complete profiles receive better recommendations and help families understand compatibility with more confidence.',
+      panelTitle: 'High-impact sections',
+      bullets: [
+        'Add family, education, career, and lifestyle details.',
+        'Upload clear photos that meet profile guidelines.',
+        'Review partner preferences so recommendations stay relevant.',
+      ],
+      ctaLabel: 'Complete profile',
+      ctaUrl: 'matchmate://profile/edit',
+    }),
     smsBody: 'Complete your Match Mate profile for better matches.',
     variables: ['completionPercent', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -372,8 +575,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'Your identity verification is complete. Your trust badge is now visible.',
     pushTitle: 'Verification approved',
     pushBody: 'Your verified badge is now active.',
-    emailSubject: 'Verification approved on Match Mate',
-    emailBody: 'Hi {{userName}}, your profile verification has been approved.',
+    emailSubject: 'Your Match Mate verification is approved',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Verification approved',
+      heading: 'Your trust badge is now active',
+      intro:
+        'Your identity verification has been approved. Your verified status helps build confidence with potential matches and families.',
+      panelTitle: 'What this means',
+      bullets: [
+        'Your verified badge can improve trust on your profile.',
+        'Keep your profile information accurate and up to date.',
+        'Continue using the app safely and respectfully.',
+      ],
+      ctaLabel: 'View profile',
+      ctaUrl: 'matchmate://profile/verify',
+    }),
     smsBody: 'Your Match Mate profile verification is approved.',
     variables: ['userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -399,9 +615,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Verification was not approved. Reason: {{reason}}',
     pushTitle: 'Verification action required',
     pushBody: 'Please re-submit your documents.',
-    emailSubject: 'Action needed: verification failed',
-    emailBody:
-      'Hi {{userName}}, verification was not approved. Reason: {{reason}}.',
+    emailSubject: 'Action needed: verify your Match Mate profile',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Verification action required',
+      heading: 'Your verification needs attention',
+      intro:
+        'We could not approve your verification request. Reason: {{reason}}. Please review the issue and submit the required details again.',
+      panelTitle: 'Before resubmitting',
+      bullets: [
+        'Use clear, readable documents or images.',
+        'Make sure submitted details match your profile information.',
+        'Contact support if you believe this decision is incorrect.',
+      ],
+      ctaLabel: 'Resubmit verification',
+      ctaUrl: 'matchmate://profile/verify',
+    }),
     smsBody: 'Verification failed on Match Mate. Please re-submit documents.',
     variables: ['userName', 'reason'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -427,8 +655,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Your profile photo is now visible to potential matches.',
     pushTitle: 'Photo approved',
     pushBody: 'Your profile photo is now live.',
-    emailSubject: 'Profile photo approved',
-    emailBody: 'Hi {{userName}}, your new profile photo has been approved.',
+    emailSubject: 'Your profile photo is approved',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Photo approved',
+      heading: 'Your profile photo is now live',
+      intro:
+        'Your new profile photo has been approved and is visible to potential matches according to your privacy settings.',
+      panelTitle: 'Photo tips',
+      bullets: [
+        'Keep your primary photo clear and recent.',
+        'Add supporting photos that feel authentic and respectful.',
+        'Avoid images with unclear faces or unrelated content.',
+      ],
+      ctaLabel: 'View profile',
+      ctaUrl: 'matchmate://profile/edit',
+    }),
     smsBody: 'Your Match Mate profile photo was approved.',
     variables: ['userName'],
     channels: { inApp: true, push: true, email: false, sms: false },
@@ -454,8 +695,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Please upload another photo that meets profile guidelines.',
     pushTitle: 'Photo upload required',
     pushBody: 'Please upload a new profile photo.',
-    emailSubject: 'Photo update needed',
-    emailBody: 'Hi {{userName}}, your uploaded photo could not be approved.',
+    emailSubject: 'Photo update needed on Match Mate',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Photo action required',
+      heading: 'Your uploaded photo could not be approved',
+      intro:
+        'The photo you uploaded did not meet Match Mate profile guidelines. Please upload another clear and appropriate photo.',
+      panelTitle: 'Photo guidelines',
+      bullets: [
+        'Use a clear image where your face is visible.',
+        'Avoid screenshots, group-only photos, or heavily edited images.',
+        'Choose respectful photos suitable for a matrimonial profile.',
+      ],
+      ctaLabel: 'Upload new photo',
+      ctaUrl: 'matchmate://profile/edit',
+    }),
     smsBody: 'Your Match Mate photo was rejected. Upload a new one.',
     variables: ['userName'],
     channels: { inApp: true, push: true, email: true, sms: false },
@@ -481,8 +735,22 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Your {{planName}} plan renews on {{renewalDate}}.',
     pushTitle: 'Plan renewal reminder',
     pushBody: '{{planName}} renews on {{renewalDate}}.',
-    emailSubject: 'Subscription renewal reminder',
-    emailBody: 'Your {{planName}} plan renews on {{renewalDate}}.',
+    emailSubject: '{{planName}} renewal reminder',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Subscription renewal',
+      heading: 'Your {{planName}} plan renews on {{renewalDate}}',
+      intro:
+        'This is a reminder that your current Match Mate subscription is scheduled for renewal soon.',
+      panelTitle: 'Before renewal',
+      bullets: [
+        'Review your plan benefits and billing details.',
+        'Update your payment method if needed.',
+        'Manage your plan from the subscription section.',
+      ],
+      ctaLabel: 'Manage subscription',
+      ctaUrl: 'matchmate://subscription',
+      greeting: 'Hello,',
+    }),
     smsBody: '{{planName}} plan renews on {{renewalDate}}.',
     variables: ['planName', 'renewalDate'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -508,8 +776,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Renew your plan to keep premium features active.',
     pushTitle: 'Subscription expired',
     pushBody: 'Renew your {{planName}} plan now.',
-    emailSubject: 'Your subscription has expired',
-    emailBody: 'Hi {{userName}}, your {{planName}} subscription has expired.',
+    emailSubject: 'Your {{planName}} subscription has expired',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Subscription expired',
+      heading: 'Renew your {{planName}} plan to continue premium benefits',
+      intro:
+        'Your {{planName}} subscription has expired. Renew your plan to keep premium discovery and communication features active.',
+      panelTitle: 'What may be affected',
+      bullets: [
+        'Premium visibility and discovery features may pause.',
+        'Some communication benefits may become limited.',
+        'You can renew or choose another plan anytime.',
+      ],
+      ctaLabel: 'Renew plan',
+      ctaUrl: 'matchmate://subscription',
+    }),
     smsBody: 'Your {{planName}} subscription expired. Renew on Match Mate.',
     variables: ['planName', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -536,9 +817,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       'Your payment of {{amount}} was successful. Transaction: {{transactionId}}.',
     pushTitle: 'Payment successful',
     pushBody: '{{amount}} payment received for {{planName}}.',
-    emailSubject: 'Payment receipt - Match Mate',
-    emailBody:
-      'Hi {{userName}}, payment {{transactionId}} for {{planName}} was successful.',
+    emailSubject: 'Payment receipt from Match Mate',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Payment successful',
+      heading: 'Your {{amount}} payment was successful',
+      intro:
+        'We received your payment for {{planName}}. Transaction reference: {{transactionId}}.',
+      panelTitle: 'Receipt details',
+      bullets: [
+        'Plan: {{planName}}',
+        'Amount: {{amount}}',
+        'Transaction ID: {{transactionId}}',
+      ],
+      ctaLabel: 'View subscription',
+      ctaUrl: 'matchmate://subscription',
+    }),
     smsBody: 'Payment successful: {{amount}} for {{planName}} on Match Mate.',
     variables: ['planName', 'amount', 'transactionId', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -566,8 +859,20 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushTitle: 'Payment failed',
     pushBody: 'Please retry your payment for {{planName}}.',
     emailSubject: 'Payment failed - action needed',
-    emailBody:
-      'Hi {{userName}}, payment for {{planName}} failed. Please retry.',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Payment failed',
+      heading: 'We could not process your {{planName}} payment',
+      intro:
+        'Your payment attempt did not go through. Please retry or update your payment method to continue premium benefits.',
+      panelTitle: 'How to fix this',
+      bullets: [
+        'Check your card, bank, wallet, or UPI payment status.',
+        'Update payment details if your method has expired.',
+        'Retry from the subscription section when ready.',
+      ],
+      ctaLabel: 'Retry payment',
+      ctaUrl: 'matchmate://subscription',
+    }),
     smsBody: 'Payment failed for {{planName}} on Match Mate. Retry now.',
     variables: ['planName', 'userName'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -593,9 +898,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Limited period offer valid until {{validTill}}. Upgrade now.',
     pushTitle: 'Special offer for you',
     pushBody: '{{discount}}% off expires on {{validTill}}.',
-    emailSubject: 'Exclusive Match Mate offer inside',
-    emailBody:
-      'Hi {{userName}}, enjoy {{discount}}% off on {{planName}} till {{validTill}}.',
+    emailSubject: '{{discount}}% off {{planName}} on Match Mate',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Limited-time offer',
+      heading: 'Save {{discount}}% on {{planName}}',
+      intro:
+        'You have an exclusive Match Mate offer valid until {{validTill}}. Upgrade before the offer expires to unlock premium benefits.',
+      panelTitle: 'Offer details',
+      bullets: [
+        'Discount: {{discount}}%',
+        'Plan: {{planName}}',
+        'Valid until: {{validTill}}',
+      ],
+      ctaLabel: 'View offer',
+      ctaUrl: 'matchmate://subscription',
+    }),
     smsBody:
       '{{discount}}% off on {{planName}} till {{validTill}}. Match Mate.',
     variables: ['discount', 'planName', 'validTill', 'userName'],
@@ -623,8 +940,22 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushTitle: 'Security alert',
     pushBody: 'Your account password was changed.',
     emailSubject: 'Security alert: password changed',
-    emailBody:
-      '<!doctype html><html><body style="margin:0;background:#f8f3f5;font-family:Arial,Helvetica,sans-serif;color:#2f2530;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f8f3f5;padding:28px 12px;"><tr><td align="center"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:620px;background:#ffffff;border:1px solid #eadde2;border-radius:20px;overflow:hidden;"><tr><td style="background:#8b1e3f;padding:26px 30px;color:#ffffff;"><div style="font-size:12px;letter-spacing:1.6px;text-transform:uppercase;opacity:.86;">Account security update</div><div style="font-size:28px;font-weight:800;margin-top:8px;">Match Mate</div><div style="font-size:14px;opacity:.9;margin-top:6px;">Private, trusted matrimonial connections</div></td></tr><tr><td style="padding:30px;"><p style="font-size:16px;line-height:24px;margin:0 0 14px;">Hello {{userName}},</p><h1 style="font-size:24px;line-height:31px;margin:0 0 12px;color:#251b25;">Your password was changed</h1><p style="font-size:15px;line-height:24px;margin:0 0 18px;color:#594b55;">Your Match Mate account password was changed on {{changedAt}}. We send this security alert to help protect your matrimonial profile, private conversations, and account access.</p><div style="background:#fff8fa;border:1px solid #eadde2;border-radius:14px;padding:16px 18px;margin-top:18px;"><div style="font-size:14px;font-weight:700;margin-bottom:8px;color:#251b25;">What to do next</div><ul style="margin:0;padding-left:18px;color:#594b55;font-size:14px;line-height:22px;"><li>If this was you, no action is needed.</li><li>If this was not you, reset your password immediately.</li><li>Review your login sessions and secure your email account.</li></ul></div><p style="font-size:13px;line-height:20px;color:#746873;margin:18px 0 0;">Match Mate helps you build meaningful matrimonial connections with privacy-first account protection.</p></td></tr><tr><td style="background:#fbf8f9;border-top:1px solid #eadde2;padding:18px 30px;color:#7a6d76;font-size:12px;line-height:18px;">This is an automated security email from Match Mate. Please do not share passwords or reset links with anyone.</td></tr></table></td></tr></table></body></html>',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Account security',
+      heading: 'Your password was changed',
+      intro:
+        'Your Match Mate account password was changed on {{changedAt}}. We send this alert to help protect your matrimonial profile, private conversations, and account access.',
+      panelTitle: 'What to do next',
+      bullets: [
+        'If this was you, no action is needed.',
+        'If this was not you, reset your password immediately.',
+        'Review your login sessions and secure your email account.',
+      ],
+      ctaLabel: 'Review security',
+      ctaUrl: 'matchmate://profile/security',
+      footerNote:
+        'Match Mate will never ask you to share your password, OTP, or reset link with anyone.',
+    }),
     smsBody: 'Security alert: your Match Mate password was changed.',
     variables: ['userName', 'changedAt'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -650,9 +981,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'New login from {{device}} at {{location}} on {{loginTime}}.',
     pushTitle: 'New device login',
     pushBody: 'Login detected from {{device}}.',
-    emailSubject: 'New login detected on your account',
-    emailBody:
-      'Hi {{userName}}, we noticed a login from {{device}} in {{location}}.',
+    emailSubject: 'New login detected on your Match Mate account',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Account security',
+      heading: 'New login detected',
+      intro:
+        'We noticed a login to your Match Mate account from {{device}} in {{location}} on {{loginTime}}.',
+      panelTitle: 'Security checklist',
+      bullets: [
+        'If this was you, no action is needed.',
+        'If this was not you, change your password immediately.',
+        'Review active sessions and secure your email account.',
+      ],
+      ctaLabel: 'Review security',
+      ctaUrl: 'matchmate://profile/security',
+    }),
     smsBody: 'New login detected on Match Mate from {{device}}.',
     variables: ['userName', 'device', 'location', 'loginTime'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -678,9 +1021,21 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     message: 'Your account has been restricted. Reason: {{reason}}.',
     pushTitle: 'Account restricted',
     pushBody: 'Open app for details on account status.',
-    emailSubject: 'Account restriction notice',
-    emailBody:
-      'Hi {{userName}}, your account is restricted. Reason: {{reason}}.',
+    emailSubject: 'Important notice about your Match Mate account',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Account notice',
+      heading: 'Your account is temporarily restricted',
+      intro:
+        'Your Match Mate account has been restricted. Reason: {{reason}}. Please review the details in the app or contact support if you need help.',
+      panelTitle: 'What you can do',
+      bullets: [
+        'Open the app to review your account status.',
+        'Follow any instructions shown by Match Mate support.',
+        'Do not create duplicate accounts while the review is active.',
+      ],
+      ctaLabel: 'View account status',
+      ctaUrl: 'matchmate://profile/security',
+    }),
     smsBody: 'Your Match Mate account is restricted. Check email for details.',
     variables: ['userName', 'reason'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -707,7 +1062,19 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushTitle: 'Safety alert',
     pushBody: '{{alertMessage}}',
     emailSubject: 'Important safety notice from Match Mate',
-    emailBody: 'Hi {{userName}}, {{alertMessage}}',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Safety notice',
+      heading: 'Please review this safety update',
+      intro: '{{alertMessage}}',
+      panelTitle: 'Stay protected',
+      bullets: [
+        'Do not share passwords, OTPs, payment details, or private documents.',
+        'Report suspicious profiles, messages, or requests immediately.',
+        'Use Match Mate privacy and blocking tools whenever needed.',
+      ],
+      ctaLabel: 'Open safety center',
+      ctaUrl: 'matchmate://safety',
+    }),
     smsBody: '{{alertMessage}}',
     variables: ['userName', 'alertMessage'],
     channels: { inApp: true, push: true, email: true, sms: true },
@@ -734,7 +1101,19 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
     pushTitle: '{{title}}',
     pushBody: '{{message}}',
     emailSubject: '{{title}}',
-    emailBody: '{{message}}',
+    emailBody: enterpriseEmail({
+      eyebrow: 'Match Mate update',
+      heading: '{{title}}',
+      intro: '{{message}}',
+      panelTitle: 'What to know',
+      bullets: [
+        'This update may affect your Match Mate app experience.',
+        'Open the app for the latest account and profile details.',
+      ],
+      ctaLabel: 'Open Match Mate',
+      ctaUrl: 'matchmate://system/announcement',
+      greeting: 'Hello,',
+    }),
     smsBody: '{{message}}',
     variables: ['title', 'message'],
     channels: { inApp: true, push: true, email: true, sms: false },
