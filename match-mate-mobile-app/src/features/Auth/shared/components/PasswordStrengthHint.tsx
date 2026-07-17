@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import Feather from 'react-native-vector-icons/Feather';
 
@@ -14,6 +14,7 @@ import {
 type PasswordStrengthHintProps = {
   password: string;
   visible?: boolean;
+  style?: StyleProp<ViewStyle>;
 };
 
 const STRENGTH_SEGMENTS: Record<PasswordStrengthLevel, number> = {
@@ -26,6 +27,7 @@ const STRENGTH_SEGMENTS: Record<PasswordStrengthLevel, number> = {
 export function PasswordStrengthHint({
   password,
   visible = true,
+  style,
 }: PasswordStrengthHintProps): React.ReactElement | null {
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -106,7 +108,7 @@ export function PasswordStrengthHint({
 
   return (
     <View
-      style={styles.wrapper}
+      style={[styles.wrapper, style]}
       accessibilityLabel={t('auth.password_strength.tooltip_title')}
     >
       <View style={styles.headerRow}>

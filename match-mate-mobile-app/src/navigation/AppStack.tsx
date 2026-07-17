@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { getSharedScreenOptions } from './sharedScreenOptions';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
@@ -44,9 +44,30 @@ export default function AppStack(): React.ReactElement {
     }
 
     if (isSettingsEntryTarget(postOnboardingTarget)) {
-      navigation.navigate('Settings', { screen: postOnboardingTarget });
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 1,
+          routes: [
+            { name: 'Tabs' },
+            {
+              name: 'Settings',
+              params: { screen: postOnboardingTarget },
+            },
+          ],
+        })
+      );
     } else if (isTabEntryTarget(postOnboardingTarget)) {
-      navigation.navigate('Tabs', { screen: postOnboardingTarget });
+      navigation.dispatch(
+        CommonActions.reset({
+          index: 0,
+          routes: [
+            {
+              name: 'Tabs',
+              params: { screen: postOnboardingTarget },
+            },
+          ],
+        })
+      );
     }
 
     dispatch(clearPostOnboardingTarget());

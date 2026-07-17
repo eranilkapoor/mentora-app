@@ -1554,6 +1554,12 @@ export class AuthService {
             user: {
               userId: existingUser._id,
               provider: dto.provider,
+              ...(verifiedProfile.firstName
+                ? { firstName: verifiedProfile.firstName }
+                : {}),
+              ...(verifiedProfile.lastName
+                ? { lastName: verifiedProfile.lastName }
+                : {}),
               isOnboardingCompleted: existingUser.isOnboardingCompleted,
             },
           },
@@ -1590,6 +1596,12 @@ export class AuthService {
               userId: existingEmailUser._id,
               provider: dto.provider,
               email: existingEmailUser.email,
+              ...(verifiedProfile.firstName
+                ? { firstName: verifiedProfile.firstName }
+                : {}),
+              ...(verifiedProfile.lastName
+                ? { lastName: verifiedProfile.lastName }
+                : {}),
               isOnboardingCompleted: existingEmailUser.isOnboardingCompleted,
             },
           },
@@ -1658,6 +1670,12 @@ export class AuthService {
           userId: user._id,
           provider: dto.provider,
           email: user.email,
+          ...(verifiedProfile.firstName
+            ? { firstName: verifiedProfile.firstName }
+            : {}),
+          ...(verifiedProfile.lastName
+            ? { lastName: verifiedProfile.lastName }
+            : {}),
           isOnboardingCompleted: user.isOnboardingCompleted,
         },
         ...tokens,

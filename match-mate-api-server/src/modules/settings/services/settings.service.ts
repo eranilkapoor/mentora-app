@@ -62,7 +62,10 @@ import {
   RequestPhoneChangeDto,
 } from '../dto/account-settings.dto';
 import { ErrorCode } from '@/common/constants';
-import { throwBadRequest } from '@/common/exceptions/throw-app-exception';
+import {
+  throwBadRequest,
+  throwConflict,
+} from '@/common/exceptions/throw-app-exception';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 import { SocialLoginDto } from '@/modules/auth/dto/auth.dto';
 import { SocialAuthVerifierService } from '@/modules/auth/services/social-auth-verifier.service';
@@ -671,8 +674,62 @@ export class SettingsService {
     return this.getAccount(userId);
   }
 
-  requestEmailChange(_userId: string, dto: RequestEmailChangeDto) {
-    return { email: dto.email, verificationRequired: true };
+  async requestEmailChange(userId: string, dto: RequestEmailChangeDto) {
+    const email = dto.email.trim().toLowerCase();
+    const objectUserId = new Types.ObjectId(userId);
+
+    const existingOwner = await this.userModel
+      .findOne({ _id: { $ne: objectUserId }, email })
+      .select('_id')
+      .lean()
+      .exec();
+
+    if (existingOwner) {
+      return throwConflict(ErrorCode.INVALID_REQUEST, {
+        reason: 'email_already_registered',
+        provider: AuthProvider.EMAIL,
+      });
+    }
+
+    const user = await this.userModel
+      .findById(objectUserId)
+      .select('+authAccounts.passwordHash')
+      .exec();
+    if (!user) {
+      return throwBadRequest(ErrorCode.INVALID_REQUEST, {
+        reason: 'user_not_found',
+      });
+    }
+
+    const emailAccount = user.authAccounts.find(
+      (account) => String(account.provider) === String(AuthProvider.EMAIL),
+    );
+    const passwordHash = await bcrypt.hash(dto.password, 10);
+
+    user.email = email;
+    user.isEmailVerified = true;
+    user.lastPasswordChangedAt = new Date();
+
+    if (emailAccount) {
+      emailAccount.providerId = email;
+      emailAccount.passwordHash = passwordHash;
+      emailAccount.isVerified = true;
+      emailAccount.lastUsedAt = new Date();
+    } else {
+      user.authAccounts.push({
+        provider: AuthProvider.EMAIL,
+        providerId: email,
+        passwordHash,
+        isVerified: true,
+        isPrimary: false,
+        lastUsedAt: new Date(),
+      });
+    }
+
+    await this.ensurePrimaryAuthAccount(user);
+    await user.save();
+
+    return this.getAccount(userId);
   }
 
   requestPhoneChange(_userId: string, dto: RequestPhoneChangeDto) {

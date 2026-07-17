@@ -115,7 +115,6 @@ export function useSocialAuth(): {
 
     return {
       provider: 'google',
-      provider_id: profile.id,
       accessToken,
       ...(profile.email ? { email: profile.email } : {}),
       ...(profile.given_name ? { first_name: profile.given_name } : {}),
@@ -159,7 +158,6 @@ export function useSocialAuth(): {
 
     return {
       provider: 'facebook',
-      provider_id: profile.id,
       accessToken,
       ...(profile.email ? { email: profile.email } : {}),
       ...(profile.first_name ? { first_name: profile.first_name } : {}),
@@ -193,7 +191,6 @@ export function useSocialAuth(): {
 
     return {
       provider: 'apple',
-      provider_id: credential.user,
       accessToken: credential.identityToken,
       ...(credential.email ? { email: credential.email } : {}),
       ...pickNameParts(credential.fullName),

@@ -15,6 +15,10 @@ import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import type { PaymentGateway } from '@matchmate/api-contract';
+import {
+  getStoreBillingProvider,
+  isStoreBillingAvailableForCurrentPlatform,
+} from '@/core/utils/billingConfig';
 import { membershipStyles } from '../Membership.styles';
 import { DisplayPlan } from '../Membership.types';
 
@@ -40,15 +44,29 @@ const WEB_PAYMENT_OPTIONS: PaymentOption[] = [
   },
 ];
 
-const getNativePaymentOption = (): PaymentOption => ({
-  gateway: Platform.OS === 'ios' ? 'apple_iap' : 'google_play',
-  icon: Platform.OS === 'ios' ? 'smartphone' : 'shopping-bag',
-  labelKey:
-    Platform.OS === 'ios'
-      ? 'membership.checkout.apple'
-      : 'membership.checkout.google',
-  descriptionKey: 'membership.checkout.store_sub',
-});
+const getNativePaymentOption = (): PaymentOption | undefined => {
+  const gateway = getStoreBillingProvider();
+
+  if (gateway === 'apple_iap') {
+    return {
+      gateway,
+      icon: 'smartphone',
+      labelKey: 'membership.checkout.apple',
+      descriptionKey: 'membership.checkout.store_sub',
+    };
+  }
+
+  if (gateway === 'google_play') {
+    return {
+      gateway,
+      icon: 'shopping-bag',
+      labelKey: 'membership.checkout.google',
+      descriptionKey: 'membership.checkout.store_sub',
+    };
+  }
+
+  return undefined;
+};
 
 interface Props {
   visible: boolean;
@@ -71,13 +89,12 @@ export function PaymentOptionSheet({
   const { height: windowHeight, width: windowWidth } = useWindowDimensions();
   const { t } = useTranslation();
 
-  const paymentOptions = useMemo(
-    () =>
-      Platform.OS === 'ios' || Platform.OS === 'android'
-        ? [getNativePaymentOption()]
-        : WEB_PAYMENT_OPTIONS,
-    []
-  );
+  const paymentOptions = useMemo(() => {
+    const nativeOption = isStoreBillingAvailableForCurrentPlatform()
+      ? getNativePaymentOption()
+      : undefined;
+    return nativeOption ? [nativeOption] : WEB_PAYMENT_OPTIONS;
+  }, []);
   const [selectedGateway, setSelectedGateway] = useState<PaymentGateway>(
     paymentOptions[0]?.gateway ?? 'razorpay'
   );

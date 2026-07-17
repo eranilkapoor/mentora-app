@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react';
 import { Platform } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { useAppDispatch } from '@/store/hooks';
+import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { setOnboardingCompletionPending } from '@/store/slices/auth.slice';
 import { MAX_PHOTOS } from '@/core/constants';
 import * as ImagePicker from 'expo-image-picker';
@@ -64,10 +64,15 @@ const INITIAL_PREFERENCES: PreferencesData = {
 
 export function useOnboardingForm() {
   const dispatch = useAppDispatch();
+  const authUser = useAppSelector((state) => state.auth.user);
   const { t } = useTranslation();
   const [onboardingProfile] = useOnboardingProfileMutation();
 
-  const [basic, setBasic] = useState<BasicData>(INITIAL_BASIC);
+  const [basic, setBasic] = useState<BasicData>(() => ({
+    ...INITIAL_BASIC,
+    firstName: authUser?.firstName?.trim() ?? '',
+    lastName: authUser?.lastName?.trim() ?? '',
+  }));
   const [preferences, setPreferences] =
     useState<PreferencesData>(INITIAL_PREFERENCES);
   const [photos, setPhotos] = useState<ProfileImage[]>([]);

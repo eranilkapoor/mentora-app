@@ -19,6 +19,10 @@ import {
   useRequestPhoneChangeMutation,
 } from '@/store/services/accountSettingsApi.service';
 import { showError, showSuccess } from '@/core/utils/toast';
+import { PASSWORD_MIN_LENGTH } from '@/core/constants';
+import { PasswordStrengthHint } from '@/features/Auth/shared/components/PasswordStrengthHint';
+import { isPasswordStrongEnough } from '@/features/Auth/shared/passwordStrength';
+import { getLinkedAccountErrorMessage } from './linkedAccountError.utils';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -54,6 +58,12 @@ const createStyles = (
       fontSize: 12,
       lineHeight: 18,
     },
+    passwordHint: {
+      marginHorizontal: 14,
+      marginTop: 6,
+      marginBottom: 8,
+      borderRadius: 8,
+    },
     footer: {
       ...StyleSheet.flatten(base.footer),
       height: 16,
@@ -69,6 +79,8 @@ export default function ChangeEmailPhoneScreen({
   const { theme } = useTheme();
   const styles = useThemedStyles(createStyles);
   const [value, setValue] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [requestEmailChange, { isLoading: isEmailLoading }] =
     useRequestEmailChangeMutation();
   const [requestPhoneChange, { isLoading: isPhoneLoading }] =
@@ -87,16 +99,26 @@ export default function ChangeEmailPhoneScreen({
 
   const canSubmit = useMemo(() => {
     const trimmed = value.trim();
-    if (isEmail) return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed);
+    if (isEmail) {
+      return (
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed) &&
+        password.length >= PASSWORD_MIN_LENGTH &&
+        isPasswordStrongEnough(password) &&
+        password === confirmPassword
+      );
+    }
     return /^\d{6,15}$/.test(trimmed.replace(/\D/g, ''));
-  }, [isEmail, value]);
+  }, [confirmPassword, isEmail, password, value]);
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit || isLoading) return;
 
     try {
       if (isEmail) {
-        await requestEmailChange({ email: value.trim() }).unwrap();
+        await requestEmailChange({
+          email: value.trim(),
+          password,
+        }).unwrap();
       } else {
         await requestPhoneChange({
           countryCode: '+91',
@@ -106,14 +128,26 @@ export default function ChangeEmailPhoneScreen({
 
       showSuccess({
         title: t('settings.account.verification_started'),
-        message: t('settings.account.verification_started_message'),
+        message: isEmail
+          ? t('settings.account.email_password_connected_message')
+          : t('settings.account.verification_started_message'),
       });
       navigation.goBack();
     } catch (error) {
-      console.error('Account change request failed:', error);
+      const linkedAccountError = getLinkedAccountErrorMessage(
+        t,
+        error,
+        isEmail ? 'email' : 'phone'
+      );
+      if (!linkedAccountError) {
+        console.error('Account change request failed:', error);
+      }
       showError({
-        title: t('settings.account.verification_failed'),
-        message: t('common.try_again_message'),
+        title:
+          linkedAccountError?.title ??
+          t('settings.account.verification_failed'),
+        message: linkedAccountError?.message ?? t('common.try_again_message'),
+        visibilityTime: linkedAccountError?.visibilityTime,
       });
     }
   }, [
@@ -125,6 +159,7 @@ export default function ChangeEmailPhoneScreen({
     requestPhoneChange,
     t,
     value,
+    password,
   ]);
 
   return (
@@ -146,6 +181,32 @@ export default function ChangeEmailPhoneScreen({
             style={styles.input}
           />
           <Text style={styles.helper}>{helper}</Text>
+          {isEmail ? (
+            <>
+              <TextInput
+                value={password}
+                onChangeText={setPassword}
+                placeholder={t('settings.account.password_placeholder')}
+                placeholderTextColor={theme.colors.textMuted}
+                secureTextEntry
+                autoCapitalize="none"
+                style={styles.input}
+              />
+              <PasswordStrengthHint
+                password={password}
+                style={styles.passwordHint}
+              />
+              <TextInput
+                value={confirmPassword}
+                onChangeText={setConfirmPassword}
+                placeholder={t('settings.account.confirm_password_placeholder')}
+                placeholderTextColor={theme.colors.textMuted}
+                secureTextEntry
+                autoCapitalize="none"
+                style={styles.input}
+              />
+            </>
+          ) : null}
           <SettingsSelectItem
             icon="send"
             label={

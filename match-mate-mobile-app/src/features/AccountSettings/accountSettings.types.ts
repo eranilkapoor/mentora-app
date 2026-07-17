@@ -65,6 +65,7 @@ export interface ConnectSocialProviderPayload {
  */
 export interface RequestEmailChangePayload {
   email: string;
+  password: string;
 }
 
 export interface RequestPhoneChangePayload {

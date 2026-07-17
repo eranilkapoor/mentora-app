@@ -12,7 +12,7 @@ import { showError, showSuccess } from '@/core/utils/toast';
 import type { PaymentGateway } from '@matchmate/api-contract';
 import {
   getStoreBillingProvider,
-  isNativeStoreBillingPlatform,
+  isStoreBillingAvailableForCurrentPlatform,
   isStoreBillingEnabled,
 } from '@/core/utils/billingConfig';
 import { DisplayPlan } from '../Membership.types';
@@ -219,8 +219,7 @@ export function useMembershipActions(options: MembershipActionsOptions = {}) {
   useEffect(() => {
     if (
       !connected ||
-      !isNativeStoreBillingPlatform() ||
-      !isStoreBillingEnabled() ||
+      !isStoreBillingAvailableForCurrentPlatform() ||
       !storeSkus.length
     ) {
       return;
@@ -347,7 +346,10 @@ export function useMembershipActions(options: MembershipActionsOptions = {}) {
         return false;
       }
 
-      if (isNativeStoreBillingPlatform() && !isStoreBillingEnabled()) {
+      const isStoreGateway =
+        gateway === 'apple_iap' || gateway === 'google_play';
+
+      if (isStoreGateway && !isStoreBillingEnabled()) {
         showError({
           title: t('membership.store_billing_unavailable_title'),
           message: t('membership.store_billing_unavailable_message'),
@@ -355,11 +357,16 @@ export function useMembershipActions(options: MembershipActionsOptions = {}) {
         return false;
       }
 
-      if (
-        isNativeStoreBillingPlatform() &&
-        (gateway === 'apple_iap' || gateway === 'google_play')
-      ) {
+      if (isStoreGateway && isStoreBillingAvailableForCurrentPlatform()) {
         return purchaseNativeSubscription(selectedPlanItem);
+      }
+
+      if (isStoreGateway) {
+        showError({
+          title: t('membership.store_billing_unavailable_title'),
+          message: t('membership.store_billing_unavailable_message'),
+        });
+        return false;
       }
 
       try {

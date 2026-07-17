@@ -19,6 +19,8 @@ import { sharedSettingsStyles } from '../Settings/shared.settings.styles';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
 import { useSocialAuth } from '@/features/Auth/shared/useSocialAuth';
 import { SocialProvider } from '@/features/Auth/shared/auth.types';
+import { authMethodConfig } from '@/features/Auth/shared/authMethodConfig';
+import { getLinkedAccountErrorMessage } from './linkedAccountError.utils';
 
 type Props = {
   navigation: SettingsNavigationProp;
@@ -93,10 +95,20 @@ export default function LinkedAccountsScreen({
           message: t('settings.account.provider_connected_message'),
         });
       } catch (error) {
-        console.error('Linked account connection failed:', error);
+        const linkedAccountError = getLinkedAccountErrorMessage(
+          t,
+          error,
+          provider as SocialProvider
+        );
+        if (!linkedAccountError) {
+          console.error('Linked account connection failed:', error);
+        }
         showError({
-          title: t('settings.account.provider_connect_failed'),
-          message: t('common.try_again_message'),
+          title:
+            linkedAccountError?.title ??
+            t('settings.account.provider_connect_failed'),
+          message: linkedAccountError?.message ?? t('common.try_again_message'),
+          visibilityTime: linkedAccountError?.visibilityTime,
         });
       }
     },
@@ -168,7 +180,9 @@ export default function LinkedAccountsScreen({
           title={t('settings.account.linked_accounts')}
           subtitle={t('settings.account.linked_accounts_subtitle')}
         >
-          {PROVIDERS.map((item, index) => {
+          {PROVIDERS.filter(
+            (item) => item.provider !== 'apple' || authMethodConfig.social.apple
+          ).map((item, index, providers) => {
             const label = t(item.labelKey);
             const linked = data.account.linkedAccounts?.find(
               (account) => account.provider === item.provider
@@ -195,14 +209,17 @@ export default function LinkedAccountsScreen({
                 label={label}
                 sublabel={sublabel}
                 value={value}
-                isLast={index === PROVIDERS.length - 1}
+                isLast={index === providers.length - 1}
                 disabled={isPrimary || (!connected && isConnecting)}
                 onPress={() =>
-                  connected
-                    ? handleMakePrimary(item.provider, label)
-                    : void handleConnect(item.provider, label)
+                  isPrimary
+                    ? undefined
+                    : connected
+                      ? handleMakePrimary(item.provider, label)
+                      : void handleConnect(item.provider, label)
                 }
-                actionIcon={connected && !isPrimary ? 'unlink' : undefined}
+                actionIcon={connected && !isPrimary ? 'link-2' : undefined}
+                showChevron={!connected}
                 actionAccessibilityLabel={t(
                   'settings.account.disconnect_title',
                   { provider: label }

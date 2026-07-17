@@ -18,6 +18,7 @@ import { useHomeActions } from './hooks/useHomeActions';
 import { ProfileCard } from './components/ProfileCard';
 import { HomeListHeader } from './components/HomeListHeader';
 import { HomeEmpty } from './components/HomeEmpty';
+import { useGetUnreadNotificationCountQuery } from '@/store/services/notificationApi.service';
 
 export default function HomeScreen({
   navigation,
@@ -28,6 +29,11 @@ export default function HomeScreen({
 
   const [query, setQuery] = useState('');
   const [refreshing, setRefreshing] = useState(false);
+  const { data: unreadNotificationData } = useGetUnreadNotificationCountQuery();
+  const unreadNotificationCount =
+    unreadNotificationData?.success && unreadNotificationData.data
+      ? unreadNotificationData.data.unreadCount
+      : 0;
 
   const {
     profiles,
@@ -110,7 +116,7 @@ export default function HomeScreen({
         actions={[
           {
             icon: 'bell',
-            badge: true,
+            badge: unreadNotificationCount > 0,
             onPress: () => navigation.navigate('Notifications'),
           },
         ]}

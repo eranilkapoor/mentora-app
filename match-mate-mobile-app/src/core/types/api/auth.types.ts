@@ -68,7 +68,6 @@ export interface ResetPasswordCodeExchangeResponse {
 
 export interface SocialLoginRequest {
   provider: string;
-  provider_id: string;
   accessToken: string;
   email?: string;
   first_name?: string;

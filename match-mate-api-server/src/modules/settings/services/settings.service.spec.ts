@@ -835,15 +835,54 @@ describe('SettingsService', () => {
     ).rejects.toMatchObject({ code: ErrorCode.INVALID_REQUEST });
   });
 
-  it('returns email and phone verification-change contracts', () => {
+  it('connects email-password login for the current account', async () => {
+    const fixture = createFixture();
+    const user: {
+      email?: string;
+      isEmailVerified?: boolean;
+      lastPasswordChangedAt?: Date;
+      authAccounts: Array<{
+        provider: AuthProvider;
+        providerId?: string;
+        passwordHash?: string;
+        isVerified?: boolean;
+        isPrimary?: boolean;
+      }>;
+      save: jest.Mock;
+    } = {
+      authAccounts: [{ provider: AuthProvider.GOOGLE, isPrimary: true }],
+      save: jest.fn().mockResolvedValue(undefined),
+    };
+
+    fixture.userModel.findOne.mockReturnValue(queryChain(null));
+    fixture.userModel.findById.mockReturnValueOnce(queryChain(user));
+    configureAccountQueries(fixture, {}, user, null);
+
+    const result = await fixture.service.requestEmailChange(USER_ID, {
+      email: 'New@Example.com',
+      password: 'Password@1234',
+    });
+
+    expect(user.email).toBe('new@example.com');
+    expect(user.isEmailVerified).toBe(true);
+    expect(user.lastPasswordChangedAt).toBeInstanceOf(Date);
+    expect(user.authAccounts[1]).toMatchObject({
+      provider: AuthProvider.EMAIL,
+      providerId: 'new@example.com',
+      isVerified: true,
+      isPrimary: false,
+    });
+    expect(user.authAccounts[1].passwordHash).not.toBe('Password@1234');
+    expect(user.save).toHaveBeenCalledTimes(1);
+    expect(result.linkedAccounts[0]).toMatchObject({
+      provider: AuthProvider.EMAIL,
+      connected: true,
+    });
+  });
+
+  it('returns the phone verification-change contract', () => {
     const { service } = createFixture();
 
-    expect(
-      service.requestEmailChange(USER_ID, { email: 'new@example.com' }),
-    ).toEqual({
-      email: 'new@example.com',
-      verificationRequired: true,
-    });
     expect(
       service.requestPhoneChange(USER_ID, {
         countryCode: '+91',
