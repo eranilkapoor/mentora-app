@@ -10,6 +10,7 @@ describe('passwordStrength', () => {
 
     expect(rules).toEqual([
       { key: 'length', passed: true },
+      { key: 'lowercase', passed: true },
       { key: 'uppercase', passed: true },
       { key: 'number', passed: true },
       { key: 'special', passed: true },
@@ -19,13 +20,14 @@ describe('passwordStrength', () => {
   it('grades weak, fair, strong and very strong passwords', () => {
     expect(getPasswordStrength('')).toBe('weak');
     expect(getPasswordStrength('short')).toBe('weak');
-    expect(getPasswordStrength('matchmatepass')).toBe('fair');
-    expect(getPasswordStrength('Matchmatepass')).toBe('strong');
+    expect(getPasswordStrength('matchmatepass')).toBe('strong');
+    expect(getPasswordStrength('Matchmatepass')).toBe('very_strong');
     expect(getPasswordStrength('Matchmate2026!')).toBe('very_strong');
   });
 
-  it('blocks only weak passwords from submit flows', () => {
+  it('requires every enterprise password rule for submit flows', () => {
     expect(isPasswordStrongEnough('short')).toBe(false);
-    expect(isPasswordStrongEnough('matchmatepass')).toBe(true);
+    expect(isPasswordStrongEnough('matchmatepass')).toBe(false);
+    expect(isPasswordStrongEnough('Matchmate2026!')).toBe(true);
   });
 });
