@@ -31,6 +31,7 @@ describe('MatchRepository', () => {
   const preferenceQuery = fluent({});
   const mediaQuery = fluent([]);
   const interactionQuery = fluent([]);
+  const userQuery = fluent(null);
   const interestModel = {
     create: jest
       .fn()
@@ -63,6 +64,7 @@ describe('MatchRepository', () => {
     find: jest.fn(() => interactionQuery),
     countDocuments: jest.fn().mockResolvedValue(1),
   };
+  const userModel = { findById: jest.fn(() => userQuery) };
   let repository: MatchRepository;
 
   beforeEach(() => {
@@ -73,6 +75,7 @@ describe('MatchRepository', () => {
     preferenceQuery.setValue({});
     mediaQuery.setValue([]);
     interactionQuery.setValue([]);
+    userQuery.setValue(null);
     repository = new MatchRepository(
       interestModel as never,
       matchModel as never,
@@ -80,6 +83,7 @@ describe('MatchRepository', () => {
       preferenceModel as never,
       mediaModel as never,
       interactionModel as never,
+      userModel as never,
     );
   });
 

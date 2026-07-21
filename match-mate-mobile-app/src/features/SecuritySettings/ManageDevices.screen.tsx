@@ -26,7 +26,7 @@ export default function ManageDevicesScreen({
 }: Props): React.ReactElement {
   const { t } = useTranslation();
   const styles = useThemedStyles(sharedSettingsStyles);
-  const { data, isLoading } = useGetSessionsQuery();
+  const { data, isLoading, refetch } = useGetSessionsQuery();
   const [logoutSession] = useLogoutSessionMutation();
 
   const handleRevoke = useCallback(
@@ -43,6 +43,7 @@ export default function ManageDevicesScreen({
             .unwrap()
             .then(() => {
               showSuccess({ title: t('settings.security.device_signed_out') });
+              void refetch();
             })
             .catch((error: unknown) => {
               console.error('Revoke device failed:', error);
@@ -54,7 +55,7 @@ export default function ManageDevicesScreen({
         },
       });
     },
-    [logoutSession, t]
+    [logoutSession, refetch, t]
   );
 
   if (isLoading || !data) {

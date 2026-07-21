@@ -22,6 +22,7 @@ import {
   Religion,
   PersonalityBadge,
   ReligiousDetails,
+  ProfileData as ApiProfileData,
 } from '@/core/types';
 
 export type { ReligiousDetails };
@@ -123,6 +124,7 @@ export interface ProfileData {
   physical: PhysicalSection;
   education: EducationSection;
   family: FamilySection;
+  contactDetails?: ApiProfileData['contactDetails'];
   images?: ProfileImage[];
   videos?: ProfileImage[];
 }

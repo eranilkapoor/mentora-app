@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import {
   Image,
   ScrollView,
@@ -20,7 +20,11 @@ import {
 } from '@/core/utils/apiMessage';
 import { resolveApiUrl } from '@/core/utils/config';
 import { cmToFeetInches, formatEnumLabel } from '@/core/utils/format';
-import { useGetMatchProfileQuery } from '@/store/services/matchApi.service';
+import {
+  MatchContactDetails,
+  useGetMatchProfileQuery,
+  useRevealMatchContactMutation,
+} from '@/store/services/matchApi.service';
 import { useGetMyPreferenceQuery } from '@/store/services/preferenceApi.service';
 import { useGetMyProfileQuery } from '@/store/services/profileApi.service';
 import { matchDetailStyles } from './MatchDetail.styles';
@@ -161,6 +165,10 @@ export default function MatchDetailScreen({
 
   const { data, isLoading, isFetching, isError, error, refetch } =
     useGetMatchProfileQuery(userId);
+  const [revealContact, { isLoading: isRevealingContact }] =
+    useRevealMatchContactMutation();
+  const [revealedContact, setRevealedContact] = useState<MatchContactDetails>();
+  const [contactRevealError, setContactRevealError] = useState<string>();
   const { data: myProfileData } = useGetMyProfileQuery();
   const { data: myPreferenceData } = useGetMyPreferenceQuery();
   const profile = data?.data ?? undefined;
@@ -220,13 +228,48 @@ export default function MatchDetailScreen({
 
   useEffect(() => {
     resetOptimistic();
+    setRevealedContact(undefined);
+    setContactRevealError(undefined);
   }, [userId, resetOptimistic]);
+
+  const handleRevealContact = async () => {
+    setContactRevealError(undefined);
+    try {
+      const result = await revealContact({ userId }).unwrap();
+      setRevealedContact(result.data?.contactDetails);
+    } catch (err) {
+      if (isPlanAccessError(err)) {
+        showUpgradePrompt(t('match_detail.section_contact'));
+      }
+      setContactRevealError(
+        getApiErrorMessage(t, err, 'match_detail.contact_reveal_failed')
+      );
+    }
+  };
+
+  const handleRequestContact = () => {
+    void handleOpenChat(t('match_detail.contact_request_message', { name }));
+  };
 
   // ─── Derived state ────────────────────────────────────────────────────
 
   const canViewDetails = Boolean(profile?.privacy?.canViewPersonalDetails);
   const isMatched = Boolean(profile?.privacy?.isMatched);
   const online = isRecentlyActive(profile?.lastActiveAt);
+  const contactDetails = revealedContact ?? profile?.contactDetails;
+  const canRevealAnyContact = [
+    profile?.contactAccess?.canRevealPhone,
+    profile?.contactAccess?.canRevealEmail,
+  ].some(Boolean);
+  const hasRevealedContact = [
+    contactDetails?.phone,
+    contactDetails?.email,
+  ].some(Boolean);
+  const canRequestContact = Boolean(profile?.contactAccess?.canRequestContact);
+  const isContactActionDisabled =
+    (!canRevealAnyContact && !canRequestContact) ||
+    isRevealingContact ||
+    isOpeningChat;
   const location = compact([
     profile?.personal?.city,
     profile?.personal?.state,
@@ -668,6 +711,104 @@ export default function MatchDetailScreen({
         </DetailSection>
 
         {/* ── Safety ───────────────────────────────────────────── */}
+        <DetailSection title={t('match_detail.section_contact')} icon="phone">
+          {hasRevealedContact ? (
+            <>
+              <DetailRow
+                label={t('match_detail.field_phone')}
+                value={
+                  contactDetails?.phone?.number
+                    ? `${contactDetails.phone.countryCode ?? ''} ${
+                        contactDetails.phone.number
+                      }`.trim()
+                    : hidden
+                }
+                icon="phone"
+              />
+              <DetailRow
+                label={t('match_detail.field_email')}
+                value={contactDetails?.email?.address ?? hidden}
+                icon="mail"
+                isLast
+              />
+            </>
+          ) : (
+            <View style={styles.contactRevealBox}>
+              <View style={styles.contactRevealIcon}>
+                <Feather
+                  name={
+                    profile.contactAccess?.requiresUpgrade && !canRequestContact
+                      ? 'lock'
+                      : canRequestContact
+                        ? 'message-circle'
+                        : 'phone'
+                  }
+                  size={18}
+                  color={theme.colors.primary}
+                />
+              </View>
+              <Text style={styles.contactRevealTitle}>
+                {profile.contactAccess?.requiresUpgrade && !canRequestContact
+                  ? t('match_detail.contact_locked_title')
+                  : canRevealAnyContact
+                    ? t('match_detail.contact_ready_title')
+                    : canRequestContact
+                      ? t('match_detail.contact_request_title')
+                      : t('match_detail.contact_hidden_title')}
+              </Text>
+              <Text style={styles.contactRevealText}>
+                {canRevealAnyContact
+                  ? t('match_detail.contact_ready_subtitle')
+                  : canRequestContact
+                    ? t('match_detail.contact_request_subtitle')
+                    : t('match_detail.contact_hidden_subtitle')}
+              </Text>
+              {contactRevealError ? (
+                <Text style={styles.contactRevealError}>
+                  {contactRevealError}
+                </Text>
+              ) : null}
+              <TouchableOpacity
+                style={[
+                  styles.contactRevealButton,
+                  isContactActionDisabled && styles.contactRevealButtonDisabled,
+                ]}
+                disabled={isContactActionDisabled}
+                onPress={
+                  canRevealAnyContact
+                    ? handleRevealContact
+                    : handleRequestContact
+                }
+                activeOpacity={0.85}
+                accessibilityRole="button"
+              >
+                <Feather
+                  name={
+                    canRequestContact
+                      ? 'message-circle'
+                      : profile.contactAccess?.requiresUpgrade
+                        ? 'lock'
+                        : 'eye'
+                  }
+                  size={15}
+                  color={theme.colors.white}
+                />
+                <Text style={styles.contactRevealButtonText}>
+                  {isRevealingContact
+                    ? t('match_detail.contact_revealing')
+                    : isOpeningChat
+                      ? t('match_detail.contact_requesting')
+                      : canRequestContact
+                        ? t('match_detail.contact_request_action')
+                        : profile.contactAccess?.requiresUpgrade
+                          ? t('membership.locked_feature.view_plans')
+                          : t('match_detail.contact_reveal_action')}
+                </Text>
+              </TouchableOpacity>
+            </View>
+          )}
+        </DetailSection>
+
         <DetailSection
           title={t('match_detail.section_compatibility')}
           icon="activity"

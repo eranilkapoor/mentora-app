@@ -59,5 +59,22 @@
   "access_limited_subtitle": "आपकी मौजूदा योजना या दैनिक प्रोफाइल देखने की सीमा अभी इस प्रोफाइल को देखने की अनुमति नहीं देती।",
   "section_compatibility": "मैच कम्पैटिबिलिटी",
   "you": "आप",
-  "exact_score": "सटीक स्कोर"
+  "exact_score": "सटीक स्कोर",
+  "section_contact": "Contact Details",
+  "field_phone": "Phone Number",
+  "field_email": "Email Address",
+  "contact_ready_title": "Contact details can be viewed",
+  "contact_ready_subtitle": "Viewing contact details may consume one contact view from your current plan.",
+  "contact_hidden_title": "Contact details are not shared",
+  "contact_hidden_subtitle": "This member has not enabled phone or email visibility for this profile.",
+  "contact_locked_title": "Upgrade required",
+  "contact_reveal_action": "View Contact Details",
+  "contact_revealing": "Revealing...",
+  "contact_reveal_failed": "Unable to reveal contact details right now.",
+  "contact_upgrade_required": "Your current plan does not include this contact access.",
+  "contact_request_title": "Ask to share contact details",
+  "contact_request_subtitle": "You are matched, so you can request their phone or email in chat without using a contact view.",
+  "contact_request_action": "Request in Chat",
+  "contact_requesting": "Opening chat...",
+  "contact_request_message": "Hi {{name}}, we are matched here. Would you be comfortable sharing your contact details?"
 }

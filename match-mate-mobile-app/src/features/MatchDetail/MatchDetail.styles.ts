@@ -424,6 +424,60 @@ export const matchDetailStyles = (
     },
 
     // ─── Safety ───────────────────────────────────────────────────────────
+    contactRevealBox: {
+      alignItems: 'center',
+      paddingVertical: 18,
+      gap: 10,
+    },
+    contactRevealIcon: {
+      width: 44,
+      height: 44,
+      borderRadius: 14,
+      alignItems: 'center',
+      justifyContent: 'center',
+      backgroundColor: theme.colors.primaryLight,
+      borderWidth: StyleSheet.hairlineWidth,
+      borderColor: theme.colors.primaryBorder,
+    },
+    contactRevealTitle: {
+      fontSize: 15,
+      fontWeight: '800',
+      color: theme.colors.textPrimary,
+      textAlign: 'center',
+    },
+    contactRevealText: {
+      maxWidth: 310,
+      fontSize: 13,
+      lineHeight: 19,
+      color: theme.colors.textMuted,
+      textAlign: 'center',
+    },
+    contactRevealError: {
+      maxWidth: 310,
+      fontSize: 12,
+      lineHeight: 18,
+      color: theme.colors.error,
+      textAlign: 'center',
+    },
+    contactRevealButton: {
+      minHeight: 42,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 7,
+      borderRadius: 22,
+      paddingHorizontal: 18,
+      backgroundColor: theme.colors.primary,
+    },
+    contactRevealButtonDisabled: {
+      opacity: 0.55,
+    },
+    contactRevealButtonText: {
+      fontSize: 13,
+      fontWeight: '800',
+      color: theme.colors.white,
+    },
+
     safetyActions: {
       flexDirection: 'row',
       flexWrap: 'wrap',

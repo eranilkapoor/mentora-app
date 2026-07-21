@@ -216,23 +216,37 @@ const getProfileEmail = (profile: SchemaProfile): string => {
   const data = profile as SchemaProfile & {
     email?: string;
     user?: { email?: string };
+    contactDetails?: { email?: { address?: string } };
   };
 
-  return data.email ?? data.user?.email ?? EMPTY_VALUE;
+  return (
+    data.contactDetails?.email?.address ??
+    data.email ??
+    data.user?.email ??
+    EMPTY_VALUE
+  );
 };
 
 const getProfilePhone = (profile: SchemaProfile): string => {
   const data = profile as SchemaProfile & {
-    phone?: string | { countryCode?: string; phone?: string };
-    user?: { phone?: string | { countryCode?: string; phone?: string } };
+    phone?: string | { countryCode?: string; phone?: string; number?: string };
+    user?: {
+      phone?:
+        string | { countryCode?: string; phone?: string; number?: string };
+    };
+    contactDetails?: {
+      phone?: { countryCode?: string; number?: string; phone?: string };
+    };
   };
-  const phone = data.phone ?? data.user?.phone;
+  const phone = data.contactDetails?.phone ?? data.phone ?? data.user?.phone;
 
   if (!phone) return EMPTY_VALUE;
   if (typeof phone === 'string') return phone;
 
   return (
-    [phone.countryCode, phone.phone].filter(Boolean).join(' ') || EMPTY_VALUE
+    [phone.countryCode, phone.phone ?? phone.number]
+      .filter(Boolean)
+      .join(' ') || EMPTY_VALUE
   );
 };
 
@@ -1515,6 +1529,17 @@ export default function ProfileScreen({
           <Row
             labelKey="profile.row_last_active"
             value={formatDateTime(profileData.lastActiveAt)}
+          />
+        </Section>
+
+        <Section titleKey="profile.section_contact" icon="phone">
+          <Row
+            labelKey="profile.row_phone"
+            value={getProfilePhone(profileData)}
+          />
+          <Row
+            labelKey="profile.row_email"
+            value={getProfileEmail(profileData)}
           />
         </Section>
 

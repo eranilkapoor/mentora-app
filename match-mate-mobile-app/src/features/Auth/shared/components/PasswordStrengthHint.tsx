@@ -26,7 +26,7 @@ const STRENGTH_SEGMENTS: Record<PasswordStrengthLevel, number> = {
 
 export function PasswordStrengthHint({
   password,
-  visible = true,
+  visible,
   style,
 }: PasswordStrengthHintProps): React.ReactElement | null {
   const { theme } = useTheme();
@@ -93,7 +93,9 @@ export function PasswordStrengthHint({
     [theme]
   );
 
-  if (!visible) return null;
+  const shouldShow = visible ?? password.length > 0;
+
+  if (!shouldShow) return null;
 
   const strength = getPasswordStrength(password);
   const rules = getPasswordStrengthRules(password);

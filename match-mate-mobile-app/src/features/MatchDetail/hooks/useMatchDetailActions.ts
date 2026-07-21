@@ -85,34 +85,32 @@ export function useMatchDetailActions(
 
   // ─── Chat ──────────────────────────────────────────────────────────────
 
-  const handleOpenChat = useCallback(async (): Promise<void> => {
-    try {
-      await createDirectRoom({ targetUserId: userId }).unwrap();
-      navigation.navigate('ChatDetails', {
-        userId,
-        partnerName: name,
-        partnerPhoto: photos[0] ?? (FALLBACK_PROFILE_PHOTO as string),
-      });
-    } catch (error) {
-      if (isPlanAccessError(error)) {
-        showUpgradePrompt(t('match_detail.action_chat'));
-        return;
-      }
+  const handleOpenChat = useCallback(
+    async (initialMessage?: string): Promise<void> => {
+      try {
+        await createDirectRoom({
+          targetUserId: userId,
+          initialMessage,
+        }).unwrap();
+        navigation.navigate('ChatDetails', {
+          userId,
+          partnerName: name,
+          partnerPhoto: photos[0] ?? (FALLBACK_PROFILE_PHOTO as string),
+        });
+      } catch (error) {
+        if (isPlanAccessError(error)) {
+          showUpgradePrompt(t('match_detail.action_chat'));
+          return;
+        }
 
-      showError({
-        title: t('match_detail.chat_unavailable_title'),
-        message: t('common.try_again'),
-      });
-    }
-  }, [
-    createDirectRoom,
-    userId,
-    name,
-    photos,
-    navigation,
-    showUpgradePrompt,
-    t,
-  ]);
+        showError({
+          title: t('match_detail.chat_unavailable_title'),
+          message: t('common.try_again'),
+        });
+      }
+    },
+    [createDirectRoom, userId, name, photos, navigation, showUpgradePrompt, t]
+  );
 
   // ─── Report ────────────────────────────────────────────────────────────
 

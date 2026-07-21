@@ -129,5 +129,8 @@
   "pdf_footer": "Match Mate से जनरेट किया गया। साझा प्रोफाइल कॉपी वॉटरमार्क और privacy-safe है।",
   "load_error_message": "प्रोफाइल लोड करने में विफल। कृपया पुनः प्रयास करें।",
   "pdf_document_title": "वैवाहिक बायोडाटा",
-  "pdf_about_title": "परिचय"
+  "pdf_about_title": "परिचय",
+  "section_contact": "Contact Details",
+  "row_phone": "Phone Number",
+  "row_email": "Email Address"
 }

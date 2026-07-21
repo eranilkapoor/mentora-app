@@ -23,6 +23,7 @@ import {
 } from '@/modules/profiles/schemas/interaction/interaction.schema';
 import { InteractionStatus } from '@/modules/profiles/enums/interaction-status.enum';
 import { InteractionType } from '@/modules/profiles/enums/interaction-type.enum';
+import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 
 //  Explicit lean types
 
@@ -56,6 +57,10 @@ type LeanInteraction = FlattenMaps<Interaction> & {
   updatedAt?: Date;
 };
 
+export type LeanContactUser = FlattenMaps<User> & {
+  _id: Types.ObjectId;
+};
+
 @Injectable()
 export class MatchRepository {
   constructor(
@@ -76,6 +81,9 @@ export class MatchRepository {
 
     @InjectModel(Interaction.name)
     private readonly interactionModel: Model<InteractionDocument>,
+
+    @InjectModel(User.name)
+    private readonly userModel: Model<UserDocument>,
   ) {}
 
   async sendInterest(
@@ -287,6 +295,14 @@ export class MatchRepository {
       .exec();
   }
 
+  async getContactUserById(userId: string): Promise<LeanContactUser | null> {
+    return this.userModel
+      .findById(userId)
+      .select('email phone isEmailVerified isPhoneVerified')
+      .lean<LeanContactUser>()
+      .exec();
+  }
+
   async getPreferenceByUserId(userId: string) {
     return this.preferenceModel
       .findOne({ userId: new Types.ObjectId(userId) })
@@ -451,6 +467,31 @@ export class MatchRepository {
             fromUserId: new Types.ObjectId(userId),
             toUserId: new Types.ObjectId(targetUserId),
             type: InteractionType.PROFILE_VIEW,
+          },
+        },
+        { upsert: true, new: true, setDefaultsOnInsert: true },
+      )
+      .lean<LeanInteraction>()
+      .exec();
+  }
+
+  async recordContactView(userId: string, targetUserId: string) {
+    return this.interactionModel
+      .findOneAndUpdate(
+        {
+          fromUserId: new Types.ObjectId(userId),
+          toUserId: new Types.ObjectId(targetUserId),
+          type: InteractionType.CONTACT_VIEW,
+        },
+        {
+          $set: {
+            status: InteractionStatus.ACCEPTED,
+            metadata: { source: 'match_contact_reveal', viewedAt: new Date() },
+          },
+          $setOnInsert: {
+            fromUserId: new Types.ObjectId(userId),
+            toUserId: new Types.ObjectId(targetUserId),
+            type: InteractionType.CONTACT_VIEW,
           },
         },
         { upsert: true, new: true, setDefaultsOnInsert: true },

@@ -500,6 +500,21 @@ export class ProfilesService {
         emailVerified: Boolean(user?.isEmailVerified),
         phoneVerified: Boolean(user?.isPhoneVerified),
       },
+      contactDetails: {
+        email: user?.email
+          ? {
+              address: user.email,
+              verified: Boolean(user.isEmailVerified),
+            }
+          : undefined,
+        phone: user?.phone?.phone
+          ? {
+              countryCode: user.phone.countryCode,
+              number: user.phone.phone,
+              verified: Boolean(user.isPhoneVerified),
+            }
+          : undefined,
+      },
     };
   }
 

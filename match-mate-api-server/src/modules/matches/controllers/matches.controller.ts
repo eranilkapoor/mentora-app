@@ -207,6 +207,18 @@ export class MatchesController {
     );
   }
 
+  @Post('profile/:userId/contact')
+  @HttpCode(HttpStatus.OK)
+  async revealMatchContact(
+    @Req() req: AuthenticatedRequest,
+    @Param('userId') userId: string,
+  ) {
+    return successResponse(
+      await this.matchesService.revealMatchContact(req.user.sub, userId),
+      SuccessCode.MATCHES_FETCHED,
+    );
+  }
+
   //  Interests
 
   @Post('interest')

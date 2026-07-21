@@ -36,6 +36,7 @@ import {
   Verification,
   VerificationSchema,
 } from '../safety/schemas/verification.schema';
+import { User, UserSchema } from '../auth/schemas/user.schema';
 
 @Module({
   imports: [
@@ -52,6 +53,7 @@ import {
       { name: Media.name, schema: MediaSchema },
       { name: Interaction.name, schema: InteractionSchema },
       { name: Verification.name, schema: VerificationSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [MatchesController],

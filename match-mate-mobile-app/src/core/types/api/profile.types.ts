@@ -56,6 +56,17 @@ export interface ProfileData {
     emailVerified: boolean;
     phoneVerified: boolean;
   };
+  contactDetails?: {
+    email?: {
+      address?: string;
+      verified?: boolean;
+    };
+    phone?: {
+      countryCode?: string;
+      number?: string;
+      verified?: boolean;
+    };
+  };
   status?: string;
   lastActiveAt?: string | Date;
 }

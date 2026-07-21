@@ -104,6 +104,37 @@ export interface DiscoveryProfile {
     interestStatus?: 'pending' | 'accepted' | 'rejected';
     interestDirection?: 'sent' | 'received';
   };
+  contactAccess?: MatchContactAccess;
+  contactDetails?: MatchContactDetails;
+}
+
+export interface MatchContactDetails {
+  email?: {
+    address?: string;
+    verified?: boolean;
+  };
+  phone?: {
+    countryCode?: string;
+    number?: string;
+    verified?: boolean;
+  };
+}
+
+export interface MatchContactAccess {
+  allowed?: boolean;
+  isMatched?: boolean;
+  canRevealPhone?: boolean;
+  canRevealEmail?: boolean;
+  canRequestContact?: boolean;
+  requiresUpgrade?: boolean;
+  reason?: string;
+  limit?: number;
+  consumed?: boolean;
+}
+
+export interface MatchContactReveal {
+  contactDetails?: MatchContactDetails;
+  contactAccess?: MatchContactAccess;
 }
 
 export interface MatchRecord {
@@ -274,6 +305,19 @@ export const matchApi = baseApi.injectEndpoints({
       ],
     }),
 
+    revealMatchContact: builder.mutation<
+      ApiResponse<MatchContactReveal>,
+      { userId: string }
+    >({
+      query: ({ userId }) => ({
+        url: `/matches/profile/${userId}/contact`,
+        method: 'POST',
+      }),
+      invalidatesTags: (_result, _error, { userId }) => [
+        { type: 'Match' as const, id: userId },
+      ],
+    }),
+
     getReceivedInterests: builder.query<
       PaginatedResponse<InterestRecord>,
       { page?: number; limit?: number } | void
@@ -376,6 +420,7 @@ export const matchApi = baseApi.injectEndpoints({
 export const {
   useGetDiscoveryProfilesQuery,
   useGetMatchProfileQuery,
+  useRevealMatchContactMutation,
   useGetMyMatchesQuery,
   useGetMatchStatsQuery,
   useGetShortlistedProfilesQuery,

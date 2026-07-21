@@ -15,7 +15,10 @@ import {
   useGetSecuritySettingsQuery,
   useUpdateSecuritySettingsMutation,
 } from '@/store/services/securitySettingsApi.service';
-import { useLogoutAllMutation } from '@/store/services/authApi.service';
+import {
+  useGetSessionsQuery,
+  useLogoutAllMutation,
+} from '@/store/services/authApi.service';
 import { baseApi, clearRefreshToken } from '@/store/services/baseApi.service';
 import { useAppDispatch } from '@/store/hooks';
 import { logout as logoutAction } from '@/store/slices/auth.slice';
@@ -34,10 +37,14 @@ export default function SecuritySettingsScreen({
   const dispatch = useAppDispatch();
 
   const { data, isLoading } = useGetSecuritySettingsQuery();
+  const { data: sessionsData } = useGetSessionsQuery();
   const [update] = useUpdateSecuritySettingsMutation();
   const [logoutAll] = useLogoutAllMutation();
 
   const settings = data?.security;
+  const activeDeviceCount = sessionsData?.success
+    ? sessionsData.data.sessions.length
+    : (settings?.loginDevices?.length ?? 0);
 
   const handleToggle = useCallback(
     async (key: keyof SecuritySettings, value: boolean) => {
@@ -190,7 +197,7 @@ export default function SecuritySettingsScreen({
             icon="list"
             label={t('settings.security.manage_devices')}
             sublabel={t('settings.security.manage_devices_sub', {
-              count: settings?.loginDevices?.length ?? 0,
+              count: activeDeviceCount,
             })}
             onPress={() => navigation.navigate('ManageDevices')}
           />

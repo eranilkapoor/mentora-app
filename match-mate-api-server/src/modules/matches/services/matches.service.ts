@@ -485,10 +485,14 @@ export class MatchesService {
       photoVisibilityAllowed &&
       Boolean(privacy?.blurPhotosForUnmatched && !isMatched);
     const canViewPhotos = photoVisibilityAllowed && !shouldBlurPhotos;
-    const canViewContact = await this.canViewContactDetails(
+    const contactAccess = await this.getContactAccessPreview(
       viewerId,
       targetUserId,
-      Boolean(isMatched && (privacy?.showPhone || privacy?.showEmail)),
+      isMatched,
+      {
+        showPhone: Boolean(privacy?.showPhone),
+        showEmail: Boolean(privacy?.showEmail),
+      },
     );
     const canViewLastSeen =
       Boolean(privacy?.showOnlineStatus) &&
@@ -514,10 +518,11 @@ export class MatchesService {
         canViewPersonalDetails,
         canViewPhotos,
         photosBlurred: shouldBlurPhotos,
-        showPhone: Boolean(privacy?.showPhone && isMatched && canViewContact),
-        showEmail: Boolean(privacy?.showEmail && isMatched && canViewContact),
+        showPhone: contactAccess.canRevealPhone,
+        showEmail: contactAccess.canRevealEmail,
         showIncome: Boolean(privacy?.showIncome && canViewPersonalDetails),
       },
+      contactAccess,
       relationship: {
         isMatched,
         interestId:
@@ -535,6 +540,73 @@ export class MatchesService {
             matchScore: compatibility.score,
           }
         : {}),
+    };
+  }
+
+  async revealMatchContact(viewerId: string, targetUserId: string) {
+    if (viewerId === targetUserId) {
+      const user = await this.repo.getContactUserById(viewerId);
+      return {
+        contactDetails: this.buildContactDetails(user, {
+          showPhone: true,
+          showEmail: true,
+        }),
+        contactAccess: {
+          allowed: true,
+          isMatched: true,
+          canRevealPhone: Boolean(user?.phone?.phone),
+          canRevealEmail: Boolean(user?.email),
+          requiresUpgrade: false,
+          reason: undefined,
+        },
+      };
+    }
+
+    await this.ensureUsersCanInteract(viewerId, targetUserId);
+
+    const [profile, privacy, match] = await Promise.all([
+      this.repo.getProfileByUserId(targetUserId),
+      this.settingsService.getPrivacy(targetUserId),
+      this.repo.getMatchBetweenUsers(viewerId, targetUserId),
+    ]);
+
+    if (!profile) return throwNotFound(ErrorCode.PROFILE_NOT_FOUND);
+
+    const isMatched = Boolean(match);
+    const visibility = {
+      showPhone: Boolean(privacy?.showPhone),
+      showEmail: Boolean(privacy?.showEmail),
+    };
+    const contactAccess = await this.getContactAccessPreview(
+      viewerId,
+      targetUserId,
+      isMatched,
+      visibility,
+    );
+
+    if (!contactAccess.allowed) {
+      return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
+        reason: contactAccess.reason ?? 'contact_details_unavailable',
+      });
+    }
+
+    const user = await this.repo.getContactUserById(targetUserId);
+    const contactDetails = this.buildContactDetails(user, visibility);
+    if (!contactDetails.phone && !contactDetails.email) {
+      return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
+        reason: 'contact_details_not_shared',
+      });
+    }
+
+    await this.consumeContactView(viewerId, targetUserId);
+    await this.repo.recordContactView(viewerId, targetUserId);
+
+    return {
+      contactDetails,
+      contactAccess: {
+        ...contactAccess,
+        consumed: true,
+      },
     };
   }
 
@@ -570,18 +642,82 @@ export class MatchesService {
     );
   }
 
-  private async canViewContactDetails(
+  private async getContactAccessPreview(
     viewerId: string,
     targetUserId: string,
-    privacyAllowsContact: boolean,
-  ): Promise<boolean> {
-    if (!privacyAllowsContact) return false;
+    isMatched: boolean,
+    visibility: { showPhone: boolean; showEmail: boolean },
+  ) {
+    const features = await this.featureService.getFeaturesForUser(viewerId);
+    const canRequestContact = Boolean(
+      isMatched && features[FeatureKey.REQUEST_CONTACT],
+    );
+    const hasSharedContact = visibility.showPhone || visibility.showEmail;
+    if (!hasSharedContact) {
+      return {
+        allowed: false,
+        isMatched,
+        canRevealPhone: false,
+        canRevealEmail: false,
+        canRequestContact,
+        requiresUpgrade: false,
+        reason: 'contact_details_not_shared',
+      };
+    }
+
+    const hasViewContact = Boolean(features[FeatureKey.VIEW_CONTACT]);
+    const hasDirectContactAccess =
+      isMatched || Boolean(features[FeatureKey.DIRECT_CONTACT_ACCESS]);
+    const contactLimit = features[FeatureKey.CONTACT_VIEW_LIMIT];
+
+    if (!hasViewContact || !hasDirectContactAccess) {
+      return {
+        allowed: false,
+        isMatched,
+        canRevealPhone: false,
+        canRevealEmail: false,
+        canRequestContact,
+        requiresUpgrade: true,
+        reason: isMatched
+          ? 'contact_feature_not_available'
+          : 'direct_contact_access_required',
+      };
+    }
+
+    const hasQuota =
+      contactLimit === -1 ||
+      (typeof contactLimit === 'number' && contactLimit > 0);
+
+    return {
+      allowed: hasQuota,
+      isMatched,
+      canRevealPhone: visibility.showPhone && hasQuota,
+      canRevealEmail: visibility.showEmail && hasQuota,
+      canRequestContact: !hasQuota && canRequestContact,
+      requiresUpgrade: !hasQuota,
+      reason: hasQuota ? undefined : 'contact_view_limit_unavailable',
+      limit: typeof contactLimit === 'number' ? contactLimit : undefined,
+    };
+  }
+
+  private async consumeContactView(
+    viewerId: string,
+    targetUserId: string,
+  ): Promise<void> {
+    await this.featureService.checkAccess(FeatureKey.VIEW_CONTACT, {
+      userId: viewerId,
+      timestamp: new Date(),
+    });
 
     const features = await this.featureService.getFeaturesForUser(viewerId);
     const contactLimit = features[FeatureKey.CONTACT_VIEW_LIMIT];
 
-    if (contactLimit === -1) return true;
-    if (typeof contactLimit !== 'number' || contactLimit <= 0) return false;
+    if (contactLimit === -1) return;
+    if (typeof contactLimit !== 'number' || contactLimit <= 0) {
+      return throwForbidden(ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE, {
+        reason: 'contact_view_limit_unavailable',
+      });
+    }
 
     await this.featureService.checkUniqueUsageLimit(
       viewerId,
@@ -590,8 +726,29 @@ export class MatchesService {
       targetUserId,
       'month',
     );
+  }
 
-    return true;
+  private buildContactDetails(
+    user: Awaited<ReturnType<MatchRepository['getContactUserById']>>,
+    visibility: { showPhone: boolean; showEmail: boolean },
+  ) {
+    return {
+      phone:
+        visibility.showPhone && user?.phone?.phone
+          ? {
+              countryCode: user.phone.countryCode,
+              number: user.phone.phone,
+              verified: Boolean(user.isPhoneVerified),
+            }
+          : undefined,
+      email:
+        visibility.showEmail && user?.email
+          ? {
+              address: user.email,
+              verified: Boolean(user.isEmailVerified),
+            }
+          : undefined,
+    };
   }
 
   expireOverdueMatches(limit?: number) {
