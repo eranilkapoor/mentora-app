@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "864292332081",
+    "project_id": "match-mate-by-webnza",
+    "storage_bucket": "match-mate-by-webnza.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:864292332081:android:73bc56121ebd253569ab10",
+        "android_client_info": {
+          "package_name": "com.webnza.mentora"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCb6AuhNqtz1UbS9xSvSZ3i2e_3xDDh7Cc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

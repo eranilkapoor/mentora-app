@@ -1,0 +1,16 @@
+export enum Role {
+  SUPER_ADMIN = 'super_admin',
+  ADMIN = 'admin',
+  SUPPORT = 'support',
+  FINANCE = 'finance',
+  KYC_REVIEWER = 'kyc_reviewer',
+  CONTENT_MODERATOR = 'content_moderator',
+  MARKETING_ADMIN = 'marketing_admin',
+  USER = 'user',
+  STUDENT = 'student',
+  PARENT = 'parent',
+  MENTOR = 'mentor',
+  TEACHER = 'teacher',
+  CONTENT_MANAGER = 'content_manager',
+  MODERATOR = 'moderator',
+}

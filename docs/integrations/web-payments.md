@@ -119,7 +119,7 @@ Add:
 Existing backend:
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run test -- payments.service.spec.ts
 npm run test -- payment-signature.util.spec.ts

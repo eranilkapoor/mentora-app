@@ -28,7 +28,7 @@ Backend implementation:
 PAYMENT_MOBILE_STORE_VERIFICATION_MODE=sandbox
 PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED=false
 
-GOOGLE_PLAY_PACKAGE_NAME=com.webnza.matchmate
+GOOGLE_PLAY_PACKAGE_NAME=com.webnza.mentora
 GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=
 GOOGLE_PLAY_RTDN_ENABLED=false
 GOOGLE_PLAY_RTDN_AUDIENCE=
@@ -36,7 +36,7 @@ GOOGLE_PLAY_RTDN_SERVICE_ACCOUNT_EMAIL=
 
 APPLE_STORE_ISSUER_ID=
 APPLE_STORE_KEY_ID=
-APPLE_STORE_BUNDLE_ID=com.webnza.matchmate
+APPLE_STORE_BUNDLE_ID=com.webnza.mentora
 APPLE_STORE_PRIVATE_KEY=
 APPLE_STORE_ENVIRONMENT=sandbox
 ```
@@ -46,7 +46,7 @@ Production requirements:
 ```env
 PAYMENT_MOBILE_STORE_VERIFICATION_MODE=strict
 PAYMENT_MOBILE_STORE_STRICT_VERIFICATION_ENABLED=true
-GOOGLE_PLAY_PACKAGE_NAME=com.webnza.matchmate
+GOOGLE_PLAY_PACKAGE_NAME=com.webnza.mentora
 GOOGLE_PLAY_SERVICE_ACCOUNT_JSON=<json, base64 json, or path>
 APPLE_STORE_ENVIRONMENT=production
 ```
@@ -124,7 +124,7 @@ https://<api-host>/api/v1/payments/google-play/rtdn
 Backend:
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run test -- store-receipt-verifier.service.spec.ts
 npm run test -- google-play-rtdn.service.spec.ts
@@ -133,7 +133,7 @@ npm run test -- google-play-rtdn.service.spec.ts
 Mobile:
 
 ```bash
-cd match-mate-mobile-app
+cd mentora-mobile-app
 npm run typecheck
 ```
 

@@ -1,4 +1,4 @@
-# Match Mate Reviewer Access Template
+# Mentora Reviewer Access Template
 
 Do not commit real reviewer credentials. Copy this file to:
 

@@ -1,0 +1,139 @@
+{
+  "expo": {
+    "name": "Mentora",
+    "slug": "mentora-mobile-app",
+    "version": "1.0.0",
+    "scheme": "mentora",
+    "orientation": "portrait",
+    "icon": "./src/assets/icon.png",
+    "userInterfaceStyle": "light",
+    "newArchEnabled": true,
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.webnza.mentora",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Allow Mentora to use your location to personalize learning content and session times."
+      },
+      "associatedDomains": [
+        "applinks:mentora.webnza.com",
+        "applinks:www.mentora.webnza.com"
+      ]
+    },
+    "android": {
+      "googleServicesFile": "./google-services.json",
+      "adaptiveIcon": {
+        "foregroundImage": "./src/assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.RECORD_AUDIO",
+        "com.android.vending.BILLING"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "mentora.webnza.com",
+              "pathPrefix": "/reset-password"
+            },
+            {
+              "scheme": "https",
+              "host": "www.mentora.webnza.com",
+              "pathPrefix": "/reset-password"
+            },
+            {
+              "scheme": "https",
+              "host": "mentora.webnza.com",
+              "pathPrefix": "/magic-login"
+            },
+            {
+              "scheme": "https",
+              "host": "www.mentora.webnza.com",
+              "pathPrefix": "/magic-login"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        },
+        {
+          "action": "VIEW",
+          "data": [
+            {
+              "scheme": "mentora"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ],
+      "package": "com.webnza.mentora"
+    },
+    "web": {
+      "favicon": "./src/assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "3378719c-798c-4ae3-ae74-18602b1267eb"
+      }
+    },
+    "plugins": [
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#fff7fb",
+          "image": "./src/assets/splash-icon.png",
+          "imageWidth": 180,
+          "resizeMode": "contain"
+        }
+      ],
+      "expo-localization",
+      "expo-secure-store",
+      [
+        "expo-location",
+        {
+          "locationWhenInUsePermission": "Allow Mentora to use your location to personalize learning content and session times."
+        }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Mentora to access your photos for profile photo upload.",
+          "cameraPermission": "Allow Mentora to capture profile photos."
+        }
+      ],
+      "expo-font",
+      [
+        "expo-av",
+        {
+          "microphonePermission": "Allow Mentora to record voice messages in chat."
+        }
+      ],
+      "expo-video",
+      "expo-apple-authentication",
+      [
+        "expo-local-authentication",
+        {
+          "faceIDPermission": "Allow Mentora to use Face ID to unlock your account quickly."
+        }
+      ],
+      "expo-web-browser",
+      "expo-notifications",
+      "expo-iap",
+      "expo-asset"
+    ],
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/3378719c-798c-4ae3-ae74-18602b1267eb",
+      "enabled": true,
+      "checkAutomatically": "ON_LOAD"
+    }
+  }
+}

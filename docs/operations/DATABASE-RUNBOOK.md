@@ -6,7 +6,7 @@ Run on every pull request through `npm run verify`:
 
 - `npm run db:audit:ci`
 - `npm run migration:validate`
-- `npm --prefix match-mate-api-server run explain:audit -- --dry-run`
+- `npm --prefix mentora-api-server run explain:audit -- --dry-run`
 
 These checks do not require database credentials. They validate the migration manifest and the critical-query audit definitions.
 
@@ -15,9 +15,9 @@ These checks do not require database credentials. They validate the migration ma
 1. Take or confirm a recent staging backup.
 2. Set `DB_DRIVER=mongo` and `MONGO_URI` for staging.
 3. Run `npm run db:audit:staging`.
-4. Run `npm --prefix match-mate-api-server run migration:up`.
-5. Run `npm --prefix match-mate-api-server run index:audit:strict`.
-6. Run `npm --prefix match-mate-api-server run explain:audit`.
+4. Run `npm --prefix mentora-api-server run migration:up`.
+5. Run `npm --prefix mentora-api-server run index:audit:strict`.
+6. Run `npm --prefix mentora-api-server run explain:audit`.
 7. Review for unexpected `COLLSCAN`, high `totalDocsExamined`, or slow execution.
 
 ## Production Migration Process

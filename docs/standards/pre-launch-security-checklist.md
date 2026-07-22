@@ -1,4 +1,4 @@
-# MatchMate Pre-Launch Security Checklist
+# Mentora Pre-Launch Security Checklist
 
 Last updated: 2026-07-22
 

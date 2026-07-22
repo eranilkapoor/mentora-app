@@ -72,7 +72,7 @@ The SES provider can also fall back to `AWS_REGION`, `AWS_ACCESS_KEY_ID`, and `A
 ## Validation Steps
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run test -- email-notification.provider.spec.ts
 npm run smoke:providers

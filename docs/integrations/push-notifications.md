@@ -61,9 +61,9 @@ Mobile config:
 ## Firebase Setup
 
 1. Create Firebase project.
-2. Add Android app with package `com.webnza.matchmate`.
+2. Add Android app with package `com.webnza.mentora`.
 3. Download `google-services.json` and place it in the mobile app as configured.
-4. Add iOS app with bundle id `com.webnza.matchmate`.
+4. Add iOS app with bundle id `com.webnza.mentora`.
 5. Configure APNs key/certificate for iOS push.
 6. Create Firebase service account for backend sends.
 7. Set backend FCM credentials.
@@ -73,7 +73,7 @@ Mobile config:
 Backend:
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run test -- push-notification.provider.spec.ts
 ```
@@ -81,7 +81,7 @@ npm run test -- push-notification.provider.spec.ts
 Mobile:
 
 ```bash
-cd match-mate-mobile-app
+cd mentora-mobile-app
 npm run typecheck
 ```
 

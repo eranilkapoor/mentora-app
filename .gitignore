@@ -1,10 +1,10 @@
-MatchMateKey.pem
+MentoraKey.pem
 *.tsbuildinfo
 node_modules/
 **/node_modules/
 docs/launch/*.private.md
 docs/launch/*.local.md
 
-match-mate-api-server/dist/
-match-mate-api-server/src/dist/
-match-mate-api-server/tsconfig.build.tsbuildinfo
+mentora-api-server/dist/
+mentora-api-server/src/dist/
+mentora-api-server/tsconfig.build.tsbuildinfo

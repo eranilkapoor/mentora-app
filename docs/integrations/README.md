@@ -1,6 +1,6 @@
-# Match Mate Integrations
+# Mentora Integrations
 
-This folder documents the external integrations currently present or scaffolded in the Match Mate API and mobile app.
+This folder documents the external integrations currently present or scaffolded in the Mentora API and mobile app.
 
 ## Inventory
 
@@ -21,7 +21,7 @@ This folder documents the external integrations currently present or scaffolded 
 Run these after changing integration environment variables:
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run typecheck
 npm run smoke:providers
@@ -30,14 +30,14 @@ npm run smoke:providers
 For stricter provider checks where real credentials are expected:
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run smoke:providers:strict
 ```
 
 For mobile build-time public variables:
 
 ```bash
-cd match-mate-mobile-app
+cd mentora-mobile-app
 npm run typecheck
 npm run lint:check
 ```
@@ -47,4 +47,4 @@ npm run lint:check
 - Never commit real private keys, service-account JSON, SMTP passwords, payment secrets, or webhook secrets.
 - `EXPO_PUBLIC_*` values are bundled into the mobile app and are not secrets.
 - Production backend validation requires strict store receipt verification, S3 storage, Sentry monitoring, payment secrets, distinct JWT refresh secrets, and safe CORS origins.
-- The docs here describe the current repository state. If a provider console changes its UI, keep the values and validation steps aligned with the env names in `match-mate-api-server/src/config/*` and `match-mate-mobile-app/src/core/utils/config.ts`.
+- The docs here describe the current repository state. If a provider console changes its UI, keep the values and validation steps aligned with the env names in `mentora-api-server/src/config/*` and `mentora-mobile-app/src/core/utils/config.ts`.

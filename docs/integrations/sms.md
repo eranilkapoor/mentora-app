@@ -68,7 +68,7 @@ Content-Type: application/json
 ## Validation Steps
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run test -- sms-notification.provider.spec.ts
 npm run test -- otp.service.spec.ts

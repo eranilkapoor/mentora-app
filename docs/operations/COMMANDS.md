@@ -91,18 +91,18 @@ sudo npm install -g pm2
 ## Clone your API project
 ```
 cd /var/www
-sudo mkdir matchmate-api
-sudo chown -R ubuntu:ubuntu matchmate-api
-cd matchmate-api
+sudo mkdir mentora-api
+sudo chown -R ubuntu:ubuntu mentora-api
+cd mentora-api
 git clone YOUR_GITHUB_REPO_URL .
 ```
 
 ## Upload files using SCP
 ```
-scp -i your-key.pem -r dist ubuntu@YOUR_ELASTIC_IP:/var/www/matrimonial-api/
-scp -i your-key.pem package.json ubuntu@YOUR_ELASTIC_IP:/var/www/matrimonial-api/
-scp -i your-key.pem package-lock.json ubuntu@YOUR_ELASTIC_IP:/var/www/matrimonial-api/
-scp -i your-key.pem ecosystem.config.js ubuntu@YOUR_ELASTIC_IP:/var/www/matrimonial-api/
+scp -i your-key.pem -r dist ubuntu@YOUR_ELASTIC_IP:/var/www/AI tutoring-api/
+scp -i your-key.pem package.json ubuntu@YOUR_ELASTIC_IP:/var/www/AI tutoring-api/
+scp -i your-key.pem package-lock.json ubuntu@YOUR_ELASTIC_IP:/var/www/AI tutoring-api/
+scp -i your-key.pem ecosystem.config.js ubuntu@YOUR_ELASTIC_IP:/var/www/AI tutoring-api/
 ```
 
 ## Install and build:
@@ -140,17 +140,17 @@ single release step before restarting or replacing API instances.
 
 ## Run API with PM2
 ```
-pm2 start dist/main.js --name matchmate-api
+pm2 start dist/main.js --name mentora-api
 pm2 save
 pm2 startup
 pm2 status
-pm2 logs matchmate-api
+pm2 logs mentora-api
 ```
 
 ## Restart PM2
 ```
-cd /var/www/matrimonial-api
-pm2 restart matrimonial-api
+cd /var/www/AI tutoring-api
+pm2 restart AI tutoring-api
 ```
 
 
@@ -204,7 +204,7 @@ adb logcat | Select-String -Pattern "ReactNativeJS"
 adb logcat | Select-String -Pattern "FATAL|AndroidRuntime"
 
 # Your app only
-adb logcat | Select-String -Pattern "com.anilkapoor.matchmatemobileapp"
+adb logcat | Select-String -Pattern "com.anilkapoor.mentoramobileapp"
 
 # Expo updates
 adb logcat | Select-String -Pattern "dev.expo.updates"
@@ -224,7 +224,7 @@ adb logcat -s ReactNativeJS
 adb logcat -s ReactNativeJS:V AndroidRuntime:V
 
 # Your app package tag
-adb logcat -s com.anilkapoor.matchmatemobileapp
+adb logcat -s com.anilkapoor.mentoramobileapp
 ```
 
 ---
@@ -246,7 +246,7 @@ adb logcat -d | Out-File "$env:USERPROFILE\Desktop\launch_log.txt"
 ### Useful One-Liners
 ```powershell
 # Show only your app's process logs
-adb shell "logcat --pid=$(adb shell pidof com.anilkapoor.matchmatemobileapp)"
+adb shell "logcat --pid=$(adb shell pidof com.anilkapoor.mentoramobileapp)"
 
 # Show logs with timestamps
 adb logcat -v time | Select-String -Pattern "ReactNative|FATAL"

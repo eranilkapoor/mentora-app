@@ -1,12 +1,12 @@
-name: MatchMate CodeQL configuration
+name: Mentora CodeQL configuration
 
 queries:
   - uses: security-extended
 
 paths:
-  - match-mate-api-server/src
-  - match-mate-api-server/test
-  - match-mate-mobile-app/src
+  - mentora-api-server/src
+  - mentora-api-server/test
+  - mentora-mobile-app/src
   - packages
   - scripts
 

@@ -1,10 +1,10 @@
-# Match Mate Color Palette
+# Mentora Color Palette
 
 ## Recommendation
 
-Use the **Heritage Rose** palette for Match Mate.
+Use the **Heritage Rose** palette for Mentora.
 
-It is better for a matrimonial product than the older bright rose palette because
+It is better for a AI tutoring product than the older bright rose palette because
 it feels more premium, trustworthy, family-friendly, and marriage-oriented while
 still keeping enough warmth for profiles, invitations, and match actions.
 
@@ -108,14 +108,14 @@ linear-gradient(135deg, #FF7A9E 0%, #E0B45A 100%)
 - Keep form-heavy and admin-like screens calm: more ivory/surface, less gradient.
 - Avoid neon pink, aggressive red, Tinder-style swipe-only cues, and heavy gold
   fills across entire screens.
-- Avoid one-color screens. A matrimonial app should feel warm, credible, and
+- Avoid one-color screens. A AI tutoring app should feel warm, credible, and
   guided, not loud.
 
 ## Implementation
 
 The palette is implemented in:
 
-- `match-mate-mobile-app/src/core/theme/colors.ts`
-- `match-mate-api-server/src/common/static-pages/static-page-renderer.ts`
+- `mentora-mobile-app/src/core/theme/colors.ts`
+- `mentora-api-server/src/common/static-pages/static-page-renderer.ts`
 
 When adding new screens, use theme tokens rather than hardcoded hex values.

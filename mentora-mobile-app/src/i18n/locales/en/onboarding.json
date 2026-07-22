@@ -1,0 +1,134 @@
+{
+  "steps": {
+    "basic": "Student",
+    "preferences": "Learning",
+    "photos": "Avatar"
+  },
+  "step_indicator": {
+    "label": "Step {{current}} of {{total}}",
+    "completed": "{{step}}, completed",
+    "current": "{{step}}, current step",
+    "upcoming": "{{step}}, upcoming"
+  },
+  "select_label": "Select {{label}}",
+  "select_placeholder": "Select {{label}}",
+  "basic": {
+    "title": "Student Setup",
+    "subtitle": "Add the learner and academic context for parent-managed AI tutoring."
+  },
+  "preferences": {
+    "title": "Learning Plan",
+    "subtitle": "Choose subjects, goals, and daily AI tutor session limits."
+  },
+  "photos": {
+    "title": "Student Avatar",
+    "subtitle": "Add an optional avatar so parents and students can recognize this learner profile.",
+    "primary": "Primary",
+    "set_primary": "Set as primary avatar",
+    "remove": "Remove avatar",
+    "add": "Add Avatar",
+    "hint": "Add up to {{max}} profile images. The first image is used as the primary avatar.",
+    "empty_title": "No avatar yet",
+    "empty_subtitle": "You can skip this and add one later from profile settings.",
+    "permission_title": "Permission Required",
+    "permission_message": "Please allow access to your photo library.",
+    "limit_title": "Limit Reached",
+    "limit_message": "You can upload a maximum of {{max}} images."
+  },
+  "date_picker": {
+    "title": "Select Student Date of Birth",
+    "day": "Day",
+    "month": "Month",
+    "year": "Year"
+  },
+  "fields": {
+    "account_type": "Account Type",
+    "profile_for": "Account Type",
+    "first_name": "Student First Name",
+    "last_name": "Student Last Name",
+    "date_of_birth": "Student Date of Birth",
+    "student_date_of_birth": "Student Date of Birth",
+    "gender": "Student Gender",
+    "student_gender": "Student Gender",
+    "country": "Country",
+    "state": "State",
+    "city": "City",
+    "qualification": "Academic Level",
+    "academic_level": "Academic Level",
+    "occupation": "School / College",
+    "institution": "School / College",
+    "height": "Current Grade / Class",
+    "grade": "Current Grade / Class",
+    "session_min": "Min Session Minutes",
+    "session_max": "Max Session Minutes",
+    "grade_from": "Grade From",
+    "grade_to": "Grade To",
+    "target_subjects": "Target Subjects",
+    "learning_goals": "Learning Goals"
+  },
+  "placeholders": {
+    "first_name": "Aarav",
+    "last_name": "Sharma",
+    "country": "Country",
+    "state": "State",
+    "city": "City",
+    "occupation": "e.g. Delhi Public School",
+    "institution": "e.g. Delhi Public School",
+    "height": "e.g. 8",
+    "grade": "e.g. 8",
+    "target_subjects": "e.g. Mathematics, Science, English",
+    "learning_goals": "e.g. algebra basics, exam prep, writing practice",
+    "select_date": "Select Date"
+  },
+  "nav": {
+    "previous": "Previous",
+    "next": "Next",
+    "submit": "Create Student"
+  },
+  "success": {
+    "eyebrow": "Student ready",
+    "title": "Mentora is ready to help",
+    "subtitle": "The student profile is saved. You can complete academic details, set parental controls, and schedule the first AI tutor session.",
+    "guide_title": "What to do next",
+    "cta_complete_profile": "Complete academic profile",
+    "cta_schedule": "Schedule AI tutor",
+    "guide": {
+      "complete_profile": {
+        "title": "Complete academic details",
+        "description": "Add grade, subjects, school or college details, goals, and current learning level."
+      },
+      "schedule": {
+        "title": "Schedule tutor time",
+        "description": "Create AI tutor sessions that follow subscription, schedule, and parental-control rules."
+      },
+      "safe_connect": {
+        "title": "Keep parents in control",
+        "description": "Use limits, subject controls, and progress reports to keep learning focused and safe."
+      }
+    }
+  },
+  "errors": {
+    "required": "This field is required",
+    "first_name_required": "Student first name is required",
+    "date_of_birth_required": "Student date of birth is required",
+    "gender_required": "Student gender is required",
+    "grade_required": "Current grade/class is required",
+    "grade_invalid": "Grade/class must contain numbers only",
+    "qualification_required": "Academic level is required",
+    "occupation_required": "School or college is required",
+    "session_min_required": "Minimum session minutes are required",
+    "session_max_required": "Maximum session minutes are required",
+    "country_required": "Country is required",
+    "state_required": "State is required",
+    "city_required": "City is required",
+    "subjects_required": "Add at least one target subject",
+    "goals_required": "Add at least one learning goal",
+    "submit_failed": "Student setup failed. Please try again.",
+    "date_incomplete": "Please select a complete date.",
+    "marital_status_required": "Academic status is required",
+    "marital_status_preference_required": "Please add at least one learning status",
+    "religion_required": "Academic level is required",
+    "religion_preference_required": "Please add at least one learning preference",
+    "location_preference_required": "Please add at least one location"
+  }
+}

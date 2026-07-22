@@ -1,77 +1,84 @@
-# Match Mate
+# Mentora
 
-Match Mate is a full-stack matrimonial platform with a NestJS API server and an Expo React Native app for iOS, Android, and Web. The product is built around Indian matrimonial workflows: onboarding, structured profiles, partner preferences, discovery, interest requests, mutual matches, real-time chat, verification, subscriptions, referrals, notifications, privacy controls, and admin moderation.
+Mentora is a new B2C AI tutoring and mentorship platform for students and parents. The codebase starts from the existing Match Mate architecture, but this repository is a separate product: it must use Mentora branding, Mentora environments, and a separate Mentora database.
 
-This repository is a modular monorepo-style project with two primary applications and one shared package:
+The first product direction is a family-managed learning app:
 
-- `match-mate-api-server`: NestJS backend API, WebSocket gateways, schedulers, storage, notifications, support tickets, payments, subscriptions, analytics, and admin APIs.
-- `match-mate-mobile-app`: Expo React Native mobile/web app with Redux Toolkit Query, secure auth, localization, settings, discovery, chat, membership checkout, wallet/referrals, support, and profile flows.
-- `packages/api-contract`: shared TypeScript contracts for membership, billing, payment, and subscription API shapes used by mobile services.
+- Students can register independently when age policy allows it.
+- Parents can create and manage multiple child/student profiles.
+- A student profile stores academic and learning data; a user account stores login identity.
+- Parent access is modeled through optional parent-student relationships and permissions.
+- Students schedule AI tutor sessions, assessments, revision, and events.
+- AI tutor access is allowed only when schedule, subscription/payment, subject entitlement, parental controls, and safety checks pass.
 
 ## Repository Layout
 
 ```text
-match-mate-app/
-  match-mate-api-server/       NestJS API server
-  match-mate-mobile-app/       Expo React Native app
+mentora-app/
+  mentora-api-server/       NestJS API server copied from the platform foundation
+  mentora-mobile-app/       Expo React Native app copied from the mobile foundation
   packages/
-    api-contract/              Shared TypeScript API contract types
-  docs/                        Planning, launch, operations, and standards docs
-    README.md                  Documentation index
-    planning/                  Product, technical, roadmap, and flow plans
-    launch/                    Launch readiness, QA, EAS, billing, and monitoring
-    operations/                Deployment and command references
-    standards/                 Coding and naming standards
-  README.md                    Repository entry point
+    api-contract/           Shared TypeScript API contract types
+  docs/                     Product, technical, database, flow, launch, operations, and standards docs
+  README.md                 Repository entry point
+```
+
+The copied server and mobile apps still contain reusable Match Mate-era modules such as auth, profiles, chat, subscriptions, payments, notifications, settings, storage, admin, analytics, and support. Treat those as implementation starting points. Matrimonial modules such as matches, interests, partner preferences, caste/religion matching, and success stories should be replaced with Mentora learning modules over the migration phases.
+
+## Core Product Model
+
+```text
+User
+  Login identity for student, parent, mentor, support, admin, or content staff
+
+StudentProfile
+  Academic and learning identity. May belong to an independent student user or be parent managed.
+
+ParentStudentRelationship
+  Optional parent/guardian link with permissions and consent.
+
+LearningSchedule
+  Scheduled AI tutoring, revision, assessment, mentor session, or academic event.
+
+LearningEntitlement
+  Explicit paid/subscription/free access to a subject, AI minutes, session, assessment, or course.
+
+AiTutorSession
+  Controlled teaching session tied to student, subject, topic, schedule, entitlement, and safety context.
 ```
 
 ## Documentation
 
-Detailed documentation lives under [docs](docs/README.md). To avoid duplicated and drifting information, use these ownership rules:
-
-- Root `README.md`: repository orientation, setup, local commands, and links.
-- [Technical Plan](docs/planning/TECHNICAL-PLAN.md): architecture, module map, API strategy, endpoint reference, technical product flows, infrastructure, and production notes.
-- [Database Plan](docs/planning/DATABASE-PLAN.md): MongoDB collections, entity relationships, Redis/cache behavior, indexes, lifecycle, and database operations.
-- [Project Plan](docs/planning/PROJECT-PLAN.md): product scope, delivery model, responsibilities, and milestones.
-- [Task Roadmap](docs/planning/TASK-ROADMAP.md): enterprise feature roadmap and backlog.
-- [Flow Plan](docs/planning/FLOW-PLAN.md): UX and screen-flow blueprint.
+- [Technical Plan](docs/planning/TECHNICAL-PLAN.md): Mentora architecture, module map, API surfaces, and migration strategy.
+- [Database Plan](docs/planning/DATABASE-PLAN.md): MongoDB collections for identity, family, academic, scheduling, AI tutor, progress, payments, and safety.
+- [Project Plan](docs/planning/PROJECT-PLAN.md): product scope, MVP, phases, and non-goals.
+- [Task Roadmap](docs/planning/TASK-ROADMAP.md): implementation roadmap from copied foundation to Mentora modules.
+- [Flow Plan](docs/planning/FLOW-PLAN.md): parent/student journeys and screen model.
 - [Commands](docs/operations/COMMANDS.md): extended command reference.
-- [Deployment Plan](docs/operations/DEPLOYMENT-PLAN.md): deployment and release operations.
-- [Launch Plan](docs/launch/LAUNCH-PLAN.md): launch-readiness audit and fix-now status.
-- [Coding Standard](docs/standards/CODING-STANDARD.md): naming, folder, file, class, function, and NestJS conventions.
-
-## Architecture Snapshot
-
-The detailed architecture lives in the [Technical Plan](docs/planning/TECHNICAL-PLAN.md). In short:
-
-- Backend: modular NestJS monolith with MongoDB, optional Redis, Socket.IO, local/S3 storage, provider-backed notifications, payments, support, admin, and analytics.
-- Frontend: Expo React Native app using React Navigation, Redux Toolkit Query, persisted storage, localization, push notifications, media capture/playback, and shared API contract types.
-- Contracts: `packages/api-contract` reduces drift for high-change membership, billing, payment, and subscription surfaces.
+- [Coding Standard](docs/standards/CODING-STANDARD.md): engineering conventions.
 
 ## Quick Start
 
 ### Prerequisites
 
 - Node.js 20 or later.
-- npm.
+- npm 10 or later.
 - MongoDB, unless using the configured local DB fallback.
-- Redis, if `CACHE_DRIVER=redis` or queues/socket adapter require Redis.
+- Redis if `CACHE_DRIVER=redis` or queues/socket adapter require Redis.
 - Expo tooling for the mobile app.
-- Optional provider accounts for Google/Facebook/Apple auth, FCM, email, SMS, Razorpay, S3, and mobile store billing.
+- Provider accounts as needed for Google/Facebook/Apple auth, FCM, email, SMS, Razorpay/store billing, S3, and monitoring.
 
 ### Install Dependencies
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm install
 
-cd ../match-mate-mobile-app
+cd ../mentora-mobile-app
 npm install
 ```
 
-## Environment
-
-### Backend
+### Backend Environment
 
 The API server loads environment files in this order:
 
@@ -80,57 +87,48 @@ The API server loads environment files in this order:
 .env
 ```
 
-For local development, `npm run start:dev` sets `NODE_ENV=development`, so `.env.development` is loaded before `.env`.
-
 Create or update:
 
 ```text
-match-mate-api-server/.env.development
-match-mate-api-server/.env.staging
-match-mate-api-server/.env.production
-match-mate-api-server/.env.example
+mentora-api-server/.env.development
+mentora-api-server/.env.staging
+mentora-api-server/.env.production
+mentora-api-server/.env.example
 ```
 
-Important backend variable groups:
-
-- `NODE_ENV`, `PORT`, `API_PREFIX`, `API_VERSION`, `API_BASE_URL`, `ALLOWED_ORIGINS`.
-- `MONGO_URI`.
-- `CACHE_DRIVER`, `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASS`.
-- `JWT_SECRET`, `JWT_ACCESS_EXPIRES_IN`, `JWT_REFRESH_EXPIRES_IN`.
-- `AUTH_*_ENABLED` and provider credentials for Google, Facebook, Apple, phone OTP, and magic link.
-- `STORAGE_DRIVER`, `AWS_*`.
-- `NOTIFICATION_*`, `PAYMENT_*`, `MATCH_DAILY_DIGEST_*`, `MEDIA_*`, `SHUTDOWN_DRAIN_MS`.
-
-### Mobile
-
-The Expo app uses `EXPO_PUBLIC_*` variables. Production builds must receive these values through the build profile or environment because they are embedded into the client bundle.
-
-Create or update:
+Use a separate database from Match Mate:
 
 ```text
-match-mate-mobile-app/.env.development
-match-mate-mobile-app/.env.example
+MONGO_URI=mongodb://localhost:27017/mentora
+JWT_ISSUER=mentora-api
+API_BASE_URL=http://localhost:3000
+APP_WEB_URL=http://localhost:3000
 ```
 
-Important mobile variable groups:
+### Mobile Environment
 
-- `EXPO_PUBLIC_ENV`, `EXPO_PUBLIC_API_BASE_URL`, `EXPO_PUBLIC_API_PORT`, `EXPO_PUBLIC_API_PATH`, `EXPO_PUBLIC_CLIENT_VERSION`.
-- `EXPO_PUBLIC_AUTH_*_ENABLED`.
-- `EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED`, `EXPO_PUBLIC_STORE_BILLING_ENABLED`.
-- `EXPO_PUBLIC_GOOGLE_*`, `EXPO_PUBLIC_FACEBOOK_CLIENT_ID`.
+The Expo app uses `EXPO_PUBLIC_*` variables:
 
-The mobile app resolves API URLs through `src/core/utils/config.ts`:
+```text
+mentora-mobile-app/.env.development
+mentora-mobile-app/.env.example
+```
 
-- If `EXPO_PUBLIC_API_BASE_URL` is set, it uses that value plus `EXPO_PUBLIC_API_PATH`.
-- In production, if the base URL is missing, it falls back to `https://matchmate.webnza.com`.
-- In development, it derives the local host from web hostname or Expo host URI, so IP changes are handled automatically when possible.
+Important values:
+
+```text
+EXPO_PUBLIC_ENV=development
+EXPO_PUBLIC_API_BASE_URL=http://localhost:3000
+EXPO_PUBLIC_API_PATH=/api/v1
+EXPO_PUBLIC_CLIENT_VERSION=1.0.0
+```
 
 ## Running Locally
 
 ### API Server
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run start:dev
 ```
 
@@ -146,17 +144,10 @@ Swagger in non-production:
 http://localhost:3000/api/docs
 ```
 
-Health probes:
-
-```text
-GET /api/v1/live
-GET /api/v1/ready
-```
-
 ### Mobile App
 
 ```bash
-cd match-mate-mobile-app
+cd mentora-mobile-app
 npm run start
 ```
 
@@ -168,93 +159,38 @@ npm run android
 npm run web
 ```
 
-Clear Expo cache:
+## Repository Commands
+
+Run from the repository root:
 
 ```bash
-npm run start:clear
-```
-
-## Common Commands
-
-### Backend
-
-Run from `match-mate-api-server`.
-
-| Command | Purpose |
-| ------- | ------- |
-| `npm run start:dev` | Development server with watch mode |
-| `npm run build` | Clean and build NestJS app |
-| `npm run start:prod` | Run compiled production server |
-| `npm run start:staging` | Run compiled staging server |
-| `npm run lint:check` | Check linting |
-| `npm run lint` | Auto-fix linting |
-| `npm run typecheck` | TypeScript typecheck |
-| `npm run format:check` | Prettier check |
-| `npm run format` | Prettier write |
-| `npm run seed` | Run master seeder |
-| `npm run smoke:dev` | Smoke test local dev API |
-| `npm run test` | Jest unit tests |
-| `npm run test:cov` | Jest coverage |
-| `npm run test:e2e` | Jest e2e tests |
-
-### Mobile
-
-Run from `match-mate-mobile-app`.
-
-| Command | Purpose |
-| ------- | ------- |
-| `npm run start` | Start Expo |
-| `npm run start:clear` | Start Expo with cache clear |
-| `npm run ios` | Start iOS target |
-| `npm run android` | Start Android target |
-| `npm run web` | Start web target |
-| `npm run lint` | ESLint check |
-| `npm run lint:fix` | ESLint auto-fix |
-| `npm run typecheck` | TypeScript typecheck |
-| `npm run format:check` | Prettier check |
-| `npm run format` | Prettier write |
-| `npm run build:android:development` | EAS Android dev build |
-| `npm run build:android:preview` | EAS Android preview build |
-| `npm run build:android:production` | EAS Android production build |
-
-## Verification Before PR
-
-```bash
-cd match-mate-api-server
-npm run lint:check
-npm run typecheck
-npm run test
-npm run build
-
-cd ../match-mate-mobile-app
 npm run lint
-npm run typecheck
+npm run typecheck:api
+npm run typecheck:mobile
+npm run build:api
+npm run test:api
+npm run test:mobile
 ```
 
-## Git and Hooks
+## Current Migration Status
 
-The root repository owns Git hooks and repository-level hygiene. Keep Husky/hooks at the repository root, not inside a nested app folder, so both backend and mobile checks run consistently.
+Done:
 
-Recommended branch naming:
+- Restored copied API/mobile source into this standalone Mentora repository.
+- Renamed top-level app folders to `mentora-api-server` and `mentora-mobile-app`.
+- Updated root package scripts to point at the Mentora folders.
+- Updated package/app metadata and mobile bundle identifiers to Mentora naming.
+- Added Mentora product, technical, database, flow, and roadmap documentation.
 
-```text
-feature/<short-name>
-fix/<short-name>
-chore/<short-name>
-refactor/<short-name>
-```
+Next:
 
-Recommended commit style:
-
-```text
-feat: add referral wallet redemption
-fix: prevent duplicate settings toggle requests
-chore: update Expo env example
-refactor: move admin payment routes under admin module
-```
+- Replace copied matrimonial domain modules with student, parent, academic, schedule, AI tutor, assessment, progress, and learning entitlement modules.
+- Update mobile navigation from discovery/matches to student and parent modes.
+- Create seed data for Classes 6-10, one education board, and Mathematics, Science, and English.
+- Add a centralized AI access guard before enabling tutor sessions.
 
 ## License
 
 This project is proprietary and confidential. All rights reserved.
 
-Copyright 2026 Match Mate.
+Copyright 2026 Mentora.

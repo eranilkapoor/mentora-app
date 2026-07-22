@@ -48,7 +48,7 @@ EXPO_PUBLIC_API_PATH=/api/v1
 ## Validation Steps
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run test -- redis-cache.service.spec.ts
 npm run test -- chat.gateway.spec.ts

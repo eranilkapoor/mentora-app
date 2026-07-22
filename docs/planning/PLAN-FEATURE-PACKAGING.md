@@ -56,13 +56,13 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
    "notes": {
       "excludedFromStore": ["FREE", "ASSISTED_CUSTOM"],
       "trialOfferId": "trial-7-days",
-      "appleSubscriptionGroupId": "matchmate_membership"
+      "appleSubscriptionGroupId": "mentora_membership"
    },
    "googlePlay": {
       "subscriptions": [
          {
-            "productId": "matchmate_silver",
-            "title": "Match Mate Silver",
+            "productId": "mentora_silver",
+            "title": "Mentora Silver",
             "basePlans": [
                {
                   "basePlanId": "monthly",
@@ -91,8 +91,8 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
             ]
          },
          {
-            "productId": "matchmate_gold",
-            "title": "Match Mate Gold",
+            "productId": "mentora_gold",
+            "title": "Mentora Gold",
             "basePlans": [
                {
                   "basePlanId": "monthly",
@@ -121,8 +121,8 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
             ]
          },
          {
-            "productId": "matchmate_platinum",
-            "title": "Match Mate Platinum",
+            "productId": "mentora_platinum",
+            "title": "Mentora Platinum",
             "basePlans": [
                {
                   "basePlanId": "monthly",
@@ -151,8 +151,8 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
             ]
          },
          {
-            "productId": "matchmate_assisted",
-            "title": "Match Mate Assisted",
+            "productId": "mentora_assisted",
+            "title": "Mentora Assisted",
             "basePlans": [
                {
                   "basePlanId": "half-yearly",
@@ -175,7 +175,7 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
       ],
       "consumables": [
          {
-            "productId": "matchmate_profile_boost_24h",
+            "productId": "mentora_profile_boost_24h",
             "linkedPlan": "PROFILE_BOOST_24H",
             "priceInr": 199,
             "type": "consumable"
@@ -183,80 +183,80 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
       ]
    },
    "appStore": {
-      "subscriptionGroupId": "matchmate_membership",
+      "subscriptionGroupId": "mentora_membership",
       "autoRenewableSubscriptions": [
          {
-            "productId": "matchmate_silver_monthly",
+            "productId": "mentora_silver_monthly",
             "linkedPlan": "SILVER_MONTHLY",
             "priceInr": 699,
             "durationDays": 30,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_silver_quarterly",
+            "productId": "mentora_silver_quarterly",
             "linkedPlan": "SILVER_QUARTERLY",
             "priceInr": 1799,
             "durationDays": 90,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_silver_yearly",
+            "productId": "mentora_silver_yearly",
             "linkedPlan": "SILVER_YEARLY",
             "priceInr": 5999,
             "durationDays": 365,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_gold_monthly",
+            "productId": "mentora_gold_monthly",
             "linkedPlan": "GOLD_MONTHLY",
             "priceInr": 999,
             "durationDays": 30,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_gold_quarterly",
+            "productId": "mentora_gold_quarterly",
             "linkedPlan": "GOLD_QUARTERLY",
             "priceInr": 2499,
             "durationDays": 90,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_gold_yearly",
+            "productId": "mentora_gold_yearly",
             "linkedPlan": "GOLD_YEARLY",
             "priceInr": 7999,
             "durationDays": 365,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_platinum_monthly",
+            "productId": "mentora_platinum_monthly",
             "linkedPlan": "PLATINUM_MONTHLY",
             "priceInr": 2499,
             "durationDays": 30,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_platinum_quarterly",
+            "productId": "mentora_platinum_quarterly",
             "linkedPlan": "PLATINUM_QUARTERLY",
             "priceInr": 6499,
             "durationDays": 90,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_platinum_yearly",
+            "productId": "mentora_platinum_yearly",
             "linkedPlan": "PLATINUM_YEARLY",
             "priceInr": 19999,
             "durationDays": 365,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_assisted_half_yearly",
+            "productId": "mentora_assisted_half_yearly",
             "linkedPlan": "ASSISTED_HALF_YEARLY",
             "priceInr": 26186,
             "durationDays": 180,
             "introductoryTrialDays": 7
          },
          {
-            "productId": "matchmate_assisted_yearly",
+            "productId": "mentora_assisted_yearly",
             "linkedPlan": "ASSISTED_YEARLY",
             "priceInr": 42373,
             "durationDays": 365,
@@ -265,7 +265,7 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
       ],
       "consumables": [
          {
-            "productId": "matchmate_profile_boost_24h",
+            "productId": "mentora_profile_boost_24h",
             "linkedPlan": "PROFILE_BOOST_24H",
             "priceInr": 199,
             "type": "consumable"
@@ -280,52 +280,52 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
 ```json
 {
    "SILVER_MONTHLY": {
-      "android": { "productId": "matchmate_silver", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_silver_monthly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_silver", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_silver_monthly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "SILVER_QUARTERLY": {
-      "android": { "productId": "matchmate_silver", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_silver_quarterly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_silver", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_silver_quarterly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "SILVER_YEARLY": {
-      "android": { "productId": "matchmate_silver", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_silver_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_silver", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_silver_yearly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "GOLD_MONTHLY": {
-      "android": { "productId": "matchmate_gold", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_gold_monthly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_gold", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_gold_monthly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "GOLD_QUARTERLY": {
-      "android": { "productId": "matchmate_gold", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_gold_quarterly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_gold", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_gold_quarterly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "GOLD_YEARLY": {
-      "android": { "productId": "matchmate_gold", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_gold_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_gold", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_gold_yearly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "PLATINUM_MONTHLY": {
-      "android": { "productId": "matchmate_platinum", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_platinum_monthly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_platinum", "basePlanId": "monthly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_platinum_monthly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "PLATINUM_QUARTERLY": {
-      "android": { "productId": "matchmate_platinum", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_platinum_quarterly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_platinum", "basePlanId": "quarterly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_platinum_quarterly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "PLATINUM_YEARLY": {
-      "android": { "productId": "matchmate_platinum", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_platinum_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_platinum", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_platinum_yearly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "ASSISTED_HALF_YEARLY": {
-      "android": { "productId": "matchmate_assisted", "basePlanId": "half-yearly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_assisted_half_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_assisted", "basePlanId": "half-yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_assisted_half_yearly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "ASSISTED_YEARLY": {
-      "android": { "productId": "matchmate_assisted", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
-      "ios": { "productId": "matchmate_assisted_yearly", "subscriptionGroupId": "matchmate_membership", "productType": "subscription" }
+      "android": { "productId": "mentora_assisted", "basePlanId": "yearly", "offerId": "trial-7-days", "productType": "subscription" },
+      "ios": { "productId": "mentora_assisted_yearly", "subscriptionGroupId": "mentora_membership", "productType": "subscription" }
    },
    "PROFILE_BOOST_24H": {
-      "android": { "productId": "matchmate_profile_boost_24h", "productType": "consumable" },
-      "ios": { "productId": "matchmate_profile_boost_24h", "productType": "consumable" }
+      "android": { "productId": "mentora_profile_boost_24h", "productType": "consumable" },
+      "ios": { "productId": "mentora_profile_boost_24h", "productType": "consumable" }
    }
 }
 ```
@@ -333,17 +333,17 @@ Use this as the exact setup blueprint for Google Play Console and App Store Conn
 ### Store Setup Checklist (Execution Order)
 
 1. Google Play Console:
-    - Create subscription products: `matchmate_silver`, `matchmate_gold`, `matchmate_platinum`, `matchmate_assisted`.
+    - Create subscription products: `mentora_silver`, `mentora_gold`, `mentora_platinum`, `mentora_assisted`.
     - Under each product, create base plans exactly as above (`monthly`, `quarterly`, `yearly`, `half-yearly`).
     - Under each base plan, create an offer `trial-7-days` with 7-day free trial.
-    - Create in-app product `matchmate_profile_boost_24h` as consumable.
+    - Create in-app product `mentora_profile_boost_24h` as consumable.
     - Activate products in all launch countries and set regional pricing.
 
 2. App Store Connect:
-    - Create subscription group `matchmate_membership`.
+    - Create subscription group `mentora_membership`.
     - Create all 11 auto-renewable product IDs listed above inside the same group.
     - Configure 7-day introductory trial for each subscription product.
-    - Create non-consumable in-app purchase `matchmate_profile_boost_24h` as consumable.
+    - Create non-consumable in-app purchase `mentora_profile_boost_24h` as consumable.
     - Set pricing and availability for target storefronts.
 
 3. Backend strict verification requirements:

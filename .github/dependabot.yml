@@ -9,7 +9,7 @@ updates:
         patterns: ['*']
 
   - package-ecosystem: npm
-    directory: /match-mate-api-server
+    directory: /mentora-api-server
     schedule:
       interval: weekly
     groups:
@@ -17,7 +17,7 @@ updates:
         patterns: ['*']
 
   - package-ecosystem: npm
-    directory: /match-mate-mobile-app
+    directory: /mentora-mobile-app
     schedule:
       interval: weekly
     groups:

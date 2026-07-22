@@ -17,7 +17,7 @@
 | SMS            | **MSG91**                                     | OTP and critical transactional alerts     |
 | Secrets        | **AWS Secrets Manager / SSM Parameter Store** | JWT, DB URI, Redis URI                    |
 | Logs           | **CloudWatch Logs**                           | App logs + metrics                        |
-| Domain/SSL     | **Route 53 + ACM**                            | `matchmate.webnza.com`                      |
+| Domain/SSL     | **Route 53 + ACM**                            | `mentora.webnza.com`                      |
 | CI/CD          | **GitHub Actions**                            | Build + deploy API                        |
 
 Elastic Beanstalk is a good fit because it provisions EC2, load balancing, health monitoring, and autoscaling for you. ([AWS Documentation][1]) SES is pay-as-you-go and currently charges around **$0.10 per 1,000 emails** for standard outbound email. ([Amazon Web Services, Inc.][2]) Keep MSG91 SMS mostly for OTP and important transactional alerts, with DLT-approved templates for Indian recipients.
@@ -210,8 +210,8 @@ on:
 
 env:
   AWS_REGION: ap-south-1
-  EB_APPLICATION_NAME: matchmate-api
-  EB_ENVIRONMENT_NAME: matchmate-api-prod
+  EB_APPLICATION_NAME: mentora-api
+  EB_ENVIRONMENT_NAME: mentora-api-prod
   DEPLOY_PACKAGE: api-${{ github.sha }}.zip
 
 jobs:
@@ -516,15 +516,15 @@ sudo npm install -g pm2
 Create app folder:
 
 ```bash
-sudo mkdir -p /var/www/matchmate-api
-sudo chown -R ubuntu:ubuntu /var/www/matchmate-api
+sudo mkdir -p /var/www/mentora-api
+sudo chown -R ubuntu:ubuntu /var/www/mentora-api
 ```
 
 Create uploads folder if using local uploads:
 
 ```bash
-sudo mkdir -p /var/www/matchmate/uploads
-sudo chown -R ubuntu:ubuntu /var/www/matchmate/uploads
+sudo mkdir -p /var/www/mentora/uploads
+sudo chown -R ubuntu:ubuntu /var/www/mentora/uploads
 ```
 
 ---
@@ -537,7 +537,7 @@ Create `ecosystem.config.js`:
 module.exports = {
   apps: [
     {
-      name: 'matchmate-api',
+      name: 'mentora-api',
       script: 'dist/main.js',
       instances: 1,
       exec_mode: 'fork',
@@ -559,12 +559,12 @@ Use `fork`, not cluster, if you are storing sockets locally. Cluster mode create
 ```nginx
 server {
     listen 80;
-    server_name matchmate.webnza.com;
+    server_name mentora.webnza.com;
 
     client_max_body_size 20M;
 
     location /uploads/ {
-        alias /var/www/matchmate/uploads/;
+        alias /var/www/mentora/uploads/;
         access_log off;
         expires 30d;
     }
@@ -590,7 +590,7 @@ server {
 Enable:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/matchmate-api /etc/nginx/sites-enabled/
+sudo ln -s /etc/nginx/sites-available/mentora-api /etc/nginx/sites-enabled/
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -599,7 +599,7 @@ Add SSL:
 
 ```bash
 sudo apt install -y certbot python3-certbot-nginx
-sudo certbot --nginx -d matchmate.webnza.com
+sudo certbot --nginx -d mentora.webnza.com
 ```
 
 ---
@@ -657,7 +657,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: app.tar.gz
-          target: /var/www/matchmate-api
+          target: /var/www/mentora-api
 
       - name: Deploy on server
         uses: appleboy/ssh-action@v1.0.3
@@ -666,7 +666,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
-            cd /var/www/matchmate-api
+            cd /var/www/mentora-api
 
             tar -xzf app.tar.gz
             rm app.tar.gz
@@ -794,7 +794,7 @@ Proxy: DNS only initially
 So your API becomes:
 
 ```txt
-https://matchmate.webnza.com
+https://mentora.webnza.com
 ```
 
 Initially keep Cloudflare proxy **DNS only** until SSL + API are working. Later you can turn orange cloud on.
@@ -827,8 +827,8 @@ PM2 is a production process manager for Node.js that keeps your app running cont
 Create folders:
 
 ```bash
-sudo mkdir -p /var/www/matchmate-api
-sudo chown -R ubuntu:ubuntu /var/www/matchmate-api
+sudo mkdir -p /var/www/mentora-api
+sudo chown -R ubuntu:ubuntu /var/www/mentora-api
 ```
 
 ---
@@ -879,7 +879,7 @@ Do not use PM2 cluster mode while sockets are local.
 Create production env file on server:
 
 ```bash
-nano /var/www/matchmate-api/.env
+nano /var/www/mentora-api/.env
 ```
 
 Example:
@@ -888,10 +888,10 @@ Example:
 NODE_ENV=production
 PORT=3000
 
-APP_URL=https://matchmate.webnza.com
+APP_URL=https://mentora.webnza.com
 WEB_URL=https://yourdomain.com
 
-MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/matchmate
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/mentora
 
 JWT_ACCESS_SECRET=change_this
 JWT_REFRESH_SECRET=change_this
@@ -986,7 +986,7 @@ Add this to your project root:
 module.exports = {
   apps: [
     {
-      name: 'matchmate-api',
+      name: 'mentora-api',
       script: 'dist/main.js',
       instances: 1,
       exec_mode: 'fork',
@@ -1008,7 +1008,7 @@ Again: `instances: 1` is important because you are using local sockets.
 Create:
 
 ```bash
-sudo nano /etc/nginx/sites-available/matchmate-api
+sudo nano /etc/nginx/sites-available/mentora-api
 ```
 
 Paste:
@@ -1016,7 +1016,7 @@ Paste:
 ```nginx
 server {
     listen 80;
-    server_name matchmate.webnza.com;
+    server_name mentora.webnza.com;
 
     client_max_body_size 25M;
 
@@ -1044,7 +1044,7 @@ Nginx needs the `Upgrade` and `Connection` headers to proxy WebSocket connection
 Enable:
 
 ```bash
-sudo ln -s /etc/nginx/sites-available/matchmate-api /etc/nginx/sites-enabled/matchmate-api
+sudo ln -s /etc/nginx/sites-available/mentora-api /etc/nginx/sites-enabled/mentora-api
 sudo nginx -t
 sudo systemctl reload nginx
 ```
@@ -1062,7 +1062,7 @@ sudo apt install -y certbot python3-certbot-nginx
 Run:
 
 ```bash
-sudo certbot --nginx -d matchmate.webnza.com
+sudo certbot --nginx -d mentora.webnza.com
 ```
 
 After success:
@@ -1085,7 +1085,7 @@ Full strict
 On local or server:
 
 ```bash
-cd /var/www/matchmate-api
+cd /var/www/mentora-api
 git clone YOUR_REPO_URL .
 npm ci
 npm run build
@@ -1098,9 +1098,9 @@ Then check:
 
 ```bash
 pm2 status
-pm2 logs matchmate-api
+pm2 logs mentora-api
 curl http://127.0.0.1:3000/health
-curl https://matchmate.webnza.com/health
+curl https://mentora.webnza.com/health
 ```
 
 ---
@@ -1158,7 +1158,7 @@ jobs:
           username: ${{ secrets.EC2_USER }}
           key: ${{ secrets.EC2_SSH_KEY }}
           source: api.tar.gz
-          target: /var/www/matchmate-api
+          target: /var/www/mentora-api
 
       - name: Deploy on EC2
         uses: appleboy/ssh-action@v1.0.3
@@ -1169,7 +1169,7 @@ jobs:
           script: |
             set -e
 
-            cd /var/www/matchmate-api
+            cd /var/www/mentora-api
 
             tar -xzf api.tar.gz
             rm api.tar.gz
@@ -1212,7 +1212,7 @@ health() {
 Then test:
 
 ```bash
-curl https://matchmate.webnza.com/health
+curl https://mentora.webnza.com/health
 ```
 
 ---
@@ -1278,7 +1278,7 @@ Public S3 bucket
 ✅ PM2 ecosystem configured
 ✅ GitHub Actions deploy configured
 ✅ /health endpoint working
-✅ Mobile app API URL updated to https://matchmate.webnza.com
+✅ Mobile app API URL updated to https://mentora.webnza.com
 ```
 
 That is completely fine for an initial launch.
@@ -1346,8 +1346,8 @@ ssh -i your-key.pem ubuntu@YOUR_ELASTIC_IP
 Create app folder:
 
 ```bash
-sudo mkdir -p /var/www/matchmate-api
-sudo chown -R ubuntu:ubuntu /var/www/matchmate-api
+sudo mkdir -p /var/www/mentora-api
+sudo chown -R ubuntu:ubuntu /var/www/mentora-api
 ```
 
 ---
@@ -1359,25 +1359,25 @@ From your local machine:
 ## Upload dist
 
 ```bash
-scp -i your-key.pem -r dist ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+scp -i your-key.pem -r dist ubuntu@YOUR_ELASTIC_IP:/var/www/mentora-api/
 ```
 
 ## Upload package.json
 
 ```bash
-scp -i your-key.pem package.json ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+scp -i your-key.pem package.json ubuntu@YOUR_ELASTIC_IP:/var/www/mentora-api/
 ```
 
 ## Upload package-lock.json
 
 ```bash
-scp -i your-key.pem package-lock.json ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+scp -i your-key.pem package-lock.json ubuntu@YOUR_ELASTIC_IP:/var/www/mentora-api/
 ```
 
 ## Upload ecosystem.config.js (optional)
 
 ```bash
-scp -i your-key.pem ecosystem.config.js ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+scp -i your-key.pem ecosystem.config.js ubuntu@YOUR_ELASTIC_IP:/var/www/mentora-api/
 ```
 
 ---
@@ -1387,7 +1387,7 @@ scp -i your-key.pem ecosystem.config.js ubuntu@YOUR_ELASTIC_IP:/var/www/matchmat
 SSH into server:
 
 ```bash
-cd /var/www/matchmate-api
+cd /var/www/mentora-api
 npm install --production
 ```
 
@@ -1426,7 +1426,7 @@ JWT_SECRET=your_secret
 ## First time
 
 ```bash
-pm2 start dist/main.js --name matchmate-api
+pm2 start dist/main.js --name mentora-api
 ```
 
 ## Save PM2 process
@@ -1453,7 +1453,7 @@ npm run build
 ## Upload only updated dist
 
 ```bash
-scp -i your-key.pem -r dist ubuntu@YOUR_ELASTIC_IP:/var/www/matchmate-api/
+scp -i your-key.pem -r dist ubuntu@YOUR_ELASTIC_IP:/var/www/mentora-api/
 ```
 
 ## Restart PM2
@@ -1465,8 +1465,8 @@ ssh -i your-key.pem ubuntu@YOUR_ELASTIC_IP
 Then:
 
 ```bash
-cd /var/www/matchmate-api
-pm2 restart matchmate-api
+cd /var/www/mentora-api
+pm2 restart mentora-api
 ```
 
 Done.
@@ -1478,7 +1478,7 @@ Done.
 On EC2:
 
 ```txt
-/var/www/matchmate-api
+/var/www/mentora-api
 ├── dist
 ├── node_modules
 ├── package.json
@@ -1551,7 +1551,7 @@ Nginx exposes public traffic.
 ## Use PM2 logs
 
 ```bash
-pm2 logs matchmate-api
+pm2 logs mentora-api
 ```
 
 ---

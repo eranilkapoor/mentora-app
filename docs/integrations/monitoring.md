@@ -46,13 +46,13 @@ EXPO_PUBLIC_SENTRY_TRACES_SAMPLE_RATE=0
 ## Validation Steps
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run typecheck
 ```
 
 ```bash
-cd match-mate-mobile-app
+cd mentora-mobile-app
 npm run typecheck
 ```
 

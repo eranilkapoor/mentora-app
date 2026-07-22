@@ -1,4 +1,4 @@
-# Match Mate Launch Readiness Audit
+# Mentora Launch Readiness Audit
 
 Last reviewed: 2026-06-12
 
@@ -12,7 +12,7 @@ Status legend:
 
 | Task | Status | Evidence / Notes |
 |---|---:|---|
-| Final Android package id | Done | `app.json` uses `com.webnza.matchmate`. |
+| Final Android package id | Done | `app.json` uses `com.webnza.mentora`. |
 | App name, icon, adaptive icon, splash | Done | `app.json` has app name, icon, adaptive icon, splash icon/background. |
 | Versioning | Partly Done | App version is `1.0.0`; confirm EAS `versionCode` policy before Play upload. |
 | Production API URL only in release | Partly Done | Env/config structure exists; release build must be verified against production `.env` and EAS env. |
@@ -110,7 +110,7 @@ Status legend:
 |---|---:|---|
 | Liveness/readiness endpoints | Done | `/live` and `/ready` exist. |
 | Graceful shutdown | Done | Shutdown drain and app readiness state exist. |
-| Production CORS | Done | Production env now uses `https://matchmate.webnza.com` only for allowed origins. |
+| Production CORS | Done | Production env now uses `https://mentora.webnza.com` only for allowed origins. |
 | Rate limiting/throttling | Done | Throttler and custom rate-limit guard exist. |
 | Structured app logger | Done | Custom `AppLogger` and logging interceptor/filter exist. |
 | Sensitive log redaction | Done | Logging interceptor redacts passwords/tokens and sensitive keys. |

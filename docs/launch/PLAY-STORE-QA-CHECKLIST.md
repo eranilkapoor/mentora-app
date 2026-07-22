@@ -6,11 +6,11 @@ Complete `PLAY-CONSOLE-SUBMISSION-GUIDE.md` before starting this QA run.
 
 ## Build Identity
 
-- Android package: `com.webnza.matchmate`
-- App name: `Match Mate`
+- Android package: `com.webnza.mentora`
+- App name: `Mentora`
 - Build profile: `production`
 - Build type: Android App Bundle (`.aab`)
-- API base URL: `https://matchmate.webnza.com/api/v1`
+- API base URL: `https://mentora.webnza.com/api/v1`
 - Push enabled only when production FCM is configured and tested.
 
 ## Submission Gate

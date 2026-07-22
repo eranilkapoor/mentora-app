@@ -61,9 +61,9 @@ EXPO_PUBLIC_FACEBOOK_CLIENT_ID=
 
 Mobile config:
 
-- App scheme: `matchmate`
-- iOS bundle id: `com.webnza.matchmate`
-- Android package: `com.webnza.matchmate`
+- App scheme: `mentora`
+- iOS bundle id: `com.webnza.mentora`
+- Android package: `com.webnza.mentora`
 - Apple auth plugin: `expo-apple-authentication`
 - Web auth plugin: `expo-web-browser`
 
@@ -72,8 +72,8 @@ Mobile config:
 ### Google
 
 1. Create OAuth clients for Web, iOS, and Android in Google Cloud Console.
-2. Android client must use package `com.webnza.matchmate` and the signing certificate SHA-1/SHA-256 for the build profile.
-3. iOS client must use bundle id `com.webnza.matchmate`.
+2. Android client must use package `com.webnza.mentora` and the signing certificate SHA-1/SHA-256 for the build profile.
+3. iOS client must use bundle id `com.webnza.mentora`.
 4. Web client redirect URI must match `EXPO_PUBLIC_GOOGLE_REDIRECT_URI` for web.
 5. Enable People/UserInfo access scopes if prompted.
 
@@ -88,7 +88,7 @@ Mobile config:
 ### Apple
 
 1. Enable Sign in with Apple for the app identifier.
-2. Ensure iOS bundle id is `com.webnza.matchmate`.
+2. Ensure iOS bundle id is `com.webnza.mentora`.
 3. Set backend `APPLE_CLIENT_ID` to the expected audience in Apple identity tokens.
 
 ## Validation Steps
@@ -96,7 +96,7 @@ Mobile config:
 Backend:
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run test -- social-auth-verifier.service.spec.ts
 ```
@@ -104,7 +104,7 @@ npm run test -- social-auth-verifier.service.spec.ts
 Mobile:
 
 ```bash
-cd match-mate-mobile-app
+cd mentora-mobile-app
 npm run typecheck
 ```
 

@@ -572,7 +572,7 @@ A consistent codebase is more important than personal preference.
 
 # EXPO BASED REACT NATIVE APPLICATION INDUSTRY USED STANDARD RULES :
 
-Yes. For your **Expo React Native matrimonial app**, follow this enterprise rulebook.
+Yes. For your **Expo React Native AI tutoring app**, follow this enterprise rulebook.
 
 ## 1. Recommended folder structure
 
@@ -736,7 +736,7 @@ Use environment variables for API URLs. Expo documents environment variables for
 Recommended:
 
 ```env
-EXPO_PUBLIC_API_BASE_URL=https://api.matchmate.com
+EXPO_PUBLIC_API_BASE_URL=https://api.mentora.com
 EXPO_PUBLIC_API_VERSION=/api/v1
 EXPO_PUBLIC_ENV=production
 ```
@@ -815,7 +815,7 @@ chats/
 
 ## 10. Final rule
 
-For your Match Mate app, use this standard:
+For your Mentora app, use this standard:
 
 | Area        | Rule                    |
 | ----------- | ----------------------- |

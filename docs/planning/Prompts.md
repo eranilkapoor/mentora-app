@@ -1,4 +1,4 @@
-# MatchMate Enterprise Readiness Prompts
+# Mentora Enterprise Readiness Prompts
 
 Last reviewed: 2026-07-22
 
@@ -721,7 +721,7 @@ provider event, queue job, and database operation without logging PII.
 - Envelope-encrypt TOTP secrets, store purchase tokens, sensitive provider
   payloads, KYC metadata, and any retained high-risk PII.
 - Require TLS for Mongo, Redis, providers, and object storage.
-- Move the local MatchMateKey.pem and all deployment credentials into a managed
+- Move the local MentoraKey.pem and all deployment credentials into a managed
   secret service; rotate any key that has been shared outside its intended
   boundary.
 - Define key ownership, KMS policy, rotation, revocation, break-glass, backup,
@@ -817,7 +817,7 @@ Commission threat modeling, OWASP ASVS/MASVS review, API/mobile penetration
 testing, dependency/container review, abuse testing, load/soak/spike tests, and
 privacy/legal review. Track every finding to remediation and retest evidence.
 
-### 40. Juaaree Match Mate CRM acceptance and permission mapping
+### 40. Juaaree Mentora CRM acceptance and permission mapping
 
 Run the existing CRM adapter against a seeded non-production API. Cover login,
 refresh, users, profiles, roles, permissions, audit, KYC/media/chat review,
@@ -825,7 +825,7 @@ support, plans/features, subscription changes, payments/refunds/reconciliation,
 notifications/templates/DLQ, analytics, pagination, and all denied-action
 states.
 
-Decide whether legacy CRM module permissions or MatchMate API RBAC controls page
+Decide whether legacy CRM module permissions or Mentora API RBAC controls page
 visibility, then make sidebar links and every row/global action consistent.
 
 ### 41. Scheduled notification campaign builder

@@ -5,9 +5,9 @@ Keep the real values in the deployment secret store, EAS secrets, CI/CD secrets,
 ## Mobile EAS Secrets
 
 - `EXPO_PUBLIC_PUSH_NOTIFICATIONS_ENABLED=true` only after backend FCM is ready.
-- Add the Firebase Android app for package `com.webnza.matchmate`, download its
+- Add the Firebase Android app for package `com.webnza.mentora`, download its
   client `google-services.json`, save it as
-  `match-mate-mobile-app/google-services.json` (the configured
+  `mentora-mobile-app/google-services.json` (the configured
   `expo.android.googleServicesFile` path), and upload the FCM V1 credential to
   EAS before enabling push. The
   Firebase Admin service-account JSON is a server secret and cannot replace

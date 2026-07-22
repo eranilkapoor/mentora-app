@@ -1,9 +1,9 @@
-# Google Play Console Submission Guide — Match Mate
+# Google Play Console Submission Guide — Mentora
 
 Last reviewed against repository and current Google guidance: 2026-07-14
 
 Use this worksheet for closed testing and the first production submission. It
-is based on the current package `com.webnza.matchmate` and repository behavior.
+is based on the current package `com.webnza.mentora` and repository behavior.
 Google approval cannot be guaranteed; every declaration must remain accurate
 for the exact Android App Bundle being submitted.
 
@@ -11,11 +11,11 @@ for the exact Android App Bundle being submitted.
 
 | Play Console field | Recommended value                                                |
 | ------------------ | ---------------------------------------------------------------- |
-| App name           | Match Mate                                                       |
+| App name           | Mentora                                                       |
 | Default language   | English (India) or the language used for the primary listing     |
 | App or game        | App                                                              |
 | Free or paid       | Free — subscriptions are sold as in-app products                 |
-| Package name       | `com.webnza.matchmate`                                           |
+| Package name       | `com.webnza.mentora`                                           |
 | Category           | Dating                                                           |
 | Tags               | Dating, Relationships, Matrimony/Marriage where Play offers them |
 | Developer name     | Must exactly match the verified Play developer profile           |
@@ -32,7 +32,7 @@ marriage,” or similar claims unless they are independently supportable.
 
 Enter:
 
-`https://matchmate.webnza.com/privacy-policy`
+`https://mentora.webnza.com/privacy-policy`
 
 Repository status: implemented as a public HTML page and linked inside the app.
 Before submission, open it in an incognito browser and confirm HTTP 200, no
@@ -43,7 +43,7 @@ developer/entity name matches the Play listing.
 
 Enter this Data safety account-deletion URL:
 
-`https://matchmate.webnza.com/account-deletion`
+`https://mentora.webnza.com/account-deletion`
 
 Repository status: in-app deletion scheduling and a public instruction page
 exist. Verify that an unauthenticated user can discover a real request path,
@@ -70,7 +70,7 @@ Repository reviewer account:
 Recommended Play reviewer instructions:
 
 ```text
-1. Open Match Mate and tap Log in.
+1. Open Mentora and tap Log in.
 2. Choose Email and Password.
 3. Enter the reviewer credentials supplied below.
 4. This account has completed onboarding, has an active profile photo and
@@ -101,9 +101,9 @@ Complete the IARC questionnaire truthfully. Recommended interpretation:
 - App type: social/communication or other non-game app.
 - Users exchange profile text, photos, videos, and private chat: **Yes, UGC and
   user interaction are present.**
-- Matrimonial/dating theme: **Yes.**
+- AI Tutoring/dating theme: **Yes.**
 - Intended explicit sexual content, nudity, violence, drugs, gambling, or
-  profanity supplied by Match Mate: **No.**
+  profanity supplied by Mentora: **No.**
 - Unrestricted web browser: **No.**
 - Location sharing: location is used for matching; exact live-location
   broadcasting is not a core feature.
@@ -117,7 +117,7 @@ verify each is reachable in the reviewer build.
 
 Recommended selection: **18 and over only**. Do not select child age groups.
 
-Match Mate is an adult matrimonial service. The mobile date picker limits DOB
+Mentora is an adult AI tutoring service. The mobile date picker limits DOB
 selection and the API rejects profile creation below age 18. Store artwork and
 copy must not be child-directed.
 
@@ -143,7 +143,7 @@ production SDK and provider:
 | Email address                         | Yes                                     | Required for email login                     | Account management, security, communication                                                                  |
 | Phone number                          | Depending on enabled login/profile flow | Optional unless phone login is enabled       | Account management, security, communication                                                                  |
 | User IDs                              | Yes                                     | Required                                     | Account management, app functionality, security                                                              |
-| Other personal info                   | Yes                                     | Mix of required and optional                 | DOB/age, gender, religion/community, marital, family, education, occupation, income and matrimonial matching |
+| Other personal info                   | Yes                                     | Mix of required and optional                 | DOB/age, gender, religion/community, marital, family, education, occupation, income and AI tutoring matching |
 | Photos and videos                     | Yes when uploaded                       | Optional but important to profile experience | Profile, verification, moderation                                                                            |
 | Audio files                           | Yes if voice/video recording is enabled | Optional                                     | Communication/profile media                                                                                  |
 | Files and documents                   | Yes for verification/support uploads    | Optional                                     | Verification, safety, support                                                                                |
@@ -163,14 +163,14 @@ shared” without that review.
 
 ### Government apps
 
-Recommended answer: **No**. Match Mate is not developed by or on behalf of a
+Recommended answer: **No**. Mentora is not developed by or on behalf of a
 government body and must not imply government affiliation.
 
 ### Financial features
 
 Recommended answer: **This app does not provide financial features.**
 
-The app sells its own digital matrimonial subscriptions through Google Play;
+The app sells its own digital AI tutoring subscriptions through Google Play;
 it does not provide banking, lending, investing, insurance, money transfer,
 cryptocurrency, earned-wage access, or financial advice. Purchase history must
 still be disclosed in Data safety.
@@ -179,7 +179,7 @@ still be disclosed in Data safety.
 
 Recommended answer: **No health features.**
 
-General profile/lifestyle fields do not make Match Mate a medical or health
+General profile/lifestyle fields do not make Mentora a medical or health
 app. Reassess before adding medical records, diagnosis, treatment, health
 research, or Health Connect.
 
@@ -215,25 +215,25 @@ can add permissions that are not obvious from `app.json`.
 
 ### App name
 
-`Match Mate`
+`Mentora`
 
 ### Short description (maximum 80 characters)
 
-`Find compatible matrimonial matches with privacy, verification and secure chat.`
+`Find compatible AI tutoring matches with privacy, verification and secure chat.`
 
 ### Full description draft
 
 ```text
-Match Mate helps adults discover compatible matrimonial profiles through
+Mentora helps adults discover compatible AI tutoring profiles through
 meaningful preferences, privacy controls and safer communication.
 
-Build a detailed matrimonial profile with your background, education,
+Build a detailed AI tutoring profile with your background, education,
 profession, family information, lifestyle and partner preferences. Explore
 recommended profiles, express interest, shortlist suitable matches and chat
 after connecting.
 
 Key features:
-• Personalized matrimonial recommendations and filters
+• Personalized AI tutoring recommendations and filters
 • Detailed profiles with optional photos and video introductions
 • Interest, shortlist and private chat workflows
 • Profile verification and moderation tools
@@ -242,8 +242,8 @@ Key features:
 • Optional subscription plans for additional benefits
 • Account data export and deletion controls
 
-Match Mate is intended only for adults aged 18 and over. Users are responsible
-for providing accurate information and communicating respectfully. Match Mate
+Mentora is intended only for adults aged 18 and over. Users are responsible
+for providing accurate information and communicating respectfully. Mentora
 does not guarantee marriage, identity, compatibility or outcomes. Some
 features require an internet connection, permissions or an active subscription.
 ```
@@ -295,7 +295,7 @@ Use `PLAY-STORE-QA-CHECKLIST.md` for the release run.
 
 ### Submission gate: external verification required as of 2026-07-14
 
-The deployment owner reports that `matchmate.webnza.com` is now working. A
+The deployment owner reports that `mentora.webnza.com` is now working. A
 repeat probe from the current development runner still resolves the hostname to
 `13.232.104.246` but receives a connection refusal on port 443 for every URL
 below. This can be caused by deployment firewall or source-network rules, so it
@@ -306,11 +306,11 @@ incognito network.
 Unblock only after all of these pass from a network outside the deployment:
 
 ```text
-https://matchmate.webnza.com/api/v1/health
-https://matchmate.webnza.com/privacy-policy
-https://matchmate.webnza.com/terms-conditions
-https://matchmate.webnza.com/community-guidelines
-https://matchmate.webnza.com/account-deletion
+https://mentora.webnza.com/api/v1/health
+https://mentora.webnza.com/privacy-policy
+https://mentora.webnza.com/terms-conditions
+https://mentora.webnza.com/community-guidelines
+https://mentora.webnza.com/account-deletion
 ```
 
 Each public policy URL must return HTTP 200 without authentication. The health

@@ -1,0 +1,67 @@
+{
+  "title": "Notifications",
+  "loading": "Loading notifications...",
+  "unread_count": "{{count}} unread notification",
+  "unread_count_plural": "{{count}} unread notifications",
+  "all_caught_up": "All caught up!",
+  "mark_all_read": "Mark all as read",
+  "empty_title": "No notifications yet",
+  "empty_subtitle": "When you get matches, messages or activity, they will appear here.",
+  "no_notifications": "No notifications",
+  "actions": {
+    "mark_read": "Mark as read",
+    "view_profile": "View profile",
+    "reply": "Reply"
+  },
+  "detail": {
+    "title": "Notification details",
+    "received": "Received",
+    "at": "at",
+    "from": "From",
+    "kind": "Type",
+    "status": "Status",
+    "read": "Read",
+    "unread": "Unread",
+    "read_title": "Seen in app",
+    "read_description": "You have already opened this notification in Mentora.",
+    "unread_title": "Not opened yet",
+    "unread_description": "Open or act on this notification to mark it as seen.",
+    "view_profile": "View profile",
+    "open_chat": "Open chat",
+    "view_matches": "View matches",
+    "view_notifications": "Back to notifications",
+    "open_related": "Open related item",
+    "kinds": {
+      "info": "Info",
+      "success": "Success",
+      "warning": "Warning",
+      "error": "Error",
+      "match": "Match",
+      "chat": "Chat",
+      "payment": "Payment",
+      "system": "System"
+    }
+  },
+  "categories": {
+    "interest_received": "Interest received",
+    "interest_accepted": "Interest accepted",
+    "profile_view": "Profile view",
+    "match_found": "Match found",
+    "message_received": "Message received",
+    "subscription": "Subscription",
+    "system": "System"
+  },
+  "types": {
+    "new_message": "You have a new message",
+    "match_request": "You received a match request",
+    "match_accepted": "Your match request was accepted",
+    "profile_view": "Someone viewed your profile",
+    "interest": "Someone sent you an interest"
+  },
+  "sections": {
+    "today": "Today",
+    "yesterday": "Yesterday",
+    "earlier": "Earlier",
+    "new": "New"
+  }
+}

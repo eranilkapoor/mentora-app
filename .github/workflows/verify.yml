@@ -17,7 +17,7 @@ jobs:
       # Pin the E2E database binary so cache hits do not change when the
       # mongodb-memory-server package changes its recommended default.
       MONGOMS_VERSION: 8.2.6
-      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/match-mate-api-server/.cache/mongodb-binaries
+      MONGOMS_DOWNLOAD_DIR: ${{ github.workspace }}/mentora-api-server/.cache/mongodb-binaries
       MONGOMS_PREFER_GLOBAL_PATH: "false"
 
     steps:
@@ -31,29 +31,29 @@ jobs:
           cache: npm
           cache-dependency-path: |
             package-lock.json
-            match-mate-api-server/package-lock.json
-            match-mate-mobile-app/package-lock.json
+            mentora-api-server/package-lock.json
+            mentora-mobile-app/package-lock.json
 
       - name: Install repository tooling
         run: npm ci
 
       - name: Install API dependencies
-        run: npm ci --prefix match-mate-api-server
+        run: npm ci --prefix mentora-api-server
 
       - name: Install mobile dependencies
-        run: npm ci --prefix match-mate-mobile-app
+        run: npm ci --prefix mentora-mobile-app
 
       - name: Cache MongoDB E2E binary
         uses: actions/cache@v4
         with:
-          path: match-mate-api-server/.cache/mongodb-binaries
-          key: mongodb-memory-server-${{ runner.os }}-8.2.6-${{ hashFiles('match-mate-api-server/package-lock.json') }}
+          path: mentora-api-server/.cache/mongodb-binaries
+          key: mongodb-memory-server-${{ runner.os }}-8.2.6-${{ hashFiles('mentora-api-server/package-lock.json') }}
 
       - name: Run verification and tests
         run: npm run ci
 
       - name: Build API container image
-        run: docker build -t match-mate-api:${{ github.sha }} ./match-mate-api-server
+        run: docker build -t match-mate-api:${{ github.sha }} ./mentora-api-server
 
       - name: Scan API container image
         uses: aquasecurity/trivy-action@0.28.0
@@ -70,7 +70,7 @@ jobs:
         with:
           name: coverage-reports
           path: |
-            match-mate-api-server/coverage
-            match-mate-mobile-app/coverage
+            mentora-api-server/coverage
+            mentora-mobile-app/coverage
           retention-days: 14
           if-no-files-found: warn

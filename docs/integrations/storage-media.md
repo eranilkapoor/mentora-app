@@ -35,7 +35,7 @@ AWS_ACCESS_KEY_ID=
 AWS_SECRET_ACCESS_KEY=
 AWS_S3_BUCKET=
 AWS_S3_BASE_URL=https://<bucket-or-cdn-host>
-API_BASE_URL=https://matchmate.webnza.com/api/v1
+API_BASE_URL=https://mentora.webnza.com/api/v1
 ```
 
 Media limits and tools:
@@ -62,7 +62,7 @@ MEDIA_AI_MODERATION_ENABLED=false
 ## Validation Steps
 
 ```bash
-cd match-mate-api-server
+cd mentora-api-server
 npm run env:validate
 npm run test -- storage.service.spec.ts
 ```

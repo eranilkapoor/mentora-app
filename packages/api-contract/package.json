@@ -1,5 +1,5 @@
 {
-  "name": "@matchmate/api-contract",
+  "name": "@mentora/api-contract",
   "version": "0.1.0",
   "private": true,
   "type": "module",
