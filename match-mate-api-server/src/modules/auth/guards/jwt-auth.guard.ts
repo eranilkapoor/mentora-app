@@ -2,6 +2,7 @@ import { Injectable, ExecutionContext } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthGuard } from '@nestjs/passport';
 import { IS_PUBLIC_KEY } from '@/common/decorators/public.decorator';
+import { INTERNAL_API_KEY_REQUIRED } from '@/common/decorators/internal-api-key.decorator';
 import { AppLogger } from '@/common/logger/logger.service';
 import { ErrorCode } from '@/common/constants';
 import { throwUnauthorized } from '@/common/exceptions/throw-app-exception';
@@ -27,6 +28,15 @@ export class JwtAuthGuard extends AuthGuard('jwt') {
     ]);
 
     if (isPublic) {
+      return true;
+    }
+
+    const requiresInternalApiKey = this.reflector.getAllAndOverride<boolean>(
+      INTERNAL_API_KEY_REQUIRED,
+      [context.getHandler(), context.getClass()],
+    );
+
+    if (requiresInternalApiKey) {
       return true;
     }
 

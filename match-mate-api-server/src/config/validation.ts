@@ -319,6 +319,23 @@ function validateAuthProviderConfig(
   return env;
 }
 
+function validateMongoPoolConfig(
+  env: Record<string, unknown>,
+  helpers: Joi.CustomHelpers,
+) {
+  const minPoolSize = Number(env.MONGO_MIN_POOL_SIZE);
+  const maxPoolSize = Number(env.MONGO_MAX_POOL_SIZE);
+
+  if (minPoolSize > maxPoolSize) {
+    return helpers.error('any.custom', {
+      customMessage:
+        'MONGO_MIN_POOL_SIZE cannot be greater than MONGO_MAX_POOL_SIZE',
+    });
+  }
+
+  return env;
+}
+
 export const ENV_VALIDATION_SCHEMA = Joi.object({
   NODE_ENV: Joi.string()
     .valid('development', 'test', 'staging', 'production')
@@ -466,6 +483,34 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
   MONGO_RETRY_ATTEMPTS: Joi.number().integer().min(0).max(20).default(5),
 
   MONGO_RETRY_DELAY: Joi.number().integer().min(0).max(60000).default(5000),
+
+  MONGO_MAX_POOL_SIZE: Joi.number().integer().min(1).max(500).default(50),
+
+  MONGO_MIN_POOL_SIZE: Joi.number().integer().min(0).max(100).default(0),
+
+  MONGO_SERVER_SELECTION_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(1000)
+    .max(60000)
+    .default(10000),
+
+  MONGO_SOCKET_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(1000)
+    .max(300000)
+    .default(45000),
+
+  MONGO_MAX_IDLE_TIME_MS: Joi.number()
+    .integer()
+    .min(0)
+    .max(300000)
+    .default(30000),
+
+  MONGO_WAIT_QUEUE_TIMEOUT_MS: Joi.number()
+    .integer()
+    .min(0)
+    .max(60000)
+    .default(10000),
 
   MONGO_AUTO_INDEX: Joi.boolean(),
 
@@ -664,6 +709,8 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
 
   THROTTLE_LIMIT: Joi.number().integer().min(1).max(10000).default(100),
 
+  INTERNAL_API_KEYS: optionalString,
+
   NOTIFICATION_QUEUE_ENABLED: Joi.boolean().empty('').optional(),
 
   NOTIFICATION_QUEUE_NAME: optionalString.default('notification-dispatch'),
@@ -780,6 +827,7 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
 
   CHAT_MODERATION_REVIEW_WORDS: optionalString,
 })
+  .custom(validateMongoPoolConfig)
   .custom(validateAuthProviderConfig)
   .custom(validateNotificationProviders)
   .custom(validateProductionProviders)

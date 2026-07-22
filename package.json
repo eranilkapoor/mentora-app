@@ -19,6 +19,7 @@
     "test:coverage:api": "npm --prefix match-mate-api-server run test:cov -- --runInBand",
     "test:coverage:mobile": "npm --prefix match-mate-mobile-app run test:cov",
     "test:coverage": "npm run test:coverage:api && npm run test:coverage:mobile",
+    "test:load:smoke": "k6 run scripts/k6-smoke.js",
     "test:e2e": "npm --prefix match-mate-api-server run test:e2e",
     "i18n:check": "npm --prefix match-mate-mobile-app run i18n:check",
     "migration:validate": "npm --prefix match-mate-api-server run migration:validate",

@@ -131,6 +131,24 @@ export const MongoModule = MongooseModule.forRootAsync({
       autoIndex: configService.get<boolean>('mongo.autoIndex', false),
       retryAttempts: configService.getOrThrow<number>('mongo.retryAttempts', 5),
       retryDelay: configService.getOrThrow<number>('mongo.retryDelay', 5000),
+      maxPoolSize: configService.getOrThrow<number>('mongo.maxPoolSize', 50),
+      minPoolSize: configService.getOrThrow<number>('mongo.minPoolSize', 0),
+      serverSelectionTimeoutMS: configService.getOrThrow<number>(
+        'mongo.serverSelectionTimeoutMs',
+        10000,
+      ),
+      socketTimeoutMS: configService.getOrThrow<number>(
+        'mongo.socketTimeoutMs',
+        45000,
+      ),
+      maxIdleTimeMS: configService.getOrThrow<number>(
+        'mongo.maxIdleTimeMs',
+        30000,
+      ),
+      waitQueueTimeoutMS: configService.getOrThrow<number>(
+        'mongo.waitQueueTimeoutMs',
+        10000,
+      ),
     };
   },
 });

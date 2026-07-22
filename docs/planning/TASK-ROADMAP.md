@@ -162,15 +162,15 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### 4.1 Discovery And Feed
 
-| Status  | Task                            | Evidence / Next Action                                                                                                                                                |
-| ------- | ------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DONE    | Recommended matches API         | `matches/recommended` and discovery service exist.                                                                                                                    |
-| DONE    | Filters API                     | Match query/filter DTOs and mobile filter modal exist.                                                                                                                |
-| PARTIAL | ML-based ranking engine         | Rule/scoring logic exists; no true ML pipeline found.                                                                                                                 |
-| DONE    | Compatibility score engine      | Compatibility service and match score UI exist.                                                                                                                       |
-| DONE    | Mutual preference scoring       | Preference weights and match discovery logic exist.                                                                                                                   |
-| DONE    | Nearby matches                  | `matches/nearby` and location support exist.                                                                                                                          |
-| DONE    | Premium match curator           | Admins can assign/expire curated matches, users can view/dismiss curated recommendations, and mobile exposes a Curated feed with curator notes.                       |
+| Status  | Task                            | Evidence / Next Action                                                                                                                                                                                                                   |
+| ------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Recommended matches API         | `matches/recommended` and discovery service exist.                                                                                                                                                                                       |
+| DONE    | Filters API                     | Match query/filter DTOs and mobile filter modal exist.                                                                                                                                                                                   |
+| PARTIAL | ML-based ranking engine         | Rule/scoring logic exists; no true ML pipeline found.                                                                                                                                                                                    |
+| DONE    | Compatibility score engine      | Compatibility service and match score UI exist.                                                                                                                                                                                          |
+| DONE    | Mutual preference scoring       | Preference weights and match discovery logic exist.                                                                                                                                                                                      |
+| DONE    | Nearby matches                  | `matches/nearby` and location support exist.                                                                                                                                                                                             |
+| DONE    | Premium match curator           | Admins can assign/expire curated matches, users can view/dismiss curated recommendations, and mobile exposes a Curated feed with curator notes.                                                                                          |
 | PARTIAL | Daily matches push notification | Code path is complete: cron digest, dry-run/limit controls, run summaries, template send, mobile device-token registration, and FCM provider exist. Remaining work is physical-device FCM delivery evidence with production credentials. |
 
 ### 4.2 Interactions
@@ -232,17 +232,17 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### Backend
 
-| Status  | Task                               | Evidence / Next Action                                                                                                                                                           |
-| ------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PARTIAL | Push notification service          | Firebase Admin provider, token storage, direct/queued dispatch, multicast sends, and mobile FCM token registration exist. Remaining work is production FCM credential/device acceptance evidence.                                           |
-| DONE    | In-app notifications               | Notification schema/API/realtime gateway exist.                                                                                                                                  |
-| PARTIAL | Email notification templates       | Template CRUD/dispatch, seeded lifecycle templates, audit logging, SES config, and SMTP config/provider support exist. Remaining work is live SES/SMTP delivery evidence with production sender credentials.                                  |
-| PARTIAL | SMS notifications                  | MSG91 Flow API provider, OTP variables, timeout/error handling, environment validation, and tests exist. Remaining work is approved DLT template mapping and production delivery evidence.                                                    |
-| TODO    | WhatsApp notifications             | No Meta WABA provider found.                                                                                                                                                     |
-| DONE    | Notification preference management | Settings and notification preference APIs exist.                                                                                                                                 |
-| DONE    | Notification deduplication         | Dedupe key/window logic exists.                                                                                                                                                  |
-| PARTIAL | Scheduled/drip notifications       | BullMQ dispatch/DLQ/replay, scheduled daily digest, expiry reminders, and reminder templates exist. Remaining code work is a campaign builder with audience rules, throttling, schedule windows, and approval workflow.                       |
-| DONE    | Deep link support                  | Notification action navigation exists in mobile.                                                                                                                                 |
+| Status  | Task                               | Evidence / Next Action                                                                                                                                                                                                  |
+| ------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| PARTIAL | Push notification service          | Firebase Admin provider, token storage, direct/queued dispatch, multicast sends, and mobile FCM token registration exist. Remaining work is production FCM credential/device acceptance evidence.                       |
+| DONE    | In-app notifications               | Notification schema/API/realtime gateway exist.                                                                                                                                                                         |
+| PARTIAL | Email notification templates       | Template CRUD/dispatch, seeded lifecycle templates, audit logging, SES config, and SMTP config/provider support exist. Remaining work is live SES/SMTP delivery evidence with production sender credentials.            |
+| PARTIAL | SMS notifications                  | MSG91 Flow API provider, OTP variables, timeout/error handling, environment validation, and tests exist. Remaining work is approved DLT template mapping and production delivery evidence.                              |
+| TODO    | WhatsApp notifications             | No Meta WABA provider found.                                                                                                                                                                                            |
+| DONE    | Notification preference management | Settings and notification preference APIs exist.                                                                                                                                                                        |
+| DONE    | Notification deduplication         | Dedupe key/window logic exists.                                                                                                                                                                                         |
+| PARTIAL | Scheduled/drip notifications       | BullMQ dispatch/DLQ/replay, scheduled daily digest, expiry reminders, and reminder templates exist. Remaining code work is a campaign builder with audience rules, throttling, schedule windows, and approval workflow. |
+| DONE    | Deep link support                  | Notification action navigation exists in mobile.                                                                                                                                                                        |
 
 ### Frontend
 
@@ -258,19 +258,19 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### 7.1 Plans And Access
 
-| Status  | Task                                 | Evidence / Next Action                                                                                                                                                                                                        |
-| ------- | ------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DONE    | Plan system                          | Plans/features schemas, seed data, admin APIs, and mobile membership UI exist.                                                                                                                                                |
-| DONE    | Custom assisted plan                 | `ASSISTED_CUSTOM` maps every capability to custom terms, adds configurable governance/integrations/SLA/data-residency, routes to sales, and is blocked from checkout/trial/coupon/store flows.                                |
-| DONE    | Feature access control               | Feature guard/decorator/service exist.                                                                                                                                                                                        |
+| Status  | Task                                 | Evidence / Next Action                                                                                                                                                                                                                           |
+| ------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| DONE    | Plan system                          | Plans/features schemas, seed data, admin APIs, and mobile membership UI exist.                                                                                                                                                                   |
+| DONE    | Custom assisted plan                 | `ASSISTED_CUSTOM` maps every capability to custom terms, adds configurable governance/integrations/SLA/data-residency, routes to sales, and is blocked from checkout/trial/coupon/store flows.                                                   |
+| DONE    | Feature access control               | Feature guard/decorator/service exist.                                                                                                                                                                                                           |
 | PARTIAL | Upgrade/downgrade/plan lifecycle     | Initial activation, plan assignment/cancel APIs, billing screens, Google receipt verification/acknowledgement, restore, and RTDN reconciliation exist. Remaining work is Apple Server Notifications V2 plus live renewal/cancel/refund evidence. |
-| PARTIAL | Upgrade plan API/payment integration | Membership CTA opens a payment-method sheet before order creation; backend signature/webhook hardening, invoice/report/refund flows, and store verification exist. Remaining work is real Razorpay/Stripe/store credential QA.                  |
-| DONE    | Purchase history                     | Billing summary/payment history APIs and UI exist.                                                                                                                                                                            |
-| DONE    | Plan expiry reminders                | Subscription expiry task includes reminders.                                                                                                                                                                                  |
-| DONE    | Coupons/discount codes               | Coupon schemas/validate flow exist.                                                                                                                                                                                           |
+| PARTIAL | Upgrade plan API/payment integration | Membership CTA opens a payment-method sheet before order creation; backend signature/webhook hardening, invoice/report/refund flows, and store verification exist. Remaining work is real Razorpay/Stripe/store credential QA.                   |
+| DONE    | Purchase history                     | Billing summary/payment history APIs and UI exist.                                                                                                                                                                                               |
+| DONE    | Plan expiry reminders                | Subscription expiry task includes reminders.                                                                                                                                                                                                     |
+| DONE    | Coupons/discount codes               | Coupon schemas/validate flow exist.                                                                                                                                                                                                              |
 | PARTIAL | Auto-renewal/subscription lifecycle  | Receipt verification, acknowledgement, active/grace/cancel status, expiry, replay protection, cancellation UI/API, and Google RTDN handling are implemented. Apple Server Notifications V2 and live renewal/cancel/refund evidence remain.       |
-| DONE    | Free trial                           | Trial endpoint/service exists.                                                                                                                                                                                                |
-| DONE    | Coin/credit wallet                   | General wallet endpoints, spend ledger, coin-pack payment crediting, and mobile wallet summary are implemented.                                                                                                               |
+| DONE    | Free trial                           | Trial endpoint/service exists.                                                                                                                                                                                                                   |
+| DONE    | Coin/credit wallet                   | General wallet endpoints, spend ledger, coin-pack payment crediting, and mobile wallet summary are implemented.                                                                                                                                  |
 
 ### 7.2 Payments
 
@@ -347,31 +347,31 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### Frontend
 
-| Status  | Task                              | Evidence / Next Action                                                                                                                                        |
-| ------- | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DONE    | Profile analytics UI              | Who-viewed/profile analytics UI exists.                                                                                                                       |
-| PARTIAL | User insights/stats dashboard     | User match stats and who-viewed-me APIs exist, and Home shows lightweight stats. A dedicated mobile insights dashboard with trends/conversion cards is still not implemented.                                                |
-| DONE    | Success story submission UI       | Help & Support links to a themed submission/history screen with validation, explicit publication consent, status tracking, errors, and English/Hindi content. |
-| DONE    | Account activity/login history UI | Security login history screen exists.                                                                                                                         |
+| Status  | Task                              | Evidence / Next Action                                                                                                                                                        |
+| ------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Profile analytics UI              | Who-viewed/profile analytics UI exists.                                                                                                                                       |
+| PARTIAL | User insights/stats dashboard     | User match stats and who-viewed-me APIs exist, and Home shows lightweight stats. A dedicated mobile insights dashboard with trends/conversion cards is still not implemented. |
+| DONE    | Success story submission UI       | Help & Support links to a themed submission/history screen with validation, explicit publication consent, status tracking, errors, and English/Hindi content.                 |
+| DONE    | Account activity/login history UI | Security login history screen exists.                                                                                                                                         |
 
 ## 10. Security
 
-| Status      | Task                          | Evidence / Next Action                                                                                                                                                              |
-| ----------- | ----------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DONE        | Rate limiting per IP/user     | Nest throttler and custom rate-limit guard exist.                                                                                                                                   |
-| DONE        | Brute-force protection        | Rate limits and auth protections exist; lockout policy should be tested.                                                                                                            |
-| DONE        | Input validation/sanitization | Global validation pipe with whitelist and DTO validators exists.                                                                                                                    |
-| PARTIAL     | Data encryption at rest       | Password hashing exists; field-level PII encryption is not clearly implemented.                                                                                                     |
-| DONE        | Audit logs                    | Admin/activity logs exist.                                                                                                                                                          |
-| PARTIAL     | Internal API key system       | Swagger and CORS allow `X-API-Key`; service-to-service enforcement should be verified.                                                                                              |
-| BLOCKED     | HTTPS/HSTS                    | Needs production reverse proxy/load balancer configuration.                                                                                                                         |
-| DONE        | Strict CORS policy support    | CORS config supports allowed origins; production env must be reviewed.                                                                                                              |
-| DONE        | Helmet/security headers       | Helmet is wired in `main.ts`.                                                                                                                                                       |
-| RECOMMENDED | OWASP checklist review        | Add a formal pre-launch security checklist.                                                                                                                                         |
-| BLOCKED     | Penetration testing           | External vendor/process task.                                                                                                                                                       |
-| PARTIAL     | GDPR/PDPB compliance layer    | Consent, deletion, export exist; legal review and policy pages still required.                                                                                                      |
-| DONE        | Data masking for logs         | Logging/error handling redacts sensitive fields.                                                                                                                                    |
-| PARTIAL     | Vulnerability scanning        | Dependabot monitors all npm lockfiles and CodeQL scans JavaScript/TypeScript on PRs, main/develop pushes, and weekly. Container image scanning remains for the deployment pipeline. |
+| Status  | Task                          | Evidence / Next Action                                                                                                                                           |
+| ------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | Rate limiting per IP/user     | Nest throttler and custom rate-limit guard exist.                                                                                                                |
+| DONE    | Brute-force protection        | Rate limits and auth protections exist; lockout policy should be tested.                                                                                         |
+| DONE    | Input validation/sanitization | Global validation pipe with whitelist and DTO validators exists.                                                                                                 |
+| PARTIAL | Data encryption at rest       | Password hashing exists; field-level PII encryption is not clearly implemented.                                                                                  |
+| DONE    | Audit logs                    | Admin/activity logs exist.                                                                                                                                       |
+| DONE    | Internal API key system       | `@RequireInternalApiKey()` and `InternalApiKeyGuard` enforce configured `INTERNAL_API_KEYS` with constant-time comparison and focused tests.                     |
+| BLOCKED | HTTPS/HSTS                    | Needs production reverse proxy/load balancer configuration.                                                                                                      |
+| DONE    | Strict CORS policy support    | CORS config supports allowed origins; production env must be reviewed.                                                                                           |
+| DONE    | Helmet/security headers       | Helmet is wired in `main.ts`.                                                                                                                                    |
+| DONE    | OWASP checklist review        | Formal pre-launch security checklist added under `docs/standards/pre-launch-security-checklist.md`; independent review remains a separate external task.         |
+| BLOCKED | Penetration testing           | External vendor/process task.                                                                                                                                    |
+| PARTIAL | GDPR/PDPB compliance layer    | Consent, deletion, export, privacy policy, terms, account deletion, and community-guideline pages exist; legal review and final policy approval remain external. |
+| DONE    | Data masking for logs         | Logging/error handling redacts sensitive fields.                                                                                                                 |
+| DONE    | Vulnerability scanning        | Dependabot monitors all npm lockfiles, CodeQL scans JavaScript/TypeScript, and CI builds/scans the API image with Trivy for high/critical vulnerabilities.       |
 
 ## 11. Logging And Monitoring
 
@@ -392,18 +392,18 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ### Backend
 
-| Status      | Task                           | Evidence / Next Action                                                 |
-| ----------- | ------------------------------ | ---------------------------------------------------------------------- |
-| DONE        | Redis caching                  | Redis/local cache module exists.                                       |
-| PARTIAL     | CDN for media                  | S3/storage support exists; CDN production setup not proven.            |
-| DONE        | DB indexes                     | Schemas define indexes across key collections.                         |
-| PARTIAL     | Queue system                   | BullMQ notification queue exists; queue coverage is not universal.     |
-| RECOMMENDED | Read replica/sharding strategy | Needed for scale, not repo code.                                       |
-| PARTIAL     | Connection pooling             | Mongo driver config exists; production pool tuning should be reviewed. |
-| DONE        | Pagination                     | Pagination audit and paged APIs/screens exist.                         |
-| DONE        | Response compression           | `compression` middleware exists.                                       |
-| RECOMMENDED | Horizontal scaling strategy    | Needs deployment/Kubernetes plan.                                      |
-| RECOMMENDED | Load testing                   | Add k6/Artillery scripts.                                              |
+| Status      | Task                           | Evidence / Next Action                                                                                                                        |
+| ----------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE        | Redis caching                  | Redis/local cache module exists.                                                                                                              |
+| PARTIAL     | CDN for media                  | S3/storage support exists; CDN production setup not proven.                                                                                   |
+| DONE        | DB indexes                     | Schemas define indexes across key collections.                                                                                                |
+| PARTIAL     | Queue system                   | BullMQ notification queue exists; queue coverage is not universal.                                                                            |
+| RECOMMENDED | Read replica/sharding strategy | Needed for scale, not repo code.                                                                                                              |
+| DONE        | Connection pooling             | Mongo driver config exposes validated pool and timeout knobs (`MONGO_MAX_POOL_SIZE`, `MONGO_MIN_POOL_SIZE`, server-selection/socket/idle/wait-queue timeouts) and rejects invalid min/max pool combinations at boot. |
+| DONE        | Pagination                     | Pagination audit and paged APIs/screens exist.                                                                                                |
+| DONE        | Response compression           | `compression` middleware exists.                                                                                                              |
+| RECOMMENDED | Horizontal scaling strategy    | Needs deployment/Kubernetes plan.                                                                                                             |
+| PARTIAL     | Load testing                   | A k6 smoke/load script exists for liveness/readiness thresholds; realistic authenticated journey, chat, payment, and media load tests remain. |
 
 ### Frontend
 
@@ -431,24 +431,24 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 ## 14. Frontend Contract And API Standards
 
-| Status  | Task                              | Evidence / Next Action                                                                                                                                                                                                                                               |
-| ------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DONE    | API versioning (`/api/v1`)        | Global prefix/versioning exist.                                                                                                                                                                                                                                      |
-| DONE    | Standard response envelope        | `successResponse`, API response DTO, and error codes exist.                                                                                                                                                                                                          |
-| DONE    | Mobile token handling             | Secure storage/base API refresh flow exists.                                                                                                                                                                                                                         |
-| DONE    | Swagger/OpenAPI docs              | Swagger setup exists in non-production.                                                                                                                                                                                                                              |
-| DONE    | API error code registry           | Error/success code constants exist.                                                                                                                                                                                                                                  |
-| PARTIAL | Cursor/offset pagination standard | A shared offset metadata builder/contract now standardizes matches, chat, notifications, support, admin, and success stories with total/page/limit/totalPages/next/previous fields. Wallet/analytics applicability and paginated RTK cache integration tests remain. |
-| DONE    | OpenAPI to TS SDK generation      | Swagger is snapshotted into `packages/api-contract/openapi.json`; complete immutable route/schema types are generated and checked through root scripts.                                                                                                              |
-| PARTIAL | Automated regression tests        | Current audit passes 111 API unit suites/1,042 tests, 18 mobile suites/73 tests, and all 18 API E2E suites/45 tests. CI preserves the MongoDB binary cache and enforces coverage; broader device, visual, and RTK cache integration suites remain.                   |
-| TODO    | Storybook component library       | Not implemented.                                                                                                                                                                                                                                                     |
-| PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.                                                                                                                                                                                                 |
+| Status  | Task                              | Evidence / Next Action                                                                                                                                                                                                                                                                  |
+| ------- | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| DONE    | API versioning (`/api/v1`)        | Global prefix/versioning exist.                                                                                                                                                                                                                                                         |
+| DONE    | Standard response envelope        | `successResponse`, API response DTO, and error codes exist.                                                                                                                                                                                                                             |
+| DONE    | Mobile token handling             | Secure storage/base API refresh flow exists.                                                                                                                                                                                                                                            |
+| DONE    | Swagger/OpenAPI docs              | Swagger setup exists in non-production.                                                                                                                                                                                                                                                 |
+| DONE    | API error code registry           | Error/success code constants exist.                                                                                                                                                                                                                                                     |
+| PARTIAL | Cursor/offset pagination standard | A shared offset metadata builder/contract now standardizes matches, chat, notifications, support, admin, success stories, and wallet transaction summaries. Analytics applicability and paginated RTK cache integration tests remain.                                                   |
+| DONE    | OpenAPI to TS SDK generation      | Swagger is snapshotted into `packages/api-contract/openapi.json`; complete immutable route/schema types are generated and checked through root scripts.                                                                                                                                 |
+| PARTIAL | Automated regression tests        | Current local evidence includes focused API guard/wallet tests, mobile type/lint, and mobile suites at 79 Jest suites/208 tests with 40%+ coverage gates. CI preserves the MongoDB binary cache and enforces coverage; broader device, visual, and RTK cache integration suites remain. |
+| TODO    | Storybook component library       | Not implemented.                                                                                                                                                                                                                                                                        |
+| PARTIAL | Internationalization              | English/Hindi implemented; more Indian languages remain future work.                                                                                                                                                                                                                    |
 
 ## 15. DevOps And Infrastructure
 
 | Status  | Task                          | Evidence / Next Action                                                                                                                                                                                                                        |
 | ------- | ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PARTIAL | Docker containerization       | API `Dockerfile` and `.dockerignore` exist; CI image builds, registry publishing, runtime health checks, and deployment verification remain.                                                                                                  |
+| PARTIAL | Docker containerization       | API `Dockerfile` and `.dockerignore` exist; runtime runs as non-root with a healthcheck, and CI builds/scans the image. Registry publishing and deployment verification remain.                                                               |
 | TODO    | Kubernetes deployment         | No manifests/Helm charts found.                                                                                                                                                                                                               |
 | PARTIAL | CI/CD pipeline                | GitHub Actions installs all workspaces and runs lint, typechecks, contract/migration checks, API build, API/mobile coverage, E2E, and i18n validation. Coverage and RTDN-related E2E drift were repaired; deployment automation remains TODO. |
 | TODO    | Infrastructure as Code        | No Terraform/IaC found.                                                                                                                                                                                                                       |

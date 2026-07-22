@@ -25,6 +25,14 @@ export interface ReferralSummary {
     pendingPoints: number;
     redemptionThreshold: number;
     transactions: unknown[];
+    transactionsMeta?: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      hasNextPage: boolean;
+      hasPrevPage: boolean;
+    };
   };
   referredUsers: ReferralUserSummary[];
 }

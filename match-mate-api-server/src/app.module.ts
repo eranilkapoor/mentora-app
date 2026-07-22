@@ -15,6 +15,7 @@ import { ProfilesModule } from './modules/profiles/profiles.module';
 import { CorrelationIdMiddleware } from '@/common/middleware/correlation-id.middleware';
 import { JwtAuthGuard } from './modules/auth/guards/jwt-auth.guard';
 import { RateLimitGuard } from '@/common/guards/rate-limit.guard';
+import { InternalApiKeyGuard } from '@/common/guards/internal-api-key.guard';
 import { LoggerModule } from '@/common/logger/logger.module';
 import { MonitoringModule } from '@/common/monitoring/monitoring.module';
 import { AdminModule } from './modules/admin/admin.module';
@@ -102,6 +103,11 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     {
       provide: APP_GUARD,
       useClass: RateLimitGuard,
+    },
+    // 4 Internal service-to-service API key guard (opt-in by metadata)
+    {
+      provide: APP_GUARD,
+      useClass: InternalApiKeyGuard,
     },
     AppService,
   ],

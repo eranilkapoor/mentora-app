@@ -129,10 +129,10 @@
     ],
     "coverageThreshold": {
       "global": {
-        "branches": 1,
-        "functions": 1,
-        "lines": 2,
-        "statements": 2
+        "branches": 25,
+        "functions": 30,
+        "lines": 40,
+        "statements": 40
       },
       "./src/features/Membership/hooks/useUpgradePrompt.ts": {
         "branches": 100,

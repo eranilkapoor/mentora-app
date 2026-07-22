@@ -20,6 +20,14 @@ export interface WalletSummary {
   pendingPoints: number;
   redemptionThreshold: number;
   transactions: WalletTransaction[];
+  transactionsMeta?: {
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPrevPage: boolean;
+  };
 }
 
 export const walletApi = baseApi.injectEndpoints({

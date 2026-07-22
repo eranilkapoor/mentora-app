@@ -15,8 +15,10 @@ import {
   WalletTransactionStatus,
   WalletTransactionType,
 } from '../enums/wallet-transaction.enum';
+import { buildPaginationMeta } from '@/common/utils/pagination';
 
 const REDEMPTION_THRESHOLD = 1000;
+const WALLET_TRANSACTION_SUMMARY_LIMIT = 50;
 
 const normalizePoints = (value: unknown): number => {
   const numericValue = Number(value ?? 0);
@@ -163,17 +165,19 @@ export class WalletService {
 
   async getSummary(userId: string | Types.ObjectId) {
     const userObjectId = this.toObjectId(userId);
-    const [balance, transactions] = await Promise.all([
+    const transactionFilter = {
+      userId: userObjectId,
+      status: WalletTransactionStatus.POSTED,
+    };
+    const [balance, transactions, totalTransactions] = await Promise.all([
       this.getBalance(userObjectId),
       this.walletModel
-        .find({
-          userId: userObjectId,
-          status: WalletTransactionStatus.POSTED,
-        })
+        .find(transactionFilter)
         .sort({ createdAt: -1 })
-        .limit(50)
+        .limit(WALLET_TRANSACTION_SUMMARY_LIMIT)
         .lean()
         .exec(),
+      this.walletModel.countDocuments(transactionFilter),
     ]);
 
     return {
@@ -182,6 +186,11 @@ export class WalletService {
       pendingPoints: balance < REDEMPTION_THRESHOLD ? balance : 0,
       redemptionThreshold: REDEMPTION_THRESHOLD,
       transactions,
+      transactionsMeta: buildPaginationMeta(
+        totalTransactions,
+        1,
+        WALLET_TRANSACTION_SUMMARY_LIMIT,
+      ),
     };
   }
 

@@ -294,6 +294,19 @@ describe('auth strategies and guards', () => {
       expect(guard.canActivate(context())).toBe(true);
     });
 
+    it('allows internal API key routes without invoking Passport', () => {
+      reflector.getAllAndOverride
+        .mockReturnValueOnce(false)
+        .mockReturnValueOnce(true);
+      const parent = Object.getPrototypeOf(JwtAuthGuard.prototype) as {
+        canActivate(ctx: ExecutionContext): boolean;
+      };
+      const passport = jest.spyOn(parent, 'canActivate').mockReturnValue(true);
+
+      expect(guard.canActivate(context())).toBe(true);
+      expect(passport).not.toHaveBeenCalled();
+    });
+
     it('delegates protected routes to Passport', () => {
       reflector.getAllAndOverride.mockReturnValue(false);
       const parent = Object.getPrototypeOf(JwtAuthGuard.prototype) as {

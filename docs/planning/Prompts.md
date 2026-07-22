@@ -1,6 +1,6 @@
 # MatchMate Enterprise Readiness Prompts
 
-Last reviewed: 2026-07-14
+Last reviewed: 2026-07-22
 
 This file contains the next executable work, ordered by risk. Complete P0
 remediation before launch evidence or new product work. Completed capabilities
@@ -26,9 +26,12 @@ remain required.
 - API unit suites: 1,063 tests pass, but the earlier coverage command failed the
   configured per-file gates for auth, notifications, matches, profiles,
   subscriptions, and media services. Aggregate line coverage was 93.26%.
-- Mobile suites: 83 tests pass after repairing the onboarding expectation.
-  The earlier aggregate line coverage was only 5.96%; configured global
-  thresholds permit as little as 2% line coverage.
+- Mobile suites: 79 Jest suites and 208 tests pass after expanding coverage
+  across auth, onboarding, home, matches, chat, membership, profile, settings,
+  support, static pages, success stories, rewards, billing, and key hooks.
+  Aggregate mobile coverage is now 42.94% statements, 30.57% branches, 37.5%
+  functions, and 43.56% lines. Global Jest thresholds were raised to 40%
+  statements, 25% branches, 30% functions, and 40% lines as a staged floor.
 - API E2E now passes all 18 suites and 45 tests, including the repaired
   DB-backed interest lifecycle.
 - English/Hindi validation passed for 1,432 static translation keys.
@@ -84,7 +87,8 @@ Focused verification completed in this pass:
 - Repository `npm run verify` passed: API/mobile lint and type checks, OpenAPI
   drift, five migration validations, and the API build are green.
 - Full API unit suite: 1,063 tests passed.
-- Full mobile unit suite: 83 tests passed.
+- Full mobile unit suite: 79 Jest suites and 208 tests passed; coverage gates
+  now enforce 40% statements, 25% branches, 30% functions, and 40% lines.
 - Full API E2E suite: 45 tests passed.
 - Second priority pass focused suites: 69 distributed OTP/cache tests, 21
   access-session authorization tests, 73 payment/auth tests, and 38 OTP/2FA
@@ -727,23 +731,23 @@ provider event, queue job, and database operation without logging PII.
 
 ### 32. Harden CI, dependencies, artifacts, and the container
 
-- Run CodeQL or an equivalent SAST scanner on every pull request; it is
-  currently manual-only.
+- Keep CodeQL/SAST and Trivy API image scanning on every verification run.
 - Add dependency review, npm audit policy, secret scanning, license policy,
-  SBOM generation, container scanning, and signed provenance.
+  SBOM generation, and signed provenance.
 - Plan an Expo SDK upgrade that resolves the current moderate advisory paths
   while passing Expo Doctor and native regression tests.
 - Pin GitHub Actions and base images by immutable digest.
-- Run the API container as a non-root user with an init process, read-only root
-  filesystem, dropped capabilities, health check, resource limits, and no
+- Keep the API container non-root with a health check, then add an init process,
+  read-only root filesystem, dropped capabilities, resource limits, and no
   writable application directory except explicit temporary mounts.
 - Publish signed images from CI and promote the same digest across
   environments.
 
 ### 33. Raise mobile workflow and accessibility assurance
 
-There are 45 mobile screens but only 21 Jest test files and no native E2E
-framework in the repository.
+There are broad mobile Jest tests now covering 79 suites and 208 tests, but no
+native E2E framework in the repository and aggregate coverage is still below
+the desired 80% launch target.
 
 - Add Maestro/Detox/Appium coverage for registration, onboarding, matches,
   privacy, chat/read counts, subscription, restore, notifications, KYC,

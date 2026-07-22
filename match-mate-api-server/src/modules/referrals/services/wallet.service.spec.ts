@@ -13,6 +13,7 @@ describe('WalletService', () => {
   const findOne = jest.fn();
   const create = jest.fn();
   const aggregate = jest.fn();
+  const countDocuments = jest.fn();
   const findExec = jest.fn();
   const find = jest.fn(() => ({
     sort: jest.fn(() => ({
@@ -24,6 +25,7 @@ describe('WalletService', () => {
     create,
     aggregate,
     find,
+    countDocuments,
   } as unknown as Model<WalletTransactionDocument>;
   let service: WalletService;
 
@@ -34,6 +36,7 @@ describe('WalletService', () => {
     create.mockImplementation((value: unknown) => Promise.resolve(value));
     aggregate.mockResolvedValue([]);
     findExec.mockResolvedValue([]);
+    countDocuments.mockResolvedValue(0);
     service = new WalletService(model);
   });
 
@@ -205,20 +208,15 @@ describe('WalletService', () => {
   });
 
   it.each([
-    [1200, 1200, 0, true, false],
-    [500, 0, 500, false, true],
+    [1200, 1200, 0],
+    [500, 0, 500],
   ])(
-    'summarizes balance %s and pagination flags',
-    async (
-      balance,
-      redeemablePoints,
-      pendingPoints,
-      hasNextPage,
-      hasPrevPage,
-    ) => {
+    'summarizes balance %s with standard transaction pagination',
+    async (balance, redeemablePoints, pendingPoints) => {
       const userId = new Types.ObjectId();
       jest.spyOn(service, 'getBalance').mockResolvedValue(balance);
       findExec.mockResolvedValue([{ points: 100 }]);
+      countDocuments.mockResolvedValue(75);
 
       const result = await service.getSummary(userId);
 
@@ -228,9 +226,15 @@ describe('WalletService', () => {
         pendingPoints,
         redemptionThreshold: 1000,
         transactions: [{ points: 100 }],
+        transactionsMeta: {
+          total: 75,
+          page: 1,
+          limit: 50,
+          totalPages: 2,
+          hasNextPage: true,
+          hasPrevPage: false,
+        },
       });
-      expect(hasNextPage).toBe(balance >= 1000);
-      expect(hasPrevPage).toBe(balance < 1000);
     },
   );
 

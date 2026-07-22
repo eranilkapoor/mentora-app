@@ -111,6 +111,18 @@ describe('production environment validation', () => {
     ).toBeUndefined();
   });
 
+  it('rejects invalid Mongo pool sizing', () => {
+    const { error } = ENV_VALIDATION_SCHEMA.validate({
+      ...productionEnv(),
+      MONGO_MIN_POOL_SIZE: 25,
+      MONGO_MAX_POOL_SIZE: 10,
+    });
+
+    expect(error?.message).toContain(
+      'MONGO_MIN_POOL_SIZE cannot be greater than MONGO_MAX_POOL_SIZE',
+    );
+  });
+
   it('requires complete SMTP settings when SMTP email delivery is enabled', () => {
     const { error } = ENV_VALIDATION_SCHEMA.validate({
       ...productionEnv(),
