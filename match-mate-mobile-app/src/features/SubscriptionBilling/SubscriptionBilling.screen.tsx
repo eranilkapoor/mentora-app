@@ -656,7 +656,14 @@ export default function SubscriptionBillingScreen({
           {data.subscriptions.length ? (
             data.subscriptions.map((subscription, index) => (
               <SubscriptionRow
-                key={subscription._id}
+                key={
+                  subscription._id ??
+                  `${
+                    typeof subscription.planId === 'string'
+                      ? subscription.planId
+                      : (subscription.planId?._id ?? 'subscription')
+                  }-${subscription.startDate ?? index}`
+                }
                 item={subscription}
                 isLast={index === data.subscriptions.length - 1}
               />
@@ -676,7 +683,10 @@ export default function SubscriptionBillingScreen({
           {data.payments.length ? (
             data.payments.map((payment, index) => (
               <PaymentRow
-                key={payment._id}
+                key={
+                  payment._id ??
+                  `${payment.orderId ?? 'payment'}-${payment.paidAt ?? payment.initiatedAt ?? index}`
+                }
                 item={payment}
                 isLast={index === data.payments.length - 1}
               />

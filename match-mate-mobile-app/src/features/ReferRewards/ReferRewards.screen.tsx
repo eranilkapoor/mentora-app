@@ -377,7 +377,10 @@ export default function ReferRewardsScreen({
             {recentTransactions.length ? (
               recentTransactions.map((item, index) => (
                 <WalletTransactionRow
-                  key={item._id}
+                  key={
+                    item._id ??
+                    `${item.source ?? 'wallet'}-${item.createdAt ?? index}`
+                  }
                   item={item}
                   isLast={index === recentTransactions.length - 1}
                 />
@@ -399,7 +402,7 @@ export default function ReferRewardsScreen({
           {summary?.referredUsers?.length ? (
             summary.referredUsers.map((item, index) => (
               <RewardRow
-                key={item.userId}
+                key={item.userId ?? `${item.name ?? 'referral'}-${index}`}
                 item={item}
                 isLast={index === summary.referredUsers.length - 1}
               />
