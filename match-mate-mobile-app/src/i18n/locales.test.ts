@@ -1,4 +1,9 @@
 import { en, hi } from './locales';
+import {
+  DEFAULT_LOCALE,
+  FALLBACK_LOCALE,
+  SUPPORTED_LOCALES,
+} from './supportedLocales';
 
 type LocaleValue =
   string | number | boolean | null | LocaleTree | LocaleValue[];
@@ -25,6 +30,12 @@ const flattenKeys = (
 };
 
 describe('locale resources', () => {
+  it('declares the launch-supported locale set', () => {
+    expect(SUPPORTED_LOCALES).toEqual(['en', 'hi']);
+    expect(DEFAULT_LOCALE).toBe('en');
+    expect(FALLBACK_LOCALE).toBe('en');
+  });
+
   it('keeps Hindi namespaces aligned with English namespaces', () => {
     expect(Object.keys(hi).sort()).toEqual(Object.keys(en).sort());
   });

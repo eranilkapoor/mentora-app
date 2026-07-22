@@ -1,6 +1,11 @@
 import { ApiResponse } from '@/core/types';
 import { baseApi } from './baseApi.service';
 import type { PaginatedItems } from '@matchmate/api-contract';
+import {
+  mergePaginatedApiResponse,
+  serializePaginatedQueryArgs,
+  shouldRefetchPaginatedQuery,
+} from './paginationCache.helpers';
 
 export type NotificationType =
   | 'info'
@@ -73,6 +78,9 @@ export const notificationApi = baseApi.injectEndpoints({
         ...(params ? { params } : {}),
       }),
       providesTags: ['Notification'],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
 
     getUnreadNotificationCount: builder.query<

@@ -17,6 +17,7 @@ module.exports = [
       'coverage/**',
       'android/**',
       'ios/**',
+      '.rnstorybook/storybook.requires.ts',
       '*.lock',
       'babel.config.js',
       'metro.config.js',

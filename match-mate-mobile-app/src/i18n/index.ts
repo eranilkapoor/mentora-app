@@ -2,6 +2,7 @@ import i18n, { Resource } from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import { en, hi } from './locales';
 import { reportError } from '@/core/utils/errorReporter';
+import { DEFAULT_LOCALE, FALLBACK_LOCALE } from './supportedLocales';
 
 // Typed resources (better TS support)
 const resources: Resource = {
@@ -9,15 +10,12 @@ const resources: Resource = {
   hi: { translation: hi },
 };
 
-// Default language (can be dynamic later)
-const DEFAULT_LANGUAGE = 'en';
-
 void i18n
   .use(initReactI18next)
   .init({
     resources,
-    lng: DEFAULT_LANGUAGE, // explicitly set language
-    fallbackLng: 'en',
+    lng: DEFAULT_LOCALE,
+    fallbackLng: FALLBACK_LOCALE,
 
     // Debug only in dev
     debug: __DEV__,

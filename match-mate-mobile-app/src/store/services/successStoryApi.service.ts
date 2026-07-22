@@ -5,6 +5,11 @@ import type {
   SuccessStory,
 } from '@matchmate/api-contract';
 import { baseApi } from './baseApi.service';
+import {
+  mergePaginatedApiResponse,
+  serializePaginatedQueryArgs,
+  shouldRefetchPaginatedQuery,
+} from './paginationCache.helpers';
 
 export type {
   SubmitSuccessStoryRequest,
@@ -24,6 +29,9 @@ export const successStoryApi = baseApi.injectEndpoints({
         ...(params ? { params } : {}),
       }),
       providesTags: ['SuccessStory'],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
     getMySuccessStories: builder.query<
       ApiResponse<SuccessStoriesResponse>,
@@ -35,6 +43,9 @@ export const successStoryApi = baseApi.injectEndpoints({
         ...(params ? { params } : {}),
       }),
       providesTags: ['SuccessStory'],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
     submitSuccessStory: builder.mutation<
       ApiResponse<SuccessStory>,

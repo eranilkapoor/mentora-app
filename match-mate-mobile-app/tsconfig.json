@@ -31,6 +31,13 @@
     "isolatedModules": true,
     "allowImportingTsExtensions": true
   },
-  "include": ["src", "*.ts", "*.tsx", "../packages/api-contract/src/**/*.ts"],
+  "include": [
+    "src",
+    ".rnstorybook/**/*.ts",
+    ".rnstorybook/**/*.tsx",
+    "*.ts",
+    "*.tsx",
+    "../packages/api-contract/src/**/*.ts"
+  ],
   "exclude": ["node_modules", "dist", ".expo", "android", "ios"]
 }

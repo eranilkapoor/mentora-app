@@ -1,6 +1,11 @@
 import { baseApi } from './baseApi.service';
 import type { PaginationMeta } from '@matchmate/api-contract';
 import {
+  mergePaginatedApiResponse,
+  serializePaginatedQueryArgs,
+  shouldRefetchPaginatedQuery,
+} from './paginationCache.helpers';
+import {
   ApiResponse,
   Caste,
   Country,
@@ -240,6 +245,9 @@ export const matchApi = baseApi.injectEndpoints({
         };
       },
       providesTags: [{ type: 'Match', id: 'DISCOVERY' }],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
 
     getMyMatches: builder.query<
@@ -255,6 +263,9 @@ export const matchApi = baseApi.injectEndpoints({
         },
       }),
       providesTags: [{ type: 'Match', id: 'MY' }],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
 
     getShortlistedProfiles: builder.query<
@@ -270,6 +281,9 @@ export const matchApi = baseApi.injectEndpoints({
         },
       }),
       providesTags: ['Shortlist'],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
 
     getWhoViewedMe: builder.query<
@@ -285,6 +299,9 @@ export const matchApi = baseApi.injectEndpoints({
         },
       }),
       providesTags: [{ type: 'Match', id: 'VIEWERS' }],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
 
     getMatchStats: builder.query<ApiResponse<MatchStats>, void>({
@@ -331,6 +348,9 @@ export const matchApi = baseApi.injectEndpoints({
         },
       }),
       providesTags: [{ type: 'Match', id: 'INTERESTS' }],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
 
     getSentInterests: builder.query<
@@ -346,6 +366,9 @@ export const matchApi = baseApi.injectEndpoints({
         },
       }),
       providesTags: [{ type: 'Match', id: 'INTERESTS' }],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
 
     sendInterest: builder.mutation<unknown, { receiverId: string }>({

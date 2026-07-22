@@ -4,7 +4,11 @@ const path = require('path');
 const root = path.resolve(__dirname, '..');
 const srcDir = path.join(root, 'src');
 const localesDir = path.join(srcDir, 'i18n', 'locales');
-const localeNames = ['en', 'hi'];
+const localeNames = fs
+  .readdirSync(localesDir, { withFileTypes: true })
+  .filter((entry) => entry.isDirectory())
+  .map((entry) => entry.name)
+  .sort();
 const supportedExtensions = new Set(['.ts', '.tsx']);
 const requiredRuntimeTranslationKeys = [
   'options.profile_status.draft',

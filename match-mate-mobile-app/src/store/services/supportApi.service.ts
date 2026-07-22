@@ -7,6 +7,11 @@ import type {
   SupportTicketsResponse,
   SupportTicketStatus,
 } from '@matchmate/api-contract';
+import {
+  mergePaginatedApiResponse,
+  serializePaginatedQueryArgs,
+  shouldRefetchPaginatedQuery,
+} from './paginationCache.helpers';
 
 export type {
   CreateSupportTicketRequest,
@@ -31,6 +36,9 @@ export const supportApi = baseApi.injectEndpoints({
         ...(params ? { params } : {}),
       }),
       providesTags: ['SupportTicket'],
+      serializeQueryArgs: serializePaginatedQueryArgs,
+      merge: mergePaginatedApiResponse,
+      forceRefetch: shouldRefetchPaginatedQuery,
     }),
 
     getSupportTicket: builder.query<ApiResponse<SupportTicket>, string>({
