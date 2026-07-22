@@ -155,6 +155,84 @@ export class AppController {
   @Public()
   @SkipThrottle()
   @SkipRateLimit()
+  @Get('child-safety')
+  @Version(VERSION_NEUTRAL)
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Cache-Control', 'public, max-age=300')
+  childSafety(
+    @Query('theme') theme?: string,
+    @Query('lang') lang?: string,
+    @Query('fontSize') fontSize?: string,
+    @Query('boldText') boldText?: string,
+    @Query('highContrast') highContrast?: string,
+    @Query('reduceMotion') reduceMotion?: string,
+  ) {
+    return this.appService.getStaticHelpPage('child-safety', {
+      theme,
+      language: lang,
+      fontSize,
+      boldText,
+      highContrast,
+      reduceMotion,
+    });
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('ai-tutor-disclaimer')
+  @Version(VERSION_NEUTRAL)
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Cache-Control', 'public, max-age=300')
+  aiTutorDisclaimer(
+    @Query('theme') theme?: string,
+    @Query('lang') lang?: string,
+    @Query('fontSize') fontSize?: string,
+    @Query('boldText') boldText?: string,
+    @Query('highContrast') highContrast?: string,
+    @Query('reduceMotion') reduceMotion?: string,
+  ) {
+    return this.appService.getStaticHelpPage('ai-tutor-disclaimer', {
+      theme,
+      language: lang,
+      fontSize,
+      boldText,
+      highContrast,
+      reduceMotion,
+    });
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
+  @Get('refund-policy')
+  @Version(VERSION_NEUTRAL)
+  @Header('Content-Type', 'text/html; charset=utf-8')
+  @Header('Access-Control-Allow-Origin', '*')
+  @Header('Cache-Control', 'public, max-age=300')
+  refundPolicy(
+    @Query('theme') theme?: string,
+    @Query('lang') lang?: string,
+    @Query('fontSize') fontSize?: string,
+    @Query('boldText') boldText?: string,
+    @Query('highContrast') highContrast?: string,
+    @Query('reduceMotion') reduceMotion?: string,
+  ) {
+    return this.appService.getStaticHelpPage('refund-policy', {
+      theme,
+      language: lang,
+      fontSize,
+      boldText,
+      highContrast,
+      reduceMotion,
+    });
+  }
+
+  @Public()
+  @SkipThrottle()
+  @SkipRateLimit()
   @Get('faqs')
   @Version(VERSION_NEUTRAL)
   @Header('Content-Type', 'text/html; charset=utf-8')

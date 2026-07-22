@@ -1,10 +1,7 @@
 import common from './en/common.json';
 import auth from './en/auth.json';
 import profile from './en/profile.json';
-import preference from './en/preference.json';
 import home from './en/home.json';
-import matches from './en/matches.json';
-import match_detail from './en/match_detail.json';
 import membership from './en/membership.json';
 import chat from './en/chat.json';
 import notifications from './en/notifications.json';
@@ -22,10 +19,7 @@ import api from './en/api.json';
 import hiCommon from './hi/common.json';
 import hiAuth from './hi/auth.json';
 import hiProfile from './hi/profile.json';
-import hiPreference from './hi/preference.json';
 import hiHome from './hi/home.json';
-import hiMatches from './hi/matches.json';
-import hiMatch_detail from './hi/match_detail.json';
 import hiMembership from './hi/membership.json';
 import hiChat from './hi/chat.json';
 import hiNotifications from './hi/notifications.json';
@@ -44,11 +38,8 @@ export const en = {
   common,
   auth,
   profile,
-  preference,
   home,
   membership,
-  matches,
-  match_detail,
   chat,
   notifications,
   settings,
@@ -67,11 +58,8 @@ export const hi = {
   common: hiCommon,
   auth: hiAuth,
   profile: hiProfile,
-  preference: hiPreference,
   home: hiHome,
   membership: hiMembership,
-  matches: hiMatches,
-  match_detail: hiMatch_detail,
   chat: hiChat,
   notifications: hiNotifications,
   settings: hiSettings,

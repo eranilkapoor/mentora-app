@@ -58,14 +58,6 @@ describe('AdminService', () => {
     updateEducationInfo: jest.fn(),
     updateFamilyInfo: jest.fn(),
   };
-  const preferenceService = {
-    getMyPreference: jest.fn(),
-    createPreference: jest.fn(),
-    updateFilters: jest.fn(),
-    updateSettings: jest.fn(),
-    updateWeights: jest.fn(),
-    updateAboutPartner: jest.fn(),
-  };
   const subscriptionsService = {
     purchasePlan: jest.fn(),
     cancelSubscription: jest.fn(),
@@ -108,7 +100,6 @@ describe('AdminService', () => {
       analyticsService as never,
       notificationsService as never,
       profilesService as never,
-      preferenceService as never,
       subscriptionsService as never,
       settingsService as never,
       profileModel as never,

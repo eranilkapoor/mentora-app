@@ -35,7 +35,6 @@ const SETTINGS_EXPORT_COLLECTIONS = [
 export const USER_DATA_EXPORT_COLLECTIONS = {
   user: COLLECTION_NAMES.USER,
   profile: COLLECTION_NAMES.PROFILE,
-  preference: COLLECTION_NAMES.PREFERENCE,
   media: COLLECTION_NAMES.MEDIA,
   sessions: COLLECTION_NAMES.USER_SESSION,
   notifications: COLLECTION_NAMES.NOTIFICATION,
@@ -50,15 +49,11 @@ export const USER_DATA_EXPORT_COLLECTIONS = {
   reports: COLLECTION_NAMES.USER_REPORT,
   consents: COLLECTION_NAMES.USER_CONSENT,
   activityLogs: COLLECTION_NAMES.ACTIVITY_LOG,
-  interests: COLLECTION_NAMES.INTEREST,
-  matches: COLLECTION_NAMES.MATCH,
-  curatedMatches: COLLECTION_NAMES.CURATED_MATCH,
   chatRooms: COLLECTION_NAMES.CHAT_ROOM,
   chatMessages: COLLECTION_NAMES.CHAT_MESSAGE,
   verification: COLLECTION_NAMES.VERIFICATION,
   analyticsEvents: COLLECTION_NAMES.ANALYTICS_EVENT,
   supportTickets: COLLECTION_NAMES.SUPPORT_TICKET,
-  successStories: COLLECTION_NAMES.SUCCESS_STORY,
   studentProfiles: COLLECTION_NAMES.STUDENT_PROFILE,
   parentProfiles: COLLECTION_NAMES.PARENT_PROFILE,
   parentStudentRelationships: COLLECTION_NAMES.PARENT_STUDENT_RELATIONSHIP,
@@ -90,7 +85,6 @@ export class DataExportService {
     const [
       user,
       profile,
-      preference,
       media,
       sessions,
       notifications,
@@ -104,15 +98,11 @@ export class DataExportService {
       reports,
       consents,
       activityLogs,
-      interests,
-      matches,
-      curatedMatches,
       chatRooms,
       chatMessages,
       verification,
       analyticsEvents,
       supportTickets,
-      successStories,
       studentProfiles,
       parentProfiles,
       parentStudentRelationships,
@@ -125,9 +115,6 @@ export class DataExportService {
         _id: userObjectId,
       }),
       this.collection(USER_DATA_EXPORT_COLLECTIONS.profile).findOne(byUserId),
-      this.collection(USER_DATA_EXPORT_COLLECTIONS.preference).findOne(
-        byUserId,
-      ),
       this.collection(USER_DATA_EXPORT_COLLECTIONS.media)
         .find(byUserId)
         .toArray(),
@@ -174,21 +161,6 @@ export class DataExportService {
       this.collection(USER_DATA_EXPORT_COLLECTIONS.activityLogs)
         .find(byUserId)
         .toArray(),
-      this.collection(USER_DATA_EXPORT_COLLECTIONS.interests)
-        .find({
-          $or: [{ senderId: userObjectId }, { receiverId: userObjectId }],
-        })
-        .toArray(),
-      this.collection(USER_DATA_EXPORT_COLLECTIONS.matches)
-        .find({
-          $or: [{ userId: userObjectId }, { targetUserId: userObjectId }],
-        })
-        .toArray(),
-      this.collection(USER_DATA_EXPORT_COLLECTIONS.curatedMatches)
-        .find({
-          $or: [{ userId: userObjectId }, { profileUserId: userObjectId }],
-        })
-        .toArray(),
       this.collection(USER_DATA_EXPORT_COLLECTIONS.chatRooms)
         .find({ participants: userObjectId })
         .toArray(),
@@ -204,9 +176,6 @@ export class DataExportService {
         .find({ userId })
         .toArray(),
       this.collection(USER_DATA_EXPORT_COLLECTIONS.supportTickets)
-        .find(byUserId)
-        .toArray(),
-      this.collection(USER_DATA_EXPORT_COLLECTIONS.successStories)
         .find(byUserId)
         .toArray(),
       this.collection(USER_DATA_EXPORT_COLLECTIONS.studentProfiles)
@@ -312,7 +281,6 @@ export class DataExportService {
       exportedAt: new Date(),
       user,
       profile,
-      preference,
       media,
       settings,
       sessions,
@@ -322,11 +290,6 @@ export class DataExportService {
       invoices,
       referrals,
       walletTransactions,
-      relationships: {
-        interests,
-        matches,
-        curatedMatches,
-      },
       chat: {
         rooms: chatRooms,
         messages: chatMessages,
@@ -334,7 +297,6 @@ export class DataExportService {
       verification,
       analyticsEvents,
       supportTickets,
-      successStories,
       learning: {
         studentProfiles,
         parentProfile: parentProfiles,

@@ -12,12 +12,11 @@ import { AppNavigationProp, AppStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<AppStackParamList>();
 
-type SettingsEntryTarget = 'EditProfile' | 'EditPreference' | 'PrivacySettings';
+type SettingsEntryTarget = 'EditProfile' | 'PrivacySettings';
 type TabEntryTarget = 'Learn' | 'Schedule' | 'Progress' | 'Profile';
 
 const SETTINGS_TARGETS = new Set<SettingsEntryTarget>([
   'EditProfile',
-  'EditPreference',
   'PrivacySettings',
 ]);
 const TAB_TARGETS = new Set<TabEntryTarget>([

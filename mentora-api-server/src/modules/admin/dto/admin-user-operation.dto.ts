@@ -11,7 +11,6 @@ import {
 import { Type } from 'class-transformer';
 import { Role, Status } from '@/common/enums';
 import { CreateProfileDto } from '@/modules/profiles/dto/create-profile.dto';
-import { UpdatePreferenceDto } from '@/modules/profiles/dto/preference.dto';
 
 export enum AdminProfileSection {
   PERSONAL = 'personal',
@@ -84,12 +83,6 @@ export class AdminUpdateUserProfileSectionDto {
   reason?: string;
 }
 
-export class AdminUpdateUserPreferencesDto extends UpdatePreferenceDto {
-  @IsOptional()
-  @IsString()
-  reason?: string;
-}
-
 export class AdminAssignUserPlanDto {
   @IsString()
   planId!: string;
@@ -126,11 +119,6 @@ export class AdminCompleteUserSetupDto {
   @ValidateNested()
   @Type(() => AdminCreateUserProfileDto)
   profile?: AdminCreateUserProfileDto;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => AdminUpdateUserPreferencesDto)
-  preferences?: AdminUpdateUserPreferencesDto;
 
   @IsOptional()
   @ValidateNested()

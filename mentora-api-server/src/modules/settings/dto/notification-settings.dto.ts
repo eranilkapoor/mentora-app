@@ -16,10 +16,10 @@ export class ChannelPreferenceDto {
 }
 
 export const NOTIFICATION_EVENT_KEYS = [
-  'interestReceived',
-  'interestAccepted',
-  'profileView',
-  'matchFound',
+  'sessionScheduled',
+  'sessionReminder',
+  'progressUpdate',
+  'parentAlert',
   'messageReceived',
   'subscription',
   'marketing',
@@ -66,22 +66,22 @@ export class UpdateNotificationSettingsDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => ChannelPreferenceDto)
-  interestReceived?: ChannelPreferenceDto;
+  sessionScheduled?: ChannelPreferenceDto;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => ChannelPreferenceDto)
-  interestAccepted?: ChannelPreferenceDto;
+  sessionReminder?: ChannelPreferenceDto;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => ChannelPreferenceDto)
-  profileView?: ChannelPreferenceDto;
+  progressUpdate?: ChannelPreferenceDto;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => ChannelPreferenceDto)
-  matchFound?: ChannelPreferenceDto;
+  parentAlert?: ChannelPreferenceDto;
 
   @IsOptional()
   @ValidateNested()

@@ -13,7 +13,6 @@ import {
   AdminCreateUserDto,
   AdminProfileSection,
   AdminSettingsCategory,
-  AdminUpdateUserPreferencesDto,
   AdminUpdateUserProfileSectionDto,
   AdminUpdateUserSettingsDto,
 } from '../dto/admin-user-operation.dto';
@@ -26,7 +25,6 @@ import {
   ProfileDocument,
 } from '@/modules/profiles/schemas/profile/profile.schema';
 import { ProfilesService } from '@/modules/profiles/services/profiles.service';
-import { PreferenceService } from '@/modules/profiles/services/preference.service';
 import {
   Media,
   MediaDocument,
@@ -73,7 +71,6 @@ export class AdminService {
     private readonly analyticsService: AnalyticsService,
     private readonly notificationsService: NotificationsService,
     private readonly profilesService: ProfilesService,
-    private readonly preferenceService: PreferenceService,
     private readonly subscriptionsService: SubscriptionsService,
     private readonly settingsService: SettingsService,
     @InjectModel(Profile.name)
@@ -266,15 +263,6 @@ export class AdminService {
       );
     }
 
-    if (dto.preferences) {
-      result.preferences = await this.updateUserPreferences(
-        userId,
-        dto.preferences,
-        actorId,
-        req,
-      );
-    }
-
     if (dto.subscription) {
       result.subscription = await this.assignUserPlan(
         userId,
@@ -333,7 +321,7 @@ export class AdminService {
         profile = await this.profilesService.updatePhysicalInfo(
           appReq,
           userId,
-          dto.data as never,
+          dto.data,
         );
         break;
       case AdminProfileSection.EDUCATION:
@@ -372,62 +360,6 @@ export class AdminService {
     );
 
     return profile;
-  }
-
-  async updateUserPreferences(
-    userId: string,
-    dto: AdminUpdateUserPreferencesDto,
-    actorId?: string,
-    req?: AuthenticatedRequest,
-  ) {
-    await this.ensureUserExists(userId);
-    const before = await this.preferenceService.getMyPreference(userId);
-    let preferences = before;
-
-    try {
-      await this.preferenceService.createPreference(userId, dto);
-    } catch {
-      // Existing preference records are updated section-by-section below.
-    }
-
-    if (dto.filters) {
-      preferences = await this.preferenceService.updateFilters(
-        userId,
-        dto.filters,
-      );
-    }
-    if (dto.settings) {
-      preferences = await this.preferenceService.updateSettings(
-        userId,
-        dto.settings,
-      );
-    }
-    if (dto.weights) {
-      preferences = await this.preferenceService.updateWeights(
-        userId,
-        dto.weights,
-      );
-    }
-    if (dto.aboutPartner !== undefined) {
-      preferences = await this.preferenceService.updateAboutPartner(
-        userId,
-        dto.aboutPartner,
-      );
-    }
-
-    await this.writeUserOperationAudit(
-      req,
-      actorId,
-      'user.preferences_updated',
-      userId,
-      {
-        reason: dto.reason,
-        before,
-        after: dto,
-      },
-    );
-
-    return preferences;
   }
 
   async assignUserPlan(
@@ -929,11 +861,11 @@ export class AdminService {
     return {
       range: { fromDate, toDate },
       analytics: analyticsOverview,
-      matchSuccess: {
+      learningConversion: {
         impressionToViewRate: conversion.impressionToViewRate ?? 0,
-        viewToInterestRate: conversion.viewToInterestRate ?? 0,
-        interestToMatchRate: conversion.interestToMatchRate ?? 0,
-        matchToChatRate: conversion.matchToChatRate ?? 0,
+        viewToSessionRequestRate: conversion.viewToSessionRequestRate ?? 0,
+        sessionRequestToStartRate: conversion.sessionRequestToStartRate ?? 0,
+        sessionStartToChatRate: conversion.sessionStartToChatRate ?? 0,
       },
       users: {
         registeredInRange: users,

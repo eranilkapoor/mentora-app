@@ -7,14 +7,14 @@ export enum ProfileVisibility {
 
 export enum VisibilityLevel {
   EVERYONE = 'everyone',
-  ACCEPTED_MATCHES = 'accepted_matches',
+  SCHEDULED_SESSIONS = 'scheduled_sessions',
   CONTACTS_ONLY = 'contacts_only',
   NO_ONE = 'no_one',
 }
 
 export enum CommunicationAccess {
   ALL = 'all',
-  MATCHES_ONLY = 'matches_only',
+  SCHEDULED_SESSIONS_ONLY = 'scheduled_sessions_only',
   CONTACTS_ONLY = 'contacts_only',
   NO_ONE = 'no_one',
 }

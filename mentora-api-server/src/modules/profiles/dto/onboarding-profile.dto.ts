@@ -9,25 +9,10 @@ import {
   IsBoolean,
   Matches,
   ValidateBy,
-  Min,
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
-import { Gender, Eating, Drinking, Smoking } from '@/common/enums';
-import {
-  BodyType,
-  Caste,
-  Complexion,
-  Country,
-  FamilyStatus,
-  FamilyType,
-  FamilyValue,
-  ManglikStatus,
-  MaritalStatus,
-  ProfileFor,
-  Qualification,
-  Religion,
-  SiblingType,
-} from '@/common/enums';
+import { Gender } from '@/common/enums';
+import { Country, Qualification, Religion } from '@/common/enums';
 
 function isValidDateString(date: string): boolean {
   const [year, month, day] = date.split('-').map(Number);
@@ -47,7 +32,7 @@ function isValidDateString(date: string): boolean {
   ) {
     age -= 1;
   }
-  return age >= 18 && age <= 100;
+  return age >= 5 && age <= 100;
 }
 
 const normalizeCountryValue = (value: unknown): unknown =>
@@ -58,18 +43,7 @@ const normalizeCountryValue = (value: unknown): unknown =>
 const normalizeCountryTransform = ({ value }: { value: unknown }): unknown =>
   normalizeCountryValue(value);
 
-const normalizeCountryArrayTransform = ({
-  value,
-}: {
-  value: unknown;
-}): unknown =>
-  Array.isArray(value) ? value.map(normalizeCountryValue) : value;
-
 export class BasicDto {
-  @IsString()
-  @IsNotEmpty()
-  profileFor!: ProfileFor;
-
   @IsString()
   @IsNotEmpty()
   firstName!: string;
@@ -107,40 +81,33 @@ export class BasicDto {
   @IsString()
   city?: string;
 
-  @IsEnum(MaritalStatus)
-  maritalStatus!: MaritalStatus;
-
-  @Type(() => Number)
-  @IsNumber()
-  height!: number;
-
   @IsString()
   @IsNotEmpty()
   qualification!: string;
 
   @IsString()
   @IsNotEmpty()
-  occupation!: string;
+  gradeLevel!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  institutionName!: string;
+
+  @IsString()
+  @IsNotEmpty()
+  primaryGoal!: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  accessibilityNeeds?: string[];
 }
 
 export class PhysicalDto {
-  @Type(() => Number)
-  @IsNumber()
-  height!: number;
-
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  weight?: number;
-
-  @IsOptional()
-  @IsEnum(BodyType)
-  bodyType?: BodyType;
-
-  @IsOptional()
-  @IsEnum(Complexion)
-  complexion?: Complexion;
+  @IsArray()
+  @IsString({ each: true })
+  accessibilityNeeds?: string[];
 }
 
 export class EducationDto {
@@ -165,58 +132,6 @@ export class EducationDto {
   annualIncome?: string;
 }
 
-export class SiblingDetailDto {
-  @IsNotEmpty()
-  @IsEnum(SiblingType, {
-    message: 'Type must be either brother or sister',
-  })
-  type!: SiblingType;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  married!: boolean;
-
-  @IsOptional()
-  @IsString()
-  occupation?: string;
-}
-
-export class SiblingsDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  brothersCount?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  sistersCount?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  marriedBrothersCount?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  marriedSistersCount?: number;
-
-  @IsOptional()
-  @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SiblingDetailDto)
-  details?: SiblingDetailDto[];
-
-  @IsOptional()
-  @IsString()
-  note?: string;
-}
-
 export class FamilyDto {
   @IsOptional()
   @IsString()
@@ -233,23 +148,6 @@ export class FamilyDto {
   @IsOptional()
   @IsString()
   motherOccupation?: string;
-
-  @IsOptional()
-  @IsEnum(FamilyType)
-  familyType?: FamilyType;
-
-  @IsOptional()
-  @IsEnum(FamilyStatus)
-  familyStatus?: FamilyStatus;
-
-  @IsOptional()
-  @IsEnum(FamilyValue)
-  familyValues?: FamilyValue;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => SiblingsDto)
-  siblings?: SiblingsDto;
 }
 
 export class RangeDto {
@@ -266,105 +164,47 @@ export class PreferencesDto {
   @IsOptional()
   @ValidateNested()
   @Type(() => RangeDto)
-  ageRange?: RangeDto;
+  dailySessionMinutes?: RangeDto;
 
   @IsOptional()
   @ValidateNested()
   @Type(() => RangeDto)
-  heightRange?: RangeDto;
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(MaritalStatus, { each: true })
-  maritalStatus?: MaritalStatus[];
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(Religion, { each: true })
-  religion?: Religion[];
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(Caste, { each: true })
-  caste?: Caste[];
+  gradeRange?: RangeDto;
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  subCaste?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(ManglikStatus, { each: true })
-  manglikStatus?: ManglikStatus[];
-
-  @IsOptional()
-  @Transform(normalizeCountryArrayTransform)
-  @IsArray()
-  @IsEnum(Country, { each: true })
-  country?: Country[];
+  subjects?: string[];
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  state?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  city?: string[];
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(Qualification, { each: true })
-  qualification?: Qualification[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  occupation?: string[];
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => RangeDto)
-  annualIncomeRange?: RangeDto;
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(BodyType, { each: true })
-  bodyType?: BodyType[];
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(Complexion, { each: true })
-  complexion?: Complexion[];
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(Smoking, { each: true })
-  smoking?: Smoking[];
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(Drinking, { each: true })
-  drinking?: Drinking[];
-
-  @IsOptional()
-  @IsArray()
-  @IsEnum(Eating, { each: true })
-  eating?: Eating[];
-
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
-  languagesKnown?: string[];
+  learningGoals?: string[];
 
   @IsOptional()
   @IsString()
-  aboutPartner?: string;
+  preferredTutorMode?: 'ai' | 'human' | 'hybrid';
 
   @IsOptional()
-  isStrict?: boolean;
+  @IsArray()
+  @IsString({ each: true })
+  preferredDeliveryModes?: string[];
+
+  @IsOptional()
+  @IsString()
+  learningPace?: 'guided' | 'balanced' | 'accelerated';
+
+  @IsOptional()
+  @IsNumber()
+  weeklyStudyMinutes?: number;
+
+  @IsOptional()
+  @IsString()
+  parentDigestFrequency?: 'after_each_session' | 'daily' | 'weekly' | 'monthly';
+
+  @IsOptional()
+  @IsBoolean()
+  parentalApprovalRequired?: boolean;
 }
 
 const parseJSON =

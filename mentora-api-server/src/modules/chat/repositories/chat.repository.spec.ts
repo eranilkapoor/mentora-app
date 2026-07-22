@@ -32,7 +32,6 @@ describe('ChatRepository', () => {
   const communicationQuery = fluent([]);
   const mediaQuery = fluent([]);
   const blockQuery = fluent([]);
-  const matchQuery = fluent([]);
   const messageModel = {
     create: jest.fn(),
     find: jest.fn(() => messageQuery),
@@ -57,10 +56,6 @@ describe('ChatRepository', () => {
   const profileModel = { find: jest.fn(() => profileQuery) };
   const communicationModel = { find: jest.fn(() => communicationQuery) };
   const mediaModel = { find: jest.fn(() => mediaQuery) };
-  const matchModel = {
-    findOne: jest.fn(() => matchQuery),
-    find: jest.fn(() => matchQuery),
-  };
   const blockModel = {
     findOne: jest.fn(() => blockQuery),
     find: jest.fn(() => blockQuery),
@@ -78,7 +73,6 @@ describe('ChatRepository', () => {
       communicationQuery,
       mediaQuery,
       blockQuery,
-      matchQuery,
     ])
       query.setValue([]);
     repository = new ChatRepository(
@@ -88,7 +82,6 @@ describe('ChatRepository', () => {
       profileModel as never,
       communicationModel as never,
       mediaModel as never,
-      matchModel as never,
       blockModel as never,
       verificationModel as never,
     );
@@ -203,8 +196,5 @@ describe('ChatRepository', () => {
     await expect(repository.getBlockedRelationUserIds(userId)).resolves.toEqual(
       [targetId],
     );
-    await repository.findActiveMatchBetween(userId, targetId);
-    await repository.findMatchesForUser(userId);
-    expect(matchModel.findOne).toHaveBeenCalled();
   });
 });

@@ -4,6 +4,7 @@ import { fireEvent, render, waitFor } from '@testing-library/react-native';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 
 const mockNavigate = jest.fn();
+const mockParentNavigate = jest.fn();
 const mockGoBack = jest.fn();
 const mockSendMessage = jest.fn();
 const mockMarkRoomRead = jest.fn();
@@ -234,7 +235,13 @@ describe('ChatScreen', () => {
   it('renders messages and wires chat actions', async () => {
     const { getByLabelText, getByText } = await render(
       <ChatScreen
-        navigation={{ navigate: mockNavigate, goBack: mockGoBack } as never}
+        navigation={
+          {
+            navigate: mockNavigate,
+            getParent: () => ({ navigate: mockParentNavigate }),
+            goBack: mockGoBack,
+          } as never
+        }
         route={
           {
             params: {
@@ -252,9 +259,7 @@ describe('ChatScreen', () => {
     expect(getByText('Mine')).toBeTruthy();
 
     await fireEvent.press(getByText('Asha'));
-    expect(mockNavigate).toHaveBeenCalledWith('MatchDetails', {
-      userId: 'match-1',
-    });
+    expect(mockParentNavigate).toHaveBeenCalledWith('Profile');
 
     await fireEvent.changeText(getByLabelText('chat.message_input'), 'Hi');
     await fireEvent.press(getByLabelText('chat.send_message'));

@@ -92,12 +92,6 @@ describe('DataExportService', () => {
     expect(findCalls).toContainEqual({
       $or: [{ reportedBy: userObjectId }, { reportedUserId: userObjectId }],
     });
-    expect(findCalls).toContainEqual({
-      $or: [{ senderId: userObjectId }, { receiverId: userObjectId }],
-    });
-    expect(findCalls).toContainEqual({
-      $or: [{ userId: userObjectId }, { targetUserId: userObjectId }],
-    });
     expect(findCalls).toContainEqual({ participants: userObjectId });
     expect(findCalls).toContainEqual({ userId });
   });
@@ -108,15 +102,15 @@ describe('DataExportService', () => {
         COLLECTION_NAMES.USER,
         COLLECTION_NAMES.PAYMENT_INVOICE,
         COLLECTION_NAMES.WALLET_TRANSACTION,
-        COLLECTION_NAMES.INTEREST,
-        COLLECTION_NAMES.MATCH,
-        COLLECTION_NAMES.CURATED_MATCH,
         COLLECTION_NAMES.CHAT_ROOM,
         COLLECTION_NAMES.CHAT_MESSAGE,
         COLLECTION_NAMES.VERIFICATION,
         COLLECTION_NAMES.ANALYTICS_EVENT,
         COLLECTION_NAMES.SUPPORT_TICKET,
-        COLLECTION_NAMES.SUCCESS_STORY,
+        COLLECTION_NAMES.STUDENT_PROFILE,
+        COLLECTION_NAMES.PARENT_PROFILE,
+        COLLECTION_NAMES.LEARNING_SCHEDULE,
+        COLLECTION_NAMES.LEARNING_ENTITLEMENT,
       ]),
     );
   });

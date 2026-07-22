@@ -52,6 +52,7 @@ AiTutorSession
 - [Technical Plan](docs/planning/TECHNICAL-PLAN.md): Mentora architecture, module map, API surfaces, and migration strategy.
 - [Database Plan](docs/planning/DATABASE-PLAN.md): MongoDB collections for identity, family, academic, scheduling, AI tutor, progress, payments, and safety.
 - [Project Plan](docs/planning/PROJECT-PLAN.md): product scope, MVP, phases, and non-goals.
+- [Student Profile Model](docs/planning/STUDENT-PROFILE-MODEL.md): complete student profile sections including personal, academic, parents, documents, payments, communications, and activity timeline.
 - [Task Roadmap](docs/planning/TASK-ROADMAP.md): implementation roadmap from copied foundation to Mentora modules.
 - [Flow Plan](docs/planning/FLOW-PLAN.md): parent/student journeys and screen model.
 - [Commands](docs/operations/COMMANDS.md): extended command reference.

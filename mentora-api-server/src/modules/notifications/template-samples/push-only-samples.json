@@ -2,7 +2,7 @@
   {
     "event": "USER_REGISTERED_WELCOME",
     "title": "Welcome to Mentora",
-    "body": "Hi {{firstName}}, complete your profile and start connecting."
+    "body": "Hi {{firstName}}, complete your learning profile and start studying."
   },
   {
     "event": "EMAIL_VERIFICATION_OTP",
@@ -15,9 +15,9 @@
     "body": "OTP {{otp}} is valid for {{expiryMinutes}} minutes."
   },
   {
-    "event": "MATCH_FOUND",
-    "title": "New match",
-    "body": "You matched with {{matchName}}."
+    "event": "SESSION_REMINDER",
+    "title": "Class starts soon",
+    "body": "{{subject}} starts in {{minutesUntilStart}} minutes."
   },
   {
     "event": "MESSAGE_RECEIVED",

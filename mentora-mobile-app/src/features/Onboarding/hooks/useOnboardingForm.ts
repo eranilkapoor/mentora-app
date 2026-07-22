@@ -9,11 +9,9 @@ import {
   BasicData,
   PreferencesData,
   ProfileImage,
-  ProfileFors,
   Genders,
   Religions,
   Countries,
-  MaritalStatuses,
   Qualifications,
 } from '@/core/types';
 import { useOnboardingProfileMutation } from '@/store/services/profileApi.service';
@@ -32,7 +30,6 @@ import {
 // ─── Initial state ────────────────────────────────────────────────────────────
 
 const INITIAL_BASIC: BasicData = {
-  profileFor: ProfileFors.SELF,
   firstName: '',
   lastName: '',
   dateOfBirth: '',
@@ -41,23 +38,24 @@ const INITIAL_BASIC: BasicData = {
   country: Countries.INDIA,
   state: '',
   city: '',
-  maritalStatus: MaritalStatuses.NEVER_MARRIED,
   qualification: Qualifications.BTECH,
-  occupation: '',
-  height: '6',
+  gradeLevel: '',
+  institutionName: '',
+  primaryGoal: '',
+  accessibilityNeeds: [],
 };
 
 const INITIAL_PREFERENCES: PreferencesData = {
-  ageRange: { min: 30, max: 60 },
-  heightRange: { min: 6, max: 10 },
-  maritalStatus: [MaritalStatuses.NEVER_MARRIED],
-  religion: [Religions.HINDU],
-  caste: [],
-  subCaste: [],
-  manglikStatus: [],
-  country: [Countries.INDIA],
-  state: [],
-  city: [],
+  dailySessionMinutes: { min: 30, max: 60 },
+  gradeRange: { min: 6, max: 10 },
+  subjects: [],
+  learningGoals: [],
+  preferredTutorMode: 'ai',
+  preferredDeliveryModes: ['chat', 'video'],
+  learningPace: 'balanced',
+  weeklyStudyMinutes: 240,
+  parentDigestFrequency: 'weekly',
+  parentalApprovalRequired: true,
 };
 
 // ─── Hook ─────────────────────────────────────────────────────────────────────

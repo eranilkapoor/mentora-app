@@ -2,7 +2,7 @@
   {
     "event": "USER_REGISTERED_WELCOME",
     "subject": "Welcome to Mentora, {{firstName}}",
-    "body": "Hello {{firstName}},\n\nThanks for joining Mentora. Complete your profile and verify your details to get better matches."
+    "body": "Hello {{firstName}},\n\nThanks for joining Mentora. Complete your learning profile to start scheduling AI tutor sessions."
   },
   {
     "event": "EMAIL_VERIFICATION_OTP",
@@ -20,9 +20,9 @@
     "body": "Hi {{firstName}},\n\nUse OTP {{otp}} to reset your password. Expires in {{expiryMinutes}} minutes."
   },
   {
-    "event": "MATCH_FOUND",
-    "subject": "You have a new match on Mentora",
-    "body": "Hi {{firstName}},\n\nYou matched with {{matchName}}. Open Mentora and start a conversation."
+    "event": "SESSION_SCHEDULED",
+    "subject": "Your {{subject}} session is scheduled",
+    "body": "Hi {{firstName}},\n\nYour {{subject}} session for {{studentName}} is scheduled at {{startTime}}."
   },
   {
     "event": "SUBSCRIPTION_PURCHASE_SUCCESS",

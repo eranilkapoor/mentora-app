@@ -138,13 +138,11 @@ describe('HelpSupportScreen', () => {
     );
 
     await fireEvent.press(getByText('settings.support_tickets.title'));
-    await fireEvent.press(getByText('settings.success_stories.title'));
     await fireEvent.press(getByText('settings.support_center.faqs'));
     await fireEvent.press(getByText('settings.support_center.privacy'));
 
     expect(mockNavigate).toHaveBeenNthCalledWith(1, 'SupportTickets');
-    expect(mockNavigate).toHaveBeenNthCalledWith(2, 'SuccessStories');
-    expect(mockNavigate).toHaveBeenNthCalledWith(3, 'Faqs');
-    expect(mockNavigate).toHaveBeenNthCalledWith(4, 'PrivacyPolicy');
+    expect(mockNavigate).toHaveBeenNthCalledWith(2, 'Faqs');
+    expect(mockNavigate).toHaveBeenNthCalledWith(3, 'PrivacyPolicy');
   });
 });

@@ -12,7 +12,7 @@ describe('OperationalMetricsService', () => {
     service.recordNotificationDelivery('sent');
     service.recordNotificationDelivery('failed');
     service.recordNotificationDelivery('skipped');
-    service.recordMatchDigest({ eligible: 3, sent: 2, errors: 1 });
+    service.recordLearningReminder({ eligible: 3, sent: 2, errors: 1 });
     service.recordMongoSlowQuery({
       collection: 'profiles',
       commandName: 'find',
@@ -21,11 +21,11 @@ describe('OperationalMetricsService', () => {
     });
 
     expect(service.snapshot()).toMatchObject({
-      service: 'match-mate-api',
+      service: 'mentora-api',
       product: {
-        matchDigestEligible: 3,
-        matchDigestSent: 2,
-        matchDigestErrors: 1,
+        learningReminderEligible: 3,
+        learningReminderSent: 2,
+        learningReminderErrors: 1,
         notificationDeliverySent: 1,
         notificationDeliveryFailures: 1,
         notificationDeliverySkipped: 1,

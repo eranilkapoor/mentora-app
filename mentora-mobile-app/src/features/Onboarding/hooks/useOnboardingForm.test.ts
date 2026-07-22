@@ -2,14 +2,7 @@ import { Platform } from 'react-native';
 import { act, renderHook } from '@testing-library/react-native';
 import * as ImagePicker from 'expo-image-picker';
 import { useOnboardingForm } from './useOnboardingForm';
-import {
-  Countries,
-  Genders,
-  MaritalStatuses,
-  ProfileFors,
-  Qualifications,
-  Religions,
-} from '@/core/types';
+import { Countries, Genders, Qualifications, Religions } from '@/core/types';
 
 const mockDispatch = jest.fn();
 const mockOnboardingProfile = jest.fn();
@@ -77,7 +70,6 @@ const fillValidBasic = async (
   >['result']
 ) => {
   await act(async () => {
-    result.current.setBasicField('profileFor', ProfileFors.SELF);
     result.current.setBasicField('firstName', 'Riya');
     result.current.setBasicField('lastName', 'Sharma');
     result.current.setBasicField('dateOfBirth', '1998-01-01');
@@ -86,17 +78,14 @@ const fillValidBasic = async (
     result.current.setBasicField('country', Countries.INDIA);
     result.current.setBasicField('state', 'Maharashtra');
     result.current.setBasicField('city', 'Mumbai');
-    result.current.setBasicField(
-      'maritalStatus',
-      MaritalStatuses.NEVER_MARRIED
-    );
     result.current.setBasicField('qualification', Qualifications.BTECH);
-    result.current.setBasicField('occupation', 'Engineer');
-    result.current.setBasicField('height', '170');
-    result.current.setPreferenceField('maritalStatus', [
-      MaritalStatuses.NEVER_MARRIED,
+    result.current.setBasicField('gradeLevel', '8');
+    result.current.setBasicField('institutionName', 'Delhi Public School');
+    result.current.setBasicField('primaryGoal', 'Board exam preparation');
+    result.current.setPreferenceField('subjects', ['Mathematics']);
+    result.current.setPreferenceField('learningGoals', [
+      'Board exam preparation',
     ]);
-    result.current.setPreferenceField('religion', [Religions.HINDU]);
   });
 };
 

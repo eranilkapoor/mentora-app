@@ -64,8 +64,9 @@ const formatDateTime = (
 
 const actionLabelKeyByScreen: Record<string, string> = {
   ChatDetails: 'notifications.detail.open_chat',
-  MatchDetails: 'notifications.detail.view_profile',
-  Matches: 'notifications.detail.view_matches',
+  Learn: 'notifications.detail.start_learning',
+  Schedule: 'notifications.detail.view_schedule',
+  Progress: 'notifications.detail.view_progress',
   Notifications: 'notifications.detail.view_notifications',
 };
 

@@ -48,19 +48,6 @@ export type HomeStackParamList = {
     metadata?: Record<string, unknown>;
     createdAt?: string;
   };
-  MatchDetails: { userId: string };
-  ChatDetails: {
-    userId: string;
-    partnerName: string;
-    partnerPhoto: string;
-    roomId?: string;
-  };
-};
-
-// ─── Matches Stack ────────────────────────────────────────────────────────────
-export type MatchesStackParamList = {
-  MatchList: undefined;
-  MatchDetails: { userId: string };
   ChatDetails: {
     userId: string;
     partnerName: string;
@@ -78,7 +65,6 @@ export type ChatsStackParamList = {
     partnerPhoto: string;
     roomId?: string;
   };
-  MatchDetails: { userId: string };
 };
 
 // ─── Profile Stack ────────────────────────────────────────────────────────────
@@ -91,15 +77,16 @@ export type ProfileStackParamList = {
 export type SettingsStackParamList = {
   SettingsScreen: undefined;
   EditProfile: undefined;
-  EditPreference: undefined;
   ChangePassword: undefined;
   NotificationSettings: undefined;
   HelpSupport: undefined;
   SupportTickets: undefined;
   SupportTicketDetail: { ticketId: string };
-  SuccessStories: undefined;
   Faqs: undefined;
   CommunityGuidelines: undefined;
+  ChildSafety: undefined;
+  AiTutorDisclaimer: undefined;
+  RefundPolicy: undefined;
   AccountDeletion: undefined;
   PrivacyPolicy: undefined;
   TermsConditions: undefined;
@@ -120,7 +107,6 @@ export type SettingsStackParamList = {
   MediaSettings: undefined;
   LocalizationSettings: undefined;
   SecuritySettings: undefined;
-  UserInsights: undefined;
 };
 
 // ─── Bottom Tabs ──────────────────────────────────────────────────────────────
@@ -159,8 +145,6 @@ export type AuthNavigationProp = NativeStackNavigationProp<AuthStackParamList>;
 export type OnboardingNavigationProp =
   NativeStackNavigationProp<OnboardingStackParamList>;
 export type HomeNavigationProp = NativeStackNavigationProp<HomeStackParamList>;
-export type MatchesNavigationProp =
-  NativeStackNavigationProp<MatchesStackParamList>;
 export type ChatsNavigationProp =
   NativeStackNavigationProp<ChatsStackParamList>;
 export type ProfileNavigationProp =
@@ -171,10 +155,6 @@ export type AppNavigationProp = NativeStackNavigationProp<AppStackParamList>;
 export type BottomNavigationProp = BottomTabNavigationProp<BottomTabParamList>; // fixed typo
 
 // ─── Route Props (for screens that receive params) ────────────────────────────
-export type MatchDetailsRouteProp = RouteProp<
-  MatchesStackParamList,
-  'MatchDetails'
->;
 export type ChatDetailsRouteProp = RouteProp<
   ChatsStackParamList,
   'ChatDetails'

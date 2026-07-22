@@ -77,10 +77,10 @@ interface NotificationRecipientContact {
 }
 
 const PAID_ENGAGEMENT_NOTIFICATION_CATEGORIES = new Set<NotificationCategory>([
-  'interest_received',
-  'interest_accepted',
-  'match_found',
-  'profile_view',
+  'session_scheduled',
+  'session_reminder',
+  'progress_update',
+  'parent_alert',
   'message_received',
 ]);
 
@@ -969,14 +969,14 @@ export class NotificationsService {
 
   private preferenceKeyFromCategory(category: NotificationCategory) {
     switch (category) {
-      case 'interest_received':
-        return 'interestReceived';
-      case 'interest_accepted':
-        return 'interestAccepted';
-      case 'profile_view':
-        return 'profileView';
-      case 'match_found':
-        return 'matchFound';
+      case 'session_scheduled':
+        return 'sessionScheduled';
+      case 'session_reminder':
+        return 'sessionReminder';
+      case 'progress_update':
+        return 'progressUpdate';
+      case 'parent_alert':
+        return 'parentAlert';
       case 'message_received':
         return 'messageReceived';
       case 'subscription':
@@ -989,16 +989,15 @@ export class NotificationsService {
 
   private typeFromCategory(category: NotificationCategory) {
     switch (category) {
-      case 'interest_received':
-      case 'interest_accepted':
-      case 'match_found':
-        return 'match' as const;
+      case 'session_scheduled':
+      case 'session_reminder':
+      case 'progress_update':
+      case 'parent_alert':
+        return 'learning' as const;
       case 'message_received':
         return 'chat' as const;
       case 'subscription':
         return 'payment' as const;
-      case 'profile_view':
-        return 'info' as const;
       case 'system':
       default:
         return 'system' as const;

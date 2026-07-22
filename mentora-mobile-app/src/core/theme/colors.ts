@@ -1,265 +1,149 @@
 import { ColorPalette } from './types';
 
 export const LIGHTCOLORS: ColorPalette = {
-  // ─────────────────────────────────────────────
-  // Brand
-  // ─────────────────────────────────────────────
-  primary: '#C7365F',
-  primaryLight: '#FCE8EE',
-  primaryBorder: '#E6A9BB',
+  primary: '#2563EB',
+  primaryLight: '#DBEAFE',
+  primaryBorder: '#93C5FD',
 
-  secondary: '#1F7A74',
-  secondaryLight: '#E7F4F2',
+  secondary: '#0F766E',
+  secondaryLight: '#CCFBF1',
 
-  accent: '#B8872E',
-  accentLight: '#FFF2D4',
+  accent: '#7C3AED',
+  accentLight: '#EDE9FE',
 
   whatsapp: '#25D366',
-
   transparent: 'transparent',
 
-  // ─────────────────────────────────────────────
-  // Backgrounds
-  // ─────────────────────────────────────────────
   background: '#FFFFFF',
-
-  /**
-   * Main app page background
-   */
-  backgroundPage: '#FFF8F3',
-
-  /**
-   * Secondary backgrounds
-   */
-  backgroundLight: '#FCE8EE',
-
-  /**
-   * Cards / modals / sections
-   */
+  backgroundPage: '#F8FAFC',
+  backgroundLight: '#EFF6FF',
   surface: '#FFFFFF',
-
-  /**
-   * Elevated cards
-   */
   surfaceElevated: '#FFFFFF',
 
-  modalOverlay: 'rgba(37,33,38,0.45)',
-  overlayDark: 'rgba(0,0,0,0.55)',
-  overlayLight: 'rgba(0,0,0,0.12)',
+  modalOverlay: 'rgba(15,23,42,0.45)',
+  overlayDark: 'rgba(2,6,23,0.58)',
+  overlayLight: 'rgba(15,23,42,0.10)',
 
-  // ─────────────────────────────────────────────
-  // Text
-  // ─────────────────────────────────────────────
-  textPrimary: '#252126',
-
-  textSecondary: '#61545A',
-
-  textMuted: '#8F8188',
-
-  textBody: '#4B4147',
-
+  textPrimary: '#0F172A',
+  textSecondary: '#334155',
+  textMuted: '#64748B',
+  textBody: '#1E293B',
   textInverse: '#FFFFFF',
 
-  // ─────────────────────────────────────────────
-  // Borders
-  // ─────────────────────────────────────────────
-  border: '#E8D7DC',
+  border: '#E2E8F0',
+  divider: '#E5E7EB',
+  borderStrong: '#CBD5E1',
 
-  divider: '#EDDFE3',
-
-  borderStrong: '#D7B8C2',
-
-  // ─────────────────────────────────────────────
-  // Inputs
-  // ─────────────────────────────────────────────
   inputBackground: '#FFFFFF',
+  inputBorder: '#CBD5E1',
+  inputPlaceholder: '#94A3B8',
+  switchTrackOff: '#CBD5E1',
 
-  inputBorder: '#D7B8C2',
-
-  inputPlaceholder: '#9C8D94',
-
-  switchTrackOff: '#D7B8C2',
-
-  // ─────────────────────────────────────────────
-  // States
-  // ─────────────────────────────────────────────
-  success: '#2E7D57',
+  success: '#16A34A',
   successLight: '#DCFCE7',
 
-  warning: '#B7791F',
+  warning: '#D97706',
   warningLight: '#FEF3C7',
 
-  error: '#B4233C',
+  error: '#DC2626',
   errorLight: '#FEE2E2',
 
-  danger: '#B4233C',
+  danger: '#DC2626',
 
-  info: '#1F7A74',
-  infoLight: '#E7F4F2',
+  info: '#0284C7',
+  infoLight: '#E0F2FE',
 
-  // ─────────────────────────────────────────────
-  // Links / CTA
-  // ─────────────────────────────────────────────
-  link: '#B02E55',
+  link: '#1D4ED8',
+  chatBtn: '#2563EB',
+  shortlistBg: '#E0F2FE',
 
-  chatBtn: '#C7365F',
-
-  shortlistBg: '#FFF2D4',
-
-  // ─────────────────────────────────────────────
-  // Status
-  // ─────────────────────────────────────────────
   online: '#22C55E',
-  offline: '#A1A1AA',
-  verified: '#1F7A74',
+  offline: '#94A3B8',
+  verified: '#0F766E',
 
-  // ─────────────────────────────────────────────
-  // Membership
-  // ─────────────────────────────────────────────
-  gold: '#B8872E',
-  platinum: '#E5E7EB',
-  membershipHeroStatBackground: 'rgba(255,255,255,0.14)',
+  gold: '#F59E0B',
+  platinum: '#94A3B8',
+  membershipHeroStatBackground: 'rgba(255,255,255,0.16)',
   membershipHeroStatBorder: 'rgba(255,255,255,0.28)',
 
-  // ─────────────────────────────────────────────
-  // Static
-  // ─────────────────────────────────────────────
   white: '#FFFFFF',
   black: '#000000',
 
-  // ─────────────────────────────────────────────
-  // Gradients
-  // ─────────────────────────────────────────────
   gradients: {
-    primary: ['#C7365F', '#B8872E'],
-    romantic: ['#F5B8C7', '#C7365F'],
-    soft: ['#FFF8F3', '#FCE8EE'],
+    primary: ['#2563EB', '#14B8A6'],
+    romantic: ['#7C3AED', '#2563EB'],
+    soft: ['#F8FAFC', '#E0F2FE'],
   },
 };
 
 export const DARKCOLORS: Partial<ColorPalette> = {
-  // ─────────────────────────────────────────────
-  // Brand
-  // ─────────────────────────────────────────────
-  primary: '#FF7A9E',
+  primary: '#60A5FA',
+  primaryLight: 'rgba(96,165,250,0.16)',
+  primaryBorder: 'rgba(96,165,250,0.40)',
 
-  primaryLight: 'rgba(255,122,158,0.16)',
+  secondary: '#2DD4BF',
+  secondaryLight: 'rgba(45,212,191,0.14)',
 
-  primaryBorder: 'rgba(255,122,158,0.38)',
-
-  secondary: '#5FC4BD',
-
-  secondaryLight: '#183331',
-
-  accent: '#E0B45A',
-
-  accentLight: 'rgba(224,180,90,0.14)',
+  accent: '#A78BFA',
+  accentLight: 'rgba(167,139,250,0.16)',
 
   whatsapp: '#2EE07C',
 
-  // ─────────────────────────────────────────────
-  // Backgrounds
-  // ─────────────────────────────────────────────
-  background: '#171214',
+  background: '#0B1120',
+  backgroundPage: '#08111F',
+  backgroundLight: '#111C2E',
+  surface: '#101827',
+  surfaceElevated: '#172033',
 
-  backgroundPage: '#100D0F',
-
-  backgroundLight: '#251A1E',
-
-  /**
-   * Cards
-   */
-  surface: '#1E171A',
-
-  /**
-   * Elevated cards/modals
-   */
-  surfaceElevated: '#2A2024',
-
-  modalOverlay: 'rgba(0,0,0,0.7)',
-
-  overlayDark: 'rgba(0,0,0,0.75)',
-
+  modalOverlay: 'rgba(2,6,23,0.78)',
+  overlayDark: 'rgba(0,0,0,0.78)',
   overlayLight: 'rgba(255,255,255,0.10)',
 
-  // ─────────────────────────────────────────────
-  // Text
-  // ─────────────────────────────────────────────
-  textPrimary: '#FFF7FA',
+  textPrimary: '#F8FAFC',
+  textSecondary: '#CBD5E1',
+  textMuted: '#94A3B8',
+  textBody: '#E2E8F0',
+  textInverse: '#020617',
 
-  textSecondary: '#E6D8DE',
+  border: '#243044',
+  divider: '#1F2937',
+  borderStrong: '#334155',
 
-  textMuted: '#BAA8B1',
+  inputBackground: '#101827',
+  inputBorder: '#334155',
+  inputPlaceholder: '#64748B',
+  switchTrackOff: '#475569',
 
-  textBody: '#F0E6EA',
+  success: '#4ADE80',
+  successLight: 'rgba(74,222,128,0.16)',
 
-  textInverse: '#000000',
+  warning: '#FBBF24',
+  warningLight: 'rgba(251,191,36,0.16)',
 
-  // ─────────────────────────────────────────────
-  // Borders
-  // ─────────────────────────────────────────────
-  border: '#42323A',
+  error: '#F87171',
+  errorLight: 'rgba(248,113,113,0.16)',
 
-  divider: '#4C3B44',
+  danger: '#F87171',
 
-  borderStrong: '#5E4852',
+  info: '#38BDF8',
+  infoLight: 'rgba(56,189,248,0.16)',
 
-  // ─────────────────────────────────────────────
-  // Inputs
-  // ─────────────────────────────────────────────
-  inputBackground: '#1E171A',
+  link: '#93C5FD',
+  chatBtn: '#60A5FA',
+  shortlistBg: 'rgba(56,189,248,0.16)',
 
-  inputBorder: '#5E4852',
-
-  inputPlaceholder: '#A3919A',
-
-  switchTrackOff: '#52525B',
-
-  // ─────────────────────────────────────────────
-  // States
-  // ─────────────────────────────────────────────
-  success: '#5AD18A',
-  successLight: 'rgba(90,209,138,0.16)',
-
-  warning: '#F0C15A',
-  warningLight: 'rgba(240,193,90,0.16)',
-
-  error: '#FF7A7A',
-  errorLight: 'rgba(255,122,122,0.16)',
-
-  danger: '#FF7A7A',
-
-  info: '#5FC4BD',
-  infoLight: 'rgba(95,196,189,0.16)',
-
-  link: '#FF9AB7',
-
-  chatBtn: '#FF7A9E',
-
-  shortlistBg: 'rgba(224,180,90,0.16)',
-
-  // ─────────────────────────────────────────────
-  // Status
-  // ─────────────────────────────────────────────
   online: '#4ADE80',
+  offline: '#64748B',
+  verified: '#2DD4BF',
 
-  offline: '#6B7280',
-
-  verified: '#5FC4BD',
-
-  gold: '#E0B45A',
-
-  platinum: '#D4D4D8',
-
+  gold: '#FBBF24',
+  platinum: '#CBD5E1',
   membershipHeroStatBackground: 'rgba(255,255,255,0.08)',
   membershipHeroStatBorder: 'rgba(255,255,255,0.18)',
 
-  // ─────────────────────────────────────────────
-  // Gradients
-  // ─────────────────────────────────────────────
   gradients: {
-    primary: ['#FF7A9E', '#E0B45A'],
-    romantic: ['#FF9AB7', '#FF7A9E'],
-    soft: ['#251A1E', '#1E171A'],
+    primary: ['#60A5FA', '#2DD4BF'],
+    romantic: ['#A78BFA', '#60A5FA'],
+    soft: ['#0B1120', '#111C2E'],
   },
 };

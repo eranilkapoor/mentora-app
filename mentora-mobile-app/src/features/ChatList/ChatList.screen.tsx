@@ -518,10 +518,10 @@ export default function ChatListScreen({
           {query.length === 0 && activeFilter === 'all' && (
             <TouchableOpacity
               style={styles.emptyBtn}
-              onPress={() => navigation.getParent()?.navigate('Matches')}
+              onPress={() => navigation.getParent()?.navigate('Learn')}
             >
               <Text style={styles.emptyBtnText}>
-                {t('chat.browse_matches')}
+                {t('chat.start_learning')}
               </Text>
             </TouchableOpacity>
           )}

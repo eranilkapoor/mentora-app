@@ -1,7 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
-import { ProfileFor, ProfileStatus } from '@/common/enums';
+import { ProfileStatus } from '@/common/enums';
 import { Education } from './education.schema';
 import { Physical } from './physical.schema';
 import { Personal } from './personal.schema';
@@ -24,9 +24,6 @@ class GeoLocation {
 export class Profile {
   @Prop({ type: Types.ObjectId, required: true, unique: true })
   userId!: Types.ObjectId;
-
-  @Prop({ enum: ProfileFor, required: true })
-  profileFor!: ProfileFor;
 
   @Prop({ type: Personal, required: true })
   personal!: Personal;

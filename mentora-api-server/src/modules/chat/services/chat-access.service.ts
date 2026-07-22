@@ -88,12 +88,9 @@ export class ChatAccessService {
       return;
     }
 
-    const [match, room] = await Promise.all([
-      this.repo.findActiveMatchBetween(userId, targetUserId),
-      this.repo.findDirectRoomByUsers(userId, targetUserId),
-    ]);
+    const room = await this.repo.findDirectRoomByUsers(userId, targetUserId);
 
-    if (!match && !room) {
+    if (!room) {
       throwForbidden(ErrorCode.CHAT_ACCESS_DENIED, {
         reason: 'recipient_communication_restricted',
       });

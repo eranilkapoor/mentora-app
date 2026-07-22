@@ -7,9 +7,9 @@ import {
   SectionKey,
 } from '../EditProfile.types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
-import { OccupationTypes, Qualifications } from '@/core/types';
+import { Qualifications } from '@/core/types';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
-import { SingleSelectPill } from '@/core/components/SingleSelectPill';
+import { TagInput } from '@/core/components/TagInput';
 
 interface Props {
   education: EducationSectionType;
@@ -28,26 +28,22 @@ export function EducationSection({
   onSet,
 }: Props): React.ReactElement {
   const { t } = useTranslation();
-  const OccupationTypeOptions = useEnumOptions(
-    OccupationTypes,
-    'options.occupation_types'
-  );
-  const QualificationOptions = useEnumOptions(
+  const qualificationOptions = useEnumOptions(
     Qualifications,
     'options.qualifications'
   );
 
   return (
     <SectionCard
-      title={t('edit_profile.sections.education')}
+      title={t('edit_profile.sections.academic')}
       icon="book"
       sectionKey="education"
       loadingKey={sectionLoading}
       onSave={onSave}
     >
       <DropdownPicker
-        label={t('onboarding.fields.qualification')}
-        options={QualificationOptions}
+        label={t('onboarding.fields.academic_level')}
+        options={qualificationOptions}
         value={education.qualification}
         onChange={(val) => onSet('qualification', val)}
         searchable
@@ -56,61 +52,49 @@ export function EducationSection({
       />
 
       <FormInput
-        label={t('edit_profile.fields.field_of_study')}
+        label={t('onboarding.fields.grade')}
         value={education.field ?? ''}
         onChange={(v) => onSet('field', v)}
-        placeholder={t('edit_profile.placeholders.field_of_study')}
+        placeholder={t('onboarding.placeholders.grade')}
       />
       <FormInput
-        label={t('edit_profile.fields.university')}
+        label={t('onboarding.fields.institution')}
         value={education.university ?? ''}
         onChange={(v) => onSet('university', v)}
-        placeholder={t('edit_profile.placeholders.university')}
+        placeholder={t('onboarding.placeholders.institution')}
       />
-
-      <SingleSelectPill
-        label={t('edit_profile.fields.occupation_type')}
-        options={OccupationTypeOptions}
-        value={education.occupationType ?? OccupationTypes.PROFESSIONAL}
-        onChange={(v) =>
-          onSet('occupationType', v as EducationSectionType['occupationType'])
-        }
-        i18nPrefix="options.occupation_types"
-      />
-
       <FormInput
-        label={t('edit_profile.fields.occupation')}
+        label={t('onboarding.fields.learning_goal')}
         value={education.occupation ?? ''}
         onChange={(v) => onSet('occupation', v)}
-        placeholder={t('edit_profile.placeholders.occupation')}
+        placeholder={t('onboarding.placeholders.learning_goal')}
+      />
+      <TagInput
+        label={t('onboarding.fields.target_subjects')}
+        value={education.preferredSubjects ?? []}
+        onChange={(values) => onSet('preferredSubjects', values)}
+        placeholder={t('onboarding.placeholders.target_subjects')}
       />
       <FormInput
-        label={t('edit_profile.fields.company_name')}
-        value={education.companyName ?? ''}
-        onChange={(v) => onSet('companyName', v)}
-        placeholder={t('edit_profile.placeholders.company_name')}
+        label={t('edit_profile.sections.previous_education')}
+        value={education.previousEducationSummary ?? ''}
+        onChange={(v) => onSet('previousEducationSummary', v)}
+        multiline
+        placeholder={t('edit_profile.placeholders.previous_education')}
       />
       <FormInput
-        label={t('edit_profile.fields.job_role')}
-        value={education.jobRole ?? ''}
-        onChange={(v) => onSet('jobRole', v)}
-        placeholder={t('edit_profile.placeholders.job_role')}
+        label={t('edit_profile.sections.exam_scores')}
+        value={education.examScoreSummary ?? ''}
+        onChange={(v) => onSet('examScoreSummary', v)}
+        multiline
+        placeholder={t('edit_profile.placeholders.exam_scores')}
       />
       <FormInput
-        label={t('edit_profile.fields.annual_income')}
-        value={
-          education.annualIncomeAmount !== null &&
-          education.annualIncomeAmount !== undefined
-            ? String(education.annualIncomeAmount)
-            : ''
-        }
-        onChange={(v) => {
-          const cleaned = v.replace(/[^0-9]/g, '');
-
-          onSet('annualIncomeAmount', cleaned ? Number(cleaned) : undefined);
-        }}
-        keyboardType="numeric"
-        placeholder={t('edit_profile.placeholders.annual_income')}
+        label={t('edit_profile.sections.course_preference')}
+        value={education.coursePreference ?? ''}
+        onChange={(v) => onSet('coursePreference', v)}
+        multiline
+        placeholder={t('edit_profile.placeholders.course_preference')}
       />
     </SectionCard>
   );

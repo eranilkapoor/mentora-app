@@ -11,12 +11,7 @@ describe('ProfileScoringService', () => {
 
     expect(result.profileCompletionPercentage).toBeLessThan(20);
     expect(result.missingFields).toEqual(
-      expect.arrayContaining([
-        'profileFor',
-        'gender',
-        'dateOfBirth',
-        'profilePhoto',
-      ]),
+      expect.arrayContaining(['gender', 'dateOfBirth', 'profilePhoto']),
     );
     expect(result.profileScore).toBeGreaterThanOrEqual(0);
     expect(result.visibilityScore).toBeGreaterThanOrEqual(0);
@@ -25,35 +20,29 @@ describe('ProfileScoringService', () => {
   it('rewards complete, verified, premium, media-rich, recently active profiles', () => {
     const result = service.calculate(
       {
-        profileFor: 'self',
         personal: {
           firstName: 'Asha',
           gender: 'female',
           dateOfBirth: '1995-01-01',
           religion: 'hindu',
-          maritalStatus: 'never_married',
           motherTongue: 'Hindi',
           country: 'IN',
           state: 'Maharashtra',
           city: 'Mumbai',
-          smoking: 'non_smoker',
-          drinking: 'non_drinker',
-          eating: 'vegetarian',
           aboutMe:
-            'A thoughtful, family-oriented professional who values kindness, mutual respect, and a balanced modern lifestyle.',
-          personalityBadges: ['kind', 'curious', 'family_oriented'],
+            'A curious student who wants guided AI tutoring, regular practice, concept clarity, and parent-visible progress.',
+          personalityBadges: [
+            'curious_learner',
+            'goal_oriented',
+            'step_by_step',
+          ],
         },
-        physical: { height: 165, bodyType: 'average' },
+        physical: { accessibilityNeeds: [] },
         education: {
           qualification: 'masters',
-          occupationType: 'private_sector',
-          occupation: 'engineer',
-          annualIncomeAmount: 1500000,
-        },
-        family: {
-          familyType: 'nuclear',
-          familyStatus: 'middle_class',
-          familyValues: 'moderate',
+          field: 'Grade 11',
+          university: 'Mentora Test School',
+          occupation: 'Exam preparation',
         },
         verificationStatus: VerificationStatus.APPROVED,
         isPremium: true,
@@ -72,7 +61,7 @@ describe('ProfileScoringService', () => {
     const result = service.calculate({});
 
     expect(result.profileCompletionPercentage).toBe(0);
-    expect(result.missingFields).toHaveLength(24);
+    expect(result.missingFields).toHaveLength(14);
   });
 
   it.each([

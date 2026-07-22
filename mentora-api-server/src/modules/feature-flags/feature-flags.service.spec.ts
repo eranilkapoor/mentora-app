@@ -25,8 +25,9 @@ describe('FeatureFlagsService', () => {
           'notification.email.provider': 'smtp',
           'notification.sms.provider': 'log',
           'notification.push.provider': 'fcm',
-          'matches.dailyDigestEnabled': true,
-          'matches.dailyDigestDryRun': false,
+          'learning.sessionReminderEnabled': true,
+          'learning.sessionReminderDryRun': false,
+          'learning.entitlementAuditEnabled': true,
         };
         return values[key] ?? fallback;
       }),
@@ -51,7 +52,11 @@ describe('FeatureFlagsService', () => {
         push: true,
         providers: { email: 'smtp', push: 'fcm' },
       },
-      matches: { dailyDigest: true, dailyDigestDryRun: false },
+      learning: {
+        sessionReminders: true,
+        sessionReminderDryRun: false,
+        entitlementAudit: true,
+      },
     });
     expect(JSON.stringify(flags)).not.toMatch(
       /secretKey|privateKey|serviceAccount|credential/i,

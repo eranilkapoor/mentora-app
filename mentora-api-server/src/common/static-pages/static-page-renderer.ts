@@ -2,6 +2,9 @@ export type StaticPageSlug =
   | 'privacy-policy'
   | 'terms-conditions'
   | 'community-guidelines'
+  | 'child-safety'
+  | 'ai-tutor-disclaimer'
+  | 'refund-policy'
   | 'faqs'
   | 'account-deletion';
 
@@ -54,7 +57,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
           {
             title: 'Personal information',
             bullets: [
-              'Full name, gender, date of birth, marital status, phone number, and email address.',
+              'Full name, gender, date of birth, student or guardian role, phone number, and email address.',
               'City, country, academic details, institution, subjects, goals, and learning preferences.',
               'Academic Level, community, mother tongue, lifestyle choices, income range, academic profile or academic plan details, and other AI tutoring profile fields when you add them.',
               'Profile photos, video introductions, verification documents, and other media you choose to upload.',
@@ -202,7 +205,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         title: 'Use truthful profile details',
         bullets: [
           'Use your real identity, current photos, accurate relationship status, and honest family, education, profession, income, location, and lifestyle details.',
-          'Do not misrepresent age, marital status, academic level, community, employment, education, visa status, family background, or intent.',
+          'Do not misrepresent age, student identity, guardian authority, academic level, community, education, institution, or learning intent.',
           'Keep family-managed profiles transparent and respectful of the member represented.',
         ],
       },
@@ -245,6 +248,94 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
           'Open a support ticket for payment issues, impersonation, harassment, safety threats, or urgent moderation concerns.',
           'Our team may review reports and take action such as warning, limiting, suspending, or removing accounts.',
         ],
+      },
+    ],
+  },
+  'child-safety': {
+    slug: 'child-safety',
+    title: 'Child Safety Policy',
+    eyebrow: 'Mentora safety',
+    subtitle:
+      'How Mentora protects students, parent-managed profiles, and learning access.',
+    lastUpdated: 'Last updated: 1 January 2026',
+    intro:
+      'Mentora supports students and parent-managed student profiles. This policy explains how we handle student safety, age eligibility, parental controls, learning access, and abuse prevention.',
+    sections: [
+      {
+        title: 'Student accounts and parent-managed profiles',
+        bullets: [
+          'Students may create their own profile only when they meet the age and eligibility rules configured for Mentora.',
+          'Parents or guardians can create and manage student profiles for their children and set credentials, limits, schedules, and safety controls.',
+          'Parent accounts are for supervision, billing, settings, and progress review; they do not receive parallel learning access for themselves through a student entitlement.',
+        ],
+      },
+      {
+        title: 'Learning access controls',
+        bullets: [
+          'AI tutor access is checked against schedule windows, active entitlement, parental controls, and device/session limits.',
+          'Students can learn only inside permitted sessions and within the plan limits purchased for that student profile.',
+          'Suspicious sharing, parallel class use, or device-limit abuse may be blocked or reviewed.',
+        ],
+      },
+      {
+        title: 'Safety and reporting',
+        bullets: [
+          'Students and parents should report unsafe content, impersonation, harassment, payment abuse, or account misuse through support.',
+          'Mentora may restrict accounts, revoke sessions, or pause access when safety, fraud, or child-protection risk is detected.',
+          'Emergency issues should be reported to local authorities first, then to Mentora support with relevant account details.',
+        ],
+      },
+    ],
+  },
+  'ai-tutor-disclaimer': {
+    slug: 'ai-tutor-disclaimer',
+    title: 'AI Tutor Disclaimer',
+    eyebrow: 'Mentora learning',
+    subtitle:
+      'What to expect from AI tutoring, mentorship, and automated learning guidance.',
+    lastUpdated: 'Last updated: 1 January 2026',
+    sections: [
+      {
+        title: 'Educational guidance',
+        body: 'Mentora provides AI-assisted tutoring, practice, explanations, and mentorship support. AI responses may be incomplete or incorrect and should be checked against textbooks, teachers, official curriculum, or qualified human tutors where accuracy matters.',
+      },
+      {
+        title: 'No guaranteed outcomes',
+        bullets: [
+          'Mentora does not guarantee grades, exam scores, admissions, certifications, or career outcomes.',
+          'Learning progress depends on student effort, attendance, curriculum fit, parent support, and plan usage.',
+          'Progress reports and recommendations are informational and may evolve as more learning activity is recorded.',
+        ],
+      },
+      {
+        title: 'Human review and escalation',
+        body: 'Where available, students or parents may request support or human review. Safety-sensitive, medical, legal, financial, or emergency questions should not rely on AI tutor output.',
+      },
+    ],
+  },
+  'refund-policy': {
+    slug: 'refund-policy',
+    title: 'Refund and Subscription Policy',
+    eyebrow: 'Mentora billing',
+    subtitle:
+      'How subscriptions, renewals, cancellations, entitlement changes, and refunds work.',
+    lastUpdated: 'Last updated: 1 January 2026',
+    sections: [
+      {
+        title: 'Subscriptions and entitlements',
+        bullets: [
+          'Plans define the student profiles, AI tutor minutes, schedules, devices, sessions, and features included with purchase.',
+          'Entitlements are assigned to the eligible account or student profile and may not be shared to bypass plan limits.',
+          'Access may pause or end when payment fails, a subscription expires, a refund is issued, or misuse is detected.',
+        ],
+      },
+      {
+        title: 'Cancellations and renewals',
+        body: 'Renewal, cancellation, trial, and billing management depend on the checkout provider used for purchase. App store purchases must usually be managed through the relevant Apple or Google account settings.',
+      },
+      {
+        title: 'Refunds',
+        body: `Refund eligibility depends on applicable law, app store rules, payment-provider rules, plan usage, and Mentora policy. Contact ${SUPPORT_EMAIL} with your registered email, order reference, student profile, and reason for review.`,
       },
     ],
   },
@@ -494,6 +585,9 @@ const hindiPages: Record<StaticPageSlug, StaticPageContent> = {
       },
     ],
   },
+  'child-safety': pages['child-safety'],
+  'ai-tutor-disclaimer': pages['ai-tutor-disclaimer'],
+  'refund-policy': pages['refund-policy'],
   faqs: {
     slug: 'faqs',
     title: 'अक्सर पूछे जाने वाले प्रश्न',
@@ -669,31 +763,31 @@ export const getStaticPageHtml = (
     <style>
       :root {
         --font-scale: ${fontScaleBySize[selectedFontSize]};
-        --primary: #C7365F;
-        --primary-soft: #FCE8EE;
-        --accent: #B8872E;
-        --page: #FFF8F3;
+        --primary: #2563EB;
+        --primary-soft: #DBEAFE;
+        --accent: #0F766E;
+        --page: #F8FAFC;
         --surface: #FFFFFF;
         --surface-elevated: #FFFFFF;
-        --text: #252126;
-        --body: #4B4147;
-        --muted: #61545A;
-        --border: #E8D7DC;
-        --shadow: rgba(199, 54, 95, 0.10);
+        --text: #0F172A;
+        --body: #1E293B;
+        --muted: #64748B;
+        --border: #E2E8F0;
+        --shadow: rgba(37, 99, 235, 0.10);
       }
 
       @media (prefers-color-scheme: dark) {
         :root {
-          --primary: #FF7A9E;
-          --primary-soft: rgba(255, 122, 158, 0.16);
-          --accent: #E0B45A;
-          --page: #100D0F;
-          --surface: #1E171A;
-          --surface-elevated: #2A2024;
-          --text: #FFF7FA;
-          --body: #F0E6EA;
-          --muted: #E6D8DE;
-          --border: #42323A;
+          --primary: #60A5FA;
+          --primary-soft: rgba(96, 165, 250, 0.16);
+          --accent: #2DD4BF;
+          --page: #08111F;
+          --surface: #101827;
+          --surface-elevated: #172033;
+          --text: #F8FAFC;
+          --body: #E2E8F0;
+          --muted: #94A3B8;
+          --border: #243044;
           --shadow: rgba(0, 0, 0, 0.30);
         }
       }
@@ -701,32 +795,32 @@ export const getStaticPageHtml = (
       html[data-theme="light"] {
         color-scheme: light;
         --font-scale: ${fontScaleBySize[selectedFontSize]};
-        --primary: #C7365F;
-        --primary-soft: #FCE8EE;
-        --accent: #B8872E;
-        --page: #FFF8F3;
+        --primary: #2563EB;
+        --primary-soft: #DBEAFE;
+        --accent: #0F766E;
+        --page: #F8FAFC;
         --surface: #FFFFFF;
         --surface-elevated: #FFFFFF;
-        --text: #252126;
-        --body: #4B4147;
-        --muted: #61545A;
-        --border: #E8D7DC;
-        --shadow: rgba(199, 54, 95, 0.10);
+        --text: #0F172A;
+        --body: #1E293B;
+        --muted: #64748B;
+        --border: #E2E8F0;
+        --shadow: rgba(37, 99, 235, 0.10);
       }
 
       html[data-theme="dark"] {
         color-scheme: dark;
         --font-scale: ${fontScaleBySize[selectedFontSize]};
-        --primary: #FF7A9E;
-        --primary-soft: rgba(255, 122, 158, 0.16);
-        --accent: #E0B45A;
-        --page: #100D0F;
-        --surface: #1E171A;
-        --surface-elevated: #2A2024;
-        --text: #FFF7FA;
-        --body: #F0E6EA;
-        --muted: #E6D8DE;
-        --border: #42323A;
+        --primary: #60A5FA;
+        --primary-soft: rgba(96, 165, 250, 0.16);
+        --accent: #2DD4BF;
+        --page: #08111F;
+        --surface: #101827;
+        --surface-elevated: #172033;
+        --text: #F8FAFC;
+        --body: #E2E8F0;
+        --muted: #94A3B8;
+        --border: #243044;
         --shadow: rgba(0, 0, 0, 0.30);
       }
 
@@ -759,8 +853,8 @@ export const getStaticPageHtml = (
         font-weight: 700;
       }
       html[data-high-contrast="true"] {
-        --primary: #D91F5C;
-        --primary-soft: #FFE6EE;
+        --primary: #1D4ED8;
+        --primary-soft: #DBEAFE;
         --page: #FFFFFF;
         --surface: #FFFFFF;
         --surface-elevated: #FFFFFF;
@@ -771,8 +865,8 @@ export const getStaticPageHtml = (
         --shadow: rgba(0, 0, 0, 0.16);
       }
       html[data-theme="dark"][data-high-contrast="true"] {
-        --primary: #FF7EA3;
-        --primary-soft: rgba(255, 126, 163, 0.18);
+        --primary: #93C5FD;
+        --primary-soft: rgba(147, 197, 253, 0.20);
         --page: #000000;
         --surface: #080808;
         --surface-elevated: #111111;

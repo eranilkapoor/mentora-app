@@ -77,6 +77,8 @@ export type ConsentType =
   | 'privacy_policy'
   | 'terms'
   | 'community_guidelines'
+  | 'child_safety'
+  | 'ai_tutor_disclaimer'
   | 'data_processing'
   | 'marketing';
 

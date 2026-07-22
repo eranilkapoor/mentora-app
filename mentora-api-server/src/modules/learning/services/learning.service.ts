@@ -1,11 +1,16 @@
 import {
   BadRequestException,
+  ConflictException,
   ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import * as bcrypt from 'bcryptjs';
+import { Role, Status, PlanTier, SubscriptionStatus } from '@/common/enums';
+import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
+import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import {
   AddParentDto,
   CreateAcademicRecordDto,
@@ -82,6 +87,8 @@ export class LearningService {
     private readonly aiSessions: Model<AiTutorSessionDocument>,
     @InjectModel(AiTutorMessage.name)
     private readonly aiMessages: Model<AiTutorMessageDocument>,
+    @InjectModel(User.name)
+    private readonly users: Model<UserDocument>,
   ) {}
 
   async createStudent(userId: string, dto: CreateStudentDto) {
@@ -91,17 +98,28 @@ export class LearningService {
         ? 'parent_created_child'
         : 'independent_student';
     const dateOfBirth = new Date(dto.dateOfBirth);
+    this.assertAllowedDateOfBirth(dateOfBirth);
+    const ageCategory = this.getAgeCategory(dateOfBirth);
+    const studentUserId =
+      ownershipType === 'parent_managed'
+        ? await this.createParentManagedStudentUser(dto)
+        : new Types.ObjectId(userId);
+    const studentDto = { ...dto };
+    delete studentDto.studentEmail;
+    delete studentDto.studentPassword;
+
+    await this.ensureAccountRole(
+      userId,
+      ownershipType === 'parent_managed' ? Role.PARENT : Role.STUDENT,
+    );
 
     const student = await this.students.create({
-      ...dto,
+      ...studentDto,
       dateOfBirth,
-      ageCategory: this.getAgeCategory(dateOfBirth),
+      ageCategory,
       ownershipType,
       registrationMode,
-      userId:
-        ownershipType === 'parent_managed'
-          ? undefined
-          : new Types.ObjectId(userId),
+      userId: studentUserId,
       createdByUserId: new Types.ObjectId(userId),
     });
 
@@ -120,7 +138,7 @@ export class LearningService {
       await this.ensureDefaultParentalControl(
         String(student._id),
         userId,
-        student.ageCategory,
+        ageCategory,
       );
     }
 
@@ -346,8 +364,25 @@ export class LearningService {
     });
   }
 
+  async listEntitlements(userId: string, studentId: string) {
+    if (!Types.ObjectId.isValid(studentId)) {
+      throw new BadRequestException('Valid studentProfileId is required');
+    }
+    await this.assertStudentAccess(userId, studentId, 'viewLearningHistory');
+    return this.entitlements
+      .find({ studentProfileId: new Types.ObjectId(studentId) })
+      .sort({ expiresAt: 1 })
+      .lean();
+  }
+
   async createAiTutorSession(userId: string, dto: CreateAiTutorSessionDto) {
-    await this.assertStudentAccess(userId, dto.studentProfileId, 'viewProfile');
+    const student = await this.getStudentOrThrow(dto.studentProfileId);
+    if (String(student.userId ?? '') !== userId) {
+      throw new ForbiddenException(
+        'Students must join tutor sessions with their own credentials',
+      );
+    }
+    await this.assertNoParallelActiveSession(dto.studentProfileId);
     const access = await this.checkAiAccess({
       studentProfileId: dto.studentProfileId,
       subjectId: dto.subjectId,
@@ -366,6 +401,7 @@ export class LearningService {
       accessEntitlementId: new Types.ObjectId(access.entitlementId),
       startedAt: new Date(),
       status: 'active',
+      deliveryMode: dto.deliveryMode ?? 'chat',
     });
     return { session, access };
   }
@@ -446,6 +482,73 @@ export class LearningService {
       .find({ studentProfileId: new Types.ObjectId(studentId) })
       .sort({ createdAt: -1 })
       .lean();
+  }
+
+  async getStudentProgress(userId: string, studentId: string) {
+    if (!Types.ObjectId.isValid(studentId)) {
+      throw new BadRequestException('Valid student id is required');
+    }
+    await this.assertStudentAccess(userId, studentId, 'viewLearningHistory');
+
+    const studentObjectId = new Types.ObjectId(studentId);
+    const [sessions, enrollments] = await Promise.all([
+      this.aiSessions
+        .find({ studentProfileId: studentObjectId })
+        .sort({ createdAt: -1 })
+        .lean(),
+      this.enrollments
+        .find({ studentProfileId: studentObjectId, status: 'active' })
+        .lean(),
+    ]);
+
+    const subjectIds = [
+      ...new Set(enrollments.map((enrollment) => String(enrollment.subjectId))),
+    ];
+    const subjects = subjectIds.length
+      ? await this.subjects
+          .find({
+            _id: { $in: subjectIds.map((id) => new Types.ObjectId(id)) },
+          })
+          .lean()
+      : [];
+    const subjectNameById = new Map(
+      subjects.map((subject) => [String(subject._id), subject.name]),
+    );
+    const completedSessions = sessions.filter(
+      (session) => session.status === 'completed',
+    );
+    const completedBySubject = completedSessions.reduce<Record<string, number>>(
+      (acc, session) => {
+        const subjectId = String(session.subjectId);
+        acc[subjectId] = (acc[subjectId] ?? 0) + 1;
+        return acc;
+      },
+      {},
+    );
+
+    return {
+      studentProfileId: studentId,
+      totalLearningMinutes: Math.round(
+        sessions.reduce(
+          (total, session) => total + (session.totalDurationSeconds ?? 0),
+          0,
+        ) / 60,
+      ),
+      completedSessions: completedSessions.length,
+      averageAssessmentScore: undefined,
+      subjectProgress: subjectIds.map((subjectId) => {
+        const completedCount = completedBySubject[subjectId] ?? 0;
+        return {
+          subjectId,
+          subjectName: subjectNameById.get(subjectId) ?? 'Subject',
+          masteryPercentage: Math.min(completedCount * 20, 100),
+          recommendedTopic:
+            completedCount > 0
+              ? 'Continue the next adaptive practice set'
+              : 'Start with the first guided AI tutor session',
+        };
+      }),
+    };
   }
 
   async checkAiAccess(input: {
@@ -559,6 +662,83 @@ export class LearningService {
     return schedule;
   }
 
+  private async assertNoParallelActiveSession(studentId: string) {
+    const activeSession = await this.aiSessions
+      .findOne({
+        studentProfileId: new Types.ObjectId(studentId),
+        status: 'active',
+      })
+      .lean();
+
+    if (activeSession) {
+      throw new ConflictException(
+        'This student already has an active tutor session',
+      );
+    }
+  }
+
+  private assertAllowedDateOfBirth(dateOfBirth: Date) {
+    const now = new Date();
+    if (Number.isNaN(dateOfBirth.getTime()) || dateOfBirth >= now) {
+      throw new BadRequestException('A valid past date of birth is required');
+    }
+
+    const age = this.getAge(dateOfBirth);
+    if (age < 4 || age > 100) {
+      throw new BadRequestException(
+        'Student age must be between 4 and 100 years',
+      );
+    }
+  }
+
+  private async createParentManagedStudentUser(dto: CreateStudentDto) {
+    if (!dto.studentEmail || !dto.studentPassword) {
+      throw new BadRequestException(
+        'Parent-managed students require studentEmail and studentPassword',
+      );
+    }
+
+    const email = dto.studentEmail.toLowerCase().trim();
+    const existingUser = await this.users.findOne({ email }).lean();
+    if (existingUser) {
+      throw new ConflictException('Student login email is already registered');
+    }
+
+    const passwordHash = await bcrypt.hash(dto.studentPassword, 12);
+    const studentUser = await this.users.create({
+      email,
+      status: Status.ACTIVE,
+      roles: [Role.USER, Role.STUDENT],
+      isEmailVerified: false,
+      isPhoneVerified: false,
+      isOnboardingCompleted: false,
+      membership: {
+        tier: PlanTier.FREE,
+        status: SubscriptionStatus.ACTIVE,
+        startDate: new Date(),
+        autoRenew: false,
+      },
+      authAccounts: [
+        {
+          provider: AuthProvider.EMAIL,
+          providerId: email,
+          passwordHash,
+          isVerified: false,
+          isPrimary: true,
+        },
+      ],
+    });
+
+    return studentUser._id;
+  }
+
+  private async ensureAccountRole(userId: string, role: Role) {
+    await this.users.updateOne(
+      { _id: new Types.ObjectId(userId) },
+      { $addToSet: { roles: role } },
+    );
+  }
+
   private async assertSubjectEnrollment(studentId: string, subjectId: string) {
     const enrollment = await this.enrollments.findOne({
       studentProfileId: new Types.ObjectId(studentId),
@@ -622,6 +802,11 @@ export class LearningService {
 
   private getAgeCategory(dateOfBirth: Date): string {
     if (Number.isNaN(dateOfBirth.getTime())) return 'unknown';
+    const age = this.getAge(dateOfBirth);
+    return age >= 18 ? 'adult' : 'minor';
+  }
+
+  private getAge(dateOfBirth: Date): number {
     const today = new Date();
     let age = today.getFullYear() - dateOfBirth.getFullYear();
     const monthDelta = today.getMonth() - dateOfBirth.getMonth();
@@ -631,6 +816,6 @@ export class LearningService {
     ) {
       age -= 1;
     }
-    return age >= 18 ? 'adult' : 'minor';
+    return age;
   }
 }

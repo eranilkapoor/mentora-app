@@ -98,12 +98,6 @@ export default function HelpSupportScreen({
             onPress={() => navigation.navigate('SupportTickets')}
           />
           <SettingsSelectItem
-            icon="heart"
-            label={t('settings.success_stories.title')}
-            sublabel={t('settings.success_stories.entry_sub')}
-            onPress={() => navigation.navigate('SuccessStories')}
-          />
-          <SettingsSelectItem
             icon="help-circle"
             label={t('settings.support_center.faqs')}
             sublabel={t('settings.support_center.faqs_sub')}
@@ -114,6 +108,24 @@ export default function HelpSupportScreen({
             label={t('settings.support_center.community_guidelines')}
             sublabel={t('settings.support_center.community_guidelines_sub')}
             onPress={() => navigation.navigate('CommunityGuidelines')}
+          />
+          <SettingsSelectItem
+            icon="user-check"
+            label={t('settings.support_center.child_safety')}
+            sublabel={t('settings.support_center.child_safety_sub')}
+            onPress={() => navigation.navigate('ChildSafety')}
+          />
+          <SettingsSelectItem
+            icon="cpu"
+            label={t('settings.support_center.ai_tutor_disclaimer')}
+            sublabel={t('settings.support_center.ai_tutor_disclaimer_sub')}
+            onPress={() => navigation.navigate('AiTutorDisclaimer')}
+          />
+          <SettingsSelectItem
+            icon="credit-card"
+            label={t('settings.support_center.refund_policy')}
+            sublabel={t('settings.support_center.refund_policy_sub')}
+            onPress={() => navigation.navigate('RefundPolicy')}
           />
           <SettingsSelectItem
             icon="file-text"

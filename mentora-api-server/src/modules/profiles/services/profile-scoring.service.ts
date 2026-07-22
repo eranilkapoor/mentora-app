@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 
 export interface ProfileScoreInput {
-  profileFor?: unknown;
+  [key: string]: unknown;
   personal?: Record<string, unknown>;
   physical?: Record<string, unknown>;
   education?: Record<string, unknown>;
@@ -31,32 +31,72 @@ export class ProfileScoringService {
     media: ProfileMediaScoreInput = {},
   ): ProfileScoreResult {
     const personal = profile.personal ?? {};
-    const physical = profile.physical ?? {};
     const education = profile.education ?? {};
     const family = profile.family ?? {};
 
     const checks: Array<{ key: string; passed: boolean }> = [
       {
-        key: 'profileFor',
-        passed: this.hasValue(profile.profileFor ?? personal.profileFor),
+        key: 'personal',
+        passed:
+          this.hasValue(personal.firstName) &&
+          this.hasValue(personal.gender) &&
+          this.hasValue(personal.dateOfBirth) &&
+          this.hasValue(personal.religion),
       },
-      { key: 'firstName', passed: this.hasValue(personal.firstName) },
-      { key: 'gender', passed: this.hasValue(personal.gender) },
-      { key: 'dateOfBirth', passed: this.hasValue(personal.dateOfBirth) },
-      { key: 'religion', passed: this.hasValue(personal.religion) },
-      { key: 'maritalStatus', passed: this.hasValue(personal.maritalStatus) },
-      { key: 'motherTongue', passed: this.hasValue(personal.motherTongue) },
-      { key: 'country', passed: this.hasValue(personal.country) },
-      { key: 'state', passed: this.hasValue(personal.state) },
-      { key: 'city', passed: this.hasValue(personal.city) },
-      { key: 'height', passed: this.hasValue(physical.height) },
-      { key: 'bodyType', passed: this.hasValue(physical.bodyType) },
-      { key: 'qualification', passed: this.hasValue(education.qualification) },
       {
-        key: 'occupationType',
-        passed: this.hasValue(education.occupationType),
+        key: 'academic',
+        passed:
+          this.hasValue(education.qualification) &&
+          this.hasValue(education.field) &&
+          this.hasValue(education.university) &&
+          this.hasValue(education.occupation),
       },
-      { key: 'occupation', passed: this.hasValue(education.occupation) },
+      {
+        key: 'parents',
+        passed:
+          this.hasValue(family.fatherName) ||
+          this.hasValue(family.motherName) ||
+          this.hasValue(family.guardianName),
+      },
+      {
+        key: 'address',
+        passed:
+          this.hasValue(personal.country) &&
+          this.hasValue(personal.state) &&
+          this.hasValue(personal.city),
+      },
+      {
+        key: 'previousEducation',
+        passed: this.hasValue(education.previousEducationSummary),
+      },
+      {
+        key: 'examScores',
+        passed: this.hasValue(education.examScoreSummary),
+      },
+      {
+        key: 'coursePreference',
+        passed:
+          this.hasValue(education.preferredSubjects) ||
+          this.hasValue(education.coursePreference),
+      },
+      {
+        key: 'documents',
+        passed: this.hasValue(profile.documents),
+      },
+      {
+        key: 'payments',
+        passed:
+          this.hasValue(profile.learningEntitlements) ||
+          this.hasValue(profile.paymentSummary),
+      },
+      {
+        key: 'communicationHistory',
+        passed: this.hasValue(profile.communicationHistory),
+      },
+      {
+        key: 'activityTimeline',
+        passed: this.hasValue(profile.activityTimeline),
+      },
       { key: 'aboutMe', passed: this.hasLongText(personal.aboutMe, 50) },
       {
         key: 'personalityBadges',
@@ -64,12 +104,6 @@ export class ProfileScoringService {
           Array.isArray(personal.personalityBadges) &&
           personal.personalityBadges.length >= 3,
       },
-      { key: 'smoking', passed: this.hasValue(personal.smoking) },
-      { key: 'drinking', passed: this.hasValue(personal.drinking) },
-      { key: 'eating', passed: this.hasValue(personal.eating) },
-      { key: 'familyType', passed: this.hasValue(family.familyType) },
-      { key: 'familyStatus', passed: this.hasValue(family.familyStatus) },
-      { key: 'familyValues', passed: this.hasValue(family.familyValues) },
       { key: 'profilePhoto', passed: Number(media.imageCount ?? 0) > 0 },
     ];
 
@@ -86,7 +120,7 @@ export class ProfileScoringService {
     ) {
       quality += 5;
     }
-    if (education.annualIncomeAmount) quality += 5;
+    if (education.university) quality += 5;
     if (Number(media.imageCount ?? 0) >= 3) quality += 7;
     if (Number(media.videoCount ?? 0) > 0) quality += 5;
 

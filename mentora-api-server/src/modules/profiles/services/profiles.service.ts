@@ -34,7 +34,6 @@ import { OnboardingProfileDto } from '@/modules/profiles/dto/onboarding-profile.
 import { UserRepository } from '@/modules/auth/repositories/user.repository';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import { MediaService } from './media.service';
-import { PreferenceService } from './preference.service';
 import { ProfileScoringService } from './profile-scoring.service';
 import { UpdateProfileLocationDto } from '../dto/location.dto';
 import { SettingsService } from '@/modules/settings/services/settings.service';
@@ -49,7 +48,6 @@ import {
   throwUnauthorized,
 } from '@/common/exceptions/throw-app-exception';
 import { AppException } from '@/common/exceptions/app.exception';
-import { normalizeFamilySiblings } from '../utils/family-normalization.util';
 import { VerificationStatus } from '@/modules/safety/enums/verification.enums';
 import { ReferralsService } from '@/modules/referrals/services/referrals.service';
 
@@ -67,9 +65,9 @@ interface ApplyUpdateOptions {
 @Injectable()
 export class ProfilesService {
   private readonly defaultPersonalityBadges = [
-    PersonalityBadge.FAMILY_ORIENTED,
-    PersonalityBadge.MARRIAGE_FOCUSED,
-    PersonalityBadge.FRIENDLY,
+    PersonalityBadge.CURIOUS_LEARNER,
+    PersonalityBadge.GOAL_ORIENTED,
+    PersonalityBadge.CONSISTENT_PRACTICE,
   ];
 
   constructor(
@@ -83,7 +81,6 @@ export class ProfilesService {
     private readonly notificationsService: NotificationsService,
     private readonly analyticsService: AnalyticsService,
     private readonly mediaService: MediaService,
-    private readonly preferenceService: PreferenceService,
     private readonly profileScoringService: ProfileScoringService,
     private readonly settingsService: SettingsService,
     private readonly referralsService: ReferralsService,
@@ -208,7 +205,7 @@ export class ProfilesService {
     return this.applyUpdate(
       req,
       userId,
-      { family: normalizeFamilySiblings(dto) },
+      { family: dto },
       'profile-family-update',
       { notifyUser: false },
     );
@@ -296,18 +293,14 @@ export class ProfilesService {
   private buildCreatePayload(dto: CreateProfileDto): Record<string, unknown> {
     const birthDate = new Date(dto.personal.dateOfBirth);
     const age = this.requireAdultAge(birthDate);
-    const family = normalizeFamilySiblings(dto.family);
-    const { missingFields: _missingFields, ...derived } =
-      this.profileScoringService.calculate({
-        personal: dto.personal as unknown as Record<string, unknown>,
-        physical: dto.physical as unknown as Record<string, unknown>,
-        education: dto.education as unknown as Record<string, unknown>,
-        family: family as unknown as Record<string, unknown> | undefined,
-      });
-    void _missingFields;
+    const { missingFields, ...derived } = this.profileScoringService.calculate({
+      personal: dto.personal as unknown as Record<string, unknown>,
+      physical: dto.physical as unknown as Record<string, unknown>,
+      education: dto.education as unknown as Record<string, unknown>,
+      family: dto.family as unknown as Record<string, unknown> | undefined,
+    });
 
     return {
-      profileFor: dto.personal.profileFor,
       personal: {
         ...dto.personal,
         personalityBadges: this.resolvePersonalityBadges(
@@ -316,9 +309,10 @@ export class ProfilesService {
       },
       physical: dto.physical,
       education: dto.education,
-      family: family ?? {},
+      family: dto.family ?? {},
       age,
       ...derived,
+      missingFields,
       searchTags: this.buildSearchTags(dto),
       status: ProfileStatus.ACTIVE,
       lastActiveAt: new Date(),
@@ -365,10 +359,10 @@ export class ProfilesService {
     }
 
     if (dto.family) {
-      normalized.family = normalizeFamilySiblings({
-        ...((existing.family as Record<string, unknown>) ?? {}),
+      normalized.family = {
+        ...(existing.family ?? {}),
         ...dto.family,
-      });
+      };
     }
 
     if (dto.location) {
@@ -377,17 +371,16 @@ export class ProfilesService {
 
     // Recalculate derived fields from the merged state
     const merged = { ...existing, ...normalized };
-    const { missingFields: _missingFields, ...derived } =
-      this.profileScoringService.calculate(
-        merged,
-        this.getMediaSummaryFromProfile(merged),
-      );
-    void _missingFields;
+    const { missingFields, ...derived } = this.profileScoringService.calculate(
+      merged,
+      this.getMediaSummaryFromProfile(merged),
+    );
     normalized.searchTags = this.buildSearchTagsFromMerged(merged);
     normalized.profileCompletionPercentage =
       derived.profileCompletionPercentage;
     normalized.profileScore = derived.profileScore;
     normalized.visibilityScore = derived.visibilityScore;
+    normalized.missingFields = missingFields;
     normalized.lastActiveAt = new Date();
 
     return normalized;
@@ -412,11 +405,7 @@ export class ProfilesService {
 
     const incoming = dto.personal;
     const current = (existing.personal ?? {}) as Record<string, unknown>;
-    const lockedFields: Array<keyof PersonalDto> = [
-      'profileFor',
-      'gender',
-      'dateOfBirth',
-    ];
+    const lockedFields: Array<keyof PersonalDto> = ['gender', 'dateOfBirth'];
     const changed = lockedFields.filter((field) => {
       if (incoming[field] === undefined) return false;
       const incomingValue = incoming[field];
@@ -462,19 +451,73 @@ export class ProfilesService {
       sections: {
         personal: {
           completed: Boolean(
-            personal.profileFor &&
             personal.firstName &&
             personal.gender &&
             personal.dateOfBirth &&
-            personal.religion &&
-            personal.maritalStatus,
+            personal.religion,
           ),
         },
-        physical: { completed: Boolean(physical.height) },
-        education: {
-          completed: Boolean(education.qualification && education.occupation),
+        academic: {
+          completed: Boolean(
+            education.qualification &&
+            education.field &&
+            education.university &&
+            education.occupation,
+          ),
         },
-        family: { completed: Boolean(profile.family) },
+        parents: {
+          completed: Boolean(
+            (profile.family as Record<string, unknown> | undefined)
+              ?.fatherName ||
+            (profile.family as Record<string, unknown> | undefined)
+              ?.motherName ||
+            (profile.family as Record<string, unknown> | undefined)
+              ?.guardianName,
+          ),
+        },
+        address: {
+          completed: Boolean(
+            personal.country && personal.state && personal.city,
+          ),
+        },
+        previousEducation: {
+          completed: Boolean(education.previousEducationSummary),
+        },
+        examScores: {
+          completed: Boolean(education.examScoreSummary),
+        },
+        coursePreference: {
+          completed: Boolean(
+            education.coursePreference ||
+            (Array.isArray(education.preferredSubjects) &&
+              education.preferredSubjects.length > 0),
+          ),
+        },
+        documents: {
+          completed: Array.isArray(profile.documents)
+            ? profile.documents.length > 0
+            : false,
+        },
+        payments: {
+          completed: Boolean(
+            profile.paymentSummary || profile.learningEntitlements,
+          ),
+        },
+        communicationHistory: {
+          completed: Array.isArray(profile.communicationHistory)
+            ? profile.communicationHistory.length > 0
+            : false,
+        },
+        activityTimeline: {
+          completed: Array.isArray(profile.activityTimeline)
+            ? profile.activityTimeline.length > 0
+            : false,
+        },
+        accessibility: {
+          completed:
+            !Array.isArray(physical.accessibilityNeeds) ||
+            physical.accessibilityNeeds.length >= 0,
+        },
       },
     };
   }
@@ -530,10 +573,10 @@ export class ProfilesService {
 
   private requireAdultAge(dateOfBirth: Date): number {
     const age = this.calculateAge(dateOfBirth);
-    if (!Number.isFinite(age) || age < 18) {
+    if (!Number.isFinite(age) || age < 5) {
       return throwBadRequest(ErrorCode.INVALID_REQUEST, {
-        reason: 'minimum_age_required',
-        minimumAge: 18,
+        reason: 'student_age_not_allowed',
+        minimumAge: 5,
       });
     }
     return age;
@@ -552,21 +595,22 @@ export class ProfilesService {
         .lean()
         .exec(),
     ]);
-    const { missingFields: _missingFields, ...derived } =
-      this.profileScoringService.calculate(
-        {
-          ...(profile as Record<string, unknown>),
-          verificationStatus:
-            verification?.status ?? VerificationStatus.NOT_STARTED,
-        },
-        {
-          imageCount: Array.isArray(images) ? images.length : 0,
-          videoCount: Array.isArray(videos) ? videos.length : 0,
-        },
-      );
-    void _missingFields;
+    const { missingFields, ...derived } = this.profileScoringService.calculate(
+      {
+        ...(profile as Record<string, unknown>),
+        verificationStatus:
+          verification?.status ?? VerificationStatus.NOT_STARTED,
+      },
+      {
+        imageCount: Array.isArray(images) ? images.length : 0,
+        videoCount: Array.isArray(videos) ? videos.length : 0,
+      },
+    );
 
-    const updated = await this.profileRepo.update(userId, derived);
+    const updated = await this.profileRepo.update(userId, {
+      ...derived,
+      missingFields,
+    });
     await this.cache.del(`profile:${userId}`);
     return updated;
   }
@@ -598,7 +642,6 @@ export class ProfilesService {
 
   private buildSearchTags(dto: CreateProfileDto): string[] {
     const raw = [
-      dto.personal.profileFor,
       dto.personal.religion,
       dto.personal.religiousDetails?.caste,
       dto.personal.city,
@@ -625,7 +668,6 @@ export class ProfilesService {
       (personal.religiousDetails as Record<string, unknown> | undefined) ?? {};
     const education = (profile.education ?? {}) as Record<string, unknown>;
     const raw = [
-      personal.profileFor,
       personal.religion,
       religiousDetails.caste,
       personal.city,
@@ -844,43 +886,44 @@ export class ProfilesService {
 
       const profilePayload = {
         personal: {
-          profileFor: dto.basic.profileFor,
           firstName: dto.basic.firstName,
           lastName: dto.basic.lastName,
           gender: dto.basic.gender,
           dateOfBirth: dto.basic.dateOfBirth,
           religion: dto.basic.religion,
-          maritalStatus: dto.basic.maritalStatus,
           country: dto.basic.country,
           state: dto.basic.state,
           city: dto.basic.city,
           personalityBadges: this.defaultPersonalityBadges,
         },
         physical: {
-          height: dto.basic.height,
+          accessibilityNeeds: dto.basic.accessibilityNeeds,
         },
         education: {
           qualification: dto.basic.qualification as Qualification,
-          occupation: dto.basic.occupation,
+          field: dto.basic.gradeLevel,
+          university: dto.basic.institutionName,
+          occupation: dto.basic.primaryGoal,
+          preferredSubjects: dto.preferences?.subjects ?? [],
+          coursePreference: [
+            ...(dto.preferences?.learningGoals ?? []),
+            dto.preferences?.preferredTutorMode
+              ? `Tutor mode: ${dto.preferences.preferredTutorMode}`
+              : undefined,
+            dto.preferences?.learningPace
+              ? `Pace: ${dto.preferences.learningPace}`
+              : undefined,
+          ]
+            .filter(Boolean)
+            .join('\n'),
         },
       } as CreateProfileDto & Record<string, unknown>;
 
-      await this.saveOnboardingProfile(userId, profilePayload);
+      const profile = (await this.saveOnboardingProfile(
+        userId,
+        profilePayload,
+      )) as unknown as Record<string, unknown>;
 
-      await this.preferenceService.upsertPreference(userId, {
-        filters: {
-          age: dto.preferences?.ageRange,
-          height: dto.preferences?.heightRange,
-          maritalStatus: dto.preferences?.maritalStatus,
-          religion: dto.preferences?.religion,
-          caste: dto.preferences?.caste,
-          subCaste: dto.preferences?.subCaste,
-          manglikStatus: dto.preferences?.manglikStatus,
-          country: dto.preferences?.country,
-          state: dto.preferences?.state,
-          city: dto.preferences?.city,
-        },
-      });
       await this.settingsService.getOrCreateAllUserSettings(userId);
 
       user.isOnboardingCompleted = true;
@@ -898,7 +941,7 @@ export class ProfilesService {
         platform: this.getRegisterRequestContext(req).platform,
         metadata: {
           source: 'onboarding-profile',
-          completionPercentage: 100,
+          completionPercentage: profile.profileCompletionPercentage,
           imageCount: uploadedImages.length,
         },
       });
@@ -918,7 +961,7 @@ export class ProfilesService {
         userId: String(user._id),
         title: 'Profile onboarding completed',
         message:
-          'Your profile is now live. We will use your onboarding details to improve discovery and matching.',
+          'Your required onboarding is complete. Complete the remaining student profile sections to improve tutoring, reports, and support.',
         emailBody: this.buildOnboardingCompletedEmail({
           userName: this.getProfileDisplayName(dto.basic.firstName, user.email),
         }),
@@ -969,7 +1012,7 @@ export class ProfilesService {
           ),
           metadata: {
             source: 'onboarding-profile',
-            completionPercentage: 100,
+            completionPercentage: profile.profileCompletionPercentage,
           },
         }),
       ]);
@@ -977,6 +1020,7 @@ export class ProfilesService {
       return {
         userId: user._id,
         isOnboardingCompleted: user.isOnboardingCompleted,
+        profileCompletionPercentage: profile.profileCompletionPercentage,
       };
     } catch (error) {
       this.logger.error(
@@ -1054,9 +1098,9 @@ export class ProfilesService {
               <div style="padding:18px;border-radius:18px;background:#fff5f8;border:1px solid #f7d5df;margin:22px 0;">
                 <div style="font-size:14px;font-weight:700;margin-bottom:10px;color:#9d174d;">What to do next</div>
                 <ol style="margin:0;padding-left:20px;font-size:14px;line-height:1.7;color:#374151;">
-                  <li>Complete family, career, lifestyle and about-me sections.</li>
-                  <li>Add verification details to improve trust with families.</li>
-                  <li>Open recommended matches and shortlist profiles you like.</li>
+                  <li>Complete academic, parent, address, documents and exam-score sections.</li>
+                  <li>Add course preferences so tutoring recommendations stay relevant.</li>
+                  <li>Schedule your first AI tutor session when your entitlement is active.</li>
                 </ol>
               </div>
               <p style="margin:0 0 18px;font-size:14px;line-height:1.65;color:#4b5563;">You can update privacy, notifications and account security anytime from Settings.</p>

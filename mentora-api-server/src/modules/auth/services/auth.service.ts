@@ -207,7 +207,11 @@ export class AuthService {
       expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
     });
 
-    await this.enforceConcurrentSessionLimit(userId, session._id.toString());
+    await this.enforceConcurrentSessionLimit(
+      userId,
+      session._id.toString(),
+      populatedUser.roles ?? [],
+    );
     await this.detectSuspiciousLogin(userId, req, {
       deviceId,
       ipAddress,
@@ -233,11 +237,9 @@ export class AuthService {
   private async enforceConcurrentSessionLimit(
     userId: string,
     currentSessionId: string,
+    roles: string[] = [],
   ): Promise<void> {
-    const maxSessions = this.configService.get<number>(
-      'authSecurity.maxConcurrentSessions',
-      5,
-    );
+    const maxSessions = this.getMaxConcurrentSessionsForRoles(roles);
 
     if (!Number.isFinite(maxSessions) || maxSessions < 1) {
       return;
@@ -290,6 +292,29 @@ export class AuthService {
           reason: 'session_limit_exceeded',
         },
       })),
+    );
+  }
+
+  private getMaxConcurrentSessionsForRoles(roles: string[]): number {
+    const roleSet = new Set(roles);
+
+    if (roleSet.has(Role.STUDENT)) {
+      return this.configService.get<number>(
+        'authSecurity.maxConcurrentStudentSessions',
+        1,
+      );
+    }
+
+    if (roleSet.has(Role.PARENT)) {
+      return this.configService.get<number>(
+        'authSecurity.maxConcurrentParentSessions',
+        3,
+      );
+    }
+
+    return this.configService.get<number>(
+      'authSecurity.maxConcurrentSessions',
+      5,
     );
   }
 

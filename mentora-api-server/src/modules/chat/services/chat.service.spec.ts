@@ -17,9 +17,7 @@ describe('ChatService', () => {
     countUnreadForUser: jest.fn(),
     createDirectRoom: jest.fn(),
     createMessage: jest.fn(),
-    findActiveMatchBetween: jest.fn(),
     findDirectRoomByUsers: jest.fn(),
-    findMatchesForUser: jest.fn(),
     findMessageById: jest.fn(),
     findMessagesByIds: jest.fn(),
     findPrimaryImageMediaByUserIds: jest.fn(),
@@ -139,7 +137,6 @@ describe('ChatService', () => {
 
     const pendingRoom = createRoom(ChatRoomStatus.PENDING);
     repo.findDirectRoomByUsers.mockResolvedValue(null);
-    repo.findActiveMatchBetween.mockResolvedValue(null);
     repo.createDirectRoom.mockResolvedValue(pendingRoom);
     const createRoomMessageSpy = jest
       .spyOn(service as any, 'createRoomMessage')
@@ -199,17 +196,14 @@ describe('ChatService', () => {
     expect(getConversationDetailSpy).toHaveBeenCalledWith(userId, roomId);
   });
 
-  it('creates matched rooms and rejects an invalid repository result', async () => {
+  it('rejects invalid direct room repository results', async () => {
     repo.findDirectRoomByUsers.mockResolvedValue(null);
-    repo.findActiveMatchBetween.mockResolvedValue({
-      _id: new Types.ObjectId(),
-    });
     repo.createDirectRoom.mockResolvedValue({});
     await expect(
       service.createOrGetDirectRoom(userId, { targetUserId: partnerId }),
     ).rejects.toMatchObject({ code: ErrorCode.INTERNAL_ERROR });
     expect(repo.createDirectRoom).toHaveBeenCalledWith(
-      expect.objectContaining({ status: ChatRoomStatus.ACTIVE }),
+      expect.objectContaining({ status: ChatRoomStatus.PENDING }),
     );
   });
 
@@ -356,23 +350,10 @@ describe('ChatService', () => {
     });
   });
 
-  it('builds contacts from legacy/current matches and existing rooms', async () => {
-    const thirdId = new Types.ObjectId().toString();
-    repo.findMatchesForUser.mockResolvedValue([
-      { users: [new Types.ObjectId(userId), new Types.ObjectId(partnerId)] },
-      {
-        userId: new Types.ObjectId(userId),
-        targetUserId: new Types.ObjectId(thirdId),
-      },
-      {
-        userId: new Types.ObjectId(thirdId),
-        targetUserId: new Types.ObjectId(userId),
-      },
-    ]);
+  it('builds contacts from existing learning chat rooms', async () => {
     repo.listRoomsForUser.mockResolvedValue([createRoom()]);
     repo.findUsersByIds.mockResolvedValue([
       { _id: new Types.ObjectId(partnerId) },
-      { _id: new Types.ObjectId(thirdId) },
     ]);
     repo.findProfilesByUserIds.mockResolvedValue([
       {
@@ -380,17 +361,12 @@ describe('ChatService', () => {
         personal: { firstName: 'Asha' },
         verificationStatus: VerificationStatus.NOT_STARTED,
       },
-      {
-        userId: new Types.ObjectId(thirdId),
-        personal: { firstName: 'Nina' },
-        verificationStatus: VerificationStatus.NOT_STARTED,
-      },
     ]);
     await expect(
       service.getContacts(userId, { search: 'asha', page: 1, limit: 1 }),
     ).resolves.toMatchObject({
       total: 1,
-      items: [expect.objectContaining({ roomId, isMatched: true })],
+      items: [expect.objectContaining({ roomId, isMatched: false })],
     });
 
     repo.getBlockedRelationUserIds.mockResolvedValue([partnerId]);
@@ -399,8 +375,8 @@ describe('ChatService', () => {
       { ...createRoom(), participants: [new Types.ObjectId(userId)] },
     ]);
     await expect(service.getContacts(userId, {})).resolves.toMatchObject({
-      total: 1,
-      items: [expect.objectContaining({ userId: thirdId, roomId: null })],
+      total: 0,
+      items: [],
     });
   });
 

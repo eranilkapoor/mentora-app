@@ -43,6 +43,10 @@ consent_records
 parental_controls
 student_preferences
 student_accessibility_profiles
+student_addresses
+student_documents
+student_communication_history
+student_activity_timeline
 ```
 
 Geography and institutions:
@@ -73,6 +77,9 @@ curriculums
 curriculum_subjects
 curriculum_topics
 student_academic_records
+student_previous_education
+student_exam_scores
+student_course_preferences
 student_subject_enrollments
 student_learning_goals
 ```
@@ -182,13 +189,20 @@ users
 student_profiles
   -> parent_student_relationships
   -> parental_controls
+  -> student_addresses
   -> student_academic_records
+  -> student_previous_education
+  -> student_exam_scores
+  -> student_course_preferences
   -> student_subject_enrollments
+  -> student_documents
   -> learning_schedules
   -> ai_tutor_sessions
   -> assessment_attempts
   -> student_topic_progress
   -> learning_entitlements
+  -> student_communication_history
+  -> student_activity_timeline
 
 learning_schedules
   -> ai_tutor_sessions
@@ -214,10 +228,59 @@ learning_subscriptions
 - `student_profiles.userId` index for independent student lookup.
 - `student_profiles.createdByUserId + status` for parent-managed child lists.
 - Unique `parentUserId + studentProfileId` in `parent_student_relationships`.
+- `student_addresses.studentProfileId + type + isPrimary`.
+- `student_documents.studentProfileId + type + status + uploadedAt`.
+- `student_previous_education.studentProfileId + endDate`.
+- `student_exam_scores.studentProfileId + examDate + subjectId`.
+- `student_course_preferences.studentProfileId + status`.
 - `learning_schedules.studentProfileId + startAt + status` for calendars.
 - `learning_entitlements.studentProfileId + status + expiresAt` for access checks.
+- `payment_transactions.studentProfileId + status + createdAt` for student payment history.
+- `student_communication_history.studentProfileId + createdAt` for support/admin timelines.
+- `student_activity_timeline.studentProfileId + occurredAt + eventType`.
 - `ai_tutor_messages.sessionId + createdAt` for chat history.
 - `student_topic_progress.studentProfileId + subjectId + topicId` unique.
+
+## Student Profile Data Shape
+
+Use `student_profiles` for stable identity and status fields. Use child collections for repeating or sensitive sections:
+
+```text
+student_profiles
+  personal identity, age policy, status, language, timezone, accessibility summary
+
+student_academic_records
+  current academic board, institution, grade/class, stream, course, session, subjects
+
+parent_student_relationships
+  parent/guardian links, permissions, consent, billing/safety authority
+
+student_addresses
+  country, state, city, timezone, optional street/postal details, address type
+
+student_previous_education
+  past institutions, board/university, grade/course, dates, result summary
+
+student_exam_scores
+  school exams, entrance exams, diagnostic assessments, marks, percentile, proof document
+
+student_course_preferences
+  subjects, courses, tutor mode, delivery mode, schedule windows, learning pace, target exams
+
+student_documents
+  identity, consent, report cards, certificates, assignments, homework, review status, access logs
+
+payment_transactions + learning_entitlements
+  payer, student beneficiary, plan, invoice, receipt, refund, usage counters
+
+student_communication_history
+  notifications, email/SMS/push logs, support messages, tutor messages, parent alerts
+
+student_activity_timeline
+  profile changes, schedule events, AI sessions, assessments, payments, safety events, admin actions
+```
+
+This separation keeps the profile complete without forcing every section into one large document, and it lets Mentora apply different retention, access, and audit rules per section.
 
 ## Age Policy
 

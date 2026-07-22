@@ -52,29 +52,6 @@ export const navigateFromNotificationAction = (
     return true;
   }
 
-  if (action.screen === 'MatchDetails') {
-    const userId =
-      typeof action.params?.userId === 'string'
-        ? action.params.userId
-        : fallback?.actorId;
-
-    if (!userId) {
-      return false;
-    }
-
-    rootNavigation.navigate('App', {
-      screen: 'Tabs',
-      params: {
-        screen: 'Matches',
-        params: {
-          screen: 'MatchDetails',
-          params: { userId },
-        },
-      },
-    });
-    return true;
-  }
-
   if (action.screen === 'Notifications') {
     rootNavigation.navigate('App', {
       screen: 'Tabs',
@@ -86,10 +63,10 @@ export const navigateFromNotificationAction = (
     return true;
   }
 
-  if (action.screen === 'Matches') {
+  if (action.screen === 'Learn') {
     rootNavigation.navigate('App', {
       screen: 'Tabs',
-      params: { screen: 'Matches' },
+      params: { screen: 'Learn' },
     });
     return true;
   }

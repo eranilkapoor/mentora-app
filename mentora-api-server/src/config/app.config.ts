@@ -49,6 +49,14 @@ export default () => ({
       process.env.AUTH_MAX_CONCURRENT_SESSIONS || '5',
       10,
     ),
+    maxConcurrentStudentSessions: parseInt(
+      process.env.AUTH_MAX_CONCURRENT_STUDENT_SESSIONS || '1',
+      10,
+    ),
+    maxConcurrentParentSessions: parseInt(
+      process.env.AUTH_MAX_CONCURRENT_PARENT_SESSIONS || '3',
+      10,
+    ),
     suspiciousLoginDetectionEnabled:
       process.env.AUTH_SUSPICIOUS_LOGIN_DETECTION_ENABLED !== 'false',
     reviewPhoneOtp: {
@@ -92,14 +100,19 @@ export default () => ({
       10,
     ),
   },
-  matches: {
-    expiryEnabled: process.env.MATCH_EXPIRY_ENABLED === 'true',
-    expiryDays: parseInt(process.env.MATCH_EXPIRY_DAYS || '90', 10),
-    expiryLimit: parseInt(process.env.MATCH_EXPIRY_LIMIT || '500', 10),
-    dailyDigestEnabled: process.env.MATCH_DAILY_DIGEST_ENABLED !== 'false',
-    dailyDigestDryRun: process.env.MATCH_DAILY_DIGEST_DRY_RUN === 'true',
-    dailyDigestLimit: parseInt(
-      process.env.MATCH_DAILY_DIGEST_LIMIT || '500',
+  learning: {
+    sessionReminderEnabled:
+      process.env.LEARNING_SESSION_REMINDER_ENABLED !== 'false',
+    sessionReminderDryRun:
+      process.env.LEARNING_SESSION_REMINDER_DRY_RUN === 'true',
+    sessionReminderLimit: parseInt(
+      process.env.LEARNING_SESSION_REMINDER_LIMIT || '500',
+      10,
+    ),
+    entitlementAuditEnabled:
+      process.env.LEARNING_ENTITLEMENT_AUDIT_ENABLED !== 'false',
+    entitlementAuditLimit: parseInt(
+      process.env.LEARNING_ENTITLEMENT_AUDIT_LIMIT || '500',
       10,
     ),
   },

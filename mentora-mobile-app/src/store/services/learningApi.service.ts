@@ -7,6 +7,7 @@ export type ScheduleStatus =
 
 export interface StudentProfileSummary {
   id: string;
+  _id?: string;
   userId?: string;
   displayName: string;
   grade?: string;
@@ -19,8 +20,10 @@ export interface StudentProfileSummary {
 
 export interface SubjectSummary {
   id: string;
+  _id?: string;
   name: string;
   code?: string;
+  category?: string;
   grade?: string;
   board?: string;
   topicsCount?: number;
@@ -28,6 +31,7 @@ export interface SubjectSummary {
 
 export interface LearningSchedule {
   id: string;
+  _id?: string;
   studentProfileId: string;
   studentName?: string;
   subjectId: string;
@@ -35,6 +39,7 @@ export interface LearningSchedule {
   topicName?: string;
   tutorType: TutorType;
   deliveryMode: DeliveryMode;
+  title?: string;
   startAt: string;
   endAt: string;
   timezone: string;
@@ -46,11 +51,15 @@ export interface LearningSchedule {
 
 export interface LearningEntitlement {
   id: string;
+  _id?: string;
   studentProfileId: string;
-  planName: string;
-  status: 'active' | 'inactive' | 'expired' | 'cancelled';
-  includedSubjectIds: string[];
-  remainingMinutes: number;
+  planName?: string;
+  entitlementType?: string;
+  status: 'active' | 'inactive' | 'expired' | 'cancelled' | 'used' | 'revoked';
+  includedSubjectIds?: string[];
+  allocatedQuantity?: number;
+  usedQuantity?: number;
+  remainingMinutes?: number;
   expiresAt?: string;
 }
 

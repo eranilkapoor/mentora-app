@@ -21,14 +21,12 @@ import { MonitoringModule } from '@/common/monitoring/monitoring.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
 import { ChatModule } from './modules/chat/chat.module';
-import { MatchesModule } from './modules/matches/matches.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
 import { SeederModule } from './modules/seeder/seeder.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { SupportModule } from './modules/support/support.module';
-import { SuccessStoriesModule } from './modules/success-stories/success-stories.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
 import { LearningModule } from './modules/learning/learning.module';
 
@@ -75,14 +73,12 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     AdminModule,
     AnalyticsModule,
     ChatModule,
-    MatchesModule,
     NotificationsModule,
     PaymentsModule,
     ReferralsModule,
     LearningModule,
     SettingsModule,
     SupportModule,
-    SuccessStoriesModule,
     FeatureFlagsModule,
     ScheduleModule.forRoot(),
   ],

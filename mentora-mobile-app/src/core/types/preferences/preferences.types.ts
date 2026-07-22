@@ -1,38 +1,24 @@
-import {
-  BodyType,
-  Caste,
-  Complexion,
-  Country,
-  ManglikStatus,
-  MaritalStatus,
-  Qualification,
-  Religion,
-  SmokingHabit,
-  DrinkingHabit,
-  EatingHabit,
-} from '../common/enums';
-import { AgeRange, HeightRange, IncomeRange } from '../common/ranges';
+export type LearningPace = 'guided' | 'balanced' | 'accelerated';
+export type TutorModePreference = 'ai' | 'human' | 'hybrid';
+export type DeliveryModePreference = 'chat' | 'audio' | 'video' | 'offline';
+export type ParentDigestFrequency =
+  'after_each_session' | 'daily' | 'weekly' | 'monthly';
 
 export interface PreferencesData {
-  ageRange?: AgeRange;
-  heightRange?: HeightRange;
-  maritalStatus?: MaritalStatus[];
-  religion?: Religion[];
-  caste?: Caste[];
-  subCaste?: string[];
-  manglikStatus?: ManglikStatus[];
-  country?: Country[];
-  state?: string[];
-  city?: string[];
-  qualification?: Qualification[];
-  occupation?: string[];
-  annualIncomeRange?: IncomeRange;
-  bodyType?: BodyType[];
-  complexion?: Complexion[];
-  smoking?: SmokingHabit[];
-  drinking?: DrinkingHabit[];
-  eating?: EatingHabit[];
-  languagesKnown?: string[];
-  aboutPartner?: string;
-  isStrict?: boolean;
+  dailySessionMinutes?: {
+    min: number;
+    max: number;
+  };
+  gradeRange?: {
+    min: number;
+    max: number;
+  };
+  subjects?: string[];
+  learningGoals?: string[];
+  preferredTutorMode?: TutorModePreference;
+  preferredDeliveryModes?: DeliveryModePreference[];
+  learningPace?: LearningPace;
+  weeklyStudyMinutes?: number;
+  parentDigestFrequency?: ParentDigestFrequency;
+  parentalApprovalRequired?: boolean;
 }

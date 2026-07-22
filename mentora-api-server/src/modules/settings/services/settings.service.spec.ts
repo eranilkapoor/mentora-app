@@ -902,10 +902,10 @@ describe('SettingsService', () => {
 
     service.updateNotification(USER_ID, {
       pushEnabled: true,
-      interestReceived: preference,
-      interestAccepted: preference,
-      profileView: preference,
-      matchFound: preference,
+      sessionScheduled: preference,
+      sessionReminder: preference,
+      progressUpdate: preference,
+      parentAlert: preference,
       messageReceived: preference,
       subscription: preference,
       marketing: preference,
@@ -915,10 +915,10 @@ describe('SettingsService', () => {
 
     expect(repo.updateNotification).toHaveBeenCalledWith(USER_ID, {
       pushEnabled: true,
-      'preferences.interestReceived': preference,
-      'preferences.interestAccepted': preference,
-      'preferences.profileView': preference,
-      'preferences.matchFound': preference,
+      'preferences.sessionScheduled': preference,
+      'preferences.sessionReminder': preference,
+      'preferences.progressUpdate': preference,
+      'preferences.parentAlert': preference,
       'preferences.messageReceived': preference,
       'preferences.subscription': preference,
       'preferences.marketing': preference,
@@ -933,7 +933,7 @@ describe('SettingsService', () => {
     service.updateNotification(USER_ID, { pushEnabled: false });
     service.updateNotificationChannel(
       USER_ID,
-      { event: 'matchFound', channel: 'push' } as never,
+      { event: 'sessionReminder', channel: 'push' } as never,
       { value: false },
     );
 
@@ -941,7 +941,7 @@ describe('SettingsService', () => {
       pushEnabled: false,
     });
     expect(repo.updateNotification).toHaveBeenNthCalledWith(2, USER_ID, {
-      'preferences.matchFound.push': false,
+      'preferences.sessionReminder.push': false,
     });
   });
 

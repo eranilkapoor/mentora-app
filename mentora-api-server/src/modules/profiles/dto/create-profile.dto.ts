@@ -9,32 +9,17 @@ import {
   IsBoolean,
   Matches,
   ValidateBy,
-  Min,
   ArrayMaxSize,
   ArrayMinSize,
 } from 'class-validator';
 import { Type, Transform, plainToInstance } from 'class-transformer';
-import { Gender, Eating, Drinking, Smoking } from '@/common/enums';
 import {
-  BloodGroup,
-  BodyType,
   Caste,
-  Complexion,
   Country,
-  FamilyStatus,
-  FamilyType,
-  FamilyValue,
-  Hour,
-  ManglikStatus,
-  MaritalStatus,
-  Minute,
-  OccupationType,
+  Gender,
   PersonalityBadge,
-  ProfileFor,
   Qualification,
   Religion,
-  SiblingType,
-  TimePeriod,
 } from '@/common/enums';
 
 function isValidDateString(date: string): boolean {
@@ -55,42 +40,13 @@ function isValidDateString(date: string): boolean {
   ) {
     age -= 1;
   }
-  return age >= 18 && age <= 100;
+  return age >= 5 && age <= 100;
 }
 
 const normalizeCountryValue = ({ value }: { value: unknown }): unknown =>
   typeof value === 'string'
     ? value.trim().toLowerCase().replace(/\s+/g, '_')
     : value;
-
-export class TimeOfBirthDto {
-  @IsOptional()
-  @IsString()
-  hour?: Hour;
-
-  @IsOptional()
-  @IsString()
-  minute?: Minute;
-
-  @IsOptional()
-  @IsEnum(TimePeriod)
-  period?: TimePeriod;
-}
-
-export class PlaceOfBirthDto {
-  @IsOptional()
-  @IsString()
-  city?: string;
-
-  @IsOptional()
-  @IsString()
-  state?: string;
-
-  @IsOptional()
-  @Transform(normalizeCountryValue)
-  @IsString()
-  country?: Country;
-}
 
 export class ReligiousDetailsDto {
   @IsOptional()
@@ -106,20 +62,12 @@ export class ReligiousDetailsDto {
   gotra?: string;
 
   @IsOptional()
-  @IsEnum(ManglikStatus)
-  manglikStatus?: ManglikStatus;
-
-  @IsOptional()
   @IsString()
   rashi?: string;
 
   @IsOptional()
   @IsString()
   nakshatra?: string;
-
-  @IsOptional()
-  @IsString()
-  kundliFileUrl?: string;
 
   @IsOptional()
   @IsString()
@@ -245,10 +193,6 @@ export class ReligiousDetailsDto {
 export class PersonalDto {
   @IsString()
   @IsNotEmpty()
-  profileFor!: ProfileFor;
-
-  @IsString()
-  @IsNotEmpty()
   firstName!: string;
 
   @IsOptional()
@@ -267,16 +211,6 @@ export class PersonalDto {
     },
   })
   dateOfBirth!: string;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => TimeOfBirthDto)
-  timeOfBirth?: TimeOfBirthDto;
-
-  @IsOptional()
-  @ValidateNested()
-  @Type(() => PlaceOfBirthDto)
-  placeOfBirth?: PlaceOfBirthDto;
 
   @IsOptional()
   @ValidateNested()
@@ -328,35 +262,6 @@ export class PersonalDto {
   @IsString()
   motherTongue?: string;
 
-  @IsEnum(MaritalStatus)
-  maritalStatus!: MaritalStatus;
-
-  @IsOptional()
-  @IsBoolean()
-  hasChildren?: boolean;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  sonsCount?: number;
-
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
-  daughtersCount?: number;
-
-  @IsOptional()
-  @IsEnum(Smoking)
-  smoking?: Smoking;
-
-  @IsOptional()
-  @IsEnum(Drinking)
-  drinking?: Drinking;
-
-  @IsOptional()
-  @IsEnum(Eating)
-  eating?: Eating;
-
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
@@ -380,35 +285,10 @@ export class PersonalDto {
 }
 
 export class PhysicalDto {
-  @Type(() => Number)
-  @IsNumber()
-  height!: number;
-
   @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  weight?: number;
-
-  @IsOptional()
-  @IsEnum(BloodGroup)
-  bloodGroup?: BloodGroup;
-
-  @IsOptional()
-  @IsEnum(BodyType)
-  bodyType?: BodyType;
-
-  @IsOptional()
-  @IsEnum(Complexion)
-  complexion?: Complexion;
-
-  @IsOptional()
-  @IsBoolean()
-  disabilityStatus?: boolean;
-
-  @IsOptional()
-  @IsString()
-  disabilityNote?: string;
+  @IsArray()
+  @IsString({ each: true })
+  accessibilityNeeds?: string[];
 }
 
 export class EducationDto {
@@ -424,79 +304,26 @@ export class EducationDto {
   @IsString()
   university?: string;
 
-  @IsOptional()
-  @IsEnum(OccupationType)
-  occupationType?: OccupationType;
-
   @IsString()
   @IsNotEmpty()
   occupation!: string;
 
   @IsOptional()
   @IsString()
-  companyName?: string;
+  previousEducationSummary?: string;
 
   @IsOptional()
   @IsString()
-  jobRole?: string;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  annualIncomeAmount?: number;
-}
-
-export class SiblingDetailDto {
-  @IsNotEmpty()
-  @IsEnum(SiblingType, {
-    message: 'Type must be either brother or sister',
-  })
-  type!: SiblingType;
-
-  @IsBoolean()
-  @IsNotEmpty()
-  married!: boolean;
+  examScoreSummary?: string;
 
   @IsOptional()
   @IsString()
-  occupation?: string;
-}
-
-export class SiblingsDto {
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  brothersCount?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  sistersCount?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  marriedBrothersCount?: number;
-
-  @IsOptional()
-  @Type(() => Number)
-  @IsNumber()
-  @Min(0)
-  marriedSistersCount?: number;
+  coursePreference?: string;
 
   @IsOptional()
   @IsArray()
-  @ValidateNested({ each: true })
-  @Type(() => SiblingDetailDto)
-  details?: SiblingDetailDto[];
-
-  @IsOptional()
-  @IsString()
-  note?: string;
+  @IsString({ each: true })
+  preferredSubjects?: string[];
 }
 
 export class FamilyDto {
@@ -517,21 +344,20 @@ export class FamilyDto {
   motherOccupation?: string;
 
   @IsOptional()
-  @IsEnum(FamilyType)
-  familyType?: FamilyType;
+  @IsString()
+  guardianName?: string;
 
   @IsOptional()
-  @IsEnum(FamilyStatus)
-  familyStatus?: FamilyStatus;
+  @IsString()
+  guardianRelation?: string;
 
   @IsOptional()
-  @IsEnum(FamilyValue)
-  familyValues?: FamilyValue;
+  @IsString()
+  primaryGuardianPhone?: string;
 
   @IsOptional()
-  @ValidateNested()
-  @Type(() => SiblingsDto)
-  siblings?: SiblingsDto;
+  @IsString()
+  primaryGuardianEmail?: string;
 }
 
 const parseJSON =

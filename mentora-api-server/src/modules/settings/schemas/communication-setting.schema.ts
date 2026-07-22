@@ -21,7 +21,7 @@ export class CommunicationSetting {
   @Prop({
     type: String,
     enum: CommunicationAccess,
-    default: CommunicationAccess.MATCHES_ONLY,
+    default: CommunicationAccess.SCHEDULED_SESSIONS_ONLY,
   })
   whoCanCall!: CommunicationAccess;
 

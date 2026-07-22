@@ -43,6 +43,42 @@ export function CommunityGuidelinesScreen({
   );
 }
 
+export function ChildSafetyScreen({
+  navigation,
+}: StaticPageScreenProps): React.ReactElement {
+  return (
+    <StaticPageWebViewScreen
+      navigation={navigation}
+      slug="child-safety"
+      titleKey="settings.support_center.child_safety"
+    />
+  );
+}
+
+export function AiTutorDisclaimerScreen({
+  navigation,
+}: StaticPageScreenProps): React.ReactElement {
+  return (
+    <StaticPageWebViewScreen
+      navigation={navigation}
+      slug="ai-tutor-disclaimer"
+      titleKey="settings.support_center.ai_tutor_disclaimer"
+    />
+  );
+}
+
+export function RefundPolicyScreen({
+  navigation,
+}: StaticPageScreenProps): React.ReactElement {
+  return (
+    <StaticPageWebViewScreen
+      navigation={navigation}
+      slug="refund-policy"
+      titleKey="settings.support_center.refund_policy"
+    />
+  );
+}
+
 export function FaqsScreen({
   navigation,
 }: StaticPageScreenProps): React.ReactElement {

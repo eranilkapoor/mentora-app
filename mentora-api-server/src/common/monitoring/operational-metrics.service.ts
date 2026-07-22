@@ -11,9 +11,9 @@ export interface SocketMetric {
 }
 
 export interface ProductMetrics {
-  matchDigestSent: number;
-  matchDigestEligible: number;
-  matchDigestErrors: number;
+  learningReminderSent: number;
+  learningReminderEligible: number;
+  learningReminderErrors: number;
   notificationDeliveryFailures: number;
   notificationDeliverySent: number;
   notificationDeliverySkipped: number;
@@ -52,9 +52,9 @@ export class OperationalMetricsService {
   private readonly startedAt = new Date();
   private readonly socketMetrics = new Map<SocketNamespace, SocketMetric>();
   private readonly productMetrics: ProductMetrics = {
-    matchDigestSent: 0,
-    matchDigestEligible: 0,
-    matchDigestErrors: 0,
+    learningReminderSent: 0,
+    learningReminderEligible: 0,
+    learningReminderErrors: 0,
     notificationDeliveryFailures: 0,
     notificationDeliverySent: 0,
     notificationDeliverySkipped: 0,
@@ -93,14 +93,14 @@ export class OperationalMetricsService {
     }
   }
 
-  recordMatchDigest(summary: {
+  recordLearningReminder(summary: {
     eligible: number;
     sent: number;
     errors: number;
   }): void {
-    this.productMetrics.matchDigestEligible += summary.eligible;
-    this.productMetrics.matchDigestSent += summary.sent;
-    this.productMetrics.matchDigestErrors += summary.errors;
+    this.productMetrics.learningReminderEligible += summary.eligible;
+    this.productMetrics.learningReminderSent += summary.sent;
+    this.productMetrics.learningReminderErrors += summary.errors;
   }
 
   recordMongoSlowQuery(metric: MongoSlowQueryMetric): void {
@@ -111,7 +111,7 @@ export class OperationalMetricsService {
 
   snapshot(): OperationalMetricsSnapshot {
     return {
-      service: 'match-mate-api',
+      service: 'mentora-api',
       generatedAt: new Date().toISOString(),
       startedAt: this.startedAt.toISOString(),
       uptimeSeconds: Math.floor((Date.now() - this.startedAt.getTime()) / 1000),

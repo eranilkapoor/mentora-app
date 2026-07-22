@@ -757,10 +757,10 @@ export class SettingsService {
   updateNotification(userId: string, dto: UpdateNotificationSettingsDto) {
     // Flatten per-event preferences into the preferences sub-document
     const {
-      interestReceived,
-      interestAccepted,
-      profileView,
-      matchFound,
+      sessionScheduled,
+      sessionReminder,
+      progressUpdate,
+      parentAlert,
       messageReceived,
       subscription,
       marketing,
@@ -771,12 +771,12 @@ export class SettingsService {
 
     const update: Record<string, unknown> = { ...globalToggles };
 
-    if (interestReceived)
-      update['preferences.interestReceived'] = interestReceived;
-    if (interestAccepted)
-      update['preferences.interestAccepted'] = interestAccepted;
-    if (profileView) update['preferences.profileView'] = profileView;
-    if (matchFound) update['preferences.matchFound'] = matchFound;
+    if (sessionScheduled)
+      update['preferences.sessionScheduled'] = sessionScheduled;
+    if (sessionReminder)
+      update['preferences.sessionReminder'] = sessionReminder;
+    if (progressUpdate) update['preferences.progressUpdate'] = progressUpdate;
+    if (parentAlert) update['preferences.parentAlert'] = parentAlert;
     if (messageReceived)
       update['preferences.messageReceived'] = messageReceived;
     if (subscription) update['preferences.subscription'] = subscription;

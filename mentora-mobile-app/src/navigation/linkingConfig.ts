@@ -37,9 +37,9 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
           Tabs: {
             screens: {
               Home: 'home',
-              Matches: 'matches',
-              Chats: 'chats',
-              Membership: 'membership',
+              Learn: 'learn',
+              Schedule: 'schedule',
+              Progress: 'progress',
               Profile: 'profile',
             },
           },
@@ -48,7 +48,6 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
             screens: {
               SettingsScreen: '',
               EditProfile: 'edit-profile',
-              EditPreference: 'edit-preference',
               ChangePassword: 'change-password',
               NotificationSettings: 'notifications',
               AccountSettings: 'account',
@@ -66,6 +65,9 @@ export const linkingConfig: LinkingOptions<RootStackParamList> = {
               HelpSupport: 'help-support',
               Faqs: 'faqs',
               CommunityGuidelines: 'community-guidelines',
+              ChildSafety: 'child-safety',
+              AiTutorDisclaimer: 'ai-tutor-disclaimer',
+              RefundPolicy: 'refund-policy',
               PrivacyPolicy: 'privacy-policy',
               TermsConditions: 'terms-conditions',
               SupportTickets: 'support-tickets',

@@ -14,10 +14,10 @@ export type ChannelPreferenceType = {
 };
 
 export type NotificationPreferencesType = {
-  interestReceived: ChannelPreferenceType;
-  interestAccepted: ChannelPreferenceType;
-  profileView: ChannelPreferenceType;
-  matchFound: ChannelPreferenceType;
+  sessionScheduled: ChannelPreferenceType;
+  sessionReminder: ChannelPreferenceType;
+  progressUpdate: ChannelPreferenceType;
+  parentAlert: ChannelPreferenceType;
   messageReceived: ChannelPreferenceType;
   subscription: ChannelPreferenceType;
   system: ChannelPreferenceType;
@@ -50,7 +50,7 @@ const engagementPreferenceDefault = () => ({
   sms: false,
 });
 
-const profileViewPreferenceDefault = () => ({
+const progressPreferenceDefault = () => ({
   inApp: true,
   push: true,
   email: false,
@@ -88,16 +88,16 @@ class QuietHours {
 @Schema({ _id: false })
 class NotificationPreferences {
   @Prop({ type: ChannelPreference, default: engagementPreferenceDefault })
-  interestReceived!: ChannelPreference;
+  sessionScheduled!: ChannelPreference;
 
   @Prop({ type: ChannelPreference, default: engagementPreferenceDefault })
-  interestAccepted!: ChannelPreference;
+  sessionReminder!: ChannelPreference;
 
-  @Prop({ type: ChannelPreference, default: profileViewPreferenceDefault })
-  profileView!: ChannelPreference;
+  @Prop({ type: ChannelPreference, default: progressPreferenceDefault })
+  progressUpdate!: ChannelPreference;
 
   @Prop({ type: ChannelPreference, default: engagementPreferenceDefault })
-  matchFound!: ChannelPreference;
+  parentAlert!: ChannelPreference;
 
   @Prop({ type: ChannelPreference, default: engagementPreferenceDefault })
   messageReceived!: ChannelPreference;

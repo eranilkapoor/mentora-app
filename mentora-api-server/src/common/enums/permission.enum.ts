@@ -67,15 +67,6 @@ export enum Permission {
   CHAT_BLOCK = 'chat:block',
   CHAT_MODERATE = 'chat:moderate',
 
-  // =========================
-  //  INTERACTIONS
-  // =========================
-  INTEREST_VIEW = 'interest:view',
-  INTEREST_MANAGE = 'interest:manage',
-
-  MATCH_VIEW = 'match:view',
-  MATCH_DELETE = 'match:delete',
-
   SHORTLIST_VIEW = 'shortlist:view',
   SHORTLIST_DELETE = 'shortlist:delete',
 

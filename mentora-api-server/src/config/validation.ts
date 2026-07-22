@@ -362,7 +362,7 @@ function validateMentoraMongoDatabase(
   if (/match[-_]?mate/i.test(dbName)) {
     return helpers.error('any.custom', {
       customMessage:
-        'MONGO_URI database name must be Mentora-specific and must not reuse Match Mate databases.',
+        'MONGO_URI database name must be Mentora-specific and must not reuse legacy app databases.',
     });
   }
 
@@ -643,26 +643,28 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
     .max(5000)
     .default(500),
 
-  MATCH_EXPIRY_ENABLED: Joi.boolean()
-    .truthy('true')
-    .falsy('false')
-    .default(false),
-
-  MATCH_EXPIRY_DAYS: Joi.number().integer().min(1).max(3650).default(90),
-
-  MATCH_EXPIRY_LIMIT: Joi.number().integer().min(1).max(5000).default(500),
-
-  MATCH_DAILY_DIGEST_ENABLED: Joi.boolean()
+  LEARNING_SESSION_REMINDER_ENABLED: Joi.boolean()
     .truthy('true')
     .falsy('false')
     .default(true),
 
-  MATCH_DAILY_DIGEST_DRY_RUN: Joi.boolean()
+  LEARNING_SESSION_REMINDER_DRY_RUN: Joi.boolean()
     .truthy('true')
     .falsy('false')
     .default(false),
 
-  MATCH_DAILY_DIGEST_LIMIT: Joi.number()
+  LEARNING_SESSION_REMINDER_LIMIT: Joi.number()
+    .integer()
+    .min(1)
+    .max(5000)
+    .default(500),
+
+  LEARNING_ENTITLEMENT_AUDIT_ENABLED: Joi.boolean()
+    .truthy('true')
+    .falsy('false')
+    .default(true),
+
+  LEARNING_ENTITLEMENT_AUDIT_LIMIT: Joi.number()
     .integer()
     .min(1)
     .max(5000)

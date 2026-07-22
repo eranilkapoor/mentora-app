@@ -20,7 +20,8 @@
   "no_online_members": "अभी कोई matched सदस्य ऑनलाइन नहीं है।",
   "archived_empty": "आर्काइव की गई बातचीत यहां दिखेगी।",
   "start_after_interest": "रुचि स्वीकार होने के बाद चैट शुरू करें।",
-  "browse_matches": "मैच ब्राउज़ करें",
+  "browse_matches": "Start Learning",
+  "start_learning": "Start Learning",
   "unable_update_title": "चैट अपडेट नहीं हो पाई",
   "filters": {
     "all": "सभी",

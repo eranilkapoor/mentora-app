@@ -20,6 +20,7 @@
 | ------- | --------------------------------------------------------------------------------------------------------------------- |
 | Done    | Extend user roles for `student`, `parent`, `mentor`, `teacher`, `content_manager`, `support`, `admin`, `super_admin`. |
 | Partial | Create `student_profiles` module with independent and parent-managed registration modes.                              |
+| Todo    | Add complete student profile sections: personal, academic, parents, address, previous education, exam scores, course preference, documents, payments, communication history, and activity timeline. |
 | Partial | Create `parent_profiles` module.                                                                                      |
 | Partial | Create `parent_student_relationships` with permissions and consent.                                                   |
 | Todo    | Create `student_invitations` and optional guardian invitation flow.                                                   |
@@ -33,6 +34,7 @@
 | Partial | Add boards, universities, institutions, academic levels, grades, streams, courses, subjects, topics, and curriculums. |
 | Partial | Add seed data for Classes 6-10, one board, Mathematics, Science, and English.                                         |
 | Partial | Add student academic records and subject enrollment.                                                                  |
+| Todo    | Add previous education, exam scores, course preferences, and document upload/review APIs.                             |
 | Partial | Replace mobile onboarding preference steps with academic onboarding.                                                  |
 
 ## P3 Scheduling And Entitlements
@@ -70,6 +72,7 @@
 | Done    | Replace mobile tabs with student mode: Home, Learn, Schedule, Progress, Profile. |
 | Partial | Add parent mode: Dashboard, Children, Schedule, Payments, Settings.              |
 | Todo    | Add account switcher for parent and child profiles.                              |
+| Todo    | Build complete student profile detail/edit screens with section-level permissions. |
 | Todo    | Build public website for brand, plans, privacy, support, and app links.          |
 
 ## Code Cleanup Backlog From Audit

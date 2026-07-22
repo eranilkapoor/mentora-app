@@ -36,9 +36,10 @@ export interface PublicFeatureFlags {
       push: string;
     };
   };
-  matches: {
-    dailyDigest: boolean;
-    dailyDigestDryRun: boolean;
+  learning: {
+    sessionReminders: boolean;
+    sessionReminderDryRun: boolean;
+    entitlementAudit: boolean;
   };
 }
 
@@ -133,14 +134,18 @@ export class FeatureFlagsService {
           ),
         },
       },
-      matches: {
-        dailyDigest: this.configService.get<boolean>(
-          'matches.dailyDigestEnabled',
+      learning: {
+        sessionReminders: this.configService.get<boolean>(
+          'learning.sessionReminderEnabled',
           true,
         ),
-        dailyDigestDryRun: this.configService.get<boolean>(
-          'matches.dailyDigestDryRun',
+        sessionReminderDryRun: this.configService.get<boolean>(
+          'learning.sessionReminderDryRun',
           false,
+        ),
+        entitlementAudit: this.configService.get<boolean>(
+          'learning.entitlementAuditEnabled',
+          true,
         ),
       },
     };

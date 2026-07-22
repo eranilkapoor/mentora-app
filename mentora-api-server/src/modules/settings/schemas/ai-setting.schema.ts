@@ -8,11 +8,11 @@ export class AiSetting {
   userId!: Types.ObjectId;
 
   @Prop({ default: true }) aiRecommendationsEnabled!: boolean;
-  @Prop({ default: true }) smartMatchRanking!: boolean;
-  @Prop({ default: false }) horoscopeSuggestions!: boolean;
-  @Prop({ default: true }) compatibilityScoring!: boolean;
-  @Prop({ default: false }) allowAiBioGeneration!: boolean;
-  @Prop({ default: true }) useProfileDataForRanking!: boolean;
+  @Prop({ default: true }) adaptiveTutorRanking!: boolean;
+  @Prop({ default: false }) studyPlanSuggestions!: boolean;
+  @Prop({ default: true }) progressScoring!: boolean;
+  @Prop({ default: false }) allowAiProfileSummary!: boolean;
+  @Prop({ default: true }) useProfileDataForPersonalization!: boolean;
 }
 
 export type AiSettingDocument = AiSetting & Document;

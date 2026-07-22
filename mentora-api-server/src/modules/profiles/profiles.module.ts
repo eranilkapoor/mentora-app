@@ -4,12 +4,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 // Controllers
 import { ProfilesController } from './controllers/profiles.controller';
 import { MediaController } from './controllers/media.controller';
-import { PreferenceController } from './controllers/preference.controller';
 
 // Services
 import { ProfilesService } from './services/profiles.service';
 import { MediaService } from './services/media.service';
-import { PreferenceService } from './services/preference.service';
 import { ProfileScoringService } from './services/profile-scoring.service';
 import { MediaModerationService } from './services/media-moderation.service';
 import { VideoThumbnailService } from './services/video-thumbnail.service';
@@ -19,15 +17,10 @@ import { ProfileArchiveTask } from './tasks/profile-archive.task';
 // Repositories
 import { ProfileRepository } from './repositories/profile.repository';
 import { MediaRepository } from './repositories/media.repository';
-import { PreferenceRepository } from './repositories/preference.repository';
 
 // Schemas
 import { Profile, ProfileSchema } from './schemas/profile/profile.schema';
 import { Media, MediaSchema } from './schemas/media/media.schema';
-import {
-  Preference,
-  PreferenceSchema,
-} from './schemas/preference/preference.schema';
 import {
   ActivityLog,
   ActivityLogSchema,
@@ -48,7 +41,6 @@ import { ReferralsModule } from '../referrals/referrals.module';
     MongooseModule.forFeature([
       { name: Profile.name, schema: ProfileSchema },
       { name: Media.name, schema: MediaSchema },
-      { name: Preference.name, schema: PreferenceSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
     ]),
     NotificationsModule,
@@ -60,12 +52,11 @@ import { ReferralsModule } from '../referrals/referrals.module';
     SubscriptionsModule,
     ReferralsModule,
   ],
-  controllers: [ProfilesController, MediaController, PreferenceController],
+  controllers: [ProfilesController, MediaController],
   providers: [
     NotificationsModule,
     ProfilesService,
     MediaService,
-    PreferenceService,
     ProfileScoringService,
     MediaModerationService,
     VideoThumbnailService,
@@ -73,12 +64,10 @@ import { ReferralsModule } from '../referrals/referrals.module';
     ProfileArchiveTask,
     ProfileRepository,
     MediaRepository,
-    PreferenceRepository,
   ],
   exports: [
     ProfilesService,
     MediaService,
-    PreferenceService,
     ProfileScoringService,
     MediaModerationService,
     VideoThumbnailService,

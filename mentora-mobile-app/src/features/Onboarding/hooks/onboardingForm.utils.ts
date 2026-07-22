@@ -7,8 +7,6 @@ export const validateOnboardingBasic = (
 ): Record<string, string> => {
   const errors: Record<string, string> = {};
 
-  if (!basic.profileFor.trim())
-    errors.profileFor = t('onboarding.errors.required');
   if (!basic.firstName.trim())
     errors.firstName = t('onboarding.errors.first_name_required');
   if (!basic.dateOfBirth)
@@ -18,14 +16,14 @@ export const validateOnboardingBasic = (
   if (!basic.state?.trim())
     errors.state = t('onboarding.errors.state_required');
   if (!basic.city?.trim()) errors.city = t('onboarding.errors.city_required');
-  if (!basic.height.trim())
-    errors.height = t('onboarding.errors.grade_required');
-  else if (!/^\d+$/.test(basic.height.trim()))
-    errors.height = t('onboarding.errors.grade_invalid');
+  if (!basic.gradeLevel.trim())
+    errors.gradeLevel = t('onboarding.errors.grade_required');
   if (!basic.qualification)
     errors.qualification = t('onboarding.errors.qualification_required');
-  if (!basic.occupation.trim())
-    errors.occupation = t('onboarding.errors.occupation_required');
+  if (!basic.institutionName.trim())
+    errors.institutionName = t('onboarding.errors.institution_required');
+  if (!basic.primaryGoal.trim())
+    errors.primaryGoal = t('onboarding.errors.goal_required');
 
   return errors;
 };
@@ -36,13 +34,13 @@ export const validateOnboardingPreferences = (
 ): Record<string, string> => {
   const errors: Record<string, string> = {};
 
-  if (!preferences.ageRange?.min)
+  if (!preferences.dailySessionMinutes?.min)
     errors.minAgeRange = t('onboarding.errors.session_min_required');
-  if (!preferences.ageRange?.max)
+  if (!preferences.dailySessionMinutes?.max)
     errors.maxAgeRange = t('onboarding.errors.session_max_required');
-  if (!preferences.city?.length)
+  if (!preferences.subjects?.length)
     errors.subjects = t('onboarding.errors.subjects_required');
-  if (!preferences.state?.length)
+  if (!preferences.learningGoals?.length)
     errors.goals = t('onboarding.errors.goals_required');
 
   return errors;

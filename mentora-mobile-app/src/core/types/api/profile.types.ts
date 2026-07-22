@@ -45,6 +45,7 @@ export interface ProfileData {
     profileCompletionPercentage?: number;
     profileScore?: number;
     hasAboutMe?: boolean;
+    missingFields?: string[];
   };
   isPremium?: boolean;
   verification?: {

@@ -32,8 +32,8 @@ export const DATA_SOURCE_OF_TRUTH = {
   },
   relationshipSignals: {
     casualInteractions: 'interactions',
-    formalInterestRequests: 'interests',
-    computedCompatibility: 'matches',
+    learningRelationships: 'parent_student_relationships',
+    scheduledLearning: 'learning_schedules',
     safetyBlocks: 'user_blocks',
     safetyReports: 'user_reports',
   },
@@ -71,7 +71,7 @@ export const DATA_RETENTION_POLICY_DAYS = {
   adminAuditLogs: 2555,
   paymentRecords: 2555,
   chatMessages: 1825,
-  successStoriesAfterUnpublish: 90,
+  learningSessions: 1825,
 } as const;
 
 export const DATA_ARCHIVE_POLICY_DAYS = {
@@ -119,7 +119,6 @@ export const DATA_SCHEMA_VERSION_TARGETS = {
     'payment_invoices',
     'subscriptions',
     'promotion_coupons',
-    'curated_matches',
     'admin_audit_logs',
     'verifications',
     'user_reports',
@@ -127,10 +126,15 @@ export const DATA_SCHEMA_VERSION_TARGETS = {
   addWhenTouched: [
     'users',
     'profiles',
-    'preferences',
     'media',
     'chat_rooms',
     'chat_messages',
+    'student_profiles',
+    'parent_profiles',
+    'parent_student_relationships',
+    'learning_schedules',
+    'learning_entitlements',
+    'ai_tutor_sessions',
     'notifications',
     'notification_logs',
     'support_tickets',

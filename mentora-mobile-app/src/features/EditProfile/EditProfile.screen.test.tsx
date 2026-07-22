@@ -172,9 +172,6 @@ const makeSectionMock = (label: string) => {
 jest.mock('./sections/PersonalSection', () => ({
   PersonalSection: makeSectionMock('personal'),
 }));
-jest.mock('./sections/AstroSection', () => ({
-  AstroSection: makeSectionMock('astro'),
-}));
 jest.mock('./sections/PhysicalSection', () => ({
   PhysicalSection: makeSectionMock('physical'),
 }));
@@ -183,9 +180,6 @@ jest.mock('./sections/EducationSection', () => ({
 }));
 jest.mock('./sections/FamilySection', () => ({
   FamilySection: makeSectionMock('family'),
-}));
-jest.mock('./sections/LifestyleSection', () => ({
-  LifestyleSection: makeSectionMock('lifestyle'),
 }));
 
 import EditProfileScreen from './EditProfile.screen';

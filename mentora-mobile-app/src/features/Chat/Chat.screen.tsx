@@ -166,9 +166,8 @@ export default function ChatScreen({
   );
 
   const handleOpenProfile = useCallback((): void => {
-    if (!userId) return;
-    navigation.navigate('MatchDetails', { userId });
-  }, [navigation, userId]);
+    navigation.getParent()?.navigate('Profile');
+  }, [navigation]);
 
   useEffect(
     () => () => {

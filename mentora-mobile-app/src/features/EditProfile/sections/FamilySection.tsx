@@ -2,18 +2,13 @@ import React from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { FamilyStatuses, FamilyTypes, FamilyValues } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
-import { SiblingsEditor } from '../components/SiblingsEditor';
 import { editProfileStyles } from '../EditProfile.styles';
 import {
   FamilySection as FamilySectionType,
   SectionKey,
 } from '../EditProfile.types';
-import { useEnumOptions } from '@/core/hooks/useEnumOptions';
-import { SingleSelectPill } from '@/core/components/SingleSelectPill';
-import { INITIAL_SIBLINGS } from '../EditProfile.constants';
 
 interface Props {
   family: FamilySectionType;
@@ -33,19 +28,10 @@ export function FamilySection({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
-  const FamilyTypeOptions = useEnumOptions(FamilyTypes, 'options.family_types');
-  const FamilyStatusOptions = useEnumOptions(
-    FamilyStatuses,
-    'options.family_status'
-  );
-  const FamilyValueOptions = useEnumOptions(
-    FamilyValues,
-    'options.family_values'
-  );
 
   return (
     <SectionCard
-      title={t('edit_profile.sections.family')}
+      title={t('edit_profile.sections.parents')}
       icon="home"
       sectionKey="family"
       loadingKey={sectionLoading}
@@ -70,56 +56,31 @@ export function FamilySection({
         </View>
       </View>
 
-      <View style={styles.row}>
-        <View style={styles.halfField}>
-          <FormInput
-            label={t('edit_profile.fields.father_occupation')}
-            value={family.fatherOccupation ?? ''}
-            onChange={(v) => onSet('fatherOccupation', v)}
-            placeholder={t('edit_profile.placeholders.father_occupation')}
-          />
-        </View>
-        <View style={styles.halfField}>
-          <FormInput
-            label={t('edit_profile.fields.mother_occupation')}
-            value={family.motherOccupation ?? ''}
-            onChange={(v) => onSet('motherOccupation', v)}
-            placeholder={t('edit_profile.placeholders.mother_occupation')}
-          />
-        </View>
-      </View>
-
-      <SingleSelectPill
-        label={t('edit_profile.fields.family_type')}
-        options={FamilyTypeOptions}
-        value={family.familyType ?? ''}
-        onChange={(v) =>
-          onSet('familyType', v as FamilySectionType['familyType'])
-        }
-        i18nPrefix="options.family_types"
+      <FormInput
+        label={t('edit_profile.fields.guardian_name')}
+        value={family.guardianName ?? ''}
+        onChange={(v) => onSet('guardianName', v)}
+        placeholder={t('edit_profile.placeholders.guardian_name')}
       />
-      <SingleSelectPill
-        label={t('edit_profile.fields.family_status')}
-        options={FamilyStatusOptions}
-        value={family.familyStatus ?? FamilyStatuses.MIDDLE_CLASS}
-        onChange={(v) =>
-          onSet('familyStatus', v as FamilySectionType['familyStatus'])
-        }
-        i18nPrefix="options.family_status"
+      <FormInput
+        label={t('edit_profile.fields.guardian_relation')}
+        value={family.guardianRelation ?? ''}
+        onChange={(v) => onSet('guardianRelation', v)}
+        placeholder={t('edit_profile.placeholders.guardian_relation')}
       />
-      <SingleSelectPill
-        label={t('edit_profile.fields.family_values')}
-        options={FamilyValueOptions}
-        value={family.familyValues ?? FamilyValues.MODERATE}
-        onChange={(v) =>
-          onSet('familyValues', v as FamilySectionType['familyValues'])
-        }
-        i18nPrefix="options.family_values"
+      <FormInput
+        label={t('edit_profile.fields.guardian_phone')}
+        value={family.primaryGuardianPhone ?? ''}
+        onChange={(v) => onSet('primaryGuardianPhone', v)}
+        keyboardType="phone-pad"
+        placeholder={t('edit_profile.placeholders.guardian_phone')}
       />
-
-      <SiblingsEditor
-        value={family.siblings ?? INITIAL_SIBLINGS}
-        onChange={(v) => onSet('siblings', v)}
+      <FormInput
+        label={t('edit_profile.fields.guardian_email')}
+        value={family.primaryGuardianEmail ?? ''}
+        onChange={(v) => onSet('primaryGuardianEmail', v)}
+        keyboardType="email-address"
+        placeholder={t('edit_profile.placeholders.guardian_email')}
       />
     </SectionCard>
   );

@@ -36,7 +36,7 @@ Start with a narrow and useful audience:
 - Student invitations for child login.
 - Parent-student relationship permissions.
 - Parental controls for minors and linked students.
-- Academic profile and education history.
+- Complete student profile covering personal details, academic details, parents, address, previous education, exam scores, course preference, documents, payments, communication history, and activity timeline.
 - Institution, board, grade, course, subject, topic, and curriculum master data.
 - Student subject enrollment.
 - Subscription plans, payments, and explicit learning entitlements.
@@ -98,6 +98,26 @@ Replace:
 - Complete university/college catalogue for every country.
 - Voice tutor, handwritten answer checking, live human mentor marketplace, group classes, and gamification.
 - Reusing Match Mate production database or user data.
+
+## Student Profile Scope
+
+Mentora needs a complete student profile because the profile becomes the operating record for learning, parent management, support, payment entitlement, and audit. The full section list is:
+
+- Personal
+- Academic
+- Parents
+- Address
+- Previous Education
+- Exam Scores
+- Course Preference
+- Documents
+- Payments
+- Communication History
+- Activity Timeline
+
+For MVP, Personal, Academic, Parents for parent-managed minors, Address at country/state/city/timezone level, Course Preference, Payments, Communication History, and Activity Timeline are required. Previous Education, Exam Scores, and Documents can be progressively completed, but the data model and APIs should be planned from the start.
+
+Detailed fields and API direction are documented in `docs/planning/STUDENT-PROFILE-MODEL.md`.
 
 ## Success Criteria
 

@@ -38,7 +38,6 @@ describe('MasterSeederService', () => {
   const templateModel = model();
   const userModel = model();
   const profileModel = model();
-  const preferenceModel = model();
   const mediaModel = model();
   const accountModel = model();
   const privacyModel = model();
@@ -66,7 +65,6 @@ describe('MasterSeederService', () => {
       templateModel,
       userModel,
       profileModel,
-      preferenceModel,
       mediaModel,
       accountModel,
       privacyModel,
@@ -97,7 +95,6 @@ describe('MasterSeederService', () => {
       templateModel as never,
       userModel as never,
       profileModel as never,
-      preferenceModel as never,
       mediaModel as never,
       accountModel as never,
       privacyModel as never,

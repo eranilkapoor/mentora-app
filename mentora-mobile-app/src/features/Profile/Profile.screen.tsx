@@ -43,12 +43,7 @@ export default function ProfileScreen({
     100,
     Math.max(0, Math.round(profile?.profileCompletionPercentage ?? 0))
   );
-  const profileFor = (profile as { profileFor?: string } | undefined)
-    ?.profileFor;
-  const profileMode =
-    profileFor === 'self'
-      ? t('profile.mode_adult_student')
-      : t('profile.mode_parent_managed');
+  const profileMode = t('profile.mode_student_learning');
 
   const openSettings = (screen: string) => {
     navigation.navigate('Settings', { screen } as never);
@@ -162,9 +157,9 @@ export default function ProfileScreen({
             onPress={() => openSettings('EditProfile')}
           />
           <ActionButton
-            icon="sliders"
-            label={t('profile.learning_preferences')}
-            onPress={() => openSettings('EditPreference')}
+            icon="cpu"
+            label={t('settings.ai_settings')}
+            onPress={() => openSettings('AiSettings')}
           />
           <ActionButton
             icon="lock"

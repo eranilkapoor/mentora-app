@@ -8,26 +8,18 @@ export type PersonalityBadgeOption = {
 };
 
 export const personalityBadgeIconByValue: Record<PersonalityBadge, string> = {
-  [PersonalityBadges.FAMILY_ORIENTED]: 'users',
-  [PersonalityBadges.MARRIAGE_FOCUSED]: 'heart',
-  [PersonalityBadges.TRADITIONAL_VALUES]: 'home',
-  [PersonalityBadges.MODERN_THINKER]: 'cpu',
-  [PersonalityBadges.CAREER_FOCUSED]: 'briefcase',
-  [PersonalityBadges.ENTREPRENEUR]: 'trending-up',
-  [PersonalityBadges.SPIRITUAL]: 'sun',
-  [PersonalityBadges.RELIGIOUS]: 'bookmark',
-  [PersonalityBadges.TRAVELER]: 'compass',
-  [PersonalityBadges.FOODIE]: 'coffee',
+  [PersonalityBadges.CURIOUS_LEARNER]: 'search',
+  [PersonalityBadges.GOAL_ORIENTED]: 'target',
+  [PersonalityBadges.CONSISTENT_PRACTICE]: 'repeat',
+  [PersonalityBadges.EXAM_FOCUSED]: 'clipboard',
+  [PersonalityBadges.PROJECT_BUILDER]: 'tool',
+  [PersonalityBadges.FAST_TRACK]: 'zap',
+  [PersonalityBadges.STEP_BY_STEP]: 'list',
   [PersonalityBadges.BOOK_LOVER]: 'book-open',
-  [PersonalityBadges.MUSIC_LOVER]: 'music',
-  [PersonalityBadges.FITNESS_ENTHUSIAST]: 'activity',
-  [PersonalityBadges.PET_LOVER]: 'smile',
-  [PersonalityBadges.NATURE_LOVER]: 'feather',
-  [PersonalityBadges.AMBITIOUS]: 'target',
-  [PersonalityBadges.CALM_NATURE]: 'cloud',
-  [PersonalityBadges.FRIENDLY]: 'user-plus',
-  [PersonalityBadges.HUMOROUS]: 'smile',
-  [PersonalityBadges.SUPPORTIVE]: 'shield',
+  [PersonalityBadges.STEM_LEARNER]: 'cpu',
+  [PersonalityBadges.CREATIVE_THINKER]: 'edit-3',
+  [PersonalityBadges.CONFIDENCE_BUILDING]: 'trending-up',
+  [PersonalityBadges.REVISION_READY]: 'refresh-cw',
 };
 
 const humanizeBadge = (value: string): string =>
@@ -39,7 +31,7 @@ export const getPersonalityBadgeLabel = (value: string, t: TFunction): string =>
   });
 
 export const getPersonalityBadgeIcon = (value: string): string =>
-  personalityBadgeIconByValue[value as PersonalityBadge] ?? 'heart';
+  personalityBadgeIconByValue[value as PersonalityBadge] ?? 'book-open';
 
 export const getPersonalityBadgeOptions = (
   t: TFunction

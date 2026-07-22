@@ -161,18 +161,12 @@ export class ChatService {
 
     let room = await this.repo.findDirectRoomByUsers(userId, dto.targetUserId);
 
-    const match = await this.repo.findActiveMatchBetween(
-      userId,
-      dto.targetUserId,
-    );
-
     if (!room) {
       room = await this.repo.createDirectRoom({
         createdById: userId,
         participantIds: [userId, dto.targetUserId],
-        ...(match ? { startedFromMatchId: String(match._id) } : {}),
-        status: match ? ChatRoomStatus.ACTIVE : ChatRoomStatus.PENDING,
-        ...(!match ? { requestedById: userId } : {}),
+        status: ChatRoomStatus.PENDING,
+        requestedById: userId,
       });
     }
 
@@ -365,28 +359,7 @@ export class ChatService {
   }
 
   async getContacts(userId: string, query: ListChatContactsDto) {
-    const [matches, rooms] = await Promise.all([
-      this.repo.findMatchesForUser(userId),
-      this.repo.listRoomsForUser(userId, 200),
-    ]);
-
-    const matchedUserIds = matches
-      .map((match) => {
-        if (
-          'users' in match &&
-          Array.isArray((match as { users?: Types.ObjectId[] }).users)
-        ) {
-          return (match as { users: Types.ObjectId[] }).users
-            .map((value) => value.toString())
-            .find((value) => value !== userId);
-        }
-
-        const primaryUserId = String(match.userId);
-        return primaryUserId === userId
-          ? String(match.targetUserId)
-          : primaryUserId;
-      })
-      .filter((value): value is string => Boolean(value));
+    const rooms = await this.repo.listRoomsForUser(userId, 200);
 
     const roomPartnerIds = rooms.flatMap((room) =>
       room.participants
@@ -397,9 +370,9 @@ export class ChatService {
     const blockedUserIds = new Set(
       await this.repo.getBlockedRelationUserIds(userId),
     );
-    const contactUserIds = Array.from(
-      new Set([...matchedUserIds, ...roomPartnerIds]),
-    ).filter((contactUserId) => !blockedUserIds.has(contactUserId));
+    const contactUserIds = Array.from(new Set(roomPartnerIds)).filter(
+      (contactUserId) => !blockedUserIds.has(contactUserId),
+    );
     const [users, profiles, media] = await Promise.all([
       this.repo.findUsersByIds(contactUserIds),
       this.repo.findProfilesByUserIds(contactUserIds),
@@ -426,7 +399,7 @@ export class ChatService {
     let items = await Promise.all(
       contactUserIds.map(async (contactUserId) => ({
         roomId: roomMap.get(contactUserId) ?? null,
-        isMatched: matchedUserIds.includes(contactUserId),
+        isMatched: false,
         ...(await this.buildUserSummary(
           contactUserId,
           userMap,

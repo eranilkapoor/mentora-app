@@ -146,6 +146,9 @@ async function bootstrap(): Promise<void> {
     '/privacy-policy',
     '/terms-conditions',
     '/community-guidelines',
+    '/child-safety',
+    '/ai-tutor-disclaimer',
+    '/refund-policy',
     '/faqs',
   ]);
   app.use(
@@ -265,6 +268,9 @@ async function bootstrap(): Promise<void> {
       { path: 'privacy-policy', method: RequestMethod.GET },
       { path: 'terms-conditions', method: RequestMethod.GET },
       { path: 'community-guidelines', method: RequestMethod.GET },
+      { path: 'child-safety', method: RequestMethod.GET },
+      { path: 'ai-tutor-disclaimer', method: RequestMethod.GET },
+      { path: 'refund-policy', method: RequestMethod.GET },
       { path: 'faqs', method: RequestMethod.GET },
       { path: 'account-deletion', method: RequestMethod.GET },
     ],
@@ -272,7 +278,7 @@ async function bootstrap(): Promise<void> {
 
   if (env !== 'production') {
     const swaggerConfig = new DocumentBuilder()
-      .setTitle('Matrimony API')
+      .setTitle('Mentora API')
       .setDescription('API documentation for AI Tutoring App')
       .setVersion('1.0')
       .addBearerAuth(

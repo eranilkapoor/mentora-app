@@ -2,13 +2,16 @@ import {
   IsArray,
   IsBoolean,
   IsDateString,
+  IsEmail,
   IsIn,
   IsMongoId,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  MaxLength,
   Max,
+  MinLength,
   Min,
 } from 'class-validator';
 
@@ -38,6 +41,16 @@ export class CreateStudentDto {
   @IsOptional()
   @IsString()
   phone?: string;
+
+  @IsOptional()
+  @IsEmail()
+  studentEmail?: string;
+
+  @IsOptional()
+  @MinLength(12)
+  @MaxLength(64)
+  @IsString()
+  studentPassword?: string;
 
   @IsOptional()
   @IsIn(['self_managed', 'parent_managed', 'jointly_managed'])
@@ -309,6 +322,10 @@ export class CreateAiTutorSessionDto {
   @IsOptional()
   @IsMongoId()
   scheduleId?: string;
+
+  @IsOptional()
+  @IsIn(['chat', 'audio', 'video'])
+  deliveryMode?: string;
 }
 
 export class SendAiTutorMessageDto {

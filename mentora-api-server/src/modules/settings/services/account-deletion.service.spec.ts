@@ -7,7 +7,6 @@ import type { UserDocument } from '@/modules/auth/schemas/user.schema';
 import type { UserSessionDocument } from '@/modules/auth/schemas/user-session.schema';
 import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
 import type { MediaDocument } from '@/modules/profiles/schemas/media/media.schema';
-import type { PreferenceDocument } from '@/modules/profiles/schemas/preference/preference.schema';
 import type { ProfileDocument } from '@/modules/profiles/schemas/profile/profile.schema';
 import type { StorageService } from '@/modules/storage/services/storage.service';
 import type { AccountSettingDocument } from '../schemas/account-setting.schema';
@@ -63,11 +62,6 @@ describe('AccountDeletionService', () => {
     updateMany: mediaUpdateMany,
   } as unknown as Model<MediaDocument>;
 
-  const preferenceDeleteMany = jest.fn(() => executable());
-  const preferenceModel = {
-    deleteMany: preferenceDeleteMany,
-  } as unknown as Model<PreferenceDocument>;
-
   const paymentUpdateMany = jest.fn(() => executable());
   const paymentModel = {
     updateMany: paymentUpdateMany,
@@ -113,7 +107,6 @@ describe('AccountDeletionService', () => {
       sessionModel,
       profileModel,
       mediaModel,
-      preferenceModel,
       paymentModel,
       invoiceModel,
       subscriptionModel,
@@ -244,7 +237,6 @@ describe('AccountDeletionService', () => {
         },
       },
     );
-    expect(preferenceDeleteMany).toHaveBeenCalledWith({ userId: objectId });
     expect(sessionUpdateMany).toHaveBeenCalledWith(
       { userId: objectId },
       { $set: { isActive: false, loggedOutAt: expect.any(Date) } },

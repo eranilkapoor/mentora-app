@@ -201,11 +201,11 @@ export class AnalyticsService {
       }),
       this.repo.count({
         ...match,
-        eventType: AnalyticsEventType.MATCH_REQUEST_SENT,
+        eventType: AnalyticsEventType.SESSION_REQUESTED,
       }),
       this.repo.count({
         ...match,
-        eventType: AnalyticsEventType.MATCH_ACCEPTED,
+        eventType: AnalyticsEventType.SESSION_STARTED,
       }),
       this.repo.count({ ...match, eventType: AnalyticsEventType.CHAT_STARTED }),
       this.repo.aggregate<{ date: string; count: number }>([
@@ -237,9 +237,9 @@ export class AnalyticsService {
       },
       conversion: {
         impressionToViewRate: safeRate(profileViews, impressions),
-        viewToInterestRate: safeRate(interests, profileViews),
-        interestToMatchRate: safeRate(matches, interests),
-        matchToChatRate: safeRate(chats, matches),
+        viewToSessionRequestRate: safeRate(interests, profileViews),
+        sessionRequestToStartRate: safeRate(matches, interests),
+        sessionStartToChatRate: safeRate(chats, matches),
       },
       dimensions: {
         byPlatform: platforms,
@@ -264,12 +264,12 @@ export class AnalyticsService {
         label: 'Profile View',
       },
       {
-        eventType: AnalyticsEventType.MATCH_REQUEST_SENT,
-        label: 'Interest Sent',
+        eventType: AnalyticsEventType.SESSION_REQUESTED,
+        label: 'Session Requested',
       },
       {
-        eventType: AnalyticsEventType.MATCH_ACCEPTED,
-        label: 'Match Accepted',
+        eventType: AnalyticsEventType.SESSION_STARTED,
+        label: 'Session Started',
       },
       {
         eventType: AnalyticsEventType.CHAT_STARTED,

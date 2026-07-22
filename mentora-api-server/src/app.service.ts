@@ -35,7 +35,7 @@ export class AppService {
 
   getRoot() {
     return {
-      message: 'Matrimony API is running ',
+      message: 'Mentora API is running',
       version: 'v1',
       timestamp: new Date().toISOString(),
     };

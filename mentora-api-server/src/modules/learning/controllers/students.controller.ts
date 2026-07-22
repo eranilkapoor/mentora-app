@@ -175,4 +175,16 @@ export class StudentsController {
       'AI tutor history fetched',
     );
   }
+
+  @Get(':studentId/progress')
+  async progress(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+  ) {
+    return successResponse(
+      await this.service.getStudentProgress(req.user.sub, studentId),
+      'STUDENT_PROGRESS_FETCHED',
+      'Student progress fetched',
+    );
+  }
 }

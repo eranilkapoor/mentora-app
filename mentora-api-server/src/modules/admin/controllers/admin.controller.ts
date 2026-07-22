@@ -21,7 +21,6 @@ import {
   AdminCompleteUserSetupDto,
   AdminCreateUserDto,
   AdminCreateUserProfileDto,
-  AdminUpdateUserPreferencesDto,
   AdminUpdateUserProfileSectionDto,
   AdminUpdateUserSettingsDto,
 } from '../dto/admin-user-operation.dto';
@@ -137,25 +136,6 @@ export class AdminController {
         req,
       ),
       SuccessCode.PROFILE_UPDATED,
-    );
-  }
-
-  @Patch('users/:userId/preferences')
-  @Roles(Role.SUPER_ADMIN, Role.ADMIN, Role.SUPPORT)
-  @HttpCode(HttpStatus.OK)
-  async updateUserPreferences(
-    @Req() req: AuthenticatedRequest,
-    @Param('userId') userId: string,
-    @Body() dto: AdminUpdateUserPreferencesDto,
-  ) {
-    return successResponse(
-      await this.adminService.updateUserPreferences(
-        userId,
-        dto,
-        req.user.sub,
-        req,
-      ),
-      SuccessCode.PREFERENCES_UPDATED,
     );
   }
 

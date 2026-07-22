@@ -13,7 +13,6 @@ import {
   Profile,
   ProfileSchema,
 } from '../profiles/schemas/profile/profile.schema';
-import { Match, MatchSchema } from '../matches/schemas/match.schema';
 import { SafetyModule } from '../safety/safety.module';
 import { SubscriptionsModule } from '../subscriptions/subscriptions.module';
 import { ChatPresenceService } from './services/chat-presence.service';
@@ -43,7 +42,6 @@ import {
       { name: Profile.name, schema: ProfileSchema },
       { name: Media.name, schema: MediaSchema },
       { name: CommunicationSetting.name, schema: CommunicationSettingSchema },
-      { name: Match.name, schema: MatchSchema },
       { name: Verification.name, schema: VerificationSchema },
     ]),
   ],

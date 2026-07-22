@@ -275,12 +275,6 @@
         "lines": 100,
         "statements": 100
       },
-      "./src/modules/admin/controllers/admin-curated-matches.controller.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
       "./src/modules/admin/controllers/admin-moderation.controller.ts": {
         "branches": 100,
         "functions": 100,
@@ -341,42 +335,6 @@
         "lines": 100,
         "statements": 100
       },
-      "./src/modules/matches/services/match-compatibility.service.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
-      "./src/modules/matches/services/match-discovery.service.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
-      "./src/modules/matches/services/match-notification.service.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
-      "./src/modules/matches/services/premium-match-curator.service.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
-      "./src/modules/matches/services/matches.service.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
-      "./src/modules/matches/controllers/matches.controller.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
       "./src/modules/payments/controllers/payments.controller.ts": {
         "branches": 100,
         "functions": 91,
@@ -412,12 +370,6 @@
         "functions": 100,
         "lines": 100,
         "statements": 100
-      },
-      "./src/modules/profiles/services/preference.service.ts": {
-        "branches": 95,
-        "functions": 92,
-        "lines": 92,
-        "statements": 92
       },
       "./src/modules/profiles/services/profile-scoring.service.ts": {
         "branches": 100,
@@ -545,18 +497,6 @@
         "lines": 95,
         "statements": 95
       },
-      "./src/modules/matches/tasks/daily-match-digest.task.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
-      "./src/modules/matches/tasks/match-expiry.task.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
       "./src/modules/profiles/tasks/media-cleanup.task.ts": {
         "branches": 100,
         "functions": 100,
@@ -677,12 +617,6 @@
         "lines": 100,
         "statements": 100
       },
-      "./src/modules/profiles/repositories/preference.repository.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
       "./src/modules/profiles/repositories/profile.repository.ts": {
         "branches": 100,
         "functions": 100,
@@ -701,12 +635,6 @@
         "lines": 100,
         "statements": 100
       },
-      "./src/modules/matches/repositories/match-discovery.repository.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
       "./src/modules/seeder/services/master-seeder.service.ts": {
         "branches": 95,
         "functions": 100,
@@ -720,12 +648,6 @@
         "statements": 100
       },
       "./src/modules/notifications/repositories/notification.repository.ts": {
-        "branches": 100,
-        "functions": 100,
-        "lines": 100,
-        "statements": 100
-      },
-      "./src/modules/matches/repositories/match.repository.ts": {
         "branches": 100,
         "functions": 100,
         "lines": 100,

@@ -19,10 +19,6 @@ import {
 } from '@/modules/profiles/schemas/media/media.schema';
 import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
 import {
-  Preference,
-  PreferenceDocument,
-} from '@/modules/profiles/schemas/preference/preference.schema';
-import {
   AccountSetting,
   AccountSettingDocument,
 } from '../schemas/account-setting.schema';
@@ -72,8 +68,6 @@ export class AccountDeletionService {
     private readonly profileModel: Model<ProfileDocument>,
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
-    @InjectModel(Preference.name)
-    private readonly preferenceModel: Model<PreferenceDocument>,
     @InjectModel(Payment.name)
     private readonly paymentModel: Model<PaymentDocument>,
     @InjectModel(PaymentInvoice.name)
@@ -201,7 +195,6 @@ export class AccountDeletionService {
           },
         )
         .exec(),
-      this.preferenceModel.deleteMany({ userId: userObjectId }).exec(),
       this.sessionModel
         .updateMany(
           { userId: userObjectId },

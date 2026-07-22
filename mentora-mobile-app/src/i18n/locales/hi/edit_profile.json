@@ -6,7 +6,8 @@
     "title": "प्रोफ़ाइल पूर्णता",
     "low": "बेहतर मैच पाने के लिए और विवरण जोड़ें",
     "medium": "लगभग पूरा! अपनी प्रोफ़ाइल पूरी करें",
-    "complete": "आपकी प्रोफ़ाइल पूरी हो गई है 🎉"
+    "complete": "आपकी प्रोफ़ाइल पूरी हो गई है 🎉",
+    "missing_sections": "Next: {{sections}}"
   },
   "sections": {
     "photos": "प्रोफ़ाइल फ़ोटो",
@@ -17,7 +18,13 @@
     "family": "पारिवारिक पृष्ठभूमि",
     "preferences": "जीवनशैली और प्राथमिकताएं",
     "astro": "ज्योतिष और धार्मिक",
-    "lifestyle": "जीवनशैली"
+    "lifestyle": "जीवनशैली",
+    "academic": "Academic Details",
+    "parents": "Parent / Guardian",
+    "accessibility": "Accessibility Details",
+    "previous_education": "Previous Education",
+    "exam_scores": "Exam Scores",
+    "course_preference": "Course Preference"
   },
   "photos": {
     "primary": "मुख्य",
@@ -115,7 +122,16 @@
     "company_name": "कंपनी / संगठन",
     "job_role": "नौकरी की भूमिका",
     "family_status": "परिवार की स्थिति",
-    "family_values": "पारिवारिक मूल्य"
+    "family_values": "पारिवारिक मूल्य",
+    "accessibility_needs": "Accessibility Needs",
+    "guardian_name": "Primary Guardian Name",
+    "guardian_relation": "Guardian Relation",
+    "guardian_phone": "Guardian Phone",
+    "guardian_email": "Guardian Email",
+    "previous_education": "Previous Education",
+    "exam_scores": "Exam Scores",
+    "course_preference": "Course Preference",
+    "preferred_subjects": "Preferred Subjects"
   },
   "placeholders": {
     "first_name": "राहुल",
@@ -149,7 +165,16 @@
     "sub_cast": "उदा. शर्मा",
     "gotra": "उदा. कश्यप",
     "rashi": "उदा. मेष",
-    "nakshatra": "उदा. रोहिणी"
+    "nakshatra": "उदा. रोहिणी",
+    "accessibility_needs": "e.g. dyslexia support, captions, slower pace",
+    "previous_education": "Summarize previous school, board, year, or learning gaps...",
+    "exam_scores": "e.g. Grade 8 final math 82%, SAT mock 1180",
+    "course_preference": "Preferred course, track, board, exam, or mentoring plan...",
+    "preferred_subjects": "e.g. Mathematics, Physics, English",
+    "guardian_name": "e.g. Rajesh Sharma",
+    "guardian_relation": "e.g. Father, Mother, Uncle",
+    "guardian_phone": "e.g. +91 98765 43210",
+    "guardian_email": "e.g. parent@example.com"
   },
   "date_picker": {
     "title": "जन्म तिथि चुनें",
@@ -189,5 +214,21 @@
     "married": "विवाहित",
     "unmarried": "अविवाहित",
     "sibling_occupation_placeholder": "जैसे सॉफ्टवेयर इंजीनियर"
+  },
+  "profile_sections": {
+    "personal": "student info",
+    "academic": "academic details",
+    "parents": "parent or guardian",
+    "address": "address",
+    "previousEducation": "previous education",
+    "examScores": "exam scores",
+    "coursePreference": "course preference",
+    "documents": "documents",
+    "payments": "payments",
+    "communicationHistory": "communication history",
+    "activityTimeline": "activity timeline",
+    "aboutMe": "learning notes",
+    "personalityBadges": "learning traits",
+    "profilePhoto": "student avatar"
   }
 }

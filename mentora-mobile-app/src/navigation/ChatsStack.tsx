@@ -6,7 +6,6 @@ import { getSharedScreenOptions } from './sharedScreenOptions';
 
 import ChatListScreen from '@/features/ChatList/ChatList.screen';
 import ChatScreen from '@/features/Chat/Chat.screen';
-import MatchDetailsScreen from '@/features/MatchDetail/MatchDetail.screen';
 
 const Stack = createNativeStackNavigator<ChatsStackParamList>();
 
@@ -19,7 +18,6 @@ export default function ChatsStack(): React.ReactElement {
     >
       <Stack.Screen name="ChatList" component={ChatListScreen} />
       <Stack.Screen name="ChatDetails" component={ChatScreen} />
-      <Stack.Screen name="MatchDetails" component={MatchDetailsScreen} />
     </Stack.Navigator>
   );
 }

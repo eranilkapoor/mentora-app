@@ -2,18 +2,14 @@ import React from 'react';
 import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { useThemedStyles } from '@/core/theme/useThemedStyles';
-import { Countries, Country, Genders, MaritalStatuses } from '@/core/types';
+import { Countries, Country, Genders } from '@/core/types';
 import { SectionCard } from '../components/SectionCard';
 import { FormInput } from '../components/FormInput';
-import { NumberStepper } from '../../../core/components/NumberStepper';
-import { TimeOfBirthPicker } from '../components/TimeOfBirthPicker';
 import { editProfileStyles } from '../EditProfile.styles';
 import {
   PersonalSection as PersonalSectionType,
   SectionKey,
-  TimeOfBirth,
 } from '../EditProfile.types';
-import { ToggleRow } from '@/core/components/ToggleRow';
 import { DatePicker } from '../components/DateOfBirthPicker';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { DropdownPicker } from '@/core/components/DropdownPicker';
@@ -44,12 +40,8 @@ export function PersonalSection({
 }: Props): React.ReactElement {
   const styles = useThemedStyles(editProfileStyles);
   const { t } = useTranslation();
-  const GenderOptions = useEnumOptions(Genders, 'options.gender');
-  const MaritalStatusOptions = useEnumOptions(
-    MaritalStatuses,
-    'options.marital_status'
-  );
-  const PersonalityBadgeOptions = getPersonalityBadgeOptions(t);
+  const genderOptions = useEnumOptions(Genders, 'options.gender');
+  const personalityBadgeOptions = getPersonalityBadgeOptions(t);
 
   return (
     <SectionCard
@@ -80,7 +72,7 @@ export function PersonalSection({
 
       <SingleSelectPill
         label={t('edit_profile.fields.gender')}
-        options={GenderOptions}
+        options={genderOptions}
         value={personal.gender}
         onChange={(v) => onSet('gender', v as PersonalSectionType['gender'])}
         i18nPrefix="options.gender"
@@ -95,60 +87,13 @@ export function PersonalSection({
         disabled
       />
 
-      <TimeOfBirthPicker
-        value={personal.timeOfBirth as TimeOfBirth}
-        onChange={(val) => onSet('timeOfBirth', val)}
-      />
-
-      <SingleSelectPill
-        label={t('edit_profile.fields.marital_status')}
-        options={MaritalStatusOptions}
-        value={personal.maritalStatus}
-        onChange={(v) =>
-          onSet('maritalStatus', v as PersonalSectionType['maritalStatus'])
-        }
-        i18nPrefix="options.marital_status"
-      />
-
-      <ToggleRow
-        label={t('edit_profile.fields.has_children')}
-        value={personal.hasChildren}
-        onChange={(v) => onSet('hasChildren', v)}
-      />
-
-      {personal.hasChildren && (
-        <>
-          <View style={styles.row}>
-            <View style={styles.halfField}>
-              <NumberStepper
-                label={t('edit_profile.fields.sons_count')}
-                value={personal.sonsCount ?? 0}
-                onChange={(v) => onSet('sonsCount', v)}
-                suffix=""
-                step={1}
-              />
-            </View>
-          </View>
-          <View style={styles.row}>
-            <View style={styles.halfField}>
-              <NumberStepper
-                label={t('edit_profile.fields.daughters_count')}
-                value={personal.daughtersCount ?? 0}
-                onChange={(v) => onSet('daughtersCount', v)}
-                suffix=""
-                step={1}
-              />
-            </View>
-          </View>
-        </>
-      )}
-
       <FormInput
         label={t('edit_profile.fields.mother_tongue')}
         value={personal.motherTongue ?? ''}
         onChange={(v) => onSet('motherTongue', v)}
         placeholder={t('edit_profile.placeholders.mother_tongue')}
       />
+
       <DropdownPicker
         label={t('onboarding.fields.country')}
         options={INDIA_COUNTRY_OPTIONS}
@@ -187,47 +132,13 @@ export function PersonalSection({
         placeholder={t('edit_profile.placeholders.citizenship')}
       />
 
-      <ToggleRow
-        label={t('edit_profile.fields.nri_profile')}
-        value={personal.isNri ?? false}
-        onChange={(v) => onSet('isNri', v)}
-      />
-
-      {personal.isNri ? (
-        <>
-          <DropdownPicker
-            label={t('edit_profile.fields.residency_country')}
-            options={NRI_COUNTRY_OPTIONS}
-            value={personal.residencyCountry ?? personal.country}
-            onChange={(val) => onSet('residencyCountry', val as Country)}
-            searchable
-            maxHeight={320}
-          />
-          <View style={styles.row}>
-            <View style={styles.halfField}>
-              <FormInput
-                label={t('edit_profile.fields.visa_status')}
-                value={personal.visaStatus ?? ''}
-                onChange={(v) => onSet('visaStatus', v)}
-                placeholder={t('edit_profile.placeholders.visa_status')}
-              />
-            </View>
-            <View style={styles.halfField}>
-              <FormInput
-                label={t('edit_profile.fields.abroad_since')}
-                value={personal.abroadSince ?? ''}
-                onChange={(v) => onSet('abroadSince', v)}
-                placeholder="YYYY"
-              />
-            </View>
-          </View>
-        </>
-      ) : null}
-
-      <ToggleRow
-        label={t('edit_profile.fields.willing_to_relocate')}
-        value={personal.willingToRelocate}
-        onChange={(v) => onSet('willingToRelocate', v)}
+      <DropdownPicker
+        label={t('edit_profile.fields.residency_country')}
+        options={NRI_COUNTRY_OPTIONS}
+        value={personal.residencyCountry ?? personal.country}
+        onChange={(val) => onSet('residencyCountry', val as Country)}
+        searchable
+        maxHeight={320}
       />
 
       <FormInput
@@ -240,7 +151,7 @@ export function PersonalSection({
 
       <MultiSelectPill
         label={t('edit_profile.fields.personality_badges')}
-        options={PersonalityBadgeOptions}
+        options={personalityBadgeOptions}
         value={personal.personalityBadges ?? []}
         onChange={(v) =>
           onSet(

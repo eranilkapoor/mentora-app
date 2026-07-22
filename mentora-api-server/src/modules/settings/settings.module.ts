@@ -47,10 +47,6 @@ import {
   ProfileSchema,
 } from '../profiles/schemas/profile/profile.schema';
 import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
-import {
-  Preference,
-  PreferenceSchema,
-} from '../profiles/schemas/preference/preference.schema';
 import { ChatRealtimeModule } from '../chat/chat-realtime.module';
 import { StorageModule } from '../storage/storage.module';
 import { AccountDeletionService } from './services/account-deletion.service';
@@ -104,7 +100,6 @@ import {
       { name: UserSession.name, schema: UserSessionSchema },
       { name: Profile.name, schema: ProfileSchema },
       { name: Media.name, schema: MediaSchema },
-      { name: Preference.name, schema: PreferenceSchema },
       { name: ActivityLog.name, schema: ActivityLogSchema },
       { name: UserConsent.name, schema: UserConsentSchema },
       { name: Payment.name, schema: PaymentSchema },

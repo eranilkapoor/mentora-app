@@ -10,17 +10,14 @@ import {
   BasicData,
   Gender,
   Qualification,
-  ProfileFor,
   Genders,
   Countries,
-  ProfileFors,
   Qualifications,
 } from '@/core/types';
 import { useEnumOptions } from '@/core/hooks/useEnumOptions';
 import { SingleSelectPill } from '@/core/components/SingleSelectPill';
 import { DatePicker } from '@/features/EditProfile/components/DateOfBirthPicker';
 import { RequiredAsterisk } from '@/core/components/RequiredAsterisk';
-import { sanitizeDigits } from '@/core/utils/inputSanitizers';
 import {
   INDIA_COUNTRY_OPTIONS,
   INDIA_STATE_OPTIONS,
@@ -59,7 +56,6 @@ export function BasicStep({
   const styles = useThemedStyles(onboardingStyles);
 
   const GenderOptions = useEnumOptions(Genders, 'options.gender');
-  const ProfileForOptions = useEnumOptions(ProfileFors, 'options.profile_for');
   const QualificationOptions = useEnumOptions(
     Qualifications,
     'options.qualifications'
@@ -82,15 +78,6 @@ export function BasicStep({
     <View>
       <Text style={styles.stepTitle}>{t('onboarding.basic.title')}</Text>
       <Text style={styles.subtitle}>{t('onboarding.basic.subtitle')}</Text>
-
-      <DropdownPicker
-        label={t('onboarding.fields.account_type')}
-        options={ProfileForOptions}
-        value={basic.profileFor}
-        onChange={(val) => onSetField('profileFor', val as ProfileFor)}
-        required
-      />
-      <ErrorText field="profileFor" errors={errors} />
 
       <RequiredTextLabel>{t('onboarding.fields.first_name')}</RequiredTextLabel>
       <TextInput
@@ -186,24 +173,36 @@ export function BasicStep({
       <TextInput
         placeholder={t('onboarding.placeholders.institution')}
         placeholderTextColor={theme.colors.textMuted}
-        value={basic.occupation}
-        onChangeText={(v) => onSetField('occupation', v)}
-        style={inputStyle('occupation')}
+        value={basic.institutionName}
+        onChangeText={(v) => onSetField('institutionName', v)}
+        style={inputStyle('institutionName')}
         accessibilityLabel={t('onboarding.fields.institution')}
       />
-      <ErrorText field="occupation" errors={errors} />
+      <ErrorText field="institutionName" errors={errors} />
 
       <RequiredTextLabel>{t('onboarding.fields.grade')}</RequiredTextLabel>
       <TextInput
         placeholder={t('onboarding.placeholders.grade')}
         placeholderTextColor={theme.colors.textMuted}
-        value={basic.height}
-        onChangeText={(v) => onSetField('height', sanitizeDigits(v))}
-        style={inputStyle('height')}
-        keyboardType="numeric"
+        value={basic.gradeLevel}
+        onChangeText={(v) => onSetField('gradeLevel', v)}
+        style={inputStyle('gradeLevel')}
         accessibilityLabel={t('onboarding.fields.grade')}
       />
-      <ErrorText field="height" errors={errors} />
+      <ErrorText field="gradeLevel" errors={errors} />
+
+      <RequiredTextLabel>
+        {t('onboarding.fields.learning_goal')}
+      </RequiredTextLabel>
+      <TextInput
+        placeholder={t('onboarding.placeholders.learning_goal')}
+        placeholderTextColor={theme.colors.textMuted}
+        value={basic.primaryGoal}
+        onChangeText={(v) => onSetField('primaryGoal', v)}
+        style={inputStyle('primaryGoal')}
+        accessibilityLabel={t('onboarding.fields.learning_goal')}
+      />
+      <ErrorText field="primaryGoal" errors={errors} />
     </View>
   );
 }

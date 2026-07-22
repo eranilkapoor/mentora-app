@@ -1,11 +1,4 @@
-import {
-  Countries,
-  Genders,
-  MaritalStatuses,
-  ProfileFors,
-  Qualifications,
-  Religions,
-} from '@/core/types';
+import { Countries, Genders, Qualifications, Religions } from '@/core/types';
 import {
   validateOnboardingBasic,
   validateOnboardingPreferences,
@@ -16,7 +9,6 @@ const t = ((key: string) => key) as never;
 describe('onboarding form validation', () => {
   it('reports every required basic field and accepts a complete profile', () => {
     const basic = {
-      profileFor: ProfileFors.SELF,
       firstName: '',
       lastName: '',
       dateOfBirth: '',
@@ -25,17 +17,18 @@ describe('onboarding form validation', () => {
       country: Countries.INDIA,
       state: '',
       city: '',
-      maritalStatus: MaritalStatuses.NEVER_MARRIED,
       qualification: Qualifications.BTECH,
-      occupation: '',
-      height: '',
+      gradeLevel: '',
+      institutionName: '',
+      primaryGoal: '',
     };
 
     expect(validateOnboardingBasic(basic, t)).toEqual({
       firstName: 'onboarding.errors.first_name_required',
       dateOfBirth: 'onboarding.errors.date_of_birth_required',
-      height: 'onboarding.errors.height_required',
-      occupation: 'onboarding.errors.occupation_required',
+      gradeLevel: 'onboarding.errors.grade_required',
+      institutionName: 'onboarding.errors.institution_required',
+      primaryGoal: 'onboarding.errors.goal_required',
       state: 'onboarding.errors.state_required',
       city: 'onboarding.errors.city_required',
     });
@@ -45,8 +38,9 @@ describe('onboarding form validation', () => {
           ...basic,
           firstName: 'Asha',
           dateOfBirth: '1995-04-12',
-          height: '165',
-          occupation: 'Engineer',
+          gradeLevel: '8',
+          institutionName: 'Delhi Public School',
+          primaryGoal: 'Board exam preparation',
           state: 'Maharashtra',
           city: 'Mumbai',
         },
@@ -55,36 +49,33 @@ describe('onboarding form validation', () => {
     ).toEqual({});
 
     expect(
-      validateOnboardingBasic({ ...basic, firstName: 'Asha', height: 'abc' }, t)
+      validateOnboardingBasic({ ...basic, firstName: 'Asha' }, t)
     ).toMatchObject({
-      height: 'onboarding.errors.height_invalid',
+      gradeLevel: 'onboarding.errors.grade_required',
     });
   });
 
   it('validates preference ranges and required selections', () => {
     const preferences = {
-      ageRange: { min: 0, max: 0 },
-      heightRange: { min: 155, max: 180 },
-      maritalStatus: [],
-      religion: [],
-      country: [],
+      dailySessionMinutes: { min: 0, max: 0 },
+      gradeRange: { min: 6, max: 10 },
+      subjects: [],
+      learningGoals: [],
     };
 
     expect(Object.keys(validateOnboardingPreferences(preferences, t))).toEqual([
       'minAgeRange',
       'maxAgeRange',
-      'maritalStatusPreference',
-      'religionPreference',
-      'locationPreference',
+      'subjects',
+      'goals',
     ]);
     expect(
       validateOnboardingPreferences(
         {
           ...preferences,
-          ageRange: { min: 25, max: 32 },
-          maritalStatus: [MaritalStatuses.NEVER_MARRIED],
-          religion: [Religions.HINDU],
-          country: [Countries.INDIA],
+          dailySessionMinutes: { min: 30, max: 60 },
+          subjects: ['Mathematics'],
+          learningGoals: ['Board exam preparation'],
         },
         t
       )

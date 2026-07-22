@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Query,
   Req,
 } from '@nestjs/common';
 import { successResponse } from '@/common/utils/response.util';
@@ -51,6 +52,18 @@ export class LearningController {
       await this.service.createEntitlement(req.user.sub, dto),
       'LEARNING_ENTITLEMENT_CREATED',
       'Learning entitlement created',
+    );
+  }
+
+  @Get('learning-entitlements')
+  async listEntitlements(
+    @Req() req: AuthenticatedRequest,
+    @Query('studentProfileId') studentProfileId: string,
+  ) {
+    return successResponse(
+      await this.service.listEntitlements(req.user.sub, studentProfileId),
+      'LEARNING_ENTITLEMENTS_FETCHED',
+      'Learning entitlements fetched',
     );
   }
 

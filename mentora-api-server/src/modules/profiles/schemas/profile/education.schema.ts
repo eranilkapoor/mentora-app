@@ -1,5 +1,5 @@
 import { Prop, Schema } from '@nestjs/mongoose';
-import { OccupationType, Qualification } from '@/common/enums';
+import { Qualification } from '@/common/enums';
 
 @Schema({ _id: false })
 export class Education {
@@ -12,18 +12,18 @@ export class Education {
   @Prop()
   university?: string;
 
-  @Prop({ enum: OccupationType })
-  occupationType?: OccupationType;
-
   @Prop({ required: true })
   occupation!: string;
 
   @Prop()
-  companyName?: string;
+  previousEducationSummary?: string;
 
   @Prop()
-  jobRole?: string;
+  examScoreSummary?: string;
 
   @Prop()
-  annualIncomeAmount?: number;
+  coursePreference?: string;
+
+  @Prop({ type: [String], default: [] })
+  preferredSubjects?: string[];
 }

@@ -54,11 +54,11 @@ export function PreferencesStep({
           <TextInput
             placeholder="30"
             placeholderTextColor={theme.colors.textMuted}
-            value={String(preferences.ageRange?.min ?? '')}
+            value={String(preferences.dailySessionMinutes?.min ?? '')}
             onChangeText={(text) => {
               const parsed = parseDigitsOrNull(text);
-              onSetField('ageRange', {
-                max: preferences.ageRange?.max ?? 35,
+              onSetField('dailySessionMinutes', {
+                max: preferences.dailySessionMinutes?.max ?? 60,
                 min: parsed ?? 0,
               });
               onClearError('minAgeRange');
@@ -75,11 +75,11 @@ export function PreferencesStep({
           <TextInput
             placeholder="60"
             placeholderTextColor={theme.colors.textMuted}
-            value={String(preferences.ageRange?.max ?? '')}
+            value={String(preferences.dailySessionMinutes?.max ?? '')}
             onChangeText={(text) => {
               const parsed = parseDigitsOrNull(text);
-              onSetField('ageRange', {
-                min: preferences.ageRange?.min ?? 18,
+              onSetField('dailySessionMinutes', {
+                min: preferences.dailySessionMinutes?.min ?? 30,
                 max: parsed ?? 0,
               });
               onClearError('maxAgeRange');
@@ -98,11 +98,11 @@ export function PreferencesStep({
           <TextInput
             placeholder="6"
             placeholderTextColor={theme.colors.textMuted}
-            value={String(preferences.heightRange?.min ?? '')}
+            value={String(preferences.gradeRange?.min ?? '')}
             onChangeText={(text) => {
               const parsed = parseDigitsOrNull(text);
-              onSetField('heightRange', {
-                max: preferences.heightRange?.max ?? 0,
+              onSetField('gradeRange', {
+                max: preferences.gradeRange?.max ?? 0,
                 min: parsed ?? 0,
               });
             }}
@@ -117,11 +117,11 @@ export function PreferencesStep({
           <TextInput
             placeholder="10"
             placeholderTextColor={theme.colors.textMuted}
-            value={String(preferences.heightRange?.max ?? '')}
+            value={String(preferences.gradeRange?.max ?? '')}
             onChangeText={(text) => {
               const parsed = parseDigitsOrNull(text);
-              onSetField('heightRange', {
-                min: preferences.heightRange?.min ?? 0,
+              onSetField('gradeRange', {
+                min: preferences.gradeRange?.min ?? 0,
                 max: parsed ?? 0,
               });
             }}
@@ -134,9 +134,9 @@ export function PreferencesStep({
 
       <TagInput
         label={t('onboarding.fields.target_subjects')}
-        value={preferences.city ?? []}
+        value={preferences.subjects ?? []}
         onChange={(values) => {
-          onSetField('city', values);
+          onSetField('subjects', values);
           onClearError('subjects');
         }}
         placeholder={t('onboarding.placeholders.target_subjects')}
@@ -145,9 +145,9 @@ export function PreferencesStep({
 
       <TagInput
         label={t('onboarding.fields.learning_goals')}
-        value={preferences.state ?? []}
+        value={preferences.learningGoals ?? []}
         onChange={(values) => {
-          onSetField('state', values);
+          onSetField('learningGoals', values);
           onClearError('goals');
         }}
         placeholder={t('onboarding.placeholders.learning_goals')}

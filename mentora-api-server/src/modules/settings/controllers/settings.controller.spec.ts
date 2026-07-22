@@ -236,7 +236,7 @@ describe('SettingsController', () => {
     [
       'updateNotificationChannel',
       'updateNotificationChannel',
-      [{ event: 'match', channel: 'push' }, { enabled: true }],
+      [{ event: 'sessionReminder', channel: 'push' }, { enabled: true }],
       SuccessCode.SETTINGS_UPDATED,
     ],
     ['getCommunication', 'getCommunication', [], SuccessCode.SETTINGS_FETCHED],

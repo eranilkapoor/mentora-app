@@ -44,9 +44,9 @@ const baseProfileDto = () =>
       languages: [' Hindi ', 'English'],
       hobbies: ['Travel'],
       personalityBadges: [
-        PersonalityBadge.FAMILY_ORIENTED,
-        PersonalityBadge.MARRIAGE_FOCUSED,
-        PersonalityBadge.FRIENDLY,
+        PersonalityBadge.CURIOUS_LEARNER,
+        PersonalityBadge.GOAL_ORIENTED,
+        PersonalityBadge.CONSISTENT_PRACTICE,
       ],
     },
     physical: { height: 165 },
@@ -91,7 +91,6 @@ const createFixture = () => {
     notificationsService as never,
     analyticsService as never,
     mediaService as never,
-    preferenceService as never,
     profileScoringService as never,
     settingsService as never,
     referralsService as never,
@@ -376,7 +375,7 @@ describe('ProfilesService', () => {
     await service.updatePersonalInfo(req, USER_ID, {
       firstName: 'Asha',
     } as never);
-    await service.updatePhysicalInfo(req, USER_ID, { height: 165 });
+    await service.updatePhysicalInfo(req, USER_ID, { accessibilityNeeds: [] });
     await service.updateEducationInfo(req, USER_ID, {
       occupation: 'Engineer',
     } as never);
@@ -1072,7 +1071,7 @@ describe('ProfilesService', () => {
       ]),
     ).toHaveLength(10);
     expect(privateService.resolvePersonalityBadges(['one'])).toEqual(
-      expect.arrayContaining([PersonalityBadge.FAMILY_ORIENTED]),
+      expect.arrayContaining([PersonalityBadge.CURIOUS_LEARNER]),
     );
     expect(privateService.getHeaderString(req, 'user-agent')).toBe('agent');
     expect(privateService.getHeaderString(req, 'invalid')).toBeUndefined();

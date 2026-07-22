@@ -21,6 +21,9 @@ export type StaticPageSlug =
   | 'privacy-policy'
   | 'terms-conditions'
   | 'community-guidelines'
+  | 'child-safety'
+  | 'ai-tutor-disclaimer'
+  | 'refund-policy'
   | 'faqs'
   | 'account-deletion';
 

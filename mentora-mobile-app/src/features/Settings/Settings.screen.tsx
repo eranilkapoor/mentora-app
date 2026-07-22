@@ -216,13 +216,6 @@ export default function SettingsScreen({
           />
 
           <SettingRow
-            icon="sliders"
-            label={t('settings.edit_preferences')}
-            subLabel={t('settings.edit_preferences_sub')}
-            onPress={() => navigation.navigate('EditPreference')}
-          />
-
-          <SettingRow
             icon="cpu"
             label={t('settings.ai_settings')}
             subLabel={t('settings.ai_settings_sub')}
@@ -245,12 +238,6 @@ export default function SettingsScreen({
             label={t('settings.referrals.title')}
             subLabel={t('settings.referrals_sub')}
             onPress={() => navigation.navigate('ReferRewards')}
-          />
-          <SettingRow
-            icon="bar-chart-2"
-            label={t('settings.insights')}
-            subLabel={t('settings.insights_sub')}
-            onPress={() => navigation.navigate('UserInsights')}
             isLast
           />
         </Section>

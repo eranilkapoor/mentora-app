@@ -11,7 +11,6 @@ import {
   Profile,
   ProfileDocument,
 } from '../../profiles/schemas/profile/profile.schema';
-import { Match, MatchDocument } from '../../matches/schemas/match.schema';
 import {
   UserBlock,
   UserBlockDocument,
@@ -77,9 +76,6 @@ export class ChatRepository {
 
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
-
-    @InjectModel(Match.name)
-    private readonly matchModel: Model<MatchDocument>,
 
     @InjectModel(UserBlock.name)
     private readonly userBlockModel: Model<UserBlockDocument>,
@@ -443,43 +439,6 @@ export class ChatRepository {
         ),
       ),
     ];
-  }
-
-  async findActiveMatchBetween(userId: string, targetUserId: string) {
-    return this.matchModel.findOne({
-      isActive: true,
-      $or: [
-        {
-          userId: new Types.ObjectId(userId),
-          targetUserId: new Types.ObjectId(targetUserId),
-        },
-        {
-          userId: new Types.ObjectId(targetUserId),
-          targetUserId: new Types.ObjectId(userId),
-        },
-        {
-          users: {
-            $all: [
-              new Types.ObjectId(userId),
-              new Types.ObjectId(targetUserId),
-            ],
-          },
-        },
-      ],
-    });
-  }
-
-  async findMatchesForUser(userId: string) {
-    return this.matchModel
-      .find({
-        isActive: true,
-        $or: [
-          { userId: new Types.ObjectId(userId) },
-          { targetUserId: new Types.ObjectId(userId) },
-          { users: new Types.ObjectId(userId) },
-        ],
-      })
-      .lean();
   }
 
   buildParticipantKey(userA: string, userB: string) {

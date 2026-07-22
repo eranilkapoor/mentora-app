@@ -5,9 +5,7 @@ export const COLLECTION_NAMES = {
   USER_SESSION: 'user_sessions',
 
   PROFILE: 'profiles',
-  PREFERENCE: 'preferences',
   MEDIA: 'media',
-  INTEREST: 'interests',
   INTERACTION: 'interactions',
   VERIFICATION: 'verifications',
 
@@ -29,8 +27,6 @@ export const COLLECTION_NAMES = {
   ANALYTICS_EVENT: 'analytics_events',
   ANALYTICS_DAILY_SUMMARY: 'analytics_daily_summaries',
 
-  MATCH: 'matches',
-  CURATED_MATCH: 'curated_matches',
   CHAT_ROOM: 'chat_rooms',
   CHAT_MESSAGE: 'chat_messages',
 
@@ -43,7 +39,6 @@ export const COLLECTION_NAMES = {
   NOTIFICATION_DEVICE_TOKEN: 'notification_device_tokens',
 
   SUPPORT_TICKET: 'support_tickets',
-  SUCCESS_STORY: 'success_stories',
 
   ACCOUNT_SETTING: 'account_settings',
   PRIVACY_SETTING: 'privacy_settings',

@@ -7,7 +7,6 @@ export type ChatsStackParamList = {
     partnerName?: string;
     partnerPhoto?: string;
   };
-  MatchDetails: { userId: string };
 };
 
 export type Props = {

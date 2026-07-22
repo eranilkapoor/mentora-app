@@ -268,14 +268,11 @@ export function useEditProfileForm() {
     const checks: unknown[] = [
       profile.personal.firstName,
       profile.personal.dateOfBirth,
-      profile.personal.maritalStatus,
-      profile.personal.motherTongue,
       profile.personal.country,
-      profile.physical.height,
-      profile.physical.bodyType,
       profile.education.qualification,
       profile.education.occupation,
-      profile.family.familyType,
+      profile.education.field,
+      profile.education.university,
       images.length > 0 ? 'yes' : '',
     ];
     const filled = checks.filter(
@@ -283,6 +280,19 @@ export function useEditProfileForm() {
     ).length;
     return Math.round((filled / checks.length) * 100);
   }, [data, images.length, profile]);
+
+  const missingProfileSections = useMemo((): string[] => {
+    const missing =
+      data?.success &&
+      data.data &&
+      Array.isArray(data.data.summary?.missingFields)
+        ? data.data.summary.missingFields
+        : [];
+
+    return missing.map((field) =>
+      t(`edit_profile.profile_sections.${field}`, { defaultValue: field })
+    );
+  }, [data, t]);
 
   const setPersonal = useCallback(
     <K extends keyof PersonalSection>(key: K, value: PersonalSection[K]) => {
@@ -642,6 +652,7 @@ export function useEditProfileForm() {
     sectionLoading,
     pageLoading,
     profileCompletion,
+    missingProfileSections,
     images,
     imagesLoading: imagesLoading || imagesFetching,
     videos,

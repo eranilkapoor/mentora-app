@@ -3,7 +3,7 @@ import {
   ProfilesController,
 } from './profiles.controller';
 import { SuccessCode } from '@/common/constants';
-import { Gender, MaritalStatus, ProfileFor, Religion } from '@/common/enums';
+import { Gender, Religion } from '@/common/enums';
 
 describe('ProfilesController', () => {
   const userId = 'user-1';
@@ -70,35 +70,33 @@ describe('ProfilesController', () => {
 
     const profile = await controller.getMyProfile(req);
     await controller.updatePersonal(req, {
-      profileFor: ProfileFor.SELF,
       firstName: 'Asha',
       gender: Gender.FEMALE,
       dateOfBirth: '1995-01-01',
       religion: Religion.HINDU,
-      maritalStatus: MaritalStatus.NEVER_MARRIED,
     });
-    await controller.updatePhysical(req, { height: 165 });
-    await controller.updateEducation(req, { occupation: 'Engineer' } as never);
-    await controller.updateFamily(req, { familyType: 'nuclear' } as never);
+    await controller.updatePhysical(req, { accessibilityNeeds: [] });
+    await controller.updateEducation(req, {
+      occupation: 'Exam preparation',
+    } as never);
+    await controller.updateFamily(req, { fatherName: 'Parent' });
     await controller.updateLocation(req, { city: 'Mumbai' } as never);
 
     expect(service.getMyProfile).toHaveBeenCalledWith(userId);
     expect(service.updatePersonalInfo).toHaveBeenCalledWith(req, userId, {
-      profileFor: ProfileFor.SELF,
       firstName: 'Asha',
       gender: Gender.FEMALE,
       dateOfBirth: '1995-01-01',
       religion: Religion.HINDU,
-      maritalStatus: MaritalStatus.NEVER_MARRIED,
     });
     expect(service.updatePhysicalInfo).toHaveBeenCalledWith(req, userId, {
-      height: 165,
+      accessibilityNeeds: [],
     });
     expect(service.updateEducationInfo).toHaveBeenCalledWith(req, userId, {
-      occupation: 'Engineer',
+      occupation: 'Exam preparation',
     });
     expect(service.updateFamilyInfo).toHaveBeenCalledWith(req, userId, {
-      familyType: 'nuclear',
+      fatherName: 'Parent',
     });
     expect(service.updateLocation).toHaveBeenCalledWith(req, userId, {
       city: 'Mumbai',

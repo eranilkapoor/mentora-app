@@ -36,7 +36,7 @@ export class NotificationTemplate {
     trim: true,
   })
   key!: string;
-  // INTEREST_RECEIVED
+  // SESSION_SCHEDULED
 
   @Prop({
     required: true,

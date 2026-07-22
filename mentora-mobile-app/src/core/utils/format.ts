@@ -161,7 +161,7 @@ export const annualIncomeFormat = (income: number | string): string => {
 
 export const formatAboutMe = (aboutMe: string | undefined): string => {
   if (!aboutMe || aboutMe.trim() === '') {
-    return 'I am a calm and positive person who believes in mutual respect and family values. Looking for a compatible life partner.';
+    return 'I am a focused learner building strong academic habits with guided support from Mentora.';
   }
 
   return aboutMe;

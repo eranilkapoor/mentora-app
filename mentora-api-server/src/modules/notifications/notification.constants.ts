@@ -3,17 +3,17 @@ export const NOTIFICATION_TYPES = [
   'success',
   'warning',
   'error',
-  'match',
+  'learning',
   'chat',
   'system',
   'payment',
 ] as const;
 
 export const NOTIFICATION_CATEGORIES = [
-  'interest_received',
-  'interest_accepted',
-  'profile_view',
-  'match_found',
+  'session_scheduled',
+  'session_reminder',
+  'progress_update',
+  'parent_alert',
   'message_received',
   'subscription',
   'system',

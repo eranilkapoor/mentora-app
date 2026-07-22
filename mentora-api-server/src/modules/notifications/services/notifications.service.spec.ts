@@ -252,7 +252,7 @@ describe('NotificationsService', () => {
       preferences: {
         system: { inApp: true, push: true, email: true, sms: false },
         subscription: { inApp: true, push: true, email: true, sms: false },
-        interestReceived: { inApp: true, push: true, email: true, sms: true },
+        sessionScheduled: { inApp: true, push: true, email: true, sms: true },
       },
     });
 
@@ -272,9 +272,9 @@ describe('NotificationsService', () => {
     });
     await service.notify({
       userId,
-      title: 'Interest received',
-      message: 'Interest received',
-      category: 'interest_received',
+      title: 'Session scheduled',
+      message: 'Session scheduled',
+      category: 'session_scheduled',
       channels: ['email', 'sms'],
     });
 
@@ -302,9 +302,9 @@ describe('NotificationsService', () => {
 
     await service.notify({
       userId,
-      title: 'Interest received',
-      message: 'Interest received',
-      category: 'interest_received',
+      title: 'Session scheduled',
+      message: 'Session scheduled',
+      category: 'session_scheduled',
       channels: ['email', 'sms'],
     });
 
@@ -609,7 +609,7 @@ describe('NotificationsService', () => {
       emailSubject: 'Email {{name}}',
       emailBody: 'Email body',
       smsBody: 'SMS {{count}}',
-      category: 'interest_received',
+      category: 'session_scheduled',
       priority: 'high',
       channels: { inApp: true, push: true, email: true, sms: true },
     };
@@ -622,7 +622,7 @@ describe('NotificationsService', () => {
       emailEnabled: true,
       smsEnabled: true,
       preferences: {
-        interestReceived: { inApp: true, push: true, email: true, sms: true },
+        sessionScheduled: { inApp: true, push: true, email: true, sms: true },
       },
     });
     await expect(
@@ -785,10 +785,10 @@ describe('NotificationsService', () => {
     }
     expect(privateService.toMinutes('01:30')).toBe(90);
     for (const category of [
-      'interest_received',
-      'interest_accepted',
-      'profile_view',
-      'match_found',
+      'session_scheduled',
+      'session_reminder',
+      'progress_update',
+      'parent_alert',
       'message_received',
       'subscription',
       'system',

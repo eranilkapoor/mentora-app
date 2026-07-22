@@ -13,31 +13,17 @@ import { Role, RoleDocument } from '@/modules/admin/schemas/role.schema';
 import {
   Permission as AppPermission,
   Role as AppRole,
-  BloodGroup,
-  BodyType,
-  ChildPreference,
   Country,
-  Drinking,
-  Eating,
-  FamilyStatus,
-  FamilyType,
-  FamilyValue,
   FeatureKey,
   Gender,
-  ManglikStatus,
-  MaritalStatus,
   MediaType,
   MimeType,
-  OccupationType,
   PlanTier,
-  ProfileFor,
   ProfileStatus,
+  Qualification,
   Religion,
-  SiblingType,
-  Smoking,
   Status,
   SubscriptionStatus,
-  ResidencyPreference,
 } from '@/common/enums';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
@@ -45,10 +31,6 @@ import {
   Profile,
   ProfileDocument,
 } from '@/modules/profiles/schemas/profile/profile.schema';
-import {
-  Preference,
-  PreferenceDocument,
-} from '@/modules/profiles/schemas/preference/preference.schema';
 import {
   Media,
   MediaDocument,
@@ -126,7 +108,6 @@ import {
   FEATURE_SEEDS,
   CUSTOM_ASSISTED_FEATURE_MAPPINGS,
   FIXED_PLAN_LIMITS,
-  INDIAN_DUMMY_PROFILE_SEED_DATA,
   NOTIFICATION_TEMPLATE_SEEDS,
   PLAN_SEEDS,
   ROLE_PERMISSION_POLICIES,
@@ -170,9 +151,6 @@ export class MasterSeederService {
 
     @InjectModel(Profile.name)
     private readonly profileModel: Model<ProfileDocument>,
-
-    @InjectModel(Preference.name)
-    private readonly preferenceModel: Model<PreferenceDocument>,
 
     @InjectModel(Media.name)
     private readonly mediaModel: Model<MediaDocument>,
@@ -416,7 +394,6 @@ export class MasterSeederService {
     const userByEmail = new Map(users.map((user) => [user.email, user._id]));
 
     const profileWrites = [];
-    const preferenceWrites = [];
     const mediaWrites = [];
     const accountSettingsWrites = [];
     const privacySettingsWrites = [];
@@ -444,7 +421,6 @@ export class MasterSeederService {
           update: {
             $set: {
               userId,
-              profileFor: ProfileFor.SELF,
               personal: profile.personal,
               physical: profile.physical,
               education: profile.education,
@@ -469,42 +445,6 @@ export class MasterSeederService {
               updatedAt: now,
             },
             $setOnInsert: { createdBy: userId, createdAt: now },
-          },
-          upsert: true,
-        },
-      });
-
-      preferenceWrites.push({
-        updateOne: {
-          filter: { userId },
-          update: {
-            $set: {
-              userId,
-              filters: profile.preferenceFilters,
-              settings: {
-                isStrict: false,
-                allowPartialMatches: true,
-                horoscopeRequired: false,
-                profileVerificationRequired: false,
-                minimumMatchScore: 45,
-              },
-              weights: {
-                age: 10,
-                height: 10,
-                religion: 15,
-                caste: 5,
-                location: 10,
-                education: 10,
-                occupation: 10,
-                lifestyle: 10,
-                horoscope: 5,
-              },
-              aboutPartner:
-                'Looking for a kind, family-oriented Hindu partner with shared values.',
-              schemaVersion: 1,
-              updatedAt: now,
-            },
-            $setOnInsert: { createdAt: now },
           },
           upsert: true,
         },
@@ -562,7 +502,6 @@ export class MasterSeederService {
 
     await Promise.all([
       this.profileModel.bulkWrite(profileWrites, { ordered: false }),
-      this.preferenceModel.bulkWrite(preferenceWrites, { ordered: false }),
       this.mediaModel.bulkWrite(mediaWrites, { ordered: false }),
       this.accountSettingsModel.bulkWrite(accountSettingsWrites, {
         ordered: false,
@@ -601,202 +540,106 @@ export class MasterSeederService {
   }
 
   private buildIndianDummyProfiles() {
-    const {
-      castes,
-      cities,
-      complexions,
-      femaleNames,
-      maleNames,
-      occupations,
-      qualifications,
-      seeds,
-    } = INDIAN_DUMMY_PROFILE_SEED_DATA;
+    const students = [
+      ['Aarav', 'Mehta', Gender.MALE, 'Delhi', 'Delhi', 28.6139, 77.209, 14],
+      [
+        'Ananya',
+        'Sharma',
+        Gender.FEMALE,
+        'Mumbai',
+        'Maharashtra',
+        19.076,
+        72.8777,
+        16,
+      ],
+      [
+        'Kabir',
+        'Verma',
+        Gender.MALE,
+        'Bengaluru',
+        'Karnataka',
+        12.9716,
+        77.5946,
+        18,
+      ],
+    ] as const;
 
-    return seeds.map(({ gender, index }) => {
-      const names = gender === Gender.FEMALE ? femaleNames : maleNames;
-      const localIndex = index % names.length;
-      const [firstName, baseLastName] = names[localIndex % names.length];
-      const lastName = baseLastName;
-      const [city, state, coordinates] = cities[index % cities.length];
-      const caste = castes[index % castes.length];
-      const age = 18 + (index % 23);
-      const birthYear = new Date().getFullYear() - age;
-      const [occupation, occupationType] =
-        occupations[index % occupations.length];
-      const qualification = qualifications[index % qualifications.length];
-      const email = `${firstName}.${lastName}@yopmail.com`.toLowerCase();
-      const phone = String(9876543211 + index);
-      const height =
-        gender === Gender.FEMALE ? 152 + (index % 20) : 165 + (index % 20);
+    return students.map(
+      ([firstName, lastName, gender, city, state, lat, lng, age], index) => {
+        const birthYear = new Date().getFullYear() - age;
+        const email = `${firstName}.${lastName}@yopmail.com`.toLowerCase();
+        const phone = String(9876543211 + index);
 
-      return {
-        index,
-        email,
-        phone,
-        gender,
-        age,
-        location: {
-          type: 'Point' as const,
-          coordinates: [coordinates[0], coordinates[1]] as [number, number],
-        },
-        personal: {
-          firstName,
-          lastName,
+        return {
+          index,
+          email,
+          phone,
           gender,
-          dateOfBirth: `${birthYear}-${String((index % 12) + 1).padStart(
-            2,
-            '0',
-          )}-${String((index % 27) + 1).padStart(2, '0')}`,
-          religion: Religion.HINDU,
-          religiousDetails: {
-            caste,
-            manglikStatus:
-              index % 7 === 0
-                ? ManglikStatus.MANGLIK
-                : ManglikStatus.NON_MANGLIK,
+          age,
+          location: {
+            type: 'Point' as const,
+            coordinates: [lng, lat] as [number, number],
           },
-          country: Country.INDIA,
-          state,
-          city,
-          citizenship: 'Indian',
-          willingToRelocate: index % 4 === 0,
-          motherTongue: ['Hindi', 'Marathi', 'Gujarati', 'Punjabi'][index % 4],
-          maritalStatus: MaritalStatus.NEVER_MARRIED,
-          hasChildren: false,
-          smoking: Smoking.NON_SMOKER,
-          drinking: index % 5 === 0 ? Drinking.SOCIALLY : Drinking.NON_DRINKER,
-          eating: index % 3 === 0 ? Eating.NON_VEGETARIAN : Eating.VEGETARIAN,
-          hobbies: ['Travel', 'Music', 'Reading', 'Cooking'].slice(
-            0,
-            2 + (index % 3),
-          ),
-          languages: ['Hindi', 'English'],
-          aboutMe: `${firstName} is a family-oriented, career-focused Hindu profile from ${city}.`,
-        },
-        physical: {
-          height,
-          weight:
-            gender === Gender.FEMALE ? 48 + (index % 18) : 62 + (index % 22),
-          bloodGroup:
-            Object.values(BloodGroup)[index % Object.values(BloodGroup).length],
-          bodyType:
-            gender === Gender.FEMALE
-              ? [
-                  BodyType.SLIM,
-                  BodyType.AVERAGE,
-                  BodyType.FIT,
-                  BodyType.PETITE,
-                ][index % 4]
-              : [
-                  BodyType.AVERAGE,
-                  BodyType.ATHLETIC,
-                  BodyType.FIT,
-                  BodyType.MUSCULAR,
-                ][index % 4],
-          complexion: complexions[index % complexions.length],
-          disabilityStatus: false,
-        },
-        education: {
-          qualification,
-          field: ['Engineering', 'Commerce', 'Management', 'Science'][
-            index % 4
+          personal: {
+            firstName,
+            lastName,
+            gender,
+            dateOfBirth: `${birthYear}-${String((index % 12) + 1).padStart(
+              2,
+              '0',
+            )}-${String((index % 27) + 1).padStart(2, '0')}`,
+            religion: Religion.HINDU,
+            religiousDetails: {},
+            country: Country.INDIA,
+            state,
+            city,
+            citizenship: 'Indian',
+            motherTongue: ['Hindi', 'Marathi', 'Kannada'][index % 3],
+            hobbies: ['Mathematics', 'Science', 'Reading', 'Coding'].slice(
+              0,
+              2 + (index % 3),
+            ),
+            languages: ['Hindi', 'English'],
+            aboutMe: `${firstName} is preparing for structured AI tutoring with Mentora and wants guided practice, clear explanations, and progress tracking.`,
+          },
+          physical: {
+            accessibilityNeeds: [],
+          },
+          education: {
+            qualification: [
+              Qualification.TENTH,
+              Qualification.TWELFTH,
+              Qualification.BTECH,
+            ][index % 3],
+            field: ['Grade 9', 'Grade 11', 'College Year 1'][index % 3],
+            university: [
+              'Delhi Public School',
+              'Mumbai Junior College',
+              'Bengaluru Institute of Technology',
+            ][index % 3],
+            occupation: [
+              'Exam preparation',
+              'STEM foundation',
+              'AI mentorship',
+            ][index % 3],
+          },
+          family: {
+            fatherName: `Parent ${lastName}`,
+            motherName: `Guardian ${lastName}`,
+          },
+          searchTags: [
+            gender,
+            Religion.HINDU,
+            city,
+            state,
+            'ai_tutor',
+            'student',
           ],
-          university: [
-            'Delhi University',
-            'Mumbai University',
-            'Pune University',
-            'Rajasthan University',
-          ][index % 4],
-          occupationType,
-          occupation,
-          companyName: [
-            'TCS',
-            'Infosys',
-            'HDFC Bank',
-            'Apollo',
-            'Family Business',
-          ][index % 5],
-          jobRole: occupation,
-          annualIncomeAmount: 500000 + (index % 12) * 150000,
-        },
-        family: {
-          fatherName: `Mr. ${baseLastName}`,
-          motherName: `Mrs. ${baseLastName}`,
-          fatherOccupation: [
-            'Business',
-            'Government Service',
-            'Retired',
-            'Teacher',
-          ][index % 4],
-          motherOccupation: ['Homemaker', 'Teacher', 'Business', 'Retired'][
-            index % 4
-          ],
-          familyType: index % 2 === 0 ? FamilyType.NUCLEAR : FamilyType.JOINT,
-          familyStatus: [
-            FamilyStatus.MIDDLE_CLASS,
-            FamilyStatus.UPPER_MIDDLE_CLASS,
-            FamilyStatus.RICH,
-          ][index % 3],
-          familyValues: [
-            FamilyValue.TRADITIONAL,
-            FamilyValue.MODERATE,
-            FamilyValue.LIBERAL,
-          ][index % 3],
-          siblings: {
-            brothersCount: index % 3,
-            sistersCount: (index + 1) % 3,
-            marriedBrothersCount: index % 2,
-            marriedSistersCount: (index + 1) % 2,
-            details: [
-              {
-                type: SiblingType.BROTHER,
-                married: index % 2 === 0,
-                occupation: 'Engineer',
-              },
-            ],
-          },
-        },
-        preferenceFilters: {
-          age: {
-            min: gender === Gender.FEMALE ? 24 : 20,
-            max: gender === Gender.FEMALE ? 40 : 36,
-          },
-          height: {
-            min: gender === Gender.FEMALE ? 165 : 150,
-            max: gender === Gender.FEMALE ? 190 : 175,
-          },
-          annualIncome: { min: 300000, max: 5000000 },
-          maritalStatus: [MaritalStatus.NEVER_MARRIED],
-          religion: [Religion.HINDU],
-          caste: [...castes],
-          childPreference: ChildPreference.DOES_NOT_MATTER,
-          residencyPreference: ResidencyPreference.DOES_NOT_MATTER,
-          country: [Country.INDIA],
-          state: [state],
-          city: [city],
-          qualification: [...qualifications],
-          occupationType: Object.values(OccupationType),
-          bodyType: Object.values(BodyType),
-          complexion: [...complexions],
-          smoking: [Smoking.NON_SMOKER],
-          drinking: [Drinking.NON_DRINKER, Drinking.SOCIALLY],
-          eating: [Eating.VEGETARIAN, Eating.NON_VEGETARIAN],
-          languages: ['Hindi', 'English'],
-        },
-        searchTags: [
-          gender,
-          Religion.HINDU,
-          caste,
-          city,
-          state,
-          qualification,
-          occupation,
-        ],
-        aiTags: ['seeded', 'indian', 'hindu', caste],
-      };
-    });
+          aiTags: ['seeded', 'student', 'ai_tutor'],
+        };
+      },
+    );
   }
-
   private buildPlayReviewerProfile() {
     const base = this.buildIndianDummyProfiles()[0];
 
@@ -1359,374 +1202,14 @@ export class MasterSeederService {
       'ASSISTED_YEARLY',
     ];
 
-    const platformFeatures: [FeatureKey, FeatureValue][] = [
-      // ==========================================
-      //  AUTH & ACCOUNT
-      // ==========================================
-
-      [FeatureKey.EMAIL_REGISTRATION, 1],
-      [FeatureKey.PHONE_REGISTRATION, 1],
-      [FeatureKey.SOCIAL_LOGIN_GOOGLE, 1],
-      [FeatureKey.SOCIAL_LOGIN_APPLE, 1],
-      [FeatureKey.SOCIAL_LOGIN_FACEBOOK, 1],
-      [FeatureKey.EMAIL_VERIFICATION, 1],
-      [FeatureKey.PHONE_VERIFICATION, 1],
-      [FeatureKey.OTP_LOGIN, 1],
-      [FeatureKey.TWO_FACTOR_AUTH, 1],
-      [FeatureKey.DEVICE_MANAGEMENT, 1],
-      [FeatureKey.MULTI_DEVICE_LOGIN, 1],
-      [FeatureKey.SESSION_HISTORY, 1],
-
-      [FeatureKey.CREATE_PROFILE, 1],
-      [FeatureKey.EDIT_PROFILE, 1],
-      [FeatureKey.DELETE_PROFILE, 1],
-      [FeatureKey.BASIC_MATCHING, 1],
-      [FeatureKey.BASIC_SEARCH, 1],
-      [FeatureKey.BASIC_FILTERS, 1],
-      [FeatureKey.SEARCH_BY_RELIGION, 1],
-      [FeatureKey.SEARCH_BY_CASTE, 1],
-      [FeatureKey.SEARCH_BY_LOCATION, 1],
-      [FeatureKey.SEARCH_BY_EDUCATION, 1],
-      [FeatureKey.SEARCH_BY_PROFESSION, 1],
-      [FeatureKey.SEARCH_BY_HEIGHT, 1],
-      [FeatureKey.LOCATION_BASED_SEARCH, 1],
-      [FeatureKey.RELIGION_PREFERENCES, 1],
-      [FeatureKey.CASTE_PREFERENCES, 1],
-      [FeatureKey.FAMILY_MANAGED_PROFILE, 1],
-      [FeatureKey.FAMILY_DETAILS, 1],
-      [FeatureKey.PUSH_NOTIFICATIONS, 1],
-      [FeatureKey.PHOTO_APPROVAL, 1],
-      [FeatureKey.VIDEO_APPROVAL, 1],
-      [FeatureKey.IDENTITY_VERIFICATION, 1],
-      [FeatureKey.REPORT_USER, 1],
-      [FeatureKey.BLOCK_USERS, 1],
-      [FeatureKey.SPAM_DETECTION, 1],
-      [FeatureKey.RESTRICTED_PROFILES, 1],
-      [FeatureKey.CUSTOMER_SUPPORT_CHAT, 1],
-      [FeatureKey.SUPPORT_TICKETS, 1],
-      [FeatureKey.ACCOUNT_DELETION, 1],
-      [FeatureKey.GDPR_COMPLIANCE, 1],
-      [FeatureKey.DATA_EXPORT, 1],
-      [FeatureKey.CONSENT_MANAGEMENT, 1],
-      [FeatureKey.PRIVACY_CONTROLS, 1],
-    ];
-
     recurringPlanSlugs.forEach((planSlug) => {
-      platformFeatures.forEach(([feature, value]) =>
-        addFeature(planSlug, feature, value),
-      );
-    });
-
-    // ==========================================
-    // FREE PLAN
-    // ==========================================
-
-    (
-      [
-        [FeatureKey.UPLOAD_PHOTOS, 3],
-        [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 3],
-        [FeatureKey.SEND_INTEREST, 10],
-        [FeatureKey.SEND_INTEREST_MONTHLY_LIMIT, 25],
-        [FeatureKey.VIEW_INTERESTS, 1],
-        [FeatureKey.ACCEPT_INTEREST, 1],
-        [FeatureKey.REJECT_INTEREST, 1],
-        [FeatureKey.SHORTLIST_PROFILES, 20],
-        [FeatureKey.VIEW_PROFILE_PHOTOS, 1],
-        [FeatureKey.PROFILE_VIEWS, 25],
-        [FeatureKey.MATCH_LIMIT, 20],
-        [FeatureKey.DAILY_PROFILE_VIEWS, 25],
-        [FeatureKey.PROFILE_BOOST, 5],
-        [FeatureKey.READ_RECEIPTS, 1],
-        [FeatureKey.PROFILE_COMPLETION_SCORE, 1],
-        [FeatureKey.HIDE_ONLINE_STATUS, 1],
-        [FeatureKey.HIDE_LAST_SEEN, 1],
-        [FeatureKey.TYPING_INDICATOR, 1],
-        [FeatureKey.PUSH_NOTIFICATIONS, 1],
-        [FeatureKey.REPORT_USER, 1],
-        [FeatureKey.BLOCK_USERS, 1],
-        [FeatureKey.CUSTOMER_SUPPORT_CHAT, 1],
-      ] as [FeatureKey, FeatureValue][]
-    ).forEach(([feature, value]) => addFeature('FREE', feature, value));
-
-    // ==========================================
-    // SILVER FEATURES
-    // ==========================================
-
-    const silverFeatures: [FeatureKey, FeatureValue][] = [
-      [FeatureKey.ADVANCED_PROFILE_COMPLETION, 1],
-      [FeatureKey.UPLOAD_PHOTOS, 5],
-      [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 5],
-      [FeatureKey.UPLOAD_VIDEOS, 1],
-      [FeatureKey.SEND_INTEREST, -1],
-      [FeatureKey.VIEW_INTERESTS, 1],
-      [FeatureKey.ACCEPT_INTEREST, 1],
-      [FeatureKey.REJECT_INTEREST, 1],
-      [FeatureKey.SHORTLIST_PROFILES, 50],
-      [FeatureKey.CHAT_ACCESS, 1],
-      [FeatureKey.MESSAGE_LIMIT, 100],
-      [FeatureKey.AUTO_REPLY, 1],
-      [FeatureKey.SEND_IMAGES_IN_CHAT, 1],
-      [FeatureKey.VIEW_CONTACT, 10],
-      [FeatureKey.CONTACT_VIEW_LIMIT, 10],
-      [FeatureKey.REQUEST_CONTACT, 1],
-      [FeatureKey.VIEW_PHONE_NUMBER, 1],
-      [FeatureKey.VIEW_EMAIL_ADDRESS, 1],
-      [FeatureKey.VIEW_PROFILE_PHOTOS, 1],
-      [FeatureKey.VIEW_PRIVATE_PHOTOS, 1],
-      [FeatureKey.SEARCH_BY_INCOME, 1],
-      [FeatureKey.DAILY_PROFILE_VIEWS, -1],
-      [FeatureKey.UNLIMITED_PROFILE_VIEWS, -1],
-      [FeatureKey.PROFILE_VIEWS, -1],
-      [FeatureKey.WHO_VIEWED_ME, 1],
-      [FeatureKey.SAVED_SEARCHES, 10],
-      [FeatureKey.PUSH_NOTIFICATIONS, 1],
-      [FeatureKey.EMAIL_NOTIFICATIONS, 1],
-      [FeatureKey.AD_FREE_EXPERIENCE, 1],
-      [FeatureKey.PROFILE_BOOST, 5],
-      [FeatureKey.MONTHLY_SUBSCRIPTION, 30],
-      [FeatureKey.QUARTERLY_SUBSCRIPTION, 90],
-      [FeatureKey.YEARLY_SUBSCRIPTION, 365],
-      [FeatureKey.AUTO_RENEWAL, 1],
-      [FeatureKey.GRACE_PERIOD, 3],
-      [FeatureKey.REPORT_USER, 1],
-      [FeatureKey.BLOCK_USERS, 1],
-      [FeatureKey.CUSTOMER_SUPPORT_CHAT, 1],
-      [FeatureKey.SUPPORT_TICKETS, 1],
-    ];
-
-    (
-      ['SILVER_MONTHLY', 'SILVER_QUARTERLY', 'SILVER_YEARLY'] as PlanSlug[]
-    ).forEach((planSlug) => {
-      silverFeatures.forEach(([feature, value]) =>
-        addFeature(planSlug, feature, value),
-      );
+      FEATURE_SEEDS.forEach((seed) => {
+        addFeature(planSlug, seed.key, seed.defaultValue as FeatureValue);
+      });
     });
 
     CUSTOM_ASSISTED_FEATURE_MAPPINGS.forEach(({ featureKey, value }) =>
       addFeature('ASSISTED_CUSTOM', featureKey, value),
-    );
-
-    // ==========================================
-    // GOLD FEATURES
-    // ==========================================
-
-    const goldFeatures: [FeatureKey, FeatureValue][] = [
-      [FeatureKey.ADVANCED_PROFILE_COMPLETION, 1],
-      [FeatureKey.UPLOAD_PHOTOS, 10],
-      [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 10],
-      [FeatureKey.UPLOAD_VIDEOS, 1],
-      [FeatureKey.PRIVATE_PHOTOS, 1],
-      [FeatureKey.SHOW_ONLY_TO_PREMIUM, 1],
-      [FeatureKey.HIDE_PROFILE_PHOTO, 1],
-      [FeatureKey.PROFILE_HIGHLIGHT, 1],
-      [FeatureKey.UNLIMITED_CHAT, -1],
-      [FeatureKey.MESSAGE_LIMIT, -1],
-      [FeatureKey.CHAT_WITH_MATCHES_ONLY, 1],
-      [FeatureKey.SEND_INTEREST, -1],
-      [FeatureKey.VIEW_INTERESTS, 1],
-      [FeatureKey.ACCEPT_INTEREST, 1],
-      [FeatureKey.REJECT_INTEREST, 1],
-      [FeatureKey.VIEW_CONTACT, 50],
-      [FeatureKey.CONTACT_VIEW_LIMIT, 50],
-      [FeatureKey.REQUEST_CONTACT, 1],
-      [FeatureKey.VIEW_PHONE_NUMBER, 1],
-      [FeatureKey.VIEW_EMAIL_ADDRESS, 1],
-      [FeatureKey.CHAT_ACCESS, 1],
-      [FeatureKey.AUTO_REPLY, 1],
-      [FeatureKey.SEND_IMAGES_IN_CHAT, 1],
-      [FeatureKey.SEND_VOICE_NOTES, 1],
-      [FeatureKey.VOICE_CALL, 1],
-      [FeatureKey.VIEW_PROFILE_PHOTOS, 1],
-      [FeatureKey.VIEW_PRIVATE_PHOTOS, 1],
-      [FeatureKey.REQUEST_PHOTOS, 1],
-      [FeatureKey.VIEW_PROFILE_VIDEOS, 1],
-      [FeatureKey.SEARCH_BY_INCOME, 1],
-      [FeatureKey.UNLIMITED_SEARCH, -1],
-      [FeatureKey.UNLIMITED_PROFILE_VIEWS, -1],
-      [FeatureKey.DAILY_PROFILE_VIEWS, -1],
-      [FeatureKey.PROFILE_VIEWS, -1],
-      [FeatureKey.WHO_VIEWED_ME, 1],
-      [FeatureKey.PROFILE_ANALYTICS, 1],
-      [FeatureKey.DAILY_ACTIVITY_STATS, 1],
-      [FeatureKey.TOP_IN_SEARCH, 1],
-      [FeatureKey.SHOW_ON_HOME, 1],
-      [FeatureKey.SMART_MATCHES, 1],
-      [FeatureKey.COMPATIBILITY_SCORE, 1],
-      [FeatureKey.RELIGION_PREFERENCES, 1],
-      [FeatureKey.CASTE_PREFERENCES, 1],
-      [FeatureKey.MANGLIK_MATCHING, 1],
-      [FeatureKey.FAMILY_DETAILS, 1],
-      [FeatureKey.SAVED_SEARCHES, 10],
-      [FeatureKey.PUSH_NOTIFICATIONS, 1],
-      [FeatureKey.EMAIL_NOTIFICATIONS, 1],
-      [FeatureKey.MARKETING_NOTIFICATIONS, 1],
-      [FeatureKey.AD_FREE_EXPERIENCE, 1],
-      [FeatureKey.PROFILE_BOOST, 5],
-      [FeatureKey.DAILY_BOOSTS, 5],
-      [FeatureKey.PRIORITY_SUPPORT, 1],
-      [FeatureKey.MONTHLY_SUBSCRIPTION, 30],
-      [FeatureKey.QUARTERLY_SUBSCRIPTION, 90],
-      [FeatureKey.YEARLY_SUBSCRIPTION, 365],
-      [FeatureKey.AUTO_RENEWAL, 1],
-      [FeatureKey.GRACE_PERIOD, 3],
-      [FeatureKey.WALLET_SYSTEM, 1],
-      [FeatureKey.REPORT_USER, 1],
-      [FeatureKey.BLOCK_USERS, 1],
-    ];
-
-    (['GOLD_MONTHLY', 'GOLD_QUARTERLY', 'GOLD_YEARLY'] as PlanSlug[]).forEach(
-      (planSlug) => {
-        goldFeatures.forEach(([feature, value]) =>
-          addFeature(planSlug, feature, value),
-        );
-      },
-    );
-
-    // ==========================================
-    // PLATINUM FEATURES
-    // ==========================================
-
-    const platinumFeatures: [FeatureKey, FeatureValue][] = [
-      ...goldFeatures,
-
-      [FeatureKey.VIDEO_PROFILE, 1],
-      [FeatureKey.AUDIO_INTRO, 1],
-      [FeatureKey.FEATURED_PROFILE, 1],
-      [FeatureKey.PRIVATE_ALBUM, 1],
-      [FeatureKey.INCOGNITO_MODE, 1],
-      [FeatureKey.HOROSCOPE_UPLOAD, 1],
-      [FeatureKey.KUNDLI_MATCHING, 1],
-      [FeatureKey.ASTROLOGY_REPORT, 1],
-
-      [FeatureKey.PRIORITY_INTEREST, 1],
-      [FeatureKey.SHORTLIST_PROFILES, -1],
-      [FeatureKey.FAVORITE_PROFILES, -1],
-      [FeatureKey.UPLOAD_PHOTOS, 20],
-      [FeatureKey.MULTIPLE_PROFILE_PHOTOS, 20],
-      [FeatureKey.VIEW_CONTACT, -1],
-
-      [FeatureKey.CHAT_WITHOUT_MATCH, 1],
-      [FeatureKey.PRIORITY_CHAT, 1],
-      [FeatureKey.MESSAGE_TRANSLATION, 1],
-      [FeatureKey.SEND_VIDEOS_IN_CHAT, 1],
-      [FeatureKey.VIDEO_CALL, 1],
-
-      [FeatureKey.DIRECT_CONTACT_ACCESS, 1],
-
-      [FeatureKey.REQUEST_PRIVATE_VIDEOS, 1],
-      [FeatureKey.AI_PHOTO_VERIFICATION, 1],
-      [FeatureKey.BLURRED_PHOTO_MODE, 1],
-
-      [FeatureKey.GLOBAL_SEARCH, 1],
-      [FeatureKey.INTERNATIONAL_MATCHES, 1],
-      [FeatureKey.NRI_MATCHING, 1],
-      [FeatureKey.SAVED_SEARCHES, -1],
-      [FeatureKey.RECENT_SEARCHES, 1],
-      [FeatureKey.FEATURED_IN_SEARCH, 1],
-      [FeatureKey.PRIORITY_SEARCH_RANKING, 1],
-
-      [FeatureKey.ADVANCED_MATCHING, 1],
-      [FeatureKey.AI_RECOMMENDATIONS, 1],
-      [FeatureKey.AI_PROFILE_SUMMARY, 1],
-      [FeatureKey.AI_PHOTO_SELECTION, 1],
-      [FeatureKey.AI_COMPATIBILITY_ANALYSIS, 1],
-      [FeatureKey.AI_CONVERSATION_STARTER, 1],
-      [FeatureKey.AI_INTEREST_PREDICTION, 1],
-      [FeatureKey.AI_FAKE_PROFILE_DETECTION, 1],
-      [FeatureKey.PERSONALITY_MATCHING, 1],
-      [FeatureKey.INTEREST_MATCHING, 1],
-      [FeatureKey.LOCATION_MATCHING, 1],
-      [FeatureKey.STRICT_PREFERENCES, 1],
-      [FeatureKey.SMART_PREFERENCES, 1],
-
-      [FeatureKey.SUBCASTE_PREFERENCES, 1],
-      [FeatureKey.COMMUNITY_BASED_MATCHING, 1],
-      [FeatureKey.MARRIAGE_TIMELINE_PREFERENCE, 1],
-      [FeatureKey.CHILDREN_PREFERENCE, 1],
-      [FeatureKey.EATING_PREFERENCES, 1],
-      [FeatureKey.LIFESTYLE_PREFERENCES, 1],
-
-      [FeatureKey.FAMILY_MANAGED_PROFILE, 1],
-      [FeatureKey.FAMILY_CONTACT_VISIBILITY, 1],
-      [FeatureKey.PARENT_LOGIN, 1],
-      [FeatureKey.GUARDIAN_ACCESS, 1],
-      [FeatureKey.FAMILY_PREFERENCES, 1],
-
-      [FeatureKey.INTEREST_ANALYTICS, 1],
-      [FeatureKey.CHAT_ANALYTICS, 1],
-      [FeatureKey.ENGAGEMENT_SCORE, 1],
-      [FeatureKey.MATCH_SUCCESS_RATE, 1],
-      [FeatureKey.WEEKLY_REPORTS, 1],
-
-      [FeatureKey.SMS_NOTIFICATIONS, 1],
-      [FeatureKey.INSTANT_MATCH_ALERTS, 1],
-      [FeatureKey.DAILY_MATCH_DIGEST, 1],
-
-      [FeatureKey.LOCATION_BASED_MATCHING, 1],
-      [FeatureKey.NEARBY_PROFILES, 1],
-      [FeatureKey.TRAVEL_MODE, 1],
-
-      [FeatureKey.VIP_BADGE, 1],
-      [FeatureKey.PREMIUM_BADGE, 1],
-      [FeatureKey.RELATIONSHIP_MANAGER, 1],
-      [FeatureKey.DEDICATED_RELATIONSHIP_MANAGER, 1],
-      [FeatureKey.CONCIERGE_MATCHMAKING, 1],
-      [FeatureKey.PERSONAL_MATCHMAKER, 1],
-
-      [FeatureKey.WEEKLY_BOOSTS, 7],
-      [FeatureKey.MONTHLY_BOOSTS, 30],
-      [FeatureKey.UNLIMITED_BOOSTS, -1],
-      [FeatureKey.PROFILE_BOOST, -1],
-      [FeatureKey.SPOTLIGHT_PROFILE, 1],
-
-      [FeatureKey.PROMO_CODES, 1],
-      [FeatureKey.REFERRAL_REWARDS, 1],
-      [FeatureKey.REFERRAL_BONUS, 1],
-      [FeatureKey.EARN_CREDITS, 1],
-
-      [FeatureKey.SAFE_MODE, 1],
-      [FeatureKey.FRAUD_DETECTION, 1],
-      [FeatureKey.SPAM_DETECTION, 1],
-      [FeatureKey.MANUAL_PROFILE_REVIEW, 1],
-
-      [FeatureKey.SHORTLIST_LIMIT, -1],
-      [FeatureKey.CONTACT_VIEW_LIMIT, -1],
-      [FeatureKey.MESSAGE_LIMIT, -1],
-      [FeatureKey.MATCH_LIMIT, -1],
-
-      [FeatureKey.STREAK_REWARDS, 1],
-      [FeatureKey.DAILY_LOGIN_REWARDS, 1],
-      [FeatureKey.MATCH_QUIZ, 1],
-      [FeatureKey.COMPATIBILITY_GAMES, 1],
-
-      [FeatureKey.SUPPORT_TICKETS, 1],
-      [FeatureKey.ACCOUNT_EXPORT, 1],
-      [FeatureKey.DATA_EXPORT, 1],
-      [FeatureKey.PRIVACY_CONTROLS, 1],
-    ];
-
-    (
-      [
-        'PLATINUM_MONTHLY',
-        'PLATINUM_QUARTERLY',
-        'PLATINUM_YEARLY',
-        'ASSISTED_HALF_YEARLY',
-        'ASSISTED_YEARLY',
-      ] as PlanSlug[]
-    ).forEach((planSlug) => {
-      platinumFeatures.forEach(([feature, value]) =>
-        addFeature(planSlug, feature, value),
-      );
-    });
-
-    (
-      [
-        [FeatureKey.PROFILE_BOOST, 1],
-        [FeatureKey.ONE_TIME_BOOST_PURCHASE, 1],
-        [FeatureKey.SPOTLIGHT_PROFILE, 1],
-      ] as [FeatureKey, FeatureValue][]
-    ).forEach(([feature, value]) =>
-      addFeature('PROFILE_BOOST_24H', feature, value),
     );
 
     Object.entries(FIXED_PLAN_LIMITS).forEach(([planSlug, limits]) => {

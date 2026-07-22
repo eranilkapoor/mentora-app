@@ -8,7 +8,6 @@ interface AuthState {
   onboardingCompletionPending: boolean;
   postOnboardingTarget:
     | 'EditProfile'
-    | 'EditPreference'
     | 'Learn'
     | 'Schedule'
     | 'Progress'

@@ -6,7 +6,6 @@ import { SettingsStackParamList } from '@/navigation/types';
 import { getSharedScreenOptions } from './sharedScreenOptions';
 
 import SettingsScreen from '@/features/Settings/Settings.screen';
-import EditPreferenceScreen from '@/features/EditPreference/EditPreference.screen';
 import ChangePasswordScreen from '@/features/ChangePassword/ChangePassword.screen';
 import NotificationSettingsScreen from '@/features/NotificationSettings/NotificationSettings.screen';
 import HelpSupportScreen from '@/features/HelpSupport/HelpSupport.screen';
@@ -14,9 +13,12 @@ import SupportTicketsScreen from '@/features/HelpSupport/SupportTickets.screen';
 import SupportTicketDetailScreen from '@/features/HelpSupport/SupportTicketDetail.screen';
 import {
   AccountDeletionScreen,
+  AiTutorDisclaimerScreen,
+  ChildSafetyScreen,
   CommunityGuidelinesScreen,
   FaqsScreen,
   PrivacyPolicyScreen,
+  RefundPolicyScreen,
   TermsConditionsScreen,
 } from '@/features/StaticPage/staticPageScreens';
 import EditProfileScreen from '@/features/EditProfile/EditProfile.screen';
@@ -37,8 +39,6 @@ import AccessibilitySettingsScreen from '@/features/AccessibilitySettings/Access
 import AiSettingsScreen from '@/features/AiSettings/AiSettings.screen';
 import SubscriptionBillingScreen from '@/features/SubscriptionBilling/SubscriptionBilling.screen';
 import ReferRewardsScreen from '@/features/ReferRewards/ReferRewards.screen';
-import SuccessStoriesScreen from '@/features/SuccessStories/SuccessStories.screen';
-import UserInsightsScreen from '@/features/UserInsights/UserInsights.screen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -52,7 +52,6 @@ export default function SettingsStack(): React.ReactElement {
     >
       <Stack.Screen name="SettingsScreen" component={SettingsScreen} />
       <Stack.Screen name="EditProfile" component={EditProfileScreen} />
-      <Stack.Screen name="EditPreference" component={EditPreferenceScreen} />
       <Stack.Screen
         name="ChangePassword"
         component={ChangePasswordScreen}
@@ -102,11 +101,6 @@ export default function SettingsStack(): React.ReactElement {
         name="ReferRewards"
         component={ReferRewardsScreen}
         options={{ title: t('settings.referrals.title') }}
-      />
-      <Stack.Screen
-        name="UserInsights"
-        component={UserInsightsScreen}
-        options={{ title: 'Insights' }}
       />
       <Stack.Screen
         name="BlockedUsers"
@@ -164,11 +158,6 @@ export default function SettingsStack(): React.ReactElement {
         options={{ title: t('settings.support_tickets.detail_title') }}
       />
       <Stack.Screen
-        name="SuccessStories"
-        component={SuccessStoriesScreen}
-        options={{ title: t('settings.success_stories.title') }}
-      />
-      <Stack.Screen
         name="Faqs"
         component={FaqsScreen}
         options={{ title: t('settings.support_center.faqs') }}
@@ -177,6 +166,21 @@ export default function SettingsStack(): React.ReactElement {
         name="CommunityGuidelines"
         component={CommunityGuidelinesScreen}
         options={{ title: t('settings.support_center.community_guidelines') }}
+      />
+      <Stack.Screen
+        name="ChildSafety"
+        component={ChildSafetyScreen}
+        options={{ title: t('settings.support_center.child_safety') }}
+      />
+      <Stack.Screen
+        name="AiTutorDisclaimer"
+        component={AiTutorDisclaimerScreen}
+        options={{ title: t('settings.support_center.ai_tutor_disclaimer') }}
+      />
+      <Stack.Screen
+        name="RefundPolicy"
+        component={RefundPolicyScreen}
+        options={{ title: t('settings.support_center.refund_policy') }}
       />
       <Stack.Screen
         name="AccountDeletion"

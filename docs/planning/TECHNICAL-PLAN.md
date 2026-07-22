@@ -36,13 +36,21 @@ Create Mentora modules in phases:
 ```text
 parents
 student-profiles
+student-profile-sections
 parent-student-relationships
 student-invitations
 guardian-invitations
 consent-records
 parental-controls
 student-preferences
+student-addresses
+student-documents
+student-communications
+student-activity-timeline
 academic-records
+previous-education
+exam-scores
+course-preferences
 education-boards
 universities
 institutions
@@ -79,6 +87,28 @@ tutor-payouts
 safety-events
 safety-review
 ```
+
+## Complete Student Profile
+
+The student profile should be implemented as a complete learning CRM record, not only a short onboarding form.
+
+Required profile sections:
+
+- Personal
+- Academic
+- Parents
+- Address
+- Previous Education
+- Exam Scores
+- Course Preference
+- Documents
+- Payments
+- Communication History
+- Activity Timeline
+
+This helps Mentora with personalization, parent supervision, support operations, payment entitlement, AI context, compliance, and audit. The profile editor should allow progressive completion: only minimum identity, age policy, academic level, course preference, and parent/consent/payment fields should block critical flows.
+
+See `docs/planning/STUDENT-PROFILE-MODEL.md` for fields, section ownership, and screen direction.
 
 Keep existing infrastructure modules where useful:
 
@@ -151,9 +181,15 @@ POST   /api/v1/students
 GET    /api/v1/students
 GET    /api/v1/students/:studentId
 PATCH  /api/v1/students/:studentId
+GET    /api/v1/students/:studentId/profile
+PATCH  /api/v1/students/:studentId/profile/personal
+PATCH  /api/v1/students/:studentId/profile/academic
 POST   /api/v1/students/:studentId/invite
 POST   /api/v1/students/:studentId/parents
+GET    /api/v1/students/:studentId/parents
 PATCH  /api/v1/students/:studentId/parental-controls
+PATCH  /api/v1/students/:studentId/address
+GET    /api/v1/students/:studentId/activity-timeline
 ```
 
 Academic:
@@ -161,8 +197,16 @@ Academic:
 ```text
 POST   /api/v1/students/:studentId/academic-records
 GET    /api/v1/students/:studentId/academic-records
+POST   /api/v1/students/:studentId/previous-education
+GET    /api/v1/students/:studentId/previous-education
+POST   /api/v1/students/:studentId/exam-scores
+GET    /api/v1/students/:studentId/exam-scores
+PATCH  /api/v1/students/:studentId/course-preferences
+GET    /api/v1/students/:studentId/course-preferences
 POST   /api/v1/students/:studentId/subjects
 GET    /api/v1/students/:studentId/progress
+GET    /api/v1/students/:studentId/documents
+POST   /api/v1/students/:studentId/documents
 ```
 
 Scheduling:
@@ -217,6 +261,8 @@ GET    /api/v1/plans
 POST   /api/v1/subscriptions
 GET    /api/v1/subscriptions/current
 GET    /api/v1/subscriptions/usage
+GET    /api/v1/students/:studentId/payments
+GET    /api/v1/students/:studentId/communications
 POST   /api/v1/payments/create-order
 POST   /api/v1/payments/verify
 ```

@@ -61,7 +61,17 @@ Dashboard
 
 Children
   -> child profile
+  -> personal details
   -> academic records
+  -> parents and permissions
+  -> address
+  -> previous education
+  -> exam scores
+  -> course preference
+  -> documents
+  -> payments
+  -> communication history
+  -> activity timeline
   -> subjects
   -> schedule
   -> progress
@@ -115,7 +125,15 @@ Progress
 Profile
   -> personal details
   -> academic profile
+  -> parents/guardians
+  -> address
   -> education history
+  -> exam scores
+  -> course preference
+  -> documents
+  -> payments
+  -> communication history
+  -> activity timeline
   -> current institution
   -> settings
 ```

@@ -29,10 +29,6 @@ import {
   Profile,
   ProfileSchema,
 } from '../profiles/schemas/profile/profile.schema';
-import {
-  Preference,
-  PreferenceSchema,
-} from '../profiles/schemas/preference/preference.schema';
 import { Media, MediaSchema } from '../profiles/schemas/media/media.schema';
 import {
   AccountSetting,
@@ -111,7 +107,6 @@ import { Subject, SubjectSchema } from '../learning/schemas/learning.schemas';
       },
       { name: User.name, schema: UserSchema },
       { name: Profile.name, schema: ProfileSchema },
-      { name: Preference.name, schema: PreferenceSchema },
       { name: Media.name, schema: MediaSchema },
       { name: AccountSetting.name, schema: AccountSettingSchema },
       { name: PrivacySetting.name, schema: PrivacySettingSchema },

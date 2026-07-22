@@ -9,7 +9,6 @@ const createRepository = () => ({
   findRoomById: jest.fn(),
   findBlockedRelation: jest.fn(),
   findCommunicationSettingsByUserIds: jest.fn(),
-  findActiveMatchBetween: jest.fn(),
   findDirectRoomByUsers: jest.fn(),
   findUsersByIds: jest.fn(),
 });
@@ -149,7 +148,7 @@ describe('ChatAccessService', () => {
     await expect(
       service.ensureMessagingAllowed('sender', 'recipient'),
     ).resolves.toBeUndefined();
-    expect(repo.findActiveMatchBetween).not.toHaveBeenCalled();
+    expect(repo.findDirectRoomByUsers).not.toHaveBeenCalled();
   });
 
   it('defaults missing communication settings to unrestricted', async () => {
@@ -163,13 +162,12 @@ describe('ChatAccessService', () => {
     ).resolves.toBeUndefined();
   });
 
-  it('requires an existing match or room for restricted recipients', async () => {
+  it('requires an existing direct room for restricted recipients', async () => {
     const repo = createRepository();
     repo.findBlockedRelation.mockResolvedValue(null);
     repo.findCommunicationSettingsByUserIds.mockResolvedValue([
-      { whoCanMessage: CommunicationAccess.MATCHES_ONLY },
+      { whoCanMessage: CommunicationAccess.SCHEDULED_SESSIONS_ONLY },
     ]);
-    repo.findActiveMatchBetween.mockResolvedValue(null);
     repo.findDirectRoomByUsers.mockResolvedValue(null);
     const service = new ChatAccessService(repo as unknown as ChatRepository);
 
@@ -178,24 +176,17 @@ describe('ChatAccessService', () => {
     ).rejects.toMatchObject({ code: ErrorCode.CHAT_ACCESS_DENIED });
   });
 
-  it.each([
-    [{ _id: 'match' }, null],
-    [null, { _id: 'room' }],
-  ])(
-    'allows restricted messaging with a match or direct room',
-    async (match, room) => {
-      const repo = createRepository();
-      repo.findBlockedRelation.mockResolvedValue(null);
-      repo.findCommunicationSettingsByUserIds.mockResolvedValue([
-        { whoCanMessage: CommunicationAccess.MATCHES_ONLY },
-      ]);
-      repo.findActiveMatchBetween.mockResolvedValue(match);
-      repo.findDirectRoomByUsers.mockResolvedValue(room);
-      const service = new ChatAccessService(repo as unknown as ChatRepository);
+  it('allows restricted messaging with an existing direct room', async () => {
+    const repo = createRepository();
+    repo.findBlockedRelation.mockResolvedValue(null);
+    repo.findCommunicationSettingsByUserIds.mockResolvedValue([
+      { whoCanMessage: CommunicationAccess.SCHEDULED_SESSIONS_ONLY },
+    ]);
+    repo.findDirectRoomByUsers.mockResolvedValue({ _id: 'room' });
+    const service = new ChatAccessService(repo as unknown as ChatRepository);
 
-      await expect(
-        service.ensureMessagingAllowed('sender', 'recipient'),
-      ).resolves.toBeUndefined();
-    },
-  );
+    await expect(
+      service.ensureMessagingAllowed('sender', 'recipient'),
+    ).resolves.toBeUndefined();
+  });
 });

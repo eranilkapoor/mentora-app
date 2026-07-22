@@ -50,6 +50,24 @@ Students should see:
 - Recent progress and streak.
 - Safe help button for reporting or parent support.
 
+### Student Profile
+
+Student Profile should be a complete, enterprise-level learner record with:
+
+- Personal
+- Academic
+- Parents
+- Address
+- Previous Education
+- Exam Scores
+- Course Preference
+- Documents
+- Payments
+- Communication History
+- Activity Timeline
+
+This is required because AI tutoring, human tutor review, parent dashboards, support, billing, safety, and audit all need a shared student context. Mobile should show a compact overview first, then section tabs or cards for the full profile. Parent mode should show the same sections for each child, but write access must follow relationship permissions.
+
 ### Learn
 
 Learn should include:
@@ -109,6 +127,7 @@ Tutor mode should include:
 - Availability calendar.
 - Session requests: accept, decline, propose time.
 - Student profile and academic context.
+- Student previous education, course preference, exam scores, documents, communication history, and timeline when permission allows.
 - Classroom launch.
 - Session notes and homework.
 - Attendance, summaries, invoices, and earnings.
@@ -177,11 +196,12 @@ Priority modules:
 
 1. Replace placeholder dashboard data with `/students`, `/schedules`, `/learning-entitlements`, `/progress`.
 2. Build Student/Children list and detail screens.
-3. Build Schedule calendar/list/create/reschedule/cancel.
-4. Build AI Tutor launch screen with server-side access guard.
-5. Build AI chat session with transcript, summary, and parent visibility.
-6. Build tutor mode only after B2C parent/student flow is stable.
-7. Remove old match/matrimonial modules from navigation and services.
+3. Build complete student profile sections: personal, academic, parents, address, previous education, exam scores, course preference, documents, payments, communication history, and activity timeline.
+4. Build Schedule calendar/list/create/reschedule/cancel.
+5. Build AI Tutor launch screen with server-side access guard.
+6. Build AI chat session with transcript, summary, and parent visibility.
+7. Build tutor mode only after B2C parent/student flow is stable.
+8. Remove old match/matrimonial modules from navigation and services.
 
 ## Enterprise Launch Checklist
 

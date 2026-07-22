@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { User, UserSchema } from '@/modules/auth/schemas/user.schema';
 import { LearningController } from './controllers/learning.controller';
 import { StudentsController } from './controllers/students.controller';
 import { LearningService } from './services/learning.service';
@@ -69,6 +70,7 @@ import {
       { name: TutorAvailability.name, schema: TutorAvailabilitySchema },
       { name: TutorSessionNote.name, schema: TutorSessionNoteSchema },
       { name: SafetyEvent.name, schema: SafetyEventSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [StudentsController, LearningController],

@@ -37,25 +37,25 @@ export const RATE_LIMIT_CONFIG = {
     message: 'Too many avatar uploads.',
   },
 
-  // Match endpoints
-  MATCH_SEND_INTEREST: {
+  // Learning endpoints
+  LEARNING_SCHEDULE_SESSION: {
     ttl: 86400, // 1 day
-    limit: 50, // Free tier
-    limitPremium: 200, // Premium tier
-    message: 'Daily interest limit reached. Upgrade for more.',
+    limit: 20,
+    limitPremium: 100,
+    message: 'Daily scheduling limit reached.',
   },
 
-  MATCH_VIEW_PROFILE: {
+  LEARNING_AI_SESSION: {
     ttl: 86400,
-    limit: 100,
-    limitPremium: 500,
-    message: 'Daily profile view limit reached.',
+    limit: 8,
+    limitPremium: 50,
+    message: 'Daily AI tutoring session limit reached.',
   },
 
-  MATCH_SEARCH: {
+  LEARNING_CATALOG_SEARCH: {
     ttl: 3600,
     limit: 30,
-    message: 'Too many search requests.',
+    message: 'Too many learning catalog search requests.',
   },
 
   // Chat endpoints

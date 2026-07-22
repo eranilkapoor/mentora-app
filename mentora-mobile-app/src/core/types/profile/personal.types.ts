@@ -1,20 +1,13 @@
 import {
   Country,
-  DrinkingHabit,
-  EatingHabit,
   Gender,
-  MaritalStatus,
-  ManglikStatus,
-  ProfileFor,
   Qualification,
   Religion,
   Caste,
-  SmokingHabit,
   PersonalityBadge,
 } from '../common/enums';
 
 export interface BasicData {
-  profileFor: ProfileFor;
   firstName: string;
   lastName: string;
   gender: Gender;
@@ -23,17 +16,17 @@ export interface BasicData {
   country: Country;
   state?: string;
   city?: string;
-  maritalStatus: MaritalStatus;
   qualification: Qualification;
-  occupation: string;
-  height: string;
+  gradeLevel: string;
+  institutionName: string;
+  primaryGoal: string;
+  accessibilityNeeds?: string[];
 }
 
 export interface ReligiousDetails {
   caste?: Caste;
   subCaste?: string;
   gotra?: string;
-  manglikStatus?: ManglikStatus;
   rashi?: string;
   nakshatra?: string;
   kundliFileUrl?: string;
@@ -70,7 +63,6 @@ export interface ReligiousDetails {
 }
 
 export interface PersonalData {
-  profileFor: ProfileFor;
   firstName: string;
   lastName?: string;
   gender: Gender;
@@ -81,10 +73,6 @@ export interface PersonalData {
   state?: string;
   city?: string;
   motherTongue?: string;
-  maritalStatus: MaritalStatus;
-  smoking: SmokingHabit;
-  drinking: DrinkingHabit;
-  eating: EatingHabit;
   hobbies?: string[];
   personalityBadges?: PersonalityBadge[];
   languages?: string[];
@@ -95,7 +83,6 @@ export interface MatchProfile {
   userId: string;
   name: string;
   age: number;
-  height: string;
   location: string;
   religion: string;
   education: string;

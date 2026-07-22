@@ -1,43 +1,11 @@
 import { Prop, Schema } from '@nestjs/mongoose';
 import {
-  Eating,
-  Drinking,
-  Hour,
-  ManglikStatus,
-  MaritalStatus,
-  Minute,
-  Smoking,
-  TimePeriod,
   Gender,
   Religion,
   Caste,
   Country,
   PersonalityBadge,
 } from '@/common/enums';
-
-@Schema({ _id: false })
-class PlaceOfBirth {
-  @Prop()
-  city?: string;
-
-  @Prop()
-  state?: string;
-
-  @Prop()
-  country?: Country;
-}
-
-@Schema({ _id: false })
-class TimeOfBirth {
-  @Prop({ enum: Hour })
-  hour?: Hour;
-
-  @Prop({ enum: Minute })
-  minute?: Minute;
-
-  @Prop({ enum: TimePeriod })
-  period?: TimePeriod;
-}
 
 @Schema({ _id: false })
 export class ReligiousDetails {
@@ -50,17 +18,11 @@ export class ReligiousDetails {
   @Prop()
   gotra?: string;
 
-  @Prop({ enum: ManglikStatus })
-  manglikStatus?: ManglikStatus;
-
   @Prop()
   rashi?: string;
 
   @Prop()
   nakshatra?: string;
-
-  @Prop()
-  kundliFileUrl?: string;
 
   @Prop()
   sect?: string;
@@ -171,12 +133,6 @@ export class Personal {
   })
   dateOfBirth!: string;
 
-  @Prop({ type: TimeOfBirth })
-  timeOfBirth?: TimeOfBirth;
-
-  @Prop({ type: PlaceOfBirth })
-  placeOfBirth?: PlaceOfBirth;
-
   @Prop({ enum: Religion })
   religion!: Religion;
 
@@ -212,27 +168,6 @@ export class Personal {
 
   @Prop()
   motherTongue?: string;
-
-  @Prop({ enum: MaritalStatus, required: true })
-  maritalStatus!: MaritalStatus;
-
-  @Prop({ default: false })
-  hasChildren?: boolean;
-
-  @Prop()
-  sonsCount?: number;
-
-  @Prop()
-  daughtersCount?: number;
-
-  @Prop({ enum: Smoking })
-  smoking?: Smoking;
-
-  @Prop({ enum: Drinking })
-  drinking?: Drinking;
-
-  @Prop({ enum: Eating })
-  eating?: Eating;
 
   @Prop({ type: [String], default: [] })
   hobbies?: string[];

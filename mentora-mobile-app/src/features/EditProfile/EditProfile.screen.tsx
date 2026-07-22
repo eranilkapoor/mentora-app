@@ -16,7 +16,6 @@ import { PersonalSection } from './sections/PersonalSection';
 import { PhysicalSection } from './sections/PhysicalSection';
 import { EducationSection } from './sections/EducationSection';
 import { FamilySection } from './sections/FamilySection';
-import { LifestyleSection } from './sections/LifestyleSection';
 import { usePlanFeatureAccess } from '@/features/Membership/hooks/usePlanFeatureAccess';
 import { useUpgradePrompt } from '@/features/Membership/hooks/useUpgradePrompt';
 
@@ -57,6 +56,7 @@ export default function EditProfileScreen({
     handleSetPrimaryVideo,
     handleRemoveImage,
     handleRemoveVideoIntro,
+    missingProfileSections,
   } = useEditProfileForm();
 
   if (pageLoading) {
@@ -86,7 +86,16 @@ export default function EditProfileScreen({
           keyboardShouldPersistTaps="handled"
           keyboardDismissMode="interactive"
         >
-          <CompletionBar percent={profileCompletion} />
+          <CompletionBar
+            percent={profileCompletion}
+            subtitle={
+              missingProfileSections.length
+                ? t('edit_profile.completion.missing_sections', {
+                    sections: missingProfileSections.join(', '),
+                  })
+                : undefined
+            }
+          />
 
           <PhotosSection
             images={images}
@@ -145,12 +154,6 @@ export default function EditProfileScreen({
           <FamilySection
             family={profile.family}
             onSet={setFamily}
-            {...sectionProps}
-          />
-
-          <LifestyleSection
-            personal={profile.personal}
-            onSet={setPersonal}
             {...sectionProps}
           />
 
