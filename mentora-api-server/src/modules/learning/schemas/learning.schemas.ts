@@ -25,7 +25,7 @@ export type SafetyEventDocument = HydratedDocument<SafetyEvent>;
 
 @Schema({ collection: COLLECTION_NAMES.STUDENT_PROFILE, timestamps: true })
 export class StudentProfile {
-  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  @Prop({ type: Types.ObjectId, ref: 'User' })
   userId?: Types.ObjectId;
 
   @Prop({
@@ -367,7 +367,7 @@ export class Subject {
   @Prop({ required: true, trim: true, index: true })
   name!: string;
 
-  @Prop({ trim: true, uppercase: true, index: true })
+  @Prop({ trim: true, uppercase: true })
   code?: string;
 
   @Prop({

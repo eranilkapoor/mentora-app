@@ -16,7 +16,7 @@ interface EnterpriseEmailParams {
 const enterpriseEmail = ({
   eyebrow,
   heading,
-  greeting = 'Namaste {{userName}},',
+  greeting = 'Namaste,',
   intro,
   panelTitle,
   bullets = [],
