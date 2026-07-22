@@ -24,6 +24,7 @@ import { getJwtConfig } from '@/config/jwt.config';
 import { AppLogger } from '@/common/logger/logger.service';
 import { FeatureKey } from '@/common/enums';
 import { FeatureService } from '@/modules/subscriptions/services/feature.service';
+import { OperationalMetricsService } from '@/common/monitoring/operational-metrics.service';
 
 interface SocketJwtPayload {
   sub: string;
@@ -63,6 +64,7 @@ export class ChatGateway
     private readonly configService: ConfigService,
     private readonly logger: AppLogger,
     private readonly featureService: FeatureService,
+    private readonly metrics: OperationalMetricsService,
   ) {}
 
   afterInit(server: Server): void {
@@ -81,6 +83,7 @@ export class ChatGateway
       socket.data.userId = userId;
 
       await socket.join(this.realtime.getUserRoom(userId));
+      this.metrics.recordSocketConnected('chats');
 
       socket.emit('connection:ready', { userId });
 
@@ -94,6 +97,7 @@ export class ChatGateway
       const message = error instanceof Error ? error.message : 'Unauthorized';
 
       this.logger.warn(`Socket authentication failed: ${message}`);
+      this.metrics.recordSocketAuthFailure('chats');
 
       socket.emit('connection:error', { message: 'Unauthorized' });
       socket.disconnect(true);
@@ -105,6 +109,8 @@ export class ChatGateway
 
     const userId = await this.presence.disconnect(socket.id);
     if (!userId) return;
+
+    this.metrics.recordSocketDisconnected('chats');
 
     this.server.to(this.userRoom(userId)).emit('presence:update', {
       userId,
@@ -120,6 +126,7 @@ export class ChatGateway
   ): Promise<{ event: string; data: { roomId: string } }> {
     const socket = client as AuthenticatedSocket;
     const userId = this.getClientUserId(socket);
+    this.metrics.recordSocketEvent('chats', 'room:join');
 
     await this.chatService.getConversationDetail(userId, payload.roomId);
     await socket.join(this.realtime.getConversationRoom(payload.roomId));
@@ -138,6 +145,7 @@ export class ChatGateway
   ): Promise<{ event: string; data: { roomId: string } }> {
     const socket = client as AuthenticatedSocket;
     this.getClientUserId(socket);
+    this.metrics.recordSocketEvent('chats', 'room:leave');
 
     await socket.leave(this.realtime.getConversationRoom(payload.roomId));
 
@@ -154,6 +162,7 @@ export class ChatGateway
   ): Promise<{ event: string; data: unknown }> {
     const socket = client as AuthenticatedSocket;
     const userId = this.getClientUserId(socket);
+    this.metrics.recordSocketEvent('chats', 'message:send');
     await this.ensureFeatureAccess(userId, FeatureKey.MESSAGE_LIMIT);
 
     const message = await this.chatService.sendMessage(userId, payload);
@@ -171,6 +180,7 @@ export class ChatGateway
   ): Promise<{ event: string; data: unknown }> {
     const socket = client as AuthenticatedSocket;
     const userId = this.getClientUserId(socket);
+    this.metrics.recordSocketEvent('chats', 'message:read');
 
     const result = await this.chatService.markRoomRead(
       userId,
@@ -191,6 +201,7 @@ export class ChatGateway
   ): Promise<{ event: string; data: { roomId: string; isTyping: boolean } }> {
     const socket = client as AuthenticatedSocket;
     const userId = this.getClientUserId(socket);
+    this.metrics.recordSocketEvent('chats', 'typing');
 
     await this.chatService.getConversationDetail(userId, payload.roomId);
     await this.presence.setTyping(payload.roomId, userId, payload.isTyping);

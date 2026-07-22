@@ -57,6 +57,7 @@ import {
   Subscription,
   SubscriptionDocument,
 } from '@/modules/subscriptions/schemas/subscription.schema';
+import { OperationalMetricsService } from '@/common/monitoring/operational-metrics.service';
 
 interface DeliveryDecision {
   inApp: boolean;
@@ -100,6 +101,7 @@ export class NotificationsService {
     private readonly queueService: NotificationQueueService,
     private readonly settingsService: SettingsService,
     private readonly realtime: NotificationRealtimeService,
+    private readonly metrics: OperationalMetricsService,
     @InjectModel(Subscription.name)
     private readonly subscriptionModel: Model<SubscriptionDocument>,
     @InjectModel(Plan.name)
@@ -657,6 +659,7 @@ export class NotificationsService {
         deliveredAt: result.status === 'sent' ? new Date() : undefined,
         responsePayload: result.responsePayload,
       });
+      this.metrics.recordNotificationDelivery(result.status);
 
       if (result.status === 'failed') {
         hasDeliveryFailure = true;

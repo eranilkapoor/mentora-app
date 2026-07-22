@@ -14,6 +14,7 @@ import {
   MediaDocument,
 } from '@/modules/profiles/schemas/media/media.schema';
 import { MediaStatus } from '@/modules/profiles/enums/profile-media.enums';
+import { ProfileStatus } from '@/common/enums';
 import { Interest, InterestDocument } from '../schemas/interest.schema';
 import { InterestStatus } from '../enums/match.enums';
 import { Match, MatchDocument } from '../schemas/match.schema';
@@ -132,10 +133,22 @@ export class MatchDiscoveryRepository {
     ];
   }
 
-  async getActiveDiscoveryUserIds(limit = 500): Promise<string[]> {
+  async getActiveDiscoveryUserIds(
+    limit = 500,
+    digestCutoff?: Date,
+  ): Promise<string[]> {
     const profiles = await this.profileModel
       .find({
+        status: ProfileStatus.ACTIVE,
         deletedAt: { $exists: false },
+        ...(digestCutoff
+          ? {
+              $or: [
+                { lastDailyMatchDigestAt: { $exists: false } },
+                { lastDailyMatchDigestAt: { $lt: digestCutoff } },
+              ],
+            }
+          : {}),
       })
       .sort({ lastActiveAt: -1, updatedAt: -1 })
       .limit(limit)
@@ -144,6 +157,28 @@ export class MatchDiscoveryRepository {
       .exec();
 
     return profiles.map((profile) => profile.userId.toString());
+  }
+
+  async markDailyMatchDigestSent(
+    userId: string,
+    matchCount: number,
+    targetUserId?: string,
+    sentAt = new Date(),
+  ): Promise<void> {
+    const update: Record<string, unknown> = {
+      lastDailyMatchDigestAt: sentAt,
+      lastDailyMatchDigestMatchCount: matchCount,
+    };
+
+    if (targetUserId && Types.ObjectId.isValid(targetUserId)) {
+      update.lastDailyMatchDigestTargetUserId = new Types.ObjectId(
+        targetUserId,
+      );
+    }
+
+    await this.profileModel
+      .updateOne({ userId: new Types.ObjectId(userId) }, { $set: update })
+      .exec();
   }
 
   async findProfiles(

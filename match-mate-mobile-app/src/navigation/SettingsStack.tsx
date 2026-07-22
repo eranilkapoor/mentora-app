@@ -38,6 +38,7 @@ import AiSettingsScreen from '@/features/AiSettings/AiSettings.screen';
 import SubscriptionBillingScreen from '@/features/SubscriptionBilling/SubscriptionBilling.screen';
 import ReferRewardsScreen from '@/features/ReferRewards/ReferRewards.screen';
 import SuccessStoriesScreen from '@/features/SuccessStories/SuccessStories.screen';
+import UserInsightsScreen from '@/features/UserInsights/UserInsights.screen';
 
 const Stack = createNativeStackNavigator<SettingsStackParamList>();
 
@@ -101,6 +102,11 @@ export default function SettingsStack(): React.ReactElement {
         name="ReferRewards"
         component={ReferRewardsScreen}
         options={{ title: t('settings.referrals.title') }}
+      />
+      <Stack.Screen
+        name="UserInsights"
+        component={UserInsightsScreen}
+        options={{ title: 'Insights' }}
       />
       <Stack.Screen
         name="BlockedUsers"

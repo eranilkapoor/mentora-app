@@ -74,6 +74,15 @@ export class Profile {
   @Prop()
   lastActiveAt!: Date;
 
+  @Prop({ index: true })
+  lastDailyMatchDigestAt?: Date;
+
+  @Prop({ default: 0, min: 0 })
+  lastDailyMatchDigestMatchCount?: number;
+
+  @Prop({ type: Types.ObjectId })
+  lastDailyMatchDigestTargetUserId?: Types.ObjectId;
+
   @Prop({ type: Types.ObjectId })
   createdBy?: Types.ObjectId;
 
@@ -109,6 +118,7 @@ ProfileSchema.index({
 ProfileSchema.index({
   status: 1,
   deletedAt: 1,
+  lastDailyMatchDigestAt: 1,
   lastActiveAt: -1,
   createdAt: -1,
 });

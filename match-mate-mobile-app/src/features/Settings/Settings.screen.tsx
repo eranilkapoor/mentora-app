@@ -245,6 +245,12 @@ export default function SettingsScreen({
             label={t('settings.referrals.title')}
             subLabel={t('settings.referrals_sub')}
             onPress={() => navigation.navigate('ReferRewards')}
+          />
+          <SettingRow
+            icon="bar-chart-2"
+            label="Insights"
+            subLabel="Profile views, match conversion, and recent viewer trends"
+            onPress={() => navigation.navigate('UserInsights')}
             isLast
           />
         </Section>

@@ -55,6 +55,12 @@ describe('ChatGateway', () => {
   const featureService = {
     checkAccess: jest.fn(),
   };
+  const metrics = {
+    recordSocketConnected: jest.fn(),
+    recordSocketDisconnected: jest.fn(),
+    recordSocketAuthFailure: jest.fn(),
+    recordSocketEvent: jest.fn(),
+  };
 
   const serverRoomEmitter = {
     emit: jest.fn(),
@@ -97,6 +103,7 @@ describe('ChatGateway', () => {
       configService as any,
       logger as any,
       featureService as any,
+      metrics as any,
     );
     gateway.server = server as any;
     jwtService.verifyAsync.mockResolvedValue({ sub: userId });

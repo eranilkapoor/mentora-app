@@ -19,6 +19,10 @@ export default () => ({
       process.env.MONGO_WAIT_QUEUE_TIMEOUT_MS || '10000',
       10,
     ),
+    slowQueryThresholdMs: parseInt(
+      process.env.MONGO_SLOW_QUERY_THRESHOLD_MS || '200',
+      10,
+    ),
     autoIndex:
       process.env.MONGO_AUTO_INDEX !== undefined
         ? process.env.MONGO_AUTO_INDEX === 'true'

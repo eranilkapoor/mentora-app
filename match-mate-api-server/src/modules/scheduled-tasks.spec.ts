@@ -11,6 +11,7 @@ describe('scheduled maintenance tasks', () => {
   const logger = { log: jest.fn(), warn: jest.fn(), error: jest.fn() };
   const config = { get: jest.fn() };
   const mongoConnection = { readyState: 1 };
+  const metrics = { recordMatchDigest: jest.fn() };
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -31,6 +32,7 @@ describe('scheduled maintenance tasks', () => {
         notifications as never,
         config as never,
         logger as never,
+        metrics as never,
       );
 
     it('skips disabled delivery and reports configured dry-run state', async () => {

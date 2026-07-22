@@ -2,11 +2,28 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Connection } from 'mongoose';
 import { AppLogger } from '@/common/logger/logger.service';
+import { MonitoringModule } from '@/common/monitoring/monitoring.module';
+import { OperationalMetricsService } from '@/common/monitoring/operational-metrics.service';
 
 type MongoConnectionConfig = {
   uri: string;
   writeConcern?: Record<string, unknown>;
 };
+
+interface MongoCommandStartedEvent {
+  requestId: number;
+  commandName: string;
+  databaseName?: string;
+  command?: {
+    [key: string]: unknown;
+  };
+}
+
+interface MongoCommandFinishedEvent {
+  requestId: number;
+  commandName: string;
+  duration?: number;
+}
 
 const encodeCredential = (value: string): string => {
   try {
@@ -95,9 +112,13 @@ const getMongoConnectionConfig = (uri: string): MongoConnectionConfig => {
 };
 
 export const MongoModule = MongooseModule.forRootAsync({
-  imports: [ConfigModule],
-  inject: [ConfigService, AppLogger],
-  useFactory: (configService: ConfigService, logger: AppLogger) => {
+  imports: [ConfigModule, MonitoringModule],
+  inject: [ConfigService, AppLogger, OperationalMetricsService],
+  useFactory: (
+    configService: ConfigService,
+    logger: AppLogger,
+    metrics: OperationalMetricsService,
+  ) => {
     const driver = configService.getOrThrow<string>('mongo.driver');
 
     //  Local mode  skip MongoDB connection entirely
@@ -149,6 +170,56 @@ export const MongoModule = MongooseModule.forRootAsync({
         'mongo.waitQueueTimeoutMs',
         10000,
       ),
+      monitorCommands: true,
+      connectionFactory: (connection: Connection) => {
+        const thresholdMs = configService.get<number>(
+          'mongo.slowQueryThresholdMs',
+          200,
+        );
+
+        if (thresholdMs > 0) {
+          const startedAt = new Map<number, MongoCommandStartedEvent>();
+          const client = connection.getClient();
+
+          client.on('commandStarted', (event: MongoCommandStartedEvent) => {
+            startedAt.set(event.requestId, event);
+          });
+
+          client.on('commandSucceeded', (event: MongoCommandFinishedEvent) => {
+            const started = startedAt.get(event.requestId);
+            startedAt.delete(event.requestId);
+            const durationMs = event.duration ?? 0;
+
+            if (!started || durationMs < thresholdMs) {
+              return;
+            }
+
+            const collection =
+              typeof started.command?.[started.commandName] === 'string'
+                ? String(started.command[started.commandName])
+                : (started.databaseName ?? 'unknown');
+
+            metrics.recordMongoSlowQuery({
+              collection,
+              commandName: event.commandName,
+              durationMs,
+              recordedAt: new Date().toISOString(),
+            });
+            logger.warn('Mongo slow query detected', {
+              collection,
+              commandName: event.commandName,
+              durationMs,
+              thresholdMs,
+            });
+          });
+
+          client.on('commandFailed', (event: MongoCommandFinishedEvent) => {
+            startedAt.delete(event.requestId);
+          });
+        }
+
+        return connection;
+      },
     };
   },
 });

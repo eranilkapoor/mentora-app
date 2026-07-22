@@ -120,6 +120,7 @@ export type SettingsStackParamList = {
   MediaSettings: undefined;
   LocalizationSettings: undefined;
   SecuritySettings: undefined;
+  UserInsights: undefined;
 };
 
 // ─── Bottom Tabs ──────────────────────────────────────────────────────────────

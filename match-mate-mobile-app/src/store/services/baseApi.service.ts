@@ -260,6 +260,7 @@ export const baseApi = createApi({
     'Notification',
     'SupportTicket',
     'SuccessStory',
+    'FeatureFlags',
   ],
 
   endpoints: () => ({}),

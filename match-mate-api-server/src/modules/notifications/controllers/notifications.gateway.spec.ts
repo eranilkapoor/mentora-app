@@ -34,6 +34,11 @@ describe('NotificationsGateway', () => {
   const logger = {
     warn: jest.fn(),
   };
+  const metrics = {
+    recordSocketConnected: jest.fn(),
+    recordSocketDisconnected: jest.fn(),
+    recordSocketAuthFailure: jest.fn(),
+  };
 
   const server = { to: jest.fn(), emit: jest.fn() };
 
@@ -60,6 +65,7 @@ describe('NotificationsGateway', () => {
       jwtService as any,
       configService as any,
       logger as any,
+      metrics as any,
     );
     jwtService.verifyAsync.mockResolvedValue({ sub: userId });
   });

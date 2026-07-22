@@ -6,6 +6,7 @@ import { MatchDiscoveryRepository } from '../repositories/match-discovery.reposi
 import { MatchDiscoveryService } from '../services/match-discovery.service';
 import { MatchNotificationService } from '../services/match-notification.service';
 import { AppLogger } from '@/common/logger/logger.service';
+import { OperationalMetricsService } from '@/common/monitoring/operational-metrics.service';
 
 @Injectable()
 export class DailyMatchDigestTask {
@@ -15,6 +16,7 @@ export class DailyMatchDigestTask {
     private readonly notificationService: MatchNotificationService,
     private readonly configService: ConfigService,
     private readonly logger: AppLogger,
+    private readonly metrics: OperationalMetricsService,
   ) {}
 
   @Cron('0 9 * * *')
@@ -37,7 +39,12 @@ export class DailyMatchDigestTask {
       return { scanned: 0, eligible: 0, sent: 0, errors: 0, dryRun };
     }
 
-    const userIds = await this.discoveryRepo.getActiveDiscoveryUserIds(limit);
+    const digestDate = new Date();
+    const digestCutoff = this.getStartOfDay(digestDate);
+    const userIds = await this.discoveryRepo.getActiveDiscoveryUserIds(
+      limit,
+      digestCutoff,
+    );
     let sentCount = 0;
     let eligibleCount = 0;
     let errorCount = 0;
@@ -66,6 +73,12 @@ export class DailyMatchDigestTask {
             matches.length,
             targetUserId,
           );
+          await this.discoveryRepo.markDailyMatchDigestSent(
+            userId,
+            matches.length,
+            targetUserId,
+            digestDate,
+          );
           sentCount += 1;
         }
       } catch (error) {
@@ -83,8 +96,22 @@ export class DailyMatchDigestTask {
       sent: sentCount,
       errors: errorCount,
       dryRun,
+      digestDate: digestDate.toISOString(),
     };
+    this.metrics.recordMatchDigest(summary);
     this.logger.log(`Daily match digest complete`, summary);
     return summary;
+  }
+
+  private getStartOfDay(value: Date) {
+    return new Date(
+      value.getFullYear(),
+      value.getMonth(),
+      value.getDate(),
+      0,
+      0,
+      0,
+      0,
+    );
   }
 }

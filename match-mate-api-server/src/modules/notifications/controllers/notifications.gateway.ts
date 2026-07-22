@@ -11,6 +11,7 @@ import { Server, Socket } from 'socket.io';
 import { NotificationRealtimeService } from '../services/notification-realtime.service';
 import { getJwtConfig } from '@/config/jwt.config';
 import { AppLogger } from '@/common/logger/logger.service';
+import { OperationalMetricsService } from '@/common/monitoring/operational-metrics.service';
 
 interface SocketJwtPayload {
   sub: string;
@@ -40,6 +41,7 @@ export class NotificationsGateway
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly logger: AppLogger,
+    private readonly metrics: OperationalMetricsService,
   ) {}
 
   afterInit(server: Server): void {
@@ -55,16 +57,19 @@ export class NotificationsGateway
 
       socket.data.userId = userId;
       await socket.join(this.realtime.getUserRoom(userId));
+      this.metrics.recordSocketConnected('notifications');
       socket.emit('connection:ready', { userId });
     } catch (error: unknown) {
       const message = error instanceof Error ? error.message : 'Unauthorized';
       this.logger.warn(`Notification socket authentication failed: ${message}`);
+      this.metrics.recordSocketAuthFailure('notifications');
       socket.emit('connection:error', { message: 'Unauthorized' });
       socket.disconnect(true);
     }
   }
 
   handleDisconnect(): void {
+    this.metrics.recordSocketDisconnected('notifications');
     // Room cleanup is handled by Socket.IO.
   }
 

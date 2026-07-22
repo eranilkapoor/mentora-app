@@ -150,6 +150,9 @@ describe('NotificationsService', () => {
       status: 'skipped',
       provider: 'msg91',
     });
+    const metrics = {
+      recordNotificationDelivery: jest.fn(),
+    };
 
     service = new NotificationsService(
       notificationRepo as never,
@@ -159,6 +162,7 @@ describe('NotificationsService', () => {
       queueService as never,
       settingsService as never,
       realtime as never,
+      metrics as never,
       subscriptionModel as never,
       planModel as never,
       featureModel as never,

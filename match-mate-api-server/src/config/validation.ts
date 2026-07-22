@@ -512,6 +512,12 @@ export const ENV_VALIDATION_SCHEMA = Joi.object({
     .max(60000)
     .default(10000),
 
+  MONGO_SLOW_QUERY_THRESHOLD_MS: Joi.number()
+    .integer()
+    .min(0)
+    .max(60000)
+    .default(200),
+
   MONGO_AUTO_INDEX: Joi.boolean(),
 
   SEEDER_CONFIRM: optionalString,

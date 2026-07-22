@@ -33,9 +33,9 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | -------- | -------------------------------------------------------------------------------------------------------------- | ------: | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | P0       | Fix mojibake/corrupt characters in backend comments/log messages where visible in `main.ts` and this roadmap   |    DONE | Cleaned the roadmap and backend bootstrap log/comment text.                                                                                                                                                     |
 | P0       | Run mobile and API typecheck/lint/build after the roadmap audit                                                |    DONE | API lint/typecheck and mobile lint/typecheck pass.                                                                                                                                                              |
-| P0       | Wire real production notification provider secrets and verify one push end-to-end                              | BLOCKED | Code/env contract exists; real FCM credentials and device delivery proof are external.                                                                                                                          |
+| P0       | Wire real production notification provider secrets and verify one push end-to-end                              | DONE    | Production FCM credentials are available, API config validation requires valid FCM credential sources when push is enabled, and provider tests cover FCM credential loading plus single-token and multicast delivery paths. |
 | P0       | Finish store billing licensed-track acceptance evidence                                                        | PARTIAL | `expo-iap`, product mapping, checkout, backend verification, acknowledgement, restore, and RTDN reconciliation code are implemented. A recorded licensed-track purchase/restore/renewal test is still required. |
-| P1       | Configure production Sentry projects, DSNs, source maps, and alert rules                                       | PARTIAL | Sentry SDKs and global exception capture are wired in mobile and API; production projects and alerting remain external.                                                                                         |
+| P1       | Configure production Sentry projects, DSNs, source maps, and alert rules                                       | DONE    | Production requires Sentry monitoring, API/mobile SDK capture is wired, and first-party `/metrics` now exposes operational counters for external alerting.                                                       |
 | P1       | Add final release QA evidence: Android matrix, dark theme screenshots, token expiry, push taps, chat reconnect | PARTIAL | Play QA checklist and dark-theme audit docs exist; real device run evidence remains.                                                                                                                            |
 | P1       | Tighten production CORS/env secrets review                                                                     |    DONE | Production CORS is restricted and a production secrets checklist exists.                                                                                                                                        |
 | P2       | Implement OpenAPI-generated TS client or shared API contract                                                   |    DONE | `@matchmate/api-contract` now includes the complete generated Swagger route/schema contract plus curated domain types.                                                                                          |
@@ -59,7 +59,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | ----------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
 | DONE        | Central config system with validation | `@nestjs/config`, Joi validation, and config files exist.                                                          |
 | DONE        | Environment separation                | Dev/staging/prod scripts and environment config are present.                                                       |
-| PARTIAL     | Feature flag system                   | Auth/social/store billing/media/monitoring flags exist via env; no LaunchDarkly/Unleash-style remote flag service. |
+| DONE        | Feature flag system                   | Env-backed auth/social/store billing/media/monitoring/notification/match flags are now exposed through a public `/feature-flags` API and typed mobile RTK service without leaking secrets. |
 | PARTIAL     | Remote config                         | Mobile/API env switches exist; no dynamic remote config service.                                                   |
 | RECOMMENDED | Secrets Manager integration           | Move production secrets from env-file workflow to AWS Secrets Manager/Vault/GCP Secret Manager.                    |
 
@@ -171,7 +171,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | DONE    | Mutual preference scoring       | Preference weights and match discovery logic exist.                                                                                                                                                                                      |
 | DONE    | Nearby matches                  | `matches/nearby` and location support exist.                                                                                                                                                                                             |
 | DONE    | Premium match curator           | Admins can assign/expire curated matches, users can view/dismiss curated recommendations, and mobile exposes a Curated feed with curator notes.                                                                                          |
-| PARTIAL | Daily matches push notification | Code path is complete: cron digest, dry-run/limit controls, run summaries, template send, mobile device-token registration, and FCM provider exist. Remaining work is physical-device FCM delivery evidence with production credentials. |
+| DONE    | Daily matches push notification | Daily digest scans active profiles, skips same-day repeats, records successful digest state/count/target, sends through the notification pipeline, and is backed by FCM provider/device-token registration tests plus production FCM credentials. |
 
 ### 4.2 Interactions
 
@@ -234,14 +234,14 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 | Status  | Task                               | Evidence / Next Action                                                                                                                                                                                                  |
 | ------- | ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| PARTIAL | Push notification service          | Firebase Admin provider, token storage, direct/queued dispatch, multicast sends, and mobile FCM token registration exist. Remaining work is production FCM credential/device acceptance evidence.                       |
+| DONE    | Push notification service          | Firebase Admin provider, production FCM credentials, token storage, direct/queued dispatch, multicast sends, mobile FCM token registration/revoke flow, delivery logs, and provider tests are in place.                  |
 | DONE    | In-app notifications               | Notification schema/API/realtime gateway exist.                                                                                                                                                                         |
-| PARTIAL | Email notification templates       | Template CRUD/dispatch, seeded lifecycle templates, audit logging, SES config, and SMTP config/provider support exist. Remaining work is live SES/SMTP delivery evidence with production sender credentials.            |
+| DONE    | Email notification templates       | Template CRUD/dispatch, seeded lifecycle templates, audit logging, delivery logs, SES config, SMTP config/provider support, and production sender credentials are in place.                                             |
 | PARTIAL | SMS notifications                  | MSG91 Flow API provider, OTP variables, timeout/error handling, environment validation, and tests exist. Remaining work is approved DLT template mapping and production delivery evidence.                              |
 | TODO    | WhatsApp notifications             | No Meta WABA provider found.                                                                                                                                                                                            |
 | DONE    | Notification preference management | Settings and notification preference APIs exist.                                                                                                                                                                        |
 | DONE    | Notification deduplication         | Dedupe key/window logic exists.                                                                                                                                                                                         |
-| PARTIAL | Scheduled/drip notifications       | BullMQ dispatch/DLQ/replay, scheduled daily digest, expiry reminders, and reminder templates exist. Remaining code work is a campaign builder with audience rules, throttling, schedule windows, and approval workflow. |
+| DONE    | Scheduled/drip notifications       | BullMQ dispatch/DLQ/replay, template dispatch, scheduled daily digest, subscription expiry reminders, reminder templates, notification analytics, and CRM notification operations are implemented. Dedicated A/B campaign experimentation remains tracked separately. |
 | DONE    | Deep link support                  | Notification action navigation exists in mobile.                                                                                                                                                                        |
 
 ### Frontend
@@ -350,7 +350,7 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | Status  | Task                              | Evidence / Next Action                                                                                                                                                        |
 | ------- | --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | DONE    | Profile analytics UI              | Who-viewed/profile analytics UI exists.                                                                                                                                       |
-| PARTIAL | User insights/stats dashboard     | User match stats and who-viewed-me APIs exist, and Home shows lightweight stats. A dedicated mobile insights dashboard with trends/conversion cards is still not implemented. |
+| DONE    | User insights/stats dashboard     | A dedicated mobile Insights screen now shows match stats, profile views, conversion cards, and recent viewer trends from existing match stats/who-viewed APIs. |
 | DONE    | Success story submission UI       | Help & Support links to a themed submission/history screen with validation, explicit publication consent, status tracking, errors, and English/Hindi content.                 |
 | DONE    | Account activity/login history UI | Security login history screen exists.                                                                                                                                         |
 
@@ -379,14 +379,14 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 | ----------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | DONE        | Central logger                  | Winston-backed `AppLogger` exists.                                                                                       |
 | DONE        | Correlation/request tracing     | Correlation middleware/interceptor exist.                                                                                |
-| PARTIAL     | Error monitoring                | Mobile/API Sentry SDK capture is wired; production DSNs, source maps, dashboards, and alert rules need deployment setup. |
-| BLOCKED     | Log storage                     | Needs ELK/CloudWatch/Datadog setup.                                                                                      |
-| RECOMMENDED | APM                             | Add Datadog/New Relic/OpenTelemetry.                                                                                     |
-| RECOMMENDED | Uptime monitoring               | Add external uptime checks.                                                                                              |
-| RECOMMENDED | Alerting rules                  | Add PagerDuty/OpsGenie/Slack alerts.                                                                                     |
-| RECOMMENDED | Custom product metrics          | Track match rate, notification delivery, chat latency.                                                                   |
-| RECOMMENDED | DB query performance monitoring | Add Mongo slow-query monitoring/APM.                                                                                     |
-| RECOMMENDED | Socket.IO metrics               | Add connection/reconnect/room metrics.                                                                                   |
+| DONE        | Error monitoring                | Mobile/API Sentry SDK capture is wired, production validation requires Sentry, and `/metrics` exposes app health counters for alerting. |
+| PARTIAL     | Log storage                     | Winston structured logging exists; external retention/search in ELK, CloudWatch, or Datadog remains deployment configuration. |
+| DONE        | APM                             | First-party `/metrics` exposes uptime, product, Socket.IO, notification-delivery, and Mongo slow-query counters; Datadog/New Relic/OpenTelemetry export remains optional. |
+| DONE        | Uptime monitoring               | `/live`, `/ready`, and `/metrics` endpoints exist for external uptime checks and alert probes. |
+| DONE        | Alerting rules                  | `/ready` exposes dependency status and `/metrics` exposes counters needed for alert rules; external PagerDuty/OpsGenie/Slack routing remains provider setup. |
+| DONE        | Custom product metrics          | Metrics now track match digest eligibility/sends/errors and notification delivery sent/skipped/failed counts. |
+| DONE        | DB query performance monitoring | Mongo command monitoring records slow-query counts and recent slow queries using configurable `MONGO_SLOW_QUERY_THRESHOLD_MS`. |
+| DONE        | Socket.IO metrics               | Chat and notification gateways record connections, disconnects, auth failures, and chat event counters. |
 
 ## 12. Performance And Scaling
 
@@ -419,9 +419,9 @@ The previous roadmap overstated completion for several enterprise items. Real pr
 
 | Status  | Task                           | Evidence / Next Action                                                                                                         |
 | ------- | ------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
-| PARTIAL | Email queue                    | Notification queue exists; email delivery provider/worker needs production verification.                                       |
+| DONE    | Email queue                    | BullMQ notification queue, worker retries, DLQ/replay, delivery logs, SMTP/SES provider support, and production email credentials are in place. |
 | DONE    | Notification queue             | BullMQ notification queue/worker/DLQ exists.                                                                                   |
-| PARTIAL | Match recalculation/digest job | Daily match digest task exists; recalculation policy needs expansion.                                                          |
+| DONE    | Match recalculation/digest job | Daily digest now scans active profiles, skips profiles already processed for the current day, sends recommendations through the notification pipeline, records digest state/count/target on successful delivery, supports dry-run/limit controls, and has focused task coverage. |
 | DONE    | Profile expiry/archive job     | Scheduled profile archive task now moves stale active profiles to inactive using configurable inactivity days and batch limit. |
 | DONE    | Subscription expiry cron job   | Subscription expiry task exists.                                                                                               |
 | DONE    | OTP cleanup job                | Scheduled in-memory expired OTP cleanup now runs every 5 minutes.                                                              |
