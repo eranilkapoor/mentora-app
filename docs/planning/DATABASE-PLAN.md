@@ -2,7 +2,7 @@
 
 Mentora uses MongoDB as the durable system of record and Redis/local cache for short-lived operational data.
 
-Use a separate database from Match Mate:
+Use a separate Mentora database:
 
 ```text
 mentora

@@ -1005,10 +1005,10 @@
             "schema": {
               "type": "string",
               "enum": [
-                "interest_received",
-                "interest_accepted",
-                "profile_view",
-                "match_found",
+                "session_scheduled",
+                "session_reminder",
+                "progress_update",
+                "parent_alert",
                 "message_received",
                 "subscription",
                 "system"
@@ -1559,63 +1559,6 @@
             "application/json": {
               "schema": {
                 "$ref": "#/components/schemas/UpdateNotificationSettingsDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Settings"
-        ]
-      }
-    },
-    "/api/v1/settings/notifications/preferences/{event}/{channel}": {
-      "patch": {
-        "operationId": "SettingsController_updateNotificationChannel_v1",
-        "parameters": [
-          {
-            "name": "event",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "interestReceived",
-                "interestAccepted",
-                "profileView",
-                "matchFound",
-                "messageReceived",
-                "subscription",
-                "marketing",
-                "system"
-              ]
-            }
-          },
-          {
-            "name": "channel",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "inApp",
-                "push",
-                "email",
-                "sms"
-              ]
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateNotificationChannelDto"
               }
             }
           }
@@ -2416,140 +2359,6 @@
         },
         "tags": [
           "Media"
-        ]
-      }
-    },
-    "/api/v1/preferences": {
-      "post": {
-        "operationId": "PreferenceController_createPreference_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdatePreferenceDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Preference"
-        ]
-      }
-    },
-    "/api/v1/preferences/me": {
-      "get": {
-        "operationId": "PreferenceController_getMyPreference_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Preference"
-        ]
-      }
-    },
-    "/api/v1/preferences/filters": {
-      "put": {
-        "operationId": "PreferenceController_updateFilters_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PartnerFiltersDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Preference"
-        ]
-      }
-    },
-    "/api/v1/preferences/settings": {
-      "put": {
-        "operationId": "PreferenceController_updateSettings_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MatchSettingsDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Preference"
-        ]
-      }
-    },
-    "/api/v1/preferences/weights": {
-      "put": {
-        "operationId": "PreferenceController_updateWeights_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/MatchWeightsDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Preference"
-        ]
-      }
-    },
-    "/api/v1/preferences/about": {
-      "put": {
-        "operationId": "PreferenceController_updateAbout_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateAboutPartnerDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Preference"
         ]
       }
     },
@@ -3739,7 +3548,7 @@
               "type": "string",
               "enum": [
                 "subscription",
-                "profile_boost",
+                "learning_boost",
                 "priority_support",
                 "coin_pack"
               ]
@@ -5114,82 +4923,6 @@
         ]
       }
     },
-    "/api/v1/admin/curated-matches": {
-      "get": {
-        "operationId": "AdminCuratedMatchesController_listCuratedMatches_v1",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminCuratedMatches"
-        ]
-      },
-      "post": {
-        "operationId": "AdminCuratedMatchesController_curateMatch_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CurateMatchDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminCuratedMatches"
-        ]
-      }
-    },
-    "/api/v1/admin/curated-matches/{curatedMatchId}": {
-      "delete": {
-        "operationId": "AdminCuratedMatchesController_expireCuratedMatch_v1",
-        "parameters": [
-          {
-            "name": "curatedMatchId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminCuratedMatches"
-        ]
-      }
-    },
     "/api/v1/payments/google-play/rtdn": {
       "post": {
         "operationId": "PaymentsController_googlePlayRtdn_v1",
@@ -5397,7 +5130,7 @@
               "type": "string",
               "enum": [
                 "subscription",
-                "profile_boost",
+                "learning_boost",
                 "priority_support",
                 "coin_pack"
               ]
@@ -5951,2313 +5684,6 @@
         ]
       }
     },
-    "/api/v1/matches/recommended": {
-      "get": {
-        "operationId": "MatchesController_getRecommended_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/new": {
-      "get": {
-        "operationId": "MatchesController_getNewMatches_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/nearby": {
-      "get": {
-        "operationId": "MatchesController_getNearbyMatches_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          },
-          {
-            "name": "radiusKm",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "default": 100,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/online": {
-      "get": {
-        "operationId": "MatchesController_getOnlineMatches_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/curated": {
-      "get": {
-        "operationId": "MatchesController_getCuratedMatches_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/curated/{curatedMatchId}": {
-      "delete": {
-        "operationId": "MatchesController_dismissCuratedMatch_v1",
-        "parameters": [
-          {
-            "name": "curatedMatchId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/my": {
-      "get": {
-        "operationId": "MatchesController_getMyMatches_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/stats": {
-      "get": {
-        "operationId": "MatchesController_getMatchStats_v1",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/who-viewed-me": {
-      "get": {
-        "operationId": "MatchesController_getWhoViewedMe_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/unmatch/{userId}": {
-      "post": {
-        "operationId": "MatchesController_unmatch_v1",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UnmatchDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/shortlisted": {
-      "get": {
-        "operationId": "MatchesController_getShortlistedProfiles_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/shortlist/{userId}": {
-      "post": {
-        "operationId": "MatchesController_shortlistProfile_v1",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      },
-      "delete": {
-        "operationId": "MatchesController_removeShortlistedProfile_v1",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/profile/{userId}": {
-      "get": {
-        "operationId": "MatchesController_getMatchProfile_v1",
-        "parameters": [
-          {
-            "name": "userId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/interest": {
-      "post": {
-        "operationId": "MatchesController_sendInterest_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SendInterestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/interest/respond": {
-      "post": {
-        "operationId": "MatchesController_respondToInterest_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RespondInterestDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/interest/{interestId}": {
-      "delete": {
-        "operationId": "MatchesController_withdrawInterest_v1",
-        "parameters": [
-          {
-            "name": "interestId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/interests/received": {
-      "get": {
-        "operationId": "MatchesController_getReceivedInterests_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
-    "/api/v1/matches/interests/sent": {
-      "get": {
-        "operationId": "MatchesController_getSentInterests_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "default": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "number"
-            }
-          },
-          {
-            "name": "search",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "minAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxAge",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 18,
-              "maximum": 100,
-              "type": "number"
-            }
-          },
-          {
-            "name": "minHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "maxHeight",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 120,
-              "maximum": 230,
-              "type": "number"
-            }
-          },
-          {
-            "name": "city",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "state",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "religion",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          {
-            "name": "caste",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          {
-            "name": "qualification",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          {
-            "name": "occupationType",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          {
-            "name": "verifiedOnly",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "boolean"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "Matches"
-        ]
-      }
-    },
     "/api/v1/support/tickets": {
       "post": {
         "operationId": "SupportTicketController_createTicket_v1",
@@ -8536,177 +5962,6 @@
         },
         "tags": [
           "AdminSupportTicket"
-        ]
-      }
-    },
-    "/api/v1/success-stories": {
-      "get": {
-        "operationId": "SuccessStoryController_listPublished_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 50,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SuccessStory"
-        ]
-      },
-      "post": {
-        "operationId": "SuccessStoryController_submit_v1",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/SubmitSuccessStoryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SuccessStory"
-        ]
-      }
-    },
-    "/api/v1/success-stories/mine": {
-      "get": {
-        "operationId": "SuccessStoryController_listMine_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 50,
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "SuccessStory"
-        ]
-      }
-    },
-    "/api/v1/admin/success-stories": {
-      "get": {
-        "operationId": "AdminSuccessStoryController_list_v1",
-        "parameters": [
-          {
-            "name": "page",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "type": "number"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 50,
-              "type": "number"
-            }
-          },
-          {
-            "name": "status",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "type": "string",
-              "enum": [
-                "rejected",
-                "archived",
-                "published",
-                "submitted"
-              ]
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminSuccessStory"
-        ]
-      }
-    },
-    "/api/v1/admin/success-stories/{storyId}/review": {
-      "patch": {
-        "operationId": "AdminSuccessStoryController_review_v1",
-        "parameters": [
-          {
-            "name": "storyId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/ReviewSuccessStoryDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": ""
-          }
-        },
-        "tags": [
-          "AdminSuccessStory"
         ]
       }
     }
@@ -9082,7 +6337,7 @@
             "type": "string",
             "enum": [
               "everyone",
-              "accepted_matches",
+              "scheduled_sessions",
               "contacts_only",
               "no_one"
             ]
@@ -9100,7 +6355,7 @@
             "type": "string",
             "enum": [
               "everyone",
-              "accepted_matches",
+              "scheduled_sessions",
               "contacts_only",
               "no_one"
             ]
@@ -9214,23 +6469,6 @@
           "version"
         ]
       },
-      "ChannelPreferenceDto": {
-        "type": "object",
-        "properties": {
-          "inApp": {
-            "type": "boolean"
-          },
-          "push": {
-            "type": "boolean"
-          },
-          "email": {
-            "type": "boolean"
-          },
-          "sms": {
-            "type": "boolean"
-          }
-        }
-      },
       "QuietHoursDto": {
         "type": "object",
         "properties": {
@@ -9277,18 +6515,6 @@
           "vibrationEnabled": {
             "type": "boolean"
           },
-          "interestReceived": {
-            "$ref": "#/components/schemas/ChannelPreferenceDto"
-          },
-          "interestAccepted": {
-            "$ref": "#/components/schemas/ChannelPreferenceDto"
-          },
-          "profileView": {
-            "$ref": "#/components/schemas/ChannelPreferenceDto"
-          },
-          "matchFound": {
-            "$ref": "#/components/schemas/ChannelPreferenceDto"
-          },
           "messageReceived": {
             "$ref": "#/components/schemas/ChannelPreferenceDto"
           },
@@ -9303,6 +6529,18 @@
           },
           "quietHours": {
             "$ref": "#/components/schemas/QuietHoursDto"
+          },
+          "sessionScheduled": {
+            "$ref": "#/components/schemas/ChannelPreferenceDto"
+          },
+          "sessionReminder": {
+            "$ref": "#/components/schemas/ChannelPreferenceDto"
+          },
+          "progressUpdate": {
+            "$ref": "#/components/schemas/ChannelPreferenceDto"
+          },
+          "parentAlert": {
+            "$ref": "#/components/schemas/ChannelPreferenceDto"
           }
         }
       },
@@ -9324,7 +6562,7 @@
             "type": "string",
             "enum": [
               "all",
-              "matches_only",
+              "scheduled_sessions_only",
               "contacts_only",
               "no_one"
             ]
@@ -9333,7 +6571,7 @@
             "type": "string",
             "enum": [
               "all",
-              "matches_only",
+              "scheduled_sessions_only",
               "contacts_only",
               "no_one"
             ]
@@ -9491,19 +6729,19 @@
           "aiRecommendationsEnabled": {
             "type": "boolean"
           },
-          "smartMatchRanking": {
+          "adaptiveTutorRanking": {
             "type": "boolean"
           },
-          "horoscopeSuggestions": {
+          "studyPlanSuggestions": {
             "type": "boolean"
           },
-          "compatibilityScoring": {
+          "progressScoring": {
             "type": "boolean"
           },
-          "allowAiBioGeneration": {
+          "allowAiProfileSummary": {
             "type": "boolean"
           },
-          "useProfileDataForRanking": {
+          "useProfileDataForPersonalization": {
             "type": "boolean"
           }
         }
@@ -9816,237 +7054,6 @@
           "min",
           "max"
         ]
-      },
-      "PreferencesDto": {
-        "type": "object",
-        "properties": {
-          "ageRange": {
-            "$ref": "#/components/schemas/RangeDto"
-          },
-          "heightRange": {
-            "$ref": "#/components/schemas/RangeDto"
-          },
-          "maritalStatus": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "never_married",
-                "divorced",
-                "widowed",
-                "awaiting_divorced"
-              ]
-            }
-          },
-          "religion": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          "caste": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          "country": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "united_states",
-                "india",
-                "china",
-                "united_kingdom",
-                "canada",
-                "australia",
-                "germany",
-                "france",
-                "brazil",
-                "japan",
-                "russia",
-                "south_africa",
-                "italy",
-                "spain",
-                "mexico",
-                "netherlands",
-                "sweden",
-                "switzerland",
-                "new_zealand",
-                "singapore",
-                "united_arab_emirates"
-              ]
-            }
-          },
-          "state": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "city": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "qualification": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          "occupation": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "annualIncomeRange": {
-            "$ref": "#/components/schemas/RangeDto"
-          },
-          "bodyType": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "slim",
-                "average",
-                "athletic",
-                "fit",
-                "heavy",
-                "chubby",
-                "petite",
-                "curvy",
-                "muscular",
-                "stocky"
-              ]
-            }
-          },
-          "complexion": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "fair",
-                "wheatish",
-                "dark"
-              ]
-            }
-          },
-          "smoking": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "non_smoker",
-                "occasionally",
-                "regular",
-                "trying_to_quit",
-                "open_to"
-              ]
-            }
-          },
-          "drinking": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "non_drinker",
-                "occasionally",
-                "regular",
-                "socially",
-                "open_to"
-              ]
-            }
-          },
-          "eating": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "vegetarian",
-                "non_vegetarian",
-                "eggetarian",
-                "vegan",
-                "jain",
-                "satvik",
-                "halal",
-                "kosher",
-                "open_to"
-              ]
-            }
-          },
-          "languagesKnown": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "aboutPartner": {
-            "type": "string"
-          },
-          "isStrict": {
-            "type": "boolean"
-          }
-        }
       },
       "OnboardingProfileDto": {
         "type": "object",
@@ -10704,384 +7711,6 @@
           "longitude"
         ]
       },
-      "PartnerFiltersDto": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "$ref": "#/components/schemas/RangeDto"
-          },
-          "height": {
-            "$ref": "#/components/schemas/RangeDto"
-          },
-          "annualIncome": {
-            "$ref": "#/components/schemas/RangeDto"
-          },
-          "maritalStatus": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "never_married",
-                "divorced",
-                "widowed",
-                "awaiting_divorced"
-              ]
-            }
-          },
-          "religion": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "hindu",
-                "muslim",
-                "christian",
-                "sikh",
-                "jain",
-                "buddhist",
-                "jewish",
-                "parsi",
-                "other",
-                "no_religion"
-              ]
-            }
-          },
-          "caste": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "general",
-                "obc",
-                "sc",
-                "st",
-                "other",
-                "not_applicable"
-              ]
-            }
-          },
-          "subCaste": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "manglikStatus": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "manglik",
-                "non_manglik",
-                "anshik"
-              ]
-            }
-          },
-          "childPreference": {
-            "enum": [
-              "does_not_matter",
-              "no_children",
-              "has_children_ok",
-              "has_children_not_ok"
-            ],
-            "type": "string"
-          },
-          "residencyPreference": {
-            "enum": [
-              "does_not_matter",
-              "india_only",
-              "abroad_only"
-            ],
-            "type": "string"
-          },
-          "country": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "united_states",
-                "india",
-                "china",
-                "united_kingdom",
-                "canada",
-                "australia",
-                "germany",
-                "france",
-                "brazil",
-                "japan",
-                "russia",
-                "south_africa",
-                "italy",
-                "spain",
-                "mexico",
-                "netherlands",
-                "sweden",
-                "switzerland",
-                "new_zealand",
-                "singapore",
-                "united_arab_emirates"
-              ]
-            }
-          },
-          "state": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "city": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "qualification": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "below_10th",
-                "10th",
-                "12th",
-                "diploma",
-                "ba",
-                "bsc",
-                "bcom",
-                "be",
-                "btech",
-                "bca",
-                "bba",
-                "llb",
-                "mbbs",
-                "ma",
-                "msc",
-                "mcom",
-                "me",
-                "mtech",
-                "mca",
-                "mba",
-                "md",
-                "ms",
-                "phd",
-                "post_doctorate",
-                "ca",
-                "cs",
-                "cma",
-                "cfa",
-                "acca",
-                "iti",
-                "polytechnic",
-                "skill_certification",
-                "other",
-                "prefer_not_to_say"
-              ]
-            }
-          },
-          "occupationType": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "government_job",
-                "private_job",
-                "business",
-                "self_employed",
-                "freelancer",
-                "professional",
-                "student",
-                "homemaker",
-                "retired",
-                "not_working",
-                "other"
-              ]
-            }
-          },
-          "occupation": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          },
-          "bodyType": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "slim",
-                "average",
-                "athletic",
-                "fit",
-                "heavy",
-                "chubby",
-                "petite",
-                "curvy",
-                "muscular",
-                "stocky"
-              ]
-            }
-          },
-          "complexion": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "fair",
-                "wheatish",
-                "dark"
-              ]
-            }
-          },
-          "smoking": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "non_smoker",
-                "occasionally",
-                "regular",
-                "trying_to_quit",
-                "open_to"
-              ]
-            }
-          },
-          "drinking": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "non_drinker",
-                "occasionally",
-                "regular",
-                "socially",
-                "open_to"
-              ]
-            }
-          },
-          "eating": {
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "vegetarian",
-                "non_vegetarian",
-                "eggetarian",
-                "vegan",
-                "jain",
-                "satvik",
-                "halal",
-                "kosher",
-                "open_to"
-              ]
-            }
-          },
-          "languages": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
-        }
-      },
-      "MatchSettingsDto": {
-        "type": "object",
-        "properties": {
-          "isStrict": {
-            "type": "boolean"
-          },
-          "allowPartialMatches": {
-            "type": "boolean"
-          },
-          "horoscopeRequired": {
-            "type": "boolean"
-          },
-          "profileVerificationRequired": {
-            "type": "boolean"
-          },
-          "minimumMatchScore": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100
-          }
-        }
-      },
-      "MatchWeightsDto": {
-        "type": "object",
-        "properties": {
-          "age": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "height": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "religion": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "caste": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "location": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "education": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "occupation": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "lifestyle": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          },
-          "horoscope": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 30
-          }
-        }
-      },
-      "UpdatePreferenceDto": {
-        "type": "object",
-        "properties": {
-          "filters": {
-            "$ref": "#/components/schemas/PartnerFiltersDto"
-          },
-          "settings": {
-            "$ref": "#/components/schemas/MatchSettingsDto"
-          },
-          "weights": {
-            "$ref": "#/components/schemas/MatchWeightsDto"
-          },
-          "aboutPartner": {
-            "type": "string"
-          }
-        }
-      },
-      "UpdateAboutPartnerDto": {
-        "type": "object",
-        "properties": {
-          "aboutPartner": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "aboutPartner"
-        ]
-      },
       "StartFreeTrialDto": {
         "type": "object",
         "properties": {
@@ -11363,7 +7992,7 @@
             "enum": [
               "self_service",
               "assisted",
-              "profile_boost"
+              "learning_boost"
             ]
           },
           "billingCycle": {
@@ -11447,33 +8076,28 @@
               "profile_completion_score",
               "multiple_profile_photos",
               "video_profile",
-              "audio_intro",
-              "profile_boost",
-              "profile_highlight",
-              "featured_profile",
-              "hide_profile_photo",
               "private_photos",
-              "private_album",
               "hide_last_seen",
               "hide_online_status",
+              "show_only_to_premium",
               "incognito_mode",
               "identity_verification",
-              "horoscope_upload",
-              "astrology_report",
-              "send_interest",
-              "view_interests",
-              "accept_interest",
-              "reject_interest",
-              "priority_interest",
-              "shortlist_profiles",
-              "favorite_profiles",
+              "student_profile",
+              "parent_profile",
+              "child_profile_limit",
+              "academic_records",
+              "subject_enrollments",
+              "learning_preferences",
+              "subject_catalog",
+              "grade_catalog",
+              "college_affiliations",
+              "curriculum_mapping",
               "chat_access",
               "unlimited_chat",
-              "chat_with_matches_only",
-              "chat_without_match",
               "priority_chat",
               "read_receipts",
               "typing_indicator",
+              "auto_reply",
               "message_translation",
               "send_images_in_chat",
               "send_videos_in_chat",
@@ -11504,96 +8128,52 @@
               "search_by_religion",
               "search_by_caste",
               "search_by_location",
-              "search_by_income",
               "search_by_education",
-              "search_by_profession",
-              "search_by_height",
-              "location_based_search",
-              "global_search",
-              "international_matches",
-              "nri_matching",
               "saved_searches",
               "recent_searches",
-              "daily_profile_views",
-              "unlimited_profile_views",
-              "profile_views",
-              "who_viewed_me",
               "profile_analytics",
-              "top_in_search",
-              "show_on_home",
-              "priority_search_ranking",
-              "featured_in_search",
-              "basic_matching",
-              "advanced_matching",
-              "smart_matches",
               "ai_recommendations",
               "ai_profile_summary",
-              "ai_photo_selection",
-              "ai_compatibility_analysis",
-              "ai_conversation_starter",
-              "ai_interest_prediction",
-              "ai_fake_profile_detection",
-              "compatibility_score",
-              "personality_matching",
-              "interest_matching",
-              "location_matching",
-              "strict_preferences",
-              "smart_preferences",
-              "kundli_matching",
-              "religion_preferences",
-              "caste_preferences",
-              "subcaste_preferences",
-              "manglik_matching",
-              "community_based_matching",
-              "marriage_timeline_preference",
-              "children_preference",
-              "eating_preferences",
-              "lifestyle_preferences",
-              "family_managed_profile",
-              "family_contact_visibility",
-              "parent_login",
               "guardian_access",
-              "family_details",
-              "family_preferences",
-              "interest_analytics",
-              "chat_analytics",
-              "engagement_score",
-              "match_success_rate",
-              "daily_activity_stats",
-              "weekly_reports",
+              "ai_tutor_access",
+              "ai_tutor_monthly_minutes",
+              "ai_tutor_daily_minutes",
+              "ai_tutor_session_limit",
+              "ai_practice_questions",
+              "ai_explanations",
+              "ai_study_plan",
+              "ai_progress_recommendations",
+              "schedule_classes",
+              "reschedule_classes",
+              "calendar_reminders",
+              "learning_session_history",
+              "missed_session_recovery",
+              "parent_login",
+              "parent_managed_children",
+              "parental_controls",
+              "daily_learning_limits",
+              "subject_access_controls",
+              "safety_activity_alerts",
+              "learning_progress",
+              "attendance_tracking",
+              "assessment_history",
+              "weekly_parent_reports",
+              "export_progress_reports",
               "push_notifications",
               "email_notifications",
               "sms_notifications",
-              "instant_match_alerts",
-              "daily_match_digest",
-              "marketing_notifications",
-              "location_based_matching",
-              "nearby_profiles",
-              "travel_mode",
-              "ad_free_experience",
-              "priority_support",
-              "vip_badge",
-              "premium_badge",
-              "relationship_manager",
-              "dedicated_relationship_manager",
-              "concierge_matchmaking",
-              "personal_matchmaker",
-              "daily_boosts",
-              "weekly_boosts",
-              "monthly_boosts",
-              "unlimited_boosts",
-              "spotlight_profile",
+              "session_reminders",
+              "payment_reminders",
+              "subscription_billing",
               "monthly_subscription",
               "quarterly_subscription",
               "yearly_subscription",
-              "one_time_boost_purchase",
-              "wallet_system",
-              "promo_codes",
-              "referral_rewards",
-              "referral_bonus",
-              "earn_credits",
+              "family_plan",
               "auto_renewal",
               "grace_period",
+              "promo_codes",
+              "referral_rewards",
+              "report_content",
               "report_user",
               "block_users",
               "safe_mode",
@@ -11601,30 +8181,59 @@
               "fraud_detection",
               "spam_detection",
               "manual_profile_review",
-              "shortlist_limit",
-              "contact_view_limit",
+              "content_moderation",
+              "chat_analytics",
+              "engagement_score",
+              "daily_activity_stats",
+              "weekly_reports",
+              "marketing_notifications",
+              "ad_free_experience",
               "message_limit",
-              "match_limit",
               "streak_rewards",
               "daily_login_rewards",
-              "match_quiz",
-              "compatibility_games",
-              "customer_support_chat",
-              "support_tickets",
-              "account_export",
-              "account_deletion",
               "gdpr_compliance",
               "data_export",
+              "customer_support_chat",
+              "support_tickets",
+              "priority_support",
+              "account_export",
+              "account_deletion",
               "consent_management",
               "privacy_controls",
-              "enterprise_sso",
               "admin_dashboard",
+              "enterprise_sso",
               "api_access",
               "custom_branding",
               "bulk_seat_management",
+              "bulk_student_management",
               "sla_support",
               "data_residency",
-              "dedicated_account_manager"
+              "dedicated_account_manager",
+              "Authentication & Account",
+              "Student & Parent Profiles",
+              "Engagement",
+              "Chat & Communication",
+              "Contact Access",
+              "Media",
+              "Search & Discovery",
+              "AI & Recommendations",
+              "Family Features",
+              "Academic Catalog",
+              "AI Tutor",
+              "Scheduling",
+              "Parent Controls",
+              "Progress & Reporting",
+              "Analytics",
+              "Notifications",
+              "Location Features",
+              "Premium Experience",
+              "Boost / Monetization",
+              "Payments & Subscriptions",
+              "Safety & Trust",
+              "Limit Based Features",
+              "Engagement & Gamification",
+              "Support & Privacy",
+              "Institutional & Operations"
             ]
           },
           "description": {
@@ -11697,12 +8306,13 @@
           "category": {
             "type": "string",
             "enum": [
-              "interest_received",
-              "interest_accepted",
-              "profile_view",
-              "match_found",
+              "session_scheduled",
+              "session_reminder",
+              "progress_update",
+              "parent_alert",
               "message_received",
               "subscription",
+              "marketing",
               "system"
             ]
           },
@@ -11819,12 +8429,13 @@
           "category": {
             "type": "string",
             "enum": [
-              "interest_received",
-              "interest_accepted",
-              "profile_view",
-              "match_found",
+              "session_scheduled",
+              "session_reminder",
+              "progress_update",
+              "parent_alert",
               "message_received",
               "subscription",
+              "marketing",
               "system"
             ]
           },
@@ -11955,34 +8566,6 @@
           }
         }
       },
-      "CurateMatchDto": {
-        "type": "object",
-        "properties": {
-          "userId": {
-            "type": "string"
-          },
-          "profileUserId": {
-            "type": "string"
-          },
-          "note": {
-            "type": "string",
-            "maxLength": 500
-          },
-          "priority": {
-            "type": "number",
-            "minimum": 0,
-            "maximum": 100
-          },
-          "expiresAt": {
-            "format": "date-time",
-            "type": "string"
-          }
-        },
-        "required": [
-          "userId",
-          "profileUserId"
-        ]
-      },
       "GooglePlayRtdnEnvelopeDto": {
         "type": "object",
         "properties": {
@@ -12035,7 +8618,7 @@
             "type": "string",
             "enum": [
               "subscription",
-              "profile_boost",
+              "learning_boost",
               "priority_support",
               "coin_pack"
             ]
@@ -12380,36 +8963,6 @@
           }
         }
       },
-      "SendInterestDto": {
-        "type": "object",
-        "properties": {
-          "receiverId": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "receiverId"
-        ]
-      },
-      "RespondInterestDto": {
-        "type": "object",
-        "properties": {
-          "interestId": {
-            "type": "string"
-          },
-          "action": {
-            "type": "string",
-            "enum": [
-              "ACCEPT",
-              "REJECT"
-            ]
-          }
-        },
-        "required": [
-          "interestId",
-          "action"
-        ]
-      },
       "CreateSupportTicketDto": {
         "type": "object",
         "properties": {
@@ -12423,7 +8976,10 @@
             "enum": [
               "account",
               "billing",
-              "matches",
+              "classes",
+              "ai_tutor",
+              "schedules",
+              "progress",
               "chat",
               "safety",
               "technical",
@@ -12494,70 +9050,66 @@
           "status"
         ]
       },
-      "SubmitSuccessStoryDto": {
+      "ChannelPreferenceDto": {
         "type": "object",
         "properties": {
-          "title": {
-            "type": "string",
-            "minLength": 4,
-            "maxLength": 120
+          "inApp": {
+            "type": "boolean"
           },
-          "story": {
-            "type": "string",
-            "minLength": 100,
-            "maxLength": 5000
+          "push": {
+            "type": "boolean"
           },
-          "partnerName": {
-            "type": "string",
-            "minLength": 2,
-            "maxLength": 100
+          "email": {
+            "type": "boolean"
           },
-          "marriageDate": {
-            "type": "string"
-          },
-          "location": {
-            "type": "string",
-            "maxLength": 120
-          },
-          "photoUrls": {
-            "maxItems": 5,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "format": "uri"
-            }
-          },
-          "publicationConsent": {
+          "sms": {
             "type": "boolean"
           }
-        },
-        "required": [
-          "title",
-          "story",
-          "partnerName",
-          "marriageDate",
-          "publicationConsent"
-        ]
+        }
       },
-      "ReviewSuccessStoryDto": {
+      "PreferencesDto": {
         "type": "object",
         "properties": {
-          "status": {
-            "type": "string",
-            "enum": [
-              "rejected",
-              "archived",
-              "published"
-            ]
+          "dailySessionMinutes": {
+            "$ref": "#/components/schemas/RangeDto"
           },
-          "reason": {
-            "type": "string",
-            "maxLength": 500
+          "gradeRange": {
+            "$ref": "#/components/schemas/RangeDto"
+          },
+          "subjects": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "learningGoals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "preferredTutorMode": {
+            "type": "string"
+          },
+          "preferredDeliveryModes": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "learningPace": {
+            "type": "string"
+          },
+          "weeklyStudyMinutes": {
+            "type": "number"
+          },
+          "parentDigestFrequency": {
+            "type": "string"
+          },
+          "parentalApprovalRequired": {
+            "type": "boolean"
           }
-        },
-        "required": [
-          "status"
-        ]
+        }
       }
     }
   }

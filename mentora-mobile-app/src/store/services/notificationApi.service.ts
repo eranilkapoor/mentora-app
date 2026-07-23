@@ -18,12 +18,13 @@ export type NotificationType =
   | 'payment';
 
 export type NotificationCategory =
-  | 'interest_received'
-  | 'interest_accepted'
-  | 'profile_view'
-  | 'match_found'
+  | 'session_scheduled'
+  | 'session_reminder'
+  | 'progress_update'
+  | 'parent_alert'
   | 'message_received'
   | 'subscription'
+  | 'marketing'
   | 'system';
 
 export interface AppNotification {

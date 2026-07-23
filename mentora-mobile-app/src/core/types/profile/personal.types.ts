@@ -29,7 +29,6 @@ export interface ReligiousDetails {
   gotra?: string;
   rashi?: string;
   nakshatra?: string;
-  kundliFileUrl?: string;
   sect?: string;
   subSect?: string;
   community?: string;

@@ -81,8 +81,8 @@ export default function PrivacySettingsScreen({
     () => [
       { value: 'everyone', label: t('settings.options.everyone') },
       {
-        value: 'accepted_matches',
-        label: t('settings.options.accepted_matches'),
+        value: 'scheduled_sessions',
+        label: t('settings.options.scheduled_sessions'),
       },
       { value: 'contacts_only', label: t('settings.options.contacts_only') },
       { value: 'no_one', label: t('settings.options.no_one') },

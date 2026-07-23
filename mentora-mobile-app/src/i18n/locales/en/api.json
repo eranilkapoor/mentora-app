@@ -111,7 +111,6 @@
     "interest_already_responded": "This interest request has already been responded to.",
     "interest_cannot_send_self": "You cannot send interest to yourself.",
     "interest_sent": "Interest sent successfully.",
-    "interest_accepted": "Interest accepted.",
     "interest_rejected": "Interest rejected.",
     "interest_withdrawn": "Interest withdrawn.",
     "chat_not_found": "Chat not found.",
@@ -215,6 +214,12 @@
     "features_fetched": "Features loaded.",
     "feature_created": "Feature created successfully.",
     "feature_assigned": "Feature assigned successfully.",
-    "feature_removed": "Feature removed successfully."
+    "feature_removed": "Feature removed successfully.",
+    "session_request_accepted": "Interest accepted."
+  },
+  "success": {
+    "match_shortlisted": "Saved successfully.",
+    "match_shortlist_removed": "Removed from saved items.",
+    "session_request_accepted": "Request accepted."
   }
 }

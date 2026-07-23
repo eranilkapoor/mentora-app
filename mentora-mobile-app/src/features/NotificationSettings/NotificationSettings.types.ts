@@ -27,10 +27,10 @@ export interface ChannelPreference {
 }
 
 export interface NotificationPreferences {
-  interestReceived: ChannelPreference;
-  interestAccepted: ChannelPreference;
-  profileView: ChannelPreference;
-  matchFound: ChannelPreference;
+  sessionScheduled: ChannelPreference;
+  sessionReminder: ChannelPreference;
+  progressUpdate: ChannelPreference;
+  parentAlert: ChannelPreference;
   messageReceived: ChannelPreference;
   subscription: ChannelPreference;
   system: ChannelPreference;

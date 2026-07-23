@@ -17,7 +17,7 @@ export const COLLECTION_NAMES = {
   FEATURE: 'features',
   PLAN_FEATURE: 'plan_features',
   SUBSCRIPTION: 'subscriptions',
-  PROFILE_BOOST: 'profile_boosts',
+  LEARNING_BOOST: 'learning_boosts',
   PAYMENT: 'payments',
   PROMOTION_COUPON: 'promotion_coupons',
   PAYMENT_INVOICE: 'payment_invoices',

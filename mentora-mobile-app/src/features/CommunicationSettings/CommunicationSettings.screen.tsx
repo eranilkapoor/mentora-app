@@ -74,7 +74,10 @@ export default function CommunicationSettingsScreen({
   const permissionOptions = useMemo<SettingsOption<CommunicationPermission>[]>(
     () => [
       { value: 'all', label: t('settings.options.everyone') },
-      { value: 'matches_only', label: t('settings.options.matches_only') },
+      {
+        value: 'scheduled_sessions_only',
+        label: t('settings.options.scheduled_sessions_only'),
+      },
       { value: 'contacts_only', label: t('settings.options.contacts_only') },
       { value: 'no_one', label: t('settings.options.no_one') },
     ],

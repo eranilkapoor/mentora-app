@@ -20,7 +20,7 @@ describe('WalletController', () => {
     const dto = {
       coins: 20,
       referenceId: 'boost-1',
-      reason: 'profile_boost',
+      reason: 'learning_boost',
       metadata: { source: 'test' },
     };
     service.getSummary.mockResolvedValue({ coins: 50 });
@@ -34,7 +34,7 @@ describe('WalletController', () => {
       userId,
       coins: 20,
       referenceId: 'boost-1',
-      reason: 'profile_boost',
+      reason: 'learning_boost',
       metadata: { source: 'test' },
     });
     expect(summary.code).toBe(SuccessCode.WALLET_FETCHED);

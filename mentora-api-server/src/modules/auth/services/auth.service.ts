@@ -832,7 +832,7 @@ export class AuthService {
           currency: 'INR',
           isPopular: false,
           sortOrder: 0,
-          description: 'Basic free membership with limited matchmaking access.',
+          description: 'Basic free membership with limited AI tutoring access.',
           isActive: true,
           version: 1,
         },

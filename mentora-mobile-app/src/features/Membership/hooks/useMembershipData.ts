@@ -238,12 +238,12 @@ export function useMembershipData(activeTab: MembershipTab) {
       ? formatMembershipPlanDisplayName(activeSubscription.planId)
       : undefined;
   const boostPlan = backendPlans.find(
-    (plan) => plan.planType === 'profile_boost'
+    (plan) => plan.planType === 'learning_boost'
   );
   const canUseProfileBoost = Boolean(
     activePlan?.features?.some(
       (item) =>
-        item.featureId?.key === 'profile_boost' &&
+        item.featureId?.key === 'learning_boost' &&
         isPlanFeatureEnabled(item.value)
     )
   );

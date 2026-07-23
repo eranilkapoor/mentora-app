@@ -35,10 +35,10 @@ import { usePlanFeatureAccess } from '../Membership/hooks/usePlanFeatureAccess';
 type EventKey = keyof NotificationSettings['preferences'];
 type QuietHoursKey = 'start' | 'end' | 'timezone';
 const PAID_ENGAGEMENT_EVENT_KEYS = new Set<EventKey>([
-  'interestReceived',
-  'interestAccepted',
-  'matchFound',
-  'profileView',
+  'sessionScheduled',
+  'sessionReminder',
+  'progressUpdate',
+  'parentAlert',
   'messageReceived',
 ]);
 const EMAIL_NOTIFICATIONS_FEATURE = 'email_notifications';
@@ -53,28 +53,28 @@ interface EventConfig {
 
 const NOTIFICATION_EVENTS: EventConfig[] = [
   {
-    key: 'interestReceived',
-    label: 'settings.notifications.interest_received',
-    sublabel: 'settings.notifications.interest_received_sub',
-    icon: 'heart',
+    key: 'sessionScheduled',
+    label: 'settings.notifications.session_scheduled',
+    sublabel: 'settings.notifications.session_scheduled_sub',
+    icon: 'calendar',
   },
   {
-    key: 'interestAccepted',
-    label: 'settings.notifications.interest_accepted',
-    sublabel: 'settings.notifications.interest_accepted_sub',
+    key: 'sessionReminder',
+    label: 'settings.notifications.session_reminder',
+    sublabel: 'settings.notifications.session_reminder_sub',
     icon: 'check-circle',
   },
   {
-    key: 'matchFound',
-    label: 'settings.notifications.match_found',
-    sublabel: 'settings.notifications.match_found_sub',
-    icon: 'star',
+    key: 'progressUpdate',
+    label: 'settings.notifications.progress_update',
+    sublabel: 'settings.notifications.progress_update_sub',
+    icon: 'trending-up',
   },
   {
-    key: 'profileView',
-    label: 'settings.notifications.profile_view',
-    sublabel: 'settings.notifications.profile_view_sub',
-    icon: 'eye',
+    key: 'parentAlert',
+    label: 'settings.notifications.parent_alert',
+    sublabel: 'settings.notifications.parent_alert_sub',
+    icon: 'shield',
   },
   {
     key: 'messageReceived',

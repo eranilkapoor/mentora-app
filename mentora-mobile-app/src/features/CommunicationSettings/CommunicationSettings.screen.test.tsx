@@ -201,7 +201,7 @@ describe('CommunicationSettingsScreen', () => {
     mockCommunicationData = {
       communication: {
         whoCanMessage: 'all',
-        whoCanCall: 'matches_only',
+        whoCanCall: 'scheduled_sessions_only',
         showReadReceipts: true,
         showTypingIndicator: true,
         autoReplyEnabled: true,

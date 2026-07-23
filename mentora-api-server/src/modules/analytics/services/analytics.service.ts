@@ -129,8 +129,8 @@ export class AnalyticsService {
       topEvents,
       impressions,
       profileViews,
-      interests,
-      matches,
+      sessionRequests,
+      sessionStarts,
       chats,
       recentTrend,
     ] = await Promise.all([
@@ -237,9 +237,9 @@ export class AnalyticsService {
       },
       conversion: {
         impressionToViewRate: safeRate(profileViews, impressions),
-        viewToSessionRequestRate: safeRate(interests, profileViews),
-        sessionRequestToStartRate: safeRate(matches, interests),
-        sessionStartToChatRate: safeRate(chats, matches),
+        viewToSessionRequestRate: safeRate(sessionRequests, profileViews),
+        sessionRequestToStartRate: safeRate(sessionStarts, sessionRequests),
+        sessionStartToChatRate: safeRate(chats, sessionStarts),
       },
       dimensions: {
         byPlatform: platforms,

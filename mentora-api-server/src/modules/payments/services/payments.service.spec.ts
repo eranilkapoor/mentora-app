@@ -608,7 +608,7 @@ describe('PaymentsService', () => {
     expect(subscriptionsService.purchasePlan).toHaveBeenCalled();
     await privateService.activateProfileBoostIfRequired(userId, {});
     await privateService.activateProfileBoostIfRequired(userId, {
-      purpose: PaymentPurpose.PROFILE_BOOST,
+      purpose: PaymentPurpose.LEARNING_BOOST,
       metadata: { durationHours: 'bad', multiplier: 'bad' },
     });
     expect(profileBoostService.activateBoost).toHaveBeenCalledWith(
@@ -1153,7 +1153,7 @@ describe('PaymentsService', () => {
     });
 
     await privateService.activateProfileBoostIfRequired(userId, {
-      purpose: PaymentPurpose.PROFILE_BOOST,
+      purpose: PaymentPurpose.LEARNING_BOOST,
     });
     expect(profileBoostService.activateBoost).toHaveBeenLastCalledWith(
       expect.objectContaining({ durationHours: 24, multiplier: 1.25 }),

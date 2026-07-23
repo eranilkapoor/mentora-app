@@ -1,6 +1,6 @@
 # Mentora
 
-Mentora is a new B2C AI tutoring and mentorship platform for students and parents. The codebase starts from the existing Match Mate architecture, but this repository is a separate product: it must use Mentora branding, Mentora environments, and a separate Mentora database.
+Mentora is a B2C AI tutoring and mentorship platform for students and parents. This repository is the Mentora product workspace and should use Mentora branding, Mentora environments, Mentora data models, and a separate Mentora database.
 
 The first product direction is a family-managed learning app:
 
@@ -15,15 +15,15 @@ The first product direction is a family-managed learning app:
 
 ```text
 mentora-app/
-  mentora-api-server/       NestJS API server copied from the platform foundation
-  mentora-mobile-app/       Expo React Native app copied from the mobile foundation
+  mentora-api-server/       NestJS API server
+  mentora-mobile-app/       Expo React Native app
   packages/
     api-contract/           Shared TypeScript API contract types
   docs/                     Product, technical, database, flow, launch, operations, and standards docs
   README.md                 Repository entry point
 ```
 
-The copied server and mobile apps still contain reusable Match Mate-era modules such as auth, profiles, chat, subscriptions, payments, notifications, settings, storage, admin, analytics, and support. Treat those as implementation starting points. Matrimonial modules such as matches, interests, partner preferences, caste/religion matching, and success stories should be replaced with Mentora learning modules over the migration phases.
+The server and mobile apps are being cleaned into a Mentora-only product surface. Shared platform capabilities such as auth, profiles, chat, subscriptions, payments, notifications, settings, storage, admin, analytics, and support remain useful only when they describe student, parent, learning, tutoring, safety, and billing behavior.
 
 ## Core Product Model
 
@@ -97,7 +97,7 @@ mentora-api-server/.env.production
 mentora-api-server/.env.example
 ```
 
-Use a separate database from Match Mate:
+Use a separate Mentora database:
 
 ```text
 MONGO_URI=mongodb://localhost:27017/mentora
@@ -173,22 +173,25 @@ npm run test:api
 npm run test:mobile
 ```
 
-## Current Migration Status
+## Current Implementation Status
 
 Done:
 
-- Restored copied API/mobile source into this standalone Mentora repository.
+- Established this standalone Mentora repository.
 - Renamed top-level app folders to `mentora-api-server` and `mentora-mobile-app`.
 - Updated root package scripts to point at the Mentora folders.
 - Updated package/app metadata and mobile bundle identifiers to Mentora naming.
-- Added Mentora product, technical, database, flow, and roadmap documentation.
+- Added Mentora product, technical, database, flow, student profile, and roadmap documentation.
+- Added learning-domain API modules for students, academic records, subjects, schedules, entitlements, AI tutor sessions, classrooms, tutors, and safety events.
+- Updated mobile navigation toward student learning tabs: Home, Learn, Schedule, Progress, Profile.
+- Updated onboarding and edit profile toward student/parent-managed learning profiles with completion scoring.
 
 Next:
 
-- Replace copied matrimonial domain modules with student, parent, academic, schedule, AI tutor, assessment, progress, and learning entitlement modules.
-- Update mobile navigation from discovery/matches to student and parent modes.
-- Create seed data for Classes 6-10, one education board, and Mathematics, Science, and English.
-- Add a centralized AI access guard before enabling tutor sessions.
+- Finish replacing stale feature keys, notification categories, and legacy contract names with learning equivalents.
+- Complete parent mode, child switching, documents, payments, communication history, and activity timeline.
+- Expand seed data for Classes 6-10, boards, Mathematics, Science, English, and common academic tracks.
+- Add tests around AI tutor schedule, entitlement, parental control, device/session, and safety guards.
 
 ## License
 

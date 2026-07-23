@@ -1,14 +1,14 @@
 {
-  "screen_title": "Go Premium",
+  "screen_title": "Mentora Plans",
   "locked_feature": {
     "title": "Premium feature",
     "message": "This option is not included in your current plan. Upgrade to unlock it.",
     "named_message": "{{feature}} is not included in your current plan. Upgrade to unlock it.",
     "view_plans": "View plans"
   },
-  "screen_subtitle": "Unlock exclusive features",
+  "screen_subtitle": "Unlock guided AI tutoring and learning insights",
   "tab_self": "Self-Service",
-  "tab_assisted": "Assisted",
+  "tab_assisted": "Mentor Support",
   "billing_cycle_title": "Choose billing cycle",
   "billing_cycle_subtitle": "Compare the same three tiers across available terms.",
   "billing_cycle": {
@@ -26,8 +26,8 @@
   "custom_pricing": "Custom pricing",
   "custom_value": "Custom",
   "contact_sales": "Contact Sales",
-  "hero_badge": "Premium Membership",
-  "hero_title": "Find Your Perfect Match",
+  "hero_badge": "Learning Membership",
+  "hero_title": "Learn with Mentora",
   "hero_subtitle": "Unlock premium AI tutoring, guarded class access, and deeper learning insights.",
   "hero_active_plan": "Current plan: {{plan}}",
   "stat_members_value": "1M+",
@@ -35,7 +35,7 @@
   "stat_faster_value": "3×",
   "stat_faster_label": "Faster Progress",
   "stat_success_value": "92%",
-  "stat_success_label": "Success Rate",
+  "stat_success_label": "Learning Goals",
   "refund_guarantee": "30-day full refund guarantee",
   "refund_terms": "*Terms & conditions apply",
   "features_header": "Features",
@@ -61,15 +61,14 @@
   "trust_secure": "Secure",
   "trust_verified": "Verified",
   "trust_support": "24/7 Support",
-  "trust_members": "1M+ Members",
+  "trust_members": "1M+ Learners",
   "exclusive_label": "✦ Exclusive",
-  "benefit_pro_max": "All Pro Max benefits + unlimited daily matches",
-  "benefit_relationship_manager": "Dedicated relationship manager assigned to you",
-  "point_profile": "Enhance and optimise your profile",
-  "point_matches": "Find the most relevant & serious matches",
-  "point_info": "Get additional info on the bride & her family",
-  "point_faster": "3× faster matching with priority placement",
-  "point_meetings": "Unlimited meeting setups with profiles",
+  "benefit_pro_max": "All premium learning benefits plus expanded AI tutor access",
+  "point_profile": "Complete and optimise the student learning profile",
+  "point_matches": "Find relevant subjects, sessions, and learning paths",
+  "point_info": "Get additional academic and progress insights",
+  "point_faster": "Faster learning with priority schedules and guided practice",
+  "point_meetings": "Scheduled tutoring and mentoring sessions",
   "request_callback": "Request Call Back",
   "know_more": "Know more ›",
   "offer_text": "FLAT 50% OFF ON ALL PLANS",
@@ -116,9 +115,9 @@
     "continue": "Continue to checkout"
   },
   "boost": {
-    "title": "Profile Boost",
-    "subtitle": "Priority discovery ranking for 24 hours",
-    "buy": "Buy profile boost",
+    "title": "Learning Boost",
+    "subtitle": "Priority learning recommendations for 24 hours",
+    "buy": "Buy learning boost",
     "duration": "24 hours"
   },
   "billing": {
@@ -128,7 +127,7 @@
     "current_membership": "Current membership",
     "valid_until": "Valid until {{date}}",
     "valid_until_label": "Valid until",
-    "upgrade_hint": "Upgrade to unlock premium profile access",
+    "upgrade_hint": "Upgrade to unlock premium AI tutor access",
     "total_paid": "Total paid",
     "payments": "Payments",
     "auto_renew": "Auto renew",
@@ -165,10 +164,10 @@
     "restore_failed_message": "We could not check your store purchases. Please try again.",
     "plan_benefits": "Plan Benefits",
     "plan_benefits_sub": "Premium access currently attached to your account",
-    "basic_profile_access": "Basic profile access",
-    "basic_profile_access_sub": "Create and maintain your AI tutoring profile",
+    "basic_profile_access": "Basic learning profile access",
+    "basic_profile_access_sub": "Create and maintain your student learning profile",
     "premium_features": "Premium features",
-    "premium_features_sub": "Upgrade to unlock premium chat and visibility features",
+    "premium_features_sub": "Upgrade to unlock premium tutor access and learning insights",
     "billing_summary": "Billing Summary",
     "billing_summary_sub": "Payments completed from this account",
     "successful_payments": "Successful payments",
@@ -219,7 +218,7 @@
       "purpose": {
         "membership": "Membership",
         "subscription": "Membership subscription",
-        "profile_boost": "Profile boost"
+        "learning_boost": "Learning boost"
       },
       "reason": {
         "user_requested_from_billing_screen": "Cancelled by you",
@@ -228,5 +227,6 @@
         "payment_failed": "Payment could not be completed"
       }
     }
-  }
+  },
+  "benefit_mentor_support": "Dedicated mentor support assigned to your learning plan"
 }

@@ -26,12 +26,12 @@ export type PaymentGateway =
   "razorpay" | "stripe" | "apple_iap" | "google_play" | "manual";
 
 export type PaymentPurpose =
-  "subscription" | "profile_boost" | "priority_support" | "coin_pack";
+  "subscription" | "learning_boost" | "priority_support" | "coin_pack";
 
 export type PaymentStatus =
   "created" | "pending" | "success" | "failed" | "refunded" | "cancelled";
 
-export type MembershipPlanType = "self_service" | "assisted" | "profile_boost";
+export type MembershipPlanType = "self_service" | "assisted" | "learning_boost";
 
 export interface MembershipPlanFeature {
   value?: string | number | boolean;
@@ -227,7 +227,10 @@ export interface PaymentInvoice extends ComplianceLifecycleFields {
 export type SupportTicketCategory =
   | "account"
   | "billing"
-  | "matches"
+  | "classes"
+  | "ai_tutor"
+  | "schedules"
+  | "progress"
   | "chat"
   | "safety"
   | "technical"
@@ -273,38 +276,6 @@ export interface PaginationMeta {
 export interface PaginatedItems<T> extends PaginationMeta {
   items: T[];
 }
-
-export type SuccessStoryStatus =
-  "submitted" | "published" | "rejected" | "archived";
-
-export interface SuccessStory {
-  _id: string;
-  userId?: string;
-  title: string;
-  story: string;
-  partnerName: string;
-  marriageDate: string;
-  location?: string;
-  photoUrls: string[];
-  publicationConsent: boolean;
-  status: SuccessStoryStatus;
-  rejectionReason?: string;
-  publishedAt?: string;
-  createdAt?: string;
-  updatedAt?: string;
-}
-
-export interface SubmitSuccessStoryRequest {
-  title: string;
-  story: string;
-  partnerName: string;
-  marriageDate: string;
-  location?: string;
-  photoUrls?: string[];
-  publicationConsent: boolean;
-}
-
-export type SuccessStoriesResponse = PaginatedItems<SuccessStory>;
 
 export interface SupportTicketsResponse extends PaginationMeta {
   items: SupportTicket[];

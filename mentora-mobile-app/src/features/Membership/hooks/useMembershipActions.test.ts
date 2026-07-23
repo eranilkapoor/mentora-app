@@ -172,7 +172,7 @@ describe('useMembershipActions', () => {
     expect(mockCreateOrder).toHaveBeenCalledWith(
       expect.objectContaining({
         planId: 'gold-quarterly',
-        purpose: 'profile_boost',
+        purpose: 'learning_boost',
       })
     );
     expect(mockStartTrial).toHaveBeenCalledWith({

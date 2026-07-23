@@ -12,7 +12,7 @@ export const OTP_LENGTH = 6;
 export const EMOJIS = ['😀', '😂', '❤️', '👍', '😍', '🙏', '🎉', '😊'];
 export const MAX_PHOTOS = 6;
 
-export const ABOUT_PARTNER_MAX = 500;
+export const LEARNING_NOTES_MAX = 500;
 
 export {
   EMPTY_DISPLAY_VALUE,
@@ -22,11 +22,10 @@ export {
   PROFILE_FEED_PAGE_SIZE,
 } from './profileDisplay';
 // ─── Range Bounds ─────────────────────────────────────────────────────────────
-export const AGE_RANGE = { min: 18, max: 70 } as const;
-export const HEIGHT_RANGE = { min: 140, max: 220 } as const;
-export const INCOME_RANGE = { min: 0, max: 10000000 } as const;
-export const INCOME_STEP = 50000 as const;
-export const MATCH_SCORE_RANGE = { min: 0, max: 100 } as const;
+export const STUDENT_AGE_RANGE = { min: 5, max: 100 } as const;
+export const GRADE_RANGE = { min: 1, max: 12 } as const;
+export const SCORE_RANGE = { min: 0, max: 100 } as const;
+export const LEARNING_PROGRESS_RANGE = { min: 0, max: 100 } as const;
 
 // ─── Weight Bounds ────────────────────────────────────────────────────────────
 export const WEIGHT_MIN = 0 as const;
@@ -35,14 +34,14 @@ export const WEIGHT_MAX = 30 as const;
 // ─── Weight Labels ────────────────────────────────────────────────────────────
 export const WEIGHT_KEYS = [
   'age',
-  'height',
-  'religion',
-  'caste',
+  'grade',
+  'subject',
+  'goal',
   'location',
-  'education',
-  'occupation',
-  'lifestyle',
-  'horoscope',
+  'academicLevel',
+  'schedule',
+  'progress',
+  'accessibility',
 ] as const;
 
 export type WeightKey = (typeof WEIGHT_KEYS)[number];
@@ -61,136 +60,54 @@ export const COUNTRY_CODES = [
 
 export const HOBBIES = [
   'Reading',
-  'Traveling',
-  'Cooking',
+  'Robotics',
+  'Coding',
   'Sports',
   'Music',
-  'Gardening',
-  'Photography',
-  'Dancing',
-  'Painting',
-  'Hiking',
-  'Gaming',
-  'Yoga',
-  'Fishing',
-  'Crafting',
-  'Collecting',
+  'Science Projects',
+  'Math Puzzles',
+  'Creative Writing',
+  'Drawing',
+  'Debate',
+  'Quiz',
+  'Chess',
+  'Languages',
   'Writing',
-  'Volunteering',
-  'Meditation',
-  'Cycling',
-  'Bird Watching',
+  'Public Speaking',
 ];
 
 export const INTERESTS = [
-  'Technology',
-  'Art',
+  'Mathematics',
   'Science',
+  'English',
   'History',
-  'Nature',
-  'Culture',
-  'Food',
-  'Fashion',
-  'Fitness',
-  'Movies',
-  'Theater',
-  'Travel',
-  'Music',
-  'Sports',
-  'Photography',
-  'Literature',
-  'Gaming',
-  'Politics',
-  'Environment',
-  'Health',
-];
-
-export const PROFESSIONS = [
-  'Engineer',
-  'Doctor',
-  'Teacher',
-  'Artist',
-  'Scientist',
-  'Lawyer',
-  'Nurse',
-  'Architect',
-  'Chef',
-  'Writer',
-  'Musician',
-  'Photographer',
-  'Entrepreneur',
-  'Designer',
-  'Accountant',
-  'Consultant',
-  'Researcher',
-  'Pharmacist',
-  'Journalist',
-  'Pilot',
-  'Social Worker',
-  'Therapist',
-  'Developer',
-  'Marketer',
-  'Salesperson',
-  'HR Manager',
-  'Financial Analyst',
-  'Project Manager',
-  'Data Analyst',
-  'UX/UI Designer',
-  'Content Creator',
-  'Digital Marketer',
-  'Product Manager',
-  'Business Analyst',
-  'Customer Support',
-  'Operations Manager',
-  'Supply Chain Manager',
-  'Quality Assurance',
-  'Legal Advisor',
-  'Event Planner',
-  'Real Estate Agent',
-  'Fitness Trainer',
-  'Nutritionist',
-  'Veterinarian',
-  'Translator',
-  'Interpreter',
-  'Librarian',
-  'Archivist',
-  'Curator',
-  'Animator',
-  'Game Developer',
-  'Film Director',
-  'Actor/Actress',
-  'Comedian',
-  'Dancer/Choreographer',
-  'Musician/Singer',
-  'Writer/Author',
-  'Poet',
-  'Journalist/Reporter',
-  'Photographer/Videographer',
-  'Artist/Painter',
-  'Sculptor',
-  'Graphic Designer',
-  'Fashion Designer',
-  'Interior Designer',
-  'Architect/Urban Planner',
-  'Chef/Baker',
-  'Food Critic',
-  'Nutritionist/Dietitian',
-  'Fitness Trainer/Coach',
-  'Yoga Instructor',
-  'Other',
+  'Geography',
+  'Computer Science',
+  'Physics',
+  'Chemistry',
+  'Biology',
+  'Economics',
+  'Accountancy',
+  'Writing',
+  'Reading Comprehension',
+  'Exam Preparation',
+  'Olympiad Practice',
+  'Coding',
+  'Communication Skills',
+  'Project Learning',
 ];
 
 export const GOALS = [
-  'Long-term Relationship',
-  'Short-term Relationship',
-  'Friendship',
-  'Networking',
-  'Casual Dating',
-  'Marriage',
-  'Companionship',
-  'Activity Partner',
-  'Travel Buddy',
-  'Shared Interests',
+  'Improve Concepts',
+  'Prepare for Exams',
+  'Finish Homework',
+  'Build Study Habit',
+  'Revise Weak Topics',
+  'Practice Questions',
+  'Learn Faster',
+  'Improve Confidence',
+  'Prepare for Olympiad',
+  'Explore Career Skills',
 ];
 
 export const LANGUAGES = [

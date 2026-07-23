@@ -247,8 +247,8 @@ describe('ChatScreen', () => {
             params: {
               userId: 'match-1',
               roomId: 'room-1',
-              partnerName: 'Asha',
-              partnerPhoto: '/asha.jpg',
+              contactName: 'Asha',
+              contactPhoto: '/asha.jpg',
             },
           } as never
         }

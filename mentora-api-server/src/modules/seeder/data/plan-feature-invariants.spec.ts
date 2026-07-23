@@ -118,7 +118,7 @@ describe('plan and feature seed invariants', () => {
   it('defines numeric limits for every fixed recurring plan', () => {
     const fixedPlanNames = PLAN_SEEDS.filter(
       ({ planType, isCustom }) =>
-        planType !== PlanType.PROFILE_BOOST && !isCustom,
+        planType !== PlanType.LEARNING_BOOST && !isCustom,
     ).map(({ name }) => name);
 
     expect(new Set(Object.keys(FIXED_PLAN_LIMITS))).toEqual(
@@ -150,7 +150,7 @@ describe('plan and feature seed invariants', () => {
     const paidPlans = PLAN_SEEDS.filter(
       ({ planType, tier, isCustom }) =>
         tier !== PlanTier.FREE &&
-        planType !== PlanType.PROFILE_BOOST &&
+        planType !== PlanType.LEARNING_BOOST &&
         !isCustom,
     );
 
@@ -170,7 +170,7 @@ describe('plan and feature seed invariants', () => {
   it('maps every paid recurring plan to unique store catalog entries', () => {
     const paidPlans = PLAN_SEEDS.filter(
       ({ planType, price, isCustom }) =>
-        price > 0 && planType !== PlanType.PROFILE_BOOST && !isCustom,
+        price > 0 && planType !== PlanType.LEARNING_BOOST && !isCustom,
     );
     const androidBasePlans = paidPlans.map(
       (plan) =>

@@ -75,7 +75,7 @@ describe('useMembershipData', () => {
           {
             value: true,
             featureId: {
-              key: 'profile_boost',
+              key: 'learning_boost',
               name: 'Profile boost',
             },
           },
@@ -92,7 +92,7 @@ describe('useMembershipData', () => {
       }),
       plan('boost-pack', {
         tier: 'basic',
-        planType: 'profile_boost',
+        planType: 'learning_boost',
         billingCycle: 'monthly',
         price: 199,
       }),

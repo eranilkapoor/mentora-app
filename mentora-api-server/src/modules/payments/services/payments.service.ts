@@ -93,9 +93,9 @@ export class PaymentsService {
       });
     }
 
-    const isBoostPlan = plan.planType === PlanType.PROFILE_BOOST;
+    const isBoostPlan = plan.planType === PlanType.LEARNING_BOOST;
     if (
-      (purpose === PaymentPurpose.PROFILE_BOOST && !isBoostPlan) ||
+      (purpose === PaymentPurpose.LEARNING_BOOST && !isBoostPlan) ||
       (purpose === PaymentPurpose.SUBSCRIPTION && isBoostPlan)
     ) {
       return throwBadRequest(ErrorCode.PAYMENT_FAILED, {
@@ -1395,7 +1395,7 @@ export class PaymentsService {
       metadata?: Record<string, unknown>;
     },
   ) {
-    if (payment.purpose !== PaymentPurpose.PROFILE_BOOST) {
+    if (payment.purpose !== PaymentPurpose.LEARNING_BOOST) {
       return;
     }
 

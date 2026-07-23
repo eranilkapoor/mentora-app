@@ -39,7 +39,7 @@ type UsageWindow = 'day' | 'month';
 const FEATURE_ACCESS_ALIASES: Readonly<
   Partial<Record<FeatureKey, readonly FeatureKey[]>>
 > = {
-  [FeatureKey.DAILY_PROFILE_VIEWS]: [FeatureKey.UNLIMITED_PROFILE_VIEWS],
+  [FeatureKey.AI_TUTOR_DAILY_MINUTES]: [FeatureKey.AI_TUTOR_MONTHLY_MINUTES],
 };
 
 @Injectable()
@@ -82,10 +82,10 @@ export class FeatureService {
     }
 
     const autoTrackedUsageFeatures = new Set<FeatureKey>([
-      FeatureKey.SEND_INTEREST,
+      FeatureKey.AI_TUTOR_SESSION_LIMIT,
       FeatureKey.MESSAGE_LIMIT,
-      FeatureKey.DAILY_PROFILE_VIEWS,
-      FeatureKey.PROFILE_BOOST,
+      FeatureKey.AI_TUTOR_DAILY_MINUTES,
+      FeatureKey.AI_STUDY_PLAN,
     ]);
 
     // Only action-style limits consume usage here; capacity limits are enforced

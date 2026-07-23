@@ -84,7 +84,7 @@ export const formatMembershipPlanDisplayName = (
     const normalizedValue = value.toLowerCase().replace(/-/g, '_');
 
     if (normalizedValue.startsWith('assisted_custom')) {
-      return 'Custom Assisted Matchmaking';
+      return 'Custom Mentor Support';
     }
 
     if (normalizedValue.startsWith('assisted')) {
@@ -96,7 +96,7 @@ export const formatMembershipPlanDisplayName = (
             ? 'Yearly'
             : '';
 
-      return ['Assisted Matchmaking', assistedCycle].filter(Boolean).join(' ');
+      return ['Mentor Support', assistedCycle].filter(Boolean).join(' ');
     }
 
     return formatPlanName(value);
@@ -108,8 +108,8 @@ export const formatMembershipPlanDisplayName = (
   );
 
   if (planOrName.planType === 'assisted') {
-    if (planOrName.isCustom) return 'Custom Assisted Matchmaking';
-    return ['Assisted Matchmaking', cycleLabel].filter(Boolean).join(' ');
+    if (planOrName.isCustom) return 'Custom Mentor Support';
+    return ['Mentor Support', cycleLabel].filter(Boolean).join(' ');
   }
 
   const tierLabel =
@@ -169,19 +169,20 @@ const formatFeatureValue = (key: string, value: unknown): string => {
       return `${value} photos`;
     case 'upload_videos':
       return `${value} video`;
-    case 'send_interest':
+    case 'ai_tutor_daily_minutes':
+    case 'ai_tutor_session_limit':
       return `${value}/day`;
-    case 'send_interest_monthly_limit':
+    case 'ai_tutor_monthly_minutes':
       return `${value}/month`;
     case 'message_limit':
       return `${value} messages`;
     case 'view_contact':
     case 'contact_view_limit':
       return `${value}/month`;
-    case 'daily_profile_views':
+    case 'learning_session_history':
       return `${value}/day`;
-    case 'profile_boost':
-      return `${value} boosts`;
+    case 'ai_practice_questions':
+      return `${value} questions`;
     default:
       return value === 1 ? 'Yes' : String(value);
   }
@@ -190,9 +191,9 @@ const formatFeatureValue = (key: string, value: unknown): string => {
 const normalizeUnlimitedFeatureValues = (
   featureValues: Record<string, string>
 ): Record<string, string> => {
-  if (featureValues.unlimited_profile_views === 'Unlimited') {
-    featureValues.daily_profile_views = 'Unlimited';
-    featureValues.profile_views = 'Unlimited';
+  if (featureValues.ai_tutor_monthly_minutes === 'Unlimited') {
+    featureValues.ai_tutor_daily_minutes = 'Unlimited';
+    featureValues.ai_tutor_session_limit = 'Unlimited';
   }
 
   return featureValues;
@@ -204,30 +205,30 @@ const getFeatureLabel = (key: string, name?: string): string =>
 const SELF_SERVICE_FEATURE_PRIORITY = [
   'upload_photos',
   'upload_videos',
-  'send_interest',
-  'send_interest_monthly_limit',
+  'ai_tutor_access',
+  'ai_tutor_daily_minutes',
+  'ai_tutor_monthly_minutes',
+  'ai_tutor_session_limit',
   'message_limit',
-  'contact_view_limit',
-  'who_viewed_me',
-  'daily_profile_views',
-  'profile_views',
-  'profile_boost',
+  'schedule_classes',
+  'reschedule_classes',
+  'learning_session_history',
+  'ai_practice_questions',
+  'ai_study_plan',
   'auto_renewal',
   'support_tickets',
 ];
 
 const ASSISTED_FEATURE_PRIORITY = [
-  'relationship_manager',
-  'dedicated_relationship_manager',
-  'concierge_matchmaking',
-  'personal_matchmaker',
-  'premium_badge',
+  'mentor_support',
+  'weekly_parent_reports',
+  'export_progress_reports',
   'priority_support',
-  'advanced_matching',
+  'advanced_filters',
   'ai_recommendations',
+  'ai_progress_recommendations',
   'weekly_reports',
-  'contact_view_limit',
-  'match_success_rate',
+  'calendar_reminders',
   'support_tickets',
 ];
 
@@ -254,7 +255,7 @@ export const buildDisplayPlans = (
     .filter(
       (plan) =>
         (plan.planType ?? 'self_service') === planType &&
-        plan.planType !== 'profile_boost' &&
+        plan.planType !== 'learning_boost' &&
         (tab !== 'self' || plan.price > 0)
     )
     .sort(

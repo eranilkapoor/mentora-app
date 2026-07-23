@@ -51,8 +51,8 @@ export default function AiSettingsScreen({
         {/* AI tutoring */}
         <SettingsCard
           icon="cpu"
-          title={t('settings.ai.matchmaking')}
-          subtitle={t('settings.ai.matchmaking_subtitle')}
+          title={t('settings.ai.tutoring')}
+          subtitle={t('settings.ai.tutoring_subtitle')}
         >
           <SettingsToggleItem
             icon="zap"
@@ -65,23 +65,23 @@ export default function AiSettingsScreen({
             icon="activity"
             label={t('settings.ai.smart_ranking')}
             sublabel={t('settings.ai.smart_ranking_sub')}
-            value={settings?.smartMatchRanking ?? false}
-            onChange={(v) => handleToggle('smartMatchRanking', v)}
+            value={settings?.adaptiveTutorRanking ?? false}
+            onChange={(v) => handleToggle('adaptiveTutorRanking', v)}
           />
           <SettingsToggleItem
             icon="star"
             label={t('settings.ai.compatibility_scoring')}
             sublabel={t('settings.ai.compatibility_scoring_sub')}
-            value={settings?.compatibilityScoring ?? false}
-            onChange={(v) => handleToggle('compatibilityScoring', v)}
+            value={settings?.progressScoring ?? false}
+            onChange={(v) => handleToggle('progressScoring', v)}
           />
           <SettingsToggleItem
             icon="moon"
-            label={t('settings.ai.horoscope_suggestions')}
-            sublabel={t('settings.ai.horoscope_suggestions_sub')}
-            value={settings?.horoscopeSuggestions ?? false}
+            label={t('settings.ai.study_plan_suggestions')}
+            sublabel={t('settings.ai.study_plan_suggestions_sub')}
+            value={settings?.studyPlanSuggestions ?? false}
             isLast
-            onChange={(v) => handleToggle('horoscopeSuggestions', v)}
+            onChange={(v) => handleToggle('studyPlanSuggestions', v)}
           />
         </SettingsCard>
 
@@ -95,16 +95,18 @@ export default function AiSettingsScreen({
             icon="edit-3"
             label={t('settings.ai.bio_generation')}
             sublabel={t('settings.ai.bio_generation_sub')}
-            value={settings?.allowAiBioGeneration ?? false}
-            onChange={(v) => handleToggle('allowAiBioGeneration', v)}
+            value={settings?.allowAiProfileSummary ?? false}
+            onChange={(v) => handleToggle('allowAiProfileSummary', v)}
           />
           <SettingsToggleItem
             icon="database"
             label={t('settings.ai.use_profile_data')}
             sublabel={t('settings.ai.use_profile_data_sub')}
-            value={settings?.useProfileDataForRanking ?? false}
+            value={settings?.useProfileDataForPersonalization ?? false}
             isLast
-            onChange={(v) => handleToggle('useProfileDataForRanking', v)}
+            onChange={(v) =>
+              handleToggle('useProfileDataForPersonalization', v)
+            }
           />
         </SettingsCard>
 

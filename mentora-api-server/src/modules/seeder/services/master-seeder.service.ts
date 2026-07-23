@@ -653,7 +653,7 @@ export class MasterSeederService {
         firstName: 'Play',
         lastName: 'Reviewer',
         aboutMe:
-          'A complete reviewer profile for validating Mentora discovery, communication, safety, and membership features.',
+          'A complete reviewer profile for validating Mentora learning, communication, safety, and membership features.',
       },
       aiTags: [...base.aiTags, 'play-reviewer'],
     };
@@ -675,7 +675,7 @@ export class MasterSeederService {
         firstName: 'Phone',
         lastName: 'Reviewer',
         aboutMe:
-          'A complete phone reviewer profile for validating Mentora authentication, matching, safety, and Platinum membership features.',
+          'A complete phone reviewer profile for validating Mentora authentication, learning, safety, and Platinum membership features.',
       },
       aiTags: [...base.aiTags, 'play-phone-reviewer'],
     };
@@ -1148,7 +1148,7 @@ export class MasterSeederService {
       | 'ASSISTED_HALF_YEARLY'
       | 'ASSISTED_YEARLY'
       | 'ASSISTED_CUSTOM'
-      | 'PROFILE_BOOST_24H';
+      | 'LEARNING_BOOST_24H';
 
     type FeatureValue = number | boolean | string;
 

@@ -35,7 +35,7 @@ export interface PublicFeatureFlags {
       push: string;
     };
   };
-  matches: {
+  learning: {
     dailyDigest: boolean;
     dailyDigestDryRun: boolean;
   };

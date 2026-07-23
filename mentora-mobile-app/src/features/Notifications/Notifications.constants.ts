@@ -6,12 +6,13 @@ import {
 
 export const notificationIconByCategory: Record<NotificationCategory, string> =
   {
-    interest_received: 'heart',
-    interest_accepted: 'check-circle',
-    profile_view: 'eye',
-    match_found: 'star',
+    session_scheduled: 'calendar',
+    session_reminder: 'clock',
+    progress_update: 'trending-up',
+    parent_alert: 'shield',
     message_received: 'message-circle',
     subscription: 'credit-card',
+    marketing: 'tag',
     system: 'bell',
   };
 

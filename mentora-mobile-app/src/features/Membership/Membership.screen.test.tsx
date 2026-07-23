@@ -85,7 +85,7 @@ jest.mock('./hooks/useMembershipData', () => ({
     selectedPlanItem,
     boostPlan: {
       _id: 'boost-1',
-      name: 'PROFILE_BOOST',
+      name: 'LEARNING_BOOST',
       currency: 'INR',
       price: 149,
     },

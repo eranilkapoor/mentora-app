@@ -3,7 +3,7 @@ import { Document, Types } from 'mongoose';
 import { COLLECTION_NAMES } from '@/common/constants';
 import { ProfileBoostStatus } from '../enums/profile-boost-status.enum';
 
-@Schema({ collection: COLLECTION_NAMES.PROFILE_BOOST, timestamps: true })
+@Schema({ collection: COLLECTION_NAMES.LEARNING_BOOST, timestamps: true })
 export class ProfileBoost {
   @Prop({ type: Types.ObjectId, required: true, index: true })
   userId!: Types.ObjectId;

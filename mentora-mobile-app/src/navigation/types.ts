@@ -50,8 +50,8 @@ export type HomeStackParamList = {
   };
   ChatDetails: {
     userId: string;
-    partnerName: string;
-    partnerPhoto: string;
+    contactName: string;
+    contactPhoto: string;
     roomId?: string;
   };
 };
@@ -61,8 +61,8 @@ export type ChatsStackParamList = {
   ChatList: undefined;
   ChatDetails: {
     userId: string;
-    partnerName: string;
-    partnerPhoto: string;
+    contactName: string;
+    contactPhoto: string;
     roomId?: string;
   };
 };

@@ -4,7 +4,6 @@
   "change_password_sub": "अपने खाते को सुरक्षित रखें",
   "account_settings": "खाता सेटिंग्स",
   "account_settings_sub": "सत्यापन, जुड़े खाते और खाता कार्रवाई",
-  "profile_matchmaking": "प्रोफ़ाइल और मैचमेकिंग",
   "privacy_safety": "गोपनीयता, सुरक्षा और संचार",
   "app_experience": "ऐप अनुभव",
   "preferences": "वरीयताएँ",
@@ -61,7 +60,7 @@
   "edit_profile_sub": "अपनी व्यक्तिगत जानकारी अपडेट करें",
   "edit_preferences": "साझेदार वरीयताएँ",
   "edit_preferences_sub": "जो आप तलाश रहे हैं उसे अपडेट करें",
-  "partner_preferences": "साझेदार वरीयताएँ",
+  "partner_preferences": "Learning Preferences",
   "danger_zone": "जोखिम क्षेत्र",
   "sign_out_sub": "आप इस डिवाइस से लॉग आउट हो जाएंगे",
   "version": "Mentora v{{version}}",
@@ -200,12 +199,6 @@
     "marketing_global_sub": "डील, ऑफ़र और फीचर अपडेट",
     "per_event": "इवेंट आधारित प्राथमिकताएं",
     "per_event_subtitle": "प्रत्येक सूचनात्मक प्रकार के लिए चैनल चुनें",
-    "interest_received": "इंटरेस्ट प्राप्त हुआ",
-    "interest_received_sub": "जब कोई आपको इंटरेस्ट भेजता है",
-    "interest_accepted": "इंटरेस्ट स्वीकार किया गया",
-    "interest_accepted_sub": "जब आपका इंटरेस्ट स्वीकार किया जाता है",
-    "match_found": "नया मैच",
-    "match_found_sub": "जब आपको नया म्यूचुअल मैच मिलता है",
     "profile_view": "प्रोफ़ाइल देखी गई",
     "profile_view_sub": "जब कोई आपकी प्रोफ़ाइल देखता है",
     "message_received": "नया संदेश",
@@ -235,7 +228,15 @@
     "quiet_start_sub": "इस समय से सूचनाएं शांत रहेंगी।",
     "quiet_end_sub": "इस समय के बाद सूचनाएं फिर शुरू होंगी।",
     "timezone": "समय क्षेत्र",
-    "timezone_sub": "यात्रा करते समय भी शांत समय इसी टाइमजोन का पालन करेगा।"
+    "timezone_sub": "यात्रा करते समय भी शांत समय इसी टाइमजोन का पालन करेगा।",
+    "session_scheduled": "Session Scheduled",
+    "session_scheduled_sub": "When a tutoring session is created or updated",
+    "session_reminder": "Session Reminder",
+    "session_reminder_sub": "Before a scheduled class or AI tutor session starts",
+    "progress_update": "Progress Update",
+    "progress_update_sub": "When learning progress, mastery, or reports are updated",
+    "parent_alert": "Parent Alert",
+    "parent_alert_sub": "When parental controls, safety, or student access need attention"
   },
   "security": {
     "title": "सुरक्षा",
@@ -476,11 +477,14 @@
     "categories": {
       "account": "खाता",
       "billing": "बिलिंग",
-      "matches": "मैच",
       "chat": "चैट",
       "safety": "सुरक्षा",
       "technical": "तकनीकी",
-      "other": "अन्य"
+      "other": "अन्य",
+      "classes": "Classes & Schedules",
+      "ai_tutor": "AI Tutor",
+      "schedules": "Schedules",
+      "progress": "Progress"
     },
     "priorities": {
       "normal": "सामान्य",
@@ -494,41 +498,6 @@
       "resolved": "हल किया गया",
       "closed": "बंद"
     }
-  },
-  "success_stories": {
-    "title": "सफलता की कहानियां",
-    "entry_sub": "समुदाय समीक्षा के लिए अपनी Mentora यात्रा साझा करें",
-    "share_title": "अपनी यात्रा का जश्न मनाएं",
-    "share_subtitle": "अपनी कहानी समीक्षा के लिए भेजें। हमारी टीम की मंजूरी तक यह निजी रहेगी।",
-    "title_placeholder": "अपनी कहानी का छोटा शीर्षक",
-    "partnerName": "जीवनसाथी का नाम",
-    "partnerName_placeholder": "अपने जीवनसाथी का नाम",
-    "marriageDate": "विवाह की तारीख",
-    "marriageDate_placeholder": "YYYY-MM-DD",
-    "location": "स्थान (वैकल्पिक)",
-    "location_placeholder": "शहर या क्षेत्र",
-    "story": "आपकी कहानी",
-    "story_placeholder": "बताएं कि आप कैसे मिले, आपका रिश्ता क्यों खास बना और आपकी यात्रा कहां पहुंची।",
-    "consent": "मैं Mentora को इस कहानी की समीक्षा और प्रकाशन की सहमति देता/देती हूं और पुष्टि करता/करती हूं कि साझा विवरण के लिए मेरे पास अनुमति है।",
-    "submit": "समीक्षा के लिए भेजें",
-    "submitting": "भेजा जा रहा है...",
-    "submitted": "सफलता की कहानी समीक्षा के लिए भेज दी गई",
-    "failed": "कहानी भेजी नहीं जा सकी",
-    "invalid_title": "अपनी कहानी पूरी करें",
-    "invalid_message": "शीर्षक, जीवनसाथी का नाम, सही तारीख, कम से कम 100 अक्षर और प्रकाशन सहमति जोड़ें।",
-    "history": "आपकी प्रस्तुतियां",
-    "empty_title": "अभी तक कोई प्रस्तुति नहीं",
-    "empty_message": "अपनी Mentora यात्रा साझा करें। आपकी भेजी गई कहानियां यहां दिखाई देंगी।",
-    "empty": "आपने अभी तक कोई सफलता की कहानी नहीं भेजी है।",
-    "story_title": "कहानी का शीर्षक",
-    "status_submitted": "समीक्षा में",
-    "status_published": "प्रकाशित",
-    "status_rejected": "बदलाव आवश्यक",
-    "status_archived": "आर्काइव किया गया",
-    "note_submitted": "आपकी कहानी समीक्षा के लिए हमारी मॉडरेशन टीम के पास है।",
-    "note_published": "आपकी कहानी स्वीकृत है और समुदाय को दिखाई दे रही है।",
-    "note_rejected": "प्रकाशित होने से पहले आपकी सबमिशन में बदलाव आवश्यक हैं।",
-    "note_archived": "यह कहानी अब सार्वजनिक सूची में दिखाई नहीं दे रही है।"
   },
   "blocked_users_screen": {
     "unblock": "अनब्लॉक करें",
@@ -679,22 +648,22 @@
   },
   "ai": {
     "title": "AI सुविधाएं",
-    "matchmaking": "AI मैचमेकिंग",
-    "matchmaking_subtitle": "AI को आपके मिलान परिणामों में सुधार करने दें",
     "recommendations": "AI सिफारिशें",
     "recommendations_sub": "स्मार्टर प्रोफ़ाइल सुझाव प्राप्त करें",
     "smart_ranking": "स्मार्ट मैच रैंकिंग",
     "smart_ranking_sub": "संगतता स्कोर द्वारा मेल को रैंक करें",
-    "compatibility_scoring": "संगतता स्कोरिंग",
-    "compatibility_scoring_sub": "देखें कि आप प्रत्येक प्रोफ़ाइल से कितनी अच्छी तरह मेल खाते हैं",
-    "horoscope_suggestions": "राशिफल सुझाव",
-    "horoscope_suggestions_sub": "मेल में कुंडली संगतता शामिल करें",
+    "compatibility_scoring": "Progress Scoring",
+    "compatibility_scoring_sub": "Show readiness, confidence, and concept mastery signals",
     "profile": "प्रोफ़ाइल AI",
     "profile_subtitle": "आपकी प्रोफ़ाइल के लिए AI उपकरण",
     "bio_generation": "AI जैव पीढ़ी",
     "bio_generation_sub": "AI को अपनी प्रोफ़ाइल जीवनी लिखने में मदद करने दें",
     "use_profile_data": "रैंकिंग के लिए प्रोफ़ाइल डेटा का उपयोग करें",
-    "use_profile_data_sub": "मेल में सुधार के लिए AI को अपनी प्रोफ़ाइल का विश्लेषण करने की अनुमति दें"
+    "use_profile_data_sub": "मेल में सुधार के लिए AI को अपनी प्रोफ़ाइल का विश्लेषण करने की अनुमति दें",
+    "tutoring": "AI Tutoring",
+    "tutoring_subtitle": "Control how Mentora personalizes scheduled tutoring",
+    "study_plan_suggestions": "Schedule-Aware Guidance",
+    "study_plan_suggestions_sub": "Use class schedule, grade level, and subject context for tutoring suggestions"
   },
   "localization": {
     "title": "भाषा और क्षेत्र",
@@ -718,8 +687,6 @@
   },
   "options": {
     "everyone": "सभी",
-    "accepted_matches": "स्वीकार किए गए मैच",
-    "matches_only": "केवल मैच",
     "contacts_only": "केवल संपर्क",
     "no_one": "कोई नहीं",
     "public": "सार्वजनिक",
@@ -739,6 +706,9 @@
     "united_states": "संयुक्त राज्य",
     "united_kingdom": "यूनाइटेड किंगडम",
     "global": "वैश्विक",
-    "selected_count": "{{count}} चयनित"
-  }
+    "selected_count": "{{count}} चयनित",
+    "scheduled_sessions": "Scheduled Sessions",
+    "scheduled_sessions_only": "Scheduled Sessions Only"
+  },
+  "students_learning": "Students & Learning"
 }

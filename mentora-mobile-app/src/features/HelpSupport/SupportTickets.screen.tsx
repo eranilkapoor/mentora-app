@@ -37,7 +37,10 @@ type Props = {
 const categories: SupportTicketCategory[] = [
   'account',
   'billing',
-  'matches',
+  'classes',
+  'ai_tutor',
+  'schedules',
+  'progress',
   'chat',
   'safety',
   'technical',

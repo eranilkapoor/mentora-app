@@ -1,14 +1,14 @@
 {
-  "screen_title": "प्रीमियम लें",
+  "screen_title": "Mentora Plans",
   "locked_feature": {
     "title": "प्रीमियम सुविधा",
     "message": "यह विकल्प आपकी मौजूदा योजना में शामिल नहीं है। इसे अनलॉक करने के लिए अपग्रेड करें।",
     "named_message": "{{feature}} आपकी मौजूदा योजना में शामिल नहीं है। इसे अनलॉक करने के लिए अपग्रेड करें।",
     "view_plans": "योजनाएं देखें"
   },
-  "screen_subtitle": "विशेष सुविधाओं का लाभ उठाएँ",
-  "tab_self": "स्वयं सेवा",
-  "tab_assisted": "सहायता प्राप्त",
+  "screen_subtitle": "Unlock guided AI tutoring and learning insights",
+  "tab_self": "Self-Service",
+  "tab_assisted": "Mentor Support",
   "billing_cycle_title": "बिलिंग अवधि चुनें",
   "billing_cycle_subtitle": "उपलब्ध अवधियों में समान तीन स्तरों की तुलना करें।",
   "billing_cycle": {
@@ -26,16 +26,16 @@
   "custom_pricing": "कस्टम मूल्य",
   "custom_value": "कस्टम",
   "contact_sales": "सेल्स से संपर्क करें",
-  "hero_badge": "प्रीमियम सदस्यता",
-  "hero_title": "अपना परफेक्ट जीवनसाथी खोजें",
-  "hero_subtitle": "प्रीमियम सुविधाएँ अनलॉक करें और गंभीर प्रोफाइल्स से तेजी से जुड़ें।",
+  "hero_badge": "Learning Membership",
+  "hero_title": "Learn with Mentora",
+  "hero_subtitle": "Unlock premium AI tutoring, guarded class access, and deeper learning insights.",
   "hero_active_plan": "वर्तमान प्लान: {{plan}}",
   "stat_members_value": "1M+",
-  "stat_members_label": "सदस्य",
+  "stat_members_label": "Learners",
   "stat_faster_value": "3×",
-  "stat_faster_label": "तेज़ मैच",
+  "stat_faster_label": "Faster Progress",
   "stat_success_value": "92%",
-  "stat_success_label": "सफलता दर",
+  "stat_success_label": "Learning Goals",
   "refund_guarantee": "30-दिन की पूर्ण रिफंड गारंटी",
   "refund_terms": "*नियम एवं शर्तें लागू",
   "features_header": "सुविधाएँ",
@@ -61,15 +61,14 @@
   "trust_secure": "सुरक्षित",
   "trust_verified": "सत्यापित",
   "trust_support": "24/7 सहायता",
-  "trust_members": "1M+ सदस्य",
+  "trust_members": "1M+ Learners",
   "exclusive_label": "✦ विशेष",
-  "benefit_pro_max": "प्रो मैक्स की सभी सुविधाएँ + प्रतिदिन असीमित मैच",
-  "benefit_relationship_manager": "आपके लिए समर्पित रिलेशनशिप मैनेजर",
-  "point_profile": "अपनी प्रोफाइल को बेहतर और आकर्षक बनाएं",
-  "point_matches": "सबसे उपयुक्त और गंभीर मैच खोजें",
-  "point_info": "दुल्हन और उसके परिवार की अतिरिक्त जानकारी प्राप्त करें",
-  "point_faster": "प्राथमिकता प्लेसमेंट के साथ 3× तेज़ मैचिंग",
-  "point_meetings": "प्रोफाइल्स के साथ असीमित मीटिंग सेटअप",
+  "benefit_pro_max": "All premium learning benefits plus expanded AI tutor access",
+  "point_profile": "Complete and optimise the student learning profile",
+  "point_matches": "Find relevant subjects, sessions, and learning paths",
+  "point_info": "Get additional academic and progress insights",
+  "point_faster": "Faster learning with priority schedules and guided practice",
+  "point_meetings": "Scheduled tutoring and mentoring sessions",
   "request_callback": "कॉल बैक का अनुरोध करें",
   "know_more": "और जानें ›",
   "offer_text": "सभी प्लानों पर फ्लैट 50% छूट",
@@ -116,10 +115,10 @@
     "continue": "चेकआउट जारी रखें"
   },
   "boost": {
-    "title": "प्रोफ़ाइल बूस्ट",
-    "subtitle": "24 घंटे के लिए priority discovery ranking",
-    "buy": "प्रोफ़ाइल बूस्ट खरीदें",
-    "duration": "24 घंटे"
+    "title": "Learning Boost",
+    "subtitle": "Priority learning recommendations for 24 hours",
+    "buy": "Buy learning boost",
+    "duration": "24 hours"
   },
   "billing": {
     "values": {
@@ -151,7 +150,7 @@
       "purpose": {
         "membership": "सदस्यता",
         "subscription": "सदस्यता योजना",
-        "profile_boost": "प्रोफ़ाइल बूस्ट"
+        "learning_boost": "Learning boost"
       },
       "reason": {
         "user_requested_from_billing_screen": "आपके द्वारा रद्द",
@@ -166,7 +165,7 @@
     "current_membership": "वर्तमान सदस्यता",
     "valid_until": "{{date}} तक मान्य",
     "valid_until_label": "मान्य तक",
-    "upgrade_hint": "प्रीमियम प्रोफ़ाइल एक्सेस अनलॉक करने के लिए अपग्रेड करें",
+    "upgrade_hint": "Upgrade to unlock premium AI tutor access",
     "total_paid": "कुल भुगतान",
     "payments": "भुगतान",
     "auto_renew": "ऑटो रिन्यू",
@@ -203,10 +202,10 @@
     "restore_failed_message": "हम आपकी स्टोर खरीद नहीं जांच सके। कृपया पुनः प्रयास करें।",
     "plan_benefits": "प्लान लाभ",
     "plan_benefits_sub": "आपके खाते से जुड़े प्रीमियम एक्सेस",
-    "basic_profile_access": "बेसिक प्रोफ़ाइल एक्सेस",
-    "basic_profile_access_sub": "अपनी AI tutoring प्रोफ़ाइल बनाएं और बनाए रखें",
+    "basic_profile_access": "Basic learning profile access",
+    "basic_profile_access_sub": "Create and maintain your student learning profile",
     "premium_features": "प्रीमियम सुविधाएं",
-    "premium_features_sub": "प्रीमियम चैट और विज़िबिलिटी सुविधाएं अनलॉक करने के लिए अपग्रेड करें",
+    "premium_features_sub": "Upgrade to unlock premium tutor access and learning insights",
     "billing_summary": "बिलिंग सारांश",
     "billing_summary_sub": "इस खाते से पूरे किए गए भुगतान",
     "successful_payments": "सफल भुगतान",
@@ -228,5 +227,6 @@
     "billing_details": "बिलिंग विवरण",
     "billing_details_sub": "हाल के ऑर्डर, इनवॉइस और भुगतान स्थिति",
     "no_billing_records": "अभी कोई बिलिंग रिकॉर्ड नहीं है।"
-  }
+  },
+  "benefit_mentor_support": "Dedicated mentor support assigned to your learning plan"
 }

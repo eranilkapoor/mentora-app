@@ -129,7 +129,7 @@ Status legend:
 | Admin dashboard APIs | Done | Admin module exists with user/payment/moderation/report routes. |
 | Revenue analytics | Partly Done | Payment/admin analytics exist; business dashboard/export should be verified. |
 | Referral campaign tracking | Done | Referral module and frontend exist. |
-| Success stories/CMS | Done | Admin success story/CMS capability exists. |
+| Learning outcomes/CMS | Todo | Replace any generic story/CMS capability with learning outcome, testimonial, and content-review workflows. |
 
 ## Tasks We Can Fix Right Now
 

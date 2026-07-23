@@ -32,14 +32,14 @@ describe('custom assisted membership presentation', () => {
   it('uses the assisted plan group and a clear custom name', () => {
     expect(getPlanTypeForTab('assisted')).toBe('assisted');
     expect(formatMembershipPlanDisplayName(customAssistedPlan)).toBe(
-      'Custom Assisted Matchmaking'
+      'Custom Mentor Support'
     );
   });
 
   it('renders custom terms inside the assisted plan collection', () => {
     expect(buildDisplayPlans([customAssistedPlan], 'assisted')).toEqual([
       expect.objectContaining({
-        name: 'Custom Assisted Matchmaking',
+        name: 'Custom Mentor Support',
         price: 'Custom pricing',
         durationLabel: 'Custom term',
         isCustom: true,
@@ -157,7 +157,7 @@ describe('self-service membership choices', () => {
         {
           value: -1,
           featureId: {
-            key: 'unlimited_profile_views',
+            key: 'ai_tutor_monthly_minutes',
             name: 'Unlimited profile views',
           },
         },
@@ -167,7 +167,7 @@ describe('self-service membership choices', () => {
     const displayPlan = buildDisplayPlans([plan], 'self')[0];
 
     if (!displayPlan) throw new Error('Expected plan to be displayed');
-    expect(displayPlan.featureValues.daily_profile_views).toBe('Unlimited');
-    expect(displayPlan.featureValues.profile_views).toBe('Unlimited');
+    expect(displayPlan.featureValues.ai_tutor_daily_minutes).toBe('Unlimited');
+    expect(displayPlan.featureValues.ai_tutor_session_limit).toBe('Unlimited');
   });
 });

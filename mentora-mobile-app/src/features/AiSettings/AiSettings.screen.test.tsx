@@ -99,11 +99,11 @@ describe('AiSettingsScreen', () => {
     mockAiData = {
       ai: {
         aiRecommendationsEnabled: true,
-        smartMatchRanking: false,
-        compatibilityScoring: true,
-        horoscopeSuggestions: false,
-        allowAiBioGeneration: true,
-        useProfileDataForRanking: false,
+        adaptiveTutorRanking: false,
+        progressScoring: true,
+        studyPlanSuggestions: false,
+        allowAiProfileSummary: true,
+        useProfileDataForPersonalization: false,
       },
     };
   });
@@ -133,10 +133,10 @@ describe('AiSettingsScreen', () => {
       aiRecommendationsEnabled: false,
     });
     expect(mockUpdateAiSettings).toHaveBeenCalledWith({
-      smartMatchRanking: true,
+      adaptiveTutorRanking: true,
     });
     expect(mockUpdateAiSettings).toHaveBeenCalledWith({
-      allowAiBioGeneration: false,
+      allowAiProfileSummary: false,
     });
   });
 });

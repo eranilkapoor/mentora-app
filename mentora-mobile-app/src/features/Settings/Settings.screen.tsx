@@ -207,7 +207,7 @@ export default function SettingsScreen({
 
         {/* Students & Learning */}
 
-        <Section icon="book-open" title={t('settings.profile_matchmaking')}>
+        <Section icon="book-open" title={t('settings.students_learning')}>
           <SettingRow
             icon="edit-3"
             label={t('settings.edit_profile')}

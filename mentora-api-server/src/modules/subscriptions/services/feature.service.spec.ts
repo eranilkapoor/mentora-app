@@ -81,7 +81,9 @@ describe('FeatureService', () => {
     const { service } = createFixture();
 
     await expect(
-      service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
+      service.checkAccess(FeatureKey.AI_TUTOR_SESSION_LIMIT, {
+        userId: USER_ID,
+      }),
     ).rejects.toMatchObject({ code: ErrorCode.SUBSCRIPTION_REQUIRED });
   });
 
@@ -90,7 +92,9 @@ describe('FeatureService', () => {
     freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
 
     await expect(
-      service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
+      service.checkAccess(FeatureKey.AI_TUTOR_SESSION_LIMIT, {
+        userId: USER_ID,
+      }),
     ).rejects.toMatchObject({
       code: ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE,
     });
@@ -111,10 +115,12 @@ describe('FeatureService', () => {
         createFixture();
       freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
       planFeaturesChain.exec.mockResolvedValue([
-        feature(FeatureKey.SEND_INTEREST, value, type),
+        feature(FeatureKey.AI_TUTOR_SESSION_LIMIT, value, type),
       ]);
       await expect(
-        service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
+        service.checkAccess(FeatureKey.AI_TUTOR_SESSION_LIMIT, {
+          userId: USER_ID,
+        }),
       ).resolves.toEqual({ allowed: true });
 
       expect(cache.incrementWithExpiry).toHaveBeenCalledTimes(
@@ -123,16 +129,18 @@ describe('FeatureService', () => {
     },
   );
 
-  it('allows daily profile views when the plan has unlimited profile views', async () => {
+  it('allows daily AI tutor minutes when the plan has monthly AI tutor minutes', async () => {
     const { cache, freePlanChain, planFeaturesChain, service } =
       createFixture();
     freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
     planFeaturesChain.exec.mockResolvedValue([
-      feature(FeatureKey.UNLIMITED_PROFILE_VIEWS, -1, 'limit'),
+      feature(FeatureKey.AI_TUTOR_MONTHLY_MINUTES, -1, 'limit'),
     ]);
 
     await expect(
-      service.checkAccess(FeatureKey.DAILY_PROFILE_VIEWS, { userId: USER_ID }),
+      service.checkAccess(FeatureKey.AI_TUTOR_DAILY_MINUTES, {
+        userId: USER_ID,
+      }),
     ).resolves.toEqual({ allowed: true });
 
     expect(cache.incrementWithExpiry).not.toHaveBeenCalled();
@@ -147,7 +155,11 @@ describe('FeatureService', () => {
         ttlSeconds: 86_400,
       });
 
-      await service.checkUsageLimit(USER_ID, FeatureKey.SEND_INTEREST, 3);
+      await service.checkUsageLimit(
+        USER_ID,
+        FeatureKey.AI_TUTOR_SESSION_LIMIT,
+        3,
+      );
 
       expect(cache.incrementWithExpiry).toHaveBeenCalledWith(
         expect.stringContaining(`usage:${USER_ID}:`),
@@ -164,7 +176,7 @@ describe('FeatureService', () => {
     });
 
     await expect(
-      service.checkUsageLimit(USER_ID, FeatureKey.SEND_INTEREST, 3),
+      service.checkUsageLimit(USER_ID, FeatureKey.AI_TUTOR_SESSION_LIMIT, 3),
     ).rejects.toMatchObject({
       code: ErrorCode.SUBSCRIPTION_FEATURE_NOT_AVAILABLE,
     });
@@ -181,7 +193,7 @@ describe('FeatureService', () => {
     cache.get.mockResolvedValue(current);
 
     await expect(
-      service.getRemainingUsage(USER_ID, FeatureKey.SEND_INTEREST, 5),
+      service.getRemainingUsage(USER_ID, FeatureKey.AI_TUTOR_SESSION_LIMIT, 5),
     ).resolves.toBe(expected);
   });
 
@@ -195,13 +207,13 @@ describe('FeatureService', () => {
     const { freePlanChain, planFeaturesChain, service } = createFixture();
     freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
     planFeaturesChain.exec.mockResolvedValue([
-      feature(FeatureKey.SEND_INTEREST, 5, 'limit'),
-      feature(FeatureKey.VIDEO_PROFILE, null, 'boolean'),
+      feature(FeatureKey.AI_TUTOR_SESSION_LIMIT, 5, 'limit'),
+      feature(FeatureKey.AI_EXPLANATIONS, null, 'boolean'),
     ]);
 
     await expect(service.getFeaturesForUser(USER_ID)).resolves.toEqual({
-      [FeatureKey.SEND_INTEREST]: 5,
-      [FeatureKey.VIDEO_PROFILE]: true,
+      [FeatureKey.AI_TUTOR_SESSION_LIMIT]: 5,
+      [FeatureKey.AI_EXPLANATIONS]: true,
     });
   });
 
@@ -210,22 +222,26 @@ describe('FeatureService', () => {
 
     expect(
       service.hasFeature(
-        { [FeatureKey.SEND_INTEREST]: 1 },
-        FeatureKey.SEND_INTEREST,
+        { [FeatureKey.AI_TUTOR_SESSION_LIMIT]: 1 },
+        FeatureKey.AI_TUTOR_SESSION_LIMIT,
       ),
     ).toBe(true);
-    expect(service.hasFeature({}, FeatureKey.SEND_INTEREST)).toBe(false);
+    expect(service.hasFeature({}, FeatureKey.AI_TUTOR_SESSION_LIMIT)).toBe(
+      false,
+    );
   });
 
   it('uses cached plan features without querying MongoDB', async () => {
     const { cache, freePlanChain, pfModel, service } = createFixture();
     freePlanChain.exec.mockResolvedValue({ _id: new Types.ObjectId() });
     cache.get.mockResolvedValue([
-      feature(FeatureKey.SEND_INTEREST, true, 'boolean'),
+      feature(FeatureKey.AI_TUTOR_SESSION_LIMIT, true, 'boolean'),
     ]);
 
     await expect(
-      service.checkAccess(FeatureKey.SEND_INTEREST, { userId: USER_ID }),
+      service.checkAccess(FeatureKey.AI_TUTOR_SESSION_LIMIT, {
+        userId: USER_ID,
+      }),
     ).resolves.toEqual({ allowed: true });
     expect(pfModel.find).not.toHaveBeenCalled();
   });
@@ -234,9 +250,14 @@ describe('FeatureService', () => {
     const { cache, freePlanChain, planFeaturesChain, service } =
       createFixture();
     const planId = new Types.ObjectId();
-    const active = feature(FeatureKey.SEND_INTEREST, true, 'boolean', true);
-    const unspecified = feature(FeatureKey.VIDEO_PROFILE, true, 'boolean');
-    const inactive = feature(FeatureKey.PROFILE_BOOST, true, 'boolean', false);
+    const active = feature(
+      FeatureKey.AI_TUTOR_SESSION_LIMIT,
+      true,
+      'boolean',
+      true,
+    );
+    const unspecified = feature(FeatureKey.AI_EXPLANATIONS, true, 'boolean');
+    const inactive = feature(FeatureKey.AI_STUDY_PLAN, true, 'boolean', false);
     const malformed = { _id: new Types.ObjectId(), featureId: undefined };
     freePlanChain.exec.mockResolvedValue({ _id: planId });
     planFeaturesChain.exec.mockResolvedValue([
@@ -249,8 +270,8 @@ describe('FeatureService', () => {
     const result = await service.getFeaturesForUser(USER_ID);
 
     expect(result).toEqual({
-      [FeatureKey.SEND_INTEREST]: true,
-      [FeatureKey.VIDEO_PROFILE]: true,
+      [FeatureKey.AI_TUTOR_SESSION_LIMIT]: true,
+      [FeatureKey.AI_EXPLANATIONS]: true,
     });
     expect(cache.set).toHaveBeenCalledWith(
       `plan_features:${planId.toString()}`,

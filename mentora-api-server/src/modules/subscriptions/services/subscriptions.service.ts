@@ -283,7 +283,7 @@ export class SubscriptionsService {
       !requestedPlan ||
       !requestedPlan.isActive ||
       requestedPlan.price <= 0 ||
-      requestedPlan.planType === PlanType.PROFILE_BOOST ||
+      requestedPlan.planType === PlanType.LEARNING_BOOST ||
       requestedPlan.isCustom
     ) {
       return throwNotFound(ErrorCode.SUBSCRIPTION_NOT_FOUND, {
@@ -294,7 +294,7 @@ export class SubscriptionsService {
     const paidPlanIds = await this.planModel
       .find({
         price: { $gt: 0 },
-        planType: { $ne: PlanType.PROFILE_BOOST },
+        planType: { $ne: PlanType.LEARNING_BOOST },
       })
       .select('_id')
       .lean()
@@ -396,7 +396,7 @@ export class SubscriptionsService {
       .findOne({
         tier: PlanTier.FREE,
         isActive: true,
-        planType: { $ne: PlanType.PROFILE_BOOST },
+        planType: { $ne: PlanType.LEARNING_BOOST },
       })
       .lean()
       .exec();

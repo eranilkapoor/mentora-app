@@ -6,12 +6,13 @@
   "all_caught_up": "All caught up!",
   "mark_all_read": "Mark all as read",
   "empty_title": "No notifications yet",
-  "empty_subtitle": "When you get matches, messages or activity, they will appear here.",
+  "empty_subtitle": "Session reminders, tutor messages, progress updates, and activity will appear here.",
   "no_notifications": "No notifications",
   "actions": {
     "mark_read": "Mark as read",
     "view_profile": "View profile",
-    "reply": "Reply"
+    "reply": "Reply",
+    "view_learning": "View learning"
   },
   "detail": {
     "title": "Notification details",
@@ -28,7 +29,6 @@
     "unread_description": "Open or act on this notification to mark it as seen.",
     "view_profile": "View profile",
     "open_chat": "Open chat",
-    "view_matches": "View matches",
     "view_notifications": "Back to notifications",
     "open_related": "Open related item",
     "kinds": {
@@ -36,27 +36,29 @@
       "success": "Success",
       "warning": "Warning",
       "error": "Error",
-      "match": "Match",
+      "match": "Learning",
       "chat": "Chat",
       "payment": "Payment",
       "system": "System"
-    }
+    },
+    "view_learning": "View learning"
   },
   "categories": {
-    "interest_received": "Interest received",
-    "interest_accepted": "Interest accepted",
-    "profile_view": "Profile view",
-    "match_found": "Match found",
+    "session_scheduled": "Session scheduled",
+    "session_reminder": "Session reminder",
+    "progress_update": "Progress update",
+    "parent_alert": "Parent alert",
     "message_received": "Message received",
     "subscription": "Subscription",
+    "marketing": "Updates and offers",
     "system": "System"
   },
   "types": {
     "new_message": "You have a new message",
-    "match_request": "You received a match request",
-    "match_accepted": "Your match request was accepted",
-    "profile_view": "Someone viewed your profile",
-    "interest": "Someone sent you an interest"
+    "session_scheduled": "Your session was scheduled",
+    "session_reminder": "A learning session is coming up",
+    "progress_update": "Student progress was updated",
+    "parent_alert": "A parent approval or safety item needs attention"
   },
   "sections": {
     "today": "Today",

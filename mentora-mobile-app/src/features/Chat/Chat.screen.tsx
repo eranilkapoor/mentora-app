@@ -119,10 +119,10 @@ export default function ChatScreen({
   const communicationSettings = useAppSelector(
     (state) => state.settings.communication ?? DEFAULT_COMMUNICATION_SETTINGS
   );
-  const { userId, roomId, partnerName, partnerPhoto } = route.params ?? {};
+  const { userId, roomId, contactName, contactPhoto } = route.params ?? {};
   const resolvedPartnerPhoto = useMemo(
-    () => (partnerPhoto ? resolveApiUrl(partnerPhoto) : null),
-    [partnerPhoto]
+    () => (contactPhoto ? resolveApiUrl(contactPhoto) : null),
+    [contactPhoto]
   );
   const [activeRoomId, setActiveRoomId] = useState(roomId);
   const [inputText, setInputText] = useState('');
@@ -565,7 +565,7 @@ export default function ChatScreen({
     showConfirm({
       title: t('chat.report_user_title'),
       message: t('chat.report_user_message', {
-        user: partnerName ?? t('chat.this_user'),
+        user: contactName ?? t('chat.this_user'),
       }),
       confirmText: t('chat.report'),
       destructive: true,
@@ -590,7 +590,7 @@ export default function ChatScreen({
           });
       },
     });
-  }, [navigation, partnerName, reportUser, userId, t]);
+  }, [navigation, contactName, reportUser, userId, t]);
 
   const handleBlockUser = useCallback((): void => {
     if (!userId) return;
@@ -645,7 +645,7 @@ export default function ChatScreen({
       <Header
         showBack
         onBackPress={navigation.goBack}
-        title={partnerName ?? t('chat.chat')}
+        title={contactName ?? t('chat.chat')}
         subtitle={
           isCreatingRoom || isFetching
             ? t('common.loading')
@@ -654,8 +654,8 @@ export default function ChatScreen({
         avatarUri={resolvedPartnerPhoto ?? undefined}
         onIdentityPress={handleOpenProfile}
         identityAccessibilityLabel={
-          partnerName
-            ? t('chat.view_user_profile', { name: partnerName })
+          contactName
+            ? t('chat.view_user_profile', { name: contactName })
             : t('chat.view_this_user_profile')
         }
         actions={[

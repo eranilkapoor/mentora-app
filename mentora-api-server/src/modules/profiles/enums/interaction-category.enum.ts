@@ -1,13 +1,13 @@
 export enum InteractionCategory {
   DISCOVERY = 'discovery',
-  MATCHING = 'matching',
+  LEARNING = 'learning',
   ENGAGEMENT = 'engagement',
   PREMIUM = 'premium',
   SAFETY = 'safety',
 }
 
 export const INTERACTION_CATEGORY_MAP = {
-  send_interest: 'matching',
-  shortlist: 'engagement',
+  request_session: 'learning',
+  save_subject: 'engagement',
   block: 'safety',
 };

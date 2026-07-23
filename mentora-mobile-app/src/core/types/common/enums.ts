@@ -130,18 +130,6 @@ export const Complexions = {
 
 export type Complexion = (typeof Complexions)[keyof typeof Complexions];
 
-// ─── Manglik Status ───────────────────────────────────────────────────────────
-
-export const ManglikStatuses = {
-  NON_MANGLIK: 'non_manglik',
-  MANGLIK: 'manglik',
-  ANSHIK_MANGLIK: 'anshik_manglik',
-  DONT_KNOW: 'dont_know',
-} as const;
-
-export type ManglikStatus =
-  (typeof ManglikStatuses)[keyof typeof ManglikStatuses];
-
 // ─── Religion ─────────────────────────────────────────────────────────────────
 
 export const Religions = {

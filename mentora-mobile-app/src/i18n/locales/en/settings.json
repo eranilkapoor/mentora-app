@@ -4,7 +4,6 @@
   "change_password_sub": "Keep your account secure",
   "account_settings": "Account Settings",
   "account_settings_sub": "Parent/student verification, linked accounts and account actions",
-  "profile_matchmaking": "Students & Learning",
   "privacy_safety": "Privacy, Safety & Communication",
   "app_experience": "App Experience",
   "preferences": "Preferences",
@@ -202,12 +201,6 @@
     "marketing_global_sub": "Deals, offers and feature updates",
     "per_event": "Learning Notification Preferences",
     "per_event_subtitle": "Choose channels for each learning and account event",
-    "interest_received": "Class Request Received",
-    "interest_received_sub": "When a student or parent requests a scheduled tutoring session",
-    "interest_accepted": "Class Confirmed",
-    "interest_accepted_sub": "When a scheduled class or tutor session is confirmed",
-    "match_found": "Tutor Session Ready",
-    "match_found_sub": "When an AI tutor session is ready for the selected subject",
     "profile_view": "Student Profile Updated",
     "profile_view_sub": "When academic or student profile details change",
     "message_received": "Tutor Message",
@@ -237,7 +230,15 @@
     "quiet_end": "End Time",
     "quiet_end_sub": "Notifications resume after this time.",
     "timezone": "Timezone",
-    "timezone_sub": "Quiet hours follow this timezone even when you travel."
+    "timezone_sub": "Quiet hours follow this timezone even when you travel.",
+    "session_scheduled": "Session Scheduled",
+    "session_scheduled_sub": "When a tutoring session is created or updated",
+    "session_reminder": "Session Reminder",
+    "session_reminder_sub": "Before a scheduled class or AI tutor session starts",
+    "progress_update": "Progress Update",
+    "progress_update_sub": "When learning progress, mastery, or reports are updated",
+    "parent_alert": "Parent Alert",
+    "parent_alert_sub": "When parental controls, safety, or student access need attention"
   },
   "security": {
     "title": "Security Settings",
@@ -478,11 +479,14 @@
     "categories": {
       "account": "Account",
       "billing": "Billing",
-      "matches": "Classes & Schedules",
       "chat": "Tutor Chat",
       "safety": "Safety",
       "technical": "Technical",
-      "other": "Other"
+      "other": "Other",
+      "classes": "Classes & Schedules",
+      "ai_tutor": "AI Tutor",
+      "schedules": "Schedules",
+      "progress": "Progress"
     },
     "priorities": {
       "normal": "Normal",
@@ -496,41 +500,6 @@
       "resolved": "Resolved",
       "closed": "Closed"
     }
-  },
-  "success_stories": {
-    "title": "Learning Outcomes",
-    "entry_sub": "Share a Mentora learning milestone for review",
-    "share_title": "Celebrate a learning milestone",
-    "share_subtitle": "Submit a student progress story for moderation. It remains private until our content team approves it.",
-    "story_title": "Story title",
-    "title_placeholder": "A short title for your story",
-    "partnerName": "Student name",
-    "partnerName_placeholder": "Student name",
-    "marriageDate": "Milestone date",
-    "marriageDate_placeholder": "YYYY-MM-DD",
-    "location": "Location (optional)",
-    "location_placeholder": "City or region",
-    "story": "Learning story",
-    "story_placeholder": "Tell us what the student learned, what improved, and how Mentora helped.",
-    "consent": "I consent to Mentora reviewing and publishing this learning story. I confirm that I have permission to share the submitted details.",
-    "submit": "Submit for Review",
-    "submitting": "Submitting...",
-    "submitted": "Learning outcome submitted for review",
-    "failed": "Unable to submit your learning story",
-    "invalid_title": "Complete your learning story",
-    "invalid_message": "Add a title, student name, valid date, at least 100 characters, and publication consent.",
-    "history": "Your submissions",
-    "status_submitted": "In review",
-    "status_published": "Published",
-    "status_rejected": "Needs changes",
-    "status_archived": "Archived",
-    "note_submitted": "Your story is with our moderation team for review.",
-    "note_published": "Your story is approved and visible to the community.",
-    "note_rejected": "Your submission needs changes before it can be published.",
-    "note_archived": "This story is no longer visible in public listings.",
-    "empty_title": "No submissions yet",
-    "empty_message": "Share a Mentora learning milestone and your submitted stories will appear here.",
-    "empty": "You have not submitted a learning outcome yet."
   },
   "blocked_users_screen": {
     "unblock": "Unblock",
@@ -681,22 +650,22 @@
   },
   "ai": {
     "title": "AI Tutor Settings",
-    "matchmaking": "AI Tutoring",
-    "matchmaking_subtitle": "Control how Mentora personalizes scheduled tutoring",
     "recommendations": "Learning Recommendations",
     "recommendations_sub": "Suggest next topics, revision areas, and practice sessions",
     "smart_ranking": "Adaptive Study Plan",
     "smart_ranking_sub": "Prioritize subjects and concepts using recent progress",
     "compatibility_scoring": "Progress Scoring",
     "compatibility_scoring_sub": "Show readiness, confidence, and concept mastery signals",
-    "horoscope_suggestions": "Schedule-Aware Guidance",
-    "horoscope_suggestions_sub": "Use class schedule, grade level, and subject context for tutoring suggestions",
     "profile": "Student Profile AI",
     "profile_subtitle": "AI tools for student academic details",
     "bio_generation": "Learning Summary Drafts",
     "bio_generation_sub": "Let AI help draft student goals and academic summaries",
     "use_profile_data": "Use Academic Data for Personalization",
-    "use_profile_data_sub": "Allow AI to analyse student profile, subjects, and learning history"
+    "use_profile_data_sub": "Allow AI to analyse student profile, subjects, and learning history",
+    "tutoring": "AI Tutoring",
+    "tutoring_subtitle": "Control how Mentora personalizes scheduled tutoring",
+    "study_plan_suggestions": "Schedule-Aware Guidance",
+    "study_plan_suggestions_sub": "Use class schedule, grade level, and subject context for tutoring suggestions"
   },
   "localization": {
     "title": "Localization Settings",
@@ -720,8 +689,6 @@
   },
   "options": {
     "everyone": "Everyone",
-    "accepted_matches": "Approved Contacts",
-    "matches_only": "Scheduled Tutors Only",
     "contacts_only": "Contacts Only",
     "no_one": "No One",
     "public": "Public",
@@ -741,6 +708,9 @@
     "united_states": "United States",
     "united_kingdom": "United Kingdom",
     "global": "Global",
-    "selected_count": "{{count}} selected"
-  }
+    "selected_count": "{{count}} selected",
+    "scheduled_sessions": "Scheduled Sessions",
+    "scheduled_sessions_only": "Scheduled Sessions Only"
+  },
+  "students_learning": "Students & Learning"
 }

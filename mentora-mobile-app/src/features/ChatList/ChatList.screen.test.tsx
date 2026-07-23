@@ -231,8 +231,8 @@ describe('ChatListScreen', () => {
     expect(mockNavigate).toHaveBeenCalledWith('ChatDetails', {
       userId: 'match-1',
       roomId: 'room-1',
-      partnerName: 'Asha Sharma',
-      partnerPhoto: 'api:/asha.jpg',
+      contactName: 'Asha Sharma',
+      contactPhoto: 'api:/asha.jpg',
     });
     await waitFor(() => {
       expect(mockUpdateRoomSettings).toHaveBeenCalledWith({

@@ -62,9 +62,9 @@ Mentora should evolve beyond the MVP into an enterprise-grade tutoring platform 
 
 See `docs/planning/ENTERPRISE-AI-TUTOR-APP-PLAN.md` for the detailed competitor-aligned product blueprint.
 
-## Reuse Strategy
+## Platform Foundation
 
-Reuse from the copied platform:
+Keep and evolve:
 
 - Auth, JWT, refresh sessions, device sessions, OTP, social login, password reset.
 - Mobile shell, navigation, RTK Query, persisted auth, i18n, theme, settings, support.
@@ -73,9 +73,9 @@ Reuse from the copied platform:
 - Chat/WebSocket infrastructure as the foundation for AI tutor message delivery.
 - Admin/RBAC foundations.
 
-Replace:
+Remove or rename when encountered:
 
-- Match generation, interests, partner preferences, compatibility scoring, curated matches, caste/religion-specific fields, matrimonial success stories, and matchmaking-specific subscription limits.
+- Discovery-marketplace APIs, request workflows that are not learning/session based, non-learning preferences, curated-profile routes, outcome-story modules not tied to learning, and non-learning subscription limits.
 
 ## Phases
 
@@ -97,7 +97,7 @@ Replace:
 - B2B school CRM.
 - Complete university/college catalogue for every country.
 - Voice tutor, handwritten answer checking, live human mentor marketplace, group classes, and gamification.
-- Reusing Match Mate production database or user data.
+- Reusing any non-Mentora production database or user data.
 
 ## Student Profile Scope
 

@@ -46,7 +46,8 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
     slug: 'privacy-policy',
     title: 'Privacy Policy',
     eyebrow: 'Mentora legal',
-    subtitle: 'How Mentora collects, uses, protects, and shares member data.',
+    subtitle:
+      'How Mentora collects, uses, protects, and shares student, parent, and tutor data.',
     lastUpdated: 'Last updated: 1 January 2026',
     intro:
       'Mentora is committed to protecting your personal information and your right to privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use the Mentora mobile application, website, and related services.',
@@ -59,7 +60,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
             bullets: [
               'Full name, gender, date of birth, student or guardian role, phone number, and email address.',
               'City, country, academic details, institution, subjects, goals, and learning preferences.',
-              'Academic Level, community, mother tongue, lifestyle choices, income range, academic profile or academic plan details, and other AI tutoring profile fields when you add them.',
+              'Academic level, board, institution, language, accessibility needs, goals, subjects, course preferences, and other AI tutoring profile fields when you add them.',
               'Profile photos, video introductions, verification documents, and other media you choose to upload.',
             ],
           },
@@ -75,7 +76,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
             title: 'Usage and device information',
             bullets: [
               'Device type, operating system, app version, IP address, approximate region, and crash diagnostics.',
-              'App interactions including profile views, learning sessions, interests, shortlists, support requests, and notification preferences.',
+              'App interactions including profile views, learning sessions, saved tutors or subjects, support requests, and notification preferences.',
               'Security events such as login history, active sessions, suspicious sign-in signals, blocked users, and moderation actions.',
             ],
           },
@@ -93,15 +94,15 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         bullets: [
           'Create and manage your account, profile, preferences, subscriptions, and support requests.',
           'Recommend compatible learning sessions and improve learning sessionmaking quality.',
-          'Enable chat, notifications, profile visibility controls, and safety workflows.',
-          'Detect fraud, spam, fake profiles, abuse, suspicious logins, and policy violations.',
+          'Enable chat, notifications, student visibility controls, parental controls, and safety workflows.',
+          'Detect fraud, spam, fake accounts, abuse, suspicious logins, and policy violations.',
           'Comply with applicable legal, payment, tax, security, and platform obligations.',
         ],
       },
       {
         title: 'Sharing your information',
         bullets: [
-          'With other members only as needed to show your profile, preferences, learning session activity, and permitted contact details.',
+          'With students, parents, tutors, mentors, or support staff only as needed to provide learning sessions, progress support, safety workflows, and permitted contact details.',
           'With infrastructure, analytics, communication, payment, verification, and support providers that help us operate Mentora.',
           'With legal authorities when required by law, court order, safety investigation, or fraud prevention need.',
         ],
@@ -111,21 +112,21 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         bullets: [
           'Camera and photo/media access are used for profile photos, verification selfies, documents, and optional video introductions.',
           'Microphone access may be used when you record or upload a video introduction or use communication features.',
-          'Location access, when enabled, helps improve nearby learning session recommendations and regional preferences.',
+          'Location access, when enabled, helps improve regional curriculum, timezone, language, and support preferences.',
           'Notification permission is used for learning sessions, messages, security alerts, subscription updates, and support ticket replies.',
           'You can revoke device permissions anytime from Android or iOS settings.',
         ],
       },
       {
         title: 'Security and retention',
-        body: 'We use encrypted transport, access controls, monitoring, secure storage, moderation workflows, and operational review to protect member data. We retain information only as long as needed for account operation, safety, fraud prevention, legal compliance, and legitimate business records.',
+        body: 'We use encrypted transport, access controls, monitoring, secure storage, moderation workflows, and operational review to protect student, parent, and tutor data. We retain information only as long as needed for account operation, safety, fraud prevention, legal compliance, and legitimate business records.',
       },
       {
         title: 'Your choices and rights',
         bullets: [
           'Access and update profile information from the app.',
           'Control privacy, searchability, communication, and notification settings.',
-          'Block or report members and request help through support tickets.',
+          'Block or report users and request help through support tickets.',
           'Withdraw consent where applicable.',
           'Request account deletion or data export from account settings or support.',
         ],
@@ -154,15 +155,15 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         bullets: [
           'You must be legally eligible to use a AI tutoring service and create an account for a genuine AI tutoring purpose.',
           'You are responsible for keeping your login credentials secure and for all activity on your account.',
-          'Family-managed profiles must clearly represent the member truthfully and must be used with appropriate consent.',
+          'Parent-managed student profiles must represent the learner truthfully and must be used with appropriate consent.',
         ],
       },
       {
         title: 'Profiles and learning sessions',
         bullets: [
-          'You agree to provide accurate identity, relationship, family, education, occupation, location, and lifestyle information.',
-          'Learning suggestions, compatibility scores, curator recommendations, and search results are informational.',
-          'You are responsible for evaluating profiles, conversations, and decisions safely before sharing personal details or meeting anyone.',
+          'You agree to provide accurate student, parent, academic, address, guardian, payment, and learning information.',
+          'AI tutor suggestions, progress scores, readiness indicators, and recommendations are informational.',
+          'Parents and students are responsible for using tutor sessions, chat, documents, and support features safely.',
         ],
       },
       {
@@ -176,8 +177,8 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       {
         title: 'Acceptable use',
         bullets: [
-          'Do not impersonate others, create fake profiles, scrape data, send spam, harass members, or use Mentora for commercial lead generation.',
-          'Do not request money, gifts, bank details, OTPs, passwords, or sensitive documents from other members.',
+          'Do not impersonate others, create fake accounts, scrape data, send spam, harass users, or use Mentora for commercial lead generation.',
+          'Do not request money, gifts, bank details, OTPs, passwords, or sensitive documents from other users.',
           'Do not upload unlawful, explicit, hateful, violent, misleading, copyrighted, or privacy-violating content.',
         ],
       },
@@ -187,7 +188,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       },
       {
         title: 'Safety, moderation, and enforcement',
-        body: 'We may review, restrict, remove, suspend, or terminate accounts, content, messages, or features when we detect abuse, fraud, fake profiles, payment risk, safety issues, or policy violations. Use report and block tools when needed.',
+        body: 'We may review, restrict, remove, suspend, or terminate accounts, content, messages, tutor sessions, or features when we detect abuse, fraud, fake accounts, payment risk, safety issues, or policy violations. Use report and block tools when needed.',
       },
       {
         title: 'Third-party services',
@@ -204,9 +205,9 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       {
         title: 'Use truthful profile details',
         bullets: [
-          'Use your real identity, current photos, accurate relationship status, and honest family, education, profession, income, location, and lifestyle details.',
+          'Use accurate identity, student, parent, guardian, academic, address, payment, and learning details.',
           'Do not misrepresent age, student identity, guardian authority, academic level, community, education, institution, or learning intent.',
-          'Keep family-managed profiles transparent and respectful of the member represented.',
+          'Keep parent-managed student profiles transparent, age-appropriate, and respectful of the learner represented.',
         ],
       },
       {
@@ -228,15 +229,15 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       {
         title: 'Protect privacy',
         bullets: [
-          'Do not share another member phone number, email, photos, address, documents, profile data, or chat screenshots without permission.',
-          'Do not pressure members to move conversations outside Mentora before they are comfortable.',
-          'Do not collect member data for marketing, recruitment, scraping, or external databases.',
+          'Do not share another user phone number, email, photos, address, documents, profile data, or chat screenshots without permission.',
+          'Do not pressure students, parents, or tutors to move conversations outside Mentora.',
+          'Do not collect user data for marketing, recruitment, scraping, or external databases.',
         ],
       },
       {
         title: 'Avoid fraud and solicitation',
         bullets: [
-          'Do not request money, gifts, investments, loans, OTPs, passwords, bank details, or payment screenshots from other members.',
+          'Do not request money, gifts, investments, loans, OTPs, passwords, bank details, or payment screenshots from other users.',
           'Do not promote outside services, agencies, crypto schemes, job offers, immigration services, or commercial learning sessionmaking without authorization.',
           'Do not impersonate anyone or create multiple misleading accounts.',
         ],
@@ -356,7 +357,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       },
       {
         title: 'How does Mentora find learning sessions?',
-        body: 'Mentora recommends learning sessions based on your preferences such as age, location, education, interests, lifestyle, and other profile parameters.',
+        body: 'Mentora recommends learning sessions based on academic level, subjects, goals, schedule, language, accessibility needs, parental controls, entitlements, and learning history.',
       },
       {
         title: 'Why are some features hidden or locked?',
@@ -393,10 +394,10 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
     title: 'Account and Data Deletion',
     eyebrow: 'User data request',
     subtitle:
-      'How Mentora members can delete their account and associated personal data.',
+      'How Mentora users can delete their account and associated personal data.',
     lastUpdated: 'Last updated: 1 January 2026',
     intro:
-      'This page explains how to request deletion of your Mentora account and personal data. It is provided for members, app store reviewers, and platform compliance checks.',
+      'This page explains how to request deletion of your Mentora account and personal data. It is provided for students, parents, tutors, app store reviewers, and platform compliance checks.',
     sections: [
       {
         title: 'Delete your account from the app',
@@ -413,13 +414,13 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
       },
       {
         title: 'Public deletion request page',
-        body: 'This page is available without signing in so app stores, reviewers, and members can confirm how account and data deletion works. The preferred secure path is still the in-app request because it verifies the signed-in account automatically.',
+        body: 'This page is available without signing in so app stores, reviewers, students, parents, and tutors can confirm how account and data deletion works. The preferred secure path is still the in-app request because it verifies the signed-in account automatically.',
       },
       {
         title: 'Data scheduled for deletion or anonymization',
         bullets: [
           'Profile details, academic records, learning preferences, photos, documents, and optional verification information.',
-          'Chat rooms, learning session activity, interests, shortlists, profile views, notifications, support tickets, and device/session records where deletion is legally and operationally permitted.',
+          'Chat rooms, AI tutor session activity, saved tutors or subjects, profile views, notifications, support tickets, and device/session records where deletion is legally and operationally permitted.',
           'Referral, wallet, subscription, and payment-linked profile references are removed or anonymized where possible.',
         ],
       },
@@ -427,7 +428,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         title: 'Data we may retain for limited purposes',
         bullets: [
           'Payment, tax, invoice, refund, and subscription records required by law or payment providers.',
-          'Security, fraud prevention, abuse reports, moderation decisions, and audit logs needed to protect members and the service.',
+          'Security, fraud prevention, abuse reports, moderation decisions, and audit logs needed to protect users and the service.',
           'Backup copies and system logs for a limited retention period before they expire through normal backup rotation.',
         ],
       },
@@ -435,7 +436,7 @@ const pages: Record<StaticPageSlug, StaticPageContent> = {
         title: 'Permissions and device access',
         bullets: [
           'Mentora may request permissions such as camera, photos/media, notifications, location, microphone, or contacts only for app features you choose to use.',
-          'Deleting your account stops Mentora from using your account data for member-facing features.',
+          'Deleting your account stops Mentora from using your account data for user-facing features.',
           'You can revoke device permissions anytime from your iOS or Android system settings. Uninstalling the app also removes app access from that device.',
         ],
       },

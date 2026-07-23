@@ -2,14 +2,14 @@
 
 ## Architecture
 
-Mentora uses the same technology stack as the copied platform:
+Mentora uses this technology stack:
 
 - `mentora-api-server`: modular NestJS API server with MongoDB, optional Redis, Socket.IO, schedulers, storage, notifications, payments, subscriptions, analytics, support, and admin APIs.
 - `mentora-mobile-app`: Expo React Native app for iOS, Android, and Web with React Navigation, Redux Toolkit Query, persisted auth, localization, push notifications, media, billing, settings, and support.
 - `packages/api-contract`: shared TypeScript API contract package.
 - Future public website: frontend public website for brand, plans, privacy, support, and app download routes.
 
-Mentora must use its own database and environments. Do not point this app at Match Mate production data.
+Mentora must use its own database and environments. Do not point this app at any non-Mentora production data.
 
 ## Identity Model
 

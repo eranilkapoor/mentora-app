@@ -201,7 +201,7 @@ Priority modules:
 5. Build AI Tutor launch screen with server-side access guard.
 6. Build AI chat session with transcript, summary, and parent visibility.
 7. Build tutor mode only after B2C parent/student flow is stable.
-8. Remove old match/matrimonial modules from navigation and services.
+8. Remove old discovery-marketplace modules from navigation and services.
 
 ## Enterprise Launch Checklist
 

@@ -413,7 +413,7 @@ export function useMembershipActions(options: MembershipActionsOptions = {}) {
         const order = await createOrder({
           planId: selectedPlanItem.source._id,
           currency: selectedPlanItem.source.currency,
-          purpose: 'profile_boost',
+          purpose: 'learning_boost',
           idempotencyKey: `boost-${selectedPlanItem.source._id}-${Date.now()}`,
           description: t('membership.boost.title'),
         }).unwrap();

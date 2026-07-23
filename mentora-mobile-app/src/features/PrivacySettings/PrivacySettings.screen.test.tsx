@@ -180,7 +180,7 @@ describe('PrivacySettingsScreen', () => {
         showEmail: true,
         showIncome: false,
         showExactAge: true,
-        showPhotosTo: 'accepted_matches',
+        showPhotosTo: 'scheduled_sessions',
         blurPhotosForUnmatched: false,
         allowScreenshots: true,
         showOnlineStatus: true,

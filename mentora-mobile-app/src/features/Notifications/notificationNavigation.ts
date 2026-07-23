@@ -43,8 +43,8 @@ export const navigateFromNotificationAction = (
               typeof action.params?.roomId === 'string'
                 ? action.params.roomId
                 : undefined,
-            partnerName: fallback?.title ?? 'Chat',
-            partnerPhoto: fallback?.image ?? '',
+            contactName: fallback?.title ?? 'Chat',
+            contactPhoto: fallback?.image ?? '',
           },
         },
       },

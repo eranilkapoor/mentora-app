@@ -204,7 +204,7 @@ export default function ChatListScreen({
     };
   }, [activeFilter, currentUserId, dispatch]);
 
-  const matches = useMemo<ChatMatch[]>(
+  const conversations = useMemo<ChatMatch[]>(
     () =>
       conversationPages.map((conversation) => {
         const participant = conversation.participant;
@@ -266,7 +266,7 @@ export default function ChatListScreen({
     [conversationPages, currentUserId, t]
   );
 
-  const visibleMatches = matches;
+  const visibleConversations = conversations;
 
   const hasMore = Boolean(data?.success && data.data.hasMore);
 
@@ -390,8 +390,8 @@ export default function ChatListScreen({
           navigation.navigate('ChatDetails', {
             userId: item.id,
             ...(item.roomId ? { roomId: item.roomId } : {}),
-            partnerName: item.name,
-            partnerPhoto: item.avatarUrl,
+            contactName: item.name,
+            contactPhoto: item.avatarUrl,
           })
         }
       />
@@ -417,7 +417,7 @@ export default function ChatListScreen({
                 totalUnread > 0
                   ? t('chat.unread_count', { count: totalUnread })
                   : t('chat.conversation_count', {
-                      count: visibleMatches.length,
+                      count: visibleConversations.length,
                     }),
             }
           : {})}
@@ -487,7 +487,7 @@ export default function ChatListScreen({
 
       {isLoading ? (
         <SkeletonList />
-      ) : visibleMatches.length === 0 ? (
+      ) : visibleConversations.length === 0 ? (
         <View style={styles.emptyWrapper}>
           <View style={styles.emptyIconWrapper}>
             <Feather
@@ -528,7 +528,7 @@ export default function ChatListScreen({
         </View>
       ) : (
         <FlatList
-          data={visibleMatches}
+          data={visibleConversations}
           keyExtractor={(item) => item.roomId ?? item.id}
           renderItem={renderItem}
           refreshControl={

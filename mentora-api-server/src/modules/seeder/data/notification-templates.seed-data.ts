@@ -343,7 +343,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
         'A simple follow-up can help clarify the next step before the next session.',
       panelTitle: 'Try this approach',
       bullets: [
-        'Ask a thoughtful question about profile interests or family expectations.',
+        'Ask a thoughtful question about the student goal, subject, or current learning gap.',
         'Share one relevant detail about yourself.',
         "Respect the other person's pace and comfort.",
       ],
@@ -420,7 +420,7 @@ export const NOTIFICATION_TEMPLATE_SEEDS: Partial<NotificationTemplate>[] = [
       eyebrow: 'Profile completion',
       heading: 'Your profile is {{completionPercent}}% complete',
       intro:
-        'Complete profiles receive better recommendations and help families understand compatibility with more confidence.',
+        'Complete profiles receive better tutoring recommendations and help families understand learning progress with more confidence.',
       panelTitle: 'High-impact sections',
       bullets: [
         'Add family, education, career, and lifestyle details.',

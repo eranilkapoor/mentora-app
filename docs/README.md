@@ -2,7 +2,7 @@
 
 This directory contains the product, architecture, delivery, operations, integration, launch, and engineering standards for Mentora.
 
-Mentora is a B2C AI tutoring and mentorship platform for students and parents. It reuses the proven platform foundation from the copied Match Mate codebase, but all product docs in this repository should describe Mentora behavior, data, and launch needs.
+Mentora is a B2C AI tutoring and mentorship platform for students and parents. All product docs in this repository should describe Mentora behavior, data, launch needs, child/student safety, AI tutoring access, subscriptions, and parent-managed learning workflows.
 
 ## Planning
 
@@ -26,7 +26,7 @@ Mentora is a B2C AI tutoring and mentorship platform for students and parents. I
 
 ## Launch
 
-Launch files remain as working templates. They must be reviewed before production release because some text was inherited from the copied source application.
+Launch files are Mentora working templates. They must be reviewed before production release for child/student AI tutoring disclosures, app-store safety requirements, subscription claims, and support operations.
 
 ## Standards
 

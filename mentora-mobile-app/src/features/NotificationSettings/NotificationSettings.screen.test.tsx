@@ -297,14 +297,14 @@ describe('NotificationSettingsScreen', () => {
     );
 
     await fireEvent.press(
-      getByText('settings.notifications.interest_received:push')
+      getByText('settings.notifications.session_scheduled:push')
     );
     await fireEvent.press(
-      getByText('settings.notifications.interest_received:email')
+      getByText('settings.notifications.session_scheduled:email')
     );
 
     expect(mockUpdateNotificationChannel).toHaveBeenCalledWith({
-      event: 'interestReceived',
+      event: 'sessionScheduled',
       channel: 'push',
       value: false,
     });

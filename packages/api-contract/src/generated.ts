@@ -164,38 +164,6 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/api/v1/admin/curated-matches": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["AdminCuratedMatchesController_listCuratedMatches_v1"];
-        readonly put?: never;
-        readonly post: operations["AdminCuratedMatchesController_curateMatch_v1"];
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/admin/curated-matches/{curatedMatchId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete: operations["AdminCuratedMatchesController_expireCuratedMatch_v1"];
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
     readonly "/api/v1/admin/dashboard": {
         readonly parameters: {
             readonly query?: never;
@@ -770,38 +738,6 @@ export interface paths {
         readonly options?: never;
         readonly head?: never;
         readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/admin/success-stories": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["AdminSuccessStoryController_list_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/admin/success-stories/{storyId}/review": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch: operations["AdminSuccessStoryController_review_v1"];
         readonly trace?: never;
     };
     readonly "/api/v1/admin/support/tickets": {
@@ -1524,294 +1460,6 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/api/v1/matches/curated": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getCuratedMatches_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/curated/{curatedMatchId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete: operations["MatchesController_dismissCuratedMatch_v1"];
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/interest": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post: operations["MatchesController_sendInterest_v1"];
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/interest/{interestId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete: operations["MatchesController_withdrawInterest_v1"];
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/interest/respond": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post: operations["MatchesController_respondToInterest_v1"];
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/interests/received": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getReceivedInterests_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/interests/sent": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getSentInterests_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/my": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getMyMatches_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/nearby": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getNearbyMatches_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/new": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getNewMatches_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/online": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getOnlineMatches_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/profile/{userId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getMatchProfile_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/recommended": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getRecommended_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/shortlist/{userId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post: operations["MatchesController_shortlistProfile_v1"];
-        readonly delete: operations["MatchesController_removeShortlistedProfile_v1"];
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/shortlisted": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getShortlistedProfiles_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/stats": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getMatchStats_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/unmatch/{userId}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post: operations["MatchesController_unmatch_v1"];
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/matches/who-viewed-me": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["MatchesController_getWhoViewedMe_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
     readonly "/api/v1/notifications": {
         readonly parameters: {
             readonly query?: never;
@@ -2062,102 +1710,6 @@ export interface paths {
         readonly get?: never;
         readonly put?: never;
         readonly post: operations["PaymentsController_webhook_v1"];
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/preferences": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post: operations["PreferenceController_createPreference_v1"];
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/preferences/about": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put: operations["PreferenceController_updateAbout_v1"];
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/preferences/filters": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put: operations["PreferenceController_updateFilters_v1"];
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/preferences/me": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["PreferenceController_getMyPreference_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/preferences/settings": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put: operations["PreferenceController_updateSettings_v1"];
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/preferences/weights": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put: operations["PreferenceController_updateWeights_v1"];
-        readonly post?: never;
         readonly delete?: never;
         readonly options?: never;
         readonly head?: never;
@@ -2724,22 +2276,6 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/api/v1/settings/notifications/preferences/{event}/{channel}": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get?: never;
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch: operations["SettingsController_updateNotificationChannel_v1"];
-        readonly trace?: never;
-    };
     readonly "/api/v1/settings/privacy": {
         readonly parameters: {
             readonly query?: never;
@@ -3060,38 +2596,6 @@ export interface paths {
         readonly patch?: never;
         readonly trace?: never;
     };
-    readonly "/api/v1/success-stories": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["SuccessStoryController_listPublished_v1"];
-        readonly put?: never;
-        readonly post: operations["SuccessStoryController_submit_v1"];
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
-    readonly "/api/v1/success-stories/mine": {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly get: operations["SuccessStoryController_listMine_v1"];
-        readonly put?: never;
-        readonly post?: never;
-        readonly delete?: never;
-        readonly options?: never;
-        readonly head?: never;
-        readonly patch?: never;
-        readonly trace?: never;
-    };
     readonly "/api/v1/support/tickets": {
         readonly parameters: {
             readonly query?: never;
@@ -3373,7 +2877,7 @@ export interface components {
         readonly CreateFeatureDto: {
             readonly description?: string;
             /** @enum {string} */
-            readonly key: "email_registration" | "phone_registration" | "social_login_google" | "social_login_apple" | "social_login_facebook" | "email_verification" | "phone_verification" | "otp_login" | "two_factor_auth" | "device_management" | "multi_device_login" | "session_history" | "create_profile" | "edit_profile" | "delete_profile" | "advanced_profile_completion" | "profile_completion_score" | "multiple_profile_photos" | "video_profile" | "audio_intro" | "profile_boost" | "profile_highlight" | "featured_profile" | "hide_profile_photo" | "private_photos" | "private_album" | "hide_last_seen" | "hide_online_status" | "incognito_mode" | "identity_verification" | "horoscope_upload" | "astrology_report" | "send_interest" | "view_interests" | "accept_interest" | "reject_interest" | "priority_interest" | "shortlist_profiles" | "favorite_profiles" | "chat_access" | "unlimited_chat" | "chat_with_matches_only" | "chat_without_match" | "priority_chat" | "read_receipts" | "typing_indicator" | "message_translation" | "send_images_in_chat" | "send_videos_in_chat" | "send_voice_notes" | "voice_call" | "video_call" | "view_contact" | "request_contact" | "direct_contact_access" | "view_phone_number" | "view_email_address" | "upload_photos" | "upload_videos" | "view_profile_photos" | "view_private_photos" | "request_photos" | "view_profile_videos" | "request_private_videos" | "photo_approval" | "video_approval" | "ai_photo_verification" | "blurred_photo_mode" | "basic_search" | "advanced_search" | "basic_filters" | "advanced_filters" | "unlimited_search" | "search_by_religion" | "search_by_caste" | "search_by_location" | "search_by_income" | "search_by_education" | "search_by_profession" | "search_by_height" | "location_based_search" | "global_search" | "international_matches" | "nri_matching" | "saved_searches" | "recent_searches" | "daily_profile_views" | "unlimited_profile_views" | "profile_views" | "who_viewed_me" | "profile_analytics" | "top_in_search" | "show_on_home" | "priority_search_ranking" | "featured_in_search" | "basic_matching" | "advanced_matching" | "smart_matches" | "ai_recommendations" | "ai_profile_summary" | "ai_photo_selection" | "ai_compatibility_analysis" | "ai_conversation_starter" | "ai_interest_prediction" | "ai_fake_profile_detection" | "compatibility_score" | "personality_matching" | "interest_matching" | "location_matching" | "strict_preferences" | "smart_preferences" | "kundli_matching" | "religion_preferences" | "caste_preferences" | "subcaste_preferences" | "manglik_matching" | "community_based_matching" | "marriage_timeline_preference" | "children_preference" | "eating_preferences" | "lifestyle_preferences" | "family_managed_profile" | "family_contact_visibility" | "parent_login" | "guardian_access" | "family_details" | "family_preferences" | "interest_analytics" | "chat_analytics" | "engagement_score" | "match_success_rate" | "daily_activity_stats" | "weekly_reports" | "push_notifications" | "email_notifications" | "sms_notifications" | "instant_match_alerts" | "daily_match_digest" | "marketing_notifications" | "location_based_matching" | "nearby_profiles" | "travel_mode" | "ad_free_experience" | "priority_support" | "vip_badge" | "premium_badge" | "relationship_manager" | "dedicated_relationship_manager" | "concierge_matchmaking" | "personal_matchmaker" | "daily_boosts" | "weekly_boosts" | "monthly_boosts" | "unlimited_boosts" | "spotlight_profile" | "monthly_subscription" | "quarterly_subscription" | "yearly_subscription" | "one_time_boost_purchase" | "wallet_system" | "promo_codes" | "referral_rewards" | "referral_bonus" | "earn_credits" | "auto_renewal" | "grace_period" | "report_user" | "block_users" | "safe_mode" | "restricted_profiles" | "fraud_detection" | "spam_detection" | "manual_profile_review" | "shortlist_limit" | "contact_view_limit" | "message_limit" | "match_limit" | "streak_rewards" | "daily_login_rewards" | "match_quiz" | "compatibility_games" | "customer_support_chat" | "support_tickets" | "account_export" | "account_deletion" | "gdpr_compliance" | "data_export" | "consent_management" | "privacy_controls" | "enterprise_sso" | "admin_dashboard" | "api_access" | "custom_branding" | "bulk_seat_management" | "sla_support" | "data_residency" | "dedicated_account_manager";
+            readonly key: "email_registration" | "phone_registration" | "social_login_google" | "social_login_apple" | "social_login_facebook" | "email_verification" | "phone_verification" | "otp_login" | "two_factor_auth" | "device_management" | "multi_device_login" | "session_history" | "create_profile" | "edit_profile" | "delete_profile" | "advanced_profile_completion" | "profile_completion_score" | "multiple_profile_photos" | "video_profile" | "private_photos" | "hide_last_seen" | "hide_online_status" | "show_only_to_premium" | "incognito_mode" | "identity_verification" | "student_profile" | "parent_profile" | "child_profile_limit" | "academic_records" | "subject_enrollments" | "learning_preferences" | "subject_catalog" | "grade_catalog" | "college_affiliations" | "curriculum_mapping" | "chat_access" | "unlimited_chat" | "priority_chat" | "read_receipts" | "typing_indicator" | "auto_reply" | "message_translation" | "send_images_in_chat" | "send_videos_in_chat" | "send_voice_notes" | "voice_call" | "video_call" | "view_contact" | "request_contact" | "direct_contact_access" | "view_phone_number" | "view_email_address" | "upload_photos" | "upload_videos" | "view_profile_photos" | "view_private_photos" | "request_photos" | "view_profile_videos" | "request_private_videos" | "photo_approval" | "video_approval" | "ai_photo_verification" | "blurred_photo_mode" | "basic_search" | "advanced_search" | "basic_filters" | "advanced_filters" | "unlimited_search" | "search_by_religion" | "search_by_caste" | "search_by_location" | "search_by_education" | "saved_searches" | "recent_searches" | "profile_analytics" | "ai_recommendations" | "ai_profile_summary" | "guardian_access" | "ai_tutor_access" | "ai_tutor_monthly_minutes" | "ai_tutor_daily_minutes" | "ai_tutor_session_limit" | "ai_practice_questions" | "ai_explanations" | "ai_study_plan" | "ai_progress_recommendations" | "schedule_classes" | "reschedule_classes" | "calendar_reminders" | "learning_session_history" | "missed_session_recovery" | "parent_login" | "parent_managed_children" | "parental_controls" | "daily_learning_limits" | "subject_access_controls" | "safety_activity_alerts" | "learning_progress" | "attendance_tracking" | "assessment_history" | "weekly_parent_reports" | "export_progress_reports" | "push_notifications" | "email_notifications" | "sms_notifications" | "session_reminders" | "payment_reminders" | "subscription_billing" | "monthly_subscription" | "quarterly_subscription" | "yearly_subscription" | "family_plan" | "auto_renewal" | "grace_period" | "promo_codes" | "referral_rewards" | "report_content" | "report_user" | "block_users" | "safe_mode" | "restricted_profiles" | "fraud_detection" | "spam_detection" | "manual_profile_review" | "content_moderation" | "chat_analytics" | "engagement_score" | "daily_activity_stats" | "weekly_reports" | "marketing_notifications" | "ad_free_experience" | "message_limit" | "streak_rewards" | "daily_login_rewards" | "gdpr_compliance" | "data_export" | "customer_support_chat" | "support_tickets" | "priority_support" | "account_export" | "account_deletion" | "consent_management" | "privacy_controls" | "admin_dashboard" | "enterprise_sso" | "api_access" | "custom_branding" | "bulk_seat_management" | "bulk_student_management" | "sla_support" | "data_residency" | "dedicated_account_manager" | "Authentication & Account" | "Student & Parent Profiles" | "Engagement" | "Chat & Communication" | "Contact Access" | "Media" | "Search & Discovery" | "AI & Recommendations" | "Family Features" | "Academic Catalog" | "AI Tutor" | "Scheduling" | "Parent Controls" | "Progress & Reporting" | "Analytics" | "Notifications" | "Location Features" | "Premium Experience" | "Boost / Monetization" | "Payments & Subscriptions" | "Safety & Trust" | "Limit Based Features" | "Engagement & Gamification" | "Support & Privacy" | "Institutional & Operations";
         };
         readonly CreateNotificationDto: {
             readonly action?: {
@@ -3384,7 +2888,7 @@ export interface components {
             readonly actorImage?: string;
             readonly actorName?: string;
             /** @enum {string} */
-            readonly category?: "interest_received" | "interest_accepted" | "profile_view" | "match_found" | "message_received" | "subscription" | "system";
+            readonly category?: "session_scheduled" | "session_reminder" | "progress_update" | "parent_alert" | "message_received" | "subscription" | "marketing" | "system";
             readonly channels?: readonly ("in_app" | "push" | "email" | "sms")[];
             readonly dedupeKey?: string;
             readonly message: string;
@@ -3412,7 +2916,7 @@ export interface components {
             readonly metadata?: Record<string, never>;
             readonly planId?: string;
             /** @enum {string} */
-            readonly purpose?: "subscription" | "profile_boost" | "priority_support" | "coin_pack";
+            readonly purpose?: "subscription" | "learning_boost" | "priority_support" | "coin_pack";
         };
         readonly CreatePermissionDto: {
             readonly description?: string;
@@ -3431,7 +2935,7 @@ export interface components {
             readonly isPopular?: boolean;
             readonly name: string;
             /** @enum {string} */
-            readonly planType?: "self_service" | "assisted" | "profile_boost";
+            readonly planType?: "self_service" | "assisted" | "learning_boost";
             readonly price: number;
             readonly slug: string;
             readonly sortOrder?: number;
@@ -3455,19 +2959,11 @@ export interface components {
         };
         readonly CreateSupportTicketDto: {
             /** @enum {string} */
-            readonly category?: "account" | "billing" | "matches" | "chat" | "safety" | "technical" | "feedback" | "other";
+            readonly category?: "account" | "billing" | "classes" | "ai_tutor" | "schedules" | "progress" | "chat" | "safety" | "technical" | "feedback" | "other";
             readonly message: string;
             /** @enum {string} */
             readonly priority?: "low" | "normal" | "high" | "urgent";
             readonly subject: string;
-        };
-        readonly CurateMatchDto: {
-            /** Format: date-time */
-            readonly expiresAt?: string;
-            readonly note?: string;
-            readonly priority?: number;
-            readonly profileUserId: string;
-            readonly userId: string;
         };
         readonly DeactivateAccountDto: {
             readonly reason?: string;
@@ -3546,24 +3042,6 @@ export interface components {
         readonly MarkRoomReadDto: {
             readonly upToMessageId?: string;
         };
-        readonly MatchSettingsDto: {
-            readonly allowPartialMatches?: boolean;
-            readonly horoscopeRequired?: boolean;
-            readonly isStrict?: boolean;
-            readonly minimumMatchScore?: number;
-            readonly profileVerificationRequired?: boolean;
-        };
-        readonly MatchWeightsDto: {
-            readonly age?: number;
-            readonly caste?: number;
-            readonly education?: number;
-            readonly height?: number;
-            readonly horoscope?: number;
-            readonly lifestyle?: number;
-            readonly location?: number;
-            readonly occupation?: number;
-            readonly religion?: number;
-        };
         readonly MessageAttachmentDto: {
             readonly mimeType?: string;
             readonly name?: string;
@@ -3590,32 +3068,6 @@ export interface components {
             readonly basic: components["schemas"]["BasicDto"];
             readonly preferences?: components["schemas"]["PreferencesDto"];
             readonly primaryImageIndex?: number;
-        };
-        readonly PartnerFiltersDto: {
-            readonly age?: components["schemas"]["RangeDto"];
-            readonly annualIncome?: components["schemas"]["RangeDto"];
-            readonly bodyType?: readonly ("slim" | "average" | "athletic" | "fit" | "heavy" | "chubby" | "petite" | "curvy" | "muscular" | "stocky")[];
-            readonly caste?: readonly ("general" | "obc" | "sc" | "st" | "other" | "not_applicable")[];
-            /** @enum {string} */
-            readonly childPreference?: "does_not_matter" | "no_children" | "has_children_ok" | "has_children_not_ok";
-            readonly city?: readonly string[];
-            readonly complexion?: readonly ("fair" | "wheatish" | "dark")[];
-            readonly country?: readonly ("united_states" | "india" | "china" | "united_kingdom" | "canada" | "australia" | "germany" | "france" | "brazil" | "japan" | "russia" | "south_africa" | "italy" | "spain" | "mexico" | "netherlands" | "sweden" | "switzerland" | "new_zealand" | "singapore" | "united_arab_emirates")[];
-            readonly drinking?: readonly ("non_drinker" | "occasionally" | "regular" | "socially" | "open_to")[];
-            readonly eating?: readonly ("vegetarian" | "non_vegetarian" | "eggetarian" | "vegan" | "jain" | "satvik" | "halal" | "kosher" | "open_to")[];
-            readonly height?: components["schemas"]["RangeDto"];
-            readonly languages?: readonly string[];
-            readonly manglikStatus?: readonly ("manglik" | "non_manglik" | "anshik")[];
-            readonly maritalStatus?: readonly ("never_married" | "divorced" | "widowed" | "awaiting_divorced")[];
-            readonly occupation?: readonly string[];
-            readonly occupationType?: readonly ("government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other")[];
-            readonly qualification?: readonly ("below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say")[];
-            readonly religion?: readonly ("hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion")[];
-            /** @enum {string} */
-            readonly residencyPreference?: "does_not_matter" | "india_only" | "abroad_only";
-            readonly smoking?: readonly ("non_smoker" | "occasionally" | "regular" | "trying_to_quit" | "open_to")[];
-            readonly state?: readonly string[];
-            readonly subCaste?: readonly string[];
         };
         readonly PaymentWebhookDto: {
             readonly eventId: string;
@@ -3711,25 +3163,16 @@ export interface components {
             readonly ios?: components["schemas"]["IosStoreProductDto"];
         };
         readonly PreferencesDto: {
-            readonly aboutPartner?: string;
-            readonly ageRange?: components["schemas"]["RangeDto"];
-            readonly annualIncomeRange?: components["schemas"]["RangeDto"];
-            readonly bodyType?: readonly ("slim" | "average" | "athletic" | "fit" | "heavy" | "chubby" | "petite" | "curvy" | "muscular" | "stocky")[];
-            readonly caste?: readonly ("general" | "obc" | "sc" | "st" | "other" | "not_applicable")[];
-            readonly city?: readonly string[];
-            readonly complexion?: readonly ("fair" | "wheatish" | "dark")[];
-            readonly country?: readonly ("united_states" | "india" | "china" | "united_kingdom" | "canada" | "australia" | "germany" | "france" | "brazil" | "japan" | "russia" | "south_africa" | "italy" | "spain" | "mexico" | "netherlands" | "sweden" | "switzerland" | "new_zealand" | "singapore" | "united_arab_emirates")[];
-            readonly drinking?: readonly ("non_drinker" | "occasionally" | "regular" | "socially" | "open_to")[];
-            readonly eating?: readonly ("vegetarian" | "non_vegetarian" | "eggetarian" | "vegan" | "jain" | "satvik" | "halal" | "kosher" | "open_to")[];
-            readonly heightRange?: components["schemas"]["RangeDto"];
-            readonly isStrict?: boolean;
-            readonly languagesKnown?: readonly string[];
-            readonly maritalStatus?: readonly ("never_married" | "divorced" | "widowed" | "awaiting_divorced")[];
-            readonly occupation?: readonly string[];
-            readonly qualification?: readonly ("below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say")[];
-            readonly religion?: readonly ("hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion")[];
-            readonly smoking?: readonly ("non_smoker" | "occasionally" | "regular" | "trying_to_quit" | "open_to")[];
-            readonly state?: readonly string[];
+            readonly dailySessionMinutes?: components["schemas"]["RangeDto"];
+            readonly gradeRange?: components["schemas"]["RangeDto"];
+            readonly learningGoals?: readonly string[];
+            readonly learningPace?: string;
+            readonly parentalApprovalRequired?: boolean;
+            readonly parentDigestFrequency?: string;
+            readonly preferredDeliveryModes?: readonly string[];
+            readonly preferredTutorMode?: string;
+            readonly subjects?: readonly string[];
+            readonly weeklyStudyMinutes?: number;
         };
         readonly QuietHoursDto: {
             readonly enabled?: boolean;
@@ -3795,11 +3238,6 @@ export interface components {
             /** @enum {string} */
             readonly action: "ACCEPT" | "REJECT";
         };
-        readonly RespondInterestDto: {
-            /** @enum {string} */
-            readonly action: "ACCEPT" | "REJECT";
-            readonly interestId: string;
-        };
         readonly ReviewChatMessageDto: {
             readonly approve: boolean;
             readonly note?: string;
@@ -3813,17 +3251,9 @@ export interface components {
             readonly approve: boolean;
             readonly note?: string;
         };
-        readonly ReviewSuccessStoryDto: {
-            readonly reason?: string;
-            /** @enum {string} */
-            readonly status: "rejected" | "archived" | "published";
-        };
         readonly RevokeDeviceTokenDto: {
             readonly deviceId?: string;
             readonly token?: string;
-        };
-        readonly SendInterestDto: {
-            readonly receiverId: string;
         };
         readonly SendMessageBodyDto: {
             readonly attachments?: readonly components["schemas"]["MessageAttachmentDto"][];
@@ -3882,15 +3312,6 @@ export interface components {
         readonly SubmitKycDto: {
             readonly documentType?: string;
         };
-        readonly SubmitSuccessStoryDto: {
-            readonly location?: string;
-            readonly marriageDate: string;
-            readonly partnerName: string;
-            readonly photoUrls?: readonly string[];
-            readonly publicationConsent: boolean;
-            readonly story: string;
-            readonly title: string;
-        };
         readonly TimeOfBirthDto: {
             /** @enum {string} */
             readonly hour?: "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10" | "11" | "12";
@@ -3940,9 +3361,6 @@ export interface components {
         readonly UnmatchDto: {
             readonly reason?: string;
         };
-        readonly UpdateAboutPartnerDto: {
-            readonly aboutPartner: string;
-        };
         readonly UpdateAccessibilitySettingsDto: {
             readonly boldText?: boolean;
             /** @enum {string} */
@@ -3952,12 +3370,12 @@ export interface components {
             readonly screenReaderOptimized?: boolean;
         };
         readonly UpdateAiSettingsDto: {
+            readonly adaptiveTutorRanking?: boolean;
             readonly aiRecommendationsEnabled?: boolean;
-            readonly allowAiBioGeneration?: boolean;
-            readonly compatibilityScoring?: boolean;
-            readonly horoscopeSuggestions?: boolean;
-            readonly smartMatchRanking?: boolean;
-            readonly useProfileDataForRanking?: boolean;
+            readonly allowAiProfileSummary?: boolean;
+            readonly progressScoring?: boolean;
+            readonly studyPlanSuggestions?: boolean;
+            readonly useProfileDataForPersonalization?: boolean;
         };
         readonly UpdateCommunicationSettingsDto: {
             readonly allowVideoCalls?: boolean;
@@ -3967,9 +3385,9 @@ export interface components {
             readonly showReadReceipts?: boolean;
             readonly showTypingIndicator?: boolean;
             /** @enum {string} */
-            readonly whoCanCall?: "all" | "matches_only" | "contacts_only" | "no_one";
+            readonly whoCanCall?: "all" | "scheduled_sessions_only" | "contacts_only" | "no_one";
             /** @enum {string} */
-            readonly whoCanMessage?: "all" | "matches_only" | "contacts_only" | "no_one";
+            readonly whoCanMessage?: "all" | "scheduled_sessions_only" | "contacts_only" | "no_one";
         };
         readonly UpdateLocalizationSettingsDto: {
             readonly appLanguage?: string;
@@ -3996,15 +3414,15 @@ export interface components {
             readonly doNotDisturb?: boolean;
             readonly emailEnabled?: boolean;
             readonly inAppEnabled?: boolean;
-            readonly interestAccepted?: components["schemas"]["ChannelPreferenceDto"];
-            readonly interestReceived?: components["schemas"]["ChannelPreferenceDto"];
             readonly marketing?: components["schemas"]["ChannelPreferenceDto"];
             readonly marketingEnabled?: boolean;
-            readonly matchFound?: components["schemas"]["ChannelPreferenceDto"];
             readonly messageReceived?: components["schemas"]["ChannelPreferenceDto"];
-            readonly profileView?: components["schemas"]["ChannelPreferenceDto"];
+            readonly parentAlert?: components["schemas"]["ChannelPreferenceDto"];
+            readonly progressUpdate?: components["schemas"]["ChannelPreferenceDto"];
             readonly pushEnabled?: boolean;
             readonly quietHours?: components["schemas"]["QuietHoursDto"];
+            readonly sessionReminder?: components["schemas"]["ChannelPreferenceDto"];
+            readonly sessionScheduled?: components["schemas"]["ChannelPreferenceDto"];
             readonly smsEnabled?: boolean;
             readonly soundEnabled?: boolean;
             readonly subscription?: components["schemas"]["ChannelPreferenceDto"];
@@ -4012,12 +3430,6 @@ export interface components {
             readonly vibrationEnabled?: boolean;
         };
         readonly UpdatePlanDto: Record<string, never>;
-        readonly UpdatePreferenceDto: {
-            readonly aboutPartner?: string;
-            readonly filters?: components["schemas"]["PartnerFiltersDto"];
-            readonly settings?: components["schemas"]["MatchSettingsDto"];
-            readonly weights?: components["schemas"]["MatchWeightsDto"];
-        };
         readonly UpdatePrivacySettingsDto: {
             readonly allowScreenshots?: boolean;
             readonly blurPhotosForUnmatched?: boolean;
@@ -4028,12 +3440,12 @@ export interface components {
             readonly showExactAge?: boolean;
             readonly showIncome?: boolean;
             /** @enum {string} */
-            readonly showLastSeen?: "everyone" | "accepted_matches" | "contacts_only" | "no_one";
+            readonly showLastSeen?: "everyone" | "scheduled_sessions" | "contacts_only" | "no_one";
             readonly showOnlineStatus?: boolean;
             readonly showOnlyToPremium?: boolean;
             readonly showPhone?: boolean;
             /** @enum {string} */
-            readonly showPhotosTo?: "everyone" | "accepted_matches" | "contacts_only" | "no_one";
+            readonly showPhotosTo?: "everyone" | "scheduled_sessions" | "contacts_only" | "no_one";
         };
         readonly UpdateProfileLocationDto: {
             readonly latitude: number;
@@ -4065,7 +3477,7 @@ export interface components {
         };
         readonly UpsertNotificationTemplateDto: {
             /** @enum {string} */
-            readonly category: "interest_received" | "interest_accepted" | "profile_view" | "match_found" | "message_received" | "subscription" | "system";
+            readonly category: "session_scheduled" | "session_reminder" | "progress_update" | "parent_alert" | "message_received" | "subscription" | "marketing" | "system";
             readonly channels?: {
                 readonly email?: boolean;
                 readonly inApp?: boolean;
@@ -4357,66 +3769,6 @@ export interface operations {
                 readonly "application/json": components["schemas"]["BroadcastDto"];
             };
         };
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly AdminCuratedMatchesController_listCuratedMatches_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly limit?: string;
-                readonly userId?: string;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly AdminCuratedMatchesController_curateMatch_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["CurateMatchDto"];
-            };
-        };
-        readonly responses: {
-            readonly 201: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly AdminCuratedMatchesController_expireCuratedMatch_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly curatedMatchId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
         readonly responses: {
             readonly 200: {
                 headers: {
@@ -4817,7 +4169,7 @@ export interface operations {
                 readonly method?: "card" | "upi" | "netbanking" | "wallet" | "bank_transfer" | "apple_pay" | "google_pay";
                 readonly orderId?: string;
                 readonly page?: number;
-                readonly purpose?: "subscription" | "profile_boost" | "priority_support" | "coin_pack";
+                readonly purpose?: "subscription" | "learning_boost" | "priority_support" | "coin_pack";
                 readonly status?: "initiated" | "pending" | "processing" | "success" | "failed" | "refunded" | "cancelled" | "expired";
                 readonly toDate?: string;
                 readonly userId?: string;
@@ -5343,50 +4695,6 @@ export interface operations {
             readonly cookie?: never;
         };
         readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly AdminSuccessStoryController_list_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly limit?: number;
-                readonly page?: number;
-                readonly status?: "rejected" | "archived" | "published" | "submitted";
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly AdminSuccessStoryController_review_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly storyId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["ReviewSuccessStoryDto"];
-            };
-        };
         readonly responses: {
             readonly 200: {
                 headers: {
@@ -6331,508 +5639,10 @@ export interface operations {
             };
         };
     };
-    readonly MatchesController_getCuratedMatches_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_dismissCuratedMatch_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly curatedMatchId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_sendInterest_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["SendInterestDto"];
-            };
-        };
-        readonly responses: {
-            readonly 201: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_withdrawInterest_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly interestId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_respondToInterest_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["RespondInterestDto"];
-            };
-        };
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getReceivedInterests_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getSentInterests_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getMyMatches_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getNearbyMatches_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly radiusKm?: number;
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getNewMatches_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getOnlineMatches_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getMatchProfile_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly userId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getRecommended_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_shortlistProfile_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly userId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_removeShortlistedProfile_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly userId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getShortlistedProfiles_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getMatchStats_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_unmatch_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly userId: string;
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["UnmatchDto"];
-            };
-        };
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly MatchesController_getWhoViewedMe_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly caste?: "general" | "obc" | "sc" | "st" | "other" | "not_applicable";
-                readonly city?: string;
-                readonly limit?: number;
-                readonly maxAge?: number;
-                readonly maxHeight?: number;
-                readonly minAge?: number;
-                readonly minHeight?: number;
-                readonly occupationType?: "government_job" | "private_job" | "business" | "self_employed" | "freelancer" | "professional" | "student" | "homemaker" | "retired" | "not_working" | "other";
-                readonly page?: number;
-                readonly qualification?: "below_10th" | "10th" | "12th" | "diploma" | "ba" | "bsc" | "bcom" | "be" | "btech" | "bca" | "bba" | "llb" | "mbbs" | "ma" | "msc" | "mcom" | "me" | "mtech" | "mca" | "mba" | "md" | "ms" | "phd" | "post_doctorate" | "ca" | "cs" | "cma" | "cfa" | "acca" | "iti" | "polytechnic" | "skill_certification" | "other" | "prefer_not_to_say";
-                readonly religion?: "hindu" | "muslim" | "christian" | "sikh" | "jain" | "buddhist" | "jewish" | "parsi" | "other" | "no_religion";
-                readonly search?: string;
-                readonly state?: string;
-                readonly verifiedOnly?: boolean;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     readonly NotificationsController_getMyNotifications_v1: {
         readonly parameters: {
             readonly query?: {
-                readonly category?: "interest_received" | "interest_accepted" | "profile_view" | "match_found" | "message_received" | "subscription" | "system";
+                readonly category?: "session_scheduled" | "session_reminder" | "progress_update" | "parent_alert" | "message_received" | "subscription" | "system";
                 readonly limit?: number;
                 readonly page?: number;
                 readonly type?: "info" | "success" | "warning" | "error" | "match" | "chat" | "system" | "payment";
@@ -7054,7 +5864,7 @@ export interface operations {
                 readonly currency?: string;
                 readonly limit?: number;
                 readonly page?: number;
-                readonly purpose?: "subscription" | "profile_boost" | "priority_support" | "coin_pack";
+                readonly purpose?: "subscription" | "learning_boost" | "priority_support" | "coin_pack";
                 readonly status?: "initiated" | "pending" | "processing" | "success" | "failed" | "refunded" | "cancelled" | "expired";
             };
             readonly header?: never;
@@ -7150,128 +5960,6 @@ export interface operations {
         };
         readonly responses: {
             readonly 201: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly PreferenceController_createPreference_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["UpdatePreferenceDto"];
-            };
-        };
-        readonly responses: {
-            readonly 201: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly PreferenceController_updateAbout_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["UpdateAboutPartnerDto"];
-            };
-        };
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly PreferenceController_updateFilters_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["PartnerFiltersDto"];
-            };
-        };
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly PreferenceController_getMyPreference_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly PreferenceController_updateSettings_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["MatchSettingsDto"];
-            };
-        };
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly PreferenceController_updateWeights_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["MatchWeightsDto"];
-            };
-        };
-        readonly responses: {
-            readonly 200: {
                 headers: {
                     readonly [name: string]: unknown;
                 };
@@ -8113,30 +6801,6 @@ export interface operations {
             };
         };
     };
-    readonly SettingsController_updateNotificationChannel_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path: {
-                readonly channel: "inApp" | "push" | "email" | "sms";
-                readonly event: "interestReceived" | "interestAccepted" | "profileView" | "matchFound" | "messageReceived" | "subscription" | "marketing" | "system";
-            };
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["UpdateNotificationChannelDto"];
-            };
-        };
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
     readonly SettingsController_getPrivacy_v1: {
         readonly parameters: {
             readonly query?: never;
@@ -8561,67 +7225,6 @@ export interface operations {
         };
         readonly responses: {
             readonly 201: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly SuccessStoryController_listPublished_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly limit?: number;
-                readonly page?: number;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly SuccessStoryController_submit_v1: {
-        readonly parameters: {
-            readonly query?: never;
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody: {
-            readonly content: {
-                readonly "application/json": components["schemas"]["SubmitSuccessStoryDto"];
-            };
-        };
-        readonly responses: {
-            readonly 201: {
-                headers: {
-                    readonly [name: string]: unknown;
-                };
-                content?: never;
-            };
-        };
-    };
-    readonly SuccessStoryController_listMine_v1: {
-        readonly parameters: {
-            readonly query?: {
-                readonly limit?: number;
-                readonly page?: number;
-            };
-            readonly header?: never;
-            readonly path?: never;
-            readonly cookie?: never;
-        };
-        readonly requestBody?: never;
-        readonly responses: {
-            readonly 200: {
                 headers: {
                     readonly [name: string]: unknown;
                 };

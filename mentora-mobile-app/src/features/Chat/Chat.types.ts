@@ -4,8 +4,8 @@ export type ChatsStackParamList = {
   ChatDetails: {
     userId: string;
     roomId?: string;
-    partnerName?: string;
-    partnerPhoto?: string;
+    contactName?: string;
+    contactPhoto?: string;
   };
 };
 

@@ -10,6 +10,7 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { skipToken } from '@reduxjs/toolkit/query';
+import Header from '@/core/components/Header';
 import { useTheme } from '@/core/theme/ThemeProvider';
 import {
   LearningEntitlement,
@@ -235,13 +236,11 @@ export default function LearningTabScreen({
       style={[styles.safe, { backgroundColor: theme.colors.backgroundPage }]}
       edges={['top', 'left', 'right']}
     >
+      <Header title={title} />
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={[styles.title, { color: theme.colors.textPrimary }]}>
-          {title}
-        </Text>
         <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
           {subtitle}
         </Text>
@@ -446,11 +445,7 @@ const styles = StyleSheet.create({
   content: {
     paddingBottom: 28,
     paddingHorizontal: 20,
-    paddingTop: 18,
-  },
-  title: {
-    fontSize: 28,
-    fontWeight: '800',
+    paddingTop: 14,
   },
   subtitle: {
     fontSize: 15,

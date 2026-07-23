@@ -3,20 +3,20 @@ export enum InteractionType {
   VIEW = 'view',
   PROFILE_VIEW = 'profile_view',
 
-  // Audit/mirror only. Formal request state belongs in the interests collection.
-  SEND_INTEREST = 'send_interest',
-  WITHDRAW_INTEREST = 'withdraw_interest',
+  // Audit/mirror only. Formal learning request state belongs in schedules.
+  REQUEST_SESSION = 'request_session',
+  WITHDRAW_SESSION_REQUEST = 'withdraw_session_request',
 
   //  ENGAGEMENT
-  SHORTLIST = 'shortlist',
-  REMOVE_SHORTLIST = 'remove_shortlist',
+  SAVE_SUBJECT = 'save_subject',
+  REMOVE_SAVED_SUBJECT = 'remove_saved_subject',
 
   //  COMMUNICATION SIGNALS
   CHAT_INITIATED = 'chat_initiated',
   MESSAGE_SENT = 'message_sent',
 
   //  PREMIUM ACTIONS
-  PROFILE_BOOST = 'profile_boost',
+  LEARNING_BOOST = 'learning_boost',
   CONTACT_VIEW = 'contact_view',
 
   // Audit/mirror only. Durable safety state belongs in safety collections.

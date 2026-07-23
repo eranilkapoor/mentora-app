@@ -15,7 +15,7 @@ Run this audit before every production submission.
 - Match detail
 - Profile
 - Edit profile
-- Partner preferences
+- Learning preferences
 - Chat list
 - Chat conversation
 - Notifications

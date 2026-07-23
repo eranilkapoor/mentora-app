@@ -71,17 +71,17 @@ describe('SettingsController', () => {
   it('gets and updates privacy settings for current user', async () => {
     settingsService.getPrivacy.mockResolvedValue({ profileVisibility: 'all' });
     settingsService.updatePrivacy.mockResolvedValue({
-      profileVisibility: 'matches',
+      profileVisibility: 'contacts_only',
     });
 
     const fetched = await controller.getPrivacy(req);
     const updated = await controller.updatePrivacy(req, {
-      profileVisibility: 'matches',
+      profileVisibility: 'contacts_only',
     } as never);
 
     expect(settingsService.getPrivacy).toHaveBeenCalledWith(userId);
     expect(settingsService.updatePrivacy).toHaveBeenCalledWith(userId, {
-      profileVisibility: 'matches',
+      profileVisibility: 'contacts_only',
     });
     expect(fetched.code).toBe(SuccessCode.SETTINGS_FETCHED);
     expect(updated.code).toBe(SuccessCode.SETTINGS_UPDATED);

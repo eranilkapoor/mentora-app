@@ -6,11 +6,11 @@ export interface AiSettingsScreenProps {
 
 export interface AiSettings {
   aiRecommendationsEnabled: boolean;
-  smartMatchRanking: boolean;
-  horoscopeSuggestions: boolean;
-  compatibilityScoring: boolean;
-  allowAiBioGeneration: boolean;
-  useProfileDataForRanking: boolean;
+  adaptiveTutorRanking: boolean;
+  studyPlanSuggestions: boolean;
+  progressScoring: boolean;
+  allowAiProfileSummary: boolean;
+  useProfileDataForPersonalization: boolean;
 }
 
 export interface AiSettingsResponse {

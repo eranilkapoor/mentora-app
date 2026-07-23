@@ -111,7 +111,6 @@
     "interest_already_responded": "इस इंटरेस्ट अनुरोध का जवाब पहले ही दिया जा चुका है।",
     "interest_cannot_send_self": "आप खुद को इंटरेस्ट नहीं भेज सकते।",
     "interest_sent": "इंटरेस्ट सफलतापूर्वक भेजा गया।",
-    "interest_accepted": "इंटरेस्ट स्वीकार हुआ।",
     "interest_rejected": "इंटरेस्ट रिजेक्ट हुआ।",
     "interest_withdrawn": "इंटरेस्ट वापस लिया गया।",
     "chat_not_found": "चैट नहीं मिली।",
@@ -215,6 +214,12 @@
     "features_fetched": "फीचर्स लोड हो गए।",
     "feature_created": "फीचर सफलतापूर्वक बनाया गया।",
     "feature_assigned": "फीचर सफलतापूर्वक असाइन हुआ।",
-    "feature_removed": "फीचर सफलतापूर्वक हटाया गया।"
+    "feature_removed": "फीचर सफलतापूर्वक हटाया गया।",
+    "session_request_accepted": "इंटरेस्ट स्वीकार हुआ।"
+  },
+  "success": {
+    "match_shortlisted": "Saved successfully.",
+    "match_shortlist_removed": "Removed from saved items.",
+    "session_request_accepted": "Request accepted."
   }
 }

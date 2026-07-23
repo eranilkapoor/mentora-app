@@ -76,12 +76,6 @@
     "kosher": "Kosher",
     "open_to": "Open To"
   },
-  "manglik_status": {
-    "non_manglik": "Non Manglik",
-    "manglik": "Manglik",
-    "anshik_manglik": "Anshik Manglik",
-    "dont_know": "Don't Know"
-  },
   "occupation_types": {
     "government_job": "Government Job",
     "private_job": "Private Job",
@@ -211,15 +205,6 @@
     "other": "Other"
   },
   "days": {
-    "01": "01",
-    "02": "02",
-    "03": "03",
-    "04": "04",
-    "05": "05",
-    "06": "06",
-    "07": "07",
-    "08": "08",
-    "09": "09",
     "10": "10",
     "11": "11",
     "12": "12",
@@ -241,9 +226,21 @@
     "28": "28",
     "29": "29",
     "30": "30",
-    "31": "31"
+    "31": "31",
+    "01": "01",
+    "02": "02",
+    "03": "03",
+    "04": "04",
+    "05": "05",
+    "06": "06",
+    "07": "07",
+    "08": "08",
+    "09": "09"
   },
   "months": {
+    "10": "October",
+    "11": "November",
+    "12": "December",
     "01": "January",
     "02": "February",
     "03": "March",
@@ -252,10 +249,7 @@
     "06": "June",
     "07": "July",
     "08": "August",
-    "09": "September",
-    "10": "October",
-    "11": "November",
-    "12": "December"
+    "09": "September"
   },
   "blood_groups": {
     "A+": "A Positive",
@@ -269,7 +263,6 @@
   },
   "personality_badges": {
     "family_oriented": "Family Oriented",
-    "marriage_focused": "Marriage Focused",
     "traditional_values": "Traditional Values",
     "modern_thinker": "Modern Thinker",
     "career_focused": "Career Focused",
