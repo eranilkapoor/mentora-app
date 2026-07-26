@@ -35,7 +35,7 @@ a {
 
 .site-header {
   align-items: center;
-  background: rgba(247, 251, 255, 0.92);
+  background: rgba(247, 251, 255, 0.94);
   border-bottom: 1px solid var(--line);
   display: flex;
   justify-content: space-between;
@@ -48,7 +48,7 @@ a {
 .brand,
 nav,
 .actions,
-.legal {
+.legal-links {
   align-items: center;
   display: flex;
   gap: 16px;
@@ -71,6 +71,7 @@ nav,
 
 nav {
   color: var(--muted);
+  flex-wrap: wrap;
   font-size: 14px;
   font-weight: 700;
 }
@@ -80,7 +81,7 @@ nav {
   display: grid;
   gap: 44px;
   grid-template-columns: minmax(0, 1.1fr) minmax(280px, 0.9fr);
-  min-height: 76vh;
+  min-height: 74vh;
   padding: 56px clamp(20px, 5vw, 72px) 72px;
 }
 
@@ -100,8 +101,8 @@ p {
 }
 
 h1 {
-  font-size: clamp(56px, 9vw, 116px);
-  line-height: 0.92;
+  font-size: clamp(48px, 7vw, 96px);
+  line-height: 0.95;
   margin-bottom: 22px;
 }
 
@@ -117,11 +118,12 @@ h3 {
 
 .hero-copy > p:not(.eyebrow),
 .band > p,
-article p {
+article p,
+.legal-page p,
+li {
   color: var(--muted);
-  font-size: 17px;
+  font-size: 16px;
   line-height: 1.65;
-  max-width: 680px;
 }
 
 .actions {
@@ -153,17 +155,19 @@ article {
 }
 
 .hero-panel {
+  display: grid;
+  gap: 14px;
   padding: 22px;
 }
 
-.session-card {
+.pipeline-card {
   background: #edf7ff;
   border: 1px solid #b9d7ff;
   border-radius: 8px;
   padding: 18px;
 }
 
-.session-card strong {
+.pipeline-card strong {
   display: block;
   font-size: 22px;
   margin: 12px 0 8px;
@@ -179,7 +183,6 @@ article {
   display: grid;
   gap: 12px;
   grid-template-columns: 1fr 1fr;
-  margin-top: 16px;
 }
 
 .metrics span {
@@ -196,7 +199,8 @@ article {
   font-size: 24px;
 }
 
-.band {
+.band,
+.legal-page {
   padding: 56px clamp(20px, 5vw, 72px);
 }
 
@@ -227,22 +231,33 @@ article {
 .two-column {
   align-items: center;
   display: flex;
+  gap: 24px;
   justify-content: space-between;
 }
 
-.legal {
+.legal-links {
   align-items: flex-start;
   flex-wrap: wrap;
 }
 
-.legal h2 {
-  flex-basis: 100%;
-}
-
-.legal a {
+.legal-links a {
   border-bottom: 2px solid var(--primary);
   color: var(--primary);
   font-weight: 900;
+}
+
+.legal-page {
+  max-width: 880px;
+}
+
+.legal-page h1 {
+  font-size: clamp(36px, 6vw, 64px);
+}
+
+.legal-page ul {
+  display: grid;
+  gap: 8px;
+  margin-top: 22px;
 }
 
 @media (max-width: 760px) {
@@ -250,10 +265,6 @@ article {
   .two-column {
     align-items: flex-start;
     flex-direction: column;
-  }
-
-  nav {
-    flex-wrap: wrap;
   }
 
   .hero,

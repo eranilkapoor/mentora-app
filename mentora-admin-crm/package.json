@@ -1,12 +1,12 @@
 {
-  "name": "mentora-public-website",
+  "name": "mentora-admin-crm",
   "version": "1.0.0",
   "private": true,
-  "description": "Next.js public website for Mentora education CRM, AI tutoring, admissions, and parent-managed learning.",
+  "description": "Next.js admin CRM portal for Mentora multi-tenant education CRM.",
   "scripts": {
-    "dev": "next dev -p 3001",
+    "dev": "next dev -p 3002",
     "build": "next build",
-    "start": "next start -p 3001",
+    "start": "next start -p 3002",
     "lint": "next lint"
   },
   "dependencies": {

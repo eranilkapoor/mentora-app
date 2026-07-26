@@ -29,6 +29,7 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { SupportModule } from './modules/support/support.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
 import { LearningModule } from './modules/learning/learning.module';
+import { EducationCrmModule } from './modules/education-crm/education-crm.module';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 
@@ -77,6 +78,7 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     PaymentsModule,
     ReferralsModule,
     LearningModule,
+    EducationCrmModule,
     SettingsModule,
     SupportModule,
     FeatureFlagsModule,

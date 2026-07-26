@@ -1,10 +1,106 @@
-MentoraKey.pem
-*.tsbuildinfo
+# Dependencies
 node_modules/
 **/node_modules/
+
+# Build output
+dist/
+build/
+web-build/
+.next/
+out/
+coverage/
+**/dist/
+**/build/
+**/web-build/
+**/.next/
+**/out/
+**/coverage/
+
+# TypeScript and framework caches
+*.tsbuildinfo
+.turbo/
+.cache/
+.parcel-cache/
+.eslintcache
+.stylelintcache
+**/.turbo/
+**/.cache/
+**/.parcel-cache/
+**/.eslintcache
+
+# Expo and React Native
+.expo/
+.expo-shared/
+**/.expo/
+**/.expo-shared/
+**/.metro-health-check*
+**/.android-version-code
+
+# Native mobile build output
+**/android/.gradle/
+**/android/build/
+**/android/app/build/
+**/android/local.properties
+**/android/.cxx/
+**/android/app/debug.keystore
+**/ios/build/
+**/ios/Pods/
+**/ios/DerivedData/
+**/ios/xcuserdata/
+
+# Logs and runtime files
+logs/
+**/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+pids/
+*.pid
+*.seed
+*.pid.lock
+report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
+
+# Environment files
+.env
+.env.*
+!.env.example
+!.env.*.example
+**/.env
+**/.env.*
+!**/.env.example
+!**/.env.*.example
+
+# Secrets and certificates
+MentoraKey.pem
+*.pem
+*.key
+*.jks
+*.p8
+*.p12
+*.mobileprovision
 docs/launch/*.private.md
 docs/launch/*.local.md
 
-mentora-api-server/dist/
+# Local databases and uploads
+local-db/
+uploads/
+**/local-db/
+**/uploads/
+
+# Editor and OS files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.iml
+*.sublime-workspace
+
+# App-specific generated files
 mentora-api-server/src/dist/
-mentora-api-server/tsconfig.build.tsbuildinfo

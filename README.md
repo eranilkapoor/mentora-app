@@ -17,7 +17,8 @@ The first product direction is a family-managed learning app:
 mentora-app/
   mentora-api-server/       NestJS API server
   mentora-mobile-app/       Expo React Native app
-  mentora-public-website/   Static public website for brand, plans, support, and legal pages
+  mentora-public-website/   Next.js public website for brand, plans, support, legal pages, and lead capture
+  mentora-admin-crm/        Next.js admin CRM portal for education organizations and platform admins
   packages/
     api-contract/           Shared TypeScript API contract types
   docs/                     Product, technical, database, flow, launch, operations, and standards docs
@@ -57,6 +58,7 @@ Assessment
 - [Database Plan](docs/planning/DATABASE-PLAN.md): MongoDB collections for identity, family, academic, scheduling, AI tutor, progress, payments, and safety.
 - [Project Plan](docs/planning/PROJECT-PLAN.md): product scope, MVP, phases, and non-goals.
 - [Student Profile Model](docs/planning/STUDENT-PROFILE-MODEL.md): complete student profile sections including personal, academic, parents, documents, payments, communications, and activity timeline.
+- [Education CRM Platform Plan](docs/planning/EDUCATION-CRM-PLATFORM-PLAN.md): multi-tenant CRM modules for leads, admissions, campaigns, payments, analytics, and learning operations.
 - [Task Roadmap](docs/planning/TASK-ROADMAP.md): implementation roadmap from copied foundation to Mentora modules.
 - [Flow Plan](docs/planning/FLOW-PLAN.md): parent/student journeys and screen model.
 - [Commands](docs/operations/COMMANDS.md): extended command reference.
@@ -80,6 +82,12 @@ cd mentora-api-server
 npm install
 
 cd ../mentora-mobile-app
+npm install
+
+cd ../mentora-public-website
+npm install
+
+cd ../mentora-admin-crm
 npm install
 ```
 

@@ -108,3 +108,17 @@
 | Todo   | Add explicit study-plan entities for JEE, NEET, UPSC, NDA, Olympiad, board exams, and skill courses.                                            |
 | Todo   | Build full class board screen with attendance, Q&A, chat, notes, assignments, tests/quizzes, tutor actions, and parent-visible session summary. |
 | Todo   | Enforce plan-specific subjects, tutor type, schedule frequency, concurrent device, and session/minute limits.                                   |
+
+## P9 Multi-Tenant Education CRM
+
+| Status | Task                                                                                                                                                |
+| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Done   | Review public Meritto-like education CRM feature families and map them to Mentora-owned modules.                                                    |
+| Done   | Convert the public website into a Next.js application for product, legal, plans, and lead-capture expansion.                                        |
+| Done   | Add `mentora-admin-crm` as a Next.js starter application for organization admins, counselors, managers, and platform admins.                        |
+| Done   | Add initial backend `education-crm` module with tenant, branch, lead, activity, assignment, application, task, campaign, and communication schemas. |
+| Done   | Keep root lint focused on installed API/mobile apps and expose separate frontend lint commands for the new Next.js apps.                            |
+| Todo   | Add tenant-aware auth context, guards, and repository helpers so every CRM query is scoped by `tenantId`.                                           |
+| Todo   | Build admin CRM lead list/detail, application pipeline, task board, campaign center, communication center, and reports.                             |
+| Todo   | Add public website lead-capture and demo-request forms connected to the CRM leads API.                                                              |
+| Todo   | Add CRM seed data for a demo tenant, lead stages, sources, sample leads, applications, tasks, campaigns, and communications.                        |

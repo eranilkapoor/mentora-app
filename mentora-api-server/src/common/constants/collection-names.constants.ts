@@ -87,4 +87,16 @@ export const COLLECTION_NAMES = {
   TUTOR_AVAILABILITY: 'tutor_availability',
   TUTOR_SESSION_NOTE: 'tutor_session_notes',
   SAFETY_EVENT: 'safety_events',
+
+  CRM_TENANT: 'crm_tenants',
+  CRM_BRANCH: 'crm_branches',
+  CRM_LEAD_SOURCE: 'crm_lead_sources',
+  CRM_LEAD_STAGE: 'crm_lead_stages',
+  CRM_LEAD: 'crm_leads',
+  CRM_LEAD_ACTIVITY: 'crm_lead_activities',
+  CRM_LEAD_ASSIGNMENT: 'crm_lead_assignments',
+  CRM_APPLICATION: 'crm_applications',
+  CRM_TASK: 'crm_tasks',
+  CRM_CAMPAIGN: 'crm_campaigns',
+  CRM_COMMUNICATION: 'crm_communications',
 };
