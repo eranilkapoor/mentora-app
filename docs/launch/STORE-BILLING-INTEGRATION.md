@@ -18,7 +18,7 @@ Create these exact IDs. They are seeded in `plans.seed-data.ts`.
 | Platinum         | `mentora_platinum` | `monthly`, `quarterly`, `yearly` | `mentora_platinum_monthly`, `mentora_platinum_quarterly`, `mentora_platinum_yearly` |
 | Assisted         | `mentora_assisted` | `half-yearly`, `yearly`          | `mentora_assisted_half_yearly`, `mentora_assisted_yearly`                             |
 
-Put all Apple subscription products in subscription group `mentora_membership`. Configure the seven-day trial as Apple introductory offers and as Google offers named `trial-7-days` under every base plan. The app falls back to the regular Google base-plan offer when an account is not eligible. Free and Custom Assisted are not store products. `mentora_profile_boost_24h` is a separate consumable product.
+Put all Apple subscription products in subscription group `mentora_membership`. Configure the seven-day trial as Apple introductory offers and as Google offers named `trial-7-days` under every base plan. The app falls back to the regular Google base-plan offer when an account is not eligible. Free and Custom Assisted are not store products. `mentora_learning_boost_24h` is a separate consumable product.
 
 ## Runtime Flow
 

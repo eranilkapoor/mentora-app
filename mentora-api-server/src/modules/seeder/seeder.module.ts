@@ -67,7 +67,20 @@ import {
   AiSettingSchema,
 } from '../settings/schemas/ai-setting.schema';
 import { SafetyModule } from '../safety/safety.module';
-import { Subject, SubjectSchema } from '../learning/schemas/learning.schemas';
+import {
+  AcademicBoard,
+  AcademicBoardSchema,
+  AcademicLevel,
+  AcademicLevelSchema,
+  Curriculum,
+  CurriculumSchema,
+  Grade,
+  GradeSchema,
+  Subject,
+  SubjectSchema,
+  Topic,
+  TopicSchema,
+} from '../learning/schemas/learning.schemas';
 
 @Module({
   imports: [
@@ -117,7 +130,12 @@ import { Subject, SubjectSchema } from '../learning/schemas/learning.schemas';
       { name: AccessibilitySetting.name, schema: AccessibilitySettingSchema },
       { name: MediaSetting.name, schema: MediaSettingSchema },
       { name: AiSetting.name, schema: AiSettingSchema },
+      { name: AcademicBoard.name, schema: AcademicBoardSchema },
+      { name: AcademicLevel.name, schema: AcademicLevelSchema },
+      { name: Grade.name, schema: GradeSchema },
       { name: Subject.name, schema: SubjectSchema },
+      { name: Topic.name, schema: TopicSchema },
+      { name: Curriculum.name, schema: CurriculumSchema },
     ]),
   ],
 

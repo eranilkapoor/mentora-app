@@ -6,15 +6,35 @@ export type StudentProfileDocument = HydratedDocument<StudentProfile>;
 export type ParentProfileDocument = HydratedDocument<ParentProfile>;
 export type ParentStudentRelationshipDocument =
   HydratedDocument<ParentStudentRelationship>;
+export type StudentInvitationDocument = HydratedDocument<StudentInvitation>;
 export type ParentalControlDocument = HydratedDocument<ParentalControl>;
 export type AcademicRecordDocument = HydratedDocument<StudentAcademicRecord>;
+export type AcademicBoardDocument = HydratedDocument<AcademicBoard>;
+export type UniversityDocument = HydratedDocument<University>;
+export type InstitutionDocument = HydratedDocument<Institution>;
+export type AcademicLevelDocument = HydratedDocument<AcademicLevel>;
+export type GradeDocument = HydratedDocument<Grade>;
+export type StreamDocument = HydratedDocument<Stream>;
+export type CourseDocument = HydratedDocument<Course>;
 export type SubjectDocument = HydratedDocument<Subject>;
+export type TopicDocument = HydratedDocument<Topic>;
+export type CurriculumDocument = HydratedDocument<Curriculum>;
 export type StudentSubjectEnrollmentDocument =
   HydratedDocument<StudentSubjectEnrollment>;
 export type LearningScheduleDocument = HydratedDocument<LearningSchedule>;
 export type LearningEntitlementDocument = HydratedDocument<LearningEntitlement>;
 export type AiTutorSessionDocument = HydratedDocument<AiTutorSession>;
 export type AiTutorMessageDocument = HydratedDocument<AiTutorMessage>;
+export type QuestionBankDocument = HydratedDocument<QuestionBank>;
+export type QuestionDocument = HydratedDocument<Question>;
+export type AssessmentDocument = HydratedDocument<Assessment>;
+export type AssessmentAttemptDocument = HydratedDocument<AssessmentAttempt>;
+export type AssessmentAnswerDocument = HydratedDocument<AssessmentAnswer>;
+export type AssessmentResultDocument = HydratedDocument<AssessmentResult>;
+export type StudentTopicProgressDocument =
+  HydratedDocument<StudentTopicProgress>;
+export type LearningRecommendationDocument =
+  HydratedDocument<LearningRecommendation>;
 export type ClassroomDocument = HydratedDocument<Classroom>;
 export type ClassroomMessageDocument = HydratedDocument<ClassroomMessage>;
 export type ClassroomFileDocument = HydratedDocument<ClassroomFile>;
@@ -75,6 +95,39 @@ export class StudentProfile {
   @Prop({ type: [String], default: [] })
   learningGoals!: string[];
 
+  @Prop({ type: Object, default: {} })
+  personal!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  academic!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  parents!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  address!: Record<string, unknown>;
+
+  @Prop({ type: [Object], default: [] })
+  previousEducation!: Record<string, unknown>[];
+
+  @Prop({ type: [Object], default: [] })
+  examScores!: Record<string, unknown>[];
+
+  @Prop({ type: Object, default: {} })
+  coursePreference!: Record<string, unknown>;
+
+  @Prop({ type: [Object], default: [] })
+  documents!: Record<string, unknown>[];
+
+  @Prop({ type: [Object], default: [] })
+  payments!: Record<string, unknown>[];
+
+  @Prop({ type: [Object], default: [] })
+  communicationHistory!: Record<string, unknown>[];
+
+  @Prop({ type: [Object], default: [] })
+  activityTimeline!: Record<string, unknown>[];
+
   @Prop({ default: false })
   onboardingCompleted!: boolean;
 
@@ -94,7 +147,6 @@ export class StudentProfile {
 
 export const StudentProfileSchema =
   SchemaFactory.createForClass(StudentProfile);
-StudentProfileSchema.index({ userId: 1 });
 StudentProfileSchema.index({ createdByUserId: 1, status: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.PARENT_PROFILE, timestamps: true })
@@ -238,6 +290,63 @@ ParentStudentRelationshipSchema.index(
   { unique: true },
 );
 
+@Schema({ collection: COLLECTION_NAMES.STUDENT_INVITATION, timestamps: true })
+export class StudentInvitation {
+  @Prop({
+    type: Types.ObjectId,
+    ref: StudentProfile.name,
+    required: true,
+    index: true,
+  })
+  studentProfileId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
+  invitedByUserId!: Types.ObjectId;
+
+  @Prop({ lowercase: true, trim: true, required: true, index: true })
+  inviteeEmail!: string;
+
+  @Prop({
+    enum: [
+      'father',
+      'mother',
+      'guardian',
+      'grandparent',
+      'sibling',
+      'sponsor',
+      'other',
+    ],
+    default: 'guardian',
+  })
+  relationship!: string;
+
+  @Prop({ type: RelationshipPermissionsSchema, default: {} })
+  permissions!: RelationshipPermissions;
+
+  @Prop({ required: true, unique: true })
+  token!: string;
+
+  @Prop({ required: true, index: true })
+  expiresAt!: Date;
+
+  @Prop({
+    enum: ['pending', 'accepted', 'revoked', 'expired'],
+    default: 'pending',
+    index: true,
+  })
+  status!: string;
+
+  @Prop()
+  acceptedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  acceptedByUserId?: Types.ObjectId;
+}
+
+export const StudentInvitationSchema =
+  SchemaFactory.createForClass(StudentInvitation);
+StudentInvitationSchema.index({ studentProfileId: 1, inviteeEmail: 1 });
+
 @Schema({ collection: COLLECTION_NAMES.PARENTAL_CONTROL, timestamps: true })
 export class ParentalControl {
   @Prop({
@@ -362,6 +471,150 @@ export const StudentAcademicRecordSchema = SchemaFactory.createForClass(
   StudentAcademicRecord,
 );
 
+@Schema({ collection: COLLECTION_NAMES.ACADEMIC_BOARD, timestamps: true })
+export class AcademicBoard {
+  @Prop({ required: true, trim: true, unique: true })
+  name!: string;
+
+  @Prop({ required: true, trim: true, uppercase: true, unique: true })
+  code!: string;
+
+  @Prop({ trim: true })
+  country?: string;
+
+  @Prop({ enum: ['school', 'university', 'professional'], default: 'school' })
+  type!: string;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const AcademicBoardSchema = SchemaFactory.createForClass(AcademicBoard);
+
+@Schema({ collection: COLLECTION_NAMES.UNIVERSITY, timestamps: true })
+export class University {
+  @Prop({ required: true, trim: true, unique: true })
+  name!: string;
+
+  @Prop({ trim: true, uppercase: true, unique: true, sparse: true })
+  code?: string;
+
+  @Prop({ trim: true })
+  country?: string;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const UniversitySchema = SchemaFactory.createForClass(University);
+
+@Schema({ collection: COLLECTION_NAMES.INSTITUTION, timestamps: true })
+export class Institution {
+  @Prop({ required: true, trim: true, index: true })
+  name!: string;
+
+  @Prop({ trim: true, uppercase: true, unique: true, sparse: true })
+  code?: string;
+
+  @Prop({ type: Types.ObjectId, ref: University.name })
+  universityId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: AcademicBoard.name })
+  boardId?: Types.ObjectId;
+
+  @Prop({
+    enum: ['school', 'college', 'university', 'coaching'],
+    default: 'school',
+  })
+  type!: string;
+
+  @Prop({ trim: true })
+  city?: string;
+
+  @Prop({ trim: true })
+  country?: string;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const InstitutionSchema = SchemaFactory.createForClass(Institution);
+InstitutionSchema.index({ name: 1, type: 1 });
+
+@Schema({ collection: COLLECTION_NAMES.ACADEMIC_LEVEL, timestamps: true })
+export class AcademicLevel {
+  @Prop({ required: true, trim: true, unique: true })
+  name!: string;
+
+  @Prop({ required: true, trim: true, unique: true })
+  code!: string;
+
+  @Prop({ default: 0 })
+  sortOrder!: number;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const AcademicLevelSchema = SchemaFactory.createForClass(AcademicLevel);
+
+@Schema({ collection: COLLECTION_NAMES.GRADE, timestamps: true })
+export class Grade {
+  @Prop({ required: true, trim: true })
+  name!: string;
+
+  @Prop({ required: true, trim: true, unique: true })
+  code!: string;
+
+  @Prop({ type: Types.ObjectId, ref: AcademicLevel.name, index: true })
+  academicLevelId?: Types.ObjectId;
+
+  @Prop({ default: 0 })
+  sortOrder!: number;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const GradeSchema = SchemaFactory.createForClass(Grade);
+
+@Schema({ collection: COLLECTION_NAMES.STREAM, timestamps: true })
+export class Stream {
+  @Prop({ required: true, trim: true })
+  name!: string;
+
+  @Prop({ required: true, trim: true, unique: true })
+  code!: string;
+
+  @Prop({ enum: ['school', 'college', 'competitive'], default: 'school' })
+  type!: string;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const StreamSchema = SchemaFactory.createForClass(Stream);
+
+@Schema({ collection: COLLECTION_NAMES.COURSE, timestamps: true })
+export class Course {
+  @Prop({ required: true, trim: true })
+  name!: string;
+
+  @Prop({ required: true, trim: true, unique: true })
+  code!: string;
+
+  @Prop({ type: Types.ObjectId, ref: AcademicLevel.name, index: true })
+  academicLevelId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Stream.name })
+  streamId?: Types.ObjectId;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const CourseSchema = SchemaFactory.createForClass(Course);
+
 @Schema({ collection: COLLECTION_NAMES.SUBJECT, timestamps: true })
 export class Subject {
   @Prop({ required: true, trim: true, index: true })
@@ -395,7 +648,67 @@ export class Subject {
 }
 
 export const SubjectSchema = SchemaFactory.createForClass(Subject);
-SubjectSchema.index({ code: 1 }, { unique: true, sparse: true });
+
+@Schema({ collection: COLLECTION_NAMES.TOPIC, timestamps: true })
+export class Topic {
+  @Prop({
+    type: Types.ObjectId,
+    ref: Subject.name,
+    required: true,
+    index: true,
+  })
+  subjectId!: Types.ObjectId;
+
+  @Prop({ required: true, trim: true })
+  name!: string;
+
+  @Prop({ required: true, trim: true })
+  code!: string;
+
+  @Prop({ type: [String], default: [] })
+  gradeIds!: string[];
+
+  @Prop({ default: 0 })
+  sortOrder!: number;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const TopicSchema = SchemaFactory.createForClass(Topic);
+TopicSchema.index({ subjectId: 1, code: 1 }, { unique: true });
+
+@Schema({ collection: COLLECTION_NAMES.CURRICULUM, timestamps: true })
+export class Curriculum {
+  @Prop({ type: Types.ObjectId, ref: AcademicBoard.name, index: true })
+  boardId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Grade.name, required: true, index: true })
+  gradeId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Subject.name,
+    required: true,
+    index: true,
+  })
+  subjectId!: Types.ObjectId;
+
+  @Prop({ type: [Types.ObjectId], ref: Topic.name, default: [] })
+  topicIds!: Types.ObjectId[];
+
+  @Prop({ required: true, trim: true })
+  code!: string;
+
+  @Prop({ enum: ['active', 'inactive'], default: 'active', index: true })
+  status!: string;
+}
+
+export const CurriculumSchema = SchemaFactory.createForClass(Curriculum);
+CurriculumSchema.index(
+  { boardId: 1, gradeId: 1, subjectId: 1 },
+  { unique: true },
+);
 
 @Schema({
   collection: COLLECTION_NAMES.STUDENT_SUBJECT_ENROLLMENT,
@@ -519,6 +832,15 @@ export class LearningSchedule {
 
   @Prop({ default: 15 })
   joinWindowAfterMinutes!: number;
+
+  @Prop({ type: [Number], default: [60, 15] })
+  reminderMinutesBefore!: number[];
+
+  @Prop({ type: [Number], default: [] })
+  reminderOffsetsSent!: number[];
+
+  @Prop()
+  nextReminderAt?: Date;
 
   @Prop({ trim: true })
   recurrenceRule?: string;
@@ -713,6 +1035,345 @@ export class AiTutorMessage {
 export const AiTutorMessageSchema =
   SchemaFactory.createForClass(AiTutorMessage);
 AiTutorMessageSchema.index({ sessionId: 1, createdAt: 1 });
+
+@Schema({ collection: COLLECTION_NAMES.QUESTION_BANK, timestamps: true })
+export class QuestionBank {
+  @Prop({ required: true, trim: true })
+  name!: string;
+
+  @Prop({ trim: true })
+  description?: string;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Subject.name,
+    required: true,
+    index: true,
+  })
+  subjectId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Topic.name, index: true })
+  topicId?: Types.ObjectId;
+
+  @Prop({
+    enum: ['school', 'exam_prep', 'skill', 'diagnostic'],
+    default: 'school',
+  })
+  category!: string;
+
+  @Prop({ enum: ['active', 'archived'], default: 'active', index: true })
+  status!: string;
+}
+
+export const QuestionBankSchema = SchemaFactory.createForClass(QuestionBank);
+QuestionBankSchema.index({ subjectId: 1, topicId: 1, status: 1 });
+
+@Schema({ collection: COLLECTION_NAMES.QUESTION, timestamps: true })
+export class Question {
+  @Prop({
+    type: Types.ObjectId,
+    ref: QuestionBank.name,
+    required: true,
+    index: true,
+  })
+  questionBankId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Subject.name,
+    required: true,
+    index: true,
+  })
+  subjectId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Topic.name, index: true })
+  topicId?: Types.ObjectId;
+
+  @Prop({
+    enum: ['mcq_single', 'mcq_multi', 'short_answer', 'long_answer', 'coding'],
+    default: 'mcq_single',
+  })
+  type!: string;
+
+  @Prop({ required: true })
+  prompt!: string;
+
+  @Prop({ type: [Object], default: [] })
+  options!: Record<string, unknown>[];
+
+  @Prop({ type: Object, default: {} })
+  answerKey!: Record<string, unknown>;
+
+  @Prop({ enum: ['easy', 'medium', 'hard'], default: 'medium', index: true })
+  difficulty!: string;
+
+  @Prop({ default: 1 })
+  points!: number;
+
+  @Prop({ enum: ['active', 'archived'], default: 'active', index: true })
+  status!: string;
+}
+
+export const QuestionSchema = SchemaFactory.createForClass(Question);
+QuestionSchema.index({ questionBankId: 1, difficulty: 1, status: 1 });
+
+@Schema({ collection: COLLECTION_NAMES.ASSESSMENT, timestamps: true })
+export class Assessment {
+  @Prop({ required: true, trim: true })
+  title!: string;
+
+  @Prop({ trim: true })
+  description?: string;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Subject.name,
+    required: true,
+    index: true,
+  })
+  subjectId!: Types.ObjectId;
+
+  @Prop({ type: [Types.ObjectId], ref: Topic.name, default: [] })
+  topicIds!: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: Question.name, default: [] })
+  questionIds!: Types.ObjectId[];
+
+  @Prop({
+    enum: ['diagnostic', 'practice', 'homework', 'quiz', 'exam'],
+    default: 'practice',
+    index: true,
+  })
+  assessmentType!: string;
+
+  @Prop({ default: 0 })
+  durationMinutes!: number;
+
+  @Prop({ default: 0 })
+  passingScorePercentage!: number;
+
+  @Prop({
+    enum: ['draft', 'published', 'archived'],
+    default: 'published',
+    index: true,
+  })
+  status!: string;
+}
+
+export const AssessmentSchema = SchemaFactory.createForClass(Assessment);
+AssessmentSchema.index({ subjectId: 1, status: 1, assessmentType: 1 });
+
+@Schema({ collection: COLLECTION_NAMES.ASSESSMENT_ATTEMPT, timestamps: true })
+export class AssessmentAttempt {
+  @Prop({
+    type: Types.ObjectId,
+    ref: Assessment.name,
+    required: true,
+    index: true,
+  })
+  assessmentId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: StudentProfile.name,
+    required: true,
+    index: true,
+  })
+  studentProfileId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: LearningSchedule.name, index: true })
+  scheduleId?: Types.ObjectId;
+
+  @Prop({
+    enum: ['started', 'submitted', 'graded', 'abandoned'],
+    default: 'started',
+    index: true,
+  })
+  status!: string;
+
+  @Prop()
+  startedAt?: Date;
+
+  @Prop()
+  submittedAt?: Date;
+}
+
+export const AssessmentAttemptSchema =
+  SchemaFactory.createForClass(AssessmentAttempt);
+AssessmentAttemptSchema.index({ studentProfileId: 1, createdAt: -1 });
+
+@Schema({ collection: COLLECTION_NAMES.ASSESSMENT_ANSWER, timestamps: true })
+export class AssessmentAnswer {
+  @Prop({
+    type: Types.ObjectId,
+    ref: AssessmentAttempt.name,
+    required: true,
+    index: true,
+  })
+  attemptId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Question.name,
+    required: true,
+    index: true,
+  })
+  questionId!: Types.ObjectId;
+
+  @Prop({ type: Object, default: {} })
+  response!: Record<string, unknown>;
+
+  @Prop({ default: 0 })
+  awardedPoints!: number;
+
+  @Prop({ default: false })
+  isCorrect!: boolean;
+}
+
+export const AssessmentAnswerSchema =
+  SchemaFactory.createForClass(AssessmentAnswer);
+AssessmentAnswerSchema.index({ attemptId: 1, questionId: 1 }, { unique: true });
+
+@Schema({ collection: COLLECTION_NAMES.ASSESSMENT_RESULT, timestamps: true })
+export class AssessmentResult {
+  @Prop({
+    type: Types.ObjectId,
+    ref: AssessmentAttempt.name,
+    required: true,
+    unique: true,
+  })
+  attemptId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: StudentProfile.name,
+    required: true,
+    index: true,
+  })
+  studentProfileId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Subject.name,
+    required: true,
+    index: true,
+  })
+  subjectId!: Types.ObjectId;
+
+  @Prop({ default: 0 })
+  scorePercentage!: number;
+
+  @Prop({ default: 0 })
+  totalPoints!: number;
+
+  @Prop({ default: 0 })
+  awardedPoints!: number;
+
+  @Prop({ default: false })
+  passed!: boolean;
+
+  @Prop({ type: [String], default: [] })
+  strengths!: string[];
+
+  @Prop({ type: [String], default: [] })
+  improvementAreas!: string[];
+}
+
+export const AssessmentResultSchema =
+  SchemaFactory.createForClass(AssessmentResult);
+AssessmentResultSchema.index({ studentProfileId: 1, createdAt: -1 });
+
+@Schema({
+  collection: COLLECTION_NAMES.STUDENT_TOPIC_PROGRESS,
+  timestamps: true,
+})
+export class StudentTopicProgress {
+  @Prop({
+    type: Types.ObjectId,
+    ref: StudentProfile.name,
+    required: true,
+    index: true,
+  })
+  studentProfileId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: Subject.name,
+    required: true,
+    index: true,
+  })
+  subjectId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Topic.name, required: true, index: true })
+  topicId!: Types.ObjectId;
+
+  @Prop({ default: 0, min: 0, max: 100 })
+  masteryPercentage!: number;
+
+  @Prop({ default: 0 })
+  practiceCount!: number;
+
+  @Prop()
+  lastPracticedAt?: Date;
+}
+
+export const StudentTopicProgressSchema =
+  SchemaFactory.createForClass(StudentTopicProgress);
+StudentTopicProgressSchema.index(
+  { studentProfileId: 1, subjectId: 1, topicId: 1 },
+  { unique: true },
+);
+
+@Schema({
+  collection: COLLECTION_NAMES.LEARNING_RECOMMENDATION,
+  timestamps: true,
+})
+export class LearningRecommendation {
+  @Prop({
+    type: Types.ObjectId,
+    ref: StudentProfile.name,
+    required: true,
+    index: true,
+  })
+  studentProfileId!: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Subject.name, index: true })
+  subjectId?: Types.ObjectId;
+
+  @Prop({ type: Types.ObjectId, ref: Topic.name, index: true })
+  topicId?: Types.ObjectId;
+
+  @Prop({
+    enum: ['topic_revision', 'assessment', 'ai_session', 'parent_review'],
+    required: true,
+  })
+  type!: string;
+
+  @Prop({ required: true })
+  title!: string;
+
+  @Prop()
+  reason?: string;
+
+  @Prop({ enum: ['low', 'medium', 'high'], default: 'medium', index: true })
+  priority!: string;
+
+  @Prop({
+    enum: ['open', 'accepted', 'dismissed', 'completed'],
+    default: 'open',
+    index: true,
+  })
+  status!: string;
+}
+
+export const LearningRecommendationSchema = SchemaFactory.createForClass(
+  LearningRecommendation,
+);
+LearningRecommendationSchema.index({
+  studentProfileId: 1,
+  status: 1,
+  priority: 1,
+});
 
 @Schema({ collection: COLLECTION_NAMES.CLASSROOM, timestamps: true })
 export class Classroom {

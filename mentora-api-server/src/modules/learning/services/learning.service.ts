@@ -8,30 +8,68 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import * as bcrypt from 'bcryptjs';
+import { randomBytes } from 'crypto';
 import { Role, Status, PlanTier, SubscriptionStatus } from '@/common/enums';
 import { User, UserDocument } from '@/modules/auth/schemas/user.schema';
 import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import {
   AddParentDto,
+  AcceptStudentInvitationDto,
   CreateAcademicRecordDto,
+  CreateAcademicCatalogDto,
   CreateAiTutorSessionDto,
+  CreateAssessmentDto,
+  CreateCurriculumDto,
   CreateEntitlementDto,
+  CreateLearningRecommendationDto,
+  CreateQuestionBankDto,
+  CreateQuestionDto,
   CreateScheduleDto,
   CreateStudentDto,
+  CreateStudentInvitationDto,
   CreateSubjectDto,
+  CreateTopicDto,
   EnrollSubjectDto,
+  RescheduleScheduleDto,
   SendAiTutorMessageDto,
+  StartAssessmentAttemptDto,
+  SubmitAssessmentAnswerDto,
   UpdateParentalControlsDto,
   UpdateStudentDto,
+  UpdateParentProfileDto,
+  UpdateStudentProfileSectionDto,
+  UpsertTopicProgressDto,
 } from '../dto/learning.dto';
 import {
   AcademicRecordDocument,
+  AcademicBoard,
+  AcademicBoardDocument,
+  AcademicLevel,
+  AcademicLevelDocument,
   AiTutorMessage,
   AiTutorMessageDocument,
   AiTutorSession,
   AiTutorSessionDocument,
+  Assessment,
+  AssessmentAnswer,
+  AssessmentAnswerDocument,
+  AssessmentAttempt,
+  AssessmentAttemptDocument,
+  AssessmentDocument,
+  AssessmentResult,
+  AssessmentResultDocument,
+  Course,
+  CourseDocument,
+  Curriculum,
+  CurriculumDocument,
+  Grade,
+  GradeDocument,
+  Institution,
+  InstitutionDocument,
   LearningEntitlement,
   LearningEntitlementDocument,
+  LearningRecommendation,
+  LearningRecommendationDocument,
   LearningSchedule,
   LearningScheduleDocument,
   ParentProfile,
@@ -40,14 +78,31 @@ import {
   ParentStudentRelationshipDocument,
   ParentalControl,
   ParentalControlDocument,
+  Question,
+  QuestionBank,
+  QuestionBankDocument,
+  QuestionDocument,
+  SafetyEvent,
+  SafetyEventDocument,
+  StudentInvitation,
+  StudentInvitationDocument,
   StudentAcademicRecord,
   StudentProfile,
   StudentProfileDocument,
   StudentSubjectEnrollment,
   StudentSubjectEnrollmentDocument,
+  StudentTopicProgress,
+  StudentTopicProgressDocument,
   Subject,
   SubjectDocument,
+  Stream,
+  StreamDocument,
+  Topic,
+  TopicDocument,
+  University,
+  UniversityDocument,
 } from '../schemas/learning.schemas';
+import { AgePolicyService } from './age-policy.service';
 
 type AccessResult = {
   allowed: boolean;
@@ -62,8 +117,31 @@ type AccessResult = {
   remainingMinutes?: number;
 };
 
+type CatalogType =
+  | 'boards'
+  | 'universities'
+  | 'institutions'
+  | 'academic-levels'
+  | 'grades'
+  | 'streams'
+  | 'courses';
+
 @Injectable()
 export class LearningService {
+  private readonly profileSections = new Set([
+    'personal',
+    'academic',
+    'parents',
+    'address',
+    'previousEducation',
+    'examScores',
+    'coursePreference',
+    'documents',
+    'payments',
+    'communicationHistory',
+    'activityTimeline',
+  ]);
+
   constructor(
     @InjectModel(StudentProfile.name)
     private readonly students: Model<StudentProfileDocument>,
@@ -71,12 +149,32 @@ export class LearningService {
     private readonly parents: Model<ParentProfileDocument>,
     @InjectModel(ParentStudentRelationship.name)
     private readonly relationships: Model<ParentStudentRelationshipDocument>,
+    @InjectModel(StudentInvitation.name)
+    private readonly invitations: Model<StudentInvitationDocument>,
     @InjectModel(ParentalControl.name)
     private readonly controls: Model<ParentalControlDocument>,
     @InjectModel(StudentAcademicRecord.name)
     private readonly academicRecords: Model<AcademicRecordDocument>,
+    @InjectModel(AcademicBoard.name)
+    private readonly boards: Model<AcademicBoardDocument>,
+    @InjectModel(AcademicLevel.name)
+    private readonly academicLevels: Model<AcademicLevelDocument>,
+    @InjectModel(Grade.name)
+    private readonly grades: Model<GradeDocument>,
+    @InjectModel(Stream.name)
+    private readonly streams: Model<StreamDocument>,
+    @InjectModel(Course.name)
+    private readonly courses: Model<CourseDocument>,
+    @InjectModel(Institution.name)
+    private readonly institutions: Model<InstitutionDocument>,
+    @InjectModel(University.name)
+    private readonly universities: Model<UniversityDocument>,
     @InjectModel(Subject.name)
     private readonly subjects: Model<SubjectDocument>,
+    @InjectModel(Topic.name)
+    private readonly topics: Model<TopicDocument>,
+    @InjectModel(Curriculum.name)
+    private readonly curriculums: Model<CurriculumDocument>,
     @InjectModel(StudentSubjectEnrollment.name)
     private readonly enrollments: Model<StudentSubjectEnrollmentDocument>,
     @InjectModel(LearningSchedule.name)
@@ -87,8 +185,27 @@ export class LearningService {
     private readonly aiSessions: Model<AiTutorSessionDocument>,
     @InjectModel(AiTutorMessage.name)
     private readonly aiMessages: Model<AiTutorMessageDocument>,
+    @InjectModel(QuestionBank.name)
+    private readonly questionBanks: Model<QuestionBankDocument>,
+    @InjectModel(Question.name)
+    private readonly questions: Model<QuestionDocument>,
+    @InjectModel(Assessment.name)
+    private readonly assessments: Model<AssessmentDocument>,
+    @InjectModel(AssessmentAttempt.name)
+    private readonly assessmentAttempts: Model<AssessmentAttemptDocument>,
+    @InjectModel(AssessmentAnswer.name)
+    private readonly assessmentAnswers: Model<AssessmentAnswerDocument>,
+    @InjectModel(AssessmentResult.name)
+    private readonly assessmentResults: Model<AssessmentResultDocument>,
+    @InjectModel(StudentTopicProgress.name)
+    private readonly topicProgress: Model<StudentTopicProgressDocument>,
+    @InjectModel(LearningRecommendation.name)
+    private readonly recommendations: Model<LearningRecommendationDocument>,
+    @InjectModel(SafetyEvent.name)
+    private readonly safetyEvents: Model<SafetyEventDocument>,
     @InjectModel(User.name)
     private readonly users: Model<UserDocument>,
+    private readonly agePolicy: AgePolicyService = new AgePolicyService(),
   ) {}
 
   async createStudent(userId: string, dto: CreateStudentDto) {
@@ -98,8 +215,11 @@ export class LearningService {
         ? 'parent_created_child'
         : 'independent_student';
     const dateOfBirth = new Date(dto.dateOfBirth);
-    this.assertAllowedDateOfBirth(dateOfBirth);
-    const ageCategory = this.getAgeCategory(dateOfBirth);
+    const agePolicy =
+      ownershipType === 'parent_managed'
+        ? this.agePolicy.evaluate(dateOfBirth)
+        : this.agePolicy.assertCanSelfRegister(dateOfBirth);
+    const ageCategory = agePolicy.ageCategory;
     const studentUserId =
       ownershipType === 'parent_managed'
         ? await this.createParentManagedStudentUser(dto)
@@ -194,6 +314,52 @@ export class LearningService {
     return updated;
   }
 
+  async updateStudentProfileSection(
+    userId: string,
+    studentId: string,
+    section: string,
+    dto: UpdateStudentProfileSectionDto,
+  ) {
+    await this.assertStudentAccess(userId, studentId, 'editProfile');
+    if (!this.profileSections.has(section)) {
+      throw new BadRequestException('Unsupported student profile section');
+    }
+
+    const update = {
+      [section]: dto.data,
+      profileCompletionPercentage: await this.calculateProfileCompletion(
+        studentId,
+        section,
+        dto.data,
+      ),
+    };
+    const updated = await this.students
+      .findByIdAndUpdate(studentId, update, { new: true })
+      .lean();
+    if (!updated) throw new NotFoundException('Student profile not found');
+    return updated;
+  }
+
+  async getParentProfile(userId: string) {
+    return this.parents.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId) },
+      { $setOnInsert: { userId: new Types.ObjectId(userId) } },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async updateParentProfile(userId: string, dto: UpdateParentProfileDto) {
+    await this.ensureAccountRole(userId, Role.PARENT);
+    return this.parents.findOneAndUpdate(
+      { userId: new Types.ObjectId(userId) },
+      {
+        ...dto,
+        userId: new Types.ObjectId(userId),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
   async addParent(userId: string, studentId: string, dto: AddParentDto) {
     await this.assertStudentAccess(userId, studentId, 'editProfile');
     await this.parents.updateOne(
@@ -231,6 +397,115 @@ export class LearningService {
     );
   }
 
+  async getParentalControls(userId: string, studentId: string) {
+    await this.assertStudentAccess(userId, studentId, 'manageParentalControls');
+    const student = await this.getStudentOrThrow(studentId);
+    const control = await this.controls
+      .findOne({ studentProfileId: new Types.ObjectId(studentId) })
+      .lean();
+    if (control) return control;
+
+    await this.ensureDefaultParentalControl(
+      studentId,
+      userId,
+      String(student.ageCategory),
+    );
+    return this.controls
+      .findOne({ studentProfileId: new Types.ObjectId(studentId) })
+      .lean();
+  }
+
+  async createStudentInvitation(
+    userId: string,
+    studentId: string,
+    dto: CreateStudentInvitationDto,
+  ) {
+    await this.assertStudentAccess(userId, studentId, 'manageParentalControls');
+    const token = randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    return this.invitations.create({
+      studentProfileId: new Types.ObjectId(studentId),
+      invitedByUserId: new Types.ObjectId(userId),
+      inviteeEmail: dto.inviteeEmail.toLowerCase().trim(),
+      relationship: dto.relationship ?? 'guardian',
+      permissions: dto.permissions,
+      token,
+      expiresAt,
+      status: 'pending',
+    });
+  }
+
+  async listStudentInvitations(userId: string, studentId: string) {
+    await this.assertStudentAccess(userId, studentId, 'manageParentalControls');
+    return this.invitations
+      .find({ studentProfileId: new Types.ObjectId(studentId) })
+      .sort({ createdAt: -1 })
+      .lean();
+  }
+
+  async acceptStudentInvitation(
+    userId: string,
+    dto: AcceptStudentInvitationDto,
+  ) {
+    const invitation = await this.invitations.findOne({ token: dto.token });
+    if (!invitation || invitation.status !== 'pending') {
+      throw new NotFoundException('Student invitation not found');
+    }
+    if (invitation.expiresAt < new Date()) {
+      invitation.status = 'expired';
+      await invitation.save();
+      throw new BadRequestException('Student invitation has expired');
+    }
+
+    await this.ensureAccountRole(userId, Role.PARENT);
+    await this.parents.updateOne(
+      { userId: new Types.ObjectId(userId) },
+      { $setOnInsert: { userId: new Types.ObjectId(userId) } },
+      { upsert: true },
+    );
+    const relationship = await this.relationships.findOneAndUpdate(
+      {
+        parentUserId: new Types.ObjectId(userId),
+        studentProfileId: invitation.studentProfileId,
+      },
+      {
+        relationship: invitation.relationship,
+        permissions: invitation.permissions,
+        status: 'active',
+        createdBy: 'parent',
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+
+    invitation.status = 'accepted';
+    invitation.acceptedAt = new Date();
+    invitation.acceptedByUserId = new Types.ObjectId(userId);
+    await invitation.save();
+
+    return relationship;
+  }
+
+  async revokeStudentInvitation(
+    userId: string,
+    studentId: string,
+    invitationId: string,
+  ) {
+    await this.assertStudentAccess(userId, studentId, 'manageParentalControls');
+    const invitation = await this.invitations.findOneAndUpdate(
+      {
+        _id: new Types.ObjectId(invitationId),
+        studentProfileId: new Types.ObjectId(studentId),
+        status: 'pending',
+      },
+      { status: 'revoked' },
+      { new: true },
+    );
+    if (!invitation)
+      throw new NotFoundException('Student invitation not found');
+    return invitation;
+  }
+
   async createAcademicRecord(
     userId: string,
     studentId: string,
@@ -259,6 +534,76 @@ export class LearningService {
       .lean();
   }
 
+  async updatePreviousEducation(
+    userId: string,
+    studentId: string,
+    dto: UpdateStudentProfileSectionDto,
+  ) {
+    return this.updateStudentProfileSection(
+      userId,
+      studentId,
+      'previousEducation',
+      dto,
+    );
+  }
+
+  async updateExamScores(
+    userId: string,
+    studentId: string,
+    dto: UpdateStudentProfileSectionDto,
+  ) {
+    return this.updateStudentProfileSection(
+      userId,
+      studentId,
+      'examScores',
+      dto,
+    );
+  }
+
+  async updateCoursePreference(
+    userId: string,
+    studentId: string,
+    dto: UpdateStudentProfileSectionDto,
+  ) {
+    return this.updateStudentProfileSection(
+      userId,
+      studentId,
+      'coursePreference',
+      dto,
+    );
+  }
+
+  async updateDocuments(
+    userId: string,
+    studentId: string,
+    dto: UpdateStudentProfileSectionDto,
+  ) {
+    return this.updateStudentProfileSection(
+      userId,
+      studentId,
+      'documents',
+      dto,
+    );
+  }
+
+  async createCatalogItem(type: CatalogType, dto: CreateAcademicCatalogDto) {
+    const model = this.getCatalogModel(type);
+    const payload = this.toCatalogPayload(type, dto);
+    return model.findOneAndUpdate({ code: dto.code.toUpperCase() }, payload, {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
+    });
+  }
+
+  async listCatalogItems(type: CatalogType) {
+    const model = this.getCatalogModel(type);
+    return model
+      .find({ status: 'active' })
+      .sort({ sortOrder: 1, name: 1 })
+      .lean();
+  }
+
   async createSubject(dto: CreateSubjectDto) {
     return this.subjects.findOneAndUpdate(
       {
@@ -277,6 +622,55 @@ export class LearningService {
 
   async listSubjects() {
     return this.subjects.find({ status: 'active' }).sort({ name: 1 }).lean();
+  }
+
+  async createTopic(dto: CreateTopicDto) {
+    await this.getSubjectOrThrow(dto.subjectId);
+    return this.topics.findOneAndUpdate(
+      {
+        subjectId: new Types.ObjectId(dto.subjectId),
+        code: dto.code.toUpperCase(),
+      },
+      {
+        ...dto,
+        subjectId: new Types.ObjectId(dto.subjectId),
+        code: dto.code.toUpperCase(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async listTopics(subjectId?: string) {
+    return this.topics
+      .find({
+        status: 'active',
+        ...(subjectId ? { subjectId: new Types.ObjectId(subjectId) } : {}),
+      })
+      .sort({ sortOrder: 1, name: 1 })
+      .lean();
+  }
+
+  async createCurriculum(dto: CreateCurriculumDto) {
+    return this.curriculums.findOneAndUpdate(
+      {
+        ...(dto.boardId ? { boardId: new Types.ObjectId(dto.boardId) } : {}),
+        gradeId: new Types.ObjectId(dto.gradeId),
+        subjectId: new Types.ObjectId(dto.subjectId),
+      },
+      {
+        ...dto,
+        boardId: dto.boardId ? new Types.ObjectId(dto.boardId) : undefined,
+        gradeId: new Types.ObjectId(dto.gradeId),
+        subjectId: new Types.ObjectId(dto.subjectId),
+        topicIds: dto.topicIds?.map((id) => new Types.ObjectId(id)) ?? [],
+        code: dto.code.toUpperCase(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async listCurriculums() {
+    return this.curriculums.find({ status: 'active' }).sort({ code: 1 }).lean();
   }
 
   async enrollSubject(
@@ -321,6 +715,10 @@ export class LearningService {
       subjectId: dto.subjectId ? new Types.ObjectId(dto.subjectId) : undefined,
       startAt: new Date(dto.startAt),
       endAt: new Date(dto.endAt),
+      nextReminderAt: this.resolveNextReminderAt(
+        new Date(dto.startAt),
+        dto.reminderMinutesBefore,
+      ),
     });
   }
 
@@ -342,6 +740,40 @@ export class LearningService {
     return this.schedules.findByIdAndUpdate(
       scheduleId,
       { status: 'cancelled' },
+      { new: true },
+    );
+  }
+
+  async rescheduleSchedule(
+    userId: string,
+    scheduleId: string,
+    dto: RescheduleScheduleDto,
+  ) {
+    const schedule = await this.getScheduleOrThrow(scheduleId);
+    await this.assertStudentAccess(
+      userId,
+      String(schedule.studentProfileId),
+      'manageSchedule',
+    );
+    if (new Date(dto.endAt) <= new Date(dto.startAt)) {
+      throw new BadRequestException(
+        'Schedule end time must be after start time',
+      );
+    }
+
+    return this.schedules.findByIdAndUpdate(
+      scheduleId,
+      {
+        startAt: new Date(dto.startAt),
+        endAt: new Date(dto.endAt),
+        ...(dto.timezone ? { timezone: dto.timezone } : {}),
+        status: 'scheduled',
+        reminderOffsetsSent: [],
+        nextReminderAt: this.resolveNextReminderAt(
+          new Date(dto.startAt),
+          schedule.reminderMinutesBefore,
+        ),
+      },
       { new: true },
     );
   }
@@ -377,7 +809,7 @@ export class LearningService {
 
   async createAiTutorSession(userId: string, dto: CreateAiTutorSessionDto) {
     const student = await this.getStudentOrThrow(dto.studentProfileId);
-    if (String(student.userId ?? '') !== userId) {
+    if (this.toIdString(student.userId) !== userId) {
       throw new ForbiddenException(
         'Students must join tutor sessions with their own credentials',
       );
@@ -403,7 +835,8 @@ export class LearningService {
       status: 'active',
       deliveryMode: dto.deliveryMode ?? 'chat',
     });
-    return { session, access };
+    const context = await this.buildAiTutorContext(userId, String(session._id));
+    return { session, access, context };
   }
 
   async getAiTutorSession(userId: string, sessionId: string) {
@@ -418,7 +851,12 @@ export class LearningService {
       .find({ sessionId: new Types.ObjectId(sessionId) })
       .sort({ createdAt: 1 })
       .lean();
-    return { session, messages };
+    const context = await this.buildAiTutorContext(userId, sessionId);
+    return { session, messages, context };
+  }
+
+  async getAiTutorSessionContext(userId: string, sessionId: string) {
+    return this.buildAiTutorContext(userId, sessionId);
   }
 
   async sendAiTutorMessage(
@@ -437,13 +875,37 @@ export class LearningService {
       throw new BadRequestException('AI tutor session is not active');
     }
 
+    const moderation = this.moderateTutorMessage(dto.content);
     const studentMessage = await this.aiMessages.create({
       sessionId: session._id,
       sender: 'student',
       messageType: dto.messageType ?? 'text',
       content: dto.content,
-      safetyStatus: 'pending_review',
+      safetyStatus: moderation.status,
+      metadata: { safetyReasons: moderation.reasons },
     });
+    if (moderation.status !== 'allowed') {
+      await this.safetyEvents.create({
+        studentProfileId: session.studentProfileId,
+        userId: new Types.ObjectId(userId),
+        sourceId: session._id,
+        sourceType: 'ai_tutor',
+        severity: moderation.severity,
+        reasons: moderation.reasons,
+        metadata: {
+          messageId: studentMessage._id,
+          action: moderation.status,
+        },
+      });
+      session.safetyEventsCount += 1;
+    }
+    if (moderation.status === 'blocked') {
+      session.totalMessages += 1;
+      await session.save();
+      throw new BadRequestException(
+        'This message was blocked by Mentora safety rules',
+      );
+    }
     const aiMessage = await this.aiMessages.create({
       sessionId: session._id,
       sender: 'ai',
@@ -471,17 +933,260 @@ export class LearningService {
     session.status = 'completed';
     session.endedAt = new Date();
     session.sessionSummary =
-      session.sessionSummary ??
-      'Session completed. A detailed AI-generated summary will be added when the tutor provider is connected.';
+      session.sessionSummary ?? (await this.generateSessionSummary(sessionId));
     return session.save();
   }
 
-  async listAiHistory(userId: string, studentId: string) {
+  async listAiHistory(
+    userId: string,
+    studentId: string,
+  ): Promise<Record<string, unknown>[]> {
     await this.assertStudentAccess(userId, studentId, 'viewLearningHistory');
-    return this.aiSessions
+    const sessions = await this.aiSessions
       .find({ studentProfileId: new Types.ObjectId(studentId) })
       .sort({ createdAt: -1 })
       .lean();
+    return sessions.map((session) => ({
+      ...session,
+      parentVisibleSummary:
+        session.sessionSummary ??
+        'Summary will appear after the tutor session is completed.',
+    }));
+  }
+
+  async createQuestionBank(dto: CreateQuestionBankDto) {
+    await this.getSubjectOrThrow(dto.subjectId);
+    return this.questionBanks.create({
+      ...dto,
+      subjectId: new Types.ObjectId(dto.subjectId),
+      topicId: dto.topicId ? new Types.ObjectId(dto.topicId) : undefined,
+    });
+  }
+
+  async listQuestionBanks(subjectId?: string) {
+    return this.questionBanks
+      .find({
+        status: 'active',
+        ...(subjectId ? { subjectId: new Types.ObjectId(subjectId) } : {}),
+      })
+      .sort({ name: 1 })
+      .lean();
+  }
+
+  async createQuestion(dto: CreateQuestionDto) {
+    return this.questions.create({
+      ...dto,
+      questionBankId: new Types.ObjectId(dto.questionBankId),
+      subjectId: new Types.ObjectId(dto.subjectId),
+      topicId: dto.topicId ? new Types.ObjectId(dto.topicId) : undefined,
+    });
+  }
+
+  async listQuestions(questionBankId?: string) {
+    return this.questions
+      .find({
+        status: 'active',
+        ...(questionBankId
+          ? { questionBankId: new Types.ObjectId(questionBankId) }
+          : {}),
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+  }
+
+  async createAssessment(dto: CreateAssessmentDto) {
+    return this.assessments.create({
+      ...dto,
+      subjectId: new Types.ObjectId(dto.subjectId),
+      topicIds: dto.topicIds?.map((id) => new Types.ObjectId(id)) ?? [],
+      questionIds: dto.questionIds?.map((id) => new Types.ObjectId(id)) ?? [],
+    });
+  }
+
+  async listAssessments(subjectId?: string) {
+    return this.assessments
+      .find({
+        status: 'published',
+        ...(subjectId ? { subjectId: new Types.ObjectId(subjectId) } : {}),
+      })
+      .sort({ createdAt: -1 })
+      .lean();
+  }
+
+  async startAssessmentAttempt(
+    userId: string,
+    assessmentId: string,
+    dto: StartAssessmentAttemptDto,
+  ) {
+    await this.assertStudentAccess(
+      userId,
+      dto.studentProfileId,
+      'viewAssessments',
+    );
+    const assessment = await this.assessments.findById(assessmentId).lean();
+    if (!assessment) throw new NotFoundException('Assessment not found');
+
+    return this.assessmentAttempts.create({
+      assessmentId: new Types.ObjectId(assessmentId),
+      studentProfileId: new Types.ObjectId(dto.studentProfileId),
+      scheduleId: dto.scheduleId
+        ? new Types.ObjectId(dto.scheduleId)
+        : undefined,
+      startedAt: new Date(),
+      status: 'started',
+    });
+  }
+
+  async submitAssessmentAnswer(
+    userId: string,
+    attemptId: string,
+    dto: SubmitAssessmentAnswerDto,
+  ) {
+    const attempt = await this.assessmentAttempts.findById(attemptId).lean();
+    if (!attempt) throw new NotFoundException('Assessment attempt not found');
+    await this.assertStudentAccess(
+      userId,
+      String(attempt.studentProfileId),
+      'viewAssessments',
+    );
+    const question = await this.questions.findById(dto.questionId).lean();
+    if (!question) throw new NotFoundException('Question not found');
+    const isCorrect = this.isAssessmentAnswerCorrect(
+      dto.response,
+      question.answerKey,
+    );
+
+    return this.assessmentAnswers.findOneAndUpdate(
+      {
+        attemptId: new Types.ObjectId(attemptId),
+        questionId: new Types.ObjectId(dto.questionId),
+      },
+      {
+        response: dto.response,
+        isCorrect,
+        awardedPoints: isCorrect ? question.points : 0,
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async completeAssessmentAttempt(userId: string, attemptId: string) {
+    const attempt = await this.assessmentAttempts.findById(attemptId);
+    if (!attempt) throw new NotFoundException('Assessment attempt not found');
+    await this.assertStudentAccess(
+      userId,
+      String(attempt.studentProfileId),
+      'viewAssessments',
+    );
+    const assessment = await this.assessments
+      .findById(attempt.assessmentId)
+      .lean();
+    if (!assessment) throw new NotFoundException('Assessment not found');
+    const answers = await this.assessmentAnswers
+      .find({ attemptId: attempt._id })
+      .lean();
+    const questions = assessment.questionIds.length
+      ? await this.questions
+          .find({ _id: { $in: assessment.questionIds } })
+          .lean()
+      : [];
+    const totalPoints = questions.reduce(
+      (total, question) => total + (question.points ?? 0),
+      0,
+    );
+    const awardedPoints = answers.reduce(
+      (total, answer) => total + (answer.awardedPoints ?? 0),
+      0,
+    );
+    const scorePercentage = totalPoints
+      ? Math.round((awardedPoints / totalPoints) * 100)
+      : 0;
+    attempt.status = 'graded';
+    attempt.submittedAt = new Date();
+    await attempt.save();
+
+    return this.assessmentResults.findOneAndUpdate(
+      { attemptId: attempt._id },
+      {
+        attemptId: attempt._id,
+        studentProfileId: attempt.studentProfileId,
+        subjectId: assessment.subjectId,
+        scorePercentage,
+        totalPoints,
+        awardedPoints,
+        passed: scorePercentage >= assessment.passingScorePercentage,
+        strengths: scorePercentage >= 70 ? ['Current concept readiness'] : [],
+        improvementAreas:
+          scorePercentage < 70 ? ['Revise weak topics with AI tutor'] : [],
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async upsertTopicProgress(
+    userId: string,
+    studentId: string,
+    dto: UpsertTopicProgressDto,
+  ) {
+    await this.assertStudentAccess(userId, studentId, 'viewAssessments');
+    return this.topicProgress.findOneAndUpdate(
+      {
+        studentProfileId: new Types.ObjectId(studentId),
+        subjectId: new Types.ObjectId(dto.subjectId),
+        topicId: new Types.ObjectId(dto.topicId),
+      },
+      {
+        masteryPercentage: dto.masteryPercentage,
+        practiceCount: dto.practiceCount ?? 0,
+        lastPracticedAt: new Date(),
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async listTopicProgress(userId: string, studentId: string) {
+    await this.assertStudentAccess(userId, studentId, 'viewLearningHistory');
+    return this.topicProgress
+      .find({ studentProfileId: new Types.ObjectId(studentId) })
+      .sort({ updatedAt: -1 })
+      .lean();
+  }
+
+  async createLearningRecommendation(dto: CreateLearningRecommendationDto) {
+    return this.recommendations.create({
+      ...dto,
+      studentProfileId: new Types.ObjectId(dto.studentProfileId),
+      subjectId: dto.subjectId ? new Types.ObjectId(dto.subjectId) : undefined,
+      topicId: dto.topicId ? new Types.ObjectId(dto.topicId) : undefined,
+    });
+  }
+
+  async listRecommendations(userId: string, studentId: string) {
+    await this.assertStudentAccess(userId, studentId, 'viewLearningHistory');
+    return this.recommendations
+      .find({
+        studentProfileId: new Types.ObjectId(studentId),
+        status: 'open',
+      })
+      .sort({ priority: -1, createdAt: -1 })
+      .lean();
+  }
+
+  async getParentProgressDashboard(userId: string) {
+    const students = await this.listStudents(userId);
+    const dashboards = await Promise.all(
+      students.map(async (student) => {
+        const studentRecord = student as Record<string, unknown>;
+        const studentId = String(studentRecord._id);
+        const progress = await this.getStudentProgress(userId, studentId);
+        const recommendations = await this.listRecommendations(
+          userId,
+          studentId,
+        );
+        return { student: studentRecord, progress, recommendations };
+      }),
+    );
+    return { students: dashboards };
   }
 
   async getStudentProgress(userId: string, studentId: string) {
@@ -491,7 +1196,7 @@ export class LearningService {
     await this.assertStudentAccess(userId, studentId, 'viewLearningHistory');
 
     const studentObjectId = new Types.ObjectId(studentId);
-    const [sessions, enrollments] = await Promise.all([
+    const [sessions, enrollments, results, topicProgress] = await Promise.all([
       this.aiSessions
         .find({ studentProfileId: studentObjectId })
         .sort({ createdAt: -1 })
@@ -499,6 +1204,11 @@ export class LearningService {
       this.enrollments
         .find({ studentProfileId: studentObjectId, status: 'active' })
         .lean(),
+      this.assessmentResults
+        .find({ studentProfileId: studentObjectId })
+        .sort({ createdAt: -1 })
+        .lean(),
+      this.topicProgress.find({ studentProfileId: studentObjectId }).lean(),
     ]);
 
     const subjectIds = [
@@ -535,15 +1245,33 @@ export class LearningService {
         ) / 60,
       ),
       completedSessions: completedSessions.length,
-      averageAssessmentScore: undefined,
+      averageAssessmentScore: results.length
+        ? Math.round(
+            results.reduce(
+              (total, result) => total + result.scorePercentage,
+              0,
+            ) / results.length,
+          )
+        : undefined,
       subjectProgress: subjectIds.map((subjectId) => {
         const completedCount = completedBySubject[subjectId] ?? 0;
+        const subjectTopics = topicProgress.filter(
+          (item) => String(item.subjectId) === subjectId,
+        );
+        const topicMastery = subjectTopics.length
+          ? Math.round(
+              subjectTopics.reduce(
+                (total, item) => total + item.masteryPercentage,
+                0,
+              ) / subjectTopics.length,
+            )
+          : undefined;
         return {
           subjectId,
           subjectName: subjectNameById.get(subjectId) ?? 'Subject',
-          masteryPercentage: Math.min(completedCount * 20, 100),
+          masteryPercentage: topicMastery ?? Math.min(completedCount * 20, 100),
           recommendedTopic:
-            completedCount > 0
+            (topicMastery ?? completedCount) > 0
               ? 'Continue the next adaptive practice set'
               : 'Start with the first guided AI tutor session',
         };
@@ -575,6 +1303,14 @@ export class LearningService {
     ) {
       return { allowed: false, denialReason: 'SUBJECT_NOT_INCLUDED' };
     }
+    if (
+      control?.allowedSubjectIds?.length &&
+      !control.allowedSubjectIds.some(
+        (subjectId) => String(subjectId) === input.subjectId,
+      )
+    ) {
+      return { allowed: false, denialReason: 'SUBJECT_NOT_INCLUDED' };
+    }
 
     const enrollment = await this.enrollments.findOne({
       studentProfileId: student._id,
@@ -589,6 +1325,15 @@ export class LearningService {
       const schedule = await this.schedules.findById(input.scheduleId).lean();
       if (!schedule || schedule.status === 'cancelled') {
         return { allowed: false, denialReason: 'OUTSIDE_SCHEDULE' };
+      }
+      if (
+        String(schedule.studentProfileId) !== input.studentProfileId ||
+        (schedule.subjectId && String(schedule.subjectId) !== input.subjectId)
+      ) {
+        return { allowed: false, denialReason: 'OUTSIDE_SCHEDULE' };
+      }
+      if (schedule.parentApprovalRequired && !schedule.parentApproved) {
+        return { allowed: false, denialReason: 'PARENTAL_CONTROL_BLOCKED' };
       }
       const startsAt = new Date(schedule.startAt);
       startsAt.setMinutes(startsAt.getMinutes() - schedule.earlyAccessMinutes);
@@ -607,7 +1352,6 @@ export class LearningService {
         studentProfileId: student._id,
         status: 'active',
         startsAt: { $lte: input.requestedAt },
-        expiresAt: { $gte: input.requestedAt },
         $or: [
           { subjectId: new Types.ObjectId(input.subjectId) },
           { entitlementType: 'ai_minutes' },
@@ -644,8 +1388,136 @@ export class LearningService {
     };
   }
 
+  private async buildAiTutorContext(userId: string, sessionId: string) {
+    const session = await this.aiSessions.findById(sessionId).lean();
+    if (!session) throw new NotFoundException('AI tutor session not found');
+    await this.assertStudentAccess(
+      userId,
+      String(session.studentProfileId),
+      'viewLearningHistory',
+    );
+    const [student, subject, schedule, control, entitlement] =
+      await Promise.all([
+        this.students.findById(session.studentProfileId).lean(),
+        this.subjects.findById(session.subjectId).lean(),
+        session.scheduleId
+          ? this.schedules.findById(session.scheduleId).lean()
+          : Promise.resolve(null),
+        this.controls
+          .findOne({ studentProfileId: session.studentProfileId })
+          .lean(),
+        this.entitlements.findById(session.accessEntitlementId).lean(),
+      ]);
+
+    return {
+      student: {
+        studentProfileId: String(session.studentProfileId),
+        ageCategory: student?.ageCategory,
+        learningGoals: student?.learningGoals ?? [],
+        profileCompletionPercentage: student?.profileCompletionPercentage ?? 0,
+      },
+      subject: subject
+        ? {
+            subjectId: String(subject._id),
+            name: subject.name,
+            code: subject.code,
+            category: subject.category,
+          }
+        : undefined,
+      schedule: schedule
+        ? {
+            scheduleId: String(schedule._id),
+            title: schedule.title,
+            startAt: schedule.startAt,
+            endAt: schedule.endAt,
+            timezone: schedule.timezone,
+            deliveryMode: schedule.deliveryMode,
+          }
+        : undefined,
+      access: {
+        entitlementId: String(session.accessEntitlementId),
+        remainingQuantity:
+          entitlement?.allocatedQuantity !== undefined
+            ? Math.max(
+                entitlement.allocatedQuantity - entitlement.usedQuantity,
+                0,
+              )
+            : undefined,
+        expiresAt: entitlement?.expiresAt,
+      },
+      safety: {
+        contentRestrictionLevel: control?.contentRestrictionLevel ?? 'standard',
+        externalLinksEnabled: control?.externalLinksEnabled ?? false,
+      },
+    };
+  }
+
+  private moderateTutorMessage(content: string): {
+    status: 'allowed' | 'review' | 'blocked';
+    severity: 'low' | 'medium' | 'high' | 'critical';
+    reasons: string[];
+  } {
+    const normalized = content.toLowerCase();
+    const blockedRules = [
+      { reason: 'self_harm', pattern: /(suicide|self harm|kill myself)/ },
+      { reason: 'sexual_content', pattern: /(explicit|nude|porn)/ },
+      { reason: 'payment_bypass', pattern: /(free class hack|bypass payment)/ },
+    ];
+    const reviewRules = [
+      {
+        reason: 'external_contact',
+        pattern: /(whatsapp|telegram|phone number)/,
+      },
+      {
+        reason: 'academic_integrity',
+        pattern: /(write my exam|cheat|answer key)/,
+      },
+    ];
+    const blockedReasons = blockedRules
+      .filter((rule) => rule.pattern.test(normalized))
+      .map((rule) => rule.reason);
+    if (blockedReasons.length) {
+      return { status: 'blocked', severity: 'high', reasons: blockedReasons };
+    }
+    const reviewReasons = reviewRules
+      .filter((rule) => rule.pattern.test(normalized))
+      .map((rule) => rule.reason);
+    if (reviewReasons.length) {
+      return { status: 'review', severity: 'medium', reasons: reviewReasons };
+    }
+    return { status: 'allowed', severity: 'low', reasons: [] };
+  }
+
+  private async generateSessionSummary(sessionId: string): Promise<string> {
+    const messages = await this.aiMessages
+      .find({ sessionId: new Types.ObjectId(sessionId) })
+      .sort({ createdAt: 1 })
+      .lean();
+    const studentMessages = messages.filter(
+      (message) => message.sender === 'student',
+    );
+    if (!studentMessages.length) {
+      return 'Session completed without student questions.';
+    }
+    const lastQuestion = studentMessages[studentMessages.length - 1]?.content;
+    return `Session completed with ${studentMessages.length} student message(s). Last focus: ${String(
+      lastQuestion,
+    ).slice(0, 160)}`;
+  }
+
+  private isAssessmentAnswerCorrect(
+    response: Record<string, unknown>,
+    answerKey?: Record<string, unknown>,
+  ): boolean {
+    if (!answerKey || !Object.keys(answerKey).length) return false;
+    return JSON.stringify(response) === JSON.stringify(answerKey);
+  }
+
   private async getStudentOrThrow(studentId: string) {
-    const student = await this.students.findById(studentId).lean();
+    const student = (await this.students.findById(studentId).lean()) as Record<
+      string,
+      unknown
+    > | null;
     if (!student) throw new NotFoundException('Student profile not found');
     return student;
   }
@@ -673,20 +1545,6 @@ export class LearningService {
     if (activeSession) {
       throw new ConflictException(
         'This student already has an active tutor session',
-      );
-    }
-  }
-
-  private assertAllowedDateOfBirth(dateOfBirth: Date) {
-    const now = new Date();
-    if (Number.isNaN(dateOfBirth.getTime()) || dateOfBirth >= now) {
-      throw new BadRequestException('A valid past date of birth is required');
-    }
-
-    const age = this.getAge(dateOfBirth);
-    if (age < 4 || age > 100) {
-      throw new BadRequestException(
-        'Student age must be between 4 and 100 years',
       );
     }
   }
@@ -757,8 +1615,8 @@ export class LearningService {
   ) {
     const student = await this.getStudentOrThrow(studentId);
     if (
-      String(student.userId ?? '') === userId ||
-      String(student.createdByUserId) === userId
+      this.toIdString(student.userId) === userId ||
+      this.toIdString(student.createdByUserId) === userId
     ) {
       return;
     }
@@ -800,22 +1658,90 @@ export class LearningService {
     );
   }
 
-  private getAgeCategory(dateOfBirth: Date): string {
-    if (Number.isNaN(dateOfBirth.getTime())) return 'unknown';
-    const age = this.getAge(dateOfBirth);
-    return age >= 18 ? 'adult' : 'minor';
+  private async calculateProfileCompletion(
+    studentId: string,
+    section: string,
+    data: Record<string, unknown>,
+  ): Promise<number> {
+    const student = await this.students.findById(studentId).lean();
+    const studentRecord = student as Record<string, unknown> | null;
+    const sections = new Set<string>();
+
+    if (studentRecord) {
+      for (const key of this.profileSections) {
+        const value = studentRecord[key];
+        if (this.hasSectionValue(value)) sections.add(key);
+      }
+    }
+
+    if (this.hasSectionValue(data)) sections.add(section);
+    else sections.delete(section);
+
+    return Math.round((sections.size / this.profileSections.size) * 100);
   }
 
-  private getAge(dateOfBirth: Date): number {
-    const today = new Date();
-    let age = today.getFullYear() - dateOfBirth.getFullYear();
-    const monthDelta = today.getMonth() - dateOfBirth.getMonth();
-    if (
-      monthDelta < 0 ||
-      (monthDelta === 0 && today.getDate() < dateOfBirth.getDate())
-    ) {
-      age -= 1;
+  private hasSectionValue(value: unknown): boolean {
+    if (Array.isArray(value)) return value.length > 0;
+    if (value && typeof value === 'object') {
+      return Object.keys(value).length > 0;
     }
-    return age;
+    return value !== undefined && value !== null && value !== '';
+  }
+
+  private getCatalogModel(type: CatalogType): Model<unknown> {
+    const models: Record<CatalogType, Model<unknown>> = {
+      boards: this.boards as Model<unknown>,
+      universities: this.universities as Model<unknown>,
+      institutions: this.institutions as Model<unknown>,
+      'academic-levels': this.academicLevels as Model<unknown>,
+      grades: this.grades as Model<unknown>,
+      streams: this.streams as Model<unknown>,
+      courses: this.courses as Model<unknown>,
+    };
+
+    return models[type];
+  }
+
+  private toCatalogPayload(
+    type: CatalogType,
+    dto: CreateAcademicCatalogDto,
+  ): Record<string, unknown> {
+    return {
+      ...dto,
+      code: dto.code.toUpperCase(),
+      academicLevelId: dto.academicLevelId
+        ? new Types.ObjectId(dto.academicLevelId)
+        : undefined,
+      streamId: dto.streamId ? new Types.ObjectId(dto.streamId) : undefined,
+      boardId: dto.boardId ? new Types.ObjectId(dto.boardId) : undefined,
+      universityId: dto.universityId
+        ? new Types.ObjectId(dto.universityId)
+        : undefined,
+      type:
+        dto.type ??
+        (type === 'boards'
+          ? 'school'
+          : type === 'institutions'
+            ? 'school'
+            : undefined),
+    };
+  }
+
+  private resolveNextReminderAt(
+    startAt: Date,
+    reminderMinutesBefore: number[] = [60, 15],
+  ): Date | undefined {
+    const now = new Date();
+    return reminderMinutesBefore
+      .map((minutes) => new Date(startAt.getTime() - minutes * 60_000))
+      .filter((reminderAt) => reminderAt > now)
+      .sort((a, b) => a.getTime() - b.getTime())[0];
+  }
+
+  private toIdString(value: unknown): string {
+    if (!value) return '';
+    if (value instanceof Types.ObjectId) return value.toHexString();
+    if (typeof value === 'string') return value;
+    return '';
   }
 }

@@ -56,7 +56,7 @@ Status legend:
 |---|---:|---|
 | Block/report users | Done | Safety/report/block collections and FE screens exist. |
 | Block affects chat/discovery/profile | Partly Done | Flow has been improved; needs regression QA with both users active in chat. |
-| Photo privacy | Done | Match/profile media privacy handling exists. Needs QA across free/premium/matched states. |
+| Photo privacy | Done | Student/profile media privacy handling exists. Needs QA across free/premium/matched states. |
 | Video intro privacy/rendering | Partly Done | Upload, thumbnail, and profile display were implemented; needs Android/iOS media QA. |
 | Location only requested when needed | Done | Flow moved toward Nearby/setting-triggered location usage. Needs final device permission QA. |
 | KYC/profile verification | Partly Done | Safety/KYC module exists; provider/manual review workflow needs production operation setup. |
@@ -95,8 +95,8 @@ Status legend:
 
 | Task | Status | Evidence / Notes |
 |---|---:|---|
-| Pagination/infinite scroll | Done | Home, matches, chat list, and notifications use paged loading. See `docs/launch/PAGINATION-AUDIT.md`. |
-| Dark theme coverage | Partly Done | Many screens were fixed; final screenshot pass needed across auth, settings, profile, match, chat, billing. |
+| Pagination/infinite scroll | Done | Home, learn, chat list, and notifications use paged loading. See `docs/launch/PAGINATION-AUDIT.md`. |
+| Dark theme coverage | Partly Done | Many screens were fixed; final screenshot pass needed across auth, settings, profile, learn, schedule, progress, chat, billing. |
 | Android device matrix QA | Pending | Needs emulator/real-device test evidence: Pixel, Samsung, Redmi/Xiaomi, low-end Android. |
 | Tablet/foldable/iPad QA | Pending | Responsive work exists; needs real screenshot/device pass. |
 | Offline/slow network QA | Pending | Needs test matrix and user-facing error-state verification. |
@@ -123,13 +123,13 @@ Status legend:
 
 | Task | Status | Notes |
 |---|---:|---|
-| Profile visibility/searchability score | Done | Scoring/visibility work exists. QA display and ranking behavior. |
-| Daily match digest notifications | Partly Done | Notification/scheduler foundation exists; final campaign rules need validation. |
-| Who viewed me / who shortlisted me | Done | Interaction/analytics work exists. Confirm paywall and UI behavior. |
+| Student profile completeness and readiness score | Done | Scoring/visibility work exists. QA display and ranking behavior. |
+| Learning reminder digest notifications | Partly Done | Notification/scheduler foundation exists; final campaign rules need validation. |
+| Student activity and saved learning analytics | Done | Interaction/analytics work exists. Confirm paywall and UI behavior. |
 | Admin dashboard APIs | Done | Admin module exists with user/payment/moderation/report routes. |
 | Revenue analytics | Partly Done | Payment/admin analytics exist; business dashboard/export should be verified. |
 | Referral campaign tracking | Done | Referral module and frontend exist. |
-| Learning outcomes/CMS | Todo | Replace any generic story/CMS capability with learning outcome, testimonial, and content-review workflows. |
+| Learning outcomes/CMS | Todo | Replace any learning outcome/testimonial CMS capability with learning outcome, testimonial, and content-review workflows. |
 
 ## Tasks We Can Fix Right Now
 
@@ -145,8 +145,8 @@ These are code/config tasks that can be completed immediately without waiting fo
 8. Partly Done - App Store/Play client purchase, restore, catalog mapping, and strict server verification are implemented; console products, provider notifications, and sandbox evidence remain.
 9. Done - Add a public web page or route for account deletion instructions: `GET /api/v1/account-deletion`.
 10. Partly Done - Add monitoring/APM for backend errors, latency, and uptime: adapter/checklist exist; external APM project and alert rules still required.
-11. Done - Add final dark-theme screenshot audit for auth, home, matches, profile, chat, settings, billing.
-12. Done - Verify all long lists use pagination/infinite scroll: notifications, chat list, home, matches, admin lists.
+11. Done - Add final dark-theme screenshot audit for auth, home, learn, schedule, progress, profile, chat, settings, billing.
+12. Done - Verify all long lists use pagination/infinite scroll: notifications, chat list, home, learn, admin lists.
 
 ## Suggested Launch Sequence
 

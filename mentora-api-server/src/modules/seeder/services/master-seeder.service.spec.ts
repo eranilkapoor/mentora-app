@@ -22,6 +22,7 @@ const query = (value: unknown) => {
 
 const model = () => ({
   bulkWrite: jest.fn().mockResolvedValue(result),
+  updateOne: jest.fn().mockResolvedValue(result),
   updateMany: jest.fn().mockResolvedValue(result),
   find: jest.fn(() => query([])),
   findOne: jest.fn(() => query(null)),
@@ -50,6 +51,11 @@ describe('MasterSeederService', () => {
   const aiModel = model();
   const verificationModel = model();
   const subjectModel = model();
+  const academicBoardModel = model();
+  const academicLevelModel = model();
+  const gradeModel = model();
+  const topicModel = model();
+  const curriculumModel = model();
 
   let service: MasterSeederService;
 
@@ -77,8 +83,14 @@ describe('MasterSeederService', () => {
       aiModel,
       verificationModel,
       subjectModel,
+      academicBoardModel,
+      academicLevelModel,
+      gradeModel,
+      topicModel,
+      curriculumModel,
     ]) {
       item.bulkWrite.mockResolvedValue(result);
+      item.updateOne.mockResolvedValue(result);
       item.updateMany.mockResolvedValue(result);
       item.find.mockReturnValue(query([]));
       item.findOne.mockReturnValue(query(null));
@@ -107,6 +119,11 @@ describe('MasterSeederService', () => {
       aiModel as never,
       verificationModel as never,
       subjectModel as never,
+      academicBoardModel as never,
+      academicLevelModel as never,
+      gradeModel as never,
+      topicModel as never,
+      curriculumModel as never,
     );
   });
 
@@ -130,6 +147,28 @@ describe('MasterSeederService', () => {
       ...PLAN_SEEDS.find(({ slug }) => slug === 'platinum-yearly'),
       _id: new Types.ObjectId(),
     };
+    academicBoardModel.findOne.mockReturnValue(
+      query({ _id: new Types.ObjectId(), code: 'CBSE' }),
+    );
+    academicLevelModel.findOne.mockReturnValue(
+      query({ _id: new Types.ObjectId(), code: 'SCHOOL_6_10' }),
+    );
+    const mathSubjectId = new Types.ObjectId();
+    const classSixId = new Types.ObjectId();
+    subjectModel.find.mockReturnValue(
+      query([{ _id: mathSubjectId, code: 'MATH' }]),
+    );
+    gradeModel.find.mockReturnValue(
+      query([{ _id: classSixId, code: 'class-6' }]),
+    );
+    topicModel.find.mockReturnValue(
+      query([
+        {
+          _id: new Types.ObjectId(),
+          subjectId: mathSubjectId,
+        },
+      ]),
+    );
     planModel.findOne.mockImplementation((filter?: unknown) => {
       const slug = (filter as { slug?: string } | undefined)?.slug;
       return query(slug === 'platinum-yearly' ? reviewerPlan : freePlan);
@@ -201,20 +240,12 @@ describe('MasterSeederService', () => {
       { ordered: false },
     );
     expect(templateModel.bulkWrite).toHaveBeenCalled();
-    expect(profileModel.bulkWrite).toHaveBeenCalled();
+    expect(academicBoardModel.updateOne).toHaveBeenCalled();
+    expect(academicLevelModel.updateOne).toHaveBeenCalled();
+    expect(gradeModel.bulkWrite).toHaveBeenCalled();
+    expect(subjectModel.bulkWrite).toHaveBeenCalled();
+    expect(curriculumModel.bulkWrite).toHaveBeenCalled();
     expect(bcrypt.hash).toHaveBeenCalledWith('Test@125#', 10);
-    expect(bcrypt.hash).toHaveBeenCalledWith('Test@123456#', 10);
-    expect(subscriptionModel.updateMany).toHaveBeenCalledWith(
-      expect.objectContaining({
-        userId: { $in: expect.any(Array) },
-        planId: { $ne: reviewerPlan._id },
-      }),
-      expect.objectContaining({
-        $set: expect.objectContaining({
-          cancelledReason: 'reviewer_plan_sync',
-        }),
-      }),
-    );
     expect(logger.log).toHaveBeenCalledWith('Master seeder completed');
   });
 
@@ -240,8 +271,8 @@ describe('MasterSeederService', () => {
     const reviewer = internals.buildPlayReviewerProfile();
     const phoneReviewer = internals.buildPlayPhoneReviewerProfile();
 
-    expect(profiles).toHaveLength(500);
-    expect(new Set(profiles.map(({ email }) => email)).size).toBe(500);
+    expect(profiles).toHaveLength(3);
+    expect(new Set(profiles.map(({ email }) => email)).size).toBe(3);
     expect(reviewer).toMatchObject({
       email: 'reviewer@webnza.com',
       personal: { firstName: 'Play', lastName: 'Reviewer' },
@@ -253,7 +284,7 @@ describe('MasterSeederService', () => {
     });
     expect(
       profiles.filter(({ gender }) => gender === Gender.FEMALE),
-    ).toHaveLength(250);
+    ).toHaveLength(1);
     expect(
       profiles.every(({ location }) => location.coordinates.length === 2),
     ).toBe(true);

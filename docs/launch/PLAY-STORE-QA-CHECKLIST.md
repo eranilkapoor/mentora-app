@@ -35,9 +35,9 @@ Capture light and dark theme screenshots where applicable.
 - Login screen
 - Register screen
 - Onboarding profile details
-- Home recommended matches
-- Matches list with filters open
-- Match detail
+- Home learning recommendations
+- Learn list with filters open
+- Learning detail
 - Chat list
 - Chat conversation
 - Notifications list/detail
@@ -71,9 +71,9 @@ Capture light and dark theme screenshots where applicable.
 - Google login when enabled
 - Forgot password deep link
 - Onboarding completion lands on Home
-- Nearby matches asks for location only when needed
-- Send, withdraw, accept, reject interest
-- Shortlist and unshortlist profile
+- Nearby/offline learning options ask for location only when needed
+- Schedule, reschedule, join, and cancel learning sessions
+- Save and remove subjects or learning paths
 - Chat send/read/typing indicator
 - Block user removes chat access
 - Notification tap opens detail or action target

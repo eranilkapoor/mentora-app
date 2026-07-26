@@ -76,6 +76,19 @@ export interface LearningProgressSummary {
   }>;
 }
 
+export interface LearningRecommendation {
+  id?: string;
+  _id?: string;
+  studentProfileId: string;
+  subjectId?: string;
+  topicId?: string;
+  type: 'topic_revision' | 'assessment' | 'ai_session' | 'parent_review';
+  title: string;
+  reason?: string;
+  priority: 'low' | 'medium' | 'high';
+  status: 'open' | 'accepted' | 'dismissed' | 'completed';
+}
+
 export interface AiTutorAccessCheck {
   allowed: boolean;
   denialReason?:
@@ -110,11 +123,36 @@ export interface StartAiTutorSessionPayload {
 
 export interface AiTutorSession {
   id: string;
+  _id?: string;
   studentProfileId: string;
   subjectId: string;
   scheduleId?: string;
   status: 'active' | 'completed' | 'blocked';
   access: AiTutorAccessCheck;
+}
+
+export interface AiTutorMessagePayload {
+  sessionId: string;
+  content: string;
+  messageType?: 'text' | 'question' | 'answer' | 'audio' | 'image';
+}
+
+export interface AssessmentSummary {
+  id?: string;
+  _id?: string;
+  title: string;
+  subjectId: string;
+  assessmentType: 'diagnostic' | 'practice' | 'homework' | 'quiz' | 'exam';
+  durationMinutes?: number;
+  passingScorePercentage?: number;
+}
+
+export interface ParentProgressDashboard {
+  students: Array<{
+    student: StudentProfileSummary;
+    progress: LearningProgressSummary;
+    recommendations: LearningRecommendation[];
+  }>;
 }
 
 type ApiEnvelope<T> = { success: boolean; data: T; message?: string };
@@ -191,6 +229,42 @@ export const learningApi = baseApi.injectEndpoints({
         'LearningProgress',
       ],
     }),
+    sendAiTutorMessage: builder.mutation<
+      ApiEnvelope<unknown>,
+      AiTutorMessagePayload
+    >({
+      query: ({ sessionId, ...body }) => ({
+        url: `/ai-tutor/sessions/${sessionId}/messages`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['AiTutorSession', 'LearningProgress'],
+    }),
+    getAssessments: builder.query<
+      ApiEnvelope<AssessmentSummary[]>,
+      { subjectId?: string } | void
+    >({
+      query: (arg) =>
+        arg?.subjectId
+          ? `/assessments?subjectId=${encodeURIComponent(arg.subjectId)}`
+          : '/assessments',
+      providesTags: ['LearningProgress'],
+    }),
+    getLearningRecommendations: builder.query<
+      ApiEnvelope<LearningRecommendation[]>,
+      { studentProfileId: string }
+    >({
+      query: ({ studentProfileId }) =>
+        `/students/${studentProfileId}/recommendations`,
+      providesTags: ['LearningProgress'],
+    }),
+    getParentProgressDashboard: builder.query<
+      ApiEnvelope<ParentProgressDashboard>,
+      void
+    >({
+      query: () => '/parents/progress-dashboard',
+      providesTags: ['LearningProgress', 'Student'],
+    }),
   }),
 });
 
@@ -203,4 +277,8 @@ export const {
   useGetLearningEntitlementsQuery,
   useGetStudentProgressQuery,
   useStartAiTutorSessionMutation,
+  useSendAiTutorMessageMutation,
+  useGetAssessmentsQuery,
+  useGetLearningRecommendationsQuery,
+  useGetParentProgressDashboardQuery,
 } = learningApi;

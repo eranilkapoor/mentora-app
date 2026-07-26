@@ -1,0 +1,10 @@
+{
+  "name": "mentora-public-website",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Public website for Mentora AI tutoring and parent-managed learning.",
+  "scripts": {
+    "start": "npx serve .",
+    "lint": "node -e \"console.log('Static website lint placeholder: HTML/CSS assets are dependency-free.')\""
+  }
+}

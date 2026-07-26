@@ -101,8 +101,18 @@ import {
   NotificationTemplateDocument,
 } from '@/modules/notifications/schemas/notification-templates.schema';
 import {
+  AcademicBoard,
+  AcademicBoardDocument,
+  AcademicLevel,
+  AcademicLevelDocument,
+  Curriculum,
+  CurriculumDocument,
+  Grade,
+  GradeDocument,
   Subject,
   SubjectDocument,
+  Topic,
+  TopicDocument,
 } from '@/modules/learning/schemas/learning.schemas';
 import {
   FEATURE_SEEDS,
@@ -187,6 +197,21 @@ export class MasterSeederService {
 
     @InjectModel(Subject.name)
     private readonly subjectModel: Model<SubjectDocument>,
+
+    @InjectModel(AcademicBoard.name)
+    private readonly academicBoardModel: Model<AcademicBoardDocument>,
+
+    @InjectModel(AcademicLevel.name)
+    private readonly academicLevelModel: Model<AcademicLevelDocument>,
+
+    @InjectModel(Grade.name)
+    private readonly gradeModel: Model<GradeDocument>,
+
+    @InjectModel(Topic.name)
+    private readonly topicModel: Model<TopicDocument>,
+
+    @InjectModel(Curriculum.name)
+    private readonly curriculumModel: Model<CurriculumDocument>,
   ) {}
 
   // MASTER RUNNER
@@ -213,6 +238,26 @@ export class MasterSeederService {
   // =========================================================
 
   private async seedMentoraAcademicCatalog() {
+    const now = new Date();
+    const board = {
+      name: 'Central Board of Secondary Education',
+      code: 'CBSE',
+      country: 'India',
+      type: 'school',
+      status: 'active',
+    };
+    const level = {
+      name: 'Middle and Secondary School',
+      code: 'SCHOOL_6_10',
+      sortOrder: 10,
+      status: 'active',
+    };
+    const grades = [6, 7, 8, 9, 10].map((grade) => ({
+      name: `Class ${grade}`,
+      code: `class-${grade}`,
+      sortOrder: grade,
+      status: 'active',
+    }));
     const subjects = [
       {
         name: 'Mathematics',
@@ -239,6 +284,48 @@ export class MasterSeederService {
           'MVP English subject for Classes 6-10 AI tutoring, reading, writing, and grammar.',
       },
     ];
+    const topicsBySubject: Record<string, string[]> = {
+      MATH: ['Numbers', 'Algebra', 'Geometry', 'Mensuration', 'Data Handling'],
+      SCI: ['Physics Basics', 'Chemistry Basics', 'Biology', 'Environment'],
+      ENG: ['Reading', 'Writing', 'Grammar', 'Vocabulary'],
+    };
+
+    await this.academicBoardModel.updateOne(
+      { code: board.code },
+      { $set: { ...board, updatedAt: now }, $setOnInsert: { createdAt: now } },
+      { upsert: true },
+    );
+    await this.academicLevelModel.updateOne(
+      { code: level.code },
+      { $set: { ...level, updatedAt: now }, $setOnInsert: { createdAt: now } },
+      { upsert: true },
+    );
+
+    const [seededBoard, seededLevel] = await Promise.all([
+      this.academicBoardModel.findOne({ code: board.code }).lean(),
+      this.academicLevelModel.findOne({ code: level.code }).lean(),
+    ]);
+    if (!seededLevel) {
+      throw new Error('Academic level seed failed');
+    }
+
+    await this.gradeModel.bulkWrite(
+      grades.map((grade) => ({
+        updateOne: {
+          filter: { code: grade.code },
+          update: {
+            $set: {
+              ...grade,
+              academicLevelId: seededLevel._id,
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
 
     await this.subjectModel.bulkWrite(
       subjects.map((subject) => ({
@@ -260,9 +347,97 @@ export class MasterSeederService {
       { ordered: false },
     );
 
+    const seededSubjects = await this.subjectModel
+      .find({ code: { $in: subjects.map((subject) => subject.code) } })
+      .lean();
+    const subjectByCode = new Map(
+      seededSubjects.map((subject) => [subject.code, subject]),
+    );
+    const seededGrades = await this.gradeModel
+      .find({ code: { $in: grades.map((grade) => grade.code) } })
+      .lean();
+    const topicWrites = Object.entries(topicsBySubject).flatMap(
+      ([subjectCode, topicNames]) => {
+        const subject = subjectByCode.get(subjectCode);
+        if (!subject) return [];
+        return topicNames.map((name, index) => ({
+          updateOne: {
+            filter: {
+              subjectId: subject._id,
+              code: `${subjectCode}_${index + 1}`,
+            },
+            update: {
+              $set: {
+                subjectId: subject._id,
+                name,
+                code: `${subjectCode}_${index + 1}`,
+                gradeIds: subjects.find((item) => item.code === subjectCode)
+                  ?.gradeIds,
+                sortOrder: index + 1,
+                status: 'active',
+                updatedAt: now,
+              },
+              $setOnInsert: { createdAt: now },
+            },
+            upsert: true,
+          },
+        }));
+      },
+    );
+    if (topicWrites.length) {
+      await this.topicModel.bulkWrite(topicWrites, { ordered: false });
+    }
+
+    const seededTopics = await this.topicModel
+      .find({
+        subjectId: { $in: seededSubjects.map((subject) => subject._id) },
+      })
+      .lean();
+    const topicIdsBySubjectId = seededTopics.reduce<
+      Record<string, Types.ObjectId[]>
+    >((acc, topic) => {
+      const key = String(topic.subjectId);
+      acc[key] = [...(acc[key] ?? []), topic._id];
+      return acc;
+    }, {});
+
+    const curriculumWrites = seededGrades.flatMap((grade) =>
+      seededSubjects.map((subject) => ({
+        updateOne: {
+          filter: {
+            boardId: seededBoard?._id,
+            gradeId: grade._id,
+            subjectId: subject._id,
+          },
+          update: {
+            $set: {
+              boardId: seededBoard?._id,
+              gradeId: grade._id,
+              subjectId: subject._id,
+              topicIds: topicIdsBySubjectId[String(subject._id)] ?? [],
+              code: `${board.code}_${grade.code}_${subject.code}`.toUpperCase(),
+              status: 'active',
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          upsert: true,
+        },
+      })),
+    );
+    if (curriculumWrites.length) {
+      await this.curriculumModel.bulkWrite(curriculumWrites, {
+        ordered: false,
+      });
+    }
+
     this.logger.log('Mentora academic catalog seeded successfully', {
+      boards: 1,
+      academicLevels: 1,
+      grades: grades.length,
       subjects: subjects.length,
-      grades: 'class-6..class-10',
+      topics: topicWrites.length,
+      curriculums: curriculumWrites.length,
     });
   }
 

@@ -12,13 +12,18 @@ import {
 import { successResponse } from '@/common/utils/response.util';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import {
+  AcceptStudentInvitationDto,
   AddParentDto,
   CreateAcademicRecordDto,
   CreateScheduleDto,
   CreateStudentDto,
+  CreateStudentInvitationDto,
   EnrollSubjectDto,
   UpdateParentalControlsDto,
+  UpdateParentProfileDto,
   UpdateStudentDto,
+  UpdateStudentProfileSectionDto,
+  UpsertTopicProgressDto,
 } from '../dto/learning.dto';
 import { LearningService } from '../services/learning.service';
 
@@ -73,6 +78,46 @@ export class StudentsController {
     );
   }
 
+  @Patch(':studentId/profile-sections/:section')
+  async updateProfileSection(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Param('section') section: string,
+    @Body() dto: UpdateStudentProfileSectionDto,
+  ) {
+    return successResponse(
+      await this.service.updateStudentProfileSection(
+        req.user.sub,
+        studentId,
+        section,
+        dto,
+      ),
+      'STUDENT_PROFILE_SECTION_UPDATED',
+      'Student profile section updated',
+    );
+  }
+
+  @Get('parents/me/profile')
+  async getParentProfile(@Req() req: AuthenticatedRequest) {
+    return successResponse(
+      await this.service.getParentProfile(req.user.sub),
+      'PARENT_PROFILE_FETCHED',
+      'Parent profile fetched',
+    );
+  }
+
+  @Patch('parents/me/profile')
+  async updateParentProfile(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: UpdateParentProfileDto,
+  ) {
+    return successResponse(
+      await this.service.updateParentProfile(req.user.sub, dto),
+      'PARENT_PROFILE_UPDATED',
+      'Parent profile updated',
+    );
+  }
+
   @Post(':studentId/parents')
   async addParent(
     @Req() req: AuthenticatedRequest,
@@ -99,6 +144,73 @@ export class StudentsController {
     );
   }
 
+  @Get(':studentId/parental-controls')
+  async getParentalControls(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+  ) {
+    return successResponse(
+      await this.service.getParentalControls(req.user.sub, studentId),
+      'PARENTAL_CONTROLS_FETCHED',
+      'Parental controls fetched',
+    );
+  }
+
+  @Post(':studentId/invitations')
+  @HttpCode(HttpStatus.CREATED)
+  async createInvitation(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Body() dto: CreateStudentInvitationDto,
+  ) {
+    return successResponse(
+      await this.service.createStudentInvitation(req.user.sub, studentId, dto),
+      'STUDENT_INVITATION_CREATED',
+      'Student invitation created',
+    );
+  }
+
+  @Get(':studentId/invitations')
+  async listInvitations(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+  ) {
+    return successResponse(
+      await this.service.listStudentInvitations(req.user.sub, studentId),
+      'STUDENT_INVITATIONS_FETCHED',
+      'Student invitations fetched',
+    );
+  }
+
+  @Post(':studentId/invitations/:invitationId/revoke')
+  async revokeInvitation(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Param('invitationId') invitationId: string,
+  ) {
+    return successResponse(
+      await this.service.revokeStudentInvitation(
+        req.user.sub,
+        studentId,
+        invitationId,
+      ),
+      'STUDENT_INVITATION_REVOKED',
+      'Student invitation revoked',
+    );
+  }
+
+  @Post('invitations/accept')
+  async acceptInvitation(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: AcceptStudentInvitationDto,
+  ) {
+    return successResponse(
+      await this.service.acceptStudentInvitation(req.user.sub, dto),
+      'STUDENT_INVITATION_ACCEPTED',
+      'Student invitation accepted',
+    );
+  }
+
   @Post(':studentId/academic-records')
   @HttpCode(HttpStatus.CREATED)
   async createAcademicRecord(
@@ -122,6 +234,58 @@ export class StudentsController {
       await this.service.listAcademicRecords(req.user.sub, studentId),
       'ACADEMIC_RECORDS_FETCHED',
       'Academic records fetched',
+    );
+  }
+
+  @Patch(':studentId/previous-education')
+  async updatePreviousEducation(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Body() dto: UpdateStudentProfileSectionDto,
+  ) {
+    return successResponse(
+      await this.service.updatePreviousEducation(req.user.sub, studentId, dto),
+      'PREVIOUS_EDUCATION_UPDATED',
+      'Previous education updated',
+    );
+  }
+
+  @Patch(':studentId/exam-scores')
+  async updateExamScores(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Body() dto: UpdateStudentProfileSectionDto,
+  ) {
+    return successResponse(
+      await this.service.updateExamScores(req.user.sub, studentId, dto),
+      'EXAM_SCORES_UPDATED',
+      'Exam scores updated',
+    );
+  }
+
+  @Patch(':studentId/course-preference')
+  async updateCoursePreference(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Body() dto: UpdateStudentProfileSectionDto,
+  ) {
+    return successResponse(
+      await this.service.updateCoursePreference(req.user.sub, studentId, dto),
+      'COURSE_PREFERENCE_UPDATED',
+      'Course preference updated',
+    );
+  }
+
+  @Patch(':studentId/documents')
+  async updateDocuments(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Body() dto: UpdateStudentProfileSectionDto,
+  ) {
+    return successResponse(
+      await this.service.updateDocuments(req.user.sub, studentId, dto),
+      'STUDENT_DOCUMENTS_UPDATED',
+      'Student documents updated',
     );
   }
 
@@ -168,7 +332,7 @@ export class StudentsController {
   async aiHistory(
     @Req() req: AuthenticatedRequest,
     @Param('studentId') studentId: string,
-  ) {
+  ): Promise<unknown> {
     return successResponse(
       await this.service.listAiHistory(req.user.sub, studentId),
       'AI_HISTORY_FETCHED',
@@ -185,6 +349,43 @@ export class StudentsController {
       await this.service.getStudentProgress(req.user.sub, studentId),
       'STUDENT_PROGRESS_FETCHED',
       'Student progress fetched',
+    );
+  }
+
+  @Get(':studentId/topic-progress')
+  async topicProgress(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+  ) {
+    return successResponse(
+      await this.service.listTopicProgress(req.user.sub, studentId),
+      'STUDENT_TOPIC_PROGRESS_FETCHED',
+      'Student topic progress fetched',
+    );
+  }
+
+  @Patch(':studentId/topic-progress')
+  async upsertTopicProgress(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Body() dto: UpsertTopicProgressDto,
+  ) {
+    return successResponse(
+      await this.service.upsertTopicProgress(req.user.sub, studentId, dto),
+      'STUDENT_TOPIC_PROGRESS_UPDATED',
+      'Student topic progress updated',
+    );
+  }
+
+  @Get(':studentId/recommendations')
+  async recommendations(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+  ) {
+    return successResponse(
+      await this.service.listRecommendations(req.user.sub, studentId),
+      'LEARNING_RECOMMENDATIONS_FETCHED',
+      'Learning recommendations fetched',
     );
   }
 }

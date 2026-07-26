@@ -11,8 +11,10 @@ Run this audit before every production submission.
 - Reset password
 - Onboarding
 - Home
-- Matches
-- Match detail
+- Learn
+- Schedule
+- Progress
+- Learning detail
 - Profile
 - Edit profile
 - Learning preferences

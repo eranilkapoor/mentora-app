@@ -85,6 +85,37 @@ export class UpdateStudentDto {
   onboardingCompleted?: boolean;
 }
 
+export class UpdateStudentProfileSectionDto {
+  @IsObject()
+  data!: Record<string, unknown>;
+}
+
+export class UpdateParentProfileDto {
+  @IsOptional()
+  @IsString()
+  occupation?: string;
+
+  @IsOptional()
+  @IsString()
+  organizationName?: string;
+
+  @IsOptional()
+  @IsIn(['push', 'email', 'sms', 'whatsapp'])
+  preferredCommunicationChannel?: string;
+
+  @IsOptional()
+  @IsIn(['after_each_session', 'daily', 'weekly', 'monthly'])
+  notificationSummaryFrequency?: string;
+
+  @IsOptional()
+  @IsBoolean()
+  billingContact?: boolean;
+
+  @IsOptional()
+  @IsBoolean()
+  emergencyContact?: boolean;
+}
+
 export class AddParentDto {
   @IsMongoId()
   parentUserId!: string;
@@ -104,6 +135,32 @@ export class AddParentDto {
   @IsOptional()
   @IsObject()
   permissions?: Record<string, boolean>;
+}
+
+export class CreateStudentInvitationDto {
+  @IsEmail()
+  inviteeEmail!: string;
+
+  @IsOptional()
+  @IsIn([
+    'father',
+    'mother',
+    'guardian',
+    'grandparent',
+    'sibling',
+    'sponsor',
+    'other',
+  ])
+  relationship?: string;
+
+  @IsOptional()
+  @IsObject()
+  permissions?: Record<string, boolean>;
+}
+
+export class AcceptStudentInvitationDto {
+  @IsString()
+  token!: string;
 }
 
 export class UpdateParentalControlsDto {
@@ -217,6 +274,90 @@ export class CreateSubjectDto {
   description?: string;
 }
 
+export class CreateAcademicCatalogDto {
+  @IsString()
+  name!: string;
+
+  @IsString()
+  code!: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  country?: string;
+
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  academicLevelId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  streamId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  boardId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  universityId?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsNumber()
+  sortOrder?: number;
+}
+
+export class CreateTopicDto {
+  @IsMongoId()
+  subjectId!: string;
+
+  @IsString()
+  name!: string;
+
+  @IsString()
+  code!: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  gradeIds?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  sortOrder?: number;
+}
+
+export class CreateCurriculumDto {
+  @IsOptional()
+  @IsMongoId()
+  boardId?: string;
+
+  @IsMongoId()
+  gradeId!: string;
+
+  @IsMongoId()
+  subjectId!: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  topicIds?: string[];
+
+  @IsString()
+  code!: string;
+}
+
 export class EnrollSubjectDto {
   @IsMongoId()
   subjectId!: string;
@@ -278,6 +419,23 @@ export class CreateScheduleDto {
   @IsOptional()
   @IsNumber()
   lateAccessMinutes?: number;
+
+  @IsOptional()
+  @IsArray()
+  @IsNumber({}, { each: true })
+  reminderMinutesBefore?: number[];
+}
+
+export class RescheduleScheduleDto {
+  @IsDateString()
+  startAt!: string;
+
+  @IsDateString()
+  endAt!: string;
+
+  @IsOptional()
+  @IsString()
+  timezone?: string;
 }
 
 export class CreateEntitlementDto {
@@ -335,4 +493,154 @@ export class SendAiTutorMessageDto {
   @IsOptional()
   @IsIn(['text', 'question', 'answer', 'quiz', 'hint', 'explanation'])
   messageType?: string;
+}
+
+export class CreateQuestionBankDto {
+  @IsString()
+  name!: string;
+
+  @IsMongoId()
+  subjectId!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  topicId?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsIn(['school', 'exam_prep', 'skill', 'diagnostic'])
+  category?: string;
+}
+
+export class CreateQuestionDto {
+  @IsMongoId()
+  questionBankId!: string;
+
+  @IsMongoId()
+  subjectId!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  topicId?: string;
+
+  @IsOptional()
+  @IsIn(['mcq_single', 'mcq_multi', 'short_answer', 'long_answer', 'coding'])
+  type?: string;
+
+  @IsString()
+  prompt!: string;
+
+  @IsOptional()
+  @IsArray()
+  options?: Record<string, unknown>[];
+
+  @IsOptional()
+  @IsObject()
+  answerKey?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsIn(['easy', 'medium', 'hard'])
+  difficulty?: string;
+
+  @IsOptional()
+  @IsNumber()
+  points?: number;
+}
+
+export class CreateAssessmentDto {
+  @IsString()
+  title!: string;
+
+  @IsMongoId()
+  subjectId!: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  topicIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  questionIds?: string[];
+
+  @IsOptional()
+  @IsIn(['diagnostic', 'practice', 'homework', 'quiz', 'exam'])
+  assessmentType?: string;
+
+  @IsOptional()
+  @IsNumber()
+  durationMinutes?: number;
+
+  @IsOptional()
+  @IsNumber()
+  passingScorePercentage?: number;
+}
+
+export class StartAssessmentAttemptDto {
+  @IsMongoId()
+  studentProfileId!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  scheduleId?: string;
+}
+
+export class SubmitAssessmentAnswerDto {
+  @IsMongoId()
+  questionId!: string;
+
+  @IsObject()
+  response!: Record<string, unknown>;
+}
+
+export class UpsertTopicProgressDto {
+  @IsMongoId()
+  subjectId!: string;
+
+  @IsMongoId()
+  topicId!: string;
+
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  masteryPercentage!: number;
+
+  @IsOptional()
+  @IsNumber()
+  practiceCount?: number;
+}
+
+export class CreateLearningRecommendationDto {
+  @IsMongoId()
+  studentProfileId!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  subjectId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  topicId?: string;
+
+  @IsIn(['topic_revision', 'assessment', 'ai_session', 'parent_review'])
+  type!: string;
+
+  @IsString()
+  title!: string;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
+
+  @IsOptional()
+  @IsIn(['low', 'medium', 'high'])
+  priority?: string;
 }

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Pressable,
@@ -15,10 +15,12 @@ import { useTheme } from '@/core/theme/ThemeProvider';
 import {
   LearningEntitlement,
   useGetLearningEntitlementsQuery,
+  useGetLearningRecommendationsQuery,
   useGetStudentsQuery,
   useGetStudentProgressQuery,
   useGetStudentSchedulesQuery,
   useGetSubjectsQuery,
+  useStartAiTutorSessionMutation,
 } from '@/store/services/learningApi.service';
 
 type LearningTabScreenProps = {
@@ -66,7 +68,12 @@ export default function LearningTabScreen({
     refetch: refetchSubjects,
   } = useGetSubjectsQuery();
 
-  const selectedStudent = students?.data?.[0];
+  const [selectedStudentIdOverride, setSelectedStudentIdOverride] =
+    useState<string>();
+  const selectedStudent =
+    students?.data?.find(
+      (student) => getEntityId(student) === selectedStudentIdOverride
+    ) ?? students?.data?.[0];
   const selectedStudentId = getEntityId(selectedStudent);
   const childQueryArg = selectedStudentId
     ? { studentProfileId: selectedStudentId }
@@ -90,6 +97,10 @@ export default function LearningTabScreen({
     isError: progressError,
     refetch: refetchProgress,
   } = useGetStudentProgressQuery(childQueryArg);
+  const { data: recommendations } =
+    useGetLearningRecommendationsQuery(childQueryArg);
+  const [startAiTutorSession, { isLoading: startingTutor }] =
+    useStartAiTutorSessionMutation();
 
   const remainingMinutes =
     entitlements?.data?.reduce(
@@ -198,13 +209,19 @@ export default function LearningTabScreen({
     }
 
     if (mode === 'progress') {
-      return (
+      const progressRows =
         progress?.data?.subjectProgress?.slice(0, 4).map((subject) => ({
           icon: 'trending-up',
           title: subject.subjectName,
           meta: `${subject.masteryPercentage}% mastery`,
-        })) ?? []
-      );
+        })) ?? [];
+      const recommendationRows =
+        recommendations?.data?.slice(0, 2).map((item) => ({
+          icon: item.priority === 'high' ? 'alert-circle' : 'target',
+          title: item.title,
+          meta: item.reason ?? 'Recommended next step',
+        })) ?? [];
+      return [...recommendationRows, ...progressRows];
     }
 
     return (
@@ -217,9 +234,26 @@ export default function LearningTabScreen({
   }, [
     mode,
     progress?.data?.subjectProgress,
+    recommendations?.data,
     subjects?.data,
     upcomingSchedules,
   ]);
+
+  const firstSubjectId = getEntityId(subjects?.data?.[0]);
+  const nextSchedule = upcomingSchedules[0];
+  const handleStartTutor = (): void => {
+    if (!selectedStudentId || !firstSubjectId) return;
+    void startAiTutorSession({
+      studentProfileId: selectedStudentId,
+      subjectId: firstSubjectId,
+      scheduleId: getEntityId(nextSchedule),
+      deliveryMode:
+        nextSchedule?.deliveryMode === 'audio' ||
+        nextSchedule?.deliveryMode === 'video'
+          ? nextSchedule.deliveryMode
+          : 'chat',
+    });
+  };
 
   const handleRetry = (): void => {
     void refetchStudents();
@@ -244,6 +278,57 @@ export default function LearningTabScreen({
         <Text style={[styles.subtitle, { color: theme.colors.textSecondary }]}>
           {subtitle}
         </Text>
+
+        {students?.data?.length ? (
+          <ScrollView
+            contentContainerStyle={styles.switcher}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+          >
+            {students.data.map((student) => {
+              const studentId = getEntityId(student);
+              const selected = studentId === selectedStudentId;
+              return (
+                <Pressable
+                  key={studentId ?? student.displayName}
+                  onPress={() => setSelectedStudentIdOverride(studentId)}
+                  style={[
+                    styles.switcherPill,
+                    {
+                      backgroundColor: selected
+                        ? theme.colors.primary
+                        : theme.colors.surface,
+                      borderColor: selected
+                        ? theme.colors.primary
+                        : theme.colors.divider,
+                    },
+                  ]}
+                >
+                  <Feather
+                    name={student.parentalControlsEnabled ? 'shield' : 'user'}
+                    size={14}
+                    color={
+                      selected ? theme.colors.white : theme.colors.textSecondary
+                    }
+                  />
+                  <Text
+                    style={[
+                      styles.switcherText,
+                      {
+                        color: selected
+                          ? theme.colors.white
+                          : theme.colors.textPrimary,
+                      },
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {student.displayName}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+        ) : null}
 
         {!selectedStudentId && !studentsLoading ? (
           <View
@@ -331,6 +416,43 @@ export default function LearningTabScreen({
             </Text>
           </View>
         </View>
+
+        {mode === 'learn' && selectedStudentId ? (
+          <Pressable
+            disabled={!firstSubjectId || startingTutor}
+            onPress={handleStartTutor}
+            style={[
+              styles.tutorCard,
+              {
+                backgroundColor: theme.colors.secondaryLight,
+                borderColor: theme.colors.divider,
+              },
+              !firstSubjectId || startingTutor ? styles.disabledCard : null,
+            ]}
+          >
+            <Feather
+              name={startingTutor ? 'loader' : 'message-square'}
+              size={18}
+              color={theme.colors.secondary}
+            />
+            <View style={styles.guardCopy}>
+              <Text
+                style={[styles.guardTitle, { color: theme.colors.textPrimary }]}
+              >
+                Start AI tutor
+              </Text>
+              <Text
+                style={[
+                  styles.guardText,
+                  { color: theme.colors.textSecondary },
+                ]}
+              >
+                Opens a guarded chat/audio/video tutor session for the selected
+                student when schedule and subscription rules allow it.
+              </Text>
+            </View>
+          </Pressable>
+        ) : null}
 
         <View style={styles.list}>
           {detailRows.length > 0
@@ -473,6 +595,25 @@ const styles = StyleSheet.create({
     fontSize: 12,
     lineHeight: 18,
   },
+  switcher: {
+    gap: 8,
+    paddingTop: 16,
+  },
+  switcherPill: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 6,
+    maxWidth: 180,
+    minHeight: 38,
+    paddingHorizontal: 12,
+  },
+  switcherText: {
+    flexShrink: 1,
+    fontSize: 13,
+    fontWeight: '800',
+  },
   cardGrid: {
     flexDirection: 'row',
     gap: 10,
@@ -501,6 +642,17 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 12,
     padding: 14,
+  },
+  tutorCard: {
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+    padding: 14,
+  },
+  disabledCard: {
+    opacity: 0.7,
   },
   guardCopy: {
     flex: 1,
