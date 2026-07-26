@@ -10,8 +10,10 @@ import {
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Feather from 'react-native-vector-icons/Feather';
 import { skipToken } from '@reduxjs/toolkit/query';
+import { useNavigation } from '@react-navigation/native';
 import Header from '@/core/components/Header';
 import { useTheme } from '@/core/theme/ThemeProvider';
+import { AppNavigationProp } from '@/navigation/types';
 import {
   LearningEntitlement,
   useGetLearningEntitlementsQuery,
@@ -22,6 +24,7 @@ import {
   useGetSubjectsQuery,
   useStartAiTutorSessionMutation,
 } from '@/store/services/learningApi.service';
+import { useGetBillingSummaryQuery } from '@/store/services/membershipApi.service';
 
 type LearningTabScreenProps = {
   title: string;
@@ -55,6 +58,7 @@ export default function LearningTabScreen({
   mode = 'learn',
 }: LearningTabScreenProps): React.ReactElement {
   const { theme } = useTheme();
+  const navigation = useNavigation<AppNavigationProp>();
   const {
     data: students,
     isFetching: studentsLoading,
@@ -101,6 +105,7 @@ export default function LearningTabScreen({
     useGetLearningRecommendationsQuery(childQueryArg);
   const [startAiTutorSession, { isLoading: startingTutor }] =
     useStartAiTutorSessionMutation();
+  const { data: billingSummary } = useGetBillingSummaryQuery();
 
   const remainingMinutes =
     entitlements?.data?.reduce(
@@ -118,6 +123,9 @@ export default function LearningTabScreen({
   const activeEntitlements =
     entitlements?.data?.filter((entitlement) => entitlement.status === 'active')
       .length ?? 0;
+  const currentPlanName = billingSummary?.currentPlan?.planId
+    ? 'Active'
+    : 'Free';
   const isLoading =
     studentsLoading ||
     subjectsLoading ||
@@ -253,6 +261,9 @@ export default function LearningTabScreen({
           ? nextSchedule.deliveryMode
           : 'chat',
     });
+  };
+  const openMembership = (): void => {
+    navigation.navigate('Settings', { screen: 'Membership' });
   };
 
   const handleRetry = (): void => {
@@ -417,6 +428,37 @@ export default function LearningTabScreen({
           </View>
         </View>
 
+        <Pressable
+          onPress={openMembership}
+          style={[
+            styles.planCard,
+            {
+              backgroundColor: theme.colors.surface,
+              borderColor: theme.colors.divider,
+            },
+          ]}
+        >
+          <Feather name="credit-card" size={18} color={theme.colors.primary} />
+          <View style={styles.guardCopy}>
+            <Text
+              style={[styles.guardTitle, { color: theme.colors.textPrimary }]}
+            >
+              {currentPlanName} learning plan
+            </Text>
+            <Text
+              style={[styles.guardText, { color: theme.colors.textSecondary }]}
+            >
+              View plan benefits, purchase access, restore billing, and confirm
+              AI tutor minutes before scheduling classes.
+            </Text>
+          </View>
+          <Feather
+            name="chevron-right"
+            size={18}
+            color={theme.colors.textMuted}
+          />
+        </Pressable>
+
         {mode === 'learn' && selectedStudentId ? (
           <Pressable
             disabled={!firstSubjectId || startingTutor}
@@ -452,6 +494,76 @@ export default function LearningTabScreen({
               </Text>
             </View>
           </Pressable>
+        ) : null}
+
+        {mode === 'schedule' ? (
+          <View
+            style={[
+              styles.boardCard,
+              {
+                backgroundColor: theme.colors.surface,
+                borderColor: theme.colors.divider,
+              },
+            ]}
+          >
+            <View style={styles.boardHeader}>
+              <View>
+                <Text
+                  style={[
+                    styles.boardTitle,
+                    { color: theme.colors.textPrimary },
+                  ]}
+                >
+                  Class board
+                </Text>
+                <Text
+                  style={[styles.boardMeta, { color: theme.colors.textMuted }]}
+                >
+                  AI tutor and online tutor events should open here with study
+                  tools attached to the schedule.
+                </Text>
+              </View>
+              <Feather name="monitor" size={20} color={theme.colors.primary} />
+            </View>
+
+            <View style={styles.boardActions}>
+              {[
+                { icon: 'help-circle', label: 'Q&A' },
+                { icon: 'message-square', label: 'Chat' },
+                { icon: 'file-text', label: 'Notes' },
+                { icon: 'check-square', label: 'Tests' },
+              ].map((action) => (
+                <Pressable
+                  key={action.label}
+                  style={[
+                    styles.boardAction,
+                    {
+                      backgroundColor: theme.colors.backgroundPage,
+                      borderColor: theme.colors.divider,
+                    },
+                  ]}
+                >
+                  <Feather
+                    name={
+                      action.icon as React.ComponentProps<
+                        typeof Feather
+                      >['name']
+                    }
+                    size={16}
+                    color={theme.colors.secondary}
+                  />
+                  <Text
+                    style={[
+                      styles.boardActionText,
+                      { color: theme.colors.textPrimary },
+                    ]}
+                  >
+                    {action.label}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+          </View>
         ) : null}
 
         <View style={styles.list}>
@@ -650,6 +762,55 @@ const styles = StyleSheet.create({
     gap: 12,
     marginTop: 12,
     padding: 14,
+  },
+  planCard: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 12,
+    marginTop: 12,
+    padding: 14,
+  },
+  boardCard: {
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    gap: 14,
+    marginTop: 12,
+    padding: 14,
+  },
+  boardHeader: {
+    alignItems: 'flex-start',
+    flexDirection: 'row',
+    gap: 12,
+    justifyContent: 'space-between',
+  },
+  boardTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+  },
+  boardMeta: {
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 3,
+  },
+  boardActions: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+  },
+  boardAction: {
+    alignItems: 'center',
+    borderRadius: 8,
+    borderWidth: StyleSheet.hairlineWidth,
+    flexDirection: 'row',
+    gap: 6,
+    minHeight: 38,
+    paddingHorizontal: 10,
+  },
+  boardActionText: {
+    fontSize: 12,
+    fontWeight: '800',
   },
   disabledCard: {
     opacity: 0.7,

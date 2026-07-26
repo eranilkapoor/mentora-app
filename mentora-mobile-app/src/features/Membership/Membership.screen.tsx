@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useState } from 'react';
-import { CommonActions } from '@react-navigation/native';
+import { CommonActions, useNavigation } from '@react-navigation/native';
 import { ScrollView, Text, TouchableOpacity, View } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,8 +21,10 @@ import { MEMBERSHIP_TABS } from './Membership.constants';
 import { useUpgradePrompt } from './hooks/useUpgradePrompt';
 import { navigationRef } from '@/navigation/navigationRef';
 import { showConfirm } from '@/core/utils/confirm';
+import { SettingsNavigationProp } from '@/navigation/types';
 
 export default function MembershipScreen(): React.ReactElement {
+  const navigation = useNavigation<SettingsNavigationProp>();
   const styles = useThemedStyles(membershipStyles);
   const { theme } = useTheme();
   const { t } = useTranslation();
@@ -133,6 +135,8 @@ export default function MembershipScreen(): React.ReactElement {
       <Header
         title={t('membership.screen_title')}
         subtitle={t('membership.screen_subtitle')}
+        showBack
+        onBackPress={() => navigation.goBack()}
       />
 
       <ScrollView

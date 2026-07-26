@@ -37,6 +37,7 @@ import LocalizationSettingsScreen from '@/features/LocalizationSettings/Localiza
 import MediaSettingsScreen from '@/features/MediaSettings/MediaSettings.screen';
 import AccessibilitySettingsScreen from '@/features/AccessibilitySettings/AccessibilitySettings.screen';
 import AiSettingsScreen from '@/features/AiSettings/AiSettings.screen';
+import MembershipScreen from '@/features/Membership/Membership.screen';
 import SubscriptionBillingScreen from '@/features/SubscriptionBilling/SubscriptionBilling.screen';
 import ReferRewardsScreen from '@/features/ReferRewards/ReferRewards.screen';
 
@@ -91,6 +92,11 @@ export default function SettingsStack(): React.ReactElement {
         name="TwoFactorSetup"
         component={TwoFactorSetupScreen}
         options={{ title: t('settings.two_factor.title') }}
+      />
+      <Stack.Screen
+        name="Membership"
+        component={MembershipScreen}
+        options={{ title: t('membership.screen_title') }}
       />
       <Stack.Screen
         name="SubscriptionBilling"

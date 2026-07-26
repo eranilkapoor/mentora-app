@@ -9,6 +9,7 @@ Mentora is a B2C AI tutoring and mentorship platform for students and parents. A
 - [Technical Plan](planning/TECHNICAL-PLAN.md): architecture, reusable modules, new Mentora modules, API surfaces, and AI tutor access model.
 - [Database Plan](planning/DATABASE-PLAN.md): MongoDB collection groups, required MVP collections, relationships, and indexing direction.
 - [Project Plan](planning/PROJECT-PLAN.md): scope, MVP audience, delivery phases, non-goals, and success criteria.
+- [Product Goal Validation](planning/PRODUCT-GOAL-VALIDATION.md): current product-goal fit, implemented foundations, and remaining high-priority gaps.
 - [Task Roadmap](planning/TASK-ROADMAP.md): implementation checklist from copied foundation to Mentora learning platform.
 - [Flow Plan](planning/FLOW-PLAN.md): student, parent, registration, scheduling, AI tutor, subscription, and admin journeys.
 - [Student Profile Model](planning/STUDENT-PROFILE-MODEL.md): complete student profile sections, why they are needed, API direction, and mobile screen direction.

@@ -228,6 +228,17 @@ export default function SettingsScreen({
 
         <Section icon="credit-card" title={t('settings.membership_billing')}>
           <SettingRow
+            icon="layers"
+            label={t('settings.learning_plans', {
+              defaultValue: 'Learning Plans',
+            })}
+            subLabel={t('settings.learning_plans_sub', {
+              defaultValue:
+                'Compare AI tutor, assessment, and mentor learning plans',
+            })}
+            onPress={() => navigation.navigate('Membership')}
+          />
+          <SettingRow
             icon="credit-card"
             label={t('membership.billing.title')}
             subLabel={t('settings.subscription_billing_sub')}

@@ -96,3 +96,15 @@
 | Todo    | Verify app store safety disclosures and child-data policy with legal/product review.                                                                                                                                                   |
 | Todo    | Replace AI tutor placeholder response with provider integration, provider moderation, and usage metering.                                                                                                                              |
 | Partial | Run lint, typecheck, tests, migration validation, build, and smoke checks. Lint, typecheck, contract check, and focused AI access tests are automated; migration/build/device smoke checks still require the full runtime environment. |
+
+## P8 Product Depth
+
+| Status | Task                                                                                                                                            |
+| ------ | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| Done   | Validate product goal against current architecture and document remaining gaps.                                                                 |
+| Done   | Surface learning plan purchase and billing entry points for parents and eligible students.                                                      |
+| Done   | Add class-board actions on the schedule surface for Q&A, chat, notes, and tests/quizzes.                                                        |
+| Todo   | Add document verification workflow for legally eligible self-managed students.                                                                  |
+| Todo   | Add explicit study-plan entities for JEE, NEET, UPSC, NDA, Olympiad, board exams, and skill courses.                                            |
+| Todo   | Build full class board screen with attendance, Q&A, chat, notes, assignments, tests/quizzes, tutor actions, and parent-visible session summary. |
+| Todo   | Enforce plan-specific subjects, tutor type, schedule frequency, concurrent device, and session/minute limits.                                   |
