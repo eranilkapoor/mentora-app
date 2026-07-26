@@ -13,6 +13,7 @@ Mentora is a B2C AI tutoring and mentorship platform for students and parents. A
 - [Flow Plan](planning/FLOW-PLAN.md): student, parent, registration, scheduling, AI tutor, subscription, and admin journeys.
 - [Student Profile Model](planning/STUDENT-PROFILE-MODEL.md): complete student profile sections, why they are needed, API direction, and mobile screen direction.
 - [Color Palette](planning/COLOR-PLATE.md): visual direction for the mobile and public web experience.
+- `../mentora-public-website`: public website source for brand, plans, support, privacy, terms, account deletion, and community guidelines.
 
 ## Operations
 
@@ -26,7 +27,7 @@ Mentora is a B2C AI tutoring and mentorship platform for students and parents. A
 
 ## Launch
 
-Launch files are Mentora working templates. They must be reviewed before production release for child/student AI tutoring disclosures, app-store safety requirements, subscription claims, and support operations.
+Launch files are Mentora working templates. They must be reviewed before production release for child/student AI tutoring disclosures, hosted public legal URLs, app-store safety requirements, subscription claims, model-provider moderation, and support operations.
 
 ## Standards
 

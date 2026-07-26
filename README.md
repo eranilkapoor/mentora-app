@@ -17,6 +17,7 @@ The first product direction is a family-managed learning app:
 mentora-app/
   mentora-api-server/       NestJS API server
   mentora-mobile-app/       Expo React Native app
+  mentora-public-website/   Static public website for brand, plans, support, and legal pages
   packages/
     api-contract/           Shared TypeScript API contract types
   docs/                     Product, technical, database, flow, launch, operations, and standards docs
@@ -45,6 +46,9 @@ LearningEntitlement
 
 AiTutorSession
   Controlled teaching session tied to student, subject, topic, schedule, entitlement, and safety context.
+
+Assessment
+  Diagnostic, practice, quiz, homework, or exam flow built from question banks and tracked through attempts, answers, results, topic progress, and recommendations.
 ```
 
 ## Documentation
@@ -183,15 +187,19 @@ Done:
 - Updated package/app metadata and mobile bundle identifiers to Mentora naming.
 - Added Mentora product, technical, database, flow, student profile, and roadmap documentation.
 - Added learning-domain API modules for students, academic records, subjects, schedules, entitlements, AI tutor sessions, classrooms, tutors, and safety events.
+- Added AI tutor context, safety moderation logging, session summaries, AI history, and parent-visible progress.
+- Added assessment/progress APIs for question banks, questions, assessments, attempts, answers, results, topic progress, recommendations, and parent progress dashboard.
 - Updated mobile navigation toward student learning tabs: Home, Learn, Schedule, Progress, Profile.
+- Added mobile learning account switcher, AI tutor start action, recommendations, and assessment/progress service contracts.
 - Updated onboarding and edit profile toward student/parent-managed learning profiles with completion scoring.
+- Added `mentora-public-website` with Mentora landing, plans, support, privacy, terms, account deletion, and community guidelines pages.
 
 Next:
 
-- Finish replacing stale feature keys, notification categories, and legacy contract names with learning equivalents.
-- Complete parent mode, child switching, documents, payments, communication history, and activity timeline.
-- Expand seed data for Classes 6-10, boards, Mathematics, Science, English, and common academic tracks.
-- Add tests around AI tutor schedule, entitlement, parental control, device/session, and safety guards.
+- Regenerate the OpenAPI snapshot from a running API and review the generated contract for the newly added learning endpoints.
+- Connect the AI tutor placeholder response to the selected model provider and add provider-level moderation.
+- Complete release QA evidence for Android/iOS/web, child/student policy disclosures, billing provider credentials, and production monitoring.
+- Expand seed data beyond Classes 6-10 and add more boards, topics, curriculums, assessments, and plan tiers.
 
 ## License
 

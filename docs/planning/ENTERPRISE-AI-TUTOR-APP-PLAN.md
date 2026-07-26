@@ -178,30 +178,35 @@ Required controls:
 - PII minimization for minors.
 - Admin safety review queue.
 
-## API Modules To Complete
+## API Module Status
 
-Priority modules:
+Implemented:
 
 1. Students and parent-student relationships.
 2. Academic catalogue and student subject enrollment.
-3. Learning schedules and recurring sessions.
-4. Learning entitlements and usage counters.
-5. AI tutor session/message APIs.
-6. Classroom session lifecycle APIs.
-7. Progress, assessments, summaries, and reports.
-8. Tutor availability, requests, notes, and payouts.
-9. Safety events, moderation, audit, and admin review.
+3. Learning schedules, reminders, and rescheduling.
+4. Learning entitlements and centralized AI access guard.
+5. AI tutor session/message APIs, context builder, safety events, and summaries.
+6. Progress, assessments, attempts, answers, results, topic progress, recommendations, and parent dashboard.
+7. Classroom/tutor schemas for future live and human mentor expansion.
+
+Still to complete before enterprise launch:
+
+1. Live classroom lifecycle controllers for audio/video/whiteboard/files.
+2. Tutor availability booking requests, notes workflow, attendance, payouts, and earnings.
+3. Provider-backed AI responses, model usage metering, provider moderation, and knowledge-base grounding.
+4. Dedicated safety review queue, retention exports, and admin audit evidence.
 
 ## Mobile Implementation Priority
 
-1. Replace placeholder dashboard data with `/students`, `/schedules`, `/learning-entitlements`, `/progress`.
-2. Build Student/Children list and detail screens.
-3. Build complete student profile sections: personal, academic, parents, address, previous education, exam scores, course preference, documents, payments, communication history, and activity timeline.
-4. Build Schedule calendar/list/create/reschedule/cancel.
-5. Build AI Tutor launch screen with server-side access guard.
-6. Build AI chat session with transcript, summary, and parent visibility.
-7. Build tutor mode only after B2C parent/student flow is stable.
-8. Remove old discovery-marketplace modules from navigation and services.
+1. Done - Replace placeholder dashboard data with `/students`, `/schedules`, `/learning-entitlements`, `/progress`.
+2. Done - Add account switcher for parent/child profile context in learning screens.
+3. Done - Build profile/onboarding around student academic and guardian context.
+4. Partial - Build Schedule list/create/reschedule/cancel; calendar-level UX still needs polish.
+5. Done - Build AI Tutor launch action with server-side access guard.
+6. Partial - Build AI tutor message service hooks and summaries; rich transcript/chat UI still needs provider integration.
+7. Done - Remove copied non-learning marketplace modules from active navigation/services.
+8. Planned - Build tutor mode only after B2C parent/student flow is stable.
 
 ## Enterprise Launch Checklist
 

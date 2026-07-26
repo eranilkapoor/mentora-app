@@ -43,7 +43,8 @@ Start with a narrow and useful audience:
 - Session scheduling with scheduled-time access validation.
 - Text AI tutor sessions with message history.
 - Session summaries, learning history, and parent progress dashboard.
-- Basic quiz and assessment attempts.
+- Question banks, questions, assessments, attempts, answers, results, topic progress, and recommendations.
+- Public website for brand, plans, support, privacy, terms, account deletion, and community guidelines.
 - Notifications for session reminders, completion, payments, and safety alerts.
 - Admin management for users, subjects, content, plans, payments, and safety review.
 
@@ -79,18 +80,18 @@ Remove or rename when encountered:
 
 ## Phases
 
-| Phase | Goal                               | Key Work                                                                                           |
-| ----- | ---------------------------------- | -------------------------------------------------------------------------------------------------- |
-| 1     | Mentora foundation                 | Branding, package names, env defaults, separate database, docs, architecture cleanup               |
-| 2     | Family and academic profile        | Student profiles, parent profiles, relationships, invitations, parental controls, academic records |
-| 3     | Academic catalogue                 | Boards, institutions, grades, courses, subjects, topics, curriculums, seed data                    |
-| 4     | Scheduling and entitlements        | Learning schedules, subject enrollments, plans, subscriptions, payments, AI access guard           |
-| 5     | AI tutor                           | AI sessions, messages, prompt context, safety checks, session summaries                            |
-| 6     | Progress and assessments           | Question bank, quizzes, attempts, topic progress, parent reports                                   |
-| 7     | Public website and admin hardening | Marketing/public pages, admin flows, operational evidence, launch readiness                        |
-| 8     | Enterprise classroom               | Chat/audio/video classroom, whiteboard, files, notes, recordings, live captions, network preflight |
-| 9     | Human tutor marketplace            | Tutor profiles, availability, booking requests, trial/recurring sessions, notes, payouts           |
-| 10    | Compliance and scale               | Safety review queues, audit exports, retention policies, analytics, enterprise reporting           |
+| Phase | Status  | Goal                               | Key Work                                                                                           |
+| ----- | ------- | ---------------------------------- | -------------------------------------------------------------------------------------------------- |
+| 1     | Done    | Mentora foundation                 | Branding, package names, env defaults, separate database, docs, architecture cleanup               |
+| 2     | Done    | Family and academic profile        | Student profiles, parent profiles, relationships, invitations, parental controls, academic records |
+| 3     | Done    | Academic catalogue                 | Boards, institutions, grades, courses, subjects, topics, curriculums, seed data                    |
+| 4     | Done    | Scheduling and entitlements        | Learning schedules, subject enrollments, plans, subscriptions, payments, AI access guard           |
+| 5     | Done    | AI tutor                           | AI sessions, messages, prompt context, safety checks, session summaries                            |
+| 6     | Done    | Progress and assessments           | Question banks, assessments, attempts, topic progress, recommendations, parent reports             |
+| 7     | Partial | Public website and admin hardening | Public website exists; admin flows, operational evidence, and launch readiness still need QA       |
+| 8     | Planned | Enterprise classroom               | Chat/audio/video classroom, whiteboard, files, notes, recordings, live captions, network preflight |
+| 9     | Planned | Human tutor marketplace            | Tutor profiles, availability, booking requests, trial/recurring sessions, notes, payouts           |
+| 10    | Planned | Compliance and scale               | Safety review queues, audit exports, retention policies, analytics, enterprise reporting           |
 
 ## Non-Goals For MVP
 
@@ -121,7 +122,8 @@ Detailed fields and API direction are documented in `docs/planning/STUDENT-PROFI
 
 ## Success Criteria
 
-- A parent can create two child profiles, assign subjects, purchase a plan, schedule an AI tutoring session, and view learning history.
-- An adult student can register without a parent, complete academic onboarding, subscribe, schedule a session, and use the AI tutor.
-- AI tutor access is denied outside schedule, without entitlement, when a subject is not included, or when parental controls block usage.
+- A parent can create multiple child profiles, assign subjects, purchase or receive entitlements, schedule tutoring, switch between children, and view learning history/progress.
+- An adult student can register without a parent, complete academic onboarding, subscribe, schedule a session, and use the AI tutor with server-side access checks.
+- AI tutor access is denied outside schedule, without entitlement, when a subject is not included, when parental controls block usage, or when another active session already exists for that student.
+- Students can start assessments, submit answers, complete attempts, and generate results that feed progress and recommendations.
 - Admin can manage academic master data, plans, users, payments, content, and safety events.

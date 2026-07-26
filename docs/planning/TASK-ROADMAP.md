@@ -77,20 +77,22 @@
 
 ## Code Cleanup Backlog From Audit
 
-| Priority | Task                                                                                                                                                     |
-| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Done     | Remove any remaining generated contract routes for old discovery/profile-marketplace APIs after OpenAPI snapshot is regenerated from active controllers. |
-| Done     | Replace old analytics metrics with learning funnel metrics: schedule starts, join rate, AI minutes, assessment completion, retention.                    |
-| Done     | Replace generic story/CMS fields with learning outcome/testimonial fields or retire the module.                                                          |
-| Done     | Confirm removed mobile discovery screens and services stay unreferenced after contract regeneration.                                                     |
-| Done     | Rename notification preference contract keys away from inherited request/ready labels after API/mobile migration.                                        |
-| P1       | Rewrite Hindi locale files after English Mentora flows stabilize.                                                                                        |
-| P1       | Replace copied launch/store docs with child/student AI tutoring disclosures.                                                                             |
+| Priority | Task                                                                                                                                               |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Done     | Remove remaining generated contract routes for copied non-learning marketplace APIs after OpenAPI snapshot is regenerated from active controllers. |
+| Done     | Replace old analytics metrics with learning funnel metrics: schedule starts, join rate, AI minutes, assessment completion, retention.              |
+| Done     | Replace generic story/CMS fields with learning outcome/testimonial fields or retire the module.                                                    |
+| Done     | Confirm removed copied non-learning mobile screens and services stay unreferenced after contract regeneration.                                     |
+| Done     | Rename notification preference contract keys away from inherited request/ready labels after API/mobile migration.                                  |
+| P1       | Rewrite Hindi locale files after English Mentora flows stabilize.                                                                                  |
+| Done     | Replace copied launch/store docs with child/student AI tutoring disclosures.                                                                       |
 
 ## P7 Launch
 
 | Status  | Task                                                                                                                                                                                                                                   |
 | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Partial | Rewrite launch, Play Store, billing, privacy, and reviewer docs for children/student AI tutoring.                                                                                                                                      |
-| Todo    | Verify app store safety disclosures and child-data policy.                                                                                                                                                                             |
+| Done    | Rewrite launch, Play Store, billing, privacy, and reviewer docs for children/student AI tutoring.                                                                                                                                      |
+| Todo    | Host public legal pages from `mentora-public-website` and update app-store URLs.                                                                                                                                                       |
+| Todo    | Verify app store safety disclosures and child-data policy with legal/product review.                                                                                                                                                   |
+| Todo    | Replace AI tutor placeholder response with provider integration, provider moderation, and usage metering.                                                                                                                              |
 | Partial | Run lint, typecheck, tests, migration validation, build, and smoke checks. Lint, typecheck, contract check, and focused AI access tests are automated; migration/build/device smoke checks still require the full runtime environment. |

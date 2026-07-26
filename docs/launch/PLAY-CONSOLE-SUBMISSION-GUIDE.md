@@ -1,24 +1,24 @@
 # Google Play Console Submission Guide - Mentora
 
-Last reviewed against repository behavior: 2026-07-23
+Last reviewed against repository behavior: 2026-07-26
 
 Use this worksheet for closed testing and the first production submission. Every declaration must match the exact Android App Bundle being submitted.
 
 ## 1. App Setup
 
-| Play Console field | Recommended value |
-| --- | --- |
-| App name | Mentora |
-| Default language | English (India) or the primary listing language |
-| App or game | App |
-| Free or paid | Free; subscriptions are sold as in-app products |
-| Package name | `com.webnza.mentora` |
-| Category | Education |
-| Tags | Education, Tutoring, AI Learning, Study Help, Parent Tools where Play offers them |
-| Developer name | Must exactly match the verified Play developer profile |
-| Contact email | `support@webnza.com` |
-| Website | `https://www.webnza.com` |
-| Contact phone | Business input required: use a monitored support number |
+| Play Console field | Recommended value                                                                 |
+| ------------------ | --------------------------------------------------------------------------------- |
+| App name           | Mentora                                                                           |
+| Default language   | English (India) or the primary listing language                                   |
+| App or game        | App                                                                               |
+| Free or paid       | Free; subscriptions are sold as in-app products                                   |
+| Package name       | `com.webnza.mentora`                                                              |
+| Category           | Education                                                                         |
+| Tags               | Education, Tutoring, AI Learning, Study Help, Parent Tools where Play offers them |
+| Developer name     | Must exactly match the verified Play developer profile                            |
+| Contact email      | `support@webnza.com`                                                              |
+| Website            | `https://www.webnza.com`                                                          |
+| Contact phone      | Business input required: use a monitored support number                           |
 
 Do not claim guaranteed marks, guaranteed admissions, government approval, medical/mental-health outcomes, or fully human supervision unless those claims are operationally true and supportable.
 
@@ -56,9 +56,11 @@ Recommended reviewer notes:
 3. Enter the supplied reviewer credentials.
 4. The reviewer account has completed onboarding, has at least one student profile, and has an active learning subscription/entitlement.
 5. No OTP, invitation, payment, or external device is required for review.
-6. To test AI tutor access: open Learn or Schedule and use the available scheduled session.
-7. To test account deletion: Settings > Account Settings > Delete Account.
-8. To test safety: open a chat/session/support surface and use report/block where available.
+6. To test AI tutor access: open Learn or Schedule, choose the prepared student profile, and start the available scheduled tutor session.
+7. To test progress: open Progress and review subject progress, topic mastery, and recommendations.
+8. To test assessments: open Learn or Progress and use the prepared assessment flow if it is enabled in the submitted build.
+9. To test account deletion: Settings > Account Settings > Delete Account.
+10. To test safety: open an AI tutor/session/support surface and use report/block or safety-test content where available.
 ```
 
 Never give Google an employee/admin account. Test the reviewer credentials in the exact release build immediately before submission.
@@ -108,33 +110,33 @@ Recommended top-level answers:
 
 Starting data inventory:
 
-| Play data type | Collected | Required/optional | Primary purposes |
-| --- | --- | --- | --- |
-| Approximate location | Optional | Optional | Timezone, regional curriculum, fraud/safety |
-| Name | Yes | Required | Account and student profile management |
-| Email address | Yes | Required for email login | Account, security, communication |
-| Phone number | Depending on enabled flow | Optional unless phone login/contact is enabled | Account, security, communication |
-| User IDs | Yes | Required | Account, entitlement, safety |
-| Other personal info | Yes | Mix | DOB/age policy, gender, parent/guardian, address, academic and accessibility context |
-| Photos/videos | Optional | Optional | Avatar, profile media, support or document review |
-| Files/documents | Optional | Optional | Student documents, consent, support, verification |
-| Messages | Yes when chat/support/session history is used | Optional feature | AI tutor, classroom, tutor/support communication |
-| App interactions | Yes | Required | Schedules, AI tutor sessions, progress, analytics, personalization |
-| Purchase history | Yes for purchasers | Required for buyers | Subscription entitlement, invoices, fraud prevention |
-| Crash logs/diagnostics | Yes when enabled | Required while enabled | Diagnostics, security, app quality |
-| Device IDs/tokens | Yes | Required for sessions/push while enabled | Security, fraud prevention, notifications |
+| Play data type         | Collected                                     | Required/optional                              | Primary purposes                                                                                 |
+| ---------------------- | --------------------------------------------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| Approximate location   | Optional                                      | Optional                                       | Timezone, regional curriculum, fraud/safety                                                      |
+| Name                   | Yes                                           | Required                                       | Account and student profile management                                                           |
+| Email address          | Yes                                           | Required for email login                       | Account, security, communication                                                                 |
+| Phone number           | Depending on enabled flow                     | Optional unless phone login/contact is enabled | Account, security, communication                                                                 |
+| User IDs               | Yes                                           | Required                                       | Account, entitlement, safety                                                                     |
+| Other personal info    | Yes                                           | Mix                                            | DOB/age policy, gender, parent/guardian, address, academic and accessibility context             |
+| Photos/videos          | Optional                                      | Optional                                       | Avatar, profile media, support or document review                                                |
+| Files/documents        | Optional                                      | Optional                                       | Student documents, consent, support, verification                                                |
+| Messages               | Yes when chat/support/session history is used | Optional feature                               | AI tutor, classroom, tutor/support communication                                                 |
+| App interactions       | Yes                                           | Required                                       | Schedules, AI tutor sessions, assessments, progress, recommendations, analytics, personalization |
+| Purchase history       | Yes for purchasers                            | Required for buyers                            | Subscription entitlement, invoices, fraud prevention                                             |
+| Crash logs/diagnostics | Yes when enabled                              | Required while enabled                         | Diagnostics, security, app quality                                                               |
+| Device IDs/tokens      | Yes                                           | Required for sessions/push while enabled       | Security, fraud prevention, notifications                                                        |
 
 Review all enabled SDKs/providers before declaring whether data is shared.
 
 ## 3. Permissions Declaration Audit
 
-| Permission | App use | Submission note |
-| --- | --- | --- |
-| Camera | Avatar, document, or support media capture | Explain before request |
-| Microphone | Audio/video tutoring or classroom features when enabled | Ask only when recording/session begins |
-| Notifications | Session reminders, progress, billing, support, and safety alerts | Runtime opt-in and settings required |
-| Billing | Google Play subscriptions | Required |
-| Location | Timezone/regional support only if enabled | Ask only when needed and disclose in Data safety |
+| Permission    | App use                                                          | Submission note                                  |
+| ------------- | ---------------------------------------------------------------- | ------------------------------------------------ |
+| Camera        | Avatar, document, or support media capture                       | Explain before request                           |
+| Microphone    | Audio/video tutoring or classroom features when enabled          | Ask only when recording/session begins           |
+| Notifications | Session reminders, progress, billing, support, and safety alerts | Runtime opt-in and settings required             |
+| Billing       | Google Play subscriptions                                        | Required                                         |
+| Location      | Timezone/regional support only if enabled                        | Ask only when needed and disclose in Data safety |
 
 After producing the AAB, review the final merged manifest in Play Console.
 
@@ -158,6 +160,7 @@ Key features:
 - Parent-managed multiple student profiles
 - Academic profile, subjects, goals, and course preferences
 - Scheduled AI tutor sessions
+- Assessments, topic progress, and recommendations
 - Subscription and entitlement-based access
 - Learning history and progress surfaces
 - Notifications for sessions, payments, and safety

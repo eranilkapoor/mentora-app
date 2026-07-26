@@ -18,7 +18,7 @@ ParentStudentRelationship = optional relationship and permissions
 
 Do not make a parent mandatory in `student_profiles`.
 
-## MVP Collections
+## Implemented Collections
 
 Identity:
 
@@ -38,60 +38,35 @@ student_profiles
 parent_profiles
 parent_student_relationships
 student_invitations
-guardian_invitations
-consent_records
 parental_controls
-student_preferences
-student_accessibility_profiles
-student_addresses
-student_documents
-student_communication_history
-student_activity_timeline
 ```
 
 Geography and institutions:
 
 ```text
-countries
-states
-cities
-education_boards
+academic_boards
 universities
 institutions
-affiliations
-accreditations
+academic_levels
+grades
+streams
+courses
 ```
 
 Academic:
 
 ```text
-academic_levels
-grades
-streams
-courses
-specializations
-academic_sessions
 subjects
-subject_topics
+topics
 curriculums
-curriculum_subjects
-curriculum_topics
 student_academic_records
-student_previous_education
-student_exam_scores
-student_course_preferences
 student_subject_enrollments
-student_learning_goals
 ```
 
 Scheduling:
 
 ```text
 learning_schedules
-schedule_recurrences
-schedule_occurrences
-session_attendance
-session_reminders
 ```
 
 AI tutor and learning content:
@@ -99,16 +74,6 @@ AI tutor and learning content:
 ```text
 ai_tutor_sessions
 ai_tutor_messages
-ai_session_contexts
-ai_session_summaries
-ai_usage_records
-ai_model_configurations
-knowledge_sources
-knowledge_documents
-knowledge_chunks
-learning_units
-learning_materials
-prompt_templates
 ```
 
 Assessments and progress:
@@ -121,60 +86,59 @@ assessment_attempts
 assessment_answers
 assessment_results
 student_topic_progress
-student_subject_progress
-learning_activities
-student_recommendations
-student_daily_metrics
-study_plans
+learning_recommendations
 ```
 
 Subscriptions and payments:
 
 ```text
-learning_plans
-learning_subscriptions
 learning_entitlements
-usage_counters
-subscription_events
-promotional_grants
-coupons
-coupon_redemptions
-payment_orders
-payment_transactions
-payment_receipts
-refunds
-payment_webhook_events
+plans
+features
+plan_features
+subscriptions
+payments
+payment_invoices
+wallet_transactions
+promotion_coupons
+referral_rewards
 ```
 
 Communication, safety, files, admin, and system:
 
 ```text
 notifications
-notification_preferences
-communication_templates
-communications
-moderation_results
-ai_safety_events
-content_reports
-age_policy_rules
-documents
-document_access_logs
+notification_templates
+notification_logs
+notification_device_tokens
 support_tickets
-support_messages
-feedback
 roles
 permissions
-role_permissions
-user_roles
 feature_flags
-app_configurations
-audit_logs
+account_settings
+privacy_settings
+notification_settings
+communication_settings
+security_settings
+localization_settings
+accessibility_settings
+media_settings
+ai_settings
+user_consents
+analytics_events
+analytics_daily_summaries
+safety_events
+classrooms
+classroom_messages
+classroom_files
+tutor_profiles
+tutor_availability
+tutor_session_notes
 activity_logs
-background_jobs
-scheduled_jobs
-webhook_events
-system_errors
+admin_audit_logs
 ```
+
+Planned later collections include dedicated student address/document/activity child collections, knowledge-base storage, AI usage records, student subject progress, study plans, live whiteboards, tutor payouts, webhook event archives, and dedicated moderation review queues. The current code stores complete student profile sections such as address, previous education, exam scores, course preference, documents, payments, communication history, and activity timeline directly on `student_profiles` as structured section fields.
 
 ## Main Relationships
 
@@ -209,10 +173,7 @@ learning_schedules
 
 ai_tutor_sessions
   -> ai_tutor_messages
-  -> ai_session_contexts
-  -> ai_session_summaries
-  -> ai_usage_records
-  -> ai_safety_events
+  -> safety_events
 
 learning_subscriptions
   -> learning_entitlements
@@ -239,15 +200,22 @@ learning_subscriptions
 - `student_communication_history.studentProfileId + createdAt` for support/admin timelines.
 - `student_activity_timeline.studentProfileId + occurredAt + eventType`.
 - `ai_tutor_messages.sessionId + createdAt` for chat history.
+- `question_banks.subjectId + topicId + status`.
+- `questions.questionBankId + difficulty + status`.
+- `assessments.subjectId + status + assessmentType`.
+- `assessment_attempts.studentProfileId + createdAt`.
+- Unique `assessment_answers.attemptId + questionId`.
+- Unique `assessment_results.attemptId`.
 - `student_topic_progress.studentProfileId + subjectId + topicId` unique.
+- `learning_recommendations.studentProfileId + status + priority`.
 
 ## Student Profile Data Shape
 
-Use `student_profiles` for stable identity and status fields. Use child collections for repeating or sensitive sections:
+Use `student_profiles` for stable identity, age policy, completion, and current full-profile sections:
 
 ```text
 student_profiles
-  personal identity, age policy, status, language, timezone, accessibility summary
+  personal identity, age policy, status, learning goals, profile completion, personal, academic, parents, address, previousEducation, examScores, coursePreference, documents, payments, communicationHistory, activityTimeline
 
 student_academic_records
   current academic board, institution, grade/class, stream, course, session, subjects
@@ -255,32 +223,11 @@ student_academic_records
 parent_student_relationships
   parent/guardian links, permissions, consent, billing/safety authority
 
-student_addresses
-  country, state, city, timezone, optional street/postal details, address type
-
-student_previous_education
-  past institutions, board/university, grade/course, dates, result summary
-
-student_exam_scores
-  school exams, entrance exams, diagnostic assessments, marks, percentile, proof document
-
-student_course_preferences
-  subjects, courses, tutor mode, delivery mode, schedule windows, learning pace, target exams
-
-student_documents
-  identity, consent, report cards, certificates, assignments, homework, review status, access logs
-
 payment_transactions + learning_entitlements
   payer, student beneficiary, plan, invoice, receipt, refund, usage counters
-
-student_communication_history
-  notifications, email/SMS/push logs, support messages, tutor messages, parent alerts
-
-student_activity_timeline
-  profile changes, schedule events, AI sessions, assessments, payments, safety events, admin actions
 ```
 
-This separation keeps the profile complete without forcing every section into one large document, and it lets Mentora apply different retention, access, and audit rules per section.
+As volume grows, move repeated or sensitive profile sections into child collections using the same section names. The API already exposes section-level updates, so this migration can happen without changing the mobile profile editor contract.
 
 ## Age Policy
 
@@ -288,7 +235,10 @@ Do not infer adulthood from class or grade. Calculate age from date of birth and
 
 ```ts
 const age = calculateAge(student.dateOfBirth);
-const policy = await agePolicyService.resolve({ age, countryId: student.countryId });
+const policy = await agePolicyService.resolve({
+  age,
+  countryId: student.countryId,
+});
 ```
 
 Then decide whether independent registration, parent consent, payment approval, parental controls, and parent visibility are required.

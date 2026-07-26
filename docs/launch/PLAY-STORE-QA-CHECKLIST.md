@@ -36,10 +36,12 @@ Capture light and dark theme screenshots where applicable.
 - Register screen
 - Onboarding profile details
 - Home learning recommendations
-- Learn list with filters open
-- Learning detail
-- Chat list
-- Chat conversation
+- Learn screen with account switcher
+- Schedule screen with upcoming sessions
+- Progress screen with topic mastery and recommendations
+- AI tutor start panel
+- Assessment list or attempt flow
+- Chat or support conversation where enabled
 - Notifications list/detail
 - Profile
 - Edit profile media/video intro
@@ -71,11 +73,14 @@ Capture light and dark theme screenshots where applicable.
 - Google login when enabled
 - Forgot password deep link
 - Onboarding completion lands on Home
-- Nearby/offline learning options ask for location only when needed
-- Schedule, reschedule, join, and cancel learning sessions
-- Save and remove subjects or learning paths
-- Chat send/read/typing indicator
-- Block user removes chat access
+- Parent can switch between multiple child profiles
+- Student profile completion percentage appears after onboarding
+- Schedule, reschedule, start, complete, and cancel learning sessions
+- AI tutor is blocked outside schedule or without entitlement
+- AI tutor unsafe message creates blocked/review behavior
+- Assessment attempt can start, save answer, complete, and update progress
+- Save and remove subjects or learning paths where enabled
+- Chat/support send and history where enabled
 - Notification tap opens detail or action target
 - Plan purchase test path
 - Restore purchase test path with a Play license tester

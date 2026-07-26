@@ -1,6 +1,6 @@
 # Mentora Pre-Launch Security Checklist
 
-Last updated: 2026-07-22
+Last updated: 2026-07-26
 
 Use this checklist before every production launch candidate. Keep provider,
 infrastructure, and independent-review evidence under `docs/launch`.
@@ -22,10 +22,17 @@ infrastructure, and independent-review evidence under `docs/launch`.
 
 ## Privacy And Data Protection
 
-- Profile, discovery, match, export, moderation, admin, and PDF responses are
+- Student profile, parent relationship, learning, export, moderation, admin, and PDF responses are
   generated from allowlisted presenters or DTOs.
-- Contact details, income, age, photos, family details, KYC data, coordinates,
-  and sensitive settings obey user privacy rules and relationship/plan checks.
+- Contact details, age, guardian details, academic records, documents, AI tutor
+  messages, assessment results, payment data, and sensitive settings obey
+  relationship permissions, parental controls, entitlement checks, and retention
+  rules.
+- AI tutor sessions are denied outside the schedule window, without active
+  entitlement, for unenrolled subjects, when parent controls block access, or
+  when a parallel active session exists for the same student.
+- AI tutor messages, assessment records, and safety events do not expose
+  unnecessary billing, parent, or document data to model context.
 - Account export and deletion flows are tested for authentication,
   authorization, audit trail, idempotency, and provider cleanup where available.
 - Consent, terms, privacy policy, account deletion, and community guideline

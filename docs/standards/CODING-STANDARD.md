@@ -81,8 +81,8 @@ export class UsersController {}
 
 ### Rules
 
-* Always plural resource naming preferred
-* Controller suffix mandatory
+- Always plural resource naming preferred
+- Controller suffix mandatory
 
 ---
 
@@ -102,8 +102,8 @@ export class UsersService {}
 
 ### Rules
 
-* Business logic belongs here
-* Service suffix mandatory
+- Business logic belongs here
+- Service suffix mandatory
 
 ---
 
@@ -177,7 +177,7 @@ export interface UserPayload {}
 ## Avoid
 
 ```ts
-IUserPayload
+IUserPayload;
 ```
 
 ---
@@ -194,8 +194,8 @@ user-role.enum.ts
 
 ```ts
 export enum UserRole {
-  ADMIN = 'admin',
-  USER = 'user',
+  ADMIN = "admin",
+  USER = "user",
 }
 ```
 
@@ -237,7 +237,7 @@ AWS_ACCESS_KEY_ID=
 
 ```ts
 const userProfile = {};
-const accessToken = '';
+const accessToken = "";
 const isActive = true;
 ```
 
@@ -245,18 +245,18 @@ const isActive = true;
 
 Use:
 
-* `is`
-* `has`
-* `can`
-* `should`
+- `is`
+- `has`
+- `can`
+- `should`
 
 Examples:
 
 ```ts
-isVerified
-hasPermission
-canDelete
-shouldRetry
+isVerified;
+hasPermission;
+canDelete;
+shouldRetry;
 ```
 
 ---
@@ -268,18 +268,18 @@ Functions should always describe actions.
 ## Good
 
 ```ts
-createUser()
-findUserById()
-validateOtp()
-sendEmail()
+createUser();
+findUserById();
+validateOtp();
+sendEmail();
 ```
 
 ## Bad
 
 ```ts
-userData()
-process()
-handle()
+userData();
+process();
+handle();
 ```
 
 ---
@@ -296,7 +296,7 @@ async createOrder()
 Avoid unnecessary:
 
 ```ts
-getUserAsync()
+getUserAsync();
 ```
 
 (TypeScript already knows it returns Promise.)
@@ -432,9 +432,9 @@ REST standards:
 
 ### Rules
 
-* lowercase
-* kebab-case
-* plural resources
+- lowercase
+- kebab-case
+- plural resources
 
 ---
 
@@ -463,8 +463,8 @@ order_items
 ## Use Singular Class Names
 
 ```ts
-UserEntity
-OrderService
+UserEntity;
+OrderService;
 ```
 
 ## Use Plural Module Names
@@ -551,10 +551,10 @@ users.service.ts
 
 The best naming convention is:
 
-* predictable
-* consistent
-* descriptive
-* scalable
+- predictable
+- consistent
+- descriptive
+- scalable
 
 A consistent codebase is more important than personal preference.
 
@@ -562,13 +562,9 @@ A consistent codebase is more important than personal preference.
 
 # 30. Official References
 
-* [NestJS Official Documentation](https://nestjs.com/?utm_source=chatgpt.com)
-* [TypeScript Naming Conventions Guide](https://www.typescriptlang.org/docs/?utm_source=chatgpt.com)
-* [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript?utm_source=chatgpt.com)
-
-
-
-
+- [NestJS Official Documentation](https://nestjs.com/?utm_source=chatgpt.com)
+- [TypeScript Naming Conventions Guide](https://www.typescriptlang.org/docs/?utm_source=chatgpt.com)
+- [Airbnb JavaScript Style Guide](https://github.com/airbnb/javascript?utm_source=chatgpt.com)
 
 # EXPO BASED REACT NATIVE APPLICATION INDUSTRY USED STANDARD RULES :
 
@@ -597,7 +593,7 @@ src/
 │   ├── auth/
 │   ├── onboarding/
 │   ├── profiles/
-│   ├── matches/
+│   ├── learning/
 │   ├── chats/
 │   ├── membership/
 │   ├── notifications/
@@ -630,12 +626,12 @@ app-theme.constants.ts
 Classes/types/components:
 
 ```ts
-LoginScreen
-ProfileCard
-useAuth
-AuthState
-UserProfile
-CreateProfilePayload
+LoginScreen;
+ProfileCard;
+useAuth;
+AuthState;
+UserProfile;
+CreateProfilePayload;
 ```
 
 Variables/functions:
@@ -707,16 +703,16 @@ common/theme/
 Use tokens, not hardcoded values:
 
 ```tsx
-backgroundColor: colors.background
-padding: spacing.md
-borderRadius: radius.lg
+backgroundColor: colors.background;
+padding: spacing.md;
+borderRadius: radius.lg;
 ```
 
 Avoid this:
 
 ```tsx
-backgroundColor: '#ffffff'
-padding: 17
+backgroundColor: "#ffffff";
+padding: 17;
 ```
 
 ## 6. API rules
@@ -768,20 +764,20 @@ React Native targets smooth native UI, ideally around 60 FPS, so avoid unnecessa
 Use:
 
 ```tsx
-React.memo()
-useMemo()
-useCallback()
-FlatList
-FlashList
+React.memo();
+useMemo();
+useCallback();
+FlatList;
+FlashList;
 ```
 
 Avoid:
 
 ```tsx
-ScrollView
+ScrollView;
 ```
 
-for long lists like profiles, matches, chats.
+for long lists like student profiles, schedules, assessments, chats.
 
 ## 9. Screen naming
 
@@ -799,14 +795,14 @@ onboarding/
 ├── physical-details.screen.tsx
 ├── education-career.screen.tsx
 ├── family-details.screen.tsx
-├── partner-preferences.screen.tsx
+├── course-preferences.screen.tsx
 ├── upload-photos.screen.tsx
 └── review-profile.screen.tsx
 
-matches/
-├── matches.screen.tsx
-├── match-details.screen.tsx
-└── match-filters.screen.tsx
+learning/
+├── learn.screen.tsx
+├── schedule.screen.tsx
+└── progress.screen.tsx
 
 chats/
 ├── chat-list.screen.tsx

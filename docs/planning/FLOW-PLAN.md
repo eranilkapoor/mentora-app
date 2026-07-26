@@ -22,7 +22,8 @@ Parent-managed child:
 ```text
 Parent registers
   -> create ParentProfile
-  -> add child StudentProfile with no userId
+  -> add child StudentProfile
+  -> optionally set studentEmail and studentPassword for child login
   -> create ParentStudentRelationship
   -> create ParentalControl
   -> add academic record and subjects
@@ -33,10 +34,14 @@ Parent registers
 Child login later:
 
 ```text
-Parent sends student invitation
-  -> student creates User
-  -> link userId to existing StudentProfile
-  -> update ownershipType to jointly_managed or self_managed
+Parent creates credentials during child profile creation
+  -> child logs in with student credentials
+  -> child can learn only as that StudentProfile
+  -> parent retains controls, payments, schedule, history, and progress visibility
+
+Parent also may send guardian invitation
+  -> invited guardian accepts
+  -> relationship permissions decide visibility and edit authority
 ```
 
 Guardian link:
@@ -105,6 +110,7 @@ Home
 Learn
   -> my subjects
   -> AI tutor
+  -> guarded start action
   -> practice
   -> assessments
   -> study materials
@@ -148,10 +154,25 @@ Student opens schedule
   -> backend verifies subscription/payment entitlement
   -> backend verifies subject enrollment
   -> backend verifies parental controls and daily limits
-  -> backend loads subject, topic, curriculum, proficiency, and learning objective
+  -> backend blocks parallel active session for the same student
+  -> backend builds minimal context: student age/profile goals, subject, schedule, entitlement, safety level
   -> AI tutor session starts
-  -> messages and usage are recorded
-  -> summary, progress, and safety events are generated
+  -> messages are moderated and recorded
+  -> unsafe messages create safety events or are blocked
+  -> completion generates a parent-visible summary
+  -> history, progress, and recommendations update downstream
+```
+
+## Assessment Flow
+
+```text
+Student opens Progress or Learn
+  -> fetch available assessments
+  -> start assessment attempt
+  -> submit answers per question
+  -> complete attempt
+  -> result calculates score, pass/fail, strengths, and improvement areas
+  -> topic progress and recommendations inform next learning action
 ```
 
 ## Scheduled Access Conditions

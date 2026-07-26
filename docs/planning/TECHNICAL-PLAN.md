@@ -7,7 +7,7 @@ Mentora uses this technology stack:
 - `mentora-api-server`: modular NestJS API server with MongoDB, optional Redis, Socket.IO, schedulers, storage, notifications, payments, subscriptions, analytics, support, and admin APIs.
 - `mentora-mobile-app`: Expo React Native app for iOS, Android, and Web with React Navigation, Redux Toolkit Query, persisted auth, localization, push notifications, media, billing, settings, and support.
 - `packages/api-contract`: shared TypeScript API contract package.
-- Future public website: frontend public website for brand, plans, privacy, support, and app download routes.
+- `mentora-public-website`: static public website for brand, plans, privacy, terms, account deletion, community guidelines, support, and app-link content.
 
 Mentora must use its own database and environments. Do not point this app at any non-Mentora production data.
 
@@ -29,64 +29,50 @@ Supported account modes:
 - Adult student with optional parent/guardian link.
 - Multiple guardians for one student.
 
-## New Backend Modules
+## Implemented Backend Domain
 
-Create Mentora modules in phases:
+The Mentora learning domain is implemented in `mentora-api-server/src/modules/learning` with these concrete concerns:
 
 ```text
-parents
-student-profiles
-student-profile-sections
-parent-student-relationships
-student-invitations
-guardian-invitations
-consent-records
-parental-controls
-student-preferences
-student-addresses
-student-documents
-student-communications
-student-activity-timeline
-academic-records
-previous-education
-exam-scores
-course-preferences
-education-boards
+student_profiles
+parent_profiles
+parent_student_relationships
+student_invitations
+parental_controls
+student_academic_records
+academic_boards
 universities
 institutions
-academic-levels
+academic_levels
 grades
 streams
 courses
 subjects
-subject-topics
+topics
 curriculums
-student-subject-enrollments
-learning-schedules
-ai-tutor-sessions
-ai-tutor-messages
-knowledge-base
+student_subject_enrollments
+learning_schedules
+learning_entitlements
+ai_tutor_sessions
+ai_tutor_messages
+question_banks
+questions
 assessments
-assessment-attempts
-student-progress
-learning-plans
-learning-subscriptions
-learning-entitlements
-usage-counters
-safety
-reports
+assessment_attempts
+assessment_answers
+assessment_results
+student_topic_progress
+learning_recommendations
 classrooms
-classroom-messages
-classroom-whiteboards
-classroom-files
-tutor-profiles
-tutor-availability
-tutor-session-requests
-tutor-session-notes
-tutor-payouts
-safety-events
-safety-review
+classroom_messages
+classroom_files
+tutor_profiles
+tutor_availability
+tutor_session_notes
+safety_events
 ```
+
+Future enterprise extensions still planned: whiteboards, live media rooms, tutor session requests, tutor payouts, knowledge-base ingestion, model usage metering, dedicated safety review queues, and retention/export automation.
 
 ## Complete Student Profile
 
@@ -181,15 +167,16 @@ POST   /api/v1/students
 GET    /api/v1/students
 GET    /api/v1/students/:studentId
 PATCH  /api/v1/students/:studentId
-GET    /api/v1/students/:studentId/profile
-PATCH  /api/v1/students/:studentId/profile/personal
-PATCH  /api/v1/students/:studentId/profile/academic
-POST   /api/v1/students/:studentId/invite
+PATCH  /api/v1/students/:studentId/profile-sections/:section
+GET    /api/v1/students/parents/me/profile
+PATCH  /api/v1/students/parents/me/profile
 POST   /api/v1/students/:studentId/parents
-GET    /api/v1/students/:studentId/parents
 PATCH  /api/v1/students/:studentId/parental-controls
-PATCH  /api/v1/students/:studentId/address
-GET    /api/v1/students/:studentId/activity-timeline
+GET    /api/v1/students/:studentId/parental-controls
+POST   /api/v1/students/:studentId/invitations
+GET    /api/v1/students/:studentId/invitations
+POST   /api/v1/students/:studentId/invitations/:invitationId/revoke
+POST   /api/v1/students/invitations/accept
 ```
 
 Academic:
@@ -197,16 +184,23 @@ Academic:
 ```text
 POST   /api/v1/students/:studentId/academic-records
 GET    /api/v1/students/:studentId/academic-records
-POST   /api/v1/students/:studentId/previous-education
-GET    /api/v1/students/:studentId/previous-education
-POST   /api/v1/students/:studentId/exam-scores
-GET    /api/v1/students/:studentId/exam-scores
-PATCH  /api/v1/students/:studentId/course-preferences
-GET    /api/v1/students/:studentId/course-preferences
+PATCH  /api/v1/students/:studentId/previous-education
+PATCH  /api/v1/students/:studentId/exam-scores
+PATCH  /api/v1/students/:studentId/course-preference
+PATCH  /api/v1/students/:studentId/documents
 POST   /api/v1/students/:studentId/subjects
 GET    /api/v1/students/:studentId/progress
-GET    /api/v1/students/:studentId/documents
-POST   /api/v1/students/:studentId/documents
+GET    /api/v1/students/:studentId/topic-progress
+PATCH  /api/v1/students/:studentId/topic-progress
+GET    /api/v1/students/:studentId/recommendations
+GET    /api/v1/academic-catalog/:type
+POST   /api/v1/academic-catalog/:type
+GET    /api/v1/subjects
+POST   /api/v1/subjects
+GET    /api/v1/topics
+POST   /api/v1/topics
+GET    /api/v1/curriculums
+POST   /api/v1/curriculums
 ```
 
 Scheduling:
@@ -214,9 +208,10 @@ Scheduling:
 ```text
 POST   /api/v1/students/:studentId/schedules
 GET    /api/v1/students/:studentId/schedules
-PATCH  /api/v1/schedules/:scheduleId
 POST   /api/v1/schedules/:scheduleId/cancel
-POST   /api/v1/schedules/:scheduleId/start
+POST   /api/v1/schedules/:scheduleId/reschedule
+POST   /api/v1/learning-entitlements
+GET    /api/v1/learning-entitlements?studentProfileId=:studentId
 ```
 
 AI tutor:
@@ -224,14 +219,32 @@ AI tutor:
 ```text
 POST   /api/v1/ai-tutor/sessions
 GET    /api/v1/ai-tutor/sessions/:sessionId
+GET    /api/v1/ai-tutor/sessions/:sessionId/context
 POST   /api/v1/ai-tutor/sessions/:sessionId/messages
 POST   /api/v1/ai-tutor/sessions/:sessionId/complete
 GET    /api/v1/students/:studentId/ai-history
 ```
 
+Assessments and progress:
+
+```text
+GET    /api/v1/question-banks
+POST   /api/v1/question-banks
+GET    /api/v1/questions
+POST   /api/v1/questions
+GET    /api/v1/assessments
+POST   /api/v1/assessments
+POST   /api/v1/assessments/:assessmentId/attempts
+POST   /api/v1/assessment-attempts/:attemptId/answers
+POST   /api/v1/assessment-attempts/:attemptId/complete
+POST   /api/v1/learning-recommendations
+GET    /api/v1/parents/progress-dashboard
+```
+
 Classroom:
 
 ```text
+Future-facing schemas exist for classroom records, messages, files, tutor profiles, tutor availability, and tutor session notes. Dedicated classroom/tutor controllers are not complete yet.
 POST   /api/v1/classrooms/:scheduleId/join
 POST   /api/v1/classrooms/:classroomId/leave
 GET    /api/v1/classrooms/:classroomId/messages
@@ -245,6 +258,7 @@ POST   /api/v1/classrooms/:classroomId/summary
 Tutor marketplace:
 
 ```text
+Future-facing. Tutor schemas exist, but marketplace booking APIs are not launch-complete yet.
 GET    /api/v1/tutors
 GET    /api/v1/tutors/:tutorId
 GET    /api/v1/tutors/:tutorId/availability
