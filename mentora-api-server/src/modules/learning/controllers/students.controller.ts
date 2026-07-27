@@ -19,6 +19,7 @@ import {
   CreateStudentDto,
   CreateStudentInvitationDto,
   EnrollSubjectDto,
+  SubmitStudentEligibilityDocumentsDto,
   UpdateParentalControlsDto,
   UpdateParentProfileDto,
   UpdateStudentDto,
@@ -286,6 +287,24 @@ export class StudentsController {
       await this.service.updateDocuments(req.user.sub, studentId, dto),
       'STUDENT_DOCUMENTS_UPDATED',
       'Student documents updated',
+    );
+  }
+
+  @Post(':studentId/eligibility-documents')
+  @HttpCode(HttpStatus.CREATED)
+  async submitEligibilityDocuments(
+    @Req() req: AuthenticatedRequest,
+    @Param('studentId') studentId: string,
+    @Body() dto: SubmitStudentEligibilityDocumentsDto,
+  ) {
+    return successResponse(
+      await this.service.submitEligibilityDocuments(
+        req.user.sub,
+        studentId,
+        dto,
+      ),
+      'STUDENT_ELIGIBILITY_DOCUMENTS_SUBMITTED',
+      'Student eligibility documents submitted',
     );
   }
 

@@ -19,6 +19,7 @@ export type CourseDocument = HydratedDocument<Course>;
 export type SubjectDocument = HydratedDocument<Subject>;
 export type TopicDocument = HydratedDocument<Topic>;
 export type CurriculumDocument = HydratedDocument<Curriculum>;
+export type StudyPlanDocument = HydratedDocument<StudyPlan>;
 export type StudentSubjectEnrollmentDocument =
   HydratedDocument<StudentSubjectEnrollment>;
 export type LearningScheduleDocument = HydratedDocument<LearningSchedule>;
@@ -709,6 +710,102 @@ CurriculumSchema.index(
   { boardId: 1, gradeId: 1, subjectId: 1 },
   { unique: true },
 );
+
+@Schema({ collection: COLLECTION_NAMES.STUDY_PLAN, timestamps: true })
+export class StudyPlan {
+  @Prop({ required: true, trim: true, index: true })
+  name!: string;
+
+  @Prop({ required: true, trim: true, uppercase: true, unique: true })
+  code!: string;
+
+  @Prop({
+    enum: [
+      'school',
+      'competitive_exam',
+      'college',
+      'university',
+      'skill_course',
+      'professional',
+      'other',
+    ],
+    default: 'competitive_exam',
+    index: true,
+  })
+  category!: string;
+
+  @Prop({
+    enum: [
+      'jee',
+      'neet',
+      'upsc',
+      'nda',
+      'olympiad',
+      'board_exam',
+      'foundation',
+      'skill',
+      'other',
+    ],
+    required: true,
+    index: true,
+  })
+  target!: string;
+
+  @Prop({ type: [Types.ObjectId], ref: Subject.name, default: [] })
+  subjectIds!: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: Topic.name, default: [] })
+  topicIds!: Types.ObjectId[];
+
+  @Prop({ type: [Types.ObjectId], ref: Curriculum.name, default: [] })
+  curriculumIds!: Types.ObjectId[];
+
+  @Prop({ type: [String], default: ['ai'] })
+  tutorTypes!: string[];
+
+  @Prop({ type: [String], default: ['chat'] })
+  deliveryModes!: string[];
+
+  @Prop({ enum: ['daily', 'weekly', 'monthly', 'custom'], default: 'weekly' })
+  scheduleFrequency!: string;
+
+  @Prop({ default: 3, min: 0 })
+  sessionsPerWeek!: number;
+
+  @Prop({ default: 45, min: 0 })
+  sessionDurationMinutes!: number;
+
+  @Prop({ default: 1, min: 1 })
+  maxConcurrentSessions!: number;
+
+  @Prop({ default: 1, min: 1 })
+  maxDevicesPerStudent!: number;
+
+  @Prop({ default: 0, min: 0 })
+  includedAiMinutes!: number;
+
+  @Prop({ default: 0, min: 0 })
+  includedHumanTutorMinutes!: number;
+
+  @Prop({ type: Object, default: {} })
+  eligibility!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  metadata!: Record<string, unknown>;
+
+  @Prop({ trim: true })
+  description?: string;
+
+  @Prop({ default: true, index: true })
+  publiclyVisible!: boolean;
+
+  @Prop({ enum: ['active', 'inactive', 'archived'], default: 'active' })
+  status!: string;
+}
+
+export const StudyPlanSchema = SchemaFactory.createForClass(StudyPlan);
+StudyPlanSchema.index({ category: 1, target: 1, status: 1 });
+StudyPlanSchema.index({ subjectIds: 1, status: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.STUDENT_SUBJECT_ENROLLMENT,

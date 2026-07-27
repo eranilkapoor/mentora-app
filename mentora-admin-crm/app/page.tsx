@@ -1,27 +1,154 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import {
+  faArrowRightFromBracket,
+  faBarsProgress,
+  faBell,
+  faBrain,
+  faBuilding,
+  faBullhorn,
+  faCalendarDays,
+  faChartLine,
+  faCheckCircle,
+  faComments,
+  faCreditCard,
+  faFileLines,
+  faGear,
+  faGraduationCap,
+  faHeadset,
+  faLock,
+  faMobileScreen,
+  faMoneyBillTrendUp,
+  faPlug,
+  faShieldHalved,
+  faTableColumns,
+  faTasks,
+  faUserGraduate,
+  faUsers,
+} from "@fortawesome/free-solid-svg-icons";
+import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
+import {
+  crmSessionActions,
+  crmWorkspaceActions,
+  loadModuleRecords,
+  loadCrmWorkspace,
+  saveModuleRecord,
+  type DemoContext,
+  type DemoUser,
+  type ModuleRecordDraft,
+  useAppDispatch,
+  useAppSelector,
+} from "./store";
 
 type CrmModule = {
   id: string;
   title: string;
   group: string;
   metric: string;
+  icon?: IconName;
+  status?: ModuleStatus;
   description: string;
   filters: string[];
   columns: string[];
   rows: string[][];
-};
-
-type DemoContext = {
-  tenant: string;
-  branch: string;
-  role: string;
-  label: string;
-  modules: string[];
+  actions?: string[];
+  insights?: string[];
 };
 
 type ThemeMode = "system" | "light" | "dark";
+
+type ModuleStatus = "Production MVP" | "Workflow MVP" | "Foundation";
+
+type IconName =
+  | "ai"
+  | "analytics"
+  | "automation"
+  | "building"
+  | "calendar"
+  | "campaign"
+  | "chat"
+  | "check"
+  | "dashboard"
+  | "document"
+  | "finance"
+  | "graduation"
+  | "headset"
+  | "integration"
+  | "lead"
+  | "lock"
+  | "mail"
+  | "mobile"
+  | "payment"
+  | "report"
+  | "settings"
+  | "shield"
+  | "task"
+  | "tenant"
+  | "user";
+
+const moduleIcons: Record<string, IconName> = {
+  admissions: "check",
+  ai_features: "ai",
+  analytics: "analytics",
+  applications: "document",
+  authentication: "lock",
+  automation: "automation",
+  calendar: "calendar",
+  call_center: "headset",
+  campaigns: "campaign",
+  communications: "chat",
+  dashboard: "dashboard",
+  dashboard_module: "dashboard",
+  document_management: "document",
+  email_crm: "mail",
+  event_management: "calendar",
+  field_force_automation: "mobile",
+  finance: "finance",
+  integrations: "integration",
+  interview: "user",
+  leads: "lead",
+  learning: "graduation",
+  mobile_crm: "mobile",
+  organization_management: "building",
+  payments: "payment",
+  reports: "report",
+  scholarship: "graduation",
+  security: "shield",
+  settings: "settings",
+  sms: "chat",
+  student_profile: "user",
+  task_management: "task",
+  tasks: "task",
+  tenants: "tenant",
+  user_management: "user",
+  whatsapp_crm: "chat",
+};
+
+const moduleActions: Record<string, string[]> = {
+  applications: ["Review", "Request Docs", "Move Stage", "Issue Offer"],
+  campaigns: ["Launch", "Pause", "Duplicate", "ROI Report"],
+  communications: ["Send Message", "Schedule", "Open Inbox", "Template"],
+  leads: ["Create Lead", "Assign", "Change Stage", "Log Activity"],
+  tasks: ["Create Task", "Escalate", "Reassign", "Complete"],
+};
+
+const moduleInsights: Record<string, string[]> = {
+  applications: [
+    "41 under review",
+    "12 waiting for documents",
+    "9 offers ready",
+  ],
+  campaigns: ["3.8x blended ROI", "18 active journeys", "Meta leads synced"],
+  communications: [
+    "96% delivery",
+    "42 unresolved inbox items",
+    "Opt-ins healthy",
+  ],
+  leads: ["82 hot leads", "11 duplicates flagged", "23 SLA risks"],
+  tasks: ["28 due today", "14 escalations", "91% completion SLA"],
+};
 
 const demoUsers = [
   {
@@ -75,7 +202,7 @@ const demoUsers = [
       },
     ],
   },
-] satisfies Array<{ email: string; name: string; contexts: DemoContext[] }>;
+] satisfies DemoUser[];
 
 const navGroups = [
   {
@@ -980,20 +1107,102 @@ const extraModules: CrmModule[] = [
   },
 ];
 
-const allModules = [...modules, ...extraModules];
+const productionModuleIds = new Set([
+  "leads",
+  "applications",
+  "tasks",
+  "campaigns",
+  "communications",
+  "tenants",
+]);
+
+const workflowModuleIds = new Set([
+  "admissions",
+  "automation",
+  "payments",
+  "reports",
+  "learning",
+  "settings",
+  "analytics",
+  "dashboard_module",
+  "security",
+]);
+
+function getModuleStatus(id: string): ModuleStatus {
+  if (productionModuleIds.has(id)) return "Production MVP";
+  if (workflowModuleIds.has(id)) return "Workflow MVP";
+  return "Foundation";
+}
+
+function enrichModule(module: CrmModule): CrmModule {
+  return {
+    ...module,
+    actions: module.actions ??
+      moduleActions[module.id] ?? ["Create", "Assign", "Export", "Audit"],
+    icon: module.icon ?? moduleIcons[module.id] ?? "dashboard",
+    insights: module.insights ??
+      moduleInsights[module.id] ?? [
+        `${module.rows.length} live records`,
+        `${module.filters.length} active filters`,
+        "Tenant scoped data",
+      ],
+    status: module.status ?? getModuleStatus(module.id),
+  };
+}
+
+const allModules = [...modules, ...extraModules].map(enrichModule);
 
 const moduleMap = Object.fromEntries(
   allModules.map((module) => [module.id, module]),
 );
 
+function Icon({ name }: { name: IconName }) {
+  const icons: Record<IconName, IconDefinition> = {
+    ai: faBrain,
+    analytics: faChartLine,
+    automation: faBarsProgress,
+    building: faBuilding,
+    calendar: faCalendarDays,
+    campaign: faBullhorn,
+    chat: faComments,
+    check: faCheckCircle,
+    dashboard: faTableColumns,
+    document: faFileLines,
+    finance: faMoneyBillTrendUp,
+    graduation: faGraduationCap,
+    headset: faHeadset,
+    integration: faPlug,
+    lead: faUserGraduate,
+    lock: faLock,
+    mail: faComments,
+    mobile: faMobileScreen,
+    payment: faCreditCard,
+    report: faChartLine,
+    settings: faGear,
+    shield: faShieldHalved,
+    task: faTasks,
+    tenant: faBuilding,
+    user: faUsers,
+  };
+
+  return (
+    <span aria-hidden="true" className="app-icon">
+      <FontAwesomeIcon icon={icons[name]} />
+    </span>
+  );
+}
+
 export default function CrmDashboardPage() {
-  const [themeMode, setThemeMode] = useState<ThemeMode>("system");
-  const [loginEmail, setLoginEmail] = useState(demoUsers[0].email);
-  const [loggedInUser, setLoggedInUser] = useState<
-    (typeof demoUsers)[number] | null
-  >(null);
-  const [activeContext, setActiveContext] = useState<DemoContext | null>(null);
-  const [activeId, setActiveId] = useState("dashboard");
+  const dispatch = useAppDispatch();
+  const {
+    activeContext,
+    activeId,
+    loggedInUser,
+    loginEmail,
+    themeMode,
+    toast,
+  } = useAppSelector((state) => state.crmSession);
+  const workspace = useAppSelector((state) => state.crmWorkspace);
   const [query, setQuery] = useState("");
   const [filterValues, setFilterValues] = useState<Record<string, string>>({});
   const [sort, setSort] = useState({
@@ -1003,10 +1212,59 @@ export default function CrmDashboardPage() {
   const [selected, setSelected] = useState<string[]>([]);
   const [pageSize, setPageSize] = useState(10);
   const [detail, setDetail] = useState<string[] | null>(null);
-  const [toast, setToast] = useState("Ready");
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
+  const [collapsedGroups, setCollapsedGroups] = useState<
+    Record<string, boolean>
+  >({});
+  const [moduleView, setModuleView] = useState<"list" | "grid">("list");
+  const [recordForm, setRecordForm] = useState<{
+    mode: "create" | "edit";
+    row?: string[];
+  } | null>(null);
+  const [apiSyncEnabled, setApiSyncEnabled] = useState(false);
+
+  useEffect(() => {
+    if (!apiSyncEnabled || !loggedInUser || !activeContext) return;
+    void dispatch(loadCrmWorkspace());
+  }, [activeContext, apiSyncEnabled, dispatch, loggedInUser]);
+
+  const activeTenantId = useMemo(
+    () => extractFirstId(workspace.tenants),
+    [workspace.tenants],
+  );
+
+  useEffect(() => {
+    if (
+      !loggedInUser ||
+      !activeContext ||
+      !apiSyncEnabled ||
+      !activeTenantId ||
+      activeId === "dashboard"
+    ) {
+      return;
+    }
+    void dispatch(
+      loadModuleRecords({ moduleKey: activeId, tenantId: activeTenantId }),
+    );
+  }, [
+    activeContext,
+    activeId,
+    activeTenantId,
+    apiSyncEnabled,
+    dispatch,
+    loggedInUser,
+  ]);
 
   const activeModule = moduleMap[activeId];
-  const activeRows = activeModule?.rows ?? [];
+  const serverRows = useMemo(
+    () =>
+      activeModule
+        ? recordsToRows(workspace.moduleRecords[activeModule.id], activeModule)
+        : [],
+    [activeModule, workspace.moduleRecords],
+  );
+  const activeRows =
+    serverRows.length > 0 ? serverRows : (activeModule?.rows ?? []);
   const filteredRows = useMemo(() => {
     if (!activeModule) return [];
     const text = query.trim().toLowerCase();
@@ -1034,31 +1292,28 @@ export default function CrmDashboardPage() {
   const selectedCount = selected.length;
 
   function openModule(id: string) {
-    setActiveId(id);
+    dispatch(
+      crmSessionActions.openModule({
+        id,
+        title: id === "dashboard" ? "Dashboard" : moduleMap[id].title,
+      }),
+    );
     setSelected([]);
     setQuery("");
     setFilterValues({});
     setDetail(null);
-    setToast(
-      `Opened ${id === "dashboard" ? "Dashboard" : moduleMap[id].title}`,
-    );
   }
 
   function login() {
     const user =
       demoUsers.find((demoUser) => demoUser.email === loginEmail) ??
       demoUsers[0];
-    setLoggedInUser(user);
-    setActiveContext(null);
-    setToast(`Logged in as ${user.name}`);
+    dispatch(crmSessionActions.login(user));
   }
 
   function chooseContext(context: DemoContext) {
-    setActiveContext(context);
-    setActiveId(
-      context.modules.includes("dashboard") ? "dashboard" : context.modules[0],
-    );
-    setToast(`Context selected: ${context.label}`);
+    dispatch(crmSessionActions.chooseContext(context));
+    setApiSyncEnabled(false);
   }
 
   function canAccessModule(id: string) {
@@ -1073,9 +1328,13 @@ export default function CrmDashboardPage() {
     return (
       <LoginScreen
         loginEmail={loginEmail}
-        setLoginEmail={setLoginEmail}
+        setLoginEmail={(value) =>
+          dispatch(crmSessionActions.setLoginEmail(value))
+        }
         login={login}
-        setThemeMode={setThemeMode}
+        setThemeMode={(value) =>
+          dispatch(crmSessionActions.setThemeMode(value))
+        }
         themeMode={themeMode}
       />
     );
@@ -1086,21 +1345,29 @@ export default function CrmDashboardPage() {
       <ContextScreen
         user={loggedInUser}
         chooseContext={chooseContext}
-        logout={() => setLoggedInUser(null)}
-        setThemeMode={setThemeMode}
+        logout={() => dispatch(crmSessionActions.logout())}
+        setThemeMode={(value) =>
+          dispatch(crmSessionActions.setThemeMode(value))
+        }
         themeMode={themeMode}
       />
     );
   }
 
   function runAction(label: string) {
-    setToast(
-      `${label} queued for ${selectedCount || "current"} record${selectedCount === 1 ? "" : "s"}`,
+    dispatch(
+      crmSessionActions.setToast(
+        `${label} queued for ${selectedCount || "current"} record${selectedCount === 1 ? "" : "s"}`,
+      ),
     );
   }
 
   return (
-    <div className={`admin-shell theme-${themeMode}`}>
+    <div
+      className={`admin-shell theme-${themeMode} ${
+        isSidebarCollapsed ? "sidebar-collapsed" : ""
+      }`}
+    >
       <aside className="left-sec">
         <div className="header-left">
           <button
@@ -1109,16 +1376,48 @@ export default function CrmDashboardPage() {
             type="button"
           >
             <span className="brand-mark">M</span>
-            <span>Mentora CRM</span>
+            <span>
+              Mentora CRM
+              <small>Education SaaS</small>
+            </span>
+          </button>
+          <button
+            aria-label={
+              isSidebarCollapsed
+                ? "Expand left navigation"
+                : "Collapse left navigation"
+            }
+            className="sidebar-toggle"
+            onClick={() => setIsSidebarCollapsed((value) => !value)}
+            type="button"
+          >
+            <FontAwesomeIcon icon={faBarsProgress} />
           </button>
         </div>
         <nav className="main-menu" aria-label="Admin CRM modules">
           {navGroups.map((group) => (
-            <section className="menu-group" key={group.title}>
-              <div className="menu-heading">
-                <span>{group.title}</span>
-                <span className="menu-icon">[]</span>
-              </div>
+            <section
+              className={`menu-group ${
+                collapsedGroups[group.title] ? "group-collapsed" : ""
+              }`}
+              key={group.title}
+            >
+              <button
+                aria-expanded={!collapsedGroups[group.title]}
+                className="menu-heading"
+                onClick={() =>
+                  setCollapsedGroups((current) => ({
+                    ...current,
+                    [group.title]: !current[group.title],
+                  }))
+                }
+                type="button"
+              >
+                <span className="menu-heading-title">{group.title}</span>
+                <span className="menu-count">
+                  {group.items.filter(canAccessModule).length}
+                </span>
+              </button>
               <ul>
                 {group.items.filter(canAccessModule).map((id) => (
                   <li key={id}>
@@ -1127,9 +1426,12 @@ export default function CrmDashboardPage() {
                       onClick={() => openModule(id)}
                       type="button"
                     >
-                      {id === "learning"
-                        ? "Learning Ops"
-                        : (moduleMap[id]?.title ?? "Dashboard")}
+                      <Icon name={moduleMap[id]?.icon ?? "dashboard"} />
+                      <span>
+                        {id === "learning"
+                          ? "Learning Ops"
+                          : (moduleMap[id]?.title ?? "Dashboard")}
+                      </span>
                     </button>
                   </li>
                 ))}
@@ -1149,31 +1451,69 @@ export default function CrmDashboardPage() {
             </p>
           </div>
           <div className="login-info">
-            <ThemeSelector setThemeMode={setThemeMode} themeMode={themeMode} />
-            <select aria-label="Tenant" defaultValue="webnza">
-              <option value="active">
-                {activeContext.tenant} / {activeContext.branch}
-              </option>
-            </select>
-            <button onClick={() => setActiveContext(null)} type="button">
-              Context
-            </button>
-            <button
-              onClick={() => runAction("Notifications opened")}
-              type="button"
-            >
-              Messages
-            </button>
-            <button onClick={() => runAction("Logout")} type="button">
-              Logout
-            </button>
+            <div className="utility-cluster">
+              <ThemeSelector
+                setThemeMode={(value) =>
+                  dispatch(crmSessionActions.setThemeMode(value))
+                }
+                themeMode={themeMode}
+              />
+              <label className="tenant-switcher">
+                <span>Context</span>
+                <select
+                  aria-label="Tenant"
+                  className="form-select form-select-sm"
+                  defaultValue="webnza"
+                >
+                  <option value="active">
+                    {activeContext.tenant} / {activeContext.branch}
+                  </option>
+                </select>
+              </label>
+              <button
+                className="btn btn-outline-primary btn-sm utility-button"
+                onClick={() => dispatch(crmSessionActions.clearContext())}
+                type="button"
+              >
+                <Icon name="tenant" />
+                Switch
+              </button>
+            </div>
+            <div className="utility-actions">
+              <button
+                className="btn btn-outline-primary btn-sm utility-button"
+                onClick={() => runAction("Notifications opened")}
+                type="button"
+              >
+                <FontAwesomeIcon icon={faBell} />
+                Messages
+              </button>
+              <button
+                className="btn btn-primary btn-sm utility-button"
+                onClick={() => dispatch(crmSessionActions.logout())}
+                type="button"
+              >
+                <FontAwesomeIcon icon={faArrowRightFromBracket} />
+                Logout
+              </button>
+            </div>
           </div>
         </header>
+
+        <ServerStatus
+          apiSyncEnabled={apiSyncEnabled}
+          onSync={() => {
+            setApiSyncEnabled(true);
+            void dispatch(loadCrmWorkspace());
+          }}
+          workspace={workspace}
+        />
 
         {activeId === "dashboard" ? (
           <Dashboard
             canAccessModule={canAccessModule}
             openModule={openModule}
+            workspace={workspace}
           />
         ) : (
           <ModulePanel
@@ -1194,11 +1534,56 @@ export default function CrmDashboardPage() {
             setSort={setSort}
             sort={sort}
             total={filteredRows.length}
+            usingServerRows={serverRows.length > 0}
+            view={moduleView}
+            setView={setModuleView}
+            openRecordForm={setRecordForm}
             runAction={runAction}
           />
         )}
 
-        <div className="toast" role="status">
+        {recordForm && activeModule ? (
+          <RecordFormModal
+            module={activeModule}
+            onClose={() => setRecordForm(null)}
+            onSubmit={async (draft) => {
+              const finalDraft = {
+                ...draft,
+                moduleKey: activeModule.id,
+                tenantId: activeTenantId,
+              };
+              if (!apiSyncEnabled || !activeTenantId || workspace.error) {
+                dispatch(
+                  crmWorkspaceActions.upsertLocalModuleRecord(finalDraft),
+                );
+                dispatch(
+                  crmSessionActions.setToast(
+                    "Record saved in CRM demo workspace",
+                  ),
+                );
+                setRecordForm(null);
+                return;
+              }
+              try {
+                await dispatch(saveModuleRecord(finalDraft)).unwrap();
+                dispatch(crmSessionActions.setToast("Record saved to API"));
+              } catch {
+                dispatch(
+                  crmWorkspaceActions.upsertLocalModuleRecord(finalDraft),
+                );
+                dispatch(
+                  crmSessionActions.setToast(
+                    "Record saved locally until API auth is ready",
+                  ),
+                );
+              }
+              setRecordForm(null);
+            }}
+            row={recordForm.row}
+          />
+        ) : null}
+
+        <div className="crm-toast" role="status">
           {toast}
         </div>
       </main>
@@ -1221,7 +1606,7 @@ function LoginScreen({
 }) {
   return (
     <main className={`auth-screen theme-${themeMode}`}>
-      <section className="auth-card">
+      <section className="auth-card card shadow-lg">
         <ThemeSelector setThemeMode={setThemeMode} themeMode={themeMode} />
         <span className="brand-mark">M</span>
         <h1>Mentora CRM Login</h1>
@@ -1229,6 +1614,7 @@ function LoginScreen({
         <label>
           <span>User</span>
           <select
+            className="form-select"
             onChange={(event) => setLoginEmail(event.target.value)}
             value={loginEmail}
           >
@@ -1239,7 +1625,7 @@ function LoginScreen({
             ))}
           </select>
         </label>
-        <button onClick={login} type="button">
+        <button className="btn btn-primary" onClick={login} type="button">
           Continue
         </button>
       </section>
@@ -1262,7 +1648,7 @@ function ContextScreen({
 }) {
   return (
     <main className={`auth-screen theme-${themeMode}`}>
-      <section className="context-card">
+      <section className="context-card card shadow-lg">
         <div className="context-head">
           <div>
             <span className="eyebrow">CRM Context</span>
@@ -1271,7 +1657,7 @@ function ContextScreen({
           </div>
           <div className="context-actions">
             <ThemeSelector setThemeMode={setThemeMode} themeMode={themeMode} />
-            <button onClick={logout} type="button">
+            <button className="btn btn-primary" onClick={logout} type="button">
               Change User
             </button>
           </div>
@@ -1307,6 +1693,7 @@ function ThemeSelector({
     <label className="theme-switcher">
       <span>Theme</span>
       <select
+        className="form-select form-select-sm"
         aria-label="Theme mode"
         onChange={(event) => setThemeMode(event.target.value as ThemeMode)}
         value={themeMode}
@@ -1319,12 +1706,72 @@ function ThemeSelector({
   );
 }
 
+function ServerStatus({
+  apiSyncEnabled,
+  onSync,
+  workspace,
+}: {
+  apiSyncEnabled: boolean;
+  onSync: () => void;
+  workspace: {
+    coverage: unknown[];
+    error: string | null;
+    loading: boolean;
+    tenants: unknown[];
+  };
+}) {
+  const statusLabel = workspace.loading
+    ? "Syncing workspace"
+    : workspace.error
+      ? "API sync unavailable"
+      : apiSyncEnabled
+        ? "Server workspace synced"
+        : "Demo workspace active";
+
+  return (
+    <div className="server-ribbon">
+      <div className="server-ribbon-copy">
+        <span
+          className={
+            workspace.error || !apiSyncEnabled
+              ? "server-dot warn"
+              : "server-dot"
+          }
+        />
+        <strong>{statusLabel}</strong>
+        <span>
+          {apiSyncEnabled
+            ? `${workspace.tenants.length} tenants`
+            : "No protected API calls before auth"}
+        </span>
+        <span>
+          {apiSyncEnabled
+            ? `${workspace.coverage.length} module records`
+            : "Create and edit uses local MVP state"}
+        </span>
+        {workspace.error ? <em>{workspace.error}</em> : null}
+      </div>
+      <button
+        className="server-sync-button"
+        disabled={workspace.loading}
+        onClick={onSync}
+        type="button"
+      >
+        <FontAwesomeIcon icon={faPlug} />
+        {workspace.loading ? "Syncing" : "Sync API"}
+      </button>
+    </div>
+  );
+}
+
 function Dashboard({
   canAccessModule,
   openModule,
+  workspace,
 }: {
   canAccessModule: (id: string) => boolean;
   openModule: (id: string) => void;
+  workspace: { coverage: unknown[]; tenants: unknown[] };
 }) {
   return (
     <section className="workspace">
@@ -1337,12 +1784,30 @@ function Dashboard({
             learning handoff in one enterprise console.
           </p>
         </div>
-        <button onClick={() => openModule("leads")} type="button">
+        <button
+          className="btn btn-primary"
+          onClick={() => openModule("leads")}
+          type="button"
+        >
+          <Icon name="lead" />
           Open Lead Queue
         </button>
       </div>
 
       <section className="kpi-grid" aria-label="CRM key metrics">
+        <button
+          className="metric-card"
+          onClick={() => openModule("tenants")}
+          type="button"
+        >
+          <Icon name="tenant" />
+          <span>Server tenants</span>
+          <strong>{workspace.tenants.length}</strong>
+          <p>
+            <em>Live</em>
+            API workspace
+          </p>
+        </button>
         {kpis.map(([label, value, delta, helper]) => (
           <button
             className="metric-card"
@@ -1352,6 +1817,15 @@ function Dashboard({
             }
             type="button"
           >
+            <Icon
+              name={
+                label === "Revenue"
+                  ? "payment"
+                  : label === "AI sessions"
+                    ? "ai"
+                    : "analytics"
+              }
+            />
             <span>{label}</span>
             <strong>{value}</strong>
             <p>
@@ -1411,9 +1885,11 @@ function Dashboard({
               onClick={() => openModule(module.id)}
               type="button"
             >
+              <Icon name={module.icon ?? "dashboard"} />
               <span>{module.group}</span>
               <strong>{module.title}</strong>
               <em>{module.metric}</em>
+              <small>{module.status}</small>
             </button>
           ))}
       </section>
@@ -1439,6 +1915,10 @@ function ModulePanel(props: {
   setSort: (value: { column: number; direction: "asc" | "desc" }) => void;
   sort: { column: number; direction: "asc" | "desc" };
   total: number;
+  usingServerRows: boolean;
+  view: "list" | "grid";
+  setView: (view: "list" | "grid") => void;
+  openRecordForm: (form: { mode: "create" | "edit"; row?: string[] }) => void;
   runAction: (label: string) => void;
 }) {
   const module = props.module;
@@ -1462,9 +1942,17 @@ function ModulePanel(props: {
   return (
     <section className="workspace">
       <div className="module-header">
-        <div>
-          <span className="eyebrow">{module.group}</span>
-          <h2>{module.title}</h2>
+        <div className="module-title-block">
+          <Icon name={module.icon ?? "dashboard"} />
+          <div>
+            <span className="eyebrow">{module.group}</span>
+            <h2>{module.title}</h2>
+          </div>
+          <span className={`status-pill ${statusClass(module.status)}`}>
+            {module.status}
+          </span>
+        </div>
+        <div className="module-copy">
           <p>{module.description}</p>
           <p className="context-line">
             {props.activeContext.role.replaceAll("_", " ")} /{" "}
@@ -1477,22 +1965,55 @@ function ModulePanel(props: {
         </div>
       </div>
 
+      <div className="insight-grid" aria-label={`${module.title} insights`}>
+        {module.insights?.map((insight, index) => (
+          <div className="insight-card" key={insight}>
+            <span>Insight {index + 1}</span>
+            <strong>{insight}</strong>
+          </div>
+        ))}
+      </div>
+
       <div className="navigationlist">
         <div className="action-row">
           <button
-            onClick={() => props.runAction("Create record")}
+            className="btn btn-primary"
+            onClick={() => props.openRecordForm({ mode: "create" })}
             type="button"
           >
-            Add New
+            <Icon name="check" />
+            New Record
           </button>
-          <button onClick={() => props.runAction("Bulk assign")} type="button">
-            Assign
-          </button>
-          <button onClick={() => props.runAction("Export")} type="button">
-            Export
-          </button>
+          {module.actions?.map((action, index) => (
+            <button
+              className={
+                index > 1 ? "btn btn-light secondary" : "btn btn-primary"
+              }
+              key={action}
+              onClick={() =>
+                action.toLowerCase().includes("create")
+                  ? props.openRecordForm({ mode: "create" })
+                  : props.runAction(action)
+              }
+              type="button"
+            >
+              <Icon
+                name={
+                  action.toLowerCase().includes("export") ||
+                  action.toLowerCase().includes("report")
+                    ? "report"
+                    : action.toLowerCase().includes("assign")
+                      ? "user"
+                      : action.toLowerCase().includes("audit")
+                        ? "shield"
+                        : "check"
+                }
+              />
+              {action}
+            </button>
+          ))}
           <button
-            className="secondary"
+            className="btn btn-light secondary"
             onClick={() => {
               props.setQuery("");
               props.setFilterValues({});
@@ -1503,13 +2024,36 @@ function ModulePanel(props: {
           </button>
           <span>{props.selectedCount} selected</span>
         </div>
+        <div className="view-toolbar">
+          <span>View mode</span>
+          <div className="btn-group btn-group-sm" role="group">
+            <button
+              className={`btn ${
+                props.view === "list" ? "btn-primary" : "btn-outline-primary"
+              }`}
+              onClick={() => props.setView("list")}
+              type="button"
+            >
+              List
+            </button>
+            <button
+              className={`btn ${
+                props.view === "grid" ? "btn-primary" : "btn-outline-primary"
+              }`}
+              onClick={() => props.setView("grid")}
+              type="button"
+            >
+              Grid
+            </button>
+          </div>
+        </div>
         <div className="filter-block">
           <div className="head">Search</div>
           <div className="formblock">
             <label className="formrow wide">
               <span className="label">Global Search</span>
               <input
-                className="input"
+                className="input form-control"
                 onChange={(event) => props.setQuery(event.target.value)}
                 placeholder="Search any visible field"
                 value={props.query}
@@ -1519,7 +2063,7 @@ function ModulePanel(props: {
               <label className="formrow" key={filter}>
                 <span className="label">{filter}</span>
                 <input
-                  className="input"
+                  className="input form-control"
                   onChange={(event) =>
                     props.setFilterValues({
                       ...props.filterValues,
@@ -1536,114 +2080,184 @@ function ModulePanel(props: {
       </div>
 
       <div className="listmanager">
-        <div className="head">{module.title} Listing</div>
-        <div className="main-listing-box">
-          <table>
-            <thead>
-              <tr className="title-pannel">
-                <th>
-                  <input
-                    checked={allSelected}
-                    onChange={toggleAll}
-                    type="checkbox"
-                  />
-                </th>
-                <th>S. No.</th>
-                {module.columns.map((column, index) => (
-                  <th key={column}>
+        <div className="head table-head">
+          <span>{module.title} Listing</span>
+          <em>
+            {props.usingServerRows ? "Live API data" : "Demo fallback"} /{" "}
+            {props.total} matching records
+          </em>
+        </div>
+        {props.view === "list" ? (
+          <div className="main-listing-box">
+            <table className="table table-hover align-middle mb-0">
+              <thead>
+                <tr className="title-pannel">
+                  <th>
+                    <input
+                      checked={allSelected}
+                      onChange={toggleAll}
+                      type="checkbox"
+                    />
+                  </th>
+                  <th>S. No.</th>
+                  {module.columns.map((column, index) => (
+                    <th key={column}>
+                      <button
+                        className="adminDataSort"
+                        onClick={() =>
+                          props.setSort({
+                            column: index,
+                            direction:
+                              props.sort.column === index &&
+                              props.sort.direction === "asc"
+                                ? "desc"
+                                : "asc",
+                          })
+                        }
+                        type="button"
+                      >
+                        {column}{" "}
+                        {props.sort.column === index
+                          ? props.sort.direction.toUpperCase()
+                          : ""}
+                      </button>
+                    </th>
+                  ))}
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                {props.rows.map((row, rowIndex) => {
+                  const id = row.join("|");
+                  return (
+                    <tr
+                      className={
+                        props.selected.includes(id) ? "selected-row" : ""
+                      }
+                      key={id}
+                    >
+                      <td>
+                        <input
+                          checked={props.selected.includes(id)}
+                          onChange={() => toggleRow(id)}
+                          type="checkbox"
+                        />
+                      </td>
+                      <td>{rowIndex + 1}</td>
+                      {row.map((value, index) => (
+                        <td key={`${id}-${index}`}>{renderCell(value)}</td>
+                      ))}
+                      <td className="row-actions">
+                        <button
+                          onClick={() => props.setDetail(row)}
+                          type="button"
+                        >
+                          <Icon name="document" />
+                          View
+                        </button>
+                        <button
+                          onClick={() =>
+                            props.openRecordForm({ mode: "edit", row })
+                          }
+                          type="button"
+                        >
+                          <Icon name="settings" />
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => props.runAction("Audit")}
+                          type="button"
+                        >
+                          <Icon name="shield" />
+                          Audit
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="record-grid">
+            {props.rows.map((row) => {
+              const id = row.join("|");
+              return (
+                <article
+                  className={`record-card ${
+                    props.selected.includes(id) ? "selected-row" : ""
+                  }`}
+                  key={id}
+                >
+                  <div className="record-card-head">
+                    <input
+                      checked={props.selected.includes(id)}
+                      onChange={() => toggleRow(id)}
+                      type="checkbox"
+                    />
+                    <strong>{row[0]}</strong>
+                  </div>
+                  <dl>
+                    {module.columns.slice(1, 6).map((column, index) => (
+                      <div key={column}>
+                        <dt>{column}</dt>
+                        <dd>{renderCell(row[index + 1] ?? "-")}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                  <div className="record-card-actions">
                     <button
-                      className="adminDataSort"
+                      className="btn btn-outline-primary btn-sm"
+                      onClick={() => props.setDetail(row)}
+                      type="button"
+                    >
+                      View
+                    </button>
+                    <button
+                      className="btn btn-light btn-sm"
                       onClick={() =>
-                        props.setSort({
-                          column: index,
-                          direction:
-                            props.sort.column === index &&
-                            props.sort.direction === "asc"
-                              ? "desc"
-                              : "asc",
-                        })
+                        props.openRecordForm({ mode: "edit", row })
                       }
                       type="button"
                     >
-                      {column}{" "}
-                      {props.sort.column === index
-                        ? props.sort.direction.toUpperCase()
-                        : ""}
+                      Edit
                     </button>
-                  </th>
-                ))}
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {props.rows.map((row, rowIndex) => {
-                const id = row.join("|");
-                return (
-                  <tr
-                    className={
-                      props.selected.includes(id) ? "selected-row" : ""
-                    }
-                    key={id}
-                  >
-                    <td>
-                      <input
-                        checked={props.selected.includes(id)}
-                        onChange={() => toggleRow(id)}
-                        type="checkbox"
-                      />
-                    </td>
-                    <td>{rowIndex + 1}</td>
-                    {row.map((value, index) => (
-                      <td key={`${id}-${index}`}>{renderCell(value)}</td>
-                    ))}
-                    <td className="row-actions">
-                      <button
-                        onClick={() => props.setDetail(row)}
-                        type="button"
-                      >
-                        View
-                      </button>
-                      <button
-                        onClick={() => props.runAction("Edit")}
-                        type="button"
-                      >
-                        Edit
-                      </button>
-                      <button
-                        onClick={() => props.runAction("Audit")}
-                        type="button"
-                      >
-                        Audit
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-            <tfoot>
-              <tr className="title-pannel">
-                <td colSpan={module.columns.length + 3}>
-                  <div className="pag-inner">
-                    <button type="button">First</button>
-                    <button type="button">Prev</button>
-                    <strong>1</strong>
-                    <button type="button">Next</button>
-                    <select
-                      onChange={(event) =>
-                        props.setPageSize(Number(event.target.value))
-                      }
-                      value={props.pageSize}
-                    >
-                      <option value={3}>3</option>
-                      <option value={10}>10</option>
-                      <option value={25}>25</option>
-                    </select>
-                    <span>{props.total} matching records</span>
                   </div>
-                </td>
-              </tr>
-            </tfoot>
-          </table>
+                </article>
+              );
+            })}
+          </div>
+        )}
+        <div className="pagination-bar">
+          <div className="pagination-actions" aria-label="Listing pagination">
+            <button className="btn btn-outline-primary btn-sm" type="button">
+              First
+            </button>
+            <button className="btn btn-outline-primary btn-sm" type="button">
+              Prev
+            </button>
+            <strong>Page 1</strong>
+            <button className="btn btn-outline-primary btn-sm" type="button">
+              Next
+            </button>
+          </div>
+          <label className="page-size-control">
+            <span>Rows</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) =>
+                props.setPageSize(Number(event.target.value))
+              }
+              value={props.pageSize}
+            >
+              <option value={3}>3</option>
+              <option value={10}>10</option>
+              <option value={25}>25</option>
+            </select>
+          </label>
+          <span className="pagination-total">
+            {props.total} matching records
+          </span>
         </div>
       </div>
 
@@ -1657,19 +2271,184 @@ function ModulePanel(props: {
             Close
           </button>
           <span className="eyebrow">Record Detail</span>
-          <h3>{props.detail[0]}</h3>
+          <div className="panel-title">
+            <Icon name={module.icon ?? "document"} />
+            <h3>{props.detail[0]}</h3>
+          </div>
           {module.columns.map((column, index) => (
             <div className="detail-row" key={column}>
               <span>{column}</span>
               <strong>{props.detail?.[index]}</strong>
             </div>
           ))}
-          <button onClick={() => props.runAction("Follow-up")} type="button">
+          <button
+            className="btn btn-primary"
+            onClick={() => props.runAction("Follow-up")}
+            type="button"
+          >
+            <Icon name="task" />
             Create Follow-up
           </button>
         </aside>
       ) : null}
     </section>
+  );
+}
+
+function RecordFormModal({
+  module,
+  onClose,
+  onSubmit,
+  row,
+}: {
+  module: CrmModule;
+  onClose: () => void;
+  onSubmit: (draft: ModuleRecordDraft) => Promise<void>;
+  row?: string[];
+}) {
+  const [title, setTitle] = useState(row?.[0] ?? "");
+  const [description, setDescription] = useState(
+    row ? `${module.title} record update` : "",
+  );
+  const [status, setStatus] = useState("open");
+  const [priority, setPriority] = useState("medium");
+  const [dueAt, setDueAt] = useState("");
+  const [payload, setPayload] = useState<Record<string, string>>(() =>
+    Object.fromEntries(
+      module.columns
+        .slice(1, 6)
+        .map((column, index) => [toPayloadKey(column), row?.[index + 1] ?? ""]),
+    ),
+  );
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function submit() {
+    if (!title.trim()) return;
+    setIsSaving(true);
+    await onSubmit({
+      description,
+      dueAt: dueAt || undefined,
+      moduleKey: module.id,
+      payload,
+      priority,
+      status,
+      title: title.trim(),
+    });
+    setIsSaving(false);
+  }
+
+  return (
+    <div className="modal-backdrop-layer" role="presentation">
+      <section
+        aria-modal="true"
+        className="record-modal"
+        role="dialog"
+        aria-labelledby="record-form-title"
+      >
+        <div className="record-modal-head">
+          <div>
+            <span className="eyebrow">{module.group}</span>
+            <h3 id="record-form-title">
+              {row ? "Edit" : "Create"} {module.title} Record
+            </h3>
+          </div>
+          <button
+            className="btn btn-light btn-sm"
+            onClick={onClose}
+            type="button"
+          >
+            Close
+          </button>
+        </div>
+
+        <div className="record-form-grid">
+          <label className="formrow wide">
+            <span className="label">Title</span>
+            <input
+              className="input form-control"
+              onChange={(event) => setTitle(event.target.value)}
+              value={title}
+            />
+          </label>
+          <label className="formrow wide">
+            <span className="label">Description</span>
+            <textarea
+              className="input form-control record-textarea"
+              onChange={(event) => setDescription(event.target.value)}
+              value={description}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Status</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) => setStatus(event.target.value)}
+              value={status}
+            >
+              <option value="draft">Draft</option>
+              <option value="open">Open</option>
+              <option value="in_progress">In progress</option>
+              <option value="blocked">Blocked</option>
+              <option value="completed">Completed</option>
+            </select>
+          </label>
+          <label className="formrow">
+            <span className="label">Priority</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) => setPriority(event.target.value)}
+              value={priority}
+            >
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high">High</option>
+              <option value="urgent">Urgent</option>
+            </select>
+          </label>
+          <label className="formrow">
+            <span className="label">Due Date</span>
+            <input
+              className="input form-control"
+              onChange={(event) => setDueAt(event.target.value)}
+              type="date"
+              value={dueAt}
+            />
+          </label>
+          {module.columns.slice(1, 6).map((column) => {
+            const key = toPayloadKey(column);
+            return (
+              <label className="formrow" key={column}>
+                <span className="label">{column}</span>
+                <input
+                  className="input form-control"
+                  onChange={(event) =>
+                    setPayload((current) => ({
+                      ...current,
+                      [key]: event.target.value,
+                    }))
+                  }
+                  value={payload[key] ?? ""}
+                />
+              </label>
+            );
+          })}
+        </div>
+
+        <div className="record-modal-actions">
+          <button className="btn btn-light" onClick={onClose} type="button">
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            disabled={!title.trim() || isSaving}
+            onClick={submit}
+            type="button"
+          >
+            {isSaving ? "Saving..." : "Save Record"}
+          </button>
+        </div>
+      </section>
+    </div>
   );
 }
 
@@ -1702,4 +2481,71 @@ function renderCell(value: string) {
   if (["urgent", "high", "hot"].includes(normalized))
     return <span className="badge danger">{value}</span>;
   return value;
+}
+
+function statusClass(status?: ModuleStatus) {
+  if (status === "Production MVP") return "good";
+  if (status === "Workflow MVP") return "warn";
+  return "neutral";
+}
+
+function extractFirstId(records: unknown[]) {
+  const first = records[0];
+  if (!first || typeof first !== "object") return "";
+  const object = first as Record<string, unknown>;
+  const directId = object._id ?? object.id;
+  if (typeof directId === "string") return directId;
+  if (
+    object.data &&
+    typeof object.data === "object" &&
+    "_id" in object.data &&
+    typeof (object.data as { _id?: unknown })._id === "string"
+  ) {
+    return (object.data as { _id: string })._id;
+  }
+  return "";
+}
+
+function recordsToRows(records: unknown[] | undefined, module: CrmModule) {
+  if (!records?.length) return [];
+
+  return records.map((record) => {
+    const object =
+      record && typeof record === "object"
+        ? (record as Record<string, unknown>)
+        : {};
+    const payload =
+      object.payload && typeof object.payload === "object"
+        ? (object.payload as Record<string, unknown>)
+        : {};
+
+    return module.columns.map((column, index) => {
+      const key = toPayloadKey(column);
+      const value =
+        payload[key] ??
+        payload[column] ??
+        object[key] ??
+        object[column] ??
+        (index === 0 ? object.title : undefined) ??
+        (index === module.columns.length - 1 ? object.status : undefined);
+
+      return stringifyCell(value);
+    });
+  });
+}
+
+function stringifyCell(value: unknown) {
+  if (value === null || value === undefined || value === "") return "-";
+  if (value instanceof Date) return value.toLocaleDateString();
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value).replaceAll("_", " ");
+}
+
+function toPayloadKey(label: string) {
+  return label
+    .replace(/[^a-zA-Z0-9]+(.)/g, (_, character: string) =>
+      character.toUpperCase(),
+    )
+    .replace(/^[A-Z]/, (character) => character.toLowerCase());
 }

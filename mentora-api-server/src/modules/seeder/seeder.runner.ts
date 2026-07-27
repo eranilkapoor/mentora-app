@@ -17,12 +17,9 @@ async function runSeeder(): Promise<void> {
     const configService = app.get(ConfigService);
     const env = configService.get<string>('env');
 
-    if (
-      env === 'production' &&
-      process.env.SEEDER_CONFIRM !== 'MATCHMATE_PROD'
-    ) {
+    if (env === 'production' && process.env.SEEDER_CONFIRM !== 'MENTORA_PROD') {
       throw new Error(
-        'Refusing to seed production without SEEDER_CONFIRM=MATCHMATE_PROD',
+        'Refusing to seed production without SEEDER_CONFIRM=MENTORA_PROD',
       );
     }
 

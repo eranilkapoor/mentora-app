@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
+import {
+  toOptionalObjectId,
+  toTenantObjectId,
+} from '@/common/utils/tenant-scope.util';
 import { CreateApplicationDto } from '../dto/applications.dto';
 import {
   Application,
@@ -15,20 +19,21 @@ export class ApplicationsService {
   ) {}
 
   async createApplication(dto: CreateApplicationDto) {
+    const tenantId = toTenantObjectId(dto.tenantId);
     const count = await this.applications.countDocuments({
-      tenantId: new Types.ObjectId(dto.tenantId),
+      tenantId,
     });
     return this.applications.create({
       ...dto,
-      tenantId: new Types.ObjectId(dto.tenantId),
-      leadId: dto.leadId ? new Types.ObjectId(dto.leadId) : undefined,
+      tenantId,
+      leadId: toOptionalObjectId(dto.leadId),
       applicationNumber: `APP-${String(count + 1).padStart(6, '0')}`,
     });
   }
 
   async listApplications(tenantId: string) {
     return this.applications
-      .find({ tenantId: new Types.ObjectId(tenantId) })
+      .find({ tenantId: toTenantObjectId(tenantId) })
       .sort({ createdAt: -1 })
       .limit(50)
       .lean();

@@ -109,11 +109,28 @@ import {
   CurriculumDocument,
   Grade,
   GradeDocument,
+  StudyPlan,
+  StudyPlanDocument,
   Subject,
   SubjectDocument,
   Topic,
   TopicDocument,
 } from '@/modules/learning/schemas/learning.schemas';
+import {
+  Branch,
+  BranchDocument,
+  LeadSource,
+  LeadSourceDocument,
+  LeadStage,
+  LeadStageDocument,
+  Tenant,
+  TenantDocument,
+} from '@/modules/tenants/schemas/tenants.schema';
+import {
+  ModuleRecord,
+  ModuleRecordDocument,
+} from '@/modules/module-records/schemas/module-records.schema';
+import { EDUCATION_PLATFORM_MODULE_KEYS } from '@/common/constants/education-platform.constants';
 import {
   FEATURE_SEEDS,
   CUSTOM_ASSISTED_FEATURE_MAPPINGS,
@@ -129,6 +146,7 @@ const PLAY_REVIEWER_PASSWORD = 'Test@123456#';
 const PLAY_PHONE_REVIEWER_EMAIL = 'phone-reviewer@webnza.com';
 const PLAY_PHONE_REVIEWER_COUNTRY_CODE = '91';
 const PLAY_PHONE_REVIEWER_PHONE = '9876543210';
+const SEED_PASSWORD = 'Test@125#';
 
 @Injectable()
 export class MasterSeederService {
@@ -212,6 +230,24 @@ export class MasterSeederService {
 
     @InjectModel(Curriculum.name)
     private readonly curriculumModel: Model<CurriculumDocument>,
+
+    @InjectModel(StudyPlan.name)
+    private readonly studyPlanModel: Model<StudyPlanDocument>,
+
+    @InjectModel(Tenant.name)
+    private readonly tenantModel: Model<TenantDocument>,
+
+    @InjectModel(Branch.name)
+    private readonly branchModel: Model<BranchDocument>,
+
+    @InjectModel(LeadSource.name)
+    private readonly leadSourceModel: Model<LeadSourceDocument>,
+
+    @InjectModel(LeadStage.name)
+    private readonly leadStageModel: Model<LeadStageDocument>,
+
+    @InjectModel(ModuleRecord.name)
+    private readonly moduleRecordModel: Model<ModuleRecordDocument>,
   ) {}
 
   // MASTER RUNNER
@@ -228,6 +264,7 @@ export class MasterSeederService {
     await this.seedPlanFeatures();
     await this.seedDefaultTemplates();
     await this.seedMentoraAcademicCatalog();
+    await this.seedEducationCrmDemoData();
     await this.seedUserSubscriptions();
 
     this.logger.log('Master seeder completed');
@@ -353,6 +390,10 @@ export class MasterSeederService {
     const subjectByCode = new Map(
       seededSubjects.map((subject) => [subject.code, subject]),
     );
+    const subjectIds = (...codes: string[]) =>
+      codes
+        .map((code) => subjectByCode.get(code)?._id)
+        .filter((id): id is Types.ObjectId => Boolean(id));
     const seededGrades = await this.gradeModel
       .find({ code: { $in: grades.map((grade) => grade.code) } })
       .lean();
@@ -431,6 +472,117 @@ export class MasterSeederService {
       });
     }
 
+    const studyPlans = [
+      {
+        name: 'JEE Foundation',
+        code: 'JEE_FOUNDATION',
+        category: 'competitive_exam',
+        target: 'jee',
+        subjectIds: subjectIds('MATH', 'SCI'),
+        tutorTypes: ['ai', 'human'],
+        deliveryModes: ['chat', 'audio', 'video'],
+        scheduleFrequency: 'weekly',
+        sessionsPerWeek: 5,
+        sessionDurationMinutes: 60,
+        maxConcurrentSessions: 1,
+        maxDevicesPerStudent: 1,
+        includedAiMinutes: 1200,
+        includedHumanTutorMinutes: 240,
+        description:
+          'Structured JEE preparation path with Mathematics and Science foundation support.',
+      },
+      {
+        name: 'NEET Foundation',
+        code: 'NEET_FOUNDATION',
+        category: 'competitive_exam',
+        target: 'neet',
+        subjectIds: subjectIds('SCI'),
+        tutorTypes: ['ai', 'human'],
+        deliveryModes: ['chat', 'audio', 'video'],
+        scheduleFrequency: 'weekly',
+        sessionsPerWeek: 5,
+        sessionDurationMinutes: 60,
+        maxConcurrentSessions: 1,
+        maxDevicesPerStudent: 1,
+        includedAiMinutes: 1200,
+        includedHumanTutorMinutes: 240,
+        description:
+          'Structured NEET preparation path for Science concepts, practice, and revision.',
+      },
+      {
+        name: 'UPSC/NDA Readiness',
+        code: 'UPSC_NDA_READINESS',
+        category: 'competitive_exam',
+        target: 'upsc',
+        subjectIds: subjectIds('ENG', 'SCI'),
+        tutorTypes: ['ai', 'human'],
+        deliveryModes: ['chat', 'audio', 'video'],
+        scheduleFrequency: 'weekly',
+        sessionsPerWeek: 4,
+        sessionDurationMinutes: 60,
+        maxConcurrentSessions: 1,
+        maxDevicesPerStudent: 1,
+        includedAiMinutes: 900,
+        includedHumanTutorMinutes: 180,
+        description:
+          'General studies, English, reasoning, and mentorship path for UPSC/NDA readiness.',
+      },
+      {
+        name: 'Olympiad and Board Excellence',
+        code: 'OLYMPIAD_BOARD_EXCELLENCE',
+        category: 'school',
+        target: 'olympiad',
+        subjectIds: subjectIds('MATH', 'SCI', 'ENG'),
+        tutorTypes: ['ai'],
+        deliveryModes: ['chat', 'audio'],
+        scheduleFrequency: 'weekly',
+        sessionsPerWeek: 3,
+        sessionDurationMinutes: 45,
+        maxConcurrentSessions: 1,
+        maxDevicesPerStudent: 1,
+        includedAiMinutes: 720,
+        includedHumanTutorMinutes: 0,
+        description:
+          'School-aligned practice, olympiad drills, tests, and revision for Classes 6-10.',
+      },
+      {
+        name: 'Skill Builder',
+        code: 'SKILL_BUILDER',
+        category: 'skill_course',
+        target: 'skill',
+        subjectIds: subjectIds('ENG'),
+        tutorTypes: ['ai'],
+        deliveryModes: ['chat', 'audio'],
+        scheduleFrequency: 'weekly',
+        sessionsPerWeek: 2,
+        sessionDurationMinutes: 45,
+        maxConcurrentSessions: 1,
+        maxDevicesPerStudent: 1,
+        includedAiMinutes: 480,
+        includedHumanTutorMinutes: 0,
+        description:
+          'Communication, English, and practical learning skills path for students.',
+      },
+    ];
+    await this.studyPlanModel.bulkWrite(
+      studyPlans.map((studyPlan) => ({
+        updateOne: {
+          filter: { code: studyPlan.code },
+          update: {
+            $set: {
+              ...studyPlan,
+              publiclyVisible: true,
+              status: 'active',
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
+
     this.logger.log('Mentora academic catalog seeded successfully', {
       boards: 1,
       academicLevels: 1,
@@ -438,7 +590,190 @@ export class MasterSeederService {
       subjects: subjects.length,
       topics: topicWrites.length,
       curriculums: curriculumWrites.length,
+      studyPlans: studyPlans.length,
     });
+  }
+
+  // =========================================================
+  // MENTORA EDUCATION CRM DEMO DATA
+  // =========================================================
+
+  private async seedEducationCrmDemoData() {
+    const now = new Date();
+    const tenant = await this.tenantModel.findOneAndUpdate(
+      { code: 'MENTORA-DEMO' },
+      {
+        $set: {
+          name: 'Mentora Demo Institute',
+          code: 'MENTORA-DEMO',
+          type: 'edtech',
+          status: 'active',
+          primaryDomain: 'mentora.test',
+          timezone: 'Asia/Kolkata',
+          currency: 'INR',
+          settings: {
+            demo: true,
+            source: 'master-seeder',
+            supportEmail: 'support@mentora.test',
+          },
+          updatedAt: now,
+        },
+        $setOnInsert: { createdAt: now },
+      },
+      { new: true, upsert: true },
+    );
+
+    await this.branchModel.updateOne(
+      { tenantId: tenant._id, code: 'HQ' },
+      {
+        $set: {
+          tenantId: tenant._id,
+          name: 'Mentora HQ',
+          code: 'HQ',
+          city: 'Delhi',
+          state: 'Delhi',
+          status: 'active',
+          updatedAt: now,
+        },
+        $setOnInsert: { createdAt: now },
+      },
+      { upsert: true },
+    );
+
+    await this.seedCrmSourcesAndStages(tenant._id, now);
+    const moduleRecordCount = await this.seedCrmModuleRecords(tenant._id, now);
+
+    this.logger.log('Mentora education CRM demo data seeded successfully', {
+      tenant: 'MENTORA-DEMO',
+      moduleRecords: moduleRecordCount,
+      loginDomain: 'mentora.test',
+      password: SEED_PASSWORD,
+    });
+  }
+
+  private async seedCrmSourcesAndStages(tenantId: Types.ObjectId, now: Date) {
+    const sources: Array<[string, string, string]> = [
+      ['Website', 'WEBSITE', 'website'],
+      ['WhatsApp', 'WHATSAPP', 'whatsapp'],
+      ['Google Ads', 'GOOGLE_ADS', 'google'],
+      ['Referral', 'REFERRAL', 'referral'],
+    ];
+
+    await this.leadSourceModel.bulkWrite(
+      sources.map(([name, code, category]) => ({
+        updateOne: {
+          filter: { tenantId, code },
+          update: {
+            $set: {
+              tenantId,
+              name,
+              code,
+              category,
+              status: 'active',
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
+
+    const stages: Array<[string, string, number, boolean, boolean, boolean]> = [
+      ['New', 'NEW', 10, true, false, false],
+      ['Contacted', 'CONTACTED', 20, false, false, false],
+      ['Application', 'APPLICATION', 30, false, false, false],
+      ['Enrolled', 'ENROLLED', 40, false, true, false],
+      ['Lost', 'LOST', 50, false, false, true],
+    ];
+
+    await this.leadStageModel.bulkWrite(
+      stages.map(([name, code, order, isInitial, isConverted, isLost]) => ({
+        updateOne: {
+          filter: { tenantId, code },
+          update: {
+            $set: {
+              tenantId,
+              name,
+              code,
+              order,
+              isInitial,
+              isConverted,
+              isLost,
+              status: 'active',
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
+  }
+
+  private async seedCrmModuleRecords(tenantId: Types.ObjectId, now: Date) {
+    const legacyAliasKeys = new Set([
+      'lead_management',
+      'application_management',
+      'admission_management',
+      'marketing_automation',
+      'communication',
+      'whatsapp',
+      'email',
+      'mobile',
+      'payment',
+    ]);
+    const moduleKeys = EDUCATION_PLATFORM_MODULE_KEYS.filter(
+      (key) => !legacyAliasKeys.has(key),
+    );
+
+    await this.moduleRecordModel.bulkWrite(
+      moduleKeys.map((moduleKey, index) => {
+        const title = this.humanizeModuleKey(moduleKey);
+        return {
+          updateOne: {
+            filter: { tenantId, moduleKey, title: `${title} Demo Record` },
+            update: {
+              $set: {
+                tenantId,
+                moduleKey,
+                title: `${title} Demo Record`,
+                description: `Seeded Mentora CRM demo record for ${title}.`,
+                status: index % 3 === 0 ? 'in_progress' : 'open',
+                priority: index % 4 === 0 ? 'high' : 'medium',
+                dueAt: new Date(now.getTime() + (index + 1) * 86_400_000),
+                tags: ['seeded', 'mentora-demo', moduleKey],
+                payload: {
+                  owner:
+                    index % 2 === 0 ? 'Admissions Team' : 'Operations Team',
+                  branch: 'Mentora HQ',
+                  source: 'master-seeder',
+                  status: index % 3 === 0 ? 'In progress' : 'Open',
+                  metric: `${index + 3}`,
+                  student: index % 2 === 0 ? 'Aarav Sharma' : 'Meera Iyer',
+                  course: index % 2 === 0 ? 'JEE Foundation' : 'NEET Target',
+                },
+                updatedAt: now,
+              },
+              $setOnInsert: { createdAt: now },
+            },
+            upsert: true,
+          },
+        };
+      }),
+      { ordered: false },
+    );
+
+    return moduleKeys.length;
+  }
+
+  private humanizeModuleKey(moduleKey: string) {
+    return moduleKey
+      .split('_')
+      .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+      .join(' ');
   }
 
   // =========================================================
@@ -451,7 +786,7 @@ export class MasterSeederService {
       this.buildPlayReviewerProfile(),
       this.buildPlayPhoneReviewerProfile(),
     ];
-    const passwordHash = await bcrypt.hash('Test@125#', 10);
+    const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10);
     const reviewerPasswordHash = await bcrypt.hash(PLAY_REVIEWER_PASSWORD, 10);
     const now = new Date();
 
@@ -1128,7 +1463,7 @@ export class MasterSeederService {
 
   private async seedRoleTestUsers() {
     const now = new Date();
-    const passwordHash = await bcrypt.hash('Test@125#', 10);
+    const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10);
     const roles = Object.values(AppRole);
 
     const permissionPolicyByRole = new Map(
@@ -1201,7 +1536,7 @@ export class MasterSeederService {
       upserted: result.upsertedCount,
       total: roles.length,
       emails: roles.map((role) => `${role}@mentora.test`),
-      password: 'Test@125#',
+      password: SEED_PASSWORD,
     });
   }
 

@@ -2,6 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
+  toOptionalObjectId,
+  toRequiredObjectId,
+  toTenantObjectId,
+} from '@/common/utils/tenant-scope.util';
+import {
   AddLeadActivityDto,
   AssignLeadDto,
   ChangeLeadStageDto,
@@ -34,10 +39,10 @@ export class LeadsService {
         : undefined;
     const lead = await this.leads.create({
       ...dto,
-      tenantId: new Types.ObjectId(dto.tenantId),
-      sourceId: dto.sourceId ? new Types.ObjectId(dto.sourceId) : undefined,
-      stageId: dto.stageId ? new Types.ObjectId(dto.stageId) : undefined,
-      branchId: dto.branchId ? new Types.ObjectId(dto.branchId) : undefined,
+      tenantId: toTenantObjectId(dto.tenantId),
+      sourceId: toOptionalObjectId(dto.sourceId),
+      stageId: toOptionalObjectId(dto.stageId),
+      branchId: toOptionalObjectId(dto.branchId),
       nextFollowUpAt: dto.nextFollowUpAt
         ? new Date(dto.nextFollowUpAt)
         : undefined,
@@ -54,7 +59,7 @@ export class LeadsService {
 
   async listLeads(tenantId: string) {
     return this.leads
-      .find({ tenantId: new Types.ObjectId(tenantId) })
+      .find({ tenantId: toTenantObjectId(tenantId) })
       .sort({ createdAt: -1 })
       .limit(50)
       .lean();
@@ -63,8 +68,8 @@ export class LeadsService {
   async getLead(tenantId: string, leadId: string) {
     const lead = await this.leads
       .findOne({
-        _id: new Types.ObjectId(leadId),
-        tenantId: new Types.ObjectId(tenantId),
+        _id: toRequiredObjectId(leadId),
+        tenantId: toTenantObjectId(tenantId),
       })
       .lean();
     if (!lead) throw new NotFoundException('Education CRM lead not found');
@@ -72,18 +77,18 @@ export class LeadsService {
   }
 
   async assignLead(userId: string, leadId: string, dto: AssignLeadDto) {
-    const tenantId = new Types.ObjectId(dto.tenantId);
+    const tenantId = toTenantObjectId(dto.tenantId);
     const lead = await this.leads.findOneAndUpdate(
-      { _id: new Types.ObjectId(leadId), tenantId },
-      { assignedTo: new Types.ObjectId(dto.assignedTo), status: 'open' },
+      { _id: toRequiredObjectId(leadId), tenantId },
+      { assignedTo: toRequiredObjectId(dto.assignedTo), status: 'open' },
       { new: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     await this.assignments.create({
       tenantId: lead.tenantId,
       leadId: lead._id,
-      assignedTo: new Types.ObjectId(dto.assignedTo),
-      assignedBy: new Types.ObjectId(userId),
+      assignedTo: toRequiredObjectId(dto.assignedTo),
+      assignedBy: toRequiredObjectId(userId),
       assignmentMethod: dto.assignmentMethod ?? 'manual',
     });
     await this.addLeadActivity(userId, leadId, {
@@ -100,10 +105,10 @@ export class LeadsService {
     leadId: string,
     dto: ChangeLeadStageDto,
   ) {
-    const tenantId = new Types.ObjectId(dto.tenantId);
+    const tenantId = toTenantObjectId(dto.tenantId);
     const lead = await this.leads.findOneAndUpdate(
-      { _id: new Types.ObjectId(leadId), tenantId },
-      { stageId: new Types.ObjectId(dto.stageId) },
+      { _id: toRequiredObjectId(leadId), tenantId },
+      { stageId: toRequiredObjectId(dto.stageId) },
       { new: true },
     );
     if (!lead) throw new NotFoundException('Education CRM lead not found');
@@ -122,9 +127,9 @@ export class LeadsService {
     leadId: string,
     dto: AddLeadActivityDto,
   ) {
-    const tenantId = new Types.ObjectId(dto.tenantId);
+    const tenantId = toTenantObjectId(dto.tenantId);
     const lead = await this.leads
-      .findOne({ _id: new Types.ObjectId(leadId), tenantId })
+      .findOne({ _id: toRequiredObjectId(leadId), tenantId })
       .lean();
     if (!lead) throw new NotFoundException('Education CRM lead not found');
     const performedBy =
@@ -143,8 +148,8 @@ export class LeadsService {
   async listLeadTimeline(tenantId: string, leadId: string) {
     return this.activities
       .find({
-        tenantId: new Types.ObjectId(tenantId),
-        leadId: new Types.ObjectId(leadId),
+        tenantId: toTenantObjectId(tenantId),
+        leadId: toRequiredObjectId(leadId),
       })
       .sort({ occurredAt: -1 })
       .lean();

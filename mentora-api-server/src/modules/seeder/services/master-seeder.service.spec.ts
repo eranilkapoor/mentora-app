@@ -22,6 +22,7 @@ const query = (value: unknown) => {
 
 const model = () => ({
   bulkWrite: jest.fn().mockResolvedValue(result),
+  findOneAndUpdate: jest.fn().mockResolvedValue({ _id: new Types.ObjectId() }),
   updateOne: jest.fn().mockResolvedValue(result),
   updateMany: jest.fn().mockResolvedValue(result),
   find: jest.fn(() => query([])),
@@ -56,6 +57,12 @@ describe('MasterSeederService', () => {
   const gradeModel = model();
   const topicModel = model();
   const curriculumModel = model();
+  const studyPlanModel = model();
+  const tenantModel = model();
+  const branchModel = model();
+  const leadSourceModel = model();
+  const leadStageModel = model();
+  const moduleRecordModel = model();
 
   let service: MasterSeederService;
 
@@ -88,6 +95,12 @@ describe('MasterSeederService', () => {
       gradeModel,
       topicModel,
       curriculumModel,
+      studyPlanModel,
+      tenantModel,
+      branchModel,
+      leadSourceModel,
+      leadStageModel,
+      moduleRecordModel,
     ]) {
       item.bulkWrite.mockResolvedValue(result);
       item.updateOne.mockResolvedValue(result);
@@ -124,6 +137,12 @@ describe('MasterSeederService', () => {
       gradeModel as never,
       topicModel as never,
       curriculumModel as never,
+      studyPlanModel as never,
+      tenantModel as never,
+      branchModel as never,
+      leadSourceModel as never,
+      leadStageModel as never,
+      moduleRecordModel as never,
     );
   });
 

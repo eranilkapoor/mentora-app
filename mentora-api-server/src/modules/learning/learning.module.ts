@@ -42,6 +42,8 @@ import {
   LearningRecommendationSchema,
   LearningSchedule,
   LearningScheduleSchema,
+  StudyPlan,
+  StudyPlanSchema,
   ParentProfile,
   ParentProfileSchema,
   ParentStudentRelationship,
@@ -102,6 +104,7 @@ import {
       { name: Subject.name, schema: SubjectSchema },
       { name: Topic.name, schema: TopicSchema },
       { name: Curriculum.name, schema: CurriculumSchema },
+      { name: StudyPlan.name, schema: StudyPlanSchema },
       {
         name: StudentSubjectEnrollment.name,
         schema: StudentSubjectEnrollmentSchema,

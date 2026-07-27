@@ -46,44 +46,43 @@ const plans = [
 
 export default function HomePage() {
   const [demoStatus, setDemoStatus] = useState("Ready for CRM demo requests.");
+  const [isSubmittingDemo, setIsSubmittingDemo] = useState(false);
 
   async function submitDemoRequest(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
     const formData = new FormData(form);
-    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
     const payload = {
-      tenantCode: "WEBNZA",
       firstName: String(formData.get("firstName") ?? ""),
       lastName: String(formData.get("lastName") ?? ""),
       email: String(formData.get("email") ?? ""),
       phone: String(formData.get("phone") ?? ""),
       city: String(formData.get("city") ?? ""),
       program: String(formData.get("program") ?? ""),
-      utm: { source: "public_website", campaign: "mentora_demo" },
     };
 
-    if (!apiBaseUrl) {
-      setDemoStatus(
-        "Demo request captured locally. Connect NEXT_PUBLIC_API_BASE_URL to send it to CRM.",
-      );
-      form.reset();
-      return;
-    }
-
     try {
-      const response = await fetch(`${apiBaseUrl}/api/v1/leads/public`, {
+      setIsSubmittingDemo(true);
+      setDemoStatus("Sending demo request...");
+      const response = await fetch("/api/demo-request", {
         body: JSON.stringify(payload),
         headers: { "Content-Type": "application/json" },
         method: "POST",
       });
-      if (!response.ok) throw new Error("Lead capture failed");
-      setDemoStatus("Demo request sent to Mentora CRM.");
+      const result = (await response.json()) as { message?: string };
+      if (!response.ok) {
+        throw new Error(result.message ?? "Lead capture failed");
+      }
+      setDemoStatus(result.message ?? "Demo request sent to Mentora CRM.");
       form.reset();
-    } catch {
+    } catch (error) {
       setDemoStatus(
-        "Could not reach CRM API. Request is ready to retry after API setup.",
+        error instanceof Error
+          ? error.message
+          : "Could not reach CRM API. Request is ready to retry after API setup.",
       );
+    } finally {
+      setIsSubmittingDemo(false);
     }
   }
 
@@ -181,8 +180,12 @@ export default function HomePage() {
             <input name="phone" placeholder="Phone" />
             <input name="city" placeholder="City" />
             <input name="program" placeholder="Interested program" />
-            <button className="button primary" type="submit">
-              Request demo
+            <button
+              className="button primary"
+              disabled={isSubmittingDemo}
+              type="submit"
+            >
+              {isSubmittingDemo ? "Sending..." : "Request demo"}
             </button>
             <p>{demoStatus}</p>
           </form>

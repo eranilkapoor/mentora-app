@@ -1,6 +1,10 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
+import {
+  toRequiredObjectId,
+  toTenantObjectId,
+} from '@/common/utils/tenant-scope.util';
 import { SelectContextDto, UpsertUserMembershipDto } from '../dto/contexts.dto';
 import {
   UserMembership,
@@ -15,15 +19,15 @@ export class ContextsService {
   ) {}
 
   async upsertMembership(dto: UpsertUserMembershipDto) {
-    const userId = new Types.ObjectId(dto.userId);
-    const tenantId = new Types.ObjectId(dto.tenantId);
+    const userId = toRequiredObjectId(dto.userId);
+    const tenantId = toTenantObjectId(dto.tenantId);
     return this.memberships.findOneAndUpdate(
       { userId, tenantId, role: dto.role },
       {
         ...dto,
         userId,
         tenantId,
-        branchIds: dto.branchIds?.map((id) => new Types.ObjectId(id)) ?? [],
+        branchIds: dto.branchIds?.map((id) => toRequiredObjectId(id)) ?? [],
       },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     );
@@ -31,7 +35,7 @@ export class ContextsService {
 
   async listUserContexts(userId: string) {
     return this.memberships
-      .find({ userId: new Types.ObjectId(userId), status: 'active' })
+      .find({ userId: toRequiredObjectId(userId), status: 'active' })
       .populate('tenantId', 'name code type status')
       .populate('branchIds', 'name code city state status')
       .sort({ role: 1, createdAt: 1 })
@@ -39,10 +43,10 @@ export class ContextsService {
   }
 
   async selectContext(userId: string, dto: SelectContextDto) {
-    const tenantId = new Types.ObjectId(dto.tenantId);
+    const tenantId = toTenantObjectId(dto.tenantId);
     const membership = await this.memberships
       .findOne({
-        userId: new Types.ObjectId(userId),
+        userId: toRequiredObjectId(userId),
         tenantId,
         role: dto.role,
         status: 'active',

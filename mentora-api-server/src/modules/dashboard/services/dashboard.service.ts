@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
+import { toTenantObjectId } from '@/common/utils/tenant-scope.util';
 import {
   Application,
   ApplicationDocument,
@@ -32,7 +33,7 @@ export class DashboardService {
   ) {}
 
   async getDashboard(tenantId: string) {
-    const tenantObjectId = new Types.ObjectId(tenantId);
+    const tenantObjectId = toTenantObjectId(tenantId);
     const [
       newLeads,
       openTasks,

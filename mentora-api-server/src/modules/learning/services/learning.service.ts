@@ -15,6 +15,8 @@ import { AuthProvider } from '@/modules/auth/enums/auth-provider.enum';
 import {
   AddParentDto,
   AcceptStudentInvitationDto,
+  AddClassroomFileDto,
+  CompleteClassroomSummaryDto,
   CreateAcademicRecordDto,
   CreateAcademicCatalogDto,
   CreateAiTutorSessionDto,
@@ -27,12 +29,15 @@ import {
   CreateScheduleDto,
   CreateStudentDto,
   CreateStudentInvitationDto,
+  CreateStudyPlanDto,
   CreateSubjectDto,
   CreateTopicDto,
   EnrollSubjectDto,
   RescheduleScheduleDto,
   SendAiTutorMessageDto,
+  SendClassroomMessageDto,
   StartAssessmentAttemptDto,
+  SubmitStudentEligibilityDocumentsDto,
   SubmitAssessmentAnswerDto,
   UpdateParentalControlsDto,
   UpdateStudentDto,
@@ -58,6 +63,12 @@ import {
   AssessmentDocument,
   AssessmentResult,
   AssessmentResultDocument,
+  Classroom,
+  ClassroomDocument,
+  ClassroomFile,
+  ClassroomFileDocument,
+  ClassroomMessage,
+  ClassroomMessageDocument,
   Course,
   CourseDocument,
   Curriculum,
@@ -89,6 +100,8 @@ import {
   StudentAcademicRecord,
   StudentProfile,
   StudentProfileDocument,
+  StudyPlan,
+  StudyPlanDocument,
   StudentSubjectEnrollment,
   StudentSubjectEnrollmentDocument,
   StudentTopicProgress,
@@ -99,6 +112,8 @@ import {
   StreamDocument,
   Topic,
   TopicDocument,
+  TutorSessionNote,
+  TutorSessionNoteDocument,
   University,
   UniversityDocument,
 } from '../schemas/learning.schemas';
@@ -175,6 +190,8 @@ export class LearningService {
     private readonly topics: Model<TopicDocument>,
     @InjectModel(Curriculum.name)
     private readonly curriculums: Model<CurriculumDocument>,
+    @InjectModel(StudyPlan.name)
+    private readonly studyPlans: Model<StudyPlanDocument>,
     @InjectModel(StudentSubjectEnrollment.name)
     private readonly enrollments: Model<StudentSubjectEnrollmentDocument>,
     @InjectModel(LearningSchedule.name)
@@ -201,6 +218,14 @@ export class LearningService {
     private readonly topicProgress: Model<StudentTopicProgressDocument>,
     @InjectModel(LearningRecommendation.name)
     private readonly recommendations: Model<LearningRecommendationDocument>,
+    @InjectModel(Classroom.name)
+    private readonly classrooms: Model<ClassroomDocument>,
+    @InjectModel(ClassroomMessage.name)
+    private readonly classroomMessages: Model<ClassroomMessageDocument>,
+    @InjectModel(ClassroomFile.name)
+    private readonly classroomFiles: Model<ClassroomFileDocument>,
+    @InjectModel(TutorSessionNote.name)
+    private readonly tutorSessionNotes: Model<TutorSessionNoteDocument>,
     @InjectModel(SafetyEvent.name)
     private readonly safetyEvents: Model<SafetyEventDocument>,
     @InjectModel(User.name)
@@ -586,6 +611,64 @@ export class LearningService {
     );
   }
 
+  async submitEligibilityDocuments(
+    userId: string,
+    studentId: string,
+    dto: SubmitStudentEligibilityDocumentsDto,
+  ) {
+    await this.assertStudentAccess(userId, studentId, 'editProfile');
+    const student = await this.getStudentOrThrow(studentId);
+    if (student.ageCategory !== 'adult') {
+      throw new ForbiddenException(
+        'Only legally eligible adult students can submit self-managed eligibility documents',
+      );
+    }
+    if (
+      !['self_managed', 'jointly_managed'].includes(
+        String(student.ownershipType),
+      )
+    ) {
+      throw new ForbiddenException(
+        'Parent-managed student profiles require parent consent instead of self-managed document verification',
+      );
+    }
+
+    const submittedAt = new Date();
+    const existingDocuments: Record<string, unknown>[] = Array.isArray(
+      student.documents,
+    )
+      ? student.documents.filter(
+          (item): item is Record<string, unknown> =>
+            Boolean(item) && typeof item === 'object' && !Array.isArray(item),
+        )
+      : [];
+    const documentRecord = {
+      documentType: dto.documentType,
+      idProofUrl: dto.idProofUrl,
+      selfieUrl: dto.selfieUrl,
+      metadata: dto.metadata,
+      purpose: 'self_managed_age_eligibility',
+      status: 'pending_review',
+      submittedAt,
+      submittedByUserId: userId,
+    };
+    const updatedDocuments = [...existingDocuments, documentRecord];
+    return this.students
+      .findByIdAndUpdate(
+        studentId,
+        {
+          documents: updatedDocuments,
+          profileCompletionPercentage: await this.calculateProfileCompletion(
+            studentId,
+            'documents',
+            updatedDocuments,
+          ),
+        },
+        { new: true },
+      )
+      .lean();
+  }
+
   async createCatalogItem(type: CatalogType, dto: CreateAcademicCatalogDto) {
     const model = this.getCatalogModel(type);
     const payload = this.toCatalogPayload(type, dto);
@@ -671,6 +754,33 @@ export class LearningService {
 
   async listCurriculums() {
     return this.curriculums.find({ status: 'active' }).sort({ code: 1 }).lean();
+  }
+
+  async createStudyPlan(dto: CreateStudyPlanDto) {
+    return this.studyPlans.findOneAndUpdate(
+      { code: dto.code.toUpperCase() },
+      {
+        ...dto,
+        code: dto.code.toUpperCase(),
+        subjectIds: dto.subjectIds?.map((id) => new Types.ObjectId(id)) ?? [],
+        topicIds: dto.topicIds?.map((id) => new Types.ObjectId(id)) ?? [],
+        curriculumIds:
+          dto.curriculumIds?.map((id) => new Types.ObjectId(id)) ?? [],
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async listStudyPlans(target?: string, category?: string) {
+    return this.studyPlans
+      .find({
+        status: 'active',
+        publiclyVisible: true,
+        ...(target ? { target } : {}),
+        ...(category ? { category } : {}),
+      })
+      .sort({ category: 1, target: 1, name: 1 })
+      .lean();
   }
 
   async enrollSubject(
@@ -952,6 +1062,116 @@ export class LearningService {
         session.sessionSummary ??
         'Summary will appear after the tutor session is completed.',
     }));
+  }
+
+  async joinClassroom(userId: string, scheduleId: string) {
+    const schedule = await this.schedules.findById(scheduleId).lean();
+    if (!schedule) throw new NotFoundException('Learning schedule not found');
+    await this.assertStudentAccess(
+      userId,
+      String(schedule.studentProfileId),
+      'viewLearningHistory',
+    );
+    const now = new Date();
+    return this.classrooms.findOneAndUpdate(
+      { scheduleId: new Types.ObjectId(scheduleId) },
+      {
+        $set: {
+          scheduleId: new Types.ObjectId(scheduleId),
+          studentProfileId: schedule.studentProfileId,
+          tutorUserId: schedule.tutorUserId,
+          tutorType: schedule.tutorType,
+          deliveryMode: schedule.deliveryMode,
+          status: 'open',
+          openedAt: now,
+          recordingEnabled: schedule.deliveryMode === 'video',
+          transcriptEnabled: ['chat', 'audio', 'video'].includes(
+            schedule.deliveryMode,
+          ),
+        },
+        $setOnInsert: { createdAt: now },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+  }
+
+  async listClassroomMessages(userId: string, classroomId: string) {
+    const classroom = await this.getClassroomForUser(userId, classroomId);
+    return this.classroomMessages
+      .find({ classroomId: classroom._id })
+      .sort({ createdAt: 1 })
+      .lean();
+  }
+
+  async sendClassroomMessage(
+    userId: string,
+    classroomId: string,
+    dto: SendClassroomMessageDto,
+  ) {
+    const classroom = await this.getClassroomForUser(userId, classroomId);
+    return this.classroomMessages.create({
+      classroomId: classroom._id,
+      senderUserId: new Types.ObjectId(userId),
+      senderRole: dto.senderRole ?? 'student',
+      messageType: dto.messageType ?? 'text',
+      content: dto.content,
+      metadata: dto.metadata,
+      safetyStatus: 'clean',
+    });
+  }
+
+  async listClassroomFiles(userId: string, classroomId: string) {
+    const classroom = await this.getClassroomForUser(userId, classroomId);
+    return this.classroomFiles
+      .find({ classroomId: classroom._id })
+      .sort({ createdAt: -1 })
+      .lean();
+  }
+
+  async addClassroomFile(
+    userId: string,
+    classroomId: string,
+    dto: AddClassroomFileDto,
+  ) {
+    const classroom = await this.getClassroomForUser(userId, classroomId);
+    return this.classroomFiles.create({
+      classroomId: classroom._id,
+      uploadedByUserId: new Types.ObjectId(userId),
+      url: dto.url,
+      mimeType: dto.mimeType,
+      originalName: dto.originalName,
+      moderationStatus: 'pending',
+    });
+  }
+
+  async completeClassroom(
+    userId: string,
+    classroomId: string,
+    dto: CompleteClassroomSummaryDto,
+  ) {
+    const classroom = await this.getClassroomForUser(userId, classroomId);
+    const closedAt = new Date();
+    await this.tutorSessionNotes.findOneAndUpdate(
+      { scheduleId: classroom.scheduleId },
+      {
+        $set: {
+          scheduleId: classroom.scheduleId,
+          tutorUserId: classroom.tutorUserId ?? new Types.ObjectId(userId),
+          studentProfileId: classroom.studentProfileId,
+          attendanceStatus: dto.attendanceStatus ?? 'present',
+          summary: dto.summary,
+          homework: dto.homework ?? [],
+          updatedAt: closedAt,
+        },
+        $setOnInsert: { createdAt: closedAt },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    );
+    return this.classrooms.findByIdAndUpdate(
+      classroom._id,
+      { status: 'closed', closedAt, summary: dto.summary },
+      { new: true },
+    );
   }
 
   async createQuestionBank(dto: CreateQuestionBankDto) {
@@ -1534,6 +1754,17 @@ export class LearningService {
     return schedule;
   }
 
+  private async getClassroomForUser(userId: string, classroomId: string) {
+    const classroom = await this.classrooms.findById(classroomId).lean();
+    if (!classroom) throw new NotFoundException('Classroom not found');
+    await this.assertStudentAccess(
+      userId,
+      String(classroom.studentProfileId),
+      'viewLearningHistory',
+    );
+    return classroom;
+  }
+
   private async assertNoParallelActiveSession(studentId: string) {
     const activeSession = await this.aiSessions
       .findOne({
@@ -1661,7 +1892,7 @@ export class LearningService {
   private async calculateProfileCompletion(
     studentId: string,
     section: string,
-    data: Record<string, unknown>,
+    data: unknown,
   ): Promise<number> {
     const student = await this.students.findById(studentId).lean();
     const studentRecord = student as Record<string, unknown> | null;

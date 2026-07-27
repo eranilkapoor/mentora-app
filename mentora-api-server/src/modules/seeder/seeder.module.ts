@@ -76,11 +76,27 @@ import {
   CurriculumSchema,
   Grade,
   GradeSchema,
+  StudyPlan,
+  StudyPlanSchema,
   Subject,
   SubjectSchema,
   Topic,
   TopicSchema,
 } from '../learning/schemas/learning.schemas';
+import {
+  Branch,
+  BranchSchema,
+  LeadSource,
+  LeadSourceSchema,
+  LeadStage,
+  LeadStageSchema,
+  Tenant,
+  TenantSchema,
+} from '../tenants/schemas/tenants.schema';
+import {
+  ModuleRecord,
+  ModuleRecordSchema,
+} from '../module-records/schemas/module-records.schema';
 
 @Module({
   imports: [
@@ -136,6 +152,12 @@ import {
       { name: Subject.name, schema: SubjectSchema },
       { name: Topic.name, schema: TopicSchema },
       { name: Curriculum.name, schema: CurriculumSchema },
+      { name: StudyPlan.name, schema: StudyPlanSchema },
+      { name: Tenant.name, schema: TenantSchema },
+      { name: Branch.name, schema: BranchSchema },
+      { name: LeadSource.name, schema: LeadSourceSchema },
+      { name: LeadStage.name, schema: LeadStageSchema },
+      { name: ModuleRecord.name, schema: ModuleRecordSchema },
     ]),
   ],
 

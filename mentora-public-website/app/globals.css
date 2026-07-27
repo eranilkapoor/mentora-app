@@ -267,6 +267,11 @@ article {
   cursor: pointer;
 }
 
+.lead-form button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
 .lead-form p {
   color: var(--muted);
   font-size: 13px;

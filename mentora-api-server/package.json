@@ -33,6 +33,8 @@
     "migration:down": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/migrations/migration.cli.ts down",
     "migration:up:prod": "node dist/infrastructure/databases/mongo/migrations/migration.cli.js up",
     "migration:status:prod": "node dist/infrastructure/databases/mongo/migrations/migration.cli.js status",
+    "db:reset": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/reset-database.cli.ts",
+    "db:fresh": "cross-env RESET_DATABASE_CONFIRM=MENTORA_RESET npm run db:reset && npm run migration:up && npm run seed",
     "index:audit": "ts-node -r tsconfig-paths/register src/infrastructure/databases/mongo/index-audit.cli.ts",
     "index:audit:strict": "npm run index:audit -- --strict",
     "index:audit:prod": "node dist/infrastructure/databases/mongo/index-audit.cli.js --strict",

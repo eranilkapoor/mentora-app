@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
+import { toTenantObjectId } from '@/common/utils/tenant-scope.util';
 import { CreateCampaignDto } from '../dto/campaigns.dto';
 import { Campaign, CampaignDocument } from '../schemas/campaigns.schema';
 
@@ -14,13 +15,13 @@ export class CampaignsService {
   async createCampaign(dto: CreateCampaignDto) {
     return this.campaigns.create({
       ...dto,
-      tenantId: new Types.ObjectId(dto.tenantId),
+      tenantId: toTenantObjectId(dto.tenantId),
     });
   }
 
   async listCampaigns(tenantId: string) {
     return this.campaigns
-      .find({ tenantId: new Types.ObjectId(tenantId) })
+      .find({ tenantId: toTenantObjectId(tenantId) })
       .sort({ createdAt: -1 })
       .limit(50)
       .lean();

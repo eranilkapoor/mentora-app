@@ -7,7 +7,7 @@ Mentora uses this technology stack:
 - `mentora-api-server`: modular NestJS API server with MongoDB, optional Redis, Socket.IO, schedulers, storage, notifications, payments, subscriptions, analytics, support, and admin APIs.
 - `mentora-mobile-app`: Expo React Native app for iOS, Android, and Web with React Navigation, Redux Toolkit Query, persisted auth, localization, push notifications, media, billing, settings, and support.
 - `packages/api-contract`: shared TypeScript API contract package.
-- `mentora-public-website`: static public website for brand, plans, privacy, terms, account deletion, community guidelines, support, and app-link content.
+- `mentora-public-website`: Next.js public website for brand, plans, privacy, terms, account deletion, community guidelines, support, app-link content, and CRM demo-request capture.
 
 Mentora must use its own database and environments. Do not point this app at any non-Mentora production data.
 
@@ -50,6 +50,7 @@ courses
 subjects
 topics
 curriculums
+study_plans
 student_subject_enrollments
 learning_schedules
 learning_entitlements
@@ -188,6 +189,7 @@ PATCH  /api/v1/students/:studentId/previous-education
 PATCH  /api/v1/students/:studentId/exam-scores
 PATCH  /api/v1/students/:studentId/course-preference
 PATCH  /api/v1/students/:studentId/documents
+POST   /api/v1/students/:studentId/eligibility-documents
 POST   /api/v1/students/:studentId/subjects
 GET    /api/v1/students/:studentId/progress
 GET    /api/v1/students/:studentId/topic-progress
@@ -201,6 +203,8 @@ GET    /api/v1/topics
 POST   /api/v1/topics
 GET    /api/v1/curriculums
 POST   /api/v1/curriculums
+GET    /api/v1/study-plans
+POST   /api/v1/study-plans
 ```
 
 Scheduling:
@@ -246,12 +250,10 @@ Classroom:
 ```text
 Future-facing schemas exist for classroom records, messages, files, tutor profiles, tutor availability, and tutor session notes. Dedicated classroom/tutor controllers are not complete yet.
 POST   /api/v1/classrooms/:scheduleId/join
-POST   /api/v1/classrooms/:classroomId/leave
 GET    /api/v1/classrooms/:classroomId/messages
 POST   /api/v1/classrooms/:classroomId/messages
+GET    /api/v1/classrooms/:classroomId/files
 POST   /api/v1/classrooms/:classroomId/files
-GET    /api/v1/classrooms/:classroomId/whiteboard
-PATCH  /api/v1/classrooms/:classroomId/whiteboard
 POST   /api/v1/classrooms/:classroomId/summary
 ```
 
@@ -280,6 +282,14 @@ GET    /api/v1/students/:studentId/communications
 POST   /api/v1/payments/create-order
 POST   /api/v1/payments/verify
 ```
+
+Public website:
+
+```text
+POST   /api/demo-request
+```
+
+The public website route validates first name plus email/phone and forwards to `POST /api/v1/leads/public` when `NEXT_PUBLIC_API_BASE_URL` is configured. This keeps the browser on a same-origin endpoint and avoids CORS friction during demos.
 
 ## Mobile Navigation
 

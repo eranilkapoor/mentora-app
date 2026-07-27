@@ -2,6 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import {
+  toOptionalObjectId,
+  toRequiredObjectId,
+  toTenantObjectId,
+} from '@/common/utils/tenant-scope.util';
+import {
   CreateModuleRecordDto,
   UpdateModuleRecordDto,
 } from '../dto/module-records.dto';
@@ -27,8 +32,8 @@ export class ModuleRecordsService {
         : undefined;
     return this.moduleRecords.create({
       ...dto,
-      tenantId: new Types.ObjectId(dto.tenantId),
-      ownerId: dto.ownerId ? new Types.ObjectId(dto.ownerId) : undefined,
+      tenantId: toTenantObjectId(dto.tenantId),
+      ownerId: toOptionalObjectId(dto.ownerId),
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
       createdBy,
     });
@@ -41,7 +46,7 @@ export class ModuleRecordsService {
   ) {
     return this.moduleRecords
       .find({
-        tenantId: new Types.ObjectId(tenantId),
+        tenantId: toTenantObjectId(tenantId),
         ...(moduleKey ? { moduleKey } : {}),
         ...(status ? { status } : {}),
       })
@@ -53,12 +58,12 @@ export class ModuleRecordsService {
   async updateModuleRecord(recordId: string, dto: UpdateModuleRecordDto) {
     const update = {
       ...dto,
-      tenantId: new Types.ObjectId(dto.tenantId),
-      ownerId: dto.ownerId ? new Types.ObjectId(dto.ownerId) : undefined,
+      tenantId: toTenantObjectId(dto.tenantId),
+      ownerId: toOptionalObjectId(dto.ownerId),
       dueAt: dto.dueAt ? new Date(dto.dueAt) : undefined,
     };
     const record = await this.moduleRecords.findOneAndUpdate(
-      { _id: new Types.ObjectId(recordId), tenantId: update.tenantId },
+      { _id: toRequiredObjectId(recordId), tenantId: update.tenantId },
       update,
       { new: true },
     );

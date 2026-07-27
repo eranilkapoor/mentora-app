@@ -90,6 +90,22 @@ export class UpdateStudentProfileSectionDto {
   data!: Record<string, unknown>;
 }
 
+export class SubmitStudentEligibilityDocumentsDto {
+  @IsString()
+  documentType!: string;
+
+  @IsString()
+  idProofUrl!: string;
+
+  @IsOptional()
+  @IsString()
+  selfieUrl?: string;
+
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, unknown>;
+}
+
 export class UpdateParentProfileDto {
   @IsOptional()
   @IsString()
@@ -358,6 +374,114 @@ export class CreateCurriculumDto {
   code!: string;
 }
 
+export class CreateStudyPlanDto {
+  @IsString()
+  name!: string;
+
+  @IsString()
+  code!: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsIn([
+    'school',
+    'competitive_exam',
+    'college',
+    'university',
+    'skill_course',
+    'professional',
+    'other',
+  ])
+  category?: string;
+
+  @IsIn([
+    'jee',
+    'neet',
+    'upsc',
+    'nda',
+    'olympiad',
+    'board_exam',
+    'foundation',
+    'skill',
+    'other',
+  ])
+  target!: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  subjectIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  topicIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  curriculumIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsIn(['ai', 'human', 'hybrid'], { each: true })
+  tutorTypes?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsIn(['chat', 'audio', 'video', 'offline', 'in_person'], { each: true })
+  deliveryModes?: string[];
+
+  @IsOptional()
+  @IsIn(['daily', 'weekly', 'monthly', 'custom'])
+  scheduleFrequency?: string;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sessionsPerWeek?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  sessionDurationMinutes?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  maxConcurrentSessions?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(1)
+  maxDevicesPerStudent?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  includedAiMinutes?: number;
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  includedHumanTutorMinutes?: number;
+
+  @IsOptional()
+  @IsObject()
+  eligibility?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsBoolean()
+  publiclyVisible?: boolean;
+}
+
 export class EnrollSubjectDto {
   @IsMongoId()
   subjectId!: string;
@@ -493,6 +617,49 @@ export class SendAiTutorMessageDto {
   @IsOptional()
   @IsIn(['text', 'question', 'answer', 'quiz', 'hint', 'explanation'])
   messageType?: string;
+}
+
+export class SendClassroomMessageDto {
+  @IsString()
+  content!: string;
+
+  @IsOptional()
+  @IsIn(['student', 'parent', 'tutor', 'ai', 'system'])
+  senderRole?: string;
+
+  @IsOptional()
+  @IsIn(['text', 'file', 'whiteboard', 'system'])
+  messageType?: string;
+
+  @IsOptional()
+  @IsObject()
+  metadata?: Record<string, unknown>;
+}
+
+export class AddClassroomFileDto {
+  @IsString()
+  url!: string;
+
+  @IsString()
+  mimeType!: string;
+
+  @IsOptional()
+  @IsString()
+  originalName?: string;
+}
+
+export class CompleteClassroomSummaryDto {
+  @IsString()
+  summary!: string;
+
+  @IsOptional()
+  @IsIn(['present', 'late', 'absent', 'excused'])
+  attendanceStatus?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  homework?: string[];
 }
 
 export class CreateQuestionBankDto {

@@ -67,7 +67,12 @@ export default () => ({
     },
   },
   cors: {
-    origins: process.env.ALLOWED_ORIGINS?.split(',') || ['*'],
+    origins: process.env.ALLOWED_ORIGINS?.split(',') || [
+      'http://localhost:3000',
+      'http://localhost:3002',
+      'http://localhost:3003',
+      'http://localhost:8081',
+    ],
     maxAgeSeconds: parseInt(process.env.CORS_MAX_AGE_SECONDS || '86400', 10),
   },
   media: {

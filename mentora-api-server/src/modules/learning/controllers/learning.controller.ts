@@ -12,6 +12,8 @@ import {
 import { successResponse } from '@/common/utils/response.util';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
 import {
+  AddClassroomFileDto,
+  CompleteClassroomSummaryDto,
   CreateAcademicCatalogDto,
   CreateAiTutorSessionDto,
   CreateAssessmentDto,
@@ -21,9 +23,11 @@ import {
   CreateQuestionBankDto,
   CreateQuestionDto,
   CreateSubjectDto,
+  CreateStudyPlanDto,
   CreateTopicDto,
   RescheduleScheduleDto,
   SendAiTutorMessageDto,
+  SendClassroomMessageDto,
   StartAssessmentAttemptDto,
   SubmitAssessmentAnswerDto,
 } from '../dto/learning.dto';
@@ -109,6 +113,28 @@ export class LearningController {
       await this.service.createSubject(dto),
       'SUBJECT_CREATED',
       'Subject created',
+    );
+  }
+
+  @Get('study-plans')
+  async listStudyPlans(
+    @Query('target') target?: string,
+    @Query('category') category?: string,
+  ) {
+    return successResponse(
+      await this.service.listStudyPlans(target, category),
+      'STUDY_PLANS_FETCHED',
+      'Study plans fetched',
+    );
+  }
+
+  @Post('study-plans')
+  @HttpCode(HttpStatus.CREATED)
+  async createStudyPlan(@Body() dto: CreateStudyPlanDto) {
+    return successResponse(
+      await this.service.createStudyPlan(dto),
+      'STUDY_PLAN_CREATED',
+      'Study plan created',
     );
   }
 
@@ -221,6 +247,82 @@ export class LearningController {
       await this.service.completeAiTutorSession(req.user.sub, sessionId),
       'AI_TUTOR_SESSION_COMPLETED',
       'AI tutor session completed',
+    );
+  }
+
+  @Post('classrooms/:scheduleId/join')
+  @HttpCode(HttpStatus.CREATED)
+  async joinClassroom(
+    @Req() req: AuthenticatedRequest,
+    @Param('scheduleId') scheduleId: string,
+  ) {
+    return successResponse(
+      await this.service.joinClassroom(req.user.sub, scheduleId),
+      'CLASSROOM_JOINED',
+      'Classroom joined',
+    );
+  }
+
+  @Get('classrooms/:classroomId/messages')
+  async listClassroomMessages(
+    @Req() req: AuthenticatedRequest,
+    @Param('classroomId') classroomId: string,
+  ) {
+    return successResponse(
+      await this.service.listClassroomMessages(req.user.sub, classroomId),
+      'CLASSROOM_MESSAGES_FETCHED',
+      'Classroom messages fetched',
+    );
+  }
+
+  @Post('classrooms/:classroomId/messages')
+  async sendClassroomMessage(
+    @Req() req: AuthenticatedRequest,
+    @Param('classroomId') classroomId: string,
+    @Body() dto: SendClassroomMessageDto,
+  ) {
+    return successResponse(
+      await this.service.sendClassroomMessage(req.user.sub, classroomId, dto),
+      'CLASSROOM_MESSAGE_SENT',
+      'Classroom message sent',
+    );
+  }
+
+  @Get('classrooms/:classroomId/files')
+  async listClassroomFiles(
+    @Req() req: AuthenticatedRequest,
+    @Param('classroomId') classroomId: string,
+  ) {
+    return successResponse(
+      await this.service.listClassroomFiles(req.user.sub, classroomId),
+      'CLASSROOM_FILES_FETCHED',
+      'Classroom files fetched',
+    );
+  }
+
+  @Post('classrooms/:classroomId/files')
+  async addClassroomFile(
+    @Req() req: AuthenticatedRequest,
+    @Param('classroomId') classroomId: string,
+    @Body() dto: AddClassroomFileDto,
+  ) {
+    return successResponse(
+      await this.service.addClassroomFile(req.user.sub, classroomId, dto),
+      'CLASSROOM_FILE_ADDED',
+      'Classroom file added',
+    );
+  }
+
+  @Post('classrooms/:classroomId/summary')
+  async completeClassroom(
+    @Req() req: AuthenticatedRequest,
+    @Param('classroomId') classroomId: string,
+    @Body() dto: CompleteClassroomSummaryDto,
+  ) {
+    return successResponse(
+      await this.service.completeClassroom(req.user.sub, classroomId, dto),
+      'CLASSROOM_COMPLETED',
+      'Classroom completed',
     );
   }
 

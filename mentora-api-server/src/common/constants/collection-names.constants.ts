@@ -67,6 +67,7 @@ export const COLLECTION_NAMES = {
   SUBJECT: 'subjects',
   TOPIC: 'topics',
   CURRICULUM: 'curriculums',
+  STUDY_PLAN: 'study_plans',
   STUDENT_SUBJECT_ENROLLMENT: 'student_subject_enrollments',
   LEARNING_SCHEDULE: 'learning_schedules',
   LEARNING_ENTITLEMENT: 'learning_entitlements',

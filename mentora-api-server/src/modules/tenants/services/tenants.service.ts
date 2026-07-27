@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
+import { toTenantObjectId } from '@/common/utils/tenant-scope.util';
 import {
   CreateBranchDto,
   CreateLeadSourceDto,
@@ -51,7 +52,7 @@ export class TenantsService {
   }
 
   async createBranch(dto: CreateBranchDto) {
-    const tenantId = new Types.ObjectId(dto.tenantId);
+    const tenantId = toTenantObjectId(dto.tenantId);
     return this.branches.findOneAndUpdate(
       { tenantId, code: dto.code.toUpperCase() },
       { ...dto, tenantId, code: dto.code.toUpperCase() },
@@ -61,13 +62,13 @@ export class TenantsService {
 
   async listBranches(tenantId: string) {
     return this.branches
-      .find({ tenantId: new Types.ObjectId(tenantId), status: 'active' })
+      .find({ tenantId: toTenantObjectId(tenantId), status: 'active' })
       .sort({ name: 1 })
       .lean();
   }
 
   async createLeadSource(dto: CreateLeadSourceDto) {
-    const tenantId = new Types.ObjectId(dto.tenantId);
+    const tenantId = toTenantObjectId(dto.tenantId);
     return this.sources.findOneAndUpdate(
       { tenantId, code: dto.code.toUpperCase() },
       { ...dto, tenantId, code: dto.code.toUpperCase() },
@@ -77,13 +78,13 @@ export class TenantsService {
 
   async listLeadSources(tenantId: string) {
     return this.sources
-      .find({ tenantId: new Types.ObjectId(tenantId), status: 'active' })
+      .find({ tenantId: toTenantObjectId(tenantId), status: 'active' })
       .sort({ name: 1 })
       .lean();
   }
 
   async createLeadStage(dto: CreateLeadStageDto) {
-    const tenantId = new Types.ObjectId(dto.tenantId);
+    const tenantId = toTenantObjectId(dto.tenantId);
     return this.stages.findOneAndUpdate(
       { tenantId, code: dto.code.toUpperCase() },
       { ...dto, tenantId, code: dto.code.toUpperCase() },
@@ -93,7 +94,7 @@ export class TenantsService {
 
   async listLeadStages(tenantId: string) {
     return this.stages
-      .find({ tenantId: new Types.ObjectId(tenantId), status: 'active' })
+      .find({ tenantId: toTenantObjectId(tenantId), status: 'active' })
       .sort({ order: 1, name: 1 })
       .lean();
   }
