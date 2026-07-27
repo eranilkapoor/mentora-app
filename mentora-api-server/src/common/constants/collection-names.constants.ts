@@ -91,6 +91,11 @@ export const COLLECTION_NAMES = {
 
   TENANT: 'tenants',
   BRANCH: 'branches',
+  DEPARTMENT: 'departments',
+  TEAM: 'teams',
+  CAMPUS: 'campuses',
+  TENANT_BRANDING: 'tenant_branding',
+  CHANNEL_SETTING: 'channel_settings',
   LEAD_SOURCE: 'lead_sources',
   LEAD_STAGE: 'lead_stages',
   LEAD: 'leads',
@@ -105,6 +110,7 @@ export const COLLECTION_NAMES = {
   WORKFLOW_EXECUTION: 'workflow_executions',
   REPORT_DEFINITION: 'report_definitions',
   REPORT_EXPORT_JOB: 'report_export_jobs',
+  CRM_DOCUMENT: 'crm_documents',
   ADMISSION: 'admissions',
   CALL_CENTER_CALL: 'call_center_calls',
   WHATSAPP_CONVERSATION: 'whatsapp_conversations',
@@ -113,5 +119,7 @@ export const COLLECTION_NAMES = {
   CRM_EVENT: 'crm_events',
   FIELD_VISIT: 'field_visits',
   FINANCE_LEDGER_ENTRY: 'finance_ledger_entries',
+  INTEGRATION_PROVIDER_CONFIG: 'integration_provider_configs',
+  TENANT_SECURITY_POLICY: 'tenant_security_policies',
   USER_MEMBERSHIP: 'user_memberships',
 };

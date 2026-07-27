@@ -20,6 +20,10 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import {
+  ExportLedgerDto,
+  ReconcileLedgerDto,
+} from '../dto/finance-ledgers.dto';
 import { FinanceLedgersService } from '../services/finance-ledgers.service';
 
 @UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
@@ -46,7 +50,7 @@ export class FinanceLedgersController {
       'CRM ledger entries fetched',
     );
   }
-  @Post(':recordId')
+  @Post(':recordId([a-fA-F0-9]{24})')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
@@ -59,7 +63,7 @@ export class FinanceLedgersController {
       'CRM ledger entry updated',
     );
   }
-  @Post(':recordId/complete')
+  @Post(':recordId([a-fA-F0-9]{24})/complete')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
@@ -70,6 +74,30 @@ export class FinanceLedgersController {
       await this.service.complete(req.user.sub, recordId, dto),
       'CRM_LEDGER_ENTRY_COMPLETED',
       'CRM ledger entry completed',
+    );
+  }
+
+  @Post(':recordId([a-fA-F0-9]{24})/reconcile')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async reconcile(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Body() dto: ReconcileLedgerDto,
+  ) {
+    return successResponse(
+      await this.service.reconcile(req.user.sub, recordId, dto),
+      'CRM_LEDGER_ENTRY_RECONCILED',
+      'CRM ledger entry reconciled',
+    );
+  }
+
+  @Post('operations/export')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  async exportLedger(@Body() dto: ExportLedgerDto) {
+    return successResponse(
+      await this.service.exportLedger(dto),
+      'CRM_LEDGER_EXPORTED',
+      'CRM ledger exported',
     );
   }
 }

@@ -35,6 +35,15 @@ export class WorkflowRule {
   @Prop({ default: 0, min: 0 })
   priority!: number;
 
+  @Prop({ type: Object, default: {} })
+  retryPolicy!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  slaPolicy!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  testMode!: Record<string, unknown>;
+
   @Prop({ type: Types.ObjectId, ref: 'User', index: true })
   createdBy?: Types.ObjectId;
 }
@@ -82,6 +91,12 @@ export class WorkflowExecution {
 
   @Prop({ trim: true })
   error?: string;
+
+  @Prop({ default: 0, min: 0 })
+  attempt!: number;
+
+  @Prop()
+  nextRetryAt?: Date;
 
   @Prop({ default: Date.now, index: true })
   executedAt!: Date;

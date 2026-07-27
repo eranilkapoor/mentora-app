@@ -12,6 +12,27 @@ export type LeadDocument = HydratedDocument<Lead>;
 export type LeadActivityDocument = HydratedDocument<LeadActivity>;
 export type LeadAssignmentDocument = HydratedDocument<LeadAssignment>;
 
+@Schema({ _id: false })
+export class LeadAttachment {
+  @Prop({ required: true, trim: true })
+  url!: string;
+
+  @Prop({ trim: true })
+  fileName?: string;
+
+  @Prop({ trim: true })
+  mimeType?: string;
+
+  @Prop({ default: 0 })
+  size!: number;
+
+  @Prop({
+    enum: ['document', 'image', 'audio', 'voice_note', 'other'],
+    default: 'document',
+  })
+  type!: string;
+}
+
 @Schema({
   collection: COLLECTION_NAMES.LEAD,
   timestamps: true,
@@ -53,8 +74,20 @@ export class Lead {
   @Prop({ type: [String], default: [] })
   interestedPrograms!: string[];
 
+  @Prop({ type: [String], default: [], index: true })
+  tags!: string[];
+
+  @Prop({ type: [LeadAttachment], default: [] })
+  attachments!: LeadAttachment[];
+
+  @Prop({ type: [LeadAttachment], default: [] })
+  voiceNotes!: LeadAttachment[];
+
   @Prop({ default: 0, min: 0, max: 100 })
   score!: number;
+
+  @Prop({ type: Object, default: {} })
+  scoreBreakdown!: Record<string, unknown>;
 
   @Prop({ enum: ['cold', 'warm', 'hot'], default: 'warm', index: true })
   temperature!: string;
@@ -72,6 +105,12 @@ export class Lead {
   @Prop()
   lastContactedAt?: Date;
 
+  @Prop()
+  slaDueAt?: Date;
+
+  @Prop({ enum: ['healthy', 'at_risk', 'breached'], default: 'healthy' })
+  slaStatus!: string;
+
   @Prop({ type: Object, default: {} })
   utm!: Record<string, unknown>;
 
@@ -87,6 +126,8 @@ LeadSchema.index({ tenantId: 1, phone: 1 });
 LeadSchema.index({ tenantId: 1, email: 1 });
 LeadSchema.index({ tenantId: 1, assignedTo: 1, stageId: 1, createdAt: -1 });
 LeadSchema.index({ tenantId: 1, nextFollowUpAt: 1 });
+LeadSchema.index({ tenantId: 1, tags: 1 });
+LeadSchema.index({ tenantId: 1, score: -1, temperature: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.LEAD_ACTIVITY,

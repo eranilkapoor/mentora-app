@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Query,
   Req,
@@ -19,6 +20,7 @@ import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.gua
 import {
   CreateWorkflowRuleDto,
   ExecuteWorkflowDto,
+  RetryWorkflowExecutionDto,
 } from '../dto/workflows.dto';
 import { WorkflowsService } from '../services/workflows.service';
 
@@ -77,6 +79,20 @@ export class WorkflowsController {
       await this.service.listExecutions(tenantId, moduleKey),
       'EDUCATION_PLATFORM_WORKFLOW_EXECUTIONS_FETCHED',
       'CRM workflow executions fetched',
+    );
+  }
+
+  @Post('executions/:executionId/retry')
+  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  async retryExecution(
+    @Req() req: AuthenticatedRequest,
+    @Param('executionId') executionId: string,
+    @Body() dto: RetryWorkflowExecutionDto,
+  ) {
+    return successResponse(
+      await this.service.retryExecution(req.user.sub, executionId, dto),
+      'EDUCATION_PLATFORM_WORKFLOW_EXECUTION_RETRIED',
+      'CRM workflow execution retried',
     );
   }
 }

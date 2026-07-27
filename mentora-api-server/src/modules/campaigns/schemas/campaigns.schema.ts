@@ -32,7 +32,26 @@ export class Campaign {
 
   @Prop({ type: Object, default: {} })
   metrics!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  audience!: Record<string, unknown>;
+
+  @Prop({ type: Object, default: {} })
+  utm!: Record<string, unknown>;
+
+  @Prop({ type: [Object], default: [] })
+  variants!: Record<string, unknown>[];
+
+  @Prop({ type: [Object], default: [] })
+  dripSteps!: Record<string, unknown>[];
+
+  @Prop({ type: Object, default: {} })
+  roi!: Record<string, unknown>;
+
+  @Prop()
+  scheduledAt?: Date;
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
 CampaignSchema.index({ tenantId: 1, channel: 1, status: 1 });
+CampaignSchema.index({ tenantId: 1, scheduledAt: 1, status: 1 });

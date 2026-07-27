@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Query,
   UseGuards,
@@ -14,7 +15,11 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
-import { CreateApplicationDto } from '../dto/applications.dto';
+import {
+  ApproveApplicationDto,
+  CreateApplicationDto,
+  UpdateApplicationReviewDto,
+} from '../dto/applications.dto';
 import { ApplicationsService } from '../services/applications.service';
 
 @UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
@@ -40,6 +45,32 @@ export class ApplicationsController {
       await this.service.listApplications(tenantId),
       'EDUCATION_PLATFORM_APPLICATIONS_FETCHED',
       'CRM applications fetched',
+    );
+  }
+
+  @Post(':applicationId([a-fA-F0-9]{24})/review')
+  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  async updateReview(
+    @Param('applicationId') applicationId: string,
+    @Body() dto: UpdateApplicationReviewDto,
+  ) {
+    return successResponse(
+      await this.service.updateReview(applicationId, dto),
+      'EDUCATION_PLATFORM_APPLICATION_REVIEW_UPDATED',
+      'CRM application review updated',
+    );
+  }
+
+  @Post(':applicationId([a-fA-F0-9]{24})/decision')
+  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  async decideApplication(
+    @Param('applicationId') applicationId: string,
+    @Body() dto: ApproveApplicationDto,
+  ) {
+    return successResponse(
+      await this.service.decideApplication(applicationId, dto),
+      'EDUCATION_PLATFORM_APPLICATION_DECIDED',
+      'CRM application decision saved',
     );
   }
 }

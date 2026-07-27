@@ -25,9 +25,9 @@ type CrmDomainRecordLean = Record<string, unknown>;
 
 export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
   constructor(
-    private readonly model: Model<TDocument>,
-    private readonly auditService: AdminAuditService,
-    private readonly resource: string,
+    protected readonly model: Model<TDocument>,
+    protected readonly auditService: AdminAuditService,
+    protected readonly resource: string,
   ) {}
 
   async create(

@@ -20,6 +20,10 @@ import {
   CreateCrmDomainRecordDto,
   UpdateCrmDomainRecordDto,
 } from '@/common/crm/dto/crm-domain-record.dto';
+import {
+  AllocateAdmissionDto,
+  HandoffAdmissionDto,
+} from '../dto/admissions.dto';
 import { AdmissionsService } from '../services/admissions.service';
 
 @UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
@@ -50,7 +54,7 @@ export class AdmissionsController {
       'CRM admissions fetched',
     );
   }
-  @Post(':recordId')
+  @Post(':recordId([a-fA-F0-9]{24})')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
@@ -63,7 +67,7 @@ export class AdmissionsController {
       'CRM admission updated',
     );
   }
-  @Post(':recordId/complete')
+  @Post(':recordId([a-fA-F0-9]{24})/complete')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
@@ -74,6 +78,32 @@ export class AdmissionsController {
       await this.service.complete(req.user.sub, recordId, dto),
       'CRM_ADMISSION_COMPLETED',
       'CRM admission completed',
+    );
+  }
+
+  @Post(':recordId([a-fA-F0-9]{24})/allocate')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async allocate(
+    @Param('recordId') recordId: string,
+    @Body() dto: AllocateAdmissionDto,
+  ) {
+    return successResponse(
+      await this.service.allocate(recordId, dto),
+      'CRM_ADMISSION_ALLOCATED',
+      'CRM admission allocated',
+    );
+  }
+
+  @Post(':recordId([a-fA-F0-9]{24})/handoff')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async handoff(
+    @Param('recordId') recordId: string,
+    @Body() dto: HandoffAdmissionDto,
+  ) {
+    return successResponse(
+      await this.service.handoff(recordId, dto),
+      'CRM_ADMISSION_HANDOFF_QUEUED',
+      'CRM admission handoff queued',
     );
   }
 }

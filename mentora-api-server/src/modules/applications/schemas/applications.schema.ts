@@ -51,6 +51,18 @@ export class Application {
 
   @Prop({ type: Object, default: {} })
   formResponses!: Record<string, unknown>;
+
+  @Prop({ type: [Object], default: [] })
+  documentRequirements!: Record<string, unknown>[];
+
+  @Prop({ type: [Object], default: [] })
+  reviewHistory!: Record<string, unknown>[];
+
+  @Prop({ type: Object, default: {} })
+  approval!: Record<string, unknown>;
+
+  @Prop({ default: false, index: true })
+  isLocked!: boolean;
 }
 
 export const ApplicationSchema = SchemaFactory.createForClass(Application);

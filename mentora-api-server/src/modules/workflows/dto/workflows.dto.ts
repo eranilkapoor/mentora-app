@@ -39,6 +39,18 @@ export class CreateWorkflowRuleDto {
   @IsNumber()
   @Min(0)
   priority?: number;
+
+  @IsOptional()
+  @IsObject()
+  retryPolicy?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  slaPolicy?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  testMode?: Record<string, unknown>;
 }
 
 export class ExecuteWorkflowDto {
@@ -58,4 +70,13 @@ export class ExecuteWorkflowDto {
   @IsOptional()
   @IsObject()
   input?: Record<string, unknown>;
+}
+
+export class RetryWorkflowExecutionDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
 }

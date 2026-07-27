@@ -57,6 +57,19 @@ export class CreateLeadDto {
   interestedPrograms?: string[];
 
   @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsArray()
+  attachments?: Record<string, unknown>[];
+
+  @IsOptional()
+  @IsArray()
+  voiceNotes?: Record<string, unknown>[];
+
+  @IsOptional()
   @IsNumber()
   @Min(0)
   @Max(100)
@@ -77,6 +90,64 @@ export class CreateLeadDto {
   @IsOptional()
   @IsObject()
   customFields?: Record<string, unknown>;
+}
+
+export class UpdateLeadTagsDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsArray()
+  @IsString({ each: true })
+  tags!: string[];
+}
+
+export class AddLeadAttachmentDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsString()
+  url!: string;
+
+  @IsOptional()
+  @IsString()
+  fileName?: string;
+
+  @IsOptional()
+  @IsString()
+  mimeType?: string;
+
+  @IsOptional()
+  @IsNumber()
+  size?: number;
+
+  @IsOptional()
+  @IsIn(['document', 'image', 'audio', 'voice_note', 'other'])
+  type?: string;
+}
+
+export class ScoreLeadDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsObject()
+  signals?: Record<string, unknown>;
+}
+
+export class TransferLeadDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsMongoId()
+  assignedTo!: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
 }
 
 export class AssignLeadDto {

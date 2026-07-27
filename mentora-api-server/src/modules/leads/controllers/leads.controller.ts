@@ -19,12 +19,16 @@ import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import {
   AddLeadActivityDto,
+  AddLeadAttachmentDto,
   AssignLeadDto,
   ChangeLeadStageDto,
   CreateLeadDto,
   FindLeadDuplicatesDto,
   ImportLeadsDto,
   MergeLeadsDto,
+  ScoreLeadDto,
+  TransferLeadDto,
+  UpdateLeadTagsDto,
 } from '../dto/leads.dto';
 import { LeadsService } from '../services/leads.service';
 
@@ -57,7 +61,7 @@ export class LeadsController {
     );
   }
 
-  @Get(':leadId')
+  @Get(':leadId([a-fA-F0-9]{24})')
   @Permissions(Permission.CRM_LEAD_VIEW)
   async getLead(
     @Query('tenantId') tenantId: string,
@@ -70,7 +74,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId/assign')
+  @Post(':leadId([a-fA-F0-9]{24})/assign')
   @Permissions(Permission.CRM_LEAD_ASSIGN)
   async assignLead(
     @Req() req: AuthenticatedRequest,
@@ -84,7 +88,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId/change-stage')
+  @Post(':leadId([a-fA-F0-9]{24})/change-stage')
   @Permissions(Permission.CRM_LEAD_UPDATE)
   async changeLeadStage(
     @Req() req: AuthenticatedRequest,
@@ -98,7 +102,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId/activities')
+  @Post(':leadId([a-fA-F0-9]{24})/activities')
   @Permissions(Permission.CRM_LEAD_UPDATE)
   async addLeadActivity(
     @Req() req: AuthenticatedRequest,
@@ -112,7 +116,63 @@ export class LeadsController {
     );
   }
 
-  @Get(':leadId/timeline')
+  @Post(':leadId([a-fA-F0-9]{24})/tags')
+  @Permissions(Permission.CRM_LEAD_UPDATE)
+  async updateTags(
+    @Req() req: AuthenticatedRequest,
+    @Param('leadId') leadId: string,
+    @Body() dto: UpdateLeadTagsDto,
+  ) {
+    return successResponse(
+      await this.service.updateTags(req.user.sub, leadId, dto),
+      'EDUCATION_PLATFORM_LEAD_TAGS_UPDATED',
+      'CRM lead tags updated',
+    );
+  }
+
+  @Post(':leadId([a-fA-F0-9]{24})/attachments')
+  @Permissions(Permission.CRM_LEAD_UPDATE)
+  async addAttachment(
+    @Req() req: AuthenticatedRequest,
+    @Param('leadId') leadId: string,
+    @Body() dto: AddLeadAttachmentDto,
+  ) {
+    return successResponse(
+      await this.service.addAttachment(req.user.sub, leadId, dto),
+      'EDUCATION_PLATFORM_LEAD_ATTACHMENT_ADDED',
+      'CRM lead attachment added',
+    );
+  }
+
+  @Post(':leadId([a-fA-F0-9]{24})/score')
+  @Permissions(Permission.CRM_LEAD_UPDATE)
+  async scoreLead(
+    @Req() req: AuthenticatedRequest,
+    @Param('leadId') leadId: string,
+    @Body() dto: ScoreLeadDto,
+  ) {
+    return successResponse(
+      await this.service.scoreLead(req.user.sub, leadId, dto),
+      'EDUCATION_PLATFORM_LEAD_SCORED',
+      'CRM lead score updated',
+    );
+  }
+
+  @Post(':leadId([a-fA-F0-9]{24})/transfer')
+  @Permissions(Permission.CRM_LEAD_ASSIGN)
+  async transferLead(
+    @Req() req: AuthenticatedRequest,
+    @Param('leadId') leadId: string,
+    @Body() dto: TransferLeadDto,
+  ) {
+    return successResponse(
+      await this.service.transferLead(req.user.sub, leadId, dto),
+      'EDUCATION_PLATFORM_LEAD_TRANSFERRED',
+      'CRM lead transferred',
+    );
+  }
+
+  @Get(':leadId([a-fA-F0-9]{24})/timeline')
   @Permissions(Permission.CRM_LEAD_VIEW)
   async listLeadTimeline(
     @Query('tenantId') tenantId: string,
@@ -135,7 +195,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId/merge')
+  @Post(':leadId([a-fA-F0-9]{24})/merge')
   @Permissions(Permission.CRM_LEAD_MERGE)
   async mergeLeads(
     @Req() req: AuthenticatedRequest,

@@ -144,5 +144,7 @@ export enum Permission {
   CRM_MODULE_RECORD_MANAGE = 'crm_module_record:manage',
   CRM_REPORT_VIEW = 'crm_report:view',
   CRM_REPORT_EXPORT = 'crm_report:export',
+  CRM_DOCUMENT_VIEW = 'crm_document:view',
+  CRM_DOCUMENT_MANAGE = 'crm_document:manage',
   CRM_WORKFLOW_MANAGE = 'crm_workflow:manage',
 }

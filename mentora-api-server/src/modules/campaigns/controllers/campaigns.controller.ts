@@ -4,6 +4,7 @@ import {
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
   Query,
   UseGuards,
@@ -14,7 +15,10 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
-import { CreateCampaignDto } from '../dto/campaigns.dto';
+import {
+  CreateCampaignDto,
+  UpdateCampaignMetricsDto,
+} from '../dto/campaigns.dto';
 import { CampaignsService } from '../services/campaigns.service';
 
 @UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
@@ -40,6 +44,19 @@ export class CampaignsController {
       await this.service.listCampaigns(tenantId),
       'EDUCATION_PLATFORM_CAMPAIGNS_FETCHED',
       'CRM campaigns fetched',
+    );
+  }
+
+  @Post(':campaignId([a-fA-F0-9]{24})/metrics')
+  @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
+  async updateMetrics(
+    @Param('campaignId') campaignId: string,
+    @Body() dto: UpdateCampaignMetricsDto,
+  ) {
+    return successResponse(
+      await this.service.updateMetrics(campaignId, dto),
+      'EDUCATION_PLATFORM_CAMPAIGN_METRICS_UPDATED',
+      'CRM campaign metrics updated',
     );
   }
 }

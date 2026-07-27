@@ -51,7 +51,26 @@ export class Task {
 
   @Prop({ index: true })
   dueAt?: Date;
+
+  @Prop()
+  reminderAt?: Date;
+
+  @Prop()
+  recurringRule?: string;
+
+  @Prop({ type: [Object], default: [] })
+  comments!: Record<string, unknown>[];
+
+  @Prop({ type: [Object], default: [] })
+  escalations!: Record<string, unknown>[];
+
+  @Prop({ enum: ['todo', 'doing', 'blocked', 'done'], default: 'todo' })
+  boardColumn!: string;
+
+  @Prop({ enum: ['healthy', 'at_risk', 'breached'], default: 'healthy' })
+  slaStatus!: string;
 }
 
 export const TaskSchema = SchemaFactory.createForClass(Task);
 TaskSchema.index({ tenantId: 1, assignedTo: 1, status: 1, dueAt: 1 });
+TaskSchema.index({ tenantId: 1, boardColumn: 1, priority: 1 });

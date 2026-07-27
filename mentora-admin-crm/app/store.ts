@@ -41,8 +41,10 @@ type CrmWorkspaceState = {
   coverage: unknown[];
   dashboard: unknown | null;
   error: string | null;
+  integrationProviders: unknown[];
   loading: boolean;
   moduleRecords: Record<string, unknown[]>;
+  securityPolicy: unknown | null;
   tenants: unknown[];
 };
 
@@ -84,7 +86,7 @@ async function getJson(path: string) {
   return response.json();
 }
 
-async function sendJson(path: string, method: "POST", body: unknown) {
+async function sendJson(path: string, method: "POST" | "PUT", body: unknown) {
   const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
     body: JSON.stringify(body),
     credentials: "include",
@@ -208,6 +210,41 @@ export const findLeadDuplicates = createAsyncThunk(
   },
 );
 
+export const updateLeadTags = createAsyncThunk(
+  "crmWorkspace/updateLeadTags",
+  async ({ leadId, tenantId }: { leadId: string; tenantId: string }) => {
+    return sendJson(`/leads/${leadId}/tags`, "POST", {
+      tenantId,
+      tags: ["exam-ready", "high-intent", "parent-follow-up"],
+    });
+  },
+);
+
+export const scoreLead = createAsyncThunk(
+  "crmWorkspace/scoreLead",
+  async ({ leadId, tenantId }: { leadId: string; tenantId: string }) => {
+    return sendJson(`/leads/${leadId}/score`, "POST", {
+      tenantId,
+      signals: {
+        engagement: 12,
+      },
+    });
+  },
+);
+
+export const addLeadAttachment = createAsyncThunk(
+  "crmWorkspace/addLeadAttachment",
+  async ({ leadId, tenantId }: { leadId: string; tenantId: string }) => {
+    return sendJson(`/leads/${leadId}/attachments`, "POST", {
+      tenantId,
+      fileName: "counseling-note.txt",
+      mimeType: "text/plain",
+      type: "document",
+      url: "https://cdn.mentora.test/crm/counseling-note.txt",
+    });
+  },
+);
+
 export const importSampleLeads = createAsyncThunk(
   "crmWorkspace/importSampleLeads",
   async ({ tenantId }: { tenantId: string }) => {
@@ -277,6 +314,181 @@ export const createReportDefinition = createAsyncThunk(
   },
 );
 
+export const createSampleDocument = createAsyncThunk(
+  "crmWorkspace/createSampleDocument",
+  async ({ entityId, tenantId }: { entityId: string; tenantId: string }) => {
+    return sendJson("/documents", "POST", {
+      tenantId,
+      category: "academic",
+      entityId,
+      entityType: "application",
+      mimeType: "application/pdf",
+      name: "Class 12 marksheet",
+      url: "https://cdn.mentora.test/documents/class-12-marksheet.pdf",
+    });
+  },
+);
+
+export const loadDocuments = createAsyncThunk(
+  "crmWorkspace/loadDocuments",
+  async ({ tenantId }: { tenantId: string }) => {
+    return getJson(`/documents?tenantId=${encodeURIComponent(tenantId)}`);
+  },
+);
+
+export const updateCampaignMetrics = createAsyncThunk(
+  "crmWorkspace/updateCampaignMetrics",
+  async ({
+    campaignId,
+    tenantId,
+  }: {
+    campaignId: string;
+    tenantId: string;
+  }) => {
+    return sendJson(`/campaigns/${campaignId}/metrics`, "POST", {
+      tenantId,
+      metrics: { clicks: 420, conversions: 37, leads: 96 },
+      roi: { adSpend: 18000, revenueAttributed: 126000, roas: 7 },
+      status: "running",
+    });
+  },
+);
+
+export const runCrmRecordAction = createAsyncThunk(
+  "crmWorkspace/runCrmRecordAction",
+  async ({ body, path }: { body: Record<string, unknown>; path: string }) => {
+    return sendJson(path, "POST", body);
+  },
+);
+
+export const createSampleDepartment = createAsyncThunk(
+  "crmWorkspace/createSampleDepartment",
+  async ({ tenantId }: { tenantId: string }) => {
+    return sendJson("/departments", "POST", {
+      tenantId,
+      code: "ADM",
+      function: "admissions",
+      name: "Admissions",
+    });
+  },
+);
+
+export const createSampleTeam = createAsyncThunk(
+  "crmWorkspace/createSampleTeam",
+  async ({ tenantId }: { tenantId: string }) => {
+    return sendJson("/teams", "POST", {
+      tenantId,
+      capacityRules: {
+        maxOpenLeadsPerCounselor: 80,
+        roundRobin: true,
+      },
+      code: "COUNSELING",
+      name: "Counseling Team",
+    });
+  },
+);
+
+export const updateSampleBranding = createAsyncThunk(
+  "crmWorkspace/updateSampleBranding",
+  async ({ tenantId }: { tenantId: string }) => {
+    return sendJson("/tenant-branding", "POST", {
+      tenantId,
+      domains: ["mentora.test"],
+      primaryColor: "#2563eb",
+      secondaryColor: "#06b6d4",
+      senderName: "Mentora Admissions",
+    });
+  },
+);
+
+export const updateSampleChannelSetting = createAsyncThunk(
+  "crmWorkspace/updateSampleChannelSetting",
+  async ({ tenantId }: { tenantId: string }) => {
+    return sendJson("/channel-settings", "POST", {
+      tenantId,
+      channel: "whatsapp",
+      limits: {
+        dailyMessages: 5000,
+      },
+      provider: {
+        mode: "sandbox",
+        providerKey: "whatsapp_business",
+      },
+      status: "sandbox",
+    });
+  },
+);
+
+export const loadTenantUsers = createAsyncThunk(
+  "crmWorkspace/loadTenantUsers",
+  async ({ tenantId }: { tenantId: string }) => {
+    return getJson(`/tenant-users?tenantId=${encodeURIComponent(tenantId)}`);
+  },
+);
+
+export const loadIntegrationProviders = createAsyncThunk(
+  "crmWorkspace/loadIntegrationProviders",
+  async ({ tenantId }: { tenantId: string }) => {
+    return getJson(
+      `/integrations/providers?tenantId=${encodeURIComponent(tenantId)}`,
+    );
+  },
+);
+
+export const upsertIntegrationProvider = createAsyncThunk(
+  "crmWorkspace/upsertIntegrationProvider",
+  async ({
+    providerKey,
+    tenantId,
+  }: {
+    providerKey: string;
+    tenantId: string;
+  }) => {
+    return sendJson(`/integrations/providers/${providerKey}`, "PUT", {
+      tenantId,
+      status: "configured",
+      health: {
+        checkedBy: "admin-crm",
+        dryRun: true,
+      },
+      settings: {
+        environment: "sandbox",
+        owner: "operations",
+      },
+    });
+  },
+);
+
+export const loadSecurityPolicy = createAsyncThunk(
+  "crmWorkspace/loadSecurityPolicy",
+  async ({ tenantId }: { tenantId: string }) => {
+    return getJson(
+      `/security-policies?tenantId=${encodeURIComponent(tenantId)}`,
+    );
+  },
+);
+
+export const updateSecurityPolicy = createAsyncThunk(
+  "crmWorkspace/updateSecurityPolicy",
+  async ({ tenantId }: { tenantId: string }) => {
+    return sendJson("/security-policies", "PUT", {
+      tenantId,
+      allowedIpCidrs: [],
+      dataRetentionPolicy: {
+        auditDays: 365,
+        communicationDays: 730,
+      },
+      maskedFields: ["email", "phone", "dateOfBirth"],
+      mfaRequired: true,
+      sessionPolicy: {
+        maxAgeHours: 12,
+        maxConcurrentSessions: 2,
+      },
+      ssoRequired: false,
+    });
+  },
+);
+
 const initialSessionState: CrmSessionState = {
   activeContext: null,
   activeId: "dashboard",
@@ -292,8 +504,10 @@ const initialWorkspaceState: CrmWorkspaceState = {
   coverage: [],
   dashboard: null,
   error: null,
+  integrationProviders: [],
   loading: false,
   moduleRecords: {},
+  securityPolicy: null,
   tenants: [],
 };
 
@@ -446,6 +660,15 @@ const crmWorkspaceSlice = createSlice({
       .addCase(findLeadDuplicates.fulfilled, (state) => {
         state.error = null;
       })
+      .addCase(updateLeadTags.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(scoreLead.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(addLeadAttachment.fulfilled, (state) => {
+        state.error = null;
+      })
       .addCase(createWorkflowRule.fulfilled, (state) => {
         state.error = null;
       })
@@ -453,6 +676,64 @@ const crmWorkspaceSlice = createSlice({
         state.error = null;
       })
       .addCase(createReportDefinition.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(createSampleDocument.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(loadDocuments.fulfilled, (state, action) => {
+        state.moduleRecords.document_management = normalizeApiData(
+          action.payload,
+        );
+        state.error = null;
+      })
+      .addCase(updateCampaignMetrics.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(runCrmRecordAction.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(createSampleDepartment.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(createSampleTeam.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(updateSampleBranding.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(updateSampleChannelSetting.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(loadTenantUsers.fulfilled, (state, action) => {
+        state.moduleRecords.user_management = normalizeApiData(action.payload);
+        state.error = null;
+      })
+      .addCase(loadIntegrationProviders.fulfilled, (state, action) => {
+        state.integrationProviders = normalizeApiData(action.payload);
+        state.error = null;
+      })
+      .addCase(upsertIntegrationProvider.fulfilled, (state, action) => {
+        const provider = normalizeApiObject(action.payload);
+        const providerKey = getRecordProviderKey(provider);
+        const index = state.integrationProviders.findIndex(
+          (item) => getRecordProviderKey(item) === providerKey,
+        );
+
+        if (index >= 0) {
+          state.integrationProviders[index] = provider;
+        } else {
+          state.integrationProviders.unshift(provider);
+        }
+
+        state.error = null;
+      })
+      .addCase(loadSecurityPolicy.fulfilled, (state, action) => {
+        state.securityPolicy = normalizeApiObject(action.payload);
+        state.error = null;
+      })
+      .addCase(updateSecurityPolicy.fulfilled, (state, action) => {
+        state.securityPolicy = normalizeApiObject(action.payload);
         state.error = null;
       });
   },
@@ -510,6 +791,15 @@ function getRecordTitle(record: unknown) {
   if (!record || typeof record !== "object") return "";
   const value = (record as { title?: unknown }).title;
   return typeof value === "string" ? value : "";
+}
+
+function getRecordProviderKey(record: unknown) {
+  if (!record || typeof record !== "object") return "";
+  const value = (record as { providerKey?: unknown; key?: unknown })
+    .providerKey;
+  if (typeof value === "string") return value;
+  const fallback = (record as { key?: unknown }).key;
+  return typeof fallback === "string" ? fallback : "";
 }
 
 export const crmSessionActions = crmSessionSlice.actions;

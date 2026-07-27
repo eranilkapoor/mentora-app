@@ -38,12 +38,15 @@ import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { CommunicationsModule } from './modules/communications/communications.module';
 import { ContextsModule } from './modules/contexts/contexts.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { DocumentsModule } from './modules/documents/documents.module';
 import { EventsModule } from './modules/events/events.module';
 import { InterviewsModule } from './modules/interviews/interviews.module';
+import { IntegrationsModule } from './modules/integrations/integrations.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { ModuleRecordsModule } from './modules/module-records/module-records.module';
 import { ReportsModule } from './modules/reports/reports.module';
 import { ScholarshipsModule } from './modules/scholarships/scholarships.module';
+import { SecurityPoliciesModule } from './modules/security-policies/security-policies.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
 import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
@@ -107,10 +110,13 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     TasksModule,
     CampaignsModule,
     CommunicationsModule,
+    DocumentsModule,
     EventsModule,
     InterviewsModule,
+    IntegrationsModule,
     ModuleRecordsModule,
     ScholarshipsModule,
+    SecurityPoliciesModule,
     WhatsappModule,
     DashboardModule,
     WorkflowsModule,

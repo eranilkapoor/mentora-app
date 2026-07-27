@@ -16,9 +16,15 @@ import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import {
   CreateBranchDto,
+  CreateCampusDto,
+  CreateDepartmentDto,
   CreateLeadSourceDto,
   CreateLeadStageDto,
+  CreateTeamDto,
   CreateTenantDto,
+  UpsertChannelSettingDto,
+  UpsertTenantBrandingDto,
+  UpsertTenantUserDto,
 } from '../dto/tenants.dto';
 import { TenantsService } from '../services/tenants.service';
 
@@ -108,6 +114,129 @@ export class TenantsController {
       await this.service.listLeadStages(tenantId),
       'EDUCATION_PLATFORM_LEAD_STAGES_FETCHED',
       'CRM lead stages fetched',
+    );
+  }
+
+  @Post('departments')
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async createDepartment(@Body() dto: CreateDepartmentDto) {
+    return successResponse(
+      await this.service.createDepartment(dto),
+      'EDUCATION_PLATFORM_DEPARTMENT_CREATED',
+      'CRM department created',
+    );
+  }
+
+  @Get('departments')
+  @Permissions(Permission.CRM_TENANT_VIEW)
+  async listDepartments(@Query('tenantId') tenantId: string) {
+    return successResponse(
+      await this.service.listDepartments(tenantId),
+      'EDUCATION_PLATFORM_DEPARTMENTS_FETCHED',
+      'CRM departments fetched',
+    );
+  }
+
+  @Post('teams')
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async createTeam(@Body() dto: CreateTeamDto) {
+    return successResponse(
+      await this.service.createTeam(dto),
+      'EDUCATION_PLATFORM_TEAM_CREATED',
+      'CRM team created',
+    );
+  }
+
+  @Get('teams')
+  @Permissions(Permission.CRM_TENANT_VIEW)
+  async listTeams(@Query('tenantId') tenantId: string) {
+    return successResponse(
+      await this.service.listTeams(tenantId),
+      'EDUCATION_PLATFORM_TEAMS_FETCHED',
+      'CRM teams fetched',
+    );
+  }
+
+  @Post('campuses')
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async createCampus(@Body() dto: CreateCampusDto) {
+    return successResponse(
+      await this.service.createCampus(dto),
+      'EDUCATION_PLATFORM_CAMPUS_CREATED',
+      'CRM campus created',
+    );
+  }
+
+  @Get('campuses')
+  @Permissions(Permission.CRM_TENANT_VIEW)
+  async listCampuses(@Query('tenantId') tenantId: string) {
+    return successResponse(
+      await this.service.listCampuses(tenantId),
+      'EDUCATION_PLATFORM_CAMPUSES_FETCHED',
+      'CRM campuses fetched',
+    );
+  }
+
+  @Post('tenant-branding')
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async upsertBranding(@Body() dto: UpsertTenantBrandingDto) {
+    return successResponse(
+      await this.service.upsertBranding(dto),
+      'EDUCATION_PLATFORM_TENANT_BRANDING_UPDATED',
+      'CRM tenant branding updated',
+    );
+  }
+
+  @Get('tenant-branding')
+  @Permissions(Permission.CRM_TENANT_VIEW)
+  async getBranding(@Query('tenantId') tenantId: string) {
+    return successResponse(
+      await this.service.getBranding(tenantId),
+      'EDUCATION_PLATFORM_TENANT_BRANDING_FETCHED',
+      'CRM tenant branding fetched',
+    );
+  }
+
+  @Post('channel-settings')
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async upsertChannelSetting(@Body() dto: UpsertChannelSettingDto) {
+    return successResponse(
+      await this.service.upsertChannelSetting(dto),
+      'EDUCATION_PLATFORM_CHANNEL_SETTING_UPDATED',
+      'CRM channel setting updated',
+    );
+  }
+
+  @Get('channel-settings')
+  @Permissions(Permission.CRM_TENANT_VIEW)
+  async listChannelSettings(@Query('tenantId') tenantId: string) {
+    return successResponse(
+      await this.service.listChannelSettings(tenantId),
+      'EDUCATION_PLATFORM_CHANNEL_SETTINGS_FETCHED',
+      'CRM channel settings fetched',
+    );
+  }
+
+  @Post('tenant-users')
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async upsertTenantUser(@Body() dto: UpsertTenantUserDto) {
+    return successResponse(
+      await this.service.upsertTenantUser(dto),
+      'EDUCATION_PLATFORM_TENANT_USER_UPDATED',
+      'CRM tenant user updated',
+    );
+  }
+
+  @Get('tenant-users')
+  @Permissions(Permission.CRM_TENANT_VIEW)
+  async listTenantUsers(@Query('tenantId') tenantId: string) {
+    return successResponse(
+      await this.service.listTenantUsers(tenantId),
+      'EDUCATION_PLATFORM_TENANT_USERS_FETCHED',
+      'CRM tenant users fetched',
     );
   }
 }

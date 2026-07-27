@@ -9,6 +9,7 @@ import { AdminAuditService } from '@/modules/admin/services/admin-audit.service'
 import {
   CreateWorkflowRuleDto,
   ExecuteWorkflowDto,
+  RetryWorkflowExecutionDto,
 } from '../dto/workflows.dto';
 import {
   WorkflowExecution,
@@ -115,6 +116,39 @@ export class WorkflowsService {
       .sort({ executedAt: -1 })
       .limit(100)
       .lean();
+  }
+
+  async retryExecution(
+    userId: string,
+    executionId: string,
+    dto: RetryWorkflowExecutionDto,
+  ) {
+    const execution = await this.workflowExecutions.findOne({
+      _id: toRequiredObjectId(executionId),
+      tenantId: toTenantObjectId(dto.tenantId),
+    });
+    if (!execution) throw new NotFoundException('Workflow execution not found');
+
+    execution.set({
+      attempt: execution.attempt + 1,
+      error: undefined,
+      input: {
+        ...execution.input,
+        retryReason: dto.reason,
+      },
+      nextRetryAt: undefined,
+      status: 'succeeded',
+    });
+    await execution.save();
+    await this.auditService.write({
+      actorId: userId,
+      action: 'crm_workflow_execution.retried',
+      resource: 'crm_workflow_execution',
+      targetId: String(execution._id),
+      after: this.toAuditRecord(execution.toObject()),
+      metadata: { tenantId: dto.tenantId },
+    });
+    return execution;
   }
 
   private toAuditRecord(value: unknown): Record<string, unknown> | null {

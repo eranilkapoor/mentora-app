@@ -20,6 +20,10 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
+import {
+  DecideScholarshipDto,
+  EvaluateScholarshipDto,
+} from '../dto/scholarships.dto';
 import { ScholarshipsService } from '../services/scholarships.service';
 
 @UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
@@ -46,7 +50,7 @@ export class ScholarshipsController {
       'CRM scholarships fetched',
     );
   }
-  @Post(':recordId')
+  @Post(':recordId([a-fA-F0-9]{24})')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
@@ -59,7 +63,7 @@ export class ScholarshipsController {
       'CRM scholarship updated',
     );
   }
-  @Post(':recordId/complete')
+  @Post(':recordId([a-fA-F0-9]{24})/complete')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
@@ -70,6 +74,32 @@ export class ScholarshipsController {
       await this.service.complete(req.user.sub, recordId, dto),
       'CRM_SCHOLARSHIP_COMPLETED',
       'CRM scholarship completed',
+    );
+  }
+
+  @Post(':recordId([a-fA-F0-9]{24})/evaluate')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async evaluate(
+    @Param('recordId') recordId: string,
+    @Body() dto: EvaluateScholarshipDto,
+  ) {
+    return successResponse(
+      await this.service.evaluate(recordId, dto),
+      'CRM_SCHOLARSHIP_EVALUATED',
+      'CRM scholarship evaluated',
+    );
+  }
+
+  @Post(':recordId([a-fA-F0-9]{24})/decision')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async decide(
+    @Param('recordId') recordId: string,
+    @Body() dto: DecideScholarshipDto,
+  ) {
+    return successResponse(
+      await this.service.decide(recordId, dto),
+      'CRM_SCHOLARSHIP_DECIDED',
+      'CRM scholarship decision saved',
     );
   }
 }

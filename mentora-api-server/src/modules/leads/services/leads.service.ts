@@ -13,12 +13,16 @@ import {
 import { AdminAuditService } from '@/modules/admin/services/admin-audit.service';
 import {
   AddLeadActivityDto,
+  AddLeadAttachmentDto,
   AssignLeadDto,
   ChangeLeadStageDto,
   CreateLeadDto,
   FindLeadDuplicatesDto,
   ImportLeadsDto,
   MergeLeadsDto,
+  ScoreLeadDto,
+  TransferLeadDto,
+  UpdateLeadTagsDto,
 } from '../dto/leads.dto';
 import {
   Lead,
@@ -52,6 +56,7 @@ export class LeadsService {
       sourceId: toOptionalObjectId(dto.sourceId),
       stageId: toOptionalObjectId(dto.stageId),
       branchId: toOptionalObjectId(dto.branchId),
+      tags: this.normalizeTags(dto.tags),
       nextFollowUpAt: dto.nextFollowUpAt
         ? new Date(dto.nextFollowUpAt)
         : undefined,
@@ -75,6 +80,171 @@ export class LeadsService {
       .sort({ createdAt: -1 })
       .limit(50)
       .lean();
+  }
+
+  async updateTags(userId: string, leadId: string, dto: UpdateLeadTagsDto) {
+    const lead = await this.leads.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(leadId),
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      { tags: this.normalizeTags(dto.tags) },
+      { new: true },
+    );
+    if (!lead) throw new NotFoundException('Education CRM lead not found');
+    await this.addLeadActivity(userId, leadId, {
+      tenantId: dto.tenantId,
+      type: 'note_added',
+      subject: 'Lead tags updated',
+      metadata: { tags: lead.tags },
+    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.tags_updated',
+      dto.tenantId,
+      lead._id,
+      {
+        after: this.toAuditRecord(lead.toObject()),
+        metadata: { tags: lead.tags },
+      },
+    );
+    return lead;
+  }
+
+  async addAttachment(
+    userId: string,
+    leadId: string,
+    dto: AddLeadAttachmentDto,
+  ) {
+    const attachment = {
+      fileName: dto.fileName,
+      mimeType: dto.mimeType,
+      size: dto.size ?? 0,
+      type: dto.type ?? 'document',
+      url: dto.url,
+    };
+    const field =
+      attachment.type === 'voice_note' ? 'voiceNotes' : 'attachments';
+    const lead = await this.leads.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(leadId),
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      { $push: { [field]: attachment } },
+      { new: true },
+    );
+    if (!lead) throw new NotFoundException('Education CRM lead not found');
+    await this.addLeadActivity(userId, leadId, {
+      tenantId: dto.tenantId,
+      type: 'note_added',
+      subject:
+        attachment.type === 'voice_note'
+          ? 'Lead voice note added'
+          : 'Lead attachment added',
+      metadata: attachment,
+    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.attachment_added',
+      dto.tenantId,
+      lead._id,
+      {
+        after: this.toAuditRecord(lead.toObject()),
+        metadata: attachment,
+      },
+    );
+    return lead;
+  }
+
+  async scoreLead(userId: string, leadId: string, dto: ScoreLeadDto) {
+    const tenantId = toTenantObjectId(dto.tenantId);
+    const lead = await this.leads.findOne({
+      _id: toRequiredObjectId(leadId),
+      tenantId,
+    });
+    if (!lead) throw new NotFoundException('Education CRM lead not found');
+
+    const programCount = lead.interestedPrograms?.length ?? 0;
+    const hasContact = Boolean(lead.email || lead.phone);
+    const hasFollowUp = Boolean(lead.nextFollowUpAt);
+    const engagement =
+      typeof dto.signals?.engagement === 'number' ? dto.signals.engagement : 0;
+    const score = Math.min(
+      100,
+      Math.max(
+        0,
+        30 +
+          (hasContact ? 20 : 0) +
+          Math.min(programCount * 8, 24) +
+          (hasFollowUp ? 12 : 0) +
+          Math.min(engagement, 14),
+      ),
+    );
+    const temperature = score >= 75 ? 'hot' : score >= 45 ? 'warm' : 'cold';
+
+    lead.set({
+      score,
+      scoreBreakdown: {
+        engagement,
+        hasContact,
+        hasFollowUp,
+        programCount,
+        source: 'rules_v1',
+      },
+      temperature,
+    });
+    await lead.save();
+    await this.addLeadActivity(userId, leadId, {
+      tenantId: dto.tenantId,
+      type: 'note_added',
+      subject: 'Lead score recalculated',
+      metadata: { score, temperature },
+    });
+    await this.writeAudit(userId, 'crm_lead.scored', dto.tenantId, lead._id, {
+      after: this.toAuditRecord(lead.toObject()),
+      metadata: { score, temperature },
+    });
+    return lead;
+  }
+
+  async transferLead(userId: string, leadId: string, dto: TransferLeadDto) {
+    const tenantId = toTenantObjectId(dto.tenantId);
+    const lead = await this.leads.findOneAndUpdate(
+      { _id: toRequiredObjectId(leadId), tenantId },
+      {
+        assignedTo: toRequiredObjectId(dto.assignedTo),
+        branchId: toOptionalObjectId(dto.branchId),
+        status: 'open',
+      },
+      { new: true },
+    );
+    if (!lead) throw new NotFoundException('Education CRM lead not found');
+    await this.assignments.create({
+      tenantId: lead.tenantId,
+      leadId: lead._id,
+      assignedTo: toRequiredObjectId(dto.assignedTo),
+      assignedBy: toRequiredObjectId(userId),
+      assignmentMethod: 'manual',
+    });
+    await this.addLeadActivity(userId, leadId, {
+      tenantId: dto.tenantId,
+      type: 'assignment_changed',
+      subject: 'Lead transferred',
+      description: dto.reason,
+      metadata: { assignedTo: dto.assignedTo, branchId: dto.branchId },
+    });
+    await this.writeAudit(
+      userId,
+      'crm_lead.transferred',
+      dto.tenantId,
+      lead._id,
+      {
+        reason: dto.reason,
+        after: this.toAuditRecord(lead.toObject()),
+        metadata: { assignedTo: dto.assignedTo, branchId: dto.branchId },
+      },
+    );
+    return lead;
   }
 
   async getLead(tenantId: string, leadId: string) {
@@ -413,6 +583,16 @@ export class LeadsService {
     return Array.isArray(value)
       ? value.filter((item): item is string => typeof item === 'string')
       : [];
+  }
+
+  private normalizeTags(tags: string[] | undefined): string[] {
+    return [
+      ...new Set(
+        (tags ?? [])
+          .map((tag) => tag.trim().toLowerCase())
+          .filter((tag) => tag.length > 0),
+      ),
+    ];
   }
 
   private csvValue(value: unknown): string {

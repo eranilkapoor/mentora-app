@@ -32,18 +32,34 @@ import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   crmSessionActions,
   crmWorkspaceActions,
+  addLeadAttachment,
   createReportDefinition,
+  createSampleDocument,
+  createSampleDepartment,
+  createSampleTeam,
   createWorkflowRule,
   executeWorkflow,
   exportLeads,
   exportModuleRecords,
   findLeadDuplicates,
   importSampleLeads,
+  loadDocuments,
+  loadIntegrationProviders,
+  loadSecurityPolicy,
+  loadTenantUsers,
   loadDedicatedCrmRecords,
   loadModuleRecords,
   loadCrmWorkspace,
   saveModuleRecord,
   saveDedicatedCrmRecord,
+  runCrmRecordAction,
+  scoreLead,
+  updateSampleBranding,
+  updateSampleChannelSetting,
+  updateLeadTags,
+  updateCampaignMetrics,
+  updateSecurityPolicy,
+  upsertIntegrationProvider,
   type DemoContext,
   type DemoUser,
   type ModuleRecordDraft,
@@ -69,6 +85,17 @@ type CrmModule = {
 type ThemeMode = "system" | "light" | "dark";
 
 type ModuleStatus = "Production MVP" | "Workflow MVP" | "Foundation";
+
+type ModuleCoverage = {
+  moduleKey: string;
+  title?: string;
+  backendStatus?: string;
+  frontendStatus?: string;
+  productionReady?: boolean;
+  productionBlockers?: string[];
+  storage?: string;
+  apiSurface?: string[];
+};
 
 const dedicatedCrmModuleIds = new Set([
   "admissions",
@@ -147,21 +174,37 @@ const moduleIcons: Record<string, IconName> = {
 };
 
 const moduleActions: Record<string, string[]> = {
+  admissions: ["Allocate Batch", "Queue Handoff", "Complete"],
   applications: ["Review", "Request Docs", "Move Stage", "Issue Offer"],
   campaigns: ["Launch", "Pause", "Duplicate", "ROI Report"],
   communications: ["Send Message", "Schedule", "Open Inbox", "Template"],
+  document_management: ["Load Documents", "Request Document", "Verify"],
+  finance: ["Reconcile", "Export Ledger", "Complete"],
   automation: ["Create Rule", "Run Workflow", "Execution Log"],
   leads: [
     "Create Lead",
     "Check Duplicates",
     "Import Leads",
     "Export Leads",
+    "Score Lead",
+    "Update Tags",
+    "Add Attachment",
     "Assign",
     "Change Stage",
     "Log Activity",
   ],
+  integrations: ["Check Providers", "Configure Provider", "Export Report"],
+  organization_management: [
+    "Create Department",
+    "Create Team",
+    "Update Branding",
+    "Configure Channel",
+  ],
   reports: ["Create Report", "Export Report", "Schedule Report"],
+  security: ["Load Policy", "Update Policy", "Audit Export"],
+  scholarship: ["Evaluate", "Decision", "Complete"],
   tasks: ["Create Task", "Escalate", "Reassign", "Complete"],
+  user_management: ["Refresh Users", "Export Users", "Audit Access"],
 };
 
 const moduleInsights: Record<string, string[]> = {
@@ -1291,12 +1334,20 @@ export default function CrmDashboardPage() {
   ]);
 
   const activeModule = moduleMap[activeId];
+  const activeCoverage = useMemo(
+    () => findModuleCoverage(workspace.coverage, activeId),
+    [activeId, workspace.coverage],
+  );
   const serverRows = useMemo(
     () =>
       activeModule
         ? recordsToRows(workspace.moduleRecords[activeModule.id], activeModule)
         : [],
     [activeModule, workspace.moduleRecords],
+  );
+  const firstServerRecordId = useMemo(
+    () => getUnknownRecordId(workspace.moduleRecords[activeId]?.[0]),
+    [activeId, workspace.moduleRecords],
   );
   const activeRows =
     serverRows.length > 0 ? serverRows : (activeModule?.rows ?? []);
@@ -1452,12 +1503,430 @@ export default function CrmDashboardPage() {
           dispatch(crmSessionActions.setToast("Sample lead imported to API"));
           return;
         }
+
+        if (
+          normalized.includes("score") ||
+          normalized.includes("tag") ||
+          normalized.includes("attachment")
+        ) {
+          if (!firstServerRecordId) {
+            dispatch(
+              crmSessionActions.setToast(
+                "Load or import API leads before running lead enrichment actions",
+              ),
+            );
+            return;
+          }
+
+          if (normalized.includes("score")) {
+            await dispatch(
+              scoreLead({
+                leadId: firstServerRecordId,
+                tenantId: activeTenantId,
+              }),
+            ).unwrap();
+            dispatch(crmSessionActions.setToast("Lead score recalculated"));
+            return;
+          }
+
+          if (normalized.includes("tag")) {
+            await dispatch(
+              updateLeadTags({
+                leadId: firstServerRecordId,
+                tenantId: activeTenantId,
+              }),
+            ).unwrap();
+            dispatch(crmSessionActions.setToast("Lead tags updated"));
+            return;
+          }
+
+          await dispatch(
+            addLeadAttachment({
+              leadId: firstServerRecordId,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Lead attachment added"));
+          return;
+        }
       } catch (error) {
         dispatch(
           crmSessionActions.setToast(
             error instanceof Error
               ? error.message
               : "Lead operation failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (activeId === "integrations") {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before managing integrations",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (normalized.includes("configure")) {
+          await dispatch(
+            upsertIntegrationProvider({
+              providerKey: "whatsapp_business",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          await dispatch(
+            loadIntegrationProviders({ tenantId: activeTenantId }),
+          ).unwrap();
+          dispatch(
+            crmSessionActions.setToast(
+              "WhatsApp provider configured in sandbox mode",
+            ),
+          );
+          return;
+        }
+
+        const result = await dispatch(
+          loadIntegrationProviders({ tenantId: activeTenantId }),
+        ).unwrap();
+        const providers = normalizeResponseArray(result);
+        dispatch(
+          crmSessionActions.setToast(
+            `${providers.length} integration providers checked`,
+          ),
+        );
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Integration action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (activeId === "organization_management") {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before managing organization setup",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (normalized.includes("department")) {
+          await dispatch(
+            createSampleDepartment({ tenantId: activeTenantId }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Admissions department saved"));
+          return;
+        }
+
+        if (normalized.includes("team")) {
+          await dispatch(
+            createSampleTeam({ tenantId: activeTenantId }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Counseling team saved"));
+          return;
+        }
+
+        if (normalized.includes("branding")) {
+          await dispatch(
+            updateSampleBranding({ tenantId: activeTenantId }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Tenant branding updated"));
+          return;
+        }
+
+        if (normalized.includes("channel")) {
+          await dispatch(
+            updateSampleChannelSetting({ tenantId: activeTenantId }),
+          ).unwrap();
+          dispatch(
+            crmSessionActions.setToast("WhatsApp channel setting saved"),
+          );
+          return;
+        }
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Organization action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (activeId === "user_management") {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before managing CRM users",
+          ),
+        );
+        return;
+      }
+
+      try {
+        const result = await dispatch(
+          loadTenantUsers({ tenantId: activeTenantId }),
+        ).unwrap();
+        const users = normalizeResponseArray(result);
+        dispatch(
+          crmSessionActions.setToast(`${users.length} tenant users loaded`),
+        );
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "User management action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (
+      [
+        "admissions",
+        "applications",
+        "campaigns",
+        "document_management",
+        "finance",
+        "scholarship",
+        "tasks",
+      ].includes(activeId)
+    ) {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before running this module action",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (activeId === "document_management") {
+          if (normalized.includes("load")) {
+            const result = await dispatch(
+              loadDocuments({ tenantId: activeTenantId }),
+            ).unwrap();
+            dispatch(
+              crmSessionActions.setToast(
+                `${normalizeResponseArray(result).length} documents loaded`,
+              ),
+            );
+            return;
+          }
+
+          await dispatch(
+            createSampleDocument({
+              entityId: firstServerRecordId || "000000000000000000000000",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Sample document requested"));
+          return;
+        }
+
+        if (!firstServerRecordId) {
+          dispatch(
+            crmSessionActions.setToast(
+              "Load API records for this module before running lifecycle actions",
+            ),
+          );
+          return;
+        }
+
+        if (activeId === "applications") {
+          await dispatch(
+            runCrmRecordAction({
+              path: normalized.includes("offer")
+                ? `/applications/${firstServerRecordId}/decision`
+                : `/applications/${firstServerRecordId}/review`,
+              body: normalized.includes("offer")
+                ? {
+                    tenantId: activeTenantId,
+                    decision: "offer_issued",
+                    offer: { expiresInDays: 7, seatType: "regular" },
+                    reason: "MVP CRM offer action",
+                  }
+                : {
+                    tenantId: activeTenantId,
+                    documentRequirements: [
+                      { category: "academic", name: "Class 12 marksheet" },
+                    ],
+                    isLocked: normalized.includes("docs"),
+                    note: label,
+                    status: "under_review",
+                  },
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Application lifecycle updated"));
+          return;
+        }
+
+        if (activeId === "campaigns") {
+          await dispatch(
+            updateCampaignMetrics({
+              campaignId: firstServerRecordId,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Campaign ROI metrics updated"));
+          return;
+        }
+
+        if (activeId === "admissions") {
+          await dispatch(
+            runCrmRecordAction({
+              path: normalized.includes("handoff")
+                ? `/admissions/${firstServerRecordId}/handoff`
+                : `/admissions/${firstServerRecordId}/allocate`,
+              body: normalized.includes("handoff")
+                ? {
+                    tenantId: activeTenantId,
+                    targetSystem: "mentora-lms",
+                    payload: { syncMode: "queued" },
+                  }
+                : {
+                    tenantId: activeTenantId,
+                    batchId: "BATCH-JEE-2027-A",
+                    cohortName: "JEE 2027 Alpha",
+                  },
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Admission action completed"));
+          return;
+        }
+
+        if (activeId === "finance") {
+          await dispatch(
+            runCrmRecordAction({
+              path: `/finance-ledgers/${firstServerRecordId}/reconcile`,
+              body: {
+                tenantId: activeTenantId,
+                externalReference: "SANDBOX-SETTLEMENT",
+                reconciliation: { matched: true },
+              },
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Finance ledger reconciled"));
+          return;
+        }
+
+        if (activeId === "scholarship") {
+          await dispatch(
+            runCrmRecordAction({
+              path: normalized.includes("decision")
+                ? `/scholarships/${firstServerRecordId}/decision`
+                : `/scholarships/${firstServerRecordId}/evaluate`,
+              body: normalized.includes("decision")
+                ? {
+                    tenantId: activeTenantId,
+                    award: { discountPercent: 25 },
+                    decision: "approved",
+                    reason: "Eligible for merit award",
+                  }
+                : {
+                    tenantId: activeTenantId,
+                    criteria: {
+                      academicScore: 82,
+                      entranceScore: 78,
+                      needScore: 64,
+                    },
+                  },
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Scholarship action completed"));
+          return;
+        }
+
+        if (activeId === "tasks") {
+          await dispatch(
+            runCrmRecordAction({
+              path: `/tasks/${firstServerRecordId}/workflow`,
+              body: {
+                tenantId: activeTenantId,
+                boardColumn: normalized.includes("complete")
+                  ? "done"
+                  : "blocked",
+                comment: label,
+                escalation: normalized.includes("escalate")
+                  ? { reason: "SLA risk", level: "manager" }
+                  : undefined,
+                slaStatus: normalized.includes("escalate")
+                  ? "at_risk"
+                  : "healthy",
+                status: normalized.includes("complete")
+                  ? "completed"
+                  : "in_progress",
+              },
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Task workflow updated"));
+          return;
+        }
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Module action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (activeId === "security") {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before managing security policy",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (normalized.includes("update")) {
+          await dispatch(
+            updateSecurityPolicy({ tenantId: activeTenantId }),
+          ).unwrap();
+          dispatch(
+            crmSessionActions.setToast(
+              "Tenant security policy updated with MFA and masking controls",
+            ),
+          );
+          return;
+        }
+
+        await dispatch(
+          loadSecurityPolicy({ tenantId: activeTenantId }),
+        ).unwrap();
+        dispatch(crmSessionActions.setToast("Tenant security policy loaded"));
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Security policy action failed. Check API auth and permissions.",
           ),
         );
         return;
@@ -1713,6 +2182,7 @@ export default function CrmDashboardPage() {
         ) : (
           <ModulePanel
             activeContext={activeContext}
+            coverage={activeCoverage}
             detail={detail}
             filterValues={filterValues}
             module={activeModule}
@@ -2099,6 +2569,7 @@ function Dashboard({
 
 function ModulePanel(props: {
   activeContext: DemoContext;
+  coverage: ModuleCoverage | null;
   detail: string[] | null;
   filterValues: Record<string, string>;
   module: CrmModule;
@@ -2122,6 +2593,10 @@ function ModulePanel(props: {
   runAction: (label: string) => Promise<void>;
 }) {
   const module = props.module;
+  const readinessLabel = props.coverage
+    ? formatReadiness(props.coverage)
+    : module.status;
+  const blockers = props.coverage?.productionBlockers ?? [];
   const allVisibleIds = props.rows.map((row) => row.join("|"));
   const allSelected =
     allVisibleIds.length > 0 &&
@@ -2148,8 +2623,8 @@ function ModulePanel(props: {
             <span className="eyebrow">{module.group}</span>
             <h2>{module.title}</h2>
           </div>
-          <span className={`status-pill ${statusClass(module.status)}`}>
-            {module.status}
+          <span className={`status-pill ${statusClass(readinessLabel)}`}>
+            {readinessLabel}
           </span>
         </div>
         <div className="module-copy">
@@ -2158,6 +2633,18 @@ function ModulePanel(props: {
             {props.activeContext.role.replaceAll("_", " ")} /{" "}
             {props.activeContext.tenant} / {props.activeContext.branch}
           </p>
+          {props.coverage ? (
+            <p className="context-line">
+              BE {formatStatus(props.coverage.backendStatus)} / FE{" "}
+              {formatStatus(props.coverage.frontendStatus)} /{" "}
+              {props.coverage.storage}
+            </p>
+          ) : null}
+          {blockers.length > 0 ? (
+            <p className="context-line">
+              Blockers: {blockers.slice(0, 3).map(formatStatus).join(", ")}
+            </p>
+          ) : null}
         </div>
         <div className="module-metric">
           <span>Total</span>
@@ -2689,6 +3176,38 @@ function statusClass(status?: ModuleStatus) {
   return "neutral";
 }
 
+function findModuleCoverage(
+  coverage: unknown[],
+  moduleKey: string,
+): ModuleCoverage | null {
+  const match = coverage.find((item) => {
+    if (!item || typeof item !== "object") return false;
+    return (item as { moduleKey?: unknown }).moduleKey === moduleKey;
+  });
+  return match && typeof match === "object" ? (match as ModuleCoverage) : null;
+}
+
+function formatReadiness(coverage: ModuleCoverage) {
+  if (coverage.productionReady) return "Production MVP";
+  if (
+    coverage.backendStatus === "workflow_ready" ||
+    coverage.frontendStatus === "workflow_ready"
+  ) {
+    return "Workflow MVP";
+  }
+  if (
+    coverage.backendStatus === "product_ready" &&
+    coverage.frontendStatus === "product_ready"
+  ) {
+    return "Production MVP";
+  }
+  return "Foundation";
+}
+
+function formatStatus(value?: string) {
+  return value ? value.replaceAll("_", " ") : "unknown";
+}
+
 function extractFirstId(records: unknown[]) {
   const first = records[0];
   if (!first || typeof first !== "object") return "";
@@ -2706,6 +3225,14 @@ function extractFirstId(records: unknown[]) {
   return "";
 }
 
+function getUnknownRecordId(record: unknown) {
+  if (!record || typeof record !== "object") return "";
+  const value = (record as { _id?: unknown; id?: unknown })._id;
+  if (typeof value === "string") return value;
+  const fallback = (record as { id?: unknown }).id;
+  return typeof fallback === "string" ? fallback : "";
+}
+
 function normalizeResponseObject(value: unknown): Record<string, unknown> {
   if (!value || typeof value !== "object") return {};
   if ("data" in value) {
@@ -2715,6 +3242,19 @@ function normalizeResponseObject(value: unknown): Record<string, unknown> {
       : {};
   }
   return value as Record<string, unknown>;
+}
+
+function normalizeResponseArray(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value;
+  if (
+    value &&
+    typeof value === "object" &&
+    "data" in value &&
+    Array.isArray((value as { data?: unknown }).data)
+  ) {
+    return (value as { data: unknown[] }).data;
+  }
+  return [];
 }
 
 function recordsToRows(records: unknown[] | undefined, module: CrmModule) {
