@@ -1,3 +1,7 @@
+"use client";
+
+import { FormEvent, useState } from "react";
+
 const modules = [
   [
     "Lead CRM",
@@ -41,6 +45,51 @@ const plans = [
 ];
 
 export default function HomePage() {
+  const [demoStatus, setDemoStatus] = useState("Ready for CRM demo requests.");
+
+  async function submitDemoRequest(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const form = event.currentTarget;
+    const formData = new FormData(form);
+    const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const payload = {
+      tenantCode: "WEBNZA",
+      firstName: String(formData.get("firstName") ?? ""),
+      lastName: String(formData.get("lastName") ?? ""),
+      email: String(formData.get("email") ?? ""),
+      phone: String(formData.get("phone") ?? ""),
+      city: String(formData.get("city") ?? ""),
+      program: String(formData.get("program") ?? ""),
+      utm: { source: "public_website", campaign: "mentora_demo" },
+    };
+
+    if (!apiBaseUrl) {
+      setDemoStatus(
+        "Demo request captured locally. Connect NEXT_PUBLIC_API_BASE_URL to send it to CRM.",
+      );
+      form.reset();
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${apiBaseUrl}/api/v1/education-crm/public/leads`,
+        {
+          body: JSON.stringify(payload),
+          headers: { "Content-Type": "application/json" },
+          method: "POST",
+        },
+      );
+      if (!response.ok) throw new Error("Lead capture failed");
+      setDemoStatus("Demo request sent to Mentora CRM.");
+      form.reset();
+    } catch {
+      setDemoStatus(
+        "Could not reach CRM API. Request is ready to retry after API setup.",
+      );
+    }
+  }
+
   return (
     <>
       <header className="site-header">
@@ -128,9 +177,18 @@ export default function HomePage() {
               billing, integrations, safety, and implementation support.
             </p>
           </div>
-          <a className="button primary" href="mailto:support@mentora.example">
-            support@mentora.example
-          </a>
+          <form className="lead-form" onSubmit={submitDemoRequest}>
+            <input name="firstName" placeholder="First name" required />
+            <input name="lastName" placeholder="Last name" />
+            <input name="email" placeholder="Work email" type="email" />
+            <input name="phone" placeholder="Phone" />
+            <input name="city" placeholder="City" />
+            <input name="program" placeholder="Interested program" />
+            <button className="button primary" type="submit">
+              Request demo
+            </button>
+            <p>{demoStatus}</p>
+          </form>
         </section>
 
         <section className="band" id="legal">

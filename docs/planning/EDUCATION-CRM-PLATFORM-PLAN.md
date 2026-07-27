@@ -87,3 +87,40 @@ GET  /api/v1/education-crm/dashboard?tenantId=:tenantId
 ## Critical Architecture Rule
 
 Every tenant-owned CRM query must include `tenantId`. The initial service methods already require `tenantId` for list/detail/dashboard reads. Expand this into a shared tenant-aware repository or guard before production.
+
+## Admin CRM UI Status
+
+Implemented starter Next.js CRM portal:
+
+```text
+mentora-admin-crm
+```
+
+The admin portal now follows the existing Juaaree/Match Mate admin interaction model:
+
+- fixed left navigation groups
+- top welcome/logout bar
+- module action strip for search, add, reset, and export actions
+- filter block with labeled inputs
+- list manager wrapper
+- sortable-style table headers
+- row checkboxes and row actions
+- pagination/page-size controls
+
+Current CRM sections:
+
+- dashboard
+- leads
+- applications
+- admissions
+- tasks
+- campaigns
+- communications
+- automation
+- payments
+- reports
+- learning operations
+- tenants and users
+- settings
+
+Next step: connect these sections to authenticated API clients and replace the fixture rows with tenant-scoped backend data.

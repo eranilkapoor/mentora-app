@@ -13,6 +13,39 @@ export type CrmApplicationDocument = HydratedDocument<CrmApplication>;
 export type CrmTaskDocument = HydratedDocument<CrmTask>;
 export type CrmCampaignDocument = HydratedDocument<CrmCampaign>;
 export type CrmCommunicationDocument = HydratedDocument<CrmCommunication>;
+export type CrmModuleRecordDocument = HydratedDocument<CrmModuleRecord>;
+export type CrmUserMembershipDocument = HydratedDocument<CrmUserMembership>;
+
+export const CRM_PARTIAL_MODULE_KEYS = [
+  'authentication',
+  'user_management',
+  'organization_management',
+  'lead_management',
+  'application_management',
+  'admission_management',
+  'marketing_automation',
+  'communication',
+  'call_center',
+  'whatsapp_crm',
+  'email_crm',
+  'sms',
+  'mobile_crm',
+  'calendar',
+  'task_management',
+  'document_management',
+  'payment',
+  'finance',
+  'scholarship',
+  'interview',
+  'event_management',
+  'field_force_automation',
+  'reports',
+  'dashboard',
+  'analytics',
+  'ai_features',
+  'integrations',
+  'security',
+] as const;
 
 @Schema({ collection: COLLECTION_NAMES.CRM_TENANT, timestamps: true })
 export class CrmTenant {
@@ -541,3 +574,113 @@ CrmCommunicationSchema.index({
   entityId: 1,
   createdAt: -1,
 });
+
+@Schema({ collection: COLLECTION_NAMES.CRM_MODULE_RECORD, timestamps: true })
+export class CrmModuleRecord {
+  @Prop({
+    type: Types.ObjectId,
+    ref: CrmTenant.name,
+    required: true,
+    index: true,
+  })
+  tenantId!: Types.ObjectId;
+
+  @Prop({ enum: CRM_PARTIAL_MODULE_KEYS, required: true, index: true })
+  moduleKey!: string;
+
+  @Prop({ required: true, trim: true })
+  title!: string;
+
+  @Prop()
+  description?: string;
+
+  @Prop({
+    enum: ['draft', 'open', 'in_progress', 'blocked', 'completed', 'archived'],
+    default: 'open',
+    index: true,
+  })
+  status!: string;
+
+  @Prop({
+    enum: ['low', 'medium', 'high', 'urgent'],
+    default: 'medium',
+    index: true,
+  })
+  priority!: string;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  ownerId?: Types.ObjectId;
+
+  @Prop({ index: true })
+  dueAt?: Date;
+
+  @Prop({ type: [String], default: [] })
+  tags!: string[];
+
+  @Prop({ type: Object, default: {} })
+  payload!: Record<string, unknown>;
+
+  @Prop({ type: Types.ObjectId, ref: 'User', index: true })
+  createdBy?: Types.ObjectId;
+}
+
+export const CrmModuleRecordSchema =
+  SchemaFactory.createForClass(CrmModuleRecord);
+CrmModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, status: 1 });
+CrmModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, dueAt: 1 });
+CrmModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, ownerId: 1 });
+
+export const CRM_USER_ROLES = [
+  'super_admin',
+  'organization_admin',
+  'branch_admin',
+  'admission_manager',
+  'admission_counselor',
+  'marketing_executive',
+  'sales_executive',
+  'call_center',
+  'finance',
+  'field_agent',
+  'student',
+  'parent',
+] as const;
+
+@Schema({ collection: COLLECTION_NAMES.CRM_USER_MEMBERSHIP, timestamps: true })
+export class CrmUserMembership {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true, index: true })
+  userId!: Types.ObjectId;
+
+  @Prop({
+    type: Types.ObjectId,
+    ref: CrmTenant.name,
+    required: true,
+    index: true,
+  })
+  tenantId!: Types.ObjectId;
+
+  @Prop({ type: [Types.ObjectId], ref: CrmBranch.name, default: [] })
+  branchIds!: Types.ObjectId[];
+
+  @Prop({ type: [String], default: [] })
+  departmentIds!: string[];
+
+  @Prop({ enum: CRM_USER_ROLES, required: true, index: true })
+  role!: string;
+
+  @Prop({ type: [String], default: [] })
+  permissions!: string[];
+
+  @Prop({ enum: ['active', 'inactive', 'suspended'], default: 'active' })
+  status!: string;
+
+  @Prop({ type: Object, default: {} })
+  settings!: Record<string, unknown>;
+}
+
+export const CrmUserMembershipSchema =
+  SchemaFactory.createForClass(CrmUserMembership);
+CrmUserMembershipSchema.index(
+  { userId: 1, tenantId: 1, role: 1 },
+  { unique: true },
+);
+CrmUserMembershipSchema.index({ tenantId: 1, role: 1, status: 1 });

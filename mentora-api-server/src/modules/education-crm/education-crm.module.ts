@@ -21,10 +21,14 @@ import {
   CrmLeadSourceSchema,
   CrmLeadStage,
   CrmLeadStageSchema,
+  CrmModuleRecord,
+  CrmModuleRecordSchema,
   CrmTask,
   CrmTaskSchema,
   CrmTenant,
   CrmTenantSchema,
+  CrmUserMembership,
+  CrmUserMembershipSchema,
 } from './schemas/education-crm.schemas';
 
 @Module({
@@ -41,6 +45,8 @@ import {
       { name: CrmTask.name, schema: CrmTaskSchema },
       { name: CrmCampaign.name, schema: CrmCampaignSchema },
       { name: CrmCommunication.name, schema: CrmCommunicationSchema },
+      { name: CrmModuleRecord.name, schema: CrmModuleRecordSchema },
+      { name: CrmUserMembership.name, schema: CrmUserMembershipSchema },
     ]),
   ],
   controllers: [EducationCrmController],

@@ -99,4 +99,6 @@ export const COLLECTION_NAMES = {
   CRM_TASK: 'crm_tasks',
   CRM_CAMPAIGN: 'crm_campaigns',
   CRM_COMMUNICATION: 'crm_communications',
+  CRM_MODULE_RECORD: 'crm_module_records',
+  CRM_USER_MEMBERSHIP: 'crm_user_memberships',
 };
