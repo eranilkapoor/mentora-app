@@ -1,5 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { AdminModule } from '../admin/admin.module';
+import { ContextsModule } from '../contexts/contexts.module';
 import { TenantsModule } from '../tenants/tenants.module';
 import { LeadsController } from './controllers/leads.controller';
 import { PublicLeadsController } from './controllers/public-leads.controller';
@@ -16,6 +18,8 @@ import { PublicLeadsService } from './services/public-leads.service';
 
 @Module({
   imports: [
+    AdminModule,
+    ContextsModule,
     TenantsModule,
     MongooseModule.forFeature([
       { name: Lead.name, schema: LeadSchema },

@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ContextsModule } from '../contexts/contexts.module';
 import { TenantsController } from './controllers/tenants.controller';
 import {
   Branch,
@@ -15,6 +16,7 @@ import { TenantsService } from './services/tenants.service';
 
 @Module({
   imports: [
+    ContextsModule,
     MongooseModule.forFeature([
       { name: Tenant.name, schema: TenantSchema },
       { name: Branch.name, schema: BranchSchema },

@@ -11,16 +11,21 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { AuthenticatedRequest } from '@/common/interfaces/authenticated-request.interface';
+import { Permissions } from '@/common/decorators/permissions.decorator';
+import { Permission } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
+import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import {
   CreateModuleRecordDto,
+  ExecuteModuleRecordDto,
   UpdateModuleRecordDto,
 } from '../dto/module-records.dto';
 import { ModuleCoverageService } from '../services/module-coverage.service';
 import { ModuleRecordsService } from '../services/module-records.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
 @Controller('module-records')
 export class ModuleRecordsController {
   constructor(
@@ -29,6 +34,7 @@ export class ModuleRecordsController {
   ) {}
 
   @Get('coverage')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   moduleCoverage() {
     return successResponse(
       this.moduleCoverageService.getModuleCoverage(),
@@ -39,6 +45,7 @@ export class ModuleRecordsController {
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async createModuleRecord(
     @Req() req: AuthenticatedRequest,
     @Body() dto: CreateModuleRecordDto,
@@ -51,6 +58,7 @@ export class ModuleRecordsController {
   }
 
   @Get()
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   async listModuleRecords(
     @Query('tenantId') tenantId: string,
     @Query('moduleKey') moduleKey?: string,
@@ -63,15 +71,44 @@ export class ModuleRecordsController {
     );
   }
 
+  @Get('operations/export')
+  @Permissions(Permission.CRM_REPORT_EXPORT)
+  async exportModuleRecords(
+    @Query('tenantId') tenantId: string,
+    @Query('moduleKey') moduleKey?: string,
+  ) {
+    return successResponse(
+      await this.service.exportModuleRecords(tenantId, moduleKey),
+      'EDUCATION_PLATFORM_MODULE_RECORDS_EXPORTED',
+      'CRM module records exported',
+    );
+  }
+
   @Post(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async updateModuleRecord(
+    @Req() req: AuthenticatedRequest,
     @Param('recordId') recordId: string,
     @Body() dto: UpdateModuleRecordDto,
   ) {
     return successResponse(
-      await this.service.updateModuleRecord(recordId, dto),
+      await this.service.updateModuleRecord(req.user.sub, recordId, dto),
       'EDUCATION_PLATFORM_MODULE_RECORD_UPDATED',
       'CRM module record updated',
+    );
+  }
+
+  @Post(':recordId/execute')
+  @Permissions(Permission.CRM_WORKFLOW_MANAGE)
+  async executeModuleRecord(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Body() dto: ExecuteModuleRecordDto,
+  ) {
+    return successResponse(
+      await this.service.executeModuleRecord(req.user.sub, recordId, dto),
+      'EDUCATION_PLATFORM_MODULE_RECORD_EXECUTED',
+      'CRM module record executed',
     );
   }
 }

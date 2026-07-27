@@ -2,6 +2,9 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { toTenantObjectId } from '@/common/utils/tenant-scope.util';
+import { ContextsService } from '@/modules/contexts/services/contexts.service';
+import { ModuleCoverageService } from '@/modules/module-records/services/module-coverage.service';
+import { TenantsService } from '@/modules/tenants/services/tenants.service';
 import {
   Application,
   ApplicationDocument,
@@ -30,7 +33,40 @@ export class DashboardService {
     private readonly campaigns: Model<CampaignDocument>,
     @InjectModel(Communication.name)
     private readonly communications: Model<CommunicationDocument>,
+    private readonly contextsService: ContextsService,
+    private readonly moduleCoverageService: ModuleCoverageService,
+    private readonly tenantsService: TenantsService,
   ) {}
+
+  async getBootstrap(userId: string, tenantId?: string) {
+    const [contexts, tenants] = await Promise.all([
+      this.contextsService.listUserContexts(userId),
+      this.tenantsService.listTenants(),
+    ]);
+    const moduleCoverage = this.moduleCoverageService.getModuleCoverage();
+    const activeTenantId =
+      tenantId ??
+      this.getContextTenantId(contexts[0]) ??
+      this.getRecordId(tenants[0]);
+
+    return {
+      activeTenantId,
+      contexts,
+      tenants,
+      moduleCoverage,
+      dashboard: activeTenantId
+        ? await this.getDashboard(activeTenantId)
+        : {
+            applications: 0,
+            campaigns: 0,
+            communications: 0,
+            hotLeads: 0,
+            newLeads: 0,
+            openTasks: 0,
+            tenantId: '',
+          },
+    };
+  }
 
   async getDashboard(tenantId: string) {
     const tenantObjectId = toTenantObjectId(tenantId);
@@ -64,5 +100,28 @@ export class DashboardService {
       campaigns,
       communications,
     };
+  }
+
+  private getContextTenantId(context: unknown) {
+    if (!context || typeof context !== 'object') return undefined;
+    const tenant = (context as { tenantId?: unknown }).tenantId;
+    return this.getRecordId(tenant) || this.getRecordId(context);
+  }
+
+  private getRecordId(record: unknown) {
+    if (!record || typeof record !== 'object') return undefined;
+    const value =
+      (record as { _id?: unknown; id?: unknown })._id ??
+      (record as { id?: unknown }).id;
+    if (typeof value === 'string') return value;
+    if (
+      value &&
+      typeof value === 'object' &&
+      'toHexString' in value &&
+      typeof (value as { toHexString?: unknown }).toHexString === 'function'
+    ) {
+      return (value as { toHexString: () => string }).toHexString();
+    }
+    return undefined;
   }
 }

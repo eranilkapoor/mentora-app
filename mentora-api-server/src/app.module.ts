@@ -20,7 +20,9 @@ import { LoggerModule } from '@/common/logger/logger.module';
 import { MonitoringModule } from '@/common/monitoring/monitoring.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { AnalyticsModule } from './modules/analytics/analytics.module';
+import { AdmissionsModule } from './modules/admissions/admissions.module';
 import { ChatModule } from './modules/chat/chat.module';
+import { CallCenterModule } from './modules/call-center/call-center.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { PaymentsModule } from './modules/payments/payments.module';
 import { ReferralsModule } from './modules/referrals/referrals.module';
@@ -28,16 +30,24 @@ import { SeederModule } from './modules/seeder/seeder.module';
 import { SettingsModule } from './modules/settings/settings.module';
 import { SupportModule } from './modules/support/support.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
+import { FieldForceModule } from './modules/field-force/field-force.module';
+import { FinanceLedgersModule } from './modules/finance-ledgers/finance-ledgers.module';
 import { LearningModule } from './modules/learning/learning.module';
 import { ApplicationsModule } from './modules/applications/applications.module';
 import { CampaignsModule } from './modules/campaigns/campaigns.module';
 import { CommunicationsModule } from './modules/communications/communications.module';
 import { ContextsModule } from './modules/contexts/contexts.module';
 import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { EventsModule } from './modules/events/events.module';
+import { InterviewsModule } from './modules/interviews/interviews.module';
 import { LeadsModule } from './modules/leads/leads.module';
 import { ModuleRecordsModule } from './modules/module-records/module-records.module';
+import { ReportsModule } from './modules/reports/reports.module';
+import { ScholarshipsModule } from './modules/scholarships/scholarships.module';
 import { TasksModule } from './modules/tasks/tasks.module';
 import { TenantsModule } from './modules/tenants/tenants.module';
+import { WhatsappModule } from './modules/whatsapp/whatsapp.module';
+import { WorkflowsModule } from './modules/workflows/workflows.module';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 
@@ -81,10 +91,14 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     ProfilesModule,
     AdminModule,
     AnalyticsModule,
+    AdmissionsModule,
     ChatModule,
+    CallCenterModule,
     NotificationsModule,
     PaymentsModule,
     ReferralsModule,
+    FieldForceModule,
+    FinanceLedgersModule,
     LearningModule,
     ContextsModule,
     TenantsModule,
@@ -93,8 +107,14 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     TasksModule,
     CampaignsModule,
     CommunicationsModule,
+    EventsModule,
+    InterviewsModule,
     ModuleRecordsModule,
+    ScholarshipsModule,
+    WhatsappModule,
     DashboardModule,
+    WorkflowsModule,
+    ReportsModule,
     SettingsModule,
     SupportModule,
     FeatureFlagsModule,

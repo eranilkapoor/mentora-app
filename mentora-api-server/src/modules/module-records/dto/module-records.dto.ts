@@ -86,3 +86,16 @@ export class UpdateModuleRecordDto {
   @IsObject()
   payload?: Record<string, unknown>;
 }
+
+export class ExecuteModuleRecordDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  outcome?: string;
+
+  @IsOptional()
+  @IsObject()
+  result?: Record<string, unknown>;
+}

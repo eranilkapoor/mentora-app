@@ -36,7 +36,10 @@ type CrmSessionState = {
 };
 
 type CrmWorkspaceState = {
+  activeTenantId: string;
+  contexts: unknown[];
   coverage: unknown[];
+  dashboard: unknown | null;
   error: string | null;
   loading: boolean;
   moduleRecords: Record<string, unknown[]>;
@@ -56,6 +59,17 @@ export type ModuleRecordDraft = {
   priority: string;
   dueAt?: string;
   payload: Record<string, string>;
+};
+
+const dedicatedCrmRoutes: Record<string, string> = {
+  admissions: "/admissions",
+  call_center: "/call-center",
+  event_management: "/events",
+  field_force_automation: "/field-force",
+  finance: "/finance-ledgers",
+  interview: "/interviews",
+  scholarship: "/scholarships",
+  whatsapp_crm: "/whatsapp",
 };
 
 async function getJson(path: string) {
@@ -88,12 +102,7 @@ async function sendJson(path: string, method: "POST", body: unknown) {
 export const loadCrmWorkspace = createAsyncThunk(
   "crmWorkspace/load",
   async () => {
-    const [tenants, coverage] = await Promise.all([
-      getJson("/tenants"),
-      getJson("/module-records/coverage"),
-    ]);
-
-    return { coverage, tenants };
+    return getJson("/dashboard/bootstrap");
   },
 );
 
@@ -104,6 +113,18 @@ export const loadModuleRecords = createAsyncThunk(
       `/module-records?tenantId=${encodeURIComponent(tenantId)}&moduleKey=${encodeURIComponent(moduleKey)}`,
     );
 
+    return { moduleKey, records };
+  },
+);
+
+export const loadDedicatedCrmRecords = createAsyncThunk(
+  "crmWorkspace/loadDedicatedCrmRecords",
+  async ({ moduleKey, tenantId }: { moduleKey: string; tenantId: string }) => {
+    const route = dedicatedCrmRoutes[moduleKey];
+    if (!route) throw new Error("Dedicated CRM route is not configured");
+    const records = await getJson(
+      `${route}?tenantId=${encodeURIComponent(tenantId)}`,
+    );
     return { moduleKey, records };
   },
 );
@@ -129,6 +150,133 @@ export const saveModuleRecord = createAsyncThunk(
   },
 );
 
+export const saveDedicatedCrmRecord = createAsyncThunk(
+  "crmWorkspace/saveDedicatedCrmRecord",
+  async (draft: ModuleRecordDraft) => {
+    const route = dedicatedCrmRoutes[draft.moduleKey];
+    if (!route) throw new Error("Dedicated CRM route is not configured");
+    const body = {
+      tenantId: draft.tenantId,
+      title: draft.title,
+      description: draft.description,
+      status: draft.status,
+      priority: draft.priority,
+      dueAt: draft.dueAt,
+      payload: draft.payload,
+    };
+    const response = draft.id
+      ? await sendJson(`${route}/${draft.id}`, "POST", body)
+      : await sendJson(route, "POST", body);
+    return { draft, response };
+  },
+);
+
+export const exportLeads = createAsyncThunk(
+  "crmWorkspace/exportLeads",
+  async ({ tenantId }: { tenantId: string }) => {
+    return getJson(
+      `/leads/operations/export?tenantId=${encodeURIComponent(tenantId)}`,
+    );
+  },
+);
+
+export const exportModuleRecords = createAsyncThunk(
+  "crmWorkspace/exportModuleRecords",
+  async ({ moduleKey, tenantId }: { moduleKey?: string; tenantId: string }) => {
+    const query = new URLSearchParams({ tenantId });
+    if (moduleKey) query.set("moduleKey", moduleKey);
+    return getJson(`/module-records/operations/export?${query.toString()}`);
+  },
+);
+
+export const findLeadDuplicates = createAsyncThunk(
+  "crmWorkspace/findLeadDuplicates",
+  async ({
+    email,
+    phone,
+    tenantId,
+  }: {
+    email?: string;
+    phone?: string;
+    tenantId: string;
+  }) => {
+    return sendJson("/leads/operations/duplicates", "POST", {
+      email,
+      phone,
+      tenantId,
+    });
+  },
+);
+
+export const importSampleLeads = createAsyncThunk(
+  "crmWorkspace/importSampleLeads",
+  async ({ tenantId }: { tenantId: string }) => {
+    return sendJson("/leads/operations/import", "POST", {
+      tenantId,
+      rows: [
+        {
+          tenantId,
+          firstName: "Imported",
+          lastName: "Student Lead",
+          email: `imported.${Date.now()}@mentora.test`,
+          phone: `90000${String(Date.now()).slice(-5)}`,
+          city: "Delhi",
+          state: "Delhi",
+          interestedPrograms: ["JEE Foundation"],
+          score: 68,
+          temperature: "warm",
+        },
+      ],
+    });
+  },
+);
+
+export const createWorkflowRule = createAsyncThunk(
+  "crmWorkspace/createWorkflowRule",
+  async ({ moduleKey, tenantId }: { moduleKey: string; tenantId: string }) => {
+    return sendJson("/workflows/rules", "POST", {
+      tenantId,
+      name: `${moduleKey.replaceAll("_", " ")} auto follow-up`,
+      moduleKey,
+      trigger: "record.created",
+      conditions: { priority: ["high", "urgent"] },
+      actions: [
+        { type: "assign_owner", strategy: "round_robin" },
+        { type: "create_task", dueInHours: 24 },
+      ],
+      status: "active",
+      priority: 10,
+    });
+  },
+);
+
+export const executeWorkflow = createAsyncThunk(
+  "crmWorkspace/executeWorkflow",
+  async ({ moduleKey, tenantId }: { moduleKey: string; tenantId: string }) => {
+    return sendJson("/workflows/execute", "POST", {
+      tenantId,
+      moduleKey,
+      trigger: "record.created",
+      input: { source: "admin-crm", preview: true },
+    });
+  },
+);
+
+export const createReportDefinition = createAsyncThunk(
+  "crmWorkspace/createReportDefinition",
+  async ({ moduleKey, tenantId }: { moduleKey: string; tenantId: string }) => {
+    return sendJson("/reports/definitions", "POST", {
+      tenantId,
+      name: `${moduleKey.replaceAll("_", " ")} operations report`,
+      moduleKey,
+      reportType: "table",
+      columns: ["title", "status", "priority", "owner", "dueAt"],
+      filters: { status: ["open", "in_progress"] },
+      status: "active",
+    });
+  },
+);
+
 const initialSessionState: CrmSessionState = {
   activeContext: null,
   activeId: "dashboard",
@@ -139,7 +287,10 @@ const initialSessionState: CrmSessionState = {
 };
 
 const initialWorkspaceState: CrmWorkspaceState = {
+  activeTenantId: "",
+  contexts: [],
   coverage: [],
+  dashboard: null,
   error: null,
   loading: false,
   moduleRecords: {},
@@ -219,8 +370,19 @@ const crmWorkspaceSlice = createSlice({
         state.loading = true;
       })
       .addCase(loadCrmWorkspace.fulfilled, (state, action) => {
-        state.coverage = normalizeApiData(action.payload.coverage);
-        state.tenants = normalizeApiData(action.payload.tenants);
+        const data = normalizeApiObject(action.payload) as {
+          activeTenantId?: unknown;
+          contexts?: unknown;
+          dashboard?: unknown;
+          moduleCoverage?: unknown;
+          tenants?: unknown;
+        };
+        state.activeTenantId =
+          typeof data.activeTenantId === "string" ? data.activeTenantId : "";
+        state.contexts = normalizeApiData(data.contexts);
+        state.coverage = normalizeApiData(data.moduleCoverage);
+        state.dashboard = data.dashboard ?? null;
+        state.tenants = normalizeApiData(data.tenants);
         state.loading = false;
       })
       .addCase(loadCrmWorkspace.rejected, (state, action) => {
@@ -229,6 +391,11 @@ const crmWorkspaceSlice = createSlice({
         state.loading = false;
       })
       .addCase(loadModuleRecords.fulfilled, (state, action) => {
+        state.moduleRecords[action.payload.moduleKey] = normalizeApiData(
+          action.payload.records,
+        );
+      })
+      .addCase(loadDedicatedCrmRecords.fulfilled, (state, action) => {
         state.moduleRecords[action.payload.moduleKey] = normalizeApiData(
           action.payload.records,
         );
@@ -249,6 +416,44 @@ const crmWorkspaceSlice = createSlice({
         }
 
         state.moduleRecords[moduleKey] = records;
+      })
+      .addCase(saveDedicatedCrmRecord.fulfilled, (state, action) => {
+        const record = normalizeApiObject(action.payload.response);
+        const moduleKey = action.payload.draft.moduleKey;
+        const records = state.moduleRecords[moduleKey] ?? [];
+        const recordId = getRecordId(record);
+        const index = records.findIndex(
+          (item) => getRecordId(item) === recordId,
+        );
+
+        if (index >= 0) {
+          records[index] = record;
+        } else {
+          records.unshift(record);
+        }
+
+        state.moduleRecords[moduleKey] = records;
+      })
+      .addCase(importSampleLeads.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(exportLeads.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(exportModuleRecords.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(findLeadDuplicates.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(createWorkflowRule.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(executeWorkflow.fulfilled, (state) => {
+        state.error = null;
+      })
+      .addCase(createReportDefinition.fulfilled, (state) => {
+        state.error = null;
       });
   },
 });

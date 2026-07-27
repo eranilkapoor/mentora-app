@@ -8,18 +8,23 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Permissions } from '@/common/decorators/permissions.decorator';
+import { Permission } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
+import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import { CreateCampaignDto } from '../dto/campaigns.dto';
 import { CampaignsService } from '../services/campaigns.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
 @Controller('campaigns')
 export class CampaignsController {
   constructor(private readonly service: CampaignsService) {}
 
   @Post()
   @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
   async createCampaign(@Body() dto: CreateCampaignDto) {
     return successResponse(
       await this.service.createCampaign(dto),
@@ -29,6 +34,7 @@ export class CampaignsController {
   }
 
   @Get()
+  @Permissions(Permission.CRM_CAMPAIGN_VIEW)
   async listCampaigns(@Query('tenantId') tenantId: string) {
     return successResponse(
       await this.service.listCampaigns(tenantId),

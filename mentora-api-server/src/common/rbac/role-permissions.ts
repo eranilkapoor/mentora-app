@@ -31,6 +31,10 @@ export const ROLE_PERMISSION_POLICIES: readonly RolePermissionPolicy[] = [
       'report:',
       'block:',
       'activity:',
+      'crm_lead:',
+      'crm_task:',
+      'crm_communication:',
+      'crm_module_record:view',
     ],
   },
   {
@@ -42,6 +46,8 @@ export const ROLE_PERMISSION_POLICIES: readonly RolePermissionPolicy[] = [
       'plan:',
       'analytics:',
       'dashboard:',
+      'crm_report:',
+      'crm_module_record:view',
     ],
   },
   {
@@ -63,7 +69,17 @@ export const ROLE_PERMISSION_POLICIES: readonly RolePermissionPolicy[] = [
   {
     name: Role.MARKETING_ADMIN,
     description: 'Marketing Admin',
-    permissionPrefixes: ['notification:', 'analytics:', 'dashboard:'],
+    permissionPrefixes: [
+      'notification:',
+      'analytics:',
+      'dashboard:',
+      'crm_lead:view',
+      'crm_lead:export',
+      'crm_campaign:',
+      'crm_communication:',
+      'crm_report:',
+      'crm_module_record:',
+    ],
   },
   {
     name: Role.MODERATOR,

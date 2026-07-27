@@ -42,6 +42,25 @@ export class ContextsService {
       .lean();
   }
 
+  async assertUserTenantAccess(userId: string, tenantId: string) {
+    const membership = await this.memberships
+      .findOne({
+        userId: toRequiredObjectId(userId),
+        tenantId: toTenantObjectId(tenantId),
+        status: 'active',
+      })
+      .select('_id role permissions branchIds')
+      .lean();
+
+    if (!membership) {
+      throw new ForbiddenException(
+        'Education CRM tenant context is not available for this user',
+      );
+    }
+
+    return membership;
+  }
+
   async selectContext(userId: string, dto: SelectContextDto) {
     const tenantId = toTenantObjectId(dto.tenantId);
     const membership = await this.memberships

@@ -81,6 +81,7 @@ POST /api/v1/leads/:leadId/activities
 GET  /api/v1/leads/:leadId/timeline?tenantId=:tenantId
 POST /api/v1/applications
 POST /api/v1/tasks
+GET  /api/v1/dashboard/bootstrap
 GET  /api/v1/dashboard?tenantId=:tenantId
 GET  /api/v1/module-records/coverage
 ```
@@ -178,7 +179,7 @@ Current CRM sections:
 
 Backend status: core modules such as tenants, leads, applications, tasks, campaigns, communications, dashboard, contexts, and module-records are implemented as top-level reusable NestJS modules. Remaining long-tail CRM areas are demo-ready through the tenant-scoped `module_records` coverage API and should be promoted into dedicated controllers/services only when their deep workflows need separate business rules.
 
-Frontend data status: the admin CRM starts in a clean demo workspace and does not call protected APIs before a CRM API session is available. The explicit Sync API action loads workspace metadata from `/api/v1/tenants` and `/api/v1/module-records/coverage` through Redux async state, then module tables can load rows from `/api/v1/module-records?tenantId=:tenantId&moduleKey=:moduleKey` when a tenant ID is available. If the API/auth session is unavailable, the UI shows an API-sync status and keeps create/edit actions in local MVP state instead of generating unauthenticated console errors.
+Frontend data status: the admin CRM starts in a clean demo workspace and does not call protected APIs before a CRM API session is available. The explicit Sync API action now calls authenticated `/api/v1/dashboard/bootstrap`, which returns contexts, tenants, active tenant scope, dashboard metrics, and module coverage in one payload. Module tables then load rows from `/api/v1/module-records?tenantId=:tenantId&moduleKey=:moduleKey` when a tenant ID is available. If the API/auth session is unavailable, the UI shows an API-sync status and keeps create/edit actions in local MVP state instead of generating unauthenticated console errors.
 
 Responsive target: the CRM is desktop/tablet-first. It should be fully usable on desktop and tablet widths, with dense navigation, tables, filters, side panels, and grid cards. Phone-size screens may show a compact advisory and horizontal workspace access, but the product is not optimized as a mobile CRM.
 
@@ -197,4 +198,4 @@ Enterprise UX backlog:
 - Keyboard-friendly navigation and accessible focus states.
 - Configurable dashboards by role: CEO, branch manager, counselor, finance, marketing, support.
 
-Next step: connect the admin CRM login to authenticated API clients and context selection, derive tenant scope from the authenticated membership, replace fixture rows with tenant-scoped backend data, and progressively promote high-traffic areas from `module_records` into dedicated modules.
+Next step: connect the admin CRM login form to real API login/session creation, enforce selected membership context on every write, and progressively promote high-traffic areas from `module_records` into dedicated modules.

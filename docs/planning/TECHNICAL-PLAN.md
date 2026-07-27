@@ -283,6 +283,19 @@ POST   /api/v1/payments/create-order
 POST   /api/v1/payments/verify
 ```
 
+Education CRM:
+
+```text
+GET    /api/v1/dashboard/bootstrap
+GET    /api/v1/dashboard?tenantId=:tenantId
+GET    /api/v1/module-records/coverage
+GET    /api/v1/module-records?tenantId=:tenantId&moduleKey=:moduleKey
+POST   /api/v1/module-records
+POST   /api/v1/module-records/:recordId
+GET    /api/v1/me/contexts
+POST   /api/v1/me/context
+```
+
 Public website:
 
 ```text

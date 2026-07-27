@@ -8,8 +8,12 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { Permissions } from '@/common/decorators/permissions.decorator';
+import { Permission } from '@/common/enums';
 import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
+import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
+import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import {
   CreateBranchDto,
   CreateLeadSourceDto,
@@ -18,13 +22,14 @@ import {
 } from '../dto/tenants.dto';
 import { TenantsService } from '../services/tenants.service';
 
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
 @Controller()
 export class TenantsController {
   constructor(private readonly service: TenantsService) {}
 
   @Post('tenants')
   @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_TENANT_MANAGE)
   async createTenant(@Body() dto: CreateTenantDto) {
     return successResponse(
       await this.service.createTenant(dto),
@@ -34,6 +39,7 @@ export class TenantsController {
   }
 
   @Get('tenants')
+  @Permissions(Permission.CRM_TENANT_VIEW)
   async listTenants() {
     return successResponse(
       await this.service.listTenants(),
@@ -44,6 +50,7 @@ export class TenantsController {
 
   @Post('branches')
   @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_TENANT_MANAGE)
   async createBranch(@Body() dto: CreateBranchDto) {
     return successResponse(
       await this.service.createBranch(dto),
@@ -53,6 +60,7 @@ export class TenantsController {
   }
 
   @Get('branches')
+  @Permissions(Permission.CRM_TENANT_VIEW)
   async listBranches(@Query('tenantId') tenantId: string) {
     return successResponse(
       await this.service.listBranches(tenantId),
@@ -63,6 +71,7 @@ export class TenantsController {
 
   @Post('lead-sources')
   @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_TENANT_MANAGE)
   async createLeadSource(@Body() dto: CreateLeadSourceDto) {
     return successResponse(
       await this.service.createLeadSource(dto),
@@ -72,6 +81,7 @@ export class TenantsController {
   }
 
   @Get('lead-sources')
+  @Permissions(Permission.CRM_TENANT_VIEW)
   async listLeadSources(@Query('tenantId') tenantId: string) {
     return successResponse(
       await this.service.listLeadSources(tenantId),
@@ -82,6 +92,7 @@ export class TenantsController {
 
   @Post('lead-stages')
   @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_TENANT_MANAGE)
   async createLeadStage(@Body() dto: CreateLeadStageDto) {
     return successResponse(
       await this.service.createLeadStage(dto),
@@ -91,6 +102,7 @@ export class TenantsController {
   }
 
   @Get('lead-stages')
+  @Permissions(Permission.CRM_TENANT_VIEW)
   async listLeadStages(@Query('tenantId') tenantId: string) {
     return successResponse(
       await this.service.listLeadStages(tenantId),

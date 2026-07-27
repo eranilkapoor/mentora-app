@@ -119,4 +119,30 @@ export enum Permission {
   //  ACTIVITY LOGS
   // =========================
   ACTIVITY_VIEW = 'activity:view',
+
+  // =========================
+  //  EDUCATION CRM
+  // =========================
+  CRM_TENANT_VIEW = 'crm_tenant:view',
+  CRM_TENANT_MANAGE = 'crm_tenant:manage',
+  CRM_LEAD_VIEW = 'crm_lead:view',
+  CRM_LEAD_CREATE = 'crm_lead:create',
+  CRM_LEAD_UPDATE = 'crm_lead:update',
+  CRM_LEAD_ASSIGN = 'crm_lead:assign',
+  CRM_LEAD_IMPORT = 'crm_lead:import',
+  CRM_LEAD_EXPORT = 'crm_lead:export',
+  CRM_LEAD_MERGE = 'crm_lead:merge',
+  CRM_APPLICATION_VIEW = 'crm_application:view',
+  CRM_APPLICATION_MANAGE = 'crm_application:manage',
+  CRM_TASK_VIEW = 'crm_task:view',
+  CRM_TASK_MANAGE = 'crm_task:manage',
+  CRM_CAMPAIGN_VIEW = 'crm_campaign:view',
+  CRM_CAMPAIGN_MANAGE = 'crm_campaign:manage',
+  CRM_COMMUNICATION_VIEW = 'crm_communication:view',
+  CRM_COMMUNICATION_MANAGE = 'crm_communication:manage',
+  CRM_MODULE_RECORD_VIEW = 'crm_module_record:view',
+  CRM_MODULE_RECORD_MANAGE = 'crm_module_record:manage',
+  CRM_REPORT_VIEW = 'crm_report:view',
+  CRM_REPORT_EXPORT = 'crm_report:export',
+  CRM_WORKFLOW_MANAGE = 'crm_workflow:manage',
 }

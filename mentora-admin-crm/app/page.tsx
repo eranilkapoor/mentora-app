@@ -32,9 +32,18 @@ import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   crmSessionActions,
   crmWorkspaceActions,
+  createReportDefinition,
+  createWorkflowRule,
+  executeWorkflow,
+  exportLeads,
+  exportModuleRecords,
+  findLeadDuplicates,
+  importSampleLeads,
+  loadDedicatedCrmRecords,
   loadModuleRecords,
   loadCrmWorkspace,
   saveModuleRecord,
+  saveDedicatedCrmRecord,
   type DemoContext,
   type DemoUser,
   type ModuleRecordDraft,
@@ -60,6 +69,17 @@ type CrmModule = {
 type ThemeMode = "system" | "light" | "dark";
 
 type ModuleStatus = "Production MVP" | "Workflow MVP" | "Foundation";
+
+const dedicatedCrmModuleIds = new Set([
+  "admissions",
+  "call_center",
+  "event_management",
+  "field_force_automation",
+  "finance",
+  "interview",
+  "scholarship",
+  "whatsapp_crm",
+]);
 
 type IconName =
   | "ai"
@@ -130,7 +150,17 @@ const moduleActions: Record<string, string[]> = {
   applications: ["Review", "Request Docs", "Move Stage", "Issue Offer"],
   campaigns: ["Launch", "Pause", "Duplicate", "ROI Report"],
   communications: ["Send Message", "Schedule", "Open Inbox", "Template"],
-  leads: ["Create Lead", "Assign", "Change Stage", "Log Activity"],
+  automation: ["Create Rule", "Run Workflow", "Execution Log"],
+  leads: [
+    "Create Lead",
+    "Check Duplicates",
+    "Import Leads",
+    "Export Leads",
+    "Assign",
+    "Change Stage",
+    "Log Activity",
+  ],
+  reports: ["Create Report", "Export Report", "Schedule Report"],
   tasks: ["Create Task", "Escalate", "Reassign", "Complete"],
 };
 
@@ -1229,8 +1259,8 @@ export default function CrmDashboardPage() {
   }, [activeContext, apiSyncEnabled, dispatch, loggedInUser]);
 
   const activeTenantId = useMemo(
-    () => extractFirstId(workspace.tenants),
-    [workspace.tenants],
+    () => workspace.activeTenantId || extractFirstId(workspace.tenants),
+    [workspace.activeTenantId, workspace.tenants],
   );
 
   useEffect(() => {
@@ -1244,7 +1274,12 @@ export default function CrmDashboardPage() {
       return;
     }
     void dispatch(
-      loadModuleRecords({ moduleKey: activeId, tenantId: activeTenantId }),
+      dedicatedCrmModuleIds.has(activeId)
+        ? loadDedicatedCrmRecords({
+            moduleKey: activeId,
+            tenantId: activeTenantId,
+          })
+        : loadModuleRecords({ moduleKey: activeId, tenantId: activeTenantId }),
     );
   }, [
     activeContext,
@@ -1354,7 +1389,165 @@ export default function CrmDashboardPage() {
     );
   }
 
-  function runAction(label: string) {
+  async function runAction(label: string) {
+    const normalized = label.toLowerCase();
+
+    if (activeId === "leads") {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before running lead operations",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (normalized.includes("export")) {
+          const result = await dispatch(
+            exportLeads({ tenantId: activeTenantId }),
+          ).unwrap();
+          const data = normalizeResponseObject(result);
+          const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
+          dispatch(
+            crmSessionActions.setToast(
+              `Lead export prepared with ${rowCount} rows`,
+            ),
+          );
+          return;
+        }
+
+        if (normalized.includes("duplicate")) {
+          const firstLeadRow = filteredRows[0];
+          await dispatch(
+            findLeadDuplicates({
+              email: firstLeadRow?.[3]?.includes("@")
+                ? firstLeadRow[3]
+                : "imported.student@mentora.test",
+              phone: firstLeadRow?.[4]?.match(/^\d{7,}$/)
+                ? firstLeadRow[4]
+                : undefined,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Duplicate check completed"));
+          return;
+        }
+
+        if (normalized.includes("create")) {
+          setRecordForm({ mode: "create" });
+          return;
+        }
+
+        if (normalized.includes("import")) {
+          await dispatch(
+            importSampleLeads({ tenantId: activeTenantId }),
+          ).unwrap();
+          await dispatch(
+            loadModuleRecords({
+              moduleKey: activeId,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Sample lead imported to API"));
+          return;
+        }
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Lead operation failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (normalized.includes("export") || normalized.includes("report")) {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before exporting records",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (activeId === "reports") {
+          await dispatch(
+            createReportDefinition({
+              moduleKey: activeId,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+        }
+        const result = await dispatch(
+          exportModuleRecords({
+            moduleKey: activeId,
+            tenantId: activeTenantId,
+          }),
+        ).unwrap();
+        const data = normalizeResponseObject(result);
+        const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
+        dispatch(
+          crmSessionActions.setToast(
+            `${activeModule?.title ?? "Module"} export prepared with ${rowCount} rows`,
+          ),
+        );
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Export failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (activeId === "automation" || normalized.includes("workflow")) {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before running workflow actions",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (normalized.includes("create") || normalized.includes("rule")) {
+          await dispatch(
+            createWorkflowRule({
+              moduleKey: activeId,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Workflow rule created"));
+          return;
+        }
+
+        await dispatch(
+          executeWorkflow({ moduleKey: activeId, tenantId: activeTenantId }),
+        ).unwrap();
+        dispatch(crmSessionActions.setToast("Workflow execution completed"));
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Workflow action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
     dispatch(
       crmSessionActions.setToast(
         `${label} queued for ${selectedCount || "current"} record${selectedCount === 1 ? "" : "s"}`,
@@ -1482,7 +1675,9 @@ export default function CrmDashboardPage() {
             <div className="utility-actions">
               <button
                 className="btn btn-outline-primary btn-sm utility-button"
-                onClick={() => runAction("Notifications opened")}
+                onClick={() => {
+                  void runAction("Notifications opened");
+                }}
                 type="button"
               >
                 <FontAwesomeIcon icon={faBell} />
@@ -1565,7 +1760,11 @@ export default function CrmDashboardPage() {
                 return;
               }
               try {
-                await dispatch(saveModuleRecord(finalDraft)).unwrap();
+                if (dedicatedCrmModuleIds.has(activeModule.id)) {
+                  await dispatch(saveDedicatedCrmRecord(finalDraft)).unwrap();
+                } else {
+                  await dispatch(saveModuleRecord(finalDraft)).unwrap();
+                }
                 dispatch(crmSessionActions.setToast("Record saved to API"));
               } catch {
                 dispatch(
@@ -1715,6 +1914,7 @@ function ServerStatus({
   onSync: () => void;
   workspace: {
     coverage: unknown[];
+    activeTenantId: string;
     error: string | null;
     loading: boolean;
     tenants: unknown[];
@@ -1741,7 +1941,7 @@ function ServerStatus({
         <strong>{statusLabel}</strong>
         <span>
           {apiSyncEnabled
-            ? `${workspace.tenants.length} tenants`
+            ? `${workspace.tenants.length} tenants / ${workspace.activeTenantId ? "tenant scoped" : "no tenant selected"}`
             : "No protected API calls before auth"}
         </span>
         <span>
@@ -1919,7 +2119,7 @@ function ModulePanel(props: {
   view: "list" | "grid";
   setView: (view: "list" | "grid") => void;
   openRecordForm: (form: { mode: "create" | "edit"; row?: string[] }) => void;
-  runAction: (label: string) => void;
+  runAction: (label: string) => Promise<void>;
 }) {
   const module = props.module;
   const allVisibleIds = props.rows.map((row) => row.join("|"));
@@ -1993,7 +2193,7 @@ function ModulePanel(props: {
               onClick={() =>
                 action.toLowerCase().includes("create")
                   ? props.openRecordForm({ mode: "create" })
-                  : props.runAction(action)
+                  : void props.runAction(action)
               }
               type="button"
             >
@@ -2504,6 +2704,17 @@ function extractFirstId(records: unknown[]) {
     return (object.data as { _id: string })._id;
   }
   return "";
+}
+
+function normalizeResponseObject(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object") return {};
+  if ("data" in value) {
+    const data = (value as { data?: unknown }).data;
+    return data && typeof data === "object"
+      ? (data as Record<string, unknown>)
+      : {};
+  }
+  return value as Record<string, unknown>;
 }
 
 function recordsToRows(records: unknown[] | undefined, module: CrmModule) {

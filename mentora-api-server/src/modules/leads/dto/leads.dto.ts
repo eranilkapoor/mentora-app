@@ -145,3 +145,40 @@ export class AddLeadActivityDto {
   @IsObject()
   metadata?: Record<string, unknown>;
 }
+
+export class FindLeadDuplicatesDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+}
+
+export class MergeLeadsDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsMongoId()
+  sourceLeadId!: string;
+
+  @IsOptional()
+  @IsObject()
+  fieldOverrides?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsString()
+  reason?: string;
+}
+
+export class ImportLeadsDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsArray()
+  rows!: CreateLeadDto[];
+}

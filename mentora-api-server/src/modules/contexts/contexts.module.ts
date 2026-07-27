@@ -5,6 +5,7 @@ import {
   UserMembership,
   UserMembershipSchema,
 } from './schemas/contexts.schema';
+import { TenantContextGuard } from './guards/tenant-context.guard';
 import { ContextsService } from './services/contexts.service';
 
 @Module({
@@ -14,7 +15,7 @@ import { ContextsService } from './services/contexts.service';
     ]),
   ],
   controllers: [ContextsController],
-  providers: [ContextsService],
-  exports: [ContextsService],
+  providers: [ContextsService, TenantContextGuard],
+  exports: [ContextsService, TenantContextGuard],
 })
 export class ContextsModule {}
