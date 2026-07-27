@@ -36,42 +36,57 @@ mentora-admin-crm        Next.js admin CRM portal for organizations and platform
 
 ## Backend Module Status
 
-Implemented starter backend module:
+Implemented starter backend modules. These are top-level reusable API modules, not admin-CRM-only modules, so the admin portal, public website, mobile app, and future integrations can reuse the same APIs.
 
 ```text
-src/modules/education-crm
+src/modules/tenants
+src/modules/leads
+src/modules/applications
+src/modules/tasks
+src/modules/campaigns
+src/modules/communications
+src/modules/module-records
+src/modules/contexts
+src/modules/dashboard
 ```
 
 Initial collections:
 
-- `crm_tenants`
-- `crm_branches`
-- `crm_lead_sources`
-- `crm_lead_stages`
-- `crm_leads`
-- `crm_lead_activities`
-- `crm_lead_assignments`
-- `crm_applications`
-- `crm_tasks`
-- `crm_campaigns`
-- `crm_communications`
+- `tenants`
+- `tenants`
+- `branches`
+- `lead_sources`
+- `lead_stages`
+- `leads`
+- `lead_activities`
+- `lead_assignments`
+- `applications`
+- `tasks`
+- `campaigns`
+- `communications`
+- `module_records`
+- `user_memberships`
 
 Initial APIs:
 
 ```text
-POST /api/v1/education-crm/tenants
-GET  /api/v1/education-crm/tenants
-POST /api/v1/education-crm/leads
-GET  /api/v1/education-crm/leads?tenantId=:tenantId
-GET  /api/v1/education-crm/leads/:leadId?tenantId=:tenantId
-POST /api/v1/education-crm/leads/:leadId/assign
-POST /api/v1/education-crm/leads/:leadId/change-stage
-POST /api/v1/education-crm/leads/:leadId/activities
-GET  /api/v1/education-crm/leads/:leadId/timeline?tenantId=:tenantId
-POST /api/v1/education-crm/applications
-POST /api/v1/education-crm/tasks
-GET  /api/v1/education-crm/dashboard?tenantId=:tenantId
+POST /api/v1/tenants
+GET  /api/v1/tenants
+POST /api/v1/leads
+POST /api/v1/leads/public
+GET  /api/v1/leads?tenantId=:tenantId
+GET  /api/v1/leads/:leadId?tenantId=:tenantId
+POST /api/v1/leads/:leadId/assign
+POST /api/v1/leads/:leadId/change-stage
+POST /api/v1/leads/:leadId/activities
+GET  /api/v1/leads/:leadId/timeline?tenantId=:tenantId
+POST /api/v1/applications
+POST /api/v1/tasks
+GET  /api/v1/dashboard?tenantId=:tenantId
+GET  /api/v1/module-records/coverage
 ```
+
+`POST /api/v1/leads/public` is implemented in the `leads` module as a public lead-capture controller because it creates the same `Lead` domain object. There is no separate `public-leads` module.
 
 ## MVP Build Order
 

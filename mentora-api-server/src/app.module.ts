@@ -29,7 +29,15 @@ import { SettingsModule } from './modules/settings/settings.module';
 import { SupportModule } from './modules/support/support.module';
 import { FeatureFlagsModule } from './modules/feature-flags/feature-flags.module';
 import { LearningModule } from './modules/learning/learning.module';
-import { EducationCrmModule } from './modules/education-crm/education-crm.module';
+import { ApplicationsModule } from './modules/applications/applications.module';
+import { CampaignsModule } from './modules/campaigns/campaigns.module';
+import { CommunicationsModule } from './modules/communications/communications.module';
+import { ContextsModule } from './modules/contexts/contexts.module';
+import { DashboardModule } from './modules/dashboard/dashboard.module';
+import { LeadsModule } from './modules/leads/leads.module';
+import { ModuleRecordsModule } from './modules/module-records/module-records.module';
+import { TasksModule } from './modules/tasks/tasks.module';
+import { TenantsModule } from './modules/tenants/tenants.module';
 
 const nodeEnv = process.env.NODE_ENV || 'development';
 
@@ -78,7 +86,15 @@ const nodeEnv = process.env.NODE_ENV || 'development';
     PaymentsModule,
     ReferralsModule,
     LearningModule,
-    EducationCrmModule,
+    ContextsModule,
+    TenantsModule,
+    LeadsModule,
+    ApplicationsModule,
+    TasksModule,
+    CampaignsModule,
+    CommunicationsModule,
+    ModuleRecordsModule,
+    DashboardModule,
     SettingsModule,
     SupportModule,
     FeatureFlagsModule,

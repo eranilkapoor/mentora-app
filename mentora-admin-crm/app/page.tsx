@@ -21,6 +21,8 @@ type DemoContext = {
   modules: string[];
 };
 
+type ThemeMode = "system" | "light" | "dark";
+
 const demoUsers = [
   {
     email: "super.admin@mentora.test",
@@ -985,6 +987,7 @@ const moduleMap = Object.fromEntries(
 );
 
 export default function CrmDashboardPage() {
+  const [themeMode, setThemeMode] = useState<ThemeMode>("system");
   const [loginEmail, setLoginEmail] = useState(demoUsers[0].email);
   const [loggedInUser, setLoggedInUser] = useState<
     (typeof demoUsers)[number] | null
@@ -1072,6 +1075,8 @@ export default function CrmDashboardPage() {
         loginEmail={loginEmail}
         setLoginEmail={setLoginEmail}
         login={login}
+        setThemeMode={setThemeMode}
+        themeMode={themeMode}
       />
     );
   }
@@ -1082,6 +1087,8 @@ export default function CrmDashboardPage() {
         user={loggedInUser}
         chooseContext={chooseContext}
         logout={() => setLoggedInUser(null)}
+        setThemeMode={setThemeMode}
+        themeMode={themeMode}
       />
     );
   }
@@ -1093,7 +1100,7 @@ export default function CrmDashboardPage() {
   }
 
   return (
-    <div className="admin-shell">
+    <div className={`admin-shell theme-${themeMode}`}>
       <aside className="left-sec">
         <div className="header-left">
           <button
@@ -1142,6 +1149,7 @@ export default function CrmDashboardPage() {
             </p>
           </div>
           <div className="login-info">
+            <ThemeSelector setThemeMode={setThemeMode} themeMode={themeMode} />
             <select aria-label="Tenant" defaultValue="webnza">
               <option value="active">
                 {activeContext.tenant} / {activeContext.branch}
@@ -1202,14 +1210,19 @@ function LoginScreen({
   loginEmail,
   setLoginEmail,
   login,
+  setThemeMode,
+  themeMode,
 }: {
   loginEmail: string;
   setLoginEmail: (value: string) => void;
   login: () => void;
+  setThemeMode: (value: ThemeMode) => void;
+  themeMode: ThemeMode;
 }) {
   return (
-    <main className="auth-screen">
+    <main className={`auth-screen theme-${themeMode}`}>
       <section className="auth-card">
+        <ThemeSelector setThemeMode={setThemeMode} themeMode={themeMode} />
         <span className="brand-mark">M</span>
         <h1>Mentora CRM Login</h1>
         <p>Select a demo CRM user to show role-based tenant access.</p>
@@ -1238,13 +1251,17 @@ function ContextScreen({
   user,
   chooseContext,
   logout,
+  setThemeMode,
+  themeMode,
 }: {
   user: (typeof demoUsers)[number];
   chooseContext: (context: DemoContext) => void;
   logout: () => void;
+  setThemeMode: (value: ThemeMode) => void;
+  themeMode: ThemeMode;
 }) {
   return (
-    <main className="auth-screen">
+    <main className={`auth-screen theme-${themeMode}`}>
       <section className="context-card">
         <div className="context-head">
           <div>
@@ -1252,9 +1269,12 @@ function ContextScreen({
             <h1>{user.name}</h1>
             <p>{user.email}</p>
           </div>
-          <button onClick={logout} type="button">
-            Change User
-          </button>
+          <div className="context-actions">
+            <ThemeSelector setThemeMode={setThemeMode} themeMode={themeMode} />
+            <button onClick={logout} type="button">
+              Change User
+            </button>
+          </div>
         </div>
         <div className="context-grid">
           {user.contexts.map((context) => (
@@ -1273,6 +1293,29 @@ function ContextScreen({
         </div>
       </section>
     </main>
+  );
+}
+
+function ThemeSelector({
+  setThemeMode,
+  themeMode,
+}: {
+  setThemeMode: (value: ThemeMode) => void;
+  themeMode: ThemeMode;
+}) {
+  return (
+    <label className="theme-switcher">
+      <span>Theme</span>
+      <select
+        aria-label="Theme mode"
+        onChange={(event) => setThemeMode(event.target.value as ThemeMode)}
+        value={themeMode}
+      >
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </label>
   );
 }
 

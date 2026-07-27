@@ -72,14 +72,11 @@ export default function HomePage() {
     }
 
     try {
-      const response = await fetch(
-        `${apiBaseUrl}/api/v1/education-crm/public/leads`,
-        {
-          body: JSON.stringify(payload),
-          headers: { "Content-Type": "application/json" },
-          method: "POST",
-        },
-      );
+      const response = await fetch(`${apiBaseUrl}/api/v1/leads/public`, {
+        body: JSON.stringify(payload),
+        headers: { "Content-Type": "application/json" },
+        method: "POST",
+      });
       if (!response.ok) throw new Error("Lead capture failed");
       setDemoStatus("Demo request sent to Mentora CRM.");
       form.reset();

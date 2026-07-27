@@ -3,6 +3,8 @@
   --bg: #eef3f8;
   --surface: #ffffff;
   --surface-2: #f8fafc;
+  --surface-3: #eef7fc;
+  --surface-action: #eef5fa;
   --ink: #102033;
   --muted: #637389;
   --line: #d7e1ea;
@@ -10,10 +12,100 @@
   --brand: #0b4d75;
   --brand-dark: #07334f;
   --brand-soft: #e4f2fb;
+  --brand-soft-line: #c6deec;
   --accent: #117e66;
+  --accent-soft: #e4f7ef;
   --warn: #b86a17;
+  --warn-soft: #fff2df;
   --danger: #b42318;
+  --danger-soft: #fde7e5;
+  --on-brand: #ffffff;
+  --on-sidebar: #ffffff;
+  --sidebar-text: #dcecf5;
+  --selected-row: #e7f6ef;
   --shadow: 0 16px 40px rgba(16, 32, 51, 0.08);
+  --shadow-soft: 0 8px 24px rgba(16, 32, 51, 0.05);
+  --shadow-panel: -16px 0 40px rgba(16, 32, 51, 0.14);
+  --auth-overlay: linear-gradient(
+    135deg,
+    rgba(7, 51, 79, 0.92),
+    rgba(11, 77, 117, 0.8)
+  );
+  --section-head: linear-gradient(180deg, #edf7fd, #d8ecf7);
+}
+
+.theme-dark {
+  color-scheme: dark;
+  --bg: #0d1420;
+  --surface: #121c2a;
+  --surface-2: #172435;
+  --surface-3: #1a3144;
+  --surface-action: #162f42;
+  --ink: #e8f1f8;
+  --muted: #a5b5c5;
+  --line: #263a4f;
+  --line-strong: #39546c;
+  --brand: #62c5f4;
+  --brand-dark: #0b2c42;
+  --brand-soft: #123852;
+  --brand-soft-line: #245a78;
+  --accent: #56d1b2;
+  --accent-soft: #123b35;
+  --warn: #f5b461;
+  --warn-soft: #3c2b16;
+  --danger: #ff8f86;
+  --danger-soft: #3f1d1b;
+  --on-brand: #06131d;
+  --on-sidebar: #ffffff;
+  --sidebar-text: #d7ecf8;
+  --selected-row: #143d36;
+  --shadow: 0 16px 44px rgba(0, 0, 0, 0.26);
+  --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.18);
+  --shadow-panel: -16px 0 40px rgba(0, 0, 0, 0.34);
+  --auth-overlay: linear-gradient(
+    135deg,
+    rgba(7, 22, 36, 0.95),
+    rgba(12, 55, 76, 0.88)
+  );
+  --section-head: linear-gradient(180deg, #17384e, #112b3f);
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-system {
+    color-scheme: dark;
+    --bg: #0d1420;
+    --surface: #121c2a;
+    --surface-2: #172435;
+    --surface-3: #1a3144;
+    --surface-action: #162f42;
+    --ink: #e8f1f8;
+    --muted: #a5b5c5;
+    --line: #263a4f;
+    --line-strong: #39546c;
+    --brand: #62c5f4;
+    --brand-dark: #0b2c42;
+    --brand-soft: #123852;
+    --brand-soft-line: #245a78;
+    --accent: #56d1b2;
+    --accent-soft: #123b35;
+    --warn: #f5b461;
+    --warn-soft: #3c2b16;
+    --danger: #ff8f86;
+    --danger-soft: #3f1d1b;
+    --on-brand: #06131d;
+    --on-sidebar: #ffffff;
+    --sidebar-text: #d7ecf8;
+    --selected-row: #143d36;
+    --shadow: 0 16px 44px rgba(0, 0, 0, 0.26);
+    --shadow-soft: 0 8px 24px rgba(0, 0, 0, 0.18);
+    --shadow-panel: -16px 0 40px rgba(0, 0, 0, 0.34);
+    --auth-overlay: linear-gradient(
+      135deg,
+      rgba(7, 22, 36, 0.95),
+      rgba(12, 55, 76, 0.88)
+    );
+    --section-head: linear-gradient(180deg, #17384e, #112b3f);
+  }
 }
 
 * {
@@ -39,9 +131,7 @@ button {
 
 .auth-screen {
   align-items: center;
-  background:
-    linear-gradient(135deg, rgba(7, 51, 79, 0.92), rgba(11, 77, 117, 0.8)),
-    var(--bg);
+  background: var(--auth-overlay), var(--bg);
   display: grid;
   min-height: 100vh;
   padding: 24px;
@@ -98,7 +188,7 @@ button {
 .auth-card button,
 .context-head button {
   background: var(--brand);
-  color: #fff;
+  color: var(--on-brand);
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
@@ -161,7 +251,7 @@ button {
 
 .left-sec {
   background: linear-gradient(180deg, var(--brand-dark), var(--brand));
-  color: #fff;
+  color: var(--on-sidebar);
   min-height: 100vh;
 }
 
@@ -174,7 +264,7 @@ button {
   align-items: center;
   background: transparent;
   border: 0;
-  color: #fff;
+  color: var(--on-sidebar);
   display: flex;
   gap: 11px;
   padding: 0;
@@ -182,7 +272,7 @@ button {
 }
 
 .brand-mark {
-  background: #fff;
+  background: var(--surface);
   color: var(--brand);
   display: grid;
   font-size: 20px;
@@ -218,7 +308,7 @@ button {
 .menu-group button {
   background: transparent;
   border: 0;
-  color: #dcecf5;
+  color: var(--sidebar-text);
   display: block;
   font-size: 13px;
   padding: 8px 22px;
@@ -228,7 +318,7 @@ button {
 
 .menu-group button:hover,
 .menu-group button.selected {
-  background: #fff;
+  background: var(--surface);
   color: var(--brand);
   font-weight: 800;
 }
@@ -290,7 +380,7 @@ button {
 .detail-panel button {
   background: var(--brand);
   border: 1px solid var(--brand-dark);
-  color: #fff;
+  color: var(--on-brand);
   font-size: 12px;
   font-weight: 800;
   min-height: 34px;
@@ -299,8 +389,35 @@ button {
 }
 
 .login-info select {
-  background: #fff;
+  background: var(--surface);
   color: var(--brand);
+}
+
+.context-actions {
+  align-items: center;
+  display: flex;
+  gap: 10px;
+}
+
+.theme-switcher {
+  align-items: center;
+  display: flex;
+  gap: 8px;
+}
+
+.theme-switcher span {
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.theme-switcher select {
+  background: var(--surface);
+  border: 1px solid var(--line-strong);
+  color: var(--brand);
+  min-height: 34px;
+  padding: 7px 10px;
 }
 
 .workspace {
@@ -331,7 +448,7 @@ button {
 
 .module-metric {
   background: var(--brand-soft);
-  border: 1px solid #c6deec;
+  border: 1px solid var(--brand-soft-line);
   min-width: 132px;
   padding: 12px;
   text-align: right;
@@ -369,7 +486,7 @@ button {
 .pipeline-step {
   background: var(--surface);
   border: 1px solid var(--line);
-  box-shadow: 0 8px 24px rgba(16, 32, 51, 0.05);
+  box-shadow: var(--shadow-soft);
   padding: 14px;
   text-align: left;
 }
@@ -409,7 +526,7 @@ button {
 
 .listmanager .head,
 .filter-block .head {
-  background: linear-gradient(180deg, #edf7fd, #d8ecf7);
+  background: var(--section-head);
   border-bottom: 1px solid var(--line-strong);
   color: var(--brand);
   font-size: 12px;
@@ -478,7 +595,7 @@ button {
 }
 
 .action-row .secondary {
-  background: #eef5fa;
+  background: var(--surface-action);
   color: var(--brand);
 }
 
@@ -512,7 +629,7 @@ button {
 }
 
 .input {
-  background: #fff;
+  background: var(--surface);
   border: 1px solid var(--line-strong);
   color: var(--ink);
   height: 34px;
@@ -532,14 +649,14 @@ table {
 
 th,
 td {
-  border-bottom: 1px solid #dce7ef;
+  border-bottom: 1px solid var(--line);
   font-size: 13px;
   padding: 10px;
   text-align: left;
 }
 
 th {
-  background: #eef7fc;
+  background: var(--surface-3);
   color: var(--brand);
   font-size: 12px;
   text-transform: uppercase;
@@ -550,7 +667,7 @@ tbody tr:nth-child(even) {
 }
 
 .selected-row {
-  background: #e7f6ef !important;
+  background: var(--selected-row) !important;
 }
 
 .adminDataSort {
@@ -588,17 +705,17 @@ tbody tr:nth-child(even) {
 }
 
 .badge.good {
-  background: #e4f7ef;
+  background: var(--accent-soft);
   color: var(--accent);
 }
 
 .badge.warn {
-  background: #fff2df;
+  background: var(--warn-soft);
   color: var(--warn);
 }
 
 .badge.danger {
-  background: #fde7e5;
+  background: var(--danger-soft);
   color: var(--danger);
 }
 
@@ -616,7 +733,7 @@ tbody tr:nth-child(even) {
 .detail-panel {
   background: var(--surface);
   border-left: 1px solid var(--line);
-  box-shadow: -16px 0 40px rgba(16, 32, 51, 0.14);
+  box-shadow: var(--shadow-panel);
   bottom: 0;
   max-width: 390px;
   padding: 22px;
@@ -658,7 +775,7 @@ tbody tr:nth-child(even) {
   background: var(--brand-dark);
   bottom: 18px;
   box-shadow: var(--shadow);
-  color: #fff;
+  color: var(--on-sidebar);
   font-size: 13px;
   font-weight: 800;
   padding: 10px 14px;
