@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -170,6 +170,7 @@ const moduleIcons: Record<string, IconName> = {
   "dashboard-module": "dashboard",
   "document-management": "document",
   "email-crm": "mail",
+  notifications: "chat",
   "event-management": "calendar",
   "field-force-automation": "mobile",
   finance: "finance",
@@ -216,11 +217,63 @@ const moduleActions: Record<string, string[]> = {
     "Configure SSO",
     "Audit Export",
   ],
-  campaigns: ["Launch", "Pause", "Duplicate", "ROI Report"],
-  communications: ["Send Message", "Schedule", "Open Inbox", "Template"],
+  campaigns: [
+    "Inventory",
+    "UTM Setup",
+    "Landing Page",
+    "Lead Ads",
+    "Remarketing",
+    "Drip Journey",
+    "ROI Report",
+    "Conversion Tags",
+  ],
+  communications: [
+    "Send Message",
+    "Schedule",
+    "Open Inbox",
+    "Template",
+    "Delivery Status",
+    "Opt-in Controls",
+  ],
   "document-management": ["Load Documents", "Request Document", "Verify"],
-  finance: ["Reconcile", "Export Ledger", "Complete"],
-  automation: ["Create Rule", "Run Workflow", "Execution Log"],
+  "mobile-crm": [
+    "Counselor Dashboard",
+    "Lead Update",
+    "Voice Note",
+    "Geo Check-in",
+    "Offline Sync",
+    "Mobile Report",
+  ],
+  calendar: [
+    "Counseling Calendar",
+    "Interview Slot",
+    "Event Calendar",
+    "Reminder",
+    "Recurring Schedule",
+    "Calendar Sync",
+  ],
+  finance: [
+    "Invoice",
+    "Receipt",
+    "Refund Approval",
+    "Tax Ledger",
+    "Collections",
+    "Pending Payments",
+    "Finance Report",
+    "Reconcile",
+    "Export Ledger",
+  ],
+  automation: [
+    "Assignment Rule",
+    "Reminder Rule",
+    "Drip Rule",
+    "Escalation Rule",
+    "Score Update",
+    "Recycle Stale Leads",
+    "Webhook",
+    "Run Workflow",
+    "Execution Log",
+  ],
   leads: [
     "Create Lead",
     "Check Duplicates",
@@ -234,7 +287,23 @@ const moduleActions: Record<string, string[]> = {
     "Log Activity",
     "Nurture Lead",
   ],
-  integrations: ["Check Providers", "Configure Provider", "Export Report"],
+  integrations: [
+    "Check Providers",
+    "Configure Provider",
+    "Webhook",
+    "Callback Verify",
+    "Health Check",
+    "Export Report",
+  ],
+  "call-center": [
+    "Incoming Call",
+    "Outgoing Call",
+    "Dialer Queue",
+    "Recording Ref",
+    "Disposition",
+    "Follow-up",
+    "Call Analytics",
+  ],
   "organization-management": [
     "Create Tenant",
     "Create Branch",
@@ -245,7 +314,14 @@ const moduleActions: Record<string, string[]> = {
     "Configure Channel",
     "Export Setup",
   ],
-  reports: ["Create Report", "Export Report", "Schedule Report"],
+  reports: [
+    "Create Report",
+    "Saved Report",
+    "Dashboard Report",
+    "Schedule Report",
+    "Export Report",
+    "Role Report",
+  ],
   security: [
     "Load Policy",
     "Update Policy",
@@ -272,7 +348,118 @@ const moduleActions: Record<string, string[]> = {
     "Handoff",
     "Complete",
   ],
-  tasks: ["Create Task", "Escalate", "Reassign", "Complete"],
+  "whatsapp-crm": [
+    "Template",
+    "Media",
+    "Buttons",
+    "Flows",
+    "Bulk Send",
+    "Automation",
+    "Delivery Report",
+    "Conversation History",
+  ],
+  "email-crm": [
+    "Template",
+    "Bulk Mail",
+    "Drip Campaign",
+    "Open Tracking",
+    "Click Tracking",
+    "Bounces",
+    "Unsubscribe",
+    "Approval",
+  ],
+  sms: [
+    "OTP",
+    "Transactional",
+    "Promotional",
+    "Bulk SMS",
+    "Template",
+    "Provider Callback",
+    "Delivery Report",
+    "Compliance Status",
+  ],
+  notifications: [
+    "Open Inbox",
+    "Templates",
+    "Delivery Logs",
+    "Analytics",
+    "Failed Queue",
+    "Replay",
+    "Preferences",
+    "Provider Check",
+  ],
+  tasks: [
+    "Create Task",
+    "Board View",
+    "SLA",
+    "Reminder",
+    "Comment",
+    "Escalate",
+    "Reassign",
+    "Complete",
+  ],
+  "task-management": [
+    "Create Task",
+    "Board View",
+    "SLA",
+    "Reminder",
+    "Comment",
+    "Escalate",
+    "Reassign",
+    "Complete",
+  ],
+  payments: [
+    "Application Fee",
+    "Admission Fee",
+    "Installment",
+    "Payment Link",
+    "Receipt",
+    "Refund",
+    "Reconciliation",
+  ],
+  "event-management": [
+    "Registration Form",
+    "Attendance",
+    "QR Check-in",
+    "Webinar",
+    "Campus Visit",
+    "Event Lead Capture",
+    "Complete",
+  ],
+  "field-force-automation": [
+    "Geo Tracking",
+    "Route Plan",
+    "Attendance",
+    "Mileage",
+    "Check-in",
+    "Check-out",
+    "Visit History",
+    "Complete",
+  ],
+  dashboard: [
+    "CEO Dashboard",
+    "Management Dashboard",
+    "Marketing Dashboard",
+    "Finance Dashboard",
+    "Counselor Dashboard",
+    "Refresh KPIs",
+  ],
+  analytics: [
+    "Lead Funnel",
+    "Admission Funnel",
+    "Revenue Analytics",
+    "ROI Analytics",
+    "Counselor Productivity",
+    "Forecasting",
+  ],
+  "ai-features": [
+    "Lead Scoring",
+    "Prediction",
+    "Chatbot",
+    "Conversation Summary",
+    "Auto Reply",
+    "Follow-up Suggestion",
+  ],
   "user-management": [
     "Create CRM User",
     "Refresh Users",
@@ -424,6 +611,7 @@ const navGroups = [
       "whatsapp-crm",
       "email-crm",
       "sms",
+      "notifications",
       "automation",
     ],
   },
@@ -744,6 +932,21 @@ const modules: CrmModule[] = [
       ],
       ["Counselor productivity", "Sales", "Daily", "4,320", "CSV", "Ready"],
       ["Campaign ROI", "Marketing", "Hourly", "2,148", "CSV/PDF", "Ready"],
+    ],
+  },
+  {
+    id: "notifications",
+    title: "Notifications",
+    group: "Growth",
+    metric: "3 alerts",
+    description:
+      "Central notification inbox, templates, delivery logs, failed queue, analytics, preferences, and provider health.",
+    filters: ["Type", "Channel", "Status", "Owner"],
+    columns: ["Notification", "Channel", "Audience", "Status", "Owner", "Updated"],
+    rows: [
+      ["Unread parent digest", "In-app", "Parents", "Pending", "Ops", "Today"],
+      ["Failed SMS batch", "SMS", "Students", "Review", "Support", "Today"],
+      ["Template approval", "Email", "Leads", "Active", "Marketing", "Yesterday"],
     ],
   },
   {
@@ -1307,6 +1510,7 @@ const productionModuleIds = new Set([
   "tasks",
   "campaigns",
   "communications",
+  "notifications",
   "tenants",
 ]);
 
@@ -1434,6 +1638,7 @@ export default function CrmDashboardPage() {
   const [tenantFormOpen, setTenantFormOpen] = useState(false);
   const [tenantUserFormOpen, setTenantUserFormOpen] = useState(false);
   const [apiSyncEnabled, setApiSyncEnabled] = useState(false);
+  const mainMenuRef = useRef<HTMLElement | null>(null);
   const activeId = useMemo(
     () => resolveRouteModuleId(pathname, sessionActiveId),
     [pathname, sessionActiveId],
@@ -1443,6 +1648,14 @@ export default function CrmDashboardPage() {
     if (!apiSyncEnabled || !loggedInUser || !activeContext) return;
     void dispatch(loadCrmWorkspace());
   }, [activeContext, apiSyncEnabled, dispatch, loggedInUser]);
+
+  useEffect(() => {
+    if (!accessToken || !loggedInUser || !activeContext || apiSyncEnabled) {
+      return;
+    }
+    setApiSyncEnabled(true);
+    void dispatch(loadCrmWorkspace());
+  }, [accessToken, activeContext, apiSyncEnabled, dispatch, loggedInUser]);
 
   const activeTenantId = useMemo(
     () => workspace.activeTenantId || extractFirstId(workspace.tenants),
@@ -1542,6 +1755,26 @@ export default function CrmDashboardPage() {
     setCurrentPage(1);
   }, [activeId, filterValues, pageSize, query, sort]);
 
+  useEffect(() => {
+    const activeGroup = navGroups.find((group) => group.items.includes(activeId));
+    if (activeGroup && collapsedGroups[activeGroup.title]) {
+      setCollapsedGroups((current) => ({
+        ...current,
+        [activeGroup.title]: false,
+      }));
+    }
+
+    window.requestAnimationFrame(() => {
+      const activeItem = mainMenuRef.current?.querySelector(
+        `[data-module-id="${activeId}"]`,
+      );
+      activeItem?.scrollIntoView({
+        block: "nearest",
+        inline: "nearest",
+      });
+    });
+  }, [activeId, collapsedGroups]);
+
   function openModule(id: string) {
     dispatch(
       crmSessionActions.openModule({
@@ -1565,6 +1798,22 @@ export default function CrmDashboardPage() {
     ).unwrap();
     setApiSyncEnabled(true);
     void dispatch(loadCrmWorkspace());
+  }
+
+  function requestApiContext(message: string) {
+    if (!accessToken) {
+      dispatch(
+        crmSessionActions.setToast(
+          "Sign in with valid CRM credentials before running this operation",
+        ),
+      );
+      return false;
+    }
+
+    setApiSyncEnabled(true);
+    void dispatch(loadCrmWorkspace());
+    dispatch(crmSessionActions.setToast(message));
+    return false;
   }
 
   function canAccessModule(id: string) {
@@ -2030,12 +2279,343 @@ export default function CrmDashboardPage() {
       }
     }
 
+    if (activeId === "campaigns") {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before managing campaigns",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (normalized.includes("roi") && firstServerRecordId) {
+          await dispatch(
+            updateCampaignMetrics({
+              campaignId: firstServerRecordId,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Campaign ROI metrics updated"));
+          return;
+        }
+
+        await dispatch(
+          runCrmRecordAction({
+            path: "/campaigns",
+            body: {
+              tenantId: activeTenantId,
+              name: `${label} campaign`,
+              channel: normalized.includes("sms")
+                ? "sms"
+                : normalized.includes("whatsapp")
+                  ? "whatsapp"
+                  : normalized.includes("landing")
+                    ? "landing_page"
+                    : normalized.includes("lead ad") ||
+                        normalized.includes("remarketing")
+                      ? "ads"
+                      : "email",
+              status: normalized.includes("pause") ? "paused" : "scheduled",
+              audience: {
+                segment: normalized.includes("remarketing")
+                  ? "remarketing"
+                  : "new_enquiries",
+                source: normalized.includes("lead ad") ? "lead_ads" : "crm",
+              },
+              dripSteps: normalized.includes("drip")
+                ? [
+                    { delayHours: 0, channel: "email" },
+                    { delayHours: 24, channel: "whatsapp" },
+                    { delayHours: 72, channel: "sms" },
+                  ]
+                : [],
+              metrics: {
+                conversionTag: normalized.includes("conversion"),
+                inventoryTracked: normalized.includes("inventory"),
+              },
+              roi: { adSpend: 0, revenueAttributed: 0 },
+              utm: {
+                campaign: "mentora_crm",
+                medium: normalized.includes("utm") ? "paid" : "crm",
+                source: "admin_crm",
+              },
+              variants: normalized.includes("landing")
+                ? [{ name: "A", type: "landing_page" }]
+                : [],
+            },
+          }),
+        ).unwrap();
+        dispatch(crmSessionActions.setToast(`${label} campaign saved`));
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Campaign action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (["communications", "email-crm", "sms"].includes(activeId)) {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before managing communications",
+          ),
+        );
+        return;
+      }
+
+      const channel =
+        activeId === "sms"
+          ? "sms"
+          : activeId === "email-crm"
+            ? "email"
+            : normalized.includes("whatsapp")
+              ? "whatsapp"
+              : normalized.includes("call")
+                ? "call"
+                : normalized.includes("push")
+                  ? "push"
+                  : normalized.includes("sms")
+                    ? "sms"
+                    : normalized.includes("in-app")
+                      ? "in_app"
+                      : "email";
+
+      try {
+        if (
+          normalized.includes("provider") ||
+          normalized.includes("callback") ||
+          normalized.includes("delivery") ||
+          normalized.includes("compliance")
+        ) {
+          await dispatch(
+            upsertIntegrationProvider({
+              providerKey:
+                channel === "sms"
+                  ? "sms_gateway"
+                  : channel === "email"
+                    ? "email_delivery"
+                    : "whatsapp_business",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+        }
+
+        await dispatch(
+          runCrmRecordAction({
+            path: "/communications",
+            body: {
+              tenantId: activeTenantId,
+              entityType: "general",
+              entityId: firstServerRecordId || "000000000000000000000000",
+              channel,
+              direction: normalized.includes("incoming")
+                ? "inbound"
+                : "outbound",
+              subject: label,
+              content: JSON.stringify({
+                approval: normalized.includes("approval"),
+                bounceTracking: normalized.includes("bounce"),
+                bulk: normalized.includes("bulk"),
+                clickTracking: normalized.includes("click"),
+                deliveryStatus: normalized.includes("delivery"),
+                drip: normalized.includes("drip"),
+                openTracking: normalized.includes("open"),
+                optInControl: normalized.includes("opt-in"),
+                template: normalized.includes("template"),
+                unsubscribe: normalized.includes("unsubscribe"),
+              }),
+            },
+          }),
+        ).unwrap();
+        dispatch(crmSessionActions.setToast(`${label} communication saved`));
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Communication action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (activeId === "notifications") {
+      if (!apiSyncEnabled || !activeTenantId) {
+        requestApiContext("Syncing CRM workspace before opening notifications");
+        return;
+      }
+
+      try {
+        if (
+          normalized.includes("provider") ||
+          normalized.includes("delivery")
+        ) {
+          await dispatch(
+            upsertIntegrationProvider({
+              providerKey: "email_delivery",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+        }
+
+        await dispatch(
+          saveModuleRecord({
+            description: `${label} notification operation`,
+            moduleKey: activeId,
+            payload: {
+              action: label,
+              analytics: String(normalized.includes("analytics")),
+              deliveryLogs: String(normalized.includes("delivery")),
+              failedQueue: String(normalized.includes("failed")),
+              preferences: String(normalized.includes("preferences")),
+              providerCheck: String(normalized.includes("provider")),
+              replay: String(normalized.includes("replay")),
+              templates: String(normalized.includes("template")),
+            },
+            priority: normalized.includes("failed") ? "high" : "medium",
+            status: "open",
+            tenantId: activeTenantId,
+            title: label,
+          }),
+        ).unwrap();
+        dispatch(crmSessionActions.setToast(`${label} notification saved`));
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Notification action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (activeId === "call-center" || activeId === "whatsapp-crm") {
+      if (!apiSyncEnabled || !activeTenantId) {
+        dispatch(
+          crmSessionActions.setToast(
+            "Enable API sync and tenant context before managing this channel",
+          ),
+        );
+        return;
+      }
+
+      try {
+        if (
+          normalized.includes("dialer") ||
+          normalized.includes("recording") ||
+          normalized.includes("analytics") ||
+          normalized.includes("delivery")
+        ) {
+          await dispatch(
+            upsertIntegrationProvider({
+              providerKey:
+                activeId === "call-center"
+                  ? "dialer_recording"
+                  : "whatsapp_business",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+        }
+
+        if (firstServerRecordId && !normalized.includes("incoming")) {
+          await dispatch(
+            runCrmRecordAction({
+              path: normalized.includes("complete")
+                ? `/${activeId === "call-center" ? "call-center" : "whatsapp"}/${firstServerRecordId}/complete`
+                : `/${activeId === "call-center" ? "call-center" : "whatsapp"}/${firstServerRecordId}`,
+              body: normalized.includes("complete")
+                ? {
+                    tenantId: activeTenantId,
+                    outcome: "completed",
+                    result: { action: label },
+                  }
+                : {
+                    tenantId: activeTenantId,
+                    payload: {
+                      automation: normalized.includes("automation"),
+                      buttons: normalized.includes("button"),
+                      disposition: normalized.includes("disposition")
+                        ? "interested"
+                        : undefined,
+                      flow: normalized.includes("flow"),
+                      followUp: normalized.includes("follow"),
+                      media: normalized.includes("media"),
+                      notes: label,
+                      recordingRef: normalized.includes("recording")
+                        ? "sandbox-recording-ref"
+                        : undefined,
+                      template: normalized.includes("template"),
+                    },
+                    status: normalized.includes("queue")
+                      ? "open"
+                      : "in_progress",
+                  },
+            }),
+          ).unwrap();
+        } else {
+          await dispatch(
+            runCrmRecordAction({
+              path: activeId === "call-center" ? "/call-center" : "/whatsapp",
+              body: {
+                tenantId: activeTenantId,
+                title:
+                  activeId === "call-center"
+                    ? `${label} record`
+                    : `${label} conversation`,
+                description: label,
+                priority: normalized.includes("incoming") ? "high" : "medium",
+                status: "open",
+                payload: {
+                  bulkSend: normalized.includes("bulk"),
+                  channel:
+                    activeId === "call-center" ? "call" : "whatsapp",
+                  direction: normalized.includes("incoming")
+                    ? "inbound"
+                    : "outbound",
+                  disposition: normalized.includes("disposition")
+                    ? "interested"
+                    : undefined,
+                  notes: label,
+                },
+              },
+            }),
+          ).unwrap();
+        }
+        dispatch(crmSessionActions.setToast(`${label} saved`));
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Channel action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
     if (
       [
         "admissions",
         "applications",
         "campaigns",
         "document-management",
+        "event-management",
+        "field-force-automation",
         "finance",
         "interview",
         "scholarship",
@@ -2215,6 +2795,80 @@ export default function CrmDashboardPage() {
           return;
         }
 
+        if (activeId === "event-management") {
+          await dispatch(
+            runCrmRecordAction({
+              path: normalized.includes("complete")
+                ? `/events/${firstServerRecordId}/complete`
+                : `/events/${firstServerRecordId}`,
+              body: normalized.includes("complete")
+                ? {
+                    tenantId: activeTenantId,
+                    outcome: "completed",
+                    result: { action: label },
+                  }
+                : {
+                    tenantId: activeTenantId,
+                    payload: {
+                      attendance: normalized.includes("attendance"),
+                      campusVisit: normalized.includes("campus"),
+                      eventLeadCapture: normalized.includes("lead"),
+                      qrCheckIn: normalized.includes("qr"),
+                      registrationForm: normalized.includes("registration"),
+                      webinar: normalized.includes("webinar"),
+                    },
+                    status: "in_progress",
+                  },
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Event workflow updated"));
+          return;
+        }
+
+        if (activeId === "field-force-automation") {
+          if (
+            normalized.includes("geo") ||
+            normalized.includes("route") ||
+            normalized.includes("mileage")
+          ) {
+            await dispatch(
+              upsertIntegrationProvider({
+                providerKey: "geo_telemetry",
+                tenantId: activeTenantId,
+              }),
+            ).unwrap();
+          }
+
+          await dispatch(
+            runCrmRecordAction({
+              path: normalized.includes("complete")
+                ? `/field-force/${firstServerRecordId}/complete`
+                : `/field-force/${firstServerRecordId}`,
+              body: normalized.includes("complete")
+                ? {
+                    tenantId: activeTenantId,
+                    outcome: "completed",
+                    result: { action: label },
+                  }
+                : {
+                    tenantId: activeTenantId,
+                    payload: {
+                      attendance: normalized.includes("attendance"),
+                      checkIn: normalized.includes("check-in"),
+                      checkOut: normalized.includes("check-out"),
+                      geoTracking: normalized.includes("geo"),
+                      mileage: normalized.includes("mileage"),
+                      routePlan: normalized.includes("route"),
+                      visitHistory: normalized.includes("history"),
+                    },
+                    status: "in_progress",
+                  },
+            }),
+          ).unwrap();
+          dispatch(crmSessionActions.setToast("Field force workflow updated"));
+          return;
+        }
+
         if (activeId === "scholarship") {
           await dispatch(
             runCrmRecordAction({
@@ -2286,6 +2940,95 @@ export default function CrmDashboardPage() {
             error instanceof Error
               ? error.message
               : "Module action failed. Check API auth and permissions.",
+          ),
+        );
+        return;
+      }
+    }
+
+    if (
+      [
+        "mobile-crm",
+        "calendar",
+        "payments",
+        "dashboard",
+        "analytics",
+        "ai-features",
+      ].includes(activeId)
+    ) {
+      if (!apiSyncEnabled || !activeTenantId) {
+        requestApiContext("Syncing CRM workspace before running this operation");
+        return;
+      }
+
+      try {
+        if (activeId === "calendar" && normalized.includes("sync")) {
+          await dispatch(
+            upsertIntegrationProvider({
+              providerKey: "calendar_sync",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+        }
+
+        if (
+          activeId === "payments" &&
+          (normalized.includes("link") ||
+            normalized.includes("reconciliation") ||
+            normalized.includes("refund"))
+        ) {
+          await dispatch(
+            upsertIntegrationProvider({
+              providerKey: "accounting_export",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+        }
+
+        await dispatch(
+          saveModuleRecord({
+            description: `${label} operation from Mentora CRM`,
+            moduleKey: activeId,
+            payload: {
+              action: label,
+              analytics: String(activeId === "analytics"),
+              calendarSync: String(normalized.includes("sync")),
+              dashboardRole: normalized.includes("ceo")
+                ? "ceo"
+                : normalized.includes("finance")
+                  ? "finance"
+                  : normalized.includes("marketing")
+                    ? "marketing"
+                : normalized.includes("counselor")
+                  ? "counselor"
+                  : "none",
+              forecasting: String(normalized.includes("forecast")),
+              offlineSync: String(normalized.includes("offline")),
+              paymentOperation: String(activeId === "payments"),
+              prediction: String(normalized.includes("prediction")),
+              report: String(normalized.includes("report")),
+            },
+            priority:
+              normalized.includes("refund") || normalized.includes("geo")
+                ? "high"
+                : "medium",
+            status: normalized.includes("complete") ? "completed" : "open",
+            tenantId: activeTenantId,
+            title: label,
+          }),
+        ).unwrap();
+        dispatch(
+          crmSessionActions.setToast(
+            `${activeModule?.title ?? "Module"} ${label} saved`,
+          ),
+        );
+        return;
+      } catch (error) {
+        dispatch(
+          crmSessionActions.setToast(
+            error instanceof Error
+              ? error.message
+              : "Operation failed. Check API auth and permissions.",
           ),
         );
         return;
@@ -2433,7 +3176,17 @@ export default function CrmDashboardPage() {
       }
 
       try {
-        if (normalized.includes("create") || normalized.includes("rule")) {
+        if (
+          normalized.includes("create") ||
+          normalized.includes("rule") ||
+          normalized.includes("assignment") ||
+          normalized.includes("reminder") ||
+          normalized.includes("drip") ||
+          normalized.includes("escalation") ||
+          normalized.includes("score") ||
+          normalized.includes("recycle") ||
+          normalized.includes("webhook")
+        ) {
           await dispatch(
             createWorkflowRule({
               moduleKey: activeId,
@@ -2500,7 +3253,11 @@ export default function CrmDashboardPage() {
             <FontAwesomeIcon icon={faBarsProgress} />
           </button>
         </div>
-        <nav className="main-menu" aria-label="Admin CRM modules">
+        <nav
+          className="main-menu"
+          aria-label="Admin CRM modules"
+          ref={mainMenuRef}
+        >
           {navGroups.map((group) => (
             <section
               className={`menu-group ${
@@ -2529,6 +3286,7 @@ export default function CrmDashboardPage() {
                   <li key={id}>
                     <button
                       className={activeId === id ? "selected" : ""}
+                      data-module-id={id}
                       onClick={() => openModule(id)}
                       type="button"
                     >
@@ -2570,7 +3328,7 @@ export default function CrmDashboardPage() {
                 aria-label="Open notifications"
                 className="icon-action"
                 onClick={() => {
-                  void runAction("Notifications opened");
+                  openModule("notifications");
                 }}
                 type="button"
               >
@@ -3159,16 +3917,14 @@ function ModulePanel(props: {
           <div className="module-title-block">
             <Icon name={module.icon ?? "dashboard"} />
             <div>
-            <nav className="module-breadcrumbs" aria-label="Breadcrumb">
-              <span>
-                <FontAwesomeIcon icon={faHouse} />
-                CRM
-              </span>
-              <span>{module.group}</span>
-              <strong>{module.title}</strong>
-            </nav>
-            <span className="eyebrow">{module.group}</span>
-            <h2>{module.title}</h2>
+              <nav className="module-breadcrumbs" aria-label="Breadcrumb">
+                <span>
+                  <FontAwesomeIcon icon={faHouse} />
+                  CRM
+                </span>
+                <strong>{module.group}</strong>
+              </nav>
+              <h2>{module.title}</h2>
             </div>
           </div>
           <p>{module.description}</p>
@@ -3529,23 +4285,23 @@ function ModulePanel(props: {
             >
               <FontAwesomeIcon icon={faAnglesRight} />
             </button>
+            <label className="page-size-control">
+              <select
+                aria-label="Rows per page"
+                className="form-select form-select-sm"
+                onChange={(event) =>
+                  props.setPageSize(Number(event.target.value))
+                }
+                value={props.pageSize}
+              >
+                <option value={5}>5</option>
+                <option value={10}>10</option>
+                <option value={25}>25</option>
+                <option value={50}>50</option>
+                <option value={100}>100</option>
+              </select>
+            </label>
           </div>
-          <label className="page-size-control">
-            <span>Limit</span>
-            <select
-              className="form-select form-select-sm"
-              onChange={(event) =>
-                props.setPageSize(Number(event.target.value))
-              }
-              value={props.pageSize}
-            >
-              <option value={5}>5</option>
-              <option value={10}>10</option>
-              <option value={25}>25</option>
-              <option value={50}>50</option>
-              <option value={100}>100</option>
-            </select>
-          </label>
           <span className="pagination-total">
             Page {props.currentPage} of {props.totalPages} / {props.total} records
           </span>

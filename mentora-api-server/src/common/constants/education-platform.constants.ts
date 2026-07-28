@@ -19,6 +19,7 @@ export const EDUCATION_PLATFORM_MODULE_KEYS = [
   'email-crm',
   'email',
   'sms',
+  'notifications',
   'mobile-crm',
   'mobile',
   'calendar',

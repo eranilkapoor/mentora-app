@@ -81,9 +81,41 @@ const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
 let crmAccessToken = "";
+const crmSessionStorageKey = "mentora.crm.session.v1";
 
 function setCrmAccessToken(token: string) {
   crmAccessToken = token;
+}
+
+type PersistedCrmSession = Pick<
+  CrmSessionState,
+  "accessToken" | "activeContext" | "activeId" | "loggedInUser" | "themeMode"
+>;
+
+function readPersistedCrmSession(): Partial<PersistedCrmSession> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = window.localStorage.getItem(crmSessionStorageKey);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as Partial<PersistedCrmSession>;
+    if (typeof parsed.accessToken === "string") {
+      setCrmAccessToken(parsed.accessToken);
+    }
+    return parsed;
+  } catch {
+    window.localStorage.removeItem(crmSessionStorageKey);
+    return {};
+  }
+}
+
+function writePersistedCrmSession(session: PersistedCrmSession) {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(crmSessionStorageKey, JSON.stringify(session));
+}
+
+function clearPersistedCrmSession() {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(crmSessionStorageKey);
 }
 
 export type ModuleRecordDraft = {
@@ -368,7 +400,7 @@ export const createWorkflowRule = createAsyncThunk(
   async ({ moduleKey, tenantId }: { moduleKey: string; tenantId: string }) => {
     return sendJson("/workflows/rules", "POST", {
       tenantId,
-      name: `${moduleKey.replaceAll("_", " ")} auto follow-up`,
+      name: `${moduleKey.replaceAll("_", " ").replaceAll("-", " ")} auto follow-up`,
       moduleKey,
       trigger: "record.created",
       conditions: { priority: ["high", "urgent"] },
@@ -584,16 +616,18 @@ export const updateSecurityPolicy = createAsyncThunk(
   },
 );
 
+const persistedSession = readPersistedCrmSession();
+
 const initialSessionState: CrmSessionState = {
-  activeContext: null,
-  activeId: "dashboard",
-  accessToken: "",
+  activeContext: persistedSession.activeContext ?? null,
+  activeId: persistedSession.activeId ?? "dashboard",
+  accessToken: persistedSession.accessToken ?? "",
   loginEmail: "",
   loginError: null,
   loginPassword: "",
-  loggedInUser: null,
-  themeMode: "system",
-  toast: "Ready",
+  loggedInUser: persistedSession.loggedInUser ?? null,
+  themeMode: persistedSession.themeMode ?? "system",
+  toast: persistedSession.accessToken ? "Session restored" : "Ready",
 };
 
 const initialWorkspaceState: CrmWorkspaceState = {
@@ -609,6 +643,21 @@ const initialWorkspaceState: CrmWorkspaceState = {
   tenants: [],
 };
 
+function persistCurrentSession(state: CrmSessionState) {
+  if (!state.accessToken || !state.loggedInUser) {
+    clearPersistedCrmSession();
+    return;
+  }
+
+  writePersistedCrmSession({
+    accessToken: state.accessToken,
+    activeContext: state.activeContext,
+    activeId: state.activeId,
+    loggedInUser: state.loggedInUser,
+    themeMode: state.themeMode,
+  });
+}
+
 const crmSessionSlice = createSlice({
   name: "crmSession",
   initialState: initialSessionState,
@@ -619,6 +668,7 @@ const crmSessionSlice = createSlice({
         ? "dashboard"
         : action.payload.modules[0];
       state.toast = `Context selected: ${action.payload.label}`;
+      persistCurrentSession(state);
     },
     clearContext(state) {
       state.activeContext = state.loggedInUser?.contexts[0] ?? null;
@@ -626,6 +676,7 @@ const crmSessionSlice = createSlice({
       state.toast = state.activeContext
         ? `Context selected: ${state.activeContext.label}`
         : "No CRM context available";
+      persistCurrentSession(state);
     },
     switchToNextContext(state) {
       const contexts = state.loggedInUser?.contexts ?? [];
@@ -647,11 +698,13 @@ const crmSessionSlice = createSlice({
         ? state.activeId
         : "dashboard";
       state.toast = `Context selected: ${nextContext.label}`;
+      persistCurrentSession(state);
     },
     login(state, action: PayloadAction<DemoUser>) {
       state.loggedInUser = action.payload;
       state.activeContext = action.payload.contexts[0] ?? null;
       state.toast = `Logged in as ${action.payload.name}`;
+      persistCurrentSession(state);
     },
     logout(state) {
       state.activeContext = null;
@@ -660,10 +713,12 @@ const crmSessionSlice = createSlice({
       state.loggedInUser = null;
       state.toast = "Logged out";
       setCrmAccessToken("");
+      clearPersistedCrmSession();
     },
     openModule(state, action: PayloadAction<{ id: string; title: string }>) {
       state.activeId = action.payload.id;
       state.toast = `Opened ${action.payload.title}`;
+      persistCurrentSession(state);
     },
     setLoginEmail(state, action: PayloadAction<string>) {
       state.loginEmail = action.payload;
@@ -673,6 +728,7 @@ const crmSessionSlice = createSlice({
     },
     setThemeMode(state, action: PayloadAction<CrmSessionState["themeMode"]>) {
       state.themeMode = action.payload;
+      persistCurrentSession(state);
     },
     setToast(state, action: PayloadAction<string>) {
       state.toast = action.payload;
@@ -693,6 +749,7 @@ const crmSessionSlice = createSlice({
         state.loginError = null;
         state.toast = `Logged in as ${action.payload.email}`;
         setCrmAccessToken(action.payload.accessToken);
+        persistCurrentSession(state);
       })
       .addCase(loginWithCredentials.rejected, (state, action) => {
         state.loginError =
