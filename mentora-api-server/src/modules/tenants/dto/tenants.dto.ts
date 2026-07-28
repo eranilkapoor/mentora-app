@@ -1,12 +1,14 @@
 import {
   IsArray,
   IsBoolean,
+  IsEmail,
   IsIn,
   IsMongoId,
   IsNumber,
   IsObject,
   IsOptional,
   IsString,
+  MinLength,
 } from 'class-validator';
 import { EDUCATION_PLATFORM_USER_ROLES } from '@/common/constants/education-platform.constants';
 
@@ -260,6 +262,52 @@ export class UpsertTenantUserDto {
   @IsOptional()
   @IsIn(['active', 'inactive', 'suspended'])
   status?: string;
+
+  @IsOptional()
+  @IsObject()
+  settings?: Record<string, unknown>;
+}
+
+export class CreateTenantUserDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsEmail()
+  email!: string;
+
+  @IsString()
+  @MinLength(8)
+  password!: string;
+
+  @IsIn(EDUCATION_PLATFORM_USER_ROLES)
+  role!: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsMongoId({ each: true })
+  branchIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  departmentIds?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  permissions?: string[];
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'suspended'])
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  countryCode?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
 
   @IsOptional()
   @IsObject()

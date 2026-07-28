@@ -215,6 +215,20 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
+.auth-error {
+  background: var(--danger-soft);
+  border: 1px solid color-mix(in srgb, var(--danger) 35%, var(--danger-soft));
+  color: var(--danger);
+  font-size: 13px;
+  font-weight: 800;
+  margin: 10px 0 14px;
+  padding: 10px 12px;
+}
+
+.modal-error {
+  margin-top: 14px;
+}
+
 .context-head {
   align-items: flex-start;
   display: flex;

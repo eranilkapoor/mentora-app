@@ -86,13 +86,21 @@ import {
 import {
   Branch,
   BranchSchema,
+  Department,
+  DepartmentSchema,
   LeadSource,
   LeadSourceSchema,
   LeadStage,
   LeadStageSchema,
+  Team,
+  TeamSchema,
   Tenant,
   TenantSchema,
 } from '../tenants/schemas/tenants.schema';
+import {
+  UserMembership,
+  UserMembershipSchema,
+} from '../contexts/schemas/contexts.schema';
 import {
   ModuleRecord,
   ModuleRecordSchema,
@@ -155,8 +163,11 @@ import {
       { name: StudyPlan.name, schema: StudyPlanSchema },
       { name: Tenant.name, schema: TenantSchema },
       { name: Branch.name, schema: BranchSchema },
+      { name: Department.name, schema: DepartmentSchema },
+      { name: Team.name, schema: TeamSchema },
       { name: LeadSource.name, schema: LeadSourceSchema },
       { name: LeadStage.name, schema: LeadStageSchema },
+      { name: UserMembership.name, schema: UserMembershipSchema },
       { name: ModuleRecord.name, schema: ModuleRecordSchema },
     ]),
   ],

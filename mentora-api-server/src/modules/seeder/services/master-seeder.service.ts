@@ -119,18 +119,29 @@ import {
 import {
   Branch,
   BranchDocument,
+  Department,
+  DepartmentDocument,
   LeadSource,
   LeadSourceDocument,
   LeadStage,
   LeadStageDocument,
+  Team,
+  TeamDocument,
   Tenant,
   TenantDocument,
 } from '@/modules/tenants/schemas/tenants.schema';
 import {
+  UserMembership,
+  UserMembershipDocument,
+} from '@/modules/contexts/schemas/contexts.schema';
+import {
   ModuleRecord,
   ModuleRecordDocument,
 } from '@/modules/module-records/schemas/module-records.schema';
-import { EDUCATION_PLATFORM_MODULE_KEYS } from '@/common/constants/education-platform.constants';
+import {
+  EDUCATION_PLATFORM_MODULE_KEYS,
+  EDUCATION_PLATFORM_USER_ROLES,
+} from '@/common/constants/education-platform.constants';
 import {
   FEATURE_SEEDS,
   CUSTOM_ASSISTED_FEATURE_MAPPINGS,
@@ -240,11 +251,20 @@ export class MasterSeederService {
     @InjectModel(Branch.name)
     private readonly branchModel: Model<BranchDocument>,
 
+    @InjectModel(Department.name)
+    private readonly departmentModel: Model<DepartmentDocument>,
+
+    @InjectModel(Team.name)
+    private readonly teamModel: Model<TeamDocument>,
+
     @InjectModel(LeadSource.name)
     private readonly leadSourceModel: Model<LeadSourceDocument>,
 
     @InjectModel(LeadStage.name)
     private readonly leadStageModel: Model<LeadStageDocument>,
+
+    @InjectModel(UserMembership.name)
+    private readonly userMembershipModel: Model<UserMembershipDocument>,
 
     @InjectModel(ModuleRecord.name)
     private readonly moduleRecordModel: Model<ModuleRecordDocument>,
@@ -600,55 +620,300 @@ export class MasterSeederService {
 
   private async seedEducationCrmDemoData() {
     const now = new Date();
-    const tenant = await this.tenantModel.findOneAndUpdate(
-      { code: 'MENTORA-DEMO' },
+    const passwordHash = await bcrypt.hash(SEED_PASSWORD, 10);
+    const tenants = [
       {
-        $set: {
-          name: 'Mentora Demo Institute',
-          code: 'MENTORA-DEMO',
-          type: 'edtech',
-          status: 'active',
-          primaryDomain: 'mentora.test',
-          timezone: 'Asia/Kolkata',
-          currency: 'INR',
-          settings: {
-            demo: true,
-            source: 'master-seeder',
-            supportEmail: 'support@mentora.test',
+        name: 'Mentora Academy',
+        code: 'MENTORA-ACADEMY',
+        type: 'edtech',
+        slug: 'academy',
+        branches: [
+          ['Delhi Learning Hub', 'DELHI', 'Delhi', 'Delhi'],
+          ['Noida Mentorship Center', 'NOIDA', 'Noida', 'Uttar Pradesh'],
+          ['Gurugram Success Center', 'GURUGRAM', 'Gurugram', 'Haryana'],
+        ],
+      },
+      {
+        name: 'Northstar School Network',
+        code: 'NORTHSTAR-SCHOOL',
+        type: 'school',
+        slug: 'northstar',
+        branches: [
+          ['Pune Campus', 'PUNE', 'Pune', 'Maharashtra'],
+          ['Mumbai Campus', 'MUMBAI', 'Mumbai', 'Maharashtra'],
+        ],
+      },
+      {
+        name: 'FutureEdge College Prep',
+        code: 'FUTUREEDGE-PREP',
+        type: 'coaching',
+        slug: 'futureedge',
+        branches: [
+          ['Bengaluru Prep Center', 'BENGALURU', 'Bengaluru', 'Karnataka'],
+          ['Hyderabad Prep Center', 'HYDERABAD', 'Hyderabad', 'Telangana'],
+          ['Chennai Prep Center', 'CHENNAI', 'Chennai', 'Tamil Nadu'],
+        ],
+      },
+    ];
+
+    let branchCount = 0;
+    let userCount = 0;
+    let membershipCount = 0;
+    let moduleRecordCount = 0;
+
+    for (const seedTenant of tenants) {
+      const tenant = await this.tenantModel.findOneAndUpdate(
+        { code: seedTenant.code },
+        {
+          $set: {
+            name: seedTenant.name,
+            code: seedTenant.code,
+            type: seedTenant.type,
+            status: 'active',
+            primaryDomain: 'mentora.test',
+            timezone: 'Asia/Kolkata',
+            currency: 'INR',
+            settings: {
+              seeded: true,
+              source: 'master-seeder',
+              supportEmail: `support.${seedTenant.slug}@mentora.test`,
+            },
+            updatedAt: now,
           },
-          updatedAt: now,
+          $setOnInsert: { createdAt: now },
         },
-        $setOnInsert: { createdAt: now },
-      },
-      { new: true, upsert: true },
-    );
+        { new: true, upsert: true },
+      );
 
-    await this.branchModel.updateOne(
-      { tenantId: tenant._id, code: 'HQ' },
-      {
-        $set: {
-          tenantId: tenant._id,
-          name: 'Mentora HQ',
-          code: 'HQ',
-          city: 'Delhi',
-          state: 'Delhi',
-          status: 'active',
-          updatedAt: now,
-        },
-        $setOnInsert: { createdAt: now },
-      },
-      { upsert: true },
-    );
+      const branchDocs: BranchDocument[] = [];
+      for (const [name, code, city, state] of seedTenant.branches) {
+        const branch = await this.branchModel.findOneAndUpdate(
+          { tenantId: tenant._id, code },
+          {
+            $set: {
+              tenantId: tenant._id,
+              name,
+              code,
+              city,
+              state,
+              status: 'active',
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          { new: true, upsert: true },
+        );
+        branchDocs.push(branch);
+      }
+      branchCount += branchDocs.length;
 
-    await this.seedCrmSourcesAndStages(tenant._id, now);
-    const moduleRecordCount = await this.seedCrmModuleRecords(tenant._id, now);
+      await this.seedCrmDepartmentsAndTeams(tenant._id, branchDocs, now);
+      await this.seedCrmSourcesAndStages(tenant._id, now);
+      moduleRecordCount += await this.seedCrmModuleRecords(
+        tenant._id,
+        now,
+        branchDocs[0]?.name ?? seedTenant.name,
+      );
 
-    this.logger.log('Mentora education CRM demo data seeded successfully', {
-      tenant: 'MENTORA-DEMO',
+      const result = await this.seedCrmTenantUsers(
+        tenant._id,
+        branchDocs,
+        seedTenant.slug,
+        passwordHash,
+        now,
+      );
+      userCount += result.users;
+      membershipCount += result.memberships;
+    }
+
+    this.logger.log('Mentora education CRM tenants seeded successfully', {
+      tenants: tenants.length,
+      branches: branchCount,
+      users: userCount,
+      memberships: membershipCount,
       moduleRecords: moduleRecordCount,
       loginDomain: 'mentora.test',
       password: SEED_PASSWORD,
     });
+  }
+
+  private async seedCrmDepartmentsAndTeams(
+    tenantId: Types.ObjectId,
+    branches: BranchDocument[],
+    now: Date,
+  ) {
+    const departmentSeeds: Array<[string, string, string]> = [
+      ['Admissions', 'ADMISSIONS', 'admissions'],
+      ['Sales', 'SALES', 'sales'],
+      ['Marketing', 'MARKETING', 'marketing'],
+      ['Finance', 'FINANCE', 'finance'],
+      ['Academics', 'ACADEMICS', 'academics'],
+      ['Operations', 'OPS', 'ops'],
+    ];
+
+    const departments: DepartmentDocument[] = [];
+    for (const [name, code, departmentFunction] of departmentSeeds) {
+      const department = await this.departmentModel.findOneAndUpdate(
+        { tenantId, code },
+        {
+          $set: {
+            tenantId,
+            name,
+            code,
+            branchId: branches[0]?._id,
+            function: departmentFunction,
+            status: 'active',
+            updatedAt: now,
+          },
+          $setOnInsert: { createdAt: now },
+        },
+        { new: true, upsert: true },
+      );
+      departments.push(department);
+    }
+
+    await this.teamModel.bulkWrite(
+      departments.map((department) => ({
+        updateOne: {
+          filter: { tenantId, code: `${department.code}_TEAM` },
+          update: {
+            $set: {
+              tenantId,
+              departmentId: department._id,
+              name: `${department.name} Team`,
+              code: `${department.code}_TEAM`,
+              status: 'active',
+              capacityRules: {
+                dailyLeadLimit: department.function === 'admissions' ? 60 : 40,
+                escalationHours: department.function === 'finance' ? 24 : 12,
+              },
+              updatedAt: now,
+            },
+            $setOnInsert: { createdAt: now },
+          },
+          upsert: true,
+        },
+      })),
+      { ordered: false },
+    );
+  }
+
+  private async seedCrmTenantUsers(
+    tenantId: Types.ObjectId,
+    branches: BranchDocument[],
+    tenantSlug: string,
+    passwordHash: string,
+    now: Date,
+  ) {
+    let users = 0;
+    let memberships = 0;
+    const allBranchIds = branches.map((branch) => branch._id);
+
+    for (const [index, role] of EDUCATION_PLATFORM_USER_ROLES.entries()) {
+      const email = `${tenantSlug}.${role.replace(/_/g, '.')}@mentora.test`;
+      const branchIds = this.resolveSeededRoleBranchIds(
+        role,
+        allBranchIds,
+        index,
+      );
+      const systemRole = this.mapCrmRoleToAppRole(role);
+
+      const user = await this.userModel.findOneAndUpdate(
+        { email },
+        {
+          $set: {
+            email,
+            status: Status.ACTIVE,
+            isEmailVerified: true,
+            isPhoneVerified: false,
+            isOnboardingCompleted: true,
+            roles: [systemRole],
+            permissions: [],
+            authAccounts: [
+              {
+                provider: AuthProvider.EMAIL,
+                providerId: email,
+                passwordHash,
+                isVerified: true,
+                isPrimary: true,
+                lastUsedAt: now,
+              },
+            ],
+            lastLoginAt: now,
+            updatedAt: now,
+          },
+          $setOnInsert: { createdAt: now },
+        },
+        { new: true, upsert: true },
+      );
+
+      await this.userMembershipModel.updateOne(
+        { userId: user._id, tenantId, role },
+        {
+          $set: {
+            userId: user._id,
+            tenantId,
+            role,
+            branchIds,
+            permissions: [],
+            status: 'active',
+            settings: {
+              seeded: true,
+              defaultTenantContext: true,
+              loginEmail: email,
+            },
+            updatedAt: now,
+          },
+          $setOnInsert: { createdAt: now },
+        },
+        { upsert: true },
+      );
+
+      users += 1;
+      memberships += 1;
+    }
+
+    return { users, memberships };
+  }
+
+  private resolveSeededRoleBranchIds(
+    role: string,
+    branchIds: Types.ObjectId[],
+    index: number,
+  ) {
+    if (
+      [
+        'super_admin',
+        'organization_admin',
+        'finance',
+        'parent',
+        'student',
+      ].includes(role)
+    ) {
+      return branchIds;
+    }
+
+    const branchId = branchIds[index % Math.max(branchIds.length, 1)];
+    return branchId ? [branchId] : [];
+  }
+
+  private mapCrmRoleToAppRole(role: string) {
+    if (role === 'super_admin') {
+      return AppRole.SUPER_ADMIN;
+    }
+    if (role === 'finance') {
+      return AppRole.FINANCE;
+    }
+    if (role === 'marketing_executive') {
+      return AppRole.MARKETING_ADMIN;
+    }
+    if (role === 'student') {
+      return AppRole.STUDENT;
+    }
+    if (role === 'parent') {
+      return AppRole.PARENT;
+    }
+    return AppRole.ADMIN;
   }
 
   private async seedCrmSourcesAndStages(tenantId: Types.ObjectId, now: Date) {
@@ -713,7 +978,11 @@ export class MasterSeederService {
     );
   }
 
-  private async seedCrmModuleRecords(tenantId: Types.ObjectId, now: Date) {
+  private async seedCrmModuleRecords(
+    tenantId: Types.ObjectId,
+    now: Date,
+    branchName: string,
+  ) {
     const legacyAliasKeys = new Set([
       'lead_management',
       'application_management',
@@ -748,7 +1017,7 @@ export class MasterSeederService {
                 payload: {
                   owner:
                     index % 2 === 0 ? 'Admissions Team' : 'Operations Team',
-                  branch: 'Mentora HQ',
+                  branch: branchName,
                   source: 'master-seeder',
                   status: index % 3 === 0 ? 'In progress' : 'Open',
                   metric: `${index + 3}`,

@@ -26,10 +26,17 @@ export type DemoUser = {
   contexts: DemoContext[];
 };
 
+type AuthenticatedCrmUser = DemoUser & {
+  accessToken: string;
+};
+
 type CrmSessionState = {
   activeContext: DemoContext | null;
   activeId: string;
+  accessToken: string;
   loginEmail: string;
+  loginError: string | null;
+  loginPassword: string;
   loggedInUser: DemoUser | null;
   themeMode: "system" | "light" | "dark";
   toast: string;
@@ -48,8 +55,36 @@ type CrmWorkspaceState = {
   tenants: unknown[];
 };
 
+export type LoginCredentials = {
+  email: string;
+  password: string;
+};
+
+export type TenantDraft = {
+  code: string;
+  name: string;
+  primaryDomain?: string;
+  type: string;
+};
+
+export type TenantUserDraft = {
+  branchIds?: string[];
+  departmentIds?: string[];
+  email: string;
+  password: string;
+  phone?: string;
+  role: string;
+  tenantId: string;
+};
+
 const apiBaseUrl =
   process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
+
+let crmAccessToken = "";
+
+function setCrmAccessToken(token: string) {
+  crmAccessToken = token;
+}
 
 export type ModuleRecordDraft = {
   id?: string;
@@ -77,6 +112,11 @@ const dedicatedCrmRoutes: Record<string, string> = {
 async function getJson(path: string) {
   const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
     credentials: "include",
+    headers: crmAccessToken
+      ? {
+          Authorization: `Bearer ${crmAccessToken}`,
+        }
+      : undefined,
   });
 
   if (!response.ok) {
@@ -90,7 +130,10 @@ async function sendJson(path: string, method: "POST" | "PUT", body: unknown) {
   const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
     body: JSON.stringify(body),
     credentials: "include",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      ...(crmAccessToken ? { Authorization: `Bearer ${crmAccessToken}` } : {}),
+      "Content-Type": "application/json",
+    },
     method,
   });
 
@@ -101,10 +144,62 @@ async function sendJson(path: string, method: "POST" | "PUT", body: unknown) {
   return response.json();
 }
 
+export const loginWithCredentials = createAsyncThunk(
+  "crmSession/loginWithCredentials",
+  async (credentials: LoginCredentials) => {
+    const response = await sendJson("/auth/login", "POST", credentials);
+    const data = normalizeApiObject(response) as Record<string, unknown>;
+    const user =
+      data.user && typeof data.user === "object"
+        ? (data.user as Record<string, unknown>)
+        : data;
+    const email =
+      typeof user.email === "string" ? user.email : credentials.email;
+    const name =
+      typeof user.name === "string"
+        ? user.name
+        : email
+            .split("@")[0]
+            .replace(/[._-]+/g, " ")
+            .replace(/\b\w/g, (letter) => letter.toUpperCase());
+
+    const accessToken =
+      typeof data.accessToken === "string" ? data.accessToken : "";
+    return {
+      accessToken,
+      email,
+      name,
+      contexts: [
+        {
+          branch: "All Branches",
+          label: "Authenticated CRM Workspace",
+          modules: ["dashboard", ...Object.keys(dedicatedCrmRoutes)],
+          role: "super_admin",
+          tenant: "Server Tenants",
+        },
+      ],
+    } satisfies AuthenticatedCrmUser;
+  },
+);
+
 export const loadCrmWorkspace = createAsyncThunk(
   "crmWorkspace/load",
   async () => {
     return getJson("/dashboard/bootstrap");
+  },
+);
+
+export const createTenant = createAsyncThunk(
+  "crmWorkspace/createTenant",
+  async (draft: TenantDraft) => {
+    return sendJson("/tenants", "POST", draft);
+  },
+);
+
+export const createTenantUser = createAsyncThunk(
+  "crmWorkspace/createTenantUser",
+  async (draft: TenantUserDraft) => {
+    return sendJson("/tenant-users/create", "POST", draft);
   },
 );
 
@@ -492,7 +587,10 @@ export const updateSecurityPolicy = createAsyncThunk(
 const initialSessionState: CrmSessionState = {
   activeContext: null,
   activeId: "dashboard",
-  loginEmail: "super.admin@mentora.test",
+  accessToken: "",
+  loginEmail: "",
+  loginError: null,
+  loginPassword: "",
   loggedInUser: null,
   themeMode: "system",
   toast: "Ready",
@@ -534,8 +632,10 @@ const crmSessionSlice = createSlice({
     logout(state) {
       state.activeContext = null;
       state.activeId = "dashboard";
+      state.accessToken = "";
       state.loggedInUser = null;
       state.toast = "Logged out";
+      setCrmAccessToken("");
     },
     openModule(state, action: PayloadAction<{ id: string; title: string }>) {
       state.activeId = action.payload.id;
@@ -544,12 +644,37 @@ const crmSessionSlice = createSlice({
     setLoginEmail(state, action: PayloadAction<string>) {
       state.loginEmail = action.payload;
     },
+    setLoginPassword(state, action: PayloadAction<string>) {
+      state.loginPassword = action.payload;
+    },
     setThemeMode(state, action: PayloadAction<CrmSessionState["themeMode"]>) {
       state.themeMode = action.payload;
     },
     setToast(state, action: PayloadAction<string>) {
       state.toast = action.payload;
     },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(loginWithCredentials.pending, (state) => {
+        state.loginError = null;
+        state.toast = "Signing in";
+      })
+      .addCase(loginWithCredentials.fulfilled, (state, action) => {
+        state.activeContext = null;
+        state.accessToken = action.payload.accessToken;
+        state.loggedInUser = action.payload;
+        state.loginPassword = "";
+        state.loginError = null;
+        state.toast = `Logged in as ${action.payload.email}`;
+        setCrmAccessToken(action.payload.accessToken);
+      })
+      .addCase(loginWithCredentials.rejected, (state, action) => {
+        state.loginError =
+          action.error.message ??
+          "Login failed. Use seeded credentials or create a CRM user.";
+        state.toast = state.loginError;
+      });
   },
 });
 
@@ -574,7 +699,7 @@ const crmWorkspaceSlice = createSlice({
       }
 
       state.moduleRecords[draft.moduleKey] = records;
-      state.error = "Using local CRM changes until authenticated API is ready";
+      state.error = "API save failed. Local unsynced CRM state was updated.";
     },
   },
   extraReducers: (builder) => {
@@ -608,6 +733,30 @@ const crmWorkspaceSlice = createSlice({
         state.moduleRecords[action.payload.moduleKey] = normalizeApiData(
           action.payload.records,
         );
+      })
+      .addCase(createTenant.fulfilled, (state, action) => {
+        const tenant = normalizeApiObject(action.payload);
+        const tenantId = getRecordId(tenant);
+        const index = state.tenants.findIndex(
+          (item) => getRecordId(item) === tenantId,
+        );
+        if (index >= 0) {
+          state.tenants[index] = tenant;
+        } else {
+          state.tenants.unshift(tenant);
+        }
+        if (tenantId) state.activeTenantId = tenantId;
+        state.error = null;
+      })
+      .addCase(createTenantUser.fulfilled, (state, action) => {
+        const data = normalizeApiObject(action.payload) as {
+          membership?: unknown;
+        };
+        const membership = data.membership ?? data;
+        const records = state.moduleRecords.user_management ?? [];
+        records.unshift(membership);
+        state.moduleRecords.user_management = records;
+        state.error = null;
       })
       .addCase(loadDedicatedCrmRecords.fulfilled, (state, action) => {
         state.moduleRecords[action.payload.moduleKey] = normalizeApiData(

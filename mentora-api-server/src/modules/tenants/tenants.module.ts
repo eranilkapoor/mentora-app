@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ContextsModule } from '../contexts/contexts.module';
+import { User, UserSchema } from '../auth/schemas/user.schema';
 import {
   UserMembership,
   UserMembershipSchema,
@@ -41,6 +42,7 @@ import { TenantsService } from './services/tenants.service';
       { name: ChannelSetting.name, schema: ChannelSettingSchema },
       { name: LeadSource.name, schema: LeadSourceSchema },
       { name: LeadStage.name, schema: LeadStageSchema },
+      { name: User.name, schema: UserSchema },
       { name: UserMembership.name, schema: UserMembershipSchema },
     ]),
   ],

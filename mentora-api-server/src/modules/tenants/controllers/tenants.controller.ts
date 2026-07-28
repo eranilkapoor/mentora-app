@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Query,
+  Req,
   UseGuards,
 } from '@nestjs/common';
 import { Permissions } from '@/common/decorators/permissions.decorator';
@@ -21,6 +22,7 @@ import {
   CreateLeadSourceDto,
   CreateLeadStageDto,
   CreateTeamDto,
+  CreateTenantUserDto,
   CreateTenantDto,
   UpsertChannelSettingDto,
   UpsertTenantBrandingDto,
@@ -227,6 +229,20 @@ export class TenantsController {
       await this.service.upsertTenantUser(dto),
       'EDUCATION_PLATFORM_TENANT_USER_UPDATED',
       'CRM tenant user updated',
+    );
+  }
+
+  @Post('tenant-users/create')
+  @HttpCode(HttpStatus.CREATED)
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async createTenantUser(
+    @Body() dto: CreateTenantUserDto,
+    @Req() req: { user: { sub: string } },
+  ) {
+    return successResponse(
+      await this.service.createTenantUser(dto, req.user.sub),
+      'EDUCATION_PLATFORM_TENANT_USER_CREATED',
+      'CRM tenant user created',
     );
   }
 

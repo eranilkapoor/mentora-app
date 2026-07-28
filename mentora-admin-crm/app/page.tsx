@@ -33,6 +33,8 @@ import {
   crmSessionActions,
   crmWorkspaceActions,
   addLeadAttachment,
+  createTenant,
+  createTenantUser,
   createReportDefinition,
   createSampleDocument,
   createSampleDepartment,
@@ -50,6 +52,7 @@ import {
   loadDedicatedCrmRecords,
   loadModuleRecords,
   loadCrmWorkspace,
+  loginWithCredentials,
   saveModuleRecord,
   saveDedicatedCrmRecord,
   runCrmRecordAction,
@@ -63,6 +66,8 @@ import {
   type DemoContext,
   type DemoUser,
   type ModuleRecordDraft,
+  type TenantDraft,
+  type TenantUserDraft,
   useAppDispatch,
   useAppSelector,
 } from "./store";
@@ -195,6 +200,7 @@ const moduleActions: Record<string, string[]> = {
   ],
   integrations: ["Check Providers", "Configure Provider", "Export Report"],
   organization_management: [
+    "Create Tenant",
     "Create Department",
     "Create Team",
     "Update Branding",
@@ -204,7 +210,7 @@ const moduleActions: Record<string, string[]> = {
   security: ["Load Policy", "Update Policy", "Audit Export"],
   scholarship: ["Evaluate", "Decision", "Complete"],
   tasks: ["Create Task", "Escalate", "Reassign", "Complete"],
-  user_management: ["Refresh Users", "Export Users", "Audit Access"],
+  user_management: ["Create CRM User", "Refresh Users", "Export Users", "Audit Access"],
 };
 
 const moduleInsights: Record<string, string[]> = {
@@ -223,7 +229,7 @@ const moduleInsights: Record<string, string[]> = {
   tasks: ["28 due today", "14 escalations", "91% completion SLA"],
 };
 
-const demoUsers = [
+const defaultCrmUsers = [
   {
     email: "super.admin@mentora.test",
     name: "Super Admin",
@@ -462,7 +468,7 @@ const modules: CrmModule[] = [
     columns: ["Task", "Entity", "Priority", "Assignee", "Due", "Status"],
     rows: [
       [
-        "Call parent after demo",
+        "Call parent after trial class",
         "Aarav Sharma",
         "High",
         "Ritika",
@@ -1270,8 +1276,11 @@ export default function CrmDashboardPage() {
   const {
     activeContext,
     activeId,
+    accessToken,
     loggedInUser,
     loginEmail,
+    loginError,
+    loginPassword,
     themeMode,
     toast,
   } = useAppSelector((state) => state.crmSession);
@@ -1294,6 +1303,8 @@ export default function CrmDashboardPage() {
     mode: "create" | "edit";
     row?: string[];
   } | null>(null);
+  const [tenantFormOpen, setTenantFormOpen] = useState(false);
+  const [tenantUserFormOpen, setTenantUserFormOpen] = useState(false);
   const [apiSyncEnabled, setApiSyncEnabled] = useState(false);
 
   useEffect(() => {
@@ -1390,16 +1401,19 @@ export default function CrmDashboardPage() {
     setDetail(null);
   }
 
-  function login() {
-    const user =
-      demoUsers.find((demoUser) => demoUser.email === loginEmail) ??
-      demoUsers[0];
-    dispatch(crmSessionActions.login(user));
+  async function login() {
+    await dispatch(
+      loginWithCredentials({
+        email: loginEmail,
+        password: loginPassword,
+      }),
+    ).unwrap();
   }
 
   function chooseContext(context: DemoContext) {
     dispatch(crmSessionActions.chooseContext(context));
-    setApiSyncEnabled(false);
+    setApiSyncEnabled(true);
+    void dispatch(loadCrmWorkspace());
   }
 
   function canAccessModule(id: string) {
@@ -1414,8 +1428,13 @@ export default function CrmDashboardPage() {
     return (
       <LoginScreen
         loginEmail={loginEmail}
+        loginError={loginError}
+        loginPassword={loginPassword}
         setLoginEmail={(value) =>
           dispatch(crmSessionActions.setLoginEmail(value))
+        }
+        setLoginPassword={(value) =>
+          dispatch(crmSessionActions.setLoginPassword(value))
         }
         login={login}
         setThemeMode={(value) =>
@@ -1631,6 +1650,12 @@ export default function CrmDashboardPage() {
           return;
         }
 
+        if (normalized.includes("tenant")) {
+          setTenantFormOpen(true);
+          dispatch(crmSessionActions.setToast("Create a new tenant"));
+          return;
+        }
+
         if (normalized.includes("team")) {
           await dispatch(
             createSampleTeam({ tenantId: activeTenantId }),
@@ -1679,6 +1704,12 @@ export default function CrmDashboardPage() {
       }
 
       try {
+        if (normalized.includes("create")) {
+          setTenantUserFormOpen(true);
+          dispatch(crmSessionActions.setToast("Create a CRM user"));
+          return;
+        }
+
         const result = await dispatch(
           loadTenantUsers({ tenantId: activeTenantId }),
         ).unwrap();
@@ -2167,6 +2198,14 @@ export default function CrmDashboardPage() {
         <ServerStatus
           apiSyncEnabled={apiSyncEnabled}
           onSync={() => {
+            if (!accessToken) {
+              dispatch(
+                crmSessionActions.setToast(
+                  "Sign in with valid credentials before syncing API data",
+                ),
+              );
+              return;
+            }
             setApiSyncEnabled(true);
             void dispatch(loadCrmWorkspace());
           }}
@@ -2223,7 +2262,7 @@ export default function CrmDashboardPage() {
                 );
                 dispatch(
                   crmSessionActions.setToast(
-                    "Record saved in CRM demo workspace",
+                    "Record saved in local CRM workspace",
                   ),
                 );
                 setRecordForm(null);
@@ -2252,6 +2291,31 @@ export default function CrmDashboardPage() {
           />
         ) : null}
 
+        {tenantFormOpen ? (
+          <TenantFormModal
+            onClose={() => setTenantFormOpen(false)}
+            onSubmit={async (draft) => {
+              await dispatch(createTenant(draft)).unwrap();
+              await dispatch(loadCrmWorkspace()).unwrap();
+              dispatch(crmSessionActions.setToast("Tenant created"));
+              setTenantFormOpen(false);
+            }}
+          />
+        ) : null}
+
+        {tenantUserFormOpen ? (
+          <TenantUserFormModal
+            activeTenantId={activeTenantId}
+            onClose={() => setTenantUserFormOpen(false)}
+            onSubmit={async (draft) => {
+              await dispatch(createTenantUser(draft)).unwrap();
+              await dispatch(loadTenantUsers({ tenantId: draft.tenantId })).unwrap();
+              dispatch(crmSessionActions.setToast("CRM user created"));
+              setTenantUserFormOpen(false);
+            }}
+          />
+        ) : null}
+
         <div className="crm-toast" role="status">
           {toast}
         </div>
@@ -2262,40 +2326,76 @@ export default function CrmDashboardPage() {
 
 function LoginScreen({
   loginEmail,
+  loginError,
+  loginPassword,
   setLoginEmail,
+  setLoginPassword,
   login,
   setThemeMode,
   themeMode,
 }: {
   loginEmail: string;
+  loginError: string | null;
+  loginPassword: string;
   setLoginEmail: (value: string) => void;
-  login: () => void;
+  setLoginPassword: (value: string) => void;
+  login: () => Promise<void>;
   setThemeMode: (value: ThemeMode) => void;
   themeMode: ThemeMode;
 }) {
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  async function submit() {
+    if (!loginEmail.trim() || !loginPassword) return;
+    setIsSubmitting(true);
+    try {
+      await login();
+    } catch {
+      return;
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
   return (
     <main className={`auth-screen theme-${themeMode}`}>
       <section className="auth-card card shadow-lg">
         <ThemeSelector setThemeMode={setThemeMode} themeMode={themeMode} />
         <span className="brand-mark">M</span>
         <h1>Mentora CRM Login</h1>
-        <p>Select a demo CRM user to show role-based tenant access.</p>
+        <p>Sign in with seeded or CRM-created credentials.</p>
         <label>
-          <span>User</span>
-          <select
-            className="form-select"
+          <span>Email</span>
+          <input
+            autoComplete="email"
+            className="form-control"
             onChange={(event) => setLoginEmail(event.target.value)}
+            placeholder="admin@mentora.test"
+            type="email"
             value={loginEmail}
-          >
-            {demoUsers.map((user) => (
-              <option key={user.email} value={user.email}>
-                {user.name} - {user.email}
-              </option>
-            ))}
-          </select>
+          />
         </label>
-        <button className="btn btn-primary" onClick={login} type="button">
-          Continue
+        <label>
+          <span>Password</span>
+          <input
+            autoComplete="current-password"
+            className="form-control"
+            onChange={(event) => setLoginPassword(event.target.value)}
+            placeholder="Password"
+            type="password"
+            value={loginPassword}
+          />
+        </label>
+        {loginError ? <div className="auth-error">{loginError}</div> : null}
+        <button
+          className="btn btn-primary"
+          disabled={!loginEmail.trim() || !loginPassword || isSubmitting}
+          onClick={() => {
+            void submit();
+          }}
+          type="button"
+        >
+          {isSubmitting ? "Signing In" : "Sign In"}
         </button>
       </section>
     </main>
@@ -2309,7 +2409,7 @@ function ContextScreen({
   setThemeMode,
   themeMode,
 }: {
-  user: (typeof demoUsers)[number];
+  user: (typeof defaultCrmUsers)[number];
   chooseContext: (context: DemoContext) => void;
   logout: () => void;
   setThemeMode: (value: ThemeMode) => void;
@@ -2396,7 +2496,7 @@ function ServerStatus({
       ? "API sync unavailable"
       : apiSyncEnabled
         ? "Server workspace synced"
-        : "Demo workspace active";
+        : "Sign in and sync workspace";
 
   return (
     <div className="server-ribbon">
@@ -2417,7 +2517,7 @@ function ServerStatus({
         <span>
           {apiSyncEnabled
             ? `${workspace.coverage.length} module records`
-            : "Create and edit uses local MVP state"}
+            : "Protected API calls require valid credentials"}
         </span>
         {workspace.error ? <em>{workspace.error}</em> : null}
       </div>
@@ -2770,7 +2870,7 @@ function ModulePanel(props: {
         <div className="head table-head">
           <span>{module.title} Listing</span>
           <em>
-            {props.usingServerRows ? "Live API data" : "Demo fallback"} /{" "}
+            {props.usingServerRows ? "Live API data" : "Static preview"} /{" "}
             {props.total} matching records
           </em>
         </div>
@@ -3132,6 +3232,246 @@ function RecordFormModal({
             type="button"
           >
             {isSaving ? "Saving..." : "Save Record"}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TenantFormModal({
+  onClose,
+  onSubmit,
+}: {
+  onClose: () => void;
+  onSubmit: (draft: TenantDraft) => Promise<void>;
+}) {
+  const [draft, setDraft] = useState<TenantDraft>({
+    code: "",
+    name: "",
+    primaryDomain: "",
+    type: "coaching",
+  });
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function submit() {
+    if (!draft.name.trim() || !draft.code.trim()) return;
+    setIsSaving(true);
+    setError("");
+    try {
+      await onSubmit({
+        ...draft,
+        code: draft.code.trim().toUpperCase(),
+        name: draft.name.trim(),
+        primaryDomain: draft.primaryDomain?.trim() || undefined,
+      });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Tenant creation failed");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop-layer" role="presentation">
+      <section className="record-modal" role="dialog" aria-modal="true">
+        <div className="record-modal-head">
+          <div>
+            <span className="eyebrow">Organization Management</span>
+            <h3>Create Tenant</h3>
+          </div>
+          <button className="btn btn-light btn-sm" onClick={onClose} type="button">
+            Close
+          </button>
+        </div>
+        <div className="record-form-grid">
+          <label className="formrow wide">
+            <span className="label">Tenant Name</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, name: event.target.value })
+              }
+              value={draft.name}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Code</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, code: event.target.value })
+              }
+              value={draft.code}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Type</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) =>
+                setDraft({ ...draft, type: event.target.value })
+              }
+              value={draft.type}
+            >
+              <option value="coaching">Coaching</option>
+              <option value="school">School</option>
+              <option value="college">College</option>
+              <option value="university">University</option>
+              <option value="edtech">EdTech</option>
+              <option value="study_abroad">Study abroad</option>
+              <option value="training">Training</option>
+            </select>
+          </label>
+          <label className="formrow">
+            <span className="label">Primary Domain</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, primaryDomain: event.target.value })
+              }
+              placeholder="academy.mentora.test"
+              value={draft.primaryDomain}
+            />
+          </label>
+        </div>
+        {error ? <div className="auth-error modal-error">{error}</div> : null}
+        <div className="record-modal-actions">
+          <button className="btn btn-light" onClick={onClose} type="button">
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            disabled={!draft.name.trim() || !draft.code.trim() || isSaving}
+            onClick={() => {
+              void submit();
+            }}
+            type="button"
+          >
+            {isSaving ? "Creating" : "Create Tenant"}
+          </button>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+function TenantUserFormModal({
+  activeTenantId,
+  onClose,
+  onSubmit,
+}: {
+  activeTenantId: string;
+  onClose: () => void;
+  onSubmit: (draft: TenantUserDraft) => Promise<void>;
+}) {
+  const [draft, setDraft] = useState<TenantUserDraft>({
+    email: "",
+    password: "",
+    role: "admission_counselor",
+    tenantId: activeTenantId,
+  });
+  const [error, setError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  async function submit() {
+    if (!draft.tenantId || !draft.email.trim() || draft.password.length < 8) {
+      setError("Tenant, email, and an 8 character password are required");
+      return;
+    }
+    setIsSaving(true);
+    setError("");
+    try {
+      await onSubmit({ ...draft, email: draft.email.trim().toLowerCase() });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "User creation failed");
+    } finally {
+      setIsSaving(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop-layer" role="presentation">
+      <section className="record-modal" role="dialog" aria-modal="true">
+        <div className="record-modal-head">
+          <div>
+            <span className="eyebrow">User Management</span>
+            <h3>Create CRM User</h3>
+          </div>
+          <button className="btn btn-light btn-sm" onClick={onClose} type="button">
+            Close
+          </button>
+        </div>
+        <div className="record-form-grid">
+          <label className="formrow wide">
+            <span className="label">Tenant ID</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, tenantId: event.target.value })
+              }
+              value={draft.tenantId}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Email</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, email: event.target.value })
+              }
+              placeholder="counselor@mentora.test"
+              type="email"
+              value={draft.email}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Temporary Password</span>
+            <input
+              className="input form-control"
+              onChange={(event) =>
+                setDraft({ ...draft, password: event.target.value })
+              }
+              type="password"
+              value={draft.password}
+            />
+          </label>
+          <label className="formrow">
+            <span className="label">Role</span>
+            <select
+              className="form-select form-select-sm"
+              onChange={(event) =>
+                setDraft({ ...draft, role: event.target.value })
+              }
+              value={draft.role}
+            >
+              <option value="organization_admin">Organization admin</option>
+              <option value="branch_admin">Branch admin</option>
+              <option value="admission_manager">Admission manager</option>
+              <option value="admission_counselor">Admission counselor</option>
+              <option value="marketing_executive">Marketing executive</option>
+              <option value="sales_executive">Sales executive</option>
+              <option value="call_center">Call center</option>
+              <option value="finance">Finance</option>
+              <option value="field_agent">Field agent</option>
+            </select>
+          </label>
+        </div>
+        {error ? <div className="auth-error modal-error">{error}</div> : null}
+        <div className="record-modal-actions">
+          <button className="btn btn-light" onClick={onClose} type="button">
+            Cancel
+          </button>
+          <button
+            className="btn btn-primary"
+            disabled={!draft.tenantId || !draft.email.trim() || isSaving}
+            onClick={() => {
+              void submit();
+            }}
+            type="button"
+          >
+            {isSaving ? "Creating" : "Create User"}
           </button>
         </div>
       </section>

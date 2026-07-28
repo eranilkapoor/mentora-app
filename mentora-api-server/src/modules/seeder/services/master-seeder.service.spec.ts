@@ -22,7 +22,14 @@ const query = (value: unknown) => {
 
 const model = () => ({
   bulkWrite: jest.fn().mockResolvedValue(result),
-  findOneAndUpdate: jest.fn().mockResolvedValue({ _id: new Types.ObjectId() }),
+  findOneAndUpdate: jest.fn((filter?: unknown, update?: unknown) =>
+    Promise.resolve({
+      _id: new Types.ObjectId(),
+      ...(filter as Record<string, unknown>),
+      ...((update as { $set?: Record<string, unknown> } | undefined)?.$set ??
+        {}),
+    }),
+  ),
   updateOne: jest.fn().mockResolvedValue(result),
   updateMany: jest.fn().mockResolvedValue(result),
   find: jest.fn(() => query([])),
@@ -60,8 +67,11 @@ describe('MasterSeederService', () => {
   const studyPlanModel = model();
   const tenantModel = model();
   const branchModel = model();
+  const departmentModel = model();
+  const teamModel = model();
   const leadSourceModel = model();
   const leadStageModel = model();
+  const userMembershipModel = model();
   const moduleRecordModel = model();
 
   let service: MasterSeederService;
@@ -98,8 +108,11 @@ describe('MasterSeederService', () => {
       studyPlanModel,
       tenantModel,
       branchModel,
+      departmentModel,
+      teamModel,
       leadSourceModel,
       leadStageModel,
+      userMembershipModel,
       moduleRecordModel,
     ]) {
       item.bulkWrite.mockResolvedValue(result);
@@ -140,8 +153,11 @@ describe('MasterSeederService', () => {
       studyPlanModel as never,
       tenantModel as never,
       branchModel as never,
+      departmentModel as never,
+      teamModel as never,
       leadSourceModel as never,
       leadStageModel as never,
+      userMembershipModel as never,
       moduleRecordModel as never,
     );
   });
