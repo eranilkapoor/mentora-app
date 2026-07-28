@@ -124,6 +124,8 @@ export class Lead {
 export const LeadSchema = SchemaFactory.createForClass(Lead);
 LeadSchema.index({ tenantId: 1, phone: 1 });
 LeadSchema.index({ tenantId: 1, email: 1 });
+LeadSchema.index({ tenantId: 1, createdAt: -1 });
+LeadSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
 LeadSchema.index({ tenantId: 1, assignedTo: 1, stageId: 1, createdAt: -1 });
 LeadSchema.index({ tenantId: 1, nextFollowUpAt: 1 });
 LeadSchema.index({ tenantId: 1, tags: 1 });
@@ -217,3 +219,4 @@ export class LeadAssignment {
 export const LeadAssignmentSchema =
   SchemaFactory.createForClass(LeadAssignment);
 LeadAssignmentSchema.index({ tenantId: 1, leadId: 1, assignedAt: -1 });
+LeadAssignmentSchema.index({ tenantId: 1, assignedTo: 1, assignedAt: -1 });

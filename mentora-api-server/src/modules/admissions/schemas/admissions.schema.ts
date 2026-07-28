@@ -42,3 +42,8 @@ export class Admission {
 }
 export const AdmissionSchema = SchemaFactory.createForClass(Admission);
 AdmissionSchema.index({ tenantId: 1, status: 1, dueAt: 1 });
+AdmissionSchema.index({ tenantId: 1, dueAt: 1, createdAt: -1 });
+AdmissionSchema.index({ tenantId: 1, status: 1, dueAt: 1, createdAt: -1 });
+AdmissionSchema.index({ tenantId: 1, ownerId: 1, status: 1, dueAt: 1 });
+AdmissionSchema.index({ tenantId: 1, relatedLeadId: 1, createdAt: -1 });
+AdmissionSchema.index({ tenantId: 1, relatedApplicationId: 1, createdAt: -1 });

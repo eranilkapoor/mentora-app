@@ -149,6 +149,8 @@ export class StudentProfile {
 export const StudentProfileSchema =
   SchemaFactory.createForClass(StudentProfile);
 StudentProfileSchema.index({ createdByUserId: 1, status: 1 });
+StudentProfileSchema.index({ userId: 1, status: 1 });
+StudentProfileSchema.index({ status: 1, createdAt: -1 });
 
 @Schema({ collection: COLLECTION_NAMES.PARENT_PROFILE, timestamps: true })
 export class ParentProfile {
@@ -290,6 +292,8 @@ ParentStudentRelationshipSchema.index(
   { parentUserId: 1, studentProfileId: 1 },
   { unique: true },
 );
+ParentStudentRelationshipSchema.index({ parentUserId: 1, status: 1 });
+ParentStudentRelationshipSchema.index({ studentProfileId: 1, status: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.STUDENT_INVITATION, timestamps: true })
 export class StudentInvitation {
@@ -347,6 +351,8 @@ export class StudentInvitation {
 export const StudentInvitationSchema =
   SchemaFactory.createForClass(StudentInvitation);
 StudentInvitationSchema.index({ studentProfileId: 1, inviteeEmail: 1 });
+StudentInvitationSchema.index({ token: 1, status: 1, expiresAt: 1 });
+StudentInvitationSchema.index({ invitedByUserId: 1, status: 1, createdAt: -1 });
 
 @Schema({ collection: COLLECTION_NAMES.PARENTAL_CONTROL, timestamps: true })
 export class ParentalControl {
@@ -412,6 +418,7 @@ export class ParentalControl {
 
 export const ParentalControlSchema =
   SchemaFactory.createForClass(ParentalControl);
+ParentalControlSchema.index({ configuredByUserId: 1, updatedAt: -1 });
 
 @Schema({
   collection: COLLECTION_NAMES.STUDENT_ACADEMIC_RECORD,
@@ -471,6 +478,8 @@ export class StudentAcademicRecord {
 export const StudentAcademicRecordSchema = SchemaFactory.createForClass(
   StudentAcademicRecord,
 );
+StudentAcademicRecordSchema.index({ studentProfileId: 1, createdAt: -1 });
+StudentAcademicRecordSchema.index({ studentProfileId: 1, status: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.ACADEMIC_BOARD, timestamps: true })
 export class AcademicBoard {
@@ -491,6 +500,7 @@ export class AcademicBoard {
 }
 
 export const AcademicBoardSchema = SchemaFactory.createForClass(AcademicBoard);
+AcademicBoardSchema.index({ status: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.UNIVERSITY, timestamps: true })
 export class University {
@@ -508,6 +518,7 @@ export class University {
 }
 
 export const UniversitySchema = SchemaFactory.createForClass(University);
+UniversitySchema.index({ status: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.INSTITUTION, timestamps: true })
 export class Institution {
@@ -541,6 +552,9 @@ export class Institution {
 
 export const InstitutionSchema = SchemaFactory.createForClass(Institution);
 InstitutionSchema.index({ name: 1, type: 1 });
+InstitutionSchema.index({ status: 1, name: 1 });
+InstitutionSchema.index({ universityId: 1, status: 1, name: 1 });
+InstitutionSchema.index({ boardId: 1, status: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.ACADEMIC_LEVEL, timestamps: true })
 export class AcademicLevel {
@@ -558,6 +572,7 @@ export class AcademicLevel {
 }
 
 export const AcademicLevelSchema = SchemaFactory.createForClass(AcademicLevel);
+AcademicLevelSchema.index({ status: 1, sortOrder: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.GRADE, timestamps: true })
 export class Grade {
@@ -578,6 +593,8 @@ export class Grade {
 }
 
 export const GradeSchema = SchemaFactory.createForClass(Grade);
+GradeSchema.index({ status: 1, sortOrder: 1, name: 1 });
+GradeSchema.index({ academicLevelId: 1, status: 1, sortOrder: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.STREAM, timestamps: true })
 export class Stream {
@@ -595,6 +612,7 @@ export class Stream {
 }
 
 export const StreamSchema = SchemaFactory.createForClass(Stream);
+StreamSchema.index({ status: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.COURSE, timestamps: true })
 export class Course {
@@ -615,6 +633,8 @@ export class Course {
 }
 
 export const CourseSchema = SchemaFactory.createForClass(Course);
+CourseSchema.index({ status: 1, name: 1 });
+CourseSchema.index({ academicLevelId: 1, status: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.SUBJECT, timestamps: true })
 export class Subject {
@@ -649,6 +669,8 @@ export class Subject {
 }
 
 export const SubjectSchema = SchemaFactory.createForClass(Subject);
+SubjectSchema.index({ status: 1, name: 1 });
+SubjectSchema.index({ category: 1, status: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.TOPIC, timestamps: true })
 export class Topic {
@@ -678,6 +700,7 @@ export class Topic {
 
 export const TopicSchema = SchemaFactory.createForClass(Topic);
 TopicSchema.index({ subjectId: 1, code: 1 }, { unique: true });
+TopicSchema.index({ subjectId: 1, status: 1, sortOrder: 1, name: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.CURRICULUM, timestamps: true })
 export class Curriculum {
@@ -710,6 +733,9 @@ CurriculumSchema.index(
   { boardId: 1, gradeId: 1, subjectId: 1 },
   { unique: true },
 );
+CurriculumSchema.index({ status: 1, code: 1 });
+CurriculumSchema.index({ gradeId: 1, status: 1, code: 1 });
+CurriculumSchema.index({ subjectId: 1, status: 1, code: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.STUDY_PLAN, timestamps: true })
 export class StudyPlan {
@@ -805,6 +831,7 @@ export class StudyPlan {
 
 export const StudyPlanSchema = SchemaFactory.createForClass(StudyPlan);
 StudyPlanSchema.index({ category: 1, target: 1, status: 1 });
+StudyPlanSchema.index({ category: 1, target: 1, status: 1, name: 1 });
 StudyPlanSchema.index({ subjectIds: 1, status: 1 });
 
 @Schema({
@@ -962,6 +989,8 @@ export class LearningSchedule {
 export const LearningScheduleSchema =
   SchemaFactory.createForClass(LearningSchedule);
 LearningScheduleSchema.index({ studentProfileId: 1, startAt: 1, status: 1 });
+LearningScheduleSchema.index({ studentProfileId: 1, startAt: 1 });
+LearningScheduleSchema.index({ studentProfileId: 1, status: 1, startAt: 1 });
 LearningScheduleSchema.index({ tutorUserId: 1, startAt: 1, status: 1 });
 LearningScheduleSchema.index({ status: 1, startAt: 1, endAt: 1 });
 LearningScheduleSchema.index({ subjectId: 1, startAt: 1 });
@@ -1087,6 +1116,7 @@ export class AiTutorSession {
 export const AiTutorSessionSchema =
   SchemaFactory.createForClass(AiTutorSession);
 AiTutorSessionSchema.index({ studentProfileId: 1, createdAt: -1 });
+AiTutorSessionSchema.index({ studentProfileId: 1, status: 1, createdAt: -1 });
 AiTutorSessionSchema.index({ scheduleId: 1, status: 1 });
 AiTutorSessionSchema.index({ subjectId: 1, status: 1 });
 
@@ -1298,6 +1328,12 @@ export class AssessmentAttempt {
 export const AssessmentAttemptSchema =
   SchemaFactory.createForClass(AssessmentAttempt);
 AssessmentAttemptSchema.index({ studentProfileId: 1, createdAt: -1 });
+AssessmentAttemptSchema.index({
+  studentProfileId: 1,
+  status: 1,
+  createdAt: -1,
+});
+AssessmentAttemptSchema.index({ assessmentId: 1, studentProfileId: 1 });
 
 @Schema({ collection: COLLECTION_NAMES.ASSESSMENT_ANSWER, timestamps: true })
 export class AssessmentAnswer {
@@ -1379,6 +1415,12 @@ export class AssessmentResult {
 export const AssessmentResultSchema =
   SchemaFactory.createForClass(AssessmentResult);
 AssessmentResultSchema.index({ studentProfileId: 1, createdAt: -1 });
+AssessmentResultSchema.index({ studentProfileId: 1, updatedAt: -1 });
+AssessmentResultSchema.index({
+  studentProfileId: 1,
+  subjectId: 1,
+  createdAt: -1,
+});
 
 @Schema({
   collection: COLLECTION_NAMES.STUDENT_TOPIC_PROGRESS,
@@ -1470,6 +1512,17 @@ LearningRecommendationSchema.index({
   studentProfileId: 1,
   status: 1,
   priority: 1,
+});
+LearningRecommendationSchema.index({
+  studentProfileId: 1,
+  priority: -1,
+  createdAt: -1,
+});
+LearningRecommendationSchema.index({
+  studentProfileId: 1,
+  status: 1,
+  priority: -1,
+  createdAt: -1,
 });
 
 @Schema({ collection: COLLECTION_NAMES.CLASSROOM, timestamps: true })
@@ -1730,3 +1783,5 @@ export class SafetyEvent {
 
 export const SafetyEventSchema = SchemaFactory.createForClass(SafetyEvent);
 SafetyEventSchema.index({ status: 1, severity: 1, createdAt: -1 });
+SafetyEventSchema.index({ studentProfileId: 1, status: 1, createdAt: -1 });
+SafetyEventSchema.index({ userId: 1, status: 1, createdAt: -1 });

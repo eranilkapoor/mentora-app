@@ -43,3 +43,5 @@ UserMembershipSchema.index(
   { unique: true },
 );
 UserMembershipSchema.index({ tenantId: 1, role: 1, status: 1 });
+UserMembershipSchema.index({ tenantId: 1, role: 1, createdAt: -1 });
+UserMembershipSchema.index({ tenantId: 1, status: 1, role: 1, createdAt: -1 });

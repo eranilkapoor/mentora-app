@@ -47,3 +47,26 @@ export class WhatsappConversation {
 export const WhatsappConversationSchema =
   SchemaFactory.createForClass(WhatsappConversation);
 WhatsappConversationSchema.index({ tenantId: 1, status: 1, dueAt: 1 });
+WhatsappConversationSchema.index({ tenantId: 1, dueAt: 1, createdAt: -1 });
+WhatsappConversationSchema.index({
+  tenantId: 1,
+  status: 1,
+  dueAt: 1,
+  createdAt: -1,
+});
+WhatsappConversationSchema.index({
+  tenantId: 1,
+  ownerId: 1,
+  status: 1,
+  dueAt: 1,
+});
+WhatsappConversationSchema.index({
+  tenantId: 1,
+  relatedLeadId: 1,
+  createdAt: -1,
+});
+WhatsappConversationSchema.index({
+  tenantId: 1,
+  relatedApplicationId: 1,
+  createdAt: -1,
+});

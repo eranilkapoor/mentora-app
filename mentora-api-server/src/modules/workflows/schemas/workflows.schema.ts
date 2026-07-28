@@ -51,6 +51,21 @@ export class WorkflowRule {
 export const WorkflowRuleSchema = SchemaFactory.createForClass(WorkflowRule);
 WorkflowRuleSchema.index({ tenantId: 1, moduleKey: 1, status: 1 });
 WorkflowRuleSchema.index({ tenantId: 1, trigger: 1, priority: -1 });
+WorkflowRuleSchema.index({ tenantId: 1, priority: -1, createdAt: -1 });
+WorkflowRuleSchema.index({
+  tenantId: 1,
+  moduleKey: 1,
+  priority: -1,
+  createdAt: -1,
+});
+WorkflowRuleSchema.index({
+  tenantId: 1,
+  moduleKey: 1,
+  trigger: 1,
+  status: 1,
+  priority: -1,
+  createdAt: 1,
+});
 
 @Schema({
   collection: COLLECTION_NAMES.WORKFLOW_EXECUTION,
@@ -108,6 +123,7 @@ export class WorkflowExecution {
 export const WorkflowExecutionSchema =
   SchemaFactory.createForClass(WorkflowExecution);
 WorkflowExecutionSchema.index({ tenantId: 1, moduleKey: 1, executedAt: -1 });
+WorkflowExecutionSchema.index({ tenantId: 1, executedAt: -1 });
 WorkflowExecutionSchema.index({
   tenantId: 1,
   workflowRuleId: 1,

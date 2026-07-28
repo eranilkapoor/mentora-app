@@ -58,6 +58,7 @@ export class Tenant {
 }
 
 export const TenantSchema = SchemaFactory.createForClass(Tenant);
+TenantSchema.index({ status: 1, name: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.BRANCH,
@@ -85,6 +86,7 @@ export class Branch {
 
 export const BranchSchema = SchemaFactory.createForClass(Branch);
 BranchSchema.index({ tenantId: 1, code: 1 }, { unique: true });
+BranchSchema.index({ tenantId: 1, status: 1, name: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.DEPARTMENT,
@@ -115,6 +117,8 @@ export class Department {
 
 export const DepartmentSchema = SchemaFactory.createForClass(Department);
 DepartmentSchema.index({ tenantId: 1, code: 1 }, { unique: true });
+DepartmentSchema.index({ tenantId: 1, status: 1, name: 1 });
+DepartmentSchema.index({ tenantId: 1, branchId: 1, status: 1, name: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.TEAM,
@@ -149,6 +153,7 @@ export class Team {
 export const TeamSchema = SchemaFactory.createForClass(Team);
 TeamSchema.index({ tenantId: 1, code: 1 }, { unique: true });
 TeamSchema.index({ tenantId: 1, departmentId: 1, status: 1 });
+TeamSchema.index({ tenantId: 1, status: 1, name: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.CAMPUS,
@@ -182,6 +187,8 @@ export class Campus {
 
 export const CampusSchema = SchemaFactory.createForClass(Campus);
 CampusSchema.index({ tenantId: 1, code: 1 }, { unique: true });
+CampusSchema.index({ tenantId: 1, status: 1, name: 1 });
+CampusSchema.index({ tenantId: 1, branchId: 1, status: 1, name: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.TENANT_BRANDING,
@@ -241,6 +248,7 @@ export class ChannelSetting {
 export const ChannelSettingSchema =
   SchemaFactory.createForClass(ChannelSetting);
 ChannelSettingSchema.index({ tenantId: 1, channel: 1 }, { unique: true });
+ChannelSettingSchema.index({ tenantId: 1, status: 1, channel: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.LEAD_SOURCE,
@@ -280,6 +288,7 @@ export class LeadSource {
 
 export const LeadSourceSchema = SchemaFactory.createForClass(LeadSource);
 LeadSourceSchema.index({ tenantId: 1, code: 1 }, { unique: true });
+LeadSourceSchema.index({ tenantId: 1, status: 1, name: 1 });
 
 @Schema({
   collection: COLLECTION_NAMES.LEAD_STAGE,
@@ -313,3 +322,4 @@ export class LeadStage {
 
 export const LeadStageSchema = SchemaFactory.createForClass(LeadStage);
 LeadStageSchema.index({ tenantId: 1, code: 1 }, { unique: true });
+LeadStageSchema.index({ tenantId: 1, status: 1, order: 1, name: 1 });

@@ -53,5 +53,7 @@ export class Campaign {
 }
 
 export const CampaignSchema = SchemaFactory.createForClass(Campaign);
+CampaignSchema.index({ tenantId: 1, createdAt: -1 });
+CampaignSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
 CampaignSchema.index({ tenantId: 1, channel: 1, status: 1 });
 CampaignSchema.index({ tenantId: 1, scheduledAt: 1, status: 1 });

@@ -25,6 +25,12 @@ interface MongoCommandFinishedEvent {
   duration?: number;
 }
 
+const SLOW_QUERY_IGNORED_COMMANDS = new Set([
+  'create',
+  'createIndexes',
+  'listIndexes',
+]);
+
 const encodeCredential = (value: string): string => {
   try {
     return encodeURIComponent(decodeURIComponent(value));
@@ -190,7 +196,11 @@ export const MongoModule = MongooseModule.forRootAsync({
             startedAt.delete(event.requestId);
             const durationMs = event.duration ?? 0;
 
-            if (!started || durationMs < thresholdMs) {
+            if (
+              !started ||
+              durationMs < thresholdMs ||
+              SLOW_QUERY_IGNORED_COMMANDS.has(event.commandName)
+            ) {
               return;
             }
 

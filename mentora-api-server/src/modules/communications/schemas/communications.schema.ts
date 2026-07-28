@@ -48,6 +48,8 @@ export class Communication {
 }
 
 export const CommunicationSchema = SchemaFactory.createForClass(Communication);
+CommunicationSchema.index({ tenantId: 1, createdAt: -1 });
+CommunicationSchema.index({ tenantId: 1, status: 1, createdAt: -1 });
 CommunicationSchema.index({
   tenantId: 1,
   entityType: 1,

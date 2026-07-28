@@ -43,3 +43,26 @@ export class FinanceLedgerEntry {
 export const FinanceLedgerEntrySchema =
   SchemaFactory.createForClass(FinanceLedgerEntry);
 FinanceLedgerEntrySchema.index({ tenantId: 1, status: 1, dueAt: 1 });
+FinanceLedgerEntrySchema.index({ tenantId: 1, dueAt: 1, createdAt: -1 });
+FinanceLedgerEntrySchema.index({
+  tenantId: 1,
+  status: 1,
+  dueAt: 1,
+  createdAt: -1,
+});
+FinanceLedgerEntrySchema.index({
+  tenantId: 1,
+  ownerId: 1,
+  status: 1,
+  dueAt: 1,
+});
+FinanceLedgerEntrySchema.index({
+  tenantId: 1,
+  relatedLeadId: 1,
+  createdAt: -1,
+});
+FinanceLedgerEntrySchema.index({
+  tenantId: 1,
+  relatedApplicationId: 1,
+  createdAt: -1,
+});

@@ -70,4 +70,5 @@ ApplicationSchema.index(
   { tenantId: 1, applicationNumber: 1 },
   { unique: true },
 );
+ApplicationSchema.index({ tenantId: 1, createdAt: -1 });
 ApplicationSchema.index({ tenantId: 1, status: 1, createdAt: -1 });

@@ -9,7 +9,13 @@ const json = process.argv.includes('--json');
 
 const run = async (): Promise<void> => {
   process.env.MONGO_AUTO_INDEX = 'false';
+  process.env.MONGO_RETRY_ATTEMPTS = '0';
+  process.env.MONGO_SERVER_SELECTION_TIMEOUT_MS = '5000';
+  process.env.MONGO_SOCKET_TIMEOUT_MS = '15000';
+  process.env.MONGO_WAIT_QUEUE_TIMEOUT_MS = '5000';
+  process.env.MONGO_SLOW_QUERY_THRESHOLD_MS = '0';
   process.env.RUN_SEEDER = 'false';
+  process.env.NOTIFICATION_QUEUE_ENABLED = 'false';
 
   const app = await NestFactory.createApplicationContext(AppModule, {
     logger: false,

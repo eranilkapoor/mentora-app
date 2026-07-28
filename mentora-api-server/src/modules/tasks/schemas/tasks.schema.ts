@@ -74,3 +74,6 @@ export class Task {
 export const TaskSchema = SchemaFactory.createForClass(Task);
 TaskSchema.index({ tenantId: 1, assignedTo: 1, status: 1, dueAt: 1 });
 TaskSchema.index({ tenantId: 1, boardColumn: 1, priority: 1 });
+TaskSchema.index({ tenantId: 1, dueAt: 1, createdAt: -1 });
+TaskSchema.index({ tenantId: 1, boardColumn: 1, dueAt: 1, priority: -1 });
+TaskSchema.index({ tenantId: 1, entityType: 1, entityId: 1, createdAt: -1 });

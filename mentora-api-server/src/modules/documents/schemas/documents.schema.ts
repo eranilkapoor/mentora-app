@@ -66,5 +66,13 @@ export class CrmDocument {
 }
 
 export const CrmDocumentSchema = SchemaFactory.createForClass(CrmDocument);
+CrmDocumentSchema.index({ tenantId: 1, updatedAt: -1 });
+CrmDocumentSchema.index({ tenantId: 1, status: 1, updatedAt: -1 });
 CrmDocumentSchema.index({ tenantId: 1, entityType: 1, entityId: 1, status: 1 });
+CrmDocumentSchema.index({
+  tenantId: 1,
+  entityType: 1,
+  entityId: 1,
+  updatedAt: -1,
+});
 CrmDocumentSchema.index({ tenantId: 1, category: 1, status: 1 });

@@ -43,3 +43,17 @@ export class CallCenterCall {
 export const CallCenterCallSchema =
   SchemaFactory.createForClass(CallCenterCall);
 CallCenterCallSchema.index({ tenantId: 1, status: 1, dueAt: 1 });
+CallCenterCallSchema.index({ tenantId: 1, dueAt: 1, createdAt: -1 });
+CallCenterCallSchema.index({
+  tenantId: 1,
+  status: 1,
+  dueAt: 1,
+  createdAt: -1,
+});
+CallCenterCallSchema.index({ tenantId: 1, ownerId: 1, status: 1, dueAt: 1 });
+CallCenterCallSchema.index({ tenantId: 1, relatedLeadId: 1, createdAt: -1 });
+CallCenterCallSchema.index({
+  tenantId: 1,
+  relatedApplicationId: 1,
+  createdAt: -1,
+});

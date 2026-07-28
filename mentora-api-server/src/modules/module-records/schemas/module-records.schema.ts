@@ -56,4 +56,17 @@ export class ModuleRecord {
 export const ModuleRecordSchema = SchemaFactory.createForClass(ModuleRecord);
 ModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, status: 1 });
 ModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, dueAt: 1 });
+ModuleRecordSchema.index({
+  tenantId: 1,
+  moduleKey: 1,
+  dueAt: 1,
+  createdAt: -1,
+});
+ModuleRecordSchema.index({
+  tenantId: 1,
+  moduleKey: 1,
+  status: 1,
+  dueAt: 1,
+  createdAt: -1,
+});
 ModuleRecordSchema.index({ tenantId: 1, moduleKey: 1, ownerId: 1 });
