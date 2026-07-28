@@ -59,7 +59,7 @@ export class TasksController {
     );
   }
 
-  @Post(':taskId([a-fA-F0-9]{24})/workflow')
+  @Post(':taskId/workflow')
   @Permissions(Permission.CRM_TASK_MANAGE)
   async updateWorkflow(
     @Req() req: AuthenticatedRequest,

@@ -156,5 +156,6 @@
   "sharing_unavailable_message": "Your profile PDF was saved to {{uri}}",
   "pdf_privacy_note": "Sensitive fields are masked according to your current privacy settings.",
   "pdf_footer": "Generated from Mentora. Shared profile copy is watermarked and privacy-safe.",
-  "load_error_message": "Failed to load profile. Please try again."
+  "load_error_message": "Failed to load profile. Please try again.",
+  "mode_student_learning": "Student learning account"
 }

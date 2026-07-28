@@ -61,7 +61,20 @@ export class LeadsController {
     );
   }
 
-  @Get(':leadId([a-fA-F0-9]{24})')
+  @Get('operations/export')
+  @Permissions(Permission.CRM_LEAD_EXPORT)
+  async exportLeads(
+    @Req() req: AuthenticatedRequest,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.exportLeads(req.user.sub, tenantId),
+      'EDUCATION_PLATFORM_LEADS_EXPORTED',
+      'CRM leads exported',
+    );
+  }
+
+  @Get(':leadId')
   @Permissions(Permission.CRM_LEAD_VIEW)
   async getLead(
     @Query('tenantId') tenantId: string,
@@ -74,7 +87,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId([a-fA-F0-9]{24})/assign')
+  @Post(':leadId/assign')
   @Permissions(Permission.CRM_LEAD_ASSIGN)
   async assignLead(
     @Req() req: AuthenticatedRequest,
@@ -88,7 +101,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId([a-fA-F0-9]{24})/change-stage')
+  @Post(':leadId/change-stage')
   @Permissions(Permission.CRM_LEAD_UPDATE)
   async changeLeadStage(
     @Req() req: AuthenticatedRequest,
@@ -102,7 +115,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId([a-fA-F0-9]{24})/activities')
+  @Post(':leadId/activities')
   @Permissions(Permission.CRM_LEAD_UPDATE)
   async addLeadActivity(
     @Req() req: AuthenticatedRequest,
@@ -116,7 +129,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId([a-fA-F0-9]{24})/tags')
+  @Post(':leadId/tags')
   @Permissions(Permission.CRM_LEAD_UPDATE)
   async updateTags(
     @Req() req: AuthenticatedRequest,
@@ -130,7 +143,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId([a-fA-F0-9]{24})/attachments')
+  @Post(':leadId/attachments')
   @Permissions(Permission.CRM_LEAD_UPDATE)
   async addAttachment(
     @Req() req: AuthenticatedRequest,
@@ -144,7 +157,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId([a-fA-F0-9]{24})/score')
+  @Post(':leadId/score')
   @Permissions(Permission.CRM_LEAD_UPDATE)
   async scoreLead(
     @Req() req: AuthenticatedRequest,
@@ -158,7 +171,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId([a-fA-F0-9]{24})/transfer')
+  @Post(':leadId/transfer')
   @Permissions(Permission.CRM_LEAD_ASSIGN)
   async transferLead(
     @Req() req: AuthenticatedRequest,
@@ -172,7 +185,7 @@ export class LeadsController {
     );
   }
 
-  @Get(':leadId([a-fA-F0-9]{24})/timeline')
+  @Get(':leadId/timeline')
   @Permissions(Permission.CRM_LEAD_VIEW)
   async listLeadTimeline(
     @Query('tenantId') tenantId: string,
@@ -195,7 +208,7 @@ export class LeadsController {
     );
   }
 
-  @Post(':leadId([a-fA-F0-9]{24})/merge')
+  @Post(':leadId/merge')
   @Permissions(Permission.CRM_LEAD_MERGE)
   async mergeLeads(
     @Req() req: AuthenticatedRequest,
@@ -220,19 +233,6 @@ export class LeadsController {
       await this.service.importLeads(req.user.sub, dto),
       'EDUCATION_PLATFORM_LEADS_IMPORTED',
       'CRM leads imported',
-    );
-  }
-
-  @Get('operations/export')
-  @Permissions(Permission.CRM_LEAD_EXPORT)
-  async exportLeads(
-    @Req() req: AuthenticatedRequest,
-    @Query('tenantId') tenantId: string,
-  ) {
-    return successResponse(
-      await this.service.exportLeads(req.user.sub, tenantId),
-      'EDUCATION_PLATFORM_LEADS_EXPORTED',
-      'CRM leads exported',
     );
   }
 }

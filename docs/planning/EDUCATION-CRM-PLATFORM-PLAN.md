@@ -1,6 +1,6 @@
 # Mentora Education CRM Platform Plan
 
-Last reviewed: 2026-07-26
+Last reviewed: 2026-07-28
 
 ## Positioning
 
@@ -36,7 +36,7 @@ mentora-admin-crm        Next.js admin CRM portal for organizations and platform
 
 ## Backend Module Status
 
-Implemented starter backend modules. These are top-level reusable API modules, not admin-CRM-only modules, so the admin portal, public website, mobile app, and future integrations can reuse the same APIs.
+Implemented backend modules. These are top-level reusable API modules, not admin-CRM-only modules, so the admin portal, public website, mobile app, and future integrations can reuse the same APIs.
 
 ```text
 src/modules/tenants
@@ -45,7 +45,20 @@ src/modules/applications
 src/modules/tasks
 src/modules/campaigns
 src/modules/communications
+src/modules/admissions
+src/modules/call-center
+src/modules/documents
+src/modules/events
+src/modules/field-force
+src/modules/finance-ledgers
+src/modules/integrations
+src/modules/interviews
 src/modules/module-records
+src/modules/reports
+src/modules/scholarships
+src/modules/security-policies
+src/modules/whatsapp
+src/modules/workflows
 src/modules/contexts
 src/modules/dashboard
 ```
@@ -63,8 +76,23 @@ Initial collections:
 - `tasks`
 - `campaigns`
 - `communications`
+- `admissions`
+- `call_center_calls`
+- `crm_documents`
+- `crm_events`
+- `field_visits`
+- `finance_ledger_entries`
+- `integration_provider_configs`
+- `interviews`
 - `module_records`
+- `report_definitions`
+- `report_export_jobs`
+- `scholarship_applications`
+- `tenant_security_policies`
 - `user_memberships`
+- `whatsapp_conversations`
+- `workflow_rules`
+- `workflow_executions`
 
 Initial APIs:
 
@@ -78,9 +106,35 @@ GET  /api/v1/leads/:leadId?tenantId=:tenantId
 POST /api/v1/leads/:leadId/assign
 POST /api/v1/leads/:leadId/change-stage
 POST /api/v1/leads/:leadId/activities
+POST /api/v1/leads/:leadId/tags
+POST /api/v1/leads/:leadId/attachments
+POST /api/v1/leads/:leadId/score
+POST /api/v1/leads/:leadId/transfer
 GET  /api/v1/leads/:leadId/timeline?tenantId=:tenantId
+GET  /api/v1/leads/operations/export?tenantId=:tenantId
 POST /api/v1/applications
+POST /api/v1/applications/:applicationId/review
+POST /api/v1/applications/:applicationId/decision
 POST /api/v1/tasks
+GET  /api/v1/tasks/board?tenantId=:tenantId
+POST /api/v1/tasks/:taskId/workflow
+POST /api/v1/campaigns/:campaignId/metrics
+POST /api/v1/admissions/:recordId/allocate
+POST /api/v1/admissions/:recordId/handoff
+POST /api/v1/documents
+GET  /api/v1/documents?tenantId=:tenantId
+POST /api/v1/documents/:documentId/verify
+POST /api/v1/finance-ledgers/:recordId/reconcile
+POST /api/v1/finance-ledgers/operations/export
+POST /api/v1/scholarships/:recordId/evaluate
+POST /api/v1/scholarships/:recordId/decision
+GET  /api/v1/integrations/providers?tenantId=:tenantId
+PUT  /api/v1/integrations/providers/:providerKey
+GET  /api/v1/security-policies?tenantId=:tenantId
+PUT  /api/v1/security-policies
+POST /api/v1/workflows/rules
+POST /api/v1/workflows/execute
+POST /api/v1/workflows/executions/:executionId/retry
 GET  /api/v1/dashboard/bootstrap
 GET  /api/v1/dashboard?tenantId=:tenantId
 GET  /api/v1/module-records/coverage
@@ -177,9 +231,9 @@ Current CRM sections:
 - security
 - settings
 
-Backend status: core modules such as tenants, leads, applications, tasks, campaigns, communications, dashboard, contexts, and module-records are implemented as top-level reusable NestJS modules. Remaining long-tail CRM areas are demo-ready through the tenant-scoped `module_records` coverage API and should be promoted into dedicated controllers/services only when their deep workflows need separate business rules.
+Backend status: the high-traffic CRM areas are now top-level reusable NestJS modules. Tenants, users, leads, applications, admissions, campaigns, tasks, documents, workflows, finance ledgers, scholarships, reports, integrations, security policies, WhatsApp, call center, events, interviews, and field force have dedicated API surfaces where their workflows need separate business rules. `module_records` remains useful as a generic fallback for lower-depth modules and shared MVP records.
 
-Frontend data status: the admin CRM starts in a clean demo workspace and does not call protected APIs before a CRM API session is available. The explicit Sync API action now calls authenticated `/api/v1/dashboard/bootstrap`, which returns contexts, tenants, active tenant scope, dashboard metrics, and module coverage in one payload. Module tables then load rows from `/api/v1/module-records?tenantId=:tenantId&moduleKey=:moduleKey` when a tenant ID is available. If the API/auth session is unavailable, the UI shows an API-sync status and keeps create/edit actions in local MVP state instead of generating unauthenticated console errors.
+Frontend data status: the admin CRM starts in a clean demo workspace and does not call protected APIs before a CRM API session is available. The explicit Sync API action now calls authenticated `/api/v1/dashboard/bootstrap`, which returns contexts, tenants, active tenant scope, dashboard metrics, and module coverage in one payload. Dedicated CRM modules load from their own APIs where available, while lower-depth modules can still load from `/api/v1/module-records?tenantId=:tenantId&moduleKey=:moduleKey`. If the API/auth session is unavailable, the UI shows an API-sync status and keeps create/edit actions in local MVP state instead of generating unauthenticated console errors.
 
 Responsive target: the CRM is desktop/tablet-first. It should be fully usable on desktop and tablet widths, with dense navigation, tables, filters, side panels, and grid cards. Phone-size screens may show a compact advisory and horizontal workspace access, but the product is not optimized as a mobile CRM.
 
@@ -198,4 +252,4 @@ Enterprise UX backlog:
 - Keyboard-friendly navigation and accessible focus states.
 - Configurable dashboards by role: CEO, branch manager, counselor, finance, marketing, support.
 
-Next step: connect the admin CRM login form to real API login/session creation, enforce selected membership context on every write, and progressively promote high-traffic areas from `module_records` into dedicated modules.
+Next step: connect the admin CRM login form to real API login/session creation, enforce selected membership context on every write, add provider-backed integrations for OCR, SSO/MFA, WhatsApp/SMS/email, ERP/LMS, calendar, and accounting exports, and deepen visual builders for forms, workflows, reports, and dashboards.

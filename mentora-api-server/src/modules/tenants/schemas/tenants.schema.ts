@@ -188,7 +188,7 @@ CampusSchema.index({ tenantId: 1, code: 1 }, { unique: true });
   timestamps: true,
 })
 export class TenantBranding {
-  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true, index: true })
+  @Prop({ type: Types.ObjectId, ref: Tenant.name, required: true })
   tenantId!: Types.ObjectId;
 
   @Prop({ trim: true })

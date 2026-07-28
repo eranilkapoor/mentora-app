@@ -42,5 +42,20 @@
   "shortlist_failed_title": "नहीं अपडेट किया गया",
   "shortlist_failed_message": "कृपया बाद में पुनः प्रयास करें।",
   "chat_unavailable_title": "चैट उपलब्ध नहीं",
-  "chat_unavailable_message": "दोनों उपयोगकर्ताओं ने मैच स्वीकार करने के बाद आप चैट कर सकते हैं।"
+  "chat_unavailable_message": "दोनों उपयोगकर्ताओं ने मैच स्वीकार करने के बाद आप चैट कर सकते हैं।",
+  "learner_fallback": "Learner",
+  "stat_children": "Students",
+  "stat_sessions": "This Week",
+  "stat_minutes": "Tutor Minutes",
+  "stat_progress": "Profile",
+  "hero_eyebrow": "Parent-managed AI tutoring",
+  "hero_title": "Keep every student on track",
+  "hero_subtitle": "Schedule classes, manage student profiles, and open AI tutor sessions only when entitlement, schedule, and parental controls allow it.",
+  "schedule_class": "Schedule Class",
+  "action_learn": "Learning Hub",
+  "action_ai_tutor": "AI Tutor",
+  "action_progress": "Progress",
+  "next_sessions": "Upcoming Learning",
+  "guard_title": "AI access is guarded",
+  "guard_text": "Mentora validates subscription, schedule window, subject entitlement, and parental controls before tutoring starts."
 }

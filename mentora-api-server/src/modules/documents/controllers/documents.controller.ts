@@ -56,7 +56,7 @@ export class DocumentsController {
     );
   }
 
-  @Post(':documentId([a-fA-F0-9]{24})/verify')
+  @Post(':documentId/verify')
   @Permissions(Permission.CRM_DOCUMENT_MANAGE)
   async verifyDocument(
     @Req() req: AuthenticatedRequest,

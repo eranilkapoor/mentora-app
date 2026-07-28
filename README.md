@@ -64,6 +64,15 @@ Assessment
 - [Commands](docs/operations/COMMANDS.md): extended command reference.
 - [Coding Standard](docs/standards/CODING-STANDARD.md): engineering conventions.
 
+## Current Verification Snapshot
+
+Last checked locally on 2026-07-28:
+
+- API server: typecheck, lint, and build pass. Non-watch boot reaches MongoDB connection with local storage initialized; full listen depends on the configured MongoDB server being reachable.
+- Admin CRM: typecheck, production build, and dev server on `http://localhost:3002` pass.
+- Public website: typecheck, production build, and dev server on `http://localhost:3001` pass.
+- Mobile app: typecheck, lint, i18n key check, Expo web page request, and `index.ts.bundle` request pass on `http://localhost:8081`.
+
 ## Quick Start
 
 ### Prerequisites

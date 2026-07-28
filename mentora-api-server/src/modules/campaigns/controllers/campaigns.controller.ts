@@ -47,7 +47,7 @@ export class CampaignsController {
     );
   }
 
-  @Post(':campaignId([a-fA-F0-9]{24})/metrics')
+  @Post(':campaignId/metrics')
   @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
   async updateMetrics(
     @Param('campaignId') campaignId: string,

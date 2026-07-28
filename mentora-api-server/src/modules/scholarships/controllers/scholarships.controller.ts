@@ -50,7 +50,7 @@ export class ScholarshipsController {
       'CRM scholarships fetched',
     );
   }
-  @Post(':recordId([a-fA-F0-9]{24})')
+  @Post(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
@@ -63,7 +63,7 @@ export class ScholarshipsController {
       'CRM scholarship updated',
     );
   }
-  @Post(':recordId([a-fA-F0-9]{24})/complete')
+  @Post(':recordId/complete')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
@@ -77,7 +77,7 @@ export class ScholarshipsController {
     );
   }
 
-  @Post(':recordId([a-fA-F0-9]{24})/evaluate')
+  @Post(':recordId/evaluate')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async evaluate(
     @Param('recordId') recordId: string,
@@ -90,7 +90,7 @@ export class ScholarshipsController {
     );
   }
 
-  @Post(':recordId([a-fA-F0-9]{24})/decision')
+  @Post(':recordId/decision')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async decide(
     @Param('recordId') recordId: string,

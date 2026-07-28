@@ -50,7 +50,18 @@ export class FinanceLedgersController {
       'CRM ledger entries fetched',
     );
   }
-  @Post(':recordId([a-fA-F0-9]{24})')
+
+  @Post('operations/export')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  async exportLedger(@Body() dto: ExportLedgerDto) {
+    return successResponse(
+      await this.service.exportLedger(dto),
+      'CRM_LEDGER_EXPORTED',
+      'CRM ledger exported',
+    );
+  }
+
+  @Post(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
@@ -63,7 +74,7 @@ export class FinanceLedgersController {
       'CRM ledger entry updated',
     );
   }
-  @Post(':recordId([a-fA-F0-9]{24})/complete')
+  @Post(':recordId/complete')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
@@ -77,7 +88,7 @@ export class FinanceLedgersController {
     );
   }
 
-  @Post(':recordId([a-fA-F0-9]{24})/reconcile')
+  @Post(':recordId/reconcile')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async reconcile(
     @Req() req: AuthenticatedRequest,
@@ -88,16 +99,6 @@ export class FinanceLedgersController {
       await this.service.reconcile(req.user.sub, recordId, dto),
       'CRM_LEDGER_ENTRY_RECONCILED',
       'CRM ledger entry reconciled',
-    );
-  }
-
-  @Post('operations/export')
-  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
-  async exportLedger(@Body() dto: ExportLedgerDto) {
-    return successResponse(
-      await this.service.exportLedger(dto),
-      'CRM_LEDGER_EXPORTED',
-      'CRM ledger exported',
     );
   }
 }

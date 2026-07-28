@@ -710,5 +710,7 @@
     "scheduled_sessions": "Scheduled Sessions",
     "scheduled_sessions_only": "Scheduled Sessions Only"
   },
-  "students_learning": "Students & Learning"
+  "students_learning": "Students & Learning",
+  "learning_plans": "Learning Plans",
+  "learning_plans_sub": "Manage plans, subscriptions, and tutor entitlements"
 }

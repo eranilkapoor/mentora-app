@@ -3,9 +3,11 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DocumentsController } from './controllers/documents.controller';
 import { CrmDocument, CrmDocumentSchema } from './schemas/documents.schema';
 import { DocumentsService } from './services/documents.service';
+import { ContextsModule } from '../contexts/contexts.module';
 
 @Module({
   imports: [
+    ContextsModule,
     MongooseModule.forFeature([
       { name: CrmDocument.name, schema: CrmDocumentSchema },
     ]),

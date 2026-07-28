@@ -54,7 +54,7 @@ export class AdmissionsController {
       'CRM admissions fetched',
     );
   }
-  @Post(':recordId([a-fA-F0-9]{24})')
+  @Post(':recordId')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async update(
     @Req() req: AuthenticatedRequest,
@@ -67,7 +67,7 @@ export class AdmissionsController {
       'CRM admission updated',
     );
   }
-  @Post(':recordId([a-fA-F0-9]{24})/complete')
+  @Post(':recordId/complete')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async complete(
     @Req() req: AuthenticatedRequest,
@@ -81,7 +81,7 @@ export class AdmissionsController {
     );
   }
 
-  @Post(':recordId([a-fA-F0-9]{24})/allocate')
+  @Post(':recordId/allocate')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async allocate(
     @Param('recordId') recordId: string,
@@ -94,7 +94,7 @@ export class AdmissionsController {
     );
   }
 
-  @Post(':recordId([a-fA-F0-9]{24})/handoff')
+  @Post(':recordId/handoff')
   @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
   async handoff(
     @Param('recordId') recordId: string,

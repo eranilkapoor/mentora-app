@@ -48,7 +48,7 @@ export class ApplicationsController {
     );
   }
 
-  @Post(':applicationId([a-fA-F0-9]{24})/review')
+  @Post(':applicationId/review')
   @Permissions(Permission.CRM_APPLICATION_MANAGE)
   async updateReview(
     @Param('applicationId') applicationId: string,
@@ -61,7 +61,7 @@ export class ApplicationsController {
     );
   }
 
-  @Post(':applicationId([a-fA-F0-9]{24})/decision')
+  @Post(':applicationId/decision')
   @Permissions(Permission.CRM_APPLICATION_MANAGE)
   async decideApplication(
     @Param('applicationId') applicationId: string,
