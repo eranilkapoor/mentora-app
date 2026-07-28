@@ -100,13 +100,13 @@ export type ModuleRecordDraft = {
 
 const dedicatedCrmRoutes: Record<string, string> = {
   admissions: "/admissions",
-  call_center: "/call-center",
-  event_management: "/events",
-  field_force_automation: "/field-force",
+  "call-center": "/call-center",
+  "event-management": "/events",
+  "field-force-automation": "/field-force",
   finance: "/finance-ledgers",
   interview: "/interviews",
   scholarship: "/scholarships",
-  whatsapp_crm: "/whatsapp",
+  "whatsapp-crm": "/whatsapp",
 };
 
 async function getJson(path: string) {
@@ -621,12 +621,36 @@ const crmSessionSlice = createSlice({
       state.toast = `Context selected: ${action.payload.label}`;
     },
     clearContext(state) {
-      state.activeContext = null;
-      state.toast = "Choose CRM context";
+      state.activeContext = state.loggedInUser?.contexts[0] ?? null;
+      state.activeId = "dashboard";
+      state.toast = state.activeContext
+        ? `Context selected: ${state.activeContext.label}`
+        : "No CRM context available";
+    },
+    switchToNextContext(state) {
+      const contexts = state.loggedInUser?.contexts ?? [];
+      if (contexts.length === 0) {
+        state.activeContext = null;
+        state.toast = "No CRM context available";
+        return;
+      }
+
+      const currentIndex = contexts.findIndex(
+        (context) =>
+          context.role === state.activeContext?.role &&
+          context.tenant === state.activeContext?.tenant &&
+          context.branch === state.activeContext?.branch,
+      );
+      const nextContext = contexts[(currentIndex + 1) % contexts.length];
+      state.activeContext = nextContext;
+      state.activeId = nextContext.modules.includes(state.activeId)
+        ? state.activeId
+        : "dashboard";
+      state.toast = `Context selected: ${nextContext.label}`;
     },
     login(state, action: PayloadAction<DemoUser>) {
       state.loggedInUser = action.payload;
-      state.activeContext = null;
+      state.activeContext = action.payload.contexts[0] ?? null;
       state.toast = `Logged in as ${action.payload.name}`;
     },
     logout(state) {
@@ -661,7 +685,8 @@ const crmSessionSlice = createSlice({
         state.toast = "Signing in";
       })
       .addCase(loginWithCredentials.fulfilled, (state, action) => {
-        state.activeContext = null;
+        state.activeContext = action.payload.contexts[0] ?? null;
+        state.activeId = "dashboard";
         state.accessToken = action.payload.accessToken;
         state.loggedInUser = action.payload;
         state.loginPassword = "";
@@ -753,9 +778,9 @@ const crmWorkspaceSlice = createSlice({
           membership?: unknown;
         };
         const membership = data.membership ?? data;
-        const records = state.moduleRecords.user_management ?? [];
+        const records = state.moduleRecords["user-management"] ?? [];
         records.unshift(membership);
-        state.moduleRecords.user_management = records;
+        state.moduleRecords["user-management"] = records;
         state.error = null;
       })
       .addCase(loadDedicatedCrmRecords.fulfilled, (state, action) => {
@@ -831,7 +856,7 @@ const crmWorkspaceSlice = createSlice({
         state.error = null;
       })
       .addCase(loadDocuments.fulfilled, (state, action) => {
-        state.moduleRecords.document_management = normalizeApiData(
+        state.moduleRecords["document-management"] = normalizeApiData(
           action.payload,
         );
         state.error = null;
@@ -855,7 +880,7 @@ const crmWorkspaceSlice = createSlice({
         state.error = null;
       })
       .addCase(loadTenantUsers.fulfilled, (state, action) => {
-        state.moduleRecords.user_management = normalizeApiData(action.payload);
+        state.moduleRecords["user-management"] = normalizeApiData(action.payload);
         state.error = null;
       })
       .addCase(loadIntegrationProviders.fulfilled, (state, action) => {

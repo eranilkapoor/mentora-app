@@ -15,17 +15,17 @@ import {
 const providerCatalog = [
   { key: 'microsoft_sso', module: 'authentication', external: true },
   { key: 'google_sso', module: 'authentication', external: true },
-  { key: 'whatsapp_business', module: 'whatsapp_crm', external: true },
+  { key: 'whatsapp_business', module: 'whatsapp-crm', external: true },
   { key: 'sms_gateway', module: 'sms', external: true },
-  { key: 'email_delivery', module: 'email_crm', external: true },
-  { key: 'dialer_recording', module: 'call_center', external: true },
+  { key: 'email_delivery', module: 'email-crm', external: true },
+  { key: 'dialer_recording', module: 'call-center', external: true },
   { key: 'calendar_sync', module: 'calendar', external: true },
-  { key: 'webinar_provider', module: 'event_management', external: true },
-  { key: 'ocr_verification', module: 'document_management', external: true },
-  { key: 'geo_telemetry', module: 'field_force_automation', external: true },
+  { key: 'webinar_provider', module: 'event-management', external: true },
+  { key: 'ocr_verification', module: 'document-management', external: true },
+  { key: 'geo_telemetry', module: 'field-force-automation', external: true },
   { key: 'accounting_export', module: 'finance', external: true },
   { key: 'payment_reconciliation', module: 'payments', external: true },
-  { key: 'ai_provider_metering', module: 'ai_features', external: true },
+  { key: 'ai_provider_metering', module: 'ai-features', external: true },
 ];
 
 @Injectable()

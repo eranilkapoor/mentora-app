@@ -984,10 +984,10 @@ export class MasterSeederService {
     branchName: string,
   ) {
     const legacyAliasKeys = new Set([
-      'lead_management',
-      'application_management',
-      'admission_management',
-      'marketing_automation',
+      'lead-management',
+      'application-management',
+      'admission-management',
+      'marketing-automation',
       'communication',
       'whatsapp',
       'email',
