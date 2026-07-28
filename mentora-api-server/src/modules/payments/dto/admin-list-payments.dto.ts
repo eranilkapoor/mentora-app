@@ -2,6 +2,7 @@ import { Type } from 'class-transformer';
 import {
   IsDateString,
   IsEnum,
+  IsIn,
   IsInt,
   IsMongoId,
   IsOptional,
@@ -18,6 +19,10 @@ export class AdminListPaymentsDto {
   @IsOptional()
   @IsString()
   orderId?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
 
   @IsOptional()
   @IsMongoId()
@@ -40,6 +45,10 @@ export class AdminListPaymentsDto {
   purpose?: PaymentPurpose;
 
   @IsOptional()
+  @IsString()
+  currency?: string;
+
+  @IsOptional()
   @IsDateString()
   fromDate?: string;
 
@@ -59,4 +68,12 @@ export class AdminListPaymentsDto {
   @Min(1)
   @Max(200)
   limit?: number = 20;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }

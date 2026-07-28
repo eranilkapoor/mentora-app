@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -17,7 +19,11 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
-import { CreateTaskDto, UpdateTaskWorkflowDto } from '../dto/tasks.dto';
+import {
+  CreateTaskDto,
+  UpdateTaskDto,
+  UpdateTaskWorkflowDto,
+} from '../dto/tasks.dto';
 import { TasksService } from '../services/tasks.service';
 
 @UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
@@ -41,11 +47,57 @@ export class TasksController {
 
   @Get()
   @Permissions(Permission.CRM_TASK_VIEW)
-  async listTasks(@Query('tenantId') tenantId: string) {
+  async listTasks(
+    @Query('tenantId') tenantId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('priority') priority?: string,
+    @Query('assignedTo') assignedTo?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+  ) {
     return successResponse(
-      await this.service.listTasks(tenantId),
+      await this.service.listTasks({
+        assignedTo,
+        limit,
+        page,
+        priority,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'EDUCATION_PLATFORM_TASKS_FETCHED',
       'CRM tasks fetched',
+    );
+  }
+
+  @Put(':taskId')
+  @Permissions(Permission.CRM_TASK_MANAGE)
+  async updateTask(
+    @Param('taskId') taskId: string,
+    @Body() dto: UpdateTaskDto,
+  ) {
+    return successResponse(
+      await this.service.updateTask(taskId, dto),
+      'EDUCATION_PLATFORM_TASK_UPDATED',
+      'CRM task updated',
+    );
+  }
+
+  @Delete(':taskId')
+  @Permissions(Permission.CRM_TASK_MANAGE)
+  async archiveTask(
+    @Param('taskId') taskId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archiveTask(taskId, tenantId),
+      'EDUCATION_PLATFORM_TASK_ARCHIVED',
+      'CRM task archived',
     );
   }
 

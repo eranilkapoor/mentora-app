@@ -24,7 +24,7 @@ export class Campaign {
   channel!: string;
 
   @Prop({
-    enum: ['draft', 'scheduled', 'running', 'completed', 'paused'],
+    enum: ['draft', 'scheduled', 'running', 'completed', 'paused', 'archived'],
     default: 'draft',
     index: true,
   })

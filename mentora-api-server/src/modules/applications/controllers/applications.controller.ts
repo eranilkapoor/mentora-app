@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +20,7 @@ import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.gua
 import {
   ApproveApplicationDto,
   CreateApplicationDto,
+  UpdateApplicationDto,
   UpdateApplicationReviewDto,
 } from '../dto/applications.dto';
 import { ApplicationsService } from '../services/applications.service';
@@ -40,11 +43,57 @@ export class ApplicationsController {
 
   @Get()
   @Permissions(Permission.CRM_APPLICATION_VIEW)
-  async listApplications(@Query('tenantId') tenantId: string) {
+  async listApplications(
+    @Query('tenantId') tenantId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('leadId') leadId?: string,
+    @Query('courseOffering') courseOffering?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+  ) {
     return successResponse(
-      await this.service.listApplications(tenantId),
+      await this.service.listApplications({
+        limit,
+        page,
+        courseOffering,
+        leadId,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'EDUCATION_PLATFORM_APPLICATIONS_FETCHED',
       'CRM applications fetched',
+    );
+  }
+
+  @Put(':applicationId')
+  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  async updateApplication(
+    @Param('applicationId') applicationId: string,
+    @Body() dto: UpdateApplicationDto,
+  ) {
+    return successResponse(
+      await this.service.updateApplication(applicationId, dto),
+      'EDUCATION_PLATFORM_APPLICATION_UPDATED',
+      'CRM application updated',
+    );
+  }
+
+  @Delete(':applicationId')
+  @Permissions(Permission.CRM_APPLICATION_MANAGE)
+  async archiveApplication(
+    @Param('applicationId') applicationId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archiveApplication(applicationId, tenantId),
+      'EDUCATION_PLATFORM_APPLICATION_ARCHIVED',
+      'CRM application archived',
     );
   }
 

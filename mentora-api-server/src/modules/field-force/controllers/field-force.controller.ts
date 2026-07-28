@@ -38,10 +38,25 @@ export class FieldForceController {
   }
   @Get() @Permissions(Permission.CRM_MODULE_RECORD_VIEW) async list(
     @Query('tenantId') tenantId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('priority') priority?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
   ) {
     return successResponse(
-      await this.service.list(tenantId, status),
+      await this.service.list({
+        limit,
+        page,
+        priority,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'CRM_FIELD_VISITS_FETCHED',
       'CRM field visits fetched',
     );

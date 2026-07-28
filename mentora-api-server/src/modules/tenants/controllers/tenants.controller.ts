@@ -1,10 +1,14 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
+  Patch,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -24,6 +28,9 @@ import {
   CreateTeamDto,
   CreateTenantUserDto,
   CreateTenantDto,
+  ListTenantsDto,
+  ListTenantUsersDto,
+  UpdateTenantDto,
   UpsertChannelSettingDto,
   UpsertTenantBrandingDto,
   UpsertTenantUserDto,
@@ -46,13 +53,33 @@ export class TenantsController {
     );
   }
 
+  @Put('tenants/:id')
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async updateTenant(@Param('id') id: string, @Body() dto: UpdateTenantDto) {
+    return successResponse(
+      await this.service.updateTenant(id, dto),
+      'EDUCATION_PLATFORM_TENANT_UPDATED',
+      'CRM tenant updated',
+    );
+  }
+
   @Get('tenants')
   @Permissions(Permission.CRM_TENANT_VIEW)
-  async listTenants() {
+  async listTenants(@Query() query: ListTenantsDto) {
     return successResponse(
-      await this.service.listTenants(),
+      await this.service.listTenants(query),
       'EDUCATION_PLATFORM_TENANTS_FETCHED',
       'CRM tenants fetched',
+    );
+  }
+
+  @Delete('tenants/:id')
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async archiveTenant(@Param('id') id: string) {
+    return successResponse(
+      await this.service.archiveTenant(id),
+      'EDUCATION_PLATFORM_TENANT_ARCHIVED',
+      'CRM tenant archived',
     );
   }
 
@@ -248,11 +275,25 @@ export class TenantsController {
 
   @Get('tenant-users')
   @Permissions(Permission.CRM_TENANT_VIEW)
-  async listTenantUsers(@Query('tenantId') tenantId: string) {
+  async listTenantUsers(@Query() query: ListTenantUsersDto) {
     return successResponse(
-      await this.service.listTenantUsers(tenantId),
+      await this.service.listTenantUsers(query),
       'EDUCATION_PLATFORM_TENANT_USERS_FETCHED',
       'CRM tenant users fetched',
+    );
+  }
+
+  @Patch('tenant-users/:userId/status')
+  @Permissions(Permission.CRM_TENANT_MANAGE)
+  async updateTenantUserStatus(
+    @Param('userId') userId: string,
+    @Query('tenantId') tenantId: string,
+    @Body('status') status: string,
+  ) {
+    return successResponse(
+      await this.service.updateTenantUserStatus(tenantId, userId, status),
+      'EDUCATION_PLATFORM_TENANT_USER_STATUS_UPDATED',
+      'CRM tenant user status updated',
     );
   }
 }

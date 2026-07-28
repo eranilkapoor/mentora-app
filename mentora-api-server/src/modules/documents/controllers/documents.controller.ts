@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -19,6 +21,7 @@ import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import {
   CreateCrmDocumentDto,
+  UpdateCrmDocumentDto,
   VerifyCrmDocumentDto,
 } from '../dto/documents.dto';
 import { DocumentsService } from '../services/documents.service';
@@ -48,11 +51,55 @@ export class DocumentsController {
     @Query('tenantId') tenantId: string,
     @Query('entityType') entityType?: string,
     @Query('entityId') entityId?: string,
+    @Query('category') category?: string,
+    @Query('status') status?: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     return successResponse(
-      await this.service.listDocuments(tenantId, entityType, entityId),
+      await this.service.listDocuments({
+        category,
+        entityId,
+        entityType,
+        limit,
+        page,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'CRM_DOCUMENTS_FETCHED',
       'CRM documents fetched',
+    );
+  }
+
+  @Put(':documentId')
+  @Permissions(Permission.CRM_DOCUMENT_MANAGE)
+  async updateDocument(
+    @Param('documentId') documentId: string,
+    @Body() dto: UpdateCrmDocumentDto,
+  ) {
+    return successResponse(
+      await this.service.updateDocument(documentId, dto),
+      'CRM_DOCUMENT_UPDATED',
+      'CRM document updated',
+    );
+  }
+
+  @Delete(':documentId')
+  @Permissions(Permission.CRM_DOCUMENT_MANAGE)
+  async archiveDocument(
+    @Param('documentId') documentId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archiveDocument(documentId, tenantId),
+      'CRM_DOCUMENT_ARCHIVED',
+      'CRM document archived',
     );
   }
 

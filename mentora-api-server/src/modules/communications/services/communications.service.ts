@@ -5,11 +5,28 @@ import {
   toRequiredObjectId,
   toTenantObjectId,
 } from '@/common/utils/tenant-scope.util';
-import { CreateCommunicationDto } from '../dto/communications.dto';
+import {
+  CreateCommunicationDto,
+  UpdateCommunicationDto,
+} from '../dto/communications.dto';
 import {
   Communication,
   CommunicationDocument,
 } from '../schemas/communications.schema';
+
+type CommunicationListOptions = {
+  channel?: string;
+  direction?: string;
+  entityId?: string;
+  entityType?: string;
+  limit?: string;
+  page?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  tenantId: string;
+};
 
 @Injectable()
 export class CommunicationsService {
@@ -26,11 +43,81 @@ export class CommunicationsService {
     });
   }
 
-  async listCommunications(tenantId: string) {
-    return this.communications
-      .find({ tenantId: toTenantObjectId(tenantId) })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
+  async listCommunications(options: CommunicationListOptions) {
+    const page = this.toPositiveInt(options.page, 1);
+    const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
+    const sortBy = this.resolveSortBy(options.sortBy);
+    const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
+    const filter: Record<string, unknown> = {
+      tenantId: toTenantObjectId(options.tenantId),
+      ...(options.channel ? { channel: options.channel } : {}),
+      ...(options.direction ? { direction: options.direction } : {}),
+      ...(options.entityType ? { entityType: options.entityType } : {}),
+      ...(options.entityId
+        ? { entityId: toRequiredObjectId(options.entityId) }
+        : {}),
+      ...(options.status ? { status: options.status } : {}),
+    };
+    const search = options.search?.trim();
+    if (search) {
+      filter.$or = [
+        { subject: { $regex: search, $options: 'i' } },
+        { content: { $regex: search, $options: 'i' } },
+        { channel: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.communications
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.communications.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
+  }
+
+  updateCommunication(communicationId: string, dto: UpdateCommunicationDto) {
+    const update: Record<string, unknown> = { ...dto };
+    delete update.tenantId;
+    return this.communications.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(communicationId),
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+  }
+
+  archiveCommunication(communicationId: string, tenantId: string) {
+    return this.communications.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(communicationId),
+        tenantId: toTenantObjectId(tenantId),
+      },
+      { $set: { status: 'archived' } },
+      { new: true },
+    );
+  }
+
+  private resolveSortBy(value?: string) {
+    const allowed = new Set(['createdAt', 'status', 'subject', 'updatedAt']);
+    return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private toPositiveInt(value: string | undefined, fallback: number) {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 }

@@ -462,15 +462,16 @@ export class ModuleCoverageService {
   getModuleCoverage() {
     return EDUCATION_PLATFORM_MODULE_KEYS.map((moduleKey) => {
       const readiness = readinessByModule[moduleKey] ?? defaultReadiness;
+      const productionReady =
+        readiness.backendStatus === 'product_ready' &&
+        readiness.frontendStatus === 'product_ready' &&
+        readiness.productionBlockers.length === 0;
       return {
         moduleKey,
         title: moduleTitles[moduleKey],
-        status: readiness.backendStatus,
+        status: productionReady ? 'product_ready' : 'workflow_ready',
         ...readiness,
-        productionReady:
-          readiness.backendStatus === 'product_ready' &&
-          readiness.frontendStatus === 'product_ready' &&
-          readiness.productionBlockers.length === 0,
+        productionReady,
       };
     });
   }

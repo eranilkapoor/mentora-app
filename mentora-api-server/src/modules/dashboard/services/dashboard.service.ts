@@ -39,10 +39,11 @@ export class DashboardService {
   ) {}
 
   async getBootstrap(userId: string, tenantId?: string) {
-    const [contexts, tenants] = await Promise.all([
+    const [contexts, tenantResult] = await Promise.all([
       this.contextsService.listUserContexts(userId),
-      this.tenantsService.listTenants(),
+      this.tenantsService.listTenants({ limit: '100', status: 'active' }),
     ]);
+    const tenants = tenantResult.items;
     const moduleCoverage = this.moduleCoverageService.getModuleCoverage();
     const activeTenantId =
       tenantId ??

@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import * as bcrypt from 'bcryptjs';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { ErrorCode } from '@/common/constants';
 import { Role, Status } from '@/common/enums';
 import {
@@ -28,6 +28,9 @@ import {
   CreateTeamDto,
   CreateTenantUserDto,
   CreateTenantDto,
+  ListTenantsDto,
+  ListTenantUsersDto,
+  UpdateTenantDto,
   UpsertChannelSettingDto,
   UpsertTenantBrandingDto,
   UpsertTenantUserDto,
@@ -88,6 +91,20 @@ export class TenantsService {
     );
   }
 
+  async updateTenant(id: string, dto: UpdateTenantDto) {
+    const update: Record<string, unknown> = { ...dto };
+    if (dto.code) update.code = dto.code.toUpperCase();
+    const tenant = await this.tenants.findByIdAndUpdate(
+      toRequiredObjectId(id),
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!tenant) {
+      throwNotFound(ErrorCode.INVALID_REQUEST, { tenantId: id });
+    }
+    return tenant;
+  }
+
   async findActiveTenantByCode(code: string) {
     return this.tenants.findOne({
       code: code.toUpperCase(),
@@ -95,8 +112,54 @@ export class TenantsService {
     });
   }
 
-  async listTenants() {
-    return this.tenants.find({ status: 'active' }).sort({ name: 1 }).lean();
+  async listTenants(query: ListTenantsDto = {}) {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const sortBy = this.resolveTenantSortBy(query.sortBy);
+    const sortOrder = query.sortOrder === 'desc' ? -1 : 1;
+    const filter: FilterQuery<TenantDocument> = {
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.type ? { type: query.type } : {}),
+    };
+    const search = query.search?.trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { code: { $regex: search, $options: 'i' } },
+        { primaryDomain: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.tenants
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: 1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.tenants.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
+  }
+
+  async archiveTenant(id: string) {
+    const tenant = await this.tenants.findByIdAndUpdate(
+      toRequiredObjectId(id),
+      { $set: { status: 'inactive' } },
+      { new: true, runValidators: true },
+    );
+    if (!tenant) {
+      throwNotFound(ErrorCode.INVALID_REQUEST, { tenantId: id });
+    }
+    return tenant;
   }
 
   async createBranch(dto: CreateBranchDto) {
@@ -265,13 +328,66 @@ export class TenantsService {
     );
   }
 
-  async listTenantUsers(tenantId: string) {
-    return this.memberships
-      .find({ tenantId: toTenantObjectId(tenantId) })
-      .populate('userId', 'email phone status roles permissions lastLoginAt')
-      .populate('branchIds', 'name code city state status')
-      .sort({ role: 1, createdAt: -1 })
-      .lean();
+  async listTenantUsers(query: ListTenantUsersDto) {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const sortBy = this.resolveTenantUserSortBy(query.sortBy);
+    const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
+    const filter: FilterQuery<UserMembershipDocument> = {
+      tenantId: toTenantObjectId(query.tenantId),
+      ...(query.branchId
+        ? { branchIds: toRequiredObjectId(query.branchId) }
+        : {}),
+      ...(query.role ? { role: query.role } : {}),
+      ...(query.status ? { status: query.status } : {}),
+    };
+    const [items, total] = await Promise.all([
+      this.memberships
+        .find(filter)
+        .populate('userId', 'email phone status roles permissions lastLoginAt')
+        .populate('branchIds', 'name code city state status')
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.memberships.countDocuments(filter),
+    ]);
+    const search = query.search?.trim().toLowerCase();
+    const filteredItems = search
+      ? items.filter((item) =>
+          JSON.stringify(item).toLowerCase().includes(search),
+        )
+      : items;
+    return {
+      items: filteredItems,
+      pagination: {
+        limit,
+        page,
+        total: search ? filteredItems.length : total,
+        totalPages: Math.max(
+          1,
+          Math.ceil((search ? filteredItems.length : total) / limit),
+        ),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
+  }
+
+  async updateTenantUserStatus(
+    tenantId: string,
+    userId: string,
+    status: string,
+  ) {
+    const membership = await this.memberships.findOneAndUpdate(
+      {
+        tenantId: toTenantObjectId(tenantId),
+        userId: toRequiredObjectId(userId),
+      },
+      { $set: { status } },
+      { new: true, runValidators: true },
+    );
+    if (!membership) return throwNotFound(ErrorCode.USER_NOT_FOUND);
+    return membership;
   }
 
   async createTenantUser(dto: CreateTenantUserDto, actorId?: string) {
@@ -337,5 +453,27 @@ export class TenantsService {
     if (role === 'student') return Role.STUDENT;
     if (role === 'parent') return Role.PARENT;
     return Role.ADMIN;
+  }
+
+  private resolveTenantSortBy(value?: string) {
+    const allowed = new Set([
+      'code',
+      'createdAt',
+      'name',
+      'status',
+      'type',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'name';
+  }
+
+  private resolveTenantUserSortBy(value?: string) {
+    const allowed = new Set(['createdAt', 'role', 'status', 'updatedAt']);
+    return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private toPositiveInt(value: string | undefined, fallback: number) {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 }

@@ -5,8 +5,24 @@ import {
   toRequiredObjectId,
   toTenantObjectId,
 } from '@/common/utils/tenant-scope.util';
-import { CreateTaskDto, UpdateTaskWorkflowDto } from '../dto/tasks.dto';
+import {
+  CreateTaskDto,
+  UpdateTaskDto,
+  UpdateTaskWorkflowDto,
+} from '../dto/tasks.dto';
 import { Task, TaskDocument } from '../schemas/tasks.schema';
+
+type TaskListOptions = {
+  assignedTo?: string;
+  limit?: string;
+  page?: string;
+  priority?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  tenantId: string;
+};
 
 @Injectable()
 export class TasksService {
@@ -27,12 +43,46 @@ export class TasksService {
     });
   }
 
-  async listTasks(tenantId: string) {
-    return this.tasks
-      .find({ tenantId: toTenantObjectId(tenantId) })
-      .sort({ dueAt: 1, createdAt: -1 })
-      .limit(50)
-      .lean();
+  async listTasks(options: TaskListOptions) {
+    const page = this.toPositiveInt(options.page, 1);
+    const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
+    const sortBy = this.resolveSortBy(options.sortBy);
+    const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
+    const filter: Record<string, unknown> = {
+      tenantId: toTenantObjectId(options.tenantId),
+      ...(options.assignedTo
+        ? { assignedTo: toRequiredObjectId(options.assignedTo) }
+        : {}),
+      ...(options.priority ? { priority: options.priority } : {}),
+      ...(options.status ? { status: options.status } : {}),
+    };
+    const search = options.search?.trim();
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { entityType: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.tasks
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.tasks.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
   }
 
   listTaskBoard(tenantId: string) {
@@ -72,5 +122,52 @@ export class TasksService {
       },
       { new: true },
     );
+  }
+
+  updateTask(taskId: string, dto: UpdateTaskDto) {
+    const update: Record<string, unknown> = {
+      ...dto,
+      ...(dto.assignedTo
+        ? { assignedTo: toRequiredObjectId(dto.assignedTo) }
+        : {}),
+      ...(dto.dueAt ? { dueAt: new Date(dto.dueAt) } : {}),
+      ...(dto.reminderAt ? { reminderAt: new Date(dto.reminderAt) } : {}),
+    };
+    delete update.tenantId;
+    return this.tasks.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(taskId),
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+  }
+
+  archiveTask(taskId: string, tenantId: string) {
+    return this.tasks.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(taskId),
+        tenantId: toTenantObjectId(tenantId),
+      },
+      { $set: { status: 'cancelled', boardColumn: 'done' } },
+      { new: true },
+    );
+  }
+
+  private resolveSortBy(value?: string) {
+    const allowed = new Set([
+      'createdAt',
+      'dueAt',
+      'priority',
+      'status',
+      'title',
+    ]);
+    return value && allowed.has(value) ? value : 'dueAt';
+  }
+
+  private toPositiveInt(value: string | undefined, fallback: number) {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 }

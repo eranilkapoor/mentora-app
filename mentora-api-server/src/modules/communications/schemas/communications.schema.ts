@@ -40,7 +40,15 @@ export class Communication {
   content?: string;
 
   @Prop({
-    enum: ['queued', 'sent', 'delivered', 'read', 'failed', 'bounced'],
+    enum: [
+      'queued',
+      'sent',
+      'delivered',
+      'read',
+      'failed',
+      'bounced',
+      'archived',
+    ],
     default: 'queued',
     index: true,
   })

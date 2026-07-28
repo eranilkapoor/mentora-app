@@ -63,6 +63,41 @@ export class UpdateApplicationReviewDto {
   note?: string;
 }
 
+export class UpdateApplicationDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  courseOffering?: string;
+
+  @IsOptional()
+  @IsIn([
+    'draft',
+    'submitted',
+    'under_review',
+    'document_verification',
+    'interview',
+    'offer_issued',
+    'admission_confirmed',
+    'rejected',
+    'withdrawn',
+  ])
+  status?: string;
+
+  @IsOptional()
+  @IsObject()
+  applicantProfile?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  formResponses?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsBoolean()
+  isLocked?: boolean;
+}
+
 export class ApproveApplicationDto {
   @IsMongoId()
   tenantId!: string;

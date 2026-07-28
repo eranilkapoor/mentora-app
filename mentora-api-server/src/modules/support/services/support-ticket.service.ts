@@ -7,6 +7,7 @@ import {
 import { NotificationsService } from '@/modules/notifications/services/notifications.service';
 import { CreateSupportTicketDto } from '../dto/create-support-ticket.dto';
 import {
+  AdminCreateSupportTicketDto,
   AdminListSupportTicketsDto,
   AdminReplySupportTicketDto,
   UpdateSupportTicketStatusDto,
@@ -127,8 +128,11 @@ export class SupportTicketService {
     const page = query.page ?? 1;
     const limit = query.limit ?? 20;
     const { items, total } = await this.repo.listAll(page, limit, {
-      status: query.status,
       priority: query.priority,
+      search: query.search,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
+      status: query.status,
     });
 
     return {
@@ -140,6 +144,18 @@ export class SupportTicketService {
       hasNextPage: page * limit < total,
       hasPrevPage: page > 1,
     };
+  }
+
+  async createAdminTicket(userId: string, dto: AdminCreateSupportTicketDto) {
+    return this.createTicket(userId, {
+      category: dto.category === 'billing' ? 'billing' : 'other',
+      message: (dto.message ?? dto.description ?? 'Created from CRM').trim(),
+      priority:
+        dto.priority === 'urgent' || dto.priority === 'high'
+          ? dto.priority
+          : 'normal',
+      subject: (dto.subject ?? dto.title ?? 'CRM support ticket').trim(),
+    });
   }
 
   async replyAsAgent(

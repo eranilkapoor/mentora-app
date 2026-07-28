@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -25,9 +27,11 @@ import {
   CreateLeadDto,
   FindLeadDuplicatesDto,
   ImportLeadsDto,
+  ListLeadsDto,
   MergeLeadsDto,
   ScoreLeadDto,
   TransferLeadDto,
+  UpdateLeadDto,
   UpdateLeadTagsDto,
 } from '../dto/leads.dto';
 import { LeadsService } from '../services/leads.service';
@@ -53,11 +57,39 @@ export class LeadsController {
 
   @Get()
   @Permissions(Permission.CRM_LEAD_VIEW)
-  async listLeads(@Query('tenantId') tenantId: string) {
+  async listLeads(@Query() query: ListLeadsDto) {
     return successResponse(
-      await this.service.listLeads(tenantId),
+      await this.service.listLeads(query),
       'EDUCATION_PLATFORM_LEADS_FETCHED',
       'CRM leads fetched',
+    );
+  }
+
+  @Put(':leadId')
+  @Permissions(Permission.CRM_LEAD_UPDATE)
+  async updateLead(
+    @Req() req: AuthenticatedRequest,
+    @Param('leadId') leadId: string,
+    @Body() dto: UpdateLeadDto,
+  ) {
+    return successResponse(
+      await this.service.updateLead(req.user.sub, leadId, dto),
+      'EDUCATION_PLATFORM_LEAD_UPDATED',
+      'CRM lead updated',
+    );
+  }
+
+  @Delete(':leadId')
+  @Permissions(Permission.CRM_LEAD_UPDATE)
+  async archiveLead(
+    @Req() req: AuthenticatedRequest,
+    @Param('leadId') leadId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archiveLead(req.user.sub, leadId, tenantId),
+      'EDUCATION_PLATFORM_LEAD_ARCHIVED',
+      'CRM lead archived',
     );
   }
 

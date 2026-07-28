@@ -46,10 +46,11 @@ import {
 import type { IconDefinition } from "@fortawesome/fontawesome-svg-core";
 import {
   crmSessionActions,
-  crmWorkspaceActions,
   addLeadAttachment,
   createTenant,
   createTenantUser,
+  deleteDedicatedCrmRecord,
+  deleteModuleRecord,
   createReportDefinition,
   createSampleDocument,
   createSampleDepartment,
@@ -77,7 +78,9 @@ import {
   updateLeadTags,
   updateCampaignMetrics,
   updateSecurityPolicy,
+  updateTenant,
   upsertIntegrationProvider,
+  testIntegrationProvider,
   type DemoContext,
   type DemoUser,
   type ModuleRecordDraft,
@@ -86,74 +89,48 @@ import {
   useAppDispatch,
   useAppSelector,
 } from "../store";
-
-type CrmModule = {
-  id: string;
-  title: string;
-  group: string;
-  metric: string;
-  icon?: IconName;
-  status?: ModuleStatus;
-  description: string;
-  filters: string[];
-  columns: string[];
-  rows: string[][];
-  actions?: string[];
-  insights?: string[];
-};
+import type { CrmModule, IconName, ModuleCoverage, ModuleStatus } from "./crmTypes";
+import {
+  extractFirstId,
+  findModuleCoverage,
+  findTenantIdByName,
+  formatReadiness,
+  formatStatus,
+  getDashboardMetric,
+  getModuleCardMetric,
+  getServerFilterValue,
+  getServerRowsForModule,
+  getUnknownRecordId,
+  normalizeResponseArray,
+  normalizeResponseObject,
+  statusClass,
+  toPayloadKey,
+  toServerSortKey,
+} from "./crmUtils";
 
 type ThemeMode = "system" | "light" | "dark";
 
-type ModuleStatus = "Active" | "Configured" | "Setup";
-
-type ModuleCoverage = {
-  moduleKey: string;
-  title?: string;
-  backendStatus?: string;
-  frontendStatus?: string;
-  productionReady?: boolean;
-  productionBlockers?: string[];
-  storage?: string;
-  apiSurface?: string[];
-};
-
 const dedicatedCrmModuleIds = new Set([
   "admissions",
+  "applications",
+  "automation",
   "call-center",
+  "campaigns",
+  "communications",
+  "documents",
+  "emails",
   "events",
   "field-force",
   "finance",
   "interview",
+  "leads",
+  "reports",
   "scholarship",
+  "support",
+  "sms",
+  "tasks",
   "whatsapp",
 ]);
-
-type IconName =
-  | "ai"
-  | "analytics"
-  | "automation"
-  | "building"
-  | "calendar"
-  | "campaign"
-  | "chat"
-  | "check"
-  | "dashboard"
-  | "document"
-  | "finance"
-  | "graduation"
-  | "headset"
-  | "integration"
-  | "lead"
-  | "lock"
-  | "mail"
-  | "mobile"
-  | "payment"
-  | "report"
-  | "settings"
-  | "shield"
-  | "task"
-  | "tenant"
-  | "user";
 
 const moduleIcons: Record<string, IconName> = {
   admissions: "check",
@@ -185,6 +162,7 @@ const moduleIcons: Record<string, IconName> = {
   security: "shield",
   settings: "settings",
   sms: "chat",
+  support: "chat",
   students: "user",
   tasks: "task",
   tenants: "tenant",
@@ -612,6 +590,7 @@ const navGroups = [
       "documents",
       "events",
       "field-force",
+      "support",
     ],
   },
   {
@@ -628,24 +607,6 @@ const navGroups = [
       "settings",
     ],
   },
-];
-
-const kpis = [
-  ["New leads", "428", "+12.4%", "82 hot leads"],
-  ["Applications", "173", "+8.1%", "41 under review"],
-  ["Follow-ups due", "86", "-6.2%", "28 high priority"],
-  ["Revenue", "INR 18.4L", "+18.7%", "94 receipts"],
-  ["Counselor SLA", "91%", "+4.3%", "first response"],
-  ["AI sessions", "1,284", "+22.9%", "this month"],
-];
-
-const pipeline = [
-  ["New", "128"],
-  ["Contacted", "94"],
-  ["Counseled", "76"],
-  ["Application", "51"],
-  ["Offer", "29"],
-  ["Enrolled", "18"],
 ];
 
 const modules: CrmModule[] = [
@@ -905,6 +866,17 @@ const modules: CrmModule[] = [
       ["Failed SMS batch", "SMS", "Students", "Review", "Support", "Today"],
       ["Template approval", "Email", "Leads", "Active", "Marketing", "Yesterday"],
     ],
+  },
+  {
+    id: "support",
+    title: "Support",
+    group: "Operations",
+    metric: "0 open",
+    description:
+      "Support tickets, learner and parent issues, SLA queues, agent replies, priority handling, resolution tracking, and closure audits.",
+    filters: ["Status", "Priority", "Category", "Agent"],
+    columns: ["Ticket", "Category", "Priority", "Status", "Replies", "Updated"],
+    rows: [],
   },
   {
     id: "learning",
@@ -1481,7 +1453,7 @@ function enrichModule(module: CrmModule): CrmModule {
     icon: module.icon ?? moduleIcons[module.id] ?? "dashboard",
     insights: module.insights ??
       moduleInsights[module.id] ?? [
-        `${module.rows.length} live records`,
+        "API-backed records",
         `${module.filters.length} active filters`,
         "Tenant scoped data",
       ],
@@ -1619,21 +1591,77 @@ export default function CrmDashboardPage() {
     ) {
       return;
     }
+    if (dedicatedCrmModuleIds.has(activeId)) {
+      void dispatch(
+        loadDedicatedCrmRecords({
+          limit: pageSize,
+          moduleKey: activeId,
+          page: currentPage,
+          search: query.trim() || undefined,
+          sortBy: toServerSortKey(moduleMap[activeId]?.columns[sort.column]),
+          sortOrder: sort.direction,
+          status: getServerFilterValue(filterValues, [
+            "draft",
+            "open",
+            "in_progress",
+            "blocked",
+            "completed",
+            "archived",
+            "submitted",
+            "under_review",
+            "withdrawn",
+            "cancelled",
+          ]),
+          priority: getServerFilterValue(filterValues, [
+            "low",
+            "medium",
+            "high",
+            "urgent",
+          ]),
+          tenantId: activeTenantId,
+        }),
+      );
+      return;
+    }
+
+    const module = moduleMap[activeId];
     void dispatch(
-      dedicatedCrmModuleIds.has(activeId)
-        ? loadDedicatedCrmRecords({
-            moduleKey: activeId,
-            tenantId: activeTenantId,
-          })
-        : loadModuleRecords({ moduleKey: activeId, tenantId: activeTenantId }),
+      loadModuleRecords({
+        limit: pageSize,
+        moduleKey: activeId,
+        page: currentPage,
+        search: query.trim() || undefined,
+        sortBy: toServerSortKey(module?.columns[sort.column]),
+        sortOrder: sort.direction,
+        status: getServerFilterValue(filterValues, [
+          "draft",
+          "open",
+          "in_progress",
+          "blocked",
+          "completed",
+          "archived",
+        ]),
+        priority: getServerFilterValue(filterValues, [
+          "low",
+          "medium",
+          "high",
+          "urgent",
+        ]),
+        tenantId: activeTenantId,
+      }),
     );
   }, [
     activeContext,
     activeId,
     activeTenantId,
     apiSyncEnabled,
+    currentPage,
     dispatch,
+    filterValues,
     loggedInUser,
+    pageSize,
+    query,
+    sort,
   ]);
 
   const activeModule = moduleMap[activeId];
@@ -1642,18 +1670,16 @@ export default function CrmDashboardPage() {
     [activeId, workspace.coverage],
   );
   const serverRows = useMemo(
-    () =>
-      activeModule
-        ? recordsToRows(workspace.moduleRecords[activeModule.id], activeModule)
-        : [],
-    [activeModule, workspace.moduleRecords],
+    () => (activeModule ? getServerRowsForModule(activeModule, workspace) : []),
+    [activeModule, workspace],
   );
   const firstServerRecordId = useMemo(
     () => getUnknownRecordId(workspace.moduleRecords[activeId]?.[0]),
     [activeId, workspace.moduleRecords],
   );
-  const activeRows =
-    serverRows.length > 0 ? serverRows : (activeModule?.rows ?? []);
+  const activeRows = apiSyncEnabled
+    ? serverRows
+    : (activeModule?.rows ?? []);
   const filteredRows = useMemo(() => {
     if (!activeModule) return [];
     const text = query.trim().toLowerCase();
@@ -1951,6 +1977,12 @@ export default function CrmDashboardPage() {
             }),
           ).unwrap();
           await dispatch(
+            testIntegrationProvider({
+              providerKey: "whatsapp_business",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          await dispatch(
             loadIntegrationProviders({ tenantId: activeTenantId }),
           ).unwrap();
           dispatch(
@@ -2174,9 +2206,18 @@ export default function CrmDashboardPage() {
         }
 
         if (normalized.includes("sso")) {
+          const providerKey = normalized.includes("microsoft")
+            ? "microsoft_sso"
+            : "google_sso";
           await dispatch(
             upsertIntegrationProvider({
-              providerKey: "sso",
+              providerKey,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          await dispatch(
+            testIntegrationProvider({
+              providerKey,
               tenantId: activeTenantId,
             }),
           ).unwrap();
@@ -2353,6 +2394,17 @@ export default function CrmDashboardPage() {
               tenantId: activeTenantId,
             }),
           ).unwrap();
+          await dispatch(
+            testIntegrationProvider({
+              providerKey:
+                channel === "sms"
+                  ? "sms_gateway"
+                  : channel === "email"
+                    ? "email_delivery"
+                    : "whatsapp_business",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
         }
 
         await dispatch(
@@ -2468,6 +2520,15 @@ export default function CrmDashboardPage() {
         ) {
           await dispatch(
             upsertIntegrationProvider({
+              providerKey:
+                activeId === "call-center"
+                  ? "dialer_recording"
+                  : "whatsapp_business",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          await dispatch(
+            testIntegrationProvider({
               providerKey:
                 activeId === "call-center"
                   ? "dialer_recording"
@@ -2784,6 +2845,12 @@ export default function CrmDashboardPage() {
                 tenantId: activeTenantId,
               }),
             ).unwrap();
+            await dispatch(
+              testIntegrationProvider({
+                providerKey: "geo_telemetry",
+                tenantId: activeTenantId,
+              }),
+            ).unwrap();
           }
 
           await dispatch(
@@ -2916,6 +2983,12 @@ export default function CrmDashboardPage() {
               tenantId: activeTenantId,
             }),
           ).unwrap();
+          await dispatch(
+            testIntegrationProvider({
+              providerKey: "calendar_sync",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
         }
 
         if (
@@ -2927,6 +3000,27 @@ export default function CrmDashboardPage() {
           await dispatch(
             upsertIntegrationProvider({
               providerKey: "accounting_export",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          await dispatch(
+            testIntegrationProvider({
+              providerKey: "accounting_export",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+        }
+
+        if (activeId === "ai-features") {
+          await dispatch(
+            upsertIntegrationProvider({
+              providerKey: "ai_provider_metering",
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          await dispatch(
+            testIntegrationProvider({
+              providerKey: "ai_provider_metering",
               tenantId: activeTenantId,
             }),
           ).unwrap();
@@ -2994,9 +3088,18 @@ export default function CrmDashboardPage() {
 
       try {
         if (normalized.includes("mfa") || normalized.includes("sso")) {
+          const providerKey = normalized.includes("microsoft")
+            ? "microsoft_sso"
+            : "google_sso";
           await dispatch(
             upsertIntegrationProvider({
-              providerKey: normalized.includes("mfa") ? "mfa" : "sso",
+              providerKey,
+              tenantId: activeTenantId,
+            }),
+          ).unwrap();
+          await dispatch(
+            testIntegrationProvider({
+              providerKey,
               tenantId: activeTenantId,
             }),
           ).unwrap();
@@ -3166,6 +3269,40 @@ export default function CrmDashboardPage() {
         `${label} queued for ${selectedCount || "current"} record${selectedCount === 1 ? "" : "s"}`,
       ),
     );
+  }
+
+  async function archiveRow(row: string[]) {
+    if (!activeModule) return;
+    if (!activeTenantId) {
+      dispatch(crmSessionActions.setToast("Tenant context is required"));
+      return;
+    }
+    const recordId = findModuleRecordIdForRow(
+      workspace.moduleRecords[activeModule.id],
+      row,
+    );
+    if (!recordId) {
+      dispatch(crmSessionActions.setToast("API record was not found"));
+      return;
+    }
+    if (dedicatedCrmModuleIds.has(activeModule.id)) {
+      await dispatch(
+        deleteDedicatedCrmRecord({
+          moduleKey: activeModule.id,
+          recordId,
+          tenantId: activeTenantId,
+        }),
+      ).unwrap();
+    } else {
+      await dispatch(
+        deleteModuleRecord({
+          moduleKey: activeModule.id,
+          recordId,
+          tenantId: activeTenantId,
+        }),
+      ).unwrap();
+    }
+    dispatch(crmSessionActions.setToast(`${activeModule.title} record archived`));
   }
 
   return (
@@ -3340,10 +3477,11 @@ export default function CrmDashboardPage() {
             sort={sort}
             total={filteredRows.length}
             totalPages={totalPages}
-            usingServerRows={serverRows.length > 0}
+            usingServerRows={apiSyncEnabled}
             view={moduleView}
             setView={setModuleView}
             openRecordForm={setRecordForm}
+            archiveRow={archiveRow}
             runAction={runAction}
           />
         )}
@@ -3360,17 +3498,42 @@ export default function CrmDashboardPage() {
               };
               if (!apiSyncEnabled || !activeTenantId || workspace.error) {
                 dispatch(
-                  crmWorkspaceActions.upsertLocalModuleRecord(finalDraft),
-                );
-                dispatch(
                   crmSessionActions.setToast(
-                    "Record saved in local CRM workspace",
+                    "API sync and tenant context are required before saving",
                   ),
                 );
-                setRecordForm(null);
                 return;
               }
               try {
+                if (activeModule.id === "tenants") {
+                  const tenantId = findTenantIdByName(
+                    workspace.tenants,
+                    finalDraft.title,
+                  );
+                  if (!tenantId) {
+                    dispatch(
+                      crmSessionActions.setToast(
+                        "Tenant record was not found in the API response",
+                      ),
+                    );
+                    return;
+                  }
+                  await dispatch(
+                    updateTenant({
+                      id: tenantId,
+                      name: finalDraft.title,
+                      primaryDomain:
+                        finalDraft.payload.primaryDomain ||
+                        finalDraft.payload.domain ||
+                        undefined,
+                      type: finalDraft.payload.type || "coaching",
+                    }),
+                  ).unwrap();
+                  await dispatch(loadCrmWorkspace()).unwrap();
+                  dispatch(crmSessionActions.setToast("Tenant updated"));
+                  setRecordForm(null);
+                  return;
+                }
                 if (dedicatedCrmModuleIds.has(activeModule.id)) {
                   await dispatch(saveDedicatedCrmRecord(finalDraft)).unwrap();
                 } else {
@@ -3379,13 +3542,11 @@ export default function CrmDashboardPage() {
                 dispatch(crmSessionActions.setToast("Record saved to API"));
               } catch {
                 dispatch(
-                  crmWorkspaceActions.upsertLocalModuleRecord(finalDraft),
-                );
-                dispatch(
                   crmSessionActions.setToast(
-                    "Record saved locally until API auth is ready",
+                    "API save failed. No local fallback record was created.",
                   ),
                 );
+                return;
               }
               setRecordForm(null);
             }}
@@ -3668,8 +3829,65 @@ function Dashboard({
 }: {
   canAccessModule: (id: string) => boolean;
   openModule: (id: string) => void;
-  workspace: { coverage: unknown[]; tenants: unknown[] };
+  workspace: {
+    coverage: unknown[];
+    dashboard: unknown;
+    moduleRecords: Record<string, unknown[]>;
+    tenants: unknown[];
+  };
 }) {
+  const dashboard = normalizeResponseObject(workspace.dashboard);
+  const dashboardKpis = [
+    {
+      helper: "New enquiries",
+      icon: "lead" as const,
+      id: "leads",
+      label: "New leads",
+      value: getDashboardMetric(dashboard, "newLeads"),
+    },
+    {
+      helper: "Submitted records",
+      icon: "document" as const,
+      id: "applications",
+      label: "Applications",
+      value: getDashboardMetric(dashboard, "applications"),
+    },
+    {
+      helper: "Open or in progress",
+      icon: "task" as const,
+      id: "tasks",
+      label: "Open tasks",
+      value: getDashboardMetric(dashboard, "openTasks"),
+    },
+    {
+      helper: "High-intent leads",
+      icon: "analytics" as const,
+      id: "leads",
+      label: "Hot leads",
+      value: getDashboardMetric(dashboard, "hotLeads"),
+    },
+    {
+      helper: "Active campaign records",
+      icon: "campaign" as const,
+      id: "campaigns",
+      label: "Campaigns",
+      value: getDashboardMetric(dashboard, "campaigns"),
+    },
+    {
+      helper: "Logged channel records",
+      icon: "chat" as const,
+      id: "communications",
+      label: "Communications",
+      value: getDashboardMetric(dashboard, "communications"),
+    },
+  ];
+  const pipelineRows = [
+    ["New", getDashboardMetric(dashboard, "newLeads"), "leads"],
+    ["Hot", getDashboardMetric(dashboard, "hotLeads"), "leads"],
+    ["Applications", getDashboardMetric(dashboard, "applications"), "applications"],
+    ["Open Tasks", getDashboardMetric(dashboard, "openTasks"), "tasks"],
+  ];
+
   return (
     <section className="workspace">
       <div className="hero-panel">
@@ -3705,28 +3923,18 @@ function Dashboard({
             API workspace
           </p>
         </button>
-        {kpis.map(([label, value, delta, helper]) => (
+        {dashboardKpis.map(({ helper, icon, id, label, value }) => (
           <button
             className="metric-card"
             key={label}
-            onClick={() =>
-              openModule(label === "Applications" ? "applications" : "leads")
-            }
+            onClick={() => openModule(id)}
             type="button"
           >
-            <Icon
-              name={
-                label === "Revenue"
-                  ? "payment"
-                  : label === "AI sessions"
-                    ? "ai"
-                    : "analytics"
-              }
-            />
+            <Icon name={icon} />
             <span>{label}</span>
             <strong>{value}</strong>
             <p>
-              <em>{delta}</em>
+              <em>Live</em>
               {helper}
             </p>
           </button>
@@ -3737,15 +3945,11 @@ function Dashboard({
         <div className="listmanager">
           <div className="head">Admissions Pipeline</div>
           <div className="pipeline">
-            {pipeline.map(([stage, value]) => (
+            {pipelineRows.map(([stage, value, moduleId]) => (
               <button
                 className="pipeline-step"
                 key={stage}
-                onClick={() =>
-                  openModule(
-                    stage === "Application" ? "applications" : "admissions",
-                  )
-                }
+                onClick={() => openModule(moduleId)}
                 type="button"
               >
                 <span>{stage}</span>
@@ -3788,7 +3992,7 @@ function Dashboard({
               </div>
               <span>{module.group}</span>
               <strong>{module.title}</strong>
-              <em>{module.metric}</em>
+              <em>{getModuleCardMetric(module, workspace)}</em>
             </button>
           ))}
       </section>
@@ -3823,6 +4027,7 @@ function ModulePanel(props: {
   view: "list" | "grid";
   setView: (view: "list" | "grid") => void;
   openRecordForm: (form: { mode: "create" | "edit"; row?: string[] }) => void;
+  archiveRow: (row: string[]) => Promise<void>;
   runAction: (label: string) => Promise<void>;
 }) {
   const module = props.module;
@@ -4071,7 +4276,33 @@ function ModulePanel(props: {
                 </tr>
               </thead>
               <tbody>
-                {props.rows.map((row, rowIndex) => {
+                {props.rows.length === 0 ? (
+                  <tr>
+                    <td
+                      className="empty-table-cell"
+                      colSpan={props.module.columns.length + 3}
+                    >
+                      <div className="empty-state-inline">
+                        <Icon name="document" />
+                        <strong>No data found</strong>
+                        <span>
+                          No {props.module.title.toLowerCase()} records match
+                          the current tenant, filters, and search.
+                        </span>
+                        <button
+                          className="btn btn-light btn-sm"
+                          onClick={() =>
+                            props.openRecordForm({ mode: "create" })
+                          }
+                          type="button"
+                        >
+                          Create record
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  props.rows.map((row, rowIndex) => {
                   const id = row.join("|");
                   return (
                     <tr
@@ -4109,22 +4340,42 @@ function ModulePanel(props: {
                           Edit
                         </button>
                         <button
-                          onClick={() => props.runAction("Audit")}
+                          onClick={() => {
+                            void props.archiveRow(row);
+                          }}
                           type="button"
                         >
                           <Icon name="shield" />
-                          Audit
+                          Archive
                         </button>
                       </td>
                     </tr>
                   );
-                })}
+                })
+                )}
               </tbody>
             </table>
           </div>
         ) : (
           <div className="record-grid">
-            {props.rows.map((row) => {
+            {props.rows.length === 0 ? (
+              <div className="empty-state-inline empty-grid-state">
+                <Icon name="document" />
+                <strong>No data found</strong>
+                <span>
+                  No {props.module.title.toLowerCase()} records match the
+                  current tenant, filters, and search.
+                </span>
+                <button
+                  className="btn btn-light btn-sm"
+                  onClick={() => props.openRecordForm({ mode: "create" })}
+                  type="button"
+                >
+                  Create record
+                </button>
+              </div>
+            ) : (
+              props.rows.map((row) => {
               const id = row.join("|");
               return (
                 <article
@@ -4166,10 +4417,20 @@ function ModulePanel(props: {
                     >
                       Edit
                     </button>
+                    <button
+                      className="btn btn-light btn-sm"
+                      onClick={() => {
+                        void props.archiveRow(row);
+                      }}
+                      type="button"
+                    >
+                      Archive
+                    </button>
                   </div>
                 </article>
               );
-            })}
+            })
+            )}
           </div>
         )}
         <div className="pagination-bar">
@@ -4515,13 +4776,14 @@ function TenantFormModal({
   const [isSaving, setIsSaving] = useState(false);
 
   async function submit() {
-    if (!draft.name.trim() || !draft.code.trim()) return;
+    const code = draft.code?.trim() ?? "";
+    if (!draft.name.trim() || !code) return;
     setIsSaving(true);
     setError("");
     try {
       await onSubmit({
         ...draft,
-        code: draft.code.trim().toUpperCase(),
+        code: code.toUpperCase(),
         name: draft.name.trim(),
         primaryDomain: draft.primaryDomain?.trim() || undefined,
       });
@@ -4602,7 +4864,7 @@ function TenantFormModal({
           </button>
           <button
             className="btn btn-primary"
-            disabled={!draft.name.trim() || !draft.code.trim() || isSaving}
+            disabled={!draft.name.trim() || !draft.code?.trim() || isSaving}
             onClick={() => {
               void submit();
             }}
@@ -4769,133 +5031,12 @@ function renderCell(value: string) {
   return value;
 }
 
-function statusClass(status?: ModuleStatus) {
-  if (status === "Active") return "good";
-  if (status === "Configured") return "warn";
-  return "neutral";
-}
-
-function findModuleCoverage(
-  coverage: unknown[],
-  moduleKey: string,
-): ModuleCoverage | null {
-  const match = coverage.find((item) => {
+function findModuleRecordIdForRow(records: unknown[] | undefined, row: string[]) {
+  if (!records?.length) return "";
+  const title = row[0];
+  const record = records.find((item) => {
     if (!item || typeof item !== "object") return false;
-    return (item as { moduleKey?: unknown }).moduleKey === moduleKey;
+    return (item as { title?: unknown }).title === title;
   });
-  return match && typeof match === "object" ? (match as ModuleCoverage) : null;
-}
-
-function formatReadiness(coverage: ModuleCoverage) {
-  if (coverage.productionReady) return "Active";
-  if (
-    coverage.backendStatus === "workflow_ready" ||
-    coverage.frontendStatus === "workflow_ready"
-  ) {
-    return "Configured";
-  }
-  if (
-    coverage.backendStatus === "product_ready" &&
-    coverage.frontendStatus === "product_ready"
-  ) {
-    return "Active";
-  }
-  return "Setup";
-}
-
-function formatStatus(value?: string) {
-  return value ? value.replaceAll("_", " ") : "unknown";
-}
-
-function extractFirstId(records: unknown[]) {
-  const first = records[0];
-  if (!first || typeof first !== "object") return "";
-  const object = first as Record<string, unknown>;
-  const directId = object._id ?? object.id;
-  if (typeof directId === "string") return directId;
-  if (
-    object.data &&
-    typeof object.data === "object" &&
-    "_id" in object.data &&
-    typeof (object.data as { _id?: unknown })._id === "string"
-  ) {
-    return (object.data as { _id: string })._id;
-  }
-  return "";
-}
-
-function getUnknownRecordId(record: unknown) {
-  if (!record || typeof record !== "object") return "";
-  const value = (record as { _id?: unknown; id?: unknown })._id;
-  if (typeof value === "string") return value;
-  const fallback = (record as { id?: unknown }).id;
-  return typeof fallback === "string" ? fallback : "";
-}
-
-function normalizeResponseObject(value: unknown): Record<string, unknown> {
-  if (!value || typeof value !== "object") return {};
-  if ("data" in value) {
-    const data = (value as { data?: unknown }).data;
-    return data && typeof data === "object"
-      ? (data as Record<string, unknown>)
-      : {};
-  }
-  return value as Record<string, unknown>;
-}
-
-function normalizeResponseArray(value: unknown): unknown[] {
-  if (Array.isArray(value)) return value;
-  if (
-    value &&
-    typeof value === "object" &&
-    "data" in value &&
-    Array.isArray((value as { data?: unknown }).data)
-  ) {
-    return (value as { data: unknown[] }).data;
-  }
-  return [];
-}
-
-function recordsToRows(records: unknown[] | undefined, module: CrmModule) {
-  if (!records?.length) return [];
-
-  return records.map((record) => {
-    const object =
-      record && typeof record === "object"
-        ? (record as Record<string, unknown>)
-        : {};
-    const payload =
-      object.payload && typeof object.payload === "object"
-        ? (object.payload as Record<string, unknown>)
-        : {};
-
-    return module.columns.map((column, index) => {
-      const key = toPayloadKey(column);
-      const value =
-        payload[key] ??
-        payload[column] ??
-        object[key] ??
-        object[column] ??
-        (index === 0 ? object.title : undefined) ??
-        (index === module.columns.length - 1 ? object.status : undefined);
-
-      return stringifyCell(value);
-    });
-  });
-}
-
-function stringifyCell(value: unknown) {
-  if (value === null || value === undefined || value === "") return "-";
-  if (value instanceof Date) return value.toLocaleDateString();
-  if (Array.isArray(value)) return value.join(", ");
-  if (typeof value === "object") return JSON.stringify(value);
-  return String(value).replaceAll("_", " ");
-}
-
-function toPayloadKey(label: string) {
-  return label
-    .replace(/[^a-zA-Z0-9]+(.)/g, (_, character: string) =>
-      character.toUpperCase(),
-    )
-    .replace(/^[A-Z]/, (character) => character.toLowerCase());
+  return getUnknownRecordId(record);
 }

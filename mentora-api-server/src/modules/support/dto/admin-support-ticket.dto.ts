@@ -13,6 +13,40 @@ import {
 } from '../support.constants';
 import { ListSupportTicketsDto } from './list-support-tickets.dto';
 
+export class AdminCreateSupportTicketDto {
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(160)
+  subject?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(160)
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(4000)
+  message?: string;
+
+  @IsOptional()
+  @IsString()
+  @MinLength(2)
+  @MaxLength(4000)
+  description?: string;
+
+  @IsOptional()
+  @IsString()
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  priority?: string;
+}
+
 export class AdminListSupportTicketsDto extends ListSupportTicketsDto {
   @IsOptional()
   @IsIn(SUPPORT_TICKET_PRIORITIES)

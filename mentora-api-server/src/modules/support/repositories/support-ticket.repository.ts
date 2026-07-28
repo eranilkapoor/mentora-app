@@ -77,7 +77,13 @@ export class SupportTicketRepository {
   async listAll(
     page: number,
     limit: number,
-    filters: { status?: SupportTicketStatus; priority?: SupportTicketPriority },
+    filters: {
+      priority?: SupportTicketPriority;
+      search?: string;
+      sortBy?: string;
+      sortOrder?: 'asc' | 'desc';
+      status?: SupportTicketStatus;
+    },
   ) {
     const filter: Record<string, unknown> = {};
     if (filters.status) {
@@ -86,12 +92,23 @@ export class SupportTicketRepository {
     if (filters.priority) {
       filter.priority = filters.priority;
     }
+    const search = filters.search?.trim();
+    if (search) {
+      filter.$or = [
+        { subject: { $regex: search, $options: 'i' } },
+        { category: { $regex: search, $options: 'i' } },
+        { priority: { $regex: search, $options: 'i' } },
+        { status: { $regex: search, $options: 'i' } },
+      ];
+    }
 
     const skip = (page - 1) * limit;
+    const sortBy = this.resolveSortBy(filters.sortBy);
+    const sortOrder = filters.sortOrder === 'asc' ? 1 : -1;
     const [items, total] = await Promise.all([
       this.ticketModel
         .find(filter)
-        .sort({ updatedAt: -1 })
+        .sort({ [sortBy]: sortOrder, _id: -1 })
         .skip(skip)
         .limit(limit)
         .lean()
@@ -217,5 +234,19 @@ export class SupportTicketRepository {
       )
       .lean()
       .exec();
+  }
+
+  private resolveSortBy(value?: string) {
+    const allowed = new Set([
+      'category',
+      'createdAt',
+      'lastAgentReplyAt',
+      'lastUserReplyAt',
+      'priority',
+      'status',
+      'subject',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'updatedAt';
   }
 }

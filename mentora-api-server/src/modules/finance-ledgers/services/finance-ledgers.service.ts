@@ -49,7 +49,8 @@ export class FinanceLedgersService extends CrmDomainRecordService<FinanceLedgerE
   }
 
   async exportLedger(dto: ExportLedgerDto) {
-    const rows = await this.list(dto.tenantId);
+    const result = await this.list({ tenantId: dto.tenantId, limit: '1000' });
+    const rows = result.items;
     return {
       format: dto.format ?? 'csv',
       rows,

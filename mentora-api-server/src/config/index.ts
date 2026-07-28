@@ -8,6 +8,7 @@ import storage from './storage.config';
 import throttle from './throttle.config';
 import membership from './membership.config';
 import chat from './chat.config';
+import integration from './integration.config';
 
 export default [
   app,
@@ -20,4 +21,5 @@ export default [
   throttle,
   membership,
   chat,
+  integration,
 ];

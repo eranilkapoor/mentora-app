@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
@@ -63,9 +64,25 @@ export class ModuleRecordsController {
     @Query('tenantId') tenantId: string,
     @Query('moduleKey') moduleKey?: string,
     @Query('status') status?: string,
+    @Query('priority') priority?: string,
+    @Query('search') search?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
     return successResponse(
-      await this.service.listModuleRecords(tenantId, moduleKey, status),
+      await this.service.listModuleRecords({
+        limit,
+        moduleKey,
+        page,
+        priority,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'EDUCATION_PLATFORM_MODULE_RECORDS_FETCHED',
       'CRM module records fetched',
     );
@@ -81,6 +98,20 @@ export class ModuleRecordsController {
       await this.service.exportModuleRecords(tenantId, moduleKey),
       'EDUCATION_PLATFORM_MODULE_RECORDS_EXPORTED',
       'CRM module records exported',
+    );
+  }
+
+  @Delete(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async deleteModuleRecord(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.deleteModuleRecord(req.user.sub, recordId, tenantId),
+      'EDUCATION_PLATFORM_MODULE_RECORD_ARCHIVED',
+      'CRM module record archived',
     );
   }
 

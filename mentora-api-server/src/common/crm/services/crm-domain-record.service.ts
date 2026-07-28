@@ -23,6 +23,17 @@ type CrmDomainRecordDocument = {
 
 type CrmDomainRecordLean = Record<string, unknown>;
 
+export type CrmDomainRecordListOptions = {
+  limit?: string;
+  page?: string;
+  priority?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  tenantId: string;
+};
+
 export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
   constructor(
     protected readonly model: Model<TDocument>,
@@ -52,20 +63,54 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
     return record as TDocument;
   }
 
-  async list(
-    tenantId: string,
-    status?: string,
-  ): Promise<CrmDomainRecordLean[]> {
-    const records = await this.model
-      .find({
-        tenantId: toTenantObjectId(tenantId),
-        ...(status ? { status } : {}),
-      })
-      .sort({ dueAt: 1, createdAt: -1 })
-      .limit(100)
-      .lean();
+  async list(options: CrmDomainRecordListOptions): Promise<{
+    items: CrmDomainRecordLean[];
+    pagination: {
+      limit: number;
+      page: number;
+      total: number;
+      totalPages: number;
+    };
+    sort: { sortBy: string; sortOrder: 'asc' | 'desc' };
+  }> {
+    const page = this.toPositiveInt(options.page, 1);
+    const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
+    const sortBy = this.resolveSortBy(options.sortBy);
+    const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
+    const filter: Record<string, unknown> = {
+      tenantId: toTenantObjectId(options.tenantId),
+      ...(options.priority ? { priority: options.priority } : {}),
+      ...(options.status ? { status: options.status } : {}),
+    };
+    const search = options.search?.trim();
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } },
+      ];
+    }
 
-    return records;
+    const [items, total] = await Promise.all([
+      this.model
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.model.countDocuments(filter),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
   }
 
   async update(
@@ -133,6 +178,47 @@ export class CrmDomainRecordService<TDocument extends CrmDomainRecordDocument> {
       record,
     );
     return record;
+  }
+
+  async archive(
+    userId: string,
+    recordId: string,
+    tenantId: string,
+  ): Promise<TDocument> {
+    const record = await this.model.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(recordId),
+        tenantId: toTenantObjectId(tenantId),
+      },
+      { $set: { status: 'archived' } },
+      { new: true },
+    );
+    if (!record)
+      throw new NotFoundException(`${this.resource} record not found`);
+    await this.writeAudit(
+      userId,
+      `${this.resource}.archived`,
+      tenantId,
+      record,
+    );
+    return record;
+  }
+
+  private resolveSortBy(value?: string) {
+    const allowed = new Set([
+      'createdAt',
+      'dueAt',
+      'priority',
+      'status',
+      'title',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private toPositiveInt(value: string | undefined, fallback: number) {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 
   private async writeAudit(

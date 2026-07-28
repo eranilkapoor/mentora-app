@@ -1,10 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -14,7 +17,10 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
-import { CreateCommunicationDto } from '../dto/communications.dto';
+import {
+  CreateCommunicationDto,
+  UpdateCommunicationDto,
+} from '../dto/communications.dto';
 import { CommunicationsService } from '../services/communications.service';
 
 @UseGuards(JwtAuthGuard, TenantContextGuard, PermissionsGuard)
@@ -35,11 +41,61 @@ export class CommunicationsController {
 
   @Get()
   @Permissions(Permission.CRM_COMMUNICATION_VIEW)
-  async listCommunications(@Query('tenantId') tenantId: string) {
+  async listCommunications(
+    @Query('tenantId') tenantId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('channel') channel?: string,
+    @Query('direction') direction?: string,
+    @Query('entityType') entityType?: string,
+    @Query('entityId') entityId?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+  ) {
     return successResponse(
-      await this.service.listCommunications(tenantId),
+      await this.service.listCommunications({
+        channel,
+        direction,
+        entityId,
+        entityType,
+        limit,
+        page,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'EDUCATION_PLATFORM_COMMUNICATIONS_FETCHED',
       'CRM communications fetched',
+    );
+  }
+
+  @Put(':communicationId')
+  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  async updateCommunication(
+    @Param('communicationId') communicationId: string,
+    @Body() dto: UpdateCommunicationDto,
+  ) {
+    return successResponse(
+      await this.service.updateCommunication(communicationId, dto),
+      'EDUCATION_PLATFORM_COMMUNICATION_UPDATED',
+      'CRM communication updated',
+    );
+  }
+
+  @Delete(':communicationId')
+  @Permissions(Permission.CRM_COMMUNICATION_MANAGE)
+  async archiveCommunication(
+    @Param('communicationId') communicationId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archiveCommunication(communicationId, tenantId),
+      'EDUCATION_PLATFORM_COMMUNICATION_ARCHIVED',
+      'CRM communication archived',
     );
   }
 }

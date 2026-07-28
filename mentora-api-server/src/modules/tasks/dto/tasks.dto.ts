@@ -68,3 +68,40 @@ export class UpdateTaskWorkflowDto {
   @IsObject()
   escalation?: Record<string, unknown>;
 }
+
+export class UpdateTaskDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  assignedTo?: string;
+
+  @IsOptional()
+  @IsIn(['low', 'medium', 'high', 'urgent'])
+  priority?: string;
+
+  @IsOptional()
+  @IsIn(['open', 'in_progress', 'completed', 'cancelled'])
+  status?: string;
+
+  @IsOptional()
+  @IsDateString()
+  dueAt?: string;
+
+  @IsOptional()
+  @IsDateString()
+  reminderAt?: string;
+
+  @IsOptional()
+  @IsString()
+  recurringRule?: string;
+}

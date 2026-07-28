@@ -17,6 +17,18 @@ import {
   ModuleRecordDocument,
 } from '../schemas/module-records.schema';
 
+type ListModuleRecordOptions = {
+  limit?: string;
+  moduleKey?: string;
+  page?: string;
+  priority?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  tenantId: string;
+};
+
 @Injectable()
 export class ModuleRecordsService {
   constructor(
@@ -53,20 +65,47 @@ export class ModuleRecordsService {
     return record;
   }
 
-  async listModuleRecords(
-    tenantId: string,
-    moduleKey?: string,
-    status?: string,
-  ) {
-    return this.moduleRecords
-      .find({
-        tenantId: toTenantObjectId(tenantId),
-        ...(moduleKey ? { moduleKey } : {}),
-        ...(status ? { status } : {}),
-      })
-      .sort({ dueAt: 1, createdAt: -1 })
-      .limit(100)
-      .lean();
+  async listModuleRecords(options: ListModuleRecordOptions) {
+    const page = this.toPositiveInt(options.page, 1);
+    const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
+    const sortBy = this.resolveSortBy(options.sortBy);
+    const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
+    const filter: Record<string, unknown> = {
+      tenantId: toTenantObjectId(options.tenantId),
+      ...(options.moduleKey ? { moduleKey: options.moduleKey } : {}),
+      ...(options.status ? { status: options.status } : {}),
+      ...(options.priority ? { priority: options.priority } : {}),
+    };
+
+    const search = options.search?.trim();
+    if (search) {
+      filter.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    const [items, total] = await Promise.all([
+      this.moduleRecords
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.moduleRecords.countDocuments(filter),
+    ]);
+
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
   }
 
   async updateModuleRecord(
@@ -144,7 +183,12 @@ export class ModuleRecordsService {
   }
 
   async exportModuleRecords(tenantId: string, moduleKey?: string) {
-    const records = await this.listModuleRecords(tenantId, moduleKey);
+    const result = await this.listModuleRecords({
+      limit: '1000',
+      moduleKey,
+      tenantId,
+    });
+    const records = result.items;
     const headers = ['id', 'moduleKey', 'title', 'status', 'priority', 'dueAt'];
     const csv = [
       headers.join(','),
@@ -170,6 +214,52 @@ export class ModuleRecordsService {
       rows: records,
       csv,
     };
+  }
+
+  async deleteModuleRecord(
+    userId: string | undefined,
+    recordId: string,
+    tenantId: string,
+  ) {
+    const record = await this.moduleRecords.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(recordId),
+        tenantId: toTenantObjectId(tenantId),
+      },
+      { $set: { status: 'archived' } },
+      { new: true },
+    );
+    if (!record) {
+      throw new NotFoundException('Education CRM module record not found');
+    }
+    await this.writeAudit(
+      userId,
+      'crm_module_record.archived',
+      tenantId,
+      record._id,
+      {
+        after: this.toAuditRecord(record.toObject()),
+        metadata: { moduleKey: record.moduleKey },
+      },
+    );
+    return record;
+  }
+
+  private resolveSortBy(value?: string) {
+    const allowed = new Set([
+      'createdAt',
+      'dueAt',
+      'priority',
+      'status',
+      'title',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private toPositiveInt(value: string | undefined, fallback: number) {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 
   private async writeAudit(

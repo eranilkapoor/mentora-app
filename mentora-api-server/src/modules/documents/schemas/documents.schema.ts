@@ -40,7 +40,14 @@ export class CrmDocument {
   size!: number;
 
   @Prop({
-    enum: ['required', 'submitted', 'verified', 'rejected', 'expired'],
+    enum: [
+      'required',
+      'submitted',
+      'verified',
+      'rejected',
+      'expired',
+      'archived',
+    ],
     default: 'submitted',
     index: true,
   })

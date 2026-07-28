@@ -25,3 +25,36 @@ export class CreateCommunicationDto {
   @IsString()
   content?: string;
 }
+
+export class UpdateCommunicationDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsIn(['email', 'sms', 'whatsapp', 'push', 'call', 'in_app'])
+  channel?: string;
+
+  @IsOptional()
+  @IsIn(['inbound', 'outbound'])
+  direction?: string;
+
+  @IsOptional()
+  @IsString()
+  subject?: string;
+
+  @IsOptional()
+  @IsString()
+  content?: string;
+
+  @IsOptional()
+  @IsIn([
+    'queued',
+    'sent',
+    'delivered',
+    'read',
+    'failed',
+    'bounced',
+    'archived',
+  ])
+  status?: string;
+}

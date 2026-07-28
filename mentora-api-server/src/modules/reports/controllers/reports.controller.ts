@@ -1,10 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
+  Param,
   Post,
+  Put,
   Query,
   Req,
   UseGuards,
@@ -19,6 +22,7 @@ import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.gua
 import {
   CreateReportDefinitionDto,
   CreateReportExportJobDto,
+  UpdateReportDefinitionDto,
 } from '../dto/reports.dto';
 import { ReportsService } from '../services/reports.service';
 
@@ -46,11 +50,58 @@ export class ReportsController {
   async listDefinitions(
     @Query('tenantId') tenantId: string,
     @Query('moduleKey') moduleKey?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
   ) {
     return successResponse(
-      await this.service.listDefinitions(tenantId, moduleKey),
+      await this.service.listDefinitions({
+        limit,
+        moduleKey,
+        page,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'EDUCATION_PLATFORM_REPORT_DEFINITIONS_FETCHED',
       'CRM report definitions fetched',
+    );
+  }
+
+  @Put('definitions/:definitionId')
+  @Permissions(Permission.CRM_REPORT_VIEW)
+  async updateDefinition(
+    @Req() req: AuthenticatedRequest,
+    @Param('definitionId') definitionId: string,
+    @Body() dto: UpdateReportDefinitionDto,
+  ) {
+    return successResponse(
+      await this.service.updateDefinition(req.user.sub, definitionId, dto),
+      'EDUCATION_PLATFORM_REPORT_DEFINITION_UPDATED',
+      'CRM report definition updated',
+    );
+  }
+
+  @Delete('definitions/:definitionId')
+  @Permissions(Permission.CRM_REPORT_VIEW)
+  async archiveDefinition(
+    @Req() req: AuthenticatedRequest,
+    @Param('definitionId') definitionId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archiveDefinition(
+        req.user.sub,
+        definitionId,
+        tenantId,
+      ),
+      'EDUCATION_PLATFORM_REPORT_DEFINITION_ARCHIVED',
+      'CRM report definition archived',
     );
   }
 
@@ -70,9 +121,23 @@ export class ReportsController {
 
   @Get('exports')
   @Permissions(Permission.CRM_REPORT_EXPORT)
-  async listExportJobs(@Query('tenantId') tenantId: string) {
+  async listExportJobs(
+    @Query('tenantId') tenantId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('status') status?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+  ) {
     return successResponse(
-      await this.service.listExportJobs(tenantId),
+      await this.service.listExportJobs({
+        limit,
+        page,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'EDUCATION_PLATFORM_REPORT_EXPORTS_FETCHED',
       'CRM report exports fetched',
     );

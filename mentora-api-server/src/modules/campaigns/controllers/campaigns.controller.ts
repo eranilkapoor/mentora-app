@@ -1,11 +1,13 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -17,6 +19,7 @@ import { PermissionsGuard } from '@/modules/auth/guards/permissions.guard';
 import { TenantContextGuard } from '@/modules/contexts/guards/tenant-context.guard';
 import {
   CreateCampaignDto,
+  UpdateCampaignDto,
   UpdateCampaignMetricsDto,
 } from '../dto/campaigns.dto';
 import { CampaignsService } from '../services/campaigns.service';
@@ -39,11 +42,55 @@ export class CampaignsController {
 
   @Get()
   @Permissions(Permission.CRM_CAMPAIGN_VIEW)
-  async listCampaigns(@Query('tenantId') tenantId: string) {
+  async listCampaigns(
+    @Query('tenantId') tenantId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
+    @Query('status') status?: string,
+    @Query('channel') channel?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
+  ) {
     return successResponse(
-      await this.service.listCampaigns(tenantId),
+      await this.service.listCampaigns({
+        channel,
+        limit,
+        page,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'EDUCATION_PLATFORM_CAMPAIGNS_FETCHED',
       'CRM campaigns fetched',
+    );
+  }
+
+  @Put(':campaignId')
+  @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
+  async updateCampaign(
+    @Param('campaignId') campaignId: string,
+    @Body() dto: UpdateCampaignDto,
+  ) {
+    return successResponse(
+      await this.service.updateCampaign(campaignId, dto),
+      'EDUCATION_PLATFORM_CAMPAIGN_UPDATED',
+      'CRM campaign updated',
+    );
+  }
+
+  @Delete(':campaignId')
+  @Permissions(Permission.CRM_CAMPAIGN_MANAGE)
+  async archiveCampaign(
+    @Param('campaignId') campaignId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archiveCampaign(campaignId, tenantId),
+      'EDUCATION_PLATFORM_CAMPAIGN_ARCHIVED',
+      'CRM campaign archived',
     );
   }
 

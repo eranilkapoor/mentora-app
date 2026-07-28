@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -46,10 +47,25 @@ export class AdmissionsController {
   @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
   async list(
     @Query('tenantId') tenantId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('priority') priority?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
   ) {
     return successResponse(
-      await this.service.list(tenantId, status),
+      await this.service.list({
+        limit,
+        page,
+        priority,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'CRM_ADMISSIONS_FETCHED',
       'CRM admissions fetched',
     );
@@ -65,6 +81,19 @@ export class AdmissionsController {
       await this.service.update(req.user.sub, recordId, dto),
       'CRM_ADMISSION_UPDATED',
       'CRM admission updated',
+    );
+  }
+  @Delete(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async archive(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archive(req.user.sub, recordId, tenantId),
+      'CRM_ADMISSION_ARCHIVED',
+      'CRM admission archived',
     );
   }
   @Post(':recordId/complete')

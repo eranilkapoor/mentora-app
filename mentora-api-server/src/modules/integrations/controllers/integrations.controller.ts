@@ -46,4 +46,17 @@ export class IntegrationsController {
       'CRM integration provider updated',
     );
   }
+
+  @Get('providers/:providerKey/test')
+  @Permissions(Permission.CRM_MODULE_RECORD_VIEW)
+  testProvider(
+    @Param('providerKey') providerKey: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      this.service.testProvider(tenantId, providerKey),
+      'CRM_INTEGRATION_PROVIDER_TESTED',
+      'CRM integration provider tested',
+    );
+  }
 }

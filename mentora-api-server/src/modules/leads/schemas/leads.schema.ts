@@ -93,7 +93,7 @@ export class Lead {
   temperature!: string;
 
   @Prop({
-    enum: ['new', 'open', 'won', 'lost', 'duplicate'],
+    enum: ['new', 'open', 'won', 'lost', 'duplicate', 'archived'],
     default: 'new',
     index: true,
   })

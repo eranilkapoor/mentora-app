@@ -10,6 +10,7 @@ import {
   CreateWorkflowRuleDto,
   ExecuteWorkflowDto,
   RetryWorkflowExecutionDto,
+  UpdateWorkflowRuleDto,
 } from '../dto/workflows.dto';
 import {
   WorkflowExecution,
@@ -17,6 +18,18 @@ import {
   WorkflowRule,
   WorkflowRuleDocument,
 } from '../schemas/workflows.schema';
+
+type WorkflowListOptions = {
+  limit?: string;
+  moduleKey?: string;
+  page?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  tenantId: string;
+  trigger?: string;
+};
 
 @Injectable()
 export class WorkflowsService {
@@ -45,15 +58,75 @@ export class WorkflowsService {
     return rule;
   }
 
-  async listRules(tenantId: string, moduleKey?: string) {
-    return this.workflowRules
-      .find({
+  async listRules(options: WorkflowListOptions) {
+    const page = this.toPositiveInt(options.page, 1);
+    const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
+    const sortBy = this.resolveRuleSortBy(options.sortBy);
+    const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
+    const filter = this.buildWorkflowFilter(options);
+    const [items, total] = await Promise.all([
+      this.workflowRules
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.workflowRules.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
+  }
+
+  async updateRule(userId: string, ruleId: string, dto: UpdateWorkflowRuleDto) {
+    const update: Record<string, unknown> = { ...dto };
+    delete update.tenantId;
+    const rule = await this.workflowRules.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(ruleId),
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!rule) throw new NotFoundException('Workflow rule not found');
+    await this.auditService.write({
+      actorId: userId,
+      action: 'crm_workflow_rule.updated',
+      resource: 'crm_workflow_rule',
+      targetId: String(rule._id),
+      after: this.toAuditRecord(rule.toObject()),
+      metadata: { tenantId: dto.tenantId, moduleKey: rule.moduleKey },
+    });
+    return rule;
+  }
+
+  async archiveRule(userId: string, ruleId: string, tenantId: string) {
+    const rule = await this.workflowRules.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(ruleId),
         tenantId: toTenantObjectId(tenantId),
-        ...(moduleKey ? { moduleKey } : {}),
-      })
-      .sort({ priority: -1, createdAt: -1 })
-      .limit(100)
-      .lean();
+      },
+      { $set: { status: 'archived' } },
+      { new: true },
+    );
+    if (!rule) throw new NotFoundException('Workflow rule not found');
+    await this.auditService.write({
+      actorId: userId,
+      action: 'crm_workflow_rule.archived',
+      resource: 'crm_workflow_rule',
+      targetId: String(rule._id),
+      after: this.toAuditRecord(rule.toObject()),
+      metadata: { tenantId, moduleKey: rule.moduleKey },
+    });
+    return rule;
   }
 
   async execute(userId: string, dto: ExecuteWorkflowDto) {
@@ -107,15 +180,31 @@ export class WorkflowsService {
     return { matchedRules: rules.length, executions };
   }
 
-  async listExecutions(tenantId: string, moduleKey?: string) {
-    return this.workflowExecutions
-      .find({
-        tenantId: toTenantObjectId(tenantId),
-        ...(moduleKey ? { moduleKey } : {}),
-      })
-      .sort({ executedAt: -1 })
-      .limit(100)
-      .lean();
+  async listExecutions(options: WorkflowListOptions) {
+    const page = this.toPositiveInt(options.page, 1);
+    const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
+    const sortBy = this.resolveExecutionSortBy(options.sortBy);
+    const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
+    const filter = this.buildWorkflowFilter(options);
+    const [items, total] = await Promise.all([
+      this.workflowExecutions
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.workflowExecutions.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
   }
 
   async retryExecution(
@@ -154,5 +243,53 @@ export class WorkflowsService {
   private toAuditRecord(value: unknown): Record<string, unknown> | null {
     if (!value || typeof value !== 'object') return null;
     return JSON.parse(JSON.stringify(value)) as Record<string, unknown>;
+  }
+
+  private buildWorkflowFilter(options: WorkflowListOptions) {
+    const filter: Record<string, unknown> = {
+      tenantId: toTenantObjectId(options.tenantId),
+      ...(options.moduleKey ? { moduleKey: options.moduleKey } : {}),
+      ...(options.status ? { status: options.status } : {}),
+      ...(options.trigger ? { trigger: options.trigger } : {}),
+    };
+    const search = options.search?.trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { moduleKey: { $regex: search, $options: 'i' } },
+        { trigger: { $regex: search, $options: 'i' } },
+      ];
+    }
+    return filter;
+  }
+
+  private resolveRuleSortBy(value?: string) {
+    const allowed = new Set([
+      'createdAt',
+      'moduleKey',
+      'name',
+      'priority',
+      'status',
+      'trigger',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'priority';
+  }
+
+  private resolveExecutionSortBy(value?: string) {
+    const allowed = new Set([
+      'attempt',
+      'createdAt',
+      'executedAt',
+      'moduleKey',
+      'status',
+      'trigger',
+    ]);
+    return value && allowed.has(value) ? value : 'executedAt';
+  }
+
+  private toPositiveInt(value: string | undefined, fallback: number) {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 }

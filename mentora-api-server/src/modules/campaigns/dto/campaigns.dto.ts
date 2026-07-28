@@ -67,3 +67,48 @@ export class UpdateCampaignMetricsDto {
   @IsObject()
   roi?: Record<string, unknown>;
 }
+
+export class UpdateCampaignDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsIn(['email', 'sms', 'whatsapp', 'push', 'ads', 'landing_page'])
+  channel?: string;
+
+  @IsOptional()
+  @IsIn(['draft', 'scheduled', 'running', 'completed', 'paused', 'archived'])
+  status?: string;
+
+  @IsOptional()
+  @IsObject()
+  metrics?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  audience?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  utm?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsArray()
+  variants?: Record<string, unknown>[];
+
+  @IsOptional()
+  @IsArray()
+  dripSteps?: Record<string, unknown>[];
+
+  @IsOptional()
+  @IsObject()
+  roi?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsDateString()
+  scheduledAt?: string;
+}

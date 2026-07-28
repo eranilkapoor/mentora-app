@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Post,
@@ -38,10 +39,25 @@ export class InterviewsController {
   }
   @Get() @Permissions(Permission.CRM_MODULE_RECORD_VIEW) async list(
     @Query('tenantId') tenantId: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+    @Query('search') search?: string,
     @Query('status') status?: string,
+    @Query('priority') priority?: string,
+    @Query('sortBy') sortBy?: string,
+    @Query('sortOrder') sortOrder?: string,
   ) {
     return successResponse(
-      await this.service.list(tenantId, status),
+      await this.service.list({
+        limit,
+        page,
+        priority,
+        search,
+        sortBy,
+        sortOrder,
+        status,
+        tenantId,
+      }),
       'CRM_INTERVIEWS_FETCHED',
       'CRM interviews fetched',
     );
@@ -57,6 +73,19 @@ export class InterviewsController {
       await this.service.update(req.user.sub, recordId, dto),
       'CRM_INTERVIEW_UPDATED',
       'CRM interview updated',
+    );
+  }
+  @Delete(':recordId')
+  @Permissions(Permission.CRM_MODULE_RECORD_MANAGE)
+  async archive(
+    @Req() req: AuthenticatedRequest,
+    @Param('recordId') recordId: string,
+    @Query('tenantId') tenantId: string,
+  ) {
+    return successResponse(
+      await this.service.archive(req.user.sub, recordId, tenantId),
+      'CRM_INTERVIEW_ARCHIVED',
+      'CRM interview archived',
     );
   }
   @Post(':recordId/complete')

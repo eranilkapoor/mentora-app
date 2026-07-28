@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
@@ -17,6 +18,7 @@ import { successResponse } from '@/common/utils/response.util';
 import { JwtAuthGuard } from '@/modules/auth/guards/jwt-auth.guard';
 import { RolesGuard } from '@/modules/auth/guards/roles.guard';
 import {
+  AdminCreateSupportTicketDto,
   AdminListSupportTicketsDto,
   AdminReplySupportTicketDto,
   UpdateSupportTicketStatusDto,
@@ -35,6 +37,18 @@ export class AdminSupportTicketController {
       await this.service.listAllTickets(query),
       SuccessCode.SUPPORT_TICKETS_FETCHED,
       'Support tickets fetched',
+    );
+  }
+
+  @Post()
+  async createTicket(
+    @Req() req: AuthenticatedRequest,
+    @Body() dto: AdminCreateSupportTicketDto,
+  ) {
+    return successResponse(
+      await this.service.createAdminTicket(req.user.sub, dto),
+      SuccessCode.SUPPORT_TICKET_CREATED,
+      'Support ticket created',
     );
   }
 
@@ -60,6 +74,15 @@ export class AdminSupportTicketController {
       await this.service.updateTicketStatus(ticketId, dto),
       SuccessCode.SUPPORT_TICKET_UPDATED,
       'Support ticket status updated',
+    );
+  }
+
+  @Delete(':ticketId')
+  async closeTicket(@Param('ticketId') ticketId: string) {
+    return successResponse(
+      await this.service.updateTicketStatus(ticketId, { status: 'closed' }),
+      SuccessCode.SUPPORT_TICKET_UPDATED,
+      'Support ticket closed',
     );
   }
 }

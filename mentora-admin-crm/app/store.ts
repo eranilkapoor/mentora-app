@@ -62,7 +62,8 @@ export type LoginCredentials = {
 };
 
 export type TenantDraft = {
-  code: string;
+  code?: string;
+  id?: string;
   name: string;
   primaryDomain?: string;
   type: string;
@@ -149,16 +150,164 @@ export type ModuleRecordDraft = {
   payload: Record<string, string>;
 };
 
+export type ModuleRecordListParams = {
+  limit?: number;
+  moduleKey: string;
+  page?: number;
+  priority?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: "asc" | "desc";
+  status?: string;
+  tenantId: string;
+};
+
 const dedicatedCrmRoutes: Record<string, string> = {
   admissions: "/admissions",
+  applications: "/applications",
   "call-center": "/call-center",
+  campaigns: "/campaigns",
+  communications: "/communications",
+  documents: "/documents",
+  emails: "/communications",
   events: "/events",
   "field-force": "/field-force",
   finance: "/finance-ledgers",
   interview: "/interviews",
+  leads: "/leads",
+  automation: "/workflows/rules",
+  reports: "/reports/definitions",
   scholarship: "/scholarships",
+  support: "/admin/support/tickets",
+  sms: "/communications",
+  tasks: "/tasks",
   whatsapp: "/whatsapp",
 };
+
+const dedicatedCrmUpdateMethods: Record<string, "PATCH" | "POST" | "PUT"> = {
+  admissions: "POST",
+  "call-center": "POST",
+  events: "POST",
+  "field-force": "POST",
+  finance: "POST",
+  interview: "POST",
+  scholarship: "POST",
+  support: "PATCH",
+  whatsapp: "POST",
+};
+
+function toDedicatedCrmPayload(draft: ModuleRecordDraft) {
+  const body = {
+    tenantId: draft.tenantId,
+    title: draft.title,
+    description: draft.description,
+    status: draft.status,
+    priority: draft.priority,
+    dueAt: draft.dueAt,
+    payload: draft.payload,
+  };
+
+  if (draft.moduleKey === "leads") {
+    const [firstName, ...lastNameParts] = draft.title.trim().split(/\s+/);
+    return {
+      tenantId: draft.tenantId,
+      firstName: firstName || "New",
+      lastName: lastNameParts.join(" ") || "Lead",
+      customFields: {
+        description: draft.description,
+        priority: draft.priority,
+        source: "admin-crm",
+        ...(draft.payload ?? {}),
+      },
+      nextFollowUpAt: draft.dueAt || undefined,
+      status:
+        draft.status === "archived"
+          ? "archived"
+          : draft.status === "closed"
+            ? "lost"
+            : draft.status === "completed"
+              ? "won"
+              : draft.status === "in_progress"
+                ? "open"
+                : "new",
+    };
+  }
+
+  if (draft.moduleKey === "applications") {
+    return {
+      tenantId: draft.tenantId,
+      courseOffering: draft.title || "Mentora Program Application",
+      applicantProfile: {
+        source: "admin-crm",
+        summary: draft.description,
+        priority: draft.priority,
+        ...(draft.payload ?? {}),
+      },
+      formResponses: {
+        dueAt: draft.dueAt,
+      },
+      status:
+        draft.status === "archived"
+          ? "withdrawn"
+          : draft.status === "completed"
+            ? "admission_confirmed"
+            : draft.status === "in_progress"
+              ? "under_review"
+              : "draft",
+    };
+  }
+
+  if (draft.moduleKey === "documents") {
+    return {
+      tenantId: draft.tenantId,
+      category: draft.payload.category || "other",
+      entityId: draft.payload.entityId || "000000000000000000000000",
+      entityType: draft.payload.entityType || "application",
+      mimeType: draft.payload.mimeType || "application/pdf",
+      name: draft.title || "CRM document",
+      status:
+        draft.status === "completed"
+          ? "verified"
+          : draft.status === "archived"
+            ? "archived"
+            : "submitted",
+      url:
+        draft.payload.url ||
+        "https://cdn.mentora.test/documents/admin-upload-placeholder.pdf",
+      verification: {
+        note: draft.description,
+        source: "admin-crm",
+      },
+    };
+  }
+
+  if (["communications", "emails", "sms"].includes(draft.moduleKey)) {
+    return {
+      tenantId: draft.tenantId,
+      channel:
+        draft.moduleKey === "emails"
+          ? "email"
+          : draft.moduleKey === "sms"
+            ? "sms"
+            : draft.payload.channel || "in_app",
+      content: draft.description || draft.payload.content || draft.title,
+      direction: draft.payload.direction || "outbound",
+      entityId: draft.payload.entityId || "000000000000000000000000",
+      entityType: draft.payload.entityType || "general",
+      status:
+        draft.status === "archived"
+          ? "archived"
+          : draft.status === "completed"
+            ? "delivered"
+            : draft.status === "failed"
+              ? "failed"
+              : "queued",
+      subject: draft.title,
+    };
+  }
+
+  return body;
+}
 
 async function getJson(path: string) {
   const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
@@ -177,7 +326,11 @@ async function getJson(path: string) {
   return response.json();
 }
 
-async function sendJson(path: string, method: "POST" | "PUT", body: unknown) {
+async function sendJson(
+  path: string,
+  method: "PATCH" | "POST" | "PUT",
+  body: unknown,
+) {
   const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
     body: JSON.stringify(body),
     credentials: "include",
@@ -186,6 +339,24 @@ async function sendJson(path: string, method: "POST" | "PUT", body: unknown) {
       "Content-Type": "application/json",
     },
     method,
+  });
+
+  if (!response.ok) {
+    throw new Error(`Request failed: ${response.status}`);
+  }
+
+  return response.json();
+}
+
+async function deleteJson(path: string) {
+  const response = await fetch(`${apiBaseUrl}/api/v1${path}`, {
+    credentials: "include",
+    headers: crmAccessToken
+      ? {
+          Authorization: `Bearer ${crmAccessToken}`,
+        }
+      : undefined,
+    method: "DELETE",
   });
 
   if (!response.ok) {
@@ -247,6 +418,13 @@ export const createTenant = createAsyncThunk(
   },
 );
 
+export const updateTenant = createAsyncThunk(
+  "crmWorkspace/updateTenant",
+  async (draft: TenantDraft & { id: string }) => {
+    return sendJson(`/tenants/${draft.id}`, "PUT", draft);
+  },
+);
+
 export const createTenantUser = createAsyncThunk(
   "crmWorkspace/createTenantUser",
   async (draft: TenantUserDraft) => {
@@ -256,23 +434,43 @@ export const createTenantUser = createAsyncThunk(
 
 export const loadModuleRecords = createAsyncThunk(
   "crmWorkspace/loadModuleRecords",
-  async ({ moduleKey, tenantId }: { moduleKey: string; tenantId: string }) => {
-    const records = await getJson(
-      `/module-records?tenantId=${encodeURIComponent(tenantId)}&moduleKey=${encodeURIComponent(moduleKey)}`,
-    );
+  async (params: ModuleRecordListParams) => {
+    const query = new URLSearchParams({
+      limit: String(params.limit ?? 10),
+      moduleKey: params.moduleKey,
+      page: String(params.page ?? 1),
+      tenantId: params.tenantId,
+    });
+    if (params.priority) query.set("priority", params.priority);
+    if (params.search) query.set("search", params.search);
+    if (params.sortBy) query.set("sortBy", params.sortBy);
+    if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+    if (params.status) query.set("status", params.status);
+    const records = await getJson(`/module-records?${query.toString()}`);
 
-    return { moduleKey, records };
+    return { moduleKey: params.moduleKey, records };
   },
 );
 
 export const loadDedicatedCrmRecords = createAsyncThunk(
   "crmWorkspace/loadDedicatedCrmRecords",
-  async ({ moduleKey, tenantId }: { moduleKey: string; tenantId: string }) => {
+  async (params: ModuleRecordListParams) => {
+    const { moduleKey, tenantId } = params;
     const route = dedicatedCrmRoutes[moduleKey];
     if (!route) throw new Error("Dedicated CRM route is not configured");
-    const records = await getJson(
-      `${route}?tenantId=${encodeURIComponent(tenantId)}`,
-    );
+    const query = new URLSearchParams({
+      limit: String(params.limit ?? 10),
+      page: String(params.page ?? 1),
+      tenantId,
+    });
+    if (params.search) query.set("search", params.search);
+    if (params.sortBy) query.set("sortBy", params.sortBy);
+    if (params.sortOrder) query.set("sortOrder", params.sortOrder);
+    if (params.status) query.set("status", params.status);
+    if (params.priority) query.set("priority", params.priority);
+    if (moduleKey === "emails") query.set("channel", "email");
+    if (moduleKey === "sms") query.set("channel", "sms");
+    const records = await getJson(`${route}?${query.toString()}`);
     return { moduleKey, records };
   },
 );
@@ -298,22 +496,58 @@ export const saveModuleRecord = createAsyncThunk(
   },
 );
 
+export const deleteModuleRecord = createAsyncThunk(
+  "crmWorkspace/deleteModuleRecord",
+  async ({
+    moduleKey,
+    recordId,
+    tenantId,
+  }: {
+    moduleKey: string;
+    recordId: string;
+    tenantId: string;
+  }) => {
+    const response = await deleteJson(
+      `/module-records/${recordId}?tenantId=${encodeURIComponent(tenantId)}`,
+    );
+    return { moduleKey, recordId, response };
+  },
+);
+
+export const deleteDedicatedCrmRecord = createAsyncThunk(
+  "crmWorkspace/deleteDedicatedCrmRecord",
+  async ({
+    moduleKey,
+    recordId,
+    tenantId,
+  }: {
+    moduleKey: string;
+    recordId: string;
+    tenantId: string;
+  }) => {
+    const route = dedicatedCrmRoutes[moduleKey];
+    if (!route) throw new Error("Dedicated CRM route is not configured");
+    const response = await deleteJson(
+      `${route}/${recordId}?tenantId=${encodeURIComponent(tenantId)}`,
+    );
+    return { moduleKey, recordId, response };
+  },
+);
+
 export const saveDedicatedCrmRecord = createAsyncThunk(
   "crmWorkspace/saveDedicatedCrmRecord",
   async (draft: ModuleRecordDraft) => {
     const route = dedicatedCrmRoutes[draft.moduleKey];
     if (!route) throw new Error("Dedicated CRM route is not configured");
-    const body = {
-      tenantId: draft.tenantId,
-      title: draft.title,
-      description: draft.description,
-      status: draft.status,
-      priority: draft.priority,
-      dueAt: draft.dueAt,
-      payload: draft.payload,
-    };
+    const body = toDedicatedCrmPayload(draft);
     const response = draft.id
-      ? await sendJson(`${route}/${draft.id}`, "POST", body)
+      ? await sendJson(
+          draft.moduleKey === "support"
+            ? `${route}/${draft.id}/status`
+            : `${route}/${draft.id}`,
+          dedicatedCrmUpdateMethods[draft.moduleKey] ?? "PUT",
+          draft.moduleKey === "support" ? { status: draft.status } : body,
+        )
       : await sendJson(route, "POST", body);
     return { draft, response };
   },
@@ -605,6 +839,23 @@ export const upsertIntegrationProvider = createAsyncThunk(
   },
 );
 
+export const testIntegrationProvider = createAsyncThunk(
+  "crmWorkspace/testIntegrationProvider",
+  async ({
+    providerKey,
+    tenantId,
+  }: {
+    providerKey: string;
+    tenantId: string;
+  }) => {
+    return getJson(
+      `/integrations/providers/${providerKey}/test?tenantId=${encodeURIComponent(
+        tenantId,
+      )}`,
+    );
+  },
+);
+
 export const loadSecurityPolicy = createAsyncThunk(
   "crmWorkspace/loadSecurityPolicy",
   async ({ tenantId }: { tenantId: string }) => {
@@ -857,6 +1108,17 @@ const crmWorkspaceSlice = createSlice({
         if (tenantId) state.activeTenantId = tenantId;
         state.error = null;
       })
+      .addCase(updateTenant.fulfilled, (state, action) => {
+        const tenant = normalizeApiObject(action.payload);
+        const tenantId = getRecordId(tenant);
+        const index = state.tenants.findIndex(
+          (item) => getRecordId(item) === tenantId,
+        );
+        if (index >= 0) {
+          state.tenants[index] = tenant;
+        }
+        state.error = null;
+      })
       .addCase(createTenantUser.fulfilled, (state, action) => {
         const data = normalizeApiObject(action.payload) as {
           membership?: unknown;
@@ -888,6 +1150,20 @@ const crmWorkspaceSlice = createSlice({
         }
 
         state.moduleRecords[moduleKey] = records;
+      })
+      .addCase(deleteModuleRecord.fulfilled, (state, action) => {
+        const records = state.moduleRecords[action.payload.moduleKey] ?? [];
+        state.moduleRecords[action.payload.moduleKey] = records.filter(
+          (item) => getRecordId(item) !== action.payload.recordId,
+        );
+        state.error = null;
+      })
+      .addCase(deleteDedicatedCrmRecord.fulfilled, (state, action) => {
+        const records = state.moduleRecords[action.payload.moduleKey] ?? [];
+        state.moduleRecords[action.payload.moduleKey] = records.filter(
+          (item) => getRecordId(item) !== action.payload.recordId,
+        );
+        state.error = null;
       })
       .addCase(saveDedicatedCrmRecord.fulfilled, (state, action) => {
         const record = normalizeApiObject(action.payload.response);
@@ -984,6 +1260,22 @@ const crmWorkspaceSlice = createSlice({
 
         state.error = null;
       })
+      .addCase(testIntegrationProvider.fulfilled, (state, action) => {
+        const provider = normalizeApiObject(action.payload);
+        const providerKey = getRecordProviderKey(provider);
+        const index = state.integrationProviders.findIndex(
+          (item) => getRecordProviderKey(item) === providerKey,
+        );
+
+        if (index >= 0) {
+          state.integrationProviders[index] = {
+            ...(state.integrationProviders[index] as Record<string, unknown>),
+            health: provider,
+          };
+        }
+
+        state.error = null;
+      })
       .addCase(loadSecurityPolicy.fulfilled, (state, action) => {
         state.securityPolicy = normalizeApiObject(action.payload);
         state.error = null;
@@ -1018,6 +1310,28 @@ function normalizeApiData(value: unknown): unknown[] {
     Array.isArray((value as { data?: unknown }).data)
   ) {
     return (value as { data: unknown[] }).data;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "data" in value &&
+    (value as { data?: unknown }).data &&
+    typeof (value as { data?: unknown }).data === "object" &&
+    "items" in ((value as { data: Record<string, unknown> }).data) &&
+    Array.isArray(
+      ((value as { data: Record<string, unknown> }).data as { items?: unknown })
+        .items,
+    )
+  ) {
+    return ((value as { data: { items: unknown[] } }).data).items;
+  }
+  if (
+    value &&
+    typeof value === "object" &&
+    "items" in value &&
+    Array.isArray((value as { items?: unknown }).items)
+  ) {
+    return (value as { items: unknown[] }).items;
   }
   return [];
 }

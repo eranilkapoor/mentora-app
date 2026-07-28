@@ -663,7 +663,9 @@ export class PaymentsService {
 
   adminListPayments(query: AdminListPaymentsDto) {
     return this.paymentRepo.findAdminPayments({
+      currency: query.currency,
       orderId: query.orderId,
+      search: query.search,
       userId: query.userId,
       status: query.status,
       gateway: query.gateway,
@@ -673,6 +675,8 @@ export class PaymentsService {
       toDate: query.toDate ? new Date(query.toDate) : undefined,
       page: query.page ?? 1,
       limit: query.limit ?? 20,
+      sortBy: query.sortBy,
+      sortOrder: query.sortOrder,
     });
   }
 

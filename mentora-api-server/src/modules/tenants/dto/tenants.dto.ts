@@ -36,6 +36,107 @@ export class CreateTenantDto {
   primaryDomain?: string;
 }
 
+export class UpdateTenantDto {
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsString()
+  code?: string;
+
+  @IsOptional()
+  @IsIn([
+    'university',
+    'college',
+    'school',
+    'coaching',
+    'edtech',
+    'study_abroad',
+    'training',
+  ])
+  type?: string;
+
+  @IsOptional()
+  @IsString()
+  primaryDomain?: string;
+}
+
+export class ListTenantsDto {
+  @IsOptional()
+  @IsString()
+  page?: string;
+
+  @IsOptional()
+  @IsString()
+  limit?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'suspended'])
+  status?: string;
+
+  @IsOptional()
+  @IsIn([
+    'university',
+    'college',
+    'school',
+    'coaching',
+    'edtech',
+    'study_abroad',
+    'training',
+  ])
+  type?: string;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: string;
+}
+
+export class ListTenantUsersDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  page?: string;
+
+  @IsOptional()
+  @IsString()
+  limit?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsIn(EDUCATION_PLATFORM_USER_ROLES)
+  role?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsIn(['active', 'inactive', 'suspended'])
+  status?: string;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: string;
+}
+
 export class CreateBranchDto {
   @IsMongoId()
   tenantId!: string;

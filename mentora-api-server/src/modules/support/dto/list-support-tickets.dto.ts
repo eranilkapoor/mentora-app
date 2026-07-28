@@ -1,5 +1,5 @@
 import { Transform } from 'class-transformer';
-import { IsIn, IsInt, IsOptional, Max, Min } from 'class-validator';
+import { IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator';
 import {
   SUPPORT_TICKET_STATUSES,
   SupportTicketStatus,
@@ -28,4 +28,16 @@ export class ListSupportTicketsDto {
   @IsOptional()
   @IsIn(SUPPORT_TICKET_STATUSES)
   status?: SupportTicketStatus;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: 'asc' | 'desc';
 }

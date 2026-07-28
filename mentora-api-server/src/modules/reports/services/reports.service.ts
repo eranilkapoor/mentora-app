@@ -9,6 +9,7 @@ import { AdminAuditService } from '@/modules/admin/services/admin-audit.service'
 import {
   CreateReportDefinitionDto,
   CreateReportExportJobDto,
+  UpdateReportDefinitionDto,
 } from '../dto/reports.dto';
 import {
   ReportDefinition,
@@ -16,6 +17,17 @@ import {
   ReportExportJob,
   ReportExportJobDocument,
 } from '../schemas/reports.schema';
+
+type ReportListOptions = {
+  limit?: string;
+  moduleKey?: string;
+  page?: string;
+  search?: string;
+  sortBy?: string;
+  sortOrder?: string;
+  status?: string;
+  tenantId: string;
+};
 
 @Injectable()
 export class ReportsService {
@@ -44,15 +56,97 @@ export class ReportsService {
     return definition;
   }
 
-  async listDefinitions(tenantId: string, moduleKey?: string) {
-    return this.reportDefinitions
-      .find({
+  async listDefinitions(options: ReportListOptions) {
+    const page = this.toPositiveInt(options.page, 1);
+    const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
+    const sortBy = this.resolveDefinitionSortBy(options.sortBy);
+    const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
+    const filter: Record<string, unknown> = {
+      tenantId: toTenantObjectId(options.tenantId),
+      ...(options.moduleKey ? { moduleKey: options.moduleKey } : {}),
+      ...(options.status ? { status: options.status } : {}),
+    };
+    const search = options.search?.trim();
+    if (search) {
+      filter.$or = [
+        { name: { $regex: search, $options: 'i' } },
+        { moduleKey: { $regex: search, $options: 'i' } },
+        { reportType: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.reportDefinitions
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.reportDefinitions.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
+  }
+
+  async updateDefinition(
+    userId: string,
+    definitionId: string,
+    dto: UpdateReportDefinitionDto,
+  ) {
+    const update: Record<string, unknown> = { ...dto };
+    delete update.tenantId;
+    const definition = await this.reportDefinitions.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(definitionId),
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!definition)
+      throw new NotFoundException('CRM report definition not found');
+    await this.auditService.write({
+      actorId: userId,
+      action: 'crm_report_definition.updated',
+      resource: 'crm_report_definition',
+      targetId: String(definition._id),
+      after: this.toAuditRecord(definition.toObject()),
+      metadata: { tenantId: dto.tenantId },
+    });
+    return definition;
+  }
+
+  async archiveDefinition(
+    userId: string,
+    definitionId: string,
+    tenantId: string,
+  ) {
+    const definition = await this.reportDefinitions.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(definitionId),
         tenantId: toTenantObjectId(tenantId),
-        ...(moduleKey ? { moduleKey } : {}),
-      })
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .lean();
+      },
+      { $set: { status: 'archived' } },
+      { new: true },
+    );
+    if (!definition)
+      throw new NotFoundException('CRM report definition not found');
+    await this.auditService.write({
+      actorId: userId,
+      action: 'crm_report_definition.archived',
+      resource: 'crm_report_definition',
+      targetId: String(definition._id),
+      after: this.toAuditRecord(definition.toObject()),
+      metadata: { tenantId },
+    });
+    return definition;
   }
 
   async createExportJob(userId: string, dto: CreateReportExportJobDto) {
@@ -97,12 +191,56 @@ export class ReportsService {
     return job;
   }
 
-  async listExportJobs(tenantId: string) {
-    return this.reportExportJobs
-      .find({ tenantId: toTenantObjectId(tenantId) })
-      .sort({ createdAt: -1 })
-      .limit(100)
-      .lean();
+  async listExportJobs(options: ReportListOptions) {
+    const page = this.toPositiveInt(options.page, 1);
+    const limit = Math.min(this.toPositiveInt(options.limit, 10), 100);
+    const sortBy = this.resolveExportSortBy(options.sortBy);
+    const sortOrder = options.sortOrder === 'asc' ? 1 : -1;
+    const filter: Record<string, unknown> = {
+      tenantId: toTenantObjectId(options.tenantId),
+      ...(options.status ? { status: options.status } : {}),
+    };
+    const [items, total] = await Promise.all([
+      this.reportExportJobs
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.reportExportJobs.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
+  }
+
+  private resolveDefinitionSortBy(value?: string) {
+    const allowed = new Set([
+      'createdAt',
+      'moduleKey',
+      'name',
+      'reportType',
+      'status',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private resolveExportSortBy(value?: string) {
+    const allowed = new Set(['completedAt', 'createdAt', 'format', 'status']);
+    return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private toPositiveInt(value: string | undefined, fallback: number) {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 
   private toAuditRecord(value: unknown): Record<string, unknown> | null {

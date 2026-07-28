@@ -1587,11 +1587,50 @@ select:focus-visible {
   --bs-table-hover-color: var(--ink);
 }
 
+.empty-table-cell {
+  padding: 34px 18px !important;
+}
+
+.empty-state-inline {
+  align-items: center;
+  color: var(--muted);
+  display: grid;
+  gap: 8px;
+  justify-items: center;
+  margin: 0 auto;
+  max-width: 420px;
+  text-align: center;
+}
+
+.empty-state-inline .app-icon {
+  height: 38px;
+  min-width: 38px;
+  width: 38px;
+}
+
+.empty-state-inline strong {
+  color: var(--ink);
+  font-size: 15px;
+}
+
+.empty-state-inline span {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .record-grid {
   display: grid;
   gap: 12px;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   padding: 12px;
+}
+
+.empty-grid-state {
+  background: var(--surface);
+  border: 1px dashed var(--line-strong);
+  border-radius: 8px;
+  grid-column: 1 / -1;
+  padding: 34px 18px;
 }
 
 .record-card {

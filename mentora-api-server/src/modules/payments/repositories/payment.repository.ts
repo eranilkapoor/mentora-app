@@ -225,7 +225,9 @@ export class PaymentRepository {
   }
 
   async findAdminPayments(params: {
+    currency?: string;
     orderId?: string;
+    search?: string;
     userId?: string;
     status?: PaymentStatus;
     gateway?: PaymentGateway;
@@ -235,11 +237,28 @@ export class PaymentRepository {
     toDate?: Date;
     page: number;
     limit: number;
+    sortBy?: string;
+    sortOrder?: 'asc' | 'desc';
   }) {
     const filter: Record<string, unknown> = {};
 
     if (params.orderId) {
       filter.orderId = params.orderId;
+    }
+
+    const search = params.search?.trim();
+    if (search) {
+      filter.$or = [
+        { orderId: { $regex: search, $options: 'i' } },
+        { gatewayOrderId: { $regex: search, $options: 'i' } },
+        { gatewayPaymentId: { $regex: search, $options: 'i' } },
+        { couponCode: { $regex: search, $options: 'i' } },
+        { source: { $regex: search, $options: 'i' } },
+        { reason: { $regex: search, $options: 'i' } },
+        { 'customer.name': { $regex: search, $options: 'i' } },
+        { 'customer.email': { $regex: search, $options: 'i' } },
+        { 'customer.phone': { $regex: search, $options: 'i' } },
+      ];
     }
 
     if (params.userId) {
@@ -262,6 +281,10 @@ export class PaymentRepository {
       filter.purpose = params.purpose;
     }
 
+    if (params.currency) {
+      filter.currency = params.currency.toUpperCase();
+    }
+
     if (params.fromDate || params.toDate) {
       filter.createdAt = {};
 
@@ -275,11 +298,13 @@ export class PaymentRepository {
     }
 
     const skip = (params.page - 1) * params.limit;
+    const sortBy = this.resolveAdminSortBy(params.sortBy);
+    const sortOrder = params.sortOrder === 'asc' ? 1 : -1;
 
     const [items, total] = await Promise.all([
       this.model
         .find(filter)
-        .sort({ createdAt: -1 })
+        .sort({ [sortBy]: sortOrder, _id: -1 })
         .skip(skip)
         .limit(params.limit)
         .lean()
@@ -295,6 +320,7 @@ export class PaymentRepository {
         total,
         totalPages: Math.ceil(total / params.limit),
       },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
     };
   }
 
@@ -442,5 +468,22 @@ export class PaymentRepository {
         },
       ])
       .exec();
+  }
+
+  private resolveAdminSortBy(value?: string) {
+    const allowed = new Set([
+      'amount',
+      'createdAt',
+      'currency',
+      'gateway',
+      'initiatedAt',
+      'netAmount',
+      'paidAt',
+      'purpose',
+      'refundedAt',
+      'status',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'createdAt';
   }
 }

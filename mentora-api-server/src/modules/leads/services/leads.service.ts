@@ -19,9 +19,11 @@ import {
   CreateLeadDto,
   FindLeadDuplicatesDto,
   ImportLeadsDto,
+  ListLeadsDto,
   MergeLeadsDto,
   ScoreLeadDto,
   TransferLeadDto,
+  UpdateLeadDto,
   UpdateLeadTagsDto,
 } from '../dto/leads.dto';
 import {
@@ -74,12 +76,117 @@ export class LeadsService {
     return lead;
   }
 
-  async listLeads(tenantId: string) {
-    return this.leads
-      .find({ tenantId: toTenantObjectId(tenantId) })
-      .sort({ createdAt: -1 })
-      .limit(50)
-      .lean();
+  async listLeads(query: ListLeadsDto) {
+    const page = this.toPositiveInt(query.page, 1);
+    const limit = Math.min(this.toPositiveInt(query.limit, 10), 100);
+    const sortBy = this.resolveLeadSortBy(query.sortBy);
+    const sortOrder = query.sortOrder === 'asc' ? 1 : -1;
+    const filter: FilterQuery<LeadDocument> = {
+      tenantId: toTenantObjectId(query.tenantId),
+      ...(query.assignedTo
+        ? { assignedTo: toRequiredObjectId(query.assignedTo) }
+        : {}),
+      ...(query.branchId
+        ? { branchId: toRequiredObjectId(query.branchId) }
+        : {}),
+      ...(query.sourceId
+        ? { sourceId: toRequiredObjectId(query.sourceId) }
+        : {}),
+      ...(query.stageId ? { stageId: toRequiredObjectId(query.stageId) } : {}),
+      ...(query.status ? { status: query.status } : {}),
+      ...(query.tag ? { tags: query.tag.trim().toLowerCase() } : {}),
+      ...(query.temperature ? { temperature: query.temperature } : {}),
+    };
+    const search = query.search?.trim();
+    if (search) {
+      filter.$or = [
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } },
+        { email: { $regex: search, $options: 'i' } },
+        { phone: { $regex: search, $options: 'i' } },
+        { city: { $regex: search, $options: 'i' } },
+        { state: { $regex: search, $options: 'i' } },
+        { interestedPrograms: { $regex: search, $options: 'i' } },
+        { tags: { $regex: search, $options: 'i' } },
+      ];
+    }
+    const [items, total] = await Promise.all([
+      this.leads
+        .find(filter)
+        .sort({ [sortBy]: sortOrder, _id: -1 })
+        .skip((page - 1) * limit)
+        .limit(limit)
+        .lean(),
+      this.leads.countDocuments(filter),
+    ]);
+    return {
+      items,
+      pagination: {
+        limit,
+        page,
+        total,
+        totalPages: Math.max(1, Math.ceil(total / limit)),
+      },
+      sort: { sortBy, sortOrder: sortOrder === 1 ? 'asc' : 'desc' },
+    };
+  }
+
+  async updateLead(userId: string, leadId: string, dto: UpdateLeadDto) {
+    const update: Record<string, unknown> = {
+      ...dto,
+      ...(dto.branchId ? { branchId: toRequiredObjectId(dto.branchId) } : {}),
+      ...(dto.sourceId ? { sourceId: toRequiredObjectId(dto.sourceId) } : {}),
+      ...(dto.stageId ? { stageId: toRequiredObjectId(dto.stageId) } : {}),
+      ...(dto.assignedTo
+        ? { assignedTo: toRequiredObjectId(dto.assignedTo) }
+        : {}),
+      ...(dto.tags ? { tags: this.normalizeTags(dto.tags) } : {}),
+      ...(dto.nextFollowUpAt
+        ? { nextFollowUpAt: new Date(dto.nextFollowUpAt) }
+        : {}),
+    };
+    delete update.tenantId;
+    const lead = await this.leads.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(leadId),
+        tenantId: toTenantObjectId(dto.tenantId),
+      },
+      { $set: update },
+      { new: true, runValidators: true },
+    );
+    if (!lead) throw new NotFoundException('Education CRM lead not found');
+    await this.addLeadActivity(userId, leadId, {
+      tenantId: dto.tenantId,
+      type: 'note_added',
+      subject: 'Lead updated',
+      metadata: { fields: Object.keys(update) },
+    });
+    await this.writeAudit(userId, 'crm_lead.updated', dto.tenantId, lead._id, {
+      after: this.toAuditRecord(lead.toObject()),
+      metadata: { fields: Object.keys(update) },
+    });
+    return lead;
+  }
+
+  async archiveLead(userId: string, leadId: string, tenantId: string) {
+    const lead = await this.leads.findOneAndUpdate(
+      {
+        _id: toRequiredObjectId(leadId),
+        tenantId: toTenantObjectId(tenantId),
+      },
+      { $set: { status: 'archived' } },
+      { new: true, runValidators: true },
+    );
+    if (!lead) throw new NotFoundException('Education CRM lead not found');
+    await this.addLeadActivity(userId, leadId, {
+      tenantId,
+      type: 'note_added',
+      subject: 'Lead archived',
+    });
+    await this.writeAudit(userId, 'crm_lead.archived', tenantId, lead._id, {
+      after: this.toAuditRecord(lead.toObject()),
+    });
+    return lead;
   }
 
   async updateTags(userId: string, leadId: string, dto: UpdateLeadTagsDto) {
@@ -509,7 +616,8 @@ export class LeadsService {
   }
 
   async exportLeads(userId: string, tenantId: string) {
-    const leads = await this.listLeads(tenantId);
+    const leadResult = await this.listLeads({ tenantId, limit: '1000' });
+    const leads = leadResult.items;
     const headers = [
       'id',
       'firstName',
@@ -593,6 +701,25 @@ export class LeadsService {
           .filter((tag) => tag.length > 0),
       ),
     ];
+  }
+
+  private resolveLeadSortBy(value?: string) {
+    const allowed = new Set([
+      'createdAt',
+      'lastContactedAt',
+      'nextFollowUpAt',
+      'score',
+      'slaDueAt',
+      'status',
+      'temperature',
+      'updatedAt',
+    ]);
+    return value && allowed.has(value) ? value : 'createdAt';
+  }
+
+  private toPositiveInt(value: string | undefined, fallback: number) {
+    const parsed = Number.parseInt(value ?? '', 10);
+    return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
   }
 
   private csvValue(value: unknown): string {

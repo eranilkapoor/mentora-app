@@ -51,3 +51,39 @@ export class VerifyCrmDocumentDto {
   @IsObject()
   ocrResult?: Record<string, unknown>;
 }
+
+export class UpdateCrmDocumentDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @IsOptional()
+  @IsIn(['identity', 'academic', 'payment', 'consent', 'other'])
+  category?: string;
+
+  @IsOptional()
+  @IsString()
+  url?: string;
+
+  @IsOptional()
+  @IsString()
+  mimeType?: string;
+
+  @IsOptional()
+  @IsNumber()
+  size?: number;
+
+  @IsOptional()
+  @IsIn([
+    'required',
+    'submitted',
+    'verified',
+    'rejected',
+    'expired',
+    'archived',
+  ])
+  status?: string;
+}

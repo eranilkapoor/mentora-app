@@ -92,6 +92,140 @@ export class CreateLeadDto {
   customFields?: Record<string, unknown>;
 }
 
+export class ListLeadsDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  page?: string;
+
+  @IsOptional()
+  @IsString()
+  limit?: string;
+
+  @IsOptional()
+  @IsString()
+  search?: string;
+
+  @IsOptional()
+  @IsIn(['new', 'open', 'won', 'lost', 'duplicate', 'archived'])
+  status?: string;
+
+  @IsOptional()
+  @IsIn(['cold', 'warm', 'hot'])
+  temperature?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  assignedTo?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  sourceId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  stageId?: string;
+
+  @IsOptional()
+  @IsString()
+  tag?: string;
+
+  @IsOptional()
+  @IsString()
+  sortBy?: string;
+
+  @IsOptional()
+  @IsIn(['asc', 'desc'])
+  sortOrder?: string;
+}
+
+export class UpdateLeadDto {
+  @IsMongoId()
+  tenantId!: string;
+
+  @IsOptional()
+  @IsString()
+  firstName?: string;
+
+  @IsOptional()
+  @IsString()
+  lastName?: string;
+
+  @IsOptional()
+  @IsEmail()
+  email?: string;
+
+  @IsOptional()
+  @IsString()
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @IsOptional()
+  @IsString()
+  state?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  sourceId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  stageId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  branchId?: string;
+
+  @IsOptional()
+  @IsMongoId()
+  assignedTo?: string;
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  interestedPrograms?: string[];
+
+  @IsOptional()
+  @IsArray()
+  @IsString({ each: true })
+  tags?: string[];
+
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(100)
+  score?: number;
+
+  @IsOptional()
+  @IsIn(['cold', 'warm', 'hot'])
+  temperature?: string;
+
+  @IsOptional()
+  @IsIn(['new', 'open', 'won', 'lost', 'duplicate', 'archived'])
+  status?: string;
+
+  @IsOptional()
+  @IsDateString()
+  nextFollowUpAt?: string;
+
+  @IsOptional()
+  @IsObject()
+  utm?: Record<string, unknown>;
+
+  @IsOptional()
+  @IsObject()
+  customFields?: Record<string, unknown>;
+}
+
 export class UpdateLeadTagsDto {
   @IsMongoId()
   tenantId!: string;
