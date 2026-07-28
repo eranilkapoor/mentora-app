@@ -810,7 +810,7 @@ export class MasterSeederService {
     const allBranchIds = branches.map((branch) => branch._id);
 
     for (const [index, role] of EDUCATION_PLATFORM_USER_ROLES.entries()) {
-      const emails = `${tenantSlug}.${role.replace(/_/g, '.')}@mentora.test`;
+      const email = `${tenantSlug}.${role.replace(/_/g, '.')}@mentora.test`;
       const branchIds = this.resolveSeededRoleBranchIds(
         role,
         allBranchIds,
@@ -819,10 +819,10 @@ export class MasterSeederService {
       const systemRole = this.mapCrmRoleToAppRole(role);
 
       const user = await this.userModel.findOneAndUpdate(
-        { emails },
+        { email },
         {
           $set: {
-            emails,
+            email,
             status: Status.ACTIVE,
             isEmailVerified: true,
             isPhoneVerified: false,
@@ -832,7 +832,7 @@ export class MasterSeederService {
             authAccounts: [
               {
                 provider: AuthProvider.EMAIL,
-                providerId: emails,
+                providerId: email,
                 passwordHash,
                 isVerified: true,
                 isPrimary: true,
@@ -860,7 +860,7 @@ export class MasterSeederService {
             settings: {
               seeded: true,
               defaultTenantContext: true,
-              loginEmail: emails,
+              loginEmail: email,
             },
             updatedAt: now,
           },
@@ -983,20 +983,7 @@ export class MasterSeederService {
     now: Date,
     branchName: string,
   ) {
-    const legacyAliasKeys = new Set([
-      'leads',
-      'applications',
-      'admissions',
-      'marketing-automation',
-      'communication',
-      'whatsapp',
-      'emails',
-      'mobile-app',
-      'payment',
-    ]);
-    const moduleKeys = EDUCATION_PLATFORM_MODULE_KEYS.filter(
-      (key) => !legacyAliasKeys.has(key),
-    );
+    const moduleKeys = EDUCATION_PLATFORM_MODULE_KEYS;
 
     await this.moduleRecordModel.bulkWrite(
       moduleKeys.map((moduleKey, index) => {
@@ -1062,7 +1049,7 @@ export class MasterSeederService {
     await this.userModel.updateMany(
       {
         'phone.phone': PLAY_PHONE_REVIEWER_PHONE,
-        emails: { $ne: PLAY_PHONE_REVIEWER_EMAIL },
+        email: { $ne: PLAY_PHONE_REVIEWER_EMAIL },
       },
       {
         $unset: { phone: '' },
@@ -1080,7 +1067,7 @@ export class MasterSeederService {
       .find({
         'phone.phone': { $in: profiles.map((profile) => profile.phone) },
       })
-      .select('emails phone.phone')
+      .select('email phone.phone')
       .lean();
 
     const phoneOwnerByNumber = new Map(
@@ -1096,10 +1083,10 @@ export class MasterSeederService {
 
         return {
           updateOne: {
-            filter: { emails: profile.emails },
+            filter: { email: profile.emails },
             update: {
               $set: {
-                emails: profile.emails,
+                email: profile.emails,
                 ...(canUsePhone
                   ? { phone: { countryCode: '91', phone: profile.phone } }
                   : {}),
@@ -1494,8 +1481,8 @@ export class MasterSeederService {
       PLAY_PHONE_REVIEWER_EMAIL,
     ];
     const users = await this.userModel
-      .find({ emails: { $in: seededEmails } })
-      .select('_id emails membership.tier')
+      .find({ email: { $in: seededEmails } })
+      .select('_id email membership.tier')
       .lean();
     const eligibleUsers = users.filter((user) => {
       const expectedTier = this.isPlayReviewerEmail(user.email)
@@ -1743,15 +1730,15 @@ export class MasterSeederService {
 
     const result = await this.userModel.bulkWrite(
       roles.map((role) => {
-        const emails = `${role}@mentora.test`;
+        const email = `${role}@mentora.test`;
         const isLearningUser = [AppRole.STUDENT, AppRole.PARENT].includes(role);
 
         return {
           updateOne: {
-            filter: { emails },
+            filter: { email },
             update: {
               $set: {
-                emails,
+                email,
                 status: Status.ACTIVE,
                 isEmailVerified: true,
                 isPhoneVerified: false,
@@ -1767,7 +1754,7 @@ export class MasterSeederService {
                 authAccounts: [
                   {
                     provider: AuthProvider.EMAIL,
-                    providerId: emails,
+                    providerId: email,
                     passwordHash,
                     isVerified: true,
                     isPrimary: true,
