@@ -1,4 +1,6 @@
-# Mentora Flow Plan
+# Mentora Mobile App Flow Plan
+
+This flow plan covers the student and parent mobile/web-app experience and its API flows. Admin CRM, tenant operations, admissions teams, campaigns, finance, reports, and business operations are documented separately in [CRM Flow Plan](CRM-FLOW-PLAN.md).
 
 ## Account Flows
 

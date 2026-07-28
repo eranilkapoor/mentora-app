@@ -98,7 +98,7 @@ export const FEATURE_SEEDS: Feature[] = [
 
   feature(
     FeatureKey.STUDENT_PROFILE,
-    'Student Profile',
+    'Students',
     FeatureCategory.PROFILE,
     'Create and manage student learning profiles.',
   ),

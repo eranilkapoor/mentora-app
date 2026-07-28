@@ -296,6 +296,7 @@ select:focus-visible {
 }
 
 .admin-shell {
+  --crm-shell-header-height: 64px;
   display: grid;
   grid-template-columns: 270px minmax(0, 1fr);
   min-height: 100vh;
@@ -322,11 +323,14 @@ select:focus-visible {
 .header-left {
   align-items: center;
   border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+  box-sizing: border-box;
   display: flex;
-  flex: 0 0 auto;
+  flex: 0 0 var(--crm-shell-header-height);
   gap: 10px;
+  height: var(--crm-shell-header-height);
   justify-content: space-between;
-  padding: 18px;
+  min-height: var(--crm-shell-header-height);
+  padding: 10px 18px;
 }
 
 .brand {
@@ -458,19 +462,6 @@ select:focus-visible {
   white-space: nowrap;
 }
 
-.menu-count {
-  align-items: center;
-  background: rgba(255, 255, 255, 0.14);
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 999px;
-  display: inline-flex;
-  font-size: 11px;
-  height: 22px;
-  justify-content: center;
-  min-width: 28px;
-  padding: 0 8px;
-}
-
 .menu-group ul {
   list-style: none;
   margin: 0;
@@ -502,13 +493,14 @@ select:focus-visible {
 }
 
 .sidebar-collapsed .header-left {
+  height: var(--crm-shell-header-height);
   justify-content: center;
-  padding: 16px 12px;
+  min-height: var(--crm-shell-header-height);
+  padding: 10px 12px;
 }
 
 .sidebar-collapsed .brand span:last-child,
 .sidebar-collapsed .menu-heading-title,
-.sidebar-collapsed .menu-count,
 .sidebar-collapsed .menu-heading::after,
 .sidebar-collapsed .menu-group ul button span:last-child {
   display: none;
@@ -585,9 +577,11 @@ select:focus-visible {
   align-items: center;
   background: var(--surface);
   border-bottom: 1px solid var(--line);
+  box-sizing: border-box;
   display: flex;
+  height: var(--crm-shell-header-height);
   justify-content: flex-end;
-  min-height: 58px;
+  min-height: var(--crm-shell-header-height);
   padding: 8px 24px;
   position: sticky;
   top: 0;
@@ -813,47 +807,71 @@ select:focus-visible {
 .icon-action,
 .logout-action {
   align-items: center;
+  border: 1px solid transparent;
   border-radius: 999px;
+  box-sizing: border-box;
   display: inline-flex;
   font-size: 12px;
   font-weight: 900;
   gap: 8px;
-  min-height: 36px;
-  padding: 7px 11px;
+  height: 38px;
+  justify-content: center;
+  line-height: 1;
+  min-height: 38px;
+  padding: 0 12px;
   text-transform: uppercase;
+  transition:
+    background-color 160ms ease,
+    border-color 160ms ease,
+    color 160ms ease,
+    filter 160ms ease;
   white-space: nowrap;
 }
 
 .icon-action {
   background: transparent;
-  border: 0;
   color: var(--brand);
   position: relative;
 }
 
 .icon-action:hover,
-.logout-action:hover,
+.logout-action:hover {
+  background: var(--brand-soft);
+  border-color: var(--brand-soft-line);
+  filter: brightness(0.98);
+}
+
 .context-switch-button:hover {
   filter: brightness(0.98);
   transform: translateY(-1px);
 }
 
+.icon-action svg,
+.logout-action svg {
+  flex: 0 0 auto;
+  height: 14px;
+  width: 14px;
+}
+
 .icon-action em {
+  align-items: center;
   background: var(--danger);
   border-radius: 999px;
   color: #ffffff;
+  display: inline-flex;
   font-size: 10px;
   font-style: normal;
   font-weight: 950;
+  height: 18px;
+  justify-content: center;
   line-height: 1;
   min-width: 18px;
-  padding: 4px 5px;
+  padding: 0 5px;
   text-align: center;
 }
 
 .logout-action {
   background: transparent;
-  border: 0;
   color: var(--danger);
 }
 

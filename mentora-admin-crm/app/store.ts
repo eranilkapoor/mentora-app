@@ -4,6 +4,7 @@ import {
   configureStore,
   createAsyncThunk,
   createSlice,
+  isRejected,
   type PayloadAction,
 } from "@reduxjs/toolkit";
 import {
@@ -118,6 +119,24 @@ function clearPersistedCrmSession() {
   window.localStorage.removeItem(crmSessionStorageKey);
 }
 
+function isUnauthorizedError(message?: string) {
+  return /\b(401|unauthorized|token expired|jwt expired)\b/i.test(
+    message ?? "",
+  );
+}
+
+function clearExpiredSession(state: CrmSessionState) {
+  state.activeContext = null;
+  state.activeId = "dashboard";
+  state.accessToken = "";
+  state.loggedInUser = null;
+  state.loginPassword = "";
+  state.loginError = "Your session expired. Please sign in again.";
+  state.toast = state.loginError;
+  setCrmAccessToken("");
+  clearPersistedCrmSession();
+}
+
 export type ModuleRecordDraft = {
   id?: string;
   tenantId?: string;
@@ -133,12 +152,12 @@ export type ModuleRecordDraft = {
 const dedicatedCrmRoutes: Record<string, string> = {
   admissions: "/admissions",
   "call-center": "/call-center",
-  "event-management": "/events",
-  "field-force-automation": "/field-force",
+  events: "/events",
+  "field-force": "/field-force",
   finance: "/finance-ledgers",
   interview: "/interviews",
   scholarship: "/scholarships",
-  "whatsapp-crm": "/whatsapp",
+  whatsapp: "/whatsapp",
 };
 
 async function getJson(path: string) {
@@ -756,6 +775,14 @@ const crmSessionSlice = createSlice({
           action.error.message ??
           "Login failed. Use seeded credentials or create a CRM user.";
         state.toast = state.loginError;
+      })
+      .addMatcher(isRejected, (state, action) => {
+        if (
+          action.type !== loginWithCredentials.rejected.type &&
+          isUnauthorizedError(action.error.message)
+        ) {
+          clearExpiredSession(state);
+        }
       });
   },
 });
@@ -835,9 +862,9 @@ const crmWorkspaceSlice = createSlice({
           membership?: unknown;
         };
         const membership = data.membership ?? data;
-        const records = state.moduleRecords["user-management"] ?? [];
+        const records = state.moduleRecords.users ?? [];
         records.unshift(membership);
-        state.moduleRecords["user-management"] = records;
+        state.moduleRecords.users = records;
         state.error = null;
       })
       .addCase(loadDedicatedCrmRecords.fulfilled, (state, action) => {
@@ -913,9 +940,7 @@ const crmWorkspaceSlice = createSlice({
         state.error = null;
       })
       .addCase(loadDocuments.fulfilled, (state, action) => {
-        state.moduleRecords["document-management"] = normalizeApiData(
-          action.payload,
-        );
+        state.moduleRecords.documents = normalizeApiData(action.payload);
         state.error = null;
       })
       .addCase(updateCampaignMetrics.fulfilled, (state) => {
@@ -937,7 +962,7 @@ const crmWorkspaceSlice = createSlice({
         state.error = null;
       })
       .addCase(loadTenantUsers.fulfilled, (state, action) => {
-        state.moduleRecords["user-management"] = normalizeApiData(action.payload);
+        state.moduleRecords.users = normalizeApiData(action.payload);
         state.error = null;
       })
       .addCase(loadIntegrationProviders.fulfilled, (state, action) => {
@@ -966,6 +991,20 @@ const crmWorkspaceSlice = createSlice({
       .addCase(updateSecurityPolicy.fulfilled, (state, action) => {
         state.securityPolicy = normalizeApiObject(action.payload);
         state.error = null;
+      })
+      .addMatcher(isRejected, (state, action) => {
+        if (isUnauthorizedError(action.error.message)) {
+          state.activeTenantId = "";
+          state.contexts = [];
+          state.coverage = [];
+          state.dashboard = null;
+          state.error = "Your session expired. Please sign in again.";
+          state.integrationProviders = [];
+          state.loading = false;
+          state.moduleRecords = {};
+          state.securityPolicy = null;
+          state.tenants = [];
+        }
       });
   },
 });

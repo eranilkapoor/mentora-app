@@ -6,47 +6,37 @@ const moduleTitles: Record<
   string
 > = {
   authentication: 'Authentication',
-  'user-management': 'User Management',
-  'organization-management': 'Organization Management',
-  leads: 'Lead Management',
-  'lead-management': 'Lead Management',
-  'student-profile': 'Student Profile',
-  applications: 'Application Management',
-  'application-management': 'Application Management',
-  admissions: 'Admission Management',
-  'admission-management': 'Admission Management',
+  users: 'Users',
+  organizations: 'Organizations',
+  leads: 'Leads',
+  students: 'Students',
+  applications: 'Applications',
+  admissions: 'Admissions',
   campaigns: 'Campaigns',
   'marketing-automation': 'Marketing Automation',
   communications: 'Communications',
-  communication: 'Communication Module',
   'call-center': 'Call Center',
-  'whatsapp-crm': 'WhatsApp CRM',
   whatsapp: 'WhatsApp',
-  'email-crm': 'Email CRM',
-  email: 'Email',
-  sms: 'SMS Module',
+  emails: 'Emails',
+  sms: 'SMS',
   notifications: 'Notifications',
-  'mobile-crm': 'Mobile App CRM',
-  mobile: 'Mobile App',
+  'mobile-app': 'Mobile App',
   calendar: 'Calendar',
   tasks: 'Tasks',
-  'task-management': 'Task Management',
-  'document-management': 'Document Management',
-  payments: 'Payment Module',
-  payment: 'Payment Module',
-  finance: 'Finance Module',
+  documents: 'Documents',
+  payments: 'Payments',
+  finance: 'Finance',
   scholarship: 'Scholarship',
-  interview: 'Interview Module',
-  'event-management': 'Event Management',
-  'field-force-automation': 'Field Force Automation',
+  interview: 'Interviews',
+  events: 'Events',
+  'field-force': 'Field Force',
   reports: 'Reports',
-  'dashboard-module': 'Dashboard Module',
   dashboard: 'Dashboard',
   analytics: 'Analytics',
   'ai-features': 'AI Features',
   integrations: 'Integrations',
   security: 'Security',
-  tenants: 'Tenants And Users',
+  tenants: 'Tenants',
   settings: 'Settings',
   learning: 'Learning Operations',
   automation: 'Automation',
@@ -94,7 +84,7 @@ const readinessByModule: Partial<
     ],
     productionBlockers: ['live_mfa_provider', 'live_sso_provider'],
   },
-  'user-management': {
+  users: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'users,roles,permissions,user_memberships,teams,departments',
@@ -108,7 +98,7 @@ const readinessByModule: Partial<
     ],
     productionBlockers: ['email_invite_provider'],
   },
-  'organization-management': {
+  organizations: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage:
@@ -144,25 +134,7 @@ const readinessByModule: Partial<
       'voice_note_storage_provider',
     ],
   },
-  'lead-management': {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage: 'leads,lead_activities,lead_assignments,lead_imports',
-    apiSurface: [
-      'leads',
-      'leads/operations/duplicates',
-      'leads/operations/import',
-      'leads/operations/export',
-      'leads/:id/score',
-      'leads/:id/tags',
-      'leads/:id/attachments',
-    ],
-    productionBlockers: [
-      'ad_provider_callbacks',
-      'voice_note_storage_provider',
-    ],
-  },
-  'student-profile': {
+  students: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage:
@@ -182,17 +154,6 @@ const readinessByModule: Partial<
     productionBlockers: ['external_form_embed_provider'],
   },
   admissions: {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage: 'admissions',
-    apiSurface: [
-      'admissions',
-      'admissions/:id/allocate',
-      'admissions/:id/handoff',
-    ],
-    productionBlockers: ['live_erp_lms_adapter'],
-  },
-  'admission-management': {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'admissions',
@@ -245,24 +206,6 @@ const readinessByModule: Partial<
     ],
     productionBlockers: ['live_dialer_provider', 'recording_storage_provider'],
   },
-  'whatsapp-crm': {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage:
-      'whatsapp_conversations,communications,integration_provider_configs,workflow_rules',
-    apiSurface: [
-      'whatsapp',
-      'whatsapp/:id',
-      'whatsapp/:id/complete',
-      'communications',
-      'integrations/providers',
-    ],
-    productionBlockers: [
-      'whatsapp_provider_approval',
-      'template_approval',
-      'delivery_callbacks',
-    ],
-  },
   whatsapp: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
@@ -295,37 +238,7 @@ const readinessByModule: Partial<
     ],
     productionBlockers: ['live_delivery_provider_callbacks'],
   },
-  communication: {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage:
-      'communications,notifications,notification_templates,notification_logs,channel_settings',
-    apiSurface: [
-      'communications',
-      'notifications',
-      'admin/notifications',
-      'tenant channel-settings',
-      'integrations/providers',
-    ],
-    productionBlockers: ['live_delivery_provider_callbacks'],
-  },
-  'email-crm': {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage:
-      'communications,notification_templates,notification_logs,integration_provider_configs',
-    apiSurface: [
-      'communications',
-      'notifications/templates',
-      'admin/notifications',
-      'integrations/providers',
-    ],
-    productionBlockers: [
-      'live_email_provider_callbacks',
-      'domain_reputation_warmup',
-    ],
-  },
-  email: {
+  emails: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage:
@@ -372,20 +285,7 @@ const readinessByModule: Partial<
     ],
     productionBlockers: ['live_delivery_provider_callbacks'],
   },
-  'mobile-crm': {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage: 'module_records,leads,tasks,communications,field_visits',
-    apiSurface: [
-      'module-records',
-      'leads',
-      'tasks',
-      'communications',
-      'field-force',
-    ],
-    productionBlockers: ['mobile_offline_sync_engine', 'app_store_release'],
-  },
-  mobile: {
+  'mobile-app': {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'module_records,leads,tasks,communications,field_visits',
@@ -441,7 +341,7 @@ const readinessByModule: Partial<
     apiSurface: ['interviews', 'interviews/:id', 'interviews/:id/complete'],
     productionBlockers: ['calendar_provider_sync'],
   },
-  'event-management': {
+  events: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'crm_events',
@@ -452,7 +352,7 @@ const readinessByModule: Partial<
       'webinar_provider_sync',
     ],
   },
-  'field-force-automation': {
+  'field-force': {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'field_visits,integration_provider_configs',
@@ -490,14 +390,7 @@ const readinessByModule: Partial<
     apiSurface: ['tasks', 'tasks/board', 'tasks/:id/workflow'],
     productionBlockers: ['calendar_reminder_provider'],
   },
-  'task-management': {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage: 'tasks',
-    apiSurface: ['tasks', 'tasks/board', 'tasks/:id/workflow'],
-    productionBlockers: ['calendar_reminder_provider'],
-  },
-  'document-management': {
+  documents: {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'crm_documents',
@@ -511,21 +404,7 @@ const readinessByModule: Partial<
     apiSurface: ['payments', 'admin/payments'],
     productionBlockers: ['live_payment_gateway_settlement_callbacks'],
   },
-  payment: {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage: 'payments,subscriptions,payment_invoices',
-    apiSurface: ['payments', 'admin/payments'],
-    productionBlockers: ['live_payment_gateway_settlement_callbacks'],
-  },
   dashboard: {
-    backendStatus: 'product_ready',
-    frontendStatus: 'product_ready',
-    storage: 'dashboard aggregates,module_records',
-    apiSurface: ['dashboard', 'dashboard/bootstrap', 'module-records'],
-    productionBlockers: [],
-  },
-  'dashboard-module': {
     backendStatus: 'product_ready',
     frontendStatus: 'product_ready',
     storage: 'dashboard aggregates,module_records',

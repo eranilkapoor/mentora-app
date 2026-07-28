@@ -810,7 +810,7 @@ export class MasterSeederService {
     const allBranchIds = branches.map((branch) => branch._id);
 
     for (const [index, role] of EDUCATION_PLATFORM_USER_ROLES.entries()) {
-      const email = `${tenantSlug}.${role.replace(/_/g, '.')}@mentora.test`;
+      const emails = `${tenantSlug}.${role.replace(/_/g, '.')}@mentora.test`;
       const branchIds = this.resolveSeededRoleBranchIds(
         role,
         allBranchIds,
@@ -819,10 +819,10 @@ export class MasterSeederService {
       const systemRole = this.mapCrmRoleToAppRole(role);
 
       const user = await this.userModel.findOneAndUpdate(
-        { email },
+        { emails },
         {
           $set: {
-            email,
+            emails,
             status: Status.ACTIVE,
             isEmailVerified: true,
             isPhoneVerified: false,
@@ -832,7 +832,7 @@ export class MasterSeederService {
             authAccounts: [
               {
                 provider: AuthProvider.EMAIL,
-                providerId: email,
+                providerId: emails,
                 passwordHash,
                 isVerified: true,
                 isPrimary: true,
@@ -860,7 +860,7 @@ export class MasterSeederService {
             settings: {
               seeded: true,
               defaultTenantContext: true,
-              loginEmail: email,
+              loginEmail: emails,
             },
             updatedAt: now,
           },
@@ -984,14 +984,14 @@ export class MasterSeederService {
     branchName: string,
   ) {
     const legacyAliasKeys = new Set([
-      'lead-management',
-      'application-management',
-      'admission-management',
+      'leads',
+      'applications',
+      'admissions',
       'marketing-automation',
       'communication',
       'whatsapp',
-      'email',
-      'mobile',
+      'emails',
+      'mobile-app',
       'payment',
     ]);
     const moduleKeys = EDUCATION_PLATFORM_MODULE_KEYS.filter(
@@ -1062,7 +1062,7 @@ export class MasterSeederService {
     await this.userModel.updateMany(
       {
         'phone.phone': PLAY_PHONE_REVIEWER_PHONE,
-        email: { $ne: PLAY_PHONE_REVIEWER_EMAIL },
+        emails: { $ne: PLAY_PHONE_REVIEWER_EMAIL },
       },
       {
         $unset: { phone: '' },
@@ -1080,7 +1080,7 @@ export class MasterSeederService {
       .find({
         'phone.phone': { $in: profiles.map((profile) => profile.phone) },
       })
-      .select('email phone.phone')
+      .select('emails phone.phone')
       .lean();
 
     const phoneOwnerByNumber = new Map(
@@ -1089,17 +1089,17 @@ export class MasterSeederService {
 
     await this.userModel.bulkWrite(
       profiles.map((profile) => {
-        const isPhoneReviewer = profile.email === PLAY_PHONE_REVIEWER_EMAIL;
-        const isPlatinumReviewer = this.isPlayReviewerEmail(profile.email);
+        const isPhoneReviewer = profile.emails === PLAY_PHONE_REVIEWER_EMAIL;
+        const isPlatinumReviewer = this.isPlayReviewerEmail(profile.emails);
         const phoneOwner = phoneOwnerByNumber.get(profile.phone);
-        const canUsePhone = !phoneOwner || phoneOwner === profile.email;
+        const canUsePhone = !phoneOwner || phoneOwner === profile.emails;
 
         return {
           updateOne: {
-            filter: { email: profile.email },
+            filter: { emails: profile.emails },
             update: {
               $set: {
-                email: profile.email,
+                emails: profile.emails,
                 ...(canUsePhone
                   ? { phone: { countryCode: '91', phone: profile.phone } }
                   : {}),
@@ -1122,9 +1122,9 @@ export class MasterSeederService {
                   : [
                       {
                         provider: AuthProvider.EMAIL,
-                        providerId: profile.email,
+                        providerId: profile.emails,
                         passwordHash:
-                          profile.email === PLAY_REVIEWER_EMAIL
+                          profile.emails === PLAY_REVIEWER_EMAIL
                             ? reviewerPasswordHash
                             : passwordHash,
                         isVerified: true,
@@ -1167,7 +1167,7 @@ export class MasterSeederService {
     );
 
     const users = await this.userModel
-      .find({ email: { $in: profiles.map((profile) => profile.email) } })
+      .find({ email: { $in: profiles.map((profile) => profile.emails) } })
       .select('_id email')
       .lean();
     const userByEmail = new Map(users.map((user) => [user.email, user._id]));
@@ -1186,7 +1186,7 @@ export class MasterSeederService {
     const verificationWrites = [];
 
     for (const profile of profiles) {
-      const userId = userByEmail.get(profile.email);
+      const userId = userByEmail.get(profile.emails);
       if (!userId) continue;
 
       const imageFilename = `seed-profile-${profile.gender}-${profile.index}.jpg`;
@@ -1346,12 +1346,12 @@ export class MasterSeederService {
     return students.map(
       ([firstName, lastName, gender, city, state, lat, lng, age], index) => {
         const birthYear = new Date().getFullYear() - age;
-        const email = `${firstName}.${lastName}@yopmail.com`.toLowerCase();
+        const emails = `${firstName}.${lastName}@yopmail.com`.toLowerCase();
         const phone = String(9876543211 + index);
 
         return {
           index,
-          email,
+          emails,
           phone,
           gender,
           age,
@@ -1425,7 +1425,7 @@ export class MasterSeederService {
     return {
       ...base,
       index: 1020,
-      email: PLAY_REVIEWER_EMAIL,
+      emails: PLAY_REVIEWER_EMAIL,
       phone: '9899999001',
       personal: {
         ...base.personal,
@@ -1447,7 +1447,7 @@ export class MasterSeederService {
     return {
       ...base,
       index: 1050,
-      email: PLAY_PHONE_REVIEWER_EMAIL,
+      emails: PLAY_PHONE_REVIEWER_EMAIL,
       phone: PLAY_PHONE_REVIEWER_PHONE,
       personal: {
         ...base.personal,
@@ -1460,8 +1460,10 @@ export class MasterSeederService {
     };
   }
 
-  private isPlayReviewerEmail(email?: string): boolean {
-    return email === PLAY_REVIEWER_EMAIL || email === PLAY_PHONE_REVIEWER_EMAIL;
+  private isPlayReviewerEmail(emails?: string): boolean {
+    return (
+      emails === PLAY_REVIEWER_EMAIL || emails === PLAY_PHONE_REVIEWER_EMAIL
+    );
   }
 
   private async seedUserSubscriptions(): Promise<void> {
@@ -1487,13 +1489,13 @@ export class MasterSeederService {
 
     const seededEmails = [
       ...Object.values(AppRole).map((role) => `${role}@mentora.test`),
-      ...this.buildIndianDummyProfiles().map((profile) => profile.email),
+      ...this.buildIndianDummyProfiles().map((profile) => profile.emails),
       PLAY_REVIEWER_EMAIL,
       PLAY_PHONE_REVIEWER_EMAIL,
     ];
     const users = await this.userModel
-      .find({ email: { $in: seededEmails } })
-      .select('_id email membership.tier')
+      .find({ emails: { $in: seededEmails } })
+      .select('_id emails membership.tier')
       .lean();
     const eligibleUsers = users.filter((user) => {
       const expectedTier = this.isPlayReviewerEmail(user.email)
@@ -1741,15 +1743,15 @@ export class MasterSeederService {
 
     const result = await this.userModel.bulkWrite(
       roles.map((role) => {
-        const email = `${role}@mentora.test`;
+        const emails = `${role}@mentora.test`;
         const isLearningUser = [AppRole.STUDENT, AppRole.PARENT].includes(role);
 
         return {
           updateOne: {
-            filter: { email },
+            filter: { emails },
             update: {
               $set: {
-                email,
+                emails,
                 status: Status.ACTIVE,
                 isEmailVerified: true,
                 isPhoneVerified: false,
@@ -1765,7 +1767,7 @@ export class MasterSeederService {
                 authAccounts: [
                   {
                     provider: AuthProvider.EMAIL,
-                    providerId: email,
+                    providerId: emails,
                     passwordHash,
                     isVerified: true,
                     isPrimary: true,

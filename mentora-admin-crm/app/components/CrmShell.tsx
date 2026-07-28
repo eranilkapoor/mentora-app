@@ -120,12 +120,12 @@ type ModuleCoverage = {
 const dedicatedCrmModuleIds = new Set([
   "admissions",
   "call-center",
-  "event-management",
-  "field-force-automation",
+  "events",
+  "field-force",
   "finance",
   "interview",
   "scholarship",
-  "whatsapp-crm",
+  "whatsapp",
 ]);
 
 type IconName =
@@ -167,31 +167,29 @@ const moduleIcons: Record<string, IconName> = {
   campaigns: "campaign",
   communications: "chat",
   dashboard: "dashboard",
-  "dashboard-module": "dashboard",
-  "document-management": "document",
-  "email-crm": "mail",
+  documents: "document",
+  emails: "mail",
   notifications: "chat",
-  "event-management": "calendar",
-  "field-force-automation": "mobile",
+  events: "calendar",
+  "field-force": "mobile",
   finance: "finance",
   integrations: "integration",
   interview: "user",
   leads: "lead",
   learning: "graduation",
-  "mobile-crm": "mobile",
-  "organization-management": "building",
+  "mobile-app": "mobile",
+  organizations: "building",
   payments: "payment",
   reports: "report",
   scholarship: "graduation",
   security: "shield",
   settings: "settings",
   sms: "chat",
-  "student-profile": "user",
-  "task-management": "task",
+  students: "user",
   tasks: "task",
   tenants: "tenant",
-  "user-management": "user",
-  "whatsapp-crm": "chat",
+  users: "user",
+  whatsapp: "chat",
 };
 
 const moduleActions: Record<string, string[]> = {
@@ -235,8 +233,8 @@ const moduleActions: Record<string, string[]> = {
     "Delivery Status",
     "Opt-in Controls",
   ],
-  "document-management": ["Load Documents", "Request Document", "Verify"],
-  "mobile-crm": [
+  documents: ["Load Documents", "Request Document", "Verify"],
+  "mobile-app": [
     "Counselor Dashboard",
     "Lead Update",
     "Voice Note",
@@ -304,7 +302,7 @@ const moduleActions: Record<string, string[]> = {
     "Follow-up",
     "Call Analytics",
   ],
-  "organization-management": [
+  organizations: [
     "Create Tenant",
     "Create Branch",
     "Create Department",
@@ -348,7 +346,7 @@ const moduleActions: Record<string, string[]> = {
     "Handoff",
     "Complete",
   ],
-  "whatsapp-crm": [
+  whatsapp: [
     "Template",
     "Media",
     "Buttons",
@@ -358,7 +356,7 @@ const moduleActions: Record<string, string[]> = {
     "Delivery Report",
     "Conversation History",
   ],
-  "email-crm": [
+  emails: [
     "Template",
     "Bulk Mail",
     "Drip Campaign",
@@ -398,16 +396,6 @@ const moduleActions: Record<string, string[]> = {
     "Reassign",
     "Complete",
   ],
-  "task-management": [
-    "Create Task",
-    "Board View",
-    "SLA",
-    "Reminder",
-    "Comment",
-    "Escalate",
-    "Reassign",
-    "Complete",
-  ],
   payments: [
     "Application Fee",
     "Admission Fee",
@@ -417,7 +405,7 @@ const moduleActions: Record<string, string[]> = {
     "Refund",
     "Reconciliation",
   ],
-  "event-management": [
+  events: [
     "Registration Form",
     "Attendance",
     "QR Check-in",
@@ -426,7 +414,7 @@ const moduleActions: Record<string, string[]> = {
     "Event Lead Capture",
     "Complete",
   ],
-  "field-force-automation": [
+  "field-force": [
     "Geo Tracking",
     "Route Plan",
     "Attendance",
@@ -460,7 +448,7 @@ const moduleActions: Record<string, string[]> = {
     "Auto Reply",
     "Follow-up Suggestion",
   ],
-  "user-management": [
+  users: [
     "Create CRM User",
     "Refresh Users",
     "Manage RBAC",
@@ -588,14 +576,14 @@ const defaultCrmUsers = [
 const navGroups = [
   {
     title: "Access",
-    items: ["dashboard", "authentication", "user-management", "security"],
+    items: ["dashboard", "authentication", "users", "security"],
   },
   {
     title: "Enrollment",
     items: [
-      "organization-management",
+      "organizations",
       "leads",
-      "student-profile",
+      "students",
       "applications",
       "admissions",
       "scholarship",
@@ -608,8 +596,8 @@ const navGroups = [
       "campaigns",
       "communications",
       "call-center",
-      "whatsapp-crm",
-      "email-crm",
+      "whatsapp",
+      "emails",
       "sms",
       "notifications",
       "automation",
@@ -618,13 +606,12 @@ const navGroups = [
   {
     title: "Operations",
     items: [
-      "mobile-crm",
+      "mobile-app",
       "calendar",
       "tasks",
-      "task-management",
-      "document-management",
-      "event-management",
-      "field-force-automation",
+      "documents",
+      "events",
+      "field-force",
     ],
   },
   {
@@ -634,7 +621,6 @@ const navGroups = [
       "finance",
       "reports",
       "analytics",
-      "dashboard-module",
       "ai-features",
       "integrations",
       "learning",
@@ -665,7 +651,7 @@ const pipeline = [
 const modules: CrmModule[] = [
   {
     id: "leads",
-    title: "Lead Management",
+    title: "Leads",
     group: "CRM",
     metric: "428",
     description:
@@ -758,35 +744,6 @@ const modules: CrmModule[] = [
       ["Rhea Jain", "Issued", "Pending", "X-CBSE-A1", "01 Aug", "Ritika"],
       ["Vihaan Rao", "Accepted", "Paid", "NEET-26", "03 Aug", "Dev"],
       ["Sara Ali", "Negotiation", "Scholarship", "JEE-27", "05 Aug", "Sahil"],
-    ],
-  },
-  {
-    id: "tasks",
-    title: "Tasks",
-    group: "CRM",
-    metric: "86",
-    description:
-      "Counselor and operations task board for calls, follow-ups, document review, fee reminders, parent callbacks, and onboarding.",
-    filters: ["Assignee", "Priority", "Due", "Status"],
-    columns: ["Task", "Entity", "Priority", "Assignee", "Due", "Status"],
-    rows: [
-      [
-        "Call parent after trial class",
-        "Aarav Sharma",
-        "High",
-        "Ritika",
-        "Today",
-        "Open",
-      ],
-      [
-        "Verify birth document",
-        "APP-000144",
-        "Urgent",
-        "Ananya",
-        "Today",
-        "In progress",
-      ],
-      ["Send fee reminder", "Rhea Jain", "Medium", "Sahil", "Tomorrow", "Open"],
     ],
   },
   {
@@ -994,7 +951,7 @@ const modules: CrmModule[] = [
   },
   {
     id: "tenants",
-    title: "Tenants And Users",
+    title: "Tenants",
     group: "Business",
     metric: "12",
     description:
@@ -1055,8 +1012,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "user-management",
-    title: "User Management",
+    id: "users",
+    title: "Users",
     group: "Access",
     metric: "132 users",
     description:
@@ -1070,8 +1027,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "organization-management",
-    title: "Organization Management",
+    id: "organizations",
+    title: "Organizations",
     group: "Enrollment",
     metric: "12 tenants",
     description:
@@ -1092,8 +1049,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "student-profile",
-    title: "Student Profile",
+    id: "students",
+    title: "Students",
     group: "Enrollment",
     metric: "1,284",
     description:
@@ -1143,8 +1100,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "whatsapp-crm",
-    title: "WhatsApp CRM",
+    id: "whatsapp",
+    title: "WhatsApp",
     group: "Growth",
     metric: "2,840",
     description:
@@ -1172,8 +1129,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "email-crm",
-    title: "Email CRM",
+    id: "emails",
+    title: "Emails",
     group: "Growth",
     metric: "18 campaigns",
     description:
@@ -1195,7 +1152,7 @@ const extraModules: CrmModule[] = [
   },
   {
     id: "sms",
-    title: "SMS Module",
+    title: "SMS",
     group: "Growth",
     metric: "6,920",
     description:
@@ -1216,8 +1173,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "mobile-crm",
-    title: "Mobile App CRM",
+    id: "mobile-app",
+    title: "Mobile App",
     group: "Operations",
     metric: "46 agents",
     description:
@@ -1260,8 +1217,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "task-management",
-    title: "Task Management",
+    id: "tasks",
+    title: "Tasks",
     group: "Operations",
     metric: "86",
     description:
@@ -1282,8 +1239,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "document-management",
-    title: "Document Management",
+    id: "documents",
+    title: "Documents",
     group: "Operations",
     metric: "392 docs",
     description:
@@ -1298,7 +1255,7 @@ const extraModules: CrmModule[] = [
   },
   {
     id: "finance",
-    title: "Finance Module",
+    title: "Finance",
     group: "Business",
     metric: "INR 31.8L",
     description:
@@ -1335,7 +1292,7 @@ const extraModules: CrmModule[] = [
   },
   {
     id: "interview",
-    title: "Interview Module",
+    title: "Interviews",
     group: "Enrollment",
     metric: "33",
     description:
@@ -1349,8 +1306,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "event-management",
-    title: "Event Management",
+    id: "events",
+    title: "Events",
     group: "Operations",
     metric: "14 events",
     description:
@@ -1371,8 +1328,8 @@ const extraModules: CrmModule[] = [
     ],
   },
   {
-    id: "field-force-automation",
-    title: "Field Force Automation",
+    id: "field-force",
+    title: "Field Force",
     group: "Operations",
     metric: "28 visits",
     description:
@@ -1405,21 +1362,6 @@ const extraModules: CrmModule[] = [
       ],
       ["Revenue forecast", "Enterprise", "Daily", "87%", "Finance", "Ready"],
       ["Counselor SLA", "Admissions", "Hourly", "94%", "Ops", "Active"],
-    ],
-  },
-  {
-    id: "dashboard-module",
-    title: "Dashboard Module",
-    group: "Business",
-    metric: "6 roles",
-    description:
-      "CEO, management, marketing, finance, admission manager, and counselor dashboards with scoped KPIs and report cards.",
-    filters: ["Role", "Widget", "Scope", "Status"],
-    columns: ["Dashboard", "Role", "Widgets", "Refresh", "Owner", "Status"],
-    rows: [
-      ["CEO overview", "CEO", "18", "Hourly", "Management", "Ready"],
-      ["Counselor desk", "Counselor", "12", "Live", "Ops", "Active"],
-      ["Finance board", "Finance", "10", "Daily", "Finance", "Ready"],
     ],
   },
   {
@@ -1522,7 +1464,6 @@ const workflowModuleIds = new Set([
   "learning",
   "settings",
   "analytics",
-  "dashboard-module",
   "security",
 ]);
 
@@ -1555,7 +1496,7 @@ const moduleMap = Object.fromEntries(
 );
 
 function getModuleHref(id: string) {
-  return id === "dashboard" ? "/" : `/${id.replaceAll("_", "-")}`;
+  return id === "dashboard" ? "/" : `/${id}`;
 }
 
 function resolveRouteModuleId(pathname: string | null, fallback: string) {
@@ -1648,6 +1589,12 @@ export default function CrmDashboardPage() {
     if (!apiSyncEnabled || !loggedInUser || !activeContext) return;
     void dispatch(loadCrmWorkspace());
   }, [activeContext, apiSyncEnabled, dispatch, loggedInUser]);
+
+  useEffect(() => {
+    if (!accessToken) {
+      setApiSyncEnabled(false);
+    }
+  }, [accessToken]);
 
   useEffect(() => {
     if (!accessToken || !loggedInUser || !activeContext || apiSyncEnabled) {
@@ -2036,7 +1983,7 @@ export default function CrmDashboardPage() {
       }
     }
 
-    if (activeId === "organization-management") {
+    if (activeId === "organizations") {
       if (normalized.includes("tenant")) {
         if (!accessToken) {
           dispatch(
@@ -2145,7 +2092,7 @@ export default function CrmDashboardPage() {
       }
     }
 
-    if (activeId === "user-management") {
+    if (activeId === "users") {
       if (!apiSyncEnabled || !activeTenantId) {
         dispatch(
           crmSessionActions.setToast(
@@ -2177,7 +2124,7 @@ export default function CrmDashboardPage() {
           const rowCount = Array.isArray(data.rows) ? data.rows.length : 0;
           dispatch(
             crmSessionActions.setToast(
-              `${rowCount} user-management rows prepared for access review`,
+              `${rowCount} user rows prepared for access review`,
             ),
           );
           return;
@@ -2361,7 +2308,7 @@ export default function CrmDashboardPage() {
       }
     }
 
-    if (["communications", "email-crm", "sms"].includes(activeId)) {
+    if (["communications", "emails", "sms"].includes(activeId)) {
       if (!apiSyncEnabled || !activeTenantId) {
         dispatch(
           crmSessionActions.setToast(
@@ -2374,7 +2321,7 @@ export default function CrmDashboardPage() {
       const channel =
         activeId === "sms"
           ? "sms"
-          : activeId === "email-crm"
+          : activeId === "emails"
             ? "email"
             : normalized.includes("whatsapp")
               ? "whatsapp"
@@ -2502,7 +2449,7 @@ export default function CrmDashboardPage() {
       }
     }
 
-    if (activeId === "call-center" || activeId === "whatsapp-crm") {
+    if (activeId === "call-center" || activeId === "whatsapp") {
       if (!apiSyncEnabled || !activeTenantId) {
         dispatch(
           crmSessionActions.setToast(
@@ -2613,9 +2560,9 @@ export default function CrmDashboardPage() {
         "admissions",
         "applications",
         "campaigns",
-        "document-management",
-        "event-management",
-        "field-force-automation",
+        "documents",
+        "events",
+        "field-force",
         "finance",
         "interview",
         "scholarship",
@@ -2632,7 +2579,7 @@ export default function CrmDashboardPage() {
       }
 
       try {
-        if (activeId === "document-management") {
+        if (activeId === "documents") {
           if (normalized.includes("load")) {
             const result = await dispatch(
               loadDocuments({ tenantId: activeTenantId }),
@@ -2795,7 +2742,7 @@ export default function CrmDashboardPage() {
           return;
         }
 
-        if (activeId === "event-management") {
+        if (activeId === "events") {
           await dispatch(
             runCrmRecordAction({
               path: normalized.includes("complete")
@@ -2825,7 +2772,7 @@ export default function CrmDashboardPage() {
           return;
         }
 
-        if (activeId === "field-force-automation") {
+        if (activeId === "field-force") {
           if (
             normalized.includes("geo") ||
             normalized.includes("route") ||
@@ -2948,7 +2895,7 @@ export default function CrmDashboardPage() {
 
     if (
       [
-        "mobile-crm",
+        "mobile-app",
         "calendar",
         "payments",
         "dashboard",
@@ -3277,9 +3224,6 @@ export default function CrmDashboardPage() {
                 type="button"
               >
                 <span className="menu-heading-title">{group.title}</span>
-                <span className="menu-count">
-                  {group.items.filter(canAccessModule).length}
-                </span>
               </button>
               <ul>
                 {group.items.filter(canAccessModule).map((id) => (
