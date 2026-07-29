@@ -34,6 +34,23 @@ Keep the real values in the deployment secret store, EAS secrets, CI/CD secrets,
 - Payment webhook secrets and gateway keys.
 - JWT secrets, database credentials, Redis credentials.
 
+## CRM And Learning Provider Secrets
+
+Configure only the providers selected for the launch scope. Providers that are not configured must remain disabled in production workflows.
+
+- AI tutor/model provider keys, moderation keys, usage-metering configuration, and fallback policy.
+- WhatsApp Business provider credentials, template namespace, webhook verify token, and callback signing secret.
+- Email provider credentials, sender domain verification values, bounce/unsubscribe callback secret, and DKIM/SPF/DMARC DNS records.
+- SMS provider credentials, DLT/template identifiers, callback signing secret, and OTP sender settings.
+- Calendar provider OAuth credentials for Google/Microsoft calendar sync.
+- Dialer/call-center credentials, recording storage credentials, and callback signing secret.
+- OCR/document-verification provider credentials and callback signing secret.
+- Geo/maps provider credentials for field-force routing and attendance.
+- Webinar/event provider credentials and webhook signing secret.
+- Accounting/tax/export provider credentials for finance-ledger handoff.
+- Razorpay/Stripe/payment gateway keys, webhook secrets, settlement callback secrets, and store billing API credentials.
+- Sentry/APM DSN, release environment, alert webhook, and uptime monitor credentials.
+
 ## Play Reviewer Phone Access
 
 Enable only while the Play reviewer account must remain available:
@@ -51,3 +68,5 @@ longer required; never reuse this phone number or OTP for a real member.
 ## Release Rule
 
 Enable mobile push only after backend push is enabled and a real Android device successfully registers a token and receives a test notification.
+
+Do not mark a module production-live only because its API and CRM screens exist. Mark it production-live only after its secrets are configured, callbacks are verified, audit logs are visible, and rollback/disable steps are documented.

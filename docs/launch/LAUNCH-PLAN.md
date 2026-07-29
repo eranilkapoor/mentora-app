@@ -1,6 +1,8 @@
 # Mentora Launch Readiness Audit
 
-Last reviewed: 2026-07-26
+Last reviewed: 2026-07-29
+
+See [Production Readiness Audit](PRODUCTION-READINESS-AUDIT.md) for the current code verification snapshot and the production gates that remain open.
 
 Status legend:
 

@@ -33,6 +33,10 @@ Mentora is a B2C AI tutoring and mentorship platform for students and parents. A
 
 Launch files are Mentora working templates. They must be reviewed before production release for child/student AI tutoring disclosures, hosted public legal URLs, app-store safety requirements, subscription claims, model-provider moderation, and support operations.
 
+- [Production Readiness Audit](launch/PRODUCTION-READINESS-AUDIT.md): current production verdict, local verification status, application readiness, module-readiness interpretation, and production gates.
+- [Launch Plan](launch/LAUNCH-PLAN.md): mobile/web/API launch checklist and release sequencing.
+- [Production Secrets Checklist](launch/PRODUCTION-SECRETS-CHECKLIST.md): secret groups that must be configured outside git before launch.
+
 ## Standards
 
 - [Coding Standard](standards/CODING-STANDARD.md): naming, folder, file, class, function, and NestJS conventions.

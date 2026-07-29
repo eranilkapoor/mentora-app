@@ -1,6 +1,6 @@
 # Mentora Product Goal Validation
 
-Last reviewed: 2026-07-26
+Last reviewed: 2026-07-29
 
 ## Goal
 
@@ -30,6 +30,20 @@ Implemented foundations:
 - Assessments, attempts, answers, results, topic progress, recommendations, and parent progress dashboard APIs.
 - Mobile Learn, Schedule, Progress tabs with account switcher.
 - Learning plans, billing summary, membership purchase screen, and subscription billing screen.
+- Multi-tenant admin CRM foundation for tenants, users/RBAC, leads, applications, admissions, communications, payments, reports, workflows, integrations, and security policies.
+- Public website foundation for product pages, legal/support surfaces, and lead/demo capture.
+
+## Production Reality
+
+The product goal is still valid and the architecture is aligned with it. The codebase is now build-clean across API, CRM, website, and mobile, but Mentora should be treated as **MVP/customer-demo ready**, not live-production ready.
+
+Production launch still depends on:
+
+- Live AI provider, moderation, usage metering, and safety escalation.
+- Production payment/store billing credentials and callback verification.
+- Email, SMS, WhatsApp, push, calendar, OCR, storage, monitoring, dialer, geo, webinar, and accounting provider activation as selected.
+- Legal/security review for child/student consent, self-managed student age/document validation, subscriptions, data retention, account deletion, and AI tutoring disclosures.
+- End-to-end QA across CRM tenant/branch/role context, mobile release builds, public website lead capture, token expiry, offline/slow network states, and production backups.
 
 ## Gaps To Close
 

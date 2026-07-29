@@ -1,6 +1,8 @@
 # Mentora Education CRM Platform Plan
 
-Last reviewed: 2026-07-28
+Last reviewed: 2026-07-29
+
+Current readiness note: the CRM codebase is build-clean and the 30-module roadmap has code-side Product Ready coverage, but customer production rollout still depends on the gates documented in [Production Readiness Audit](../launch/PRODUCTION-READINESS-AUDIT.md).
 
 ## Positioning
 

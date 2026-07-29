@@ -210,6 +210,7 @@ Still to complete before enterprise launch:
 
 ## Enterprise Launch Checklist
 
+- Review [Production Readiness Audit](../launch/PRODUCTION-READINESS-AUDIT.md) before marking the platform production-live.
 - Mobile typecheck/lint/test pass.
 - API typecheck/lint/test pass.
 - Seeder contains only Mentora data.

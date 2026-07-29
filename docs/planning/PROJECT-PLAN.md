@@ -60,8 +60,11 @@ Mentora should evolve beyond the MVP into an enterprise-grade tutoring platform 
 - Parent-visible AI history, summaries, moderation alerts, and learning reports.
 - Tutor app mode for availability, session requests, classroom launch, notes, homework, attendance, invoices, and earnings.
 - Enterprise audit, retention, safety review, transcript export, and notification controls.
+- Multi-tenant education CRM for institutes, colleges, universities, coaching brands, admissions teams, counselors, marketing, finance, reports, integrations, and tenant security policy.
 
 See `docs/planning/ENTERPRISE-AI-TUTOR-APP-PLAN.md` for the detailed competitor-aligned product blueprint.
+
+See `docs/launch/PRODUCTION-READINESS-AUDIT.md` for the current production verdict and launch gates.
 
 ## Platform Foundation
 
@@ -88,14 +91,15 @@ Remove or rename when encountered:
 | 4     | Done    | Scheduling and entitlements        | Learning schedules, subject enrollments, plans, subscriptions, payments, AI access guard           |
 | 5     | Done    | AI tutor                           | AI sessions, messages, prompt context, safety checks, session summaries                            |
 | 6     | Done    | Progress and assessments           | Question banks, assessments, attempts, topic progress, recommendations, parent reports             |
-| 7     | Partial | Public website and admin hardening | Public website exists; admin flows, operational evidence, and launch readiness still need QA       |
+| 7     | Done    | Public website and admin CRM code foundation | Public website, admin CRM shell, tenant context, CRM module routes, and server-backed CRM foundations exist |
 | 8     | Planned | Enterprise classroom               | Chat/audio/video classroom, whiteboard, files, notes, recordings, live captions, network preflight |
 | 9     | Planned | Human tutor marketplace            | Tutor profiles, availability, booking requests, trial/recurring sessions, notes, payouts           |
 | 10    | Planned | Compliance and scale               | Safety review queues, audit exports, retention policies, analytics, enterprise reporting           |
 
 ## Non-Goals For MVP
 
-- B2B school CRM.
+- Full custom ERP replacement for schools, colleges, or universities.
+- Live-production CRM provider automation before provider credentials, callbacks, and tenant rollout operations are configured.
 - Complete university/college catalogue for every country.
 - Voice tutor, handwritten answer checking, live human mentor marketplace, group classes, and gamification.
 - Reusing any non-Mentora production database or user data.

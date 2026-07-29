@@ -1,5 +1,19 @@
 # Mentora Task Roadmap
 
+## 2026-07-29 Production Audit Update
+
+The repository currently passes the local code quality checks recorded in [Production Readiness Audit](../launch/PRODUCTION-READINESS-AUDIT.md): API lint/build, CRM build/typecheck, public website build/typecheck, and mobile lint/typecheck/i18n.
+
+Roadmap status uses **Product Ready** for code-side readiness: module ownership, DTOs/schemas/services/controllers, tenant guards, permissions, frontend routes, list/action surfaces, and audit-aware operations where applicable. Production launch still requires external activation: provider credentials, callback verification, live infrastructure, E2E/device QA, legal/security sign-off, monitoring, backups, and release runbooks.
+
+| Priority | Production gate | Status |
+| --- | --- | --- |
+| P0 | Production environment, secrets, MongoDB/Redis/S3/queue workers, strict CORS, seeder policy | Pending environment setup |
+| P0 | Provider smoke tests for AI, email, SMS, WhatsApp, push, payments, storage, monitoring, calendar, OCR, dialer, geo, webinar, and accounting export | Pending live credentials |
+| P0 | Tenant, branch, role, permission, token-expiry, and audit-export QA | Pending staging QA |
+| P0 | CRM desktop/tablet, public website, and mobile Android/iOS release-mode QA | Pending staging/device QA |
+| P0 | Child/student legal, subscription, privacy, account deletion, and AI tutoring disclosure review | Pending legal/security sign-off |
+
 ## P0 Foundation
 
 | Status | Task                                                                                               |

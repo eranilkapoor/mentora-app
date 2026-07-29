@@ -57,6 +57,7 @@ Assessment
 - [Technical Plan](docs/planning/TECHNICAL-PLAN.md): Mentora architecture, module map, API surfaces, and migration strategy.
 - [Database Plan](docs/planning/DATABASE-PLAN.md): MongoDB collections for identity, family, academic, scheduling, AI tutor, progress, payments, and safety.
 - [Project Plan](docs/planning/PROJECT-PLAN.md): product scope, MVP, phases, and non-goals.
+- [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md): current production verdict, verified checks, module readiness interpretation, and launch gates.
 - [Student Profile Model](docs/planning/STUDENT-PROFILE-MODEL.md): complete student profile sections including personal, academic, parents, documents, payments, communications, and activity timeline.
 - [Education CRM Platform Plan](docs/planning/EDUCATION-CRM-PLATFORM-PLAN.md): multi-tenant CRM modules for leads, admissions, campaigns, payments, analytics, and learning operations.
 - [Task Roadmap](docs/planning/TASK-ROADMAP.md): implementation roadmap from copied foundation to Mentora modules.
@@ -66,12 +67,14 @@ Assessment
 
 ## Current Verification Snapshot
 
-Last checked locally on 2026-07-28:
+Last checked locally on 2026-07-29:
 
-- API server: typecheck, lint, and build pass. Non-watch boot reaches MongoDB connection with local storage initialized; full listen depends on the configured MongoDB server being reachable.
-- Admin CRM: typecheck, production build, and dev server on `http://localhost:3002` pass.
-- Public website: typecheck, production build, and dev server on `http://localhost:3001` pass.
-- Mobile app: typecheck, lint, i18n key check, Expo web page request, and `index.ts.bundle` request pass on `http://localhost:8081`.
+- API server: lint and production build pass.
+- Admin CRM: typecheck/lint and production build pass.
+- Public website: typecheck/lint and production build pass.
+- Mobile app: typecheck, lint, and i18n key check pass for English and Hindi.
+
+Current production verdict: the codebase is build-clean and suitable for an MVP/customer demo environment, but not production-live until provider credentials, production infrastructure, legal/security review, E2E/device QA, monitoring, backups, and launch runbooks are completed. See the [Production Readiness Audit](docs/launch/PRODUCTION-READINESS-AUDIT.md).
 
 ## Quick Start
 
@@ -210,12 +213,13 @@ Done:
 - Added mobile learning account switcher, AI tutor start action, recommendations, and assessment/progress service contracts.
 - Updated onboarding and edit profile toward student/parent-managed learning profiles with completion scoring.
 - Added `mentora-public-website` with Mentora landing, plans, support, privacy, terms, account deletion, and community guidelines pages.
+- Added `mentora-admin-crm` with multi-tenant organization, users/RBAC, leads, applications, admissions, communications, payments, reports, workflows, integrations, and security-policy foundations.
 
 Next:
 
 - Regenerate the OpenAPI snapshot from a running API and review the generated contract for the newly added learning endpoints.
 - Connect the AI tutor placeholder response to the selected model provider and add provider-level moderation.
-- Complete release QA evidence for Android/iOS/web, child/student policy disclosures, billing provider credentials, and production monitoring.
+- Complete release QA evidence for API, CRM desktop/tablet, Android/iOS mobile, public website, child/student policy disclosures, billing/provider credentials, production monitoring, backups, and security sign-off.
 - Expand seed data beyond Classes 6-10 and add more boards, topics, curriculums, assessments, and plan tiers.
 
 ## License
